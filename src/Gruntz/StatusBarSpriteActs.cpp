@@ -72,8 +72,6 @@ i32 CreateStatusBarSprite(CGameObject* obj) {
 // apply the single-image-ani geometry, bind the "A" bute node and lock the draw
 // order to 0xf4240.
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0010c230, 0x178)
 CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_STATUSBARSPRITE");

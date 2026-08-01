@@ -48,15 +48,6 @@ CMenuState::~CMenuState() {
 }
 
 // @early-stop
-// frame-layout / regalloc wall: complete + correct body - instruction
-// selection, the guarded registry-call chain, the heap CChatBox CPtrList+2 CString
-// construction + EH trylevel, the MENU_CURSOR/SELECT/ACTIVATE keys and the two sound
-// finds all match retail (verified instruction-by-instruction; the ARG_MISMATCH
-// rows are the reloc-name scoring artifact).  Residual: retail frame-allocates 0x10
-// of locals while this /O2 recompile allocates 0x14 (one extra slot), yielding a +4
-// cascade across every [esp+N] operand, plus the base-loader arg push scheduling and
-// the new-obj-vs-EH-state interleave - all allocator choices, not source-steerable.
-// See docs/patterns/zero-register-pinning.md + identical-return-epilogue-tailmerge.md.
 RVA(0x0009fe50, 0x343)
 i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (prevStateId == 0) {

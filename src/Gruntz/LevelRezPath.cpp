@@ -12,14 +12,6 @@
 
 // @source: decomp-xref
 // @early-stop
-// zero-register-pinning wall (~45%): logic + control flow + every call/offset are
-// byte-identical to retail EXCEPT retail pins the /GX EH-state constant 1 in `bl`
-// (`mov bl,1; mov [state],bl`, 4 state=1 stores vs the recompile's 3) which forces a
-// 4th callee-saved `push ebx`; that extra push shifts EVERY [esp+disp] operand by 4,
-// cascading a fuzzy-score hit through the whole body. Verified instruction-by-
-// instruction (llvm-objdump -dr, base vs delinked target): identical opcodes, disp32
-// differs by 4 throughout; the only other residual is the demangled-vs-mangled EH/
-// CString reloc names. Documented, not source-steerable: docs/patterns/zero-register-pinning.md.
 RVA(0x00093d40, 0x473)
 // Slot names from the declaration in <Gruntz/GruntzMgr.h>, which the two SaveGame call
 // sites confirm: BuildLevelRezPath(pathHi == 0, slot->m_pathHi, slot->m_pathLo,

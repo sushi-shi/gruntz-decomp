@@ -26,8 +26,6 @@ VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; wa
 // the WHOLE-STRUCT `m_rect14 = rc` copy, and the member offsets themselves were wrong
 // (m_step/m_loop and m_frameStart/m_frameEnd were swapped in the header - see there).
 // @early-stop
-// Residual: cl cross-jumps the key/record `return 0` epilogues onto one shared block
-// where retail keeps two inline copies, plus eax<->edx naming in the cel fetch.
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,
@@ -111,12 +109,6 @@ i32 CSBI_ImageSetAni::Refresh(i32) {
 // advance within [m_4c, m_50]. Ex CAniPlayer::Tick (dossier #16: vtbl 0x1ead6c
 // slot [5] thunk 0x2dfb).
 // @early-stop
-// tail-merge + regalloc wall (~91.4). Branch sequences AGREE (mnemonics AND symbolic
-// targets); base is 210 B against retail's 225 because cl merges two wrap exits retail
-// keeps apart - one of which uses a REGISTER decrement, the other `dec [esi+0x28]`.
-// Plus the cel-fetch eax<->ecx naming. 27-cell matrix
-// (config/axes/sbi-imagesetani-render.json: cel-fetch spelling x anchor-add operand
-// order x explicit register decrement) is FLAT - baseline is the product optimum.
 RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
     if (m_28 > 0) {

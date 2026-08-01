@@ -208,16 +208,6 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
 // constructs a CString temp (destroyed by MeasureText); rc/x/y are text-space clip
 // coords, (x,y) positions the run on the surface.
 // @early-stop
-// ~62% (from 0%): full body + control flow + the whole call/data set byte-match
-// (MeasureText, IntersectRect, Lock, GetGlyph x3, GetSurface, m_8->Unlock, the 5
-// g_r/g/b Up/Down pixel-format globals, the 16bpp pack + per-pixel alpha blend). The
-// three DrawLineClipped CALLs (0x179d10 +0x84/+0xe3/+0x132) now BIND. Residual is a
-// callee-saved-register-assignment wall: retail pins this=edi / surf=ebp / x=ebx, cl
-// pins this=ebp / surf=esi, so every this/surf/x access re-encodes (different modrm)
-// and cl additionally materializes m_color into a GP reg + spill to extract its bytes
-// where retail reads this->m_color fresh (+~10 insns, +3 stack dwords -> frame 0x88 vs
-// retail 0x7c). A global allocation decision, not steerable by operand order. Verified
-// base-vs-target with the objdiff mnemonic stream (442 vs 432 insns).
 RVA(0x00179e70, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == 0) {
@@ -391,12 +381,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 // same skeleton as MeasureWrapped) and draws each line via DrawLine - centered
 // horizontally within [x0, right] using CRect::Width when `hcenter` is set.
 // @early-stop
-// ~73% (from 0.5%): logic + control flow + the full call set (6 DrawLine, 8
-// MeasureText, 5 Span, 2 Left, 17 CString ctors, 8 operator=, ...) byte-match.
-// Residual is the temp-layout/regalloc/EH-state wall shared with its siblings,
-// plus a codegen-form split on the MeasureWrapped-arg block (retail materializes
-// the 4-int {x0,top,right,bottom} arg tuple via `sub esp,0x10`+stores; cl emits
-// pushes). Verified base-vs-target with llvm-objdump -dr.
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
     CString text,
@@ -545,15 +529,6 @@ void FontRenderer::DrawWrapped(
 // line-height. With no font loaded the extent is {0,0}. The CString arg is
 // taken by value (the EH frame destroys it); the result is returned by value.
 // @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md, 71.8%): the
-// loop is now byte-identical. Retail coalesces the loop counter's initial 0 with the
-// 0 constant into esi (`xor esi,esi` before the m_font gate, then `cmp eax,esi` /
-// `mov al,[esi+eax]` / `inc esi`), so on the null path esi is busy and cl picks ebx
-// for the sret pointer - which makes retail's two epilogues differ and stops them
-// tail-merging. Ours puts the zero in ecx and the sret in esi on BOTH paths, so cl
-// merges them (-12 insns). Tried: hoisting `i = 0` out of the for-init (71.6),
-// `g.height = 0` in the loop as a source for retail's dead `mov [esp+0x10],esi`
-// store (66.3). Both regressed.
 RVA(0x0017ac50, 0xbd)
 TextExtent FontRenderer::MeasureText(CString text) {
     TextExtent ext;
@@ -601,11 +576,6 @@ TextExtent FontRenderer::MeasureText(CString text) {
 // `this` - modeled by reinterpreting &head as the FontRenderer accessor, which
 // reads the same +0 char*; reloc-masked).
 // @early-stop
-// ~75.5% (from 0.13%): logic + control flow + CString-op sequence byte-exact.
-// Residual is the temp-layout/regalloc wall - cl pins `this` in edi (retail esi)
-// and DSE-eliminates the dead `e.height` store the retail keeps, so the /GX frame
-// is 0x50 vs retail's 0x54; that 4-byte shift cascades every [esp+N] offset.
-// Verified base-vs-target with llvm-objdump -dr.
 RVA(0x0017ad10, 0x402)
 TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom) {
     TextExtent ext;
@@ -724,9 +694,6 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
 // {x, lineHeight + y + 1} and writes totalChars to *outLen. The char-split path
 // consumes head[0] (index 0, unlike MeasureWrapped's per-char index).
 // @early-stop
-// ~79.2% (from 4.2%): logic + control flow + CString-op sequence byte-exact.
-// Same temp-layout/regalloc wall as MeasureWrapped (dead measure-height store DSE
-// + a callee-saved-register pin shift); verified base-vs-target with llvm-objdump.
 RVA(0x0017b120, 0x3c6)
 TextExtent
 FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom, i32* outLen) {

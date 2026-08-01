@@ -28,11 +28,6 @@ RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 // CLevelTime::CLevelTime @0x9b8b0 - fold the shared CUserLogic(obj) init (with the
 // built-in logic types inlined-registered), then flag the sub-object (+0x08 bit 1).
 // @early-stop
-// eh-ctor-vptr-restamp-position wall, all-inline-base variant (99.68%) - the shared cause of the
-// whole CUserLogic+CWapX leaf-ctor family; mechanism + the full list of spellings that do NOT move
-// it is on CWayPoint::CWayPoint (src/Gruntz/WayPoint.cpp) and in
-// docs/patterns/eh-ctor-vptr-restamp-position.md. One adjacent transposition: cl hoists the body's
-// `mov eax,[esi+0x38]` one slot over the leaf vptr stamp.
 RVA(0x0009b8b0, 0x18f)
 CLevelTime::CLevelTime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;

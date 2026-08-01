@@ -75,14 +75,6 @@ i32 QueryToken(i32 arg) {
 // the matching per-area handler (40-way jump table).
 // ---------------------------------------------------------------------------
 // @early-stop
-// epilogue-tailmerge + jump-table wall (~79%): the 40 case bodies + dispatch logic
-// are byte-exact; the residual is (a) retail hoists the default `xor eax,eax` before
-// the jump table (index then in ecx, not eax) while the recompile keeps the index
-// in eax with no pre-zero, and (b) retail emits the range-guard zero-return and the
-// switch-default zero-return as two separate epilogues where the recompile
-// tail-merges them.  Result-var idiom didn't help (regresses the tail-return cases).
-// See docs/patterns/identical-return-epilogue-tailmerge.md +
-// docs/patterns/switch-pointer-default-result-var.md + jumptable-data-overlap.md
 RVA(0x00099d40, 0x2c0)
 i32 CAreaMgr::Dispatch(i32 index) {
     if (index <= 0 || index > 0x28) {
@@ -215,11 +207,6 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
 // against an empty CString before moving on. Was also declared as
 // CObjResBuilder::FindAdd by the LoadObject* reconcilers - same one function.
 // @early-stop
-// /GX CString-temp EH wall: same family as FindEntry; logic faithful, EH-state +
-// CString temp layout is the byte residual (retail's key build is an operator+
-// against a global char - 0x1b9f81 with g_dat60b588 - not a plain copy; part of
-// the parked residual).
-// ---------------------------------------------------------------------------
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
     CString key(name);
@@ -279,17 +266,6 @@ i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 
 // @source: decomp-xref
 // @early-stop
-// ~88.7%: complete + correct (the OBJECTZ_ GetNextAssoc scan, FindAdd reconcile,
-// CPtrList drain via the registry's ProcessNew, the IMAGEZ_%s sprintf + CSymTab
-// ResolvePath + the polymorphic vtable Install, and the g_resourceInstallActive bracket
-// are all byte-faithful, strings/relocs aligned). Residual: retail's frame is 0xb4
-// vs this build's 0xac because retail reserves a guarded CString cleanup slot
-// ([esp+0x24] with its construction guard at [esp+0x1c]) that it NEVER constructs
-// nor sets in the normal path - dead EH-cleanup scaffolding the optimizer emitted
-// for an elided by-value name temp - plus the matching conditional ~CString block.
-// That phantom +8 shifts every [esp+N] operand, capping the fuzzy score though the
-// instruction selection is identical. Not source-steerable without reproducing the
-// elided-but-scaffolded temp. Reused for the Sound/Anim siblings below.
 RVA(0x0009a510, 0x275)
 i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == 0) {
@@ -364,13 +340,6 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 // into the caller's return slot, destruct the local (the /GX frame).
 // ---------------------------------------------------------------------------
 // @early-stop
-// zero-register-pinning wall (~66%, docs/patterns/zero-register-pinning.md,
-// topic:wall topic:regalloc): the branch structure + every CString call/operand
-// is byte-faithful, but retail pins the 0 and 1 constants in callee-saved ebx/edi
-// (push ebx;push esi;push edi; xor ebx,ebx; mov edi,1) and reuses them for the
-// len==0 compare + the EH-state =0/=1 stores; the recompile keeps only esi and
-// emits immediates, so the extra pushes phase-shift every stack offset. Not
-// source-steerable. Deferred to the final sweep.
 RVA(0x0009a830, 0xa4)
 CString CSpawnEntry::GetTail() {
     CString tmp;
@@ -386,9 +355,6 @@ CString CSpawnEntry::GetTail() {
 
 // @source: decomp-xref
 // @early-stop
-// ~88.3%: complete + correct Image sibling (SOUNDZ_ key, CMapStringToPtr source,
-// the concrete entry->m_soundRegistry ProcessNew/Install, no install-gate bracket). Same phantom
-// guarded-CString +8 frame-shift wall documented on the Image arm above.
 RVA(0x0009a910, 0x261)
 i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == 0) {
@@ -458,8 +424,6 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 
 // @source: decomp-xref
 // @early-stop
-// ~88.3%: complete + correct Sound sibling (ANIZ_ key, the concrete entry->m_animRegistry
-// ProcessNew/Install). Same phantom guarded-CString +8 frame-shift wall as above.
 RVA(0x0009ac20, 0x261)
 i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == 0) {
@@ -740,14 +704,6 @@ i32 CAreaMgr::H40() {
 
 // ---------------------------------------------------------------------------
 // @early-stop
-// shrink-wrapped callee-save-push wall (~58%): the dual idiv-group math is logically
-// identical, but retail keeps `a` in eax for the `if(a<=0)` guard and DEFERS the
-// `push esi` past it, computing the arg group first; the recompile commits `a` to
-// callee-saved esi at entry (push esi upfront) and computes the current index group first.
-// Not source-steerable.  See docs/patterns/shrink-wrapped-callee-save-push.md
-// @interleaver CAreaMgr::SameGroup emitted-in <boundary: the H01..H40 handler run
-// @0x9af30-0x9b410 (before, defined above) + StateDispatch.cpp StateDispatch @0x9b770
-// (after)>. A /Gy first-use COMDAT the linker placed past the handler run.
 RVA(0x0009b430, 0x49)
 i32 CAreaMgr::SameGroup(i32 a) {
     if (a <= 0) {

@@ -84,12 +84,6 @@ void CWwdGrid::Remove(WwdRegion* r) {
 // (Wrapping the loop in `if(colA<=colB)` instead of an early `return fired` was the
 // earlier fix: 95%->99.7%, killing the duplicate early-return epilogue.)
 // @early-stop
-// 99.92% - ONE scheduling pair left: in the inner loop's tail block cl emits the two
-// independent reloads as `base` then `rowN`, retail as `rowN` then `base` (the `base`
-// reload only feeds the post-loop `base += m_cols`, so both orders are legal and the two
-// instructions are otherwise byte-identical). The frame is now exact - the 16-byte
-// cell-rect aggregate above closed the 0x18-vs-0x20 frame + every slot number.
-// match_variants --state-trials 48 --max-depth 3 exhausted 384 variants without a win.
 RVA(0x001918c0, 0x1a2)
 // The four bounds are one rect: CWwdSpatialMgr's three walkers all call this as
 // Query(r.m_minX, r.m_minY, r.m_maxX, r.m_maxY, 1), and the clamps below pin each to
@@ -187,12 +181,6 @@ WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
 // the live cell-walk counters, prime the cursor at the first cell head, then
 // advance to the first in-rect node.
 // @early-stop
-// ~95.5% - imul regalloc wall: body byte-identical (the rect block-copy + all 8
-// clamp guards + the cell-range corners match), but the final
-// base=colStart*cols+rowStart keeps colStart in a different reg than retail
-// (retail imul edi,ecx + m_col=ecx between imul/add; recompile imul ecx,esi),
-// a 3-instr operand-register choice. Not source-steerable (see
-// docs/patterns/zero-register-pinning.md / statement-schedule-faithful.md).
 RVA(0x00191b10, 0x111)
 WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_grid = grid;
@@ -240,19 +228,8 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
 // then walk the bucket testing each node against the query rect; on a hit,
 // optionally unlink it and return it.
 // @early-stop
-// ~93.7% - LICM/regalloc wall: the cell-advance block + the whole control flow
-// are byte-identical, but cl hoists the loop-invariant query bound m_rect.m_minX
-// (+0x10) into a callee-saved register (extra push ebx) where retail reloads it
-// from memory each iteration; this cascades the walk's m_y0 reg (ebx vs edi) and
-// the remove-block reg assignment. Not source-steerable (member-bound LICM
-// choice; see docs/patterns/zero-register-pinning.md).
 RVA(0x00191c30, 0xcc)
 // @early-stop
-// ~90.6 (MAX 93.7 held by the OLD goto transcription, which was semantically
-// BROKEN - its walk loop never advanced m_cur). Correct nested-loop form kept;
-// residue: retail merges the m_next load into the walk back-edge block (re-enter
-// at the load) + moves the found/unlink handler after the rets; &&/||-continue
-// spellings canonicalize to the same base layout - not condition-steerable.
 WwdRegion* CWwdGridIter::GetNext() {
     for (;;) {
         m_cur = m_next;
@@ -297,16 +274,6 @@ BucketHead::~BucketHead() {}
 // (count cookie + vector-constructed 8-byte heads). /GX frame from the alloc EH.
 // ===========================================================================
 // @early-stop
-// Remaining differences: (1) the log2/pow x87 path
-// (fldln2/fld 2.0/fyl2x/fdiv/__ftol/__CIpow) has a non-steerable FP-stack
-// schedule (docs/patterns/x87-fp-stack-schedule.md), and (2) the four rect-field
-// stores fuse to a pointer block in retail (`lea eax,[esi+0x28]; mov edx,eax;
-// mov [edx],..`) plus a 3-register temp SWAP for the two min/max pairs. Measured
-// 2026-08-01: writing the bounds through an explicit `WwdRect* b = &m_bounds`
-// and the pairs as real `t = a; a = b; b = t;` swaps costs 1.1pt (79.55 -> 78.40)
-// - cl folds `b` back to the disp8 form and re-canonicalises the swap to a select.
-// The block form needs `m_bounds` and the `RECT` parameter to be ONE type (the
-// two-readings union), which is a header change, not a statement change.
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;

@@ -88,15 +88,6 @@ void CLightFx::RegisterActs() {
 // up in the effect map (twice), feed it to the layer descriptor, and rebind.
 // ===========================================================================
 // @early-stop
-// 86.7% - scheduling/stack-slot wall (regalloc family, see
-// docs/patterns/pin-local-for-callee-saved-reg.md + reread-member-view-pointer.md):
-// the body is byte-identical in shape - promoting the spec-lookup result into the
-// named local `found` already pins it callee-saved (edi) like retail (70%->86.7%),
-// and re-reading m_38 per-region matches retail's reload pattern. The residual is
-// (a) the `node` out-param stack slot lands at [esp+0xc] vs retail's [esp+0x14]
-// (an 8-byte frame-layout pick that renames every slot ref) and (b) two 2-3 instr
-// schedule swaps (the node=0 zero relative to the arg pushes; the m_54/m_58 stores
-// vs the m_38 reload before the effect lookup). Logic 100% correct.
 RVA(0x0009d520, 0xfd)
 i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     void* node = 0;
@@ -228,9 +219,6 @@ i32 CreateLightFx(CGameObject* obj) {
 // logic-type registration (the "unrolled" prologue); the per-class tail seeds the
 // leaf anchors (m_anchorA = 2, m_anchorB = 1).
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical (incl. the unrolled logic-type registration); residual is the
-// /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_anchorA = 2;

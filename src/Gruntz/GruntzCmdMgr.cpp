@@ -104,10 +104,6 @@ void CGruntzCmdMgr::ClearAndReset() {
 // select+deselect it immediately. After the walk, in play state, run the deferred
 // select+deselect over the table. Returns 1.
 // @early-stop
-// regalloc/scheduling wall - the state-filter scan pins the 4-slot stack table +
-// the index counter the way only the original source spelling reproduces; logic
-// is byte-for-byte, the residual is register-coloring + the signed-mod-by-4
-// table index ordering. Deferred to the final sweep.
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     CState* sp = m_38->m_curState;
@@ -234,10 +230,6 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 }
 
 // @early-stop
-// scheduling wall (~50%): logic exact, but retail interleaves the sx/sy compute
-// sharing the R/P loads and snaps sx with a byte `and al,0xe0` (proven high bits 0)
-// vs our full `and eax,~0x1f`; our /O2 evaluates sy fully then sx and pushes args
-// eagerly. Pure x86 instruction scheduling/regalloc.
 RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType) {
     CGameLevel* p = m_38->m_world->m_level;
@@ -319,15 +311,6 @@ i32 CGruntzCommand::SetMaskFromList(
 // conditional m_11 byte (when m_5 >= 8). The tag byte is skipped. Returns the byte
 // count consumed. The `len` arg is unused (the record is self-delimiting).
 // @early-stop
-// walker-register coin-flip (~86.4%, docs/patterns/zero-register-pinning.md family):
-// the running-pointer deserialize is byte-faithful instruction-for-instruction (the
-// tag skip, the m_4/m_5/m_6 byte reads, the m_8/m_a word reads, m_10, the m_5>=8
-// m_11 tail, and the buf-start byte count), verified vs target with sema disasm
-// --diff. The sole residual is which register holds the running buffer pointer:
-// retail loads `data` into eax BEFORE `push esi` and walks eax (esi=start copy); cl
-// pins the walker in esi and derives eax, cascading the modrm register field through
-// every read. Not source-steerable (three spellings + the permuter: no change).
-// ---------------------------------------------------------------------------
 RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
     char* buf = static_cast<char*>(data) + 1; // skip the tag byte
@@ -352,10 +335,6 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
 // +0x10 field is read as a full 16-bit flag mask (a WORD) rather than the conditional
 // byte pair. Returns the byte count consumed.
 // @early-stop
-// walker-register coin-flip (~83.2%): same wall as CGruntzSingleCommand::Parse above -
-// the running-pointer deserialize is byte-faithful except the walker register (retail
-// eax, cl esi). Not source-steerable.
-// ---------------------------------------------------------------------------
 RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
     char* buf = static_cast<char*>(data) + 1; // skip the tag byte
@@ -654,13 +633,6 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
 //       (tag 1) / Multi (tag 2) command, deserializing it, and AddTail'ing it onto
 //       the base queue. Returns 1 (0 on a bad tag / failed element / inactive).
 // @early-stop
-// Structure fixed 2026-07-21 (8.8% -> 79%): the mode-4 WRITE block is out-of-line
-// (retail `cmp mode,4; je <write-far>`, READ inline) and the read loop is a
-// `while(idx<count)` (stack idx, `jbe` guard) - both are now source-steerable-matched.
-// Residual (~21%) is the genuine this-register spill: retail keeps `stream` in esi and
-// SPILLS `this` to [esp+0x10] (the leading `push ecx`), reloading it for the read-path
-// AddTail; the recompile keeps both in callee-saved regs (no spill), swapping esi/edi/ebx.
-// Not source-steerable; final sweep.
 RVA(0x00024890, 0x18d)
 i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pObj) {
     if (!stream) {

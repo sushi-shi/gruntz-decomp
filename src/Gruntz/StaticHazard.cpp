@@ -90,12 +90,6 @@ static inline CString* ActNameLookupCallReport(i32 id) {
 // pulse window from the "Hazardz/AniPad" bute int, cache the anim-set node.
 //
 // @early-stop
-// jump-table + bound-object spill wall: logic byte-correct (the CUserLogic init,
-// the IDLE re-arm via the SetAnimEx idiom, the tile snap (`and al,0xe0`), the
-// 4-case level-kind jump table, the bbox/period seeding, the sound-map Lookup and
-// the Hazardz/AniPad GetIntDef), but the dense bound-object field stores spill
-// against retail's stack-slot schedule and the jump-table data region scores as
-// the jumptable-data-overlap artifact. Parked for the final sweep.
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
@@ -219,11 +213,6 @@ void CStaticHazard::RegisterActs() {
 // idiom), and re-resolve the "B" anim-set node through the global bute tree.
 //
 // @early-stop
-// store-vs-load scheduling wall (docs/patterns/statement-schedule-faithful.md):
-// logic 100% correct, all reloc operands named. Retail emits `mov [m_fired],1` before
-// reloading m_38; MSVC5 here hoists the m_38 load above the store. The m_38 reload
-// is load-bearing (re-read per call), so the store/load pair can't be pinned.
-// ~98%. Parked for the final sweep.
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::LoadAttributes2() {
     CGruntzMgr* reg = g_gameReg;
@@ -262,10 +251,6 @@ i32 CStaticHazard::LoadAttributes2() {
 // hazard grid cell), and set/clear the cell's bit-0x8000000.
 //
 // @early-stop
-// branch-heavy bound-object + grid-cell spill wall: logic byte-correct (the phase
-// gate, the four re-arm paths, the SetAnim dispatch with the ScreenToCell/MarkCell
-// calls, the grid set/clear-bit cell math), but the dense field reloads + the four
-// grid-cell op sites spill against retail's stack-slot schedule. Parked for sweep.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_118);

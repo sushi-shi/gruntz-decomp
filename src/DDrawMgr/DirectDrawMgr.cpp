@@ -583,12 +583,6 @@ CDDSurface* CDDrawPtrCollections::Createa58_3(char* path, i32 caps, i32 colorKey
 // Createa58_3 each and gather the non-null results into `out`; return the count.
 // __thiscall, ret 0x1c => 7 args.
 // @early-stop
-// regalloc/spill wall (~80%): logic is complete + correct (the numbered-name build,
-// the ".."/suffix override, the Createa58_3 loop + non-null collect). The inline
-// strlen/strcpy/strcat clobber the caller-saved regs, forcing heavy spilling; retail
-// spills n/end/output-ptr and keeps the suffix in ebp (frame 0x28), while cl assigns
-// the callee-saved regs differently (frame 0x20). The permuter finds no operand fix;
-// same MSVC5 coin-flip its sibling factories carry. Banked for the final sweep.
 RVA(0x00142630, 0xfe)
 i32 CDDrawPtrCollections::CreateRange(
     CDDSurface** out,
@@ -870,16 +864,6 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 }
 
 // @early-stop
-// 90.81% (was 81 -> 87 -> 90.81). The frame is now retail's 0x10 and the selection
-// sort is instruction-for-instruction identical: binding BOTH compared elements to
-// locals and reusing them for the swap is what costs the registers that push the two
-// loop indices into frame slots. The append loop reaching the array through a
-// pointer fixed its `[ebx+0x8]` size read. Two residuals left, both cl-internal:
-// (1) a consistent 3-way register rotation - retail colours this->esi /
-// &m_poolItems->ebx / the walk index->edi, cl ebx/edi/esi, decided by which value
-// the FIRST `mov <reg>,ecx` in the prologue takes; (2) retail emits the inner loop's
-// hoisted entry guard `cmp n,1 / jle done` in ADDITION to the outer `n-1 <= 0` one
-// (loop-rotation guard duplication), where cl emits only the outer.
 RVA(0x00143240, 0x143)
 void CDDrawPtrCollections::SetupCaps() {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
@@ -1050,38 +1034,10 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
 // +0x94 sub-object + stamps the vtable, runs the item's Init (slot +0x04) and
 // publishes it (AddPoolItem); a failed Init scalar-deletes (slot +0x00) the item.
 // @early-stop
-// operator-new ctor-in-flight EH frame: the descriptor call, construction, field
-// stores + Init/Dtor dispatch are byte-faithful, but retail carries the throwing
-// new's /GX cleanup frame (push -1/fs:0 + trylevel) the manual operator-new body
-// omits.  docs/patterns/rezalloc-placement-new-no-eh-frame.md family.
-// ---------------------------------------------------------------------------
-// IDENTITY SETTLED 2026-07-29 (the @identity-TODO here, and the CDdCreateArg /
-// CDdDescSrc views in the deleted <DDrawMgr/DdCreateArg.h>, are gone):
-//   * arg0 is a CDDSurface. Both call sites (CDDrawSurfacePair::Create @0x163c90 and
-//     ::SetGeom @0x164250) pass `OwnerMgr()->m_drawTarget->m_frontPair->m_surface`,
-//     which is declared CDDSurface*. The "deeply-nested descriptor" the old note
-//     described IS that member chain.
-//   * its +0x08 is CDDSurface::m_ddSurface, a real IDirectDrawSurface - not a
-//     RTTI-less mystery interface, which is why no COL was ever found for it.
-//   * the "Make(outB, outA)" slot 12 (+0x30) is IDirectDrawSurface::GetAttachedSurface
-//     (LPDDSCAPS, LPDIRECTDRAWSURFACE FAR*): counting ddraw.h's IDirectDrawSurface
-//     vtable - QueryInterface/AddRef/Release/AddAttachedSurface/AddOverlayDirtyRect/
-//     Blt/BltBatch/BltFast/DeleteAttachedSurface/EnumAttachedSurfaces/
-//     EnumOverlayZOrders/Flip - puts it at exactly index 12.
-//   * `caps` (the ex "kind: 2 or 4; unused by the body") is therefore the DDSCAPS the
-//     query asks for, and DDSCAPS is a single DWORD - which is why retail spends no
-//     frame on it and passes the address of the argument's own home. Both call sites
-//     pass 4 == DDSCAPS_BACKBUFFER: this factory wraps the front surface's attached
-//     BACK BUFFER as a new pool item. The old model left that DWORD UNINITIALISED
-//     (it passed an uninitialised `void* outB`), so the query asked for random caps.
 
 // The pool item is a real CDDSurface (vtable 0x5ef7f0): `new CDDSurface` + slot-1
 // Refresh / `delete` (see CreatePoolItem below).
 // @early-stop
-// ~89%: `new CDDSurface` now inlines the ctor correctly (CPtrArray @+0x94, vptr stamp
-// 0x5ef7f0, 6 field-zeros).
-// Residual is the /GX ctor-in-flight EH-state index of the throwing CPtrArray member ctor
-// (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
 void* CDDrawPtrCollections::CreatePoolItem(void* srcSurfacev, i32 caps) {
     CDDSurface* srcSurface = static_cast<CDDSurface*>(srcSurfacev); // the sig is PAX in retail

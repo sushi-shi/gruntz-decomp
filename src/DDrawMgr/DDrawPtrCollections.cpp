@@ -115,9 +115,6 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
 // __thiscall, 4 args. (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view
 // dissolved onto the real CPoolItemA88.)
 // @early-stop
-// descriptor-fill scheduling wall (~85%): the Apply path is the 100% Setup path, but into
-// a stack-local descriptor; retail hoists the a4 load (or al,0x80) ahead of a2 while MSVC
-// loads a2 first, swapping the eax/ecx assignment + a couple store slots. Logic complete.
 RVA(0x00148a50, 0x6b)
 i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 width, i32 height, i32 caps) {
     DDSURFACEDESC desc;
@@ -249,8 +246,6 @@ i32 CPoolItemAB8::InstallColorFormat() {
 // (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view dissolved onto the real
 // CPoolItemAE8.)
 // @early-stop
-// descriptor-fill scheduling wall (~85%): mirror of CPoolItemA88::Blit7 (7-arg / mode 0x47).
-// Same stack-local-descriptor load/store scheduling divergence. Logic complete.
 RVA(0x00148c40, 0x75)
 i32 CPoolItemAE8::Blit47(
     CDDrawPtrCollections* info,

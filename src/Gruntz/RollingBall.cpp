@@ -26,15 +26,6 @@
 // the offsets / code bytes are load-bearing (campaign doctrine).
 //
 // @early-stop
-// /GX branchy nested-jump-table state-machine wall. The whole body is
-// reconstructed here and matches retail's logic; the byte-match of the descending
-// /GX exception-state thread around the two CString temps + the three nested
-// jump-table base relocs across this 2682-byte size is the documented
-// megafunction wall (cf. the sibling /GX megafunctions TerrainTileLoader,
-// MainMenuBuilder ~78%): MSVC5's jump-table base reloc typing + the EH-state
-// numbering are not steerable from C source. Deferred to the final sweep
-// (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md;
-// eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/GameRegMfcPtr.h>   // g_gameReg at its REAL type (CGruntzMgr)
@@ -90,12 +81,6 @@ RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 // into the per-frame speed and seed the timer block.
 //
 // @early-stop
-// inline-strcmp + register-pinning + eh wall (docs/patterns/strcmp-eq-bool-local-setcc.md,
-// zero-register-pinning.md, eh-ctor-vptr-restamp-position.md): body byte-faithful
-// (the four unrolled inline-strcmp loops, the CString temp EH, the snap + layer key,
-// the time-bonus gate + 32.0/time divide, the timer block). Residual is the strcmp
-// result-reg alloc, the shared dy=0 store fold, and the /GX leaf-vptr re-stamp
-// position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_explodeStartLo = 0;
@@ -211,16 +196,6 @@ void CRollingBall::RegisterActs() {
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
 // @early-stop
-// /GX branchy nested-jump-table megafunction wall (~38%): complete, correct
-// reconstruction (prologue, explosion/fall latches, action/direction/sink switches,
-// x87 interpolation tail). Two binary-proven structural fixes landed the prologue
-// exactly (36.4%->38.0%): the m_38+0x1a0 sub-update is the real CAniAdvanceCursor::
-// Advance(g_engineFrameDelta) __thiscall (was a fake free-fn RbSubUpdate + a dead
-// g_engineFrameDelta load), and g_gameReg is re-loaded per use (retail does not cache the game
-// registry in a callee-saved reg - ~15 fresh ds:0x64556c loads). Residual is the
-// documented wall: MSVC5's constant-materialization (test eax,eax vs cmp [mem],ebx),
-// the +8B frame spill count, the EH-state numbering + the three nested jump-table
-// reloc-typings across 2682 B. See file header; final-sweep.
 RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

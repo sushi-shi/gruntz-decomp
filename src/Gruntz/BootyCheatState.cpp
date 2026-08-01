@@ -23,25 +23,6 @@ i32 g_bootyCheatBuilt = 0; // 0x22af10
 
 // @source: string-xref
 // @early-stop
-// epilogue tail-merge layout wall, now PARTLY broken (measured 2026-07-27, 86.20 ->
-// 88.48): base 2 rets vs retail 1. `goto fail; ... fail: return 0;` still makes cl lay
-// the fail block BEFORE the success tail, i.e. two epilogues. Carrying the value in a
-// local instead (`i32 ok = 0; ... ok = 1; done: return ok;`) is what reproduces retail
-// 0x18b9b - ONE epilogue that the success tail falls into and every gate jumps to with
-// eax preloaded (the last five gates need no `xor` at all, eax is already 0).
-// Logic complete + verified vs retail - the
-// inline /GX prologue, the whole first-run cheat-table build (idiv %3 + reciprocal
-// /3, the 5-CString EH frame, the Format/GetIntDef/GetStringDef/op= chain, the
-// inline-strcpy rep-movs, the signed `jl` loop bound), the STATEZ_BOOTY/GAME/GRUNTZ
-// registration, the sound/image installs, the ShowCursor cached-ptr loop, the Pump,
-// and the 5-stage Init chain (`test;je` guards) all byte-match. Residual: retail
-// routes ALL 12 returns to ONE shared epilogue, emitting per-site `jne skip; xor
-// eax,eax; jmp <epilogue>` for the 6 pointer-null guards (flat `if(!x)return 0` with
-// a cross-jumped epilogue tail); flat source here does NOT cross-jump (MSVC inlines
-// 12 full epilogues, 54%), and the `goto fail` shared-exit that recovers the merge
-// emits `je fail` (86%) not the retail per-site xor+jmp. The merge-vs-inline choice
-// is the allocator's block-layout decision, not source-steerable. See
-// docs/patterns/identical-return-epilogue-tailmerge.md (reverse direction).
 RVA(0x00018830, 0x380)
 i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     // ONE epilogue (retail 0x18b9b): every gate carries the result into eax and jumps

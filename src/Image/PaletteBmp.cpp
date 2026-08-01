@@ -8,9 +8,6 @@
 namespace ApiCallerStubs {
 
     // @early-stop
-    // /GX CFile-frame plateau: the BMP read + BGR->RGB swap + Build hand-off are
-    // faithful; the exact stack-buffer offset assignment under the EH frame is not
-    // source-steerable.
     RVA(0x00177480, 0x169)
     i32 CImagePaletteNode::LoadBmpFile(char* path, i32 arg) {
         CFile f;

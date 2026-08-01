@@ -169,22 +169,6 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 // read buffer and reset the cursor. Returns 1 on success, 0 if there was no open
 // FILE* or the gate gave up.
 // @early-stop
-// 81.3 -> 93.1 (shared-exit spelling) -> 94.6. The "callee-saved role swap" is FIXED:
-// the redundant `ok = 0;` in the retry arm (the loop only runs while ok==0) is what
-// flipped cl's colouring to this->edi / ok->esi; folding that arm to `else if` restores
-// retail's this->esi / ok->edi. Residual is ONE row - retail schedules the retry arm's
-// `xor edi,edi` between the m_parent load and the Retry dispatch, cl hoists it above the
-// loop. 8 loop shapes tested (do-while, inverted test, zero-store first/last); the ones
-// that put the zero back in the arm all re-swap the registers.
-// Re-measured 2026-08-01 with six more shapes, and the bound holds exactly: baseline
-// 94.615, `do{}while` with `ok = 0` in the retry arm 92.821 (as does the `while` form
-// and the one that takes m_parent into a local first), `ok = 0` after the Retry gate
-// 87.949, and inverting the fclose test 63.077. The one row this arm's zero would buy
-// costs about two points of re-colouring - the trade is settled, stop re-testing it.
-// The FILE* gate is POSITIVE-form so the guard's `return 0` tail-merges with the
-// Retry()-gave-up `return 0` into retail's single bottom epilogue @0x13c88e, and
-// cl sinks `push edi` past `mov esi,ecx`
-// (docs/patterns/positive-gate-enables-shrink-wrap.md).
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
     if (m_fp != 0) {
@@ -246,11 +230,6 @@ i32 CRezItm::Check() {
 // (each stamps ??_7CRezList @0x1ef7c8 and zeroes head/tail), the derived vtbl
 // is stamped, then m_openCount=0, m_write=0, m_maxOpen=maxOpen, m_readonly=1.
 // @early-stop
-// vptr-schedule wall (ALL-VTABLES): real-polymorphic list members auto-stamp their
-// vptr FIRST (vptr,head,tail) and the compiler zeroes m_openCount/m_write after the
-// derived vptr, vs retail's head,tail,vtbl store order + pre-vptr field zeroing. The
-// two child collections + the CRezItmBase base are byte-faithful; converted per the
-// ALL-VTABLES mandate (was the hand-rolled child-collection double-stamp).
 RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_openCount = 0;

@@ -48,12 +48,6 @@ i32 g_levelMsgIconPos[16] = {
 // {x,y} spawn position by edge, selected by `sel` (1..8). Rand() = signed game RNG;
 // RandRange(0,N) = uniform [0,N).
 // @early-stop
-// regalloc coin-flip wall (~89%): all 8 cases + shared tails + idiv constants are
-// byte-identical; the sole residual is outX/outY swapped between esi/edi (retail
-// outX->edi/outY->esi, recompile outX->esi/outY->edi). A named-local pin
-// (docs/patterns/pin-local-for-callee-saved-reg.md) did NOT flip it -> the pure
-// allocator coin-flip that doc flags as the zero-register-pinning.md wall.
-// ===========================================================================
 #include <Gruntz/GlyphStringDraw.h> // ShowHudMessage (ex .cpp extern)
 RVA(0x00019cd0, 0x1df)
 void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
@@ -128,12 +122,6 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 // @confidence: med
 // @source: string-xref
 // @early-stop
-// ~96.3%: complete + correct, dev-authentic shape (natural array indexing throughout).
-// Residual is two scheduling walls: (1) the SecretColor block schedules the
-// g_gameReg->m_78 load AFTER the GetIntDef call (retail hoists it before); (2) the
-// (a+c)/2 geom pair loads a/c in the opposite eax/edx order (commutative). All
-// externs/strings named.
-// ===========================================================================
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
     CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
@@ -307,18 +295,6 @@ i32 CBootyState::LoadGruntEffectSprites() {
 }
 
 // @early-stop
-// /GX branchy megafunction wall (~complete reconstruction): the whole body - the reveal
-// pass (m_hudPhase == 0) slot slide + rectsA/rectsB ShowHudMessage pops + explosion cue,
-// and the drive pass (m_hudPhase != 0) redraw loop + explosion-active finalize - matches
-// retail's logic (all externs/strings/tables named). Three comparisons were also written
-// with their operands the other way round from retail (`mid <= gx` vs retail's `gx >= mid`
-// - identical in C, different `cmp` operand order AND jcc; jcc_sieve 2026-07-28, 84.80 ->
-// 85.23). Residual is the documented /GX
-// EH-state numbering + the parallel-induction-pointer loop shape (retail hoists the
-// rectsA/rectsB/iconPos/strings/icon walks into 6 induction pointers with a data-address
-// bound `cmp ebp,0x60b8fc` = &g_levelMsgRectsB[0].top) that MSVC5 will not reproduce
-// from counted C loops.
-// Final-sweep candidate (docs/patterns/big-seh-fuzzy-desync.md; jumptable-data-overlap.md).
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
     if (m_initGate != 0) {

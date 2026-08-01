@@ -33,15 +33,6 @@ i32 CGruntzWnd::Wap32GameWndVfunc2(i32, i32, i32) {
 // pumps the manager RefreshGameClock when the game manager + its sound chain are live. All
 // other messages fall through as not-handled here (0 = keep dispatching).
 // @early-stop
-// Exit-block layout FIXED (measured 2026-07-27, 77.64 -> 98.19): the old note called
-// item (2) "not source-steerable" and it was simply wrong. base 6 rets / retail 3.
-// Writing the WM_SYSCOMMAND arm's three `return 0` exits as `break` (i.e. the switch's
-// shared trailing `return 0`) makes cl park that block at the bottom, invert the last
-// ladder compare to `jne <default>` and run case 0x3b9 as the fall-through - retail's
-// exact block order, every branch target now aligned.
-// Residual is ONE register rotation: retail colours this->ebx / wParam->esi /
-// isIconic->edi, cl picks esi / edi / ebx. Prologue push order and every instruction
-// otherwise match. topic:regalloc.
 RVA(0x00094790, 0xcd)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

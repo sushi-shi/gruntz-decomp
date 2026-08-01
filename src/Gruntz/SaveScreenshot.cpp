@@ -10,15 +10,6 @@
 
 // @source: decomp-xref
 // @early-stop
-// regalloc-coloring wall (~96.8%): frame/instruction-selection/constants/strings
-// are byte-faithful (frame 0xa8, all locals + the descriptor block at the retail
-// offsets), but MSVC colored the two callee-saved registers oppositely - retail
-// pins the persistent zero (and the reused return temp) in esi and cnt/img in edi,
-// while this /O2 recompile pins them edi<->esi swapped; that propagates through
-// every null-compare/push. The descriptor fill also CSEs the g_gameReg m_modeW/m_modeH
-// loads where retail re-reads each twice (a scheduling choice). Logic complete; the
-// coloring/scheduling is the allocator's, not source-steerable. See
-// docs/patterns/zero-register-pinning.md + pin-local-for-callee-saved-reg.md.
 RVA(0x00114ff0, 0x1b3)
 i32 SaveScreenshot(
     CDDSurface* src,

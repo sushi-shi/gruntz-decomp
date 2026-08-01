@@ -23,9 +23,6 @@ u32 g_bfInitS[4][256] = BF_PI_S_INIT;
       + g_bfS[3][(R) & 0xff]))
 
 // @early-stop
-// the other arm of the decipher mirror wall below (see its note): with the
-// memcpy S-box reload retail's decipher schedule is the one cl emits, so this
-// twin sits at 60.41. Its own MAX (100.00) is banked from the loop spelling.
 RVA(0x0016f7f0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
     u32 l = *xl;
@@ -55,39 +52,6 @@ void Blowfish_encipher(u32* xl, u32* xr) {
 }
 
 // @early-stop
-// 99.875 - mirror-function scheduling wall, and it is a ONE-OR-THE-OTHER wall:
-// encipher and decipher share this macro verbatim, but retail's two bodies chose
-// DIFFERENT round-1 byte-extract regallocs (which of eax/ecx is zeroed on entry
-// and which one takes the `shr ..,0x18`), and cl emits one schedule for both.
-// MEASURED 2026-07-29, four builds, all cast-free variants:
-//   S-box declared u32[1024] + the flat 1024-iteration copy loop
-//        -> encipher 100.00, decipher 61.51, InitializeBlowfish 99.89
-//   S-box declared u32[4][256] + memcpy (either subscript spelling)
-//        -> encipher  60.41, decipher 99.875, InitializeBlowfish 100.00
-// The subscript form (`g_bfS[1][x]` vs `g_bfS[0][0x100+x]`) is NOT the steer -
-// both give byte-identical output; the steer is the copy spelling above, i.e. a
-// TU-cumulative optimizer-state effect from a sibling function. The memcpy arm is
-// kept: it banks the higher decipher MAX, takes InitializeBlowfish to EXACT, and
-// is the shape retail's own `mov ecx,0x400; rep movsd` proves.
-// See docs/patterns/mirror-function-divergent-schedule.md.
-//
-// NEGATIVE RESULT 2026-08-01 - do not re-try this one. The reference Blowfish source
-// extracts the four bytes through a `union aword { u32 word; u8 byte[4]; struct {
-// u32 byte3:8; byte2:8; byte1:8; byte0:8; } w; }`, with `S(x,i) == SB[i][x.w.byte##i]`
-// and `ROUND(a,b,n) == (a.word ^= bf_F(b) ^ P[n])`, and retail LOOKS like it: round 1
-// gives the word a stack home and reads byte 1 back out of memory
-// (`mov [esp+0x14],edx` then `mov al,BYTE PTR [esp+0x16]`), which is not what
-// shift-and-mask on a register value suggests. It is not evidence for the union.
-// Transcribing the reference verbatim - union, bitfields, ROUND, both bodies - compiles
-// BYTE-IDENTICAL to the macro above: 60.4148 / 99.8750 to four decimals, unchanged.
-// cl already spills the word and already picks the memory byte for bits 16-23 out of
-// `((R) >> 16) & 0xff`, so the union buys nothing and stays unproven; the simpler
-// spelling is kept.
-// The residual really is ONLY the round-1 register swap, and retail's two bodies
-// disagree with EACH OTHER:
-//   retail encipher   xor eax,eax / mov ecx,edx / mov al,[esp+0x16] / shr ecx,0x18
-//   retail decipher   xor ecx,ecx / mov eax,edx / mov cl,[esp+0x16] / shr eax,0x18
-// One macro can only emit one of the two, and everything downstream follows the choice.
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
     u32 l = *xl;

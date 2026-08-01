@@ -95,8 +95,6 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // the "A" bute node, apply the cycle geometry, then run the shared eyecandy z-clamp
 // + BigActHeight de-prioritize tail (the SAME archetype as CEyeCandy/CBehindCandyAni).
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;

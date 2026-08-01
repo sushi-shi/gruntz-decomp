@@ -102,12 +102,6 @@ static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
 // the player's start cap (g_gameReg+0x150[magic].m_228). ret 1.
 // ===========================================================================
 // @early-stop
-// /GX-EH + regalloc wall (~65%): every instruction/branch and the reloc-masked externs
-// (PlaceObject/EnqueueSingle/LogTileError/CString Format+ctor+dtor) reproduce, incl. the
-// two vacuous address-null guards and the stride-568 player-slot `lea` - but retail homes
-// `this` in ebp (re-reading m_gameReg + spilling counter/flag14 to the EH frame) while our cl
-// keeps `this` in ecx and enregisters counter/flag14, a systematic register rename across
-// the whole body. Same EH/regalloc wall ValidateLevelTiles (this TU) hits. topic:wall.
 RVA(0x000d2b20, 0x21f)
 i32 CPlay::PlaceStartGruntz() {
     // Retail lea's the live-object CObList embedded at manager+0x10 (the real m_list
@@ -654,13 +648,6 @@ i32 CPlay::ValidateLevelTiles() {
 // left as-is so no reference is re-bound on a guess. (@identity-TODO, see report.)
 // ===========================================================================
 // @early-stop
-// ~91%: control flow + offsets byte-identical. Residual is three documented
-// codegen-idiom/regalloc nits: (a) MSVC5 emits `sub edi,K` where retail emits
-// `add edi,-K` for the two X-inset decrements (non-steerable add/sub coin-flip);
-// (b) the tail's m_4 reload lands in eax (ours) vs ecx (retail) - a free-list
-// pick; (c) retail keeps a redundant consecutive `test;je` on the goal pointer
-// that MSVC5 collapses in the nested form here (redundant-sibling-guard-retest.md;
-// no intervening call to pin the flag, so de-nesting doesn't apply). Deferred.
 RVA(0x000d5b20, 0xbb)
 i32 CPlay::PositionBridgeToggle(i32 mode, i32) {
     CGruntzMgr* w = m_mgr;

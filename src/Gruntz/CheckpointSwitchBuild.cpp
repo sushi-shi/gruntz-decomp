@@ -10,14 +10,6 @@
 // data members, sizeof 0x8c). BuildSmall is its slot-1 override; the base's slot-0 "build"
 // virtual (Setup) is the 8-arg builder it chains to.
 // @early-stop
-// 62.4 -> 72.6 via the shared-exit spelling; residual is the prologue arg-load
-// scheduling (retail interleaves the ebx/ebp arg loads into the push run).
-// Every failure exit is a `goto fail` onto ONE shared bottom epilogue - retail's
-// shape (`xor eax,eax; jmp <epi>`); the per-return spelling emitted an inline
-// `pop/pop/pop/pop; ret 0x24` at each of them.
-// docs/patterns/positive-gate-enables-shrink-wrap.md (shared-exit half).
-// (The pre-existing @early-stop blamed the same wall but was measuring WRONG code: the old
-// .cpp-local view shadowed the base's fields, so every access here was 0xc8 too high.)
 RVA(0x00112a50, 0xdd)
 // Slot names come from the base declaration in <Gruntz/TileTriggerSwitchLogic.h>
 // (typeId/tileX/tileY/cellKey/linkGate, proven there by CTileTriggerSwitchLogic::Setup's

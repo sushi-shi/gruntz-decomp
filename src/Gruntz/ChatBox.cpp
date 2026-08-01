@@ -194,13 +194,6 @@ i32 CChatBox::ReplaceNode(const char* key) {
 }
 
 // @early-stop
-// scheduling wall (~95%): body byte-exact and the Lookup reloc now binds correctly to
-// CMapStringToOb::Lookup @0x1b8008 (masked in objdiff). Residual is a 1-instruction
-// reorder: cl emits the out-param zero-init (`a_ob = 0` -> `mov [slot],0`) BEFORE the
-// arg pushes, where retail defers it past them (`mov [esp+0xc],0` after push ecx/edx).
-// Independent-store scheduler choice, not steerable from source. Logic complete.
-// advance row0 to the message keyed by `key`; cache its frame state. The catalog map
-// is a CMapStringToOb (Lookup 0x1b8008); its CObject* value is a CDDrawWorker record.
 RVA(0x00182df0, 0x69)
 i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!m_page) {
@@ -222,10 +215,6 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
 }
 
 // @early-stop
-// scheduling wall (~95%): same as AdvanceRow0 - body byte-exact, Lookup reloc binds
-// CMapStringToOb::Lookup @0x1b8008 (masked), residual is cl emitting the out-param
-// zero-init before the arg pushes vs retail deferring it past them. Logic complete.
-// advance row1 to the message keyed by `key`; cache its frame state.
 RVA(0x00182e60, 0x69)
 i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     if (!m_page) {
@@ -247,10 +236,6 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
 }
 
 // @early-stop
-// regalloc wall: body byte-exact (unsigned counter compare, clamp+wrap of both
-// rows' frame indices), but retail holds the row node in eax with the counter in
-// edx, whereas MSVC swaps them here; 1-register phase shift only. ~89%.
-// per-frame advance of both rows' scroll counters & frame indices.
 RVA(0x00182ed0, 0xbc)
 i32 CChatBox::Step(i32 delta) {
     CDDrawWorker* a = m_row0Anim;
@@ -299,10 +284,6 @@ i32 CChatBox::Step(i32 delta) {
 }
 
 // @early-stop
-// reloc-masked plateau: instruction stream byte-identical to retail; residual is
-// only the differently-named Blit extern (0x153790) + the GetFrameWidth slot.
-// ~95%.
-// blit both rows' current frames, centered under the sprite anchor.
 RVA(0x00182f90, 0x92)
 i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0) {
     if (!sprite) {
@@ -328,11 +309,6 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0)
 }
 
 // @early-stop
-// shrink-wrap wall: retail DEFERS the `push edi/esi` past the empty-key guard,
-// giving that guard its own one-pop epilogue; cl saves both in the prologue and
-// shares one exit. The play tail RETURNS the ConfigureItem result (retail leaves
-// the callee's eax alone - no `xor eax,eax` before the epilogue).
-// scroll row0's sprite one tick if its scroll interval has elapsed.
 RVA(0x00183030, 0x7b)
 i32 CChatBox::ScrollRow0() {
     if (m_row0Key.GetLength() == 0) {
@@ -357,8 +333,6 @@ i32 CChatBox::ScrollRow0() {
 }
 
 // @early-stop
-// shrink-wrap wall, twin of ScrollRow0 (same play tail, same deferred pushes).
-// scroll row1's sprite one tick if its scroll interval has elapsed.
 RVA(0x001830b0, 0x7b)
 i32 CChatBox::ScrollRow1() {
     if (m_row1Key.GetLength() == 0) {

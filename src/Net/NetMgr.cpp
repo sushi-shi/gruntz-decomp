@@ -229,12 +229,6 @@ void CNetMgr::ClearGroupList() {
 // object pointer as the item data. The +0x7c cursor (m_groupSelId) latches the walk
 // position (same slot Find reuses); the GetName CString temp gives the /GX EH frame.
 // @early-stop
-// callee-saved pair swap (97.30%): every instruction, offset, callee, EH state, stack
-// slot and both inlined advances are byte-faithful after the GetName temporary +
-// latch-then-assign fixes (78.6 -> 97.3). Residual: retail colours this->edi and the
-// LB_ADDSTRING index->ebp, cl the other way round, so `mov edi,ecx` also lands one
-// instruction earlier in the prologue. Measured non-levers: hoisting the index local
-// out of the loop, and (earlier) an explicit `flag & 1` local, which was WORSE.
 RVA(0x00178470, 0x11e)
 void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
     if (hList == 0) {
@@ -357,11 +351,6 @@ BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags,
 // its name); if the init fails it self-destructs the node and returns 0,
 // otherwise AddTail's it onto the +0x38 CObList and caches the position at +0x54.
 // @early-stop
-// regalloc wall (~92%): the `new` node (real-polymorphic ctor: coalesced vptr
-// stamp + zero-loop), the Init call with the delete-on-fail, and the
-// AddTail-into-+0x38 are all byte-aligned, but retail keeps playerDesc->ebx /
-// this->ebp where cl swaps them (ebp/ebx), and the vptr store / lea schedule one
-// pair differently. Not steerable. Final sweep.
 RVA(0x001786d0, 0x77)
 CNetPlayerListNode* CNetMgr::AddPlayerNode(void* playerDesc) {
     if (playerDesc == 0) {
@@ -596,13 +585,6 @@ BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlag
 // NetMgr.cpp line 0x36c), and a failed AddTail - deletes the node and returns 0;
 // only the AddTail success arm latches +0x20 and returns it.
 // @early-stop
-// cross-jump wall (88.17%): prologue/frame/ctor/InitSession/SetPlayerData probe/
-// ReportError/AddTail and the block ORDER are byte-exact. Retail emits the
-// `delete node; return 0;` tail TWICE - the AddTail-failure copy uses edx and falls
-// into the shared `xor eax,eax` latch, the InitSession/HRESULT copy uses eax and
-// duplicates the epilogue - while our cl cross-jumps the second into the first
-// (`cmp ecx,edi / je latch / jmp copy1`). Source-level attempts to keep them apart
-// (arm order both ways, a distinct local for the deleted pointer) all re-merge.
 RVA(0x00178b30, 0x140)
 CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d) {
     CNetSessionNode* node = new CNetSessionNode();

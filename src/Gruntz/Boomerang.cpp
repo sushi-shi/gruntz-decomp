@@ -27,11 +27,6 @@ RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
 // @confidence: high
 // @source: rtti-vptr
 // @early-stop
-// vptr-store-schedule wall (~97.3%): retail emits the implicit vptr store BEFORE
-// the m_38 (+0x154) load; MSVC5 /O2 fills the post-base-call latency slot with
-// the independent m_38 load and sinks the store after it. A real polymorphic
-// class (implicit vptr init), so the store is no longer source-orderable - the
-// schedule is the optimizer's, not steerable. Byte-exact otherwise.
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     // vptr stamp is IMPLICIT (real polymorphic class).
@@ -48,12 +43,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 // onto the global free-list + cleared. m_launched is reset to 0.
 //
 // @early-stop
-// x87-scheduling wall (same family as CProjectile::LoadProjectileSprites ~58% /
-// StepMotion / MovingSlot16): the base forward, the integer grunt-cell lookup + the
-// return-record stamp + the free-list recycle/RemoveAll are byte-shaped; the residue is
-// the dense fxch-laden x87 stack schedule of the origin/dir/velScale trajectory block
-// (0xe06e3..0xe0793) which MSVC5 emits from the trajectory expression and is not
-// steerable from C source, plus the unnamed engine-call relocs. Logic complete; parked.
 RVA(0x000e0690, 0x1a9)
 i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
     if (CProjectile::LoadProjectileSprites(kind, a, b, sx, sy, t0, t1) == 0) {

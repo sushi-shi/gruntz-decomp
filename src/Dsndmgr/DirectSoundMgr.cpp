@@ -580,14 +580,6 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @early-stop
-// shrink-wrapped callee-save push wall (90.31), in the OPPOSITE direction to its
-// sibling SoundDevice::FreeSamples: here RETAIL shrink-wraps (only edi at entry,
-// `push esi`/`push ebx` deferred past the m_78 null guard, the early-out restoring
-// just edi) and cl pushes all three up front. Logic + offsets + externs byte-exact.
-// A 4-cell matrix over the guard (config/axes/getitem.json: `!x`, `x == 0`, an owner
-// local, the node declared above the guard) scored ALL FOUR identical at 90.31 - the
-// site is not the lever. That the two functions need OPPOSITE shrink-wrap decisions
-// from the same guard shape is why this is the allocator, not the source.
 RVA(0x00135d70, 0x92)
 DirectSoundMgr* DSoundCloneInst::GetItem() {
     if (!m_owner->m_initialized) {
@@ -1015,15 +1007,6 @@ void SoundDevice::Shutdown() {
 // DSoundCloneInst leaf, thread it on the +0x04 list, and seed its format,
 // avg-bytes, byte-count, and duration.
 // @early-stop
-// ONE exit, and it must stay a `goto done`: retail's six gates each emit
-// `xor eax,eax / jmp 0x136843` into a single fs:0-restoring epilogue (1 ret). Six
-// `return 0;` instead MEASURED 61.35 -> 35.61 - under /GX cl5 duplicates the WHOLE
-// epilogue (fs:0 restore + pops + add esp) at every return, giving 7 rets. The
-// per-gate `xor eax,eax` is cl's own return-value materialization into the shared
-// exit, NOT evidence of a per-gate return (re-confirmed 2026-08-01; the earlier
-// 35.6 -> 53.5 note recorded the same experiment). docs/patterns/
-// positive-gate-enables-shrink-wrap.md (shared-exit half). Residual is the
-// callee-saved count (same family as SoundStream::CreateStreamBuffer).
 RVA(0x001366f0, 0x168)
 DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
     WaveFormatX wf;
@@ -1389,15 +1372,6 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
 // FreeSamples: walk the voice list; per node run its slot-1 stop, unlink, then
 // `delete (PureSoundElem*)node` (pure-base teardown + RezFree). Returns 1.
 // @early-stop
-// shrink-wrap wall (77.31), and the guard form is NOT the lever. The whole loop body
-// is BYTE-IDENTICAL (including the neg/sbb/and null-mask in eax); the only difference
-// is that retail saves all four callee-saved regs in the prologue and pops them on
-// the early exit, while cl distributes the pushes past the gate. A 4-cell matrix
-// (config/axes/freesamples.json) refutes docs/patterns/positive-gate-enables-shrink-
-// wrap.md here: the early-return baseline is the BEST at 77.31, the positive form
-// `if (m_initialized) { loop; return 1; } return 0;` drops to 72.13 and a result
-// variable to 71.39. Retail's own polarity is the early return too (`jne body`,
-// return-0 as the fallthrough), so both sides already agree on the gate.
 RVA(0x00136ed0, 0x72)
 i32 SoundDevice::FreeSamples() {
     if (m_initialized == 0) {
@@ -1462,14 +1436,6 @@ void DSoundList::RemoveMatching(void* key, u32 tag) {
 // global-clock reading (_g_pTimeGetTime @ 0x6c4650); otherwise use it verbatim.
 // CloneAndPlay's `new DSoundVoice(...)` binds here.
 // @early-stop
-// store-SCHEDULING wall, NOT the vptr-stamp-splits-meminit divider. Retail stores
-// +0xc/+0x10/+0x14/+0x1c before `mov [esi],??_7DSoundVoice` and +0x18/+0x20/+0x24
-// after; we emit +0x10/+0x14/+0x18 before and +0xc/+0x1c after. Spelling retail's
-// pre-stamp set as a member-init list (`: m_live(1), m_buffer(owner),
-// m_stopAndRewind(slot), m_rampStartVolume(pct)`) MEASURED 87.94 -> 87.76 and moved
-// NEITHER a list member up nor the body member down - the stamp is not a barrier
-// here. PureSoundElem is an abstract base with no ctor, so there is no base-ctor
-// call to anchor the stamp and cl schedules it freely among the stores.
 RVA(0x00136fe0, 0x7b)
 DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp) {
     m_live = 1;
@@ -1489,19 +1455,7 @@ DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 
 // push it through SetVolumeByIndex. On completion, when the stop flag is set,
 // stop+rewind the buffer. Returns whether the voice is still live (!done).
 // @early-stop
-// 95.7% -- regalloc-pinning wall (docs/patterns/zero-register-pinning.md): every
-// instruction matches (the unsigned clamp `jb`, the signed idiv interpolation, the
-// three buffer calls, the done/!done epilogue). The only residual is the esi<->edi
-// coin-flip: retail pins this->esi + elapsed->edi, MSVC5 here pins elapsed->esi +
-// this->edi (same values, mirrored register file). Logic complete.
 // @early-stop
-// this-vs-arg callee-saved pick (95.70): retail loads `mov esi,ecx` (this) first and
-// puts `now` in edi; we load `now` into esi first and this into edi. Every
-// instruction is otherwise identical. A 6-cell matrix over the elapsed computation
-// (config/axes/dsoundvoicetick.json - dur/start hoisted to locals, both hoisted,
-// negated-member LHS, `done` split from its declaration) scored ALL SIX identical to
-// baseline, so the statement site is not the lever; the pick is made by the
-// allocator, not by first-use order in the source.
 RVA(0x00137060, 0x6b)
 i32 DSoundVoice::Tick(i32 now) {
     i32 done = 0;

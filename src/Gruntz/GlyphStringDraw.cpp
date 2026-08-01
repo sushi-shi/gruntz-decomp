@@ -105,11 +105,6 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
 }
 
 // @early-stop
-// tail-merge / block-layout wall (~94.3%): the page load + the 10-arg
-// `[esp+0x24]`-reload forwarding push chain + the call/`add esp` are byte-IDENTICAL;
-// the sole residual is the null guard, where retail emits `jne body; ret` (a separate
-// early ret, no tail-merge) but cl tail-merges the two rets to `je <shared end ret>`.
-// An MSVC5 block-ordering coin-flip; not source-steerable.
 RVA(0x001154b0, 0x45)
 void ShowHudMessage(
     CDDrawSurfaceMgr* sink,
@@ -129,7 +124,6 @@ void ShowHudMessage(
     HudMsgPush(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
 }
 // @early-stop
-// same tail-merge wall as ShowHudMessage (twin; draw page m_14 vs present page m_18).
 RVA(0x00115520, 0x45)
 void ShowHudMessageAlt(
     CDDrawSurfaceMgr* sink,

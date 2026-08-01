@@ -355,12 +355,6 @@ RVA(0x0010d510, 0xf1)
 i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
 // @early-stop
-// eh-ctor-vptr-restamp-position wall, all-inline-base variant (99.65%) - the shared cause of the
-// whole CUserLogic+CWapX leaf-ctor family; mechanism + the full list of spellings that do NOT move
-// it is on CWayPoint::CWayPoint (src/Gruntz/WayPoint.cpp) and in
-// docs/patterns/eh-ctor-vptr-restamp-position.md. One adjacent transposition: cl hoists the body's
-// `mov eax,[esi+0x38]` one slot over the leaf vptr stamp; everything else (incl. the folded
-// `|= 3`, the g_gameReg->m_134 arm and the "A" re-latch) is byte-identical.
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
@@ -528,11 +522,6 @@ void CTileTrigger::RegisterActs() {
 // the standard CUserLogic(obj) init plus the Brickz tail (cache the anim-set node off the "A"
 // bute key, raise the logic/collision flag bits, seed the tile-coordinate fields).
 // @early-stop
-// regalloc: the three m_38 read-modify-writes land in a rotated callee-saved triple
-// (retail ecx/ebp/edi with a late `pop edi`, cl edi/edx/ecx with an early one), which
-// then flips tileY between edx and ecx in the coord tail. ~30 tail spellings measured;
-// only an `o = m_object` local reproduces retail's triple, and that elides the two
-// +0x10 reloads retail keeps. Identical body to CTileTrigger @0x10e220.
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -618,13 +607,6 @@ i32 CTileTrigger::AdvanceAnim() {
 }
 
 // @early-stop
-// 94.23 -> 99.87. Three real corrections: the first-empty scan is a flag-terminated
-// `while` (not `for`+`break`), its NON-empty arm owns the fallthrough, and the z-key
-// block runs off one bound object pointer. The last 3 rows are the two-member
-// commutative add - cl canonicalises `A + B` to load the LOWER member offset into the
-// accumulator (proven with a standalone cl A/B over 9 spellings; only an intervening
-// aliasing STORE defeats it), and retail's is the other way round. Same wall as
-// ProbeColumn/ProbeFeetKind/ProbeHeadSoft/HoldMove/SumWeighted.
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -750,13 +732,6 @@ void CCheckpointTrigger::RegisterActs() {
 // @source: vtable-slot+pmf (RegisterActs binds this RVA as the "A" handler) +
 //   full-disasm-decode (every callee named)
 // @early-stop
-// 97.3% (from a 1.1% stub). Control flow, all ten callees, the tile-grid *7-int walk,
-// the m_grid row*15+col index, the inlined seeded-LCG coin flip and the four
-// view-rect gates are byte-faithful. Two residues: (a) the "B" act key - retail
-// references the .data array at 0x60d1bc (?s_actKeyB@@3PADA), which has no definition
-// anywhere in the tree, so this uses the literal and one reloc TARGET NAME differs;
-// (b) a two-instruction scheduling slip where cl sinks the `mov ecx,g_gameReg` for the
-// Rand() call past the m_firstEmpty load.
 RVA(0x0010f6a0, 0x235)
 i32 CCheckpointTrigger::Act() {
     CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);

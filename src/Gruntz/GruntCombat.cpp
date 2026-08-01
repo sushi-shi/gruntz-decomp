@@ -237,14 +237,6 @@ static inline void GruntScratchTeardown() {
 // any other value leaves the position unchanged). One tile step is 0x20 px. Writes the
 // (x, y) pair through `out`. __thiscall, ret 4.
 // @early-stop
-// register-pinning / tail-merge wall (~60%): the 8-entry jump table + the per-case
-// ±0x20 deltas are logically exact. Retail pins y in the callee-saved esi (push esi),
-// which lets it TAIL-MERGE every case into one shared `mov eax,[esp+8]; mov [eax],edx;
-// mov [eax+4],esi; pop esi; ret` epilogue (the cardinal cases enter mid-block, skipping
-// the diagonal's first sub). cl allocates volatiles (x->eax, y->edx) with nothing to
-// restore, so it DUPLICATES the tiny store+ret into all 8 case blocks instead of
-// merging. The esi choice (zero-register-pinning) is the root and is not source-
-// steerable; the cascading register operands + duplicated tails are the residual.
 RVA(0x00056f80, 0x8e)
 void CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePxX;
@@ -393,15 +385,6 @@ static inline CString* ActNameSlots() {
     }
 
 // @early-stop
-// Create*-sprite register coin-flip wall (~90.5%): the prologue (incl. the ebp=0 +
-// 4th-saved-reg pin recovered via the rolling-ball m_7c temps), the random-index pick,
-// the GAME_ATTACK sound gate, every switch case (CreateSprite, the init vtable call,
-// Activate, the GetIntDef-into-CombatCue/ResurrectCue area cue) and the cross-case
-// tail-merge are byte-correct in shape/offsets/symbols/CFG. Residue is the documented
-// Create*-sprite scheduling coin-flip (which callee-saved reg holds m_180/m_17c/g per
-// case; the same wall the 7 CGrunt Create* carry at 99% each, compounded over the 10
-// CreateSprite calls) + a 1-instr `cmp edi,ebp` operand-order flip. Deferred to the
-// final sweep.
 RVA(0x00057100, 0x577)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     i32 idx = forced;
@@ -626,10 +609,6 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 // (0x939 / 0x2), probe a move-tile placement via the tile mgr and return 1; else 0.
 //
 // @early-stop
-// single-instruction scheduling coin-flip: logic/CFG/offsets/board-deref/both returns
-// byte-exact. Residue = cl loads board->m_width (`mov ecx,[ebx+0xc]`) one slot earlier
-// than retail (retail defers it past `add eax,0x10`) and reads g_gameReg before m_object
-// vs retail's m_object-first; the rest is identical. ~93%. Final sweep.
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
     i32 reason = m_entranceReason;
@@ -667,12 +646,6 @@ i32 CGrunt::TryPowerupAtTile() {
 // __thiscall, ret 4. Same lookup shape as EnsureStruckVoice / CProjectile::LaunchSound.
 //
 // @early-stop
-// reloc-naming scoring artifact (objdiff-reloc-scoring memory): the three engine
-// callees - the sound-map Lookup (0x1b8438), the sample factory GetItem (0x135d70)
-// and the sample Play (0x136300) - are not yet RVA-annotated, so their REL32
-// operands pair to the target's FUN_ names and stay fuzzy until those engine fns
-// get stubs (the SAME referent set EnsureStruckVoice waits on). g_gameReg IS named.
-// Logic complete; flips to exact once that shared referent set is named.
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
     DirectSoundMgr*& sample = m_struckSlotSound;
@@ -783,33 +756,6 @@ void CGrunt::DestroyAnims() {
 // and report 0.
 //
 // @early-stop
-// Complete and structurally aligned as of 2026-07-27: the base and retail basic-block
-// skeletons are 100 vs 101 blocks with B8..B29 and B42..B56 identical, and every
-// DATA ref (g_gameReg / g_coordPool.m_freeHead family / g_coordPool / IntersectRect)
-// pairs. Six evidenced logic fixes landed this pass (see the git log for the measured
-// steps) - most importantly that SearchEdge's arg5 IS the local CPtrList and the
-// +-4 gate/ring are centred on the ROUTE TAIL, which is what unblocked the 0x58555
-// second probe an earlier pass had measured backwards.
-//
-// Residual is regalloc/frame, in three named pieces:
-//  1. frame 0x8c vs retail 0x74 - retail's whole body fits FOUR RECT slots
-//     (0x28/0x38/0x48/0x58, with tcol/trow reusing the dead box.left/box.top) plus
-//     one CPtrList; cl gives our block-scoped SCAN_BOUNDS rects two extra slots, so
-//     every [esp+N] operand is displaced.
-//  2. the ring's outer loop (0x58371): retail re-reads tcol/trow/dx/dy from the frame
-//     each iteration; cl enregisters tcol in edi, strength-reduces `cc` into a second
-//     induction variable (`lea ebx,[edi-1]`) and therefore needs a `jmp`-to-condition
-//     entry block retail does not have (base B57/B58 vs target B57).
-//  3. block PLACEMENT of the cold `grid->Clip(0); return 0` copy that carries the
-//     ~CPtrList (retail 0x58686, at the very end of the function; cl emits it inline
-//     right after the first empty-list test). Sizes are identical, position is not.
-//     This is the whole of what the jcc sieve reports as `#44 =mnem ->blk60 not
-//     blk47` + `#46 jne->je`: BOTH sides guard with the same two `[esp+X]==0` tests
-//     and both reach ONE cleanup copy - retail by two `je`s to the sunk block, ours
-//     by one `je` plus the `jne`'s fallthrough. Verified 2026-08-01, not a
-//     behaviour difference; do not re-open it as one.
-// No source lever found for any of the three; the permuter is the right tool if this
-// is re-attacked.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CMapMgr)
@@ -1105,11 +1051,6 @@ i32 CGrunt::PathScan() {
 // grunt-voice cue (CueA) keyed by whether it was a real hit and the running count.
 // __thiscall, ret 4, frameless.
 // @early-stop
-// regalloc wall: logic/CFG/member-offsets/cue-ids byte-exact (the on-screen push
-// blocks match verbatim); residue = retail pins `this` in esi (push esi; mov
-// esi,ecx) for the whole 4-branch body, mine keeps it in ecx and reloads the cue
-// sink per branch in a different slot - pure register placement, no source lever
-// flips it. ~76%, deferred to the final sweep.
 RVA(0x000588f0, 0x1ea)
 void CGrunt::OnStruck(i32 wasHit) {
     m_struckTimerLo = 0xfa0;
@@ -1184,13 +1125,6 @@ void CGrunt::OnStruck(i32 wasHit) {
 // cell record (the resolver's coord->index map) and bail; final miss -> ResetGeometry().
 //
 // @early-stop
-// large-state-machine + custom-resolver-internals plateau (sibling of RunEntranceMove
-// 0x67850 / StepEntranceReinit 0x637a0): CFG, the switch jump-table mapping, every
-// member offset/gate, the 15-stride tile index, the RectContains-gated commit, and the
-// three sequential strcmp-reject cell-resolves are reconstructed in shape/order. Residue:
-// the resolver coord-range field reads + the two distinct cell-record fallback helpers
-// reloc-mask to differently-named externals, the inline-strcmp setcc sentinel pinning,
-// and the cross-block regalloc on the shared resolve tail. Deferred to the final sweep.
 RVA(0x00059230, 0x40d)
 i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     if (mode == 0) {
@@ -1806,18 +1740,6 @@ L_moveDone:
 // re-arm the attack anim. __thiscall, ret 0x10; returns 1 on success, 0 on bail.
 //
 // @early-stop
-// Bugs fixed here: the `if (redo)` arm was MISSING the `SetupTubeAnim(m_coordToggle)`
-// call (0x5b32f -> ILT 0x1e47 -> CGrunt::SetupTubeAnim @0x50a50); the two tile latches
-// m_17c/m_180 are hoisted into registers before the compare; and the move-config gate
-// (see below) was rewritten TWICE in the wrong direction - a lane replaced the correct
-// `v = m_170; if (v > 0x16) v = m_19c;` with a two-condition AND, on the theory that
-// retail's `xor ecx,ecx` proved both were required. It does not: retail's `jle` lands
-// ON the `cmp eax,1`, so m_170 itself is compared when it is <= 0x16. The jcc sieve's
-// arm-selector screen had demoted that flip because retail holds the flag in ecx and
-// we held it in eax - a register difference, not an arm swap (see head_key in
-// gruntz.core.branches).
-// Residue: arg-evaluation LOAD order (retail loads m_screenX before m_screenY, cl the
-// reverse - the same left-to-right-vs-push-order difference seen across this TU).
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     if (a == m_tileOwnerHi && g_traitorMode == 0) {
@@ -1950,12 +1872,6 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 // re-arms the ATTACK2 anim (RearmAttackAnim2). Returns 1 on commit, else 0.
 //
 // @early-stop
-// ~78% (was 53.7%: the mislabeled note claimed byte-faithful, but retail SHARES one
-// return-0 tail all gates jump to - shared `goto fail` merges them - INLINES the scratch
-// teardown loop (marked inline) and defers the record->m_name load past it). Residual:
-// the inlined teardown's loop-induction form (retail dec/lea pre-adjusts the counter vs
-// cl's test/use) + the inline-strcmp result-bool register (retail eax, cl ecx). Both
-// MSVC5 /O2 coin-flips; not source-steerable.
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 a, i32 b) {
     if (m_entranceCommitted == 0) {

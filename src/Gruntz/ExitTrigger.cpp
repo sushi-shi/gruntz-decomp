@@ -43,13 +43,6 @@ VTBL(CExitTrigger, 0x001e822c);
 // so MSVC emits the /GX EH frame.
 //
 // @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful (the CUserLogic init, the implicit leaf vptr stamp, the "A" cache, the tile
-// snaps, the z-gate, the four `=1` bounds, the geometry apply, the focus-slot
-// resolve + warlord probe + finalize); the residue is this ctor's own __ehfuncinfo
-// state numbering + the zero-register-pinning callee-saved choice (the shared
-// CUserLogic-init wall) + the `and al,0xe0` byte-AND codegen pick. The SAME plateau
-// as CTimeBomb / the other bute ctors; not source-steerable. Parked for the final sweep.
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
@@ -102,16 +95,6 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // object and re-binds its logic. g_serialCounter is bumped each id write.
 //
 // @early-stop
-// ~96.7%: body byte-faithful (both chain gates, the mode-4/7 switch layout, the
-// m_resolved stream, the write-side id/counter path, the read-side Lookup + aux
-// deref + m_54 store). The old branchless-ternary residue is FIXED (2026-07-28,
-// +3.0%): the `Lookup(...) ? found : 0` ternary if-converted to `neg/sbb/and`;
-// the STATEMENT form (`T* o = 0; if (Lookup(...)) o = found;`) emits retail's
-// `test eax,eax / je / mov eax,[found]` - see docs/patterns/map-lookup-ternary-
-// ifconverts.md. Remaining residue: the mirrored key/found stack-slot assignment
-// (esp+0x1c<->0x20, declaration-order-insensitive - tried) and the pre-zeroed
-// `obj` register (retail reuses the FALSE return value in eax at the merge).
-// topic:wall topic:regalloc. Deferred to the final sweep.
 RVA(0x0003f040, 0x147)
 i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {

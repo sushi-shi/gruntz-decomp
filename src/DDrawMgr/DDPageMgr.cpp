@@ -41,14 +41,6 @@ const GUID IID_IDirectDrawSurface3 = {
 }; // 0x5ef888
 
 // @early-stop
-// zero-materialisation wall (98.24%, docs/patterns/const-materialize-into-reg-vs-immediate.md):
-// two real bugs are fixed below (the mode triple is ONE struct assignment, and the tail
-// store is m_streamOpen/+0x08 not m_0c/+0x0c - the sibling InitMode says the same); the
-// residual is 3 instructions of where cl parks the shared literal 0. Retail zeroes edi
-// BEFORE the last QueryInterface test (`xor edi,edi; cmp eax,edi`) and then stores the
-// palette branch's `m_smackBufMode = 0` as an IMMEDIATE, falling through into a second
-// `xor edi,edi`; cl defers the zero into the palette branch, stores it from edi and
-// jumps over the join's `xor`. Same family as CFxModeT2/CDDPageMgr::RemoveAt.
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {
@@ -146,10 +138,6 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 // if the window exists, create a screen-sized top-level MFC CWnd "Smacker Video
 // Window", focus it, then hand its HWND to the host's Init.
 // @early-stop
-// Complete + correct (~98%). Residual is two documented walls: (1) the /GX EH scope-
-// table + handler-thunk relocs are named differently ($L.../__except_list vs the retail
-// Unwind@... funclet), a reloc-typing artifact; (2) MSVC5 tail-merges the two `return 0`
-// guards differently than retail (one extra `jmp; xor eax,eax`).
 RVA(0x0017c2a0, 0x14e)
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
     CString cls(AfxRegisterWndClass(3, 0, 0, 0));
@@ -246,13 +234,6 @@ void CMoviePlayer::Teardown() {
 }
 
 // @early-stop
-// 70.73 -> 82.32 (jcc sieve, 2026-08-01): two source-shape bugs - `flags` is
-// assign-then-override (retail hoists the 0 above the compare) and m_514 is latched
-// BEFORE the sound-mode call, not after it. Residual: retail duplicates BOTH guard
-// exits inline (`jne` over its own `pop/pop/pop; ret 0x14`) where cl cross-jumps
-// them onto the shared tail, and it keeps the Configure result live in edi
-// (`mov edi,eax; test edi,edi` ... `mov eax,edi`) where cl folds it to a literal 0
-// on the cleanup path. Same residual in the OpenHi twin below.
 RVA(0x0017c570, 0xc0)
 i32 CMoviePlayer::OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
@@ -630,11 +611,6 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 // CMoviePlayer::Configure (0x17cfc0) - derive the tile grid + scroll origin for a layout
 // `mode` (0..3), validating the caller's optional origin/clip against the screen first.
 // @early-stop
-// reloc-mask scoring artifact (~97.4%): the CODE BYTES are byte-exact (llvm-objdump -dr
-// base vs target). The residual is two differently-named reloc operands: the rel32 call
-// to the sibling grid validator at 0x17cbe0 (stubbed ?Unmatched_17cbe0, modeled here as
-// CMoviePlayer::CheckGrid), and the switch jump table ($L385 vs switchdataD_0057d2a0).
-// topic:scoring-artifact - no further code change possible.
 RVA(0x0017cfc0, 0x2f0)
 i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     if (origin) {
@@ -757,9 +733,6 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
 // CMoviePlayer::CheckMode16 (0x17d2b0) - popcount the current display mode's R/G/B masks
 // and classify a 16-bit mode (5/5/5 -> 0x80000000, 5/6/5 -> 0xc0000000).
 // @early-stop
-// 83.9% - logic/CFG/COM call/popcount loops/classification reproduced. The residual is a
-// regalloc coin-flip: retail spills `this` (sub esp,0x70) + uses ebx as a bit counter,
-// while we keep `this` in ebx (sub esp,0x6c) + use edi for the third counter. Deferred.
 RVA(0x0017d2b0, 0xe4)
 i32 CMoviePlayer::CheckMode16() {
     DDSURFACEDESC desc;

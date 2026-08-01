@@ -109,9 +109,6 @@ CFxModeT1::CFxModeT1() {
 
 // 0x17e840 - CFxModeT2(): base ctor, stamp the type-2 record.
 // @early-stop
-// constant-materialization/store-scheduling wall (~72%): same stores/offsets/values as
-// retail, but retail pre-loads 0x140->eax / 0xf0->ecx / 0->edx + stores in offset order,
-// while cl keeps 0x140/0xf0 as immediates + groups the zero stores. Not source-steerable.
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
     m_type = 2;
@@ -173,14 +170,6 @@ CFaderMesh::CFaderMesh() {}
 // member, then chains ~CFader (0x17e4a0). /GX frame from the destructible member
 // + base.
 // @early-stop
-// out-of-line member-dtor wall: retail INLINES ~CRezBufferObject's teardown here
-// (stamp 0x5f07d8 into +0x58, free +0x5c, restamp ??_7CObject) - byte-shape
-// `mov [edi],vt; mov eax,[edi+4]; test; push; call delete` - while our canonical
-// ??1CRezBufferObject stays out-of-line (RezBufferObjectDtor.cpp @0x17f330, itself
-// 100%-matched), so this dtor emits `lea ecx,[esi+0x58]; call ??1CRezBufferObject`
-// instead. The CALL reloc binds to the real dtor (reloc-faithful); inlining it here
-// would require the header-inline move that unbinds the 0x17f330 emission. A
-// deliberate structure-over-% trade.
 RVA_COMPGEN(0x0017e970, 0x1e, ??_GCFaderMesh@@UAEPAXI@Z)
 RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
@@ -193,13 +182,6 @@ CFaderMesh::~CFaderMesh() {}
 // source (srcRect = m_4c ? rectA : the clipped rectB). Finally Flip m_44.
 // ===========================================================================
 // @early-stop
-// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md; sibling of
-// ApplyInit @0x17ea00): the per-record t=frame/GetFrameCount() divide, the four
-// A + (int)((B-A)*t) rect interpolations (fild/fmul/__ftol), the surface clip and the
-// BltEx/Flip dispatch are byte-faithful in operation/offset, but retail keeps t on the
-// x87 stack across the four __ftol calls and colours the record temporaries into a
-// dense frame-slot layout cl doesn't reproduce; the frame/count int64->float loads
-// also differ (fild qword vs dword). Not source-steerable.
 RVA(0x0017ef00, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
     CDDSurface* dst = m_dstSurface;
@@ -295,12 +277,6 @@ static __inline i32 FxRand(i32 range) {
 }
 
 // @early-stop
-// 87.07% (was 71.58). The "callee-saved coloring swap that touches every ModRM byte" was
-// the range guard's shape (jcc_sieve 2026-07-28): two separate `if (...) goto fail;`
-// statements let cl place the FIRST guard's target inline between the guards and the body,
-// which inverts the second into `jle <body>`; retail sends both to the same far block
-// (`jl <fail> / jg <fail>`) - i.e. ONE `||`. The ebx/edi colouring came right on its own.
-// Residual is the FxRand-loop scheduling tail.
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     i32 w;
@@ -382,9 +358,6 @@ CFaderLight::~CFaderLight() {
 // tables, resolve the hue-ramp shade table into the base's m_table (m_flag = "we own it",
 // so ~CFader FindRemoves it from the cache).
 // @early-stop
-// 92% - /O2 regalloc entropy tail: the descriptor field loads + the m_3c/m_surface
-// conditional reuse eax in retail but the recompile distributes them across ecx/edx/eax;
-// same instruction selection + scheduling, only the register names differ. Final sweep.
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     CFxModeT2* d = static_cast<CFxModeT2*>(desc); // fader type 1 -> the id-2 mode record
@@ -484,16 +457,6 @@ void CFaderLight::SubFree() {}
 //     shaded by calling Render out of line with radius `frame + m_spanCount - 1`.
 // m_20 latches the frame reached, then the three surfaces are unlocked.
 // @early-stop
-// ~62% (from 0.12%): COMPLETE - both modes, all four rim-walk variants, the span
-// bookkeeping, the wholesale row clear and the out-of-line Render tail reconstruct, and
-// three shape levers are already banked (the NEGATED half-chord that feeds both edge
-// clamps, the right-edge double-evaluated clamp vs the single-evaluated left one, and
-// reading m_centerX from the MEMBER inside the rim loop while the pointer setup uses the
-// cached copy: 55.3 -> 57.6 -> 59.9 -> 62.0). The residue is register pressure: this body
-// keeps ~20 values live across a four-way branch, and retail parks m_spanCount in ebx and
-// m_centerX in ebp for the whole rim walk where cl5 spills both, which re-assigns every
-// stack slot downstream (frame 0x54 vs 0x50) - the same class of wall the out-of-line
-// twin CFaderLight::Render @0x180fb0 sits on at ~54%.
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
     i32 delta = frame - m_20;
@@ -765,10 +728,6 @@ void CFaderLight::RenderFrame(i32 frame) {
 // distance from the light centre to any active-surface corner (each squaring is
 // pow(x, 2.0), the largest hypotenuse __ftol'd into m_5c).
 // @early-stop
-// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md): the four pow/sqrt
-// corner distances + the running-max are byte-faithful in operation/operand, but retail
-// interleaves the pow calls with a dense fxch/fld juggle + open-codes the max as an fcomp
-// tree; cl serialises them + lowers the max as fcom/branch pairs. Not source-steerable.
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
     i32 cx = m_centerX;
@@ -857,14 +816,6 @@ CFaderShape::CFaderShape() {
 // the achieved frame rate in m_34. NON-EH (base /O2) frame.
 // ===========================================================================
 // @early-stop
-// Complete + correct (~87%). Same x87-schedule + regalloc wall as the sibling
-// RunFade (0x17e620): retail pins `count` in ebx and `loops` in ebp, cl swaps them
-// (count->ebp, loops->ebx) - a callee-saved recolor changing every ModRM through the
-// body; and retail spills `(float)loops` to memory BEFORE the GetTickCount call
-// (fild/fstp [esp+0x20], then fdivrs memory), while cl schedules the fild after the
-// call and keeps it on the x87 stack (fdivrp register). The loop, the sink COM-call,
-// all guards, and the m_34 frame-rate store are byte-exact; the reg-swap + fp-spill
-// schedule are not source-steerable (docs/patterns/x87-fp-stack-schedule.md).
 RVA(0x0017e540, 0xd8)
 void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 count = GetFrameCount();
@@ -898,14 +849,6 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
 }
 
 // @early-stop
-// Complete + correct (~86%). Wall = the x87 loop-invariant conversion block: retail
-// batches (float)startTick + (float)dur + (float)count as fild QWORD x2 + fild DWORD
-// then a single `fxch st(2)` + 3 fstp, and pins fStart@0x2c / fDur@0x10 / fCount@0x14;
-// MSVC5 here schedules the three (unsigned/int)->float conversions separately and
-// assigns different stack slots, which cascades the fsub/fdiv/fmul memory operands
-// (same FP-schedule/local-slot class as the blit reassociation walls). No source
-// ordering of the three float decls pins the fxch batching. Loop body, guards, sink
-// COM-call and the m_34 frame-rate store (0.001f const) are byte-exact.
 RVA(0x0017e620, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     i32 prev = 0;
@@ -951,21 +894,6 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
 // into this->m_58 from the transition descriptor. Returns 0 on a null gate, else 1.
 // ===========================================================================
 // @early-stop
-// regalloc this-pin + x87-schedule wall (proven with llvm-objdump -dr base vs
-// target): the descriptor latch is instruction-for-instruction identical
-// (same loads [eax+N], same stores [this+N], same tests/branches, same offsets),
-// but retail pins `this` in EBP while cl colours it ESI - a callee-saved recolor
-// that changes the ModRM encoding of every this-relative access through the whole
-// body (this is the docs/patterns/zero-register-pinning.md family), and the frame
-// is 0x9c vs cl's 0x90 (retail reserves 12 B more x87 stack-temps). On top of that
-// the radius + per-cell projection is a dense x87 expression whose fild/fsqrt/fdiv/
-// fmul + __ftol ordering is not source-steerable (docs/patterns/x87-fp-stack-
-// schedule.md, ~60-75% band), and the open-coded MFC buffer grow (RezAlloc/RezFree
-// + rep-movs) diverges likewise. Grid topology, the sqrt distance projection and the
-// field assembly are all correct; the this-recolor + FP schedule park it (~68.4%,
-// up from ~65.6% pre-de-view). Final-sweep candidate. The de-view (CFxModeT3::Build
-// -> CFaderMesh::ApplyInit) is byte-neutral/positive: only the mangled symbol name
-// changes (paired by RVA), not the algorithm.
 RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     // The arg is the type-6 CFxMode transition descriptor; m_58 is this fader's real
@@ -1118,12 +1046,6 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 // around the engine allocator (RezAlloc 0x1b9b46 / RezFree 0x1b9b82).
 //
 // @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md, topic:wall
-// topic:regalloc): ~96%, every operation/offset/immediate/branch + the store
-// ordering (m_nSize=m_nMaxSize=0) is byte-faithful; the sole residual is the long-
-// lived "0"/null register choice - retail pins it in esi (then reloads esi as the
-// memcpy src), cl pins it in edi, which cascades into the edx/ecx scratch picks in
-// the realloc lea chains. Not source-steerable. Deferred to the final sweep.
 RVA(0x0017f390, 0x164)
 void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
     if (nGrowBy != -1) {
@@ -1171,8 +1093,6 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
 }
 
 // @early-stop
-// regalloc/scheduling tie (~90%): logic byte-exact; retail's ecx/edx assignment
-// for the m_src reload + s->m_10 store schedule differs from this cl's.
 RVA(0x0017f5e0, 0x7d)
 i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     CFxModeT5* s = static_cast<CFxModeT5*>(desc);
@@ -1204,18 +1124,6 @@ i32 CFaderFlat::GetFrameCount() {
 }
 
 // @early-stop
-// Re-reconstructed 61.64%->73.70% by fixing three structural bugs the prior model
-// carried (it was NOT an x87 wall): (1) m_maxRadius was `ftol(cx^2+cy^2)` - the real
-// formula is `ftol(sqrt(cx^2+cy^2) * 10000)`; (2) the per-cell dy was `0-centerY`
-// (the y term dropped) - it is `y - centerY`; (3) the pixel read used m_pixels(=the
-// m_8 COM surface) as the byte base and a phantom GetRowBase(row) - the real code
-// Lock()s the surface (0x13e6d0 returns the locked lpSurface base) then reads
-// `base[colStride*x + pitch*y]` and UnlockThunk()s. The K constants (0.5/10000/-1.0/
-// -1.0) are the reloc-masked .rdata doubles/floats. Residual is a callee-saved regalloc
-// coloring (retail pins this->esi/zero->ebp; our cl picks edi/ebx) + the x87 temp-slot
-// frame (sub esp,0x18 vs 0xc) - genuine MSVC5 scheduling, not logic.
-// (The cells store FLOAT vx/vy/fade - RenderFrame @0x17fc60 reads them with fld/fcomp - so the
-// de-view also drops the three (i32) truncations the old FrCell forced.)
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     CFxModeT4* cfg = static_cast<CFxModeT4*>(desc);
@@ -1300,11 +1208,6 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
 // dest at [py*pitch + px]. Unlock both COM surfaces (inlined m_8->vtbl[0x80]).
 // ===========================================================================
 // @early-stop
-// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md; same family as
-// the sibling ApplyInit @0x17fa40): the per-cell (fade-frame)/divisor + vx/sf, vy/sf
-// __ftol chain, the fcoms threshold and the bounds test + plot are byte-faithful, but
-// cl schedules the frame-float on the x87 stack and colours edi/ebx/ebp differently
-// than retail (which pins this->esi/cellptr->ebx/index->ebp). Not source-steerable.
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
     CDDSurface* dst = m_dstSurface;         // +0x3c
@@ -1362,12 +1265,6 @@ CFaderShape::~CFaderShape() {
 }
 
 // @early-stop
-// x87 scheduling wall (~40-50%): the surface resolution, the equal-dimension
-// validation, the per-row offset tables (m_rowOfsA/B/C) and the m_lineBuf scratch
-// allocation match, but the two transcendental ramp loops are not source-steerable
-// - retail's fild/fxch/fstp stack-slot reuse over `acos((i-r)/r)*r` (m_warpTable) and
-// `0x10 - sin(i/r*PI)*-32` (m_shadeRamp), plus the MFC CString temp the file-name
-// AddFromArray path builds, diverge. Same family as CFaderRadial::ApplyInit (0x17fa40).
 RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
@@ -1496,14 +1393,6 @@ fail:
 // 0x182610 - RenderTile: assemble + write back one (2*m_halfWidth)-wide line per row.
 // ===========================================================================
 // @early-stop
-// Regalloc / loop-scheduling wall: this is a deep nested gather with ~16 live
-// member bases, four per-bpp inner variants and two byte-copy tails. The logic
-// (column loop, the m_useLut LUT gather vs the 1/2/3-byte straight copies, the m_stripCopy
-// copy/zero strip, the scratch write-back) is reconstructed faithfully, but MSVC5
-// reloads each member base per use and threads the dual src/dest pointers through
-// a spill schedule that this C spelling does not reproduce instruction-for-
-// instruction. Inner addressing, the *bpp scaling and the LUT keying are correct;
-// the spill/reload schedule parks it. Final-sweep candidate.
 RVA(0x00182610, 0x2eb)
 // (col, stripWidth): CFaderShape::RenderFrame calls this as RenderTile(<column in the
 // span>, frame - m_20), and the body treats the second as the strip this frame adds -
@@ -1594,12 +1483,6 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
 // dest strip. param_2 = base pixel row, param_3 = leading width.
 // ===========================================================================
 // @early-stop
-// Dual wall: (1) the same deep-loop / many-live-base regalloc schedule that parks
-// the sibling RenderTile, and (2) the x87 arc/scale block (fild/fmul PI/fidiv/fimul
-// /__ftol) whose fp-stack scheduling cl reorders. Logic (the two condition-gated
-// scroll halves, the per-bpp 1/2/3 gather, the LUT remap, the copy/zero strip and
-// the scratch write-back) is reconstructed faithfully; FP scheduling + spill order
-// park it. Final-sweep candidate.
 RVA(0x00181e50, 0x7b9)
 // (col, stripWidth) - the warped twin of RenderTile; same two caller expressions.
 void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
@@ -1963,14 +1846,6 @@ const float g_sineOne = 1.0f; // 0x5f0864  the whole-pixel carry threshold
 // (cross-fade). Rows that have fully passed the band are finished off wholesale in the
 // trailing loop, and m_20 latches the frame reached.
 // @early-stop
-// ~75% (from 0.24%): COMPLETE and shape-correct - the band loop, both m_boxParam arms,
-// the unsigned phase (`fild QWORD` with a zeroed high half), the float carry in m_arr2,
-// the inlined FxRand top-up and the trailing wholesale finish all reconstruct, and the
-// frame is now the right size (0x24) with the counter/fidiv-temp slot sharing retail's.
-// The residual is which local lands in which of those slots (retail 0x10 row / 0x14
-// whole / 0x18 step, ours 0x18 / 0x14 / 0x10) plus the matching callee-saved colouring
-// (retail this=esi frame=edi, ours this=ebx frame=ebp) - a spill-ordering coin flip;
-// swapping the two declarations moved it 74.7 -> 73.6, i.e. the wrong way.
 RVA(0x0017ff30, 0x4c2)
 void CFaderSine::RenderFrame(i32 frame) {
     if (frame == 0) {
@@ -2120,16 +1995,6 @@ void CFaderSine::RenderFrame(i32 frame) {
 // number of columns to advance since the previous call, so the base's m_20 latches `frame`
 // on the way out, just before the three COM unlocks.
 // @early-stop
-// ~79% (from 0.3%): COMPLETE and shape-correct - all four compositor groups, both band
-// tests (unsigned, hence `ja`/`jbe`), the first-frame row prime, the m_mode save/force/
-// restore and the three unlocks reconstruct, and the local stack homes now line up
-// (0x10 seam / 0x14 arc / 0x18 stride). The residual is ONE constant-materialisation
-// choice with a whole-function regalloc tail: retail dedicates the callee-saved ebp to
-// the literal 2 for the whole body (`mov ebp,0x2` @0x181bec, then `mov [esi+0x50],ebp`
-// at each of the four mode-3 arms) where cl5 emits `mov [esi+0x50],0x2` immediates and
-// keeps ebp as a scratch for m_20. See docs/patterns/const-materialize-into-reg-vs-
-// immediate: a named local folds straight back, and there is no MSVC5 spelling that
-// pins a callee-saved register to a literal.
 RVA(0x00181b00, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
     m_dstBase = static_cast<u8*>(m_surfA->Lock(0));

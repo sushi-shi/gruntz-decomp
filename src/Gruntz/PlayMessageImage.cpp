@@ -1,4 +1,4 @@
-#include <Gruntz/PlayMessageImage.h> // this TU's external declarations
+#include <Gruntz/PlayMessageImage.h>      // this TU's external declarations
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/Play.h>
@@ -8,20 +8,11 @@
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Flip (0x13e850)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 
-
 // ===========================================================================
 // CPlay::DrawMessageFrame (0x0d1650) - draw the GAME_MESSAGEZ image `index`
 // centered in the active viewport. useFront selects the front/back layer node.
 // ===========================================================================
 // @early-stop
-// ~88%: logic byte-faithful (lookup + inlined GetAt bounds/frame + centered blit
-// all match). Wall is a regalloc register-CLASS coin-flip: retail keeps m_c in the
-// caller-saved ecx (leaving esi/edi/ebx free to read all 4 viewport corners UP FRONT
-// into registers), while cl assigns m_c to callee-saved esi (reusing `this`'s reg),
-// which forces the two corner reads to be scheduled lazily around the /2 divides.
-// Same instructions + operands, only the register names/read-order differ (verified
-// sema disasm --diff); tried l/t/r/b locals, cx/cy locals, fresh Lookup local - none
-// tip m_c out of esi. Not source-steerable (permuter: no change).
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
@@ -42,13 +33,6 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
 // CPlay::Vslot23 (0x0cfef0, slot 35) - present the state's GAME_MESSAGEZ screen.
 // ===========================================================================
 // @early-stop
-// ~95%: logic byte-faithful. The escaped Lookup out-param is copied to a fresh local
-// (`set`) so cl promotes it into the callee-saved ebx across the Update() virtual
-// call - matching retail. Residual is a 2-instruction /O2 SCHEDULING swap: retail
-// emits the `out = 0` init AFTER pushing the Lookup args (so the slot sits at
-// [esp+0x14]); cl emits it before (at [esp+0xc]). Not source-steerable (the fresh
-// local is required for the ebx promotion; permuter: no change). The 4*esi/esi*4 and
-// `sar eax`/`sar eax,1` diff rows are disasm-formatting only, not real byte diffs.
 RVA(0x000cfef0, 0xbc)
 i32 CPlay::Vslot23() {
     Present(0x3c);
@@ -74,13 +58,7 @@ i32 CPlay::Vslot23() {
     if (surf == 0) {
         return 0;
     }
-    (static_cast<CImage*>(frame))
-        ->RenderFrame(
-            surf,
-            surf->m_width / 2,
-            surf->m_height / 2,
-            0
-        );
+    (static_cast<CImage*>(frame))->RenderFrame(surf, surf->m_width / 2, surf->m_height / 2, 0);
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
     return 1;
 }

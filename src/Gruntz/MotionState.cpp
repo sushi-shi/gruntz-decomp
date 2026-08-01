@@ -124,10 +124,6 @@ void CMotionState::SetZ(double z) {
 
 // ---------------------------------------------------------------------------
 // @early-stop
-// x87 stack-schedule wall (~65%): math + control flow + every member store are
-// byte-exact; the residual is MSVC5's fld-st(0)-vs-fld-[mem] / fxch choreography
-// in the per-axis quadratic-solve + clamp blocks, which is not source-steerable
-// (docs/patterns/x87-fp-stack-schedule.md, x87-copypaste-vs-inline-fp-block.md).
 RVA(0x0016ecd0, 0x6e6)
 void CMotionState::Step(double dt) {
     m_58 = m_40;

@@ -107,13 +107,6 @@ void CShadeTableCache::FreeNodes() {
 // SetSize(nSize+1) algorithm), like AddFrom*. EH frame + x87.
 // ===========================================================================
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + dense x87 schedule
-// (x87-fp-stack-schedule.md): the new+throwing-ctor /GX frame is absent on MSVC5
-// (element ctor 0x150180 external), and retail's fld/fxch/fmul ordering across the
-// per-channel lerps does not reproduce from C. Phase 1 (fade-in from
-// startPct%->full), the in-place +16 palette highlight, and the FindNearestColor
-// remap are recovered byte-for-structure; the phase-2 fade-out's exact channel
-// expression is the wall's residual (re-derive in the final sweep). Logic complete.
 RVA(0x0014df40, 0x5f4)
 CShadeTable*
 CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
@@ -232,15 +225,6 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
 // as retail (MSVC5 /O2 does not hoist the pal reads across FindNearestColor).
 // EH frame + x87 (pow via __CIpow, channels via __ftol).
 // @early-stop
-// x87-fp-stack-schedule wall (x87-fp-stack-schedule.md): the 5-arg prototype, the
-// control flow, the FindNearestColor(pal,rn,gn,bn) arg order, and the whole
-// instruction SELECTION (fild/fmuls g_lumaR/G/B/faddp luma sum, __CIpow, per-channel
-// fmuls + fcomp g_255 clamp, __ftol) now match retail in sequence (30% wrong-arg-count
-// -> 62%). The residual is the spill layout: retail uses a 0x44 frame (rematerialises
-// the invariant floats + 3 channel pointers to fresh slots each i) while MSVC5 here
-// uses a 0x20 frame keeping more on the x87 stack, so the clamp emits fcom(+fstp)
-// vs retail's fcomp(+recompute-in-branch). Register/x87-stack allocation; not
-// source-steerable. Final-sweep candidate.
 RVA(0x0014e540, 0x2ea)
 CShadeTable*
 CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
@@ -294,10 +278,6 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
 // nearest palette index. Channels processed b,g,r. EH frame + x87. @early-stop
 // ===========================================================================
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + x87 fxch schedule
-// (x87-fp-stack-schedule.md): body reconstructed (the per-channel lerp toward
-// arg2 by t=j/steps), but the /GX frame is absent and retail's fld/fxch/fmul
-// ordering of the three interleaved channel lerps diverges from the recompile.
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
@@ -346,10 +326,6 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
 // /div is a runtime idiv. EH frame. @early-stop
 // ===========================================================================
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + div-by-100 strength
-// reduction + runtime idiv scheduling: body reconstructed (256x256, two /100
-// blends summed then /div per channel), but the /GX frame is absent and MSVC
-// orders the strength-reduced accumulators differently than retail.
 RVA(0x0014e9f0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
     CShadeTable* t = new CShadeTable;
@@ -426,12 +402,6 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
 // (b*lumaB + g*lumaG + r*lumaR, __ftol) and orders them ascending by luma.
 // ===========================================================================
 // @early-stop
-// regalloc wall (~69%): logic + the cmp/jbe/or-eax,-1/sbb-eax/neg comparison tail
-// byte-exact. Retail spills BOTH index bytes to stack locals (mov [esp+c],cl;
-// mov [esp+10],al) and reloads/zero-extends per use, whereas MSVC5 here keeps
-// them in registers (xor eax,eax; mov al,[ptr]); that cascades the x87 fild
-// schedule of the two inlined luma sums. Permuter found no operand-order gain.
-// Same wall class as sibling CompareHue (89%) / FindNearestColor (64%).
 RVA(0x0014ed10, 0xcc)
 i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
@@ -498,9 +468,6 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
 // the RezAlloc + external element ctor emits no /GX frame on MSVC5). @early-stop
 // ===========================================================================
 // @early-stop
-// EH-frame wall: retail's `new`+throwing-element-ctor carries a /GX frame this
-// recompile can't emit (element ctor is external ClassUnknown_4_150180); body
-// byte-exact, frame+epilogue cascade absent. See rezalloc-placement-new-no-eh-frame.md
 RVA(0x0014eef0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
     CShadeTable* t = new CShadeTable;
@@ -543,17 +510,6 @@ CShadeTable* CShadeTableCache::GreyTable() {
 // channels go through __ftol after a 255 ceiling clamp. EH frame. @early-stop
 // ===========================================================================
 // @early-stop
-// 60 -> 74.23 -> 92.21. The old "x87 schedule + EH frame" note hid three source
-// bugs the jcc sieve's three `jl -> jne` flips pointed straight at:
-//   (1) the THREE INNER levels are trip-counted (`dec <n>; jne`) with the channel
-//       value advanced separately; only the outer alpha level is `v < 0x100`;
-//   (2) the float constants are the NAMED file globals retail references
-//       (g_inv255 / g_negone / g_255) - literals make cl mint its own $T pool
-//       entries, and `+ 1.0f` against a private temp is not `- g_negone`;
-//   (3) the three __ftol results are BYTES (`mov bl,al`), not i32 locals.
-// Residual: cl hoists the per-iteration factor `f` out of the r/g/b nest (retail
-// rebuilds it inside the innermost loop, fusing the first channel's fild via fxch)
-// and spends one extra frame dword on it.
 RVA(0x0014f080, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
     CShadeTable* t = new CShadeTable;
@@ -626,11 +582,6 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
 // frame. @early-stop
 // ===========================================================================
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + div-by-15 strength
-// reduction scheduling: body reconstructed (level 15..0 x r/g/b, color split into
-// cr/cg/cb, /15 via imul 0x88888889;sar 3), but the /GX frame is absent and MSVC
-// strength-reduces the per-level color accumulators with a different init/step
-// schedule than retail; ~61%.
 RVA(0x0014f310, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
     CShadeTable* t = new CShadeTable;
@@ -684,15 +635,6 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
 // with the RGB565 conversion of a 256-entry PALETTEENTRY palette (arg). EH frame.
 // ===========================================================================
 // @early-stop
-// 99.977% - ONE instruction pair. The ex-"mirror-register wall (92.6%)" note is dead:
-// the esi/edi mirror was the `m_arr.` spelling (see the CShadeTableArray& below), not
-// register colouring. What is left is the ORDER of the two channel byte loads: retail
-// emits `mov dl,[eax-0x2]` (red) then `mov bl,[eax-0x1]` (green), cl the reverse - each
-// still paired with its OWN g_rDown/g_gDown (verified against the base obj's relocs, so
-// the code is semantically identical). /O2 canonicalises the `|` chain, so no operand
-// order, associativity or per-channel temp reaches it (7 spellings measured). It IS
-// state-dependent: without /GX cl emits retail's order - but this TU needs /GX for the
-// LumaSortTable/HueSortTable EH frames.
 RVA(0x0014f5b0, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -733,10 +675,6 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
 // growth + a CString temp. @early-stop
 // ===========================================================================
 // @early-stop
-// EH-frame + inlined-MFC-SetSize wall: the array-grow algorithm is open-coded
-// (the realloc/capacity-bump/rep-movs copy + RezAlloc/RezFree) inline rather than
-// the out-of-line SetSizeGrow, and the /GX frame + CString temp teardown
-// (1b9ba3/1b9cde) don't reproduce; logic complete, scheduling parks it.
 RVA(0x0014f6c0, 0x1e1)
 CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
     CShadeTable* t = new CShadeTable;
@@ -802,10 +740,6 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
 // growth is again inlined. EH frame.
 // ===========================================================================
 // @early-stop
-// EH-frame + inlined-MFC-SetSize wall (see AddFromArray): the array-grow algorithm
-// is open-coded inline rather than the out-of-line SetSizeGrow, and the /GX
-// EH-state numbering around `new CShadeTable` doesn't reproduce; logic complete,
-// scheduling parks it.
 RVA(0x0014f8b0, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     CShadeTable* t = new CShadeTable;
@@ -867,10 +801,6 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
 // orders them by hue. Plain frame (no /GX): the Hsv locals are trivial.
 // ===========================================================================
 // @early-stop
-// regalloc wall: body + frame (sub esp,0x24, the *a/*b spill-reload, the two
-// fcomp/fnstsw return canonicalizations) byte-exact; retail reads arg a before
-// arg b and pins g_pal in edx (index in ecx), the recompile reads b first and
-// swaps the pair - pure register-allocation noise, ~90%.
 RVA(0x0014fa60, 0xd7)
 i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
@@ -896,11 +826,6 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
 // 0x14fb40 - linear-search the cache for the table whose m_key matches; return it
 // (or null). The index of the match materialises the returned m_pData[i].
 // @early-stop
-// ~78% regalloc coin-flip (permuter-confirmed, no operand-order fix): logic +
-// instruction multiset byte-exact. Retail walks m_pData in a caller-saved reg
-// (edx) and keeps `this` in ecx to RE-READ m_pData[i] on the hit; this cl caches
-// m_pData in a callee-saved reg (edi) and clobbers ecx for the walk. Not steerable
-// from C. Final sweep.
 RVA(0x0014fb40, 0x3e)
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
@@ -945,11 +870,6 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 // entries 1..255 keeping the minimum; return its index.
 // ===========================================================================
 // @early-stop
-// regalloc wall (~64%): logic byte-for-byte correct, but retail spills r/b/i/best
-// to stack (keeps only g in a reg) and reserves the extra slot via `push ecx`,
-// whereas MSVC keeps r/g/b all in registers here (4 pushes, reuses the dead arg
-// slot). Pure register-allocation/stack-layout divergence; instruction selection
-// matches. Cascades register names through the whole body. Final-sweep candidate.
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
     r &= 0xff;
@@ -992,10 +912,6 @@ RVA_COMPGEN(0x0014fe30, 0x51, ??1CShadeTableArray@@UAE@XZ)
 // m_nSize/8 clamped to [4,0x400]), then read the raw block.
 // ===========================================================================
 // @early-stop
-// regalloc/scheduling wall (~73%, twin of the identical CArray<DWORD>::Serialize
-// at 0x39fa0 / ArraySerialize.cpp): the SetSize-inlined load/grow/shrink logic is
-// byte-faithful, but MSVC pins this->ebx / arg->esi where retail interleaves the
-// prologue push/mov and register coloring differently. Not source-steerable.
 RVA(0x0014fe90, 0x188)
 void CShadeTableArray::Serialize(CArchive& arc) {
     if (!arc.IsStoring()) {
@@ -1056,13 +972,6 @@ void CShadeTableArray::Serialize(CArchive& arc) {
 // CDwArray::SetSize view - now dissolved onto the canonical CShadeTableArray (same 0x14
 // layout, m_pData/m_nSize/m_nMaxSize/m_nGrowBy at +4/+8/+c/+10).
 // @early-stop
-// inline-memset-codegen + zero-register-pinning wall (docs/patterns/zero-register-
-// pinning.md, topic:wall topic:regalloc): ~86%. Every op/offset/immediate/branch + the
-// fresh-alloc and realloc memcpy/memset (byte-count rep stosd+stosb) are byte-faithful;
-// the residual is (1) the within-capacity zero-fill, where retail emits a pure
-// element-count `rep stosd` but cl emits the generic byte-count split (shl/shr +
-// `rep stosb` remainder) for the same memset, and (2) the long-lived 0/null register
-// pin cascade the 40-byte twin (CArrayE40, 96%) also hits. Not source-steerable.
 RVA_COMPGEN(0x00150020, 0x1e, ??_GCShadeTableArray@@UAEPAXI@Z)
 RVA(0x00150040, 0x136)
 void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {

@@ -66,12 +66,6 @@
 // clearFlag) m_0 = 0; set m_4c = maskA & 0x20000000; run Search(...,0x2000,...);
 // then m_4c = 0 and restore every saved field. Returns Search's result.
 // @early-stop
-// regalloc wall (~82%): the body is byte-correct end to end - the combined bounds
-// gate shares one return-0 tail, the cell save/punch/restore re-indexes m_8[row][col]
-// per write (matching retail's factored col byte-offset), and the 8-arg Search call's
-// interleaved push/reload schedule is byte-identical. The residual is that retail pins
-// `this` in ebx (xA in edi) where MSVC5 here pins `this` in edi, plus a 1-slot frame
-// delta (0x1c vs 0x18); the zero-pin/this-reg choice is not source-steerable.
 RVA(0x00081e10, 0x1a7)
 i32 CMapMgr::SearchEdge(
     i32 xA,
@@ -126,14 +120,6 @@ i32 CMapMgr::SearchEdge(
 // and re-set it if any opposite neighbour pair (UP/DOWN, RIGHT/LEFT, UR/DL, UL/DR)
 // is both passable (no 0x939 bit). Clears m_5c and returns 1.
 // @early-stop
-// Control flow is byte-for-byte retail's (34/34 branches, same targets, 47 blocks).
-// Residue is register COLOURING only, worth exactly 8 bytes: retail colours `cell`
-// ebx and `right` ebp, we colour `cell` ebp and `up` edx. ebp as the cell base forces
-// a disp8 on all four `[cell]` derefs and on `lea ebp+/-0x1c` (+6), plus cl keeps
-// m_width alive over `lea ecx,[eax-1]` where retail spends `dec edx` (+2); retail
-// pays 1 back on `test [ebp+0x0],0x939`. The 24-cell counter-decl x neighbour-decl
-// matrix (config/axes/updatediagonals.json) is inert on the colouring: every
-// counter_decl spelling ties, only `up_last` moves it (90.02 -> 90.17).
 RVA(0x00082030, 0x1a1)
 i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     BrickzCell* cell = m_cellPool;

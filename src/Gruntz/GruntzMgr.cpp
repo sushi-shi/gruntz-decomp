@@ -179,12 +179,6 @@ RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 // bail; else run RefreshGameClock (direct call 0x3d23, byte-verified) and re-arm the pending flag. A free function (reads the
 // singleton, no `this`).
 // @early-stop
-// 88%: complete + correct (structure/branches/singleton re-reads all aligned; RefreshGameClock
-// called non-virtually). Residual is a pure regalloc coin-flip: retail pins the g_gameReg
-// pointer chain (mgr -> m_world / m_curState) in ecx so the InputVirtual thiscall's `this`
-// is already there; our cl pins it in eax and copies (`mov ecx,eax`) into the thiscall - a
-// base-register choice the permuter can't rewrite (operand-order only), whose eax<->ecx swap
-// ripples through the null-check chain. topic:regalloc.
 RVA(0x0008b8c0, 0x76)
 i32 PumpIdleFrame() {
     if (g_pendingFrame == 0) {
@@ -287,15 +281,6 @@ CMulti::CMulti() {
 // ===========================================================================
 // CGruntzMgr::TransitionState (0x8b960) - see the file header.
 // @early-stop
-// /GX EH-state-numbering wall (same family as the CProjectile ctor / ApplySwitch /
-// DestroyGroup plateaus): the teardown, the m_a4 replay fast-path, the whole
-// per-state new/ctor/member/vtable/field-init switch and the install/activate tail
-// are reconstructed with the retail sizes, vtables and field sets. The residue is
-// the __ehfuncinfo state ladder across the ~13 nested new-expression try-regions
-// (each `mov [esp+0x1c],N` state id) + the interleave of the per-object field
-// zeroing with the member ctors - MSVC5's state numbering + store scheduling for a
-// factory of this size is not source-steerable. Logic complete. topic:wall topic:eh.
-// ===========================================================================
 RVA(0x0008b960, 0x7c4)
 i32 CGruntzMgr::TransitionState(i32 stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
@@ -558,11 +543,6 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
 // drives SetVideoMode(640, 480, save); on failure it surfaces a (0x8008, 0x438)
 // error and returns 0.
 // @early-stop
-// constant-CSE/copy-prop wall: retail uses immediate cmp operands + re-loads the
-// fields fresh in the save block (no constant propagation); MSVC 5.0 here either
-// hoists 0x280/0x1e0 into entry registers (direct-member compare) or copy-props
-// the known value into the m_savedModeW/m_savedModeH store (local-copy compare). Logic is exact;
-// see docs/patterns/constant-cse-immediate-vs-hoist.md.
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(i32 save) {
     i32 w = m_modeW;
@@ -749,15 +729,6 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 // guard `je`s the single fail tail, matching retail's block layout instead of a
 // per-guard epilogue; see docs/patterns/nested-if-success-deepest-error-tail.md.
 // @early-stop
-// 96.7% constant-fold tiebreak: logic byte-exact (guard chain + index + toggle).
-// Residual is MSVC folding the index's true-arm `count-1` to `mov eax,3` (with a
-// je/jne polarity flip) where retail kept `cmp eax,4; jne; dec eax`; the literal
-// `if(idx==4)idx--` form scores worse (88%, view in edx). Documented constant-CSE
-// wall, see docs/patterns/constant-cse-immediate-vs-hoist.md (regalloc family).
-// Retested 2026-07-28 (jcc-sieve POLARITY #3): the statement form DOES reproduce
-// retail's `mov eax,edx / cmp eax,4 / jne / dec eax / dec eax` and its polarity, but
-// re-colours view/count into edx/ecx AND still folds the true arm to `mov eax,3`
-// - net 96.67 -> 84.49. The fold and the colouring are a coupled pair, not one lever.
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
@@ -930,12 +901,6 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
 }
 
 // @early-stop
-// 96.7%. Two defects fixed (88.1 -> 96.7): the switch case values (see below) and the
-// RVA() span, which was the code length 0x1ca and now covers the 16-entry inline jump
-// table at 0x900fc (docs/patterns/rva-span-must-cover-inline-jump-tables.md). Residual
-// is in the working-directory probe tail: retail materialises `&path` in ecx BEFORE the
-// FileExists test and tail-merges the two `push &path` paths (`jne` straight to a
-// shared `push ecx`), where cl re-forms the address per path.
 RVA(0x0008ff30, 0x20c)
 CString CGruntzMgr::BuildMoviePath(i32 movie) {
     CString name;
@@ -1199,10 +1164,6 @@ void CGruntzMgr::Post(i32 code) {
 // The status code is u32 so the range checks emit unsigned `cmp;ja` (not `jg`);
 // see docs/patterns/switch-key-unsigned-ja-vs-jg.md.
 // @early-stop
-// CODE byte-exact: the cmp/je tree, the dense 0x80ea..0x80ed jump table, and every
-// ReportError push match retail to the byte. The residual ~3% is the jump-table
-// DATA scored mismatched against the reloc-masked `jmp [eax*4+tbl]` base - the
-// documented jumptable-data-overlap scoring artifact, NOT a code difference.
 RVA(0x00090ac0, 0x1cc)
 void CGruntzMgr::ReportWorldStatus(i32 a) {
     if (m_world == 0) {
@@ -1422,12 +1383,6 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 // the throttled "GAME_MINORCHEAT" cue. Every missing precondition falls straight
 // through to the shared exit (retail sets no return value there -> void).
 // @early-stop
-// ONE opcode left (99.25%). The frame is now retail's (the lookup out-param shares
-// the single [esp+8] dword - see CheatEclipseToggle) and the `switch` recovers
-// retail's register-form control load (`mov eax,[eax+0x14]`), which the plain
-// `if (st != 2)` folded into `cmp [mem],2`. Residual: cl lowers the one-case switch
-// with `sub eax,2` where retail has `cmp eax,2`. The twin at 0x091390 uses the
-// memory-form compare, so the two forms genuinely coexist in retail.
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
@@ -1578,13 +1533,6 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
 // offY), then every live game object matching `mask` whose screen position falls in
 // the offset box is counted and passed to cb(obj, user). Stops early if cb returns 0.
 // @early-stop
-// regalloc/frame wall (~84.7%): the object-list walk, the four offset-rect bounds,
-// the bounding-box test, the callback and the count are byte-exact. Retail keeps all
-// four bounds in registers (edi/ebp/ebx/edx) and reserves a dedicated `sub esp,0x10`
-// spill frame; MSVC 5.0 here proves offX dead after the X bounds and reuses its
-// incoming arg slot ([esp+0x14]) to spill hiY, comparing against memory (`cmp ecx,
-// [mem]`) instead of a register - so no frame is reserved. No source spelling flips
-// MSVC's dead-arg-slot reuse back to a fresh frame (regalloc family).
 RVA(0x00092250, 0xba)
 i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user) {
     if (cb == 0) {
@@ -1627,12 +1575,6 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
 // shift/mask globals (red 0xff, green 0, blue 0x84 each sar'd down then shl'd up
 // and masked to 16 bits). Returns 1 once stored.
 // @early-stop
-// CODE byte-exact: the double depth switch, the 8/24bpp stores, and the 16bpp
-// per-channel pack (u16-truncated so the three `and 0xffff` stay inline, matching
-// retail's schedule) all match to the byte. The residual ~17% is the reloc-typing
-// scoring artifact: the g_683ea*/g_surfaceColorKey DIR32 data refs score against
-// the differently-typed delinked target (docs/matching-patterns.md fuzzy% note),
-// NOT a code difference.
 RVA(0x00091170, 0xad)
 i32 CGruntzMgr::SetColorDepth(i32 depth) {
     if (depth != 8 && depth != 0x10 && depth != 0x18) {
@@ -1676,15 +1618,6 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 // input object (+0x54) and re-arms it per the m_isAmbientEnabled gate, finally re-storing the
 // input flag. Each engine reject surfaces an error and returns 0.
 // @early-stop
-// big /GX state-machine reload (~27%): the whole flow + per-stage error ladder
-// are reconstructed and the /GX frame + the head (world/mode/8|16 guards + the
-// m_54/m_symParser two-stage teardowns) match. The low % is a big-SEH scoring desync:
-// (a) the long chain of reloc-masked engine thiscalls (RezBuild/Apply/Teardown,
-// CPtrList ctor/dtor, the world mode-set vtable, MakeRezPath/GetRezPath) each
-// fuzzy-mismatch until their whole referent set is named; (b) the entry `push ecx`
-// local-slot reservation + the CString-temp EH-state numbering on the fail chain
-// (gx-state-machine + eh-state-numbering walls). Logic-complete; deferred to the
-// final sweep / a leaf-first redo (docs/patterns/big-seh-fuzzy-desync.md).
 RVA(0x00091a40, 0x2f9)
 i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     if (m_world == 0) {
@@ -2281,23 +2214,6 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 //   CDDrawSubMgrLeafScan::HasKeyEqual/ScanTree, CSymParser::ResolvePath,
 //   CMoviePlayer::InitMode/Open/Pump/Teardown)
 // @early-stop
-// 70.5% (from a 1.1% stub). Control flow, every callee, every member offset and the
-// 0x86ac/__alloca_probe frame are byte-faithful. Two INLINING-BOUNDARY residues, both
-// on the local CMoviePlayer's compiler-run ctor/dtor, and both are the same wall:
-//   (1) ~CMoviePlayer. Retail FOLDS it into every exit (Teardown, the playlist CArray
-//       dtor, then the CFecFile store's Close + ~CDWordArray + ~CFile, EH states
-//       7/8/9/0xa); we emit `call ??1CMoviePlayer`. It was an inline member in retail
-//       whose one surviving COMDAT copy is the 0x38fc0 body. Making it inline in
-//       <Io/MoviePlayer.h> is NOT available: cl then emits no out-of-line copy at all
-//       and the 0x38fc0 label is lost (measured on the sibling
-//       CDDrawWorkerHost::SetTileSizeFromImageSet - the labels gate caught the dropped
-//       symbol), and it would take MoviePlayer.cpp's inline ~CFecFile @0x390a0 with it.
-//   (2) The playlist CArray's ctor. Retail CALLS ??0?$CArray@PAUPLAYLISTINFOSTRUCT...
-//       (the COMDAT copy that landed in the arrayserialize band); cl expands MFC's
-//       template ctor inline (5 stores). That costs one rung of the /GX state ladder,
-//       so every state number below is one lower than retail's. The CFecFile store's
-//       ctor DID come back as a call once its body moved out of sight (the
-//       FileIOOwner->CFecFile fold below), which is what took this 64.3 -> 70.5.
 RVA(0x0008fab0, 0x318)
 i32 CGruntzMgr::ChangeState(i32 arg) {
     if (arg < 1 || arg > 3) {
@@ -2370,12 +2286,6 @@ i32 CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
 // No-op when no world is loaded. The int extents are converted to float once and
 // reused across the three scale passes (fild/fst then fld).
 // @early-stop
-// ~83% x87-scheduling wall: logic is exact (same 1.4/5.3/1.12 scales, same view
-// writes + per-pass Notify + the m_viewBounds.left..m_148 edge snapshot). Retail keeps the
-// freshly-converted extent in st0 with `fst` (store-and-keep) and multiplies it
-// in place; MSVC here emits `fstp` (store-and-pop) + a reload `fld`, a 1-2 instr
-// FPU-stack scheduling drift per pass. No source spelling flips fst<->fstp;
-// interleaving the conversions makes it worse (78%).
 RVA(0x0008f7f0, 0x131)
 void CGruntzMgr::RecomputeViewScale() {
     if (m_world == 0) {
@@ -2853,11 +2763,6 @@ i32 CGruntzMgr::SwitchToNextState() {
 // slot 9 (Vslot09) and returns 1, otherwise returns 0. When not in PLAY/paused
 // it pushes a fresh PLAY transition via TransitionState(3, areaArg, 0, 0).
 // @early-stop
-// regalloc wall: in the hit block retail caches m_curState's vtbl in callee-saved ebx
-// across the two virtual calls (push ebx at entry, stack args shift +4); MSVC
-// here keeps the vtbl in edi and re-reads it, so no ebx push. Logic is exact;
-// the residual is the vtbl-CSE register choice (see docs/patterns/
-// pin-local-for-callee-saved-reg.md - no clean source spelling for vtbl pinning).
 RVA(0x0008d780, 0x95)
 i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unused) {
     i32 inPlay = 0;
@@ -2949,11 +2854,6 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
 // in the same pass (the dual-slot unroll: idx jumps by 2 but the loop counter by
 // 1). Any LoadConfig failure aborts (delete the CString, return 0).
 // @early-stop
-// 92.95% - logic byte-exact (inline strcmp, srand(time(0)), the dual-slot
-// unroll). Residual is the loop preheader placement: the `for` form floats the
-// invariant `lea` preheader above the i<count guard + spills `this`; the
-// `do-while` form keeps it inside but inverts the exit-block order. Neither
-// MSVC5 spelling reaches both at once - see docs/patterns/loop-preheader-vs-exit-block-order.md.
 RVA(0x00093170, 0x1e3)
 i32 CGruntzMgr::SyncOptionsState() {
     i32 matched = 0;
@@ -3017,10 +2917,6 @@ i32 CGruntzMgr::SyncOptionsState() {
 // two engine state singletons), and finally chain the base CGameMgr::Close and
 // drop the registry singleton.
 // @early-stop
-// big mechanical teardown (~512 named-extern set): the control flow + the WriteInt
-// settings block + the per-member delete ladder are reconstructed. The residual is
-// the long run of reloc-masked teardown thiscalls (each owned sub-object's Teardown
-// is a distinct engine address) - the documented reloc-typing wall, not a code diff.
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
@@ -3239,12 +3135,6 @@ void CGruntzMgr::OnCheckpointReached() {
 // deadline passes, clear the app's resume flag (m_running), then PostMessageA WM_CLOSE to
 // the game window.
 // @early-stop
-// zero-register-pinning wall (~3.5%): logic + control flow are structurally byte-for-
-// byte (verified via llvm-objdump). Retail keeps `this` in ebx and tests each null via
-// `mov;test` (no 0 constant); our MSVC5 materializes 0 in ebx (for the `out = 0` init
-// store + the four null compares) and so spills `this` into ebp + an extra callee-saved
-// push - every this-relative modrm then differs. No source spelling flips MSVC's
-// zero-register pick here (docs/patterns/zero-register-pinning.md, regalloc family).
 RVA(0x0008f530, 0xbd)
 void CGruntzMgr::DelayedQuit() {
     if (m_a4 != 0) {

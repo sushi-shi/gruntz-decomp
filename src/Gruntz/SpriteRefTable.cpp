@@ -94,9 +94,6 @@ CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
 }
 
 // @early-stop
-// out-param zero-init scheduling wall: retail SINKS `mov [&out],0` past both arg
-// pushes, cl HOISTS it between them (identical multiset, 1 instr permuted); the
-// rest of the 182-byte body is byte-exact. docs/patterns/outparam-zeroinit-scheduling.md
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     CObject* out = 0;
@@ -134,11 +131,6 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 }
 
 // @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-// the ONLY residual is retail SINKING `mov [&found],0` past the `lea &found` (lea
-// then store) while cl HOISTS it (store then lea) - identical instruction multiset,
-// one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
-// exact (frame 0x40, epilogues, !!x normalize all match).
 RVA(0x000e2d10, 0xa1)
 i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
     if (!src) {

@@ -42,8 +42,6 @@ RVA_COMPGEN(0x00010670, 0x44, ??1CGruntStartingPoint@@UAE@XZ)
 // and +0x40 bit 1).
 //
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0003df30, 0x161)
 CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_EXIT");

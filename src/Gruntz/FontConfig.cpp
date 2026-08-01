@@ -229,11 +229,6 @@ void CFontConfig::Scroll(i32 delta) {
 // buffer is non-empty disarms and returns 1 (commit). While armed, backspace
 // (8) trims one char, and a printable byte (0x20..0xff) appends if under 0x50.
 // @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): logic +
-// control flow byte-identical, but retail pins `ch` in ebx (loaded early between
-// the prologue pushes) and the 0 constant in edi, while our cl swaps them (ch in
-// edi, 0 in ebx). A 1-instr phase shift through every =0 store / compare; not
-// source-steerable. Effectively matched.
 RVA(0x00021e20, 0x95)
 // `flag` is the slot-11 key handler's second word; this body never reads it.
 i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
@@ -289,10 +284,6 @@ void CFontConfig::EndInput() {
 // DrawTextA - while arg2 (esi) is the RECT* it reads left/top/right/bottom from at
 // [ecx]..[ecx+0xc].
 // @early-stop
-// The caret tail is the REAL MFC CDC/CPen. The residual is the DT_CALCRECT measure block's RECT-copy
-// + argument scheduling (retail interleaves `push 0x420` with the four field copies
-// and walks them through one register; cl copies then pushes - same instruction
-// multiset, /O2 scheduling) - a codegen residual for the final sweep, no view left.
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == 0) {
@@ -339,11 +330,6 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 // renders it into the rect. thiscall member, /GX (destructible CString).
 // (PwdStr is an MFC CString.)
 // @early-stop
-// EH-state/regalloc residue. The hdc gate is POSITIVE-form so its `return 0`
-// tail-merges into the shared /GX epilogue (retail: `xor eax,eax; jmp <epi>`,
-// the early-return spelling emitted a full 8-instruction inline unwind) -
-// docs/patterns/positive-gate-enables-shrink-wrap.md. Residual is the [esp+N]
-// local-slot assignment + the EH scope addend.
 RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     if (hdc != 0) {
@@ -446,14 +432,6 @@ typedef enum TextColorRef {
 // bottom so the next line stacks below. Text color is reset to white each line.
 // -------------------------------------------------------------------------
 // @early-stop
-// Complete, correct reconstruction (0% stub -> 78% fuzzy). Body/control-flow align.
-// Residual is codegen shape, not logic: (1) the GDI calls bind __imp__{DrawTextA,
-// SelectObject,SetTextColor} while retail calls through the game's own fn-ptr
-// globals g_p*@m4 (0x6c454c/0x6c3ec4/0x6c3eb4) - the import-linking plateau the
-// campaign is resolving globally (see recent link(imports) commits); (2) retail
-// sinks the color `push` into each switch arm, cl here stores to `color` and pushes
-// once at the merge; (3) cl DSE'd the dead pre-loop `work=*rect` copy retail keeps;
-// (4) the min-branch is emitted with inverted sense. All logically equivalent.
 RVA(0x00022360, 0x2f4)
 i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (hdc == 0) {
@@ -617,13 +595,6 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
 // main pass. thiscall member, 10 args, /GX (destructible CString).
 // (its m_3c/m_40 are m_trainingFont/m_messageFont.)
 // @early-stop
-// regalloc/scheduling wall. Complete correct reconstruction: the /GX frame, the
-// three arg-null gates before the CString copy, the two-font SelectObject, the
-// transparent-bk setup, the DT_CALCRECT centering math (signed /2 round-toward-
-// zero on both axes), the black-shadow offset pass and the RGB main pass all
-// align by shape (llvm-objdump -dr). Residual is MSVC5 permuting the rc/centering
-// temporaries across ebx/ebp/esi/edi vs retail and reusing dead arg slots for the
-// rc + selPrev locals differently, shifting the [esp+N] operands - not steerable.
 RVA(0x00022810, 0x22a)
 i32 CFontConfig::Draw3DText(
     const CString* strSrc,

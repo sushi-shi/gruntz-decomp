@@ -65,23 +65,6 @@ CHashElement* CHashElement::Next() {
 // with First. Zero-ref is expected: Last (0x184b10) is equally uncalled - retail emitted
 // the whole reverse-iteration family and the game only ever iterates forward.
 // @early-stop
-// ONE byte left (99.66%): the SIB base/index coin-flip this whole CHashBase family sits
-// on (Insert 0x184a70 99.55 / Remove 0x184ab0 99.23 / Lookup 0x184b40 99.00). Every
-// register is coloured exactly as retail; only the roles inside the preheader lea are
-// swapped - retail `lea ecx,[eax+ecx+0xc]` (SIB base = m_buckets), cl `[ecx+eax+0xc]`
-// (SIB base = i<<4). docs/patterns/sib-base-index-follows-local-decl-order.md says local
-// declaration order is the lever; it is NOT one here (measured: counter-first, pointer-
-// first, and routing the subscript through `coll->m_buckets[i]` instead of a `b` local
-// all produce the same byte - the last of those additionally recolours m_buckets into
-// ecx, so it is strictly worse). The pointer comes from a MEMBER, which is exactly the
-// sub-family that doc records as still open.
-// 2026-07-29, the real mechanism: this byte is decided by TU-CUMULATIVE COMPILER STATE,
-// not by the victim's own source. Two controlled A/B compiles prove it - dropping /GX
-// flips Insert's SIB (retail's form) with a byte-identical instruction stream otherwise,
-// and MOVING Insert to the top of the file flips it too. Deleting the fabricated
-// Gap_1849d0 stub (one preceding COMDAT) flipped Lookup and nothing else. /GX is not
-// available as a lever (Construct's EH frame needs it) and the RVA order is fixed, so
-// there is no legal knob left for these four - but stop looking for a local spelling.
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
     CHashElement* e = CHashBase::FromLink(m_link.m_prev);
@@ -165,14 +148,6 @@ void CHashBase::RemoveAll() {
 // chain node (element+4) into the bucket's chain. The `?:` keeps the null-check
 // `lea ecx,[esi+4]/xor ecx,ecx` even though the engine never feeds a null node.
 // @early-stop
-// SIB base/index coin-flip (99.55%): retail `lea [eax+ecx+8]` (idx<<4 as base) vs
-// cl `lea [ecx+eax+8]` (m_buckets as base); operand-typing/reorder do not flip it.
-// 2026-08-01, the obvious remaining idea also fails: the SIB base is NOT the left
-// operand of the address addition. Writing the addition backwards so the scaled index
-// comes first - `CHashSlot* s = idx + m_buckets;`, `(*(idx + m_buckets))`, and even the
-// commuted subscript `idx[m_buckets]` - is BYTE-IDENTICAL to `m_buckets[idx]`, all four
-// at 99.545456 / size 52. cl canonicalises the tree long before the encoder, so no
-// source spelling can reach this byte. It really is the TU-cumulative state above.
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashElement* node) {
     node->m_owner = this;

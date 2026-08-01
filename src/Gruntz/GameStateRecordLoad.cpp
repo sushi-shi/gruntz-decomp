@@ -55,24 +55,6 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
     } while (0)
 
 // @early-stop
-// 91.76% - COMPLETE, correct reconstruction of the whole 4856-byte deserializer
-// (all 7 serial refs, 3 CStrings, 18 name refs, ~100 scalar reads, the 3x3
-// sub-record loop, both free-list-backed list rebuilds, and the tail event
-// pushes + GetIntDef), verified instruction-by-instruction against the disasm.
-// The callee-saved pinning matches retail exactly (ebx=this, esi=ar, edi=dir,
-// ebp=null-reg) and every opcode / immediate / call target / member offset /
-// branch matches. The residual is purely the stack-FRAME LAYOUT: the recompile
-// reserves a 0x94 frame and assigns the four scratch locals as obj@0x10 /
-// dir-spill@0x14 / id@0x18 / count@0x1c, while retail reserves 0x90 with id@0x10
-// / obj@0x14 / dir-spill@0x18 / count@0x1c. That one-slot-bigger frame + the
-// permuted slot assignment shifts the `[esp+N]` displacement of every scratch
-// access (id/obj/dir/count) across all 28 unrolled blocks + the param load
-// (`[esp+0xa8]` vs `[esp+0xa0]`) - same instructions, different disp byte. This
-// is MSVC5's internal frame-layout choice and is not steerable from source
-// (merging the two count locals dropped 0x98->0x94 but the last slot + the
-// id<->obj permutation persist; reordering the scratch declarations had no
-// effect). The documented large-function regalloc/frame-layout wall; reconstructed
-// in full per the no-stub mandate.
 RVA(0x000555e0, 0x12f8)
 i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     if (ar == 0) {

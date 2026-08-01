@@ -61,8 +61,6 @@ CDoNothingNormal* RealizeCDoNothingNormal() {
 // shared BigActHeight "big-act" de-prioritize tail (the SAME archetype as
 // CSimpleAnimation / CEyeCandy).
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 1;

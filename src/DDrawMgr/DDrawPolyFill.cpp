@@ -15,11 +15,6 @@
 // maxYi, reads the two edge x's, orders them and `rep stosw`s the span with `color`,
 // stepping the row base by the surface pitch. Finally Unlocks the held surface. ret 1.
 // @early-stop
-// FP-scheduling + stack-slot wall (~67%): logic + offsets + the reloc-masked Lock/Unlock/
-// ftol are faithful and the EBP frame now matches (framed profile), but retail reuses the
-// two incoming arg slots ([ebp+8]/[ebp+0xc]) as the prev/cur temps where our cl spills to
-// fresh negative locals, and the x87 endpoint evaluation + edge-slope idiv schedule
-// differently. Not source-steerable; deferred to the final sweep. topic:wall.
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     ClipVtx* prev = &verts[count - 1];

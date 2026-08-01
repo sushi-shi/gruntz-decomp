@@ -174,12 +174,6 @@ typedef enum {
 // LoadString(0x81a9) banner + tick the status message.
 // ===========================================================================
 // @early-stop
-// /GX EH-frame wall (92.75%): full+correct logic, all externs typed/named. Residual
-// is (1) the SEH scope-table representation (retail push Unwind@005dde38 / state 8 vs
-// cl's push $L.. / state 0 - reloc-masked immediates, docs/seh-eh.md) and (2) cl
-// allocates the RECT+CString locals in a 0x14-byte frame vs retail's 0x10, a 4-byte
-// /GX frame-packing residue that shifts the [esp+N] stack offsets (not statement-order
-// or decl-order steerable - tried both). Permuter candidate for the final sweep.
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::FrameSlot28(i32 arg) {
     m_mgr->m_cueSink->PauseAllVoices(); // 0x20a4 -> CGruntSpawnConfig::PauseAllVoices @0x11c7b0
@@ -210,31 +204,6 @@ i32 CPlay::FrameSlot28(i32 arg) {
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================
 // @early-stop
-// DIVERGING CARCASS (0%): the control flow + member offsets are faithful but the
-// codegen is NOT byte-exact yet - retail is 897 instrs, this lowers to ~737. A
-// dedicated rewrite (final sweep) must apply these traced structural fixes before
-// the codegen residue is even reachable:
-//   * zero-register wall: retail pins the 0-constant in EBP (xor ebp,ebp; ebp free
-//     because it is NOT a frame pointer here); cl picks EDI, so every `push 0`/
-//     `cmp x,0` differs. Pervasive; caps the score. Not source-steerable.
-//   * the per-frame sound tick is a __thiscall pair on m_c->m_soundStream (+0x20, the
-//     REAL SoundStream): PurgeVoiceList/TickSubManagers (0x136e20/0x137ac0), NOT cdecl.
-//   * MarkerBegin(now) -> m_beginMarker->Begin(now) (ecx=[esi+0x2e4], call 0x2cc0);
-//     GutsStep() -> m_guts->FrameStep() (ecx=[esi+0x2dc], call 0x21b7) - both are
-//     sub-object thiscalls, not CPlay-this methods.
-//   * FrameTimerBegin(now) -> m_frameMarker->Begin(now) (ecx=[esi+0x3f4], 0x3710);
-//     FrameTimerEnd -> m_frameMarker->End(view, 1) (0x27a2), 2 args.
-//   * ALL the interval one-shots (cue +0x3f8, booty +0x328, ambient +0x338,
-//     win/lose, snapshot +0x4a0) are 64-BIT elapsed tests: retail does
-//     `sub ecx,lo; sbb eax,hi; cmp eax,intervalHi; jl/jg; cmp ecx,intervalLo; jb`
-//     ((i64)(u32)g_frameTime - *reinterpret_cast<i64*>(&m_timerLo) >= *reinterpret_cast<i64*>(&m_intervalLo)), not 32-bit.
-//   * the in-game tail (after the view check) has 2 CPlay this-calls the carcass
-//     omits (0x2e2d(clock), 0x1519(view)) + a 3-arg cdecl(g_gameReg, m_guts,
-//     m_region0Gate) before m_c->m_level->PostStep(); surface flush is a __thiscall on
-//     m_2c, not cdecl Eng_SurfaceFlush.
-// Also a /GX EH-frame + frame-size residue (0x84 vs 0x6c) once the above land.
-// Left as carcass (not touched this pass): a partial rewrite ripples the tight play
-// unit's regalloc (StepScroll-style) for no % gain until ALL of the above are done.
 RVA(0x000c8cf0, 0xc14)
 i32 CPlay::Render() {
     // --- frame entry: clear the per-frame flag, then a `this`-virtual begin. ---
@@ -1297,12 +1266,6 @@ fail0:
 #undef PTR
 
 // @early-stop
-// 94.8%, two register nits: (1) the FIRST `g_gameReg->m_128 = 0` store temp - cl picks
-// ecx, retail eax (the ecx/edx/eax phase of docs/patterns/
-// global-store-temp-alternates-ecx-edx.md, so a temp is missing upstream); (2) retail
-// materializes the grid before the virtual call (`mov eax,[eax+0x70]; mov ecx,eax;
-// mov edx,[eax]`) where cl loads it straight into the receiver (`mov ecx,[eax+0x70];
-// mov edx,[ecx]`). A named local for the grid is FOLDED back by cl (tried).
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
@@ -1373,12 +1336,6 @@ void CPlay::ModeCleanup() {
 // layer / dispatch the bracket-key zoom guts steps. __thiscall(key, flag), ret 8.
 // ===========================================================================
 // @early-stop
-// ~82% identical-return-epilogue tail-merge wall: the whole priority chain + every
-// cmp/call is byte-faithful and all relocs pair, but MSVC5's epilogue merger picks a
-// different set of return-1/return-0 sites to share vs inline than retail (retail
-// inlines the m_hudSuppressed return-1 + shares the two return-0 tails; we do the
-// reverse), cascading a small offset shift. Not source-steerable.
-// docs/patterns/identical-return-epilogue-tailmerge.md.
 RVA(0x000cbaf0, 0x16f)
 i32 CPlay::Vslot0b(i32 key, i32 flag) {
     if (m_hudSuppressed != 0) {
@@ -1729,12 +1686,6 @@ i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
 // scroll-sink game object through the factory's serialize map (validated by
 // GetClassId == CLASSID_SERIALREF), then streams the remaining scalars.
 // @early-stop
-// reloc-masked-extern plateau (SyncWrite19fb's symmetric pair): the field/record
-// Read stream, the freelist recycle + CPtrArray SetSize/SetAtGrow rebuild loops,
-// the registry/map lookups and the load-fail bail are reconstructed in shape/
-// order. Residue is the ~90 archive-Read + collection + map-lookup call operands
-// pairing to differently named retail symbols (the whole referent set is
-// external). Final sweep.
 RVA(0x000d8060, 0x6ce)
 i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
     if (ar == 0) {
@@ -1952,11 +1903,6 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
 // install the rect on the draw-surface and run the world apply-tail. __thiscall.
 // ===========================================================================
 // @early-stop
-// ~95% regalloc wall: the SetRect dispatch, the region-0 re-center block and the
-// apply-tail are byte-faithful with all relocs pairing; only the 5-instruction
-// prologue colors the (m_4, right, bottom) trio eax/ecx-swapped vs retail (retail
-// pins m_4 in ecx and right in eax; we mirror). Tried explicit load ordering.
-// docs/patterns/zero-register-pinning.md.
 RVA(0x000d8c60, 0xea)
 i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
@@ -2046,12 +1992,6 @@ i32 CPlay::ClampViewport(i32 inset) {
 // otherwise install the clamped rect + run the apply-tail. __thiscall, ret 4.
 // ===========================================================================
 // @early-stop
-// 91.3% (was 86%): the frame, the `clamped`-in-ecx merge and the rect-pointer
-// materialization all fell out once the rect became a real COPY (`RECT r = *rp`) and
-// the two mode extents became one SIZE aggregate. Sole residual is a five-register
-// permutation (ecx/eax/edi/edx/ebp) rooted in ONE scheduling choice: retail loads
-// m_guts third, right after m_world and m_mgr, where cl sinks that load to its single
-// use in the ternary. Neither the named-local nor the deleted-local spelling moves it.
 RVA(0x000d8ed0, 0x128)
 i32 CPlay::ClampViewport2(i32 stride) {
     i32 clamped = 0;
@@ -2437,9 +2377,6 @@ void CPlay::DrawWorldFrame() {
 // frame-timer step over the full delta.
 // ===========================================================================
 // @early-stop
-// regalloc wall — full control flow + the fixed-substep loop + 3-arg StepFull
-// calls byte-structure-identical; MSVC colors now/accum into ebx/ebp swapped vs
-// retail and the prologue spill schedule differs. See docs/patterns/zero-register-pinning.md.
 RVA(0x000c9cc0, 0x12e)
 i32 CPlay::DrawWorldFrames() {
     i32 delta = static_cast<i32>(g_frameDelta);
@@ -2702,18 +2639,6 @@ i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
 // ===========================================================================
 
 // @early-stop
-// Logic + control-flow byte-exact through the whole switch/mode/QueryLevelName
-// chain (all if/else fall-through polarities matched); residual ~11% is a
-// register-allocation rotation in the tail SetRect/EngStr_DrawText render block:
-// retail threads the RECT/CString/m_c temps through eax/ecx/edx where cl picks
-// edx/eax/ecx (a consistent 3-register rotation, identical push order + opcodes,
-// only the ModRM reg field differs), plus the basename ptr pushed in-branch vs
-// post-merge. Pure allocator coin-flip; no source spelling flips the rotation.
-// The 3 `jmpl *table(,%eax,4)` rows are jump-table DIR32 displacement artifacts
-// (code bytes identical, reloc-masked). Verified base-vs-target with llvm-objdump -dr.
-// The 8 Gruntz worlds (m_20, 1-based); the line-1 name is LoadString'd from the
-// retail STRINGTABLE (ids 0x81ae..0x81b5, texts recovered from GRUNTZ.EXE .rsrc).
-// Same immediates as the bare labels -> naming is matching-neutral.
 enum World {
     WORLD_ROCKY_ROADZ = 1,       // "Rocky Roadz"
     WORLD_GRUNTZICLEZ = 2,       // "Gruntziclez"
@@ -2956,20 +2881,6 @@ i32 CPlay::DrawLevelInfoText() {
 
 // ===========================================================================
 // @early-stop
-// 361-B map-grid free-list walk. The control flow (the 4 placed-object arrays at
-// +0x3a4, the per-array element walk with the restart flag, the grid (x,y)
-// occupant lookup with the x*7-dword cell stride, the cell-map lookup, the
-// cell-flag clear + CPtrArray::RemoveAt + free-list node return) is a faithful
-// reconstruction of retail's logic. The residual is the dual-exit regalloc/
-// scheduling wall: MSVC5 pins blockIdx/ebx/edi/esi across the nested loops and
-// threads the restart `edi` flag through the block advance in a way the C source
-// can't steer (zero-register-pinning.md). Deferred to the final sweep.
-//
-// CPlay::ClearPlacedObjects (0x0da030) -
-// sweep the 4 placed-object arrays (m_3a4); for each still-occupied grid cell
-// whose map entry is gone (or not type 0x14), clear the cell, remove the object
-// from its array (RemoveAt on the ARRAY base - retail lea ecx,[this+idx*0x14+
-// 0x3a4]), and free the node. Returns the array index on an early-out, else -1.
 RVA(0x000da030, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
@@ -3469,9 +3380,6 @@ i32 GruntzPlayer::Deactivate() {
 // [m_64,m_68]); if the lookup is empty wrap back to the first row.
 // ===========================================================================
 // @early-stop
-// regalloc/save-scheduling wall — logic + control flow identical; retail defers the
-// `push esi`/`pop esi` past the two early returns (into the m_gridDelayCount>dt block) and colors
-// idx/grid into edx/eax swapped vs MSVC here. See docs/patterns/zero-register-pinning.md.
 RVA(0x000d0a60, 0x92)
 i32 CPlay::StepGridWalk(i32 dt) {
     if (m_gridWalkActive == 0) {
@@ -3509,14 +3417,6 @@ i32 CPlay::StepGridWalk(i32 dt) {
 // succeed, outside -> forward to the click-at-point handler.
 // ===========================================================================
 // @early-stop
-// 73.33 -> ~93 (2026-07-29): the viewport rect is copied BY VALUE, not bound by
-// reference - that alone restores retail's ebx zero-pin, the ebp colouring of `y` and
-// the 5-callee-save frame (the "no source lever forces it" verdict was reading the
-// consequence, not the cause). 75 of retail's 80 instructions now pair; the residual is
-// the missing 5-instruction `return <ClickAt result>` epilogue: retail keeps that tail
-// separate AND merges the three `return 1` gates into one block after it, where
-// spelling the tail `return m_guts->ClickAt_ff9d0(...)` makes cl inline all three gate
-// epilogues instead (92 instructions, measured both polarities).
 RVA(0x000ce530, 0xe3)
 i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
@@ -3548,12 +3448,6 @@ i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
 }
 
 // @early-stop
-// 4-byte stack-coalesce wall (~84%, body byte-exact). Return-epilogue tail-merge
-// (paired guards combined with `||`) + a uniform +4 frame shift (sub esp,0x14 vs
-// 0x10): retail packs every local into the 16-byte RECT + reuses dead x/y arg homes
-// for the Probe/Find out-params; this build spills one out-param to a fresh 5th slot.
-// A documented stack-slot-coalesce coin-flip (docs/patterns/stack-slot-coalesce-
-// frame-4b.md), not source-steerable; ZERO logic differences remain.
 RVA(0x000ce660, 0x362)
 i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
     if (m_hudSuppressed != 0 || m_guts == 0) {
@@ -3653,13 +3547,6 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
 // `index` (clamped to [m_64,m_68]) and, if non-empty, latch the e8/delay state.
 // ===========================================================================
 // @early-stop
-// 81.19 -> ~98 (2026-07-29): the three early exits return 0, NOT 1. Retail's gate
-// epilogues are `jne <on>; pop edi; pop esi; pop ecx; ret 0x14` with NO `mov eax,..` -
-// eax already holds the null that failed the test - and only the full-success tail
-// carries `mov eax,0x1`. Spelled `return 1` they all needed the constant, which is
-// what tail-merged the three epilogues into one shared block. 84/84 instructions now
-// pair; the sole residual is the out-param zero-init store position (`mov [esp+8],0`
-// before the two arg pushes instead of after `add ecx,0x10`) - the known-immovable one.
 RVA(0x000d0920, 0xfe)
 i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
     if (m_world == 0) {
@@ -3717,17 +3604,6 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
 //             + clamp the sel rect into the box, then the m_dragEndNotify end-notify).
 // ===========================================================================
 // @early-stop
-// block-placement + min/max-clamp regalloc wall (~35%). Logic, control flow,
-// member offsets, the full call set, the box point-test and BOTH drag-rect clamp
-// ladders are byte-faithful; the RECT-local copy already forced the matching
-// `sub esp,0x10` frame and the goto folds the two snap/inside tails into retail's
-// shared Lf1a. The residual is non-source-steerable codegen choice: (1) retail
-// hoists the cold OUTSIDE-of-box clamp block to the function end (forward-jumped)
-// while MSVC here lays it inline after the box-test; (2) the m_overlayActive/m_dragSnapActive probes
-// color into ecx vs eax; (3) the four min/max ternaries pick the eax/ecx operand
-// for the clamp the opposite way. The block-float matches the family in
-// docs/patterns/nested-if-success-deepest-error-tail.md; the regalloc residual is
-// docs/patterns/zero-register-pinning.md.
 RVA(0x000d0db0, 0x347)
 i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     // box corners declared (uninitialized) up front so the `goto rearm` tail
@@ -3881,14 +3757,6 @@ i32 CPlay::PostActionCue(i32 cueId) {
 // i in [counter, 0x37). Always draws the trailing cap and advances the counter.
 // ===========================================================================
 // @early-stop
-// control-flow/float-schedule wall — prologue + the two cap strips + the per-strip
-// HudStrip pushes + the __ftol column math are byte-faithful; the counter>=0x37 cap
-// branch merges into the trailing-cap tail via a shared landing pad the C if/else
-// can't reproduce 1:1, and the x87 fmul/fild ordering diverges. ~68%.
-// NB retail rets 0x4 (every
-// caller pushes 0; LoadByMode's finale pushes 1). The strip blit is LayerBlitFrame
-// (thunk 0x18ca -> 0x115300); retail also runs 2x an 0x11f570 leaf this
-// reconstruction still lacks (final-sweep item).
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
     static_cast<void>(final);
@@ -3974,13 +3842,6 @@ inline CState::CState() {
 // @confidence: high
 // @source: full-disasm-decode (both ??_7 stamps + the five member ctors + `mov eax,esi`)
 // @early-stop
-// 94.1% (from a 0% stub). Every store, both vptr stamps, the five member ctors, the
-// /GX state ladder 0..4 and the mem-init/body split are byte-faithful. The residue is
-// a pure store-PAIRING order inside each 64-bit timer quad: retail emits
-// lo(+0)/interval(+8)/hi(+4)/intervalHi(+0xc), cl emits strict declaration order
-// +0/+4/+8/+0xc. Not source-steerable - MSVC5 runs mem-initializers in DECLARATION
-// order no matter how the list is written (verified: reordering the initializer list
-// to retail's emission order changed nothing), so the pairing is the scheduler's.
 RVA(0x0008c9d0, 0x2bd)
 // The nine 64-bit timer quads are MEMBER INITIALIZERS, not body statements: retail
 // emits their stores INTERLEAVED with the five member ctors, each group landing
@@ -4097,26 +3958,6 @@ i32 CPlay::Vslot0d(i32 key, i32 flags) {
 // path returns 1 except the overlay-drag guts dispatch tail (returns its result).
 // ===========================================================================
 // @early-stop
-// full+correct reconstruction (was a bare `return 0` stub; 0.29% -> 34.9%). Six
-// steerable codegen fixes landed on the correct structure:
-//   1. nest the no-active-grunt body deepest so the guts-dispatch cold block floats
-//      to the tail (nested-if-success-deepest-error-tail.md): 27 -> 30
-//   2. byte-widen the g_curPlayer marker arg via a `char` Place param (mov cl,[g] +
-//      store-byte/read-dword): 30 -> 32.2
-//   3. order waypoint_cancel before drag_path per retail (cdf36 < cdf6c)
-//   4. route the drag/pick/reset `return 1`s to a shared `ret1:` tail (retail's
-//      0xce2e9), matching its 23 vs my former 25 epilogues: 32.2 -> 33.3
-//   5. cache arg1 x in a pure-read local `xr` for the pre-snap value reads so cl
-//      promotes it to EBX like retail (the arg slot is modified in place by the &x
-//      snap/place calls): 33.3 -> 34.6  (drag_box's first rect-test x stays stack)
-//   6. size FindGruntAt's span-output arg as an 8-byte buffer (2 ints), not a 4-byte
-//      void* - this makes cl reserve retail's 0x20 frame (was 0x1c), so every
-//      [esp+arg] aligns: 34.6 -> 34.9. The "frame-coalesce wall" was a sizing bug.
-// Residual (regalloc, not source-steerable): the marker/drag blocks assign sx/sy to
-// edi/ecx where retail uses ebp/edi, and cl spills the cached CWorld* to [esp+0x10]
-// where retail re-reads m_4 (removing the cache regressed 34.9->33.3 - the re-read
-// cascades worse); plus m_5c `add 0x40`/`[+0x40]` addressing-mode coin-flips.
-// Final-sweep/permuter candidate.
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
     // retail keeps the ORIGINAL click x in EBX for the pre-snap value reads while
@@ -4419,16 +4260,6 @@ i32 CPlay::Vslot13(i32 a, i32 b, i32 c) {
 }
 
 // @early-stop
-// regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): the whole
-// priority chain, the overlay probe, both HUD/world rect hit-tests, the grid-snap
-// math + PlaceMarker/CancelMarker tail are all byte-faithful (the grid math +
-// 7-arg PlaceMarker push match exactly). Residual: MSVC assigns the x-coord to
-// edi and y to ebx where retail pins x->ebx / y->edi (mirror pair) and defers the
-// y-load to the guts-rect site; because the compare ORDER is byte-matched I cannot
-// reorder to flip the pair without breaking the matched guts rect. The swap also
-// spares retail's rect-field spill, so my frame drops sub esp,0x10 (the 3 arg-load
-// displacements + 7 epilogue add esp shift). Pure allocator choice, no source
-// lever. ~81%.
 RVA(0x000ceae0, 0x268)
 i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
@@ -4531,15 +4362,6 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
 //   resolved; the COM slot +0x38 is IDirectDrawSurface::GetCaps and 0x800 is
 //   DDSCAPS_FLIP)
 // @early-stop
-// 90.0% (from a 0% stub). Logic, offsets, both clamp pairs, the save-under BltFast,
-// the CopyRect + DecodeThunk hand-off (whose by-value RECT + i16 arg-6 shape this
-// call site PROVED, taking DecodeThunk itself 61.6 -> 65.1) and the GetCaps/
-// DDSCAPS_FLIP toggle are byte-faithful. Residue is regalloc: retail pins x->ebx /
-// y->ebp and keeps the src-rect pointer in the caller-saved ecx; cl swaps x/y, spends
-// ebx on the `pair` argument and therefore spills y to a 5th local dword (frame 0x28
-// vs retail's 0x24), which shifts every [esp+N] displacement after it. Same family as
-// the neighbouring CPlay @early-stops (docs/patterns/zero-register-pinning.md).
-// ===========================================================================
 RVA(0x000d0b30, 0x200)
 i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
     i32 x = m_cursorX + m_2fc;
@@ -4682,9 +4504,6 @@ i32 CPlay::DrawWorldPresent() {
 // either notify-visible (region-1 gate) or push+present, and flush the draw
 // surface. Migrated from engine_boundary (CPlay).
 // @early-stop
-// reloc-masked plateau (~97%): code bytes exact; residual is the call-rel32
-// operands to the unmatched engine callees (m_guts ClampApply 0x500cb0, the
-// PushView 0x15dc90, surface flush 0x13e850, m_4 RestoreVideoMode 0x8df00).
 RVA(0x000cba10, 0xb0)
 i32 CPlay::Vslot06() {
     if (IsActive() == 0) {
@@ -4857,14 +4676,6 @@ i32 CPlay::Vslot15() {
 // @confidence: med
 // @source: string-xref
 // @early-stop
-// ~93%: complete + correct (the early-out guard, all four dispatch arms - the 1..0x26
-// chip range, the pointer, the flailing-grunt cue arm, and the full 33-case tool-cursor
-// switch - all match, every GAME_CURSORZ_*/helper named). Residual walls: (1) the tool
-// switch's range check - retail emits the signed two-bound form (cmp eax,0xc8;jl + sub;cmp
-// 0x20;ja) where cl folds it to the single unsigned check; (2) the jump-table dispatch is
-// the delinker's `jmp [eax*4+$L]` reloc-typing vs cl's separate DIR32 base (same bytes);
-// (3) the three prefix blocks reload `frame` into a different scratch reg (edx vs eax) for
-// the trailing m_2f8 store. All logic + externs/strings named.
 RVA(0x000d0120, 0x5d8)
 i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     if (this->m_levelId == frame && flag == this->m_dragEndNotify) {
@@ -5111,9 +4922,6 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 // four - also sets `changed` when the edge merely becomes active (its two arms share
 // the timeGetTime tail, which cross-jumping can only do when both set it).
 // @early-stop
-// residual (93.9%): cl canonicalizes the two speed multiplies (it emits the int
-// `fimul` before the double `fmul` whichever order the source spells them, proven both
-// ways), so the FPU/integer interleave differs by two instruction slots.
 
 DATA(0x0024c01c)
 u8 g_scrollLoadFlags; // 0x64c01c  owner def (zero-init .bss)
@@ -5261,13 +5069,6 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // edi/ebx/ebp local to the TOOB block instead of being hoisted for the whole fn). The
 // CString name temp forces the /GX EH frame.
 // @early-stop
-// jump-table-data-overlap wall (33.3%, from 0% stub): the full body is byte-exact vs
-// retail (verified llvm-objdump -dr base vs target — prologue, dispatch, all 58 case
-// pushes, the TOOB/TOOBWATER special path, and the shared destruct-tail all match). The
-// residual is the 194-byte switch data (58-entry index byte-table + 34-slot jump table)
-// which cl emits as separate $L symbols vs the delinker inlining it into the fn symbol
-// at fn+0x218/+0x2a4; the table DATA + the 2 dispatch reloc operands never pair. Not
-// source-steerable (docs/patterns/jumptable-data-overlap.md, cf. LoadPowerupIconSprites).
 RVA(0x000dc6d0, 0x2e0)
 i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 mode, i32 lightGate, CMulti* finishGate) {
     CString name("NORMALGRUNT");
@@ -5694,17 +5495,6 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
 
 // @source: decomp-xref
 // @early-stop
-// /GX shared-return block-layout wall (~90.5%): the logic, both mode branches, the
-// three GRUNTZ_ namespace registrations, the lighting/preview draw, g_resourceInstallActive
-// gating and the vtable-LoadTree/direct-load split are all byte-identical to retail.
-// The residual is where cl places the single return-cleanup epilogue: the recompile
-// makes the ResolvePath-fail path the fall-through (epilogue mid-body at ~0x173) and
-// reaches LoadTree by branch, while retail makes the success path the fall-through
-// (epilogue at the tail); that block-ordering drift cascades stack-offset/branch bytes
-// through the back half. Both `return 0`/single-`goto done` spellings compile identical
-// (block-layout heuristic, not source-steerable). The rest is reloc/EH scoring artifact
-// (differently-named externs, the __except handler-index push, __imp__CopyRect vs the
-// 0x6c44bc pointer). Verified llvm-objdump -dr, base main body vs delinked target.
 RVA(0x000dca70, 0x4a4)
 i32 CState::BuildAssetNamespacePrefixes(
     const CString& name,
@@ -5995,16 +5785,6 @@ i32 CPlay::Vslot09(i32 mode) {
 // m_228 cap) and the +0x68 per-slot table is m_cmdGrid->m_rowCount, both on the
 // canonical CGameRegistry.)
 // @early-stop
-// Exit-block layout FIXED (measured 2026-07-27, 83.22 -> 93.49). base 3 rets / retail 2.
-// TWO edits were needed and only the pair worked: (a) fold the two guards into one
-// positive `if (slot != 0 && rowCount < cap)` so the function has a single `return 0`
-// statement - alone this moved NOTHING; (b) additionally spell the scan as an explicit
-// `i32 i = 0; if (i < markerCount()) { do { ... i++; } while (i < markerCount()); }`.
-// A plain `for` leaves cl duplicating the miss epilogue as the loop's fall-through;
-// the hoisted-guard do-while makes the bottom test branch OUT to the shared miss block
-// and the back-edge an unconditional jmp, which is retail 0x5af1/0x5af5.
-// Residual is register coloring in the gate (registry base edx vs ecx).
-// docs/patterns/zero-register-pinning.md.
 RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     // NO `CGruntzMgr* reg = g_gameReg;` local: naming the singleton makes cl treat the
@@ -6438,8 +6218,6 @@ finish:
 }
 
 // @early-stop
-// /GX list-walk wall: the registration loop + CString error log are faithful, but
-// the 13-arg AddGrunt + CString-temp EH frame keep it reloc-fuzzy.
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
     CObList& chain = m_world->m_childGroup->m_list;
@@ -6829,12 +6607,6 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
 // canonical CDDrawSubMgrLeafScan::m_10 (the holder's +0x28 sound-cue host) and the looked-up
 // descriptor is a LeafCue (LeafCue.h): +0x18 is its interval/display duration.)
 // @early-stop
-// ~67% Lookup out-param zero-init scheduling wall (large unrolled fn): logic is
-// complete and every name string + duration is byte-exact (all relocs pair), but
-// MSVC5 permutes each block's `lea &out` / `out = 0` init / m_c->m_soundRegistry load vs
-// retail (retail hoists the first `lea &out` into the prologue, shifting the
-// out-slot operand 0xc<->0x10), repeating across all 32 blocks. Documented wall;
-// deferred to the final sweep. docs/patterns/outparam-zeroinit-scheduling.md.
 RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     LeafCue* d;
@@ -7024,20 +6796,6 @@ i32 CPlay::SetEffectSpriteDurations() {
 // @dead-code
 // zero-ref (gruntz sema xref --tree): the dev overlay, kept without /OPT:REF.
 // @early-stop
-// 94.72%. STACK-COLOURING wall, and the residual is the allocator's, not the source's.
-// Retail's `lr` lives ON the sprintf scratch buffer: the same slot is a sprintf
-// destination earlier in the body (`lea edx,[esp+0x30]; push 0x612718; call sprintf`),
-// and because that region is address-exposed one of lr's stores survives (lr.top, at
-// scratch+4) while the other three forward straight into dr. Our cl gives `lr` a fresh
-// 0x10 of frame and dead-store-eliminates it entirely, which shifts every later
-// [esp+N] displacement. Nothing in the source expresses that overlay - it is MSVC5's
-// stack allocator reusing a dead array - so there is no spelling to reach for.
-// This previously scored 99.10% by aliasing the scratch buffer as the rect
-// (`RECT* lr = reinterpret_cast<RECT*>(scratch)`), which forced the colouring. That was
-// a mis-model, not a discovery: `scratch` is a char[0x40] sprintf buffer and no dev
-// declared a RECT over it. The honest local stays and the 4.4 points go.
-// (Other measured alternative: CopyRect(&lr,..) emits a real `call ds:[CopyRect]`
-// retail does not have, 98.71%.)
 RVA(0x000cf0a0, 0x567)
 void CPlay::DrawDebugStatsFull() {
     if (g_debugDisplayFlags & 0x20) {

@@ -112,14 +112,6 @@ void CRangeSet::AddFromString(char* str) {
 // runs past the last line (25), scroll the whole 80x25 word buffer up one line
 // (0xa2-byte word copy) then blank the bottom line (0x0720), leaving the row at 24.
 // @early-stop
-// 98.6% (was 91.0). The "cl caches g_monoBuffer in a callee-saved reg / colours the
-// scroll temporaries one register apart" note was wrong: the blank loop's pre-increment
-// spelling (`i += 2;` first, then `buf + i - 2`) made cl HOIST the 0x720 constant into
-// ecx for the loop and push the buffer into edx; MonoClear's post-increment spelling
-// (`buf + i` ... `i += 2;`) keeps 0x720 an immediate and the buffer in ecx, exactly as
-// retail. Residual is 3 rows of the SIB base/index coin-flip shared with MonoClear and
-// the whole CHashBase family (`[ecx+eax*1+d]` vs `[eax+ecx*1+d]`) - measured
-// TU-cumulative state, not a local spelling (8 spellings tested here, 7 in MonoClear).
 RVA(0x00184d50, 0x5f)
 void MonoNewline() {
     g_monoCol = 0;
@@ -154,12 +146,6 @@ void MonoNewline() {
 // 0x184db0 - MONO-console clear: blank the whole 80x25 word buffer (0x0720) and home
 // the cursor (row 0, column 0).
 // @early-stop
-// one row left (99%): SIB role swap ([eax+edx] vs [edx+eax*1]) - operand order can't
-// steer it (8 spellings tested 2026-08-01: &buf[i], i+buf, pre/post increment, u32 i,
-// local buffer pointer, for-loop, row/col hoisted - all identical to the byte). Same
-// family as CHashBase::Prev/Insert/Remove/Last, which is measured TU-cumulative state.
-// The old ~60% "codegen-alias wall" note was stale TU state: it cleared when
-// the Rez*Printf family stopped hand-rolling `(char*)(&fmt+1)` and used va_start.
 RVA(0x00184db0, 0x28)
 void MonoClear() {
     i32 i = 0;

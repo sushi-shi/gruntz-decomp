@@ -18,12 +18,6 @@ DATA(0x002455ec)
 i32 g_cdPromptResult = 0;
 
 // @early-stop
-// ~98%: body byte-exact incl. the /GX frame, both CString temps + the CWaitCursor
-// dtor states. Residual is the return/EH-cleanup tail-merge wall
-// (docs/patterns/identical-return-epilogue-tailmerge.md): retail emits the
-// EndWaitCursor dtor inline at each loop break AND `mov eax,1` inline at the early
-// CD-found return, where MSVC5 here tail-merges the duplicate exits into one
-// shared block. Logic complete; the merge is a cl /O2 layout choice, not steerable.
 RVA(0x0001f9b0, 0x2d2)
 int StartUpPrompt(HWND hWnd) {
     if (IsGruntzCDInAnyDrive()) {

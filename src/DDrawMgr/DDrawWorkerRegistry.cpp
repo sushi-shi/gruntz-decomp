@@ -237,9 +237,6 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
 // dispatch its +0x3c(dir) (a -1 aborts to -1) and bump the count when the value's
 // +0x18 is positive. No EH frame (plain /O2 leaf).
 // @early-stop
-// regalloc/loop-schedule wall: the walk / sprintf-vs-strcpy / +0x4c dispatch + <0
-// abort / Lookup / +0x3c dispatch + -1 abort / +0x18 count are reproduced; the
-// buffer/entry/count register schedule + reloc-masked thunk names are the residual.
 RVA(0x00155160, 0x11e)
 i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = static_cast<CSymTab*>(tree);
@@ -331,10 +328,6 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
 // Map scan: sum each non-null value's GetMemoryUsage(a2) over the entries whose
 // key strncmp-matches `str` (a null/empty `str` matches every entry). /GX frame.
 // @early-stop
-// zero-register-pin wall (~69%): the GetNextAssoc scan, match-all guard,
-// strlen+strncmp compare, and per-value thiscall accumulation all reproduced.
-// Residue: retail pins 0 in edi and holds `raw` in ebx across the body where our
-// cl uses test/immediate + a per-call reload - regalloc coin-flip.
 RVA(0x00155460, 0xe2)
 i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
     CString key;

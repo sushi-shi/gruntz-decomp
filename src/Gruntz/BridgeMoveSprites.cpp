@@ -8,18 +8,6 @@
 #include <Gruntz/TileTriggerLogic.h> // this IS CTileTriggerLogic (m_08/m_0c coord x/y)
 
 // @early-stop
-// switch range-header + inline-jump-table wall (~77%): all six case bodies are
-// byte-exact vs retail (bounds gate, the FindEntry+Play(g_sndCueTag) cue arms and
-// the bare PlaySimple arms; reg assignment matched by computing py(m_c) before
-// px(m_8) so m_c lands in eax). Residual: (1) retail's switch normalizes over
-// [15,116] (`add -0xf; cmp 0x65`) while MSVC tightens mine to [93,116]
-// (`add -0x5d; cmp 0x17`) - the original had explicit empty low cases (15..18 ->
-// the slot-0 default, 19..92 the slot-7 gap-default in the index table) but any
-// `case 15..18: return;` group makes MSVC emit a real block instead of tail-
-// merging to default, misaligning every body (drops to ~27%); (2) the .rdata
-// jump+index tables are emitted inline in the base .text but delinked as separate
-// symbols. Both documented: docs/patterns/switch-jumptable-separate-comdat.md +
-// jumptable-data-overlap.md. Logic complete; not source-steerable.
 RVA(0x00110860, 0x2a0)
 void CTileTriggerLogic::LoadBridgeMove(i32 type) {
     i32 px, py;

@@ -126,19 +126,6 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 f
 // @confidence: high
 // @source: vtable_hierarchy-slot-map+ReadPlane-dispatch+full-disasm-decode
 // @early-stop
-// 96.7%: complete + byte-faithful reconstruction; three small scheduling islands
-// remain. (1) the Lookup out-param zero-init - retail emits `mov [esp+N],0` AFTER
-// both arg pushes AND the this-setup, cl emits it between the pushes (the identical
-// residue RegisterNamed itself is parked on). (2) the `shl eax,2 / push eax`
-// operator-new size: retail interleaves it after the FIRST fmul, cl sinks it past the
-// second. (3) the scroll-origin fild pair: retail loads both ints to registers and
-// spills them to fresh stack temps ([esp+0x14]/[esp+0x10]) before each fild, cl filds
-// straight out of [esi+0x6c]/[esi+0x68] - int locals do not stop cl forward-
-// substituting the load into the fild operand. Everything else (the tokenizer's two
-// char loops incl. the SIB base/index order, the inlined RegisterNamed, the inlined
-// SetTileSizeFromImageSet with its doubled GetAt bounds check, the whole geometry
-// seed block, the CopyRect + view re-derive, both operator-new allocations, the tile
-// copy loop, the column-offset fill and the RebuildPlanes tail) is byte-exact.
 RVA(0x00161640, 0x3a2)
 i32 CDDrawWorkerHost::Read(
     const WwdPlaneHeader* pd,
@@ -273,12 +260,6 @@ i32 CDDrawWorkerHost::Read(
 // the name, alloc the tile grid + column-offset table, tail-call RecomputePlaneCoords.
 // __thiscall, 8 args (ret 0x20), returns 1.
 // @early-stop
-// 94.0% (was 78.3%: the recorded "zero-register-pinning wall" was largely a
-// mislabeled source bug - the `i32 pw = ...; m_viewW = pw;` temporaries in BOTH
-// view-derive blocks. Assigning m_viewW/m_viewH directly and reading them back for
-// the halves took it 78.3 -> 94.0 and made the twin Build EXACT.) Logic/fields/
-// offsets/CFG/args byte-faithful; the residue is the remaining arg->register
-// rotation over the ~20 field seeds (docs/patterns/zero-register-pinning.md).
 RVA(0x001619f0, 0x1f7)
 i32 CDDrawWorkerHost::InitGeometry(
     i32 w,
@@ -377,12 +358,6 @@ void CDDrawWorkerHost::Unload() {
 // +0x0c owner context (declared i32; the reinterpret is the CLoadable ctx handle).
 // ===========================================================================
 // @early-stop
-// 90.48%: identical Lookup out-param zero-init reorder wall as CDDrawWorkerB::
-// Helper - retail emits the `mov [esp+N],0` (val=0) AFTER both Lookup arg
-// pushes (push &val / push key), cl emits it BETWEEN them. Verified byte-exact
-// elsewhere (llvm-objdump -dr): the only differing bytes are that 1-instruction
-// slot. Logic/offsets/both call sites/movsbl-narrowed index all match. Not
-// source-steerable (same as Helper's documented note).
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val;
@@ -522,11 +497,6 @@ void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
 // reuses the width, not the height - reproduced verbatim).
 //
 // @early-stop
-// scheduling/regalloc wall (~88%): body byte-exact, but retail loads arg1 before
-// the callee-save pushes (product in edi) and parks the shiftY accumulator in esi;
-// cl loads m_gridW before the pushes (product in edx) and reuses edi for shiftY.
-// Operand-order swaps don't move it; not source-steerable.
-// ===========================================================================
 RVA(0x00161f00, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
     m_wrapW = m_gridW * tileW;
@@ -576,20 +546,6 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     } while (0)
 
 // @early-stop
-// Complete reconstruction of the 2237-byte toroidally-wrapped tile-grid renderer
-// (~80.6%, up from a 0.1% bare stub). The five-band walk (top row: TL corner /
-// top strip / TR corner; per interior row: left col / interior cols / right col;
-// bottom row: BL / bottom strip / BR), the per-region clip math, the column/row
-// wrap (mod m_gridW / m_gridH), the handle resolution and the BltEx/BltFast
-// callees are all reproduced; the frame (0x94) now matches retail exactly. Parked
-// on a whole-function regalloc/scheduling wall (permuter-confirmed: an operand-
-// order search moved it only 80.613 -> 80.615): retail pins viewX->ebx /
-// viewY->edi where cl swaps them, and reuses the shiftX register (ebp) both to
-// zero-init the src-rect left/top and to hold the deferred ctx->m_surface load
-// where cl keeps the surface live in its own register from the top; the per-site
-// dest-rect operand order (add-then-sub vs sub-then-add) and per-loop counter
-// slot numbering also diverge. Logic + offsets + CFG byte-faithful; a leaf-first
-// regalloc grind is deferred to the final sweep.
 RVA(0x00162010, 0x8bd)
 void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & 2) != 0) {
@@ -715,15 +671,6 @@ i32 CDDrawWorkerHost::Prune() {
 }
 
 // @early-stop
-// throwing-new EH-frame + embedded-vtable-stamp wall: the worker rebuild + the
-// 6-pair init + the ReadPlaneObjects loop are faithful, but (a) the
-// partial-construct exception cleanup frame's trylevel/handler bytes are not
-// source-steerable, and (b) the worker's EMBEDDED sub-object at +0x70 has its
-// vtable stamped manually (g_planeRenderVtbl @0x5f02a8 = ??_7CWwdGridIter, realized
-// in WwdSpatialMgr.cpp; and g_wapObjectDtorVtbl @0x5e8cb4 = the CObject base-dtor
-// table on the fail path). The worker's own +0x00 vptr is ZEROED here (not a
-// polymorphic outer object), so a plain `new CWwdSpatialMgr` cannot express this; the
-// embedded-object-at-offset re-stamp is the only expressible form (wall).
 RVA(0x001628f0, 0x1fc)
 i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     if (base == 0) {
@@ -802,17 +749,6 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 }
 
 // @early-stop
-// 2026-08-01, 75.0 -> 85.8: four transcription bugs fixed (the four record strings
-// were ROTATED across their use sites - retail's worker-cache Lookup key is `logic`
-// [esp+0x18], the sprite lookup is `imageSet` [esp+0x20] keyed by m_gridIndex
-// [esp+0x40] not z, and +0xdc takes `name` [esp+0x1c]; the copy blocks default the
-// terminator index to 0), plus the single record cursor and the header-inline
-// CAniAdvanceCursor ctor. Residual: our cl SHARES the /GX CString-teardown blocks
-// between exits (2 copies) where retail emits one per return site (4 copies, two of
-// which are byte-identical - so cl5 is not cross-jumping them), which also outlines
-// the `src == 0` and `tmpl == 0` bails instead of leaving them inline. No source
-// spelling found that suppresses the share; the return-expression form
-// (`strCursor - (const char*)src` vs `+ 0x11c`) is canonicalised byte-identical.
 RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
@@ -1074,17 +1010,6 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 // camera method called (0x168340 vs 0x168500) and the symmetric mid-point pairing.
 //
 // @early-stop
-// 87.9%, logic byte-exact (the int return + `return 0` guard restored retail's
-// inline epilogues, 83.5%->87.9%). Two residuals: (1) retail SHRINK-WRAPS the
-// callee-save pushes - only ebp/esi before the null guard, edi/ebx after it passes -
-// while this build pushes all four upfront (the positive-gate lever was measured on
-// THESE two and cost 15 points, docs/patterns/positive-gate-enables-shrink-wrap.md);
-// (2) the mid-point `add` loads m_40-first (A) / m_48-first (B) in retail. Measured
-// 2026-07-28: swapping the two `+` operands is canonicalized away (byte-identical
-// both ways, in both functions), and routing the pair through an inlined 2-arg
-// helper - whose args ARE materialized right-to-left - gives 0x48/0x4c-first in
-// BOTH, i.e. it fixes B and cannot fix A. No spelling reaches A's low-offset-first
-// order. See docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00163300, 0x70)
 i32 CDDrawWorkerHost::CenterScrollA() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -1111,7 +1036,6 @@ i32 CDDrawWorkerHost::CenterScrollA() {
 }
 
 // @early-stop
-// 87.9%, same shrink-wrapped-push / member-load scheduling wall as CenterScrollA.
 RVA(0x00163370, 0x70)
 i32 CDDrawWorkerHost::CenterScrollB() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -1224,11 +1148,6 @@ void CDDrawWorkerHost::InitScrollRects() {
 // only the source scan. (That 11-byte hole was filed as "inlined-sprintf/strcpy
 // register scheduling"; fixing it took 92.5 -> 97.0.)
 // @early-stop
-// 97.0%: one register-coloring residue left. Retail parks the tile handle in ecx (the
-// dead m_colOffsets base) and handle>>16 in eax, paying TWO `mov eax,ecx` copies; cl
-// parks the handle in eax (the dead m_tileGrid base, which dies one instruction later)
-// and needs only one copy - a strictly cheaper colouring, so no source spelling asks
-// for retail's. Hoisting handle>>16 into its own local changes nothing.
 RVA(0x00163510, 0x156)
 i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     if (IsLoaded() == 0) { // the class's own vtable slot 5 (+0x14, 0x163a90)
@@ -1288,13 +1207,6 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 // m_colorKey.
 //
 // @early-stop
-// 66.6%, logic byte-exact (the format gate, the index bounds, the palette chain,
-// and the RGB565 pack spelling are the proven-exact SpriteRef idiom). Residual is a
-// whole-function regalloc wall: retail pins `this` in ebp (freeing esi/edi for the
-// rgb/index pair) and accumulates the pack in eax; our cl pins `this` in edi and
-// accumulates in edx. Not source-steerable (the live-range allocation differs once
-// rgb/index come from memory rather than register locals). docs/patterns/
-// zero-register-pinning.md family.
 RVA(0x00163670, 0x95)
 void CDDrawWorkerHost::ResolveColorKey() {
     i32 format = OwnerMgr()->m_drawTarget->m_frontPair->m_bpp;
@@ -1345,14 +1257,6 @@ void CDDrawWorkerHost::ResolveColorKey() {
 // `neg/sbb/neg`, instead of retail's `test eax,eax / jne <shared return 1>`).
 // See docs/patterns/switch-empty-arms-dedup-before-jumptable.md.
 // @early-stop
-// BYTE-EXACT, scored 68% by a tooling artifact - verified with `llvm-objdump -dr` on
-// build/objdiff/base/levelplane.obj against retail 0x163710..0x163752: all 66 bytes
-// agree (only the jump-table DIR32 and the two rel32 call targets are reloc-masked).
-// The score is the delinker/objdiff jump-table symbol split: cl emits the arms under
-// their own `$L<n>` label symbols (the jump table needs DIR32 relocs to them), so
-// objdiff pairs only the first 0x1e bytes of our symbol against retail's whole 0x42.
-// Same artifact as CGameObject::Play @0x151150 (scored 0.00%). MAX 79.27 was the
-// WRONG (compare-ladder) shape; do not revert to it.
 RVA(0x00163710, 0x60)
 i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, i32 kind, i32, i32) {
     if (!s) {

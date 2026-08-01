@@ -41,9 +41,6 @@ i32 CSBI_WarlordHead::SetupImage(
 // if the frame exists, fire its sprite handle's show/hide notifier and (when a
 // non-zero arg2 is supplied) latch arg2 into the handle's m_1c.
 // @early-stop
-// ~92.3% (reloc-residual plateau): code bytes byte-identical to retail; the two
-// `call WhShowItem` (0x14dd90) rel32 are reloc-masked against a differently-named
-// symbol (docs/patterns/reloc-typing-vptr-global.md). Exact once it co-names.
 RVA(0x000eb740, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(i32 show, CShadeTable* palDescr) {
     CDDrawWorker* cfg = m_34;
@@ -96,11 +93,6 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
 // per m_3c) and the indexed frame (table slot m_38, latched into m_30). Each draws
 // at the base origin plus the frame record's own m_rect14.top/m_1c offset.
 // @early-stop
-// 87.7 -> 95.4 via the shared-exit spelling; residual is the two RenderFrame
-// rel32 + g_gameReg DIR32 reloc-name pairing.
-// The countdown gate is POSITIVE-form: retail has ONE `ret` (the idle path
-// tail-merges into the shared bottom epilogue), the early-return spelling gave
-// two - docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x000eb880, 0xbd)
 i32 CSBI_WarlordHead::Render() {
     if (m_28 > 0) {

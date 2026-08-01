@@ -12,11 +12,6 @@
 // Bake the team-color triple for `kind` and cache the shade table. Returns 1, or
 // 0 for an out-of-range kind. __thiscall, ret 0xc.
 // @early-stop
-// jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
-// 927-byte function CODE is byte-exact (dispatch, all 17 case bodies in retail
-// .text order, the RGB565 pack tail, both ret paths); the trailing 17-entry inline
-// jump table scores fuzzy because cl emits local $L-label DIR32 relocs vs the
-// delinked target's self-relocs. ~93.7% unit, the remainder is that data region.
 #include <Io/GameSave.h> // g_savedMenuCmd (ex .cpp extern)
 RVA(0x000e2df0, 0x3f0)
 i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {

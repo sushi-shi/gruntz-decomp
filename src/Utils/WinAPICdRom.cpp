@@ -78,8 +78,6 @@ char CheckCdRomRegistry() {
 // Returns the letter (0 if none). The local RegistryHelper's destructor (Close) runs
 // at scope exit -> the C++ EH frame.
 // @early-stop
-// 98.4%: body byte-exact; residual is the `push 0xb` EH-scope-table value vs the
-// delinked `push 0x0` (same accepted EH-frame artifact as CheckCdRomRegistry).
 RVA(0x0001ffe0, 0x192)
 char GetGruntzDriveLetter() {
     if (s_cdDriveLetter == 0) {

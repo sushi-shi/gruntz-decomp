@@ -83,20 +83,6 @@ HINSTANCE g_appHInstance;
 
 // =====================================================================
 // @early-stop
-// 6445-B /GX C++-EH function; complete carcass, ~5.6%->63.3% fuzzy. The /GX
-// prologue is byte-EXACT (mov fs:0/push -1/push handler/mov fs:0,esp/sub
-// esp,0x428) and the phase-1..4 blocks (coord free-list, Run/Fn2db0 gates, srand,
-// ShowCursor while-loop, "Monolith Productions" registry reads, settings) verify
-// byte-identical vs the target under llvm-objdump -dr (only the reloc-masked
-// call/DIR32 operands differ). Three documented walls cap it: (1) the ~0x29-state
-// `new T`-in-flight EH-state numbering + zero-register/pointer-register regalloc
-// (retail pins the alloc ptr in edi/esi, docs/patterns/zero-register-pinning.md);
-// (2) the heap objects' INLINE constructors (member sub-ctors + field-zeroing
-// blocks, e.g. the ~250-B m_cmdGrid ctor @0x84948) are modeled as extern ctors, so
-// those store runs are absent; (3) objdiff's global alignment DESYNCS at the
-// long multi-way error ladder (docs/patterns/big-seh-fuzzy-desync.md), so the
-// rollup understates the faithful carcass. Deferred to the final sweep: model
-// each heap ctor inline once the child classes are reconstructed.
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 1: coord-pool free list -------------------------------

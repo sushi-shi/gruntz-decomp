@@ -94,15 +94,6 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 // "selected" ring tracks the grunt. Returns 0.
 //
 // @early-stop
-// regalloc/scheduling wall (zero-register-pinning class): the logic is byte-exact
-// but cl pins g_gameReg in a different register than retail (ecx vs edx) and emits
-// the reg->m_68 load before the index lea-chain where retail defers it - the
-// `m_drawn` second condition shifts the register pressure so the deref ordering is
-// not source-steerable (the sibling Toy::Update, no m_1d8 check, reaches 99.3%).
-// Every instruction matches modulo register names. Deferred to the final sweep.
-// (wave5-R7: this zero-reg-pin wall is ultra-TU-sensitive; SerializeMove's byte-neutral
-// chain rebinding to CMovingLogicBase::Serialize nudged its regalloc 99.2->84.8%. The
-// LOGIC is unchanged - only more register-name divergence in the same wall.)
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGruntzMgr* reg = g_gameReg;

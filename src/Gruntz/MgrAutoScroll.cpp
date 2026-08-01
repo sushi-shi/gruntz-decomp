@@ -47,12 +47,6 @@ static i32 RandRange(i32 lo, i32 hi) {
 }
 
 // @early-stop
-// ~60% regalloc wall: logic + control flow are byte-isomorphic to retail (the
-// int64 ScrollTime compare, the x87 view/back-plane stores, the [BackPlane]
-// ScrollDist plumbing and the m_scrollBoundL..0x148 bound writes all match instruction for
-// instruction), but retail pins `pm` in ebx (loaded early between the pushes) and
-// keeps scrollY in its stack home while this cl pins `pm` in ebp / scrollY in ebx;
-// the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;

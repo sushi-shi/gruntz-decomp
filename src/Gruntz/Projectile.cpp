@@ -105,32 +105,6 @@ void CMovingLogic::FinalizeStep(char*) {
 // @confidence: med
 // @source: rtti-vptr / disasm
 // @early-stop
-// The 1-arg spawn ctor CProjectile(owner), 0.63% stub -> ~55%. Reconstructed
-// ADDITIVELY (new overloaded ctors CProjectile(owner)/CMovingLogic(owner); the
-// byte-exact no-arg ctor 0x126e0 + its inline CMovingLogic are UNTOUCHED - verified
-// still 99.05%). The bounds/SetCoords/CProjectile-body region is byte-shaped.
-// Two fixes landed 2026-07-29 (87.9% -> 88.6%): the three vmax slots are SEPARATE
-// assignments through the CMotionState cursor (retail stores +0xd8/+0xe0/+0xe8
-// ASCENDING off the `lea edi,[this+0x38]` it already holds - a chained `a = b = c = v`
-// runs them right-to-left off `this`), and the sortKey test + the m_flags RMW share ONE
-// m_object read.
-// THE REMAINING WALL IS STRUCTURAL AND CROSS-UNIT (proven, not guessed). The call SET
-// matches exactly; only the POSITION of the m_hitList CPtrList(10) ctor differs:
-//   retail: ??0CUserLogic, ??0CMotionState, [??_7CMovingLogic stamp], bounds/SetParams/
-//           vmax/m_148/m_14c/m_moveMode/CMovingLogic::MovingSlot16, m_150/m_154/m_158,
-//           CPtrList(10), [??_7CProjectile stamp], body
-//   ours  : ??0CUserLogic, ??0CMotionState, [??_7CMovingLogic stamp], CPtrList(10),
-//           [??_7CProjectile stamp], bounds/SetParams/... in the BODY
-// A member ctor cannot run after body code, and retail's CPtrList ctor runs AFTER the
-// bounds block and BEFORE the leaf vptr stamp - so in retail that whole block IS
-// `CMovingLogic::CMovingLogic(CGameObject*)`'s own body (inlined here), and the
-// m_150/m_154/m_158 stores are an inlined `CWapX(owner)` BASE ctor, not body assignments
-// (the note below assumed the preceding code was CProjectile's body; it is not).
-// CGrunt::CGrunt @0x47a10 carries a character-for-character copy of the same block,
-// which corroborates it.
-// FIX (deferred - crosses into the `grunt` unit): move the block into the inline
-// CMovingLogic(CGameObject*) in <Gruntz/MovingLogic.h>, spell this mem-init list
-// `: CMovingLogic(owner), CWapX(owner)`, and delete the duplicate from Grunt.cpp.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     // CMovingLogic constructed the real m_motion member. This leaf applies its
@@ -253,20 +227,6 @@ enum ProjectileKind {
 };
 
 // @early-stop
-// x87-scheduling + EH-frame-size wall (~58%, docs/patterns, same family as
-// StepMotion ~70% and gx-scoped-local-eh-frame-size): the prologue, the tile-snap
-// + id stores, the dense jump-table switch (kind 2/9/10/11/21/22 -> the six sprite
-// bases, tail-merged arc-flag commons), the seven CString `base + "N"` concat +
-// geometry-map Lookups, the frame-0 Setup and CacheFirstFrame are reproduced. Two
-// residues: (1) the fxch-laden trajectory-normalisation block (0xdf4db..0xdf6ae:
-// the sqrt / fdiv / fdivr chain, the two sign-of-component fcomp ladders and their
-// interleaved qword stores) whose x87 stack ordering is not steerable from C; its
-// double temps also miss the retail /GX frame by a dword (cl `sub esp,0x18` vs
-// retail `sub esp,0x1c` - tried 0x18/0x1c/0x20 local combos, none lands 0x1c),
-// which shifts EVERY front-half [esp+N] displacement by 4 (opcodes match, disp
-// bytes differ). (2) engine-call/string relocs (operator+/Lookup/CreateSprite/
-// GetDwordDef/CacheFirstFrame reached direct where retail uses ILT thunks). Logic
-// complete; parked for the final sweep.
 RVA(0x000df050, 0x6ba)
 i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
     CString key;
@@ -498,17 +458,6 @@ void CProjectile::RegisterType() {
 // (WINGZ, kind 0x16, additionally loops its flight sound while over the level.)
 //
 // @early-stop
-// x87-scheduling + EH-frame family wall (same as LoadProjectileSprites ~58% /
-// StepMotion ~70%; docs/patterns): the control flow, the WINGZ sound gate, the
-// reached-destination hit-scan + terrain-flag switch (water/death/tier), the
-// LEVEL_DEATHSPLASH/GAME_WATER spawns and the five distance-tier sprite installs
-// are reconstructed. The residue is the dense fxch/fcompp FP schedule of the
-// parabola integration (0xdfeb6..0xdff37) and the distance/sqrt tier ladder
-// (0xdffd7..0xe00e9) - MSVC5 keeps `dist` live on the x87 stack across the eight
-// tier comparisons and pre-computes m_flightDist*0.9 interleaved with the fsqrt, which
-// is not steerable from C source - plus the effect-spawn regalloc (ecx vs edx for
-// reg->m_world) and the unnamed engine-call relocs. Logic complete; parked.
-// ===========================================================================
 RVA(0x000dfd00, 0x6f5)
 void CProjectile::MovingSlot16() {
     if (m_arrived != 0) {
@@ -743,11 +692,6 @@ i32 CProjectile::DetachRenderObj() {
 // into the render position and rounds it into the render objects' screen coords.
 //
 // @early-stop
-// x87-scheduling wall: the sin/cos parabola block (0xe0929..0xe09e1) is a dense
-// fxch-laden FP stack schedule MSVC5 emits from the trajectory expression; the
-// control flow, the muzzle-snap, the expire path and all __ftol rounds match, but
-// the FP body's stack ordering is not steerable from C source. ~70% plateau.
-// ---------------------------------------------------------------------------
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::MovingSlot16() {
     i32 impact = 0;
@@ -802,28 +746,6 @@ step:
 // self cell, when `impact` is set, triggers the grunt's self-impact handler.
 //
 // @early-stop
-// Logic byte-exact end to end (the grid scan, the AABB test, the GetNext list
-// walk, the free-list pull/AddTail, the deliver/self-impact branches, the void
-// epilogue). Residue is a register-coloring difference in the bbox slot pair
-// (projXhi/projYlo land in swapped [esp+0x20]/[esp+0x24] vs retail) and the
-// 8-arg DeliverHit push temps (edx/eax/ecx vs retail eax/ecx/edx) - same values,
-// same push order, different temp registers - plus the three unnamed engine-call
-// relocs (AddTail/DeliverHit/SelfImpact at instantiation-specific RVAs not yet in
-// symbol_names.csv). ~94%, not steerable from C source.
-// One more, from jcc_sieve 2026-07-28 (rets 1 -> 2): retail gives the row loop's FALL-OUT
-// its own epilogue (`cmp eax,0x10c / jl <top>` then pop/ret) where cl merges it with the
-// three inner `return`s into one shared exit and inverts the back-edge (`jge <shared> /
-// jmp <top>`). Retail's layout is [loop][epilogue A][self-cell handler][epilogue B], with
-// the hit-list `return` and the handler both landing on B; ours is [loop][handler]
-// [one shared epilogue]. This is the tail-merge direction positive-gate-enables-shrink-
-// wrap.md does NOT cover (b_ret < t_ret) and it is a WALL: three spellings tried
-// 2026-07-28, all byte-identical at 93.99 - (1) the handler inline in the loop, (2) the
-// handler sunk to a `return; selfcell:` tail below the function's own return, (3) that
-// plus the hit-list return routed to a `done:` label after the handler (retail's exact
-// edge structure). cl5 tail-merges identical epilogues regardless of source position; the
-// duplicate is retail's cl choosing NOT to, and nothing in C selects it. Same wall as
-// EngStr_DrawText/ShowHudMessage (identical-return-epilogue-tailmerge.md).
-// ---------------------------------------------------------------------------
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
     i32 tileY = 0;                            // [esp+0x10]  outer (row) counter
@@ -909,27 +831,6 @@ void CProjectile::ScanTargets(i32 impact) {
 // reinterpreted at use exactly like CUserLogic::SerializeMove does.
 // ---------------------------------------------------------------------------
 // @early-stop
-// The dual-mode switch, every Read/Write field+size, the 7-entry name-ref loop, the
-// type-code-gated map lookup, the g_coordPool m_freeHead splice + AddTail, the inline
-// strlen/strcpy KeyOfValue temps, the g_serialCounter bumps, the base tail-chain and the
-// embedded CWapX record are byte-faithful. Two former "not source-steerable" residuals
-// were real source shapes and are now fixed: (a) ONE `void*` out-slot serves BOTH the
-// name-loop Lookup and the object-id Lookup (retail passes `lea ecx,[esp+0x14]` for both
-// and stores `found = 0` into that same slot); (b) the id ternary RE-READS `out` after
-// the GetClassId call (`mov ecx,[esp+0x14]`) instead of binding it to a local - binding
-// it pinned esi and cost retail's shared zero register (`xor esi,esi` + `cmp r,esi`
-// against `test r,r` at five sites). Likewise the write branch's loop counter and the
-// serialized shadow id are ONE variable (retail shares [esp+0x10]).
-// Residual: our read branch needs FOUR stack slots (out / key / cnt / the down-counter
-// temp) where retail needs three - retail coalesces the 7-down-counter temp with `key`
-// (both live at [esp+0x18]), which no declaration order or scope reproduces. That one
-// extra dword makes the frame 0x118 vs retail 0x114 and shifts every [esp+N] by 4.
-// 2026-08-01 (91.62 -> 94.34, jcc-sieve `#13 jl->jne` closed): the WRITE branch's
-// 7-frame loop needed two changes together - a `CAniElement**` cursor instead of
-// `m_frames[n]`, and a loop counter SEPARATE from the shadow-id variable. Sharing one
-// `n` kept it live past the loop, so cl could not reverse the count and emitted
-// `inc n / cmp n,7 / jl` against retail's `dec / jne`. Both, or neither: the cursor
-// alone bought 1.5 points and left the flip standing.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObject* pObj) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
@@ -1267,15 +1168,6 @@ static inline void TBombGridClear(CGameObject* obj) {
 // to the registry's tile-manager (NotifyMoveAt). Returns 0 on every path.
 //
 // @early-stop
-// 91.12% (was 89.67). The "i64 jl/jg branch-emission order" was NOT unsteerable
-// (jcc_sieve OTHER, 2026-07-28): cl emits the i64 hi-word pair branch-if-FALSE first, so
-// retail's `jl <trailing return 0> / jg <body>` is the POSITIVE form
-// `if (elapsed >= m_duration) { body }` with one shared trailing `return 0` - the
-// early-return spelling emits `jg <body> / jl <return>`. Every path returns 0 anyway.
-// Residue: the coin-flip that pins the bound object (m_object) in eax vs ecx, which
-// cascades into the screen-coord load order at the three inlined grid sites, plus the
-// NotifyMoveAt arg-push schedule (docs/patterns/zero-register-pinning.md +
-// reread-member-view-pointer.md; cy-first reordering regressed it).
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::LoadAttributes() {
     i32 cell = TBombGridCell(m_object);

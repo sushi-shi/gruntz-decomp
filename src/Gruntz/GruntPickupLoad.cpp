@@ -25,14 +25,6 @@
     } while (0)
 
 // @early-stop
-// Lookup out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md),
-// amplified across the ~90 switch cases: prologue/switch-jump-table/case CFG/tail are all
-// byte-correct in shape, but retail SINKS each case's `out=0` store + the `m_c` load PAST the
-// two arg pushes (store lands at [esp+0x28], ours hoists it to [esp+0x20]) — an identical
-// instruction multiset, 2-3 instrs permuted per Lookup. Source-invariant under /O2 (the
-// documented Lookup-family coin-flip); counter-block regalloc (edx<->eax) is the same wall's
-// tail. Logic complete (guard, stats counters, "J" relatch, 90-way pickup switch + MEGAPHONE
-// inner unit-type switch, cue-rect gate, sprite retire, geometry apply). ~47%; final sweep.
 RVA(0x00065e80, 0x12b8)
 i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 countStats) {
     CAniElement* geo; // the resolved pickup anim (retail reuses the dead unused slot)

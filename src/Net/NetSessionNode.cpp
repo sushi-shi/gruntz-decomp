@@ -19,10 +19,6 @@ CNetPlayerListNode::~CNetPlayerListNode() {
 // CString members + the empty ~CObject (grand-base re-stamp) fold in last.
 // /GX frame from the destructible CString members + base subobject.
 // @early-stop
-// 97.6% (was 90.6%): own-vptr stamp now compiler-emitted stamp-first; residual is
-// the /GX trylevel ordering across the two folded ~CString member teardowns vs the
-// grand-base fold - an EH-state-machine schedule detail, not source-steerable. The
-// teardown logic is byte-faithful. Final-sweep candidate.
 RVA(0x00179420, 0x8a)
 CNetSessionNode::~CNetSessionNode() {
     m_id = 0;

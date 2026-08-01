@@ -583,16 +583,6 @@ void CInputDevice::ReleaseDevices() {
 // table (0x20 dwords) then writes the per-mode key codes selected by the m_modeFlags
 // async/buffered flag: the movement quad at [0..3] and the action quad at [0x1c..0x1f].
 // @early-stop
-// epilogue pop-scheduling wall, 94.6%: body + both flag tests are byte-exact (the
-// pointer-local store routes index 0 so cl re-reads m_modeFlags and reuses al=1 across both
-// `if (m_modeFlags & MODE_ASYNC)` tests; see docs/patterns/pointer-store-defeats-flag-cse.md). Residual
-// is only the else-branch epilogue: retail interleaves `pop edi` between the last two
-// DIK stores, cl hoists both pops to the block head. SEARCHED 2026-08-01 and it did not
-// move: 9 hand spellings (all-m_keyTable, all-pointer, mixed, memset, memset-via-pointer,
-// `& MODE_ASYNC != 0`, pointer-indexed second block, pointer only on the last store) plus
-// a 280-cell forests x islands run (46 AST mutations x 48 TU-state trials,
-// `permute variants 0x00133c30 --max-depth 3 --limit 280 --state-trials 48`) - every one
-// of the 280 cells scored exactly 94.5946 with size 201. Genuine scheduler wall.
 RVA(0x00133c30, 0xc9)
 void CInputDevice::SetupKeyTable() {
     u32* keyTable = m_keyTable;

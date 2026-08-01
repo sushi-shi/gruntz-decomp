@@ -13,11 +13,6 @@ RVA_COMPGEN(0x00012130, 0x44, ??1CGruntToyTimeSprite@@UAE@XZ)
 // @confidence: high
 // @source: rtti-vptr
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (94.76%): real polymorphic base, body+offsets
-// byte-identical; the single residual is the leaf vptr re-stamp (mov [esi],&??_7) that
-// MSVC5's /GX EH-state machine sinks into the first throwing call's state 0 instead of
-// retail's eager post-base-ctor stamp. NOT source-steerable
-// (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the final sweep.
 RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);

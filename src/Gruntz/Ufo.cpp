@@ -19,15 +19,6 @@ i32 CUFO::Tick() {
 // @confidence: high
 // @source: rtti-vptr
 // @early-stop
-// dead-spill frame-size wall (~81%): logic/offsets/CFG/the spotlight loop/CreateSprite
-// arg marshaling all match retail (registry path is the canonical m_world->m_childGroup, byte-
-// verified against 0x000b4a90). The single non-steerable /O2 residue: retail loads
-// sy = o->m_screenY and spills it to [esp+0x30] but NEVER reloads it - a DEAD load+spill
-// MSVC5 keeps in retail yet our recompile (same compiler) DCEs, so retail's frame
-// reserves 8 bytes (sub esp,8) vs our 4, shifting every [esp+N] (incl. the EH trylevel
-// slot) by 4 and cascading; making sy "used" would change semantics. Plus the
-// eh-ctor-vptr-restamp-position late-stamp (docs/patterns/eh-ctor-vptr-restamp-position.md).
-// Deferred to the final sweep.
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;

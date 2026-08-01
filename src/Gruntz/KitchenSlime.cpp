@@ -62,12 +62,6 @@ RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 // cycle geometry, and clear the bound sprite's rect.
 //
 // @early-stop
-// inline-strcmp + min/max-polarity + eh wall (docs/patterns/strcmp-eq-bool-local-setcc.md,
-// zero-register-pinning.md, eh-ctor-vptr-restamp-position.md): body byte-faithful
-// (the four unrolled inline-strcmp loops + CString temp EH, the min/max window
-// clamp, the LoadSprites/bute/geometry tail). Residual is the strcmp result-reg
-// alloc, the cmov-vs-branch min/max selection polarity, and the /GX leaf-vptr
-// re-stamp position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
@@ -186,10 +180,6 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // the target tile on overshoot and writing the new grid position back to m_10.
 // The integer scaffolding + visibility/already-arrived blocks are byte-exact.
 // @early-stop
-// x87 FP movement-integrator wall (docs/patterns/x87-fp-stack-schedule.md): the
-// residual is a stack-slot swap (MSVC parks `step` at [esp+8] vs retail's
-// [esp+0x10], swapping the per-iter temp) plus the dead x-clamp redundant-jump
-// schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
@@ -306,10 +296,6 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
 }
 
 // @early-stop
-// Returns int (1 on success, 0 when no walkable tile was found) - the true
-// signature, needed by Tick's `LoadSprites() == 0` test. Residual is the same FP
-// /jump-table stack-frame schedule wall it has carried (retail reserves 0x1c vs
-// our 0x14 - an extra direction-magnitude stack temp). ~69%, logic exact.
 RVA(0x000b3160, 0x339)
 i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_124;

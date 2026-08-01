@@ -291,15 +291,6 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 }
 
 // @early-stop
-// big-SEH wall, same family as RestoreChildren below (docs/patterns/big-seh-fuzzy-desync.md
-// + gx-state-machine-scalar-delete-cleanup.md). 2026-07-29 the ARGUMENT BUG under it was
-// fixed - the guard/SetName argument is arg #2, the path, not the callback laundered
-// fn-ptr-through-void*-through-const char* (retail `mov esi,[esp+0x16c]`; our base read
-// [esp+0x164]) - and `this` now colours to ebp like retail (74.58 -> 76.27). What is left
-// is the /GX state machine: retail hoists the CFileMem vptr into edi and writes the
-// trylevel as a BYTE (`mov byte ptr [esp+0x164],1`) where cl re-materialises the vptr per
-// reject and writes dword states, so the long fail ladder desyncs. Not source-steerable;
-// final sweep with the serializer leaf-first redo.
 RVA(0x00156020, 0x505)
 // ARGUMENT SLOTS CORRECTED 2026-07-29 (found while naming; frame is entry-0x164 after
 // the 3 EH pushes + `sub esp,0x14c` + ebx/ebp/esi, so arg1..arg4 sit at
@@ -392,17 +383,6 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
 // call sequence are load-bearing. Engine callees are reloc-masked external.
 //
 // @early-stop
-// big-SEH wall (same as SnapshotChildren above; docs/patterns/big-seh-fuzzy-desync.md
-// + gx-state-machine-scalar-delete-cleanup.md + eh-state-numbering-base.md): a 1367-B
-// /GX function with a multi-way fall-through reject ladder over the CFileMem serializer
-// temp. The whole carcass (every offset, the embedded-stream Init, the 0x120 header
-// Read, the g_wwdObjIdCounter publish, the ordered child load-op call sequence, the inline-vs-
-// out-of-line ~Serializer split) is reproduced, but at each reject retail destroys the
-// temp via the re-stamped scalar-deleting vtable (mov [esp+0xc],0x5efe30; call
-// ds:0x5efe3c) under an even/odd __ehfuncinfo state pair before a shared ~T tail, while
-// idiomatic scope-exit C++ emits the simple dtor per return -> the long fail ladder
-// desyncs and the trylevel state numbers diverge. Not source-steerable; deferred to the
-// final sweep once the serializer + child classes are fully modeled (leaf-first redo).
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
     if (name == 0) {
@@ -507,27 +487,6 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, i32 mode, i32 typeId, void* paylo
 // @dead-code
 // zero-ref: no caller in .text. Kept and reconstructed rather than stubbed.
 // @early-stop
-// out-of-line ctor/dtor wall: retail INLINES the whole CFileMem construction (base vptr
-// + m_4/m_mode + m_name.Empty(), the CFile member ctor, the derived vptr + m_length/
-// m_offset, then the base field re-init) and both teardown ladders, which only happens
-// if ??0CFileMemBase / ??1CFileMemBase / ??1CFileMem have IN-CLASS bodies (cl 5.0 /Ob1
-// inlines nothing else). Ours are out-of-line in DDrawSubMgr.cpp, pinned at 0x157850 /
-// 0x1578b0 / 0x157980, so cl emits `call` where retail has the expansion. Moving them
-// in-class is the retail-faithful model - retail's own 0x157850/0x157980 bodies are then
-// the COMDAT copies cl emits for an inline it declined.
-//
-// MEASURED 2026-07-29, and it does NOT work with this cl - do not re-try it blind. With
-// all four bodies moved in-class, cl emits the COMDAT copies into THIS obj
-// (ddrawsurfacemgr, the TU that owns the CFileMem locals) instead of ddrawsubmgr, so
-// ddrawsubmgr loses five labelled functions (??0CFileMemBase, ??1CFileMemBase,
-// ??1CFileMem and both ??_G thunks) and the FATAL labels gate fires; pinning them here
-// instead would break the TU linker-order invariant, since 0x1578xx sits past this
-// block. Worse, ??0CFileMemBase then has NO out-of-line copy anywhere: our cl inlines it
-// at all three call sites, where retail's declined it at SnapshotChildren/RestoreChildren
-// (both `call 0x157850`). So the inline-budget decision itself differs, and the in-class
-// form cannot reproduce retail's split. Closing this needs a lever over cl's per-site
-// inline decision, not a body move. Logic here is complete and byte-faithful; the
-// construction/teardown expansion is the whole residual.
 RVA(0x00156ad0, 0x1d2)
 i32 __stdcall
 LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i32 unused) {

@@ -156,12 +156,6 @@ RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 // bute node, and resolve+stamp the draw color (the LoadColors/Serialize tail).
 //
 // @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful (the CUserLogic init, the implicit leaf vptr stamp, the flag RMWs,
-// the name/geo apply, the "A" cache, the color resolve/stamp); the residue is this
-// ctor's own __ehfuncinfo state numbering + the leaf vptr-restamp scheduling
-// position (docs/patterns/eh-ctor-vptr-restamp-position.md). The SAME plateau as
-// CVoiceTrigger / CTimeBomb / the other bute ctors; not source-steerable.
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
@@ -313,8 +307,6 @@ i32 CWormhole::SpawnPartners() {
 // order to 0xa, name + apply the puddle sprite, bind the "A" bute node, snap the
 // owner to its tile center, and seed the placed-state fields (+0x5c/+0x60).
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
@@ -393,15 +385,6 @@ void RegisterLogic() {
 // apply the puddle sprite geometry. Returns 1.
 //
 // @early-stop
-// inverse register-pinning wall (docs/patterns/zero-register-pinning.md): the body
-// is structurally byte-exact, but retail does NOT enregister the `placeIndex` parameter -
-// it re-reads `[esp+0x10]` each use (so `m_pending = 0` is an immediate store and the
-// ApplyLookupGeometry flag is `push $0`). Our MSVC 5.0 caches `placeIndex` in callee-saved
-// edi (extra push edi/pop edi; `m_pending = edi`; `push edi` flag). All offsets,
-// immediates, call args and branch targets match; only the placeIndex caching differs.
-// No init-list/assignment/reorder lever flips the allocator. Deferred.
-// CGruntPuddle::Idle @0x040c10 - the act-"A" slot: retail is the bare
-// `xor eax,eax; ret` (3 bytes). Registered by RegisterLogic below.
 RVA(0x00040c10, 0x3)
 i32 CGruntPuddle::Idle() {
     return 0;
@@ -451,14 +434,6 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
 // flag +0x60; otherwise set the owner's +0x40 low bit. Returns 0.
 //
 // @early-stop
-// register-allocation wall (docs/patterns/zero-register-pinning.md): the body is
-// structurally byte-exact - every offset, immediate (0x939/0x2/0x10000/0x1a0),
-// branch target and call arg matches retail. The sole residual is the callee-saved
-// scratch register: retail allocates `edi` (push esi/push edi) where our MSVC 5.0
-// allocates `ebx` (push ebx/push esi), cascading the name through the tile-index
-// `tx*7`, the `+0x8 |= 0x10000` temp and the list-walk node. The advance-then-test
-// loop ordering was steered to match retail (+`next` local, ~70->71%); the ebx/edi
-// coin-flip is not source-steerable. Deferred.
 RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
     if (m_placed != 0) {
@@ -705,13 +680,6 @@ void CTeleporter_RegisterActs() {
 // block is the SAME archetype as CGruntPuddle::Place's tail. Returns 0.
 //
 // @early-stop
-// inverse register-pinning wall (~88%, docs/patterns/zero-register-pinning.md):
-// every offset / immediate / branch target / call arg / field store is byte-faithful,
-// but our MSVC enregisters the reloaded m_38+0x1a0 pointer + the m_7c->m_bc /
-// g_frameTime values in callee-saved edi (extra push edi/pop edi; folds +0x1a0 into the
-// +0x1c8/+0x1c0 field offsets instead of re-adding 0x1a0; reuses eax for the m_1b4
-// read) where retail re-reads from memory each time. The SAME coin-flip
-// CGruntPuddle::Place / CPlay::ApplyGameOptions carry; no source lever flips it.
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -741,15 +709,6 @@ i32 CTeleporter::Begin() {
 // it. Returns 0.
 //
 // @early-stop
-// ~99% - the whole 786-byte body is byte-identical to retail except a regalloc
-// coin-flip in the final ~7-instruction tail (the m_24c active-cell gate):
-// retail reuses the now-dead ebx (which held the constant 1 for the earlier
-// cmp/m_68 store) to hold `col`, so `row*15 + col` accumulates into edx and the
-// two ResetGoals reads land in eax/ecx/edx; MSVC here keeps `col` in ecx (the
-// pointer-chain register), so the accumulator + the outB/curPlayer + g->m_5c/m_60
-// registers shift by one. Same zero-register-pinning coin-flip
-// (docs/patterns/zero-register-pinning.md) CGruntPuddle::Place / CTeleporter::Begin
-// carry; not source-steerable. Logic + every offset/branch/call-arg byte-faithful.
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

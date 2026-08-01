@@ -108,22 +108,6 @@ RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 // @confidence: low
 // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
 // @early-stop
-// CBattlezDlg::DoDataExchange @0x14d00 - ??_7CBattlezDlg (0x1e8bac) slot 35, +0x8c:
-// the MFC DDX of the Battlez multiplayer-setup dialog (GAME code, 2664 B). Reads config
-// via g_buteMgr ("Battlez_Setup" section: LastMaxGruntz%d / LastDiff%d / LastColour%d,
-// DefaultMaxGruntz) + g_gameReg, populates the dialog controls (the "Computer
-// (easy/normal/difficult)", "Human", "Player", "Serra", "Jebediah" combo/list strings)
-// and drives them via the ::SendMessageA / PTR_GetWindow / PTR_GetWindowLongA /
-// PTR_SetWindowLongA function-pointer trampolines - which is exactly what a DDX does.
-// WIRED (VT1): was the free fn `BattlezSetupDlgInit` (a Ghidra name guess, RVA-homed
-// from src/Stub/ApiCallers.cpp) while THIS class's own `virtual void DoDataExchange
-// (CDataExchange*) OVERRIDE // slot 35` had no definition - the two sat unjoined in the
-// same file. Slot identity is unambiguous: both sibling dialogs put their real
-// DoDataExchange at slot 35 (CBattlezDlgColors 0x179b0, CBattlezDlgCustom 0x180e0), and
-// retail 0x14d00 ends `ret 0x4` == a __thiscall with one pointer arg, i.e. CDataExchange*.
-// Body still parked (>512B leaf-first: ~20 CButeMgr/CString/CGameReg callees + a
-// subclass window trampoline must be modeled first) - the BINDING is fixed, not the
-// byte-match.
 RVA(0x00014d00, 0xa68)
 void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {}
 
@@ -193,16 +177,6 @@ const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
 // ~CBattlezDlgCustom `inline` is what makes /Ob1 inline the teardown here (retail
 // inlined it too - separate ~CString + ~CDialog calls, not one ??1 call).
 // @early-stop
-// EH-TRYLEVEL wall (~90.7%). The vptr-restamp half of this wall is FIXED: making
-// ~CBattlezDlgCustom compiler-generated (the binary's own evidence - retail's dtor carries
-// no re-stamp, and the out-of-line COMDAT is now byte-EXACT) removed the spurious
-// `mov [esp+4],&??_7CBattlezDlgCustom`. What remains is the /GX bookkeeping around the
-// inlined teardown: retail numbers its trylevels 0/1/2/-1 where cl emits 0/1/-1, and the
-// `child != 0` branch polarity flips with it. The ctor/DoModal/GetLength/MakeUpper/
-// GetDlgItem/GetWindow/FromHandle/SetWindowText chain is byte-exact. (Score moved 92.9 ->
-// 90.7 when the stamp went: the extra instruction had been padding the alignment of the
-// tail it now no longer shifts - a scoring artifact, not a regression; the dtor it shares
-// with 0x17140 went 94.4 -> 100.) Not source-steerable; final sweep.
 RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(0);
@@ -302,7 +276,6 @@ void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 // dispatch (docs/patterns/switch-pointer-default-result-var.md).
 // ---------------------------------------------------------------------------
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015ac0, 0x60)
 CWnd* CBattlezDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
@@ -324,7 +297,6 @@ CWnd* CBattlezDlg::GetCtrlA(i32 index) {
 }
 
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015b40, 0x60)
 CWnd* CBattlezDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
@@ -346,7 +318,6 @@ CWnd* CBattlezDlg::GetCtrlB(i32 index) {
 }
 
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015bc0, 0x60)
 CWnd* CBattlezDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
@@ -368,7 +339,6 @@ CWnd* CBattlezDlg::GetCtrlC(i32 index) {
 }
 
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015c40, 0x60)
 CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
@@ -569,9 +539,6 @@ void CBattlezDlg::ApplyColorSlot3() {
 // (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
 // frame unwinds the local CString.
 // @early-stop
-// 96.8%: full logic byte-exact (combo GetCurSel via ::SendMessageA, GetLBText into the
-// local CString, GetWindow(GW_CHILD)/FromHandle/SetWindowText, m_68 latch). Residual is the
-// local CString's /GX unwind vptr/state ordering (same EH-restamp family), not steerable.
 RVA(0x000171b0, 0xca)
 void CBattlezDlg::CopyComboSelToChild() {
     CWnd* combo = GetDlgItem(0x4ff);
@@ -597,12 +564,6 @@ void CBattlezDlg::CopyComboSelToChild() {
 // GetCtrlB(index)->GetWindowText, then measure the resulting C-string. The /GX EH
 // frame guards the half-built local CString.
 // @early-stop
-// trailing inlined-strlen block unmodeled (~69%): after GetWindowText, retail measures
-// the filled buffer with an inline `repnz scas` (using edi as the scan pointer, hence an
-// extra `push edi`) and DISCARDS the result. MSVC drops a discarded intrinsic strlen, so
-// the scas can't be re-emitted without the original (unresolved) use of the length. The
-// missing `push edi` shifts every [esp+N] reference by 4, depressing the byte score even
-// though the CString ctor/dtor + GetCtrlB->GetWindowText + /GX frame are structurally exact.
 RVA(0x00017340, 0x73)
 void CBattlezDlg::ReadCtrlBText(i32 index) {
     CString s;
@@ -628,24 +589,6 @@ static __inline i32 GameRand() {
 }
 
 // @early-stop
-// EH frame-size + regalloc wall (~84%). Complete correct reconstruction: the
-// /GX EH frame, the 4-slot loop, the child->host rect map, the 3x inlined LCG
-// colour, the inline CBrush ctor + inline vptr-stamp dtor chain, the rect-deflate
-// and the NULL-guarded operator HBRUSH select all match by shape
-// (llvm-objdump -dr). Residual is MSVC5 reserving a 0x70 frame vs ours
-// (so dc/EH-state slots shift) and swapping the ecx/edx scratch regs in the
-// strength-reduced *214013 LCG - not steerable from source. The CMultiStartDlg
-// twin (no deflate) lives in MultiStartDlgRoster.cpp and reaches ~95%.
-//
-// The scratch object is a REAL MFC `CBrush` - proven by RTTI: the vtable its
-// inline ctor stamps (0x1e8cf4) carries the COL .?AVCBrush@@, and the dtor chain
-// stamps .?AVCGdiObject@@ (0x1e8cd4) / .?AVCObject@@ (0x1e8cb4). This INLINE
-// default ctor is what forces this obj's ??_GCBrush/??_7CBrush COMDATs (pinned
-// above). Check1be68c was CWnd::IsWindowEnabled (0x1be68c); the "FlashHost" view
-// was the dialog itself (GetItem2c52 -> CBattlezDlg::GetCtrlD @0x15c40 via thunk
-// 0x2c52). The g_p* "Win32 pointer table" externs were the plain dllimport IAT
-// slots - `&::ClientToScreen` loads __imp__ClientToScreen@8 exactly as retail's
-// cached `mov ebp/ebx, ds:[imp]`.
 RVA(0x000160f0, 0x245)
 void CBattlezDlg::FlashCtrlD() {
     CPaintDC dc(this);

@@ -245,12 +245,6 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
 // draw state.
 //
 // @early-stop
-// inline-strcmp + register-pinning + eh wall (docs/patterns/strcmp-eq-bool-local-setcc.md,
-// zero-register-pinning.md, eh-ctor-vptr-restamp-position.md): body byte-faithful
-// (the four unrolled inline-strcmp loops, the CString temp lifecycle + EH states,
-// the snap/bute/time-divide all match retail). Residual is the strcmp result-reg
-// alloc (ebx pinned to 1 across the first loop), the /GX leaf-vptr re-stamp position
-// + the shared dy=0 store fold. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_lastDropTime = 0;
@@ -513,13 +507,6 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
 // CUserBaseLink, so MSVC emits the /GX EH frame.
 //
 // @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful to retail (the CUserLogic init, the anim-set cache, the
-// ApplyName/ApplyLookupGeometry pair, the tile snap, both bute reads + the int->
-// double conversions); the residue is this ctor's own __ehfuncinfo state numbering,
-// the constant-enregistration coin-flip, and the `and al,0xe0` vs `and eax,~0x1f`
-// byte-AND codegen pick. The SAME plateau as CBrickz / the other bute ctors; not
-// source-steerable. Parked for the final sweep.
 RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -616,29 +603,6 @@ void CDroppedObject::RegisterActs() {
 // activation key, and post the tile-hit event to the registry's tile-manager.
 //
 // @early-stop
-// callee-saved-register-assignment coin-flip (~92.5%, docs/patterns/zero-register-pinning.md,
-// topic:wall topic:regalloc): the whole body is byte-faithful (verified base vs
-// target with llvm-objdump -dr) - the fall integration + __ftol, the >m_68 landing
-// inversion, the grid-cell lookup, the (cell&0x900)/(cell&2)/==0x40 split, the
-// fx-mode splash jump table, both CreateSprite/ApplyName/ApplyLookupGeometry splash
-// paths, and the hit/bute/CombatCue tail all match. The sole residual is which
-// callee-saved register holds the long-lived screen-X vs the short-lived grid
-// pointer: retail pins X->edi, grid->ebx; cl pins X->ebx, grid->edi, cascading the
-// modrm register field through the landing block. Not source-steerable (tried
-// reordering the x/grid declarations - identical codegen). Parked for the final
-// sweep.
-//
-// The extent is DELIBERATELY short of this function's switch tables, which is the one
-// exception to docs/patterns/rva-extent-must-include-switch-tables.md. Claiming them
-// (0x21b -> 0x230, the base COMDAT) really does take this function 92.55 -> 96.45, but
-// it makes the DELINKER drop an unrelated relocation elsewhere in this same unit:
-// CDroppedObject::UserLogicVfunc5 @0xc7350 loses the DIR32 on its
-// `mov eax,ds:_g_engineFrameDelta` (the delinked byte becomes `a1 00 00 00 00` with no
-// reloc, so the reference is simply lost), and `assert_relocs` then reports our base as
-// referencing a global "retail never does" - which is backwards, retail's 0xc7351 plainly
-// does. Reproduced both directions: 0x230 -> 1 defect, 0x21b -> 0 defects, nothing else
-// changed. Reloc fidelity outranks match %, so the short extent stays until the delinker
-// is fixed; the 3.9 points are waiting behind that.
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -760,12 +724,6 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
 // throwing CUserBaseLink, so MSVC emits the /GX EH frame.
 //
 // @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-identical to retail (the CUserLogic init, the "A" anim-set cache, the
-// ApplyName/ApplyLookupGeometry pair, the m_38->m_08 RMW, the m_10 render-state
-// seed); the residue is this ctor's own __ehfuncinfo state numbering + the
-// 1-slot callee-saved scheduling delta MSVC coin-flips. The SAME plateau as
-// CBrickz::CBrickz (~92%); not source-steerable. Parked for the final sweep.
 RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -826,13 +784,6 @@ void CDroppedObjectShadow::RegisterActs() {
 // shadow heralds the drop); then raise the object's redraw bit if the anim
 // latched active while idle-clear (same idle tail as CDroppedObject::UserLogicVfunc5).
 // @early-stop
-// tail regalloc coin-flip (98.48%): the whole body is byte-faithful (the Advance
-// call, the ==2 gate, the CreateSprite spawn, the idle check). The sole residue is
-// the m_38 reload in the idle tail: with the CreateSprite branch in front, `this`
-// is dead there and retail REUSES esi (`mov esi,[esi+0x38]`), while cl keeps `this`
-// in esi and loads m_38 into eax. The identical tail matched EXACT in
-// CDroppedObject::UserLogicVfunc5 (no preceding branch); not source-steerable here
-// (local/inline m_object + permute all identical). Parked for the final sweep.
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) == 2) {

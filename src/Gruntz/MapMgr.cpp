@@ -23,14 +23,6 @@ CMapArrayA::CMapArrayA() {
 // bytes, then carve the block into a doubly-linked free list (next @elem+0x14,
 // prev @elem+0x18). Returns 0 on alloc failure, else 1.
 // @early-stop
-// ~71% loop strength-reduction / regalloc wall (the loop-induction family, cf.
-// docs/patterns/loop-invariant-multiply-strength-reduce-vs-memreread.md): the
-// alloc (count*0x24), the three header stores (m_0/m_block/m_count), the pre-loop
-// block->m_prev=0, and the per-element prev/next link writes are all byte-faithful,
-// but retail strength-reduces `e+1` into a second running pointer (next=cur+0x24)
-// and addresses the link fields as next-relative (next-0x10/next-0xc); cl keeps a
-// single `cur` and derefs cur+0x14/cur+0x18. A whole-loop induction-variable pick,
-// not source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
     BrickzNode* block = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
@@ -78,12 +70,6 @@ CMapArrayB::CMapArrayB() {
 // bytes, then carve the block into a doubly-linked free list (next @elem+0x08,
 // prev @elem+0x04). Returns 0 on alloc failure, else 1.
 // @early-stop
-// ~62% loop strength-reduction / regalloc wall (same family as CMapArrayA::Allocate
-// above): the alloc (count*0xc), header stores, pre-loop block->m_prev=0, and the
-// per-element m_prev/m_0/m_next writes are byte-faithful, but retail carries a
-// second running pointer (next=cur+0xc) and writes the fields as next-0x8/next-0x4
-// while cl keeps a single `cur`. A whole-loop induction-variable pick, not
-// source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
     BrickzNode* block = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
@@ -148,10 +134,6 @@ CMapMgr::~CMapMgr() {
 // (m_originX) via the Win32 IntersectRect (of the {0,0,width,height} box with itself),
 // from which m_gridW/m_gridH = the rect width/height. Returns 1, or 0 on any alloc fail.
 // @early-stop
-// alloc/loop spill wall: logic byte-correct (the two new's + null gates, the
-// inline memset, the row-pointer accumulate loop, the two pool inits, the
-// IntersectRect rect build + the m_gridW/m_gridH size compute), but the count*0x1c temp
-// + the rect stack slots spill against retail's slot schedule. Parked for sweep.
 RVA(0x0009ea60, 0x168)
 i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     i32 count = height * width;
@@ -232,10 +214,6 @@ void CMapMgr::Reset() {
 // neighbours via Expand until the open list empties or the goal is popped. On
 // success the result path is recycled to g_brickzFreeList + handed to `list`.
 // @early-stop
-// regalloc wall, ~91%: logic byte-correct (BFS loop + path-walk + free-list pop
-// all match). Residual is the opening bounds-gate's callee-saved assignment
-// (retail pins x1 in ebx for the whole fn, reused at m_startX=x1) and the cell-clear
-// loop's reg/zero choice; no source spelling flips MSVC5's allocator here.
 RVA(0x0009eca0, 0x2bd)
 i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC) {
     i32 ox = m_bounds.left;
@@ -366,11 +344,6 @@ reached:
 // (h = 2*(|gx-ncol| + |gy-nrow|)), parent = node, and Insert() it. Returns 1
 // (the open-list is unchanged only when out of records => 0).
 // @early-stop
-// spill-scheduling + sibling-retest wall, ~79%: logic byte-correct (bounds gate,
-// 4-quadrant corner check, open/closed-record relax, heuristic abs() all match).
-// Residual is the prologue's local-spill count (retail spills ng/ncol/nrow to 4
-// stack slots; MSVC5 rematerializes into 2) + the redundant open-node re-tests;
-// neither flips with a local-pin here. Parked for the final sweep.
 RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     i32 ng = node->m_gCost + cost;
@@ -550,9 +523,6 @@ BrickzNode* CMapMgr::PopFront() {
 // CMapMgr::CellPush - allocate a bucket node from the m_40 free list and link it
 // into the grid cell m_rows[node->m_4][node->m_0]; record the slot in node->m_20.
 // @early-stop
-// regalloc/scheduling wall: branch shape + free-list pop byte-match; only the
-// arg-pointer register (retail defers the `node` load past the 3 pushes -> edi;
-// recompile loads it pre-push -> edx) and the dependent reg chain differ, ~86%.
 RVA(0x0009f470, 0x62)
 void CMapMgr::CellPush(BrickzNode* node) {
     BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
@@ -611,9 +581,6 @@ BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
 // CMapMgr::Drain - move every node off the m_openList list onto the front of the m_30
 // list (re-threaded via m_cellCount/m_openList), then clear the m_openList head.
 // @early-stop
-// regalloc wall: retail materializes &node->m_14 as a base ptr in a callee-saved
-// reg (lea + 3 pushes); recompile uses a direct offset + 2 pushes. Logic
-// byte-correct, ~67% (no source spelling forces the 3rd reg / lea base).
 RVA(0x0009f590, 0x2f)
 void CMapMgr::Drain() {
     BrickzNode* p = m_openList;
@@ -635,10 +602,6 @@ void CMapMgr::Drain() {
 // pushed onto the m_30 active list and the bucket node itself onto the m_40
 // free list; then the cell head is cleared.
 // @early-stop
-// regalloc/addressing wall (same family as Drain): retail materializes
-// &node->m_8 as a callee-saved base ptr (lea + extra reg) and commutes the
-// m_height*m_width imul operand order; recompile uses direct offsets. Logic
-// byte-correct (loop structure + unsigned counter match), ~65%.
 RVA(0x0009f5d0, 0x81)
 void CMapMgr::ResetCells() {
     BrickzCell* cell = m_cellPool;
@@ -668,10 +631,6 @@ void CMapMgr::ResetCells() {
 // (m_cellCount = next, m_openList = prev), repairing the neighbours and the head, then
 // clearing the node's links.
 // @early-stop
-// sibling-guard-retest + regalloc wall: retail keeps redundant `cmp prev,0`
-// re-tests (4-way dispatch from a sequential-if source) and uses 2 callee-saved
-// regs; with no calls to pin the flag MSVC5 folds the re-tests + uses 1 reg.
-// Logic byte-correct, ~75%.
 RVA(0x0009f690, 0x5d)
 void CMapMgr::Unlink(BrickzNode* node) {
     if (node->m_18 != 0) {
@@ -700,9 +659,6 @@ void CMapMgr::Unlink(BrickzNode* node) {
 // doubly-linked bucket list (m_cellPool = prev, m_rows = next), clear node's links, return
 // the slot to the m_40 free list, and (if flag) push node onto the m_30 list.
 // @early-stop
-// sibling-guard-retest wall (same as Unlink): the 4-way prev/next dispatch keeps
-// redundant `cmp prev,0` re-tests in retail that MSVC5 folds with no call to pin
-// the flag. Logic byte-correct, container shape proven; parked for the sweep.
 RVA(0x0009f710, 0xa7)
 void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;

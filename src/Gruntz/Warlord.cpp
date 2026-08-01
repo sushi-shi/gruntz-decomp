@@ -162,33 +162,6 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 // docs/patterns/eh-dtor-vptr-restamp-presence.md
 //
 // @early-stop
-// The restamp wall is DEAD (implicit dtor above): 73.95% -> 85.43%. What remains is
-// NOT a codegen wall - it is a MISSING BASE CLASS, and the residual is its symptom:
-//   retail  push ecx (a dedicated this-spill slot); EH states 1/2; add esp,0x10
-//   ours    no spill slot;                          EH states 0/1; add esp,0xc
-// PROVEN from retail's own EH tables + RTTI (not inferred from codegen):
-//   * ~CWarlord pushes handler 0x5d85a0 -> `mov eax,0x5f8298; jmp __CxxFrameHandler`,
-//     and FuncInfo @0x5f8298 has magic 0x19930520 and **maxState = 3** (unwind map
-//     @0x5f82b8): state0(toState -1), state1(toState 0), state2(toState -1). We
-//     compile only 2 states -> we are missing one destructible SUBOBJECT.
-//   * state 1's funclet @0x1d8578 is `p = this ? this+0x34 : 0; ~T(p)` - the
-//     null-check this-adjust cl emits for a NON-PRIMARY BASE, i.e. a base at +0x34.
-//   * CWarlord's RTTI ClassHierarchyDescriptor @0x5f3818 says **attributes=1
-//     (MULTIPLE INHERITANCE)**, numBaseClasses=4:
-//         CWarlord +0x00 | CUserLogic +0x00 | CUserBase +0x00 | **CWapX +0x34**
-//     while CUserLogic's own CHD @0x5f1fd8 is attributes=0 (single-inh, 2 bases) -
-//     so CWapX is NOT inherited through CUserLogic: it is a SECOND DIRECT BASE of
-//     CWarlord at +0x34. Our header spells that subobject as anonymous padding
-//     (m_pad40 / the TILE_LOGIC_TAIL m_34/m_38/m_3c injection, 0x34..0x40 = 12 B).
-// So the true shape is `class CWarlord : public CUserLogic, public CWapX`. Landing
-// it needs two things this TU does not own: (1) CWapX modeled (no `class CWapX`
-// exists in include/ yet) and (2) SIZE(CUserLogic, 0x30) revisited - a base at
-// +0x34 requires the primary base to occupy 0x00..0x34, whereas UserLogic.h pins
-// 0x30 from "the base ctor's highest write is [esi+0x2c]" (which bounds the
-// INITIALIZED fields, not the size). CBehindCandy/CBehindCandyAni are flagged <MI>
-// too, so this is a ~50-leaf tile-logic-wide structural item, not a CWarlord one.
-// Also entangled: unwind action(0) calls ??1L_8860@@UAE@XZ - still an L_<rva>
-// placeholder shell (src/Gruntz/WorldSoundSet.cpp).
 RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)
 RVA_COMPGEN(0x000107f0, 0x55, ??1CWarlord@@UAE@XZ)
 
@@ -400,9 +373,6 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 //   * the lookup's map address is taken into a local before the out-slot is zeroed, so
 //     the `0` store lands after both argument pushes as retail has it.
 // @early-stop
-// 99.52%. The only residue is the chain half's lookup block, and it is not this
-// function's: CWapX::Chain @0x8c00 - the same code, out of line - carries the identical
-// one at 92.65%. Whatever fixes it there fixes it here.
 RVA(0x00043670, 0xc20)
 i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj) {
     // Two 0x80 buffers: the body buffer every per-anim block formats through, and the
@@ -947,19 +917,6 @@ i32 CWarlord::BuildFortSplashParticles() {
 }
 
 // @early-stop
-// The two cooldown halves are single i64 stores (the zero-extension IS retail's
-// `mov [hi],ebx`; two i32 stores let cl hoist the hi store above the divide).
-// FIXED 2026-07-29: the phase-start stamp read the WRONG GLOBAL - `g_movingSeed`
-// (an unbound `i32` in Grunt.cpp) where retail reads `_g_frameTime` @0x645588, the
-// same clock LoadAttributes2/NotifyFortUnderAttack stamp into this pair. objdiff's
-// reloc row named it outright.
-// Residue is now exactly TWO rows: the `m_value = m_1a0.m_14` store lands one slot
-// EARLY (before retail's `lea ecx,[m_38+0x1a0]` receiver setup instead of after it).
-// Six spellings tried (anim local / no local / prev-temp / cursor pointer / statement
-// swap / m_38 local) - all byte-identical bar the cursor-pointer form, which is worse.
-// The same one-slot store swap is the whole residue of ResolveDeathAnimation @0x455f0
-// and NotifyFortUnderAttack @0x45270, and it does NOT appear in the byte-identical
-// twins RaiseBattleAlert/ResolveIdleAnimation/ResolveBattlecryAnimation.
 RVA(0x00045100, 0x112)
 i32 CWarlord::ResolveMovingAnimation() {
     if (m_a8 != 0) {
@@ -994,13 +951,6 @@ i32 CWarlord::ResolveMovingAnimation() {
 // applied, and act "D" is latched. /GX EH frame from the two CString temporaries the
 // `"GRUNTZ_" + m_54 + "_PANIC"` concatenation builds.
 // @early-stop
-// 95.7% (from 0.55%): COMPLETE. The residual is ONE constant-materialisation choice -
-// cl5 ALSO enregisters the literal 1 (`mov ebx,0x1`, then `cmp [edx+0x134],ebx` /
-// `test bl,al` / `or al,bl` for the magic-static guard), which costs the extra
-// `push ebp` retail does not need because retail spells all four 1s as immediates and
-// pins only the 0. Nothing in C picks which literal MSVC5 enregisters
-// (docs/patterns/const-materialize-into-reg-vs-immediate.md); the guard's two uses are
-// compiler-generated, so the count cannot be reduced from source either.
 RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
     // Both guards are written POSITIVELY around the whole body, not as early returns:
@@ -1050,8 +1000,6 @@ i32 CWarlord::NotifyFortUnderAttack() {
 }
 
 // @early-stop
-// One-slot store swap only (same as ResolveMovingAnimation @0x45100): retail emits
-// `lea ecx,[m_38+0x1a0]` before `mov [this+0x40],edx`, cl the other way round.
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
     if (m_a8 != 0) {
@@ -1114,12 +1062,6 @@ i32 CWarlord::RaiseBattleAlert() {
 }
 
 // @early-stop
-// the voice-cue LOCAL is byte-evidenced (retail `push ebx` + `lea ebx,[edi+0x431]` hoisted
-// above the four viewport compares, and every [esp+N] home shifts by the extra push) and is
-// KEPT even though objdiff's alignment score fell 92.1 -> 83.7: the prologue, the saved-reg
-// set and the cue hoist now match retail exactly, and the residue is the same
-// ecx/edx Setup-pair pool phase as ResolveMovingAnimation @0x45100 plus the register
-// renames it cascades. MAX 92.06 is preserved by the ledger.
 RVA(0x00045960, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {
     if (m_a8 != 0) {
@@ -1162,9 +1104,6 @@ i32 CWarlord::ResolveIdleAnimation() {
 }
 
 // @early-stop
-// 90.3% -> better: the voice-cue id is a LOCAL computed before the viewport test (retail
-// hoists `lea ebx,[idx+0x42e]` above the four compares, which costs it a `push ebx`).
-// Residue is the same Setup-pair temp phase as ResolveMovingAnimation @0x45100.
 RVA(0x00045b60, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
     if (m_a8 != 0) {

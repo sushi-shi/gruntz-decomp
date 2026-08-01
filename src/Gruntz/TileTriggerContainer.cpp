@@ -123,14 +123,6 @@ void CTileTriggerContainer::DtorBase() {
 // @source: full-disasm-decode (jump table 0x516240 read out of .rdata; all six ctor
 //   ILT thunks resolved; the 9-arg vtable +0x04 call matches BuildSmall exactly)
 // @early-stop
-// BYTE-EXACT, scored 95.05%. Verified instruction-for-instruction with
-// `llvm-objdump -dr` on build/objdiff/base/tiletriggercontainer.obj against the
-// retail 0x115f60 bytes: every opcode, every displacement and every EH-state store
-// matches; the only base-side differences are unresolved reloc placeholders
-// (??2/??3, the six ctors, ??_7CTileTriggerSwitchLogic, __except_list). The residual
-// is the known delinker jump-table artifact - the `jmp [eax*4+<table>]` DIR32 points
-// at a size-0 duplicate symbol for the .rdata table, so objdiff cannot pair those
-// bytes (docs: delinker-jumptable-dup-symbol-undercount). Nothing to fix in source.
 RVA(0x00115f60, 0x300)
 CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     i32 tag,
@@ -213,17 +205,6 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
 // CTileTriggerWiring::AddLogicDefaults  (0x1163b0)
 // ===========================================================================
 // @early-stop
-// Register-allocation wall (topic:regalloc). The forwarder structure is faithful -
-// push the four trailing ids, build six in-place zeroed 16-byte param blocks, push
-// the five leading ids, tail into AddLogic - and the zeroing-ctor temps reproduce
-// retail's shared-zero-register stores (MSVC5 will NOT value-init `CTrigParam()`,
-// so the explicit ctor is required: a no-ctor POD copied garbage, 27%->76%). The
-// residual is purely which registers cl picks: retail loads the forwarded ids
-// THROUGH ebx (reused as the block pointer) and keeps exactly FOUR zero regs
-// (eax/edx/esi/edi) live across all six blocks; cl loads through ebp and spends a
-// FIFTH zero reg (ebx), so every arg-load/zero-store operand shifts. A pure /O2
-// regalloc coin-flip with no source lever. ~75.9%, logic complete; deferred to the
-// final sweep.
 RVA(0x001163b0, 0xb2)
 void CTileTriggerContainer::AddLogicDefaults(
     i32 tileType,
@@ -398,11 +379,6 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
 // and appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
 // ---------------------------------------------------------------------------
 // @early-stop
-// /GX operator-new wall (~43%): the RezAlloc + placement-ctor + exception-cleanup
-// trylevel guard around the partially-constructed heap element is not reproducible
-// with a plain new (distinct from the member-teardown dtor frame, which IS
-// steerable - see eh-dtor-model-members-as-destructible.md); field-fill + Notify +
-// AddTail identical.
 RVA(0x00116a40, 0xf5)
 CTileActionEvent* CTileTriggerContainer::AddToList3(
     i32 actionCode,
@@ -447,11 +423,6 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
 // appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
 // ---------------------------------------------------------------------------
 // @early-stop
-// RezAlloc + placement-ctor /GX wall (~49%): twin of AddToList3 - retail carries the
-// ctor-in-flight EH frame (push -1/fs:0 + trylevel + shared jmp epilogue) that MSVC5
-// won't emit for the RezAlloc+ctor pair; switch flag-fill + Notify + AddTail are
-// byte-identical (scores above the no-switch twin AddToList3 at 43%).
-// See docs/patterns/rezalloc-placement-new-no-eh-frame.md
 RVA(0x00116b80, 0x105)
 CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     i32 actionCode,
@@ -513,14 +484,6 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
 // alloc/double-init failure (vtable-stamped + freed).
 // ---------------------------------------------------------------------------
 // @early-stop
-// /GX operator-new wall (~29%): the RezAlloc + placement-ctor + exception-cleanup
-// trylevel guard around the partial heap element is not reproducible with a plain
-// new; field-fill + rep-movs + AddTail identical.
-// ARG ORDER FIXED (2026-07-14, retail stack reads): the 9-dword matrix source is
-// the FOURTH arg (rep movs esi=[esp+0x34]=arg4), matching the byte-proven caller
-// CPlay::ScanBuildTiles (m_164, m_168, m_4, &buf, m_11c, m_118, m_130) and the
-// sibling AddLogic mapping (m_08<-m_164, m_0c<-m_168, m_10<-m_4). The old def had
-// block9 third and folded two args into one.
 RVA(0x00116cf0, 0x111)
 CGiantRockLogic* CTileTriggerContainer::AddToList1(
     i32 tileX,
@@ -753,12 +716,6 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
 //                inline + TtcMark::Serialize); close with Method117e70.
 // ---------------------------------------------------------------------------
 // @early-stop
-// /GX serialize-walk wall (~30%): 748-byte EH function; the inline RezAlloc + ctor for
-// the m_list3 mark (op 7) hits the same RezAlloc+placement-ctor /GX wall as AddToList3
-// (no ctor-in-flight EH frame on MSVC5), and the four near-identical list-walk loops +
-// vtable serialize calls schedule their node cursors differently from retail.  Logic +
-// list/helper dispatch + count read/write identical.
-// See docs/patterns/rezalloc-placement-new-no-eh-frame.md
 RVA(0x00117280, 0x2ec)
 i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
     if (s == 0) {
@@ -865,23 +822,6 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
 // the container's serialize walk (117280).
 // ---------------------------------------------------------------------------
 // @early-stop
-// switch jump-table-vs-cmp-tree wall (~57%): logic identical; retail lowers the
-// 8-tag switch to a jmp[tbl+(tag-1)*4] table, the recompile to a range-check tree
-// (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
-// The jump table at 0x5176b4 was READ (2026-08-01): cases 1..7 -> 0x117666, case 8 ->
-// 0x117686, and those two blocks are BYTE-IDENTICAL (same four pushes, same
-// `call 0x277f`) - they differ only in which exit each uses. So the jcc-sieve rows
-// `#1 jle->ja=dest` and `#3 jne->je=dest` are the tree-vs-table lowering, NOT a
-// missing case handler; there is no behaviour difference to fix here.
-// Spelling levers TRIED and rejected, each rebuilt + measured:
-//   * different if/return spellings per arm - still merged, 57.31;
-//   * retail's OPPOSITE gates (`test eax,eax / jne <ret 1>` vs `.. / je <ret 0>`) to
-//     stop the merge - emits two cmp-tree bodies instead, 57.31 -> 39.02;
-//   * `default: goto fail;` with the shared tail - kills the neg/sbb/neg but
-//     duplicates the tail, 40.00.
-// cl merges the arms before the density decision, and that merge is not
-// source-steerable while the bodies are equivalent. The table is cl's lowering
-// decision, not a source shape.
 RVA(0x00117630, 0x82)
 i32 __stdcall
 SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o) {
@@ -914,9 +854,6 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
 // 0x113a90); returns success.  __stdcall helper of the serialize walk (117280).
 // ---------------------------------------------------------------------------
 // @early-stop
-// switch jump-table-vs-cmp-tree wall (~63%): logic identical; retail lowers the
-// 6-tag switch to a jmp[tbl+(tag-0x15)*4] table, the recompile to a cmp tree.
-// See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117710, 0xa6)
 i32 __stdcall
 SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o) {
@@ -973,13 +910,6 @@ static void* RegLogicTail(
 }
 
 // @early-stop
-// 0x47f (1151 B) /GX compact-switch factory. The body reproduces the reader read, the
-// dense id 1..26 switch (the documented MSVC byte-index + jump-table wall: id->case map
-// recovered from 0x517cbc/0x517c80), every per-case Rez-alloc + ctor + register + owner
-// stamp, and the id 21 board-tile gate. The plateau is the jump-table/reloc-typing wall
-// + the per-`new` /GX trylevel state machine (each case carries its own EH state, which
-// MSVC tail-merges differently from the helper-factored spelling here) + the differently
-// -named ctor/register reloc operands. Logic complete; byte-match parked for the final sweep.
 RVA(0x00117800, 0x47f)
 void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 typeId, i32 pObj) {
     if (reader == 0) {
@@ -1119,14 +1049,6 @@ i32 CTileTriggerContainer::LoadFlag74(CFileMemBase* s) {
 // the first hit, else 0. CONTAINER method (TriggerMgr drives it on m_2e4).
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc wall (~76%): logic exact, inner loop + ProbeCell call/regs match.
-// Retail reserves an 8B frame (sub esp,8), keeps the inner bound py_end in a
-// callee-saved REGISTER (ebp, hoisted once) and spills px/base to stack, whereas
-// MSVC5 keeps px/base in registers and reloads py_end from the frame each inner
-// step. The strength-reduced form (base += 0x100 accumulator) reproduces retail's
-// outer tail but flips the same 2 callee-saved registers the other way (72%), so
-// the plain double-for is the closest. Which of {px,base,py_end} wins the two
-// callee-saved regs is a non-steerable regalloc pick. Final-sweep.
 RVA(0x00117ec0, 0x7f)
 CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
     for (i32 px = x - 1; px < x + 2; px++) {
@@ -1154,8 +1076,6 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
 // 3x3 neighborhood.  Returns 1 on success, 0 only from a failed fallback.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc wall (~78%): logic identical; retail pins key in edi / this in esi,
-// the recompile swaps them (esi<->edi), propagating through the body.
 RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     i32 key = (tileX << 8) + tileY;

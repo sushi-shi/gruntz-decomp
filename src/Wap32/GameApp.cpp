@@ -73,22 +73,6 @@ CGameApp::CGameApp() {
 }
 
 // @early-stop
-// 97.28%, relocs 7/7, and the whole residual is SIX bytes with one cause: cl treats
-// `pCreateStruct` as a register variable and retail treats it as memory.
-//   retail  reads it fresh into the scratch eax for the hInstance guard
-//           (`mov eax,[esp+0x1c] / cmp / je / mov eax,[eax+0x4]`), throws it away, and
-//           loads `mov esi,[esp+0x1c]` ONCE at the merge below the wndclass copy.
-//   cl      pins it in esi from inside the guard. `rep movsd` for the WNDCLASS copy
-//           then clobbers esi, so it has to re-establish it - which costs a duplicated
-//           `mov esi,[esp+0x1c]` (4 B) plus a `jmp` (2 B) to skip that copy on the other
-//           path. 473 B vs retail's 467, 36 blocks vs 34.
-// Not steerable from the guard: four spellings (the flat `&&` chain, fully nested ifs,
-// explicit `== 0` comparisons, and the last clause split into its own if/goto pair) are
-// BYTE-IDENTICAL at 97.283950 / 473, on top of the 16-cell guard-site matrix a previous
-// lane ran (also all 97.284). Negating the create-struct if/else costs 4.8 points.
-// Hoisting the read into a local is not writable here at all: the function's `goto Fail`
-// chain means MSVC5 rejects any initialised declaration after the first goto (C2362), and
-// the declare-then-assign form just re-creates the same live range.
 RVA(0x0013d5d0, 0x1d3)
 i32 CGameApp::InitInstance(
     GameInfo* pGameInfo,
@@ -273,17 +257,6 @@ void CGameApp::InitializeDefaultWindowClass() {
 }
 
 // @early-stop
-// 99.15%, size 267 == retail, relocs 2/2, ONE 3-row hunk. The final store block is a
-// chain of memory-to-memory copies; retail allocates the SAME scratch (eax) to all
-// three (`load eax / store / load eax / store / load eax / store`), cl alternates
-// eax,ecx,eax and the pairing pass then hoists the ecx load above the hInstance store.
-// Every long-lived value IS allocated as retail (ebx=x, edi=cx, ebp=cy, edx=exStyle,
-// ecx=style; hMenu/y spilled to the same [esp+0x10]/[esp+0x14] slots) - only the
-// short-lived copy temp differs, so there is nothing above it to fix. A 216-cell
-// Cartesian over the store-block spelling (explicit temps for hInstance/hMenu/y, a
-// CREATESTRUCTA* alias), the hMenu declaration, and the style/x/y declaration types
-// scored FLAT at 99.146670 / size 267 in 180 of 216 cells; the only movement was the
-// pointer-alias option, which REGRESSED to 80.35 / 263. Not source-steerable.
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
     // retail: `mov ecx,0xc; xor eax,eax; lea edi,[esi+0x210]; rep stosd` == an inline

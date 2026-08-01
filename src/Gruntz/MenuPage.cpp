@@ -72,10 +72,6 @@ void CMenuPage::Clear() {
 // ResolveSubPage: look `key` up in the owner's catalog map, cache the resolved
 // entry in m_subPage, and return whether it was found.
 // @early-stop
-// ~90.5% - schedule coin-flip (topic:scheduling): body byte-exact and identical in
-// shape to CMenuPage::Configure's catalog Lookup; the sole residual is MSVC5
-// emitting the `mov [slot],0` init AFTER both call-arg pushes (retail) vs between
-// them (cl). Permuter confirmed no source spelling reorders it (90.238 -> 90.238).
 RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
@@ -313,10 +309,6 @@ i32 CMenuPage::FocusPrev() {
 // place each via its vtable Place, render selected ones through the host, and
 // accumulate the running y.
 // @early-stop
-// scheduling tail (~99.98%, 231/232 B): the whole body is byte-identical except
-// MSVC swaps which of two interchangeable registers (edx/edi) holds the two
-// commutative `m_offsetY + m_rectTop` operands at the y-init; not source-steerable (operand
-// order, hoisting, and raw-vs-member access all canonicalize to the same pick).
 RVA(0x00183b60, 0xe8)
 i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
     if (m_flags & 4) {
@@ -401,13 +393,6 @@ i32 CMenuPage::CanWrap() {
 // it (vtable +0x24), render the selected one (host Draw) and advance x/y, wrapping
 // to a new column every m_rowsPerCol rows.
 // @early-stop
-// 8 bytes: the y-init's two loads land in the opposite registers. Retail
-// `mov edi,[ebp+0x38](m_rect.top); cdq; mov esi,[ebp+0x5c](m_offsetY)`, cl emits
-// them swapped, so cl's `add edi,esi` starts from m_offsetY. cl canonicalizes the
-// commutative `+` and IGNORES source order: `top+offsetY`, `offsetY+top`, the
-// two-statement `y=top; y+=offsetY`, a hoisted `y0` local, and splitting the two
-// halves around the x computation ALL emit the identical stream (tested
-// 2026-07-28). Same pick as the sibling Layout (0x183b60). Logic complete.
 RVA(0x00183e50, 0x11c)
 i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
     i32 x0 = m_rect.left;
@@ -742,8 +727,6 @@ CMenuItem2* CMenuPage::AddItem2(
 // like AddItem2, but the new item links its parent context (item+0x30/m_1c) on
 // success. `new CMenuItem2()` folded from the split RezAlloc+placement-new (49%->58%).
 // @early-stop
-// 58%: same inlined-base-ctor EH-trylevel-scheduling residual as AddItem2, amplified
-// by the extra parent-link stores (docs/patterns/rezalloc-placement-new-no-eh-frame.md).
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(
     const char* name,

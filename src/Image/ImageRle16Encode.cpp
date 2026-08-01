@@ -6,29 +6,6 @@
 #include <DDrawMgr/DDrawShadeBlit.h> // the real owner (ex the fake CImageRle16 view)
 
 // @early-stop
-// FPU-free but heavy (65.4%): the palette->16bpp table build, the two-pass row walk
-// (size then emit), the literal-run table expansion and the byte-granular token copies
-// are byte-faithful. Residual is the MSVC5 8-bit narrowing on the palette pack -
-// retail keeps each channel in a byte register (`shr dl,cl / movzx dx,dl / shl edx,cl`)
-// while cl spills one to `[esp+0x17]` (frame 0x214 vs 0x20c) - plus `this` in ebp vs
-// edi and the scratch-index scheduling across the two passes. Completing each OR term
-// before the next (the BlendRange lever) was tried and scored LOWER, 62.5%.
-//
-// ROW-END ODDITY, DELIBERATE - DO NOT RECONCILE. The two `x >= m_width - 1`
-// tests below are retail (0x149694 and 0x14973d: `mov edx,[ebp+4] / dec edx /
-// cmp ...,edx / jl`). The SAME token grammar decoded by CRezImage::DecodePidData
-// @0x176597 ends a scanline at `x >= width`, no `- 1`. Both are retail.
-//
-// MEASURED (tools/gruntz-oracle rle16), so this is settled, not a worry:
-// CDDrawShadeBlit::Build memcpy's the PID skip/fill stream into m_rleData
-// verbatim and only calls this function when m_srcBpp == 2, which requires
-// NEITHER PID_SRC_8BPP_SHADE (0x40) NOR PID_SRC_8BPP (0x200). That leaves
-// 0 of 6,940 skip/fill sprites in the demo archive and 5 of 13,037 in retail
-// (AREA8\IMAGEZ\UFO\FRAME001..005, 64x64, flag word 0x01a5). On all five the
-// two rules walk the stream identically - same rows, same byte count. They can
-// only diverge when a row ends with a one-pixel token, and no shipped stream
-// does. So do NOT "fix" either side to match the other: there is nothing to
-// fix, and changing this one would cost bytes for no behavioural gain.
 RVA(0x001495d0, 0x1a6)
 void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     u16 table[256];

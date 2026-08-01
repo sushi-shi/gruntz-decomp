@@ -136,10 +136,6 @@ CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
 // CreateNamed_1593e0 (__thiscall, ret 0x1c => 7 args). Resolve `name` through the
 // level string map to a value, then create the 7-arg kind with it as arg5.
 // @early-stop
-// 93.5% - logic byte-exact. Residual: MSVC5 schedules the `val = 0` pre-init store
-// BETWEEN the two Lookup arg-pushes (push &val / [val]=0 / push name) where retail
-// emits it AFTER both pushes. A non-steerable /O2 statement-scheduling coin-flip
-// (permuter + map-hoist both tried). Shared with CreateNamed_1595b0/159a10/166780.
 RVA(0x001593e0, 0x53)
 CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
     int id,
@@ -191,7 +187,6 @@ CDDrawChildGroup::CreateObject_159440(int id, int sortKey, AnimWorkerObj* tmpl, 
 // CreateNamed_1595b0 (__thiscall, ret 0x10 => 4 args). Resolve `name` -> value and
 // create the 4-arg kind with it substituted for arg3.
 // @early-stop
-// 92% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x001595b0, 0x44)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateNamed_1595b0(int id, int sortKey, const char* name, int stateFlags) {
@@ -205,13 +200,6 @@ CDDrawChildGroup::CreateNamed_1595b0(int id, int sortKey, const char* name, int 
 // + construct, register it (InsertSorted), and - when `flags & 0x200000` - kick the
 // worker's m_notify. __thiscall, 6 stack args (ret 0x18).
 // @early-stop
-// ONE instruction: retail CALLS WwdRegion's ctor COMDAT (0x15b2b0) for the +0x9c
-// member here, while our cl expands it (`mov [ebp+0x18],edi` in place of the call).
-// The same INLINE visibility is what takes CreateObject_159250/159440 to EXACT
-// (there retail expands it too). The WWDREGION_OOL_CTOR guard is per-TU and these
-// three factories share this TU, so the two demands are in direct conflict and
-// MSVC5 has no per-callsite noinline. docs/patterns/ob1-inline-budget-divergence.md
-// ===========================================================================
 RVA(0x00159600, 0x1ab)
 CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
     i32 id,
@@ -317,14 +305,6 @@ i32 CDDrawChildGroup::AttachSprite(
 // instead of inlining it - the B ctor is the biggest of the four, so retail's inline
 // budget ran out one level up. __thiscall, 6 stack args (ret 0x18).
 // @early-stop
-// cl-5.0 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
-// the body/types/EH states are right, but our cl EXPANDS CGameObject's ctor here
-// where retail's CALLED its COMDAT (0x15b390). The CGAMEOBJECT_OOL_CTOR guard that
-// fixes the OTHER two calling sites (wwdgameobjectrender 0x166640, levelplane
-// 0x162af0) is per-TU, and CreateObject_159250/159440/159600 in THIS file need the
-// opposite (they are EXACT / 95.7 % via the expansion). MSVC5 has no per-callsite
-// noinline, so this one site cannot be spelled both ways.
-// ===========================================================================
 RVA(0x001598d0, 0x13d)
 CWwdGameObject* CDDrawChildGroup::CreateObject_1598d0(
     int id,
@@ -351,7 +331,6 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_1598d0(
 // CreateNamed_159a10 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
 // the lookup produced nothing, bail; else create the 6-arg kind with the value as arg5.
 // @early-stop
-// 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x00159a10, 0x57)
 CWwdGameObject* CDDrawChildGroup::CreateNamed_159a10(
     int id,
@@ -568,15 +547,6 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
 // and RectsOverlap, then a BOX overlap (skipped when j&4 or i&0x80) via
 // BoxesOverlap. __thiscall, no args.
 // @early-stop
-// 87.9% - logic/CFG/field-offsets/arg-order byte-identical. Residual is a
-// zero-register-pinning / dead-spill wall: retail spills `this` to [esp] at
-// entry and reloads it (dead) before the stdcall BoxesOverlap, giving a 0x30
-// frame; our cl never spills the unused `this` (0x2c frame), shifting every stack
-// slot offset + rotating the mask temp register (retail ebp vs our ecx). No
-// source lever forces a dead self-spill (docs/patterns/zero-register-pinning.md).
-// Forward decl for the Slot40 body (definition follows at 0x15a130 in RVA order):
-// the box-overlap predicate over two CGameObjects (<Gruntz/UserLogic.h>; the old
-// CWwdBox fwd decl mismatched the definition and left the call reloc UNBOUND).
 
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
@@ -685,22 +655,7 @@ void CDDrawChildGroup::CollideBroadcast() {
 // oi->m_collCategory, and oj->Notify(oi) on a hit). Either box invalid (its first
 // AABB field == INT_MIN) -> no overlap. __stdcall, 2 args (ret 0x8).
 // @early-stop
-// 76% - logic/CFG/offsets/compares byte-exact; the residual is a spill-frame
-// strategy difference: retail allocates a fresh `sub esp,0x20` local frame for the
-// 3 spilled box edges, our cl reuses the incoming arg stack slots - shifting every
-// spill offset + rotating esi/edi. A non-steerable codegen heuristic
-// (zero-register-pinning family).
-// The two boxes are wide game objects (CGameObject family) - the `CWwdBox` view is
-// gone. Every field is a canonical member at the same offset: the screen position
-// (m_screenX @+0x5c / m_screenY @+0x60, CResolveNode) and the two 4-dword boxes
-// m_area (+0x144) / m_switchRect (+0x154) on E. The 0x80000000 "invalid" sentinel is
-// the family's documented unset marker.
 // @early-stop
-// ~85% (was 75.9%: materializing the two screen-space AABBs as CDDrawRect stack rects
-// forces retail's 0x20 frame instead of cl keeping the 8 coords in registers). Residual
-// is the rect-field store scheduling + stack-slot assignment (retail interleaves the
-// coord adds/stores differently and colours the a2.switchRect.left probe into ebp);
-// pure /O2 scheduling/regalloc, not source-steerable (caching the .left probes regressed).
 RVA(0x0015a130, 0xdc)
 i32 __stdcall BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
     if (switchObj->m_switchRect.left == static_cast<i32>(0x80000000)) {
@@ -756,17 +711,6 @@ static char s_dbgNoCaps[] = "???"; // neither VIDEOMEMORY nor SYSTEMMEMORY in th
 // The three box passes and the label pass call the plane's WrapCoord on both corners;
 // the cross pass INLINES the same wrap+translate on two scalars.
 // @early-stop
-// 0.58% -> 91.9 -> 93.73. The label pass's VID/SYS caps probes are JOINS, not hoisted
-// zero-inits: retail branches both failure edges (null surface / nonzero GetCaps
-// HRESULT) to a shared `xor eax,eax` that merges with `caps.dwCaps & DDSCAPS_*`,
-// which is only the `if (surf != 0 && GetCaps(..) == 0) v = ...; else v = 0;` form -
-// seeding `i32 vid = 0;` above the guard pins the zero in a callee-saved register.
-// (docs/patterns/default-hoists-into-destination-no-jmp.md, inverse direction.)
-// Residual, all x3 across the box passes: retail compares the unset sentinel straight
-// against memory (`cmp [eax+0x144],imm`) and re-loads the field afterwards where cl5
-// CSEs the two into one register, and retail reloads `this` only on the loop's exit
-// edge where cl5 reloads it every iteration. Plus an edx/edi naming swap in the cross
-// pass (y vs farEdge) that is otherwise instruction-for-instruction identical.
 RVA(0x0015a210, 0x432)
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & 0x10000) {
@@ -953,10 +897,6 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
 // through the viewport's WrapCoord, and draw the object's +0x74 count into the
 // resulting rect via the counter draw-host (m_parent->m_4->m_14). __thiscall.
 // @early-stop
-// 86.8% - logic/CFG/field-offsets/arg-order byte-identical. Residual is a
-// zero-register-pinning wall: retail rotates the (drawHost/view/obj/box) live
-// values through edx/ecx/eax/ebx where our cl picks ecx/eax/edx/ebx, and
-// allocates one fewer scratch slot - flipping the ModRM byte of most accesses.
 RVA(0x0015a650, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
     if (!(m_flags & 0x200000)) {
@@ -1110,21 +1050,6 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
 // whose +0x04 id == `id`, and whose +0x7c sub-object's +0x10 equals the looked-up
 // object's +0x10.
 // @early-stop
-// 91.9% - logic/CFG/offsets/vtable-dispatch byte-faithful. The branch-layout half is
-// FIXED (2026-07-28): the scan is a plain `while (pos != 0)` with the miss `return 0`
-// after it - NOT the hoisted-guard `if (pos == 0) return 0; do {...} while (pos);`
-// echo, which makes cl share one miss epilogue and take an unconditional back-edge
-// where retail duplicates the miss and falls into it (82.9 -> 91.9). Residual: the
-// shared out-param zero-init scheduling wall
-// (docs/patterns/outparam-zeroinit-scheduling.md) plus the ebx/ebp coloring of
-// `id` vs `fp` - measured against three decl/assign orders and an inline-the-cast
-// spelling, all identical (docs/patterns/zero-register-pinning.md).
-// The `CChildFinder_15a8c0` placeholder class is GONE: it WAS this manager. Its two fields
-// were CDDrawChildGroup's own - m_parent @+0x0c is m_0c (the CDDrawSurfaceMgr owner, whose
-// +0x14 worker cache holds the name map this looks the key up in, exactly as
-// CreateNamed_1593e0/1595b0 do) and m_listHead @+0x14 is m_10's head node (the CObList sits
-// at +0x10). So Find is a plain CDDrawChildGroup method, walking the same list with the
-// same GetHeadPosition/GetNext idiom every sibling FindBy* here uses.
 RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
@@ -1236,14 +1161,6 @@ void CDDrawChildGroup::PruneList() {
 // ---------------------------------------------------------------------------
 // 0x15aaf0: accumulate SUM over the list of index*(obj->m_screenX + m_74 + m_60 + m_04).
 // @early-stop
-// logic/CFG/offsets byte-exact; the residual is cl's COMMUTATIVE-SUM CANONICALIZATION.
-// Our source order already IS retail's emission order (m_screenX 0x5c, m_sortKey 0x74,
-// m_screenY 0x60, m_id 0x4) - retail emits it verbatim, but cl sorts the four same-base
-// loads by ASCENDING OFFSET (0x4, 0x5c, 0x60, 0x74) and seeds the accumulator with the
-// lowest. Proven unbreakable from the source: stepwise `t += ...` statements, explicit
-// ((a+b)+(c+d)) parens, and splitting the base across the CGameObject*/CWwdGameObject*
-// aliases (cl CSEs the base and sorts anyway) all produce the identical sorted chain.
-// (The previous note's "cl loads m_74 first" was stale - it loads m_4 first.)
 RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;
@@ -1339,13 +1256,6 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, i32 typeId) {
 // the matching factory; then build + link each object's child record.
 // ===========================================================================
 // @early-stop
-// jump-table + foreign-chain plateau (>512 B): logic + the four kind arms
-// (Resolve + the matching factory), the +0x48 dedup gate, the g_wwdObjIdCounter
-// publish/restore, the merge createdObj/m_7c guards, and the child-build link are
-// reconstructed in shape + order. Residual: the switch lowers to MSVC5's
-// byte-index jump table (reloc-typed scoring artifact) and the heavy descriptor
-// stack-buffer + null-register (ebp=0) regalloc across the arms is non-steerable
-// under /O2. Final sweep.
 RVA(0x0015ad30, 0x2be)
 i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
     i32 savedCounter = 0;
@@ -1481,11 +1391,6 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 typeId) {
 // keys back through the archive, resolve each in m_map48, require it present + alive
 // (+0x7c != 0), then run its +0x3c dispatch with (ar, 7, flag, obj).
 // @early-stop
-// retail carries a conditional CString-cleanup latch (a name temp tracked by a
-// stack "alive" flag) whose CONSTRUCTION the optimizer elided in this
-// instantiation, leaving a never-taken `~CString` cleanup branch. The latch isn't
-// reproducible from C without re-introducing the (here dead) name build; logic /
-// CFG / offsets are exact, the dead cleanup branch is the residual.
 RVA(0x0015b0e0, 0xec)
 i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
     if (ar == 0) {
@@ -1518,14 +1423,6 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
 // 0x15b1d0: for each m_map48 object, look its key up in m_map2c; if absent, remove it
 // from m_map48 and destroy it. Returns the number removed.
 // @early-stop
-// 93.75% - logic/CFG/offsets exact. Residual (re-derived 2026-07-28 with
-// `sema disasm 0x0015b1d0 --branches --diff`): retail CHAINS the `||`'s two false arms -
-// its `test eax,eax / je` on Lookup-failure lands on the `cmp found,0` (0x15b22d ->
-// 0x15b235) and lets the already-zero slot fail that test too, where cl merges both false
-// arms onto the remove block. Identical mechanism to CInGameIcon::Reposition @0x98a90,
-// where all three chaining spellings were measured and every one cost more than the byte
-// it bought. Retail also loads `found` into a register for the compare where cl compares
-// memory, and schedules the `found = 0` store after the arg pushes rather than before.
 RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;

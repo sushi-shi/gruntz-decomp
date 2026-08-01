@@ -12,11 +12,6 @@
 // view offset. Pure integer arithmetic + member reads; no calls.
 //
 // @early-stop
-// 91.5%, logic byte-exact. Residual: the SECOND flag test - retail emits a direct
-// `test BYTE [ecx+8],8` (memory) and loads py into eax in the branch shadow; this
-// build loads the flag byte into al (`mov al; test al,8`) and parks py in edx.
-// A whole-function regalloc/scheduling choice (which physical reg holds py); not
-// source-steerable. Documented scheduling wall (matching-patterns.md §entropy).
 RVA(0x0000a000, 0xac)
 void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
     if (m_flags & 0x4) { // wrap X
@@ -55,17 +50,6 @@ void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
 // CDDrawWorkerHost::SnapToTileCenter (__thiscall, ret 0xc). Floor each axis to its
 // tile boundary (>>shift <<shift) and add half a tile (signed /2).
 // @early-stop
-// ~51%, logic byte-exact (same sar/shl/cltd/sub/sar/add selection). Residual is a
-// whole-function regalloc/coloring wall: retail keeps the two shift counts in
-// caller-saved eax/edx (3 callee-saved pushes) and stores both results last; this
-// build colors a shift count into ebx (a 4th push, ebp) and flips the axis order.
-// Not source-steerable (member-load scheduling / coloring; matching-patterns.md).
-// @interleaver CDDrawWorkerHost::SnapToTileCenter emitted-in <boundary: unreconstructed>
-// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are freenodepool
-// FreeNodePool::Push @0x311b0 (before) + ddrawsubmgr CQueueDrainHost::Drain @0x31250
-// (after), NOT one reconstructed host both sides. Home hint battlezmapconfig is a
-// scattered god-TU (proximity only). This is one of WwdFile.cpp's 3 far-flung
-// CDDrawWorkerHost strays awaiting individual birth-position attribution; leave + flag.)
 RVA(0x000311e0, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     i32 sx = m_shiftX;

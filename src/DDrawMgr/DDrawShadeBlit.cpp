@@ -133,16 +133,6 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
 // opaque run of `b` pixels) and memcpy's opaque runs into the surface.
 // ===========================================================================
 // @early-stop
-// Regalloc / loop-scheduling wall (the RLE-blit family): logic is complete and
-// correct - prepass, v-flip start, all three clip loops match the retail control
-// flow, and opaque runs lower to the inline rep-movs memcpy idiom. Two residual
-// walls: (1) MSVC pins `this` in ebx and frames `sub esp,0xc` (1 spill local),
-// while retail pins `this` in ebp / frames `sub esp,8` and reuses the dead arg0
-// slot for the pitch - a callee-saved-register choice that renames the modrm byte
-// of every member read; (2) the row counter / x / pos register threading and the
-// redundant clip-dispatch `test;je` are scheduled differently across the three
-// near-identical sub-loops. Inlining the W/clip caches lifted it from ~15% to
-// ~31%; the rest is the zero-register-pinning family. Deferred to the final sweep.
 RVA(0x00149950, 0x3a1)
 void CDDrawShadeBlit::BlitMode_149950(
     ShadeRect* dst,
@@ -288,12 +278,6 @@ void CDDrawShadeBlit::BlitMode_149950(
 // else word) selects a manual byte/word reverse-copy loop instead of memcpy.
 // ===========================================================================
 // @early-stop
-// Loop-scheduling / regalloc wall + the reverse-copy idiom: logic complete and
-// correct (right-to-left mirror blit with the same RLE decode and clip cases), but
-// MSVC's lowering of the `for (k=cnt; k>0; k--) *d-- = *s++;` reverse copy differs
-// from retail's `mov edx,eax; dec eax; test; jle; inc eax; do{..}while(--)` peeled
-// count-down, and the cross-sub-loop register pinning diverges as in 149950.
-// Deferred to the final sweep.
 RVA(0x00149d00, 0x4f8)
 void CDDrawShadeBlit::BlitMode_149d00(
     ShadeRect* dst,
@@ -491,19 +475,6 @@ void CDDrawShadeBlit::BlitMode_149d00(
 // m_data), RGB565 channel-split blends via m_lutBank0/1/2, the m_light fill/lerp.
 // ===========================================================================
 // @early-stop
-// ~23% (0.06 -> 23.3, complete + correct). Full reconstruction: prepass, v-flip
-// row start, 3 horizontal-clip loops, the vertical-2x interlace, and the inlined
-// full-width blend (all 14 draw-type cases) match retail's control flow. Three
-// stacked walls cap it: (1) the whole-function REGALLOC pins `this` in ebp here
-// vs ebx in retail (frame sub esp,0x2c vs 0x34) - the zero-register-pinning
-// family (see BlitMode_149950 @early-stop) renames the modrm byte of every one of
-// the ~200 member reads; (2) retail INLINES the vertical-double blend in the
-// left-clip path (jump tables 0x54b738/0x54b754) but this reconstruction CALLS
-// ConvertRowDoubleFwd there (the out-of-line/inline split is an MSVC5 /Ob1
-// heuristic that can't be steered from source), so the clip locals + regalloc
-// diverge; (3) the two inlined full-width jump tables (0x54b6f4/0x54b710) hit the
-// .rdata jump-table-data-overlap scoring artifact (docs/patterns/jumptable-data-
-// overlap.md). Deferred to the final sweep.
 RVA(0x0014a200, 0x14f3)
 void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip) {
     i32 pitch = src->m_pitch;
@@ -887,14 +858,6 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
 // ConvertRowDouble doubled); the CLIPPED paths call the out-of-line helpers.
 // ===========================================================================
 // @early-stop
-// Complete + correct h-flipped reconstruction (mirror of BlitLoop 0x14a200; same
-// walls). Full-width inlines the reversed blend (all 14 draw-type cases); the two
-// clip loops call ConvertRowFlip / ConvertRowDouble. Capped by the same three
-// stacked walls as BlitLoop: (1) whole-function regalloc / this-pinning; (2)
-// retail inlines the vertical-double blend in one clip path (jump table 0x54c9d4)
-// where this calls it (uncontrollable MSVC5 /Ob1 inline split); (3) the two
-// full-width jump tables (0x54c990/0x54c9ac) hit the jump-table-data-overlap
-// scoring artifact (docs/patterns/jumptable-data-overlap.md). Deferred to sweep.
 RVA(0x0014b770, 0x121d)
 void CDDrawShadeBlit::BlitMode_14b770(
     ShadeRect* dst,
@@ -1269,20 +1232,6 @@ void CDDrawShadeBlit::BlitMode_14b770(
 }
 
 // @early-stop
-// ~56% (logic complete + correct). 1446 B dense-jump-table per-row format/blend
-// converter (one of the four tables the BlitLoop family dispatches). Nine cases
-// on (m_drawType - 2) over a single row: 8/16-bit palette LUTs (m_palDescr->m_data /
-// g_blendDescr->m_data), RGB565 channel-split blends via m_lutBank0/m_lutBank1/m_lutBank2, and a
-// magic-divide (/255) alpha lerp (case 6). Each case body is within 1-3
-// instructions of retail (per-case insn counts: case 7 matches exactly). Two
-// stacked walls: (1) the jump-table .rdata region scoring artifact
-// (docs/patterns/jumptable-data-overlap.md); (2) every counted loop's entry
-// guard + counter is the predecrement-guard-lea-recover-count regalloc shape
-// (docs/patterns/predecrement-guard-lea-recover-count.md) - retail keeps the
-// counter in a callee-saved reg freed after the rep-movs (re-materializing the
-// const scratch addr 0x6bed08), our cl spills it; `for`/`do-while(--i)`/
-// `if(--count>=0)` all diverge and `for` scores highest. Deferred to the final
-// sweep. Cases written in retail .text body order (2,7,10,8,11,3,4,5,6).
 RVA(0x0014c9f0, 0x5a6)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     i32 i;
@@ -1421,14 +1370,6 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
 // `base` = m_palDescr ? m_palDescr->m_data : src (computed once before the switch).
 // ===========================================================================
 // @early-stop
-// Same stacked walls as ConvertRow (~56%): (1) the jump-table .rdata scoring
-// artifact (docs/patterns/jumptable-data-overlap.md); (2) every counted loop is
-// the predecrement-guard-lea-recover-count regalloc shape
-// (docs/patterns/predecrement-guard-lea-recover-count.md) plus the reverse-walk
-// pointer threading - retail re-materializes the scratch addr and reuses the dead
-// arg slot as the loop counter, our spill schedule diverges. Per-pixel blend math
-// (8/16-bit LUTs, RGB565 channel splits, the /255 alpha lerp) is byte-faithful;
-// scheduling parks it. Cases in retail .text body order (2,7,10,8,11,3,4,5,6).
 RVA(0x0014cfc0, 0x5f1)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     u8* base = m_palDescr ? m_palDescr->m_data : src;
@@ -1560,13 +1501,6 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
 // the saved dest; src is unused). __thiscall, ret 0x10.
 // ===========================================================================
 // @early-stop
-// Same family wall as ConvertRow/ConvertRowFlip/ConvertRowDouble (~56%): the
-// jump-table .rdata scoring artifact (docs/patterns/jumptable-data-overlap.md) +
-// the predecrement-guard-lea-recover-count regalloc shape
-// (docs/patterns/predecrement-guard-lea-recover-count.md), here with the dual-store
-// thread (retail recomputes the blended pixel for the second store - reproduced by
-// writing the index expression twice). Per-pixel blend math is byte-faithful; the
-// spill/recompute schedule parks it. Deferred to the row-converter final sweep.
 RVA(0x0014d5e0, 0x345)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
@@ -1654,11 +1588,6 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
 // row gets the palette blend of the source. __thiscall, ret 0x10.
 // ===========================================================================
 // @early-stop
-// Same family wall as ConvertRow/ConvertRowFlip: jump-table .rdata scoring
-// artifact + the predecrement-guard-lea-recover-count regalloc shape, here with
-// the dual-store thread (retail recomputes the blended pixel for the second store
-// rather than reusing it - reproduced by writing the index expression twice). The
-// per-pixel blend math is byte-faithful; the spill/recompute schedule parks it.
 RVA(0x0014d950, 0x377)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
@@ -1738,9 +1667,6 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
 }
 
 // @early-stop
-// Code bytes byte-exact (all 8 global stores + reloc-named globals pair); residual is
-// the switch-jumptable-separate-comdat wall — MSVC emits the jump table as a separate
-// $L symbol, the delinker inlines it at fn+0x6c, so only the jmpl table reloc differs.
 RVA(0x0014dcf0, 0xa0)
 void SetShadeDescr(CShadeTable* v, int mode) {
     switch (mode) {
@@ -1772,9 +1698,6 @@ void SetShadeDescr(CShadeTable* v, int mode) {
 }
 
 // @early-stop
-// Code bytes byte-exact (verified llvm-objdump base vs target: every byte pairs except
-// the single jmpl table displacement); residual is the switch-jumptable-separate-comdat
-// wall (MSVC $L table symbol vs delinker inline-at-fn+0x74).
 RVA(0x0014dd90, 0xa0)
 void CDDrawShadeBlit::Select(i32 mode, CShadeTable* descr) {
     m_drawType = mode;

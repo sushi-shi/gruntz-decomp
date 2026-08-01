@@ -46,9 +46,6 @@ const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
 // CCheckpointDlg::OnToggleCheckpointPrompts (0x23590): mirror the "disable prompts"
 // checkbox (control 0x53a) into the game registry - checked -> prompts off.
 // @early-stop
-// zero-register-pinning regalloc coin-flip (~97.9%): instructions byte-identical,
-// only the g_mgr base vs bool result land in ecx/edx swapped (sete cl+[edx] vs
-// sete dl+[ecx]); not source-steerable, permuter no-change. See zero-register-pinning.md.
 RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {
     CWnd* c = GetDlgItem(0x53a);

@@ -39,25 +39,6 @@
 // @confidence: high
 // @source: pmf-xref:registeracts-ilt-0x1938+class-layout
 // @early-stop
-// ~78% (was a 0.5% stub): the whole body is reconstructed and every callee/global/
-// string is bound - the head anim tick, the m_134 HitTestApply fast path, the
-// FindGruntAt hit/miss split, the 5-CString conquest message, MarkFlag/ClearRowAndRefresh/
-// CellDispatch, the warlord death + battle-alert resolve, both child-list re-home walks
-// (incl. the g_coordPool pop + CPlay::m_startMarkers append) and the GAME_EXPLOSION3
-// spawn. Two residues, both codegen-layout:
-//   (a) ZERO-REGISTER COLOURING. retail dedicates ebx to the constant 0 for the whole
-//       body (`cmp r,ebx` / `push ebx` / `mov [x],ebx`) and spills `this` to esp+0x1c,
-//       reloading it in the second walk; cl gives ebx to `this` (never reloads) and
-//       materialises the zero inline (`test r,r` / `push 0`/`xor eax,eax`). Both are
-//       4-callee-saved solutions of the same pressure - a pure colour assignment, and
-//       it is what cascades into the two `[eax+edi+0x158]` CSE-vs-recompute sites and
-//       the `lea eax,[edx+ecx*8]`+0x174 vs `+0x150`+0x24 displacement folding.
-//   (b) EPILOGUE DUPLICATION. retail tail-merges every exit into ONE bottom epilogue
-//       (13 `jmp 0x3fb01`); cl inlines a full 9-instruction /GX epilogue at the three
-//       exits that are the physical end of an if/else arm (base 4 rets vs retail 1).
-//       Both the `goto done` and the if/else spellings produce byte-identical output,
-//       so it is docs/patterns/identical-return-epilogue-tailmerge.md in reverse, not a
-//       gate-spelling choice (the positive-gate lever does not run this way).
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

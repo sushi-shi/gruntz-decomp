@@ -41,21 +41,6 @@ CRezBufferObject::~CRezBufferObject() {
 // CFaderArray::Serialize (0x17e2a0) but with a non-trivial 0x28-byte element.
 // ---------------------------------------------------------------------------
 // @early-stop
-// 96.2% (was 71.6). The old "regalloc wall / this->ebx vs ar->esi" note was wrong on
-// every count - the colouring already agreed. Three real source bugs:
-//   - the three SetSize arms do THREE DIFFERENT things in retail, not one shared
-//     ConstructElements: the fresh-alloc arm only memsets (no per-element ctor loop),
-//     the grow-in-place arm inlines memset + the placement-new loop, and the realloc
-//     arm CALLS the out-of-line record eraser ZeroRecords (0x17f500, src/Utils/
-//     RecordFill.cpp) - `push count; push ptr; call 0x17f500`.
-//   - the newMax select is a real if/else (`cmp ebp,eax; jge; mov slot,eax; jmp`), not
-//     `newMax = m_nMaxSize + grow; if (n >= newMax) newMax = n;` (which cl merges into
-//     store-then-conditionally-overwrite).
-//   - the tail's m_pData/m_nSize are hoisted into locals BEFORE the IsStoring() test,
-//     so both arms share one load pair.
-// Residual is one allocator tie-break in the grow-in-place arm: retail keeps `n` in ebp
-// and spills the tail POINTER to [esp+0x10]; cl keeps the pointer in esi and spills `n`.
-// Six helper/call-site spellings tested, none flips it.
 RVA(0x0017f130, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
     if (ar.IsStoring()) {

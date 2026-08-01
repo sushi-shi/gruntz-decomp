@@ -195,13 +195,6 @@ void CPreviewState::LoadLevelPreviewScreen() {
 // symbol table) is missing or any step fails, else 1.
 //
 // @early-stop
-// 96.39% - pointer-chain scratch-register + arg-eval-order wall (docs/patterns/
-// pin-local-for-callee-saved-reg.md: "inner-split hurts 2-arg"): the m_0c->m_04
-// object base for the 2-arg LoadPageImage call is hoisted before the arg pushes by
-// retail (cl emits it after), and the m_0c->m_04->m_frontPair->m_surface Flip chain picks edx/
-// eax where cl picks ecx/edx - ~6 register-field bytes. Logic + control flow + all
-// externs (sprintf, g_screenTag, ResolveQualified, LoadPageImage, Flip) byte-exact.
-// Final sweep.
 RVA(0x000fab90, 0xaa)
 // args 3/4 are never read: the frame is entry-0x44 and retail touches only
 // [esp+0x48] (name) and [esp+0x4c] (doFlip), never the +0x50/+0x54 homes.

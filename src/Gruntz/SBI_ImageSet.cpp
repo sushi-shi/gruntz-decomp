@@ -27,15 +27,6 @@ VTBL(CSBI_ImageSet, 0x001eac4c);
 // 52.2 -> 68.2 (2026-08-01). The old note's "reused edx = this+0x14 pointer" was NOT a
 // scheduling artifact - it is the WHOLE-STRUCT `m_rect14 = rect` copy (see below).
 // @early-stop
-// ONE root cause left, and it is an allocator coin-flip, not a source shape: cl hoists
-// `mov eax,[esp+0x8]` ABOVE the `push esi`, so the load happens while ecx still holds
-// `this` and host is forced into EAX. Retail emits `push esi; mov esi,ecx;
-// mov ecx,[esp+0xc]` - `this` vacates ecx FIRST, host takes ecx and owner takes eax.
-// Every remaining diff row follows from that one swap, including the key guard's
-// epilogue: retail's `pop esi; ret 0x2c` drops its `xor eax,eax` only because EAX
-// already holds key==0, which makes that block unmergeable and keeps it inline.
-// 36-cell matrix (config/axes/sbi-imageset-setupimage.json: guard form x lookup
-// receiver x frame resolve) is FLAT at 68.23 - none of those sites move the hoist.
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,

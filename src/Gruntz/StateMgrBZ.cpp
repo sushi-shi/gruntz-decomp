@@ -37,9 +37,6 @@ void StateMgrBZ::Setup() {
 // composite controller node) from the manager's device list. Returns 1 unless the
 // source is null.
 // @early-stop
-// jumptable-data-overlap scoring artifact: every code instruction matches; the
-// residual is the inline .rdata jump-table data block + the reloc-masked switch-
-// base / AddControllerArr symbol names. See docs/patterns/jumptable-data-overlap.md.
 RVA(0x000383b0, 0x1c0)
 i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     if (src == 0) {
@@ -135,11 +132,6 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
 // packed current/edge key flags into m_18/m_1c, with a "suppress input" clear, and
 // snapshot into m_20.
 // @early-stop
-// inverse zero-register-pinning regalloc wall: body byte-structurally identical
-// (same offsets/sequence), but our cl pins 0 in edx (extra push esi + cmp eax,edx
-// null tests + reg-zero clears) where retail uses test eax,eax + immediate mov
-// [],0 and edx as the OR temp. No /O2 source lever flips the pin (coin-flip).
-// See docs/patterns/zero-register-pinning.md (INVERSE case).
 RVA(0x000385e0, 0x9f)
 i32 StateMgrBZ::Flush() {
     if (m_device) {

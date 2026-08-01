@@ -169,15 +169,6 @@ static void GruntScratchTeardown() {
 // ---------------------------------------------------------------------------
 // CGrunt::FinalizeStep(arg)   @0x5ecd0   (ret 4, the settled vtable slot-5 override)
 // @early-stop
-// complete reconstruction (all logic + control flow: the Finalize + slot-16 tick,
-// the L/G ClearSubA gate, the off-screen ClearSubB gate, and BOTH the "O" and the
-// scratch-resolved position-interpolation arms with the per-cell velocity math +
-// overshoot clamp). A documented x87-scheduling wall (the fld/fmul/fadd/fcom + the
-// fnstsw/test-ah overshoot clamp is not source-steerable), compounded by the
-// strcmp-eq-setcc dispatch and the scratch-teardown loop-strength-reduction wall,
-// same family as StepEntranceReinit / StepCombatReaction in Grunt.cpp. Homed here
-// (out of the Gap stub) as a real CGrunt method so its 0x5ecd0 symbol resolves for
-// callers; the % is a codegen wall, not a shape error.
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name); // direct base call (retail `call 0x3913`)
@@ -268,38 +259,7 @@ void CGrunt::FinalizeStep(char* name) {
 }
 
 // @early-stop
-// reloc-masked-extern plateau: instruction stream byte-exact (verified
-// llvm-objdump - prologue, geometry call, desc/frame read, cell-index math
-// `0x468 + (3*col+row)*0x68`, GetName/SetAnimFrame, anim-set latch all match),
-// residual is the 4 unnamed engine calls (SetGeometry/GetName/SetAnimFrame/
-// LookupAnimSet) pairing to differently named retail symbols.
-// ---------------------------------------------------------------------------
-// CGrunt::ResetGeometry() @0x616e0 - re-arms the entrance player's geometry to
-// the m_poseAttackIdle source, re-stamps the active anim-set node, and re-applies the
-// per-cell entrance frame. Reads the active-anim descriptor's first element's
-// frame (+0x14), reads the per-cell AttackName buffer via CString::GetBuffer(0) keyed
-// by the m_entranceCell {col,row} triple (cell stride 0x68 at +0x468), applies the
-// frame, then latches a fresh idle anim-set
-// node (g_entranceAnimSrc.LookupAnimSet) into m_objAux->m_1c. __thiscall, ret 0.
 // @early-stop
-// ~95.7% - copying the whole GruntEntranceCell triple (below) fixed the missing
-// dead `reason` (+0x444) load/spill (was 81%: source read only col/row, so cl
-// DCE'd reason; retail keeps the whole-struct copy with reason dead-spilled to
-// [esp+0x14]). Residual is the m_value(+0x15c) store schedule + edx/ecx colouring
-// on the first two statements.
-// 2026-07-29: PROVEN not source-reachable. A standalone replica with the real member
-// offsets and this function's prologue shape reproduces our bytes EXACTLY, and 15
-// further spellings through it all emit the same pick - a pose local, a `p = m_38`
-// local, an `old` value local, an `AniCursor&` / `AniCursor*` receiver local (the
-// pointer form is strictly worse: it adds `add ecx,0x1a0`), `this->`-qualified reads,
-// a comma-expression argument, an `m_value` pointer alias, and both statement orders.
-// The one variant that DOES give retail's `mov ecx,[pose]` puts the m_value store
-// AFTER the call, which is semantically wrong. cl allocates the ecx/edx pool in SOURCE
-// STATEMENT order, so the value (statement 1) takes ecx and then the store must precede
-// `lea ecx,<receiver>`; retail's pool starts one phase over. Same TU-cumulative-state
-// class as CDDrawWorkerHost::Save's imul pick. The identical hunk is the ONLY residue in
-// StepEntranceRelatchA (98.80) and LoadVehicleGruntAnimations (98.62) - one lever, four
-// functions, so it is worth re-attacking from the TU-state side, not the spelling side.
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
     m_value = m_38->m_1a0.m_14;
@@ -337,12 +297,6 @@ i32 CGrunt::ResetGeometry() {
 // (docs/patterns/positive-gate-enables-shrink-wrap.md, second effect); the natural
 // x-then-y declaration emits them the other way round. 94.50 -> 94.63.
 // @early-stop
-// lazy callee-saved-reg save: instruction MULTISET byte-identical vs retail
-// (verified), logic/CFG/offsets exact; residue = retail defers `push edi` until
-// AFTER the m_poweredUp==0 early-bail (the cold path uses only esi) where cl saves edi
-// in the prolog. The positive-gate lever that normally buys this was already measured
-// on THIS function and craters it (94.5 -> 77.1, see the pattern doc's bound table);
-// it is one of the cases where the layout and the shrink-wrap halves are separable.
 RVA(0x000617c0, 0x127)
 i32 CGrunt::UpdateGruntStatus() {
     if (m_poweredUp == 0) {
@@ -401,13 +355,6 @@ i32 CGrunt::UpdateGruntStatus() {
 // ATTACK1/ATTACK2 geometry by index, and re-stamps the entrance-cell frame.
 //
 // @early-stop
-// switch/regalloc + cell-frame scratch-spill plateau: CFG, the (m_entranceReason-2)
-// switch (the byte+jump table reloc-masks), every member offset/gate, the
-// CreateHealthSprite/GetDwordDef/CueSpawn/SetGeometry/SetAnimFrame call shapes, the
-// combat-timer block, the on-screen cue gate, and the HUD-dirty stamp are
-// byte-faithful. Residue = the switch index register (ecx vs edx), the rand()%2 mask
-// (and eax,1 vs the CSE'd ebx=1), the dead cell[2] read retail spills into a scratch
-// frame, and the cross-arm regalloc; source-invariant. Deferred to the final sweep.
 RVA(0x00061940, 0x200)
 i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     if (m_entranceReason >= 0x17) {
@@ -495,12 +442,6 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 // geometry, re-stamp the entrance-cell frame, set the +0x214 latch. Returns 0.
 //
 // @early-stop
-// cell-frame scratch-spill plateau: CFG, every member offset, the g_buteTree.Find
-// re-latch, the m_poseAttack[GRUNT_ATTACK2] geometry drive, the first-elem frame read, the
-// (3*col+row)*0x68 cell-frame index, and the SetAnimFrame call are byte-faithful.
-// Residue = retail loads the cell as a 3-int read and spills the dead cell[2] to a
-// 0xc scratch frame (sub esp,0xc) where cl strips the unused read (no frame), plus
-// the cell-base register; source-invariant. Deferred to the final sweep.
 RVA(0x00061bc0, 0xb2)
 i32 CGrunt::RearmAttackAnim2() {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -531,23 +472,6 @@ i32 CGrunt::RearmAttackAnim2() {
 // the dllimport call. A plain ::PostMessageA call is the honest source.)
 // @source: string-xref
 // @early-stop
-// jump-table-data-overlap wall (fuzzy % is an alignment artifact): logic complete
-// and byte-verified vs retail (`sema disasm 0x61cb0 --diff`): the prologue is
-// exact (`sub esp,8`; the retry flag in callee-saved ebx - the
-// exact retail shape (`mov edx,[edi]; mov ecx,edi; call [edx+0x44]`, then
-// `mov edi,[edi+0x154]; or [edi+0x8],0x10000`), and the 5-slot dense switch on
-// m_entranceReason (the multiplexed tool kind; bias 2, range 0x14) + the named
-// "Projectile"/"Boomerang"/"TimeBomb"
-// /"AttackDowntime" DIR32 strings + g_gameReg/g_buteMgr/g_frameTime reproduce
-// retail. Residues: (1) DOMINANT - cl emits the byte index-table + dword
-// jump-table as $L COMDATs while the delinker INLINES the switchdataD_* tables
-// into .text, so the tables never pair and objdiff mis-aligns the ENTIRE switch
-// tail as inserted lines (docs/patterns/jumptable-data-overlap.md +
-// switch-jumptable-separate-comdat.md - the % floor, not a logic diff);
-// (2) minor - retail schedules the two zeroing xors (ebp/ebx) AFTER the Tick
-// call, cl hoists them into the call-setup latency slots (2-line reorder, not
-// source-steerable). Types 9-11 and 21-22 share one tail-merged "Projectile"
-// arm across two jump-table slots.
 RVA(0x00061cb0, 0x34a)
 i32 CGrunt::StepAttackFire() {
     i32 flag = 0;
@@ -726,12 +650,6 @@ i32 CGrunt::StepAttackFire() {
 // pose select + the visible-bounds CueSpawn.
 //
 // @early-stop
-// large-state-machine + reloc-masked-extern plateau (sibling of 0x690a0/0x637a0): CFG, the
-// two-flag dispatch, every member offset/gate, the 15-stride tile index, the board attr
-// chains, the rand()%N pose rolls, the 64-bit toy-timer compare/select, the +0x810/0x820
-// timer snapshots, and all cue/anim call shapes are byte-faithful. Residue: the engine
-// callees reached via incremental-link thunks reloc-mask to differently-named retail thunks,
-// plus the cross-arm regalloc / zero-register pinning. Deferred to the final sweep.
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
@@ -934,9 +852,6 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 }
 
 // @early-stop
-// 98.80%. The ONLY residue is the shared `m_value = m_38->m_1a0.m_14; <cursor>.Setup(pose)`
-// ecx/edx pool phase - the same four instructions as ResetGeometry @0x616e0, where the
-// 17-spelling replica proof lives. Not source-reachable; TU-state.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
     i32 ready = m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1328,13 +1243,6 @@ tail:
 // ---------------------------------------------------------------------------
 // CGrunt::StepEntranceReinit()   @0x637a0   (ret 0)
 // @early-stop
-// large-state-machine + grid-regalloc plateau: the D/L early rejects, the +0x8c0
-// struck-timer reset, the "I"-code tile-mgr re-notify + idle reseed, and the two
-// visibility-gated anim-set re-latch + entrance-cell frame re-stamp arms are
-// reconstructed in shape/order. Residue is the strcmp-eq setcc sentinel pinning
-// (docs/patterns/strcmp-eq-bool-local-setcc + zero-register-pinning), the deep
-// g_gameReg->m_tileGrid board chains modeled by raw offset, and the cross-arm regalloc on
-// the shared cell-frame tail. Deferred to the final sweep.
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     bool eq;
@@ -1433,10 +1341,6 @@ i32 CGrunt::StepEntranceReinit() {
 // 0x7148 threshold, roll a 0..100 pick and fire the on-screen event/spawn cue
 // (CueEvent when pick>0x19, else CueSpawn) if the grunt is inside the visible rect.
 // @early-stop
-// complete reconstruction (all logic incl. the three inlined LCG rolls); ~76%
-// plateau. Residue is the saturated-elapsed i64 sbb/branch regalloc + the repeated
-// inline-rand seed materialization scheduling (not source-steerable) + reloc-masked
-// cue operands. Correct shape + control flow; a codegen wall.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1525,12 +1429,6 @@ i32 CGrunt::StepArrivalReroll() {
 // kind (m_170 0x1a=gokart, 0x19=bigwheel).
 //
 // @early-stop
-// ~95.4%: CFG, every member offset, the 64-bit elapsed-time compares, all three
-// visibility gates + cue ids, and the kind dispatch are byte-faithful. GruntStrGetBuffer
-// is now the real __thiscall CString::GetBuffer(this=&m_448) (`lea ecx; push 0; call`).
-// Residue (98.62%) = the shared `m_value = m_38->m_1a0.m_14; ApplyGeometryDirect(pose,0)`
-// ecx/edx pool phase, the same four instructions as ResetGeometry @0x616e0 (17-spelling
-// replica proof there). Not source-reachable; TU-state.
 RVA(0x00063db0, 0x32f)
 i32 CGrunt::LoadVehicleGruntAnimations() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1741,8 +1639,6 @@ i32 CGrunt::BuildGruntExitAnimation() {
 }
 
 // @early-stop
-// 86.4%: logic byte-faithful. Residual is the register scheduling around the m_154
-// reloads + the /GX CString unwind state ordering; not source-steerable.
 RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -1781,14 +1677,6 @@ i32 CGrunt::StepWarpExit() {
 // entrance-cell frame, and fires the focused-grunt spawn cue when on-screen.
 //
 // @early-stop
-// large anim-dispatch state-machine plateau (the same family as StepEntranceReinit /
-// RunEntranceMove in this TU): the +0x1fc/+0x364 gate, the HUD-scroll clamp, the 10
-// inline-strcmp dispatch arms + their state transitions, the m_1a0 move-mode switch,
-// the combat-timeout re-arm, the 8-arg forward, the two scratch-resolver (ScratchResolve
-// + scratch CString teardown) re-latches, the cell-frame restamp and the on-screen
-// spawn-cue gate are all reconstructed in shape/order. Residue is the shared
-// strcmp-eq setcc/zero-register pinning (no source spelling), the scratch loop-
-// strength-reduction, and the deep cross-arm regalloc. Final sweep.
 RVA(0x000646b0, 0x9c8)
 i32 CGrunt::StepCombatReaction(
     i32 attackKind,
@@ -2112,14 +2000,6 @@ i32 CGrunt::StepArrivalCommitB() {
 // and applies the resolved pose geometry + entrance-cell name to the player.
 //
 // @early-stop
-// ~72%: full CFG, the m_entranceReason switch (1/0x12/0x13/else), the inline
-// strcmp (eq=sete idiom, shared with StepArrivalCommit), all bute reads, both cue
-// variants, and the entrance-cell pose/name tail are byte-faithful. Residue = a
-// whole-function stack-frame coin-flip: retail allocates 0xc scratch locals (it
-// spills the entrance-cell triple + an extra temp for the cell-stride math),
-// where cl reuses registers and allocates 4 - shifting every [esp+N] arg/local
-// offset by 8 and cascading a register-renumber through the 843-byte body. No
-// source lever forces the larger frame; deferred to the final sweep.
 RVA(0x00065630, 0x34b)
 void CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 poseIdx = 0; // ebx
@@ -2219,9 +2099,6 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 // wand health loss, and fire the depletion anim; every active frame run the wand
 // projectile step; finally, once arrived + idle, clear the latch + run the reset.
 // @early-stop
-// ~95%: whole body byte-identical (incl. the branchless max(0,hp) sub/sets/dec/and
-// idiom) except cl schedules the `if (m_1c4)` load a few slots earlier than retail
-// (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
 i32 CGrunt::LoadWandGruntItemConfig() {
     i32 phase = m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -2277,11 +2154,6 @@ i32 CGrunt::LoadWandGruntItemConfig() {
 // the sprite factory's key->object map and, when found, place its in-game icon at
 // the grunt's owner cell; else clear the tile's object slot + the 0x40000 flag bit.
 // @early-stop
-// complete reconstruction (all logic + control flow); ~73% plateau. Residue is the
-// deep board-cell index regalloc across the TWO tile-board reads + the cell-clear
-// (the strength-reduced tx*0x1c / ty*4 running-pointer forms), the reloaded-`g`
-// (0x64556c) scheduling around the lose-item call, and the reloc-masked map-lookup /
-// PlaceAt / cue operands. A register-allocation/scheduling wall, not a shape error.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
     i32 ready = m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));

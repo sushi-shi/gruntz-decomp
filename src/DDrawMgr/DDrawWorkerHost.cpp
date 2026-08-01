@@ -29,10 +29,6 @@ void CDDrawWorkerHost::VtSlot11_163ac0(i32) {}
 // buffers; then the +0x9c CWorkerObArray member and ~CLoadable fold in.
 // ===========================================================================
 // @early-stop
-// Canonical CLoadable re-base lifted this 82.3%->85.8%->88.1%. Residual is the
-// multi-member /GX funclet/state ordering across the worker delete + two buffer
-// frees + CWorkerObArray member + ~CLoadable fold (grand-base stamp position + EH
-// state writes), same wall class as the entry-list dtor. Logic complete.
 RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCDDrawWorkerHost@@UAEPAXI@Z)
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {

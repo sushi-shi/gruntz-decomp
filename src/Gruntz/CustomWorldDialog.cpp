@@ -62,10 +62,6 @@ namespace m4 {}
 // when present; return the selected-world path by value.
 // ===========================================================================
 // @early-stop
-// ~95.7% under this obj's real /GX profile. Remaining residual is the cross-TU reloc-name tail:
-// the CString::Empty/operator=/copy-ctor + RunModalDialog relocs resolve to the
-// delinker's Ghidra simple-labels which a foreign TU cannot name-match; they go
-// exact once those library/manager functions are reconstructed. Logic complete.
 RVA(0x0003ad90, 0x97)
 CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_pathStr.Empty();
@@ -153,14 +149,6 @@ namespace m4 {
     // glob + ".." literals are this TU's own, DEFINED at file scope above.)
 
     // @early-stop
-    // regalloc + frame-layout wall. Complete correct reconstruction: the listbox
-    // reset, the "Custom" gate, the _findfirst glob, the singleton lock (its /GX
-    // unwind), the do-while _findnext walk with the per-entry sprintf + by-value
-    // IsHidden query + extension strip + LB_ADDSTRING, and the unlock all align by
-    // shape (llvm-objdump -dr). Residual is MSVC5's stack-buffer placement (the glob
-    // vs _finddata_t vs display-name locals land at different [esp+N] than retail's, and
-    // the CString-temp arg slot is reused) shifting the operand displacements - not
-    // steerable from source.
     RVA(0x0003af90, 0x194)
     i32 FillCustomLevelList(HWND hWnd) {
         HWND lb = ::GetDlgItem(hWnd, 0x3fc);
@@ -411,10 +399,6 @@ CString BuildCustomWwdPath(CString name) {
 // and a working-copy CString temp carries the result, so cl emits the /GX frame.
 // ===========================================================================
 // @early-stop
-// /GX CString-temp wall: the inline strcpy/strlen, the extension truncation, the
-// last-'\\' scan, the by-value arg + result CString teardown and the return-copy
-// are byte-faithful; residue is the EH scope-table cookie + the descending
-// trylevel numbering across the two CString temps (not source-steerable).
 RVA(0x0003bb50, 0x128)
 CString WwdFile::GetMapBaseName(CString path) {
     CString result = path;

@@ -18,13 +18,6 @@ DATA(0x00251614)
 i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 
 // @early-stop
-// ~94.5% - /O2 register-allocation/scheduling entropy on a large loader: the branch
-// structure, every extern call and the namespace strings match retail, but the
-// optimizer distributes the descriptor/holder loads across eax/ecx/edx differently
-// and schedules the a3 store later (with the version-string lea). Logic + externs
-// match retail. Return type is int (retail sets eax=1 on success; every leaf state
-// TESTs it - the int fix lifted 73% -> ~94.5%) - re-homed onto CState so the ~7 leaf
-// callers bind cast-free. Final sweep.
 RVA(0x000f9ea0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     m_mgr = mgr;

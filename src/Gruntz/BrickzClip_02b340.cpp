@@ -10,10 +10,6 @@
 // (Homed from BattlezMapConfig.cpp; was the placeholder ClipHost_02b340 view -
 //  this->m_board is a CMapMgr, so Clip is a real CMapMgr method.)
 // @early-stop
-// regalloc-rotation + scheduling wall (~81%): the clip logic is faithful, but retail
-// keeps `src` in eax and interleaves the rect field loads/stores differently, while cl
-// pins `src` in edx - a whole-function register rotation + a scheduling shift. Not
-// source-steerable.
 RVA(0x0002b340, 0xaa)
 void CMapMgr::Clip(const RECT* src) {
     RECT a, b;

@@ -37,16 +37,6 @@ void CWwdSpatialMgr::FreeGrids() {
 // the three grid-scroll results.
 // ===========================================================================
 // @early-stop
-// scheduling wall (+ dissolution cost) - MSVC floats the m_scrollX/m_scrollY
-// (0x68/0x6c) member stores down into the first grid's struct setup to fill
-// pipeline slots; retail emits them eagerly at the jne target. Body logic
-// byte-faithful. NOTE (2026-07-14): dropped ~66% -> ~35% when the ex-view's
-// Scroll_1918c0(WwdRect BY VALUE, flag) call was dissolved onto the canonical
-// CWwdGrid::Query(x0,y0,x1,y1,doRemove) (5 scalars): retail's caller pushes the
-// rect BY VALUE (the by-value model scored closer), so a faithful re-match wants
-// canonical Query retyped to `Query(WwdRect, i32)` - a cross-TU unification with
-// WwdGrid.cpp, deferred. The view was a divergent 2nd CWwdGrid definition (the
-// anti-pattern); the canonical dissolution is correct, the % is the accepted cost.
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     if (m_scrollX == dx && m_scrollY == dy) {
@@ -120,13 +110,6 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
 // retail emits it - flags bit 0x800000 picks grid1, 0x1000000 picks grid2, neither
 // picks grid0.
 // @early-stop
-// 86.9% (from 0.65%). Four cached locals carried it there: the per-object flags word
-// (retail loads it ONCE for each of the two gate groups, not per test), the +0x7c
-// worker, the &obj->m_region pointer (retail reaches m_x/m_y/m_object through it with
-// disp8) and the pair of screen coordinates loaded together. The residual is one extra
-// SPILL retail makes and cl5 does not - it parks the region pointer in [esp+0x18] as
-// well as ebp (ebp is clobbered by the third arm's saved act key), which shifts every
-// box temporary one slot down.
 RVA(0x00168500, 0x3af)
 i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
     i32 count = 0;

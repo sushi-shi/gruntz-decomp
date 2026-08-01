@@ -19,29 +19,14 @@ DATA_SYMBOL(0x002bf3bc, 0x4, _g_engineFrameDelta)
 DATA_SYMBOL(0x002bf3c0, 0x4, _g_killCueClock)
 
 // @early-stop
-// 96.6% - the old note called the whole residual a "regalloc wall"; three quarters of it
-// was source shape and is fixed (the miss handler's positive gate, the y-before-x screen
-// load, and taking g_gameReg into `reg` AFTER them so cl stops hoisting the singleton
-// above the coord loads: 79.5 -> 93.8 -> 95.6 -> 96.6). What is LEFT is genuinely
-// scheduling, in three spots, none of which moved under any tried spelling:
-//   * LoadPickupSprites - retail sets the receiver (`mov ecx,edi`) between the flag
-//     pushes and uses eax for the m_124 temp; cl uses ecx for the temp and reloads the
-//     receiver last. Hoisting m_124 into a local changes nothing.
-//   * the CMapStringToPtr::Lookup out-param - retail zeroes the slot AFTER both arg
-//     pushes (`mov [esp+0x18],0`), cl zeroes it before (out-param zero-init scheduling,
-//     docs/patterns/).
-//   * the success tail loads subId before areaId (source order is areaId first, as in
-//     retail) and the miss tail hoists the m_38 load above the `m_cachedSubId = -1`
-//     store. Both are pure instruction order; the bytes of every op match.
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
     i32 areaId;
     i32 subId;
-    CGrunt* found =
-        g_gameReg->m_cmdGrid
-            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
+    CGrunt* found = g_gameReg->m_cmdGrid
+                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     // POSITIVE GATE: retail parks the miss handler at the very END of the function
     // (0x9998f) where it falls into the `return 0` epilogue the three inner early
     // exits also tail-merge into. Written as an early return it lands inline right

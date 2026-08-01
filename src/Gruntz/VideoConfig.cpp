@@ -303,22 +303,6 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 // commit idiom as CPlay::ApplyGameOptions, with dialog reads as the value source.
 //
 // @early-stop
-// 99.90%: every instruction byte matches retail except (a) the IsDlgButtonChecked IAT
-// reference - retail names the cached IAT pointer by its fixed VA 0x6c44b0, our
-// <Win32.h> import emits the identical `mov edi,ds:[__imp]` against
-// __imp__IsDlgButtonChecked@8 (win32-import scoring artifact, same bytes), and (b) the
-// m_isVoiceEnabled reload is `mov edx,[g_gameReg]` where retail has ecx.
-// (b) is NOT a coin flip - it is a PHASE. Isolated in a 40-line micro-replica (cl 5.0
-// /O2 /MT /GX reproduces our exact register sequence): successive `gGlobalPtr->member =
-// <value>` stores take their address temp from a 2-register pool that ALTERNATES
-// ecx, edx, ecx, edx... Deleting the earlier `m_isEasyMode` store flips this one to ecx;
-// inserting a third such store before it flips it back. Retail's phase is ecx,ecx,...,
-// so retail's source has ONE MORE (or one fewer) pool temp than ours somewhere before
-// this store, in a form that is otherwise byte-identical. Tried and rejected: a temp for
-// the IsDlgButtonChecked result, a local CGruntzMgr* (worse - it re-colors 3 sites and
-// adds a push ebx), flattening the gA/gB nest, a temp for the SetRunState argument,
-// dropping the trailing 0x478 block, dropping the null guard.
-// docs/patterns/global-store-temp-alternates-ecx-edx.md
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
     if (g_gameReg == 0) {
@@ -366,12 +350,6 @@ void ReadMenuOptionsDialog(HWND hDlg) {
 // (the dlgproc's IDCANCEL path calls it to roll the live settings back).
 // ===========================================================================
 // @early-stop
-// register-coloring wall (~83%). Control flow, all member offsets
-// (+0x118/+0x100/+0x124/+0x48/+0x28), the 12 option/gate globals, the 5 callees
-// and the redundant lock-gate re-test are byte-faithful and all relocs pair;
-// the residual is the non-steerable eax-vs-ecx coloring of the reloaded manager
-// pointer (retail pins it in ecx, our cl picks eax) which cascades into the temp
-// regs + the top videomode/lock-load schedule. See docs/patterns/zero-register-pinning.md.
 RVA(0x00036be0, 0xd3)
 void ApplyGameOptions() {
     if (g_gameReg == 0) {
@@ -564,12 +542,6 @@ namespace ApiCallerStubs {
 // clock cooldown gate throttles, then LeafCue::m_10->ConfigureItem plays it.
 //
 // @early-stop
-// regalloc wall + jump-table-data artifact (docs/patterns/jumptable-data-overlap.md).
-// Logic + instruction selection identical, but MSVC5 caches `code` in ebp and `newpos`
-// in edi across the whole body, whereas retail keeps `newpos` in ebp, holds `code` in
-// eax only for the switch, and RE-READS code from the stack in the voice/chip blocks;
-// that register permutation shifts most operand bytes (consistent ebp<->edi/eax swap,
-// llvm-objdump -dr). ~85%.
 RVA(0x00037260, 0x220)
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     if (!hCtrl) {
@@ -708,11 +680,6 @@ void DialogInit(HWND hDlg) {
 // (IDC 0x46f smooth-scroll, 0x4d5 show-fps) into the settings singleton. No-op
 // when the singleton is not yet live.
 // @early-stop
-// 99.5%, and the residue is NOT the "deferred-callee-save (push) coin-flip" this note
-// used to claim: it is 2 instructions of the SAME ecx/edx global-store-temp alternation
-// as ReadMenuOptionsDialog above (`mov ecx,[g_gameReg]; mov [ecx+0x110],eax` where retail
-// takes edx) - docs/patterns/global-store-temp-alternates-ecx-edx.md. Logic + offsets
-// byte-exact; park on sight.
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
     if (g_gameReg == 0) {

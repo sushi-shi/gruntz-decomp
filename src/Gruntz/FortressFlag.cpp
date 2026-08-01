@@ -124,9 +124,6 @@ RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
 // routine GetSel thunks to, so the reused GetSel call reloc-masks.
 //
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical (incl. the m_124 jump table); residual is the /GX leaf-vptr
-// re-stamp position + EH-state ids.
 RVA(0x00045d30, 0x220)
 CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
@@ -419,10 +416,6 @@ i32 CParticlez::Update() {
 // bute node, flag the sub-object, lock the draw order to 0xf4240 and clear m_38.
 //
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md,
-// topic:wall topic:eh): body byte-identical; residual is the /GX leaf-vptr re-stamp
-// position + the EH-state ids, not source-steerable - the established leaf-ctor
-// baseline (cf. CMenuSparkle 92.8% / CEyeCandy 92.5% in userlogic).
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_EXPLOSION");

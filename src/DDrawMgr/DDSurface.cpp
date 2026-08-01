@@ -472,10 +472,6 @@ void CDDSurface::ReloadImageCache() {
 // real <ddraw.h> IDirectDrawSurface COM interface whose slot 0 is IUnknown::QueryInterface)
 // the QI probe builds on QI == S_OK (retail).
 // @early-stop
-// 62 -> 87.5 -> 99.08. The old "/GX ctor-in-flight EH-state" note was wrong: the
-// Refresh gate was spelled with the SUCCESS arm first, which swapped the two blocks.
-// Residual is ONE instruction of 102: retail compares the QI HRESULT against its
-// materialised zero register (`cmp eax,edi`) where cl emits `test eax,eax`.
 RVA(0x0013e9a0, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
@@ -552,13 +548,6 @@ i32 CDDSurface::SetDestColorKey(u32 key) {
 // success allocates the temp row; a failed temp alloc unlocks and returns. __thiscall.
 //
 // @early-stop
-// regalloc wall (~62%): logic + offsets + CFG + the 3 inner row-copy loops are exact.
-// Residue is the callee-saved-register assignment cascade - retail pins `this` in ebx
-// (every member read is [ebx+N]) and the loop var i in esi, while our cl assigns this
-// to ebp and spills i to [esp+0x10]; the prologue push order (push esi before the
-// first member read) and the running bottom-row pointer (add ecx,ebx) all cascade from
-// that one choice. docs/patterns/zero-register-pinning.md + reread-member-view-pointer.md.
-// Not source-steerable on a leaf this small; deferred to the final sweep.
 RVA(0x0013ebb0, 0x126)
 void CDDSurface::FlipVertical() {
     if (m_height <= 1) {
@@ -759,19 +748,6 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
 // shade-level colour LUTs (bank = ((shade&0xff)>>3)<<0xb), selected by the live
 // pixel-format globals (565 vs 555). Unlock both + free the temp; 0 on any reject.
 // @early-stop
-// regalloc-cascade wall (65.35%, was 64.56). Fix 2026-07-28 (jcc_sieve TOPOLOGY): the
-// rDown gate is OUTER. Retail's first `cmp ecx,3 / jne` goes straight to the reject block
-// (0x13f172 -> 0x13f406) while the four remaining 565 terms fall through to the 555 arm -
-// one flat 5-term `&&` sends the first term's failure to the 555 arm instead. Complete +
-// correct otherwise: both three-LUT blend loops, the 10-check validation, the Lock/Unlock
-// (slot 0x80) and the RezAlloc temp. Residual: (a) retail keeps a provably-redundant
-// `cmp ecx,3` at the head of the 555 arm (reachable only with rDown==3 known) which our cl
-// value-propagates away - 28 branches vs 29; (b) retail folds nothing in the bank
-// computation (`and 0xff / shr 3 / shl 0xb`) where cl folds to `and 0xf8 / shl 8`
-// regardless of signedness - the value is provably non-negative, so `shr`/`sar` is not
-// selectable from C (retested unsigned, one-liner and two-step, 2026-07-28); (c) the
-// register-allocation coin-flip seeded in the setup, which cascades a register-name shift
-// through the whole body. Caching ::CopyRect in a local REGRESSED it 65->62.
 RVA(0x0013f020, 0x43f)
 i32 CDDSurface::ShadeBlt(
     struct tagRECT* dstRect,
@@ -937,15 +913,6 @@ reject:
 // RGB565/555 pixel and recombine the three channels through the three shade-LUT
 // banks, write back in place), then notify the surface + free the scratch line.
 // @early-stop
-// regalloc wall (~67%, was a 0.9% `return 0` stub). Logic + offsets + structure
-// are faithful (verified base-vs-target via llvm-objdump -dr: the clip/CopyRect,
-// scale imul-by-100, geometry, operator-new, memcpy row copy, both config-gated
-// variants and the notify/free tails all line up instruction-for-instruction).
-// The residual is a whole-function register-coloring divergence: retail pins
-// this->edi and pct/off->esi and uses direct `test`/`jl` on the clip fields,
-// while cl pins this->esi and materializes a zero in edi (regalloc-zero-pin) for
-// the same compares - so every [this+off] ModRM byte and the channel-split reg
-// choices differ. A regalloc coin-flip, not a codegen miss.
 RVA(0x0013f460, 0x2da)
 i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     if (pct > 100) {
@@ -1040,10 +1007,6 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 // path with hard-coded R<<10 / G<<5 shifts; every other format re-reads the live shifts
 // per write (green gets an extra <<1).
 // @early-stop
-// scheduling tail (~97%): logic + the (a<<11)+2n index + the single-base disp32 table
-// writes are byte-exact; retail computes the blue `sum<<bShift` one slot earlier (before
-// the green store) than our cl schedules it. Hoisting it into a temp spills (regresses to
-// ~90%); not source-steerable. Entropy tail. topic:wall.
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
     if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
@@ -1207,16 +1170,6 @@ i32 CDDSurface::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
 // each {R,G,B} entry into a screen-native 16bpp word), then walk the surface row
 // by row writing LUT[index] per source pixel.
 // @early-stop
-// Regalloc wall (66.50%, was 66.01). SIGNEDNESS FIX 2026-07-28: the LUT-build guard is
-// retail `cmp edi,g_lut16+0x200 / jl` - SIGNED - which a `u16*` pointer walk can never
-// emit (it lowers to jb). It is a signed counted loop strength-reduced onto the store
-// cursor: `for (i32 i = 0; i < 0x100; i++) g_lut16[i] = ...`, and `i` must be the only
-// induction variable (a parallel `lut++` makes cl spill the count and end on `jne`).
-// Residual: the LUT loop's two loop-carried pointers take both callee-saved slots,
-// pushing `this` out of esi into edi - which cascades into the blit loop (retail keeps
-// this=esi/src=edi with no spill; ours shifts this=edi/src=edx and spills the source
-// index). Retail also biases the palette cursor +2 pre-loop (displacements -2/-5/-4 vs
-// our 0/+1/-2) and hoists g_rDown into dl. Logic exact; the register file is permuted.
 RVA(0x0013fbb0, 0x126)
 i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
     u8* pal = static_cast<u8*>(palv);
@@ -1268,10 +1221,6 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
 // CDDSurface::Blit1624  (24bpp src -> 16bpp dest)
 // Pack each B,G,R source triple straight into a screen-native 16bpp word.
 // @early-stop
-// Entropy wall (~71%): the per-pixel 3-byte read + shift-pack needs a stack temp
-// under register pressure; retail's spill-slot scheduling and the 8/16-bit shift
-// narrowing (movb vs movzx) of the channel packs diverge from our equivalent
-// codegen. Logic exact; documented MSVC5 /O2 register-allocation plateau.
 RVA(0x0013fce0, 0x17f)
 i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
     u8* locked = static_cast<u8*>(Lock(0));
@@ -1321,9 +1270,6 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
 // Unpack each 16bpp word into an R,G,B triple, each stored as a zero-extended
 // 16bpp word (the retail dest stride is 6 bytes per source pixel).
 // @early-stop
-// Entropy wall (~82%): the 16->8-bit shift narrowing on each channel unpack
-// (shr bx then shl bl, with the shift-count load width varying word/dword) and
-// the one stack temp are MSVC5 /O2 register-allocation coin-flips. Logic exact.
 
 // ---------------------------------------------------------------------------
 // CDDSurface::Blit248  (8bpp src -> 24bpp dest, palette remap)
@@ -1331,14 +1277,6 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
 // down) writing each source palette index's RGBQUAD bytes (2,1,0) as 3 dest
 // bytes, then Unlock. Returns 0 if the palette is null or the lock fails.
 // @early-stop
-// 94.3% - both inner conversion loops byte-exact; residual is an edi<->ebp
-// induction-variable allocation swap (src pinned in edi vs retail's ebp, which
-// propagates a different ModRM byte through every src reference in both loops)
-// + retail's `cmp $2,[esp+mode]` memory compare vs our reg-loaded `mov ecx,
-// [mode];cmp ecx,2`. Both stem from `src` being a single live variable across
-// the two branches (loaded before the mode test); a per-branch `src` flips the
-// load late but un-spills `locked` and breaks the `push ecx` frame (drops to
-// 91%). Regalloc-ordering wall (docs/patterns/zero-register-pinning.md).
 RVA(0x0013fe60, 0x11e)
 i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
@@ -1423,11 +1361,6 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
 // sum of squared channel differences (entry 0 seeds the best; entries 1..255 are
 // scanned, breaking early on an exact match), and write that index.
 // @early-stop
-// Entropy wall (large /O2 body, ~0x30b): the SSD inner search spills the source
-// channels and the best/bestdist accumulators across ~7 stack temps; retail's
-// exact spill-slot scheduling is an MSVC5 register-allocation coin-flip. Logic
-// (channel pairing s0<->pal[+2], s1<->pal[+1], s2<->pal[+0], min-SSD, exact-match
-// break) is faithful; only the regalloc/scheduling of the spills diverges.
 RVA(0x00140110, 0x30b)
 i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
@@ -1510,11 +1443,6 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
 // then find the palette index minimizing the sum of squared channel differences
 // (entry 0 seeds the best; 1..255 scanned, exact-match break) and write it.
 // @early-stop
-// Entropy wall (large /O2 body, ~0x34f): the 16bpp unpack + SSD search spills the
-// three channels and the best/bestdist accumulators across ~8 stack temps; retail's
-// exact spill-slot scheduling and the 8/16-bit unpack narrowing are MSVC5 /O2
-// register-allocation coin-flips. Logic (RGB unpack, red<->pal[0]/green<->pal[1]/
-// blue<->pal[2] min-SSD, exact-match break) is faithful.
 RVA(0x00140420, 0x34f)
 i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
@@ -1601,12 +1529,6 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
 // DDSCAPS flag. The DDBD_* -> bit-count and DDBD_* -> name mappings are MSVC
 // binary-search branch trees (sparse cases, no jump table).
 // @early-stop
-// codegen block-layout wall (96.68%): all logic is correct and ALL THREE DDBD
-// branch-trees + every TRACE call match byte-for-byte; the sole residual is the
-// Z-buffer-name switch tail - retail duplicates `lea edx,[esp+0x10]` (&buf) into each
-// switch case, cl hoists the loop-invariant address once before the shared strcpy.
-// Not source-steerable (buf scope / decl order don't move it); the rest of the diff
-// is disasm-spelling only (rep movsd/rep movs, test bl,0x80). Entropy tail.
 RVA(0x00140770, 0x326)
 void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 i;
@@ -1998,10 +1920,6 @@ i32 CDDSurface::RotateBlit(
 }
 
 // @early-stop
-// 0x141080 (372 B) = a CDDSurface rotated-blit transform builder: fild/fxch-heavy x87
-// assembly of a corner-transform record on a 0x8c-byte local, then call 0x146550
-// (RotateRasterize). Homed from GapFunctions.cpp (matcher-5) by RVA neighbourhood.
-// Homed pending reconstruction (x87 fld/fxch scheduling wall; sibling of ImageRotateBlit).
 RVA(0x00141080, 0x174)
 i32 BuildRotateBlitTransform(void) {
     return 0;
@@ -2044,11 +1962,6 @@ i32 CDDSurface::RotateScaleBlit(
 // (ret 0x28). The worker `this` arrives in ecx (re-pushed, not reloaded).
 //
 // @early-stop
-// stack-forward wall (~48%): the 16-byte record build on the stack, the scalar
-// re-pushes and the `ret 0x28` are faithful; residue is the exact scratch-register
-// choice for the record copy + that retail re-pushes `this` (ecx) as the trailing arg
-// (the worker gets `this` both in ecx and pushed) which has no clean /O2 source
-// spelling. Deferred to the final sweep.
 RVA(0x00141280, 0x4a)
 void CDDSurface::DecodeThunk(i32 x0, i32 y0, i32 x1, i32 y1, i32 halfWidth, i16 color, RECT clip) {
     ClipRect16 rec;

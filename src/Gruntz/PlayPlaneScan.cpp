@@ -23,11 +23,6 @@
 // (and bails) on a failed insert.
 // ---------------------------------------------------------------------------
 // @early-stop
-// scheduling wall (~99.6%, topic:scheduling): only residual is the 9-dword rock
-// buf fill (llvm-objdump -dr base vs target) - retail emits strict load;store
-// pairs (mov [m134],edx / mov edx,[m138] / ...) while cl schedules the m_138/m_13c
-// loads 2-ahead of the first buf store. An MSVC5 load-look-ahead coin-flip; the
-// struct-copy and array spellings both still hoist. All logic/relocs byte-match.
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CDDrawSurfaceMgr* v = m_world;
@@ -153,14 +148,6 @@ i32 CPlay::ScanBuildTiles() {
 // types and scatter-permuting the four m_blockF corners for the special type.
 // ---------------------------------------------------------------------------
 // @early-stop
-// CByteArray Fisher-Yates shuffle-idiom wall (~77.7%, topic:codegen-idiom): the
-// guard + the whole plane-walk (5 quad types -> perm[m_quadIndex]; the special type's
-// NAN-fixup + 4-corner scatter-permute) byte-match. The residual is the shuffle
-// prologue - retail's `rand() % n` per round carries a defensive n==0 branchless
-// fallback (`lea esi,[n-1]; lea edi,[esi+1]; cmp edi,0; jne idiv; else ~-(rand&1)
-// & (n-1)`) that a plain `rand() % arr.GetSize()` does not emit, plus the exact
-// MFC CByteArray field offsets the shuffle indexes. Complete algorithm; the exact
-// RNG-helper idiom is deferred to the final sweep.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;

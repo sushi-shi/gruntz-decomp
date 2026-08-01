@@ -46,16 +46,6 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
 // the reloc table 0xd3af..0xe9e5).
 //
 // @early-stop
-// >512B leaf-first megafunction (6532 B). Deferred to the leaf-first final sweep per the
-// same >512B REVERT rule as BattlezSetupDlgInit: this body inlines the FULL ctor of ~80
-// distinct CUserBase-derived game object classes (verified: each case is operator-new +
-// an inlined ctor that stamps ??_7C<Class> + ??_7CUserBase and runs the embedded-member
-// ctors, e.g. CGrunt's 0x21a-byte inline ctor at 0xd37a). A faithful match REQUIRES every
-// one of those ~80 leaf ctors matched first AND MSVC5 to inline each identically here;
-// none are set up to inline-match yet, so any partial would under-count AND diverge its
-// own regalloc. The structural dossier above (mode dispatch + typeId->class->size->vtable
-// factory table) is the final-sweep starting point; the return-0 normalization artifact
-// is kept per the >512B rule.
 RVA(0x0000d2a0, 0x1984)
 i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void* payload) {
     return 0;

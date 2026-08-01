@@ -30,9 +30,6 @@ i32 CImageSet2::GetStride() {
 // from the WWD record at +0x08.. into m_04..m_20 via an advancing source pointer
 // and returns TRUE.
 // @early-stop
-// tail-peephole wall (~94%): retail advances the source pointer on the 7th store
-// (add eax,4) then reads the 8th via [eax]; cl folds the 7th advance into the
-// 8th's +4 displacement. Body otherwise byte-exact; not source-steerable.
 RVA(0x00166990, 0x4c)
 i32 CImageSet2::Parse(void* record) {
     i32* p = static_cast<WwdTileImageRecord*>(record)->m_fields;

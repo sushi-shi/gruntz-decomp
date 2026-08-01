@@ -29,21 +29,6 @@
 RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ) // (100% - byte-exact)
 //
 // @early-stop
-// 1-arg ctor 0x58cd0: 0.89% stub -> 89.0%, byte-shaped (prologue + throwing-link
-// /GX frame + EngStr temp + inlined Lookup-based BuildLogicTypeTable + AddLogic*3
-// + int stores all match; verified base-vs-target with llvm-objdump -dr). Two
-// residuals, both documented walls, both also present in the reference standalone
-// BuildLogicTypeTable @0x8a40 (itself only 87.92%):
-//   1. Factory-fn DIR32 naming: the three RegisterType factory pushes reference
-//      _LogicHitFactory/_LogicAttackFactory/_LogicBumpFactory, but retail's symbols
-//      at 0x56e4c0/d0/e0 are delinked as ?KeyPrefixBits_16e480@@YAHPBD0@Z (a Ghidra
-//      mislabel shared across the logic-type TUs) -> DIR32 name mismatch. Renaming
-//      is a cross-unit symbol-naming fix (would also touch userlogic), out of
-//      this TU's scope.
-//   2. MSVC scheduling coin-flip inside the inlined BuildLogicTypeTable: retail
-//      schedules the `found = 0` store + the `obj->m_c` reload AFTER the Lookup
-//      arg-pushes; MSVC5 here emits them before (x3 blocks). Not source-steerable
-//      (a scalar store vs call-arg ordering the scheduler owns).
 RVA_COMPGEN(0x00058cd0, 0x195, ??0CUserLogic@@QAE@PAUCGameObject@@@Z)
 
 i32 LogicHitFactory(

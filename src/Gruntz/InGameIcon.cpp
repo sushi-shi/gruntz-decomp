@@ -145,24 +145,6 @@ RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 //     the icon (owner->m_8 |= 0x10000).
 //
 // @early-stop
-// Complete reconstruction, ~89.8% fuzzy (0%->90% from the bare stub); parked below
-// 100% on two intertwined MSVC5 /O2 walls of this 5616-byte /GX megafunction, both
-// verified via llvm-objdump -dr base-vs-target:
-//   (1) FRAME-SIZE + EH-STATE shift. The whole CUserLogic(obj) base-ctor fold + own
-//   zero-init head is BYTE-EXACT (vptr stamps, link ctor, EngStr temp, the three
-//   AddLogic* calls, the data seed - all identical). But cl allocates the local
-//   frame at sub esp,0x1c vs retail's 0x18: retail keeps `glitter` in edi across the
-//   WarpStone-format block so its [esp+0x38] slot is reused for the warpName CString,
-//   while cl spills glitter (its lifetime spans that block), forcing warpName to a
-//   fresh slot (+4). That shifts every [esp+N] operand and bumps the CString EH
-//   trylevel stamp (ebx=4 vs retail 5) in the tail. Not source-steerable.
-//   (2) INLINE-STRCMP regalloc pin (docs/patterns/zero-register-pinning.md family).
-//   The ~40-block name dispatch is shape-faithful (same sbb/sbb byte compare, same
-//   id/category, same tail-merged SetupSprite cross-jump), but cl caches the name
-//   pointer in edi from block 1 (`mov eax,edi`) whereas retail reloads [esp+0x10]
-//   for the first ~5 blocks then caches in edx - a free-list coin-flip that shifts
-//   the block byte stream. Every call, string literal, field offset, immediate and
-//   control-flow edge matches retail. Deferred to the final sweep.
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
@@ -493,13 +475,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // paths return 0.
 //
 // @early-stop
-// CODE BYTE-EXACT - residual is the jumptable-data-overlap scoring artifact
-// (docs/patterns/jumptable-data-overlap.md): the dense 0x1e/0x13 switch lowers to
-// a .rdata jump table that cl emits as local $L labels while the delinked target
-// carries self-relocs, so objdiff under-counts the table region (~9%). The
-// dispatch, the index table and every case body are byte-identical to retail
-// (verified by raw byte-compare). Effectively matched; deferred only for the
-// jump-table reloc-typing fix.
 RVA(0x00097680, 0x110)
 i32 CInGameIcon::HandleInput() {
     CWwdGameObjectA* obj = m_object;
@@ -672,18 +647,6 @@ i32 CInGameIcon::RefreshCell() {
 // ({m_peekWindow}=0xfa, {m_peekTimer}=g_frameTime). Returns 0.
 //
 // @early-stop
-// 88.2% - block topology is IDENTICAL (22 vs 22, every edge matching). Two of the five
-// residual instructions are gone now that the tile cell is spelled as the BrickzCell it
-// is (retail scales x*28 into a byte offset ONCE and uses it as [row+off+8] then
-// [row+off], i.e. struct indexing - it emits the memory RMW `and [eax],0xfffbffff` by
-// itself). The remaining FOUR are one cause: cl CSEs `grid->m_width` out of the two
-// bounds checks into a FIFTH callee-saved register, so the prologue gains `push ebp`,
-// both epilogues a `pop ebp`, and the extra live value re-colors everything downstream.
-// Retail re-reads `[edx+0xc]`/`[edx+0x10]` at BOTH checks. TESTED and not steerable -
-// five spellings of the second gate all reproduce the CSE: operand swap (87.2, worse),
-// De Morgan, dropping the redundant u32 cast, hoisting the clear into an inline helper,
-// and hoisting BOTH gates into inline helpers (all 88.2 exactly). With no store between
-// the two loads the CSE is legal and cl always takes it.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -770,19 +733,6 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 // store. Returns 1 on a successful place, 0 on a reject.
 //
 // @early-stop
-// 69.1% - re-audited against the disasm. The residual is ONE cause and it is the
-// documented ONE/ZERO-register pinning (docs/patterns/zero-register-pinning.md, which
-// proves it a coin-flip on a structurally identical twin): retail materialises the
-// constant 1 in ebx up front and spends it BOTH on the reject gate (`cmp eax,ebx` for
-// `m_134 == 1`) and on `matchActive = 1` (`mov [esp+0x14],ebx`), then `xor ebx,ebx`
-// re-uses the same register as the zero. cl emits `mov edx,1` / immediates instead, and
-// the freed/occupied register cascades through the whole 780-byte body (it also lets
-// retail schedule `push edi` after the first compare and the g_gameReg load before the
-// pushes). TESTED: rewriting the reject as a positive gate wrapping the whole body -
-// the lever that took CInGameText::Update 79.5 -> 93.8 - is byte-IDENTICAL here (cl
-// canonicalises the negation), because this reject is a bare `return 0` with no side
-// effects for cl to have to place. Left in the literal `if (A && B && C) return 0;`
-// form, which is what retail's branch structure spells.
 RVA(0x000986b0, 0x30c)
 // Both callers (CGrunt @Grunt.cpp / GruntEntranceArrival.cpp) pass
 // (m_tileOwnerHi, m_tileOwnerLo), and the body's `idx = hi * 15 + lo` is the same
@@ -905,23 +855,6 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
 // Returns 0.
 //
 // @early-stop
-// 97.4% - re-audited instruction by instruction: everything except ONE pair of
-// instructions is pure register RENAMING (ebx<->esi, ecx<->edx, edi<->ebx), i.e. the
-// same value in a different callee-saved home. The single real difference is in the
-// occupancy clear: retail materialises the cell address first (`add eax,ecx`) then
-// `mov ecx,[eax]`, while cl folds the add into the addressing mode (`mov ecx,[eax+edx]`)
-// and adds afterwards. Same operands, same count, different order.
-// The typed-BrickzCell spelling that took PeekCycle 83.7 -> 88.2 goes the OTHER way here
-// (measured: read block 97.4->96.3 alone, clear block -1.2, the m_188 publish block -7.0,
-// all three -8.2), which is exactly why CMapMgr carries the m_rows/m_rowInts union:
-// retail walks this band both ways and this function is on the int-walk side.
-// Second real difference, found by jcc_sieve TOPOLOGY 2026-07-28 and worth ONE byte: our
-// `&&` merges both false arms onto the end block, where retail CHAINS them - its first
-// `je` lands on the second `test eax,eax` and lets the already-zero call result serve as
-// the null. All three spellings that reproduce that chain cost more than the byte they buy:
-// `CGameObject* hit = 0; if (Lookup(..)) hit = ..;` promotes hit to ebp (92.83), and both
-// the explicit if/else and the ternary make cl emit a branchless `neg eax`/sbb select
-// (93.26 / 93.97). Measured 2026-07-28; the `&&` stays.
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -1004,21 +937,6 @@ i32 CInGameIcon::Reposition() {
 // spelled out below; making Chain inline instead would reshape its real callers
 // (CAniCycle::SerializeMove @0xf470 and friends), which `call 0x8c00` it.
 // @early-stop
-// 89.97%. Everything up to and including the two timer pairs is byte-exact. The residue
-// is one stack-allocator choice plus its fallout: retail puts the CHAIN-half key buffer
-// at the HIGH slot (esp+0x9c) and the tail's at the LOW one (esp+0x1c); cl gives us the
-// mirror, so roughly ten `lea`/`push` sites differ only in their displacement
-// (disp8 vs disp32) and the CString temp lands 4 bytes off. Not source-steerable:
-// measured both declaration orders and a point-of-use declaration for the second buffer
-// - all three produce the identical layout, because the two arrays are the SAME SIZE and
-// cl orders equal-size arrays by which has its address taken first, which the algorithm
-// fixes. (Declaration order DOES control it when the sizes differ - see
-// CPlay::DrawDebugStatsFull @0xcf0a0, where buf/0x200 and two 0x40 scratches land in
-// declaration order.) The last small item is `mov edi,[eax]` vs `mov edi,[esp+0x10]`
-// after each Key/FindKeyOfValue: retail reads the returned CString's m_pchData straight
-// off the return-buffer pointer. Consuming the temp in place does emit that, but gives
-// the two call sites separate 4-byte slots where retail shares one, costing more frame
-// than it saves (measured: 87.47% vs 87.13% at the time).
 RVA(0x00098c90, 0x382)
 i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* obj) {
     // TWO 0x80 key buffers, not one - retail's frame is 0x10c and holds both (the
@@ -1163,11 +1081,6 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
 // layer key and the +0x54/+0x58 scalars to -1.
 //
 // @early-stop
-// register-pinning/eh-ctor-vptr-restamp wall (docs/patterns/zero-register-pinning.md,
-// eh-ctor-vptr-restamp-position.md): body byte-faithful (every op/offset/imm/string
-// + the m_128 visibility branch tangle match retail; constant 2 pins in ebx like
-// retail). Residual is the /GX leaf-vptr re-stamp position + the visibility-gate
-// branch-polarity (retail emits `je visible` where structured C emits `jne hide`).
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_134 == 2) {
@@ -1269,15 +1182,6 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, CGameObject* b)
 }
 
 // @early-stop
-// 64.2% on 54 bytes - logic and structure are identical; the residual is the documented
-// zero-register pinning (docs/patterns/zero-register-pinning.md). Retail materialises 0
-// in ecx and reuses it three ways (`cmp eax,ecx` for the null test, the out-param slot
-// store, and the null-path `m_cue = 0`), where cl emits `test ecx,ecx` + an immediate
-// store; and retail reads the parameter from [esp+4] BEFORE `push esi`. Three spellings
-// measured: collapsing cue+found into ONE variable to share the zero makes it WORSE
-// (56.4, and 55.6 with the g_gameReg hoist), which is the coin-flip the pattern doc
-// describes. Hoisting g_gameReg into its own local ahead of the out-param zero is the
-// one lever that did move it (63.4 -> 64.2) and is kept.
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
     LeafCue* cue = 0;

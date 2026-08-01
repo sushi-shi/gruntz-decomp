@@ -139,17 +139,6 @@ i32 CGameObject::IsLoaded() {
 // real class emits on its own - ??_7CResolveNode from the base ctor, then
 // ??_7CGameObject.)
 // @early-stop
-// cl-5.0 /Ob1 EXPANSION-COUNT exhaustion (docs/patterns/ob1-inline-budget-
-// divergence.md). Everything matches except the +0x9c member: retail folds
-// WwdRegion's three stores, we emit `lea ecx,[esi+0x9c]; call ??0WwdRegion` (and
-// the two -1 immediates that no longer share the clobbered `or eax,-1`). That call
-// is DELIBERATE - see the guard rationale at the top of the file: this body needs
-// ~12 nested ctor expansions and cl 5.0 is one short, so left to itself it prunes
-// the deepest one instead (`??0CWapObj`, whose out-of-line COMDAT then emits the
-// proven-absent ??_7CWapObj@@6B@ and fails the vtbl-absent gate). PROVEN a count,
-// not a depth: deleting the `new AnimWorkerObj(...)` statement (probe) frees the
-// same budget, while #pragma inline_depth(16)/(255) change nothing and MSVC5 has
-// no __forceinline (C2501). 88.7 % with the CWapObj prune, 91.1 % this way.
 RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CResolveNode(owner, id, stateFlags) {
@@ -170,8 +159,6 @@ CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
 // THIS TU so the family dtors below fold its content (retail ~E/~A/~F/~C tails);
 // the ResolveNode.cpp pocket's ??_G calls it (retail 0x154a30 -> 0x154a50).
 // @early-stop
-// sentinel-seed store-scheduling wall (docs/patterns/sentinel-seed-ctor-store-schedule.md):
-// byte-identical EXCEPT the single immediate vptr restamp store position.
 RVA(0x00154a50, 0x23)
 CResolveNode::~CResolveNode() {
     m_screenX = static_cast<i32>(0x80000000);
@@ -184,9 +171,6 @@ CResolveNode::~CResolveNode() {
 // release pass folds, then the CString member dtor, then the inline
 // ~CResolveNode + ~CLoadable + CObject-grand-base restamp fold in (retail tail).
 // @early-stop
-// zero-register-pinning regalloc wall (docs/patterns/zero-register-pinning.md):
-// logic + /GX trylevel chain (3->2) byte-exact, residual is the callee-saved
-// zero/0x80000000/-1 register coloring (edi/ebx/ebp vs retail ebp/edi/ebx).
 RVA(0x00154a80, 0x13)
 void CResolveNode::Unload() {
     m_screenX = static_cast<i32>(0x80000000);
@@ -206,10 +190,6 @@ CGameObject::~CGameObject() {
 // worker. Otherwise hand `p` to the +0x80 notifier's +0x10 cdecl callback (with
 // the owner), after recording `p` at +0x84. __thiscall, 1 arg (ret 0x4).
 // @early-stop
-// 84% - structure/CFG/offsets/stores byte-exact; the residual is two instruction-
-// selection coin-flips MSVC5 won't flip from source: the flag test (`movb;testb`
-// vs retail `testb mem`) and the budget subtract (mem-operand vs reg-load first).
-// Entropy-tail / zero-register-pinning wall.
 RVA(0x0015b650, 0x4d)
 void CGameObject::Notify(void* p) {
     if (m_flags & 0x8) {
@@ -319,8 +299,6 @@ void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, CD
 // 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
 // of Mid. Re-runs the worker pass + groupX, then folds Mid + wap-object base.
 // @early-stop
-// zero-register-pinning regalloc wall: two-level fold + double worker pass +
-// trylevel chain reproduced; residual is callee-saved const register coloring.
 RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdGameObjectF@@UAEPAXI@Z)
 RVA(0x0015bad0, 0x153)
 CWwdGameObjectF::~CWwdGameObjectF() {
@@ -413,9 +391,6 @@ i32 CWwdGameObjectC::SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl
 // 0x15c290: bind the cursor to the wide game object that embeds it (+0x1a0) and seed
 // the per-frame state.
 // @early-stop
-// 94.75% - structure/offsets/stores byte-exact; retail pins `src` in edx and the
-// constant `1` in eax, our cl swaps them (eax<->edx phase shift), a regalloc
-// coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
 RVA(0x0015c290, 0x2f)
 void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
     m_boundObject = src;
@@ -496,19 +471,6 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
 // 0x15c360: advance the animation cursor by `elapsed` ticks. __thiscall, 1 arg
 // (ret 4).
 // @early-stop
-// Zero-register-pinning plateau (1365 B, two jump-table switches): the body is a
-// complete, logic-correct reconstruction. Byte-exact: the entry + timer-decrement
-// block, both jump-table switches (both emit the retail .rdata table AND match its
-// physical case-body order), the pos-mode update, the random blit/sound trigger,
-// the float speed scale (fild/fmul/__ftol), the descriptor-advance variants, and
-// the buffer-consuming return tail. The residual is purely the documented
-// register-pinning wall: (1) switch1's increment/step cases pin the new frame
-// index in a callee-saved ebx as a TWIN copy where our cl keeps it single-register
-// in eax; (2) the back half re-materializes the zero in ecx vs our reuse of the
-// ebp=0 pin, and the pos-mode switch swaps eax<->ecx for the switch value. Same
-// values, same stores, same CFG; no source lever flips the homing. Deferred to the
-// final sweep per the big-function stop rule. docs/patterns/zero-register-pinning.md
-// + linked-list-walk-node-eax-rotation.md (the twin-copy idiom).
 RVA(0x0015c360, 0x555)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_14 == 0) {
@@ -886,9 +848,6 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 // via the named sibling), every other type is a no-op that returns 1. A
 // serialize/deserialize that returns 0 propagates the 0.
 // @early-stop
-// 80% - logic exact. Residual is the switch lowering: retail emits a `.rdata`
-// jump table, but MSVC5 folds our empty cases into a cmp/je-subtract chain.
-// Not source-steerable. docs/patterns/switch-cmpje-tree-vs-jumptable.md.
 RVA(0x0015c900, 0x42)
 i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) {
     if (ar == 0) {
@@ -955,19 +914,6 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
 // label is non-empty - looks it up in the worker sub-object's +0x10 map to recover
 // the worker into m_srcRef. Then the Setup-style tail. __thiscall, ret 0x4.
 // @early-stop
-// 89.9% - every instruction/CFG/offset present and the logic is byte-faithful.
-// Residuals: (1) a register-allocation cascade seeded at the first field read - retail
-// keeps &m_30 in callee-saved ebp across the function, our cl spills it (frame 0x94) and
-// rotates eax/ebp through the eight reads + the index tail; (2) jcc_sieve TOPOLOGY
-// 2026-07-28: retail RE-READS m_element for the third guard (`mov ebx,[ebx+0x18] / test
-// ebx,ebx`, 0x15cb8f) on both incoming paths, where our cl value-propagates through the
-// preceding `m_element = e` store and threads the `e != 0` branch straight into the body.
-// A compiler-analysis difference, not a source shape - the C is already `m_element = e;
-// ... if (m_element != 0)`. RE-CONFIRMED 2026-08-01: binding it to a fresh local
-// (`CAniDesc* cur = m_element; if (cur != 0) ... cur->m_drawValue`) is BYTE-IDENTICAL -
-// cl value-propagates through the store either way, so the re-read is not reachable
-// from C. docs/patterns/pin-local-for-callee-saved-reg.md /
-// zero-register-pinning.md / reread-member-view-pointer.md.
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == 0) {
@@ -1031,10 +977,6 @@ CImage* CDDrawWorker::GetFrame(i32 n) {
 // frame cursor to the active sequence's low/high frame and re-resolve +0x198
 // through the same bounds-checked fetch GetFrame (0x15cc30) inlines.
 // @early-stop
-// shrink-wrapped-callee-save-push wall (~62%, docs/patterns/shrink-wrapped-callee-
-// save-push.md): retail defers `push esi` past the null guard and emits the
-// esi-pop epilogue inline per exit; cl hoists push esi to the prologue and
-// tail-merges the exits. Body byte-exact; not source-steerable.
 RVA(0x0015cc50, 0x38)
 void CWwdGameObjectA::ClampFirst() {
     CDDrawWorker* seq = m_sprite;
@@ -1051,7 +993,6 @@ void CWwdGameObjectA::ClampFirst() {
 }
 
 // @early-stop
-// shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
 RVA(0x0015cc90, 0x38)
 void CWwdGameObjectA::ClampLast() {
     CDDrawWorker* seq = m_sprite;

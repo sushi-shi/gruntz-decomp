@@ -13,10 +13,6 @@
 #include <string.h>                    // inline strlen (repne scasb) over the scratch buffer
 
 // @early-stop
-// outparam-zeroinit-scheduling wall (same as CTriggerLoadRec): logic + offsets
-// byte-exact, residual is only the 6 `out = 0` store positions (retail sinks, cl
-// hoists). The idx-in-callee-saved-reg regalloc is steered by the `i32 i = idx;`
-// copy. ~92%.
 RVA(0x0009c650, 0x372)
 i32 CTimer::Deserialize(CFileMemBase* s) {
     if (s == 0) {

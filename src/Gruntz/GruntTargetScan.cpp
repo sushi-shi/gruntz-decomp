@@ -19,17 +19,6 @@
 // canonical CGruntzMapMgr/CMapMgr object.
 //
 // @early-stop
-// Logic reconstructed in full (every branch, the 12 inlined priority switches, the grid
-// scan, the m_defenderState dispatch, the wander tail). 2026-07-05: the m_defenderState
-// dispatch is a `switch` (converted from if/else) -> retail's exact `sub eax; je case0; dec;
-// je case1; dec; jne default(return 1); [case2 fall-through]` ladder with case2 nearest /
-// case0 (seek+wander) farthest; +0.4% only, because the if/else already put mode2 first (unlike
-// ChargeStep/UpdateArrival where the switch was worth +30%). Residual (base 1035 vs retail
-// 1238 insns) is the family wall of the ArrivalScan siblings: (1) this-register colored ebx
-// here vs edi in retail + frame 0x44 vs 0x40 + the scan-loop scheduling, (2) the case-2
-// powered-up recheck DCE (same artifact as ChargeStep/UpdateArrival - dead because the
-// switch runs only with m_poweredUp==0), (3) the shared-return tail-merge cl won't permute.
-// Final-sweep candidate.
 #include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
 #include <Gruntz/GruntSpawnConfig.h> // complete type for the cue calls
 #include <Gruntz/GameRegMfcPtr.h>    // g_gameReg at its REAL type (CGruntzMgr)
@@ -43,7 +32,7 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry / CDDrawSurfaceMgr
 #include <Gruntz/GameLevel.h> // CGameLevel / CDDrawWorkerHost (world->m_24->m_mainPlane->m_viewRect.left)
 #include <Gruntz/GruntzMapMgr.h> // canonical tile board
-#include <stdlib.h>           // engine rand (0x11fee0)
+#include <stdlib.h>              // engine rand (0x11fee0)
 
 #define PRIO(dst, r)                                                                               \
     switch (r) {                                                                                   \
@@ -287,7 +276,8 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 Coord cc[2];
                 best->GetScreenPos(cc);
-                if (this->TileSwitch(cc[0].m_x >> 5, cc[0].m_y >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
+                if (this->TileSwitch(cc[0].m_x >> 5, cc[0].m_y >> 5, 0, m_arrivalFlags, 1, 0)
+                    == 0) {
                     goto L_scanDone;
                 }
             }
@@ -302,8 +292,7 @@ i32 CGrunt::ScanNearestTarget() {
                         m_object->m_screenY
                     )
                     != 0) {
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
         L_scanDone:

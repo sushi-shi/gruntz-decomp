@@ -257,11 +257,6 @@ i32 CMenuItem::Hit(i32 x, i32 y) {
 // configure from a template + strings (chaining CMenuItem::Init), then
 // resolve the three per-state sprites by "<key>_NORMAL/_SELECTED/_DISABLED".
 // @early-stop
-// scheduling artifact (~91.6%): every instruction is byte-identical (incl. the base
-// Init forwarding, all three sprintf+Lookup blocks, stack layout) -- the only residual
-// is where MSVC schedules the `sprite = 0` store: retail interleaves the `mov [out],0`
-// after both Lookup arg-pushes, the recompile hoists it adjacent to the &out lea. Not
-// source-steerable (no statement order forces a plain store past the call arg setup).
 RVA(0x00185750, 0x123)
 i32 CMenuItem2::Init(
     CMenuPage* page,
@@ -332,9 +327,6 @@ i32 CMenuItem2::Notify(u32 a) {
 // the slot-9 Place override: draw the current animation frame at the placed (or
 // argument) coordinates, then cache the resulting hit rect.
 // @early-stop
-// regalloc tie (~98.8%): body byte-aligned; the residual is which callee-saved reg
-// (ebx vs ebp) holds the py/px coordinate pair -- retail pins py(m_44) in ebp, the
-// recompile in ebx. Identical not-source-steerable tie as CMenuItem::Place (0x1855f0).
 RVA(0x001858d0, 0x72)
 i32 CMenuItem2::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     // Same shape as CMenuItem::Place: the placed coordinates overwrite the parameters.
@@ -368,10 +360,6 @@ CDDrawWorker* CMenuItem2::GetCurrentSprite() {
 // resolve the frame at the current cursor; if absent, rewind the cursor
 // to the sprite's first index and try once more.
 // @early-stop
-// shrink-wrapped callee-save wall (~60.7%): body byte-identical to retail (both GetAt
-// inlines, the eax-reuse on the retry) -- retail defers `push edi` past the early
-// `if(!s) return 0` guard (saving only esi there), the recompile pushes edi upfront so
-// every return epilogue differs by a pop. docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00185970, 0x4d)
 CImage* CMenuItem2::GetCurrentFrame() {
     CDDrawWorker* s = GetCurrentSprite();

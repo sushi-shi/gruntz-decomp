@@ -10,13 +10,6 @@
 // fold every team object's fields into a 32-bit game-state signature.
 //
 // @early-stop
-// integer-sum reassociation/scheduling wall (topic:wall topic:regalloc, ~56%):
-// every field offset, the nested 15x4 loop, the value->value+2 switch jump table,
-// the g_frameTime salt and the rand() term are all byte-faithful, but retail
-// spills m_17c/m_180 to locals (a 0x10-byte frame) which reschedules the long field
-// sum (adjacent independent loads land in a different order, e.g. 0x3f0/0x3f4 and
-// 0x60/0x74 swapped). MSVC freely reassociates the integer +, so the order is not
-// source-steerable here. Complete + correct; deferred to the final sweep.
 RVA(0x000c0590, 0x1c3)
 i32 CNetSession::Checksum() {
     i32 sum = 0;

@@ -22,8 +22,6 @@ i32 g_rng2State; // 32-bit LCG state
 // Manager-owned primary LCG range helper. Retail callers pass g_gameReg in ecx;
 // the body does not otherwise access the receiver.
 // @early-stop
-// Scheduling wall: cl hoists g_randSeeded and uses inc for the span where retail
-// loads the flag later and materializes the span with lea.
 RVA(0x00019f50, 0xb2)
 i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
     i32 span = hi - lo + 1;

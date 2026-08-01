@@ -150,17 +150,6 @@ enum PyramidSpriteType {
 };
 
 // @early-stop
-// /GX nested-jump-table megafunction wall (~7%). The grid-cell resolve, the PtInRect
-// transition gate, the two CString sprite-key temps and the pyramid-color jump arms are
-// reconstructed and match retail's logic. The full 3647-byte body - the 0x66-case jump
-// table (RED/WHITE/CHECKPOINT pyramidz + the LEVEL_*BRIDGE* arms are still to write),
-// the per-bridge inner grid-scan loops, and the descending /GX exception thread -
-// is the documented wall shared by the sibling /GX megafunctions. Deferred to the final
-// sweep (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md).
-// @interleaver CTileTriggerLogic::Tick emitted-in <boundary:
-// BridgeMoveSprites.cpp LoadBridgeMove @0x110860 (before) + GruntzMgr2.cpp SetCellHeight
-// @0x111ec0 (after)>. A /Gy COMDAT the linker scattered between two OTHER units - not
-// this TU's body run.
 RVA(0x00110c10, 0xe3f)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world; // ebx (spilled to [esp+0x24])
@@ -300,18 +289,6 @@ CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 // interval 0x110430..0x1140e2 - first-link contiguity says it was defined here).
 // ---------------------------------------------------------------------------
 // @early-stop
-// 99.82% (was 84%). The old "loop-induction / counter register colouring" note was
-// three separate source-shape bugs: (1) the hand-rolled `i32* p` block cursor - retail
-// subscripts and lets strength reduction build the cursor, anchored on `m_block[i]`
-// (so the sentinel read must be `i++; if (m_block[i] == 0)`, NOT `p[1]` / `m_block[i+1]`,
-// which anchors the IV one element late); (2) `done`/`counter` are declared BEFORE the
-// base::SwitchDown() call, which is where retail's two zero stores sit; (3) the loop is a
-// `while (done == 0)`, not a `do/while` - the do-while form lets cl rotate the
-// `i >= 0x18` guard to the bottom and merge it with the back edge, where retail keeps
-// it at the top with the back edge jumping to it.
-// Residue: ONE 2-byte register coin-flip - retail loads node->m_key1 into ecx and
-// this->m_key1 into eax (`cmp ecx,eax`), cl picks eax then ecx. Both operand orders and
-// a named-local form were compiled; the register pair does not flip.
 RVA(0x00112080, 0x138)
 i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
     // retail: a DIRECT `call 0x2e0f` (the base slot-2 body's ILT thunk) - the
@@ -366,14 +343,6 @@ RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 // @early-stop
-// 74.5% (was 69.6): the hand-rolled `i32* cursor = &m_matrix[0]` walk is gone (subscript
-// `m_matrix[j*3+i]`, so the cursor is a strength-reduced IV - see
-// docs/patterns/array-cursor-bias-from-row-pointer-local.md). The rest of the old
-// "loop-body regalloc wall" note still stands: retail spills BOTH counters i (edi) and
-// j (ebx) to the frame and chains the plane through a 2nd register so g_gameReg stays
-// live in edi for the +0x70 tileGrid read; MSVC5 here keeps i in ebx and re-loads
-// g_gameReg, duplicating the inner tail. Same CSE-strength gap as the SwitchDown
-// family in this TU. Deferred to the final sweep.
 RVA(0x001122a0, 0x241)
 void CGiantRockLogic::BuildRockBreakInGameText() {
     // The world holder: the ex-CWorldZ view IS CDDrawSurfaceMgr (one object at +0x30;
@@ -470,9 +439,6 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
 // in-game-text record stamped with m_2c.  Returns 1.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc/addressing wall (~70%): logic + the subtract-chain switch + the
-// shared px/py reuse match; the four duplicated grid-access blocks allocate
-// registers differently from retail (same scale-4 vs pre-shift split as BumpCell).
 RVA(0x00112590, 0x166)
 i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 v;
@@ -568,18 +534,6 @@ void CTileTriggerLogic::RecordMove() {
 // diagnostic and returns 0.
 // ---------------------------------------------------------------------------
 // @early-stop
-// Register-naming wall (~88%, structure byte-exact). Retail has higher register
-// pressure: it keeps mgr(edi)/idx/grp live, spills newTok to a stack local
-// ([esp+0x1c]/[esp+0x10]) and RE-WALKS the m_world->m_level->m_mainPlane->cells
-// chain for the write instead of CSE-ing the cell address. Two levers reproduced
-// that shape (54.9 -> 88): (1) cache g_gameReg in a local `mgr`; (2) idx/grp
-// read-once locals shared between the cell index and the ComputeCellFlags args;
-// (3) crucially, WRITE the cell through the un-cached global g_gameReg while
-// READING via mgr - this defeats MSVC's read/write address-CSE, forcing the
-// spill+rewalk (62 -> 88). Residual is pure regalloc naming (retail mgr=edi/
-// idx=eax/grp=ecx vs base mgr=ecx/idx=edx/grp=eax, plus the idx leaf-read
-// scheduled after W/L vs hoisted before) - an unsteerable allocator coin-flip at
-// identical instruction count. See docs/patterns/cse-defeat-uncached-global-rewalk.md.
 RVA(0x001128b0, 0x88)
 i32 CTileSecretTriggerLogic::Tick() {
     i32 oldTok = m_tileToken;
@@ -608,21 +562,6 @@ i32 CTileSecretTriggerLogic::Tick() {
 // 0 (just turned on, one-shot of type 0x18) or -1 (just turned off, not 0x17).
 // ---------------------------------------------------------------------------
 // @early-stop
-// 98.85% (was 96.03). CORRECTNESS FIX 2026-07-28: the overflow arm returns -1 EITHER
-// WAY - retail's `cmp [esi+0x38],1 / jne` goes to the shared `or eax,-1` block
-// (0x1128ba -> 0x11300f), so the guard gates only the Tick(). We were returning +1
-// there, i.e. reporting "still active" on a duty cycle that had already run out. The
-// earlier note asserted the opposite and cited "the full retail decode"; the branch
-// TARGET disproves it (docs/patterns/masked-diff-hides-branch-target.md - --diff masks
-// exactly this). That bug is also what forced the two exit blocks out of retail's
-// order; spelling the final guard as `!= 0x17 -> return -1` restored it.
-// Residual: the period add emits `lea edi,[edx+ecx]` with both operands live where we
-// emit a 2-op `add ecx,edi` (and the div/cmp registers follow). cl canonicalizes the
-// commutative operand order - re-tested both spellings 2026-07-28, byte-identical.
-// @interleaver CTileTriggerLogic::Classify emitted-in <boundary:
-// CTileSecretTriggerLogic::Tick @0x1128b0 (before, now THIS TU) +
-// CheckpointSwitchBuild.cpp BuildSmall @0x112a50 (after)>. A /Gy first-use
-// COMDAT the linker scattered inside the band.
 RVA(0x00112970, 0xad)
 i32 CTileTriggerLogic::Classify(i32 arg) {
     u32 elapsed = g_frameTime - m_startClock;
@@ -680,13 +619,6 @@ ret1:
 // Slot 2: reads the active tile layer's cell at (col,row), stores value+1 back, republishes
 // it through the tile grid, and SETS the +0x14 flag.  Returns 1.
 // @early-stop
-// 73.1% - CSE-strength wall (re-diagnosed 2026-07-29, was "addressing-mode wall"). Retail
-// re-reads the whole m_world->m_level->m_mainPlane chain for the SECOND cell access and
-// uses `[base+key*4]` twice; our cl CSEs the chain into one read and materialises `key*4`
-// once (`shl ecx,2` + scale-1). Spelling the chain inline at both sites was compiled and
-// is WORSE (46%) - cl CSEs it anyway. The same gap caps ApplyMove/SetActionCode/
-// Tick@CTileSecretTriggerLogic; it is the SP-level optimizer difference this TU keeps
-// hitting (see the SetActionCode note), not an addressing-mode pick.
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
@@ -702,7 +634,6 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 // Slot 3: the decrement sibling - same cell read/write path, value-1, and CLEARS the +0x14
 // flag.  Returns 1.
 // @early-stop
-// 73.1% - same CSE-strength wall as SwitchDown above; see the note there.
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
@@ -781,13 +712,6 @@ CTileActionEvent::CTileActionEvent() {
 }
 
 // @early-stop
-// 66.9% - the cell block is now retail's shape (m_tileX/m_tileY latched into registers
-// before the compare, so the ComputeCellFlags args come from registers instead of three
-// re-reads). Residue is the SAME CSE-strength gap as SwitchDown/ApplyMove in this TU:
-// retail re-reads the whole m_world->m_level->m_mainPlane chain AND recomputes the cell
-// address for the store block, where our cl CSEs the `lea <cell>` across the `jne` and
-// re-reads g_gameReg/m_tileX/m_tileY instead. Spelling the chain inline at both sites
-// (done, kept - it IS retail's source shape) does not stop the address CSE.
 RVA(0x00112da0, 0xf0) // span includes the inline switch jump table (base COMDAT 0xf0)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
@@ -850,23 +774,6 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
 // CTileActionEvent::Process  (0x112ee0) - __thiscall, ret 4
 // ===========================================================================
 // @early-stop
-// 918-byte two-jump-table dispatch wall (outer remap switch on m_actionCode + inner
-// brick-color switch on the derived effect code, four shl-5/add-0x10 coordinate
-// scalings under heavy register pressure ebp=this/ebx=arg/esi=newCode/edi=effect).
-// Logic complete + decoded. objdiff cannot align across the two INLINE .text jump
-// tables, so its fuzzy% is unreliable here (drops on unrelated outer-switch regalloc
-// churn while MAX preserves best-ever); byte-match deferred to the final sweep.
-// NOTE 2026-07-21: the inner color mapping was a proven-WRONG guess and is now fixed
-// against the retail byte map @0x5132f8 / jump table @0x5132e4: effect 0x132->RED,
-// 0x138->BLUE, 0x13e->GOLD, 0x144->BLACK, else->GAME_BRICKBREAK. The recompiled inner
-// dispatch is byte-identical to retail (`lea eax,[edi-0x132]; cmp 0x12; ja; byte-map
-// jump`); the current-% dip vs the old guess is the objdiff inline-jump-table artifact.
-//
-// Outer switch(m_actionCode): derive `effect` (edi, 0=none) and the canonical re-fire code
-// `newCode` (esi). First-half: fire the per-effect game action on the brick arg.
-// Second-half (always): if the tile is on-screen, spawn the brick-break sprite and
-// pick its colored break animation by `effect`. Finally re-fire SetActionCode with
-// `newCode` if it changed; return (newCode == 0x12d).
 RVA(0x00112ee0, 0x35e)
 i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 newCode = m_actionCode;

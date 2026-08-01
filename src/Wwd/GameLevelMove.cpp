@@ -45,10 +45,6 @@ static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 // fold flag bits into the result and tag 0x400000 when the scroll did not move.
 //
 // @early-stop
-// call-arg-materialization entropy (~95%): logic/offsets/CFG/__stdcall conv are exact;
-// the only residue is the MoveKindDispatch12 call setup - retail interleaves a reload
-// between the arg pushes (2 regs), MSVC pre-loads all three (eax/ecx/edx). See
-// docs/patterns/pin-local-for-callee-saved-reg.md. Entropy tail; deferred.
 RVA(0x00167130, 0x83)
 i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
     CGameObject* s = obj;
@@ -112,10 +108,6 @@ i32 CGameLevel::MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags) {
 // spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
 // the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
-// has no free register and lands as a direct immediate store, and this/state take the
-// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
-// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167260, 0x1ef)
 i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 xEnd = x + t->m_extent.right;
@@ -204,10 +196,6 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
 // spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
 // the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
-// has no free register and lands as a direct immediate store, and this/state take the
-// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
-// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167450, 0x1ef)
 i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 xEnd = x + t->m_extent.left;
@@ -296,10 +284,6 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
 // spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
 // the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
-// has no free register and lands as a direct immediate store, and this/state take the
-// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
-// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167640, 0x1eb)
 i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
@@ -388,10 +372,6 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
 // spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
 // the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
-// has no free register and lands as a direct immediate store, and this/state take the
-// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
-// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167830, 0x1eb)
 i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
@@ -545,8 +525,6 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
 // retail has `jne looptop`). jcc_sieve flagged it as POLARITY #17; the branch sequences
 // agree now.
 // @early-stop
-// regalloc: retail pins the resolved coord in esi from the prologue; cl reuses esi for
-// the scan index. No source lever found (the local/param/decl-order forms are worse).
 RVA(0x00167ea0, 0x1b9)
 i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & 0x100)) {

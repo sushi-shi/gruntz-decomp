@@ -25,11 +25,6 @@ VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
 // CSBI_MenuItem::InitItem - configure the menu entry from its config record,
 // then resolve its initial frame (ResolveFrame). 11-arg __thiscall (ret 0x2c).
 // @early-stop
-// 61 -> 67.8 -> 92.17. The `lea edx,[ecx+0x14]` block was NOT a schedule artifact:
-// the rect is copied as a WHOLE STRUCT (`m_rect14 = rc;`), which is what makes cl
-// CSE the destination into edx. Residual is ONE block: retail duplicates the
-// key-null guard's `xor eax,eax; pop esi; ret 0x2c` inline (jne over it) where cl
-// cross-jumps it onto the shared tail the other two guards use.
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
     CStatusBarMgr* owner,
@@ -78,14 +73,6 @@ i32 CSBI_MenuItem::Refresh(i32) {
 // map; if found and in range, latch its frame handle into m_30. Returns whether
 // a frame was resolved. 2-arg __thiscall (ret 8).
 // @early-stop
-// store-schedule + value-register wall: the CFG, the three inline `pop esi; ret 8`
-// tails and both zero-reusing guards now match retail exactly (the old 46% was the
-// tail-merge caused by writing a per-arm `return`; the real shape is ONE trailing
-// `return m_frame != 0` that cl duplicates into every arm). Residue is (1) the
-// `rec_v = 0` store scheduled before the two arg pushes instead of after, and
-// (2) the in-range/out-of-range arms landing the frame value in eax where retail
-// picks ecx (so retail zeroes eax early and forwards the store past the test).
-// Decl-order permutations and the per-arm-local spelling both regress; /O2 coin-flip.
 RVA(0x000e81e0, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     if (key == 0) {

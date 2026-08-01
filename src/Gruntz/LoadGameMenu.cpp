@@ -82,12 +82,6 @@ void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32
 // to the main window (WM_COMMAND 0x807e) and closes.
 //
 // @early-stop
-// jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
-// switch dispatch, all three 10-way index tables, case bodies and the two return
-// epilogues are byte-exact (llvm-objdump -dr), but objdiff scores the 3 inline
-// jump-table regions (~120 B) as mismatched - cl's base obj references local `$L####`
-// case labels (addend 0) while the delinked target carries `?LoadGameCommand+offset`
-// self-relocs, which objdiff cannot pair. ~79%.
 RVA(0x0009e390, 0x243)
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     i32 idx = -1;

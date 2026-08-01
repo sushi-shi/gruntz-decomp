@@ -531,15 +531,6 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 // on stop it StopAndRewind's (mode==0) or CloneAndPlay-stops (mode!=0).
 // ---------------------------------------------------------------------------
 // @early-stop
-// ~89% constant-materialization wall (was 35% - the play/stop branch polarity and both
-// mode branches are now retail-correct: playFlag!=0 play path is the fall-through, mode==0
-// is the fall-through in BOTH the play and stop arms). Residual, all one cause: the
-// function names the constant 1 seven times (two ApplyAndPlay args x2 arms, three
-// `m_isPlaying = 1`), and cl pins it in ebp (`mov ebp,1; push ebp; ...
-// mov [esi+0x14],ebp`) where retail keeps ebp on `mode` and spells every 1 as an
-// immediate. Retail's immediates make the two arms' four ApplyAndPlay pushes a common
-// prefix, so cl5 cross-jumps them ABOVE the mode branch and leaves only the two `call`s
-// - the whole diff is downstream of the pin. See zero-register-pinning.md.
 RVA(0x0000c2a0, 0x19e)
 void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
     if (m_voice == 0) {
@@ -890,14 +881,6 @@ i32 SpawnPosSound(PosSoundObj* obj) {
 // active phase's [lo,hi], halve+clamp it to <=1000, and (re)play via Update.
 // ---------------------------------------------------------------------------
 // @early-stop
-// 95.04% and the control flow is now byte-exact. CORRECTNESS FIX 2026-07-28 (jcc_sieve):
-// what the earlier note filed as "the box2 last-term block layout (jl vs jge)" was both
-// box tests being LOGICALLY INVERTED - see the fix below. That inversion SCORED HIGHER
-// (96.56) than the truth does, which is exactly why current % is not evidence.
-// Residual is one consistent register permutation (retail edi=inBox/edx=y and
-// ebx=span/edi=lo; ours swaps each pair), which also moves `push edi` earlier and makes
-// the two reroll arms emit `mov edi,ebp; sub edi,ebx; inc edi` where retail computes in a
-// scratch and moves with `lea ebx,[eax+1]; test ebx,ebx`. Same operations, same count.
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
     // CORRECTNESS FIX 2026-07-28 (jcc_sieve): both box tests were INVERTED. The `inBox`
@@ -1003,14 +986,6 @@ i32 CGruntzMgr::Rand() {
 // re-read: retail's tail reads the LCG result out of eax
 // (`mov [g_randSeed],eax / sar eax,0x10`), never reloading the global.
 // @early-stop
-// parameter-pin wall (~72.6%): logic, both LCG arms, the coin-flip endpoints and
-// the modulo tail are byte-faithful. Retail pins lo->ebx / hi->ebp and loads the
-// args in declaration order, so its span is `mov edx,ebp / sub edx,ebx /
-// lea edi,[edx+1]` + an explicit `test edi,edi`; our cl loads lo2 first, pins the
-// pair the other way round and folds the span into `mov/sub/inc` (whose flags then
-// feed the `jne` directly). Measured non-levers: statement order (span before vs
-// after the four stores), a separate `diff` local for `hi - lo`, and inverting the
-// span gate so the roll arm leads - all emit the identical prologue.
 RVA(0x0000cd70, 0xe5)
 void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 lo2, i32 hi2) {
     i32 span = hi - lo + 1;

@@ -19,9 +19,6 @@ RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
 // the owner up 0x18 px, lock its draw order to 0xdbba0, apply the small-icon
 // status-bar sprite, seed the +0x58..+0x64 countdown state and bind the "A" node.
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids
-// + the leaf-field zero-init schedule (CToyPeek's wider +0x58..+0x64 init block).
 RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_startClockLo = 0;

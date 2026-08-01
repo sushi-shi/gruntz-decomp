@@ -25,12 +25,6 @@
 // Write at +0x30 (mode 4) - both slots off the one type.
 // ===========================================================================
 // @early-stop
-// scratch-slot scheduling tail (same family as CTriggerLoadRec/CTimer::Deserialize/
-// CArchiveLoadRec): the dual-mode switch, every Read field/size, the indexed-ref
-// bounds checks, the name-ref Lookups, the FillDefault sub-records, the inline
-// strlen/strcpy, the g_serialCounter bumps and the tail-chain + 0/1 normalise are
-// byte-faithful; residual is the MSVC5 scratch-buffer slot assignment + the
-// outparam zero-init store positions. Not source-steerable.
 RVA(0x000ea990, 0xa72)
 i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {

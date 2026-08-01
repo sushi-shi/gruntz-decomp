@@ -368,16 +368,6 @@ i32 CImage::Create24(i32 width, i32 height, i32 keyed) {
 // level writes 0 then -1 around the ctor), which puts the /GX frame on this method.
 // __thiscall, ret 8 (2 stack args).
 // @early-stop
-// 98.7% - all 70 instructions present and logic byte-faithful (the 0x3c new, the
-// EH try-level machine, the parent-chain fmt, the geometry copy). The residual is
-// (1) the reloc/EH scoring artifacts (push Unwind handler, call _RezAlloc vs
-// operator new, the fs:0 __except_list writes - all reloc-masked, code bytes match)
-// and (2) a 2-3 byte regalloc/scheduling wall: retail loads `a` into edx before
-// completing the fmt chain (we finish the chain first), and orders the tail
-// geometry copy before the fs:0 restore (we interleave). No source lever flips it
-// under /O2 (tried inline vs local for both the chain and the arg). Logic complete;
-// deferred to the final sweep.
-// ---------------------------------------------------------------------------
 RVA(0x00153180, 0xda)
 i32 CImage::BuildSlot13(PidHeader* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
@@ -534,11 +524,6 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
 // BltFast this->m_surface onto dst->m_surface and record the clipped rect back into
 // the request. __thiscall, ret 8.
 // @early-stop
-// Complete + correct - the dispatch selector is byte-exact; the inlined geometry
-// path inherits the SAME whole-function regalloc/scheduling wall as its BlitNorm
-// siblings (the origin-load this-member->register tie-break + the WrapCoord ILT-thunk
-// / CopyRect IAT-import reloc-name operand artifacts). Logic verified against retail;
-// the residual is codegen-only.
 RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 mode = info->m_stateFlags;
@@ -722,11 +707,6 @@ void CImage::RenderFrameClipped(
 // No flip, surface blit (BltEx, blend mode 6).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct. Residual = 4 origin-load insns whose this-member->register
-// assignment differs (the loaded members die right after the subtract chain, so
-// the pick is a whole-function regalloc tie-break MSVC5 resolves differently than
-// retail) + the WrapCoord (0x295a ILT thunk) / CopyRect (IAT import) reloc-name
-// operand artifacts. Code bytes otherwise byte-exact (clip + struct-copy end).
 RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
@@ -813,14 +793,6 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 // Vertical flip, surface blit (BltEx, blend mode 2).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct (formulas verified against retail). The vertical flip makes
-// the Y anchor a mixed-sign chain (m_originY - m_anchorY + m_adjustY + m_drawY);
-// MSVC5 reassociates it to (m_adjustY + m_originY + m_drawY) - m_anchorY and picks a
-// different Y-accumulator base than
-// retail, which co-schedules the X subtract chain into different registers. That
-// one divergence cascades through the whole function (no source spelling pins the
-// reassociation - compound-assign / anchor-temp / x<->y reorder all tried). Plus
-// the WrapCoord/CopyRect reloc-name artifacts.
 RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
@@ -907,10 +879,6 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // Horizontal flip, surface blit (BltEx, blend mode 4).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct. Same wall as BlitFlipV: the horizontal flip makes X a
-// mixed-sign chain (m_adjustX - m_anchorX + m_originX + m_drawX) that MSVC5 reassociates + reorders
-// vs retail, cascading the co-scheduled X/Y register assignment. Plus the
-// WrapCoord/CopyRect reloc-name artifacts.
 RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
@@ -997,14 +965,6 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
 // X+Y flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/0).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct - the fourth member of the shaded family, structurally
-// identical to BlitShadeNorm/FlipV. Both anchor axes are flipped (X: the
-// m_anchorX/m_originX signs; Y: the m_originY/m_adjustY/m_anchorY mixed-sign chain), so it inherits the
-// SAME whole-function regalloc/reassociation wall the other flip variants hit:
-// MSVC5 reassociates the mixed-sign X/Y accumulator chains and picks a different
-// this-member->register mapping than retail, cascading downstream. Plus the
-// WrapCoord (0x295a ILT thunk) / CopyRect (IAT import) / 0x14dd90 pre-notify
-// reloc-name operand artifacts. Clip + inclusive-rect struct-copy end match.
 RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
@@ -1089,21 +1049,6 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // No flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/1).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct, ~99.86%. The 0x14dd90 pre-notify is bound to its real callee
-// CDDrawShadeBlit::Select - a plain `m_owned->Select(...)` now that the fake ShadeSelector
-// class it used to be bound to is dissolved, so the ((ShadeSelector*)m_owned) reinterpret
-// is GONE (the cast was the symptom; the wrong owning class was the cause).
-// The whole residue is now TWO instructions in the rect setup: which of ebp/ebx holds
-// info->m_plotDX vs m_anchorX (retail ebx=plotDX/ebp=anchorX, ours the reverse), which
-// also swaps the 4th/5th load ([edi+0x18] vs [edi+0x24]). The `sub eax,ecx / sub eax,ebp
-// / sub eax,ebx` chain itself is byte-identical, so the operands are only relabelled.
-// NOT source-steerable: nine spellings of the X/Y formulas - operand permutations
-// (swap34/anchor-first/plot-first), parenthesised (o+a) grouping, step-wise `x -= ...`,
-// X/Y interleaved, and hoisting either the this-members or the info-members into locals
-// - all emit the byte-identical prologue. cl reassociates the sub chain to one canonical
-// order before regalloc; this is the commutative-operand register pick
-// (docs/patterns/commutative-imul-operand-in-eax.md). Sibling BlitShadeFlipV has the
-// same wall. Plus the WrapCoord ILT-thunk / CopyRect IAT-import reloc-name artifacts.
 RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
@@ -1188,12 +1133,6 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 // Vertical flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/0).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct - the X/Y formulas already match retail's operation order.
-// The wall is pure whole-function regalloc: retail pins `this` in EBX (`mov ebx,ecx`,
-// push edi later) where our cl picks EDI, and reorders the all-sub X chain to a
-// different this-member->register mapping; that one prologue choice shifts every
-// downstream register. Plus the WrapCoord/CopyRect/0x14dd90 reloc-name artifacts.
-// End-store struct-copy matches retail.
 RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
@@ -1278,11 +1217,6 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // X flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/1).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct - the shaded twin of BlitFlipH. The horizontal flip makes
-// X the mixed-sign chain (m_adjustX + m_originX + m_drawX - m_anchorX) that MSVC5 reassociates +
-// reorders vs retail, cascading the co-scheduled X/Y register assignment (same
-// wall as the surface BlitFlipH). Plus the WrapCoord/CopyRect/0x14dd90 reloc-name
-// operand artifacts. Clip + inclusive-rect struct-copy end match retail.
 RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;

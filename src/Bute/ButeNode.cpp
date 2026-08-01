@@ -26,18 +26,6 @@ VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00 (this 
 // type-group is a plain `operator delete(pValue)`.
 //
 // @early-stop
-// per-arm scratch-register wall (~69%) - the twin of ~CButeValue (0x172160, ~69% for the
-// same reason). BYTE-PROVEN with a raw COMDAT-vs-retail compare: of 0x7c bytes, every
-// difference is either a reloc-masked field (the two call rel32s, the jmp's table DIR32,
-// the 9 jump-table entries) or ONE byte per delete-arm - the arm's scratch register.
-// Structure is byte-exact: same prologue, same `cmp ecx,8 / ja +0x48`, same four arms at
-// the same offsets (0x13 string / 0x2c / 0x3a / 0x48), same shared `pop esi; ret` tail,
-// same `8b ff` align pad. Retail colours the three identical `mov reg,[eax+4]; push reg;
-// call ??3` arms edx / eax / ecx; cl colours them eax / ecx / edx.
-// NOT source-steerable: the permuter found no lever (68.8, no change), and reordering the
-// case groups to chase the colouring MOVES the blocks (cl lays arms out in source order),
-// which craters it to 5.4%. So the arm ORDER is right and only the colouring is off.
-// ===========================================================================
 RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
 RVA(0x00174df0, 0x7c)
 void __cdecl ButeValueTeardown(void* pValue) {

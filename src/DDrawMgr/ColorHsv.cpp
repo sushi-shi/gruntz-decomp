@@ -6,13 +6,6 @@
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 // @early-stop
-// regalloc + x87-schedule wall (~46.7%): body logic + min/max macro + channel
-// extraction are faithful. The u16 `lo` local steers b1 toward the word-sized
-// extraction retail uses, but MSVC5 still picks `mov dl,ch` where retail emits
-// `mov cx,bx; shr cx,8`, pins `color` in ecx (retail: ebx), and lays a 0xc-byte
-// frame (retail 0x10 - a 4-byte gap for retail's early `(float)mn` fild/fstp
-// materialization). None is source-steerable; verified base-vs-target with
-// `gruntz sema disasm 0x0014fcc0 --diff`. docs/patterns/zero-register-pinning.md.
 RVA(0x0014fcc0, 0x16d)
 ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     u16 lo = static_cast<u16>(color);

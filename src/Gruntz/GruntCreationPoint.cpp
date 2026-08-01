@@ -39,13 +39,6 @@ RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 // the "A" bute node.
 //
 // @early-stop
-// register-pinning/spill wall (docs/patterns/zero-register-pinning.md +
-// eh-ctor-vptr-restamp-position.md): body byte-identical (every op/offset/imm/
-// branch incl. the m_134/ref-array selector branch matches retail). Residual:
-// retail spills `obj` to its arg slot and reloads it once in the rare else branch,
-// freeing edi for the constant 1; MSVC keeps obj in edi and pins constant 2 in
-// ebx (extra push ebx -> a 4th callee-saved reg, shifting every stack-slot offset).
-// Not source-steerable (global regalloc). ~80%.
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;

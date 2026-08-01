@@ -145,17 +145,6 @@ typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 // opens the process (PROCESS_QUERY_INFORMATION) into *pHandleOut. Returns 1 once
 // `wantCount` matches are seen, else 0.
 // @early-stop
-// memset-lowering wall. The exit-block-layout half is FIXED (measured 2026-07-27,
-// 86.14 -> 93.54): the ret-count screen read base 3 / retail 2, and the extra one was
-// the Process32First failure carrying its own `CloseHandle; return 0` epilogue where
-// retail 0x11914d branches it into the loop's shared CloseHandle tail. Wrapping the
-// walk in `if (pFirst(...)) { ... }` over a single trailing CloseHandle+return-0
-// reproduced retail's block layout.
-// Residual is the MSVC /O2 inline-memset shape on the two Toolhelp snapshot records:
-// retail splits the leading dwSize dword out of the `rep stosd` (count 0x49 from
-// struct+4, dwSize stored separately / from the live zero-reg), our build emits the
-// full-width `rep stosd` (0x4a) from struct+0. Not exit layout; not source-steerable
-// from `memset(&pe,0,sizeof pe); pe.dwSize = sizeof pe;`. Final-sweep.
 RVA(0x00118ce0, 0x1f5)
 i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     if (name == 0 || *name == 0) {

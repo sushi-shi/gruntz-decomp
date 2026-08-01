@@ -115,12 +115,6 @@ void RegisterXLogic_646010() {
 // and the anim is idle (m_20 == 0), recompute the blit param and re-arm the random
 // flicker delay (rand()%0xfa1 + 0x3e8, the same range the ctor seeds).
 // @early-stop
-// scheduling/regalloc coin-flip (~95%, topic:scheduling): logic byte-faithful (the
-// countdown, the conditional Advance, the m_1c8/m_20 gate, the Recompute + rand
-// re-arm all match retail). Sole residual: retail schedules `lea ecx,[m_38+0x1a0]`
-// (anim) BEFORE `mov eax,[m_38+0x1c8]` (m_1c8, reusing eax), whereas MSVC5 loads
-// m_1c8 into edx first (keeping m_38 in eax) then the lea - a 2-instruction reorder
-// + reg choice not steerable from C (tried o-local, active-local, direct m_38).
 RVA(0x000ae2a0, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
     u32 delta = g_frameDelta;

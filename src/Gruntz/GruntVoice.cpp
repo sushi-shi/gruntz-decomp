@@ -181,11 +181,6 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
 // bute node (stashing the previous in m_prevAnimSetNode). Returns this. __thiscall, ret 4.
 //
 // @early-stop
-// /GX EH-state + store-scheduling wall: the CUserLogic(obj) fold, the vptr stamp, the
-// ApplyName/flag/Find chain and every member offset are byte-faithful, but MSVC5
-// schedules the repeated {m_54..m_64}=0 zeroing and the trailing /GX trylevel numbers
-// (states 3/4 around ApplyName) differently than retail. Logic complete; the same
-// store-schedule + eh-state walls the sibling Setup (0x11a7e0) carries. Final sweep.
 RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_icon = 0;
@@ -234,13 +229,6 @@ RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
 // CUserBaseLink, so MSVC emits the /GX EH frame.
 //
 // @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful (the CUserLogic init, the implicit leaf vptr stamp, the two flag
-// RMWs, the "A" cache, the two tile snaps, the four rect derivations); the residue
-// is this ctor's own __ehfuncinfo state numbering + the leaf vptr-restamp scheduling
-// position (docs/patterns/eh-ctor-vptr-restamp-position.md) + the `and al,0xe0`
-// byte-AND codegen pick. The SAME plateau as CTimeBomb / the other bute ctors; not
-// source-steerable. Parked for the final sweep.
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
@@ -341,15 +329,6 @@ i32 CVoiceTrigger::Tick() {
 // previous in CUserLogic::m_prevAnimSetNode). Returns 1.
 //
 // @early-stop
-// store-scheduling wall (docs/patterns/statement-schedule-faithful.md): the body
-// is structurally byte-exact - every offset, immediate, call arg and branch
-// matches retail. The sole residual is a ~2-3 instruction phase shift: MSVC fills
-// the latency slot after the ComputeDuration call by hoisting the `m_14` load
-// (edx) up, which in turn swaps the adjacent {m_58:=g_frameTime, m_5c:=0}
-// stores; retail loads m_14 late (after the icon stores) and keeps m_58 before
-// m_5c. No source reorder flips the allocator (m_58/m_5c swap -> 83%, a captured
-// m_14 local -> 70%, m_6c hoist -> 83%); the in-order spelling at 85% is the best.
-// Deferred to the final sweep.
 RVA(0x0011a7e0, 0x6e)
 // The three scalars are the members the body snapshots them into, already named in
 // <Gruntz/GruntVoice.h>: m_source (+0x68), m_playFlags (+0x6c), m_owner (+0x70).

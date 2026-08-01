@@ -8,14 +8,6 @@
 #include <Gruntz/GruntzMgr.h> // the *0x24556c singleton (CGruntzMgr)
 
 // @early-stop
-// this/newobj callee-saved register-pinning wall (docs/patterns/
-// zero-register-pinning.md) + the vptr-position wall: the loop body - geometry-base
-// branch, the CSBI_SideTab item field-init + auto-stamped 0x5eae3c vptr, the 13-arg
-// BuildStatzTabStatusBar call, the AddTail + slot store and the failure-path
-// scalar-delete - is logic byte-faithful. Residuals: a regalloc coin-flip (retail pins
-// this->edi and newobj->esi, reusing the zeroed newobj as a zero-constant; cl pins
-// this->esi / newobj->edi) and the vptr stamped FIRST by the real ctor vs MIDDLE in
-// retail's inline init. No source lever flips either. Deferred to the final sweep.
 RVA(0x00105070, 0x10e)
 i32 CStatusBarMgr::BuildSideTabs() {
     i32 i = 0;

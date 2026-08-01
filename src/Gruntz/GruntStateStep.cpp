@@ -54,16 +54,6 @@ static i32 iabs(i32 v) {
 }
 
 // @early-stop
-// large grunt state-step reconstruction (final-sweep candidate): the m_2d4 3/2/fresh
-// dispatch, the path-node arrival (Check3c4c) + flag-gated type-name {I,G,L,P,J,C,R}
-// Finish3e4f, the Euclidean fild/fsqrt/__ftol board-distance reroute, the manhattan
-// board distance, the g_coordPool recycle drains, the grid dirty-rect recompute and
-// the random-goal retarget are byte-shaped and the DATA refs (g_coordPool /
-// g_freeList family / g_typeColl / the k_60c* char keys / IntersectRect) pair.
-// Residual walls: retail re-calls GetTilePos36c0 several times into overlapping
-// coalesced stack slots feeding the box (the optimizer folds the redundant calls
-// here), the sqrt is modeled without /Oi, and the shared-landing-pad regalloc /
-// slot schedule diverges - re-attack leaf-first in the final sweep.
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::Step33520(CGrunt* g) {
     i32 state = g->m_defenderState;

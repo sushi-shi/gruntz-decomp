@@ -13,22 +13,6 @@
 
 // ---------------------------------------------------------------------------
 // @early-stop
-// CRACKED 21%->57.6% (2026-07-05). The state machine is a `switch (m_defenderState)`
-// (NOT if/else) - that alone produced retail's `sub eax; je state0; dec; je state1; dec;
-// jne return; [state2 fall-through]` dispatch and the state2/state1/state0 reverse layout
-// (+30% in one build). Also fixed: the powered-up (m_poweredUp) block flattened to retail's
-// guard-gotos with the >=100 stamina path as fall-through; a real bug - the state 0/1/2
-// RectContains args were reversed (must be (m_5c, m_60) like the top hitGate); state1's
-// dwell compare is unsigned (jbe). Residual ~42% is three genuine walls (final sweep):
-//   1. State-2 powered-up recheck (0x198, 57 insns) is DEAD in-source (the switch is only
-//      reached with m_poweredUp==0, verified: 0x157 has one pred = the m_poweredUp==0
-//      guard) so THIS cl dead-code-eliminates it; retail's cl emits it. Pure DCE-behavior
-//      artifact - no clean C spelling forces the dead block without a goto/opaque hack.
-//   2. Zero-register swap cascade: retail pins the ubiquitous 0 constant in ebp and hitGate
-//      in ebx; this cl swaps them (ebx=0, ebp=hitGate), flipping every `cmp <zero>,x`.
-//   3. Shared CommitNeighbor(0x5b050) tail-merge (states 0 and 2 share one
-//      CommitNeighbor;return 1 tail via `sub esp,0xc` coord spills) + the surrounding
-//      regalloc permutations.
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderX = m_lastTilePxX;
@@ -135,14 +119,7 @@ i32 CGrunt::ChargeStep() {
                             mp->m_screenY
                         );
                         if (los != 0) {
-                            mgr->m_cueSink->SpawnVoiceDriver(
-                                this,
-                                0x366,
-                                -1,
-                                0,
-                                -1,
-                                -1
-                            );
+                            mgr->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                         }
                     }
                     m_dwell = 0;

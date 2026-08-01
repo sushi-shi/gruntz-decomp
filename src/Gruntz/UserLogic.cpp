@@ -98,9 +98,6 @@ void CUserLogic::UserLogicVfuncD() {}
 // two are inlining devices only - neither emits a COMDAT any more, so this is the
 // single definition in the link.
 // @early-stop
-// 84.58%: retail schedules `lea eax,[esp+4]` BEFORE the `[esp+4] = 0` seed and reloads
-// obj->m_0c after the arg pushes; cl emits the seed first (x3 blocks). Plus the three
-// factory DIR32s (0x56e4c0/d0/e0) are delinked under a Ghidra mislabel.
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
@@ -151,17 +148,6 @@ void CUserLogic::FinalizeStep(char* /*name*/) {
 // ---------------------------------------------------------------------------
 // 0x8c00: serialize one referenced object + its key name.
 // @early-stop
-// 88.0% - logic byte-faithful: the read/write virtual dispatch (Read @ +0x2c /
-// Write @ +0x30), the strlen-key gate, the CMapStringToOb::Lookup + KeyOfValue
-// registry chain (both real symbols paired), the inline strlen/strcpy/memset, and
-// the frameless /GX-elided CString temp all match. The residual is one stack-slot-
-// coloring difference (docs/patterns/stack-slot-coalesce-frame-4b.md): retail gives
-// the read-path Lookup `out` and the write-path CString temp DISTINCT slots
-// (sub esp,0x88: out@0x10, CString@0x14, buf@0x18) while cl COALESCES the two
-// mutually-exclusive locals into one slot (sub esp,0x84) - shifting every [esp+M]
-// by 4 and spilling the KeyOfValue RVO result instead of using eax. Not steerable
-// from source under /O2 (function-scope `val` and inner-scope reshapes both
-// regressed). Logic complete; deferred to the final sweep.
 RVA(0x00008c00, 0x152)
 i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
     char name[0x80];

@@ -23,22 +23,6 @@
 // ---------------------------------------------------------------------------
 // 0x6eb80 (__thiscall, ret 4) - the per-frame goo-well / win-condition update.
 // @early-stop
-// ~96.4%, logic byte-exact (tails + the whole 64-bit-countdown / respawn body
-// match). Residual is the source-invariant Lookup out-param zero-init scheduling
-// wall (docs/patterns/outparam-zeroinit-scheduling.md): retail SINKS `mov [&out],0`
-// past the arg pushes at 3 of the 4 ...->Lookup(key, &out) sites (the i==winner
-// site already matches), an identical-multiset permutation /O2 won't steer. The
-// only other residue is two regalloc coin-flips: the count<=1 guard clusters the
-// m_phase load into a reg + hoists g->m_2c before the `cmp $2`, and the per-row
-// `g + 0x150 + off` slot lea picks the opposite base/index register pair.
-// 2026-08-01: retail's `off += 0x238; cmp off,0x8e0; jl` player loop is CL'S OWN
-// strength reduction of a plain `i < 4` - hand-writing it in the source (the old
-// `for (i = 0, off = 0; off < 0x8e0; ...)`, which also reused the `off` PARAMETER
-// slot the way cl does) made cl build a THIRD induction variable (a pointer IV plus
-// a countdown, `jne` instead of `jl`). Writing the natural loop restores the shape.
-// What is left is a whole-function register rotation - retail colours esi=this,
-// edi=i, ebx=0, ebp=lastSlot and SHRINK-WRAPS `push edi` past the sound gate; we get
-// esi=i, edi=this, ebx=lastSlot, ebp=0 with all four pushed up front.
 RVA(0x0006eb80, 0x5ef)
 i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     if (g_gameReg->m_soundEnabled) {

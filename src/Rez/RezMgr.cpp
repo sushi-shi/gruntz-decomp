@@ -150,15 +150,6 @@ i32 CGruntzMgr::HandleDebugPosition() {
 // deliverable; per the prompt's "don't sacrifice a green fn", this is left as a
 // documented plateau with the full reconstruction in place.
 // @early-stop
-// EH-state-write scheduling residue (see the PLATEAU note above); logic complete.
-// 2026-08-01: the frame slots of the three movie CStrings do differ from retail's
-// (retail keeps the two name temporaries adjacent and puts `fec` further out; we get
-// `fec` between them), and retail's ternary selects the FIRST-constructed one when
-// g_disableHqMovie is set - which reads like `fecLo` being declared first. It is not
-// declaration order: swapping the two declarations, inverting the ternary, and doing
-// both are all WORSE or flat (97.328 baseline vs 97.311 / 97.005 / 96.989, size 673
-// invariant). MSVC assigns these slots from the CString live ranges the EH funclet
-// states impose, not from the order they are written.
 RVA(0x00091670, 0x2ac)
 i32 CGruntzMgr::MakeRezPath() {
     char cwd[0x100];

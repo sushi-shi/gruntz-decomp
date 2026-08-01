@@ -28,8 +28,6 @@ void CChatBoxOwner::Deactivate() {
 
 // Configure - origin from the viewport for the given mode; mark dirty.
 // @early-stop
-// dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail
-// spills the unused viewport width to a dead `[esp]` slot per arm; our cl DCEs it.
 RVA(0x00020530, 0x61)
 void CChatBoxOwner::Configure(i32 mode) {
     m_8 = mode;
@@ -48,11 +46,6 @@ void CChatBoxOwner::Configure(i32 mode) {
 
 // HitTest - is screen point (x,y) over the box for the current mode.
 // @early-stop
-// dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail
-// keeps 4 dead viewport-width loads+spills (`mov [esp+8],reg`); our cl DCEs them all,
-// freeing the registers -> the whole regalloc/code-motion diverges. Logic exact.
-// The m_10 gate is POSITIVE-form so its `return 0` tail-merges into the shared
-// bottom epilogue (docs/patterns/positive-gate-enables-shrink-wrap.md).
 RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (m_10) {
@@ -133,35 +126,6 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 //   done:   m_14->SetSubtype(); this->m_10 = 0;             // 0x25c2
 //
 // @early-stop
-// DEFERRED to the final sweep (ALL-OR-NOTHING /GX FRAME wall). This is a 1857-byte
-// CString-temp-heavy /GX body with ~24 cascading EH states (the [esp+0x154] state byte
-// runs 0..0x18) whose `sub esp,0x13c` frame is fixed only when EVERY destructible local
-// is declared - so a partial reconstruction shifts every esp offset and gains nothing
-// (empirically confirmed on the simpler non-EH PlaceObjectFull: an under-declared frame
-// wholesale-diverges regalloc). Callee/local identities recovered (xref) for the redo:
-//   [esp+0x3c] = CButeMgr (ctor ??0CButeMgr 0x170210; ParseGroup 0x171580;
-//                GetIntDef 0x171aa0 / Exists 0x171a60 / GetStringDef 0x173180; Init 0x170330)
-//   ebx        = CParseSource (m_34->LoadBute 0x13bff0; BeginParse 0x139960 / EndParse 0x1399d0)
-//   [esp+0x54/0x84/0xb0] = 3 scratch zPTree locals (ctor/Clear 0x16e070; MI dtor
-//                restamps ??_7zPTree@0x5e94ac / ??_7CButeStore@0x5e949c + 0x16dfc0 + 0x16da60)
-//   the two `new`(0x5c/0x58) heap objects are CRT strstreams (both ctors are
-//                manual-crt-reclass in config/library_labels.csv): the 0x58 is an
-//                `ostrstream(buf, len, ios::out)` (??0ostrstream @0x1698c0, over a
-//                `new(len)` byte buffer) that BitStreamBlowfishDecode (0x16f760)
-//                fills with the Blowfish-decoded cheat text; its size is then read
-//                via `os.rdbuf()->out_waiting()` (the inline-member copies
-//                ?rdbuf@ostrstream @0x213a0 / ?out_waiting@streambuf @0x21280 -
-//                MSVC5 won't inline the ios virtual-base access, so the copies sit
-//                in this obj's COMDAT band); the 0x5c is the `istrstream(buf,
-//                count)` reader (??0istrstream @0x169700) the Bute parse then
-//                consumes. All LIBRARY machinery - reconstruct with the real
-//                <strstrea.h>/<iostream.h> classes in the redo.
-// m_14 = CChatBoxTextHost (IsAcceptingInput 0x3508 / GetText 0x12a3 / Dispatch 0x2243 /
-//        ClearInput 0x442b / Refresh 0x25c2); g_gameReg->m_2c GetInputMode @vtbl+0x10;
-//        g_gameReg->m_44 = the cheat applier (Apply 0x4269). Per eh-state-numbering-base.md
-// + gx-state-machine-scalar-delete-cleanup.md, reproducing the exact EH-state machine + the
-// istream/ostream library construction is a leaf-first redo - homed by RVA as a complete-
-// intent placeholder rather than a half-reconstructed body that would diverge regalloc.
 RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     static_cast<void>(a);

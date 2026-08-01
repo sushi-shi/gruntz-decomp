@@ -222,23 +222,6 @@ i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
 }
 
 // @early-stop
-// ~37%: COMPLETE + correct (prologue/dispatch/jump-table/common CString-tail/
-// tile-A-B gate + the two registrations all model retail). Residual is a GLOBAL
-// register-COLORING wall, proven with llvm-objdump -dr base vs target:
-//   * The A/B tile-code tail computes `code = grid->m_8[m_180>>5][(m_17c>>5)*7+4]`.
-//     RETAIL colors its temps into callee-saved ebp ((x>>5)*7 via shl3/sub) and ebx
-//     (grid->m_8 row table); THIS cl colors the same temps into volatile edi/edx and
-//     leaves ebp/ebx free.
-//   * Because ebp/ebx are free across the switch here, this cl HOISTS the shared
-//     {-1,-1,1,1}/{0,0,0,0} region constants into ebx(-1)/ebp(1)/edi(0) -> each of the
-//     10 arms is 10 esi-relative stores. Retail, denied ebp/ebx by the tail, instead
-//     re-materializes per-arm (lea ebx,[esi+0x2b0]; or eax,-1; or ecx,-1; mov edx,1;
-//     store; xor-recycle to 0; store region1) -> each arm ~20 insns. The 2x-longer
-//     arm x10 + the prologue reg diff is the whole 63% residual.
-// Not a source-shape bug: paired-column vs sequential region writes + pointer-vs-index
-// spellings were tried (identical bytes / hoist unchanged). The hoist is downstream of
-// the tail's callee-saved coloring, which cl build-8034 assigns opposite to retail and
-// which no source spelling of the tail expression reorders. Deferred to the final sweep.
 RVA(0x00050ce0, 0x399)
 i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     m_198 = kind;
@@ -383,9 +366,6 @@ void CGrunt::PlayMoveSoundAtTile(i32 tx, i32 ty) {
 }
 
 // @early-stop
-// 97.98%: the CFG, calls, constants, typed BrickzCell accesses, and ordered relocations
-// match retail. Residue is the free-list node/coordinate register swap plus equivalent
-// SIB spellings and store scheduling in the two board-cell blocks.
 RVA(0x00051510, 0x20f)
 i32 CGrunt::IsDropReady(i32 a) {
     {
@@ -487,14 +467,6 @@ void CGrunt::SnapToLastTile(i32 a) {
 // ---------------------------------------------------------------------------
 // CGrunt::RectContains(x, y)   @0x51850   (__thiscall, ret 8)
 // @early-stop
-// register-relative rect-walk plateau: the logic is exact - builds two tile-space
-// rects from the grunt's stored bounds (this+0x290 / this+0x2a0) shifted by the
-// committed pixel position (m_17c/m_180)>>5 and inflated by +1 on the high edges,
-// tests the query point (x>>5, y>>5) against the live rect(s) via IsRectEmpty, and
-// returns whether it is contained. Residue: cl interleaves the two CRect builds
-// and reuses the [esp+N] temp slots in an order the source can't pin (it folds the
-// member loads + the >>5 shifts across both rects); the IAT-hoisted `IsRectEmpty`
-// call shape matches. Pure stack-slot/regalloc scheduling. Deferred to final sweep.
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 dx = m_lastTilePxX >> 5;
@@ -545,12 +517,6 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 // ---------------------------------------------------------------------------
 // CGrunt::RectContainsGated(x, y)   @0x51a20   (__thiscall, ret 8)
 // @early-stop
-// register-relative rect-walk plateau (sibling of RectContains, same wall): gated
-// on the m_198 enable flag, then builds two tile-space rects from this+0x2b0 /
-// this+0x2c0 shifted by (m_17c/m_180)>>5 (rect1's high edges +1), and tests the
-// query point (x>>5, y>>5) against them via IsRectEmpty + the 4-way bounds compare.
-// Residue: identical to RectContains - cl interleaves the two CRect builds and the
-// [esp+N] temp-slot reuse in an unpinnable order. Deferred to the final sweep.
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 px = x >> 5;
@@ -601,14 +567,6 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 }
 
 // @early-stop
-// dual switch jump-table + grid-regalloc + /GX-trylevel wall (the same family as
-// ClaimSwitchTile in this TU). Logic/CFG/offsets/flag bits + the compass voice
-// records + the board release/claim + both engine calls are reconstructed in
-// shape/order. Residue: (1) the move-command + direction switches tail-merge their
-// overlapping +-0x20 compass arms in a .text layout no source case-order pins; (2)
-// the x/y move coords held across the validity/wall test + the level-board double-
-// deref land in a different callee-saved-reg/stack-spill assignment than retail;
-// (3) the /GX trylevel transitions for the CString + CToyTileBag temps. Final sweep.
 RVA(0x00051c00, 0xc7b)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -883,15 +841,6 @@ commit:
 // m_arrivalPending=1, and return 1. On an obstructed tile return 0.
 //
 // @early-stop
-// switch jump-table + grid-regalloc wall (docs/patterns: switch-cases-source-order,
-// align-down-byte-and-encoding, the regalloc family): logic/CFG/offsets/flag bits +
-// both engine calls byte-exact; residue = (1) the 8-way direction switch tail-merges
-// the overlapping +-0x20 delta arms in a .text layout no source case-order pins, and
-// (2) the x/y move-coords held across both calls + the level-board double-deref
-// (g_gameReg->m_tileGrid->m_rowBytes[ty]) land in a different callee-saved-reg/stack-spill
-// assignment than retail (retail spills the pre-switch x/y to [esp+0x18/0x1c] for the
-// default arm and keeps x=ebx/y=edi). The memory-RMW byte twiddle is matched
-// (55.8%->61.6%); the rest is the documented regalloc/scheduling plateau. Final sweep.
 RVA(0x00052c70, 0x1b1)
 i32 CGrunt::ClaimSwitchTile() {
     i32 x = m_lastTilePxX;
@@ -974,12 +923,6 @@ i32 CGrunt::ClaimSwitchTile() {
 // pixel coords m_defenderX/Y = (c/d aligned down to the tile grid) + 0x10.
 //
 // @early-stop
-// leaf regalloc / align-down-encoding coin-flip (docs/patterns/align-down-byte-and-
-// encoding + the regalloc family): all 5 member stores + values + `ret 0x10` exact.
-// Residue = retail keeps `c` in edx (dword `and edx,~0x1f`) and materializes the
-// constant 1 in eax (`mov eax,1; mov [m_arrivalActive],eax`) interleaved into the c-block;
-// our cl loads c into eax (byte `and al,0xe0`) + stores m_arrivalActive as an immediate. No
-// source spelling pins which value owns edx vs eax on a 66-byte leaf. Final sweep.
 RVA(0x00052ed0, 0x42)
 void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
     m_arrivalCol = a;
@@ -998,11 +941,6 @@ void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
 // tail path (no `xor eax,eax`), so the slot is morally void.
 //
 // @early-stop
-// leaf regalloc/schedule coin-flip (the same tiny-accessor family as GetTilePos):
-// logic/CFG/offsets exact + the tail (no eax write) byte-matched. Residue = retail
-// pins the arg `a` in ebx (3 callee-saved: ebx/esi/edi, arg spilled up-front) and
-// loads m_5c->eax/m_60->ecx (m_5c aligns first); our cl uses 2 callee-saved and
-// reverses the eax/ecx axis assignment. Source-invariant on a 75-byte leaf. ~84%.
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
     CWwdGameObjectA* h = m_object;
@@ -1019,16 +957,6 @@ void CGrunt::ConsiderArrival(i32 a) {
 // ---------------------------------------------------------------------------
 // CGrunt::StepAnimDispatchA(x, y, c, d)   @0x52fb0   (ret 0x10)
 // @early-stop
-// ebp-zero-pin regalloc wall (42.4%, was 39.9%). STRUCTURE now confirmed exact:
-// GruntTileFlags is __inline (matches the inlined grid-walk), and the "J" arm's
-// GruntEntranceCell by-value copy (dead-spilling `reason` to esp+0x1c) reproduces
-// the `sub esp,0xc` frame + the GetBuffer(0)/CacheFirstFrame calls. Every remaining
-// diff is register-COLORING: retail pins 0 in EBP (no 8-bit subreg in 32-bit x86 ->
-// all 12 strcmp arms null-test `test cl,cl`, and a 4th callee-saved reg is pushed with
-// `this` in esi); my body pins 0 in EBX (has bl -> `cmp cl,bl`, this in edi, only 3
-// pushes). Same offsets throughout, no wrong field/dispatch. Which physical reg holds
-// the zero is not source-steerable (permuter SKILL.md excludes register-coloring); the
-// standalone-repro proof in StepArrivalCommit's note applies verbatim. Final sweep.
 RVA(0x00052fb0, 0x96e)
 i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     if (m_entranceCommitted == 0) {

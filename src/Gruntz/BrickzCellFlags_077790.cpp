@@ -17,17 +17,6 @@
 // clear its 0x1000 bit and re-set it when one of the four opposite neighbour pairs
 // is both passable (no 0x939 bit).
 // @early-stop
-// dense-switch + 8-neighbour spill wall. The old note here blamed the hard 0% on the
-// "jumptable-data-overlap scoring artifact"; the real cause was the SPAN. The code
-// ends at `ret 0xc` after 0x37d bytes, but 691 more bytes of switch index LUT + jump
-// table follow before the next real function (SetCell @0x77dc0), and objdiff sizes a
-// symbol by next-symbol-start - with a code-only annotation the two sides disagreed on
-// the length and the function was not scored AT ALL. The span below is the true retail
-// extent 0x77790..0x77dc0 (0x630), which is what the delinker must carve for the sides
-// to be comparable; it scores 42.95%. (Measured alternatives: 0x37d = unscored,
-// 0x450 = our base COMDAT = 24.5%, 0x630 = 43.0%.) The remaining residue IS a real
-// divergence - the deep 8-neighbour walk's pointer/spill schedule against retail's
-// stack-slot-heavy neighbour layout - not a measurement artifact any more.
 RVA(0x00077790, 0x630)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // The target cell pointer is computed first and held in a callee-saved register
@@ -213,16 +202,6 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
 // the reference tile; null it unless it lands inside the reference object's
 // +/-(m_298+m_2dc+1) tile box. Tile coords are 1/32-pixel units (>>5).
 // @early-stop
-// regalloc wall: logic + the distance/rect math are byte-exact, but MSVC spills
-// colPtr/rowPtr to the stack where retail keeps them in edi/ecx (it instead reloads
-// `w` per outer iter). A spill-weight choice; the loop body matches.
-// THE Grid_77df0 FAMILY IS DISSOLVED (2026-07-14): the receiver at EVERY call site
-// is the grunt's +0x260 board slot, whose type is settled as CTriggerMgr (Grunt.h's
-// CGruntTileMgr note) - the crack the old @identity-TODO lacked. The cells/world
-// are CGrunt (live flag +0x1fc == m_entranceCommitted, kind +0x258 == m_gruntKind,
-// ref x/y == m_lastTilePxX/Y, skip-row == m_tileOwnerHi, radius parts ==
-// m_reachRadius/m_defenderRadius) and the +0x10 spatial obj is CGruntHud - the
-// same shapes as the sibling FindNearestInRow @0x77f80 in TriggerMgr.cpp.
 RVA(0x00077df0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     CGrunt* best = 0;

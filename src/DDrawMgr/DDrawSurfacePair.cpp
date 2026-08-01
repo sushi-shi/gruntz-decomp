@@ -110,15 +110,6 @@ void CDDrawWorkerList::ClearWorkers() {
 // two m_04 paths are TWO sequential ifs (if m_04==1 {...} if m_04!=1 {...}), which
 // is why the success merge re-tests m_04. __thiscall, 4 stack args (ret 0x10).
 // @early-stop
-// 97.2% - logic/CFG/offsets/calls/error-codes all reproduced. The old residual (1) (the
-// w<=0 error path's `cmp $1,[esi+4]` memory compare) is FIXED: dropping the two named
-// locals there gives retail's `mov eax,[esi+4]; mov esi,[esi+0xc]; cmp eax,1` (the
-// manager takes over the dead `this` register), and hoisting the success path's m_id
-// read into `kind` gives the register compare above the store block. What is left is
-// ONE 2-instruction slip - cl schedules that `cmp eax,1` three stores later than retail
-// (position swept: kind read at each of the 5 leading statements, plus a `BOOL` form and
-// an inverted arm; all >= the current spelling, and `gruntz permute variants` found no
-// AST win in 250 candidates).
 RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 flags) {
     m_flags = flags;
@@ -183,15 +174,6 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 flags) {
 // src rect, mark active (m_04=0x63), latch the surface (not owned). Rejects a
 // null surface or non-positive geometry. __thiscall, 1 arg (ret 4).
 // @early-stop
-// ~77.7% - logic/CFG/offsets/store-order all byte-faithful. Residual is the mirror-
-// register wall: retail keeps the `src` pointer in edx (loaded for the null test,
-// reused as the geometry base, stored to m_surface LAST); MSVC on this identical
-// source pins src in eax and schedules the m_surface store early. Same values/order.
-// Not source-steerable (permuter 180-iter marginal). docs/patterns/zero-register-pinning.md.
-// 2026-08-01: retail has 3 rets to our 2 - it duplicates the null guard's exit
-// inline where cl cross-jumps it onto the geometry guard's shared tail. Rewriting
-// the body to early-return + one `||` (retail's exact statement shape, below) is
-// BYTE-IDENTICAL to the old nested form, so the merge is cl's, not the source's.
 RVA(0x00163db0, 0x64)
 i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     // Early return with its OWN inline block (retail `jne`), then the geometry
@@ -301,19 +283,6 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 // surface, fills the top + bottom edge rows then walks the left + right edge
 // columns, then unlocks. 8bpp (1 byte/pixel) and 16bpp (2 bytes/pixel) paths.
 // @early-stop
-// 84.6% (was 52.74). The old "regalloc / stack-frame wall (sub esp,0x18 vs 0x8)" was
-// three source-shape bugs, and the frame size was the symptom, not the cause:
-//   * the four rect corners were latched into locals - retail re-reads rect->left/top/
-//     right/bottom at every use and CSEs m_width/m_height across the four bounds tests
-//     instead; four latched corners is exactly the 0x10 extra frame;
-//   * `CDDSurface* sv = m_surface;` collapsed a chain retail re-derives at every use
-//     (twice per vertical-loop iteration);
-//   * the memset destination OFFSET belongs in its own local outside the count guard
-//     (retail has the two imuls + add above `test <n>,<n> / jle`, only `add edi,<off>`
-//     inside) - and memset takes the `color` int, not the u8 (retail's expansion reads
-//     the arg byte, it does not mask).
-// Residual: the commutative imul accumulator pick on the two offsets, the `add edi,<off>`
-// slot, and one frame-slot number for `h` (retail reuses the w/n slot).
 RVA(0x00163f40, 0x23e)
 void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
     // The four corners are NOT latched into locals. Retail re-reads rect->left/top/
@@ -401,14 +370,6 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 // the vertical loops (the base writes may alias the surface header), which is why
 // each iteration reloads m_surface->pitch. __thiscall, 2 stack args (ret 0x8).
 // @early-stop
-// 99.56% (was 73.19). The old "regalloc coin-flip / not source-steerable" note was two
-// source-shape bugs: the three zero stores right of centre are a FILL LOOP (cl5 then
-// emits retail's `xor ecx,ecx / mov WORD [..+1],cx / mov BYTE [..+3],cl` -
-// docs/patterns/adjacent-same-value-stores-are-a-loop.md), and both vertical arms peel
-// their FIRST step (`up = off - pitch;` then a `{store; step}` body, 4 pitch reads and
-// 3 stores). Residual is 4 instructions: the commutative `imul` operand pick on
-// `bpp*x + pitch*y` (both orders compiled, identical - INDEX
-// commutative-imul-operand-in-eax.md) and the Unlock receiver register that follows it.
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
@@ -470,14 +431,6 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 // MakeAndAddB (system-memory) / CreateB (video). Cache the new geometry + a {0,0,w,h}
 // src rect and return 1 on a valid {w>0,h>0,bpp in {8,16,24,32}}. __thiscall, 3 args.
 // @early-stop
-// ~78.5% block-layout/tail-merge wall. Logic/CFG/offsets/calls/geometry-set all
-// reproduced (incl. the bpp-hoist to ebp after the MakeAndAddB bpp-arg fix). Residual
-// is MSVC5's basic-block layout: retail keeps each surface-alloc failure `return 0`
-// INLINE (fall-through, reusing eax==null-surface, no xor) and places the geometry-
-// equal `return 1` at a cold tail; our cl tail-MERGES the three `return 0`s into one
-// shared `xor eax,eax` block and inlines the equal `return 1`. The sibling Create
-// (0x163c90) hits the same family. Not source-steerable (invert-condition + permuter
-// both no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x00164250, 0x12b)
 i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width != w || m_height != h || m_bpp != bpp) {
@@ -584,12 +537,6 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // ---------------------------------------------------------------------------
 // The attached surface's readiness predicate is CDDSurface::IsValid (slot 5, @0x14).
 // @early-stop
-// ~87.4%: the prologue, the mode/fullscreen branches, the pool call, and all seven
-// error blocks (the five 0x80e9..0x80ed switch cases + both 0xbb9 + the 0xbba) are
-// byte-identical. Residual: MSVC5 cross-jumps (merges) the two byte-identical 0xbb9
-// blocks (switch-default + err==0) that retail emitted as separate copies, which
-// shifts the trailing success + 0xbba blocks. A block-merge/layout artifact, not a
-// source lever (the two paths are genuinely identical code). Logic byte-faithful.
 RVA(0x001644a0, 0x19b)
 i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
@@ -763,13 +710,6 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
 // Setup @0x150d60 AND by every worker Vfunc* (qualified base call) - the proof
 // that unmasked the ex "CDDrawWorkerBase::Helper_164790" label.
 // @early-stop
-// regalloc/scheduling wall (topic:regalloc): logic + every member store are byte-exact,
-// but retail parks the ctx handle in eax while cl parks it in edx and reuses one
-// `mov eax,1` for both m_50 and the return. ~90%. Naming the level (or the manager) in
-// a local was swept over all 11 statement positions: two positions recover retail's
-// early `mov eax,[ecx+0xc]` + the IMMEDIATE `mov [ecx+0x50],1`, but every one of them
-// scores LOWER on objdiff than the plain spelling - the deref/store pair then lands on
-// the wrong side of the `mov eax,1`. Reverted to the plain form.
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
@@ -874,14 +814,6 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
 // 0x165460: (re)build the element from a parsed-source descriptor. __thiscall,
 // 3 stack args (ret 0xc). Returns 1 on success, 0 on any record-parse failure.
 // @early-stop
-// 89.34% - whole body byte-correct in shape (offsets, calls, control flow, the
-// for-loop success-first/`jl` exit order per docs/patterns/loop-preheader-vs-exit-
-// block-order.md). Residual is three regalloc/scheduling walls: (1) retail rebases
-// the descriptor's m_08 read onto the cursor (`mov ecx,[ebp-0x18]` where ebp=src+0x20)
-// vs our `mov ecx,[ebx+8]`; (2) retail re-zeros the record reg at the loop top
-// (`xor edi,edi` + a `jmp` skipping it the first iteration - zero-register-pinning.md);
-// (3) the SetAtGrow arg lands in edx (retail) vs ecx (ours) with the array-`this`
-// `lea` hoisted before the pushes (pin-local-for-callee-saved-reg.md). None steerable.
 RVA(0x00165460, 0x156)
 i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
@@ -1040,9 +972,6 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* src, const char* key, i
 
 // Allocate + construct a worker, call its +0x28 virtual with (arg1, arg3).
 // @early-stop
-// vptr-scheduler wall (see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md):
-// the real ctor fixed the regalloc; residual is only the vptr store position (cl 1st vs
-// retail 4th).
 RVA(0x00165990, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker28(void* data, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
@@ -1063,8 +992,6 @@ void* CDDrawWorkerMapSmall::CreateWorker28(void* data, const char* key, i32 flag
 // @0x147410, whose first act is `strrchr(a1,'.')`. `key` (the only other string here)
 // is unrelated: its sole use is the m_map1 subscript at 0x165a75.
 // @early-stop
-// vptr-scheduler wall (see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md):
-// residual is only the vptr store position (cl 1st vs retail 4th).
 RVA(0x00165a10, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker2C(char* path, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
@@ -1095,8 +1022,6 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(char* path, const char* key, i32 flag
 // ?Factory_165a90@CDDrawWorkerMapSmall@@UAEPAXPAUCParseSource@@HH@Z; the slot carries a
 // char*, which is what <AddrWord.h> is for.
 // @early-stop
-// vptr-scheduler wall (twin of Factory_1658c0): real ctor fixed the regalloc;
-// residual is the vptr store position (cl 1st vs retail 4th) + the /GX EH-state schedule.
 RVA(0x00165a90, 0xf4)
 void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* src, i32 key, i32 flags) {
     if (src->GetEntryTag() != IMGTAG_XCP) {
@@ -1173,9 +1098,6 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
 
 // 0x165d30 (__thiscall): remove a worker from m_map1 by its `key`.
 // @early-stop
-// ~77.7% - MSVC5 `delete`-null-check wall: retail runs the value's scalar-deleting
-// destructor DIRECTLY with no null-check; `delete w` (the only MSVC5-expressible
-// form) emits an unconditional null-check + reloads val.
 RVA(0x00165d30, 0x5f)
 i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     CObject* val = 0;
@@ -1277,14 +1199,6 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 // 0x165fa0 (vtable slot 10): plot the worker's marker pixel (m_78) at pixel
 // (m_5c, m_60) onto BOTH passed surface pairs - the back one (b) first.
 // @early-stop
-// 99.78%, 4 bytes, in the SECOND block only: retail evaluates `m_bytesPerPixel * x`
-// first (it lands in ecx and is the `add eax,ecx` term) while this cl evaluates
-// `m_pitch * y` first, so the two products trade the add-term and the index-term of
-// `mov [edx+eax],bl`. cl canonicalises the commutative `+` (both operand orders and
-// the statement-split form compile identically), and the two blocks are now
-// source-identical while only the second one differs - so the pick is whole-TU
-// allocator state, not this body's spelling. It moved here as /O2 ripple from the
-// CDrawSubWorker::Probe fold in this TU (its previous MAX was 88.96%).
 RVA(0x00165fa0, 0x93)
 void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     {
@@ -1316,8 +1230,6 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // look up a named object in the owner's map, then fetch element[idx] when in
 // range; cache it at m_78 and return whether it is non-null.
 // @early-stop
-// scheduling wall (topic:regalloc): body byte-exact; only residue is WHERE the
-// Lookup out-param zero-init lands (a 1-instruction reorder). ~95%.
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
     CObject* obj = 0;

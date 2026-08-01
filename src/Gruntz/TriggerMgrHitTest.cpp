@@ -87,8 +87,6 @@ i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
 // the CTrigger pad-view at those call sites stood in for. Neither out-ptr is null-checked
 // either, and the box test is (x-7 > ox+7 || x+7 < ox-7), not the +14 form we had.
 // @early-stop
-// regalloc wall: the row/col high/low-byte split pins edi/ebp and the box arithmetic
-// spills to different slots than retail. Logic + offsets byte-exact.
 RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
     CMapMgr* plane = g_gameReg->m_tileGrid;
@@ -144,15 +142,6 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
 // HitGrid views folded onto CGrunt / CTmDisplay / CMapMgr.)
 //
 // @early-stop
-// 74.75 -> 79.42 (measured 2026-07-27). The old note's "identical instruction
-// selection" claim was false: base had 3 rets against retail's 2, i.e. an extra whole
-// basic block. The outer column `for` let cl duplicate the miss epilogue as the loop's
-// fall-through; hoisting the gate (`if ((u32)x <= (u32)xEnd) { do { ... x++; } while
-// (...); }`) gives retail 0x75f8d/0x75f91 - bottom test branches out to the shared miss
-// block, back-edge unconditional.
-// Residual: MSVC5 assigns the point/rect args to a permuted register set (a0->edi,
-// a1->esi vs retail a0->ebx/a1->edi) and spills one fewer local, so the frame is 0x1c vs
-// retail 0x20 and every [esp+N] offset shifts. topic:regalloc.
 RVA(0x00075c60, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
     i32 tcol = px >> 5;

@@ -75,9 +75,6 @@ void CTriggerMgr::Cleanup() {
 // stashes the new cell into the grid (+0x1c) and bumps the per-row/level counters. ret the
 // placed column (or -1). (__stdcall: ret 0x34.) Reconstructed to plateau.
 // @early-stop
-// big factory/jump-table driver (0x3f4 B): the kind jump table + the two CreateSprite stanzas
-// pin ebp(this)/esi/edi differently than retail and the attribute-mask test ladder spills.
-// Structurally faithful; regalloc diverges across the table. topic:wall.
 RVA(0x0006b6d0, 0x3f4)
 i32 CTriggerMgr::PlaceObject(
     i32 a8,
@@ -205,12 +202,6 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
 // flag each live cell's goal (+0x154) done and clear the cell, its parallel grid slot
 // (+0x11c) and the per-row state words (+0x10c/+0x20c/+0x21c); then ClearSelections.
 // @early-stop
-// 60->65: the "5 = all" decode is now the if/else form (jmp-merge). Residual is a
-// byte-or-vs-dword-RMW regalloc cascade: our cl pins the zero constant in ebp and peepholes
-// `m_8 |= 0x10000` to `or byte [mem+2],1` (frees a reg -> keeps `this` in ebx); retail pins
-// zero in ebx and emits the full `mov r,[m_8];or r,0x10000;mov [m_8],r` RMW (the reg temp
-// forces `this` to spill to [esp+0x10] + one extra `push ecx` frame slot). Same expr matches
-// as dword-RMW in the lower-pressure ResetAll; not source-steerable here. topic:wall topic:regalloc.
 RVA(0x0006bd40, 0xb3)
 i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     i32 row, last;
@@ -259,10 +250,6 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 // (view@m_24: scroll struct embedded at [m_5c]+0x40, origin @m_10/m_14) and forward to
 // CellHitTest.
 // @early-stop
-// reassociation/scheduling residual (~85%): the scroll/view loads + the CellHitTest arg
-// pushes are byte-exact; retail loads scroll[0]/[4] together up front and accumulates px
-// from scroll[0] (`(scroll0-view10)+sx`), our cl reloads sx and accumulates from it
-// (`(sx-view10)+scroll0`) - same value, swapped operand order. topic:wall topic:scheduling.
 RVA(0x0006be30, 0x47)
 CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     CGameLevel* view = m_world->m_level;
@@ -275,14 +262,6 @@ CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 
 // (px,py). startRow==5 means "rows 0..3"; otherwise just that one row. Writes the hit
 // (row,col) through the out-ptrs and returns the cell pointer (0 when none).
 // @early-stop
-// 71.2 -> 80.71 (measured 2026-07-27): the "tail-merges the loop exit" half of the old
-// note WAS steerable. base 3 rets / retail 2; hoisting the row gate out of the `while`
-// (`if (row <= last) { do { ... } while (row <= last); }`) makes the outer bottom test
-// branch to the shared miss block with an unconditional back-edge, which is retail
-// 0x6bf6d/0x6bf71.
-// Residual regalloc wall: retail spills px to [esp+0x1c] and reloads it for each box-edge
-// compare (freeing esi to precompute y0+30); our cl pins px in ebx. High register
-// pressure (5 args + this + nested loop) -> different spill picks. topic:regalloc.
 RVA(0x0006bea0, 0xe2)
 CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
     i32 row, last;
@@ -374,12 +353,6 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
 }
 
 // @early-stop
-// /GX branchy nested-jump-table megafunction wall (~10%): validated top reconstructed
-// (prologue, grid clamp, cell-tag resolve, primary switch + first arm: FindChild(key,7),
-// SwitchDown, the m_list2/m_list1 claim walks and both diagnostic stanzas); the 20-way +
-// nested 7-way dispatch, the twelve near-identical list-walk/CString-format arms
-// and the /GX EH-state thread across 3426 B are the documented wall. Final-sweep.
-// docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md; eh-state-numbering-base.md.
 RVA(0x0006c130, 0xd62)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     // retail loads the play state early and spills it ([esp+0x10]); the switch
@@ -476,10 +449,6 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 // emitted `ret 8`. The grunt arg is unread by this driver (the callers pass it for
 // the logic objects that need the actor; this body dispatches by tile only).
 // @early-stop
-// big /GX switch driver (0x5b2 B): the dense jump table + the six CString-error stanzas
-// (ctor/Format/ReportError/dtor under the EH frame) diverge wholesale in regalloc and the
-// __ehfuncinfo state numbering; the validated head + the error-Format shape are faithful.
-// topic:wall topic:eh.
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     static_cast<void>(g);
@@ -562,9 +531,6 @@ void CTriggerMgr::GridAction7(i32 a, i32 b) {
 // snap - exactly as the twin ApplyTriggerB @0x6e120 does with its already-named
 // worldX/worldY. arg1*15+arg2 is the m_grid index, so arg1/arg2 are col/row.
 // @early-stop
-// big branchy trigger-applier (0x4b7 B): the kind-dispatch ladder + the snapped-pos compares
-// pin esi(cell)/edi/ebp differently than retail; the body is structurally faithful but its
-// regalloc diverges across the many branches. topic:wall.
 RVA(0x0006dae0, 0x4b7)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
@@ -599,8 +565,6 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
 // logic; updates the arrival phase and returns the applier's boolean. (__stdcall: ret 0x10.)
 // Reconstructed to plateau.
 // @early-stop
-// big branchy trigger-applier (0x552 B): mirrors ApplyTriggerA's wall - kind-dispatch ladder
-// + snapped-box arithmetic diverge in regalloc across the branches. topic:wall.
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
@@ -730,8 +694,6 @@ CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
 // boolean result.
 // (__stdcall: ret 0x14.)
 // @early-stop
-// regalloc + inline-strcmp wall: the "I" compare inlines as a byte loop pinning ah/bl
-// differently than retail and the box arithmetic spills. Logic + offsets byte-exact.
 RVA(0x0006e800, 0x189)
 i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 worldY) {
     i32 idx = col * TM_GRID_COLS + row;
@@ -770,13 +732,6 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 w
 // score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
 // and ClearRow(g_curPlayer). void - no path materialises a return value. (__stdcall: ret 0xc.)
 // @early-stop
-// inline-strcmp result-register coloring wall (88.71%, up from ~80% when the dual-role
-// third parameter stopped being punned - see HitSpanArg). void return + strcmp `!= 0`
-// bool steer + i64 score sub are byte-exact and the size matches retail (0x125). The
-// residual is the inline strcmp landing its sbb result in ecx (retail eax) with the
-// `differ` bool in al vs retail's cl, so the `setne`+null-test colors as `cmpb bl,al`
-// vs retail `testb cl,cl`. Not source-steerable (the `bool` local is required for the
-// setne form but shifts the result register). topic:wall.
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     // retail 0x6ea00 reads arg3 BOTH by value (the span rect) and by address (the

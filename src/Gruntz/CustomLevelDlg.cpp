@@ -26,15 +26,6 @@ const AFX_MSGMAP_ENTRY CBattlezDlgCustom::_messageEntries[] = {
 };
 
 // @early-stop
-// stack-buffer-placement wall (same as sibling CBattlezDlg::FillCustomLevelList
-// @0x3af90): complete correct reconstruction - the GetDlgItem gate, the MFC wait
-// cursor's /GX unwind, the "\custom\*.wwd" glob under the current dir, the
-// function-static CString("custom\\") magic-static guard + atexit, the loop-rotated
-// _findfirst/_findnext walk with the per-entry operator+ + by-value IsHidden query +
-// LB_ADDSTRING, the LB finalize and EndWaitCursor, and the save/validate select
-// branch all align by shape (llvm-objdump -dr). Residual is MSVC5's [esp+N] local
-// placement (glob / _finddata_t / CString-temp arg slots land differently than
-// retail) + the by-value CString-temp lifetime - not steerable from source.
 RVA(0x000180e0, 0x23f)
 void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
     CListBox* item = static_cast<CListBox*>(GetDlgItem(0x516));

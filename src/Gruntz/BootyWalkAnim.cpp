@@ -50,18 +50,6 @@ char g_secretChars[] = "WARP"; // "WARP"
 // shared sprite factory. The static CString cue buffer forces the /GX EH frame.
 // ===========================================================================
 // @early-stop
-// 92.8% (from 0.6% stub): complete + correct reconstruction - prologue byte-exact
-// (esi=this, the two inline `return 1` early-outs, the GetSel gate), the per-player
-// two-sprite create loop, the signed `(m_levelIndex-1)%4+1` prefix select, the
-// static-CString "%sSECRET%c" cue build, and the m_spriteId/m_timer stores all match.
-// Residual is non-source-steerable: (1) strength-reduction ANCHOR: retail folds the
-// two 0x10-apart sprite arrays onto one induction pointer anchored at m_visSprites
-// (esi=this+0x2c8, m_animSprites via [esi+0x10]); cl anchors at m_animSprites
-// (this+0x2d8), flipping every sprite-access displacement byte; (2) reloc-name
-// scoring artifact - the CacheFirstFrame/ApplyLookupGeometry/CreateSprite/GetSel
-// callees live on the real CGruntSprite/CGruntAnimPlayer/CDDrawChildGroup/CGruntSprite
-// classes but are modeled as BzSprite/BzSpriteFactory/BzSelSource methods (code bytes
-// identical, REL32 masked); (3) the /GX static-CString-guard EH frame (docs/seh-eh.md).
 RVA(0x0001b450, 0x1ac)
 i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_scoreHud->m_08 != 0) {
@@ -111,24 +99,6 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 // advances m_stepIndex across the players, seeding an inline-RNG cue on completion.
 // ===========================================================================
 // @early-stop
-// ~90.5% - complete + correct reconstruction (all logic, externs, globals, and the
-// s_codeA "A" reloc named). Residual is layered documented walls, none steerable
-// from source:
-//  (1) global regalloc register-SELECTION: retail pins the persistent 0 constant in
-//      ebx (`xor ebx,ebx` at entry) whereas cl selects ebp for it, cascading to
-//      flipped `cmp` operand order (`cmp ecx,ebx` vs `cmp ebp,ecx`) and to ebp=1 vs
-//      immediate-1 materializations across the paths.
-//  (2) /GX EH-frame: the delinked `$L..`/`$T..` EH-state table + no-`__except_list`
-//      frame vs cl's representation (docs/seh-eh.md); plus two return-0 exits that
-//      run the CString `letter` destructor emit an INLINE EH-teardown epilogue
-//      (`xor eax,eax` first) instead of retail's `jmp` to the single shared return-0
-//      block (a tail-merge cl did not perform).
-//  (3) peephole: two `m_visFlags &= ~1` sites where cl's loaded value lands in a
-//      byte-addressable reg -> `andb al,0xFE` vs retail's dword `andl ecx,-2`.
-//  (4) scheduling: g_sndCueTag is load-hoisted early in retail's GAME_FLAGRISE arm,
-//      late in cl's.
-//  (5) jumptable-data-overlap: the two 4-entry WARP `$L` jump tables + pooled W/R/P
-//      `??_C@` string-constant labels (docs/patterns/jumptable-data-overlap.md).
 RVA(0x0001b690, 0x7bf)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
     CBattlezData* rec = g_gameReg->m_scoreHud;

@@ -51,10 +51,6 @@ i32 CShadeTable::ReadFrom(CFile* file, i32 id) {
 // ret 8.
 //
 // @early-stop
-// /GX EH-frame wall (~72%): logic + the CFile ctor/Open/ReadFrom/~CFile call chain +
-// the CFileException CString temp are faithful; residue is the EH-state numbering +
-// the local CFile's stack-slot scheduling inside the 0x10-byte frame. Deferred to the
-// final sweep.
 RVA(0x00150250, 0xd1)
 i32 CShadeTable::LoadFromFile(const char* path, i32 id) {
     CFile file;
@@ -69,9 +65,6 @@ i32 CShadeTable::LoadFromFile(const char* path, i32 id) {
 // it. /GX EH frame, ret 0xc.
 //
 // @early-stop
-// /GX EH-frame wall (~83%): logic + the CMemFile ctor/Attach/ReadFrom/~CMemFile chain
-// are faithful; residue is the local CMemFile's stack-slot offset (retail lands it at
-// [esp+0x10], our cl at [esp+0x8]) + the EH-state numbering. Deferred to the final sweep.
 RVA(0x00150330, 0x87)
 i32 CShadeTable::LoadFromMem(void* buf, u32 len, i32 id) {
     CMemFile file(0x400);

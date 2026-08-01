@@ -18,15 +18,6 @@ namespace Utils {
         // into outBuf. Returns nonzero iff the module was found.
         //
         // @early-stop
-        // 99.90%: one swapped pair. After the inlined memcpy's `rep movsb` clobbers
-        // esi/edi, cl restores the two spilled locals in the order edi<-[esp+0x14]
-        // (pModuleNext), esi<-[esp+0x10] (snap); retail restores esi first (the
-        // most-recently-spilled slot, and the one the next `push esi / call edi`
-        // consumes first). Same slots, same spill sites, same uses - only the two
-        // reload instructions are transposed. Tried: declaring `snap` up front with the
-        // other locals (slot-neutral, no change) and `found = 1` before the memcpy
-        // (no change). Everything else, incl. the four GetProcAddress arms and the
-        // rep movsd/movsb split, is byte-exact.
         RVA(0x00118f60, 0x134)
         i32 LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void* outBuf, DWORD bufSize) {
             i32 found = 0;

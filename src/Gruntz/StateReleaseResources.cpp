@@ -9,8 +9,6 @@
 // gate (+0x3c). __thiscall.
 //
 // @early-stop
-// cmp-operand-order wall: retail emits cmp val,edi (val vs the zeroed edi); cl emits
-// cmp edi,val. Same semantics, 1 byte per guard. All four frees + offsets byte-faithful.
 RVA(0x000fa150, 0x74)
 void CState::ReleaseResources() {
     if (m_world != 0) {

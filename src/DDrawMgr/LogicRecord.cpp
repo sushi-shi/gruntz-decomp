@@ -15,13 +15,6 @@
 // Then, when a sub-record is present, forward to its per-frame step
 // (m_logic->SerializeMove, CUserBase slot 1); a falsey result short-circuits.
 // @early-stop
-// regalloc wall (docs/patterns/zero-register-pinning.md): body is structurally
-// byte-exact, but retail keeps BOTH a (edi) and mode (ebp) callee-saved across
-// the switch while cl pins a in ebx and SPILLS mode to the stack (re-read as
-// [esp+0x1c] at the Step push); the residual is that register coin-flip plus the
-// reloc-masked jump-table base + Save/Resolve extern call names. No source lever
-// (local-pin of mode, arg reorder) flips the allocation. ~79%; defer to the
-// final sweep.
 RVA(0x00164830, 0xd3)
 i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
     if (a == 0) {
@@ -241,12 +234,6 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
 // (m_170) by looking the id up in the level grid's CMapPtrToPtr resolver.
 // Returns 0 on a null argument, 1 otherwise.
 // @early-stop
-// 99.33% - regalloc coin-flip wall (docs/patterns/zero-register-pinning.md):
-// body byte-identical (the out=0 store schedule, push order, and if/else branch
-// polarity all match after computing `res` before `out`), but retail pins m_0c in
-// edx and &out in ecx (`mov edx,[esi+0xc]; lea ecx,[esp+8]`) while cl pins m_0c in
-// ecx and &out in edx - a 3-instruction operand-register choice the permuter can't
-// flip. Not source-steerable.
 RVA(0x001651b0, 0x5d)
 i32 AnimWorkerObj::ResolveTarget(void* a) {
     if (a == 0) {

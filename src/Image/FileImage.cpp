@@ -42,16 +42,6 @@ static PALETTEENTRY s_palPcxData[0x100]; // 0x6852f0 (CDDSurface::DecodePcxData)
 // straight path BlitDirect. ret 0x10. No /GX frame.
 //
 // @early-stop
-// branch-scheduling wall (sibling of Decode @0x144b30, same archetype): the format/
-// convert dispatch, the ramp build and the BlitSurf/Blit/BlitDirect merge are logic/
-// offset/CFG-faithful, but MSVC's spilled-reg + ramp-cursor scheduling diverges from the
-// one allocation retail emitted. Note for the sweep: retail strength-reduces the four
-// channel stores of the scratch palette into FOUR induction pointers (three separate
-// relocs at base, base+1, base+2 - clearest in DecodeBmp @0x144024). This is NOT the
-// member-vs-byte-subscript spelling: A/B'd both, the member form gives cl ONE base plus
-// displacements and the byte-subscript form gives TWO (one reloc + one src-rebased) -
-// neither reproduces four. The ARRAY TYPE is settled (PALETTEENTRY[256] - it feeds the
-// same Blit `palette` slot as CDDrawPtrCollections::m_palette); the IV split is open.
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     // `srcv` is a whole BMP file image: BITMAPFILEHEADER, then BITMAPINFO (header +
@@ -297,13 +287,6 @@ i32 CDDSurface::SaveDispatch(char* path, void* pal, i32 flag) {
 // CFile). ret 0xc.
 //
 // @early-stop
-// /GX export wall residue (78.4%): CFG skeleton matches retail block-for-block (double
-// spal guard + 0xe memset recovered). Left: a whole-body regalloc mirror (retail keeps
-// the zero in ebx and materializes `mov esi,0x8` for the bit-depth compare; cl pins the
-// zero in esi and compares against the immediate), the quad-loop induction master
-// (retail rebases the 3 dest streams onto the src walker - index, cursor and dual-cursor
-// spellings all tried, 78.4/77.5/78.4), retail's UNFOLDED biSize*m_width imul (ours
-// constant-folds 0x28*w to lea*40), and the fh-pointer spill + EH-state numbering.
 RVA(0x001443b0, 0x284)
 i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
@@ -410,11 +393,6 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 // BGR triple and writing the scanline. On any failure Unlock + free + close +
 // return 0; on success return 1. The CFile stack object -> a /GX EH frame.
 // @early-stop
-// Two stacked walls (~52%): (1) the /GX shared-cleanup ladder - retail's per-reject
-// unwind funclets converge on one Unlock/delete/~CFile tail that idiomatic C++
-// scope-exit can't reproduce (docs/patterns/gx-state-machine-scalar-delete-cleanup.md);
-// (2) register-allocation entropy in the 16->24bpp conversion inner loop. Logic is
-// complete + correct; both are documented non-steerable plateaus.
 RVA(0x00144640, 0x2be)
 i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
@@ -519,9 +497,6 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
 // matching retail), and unlocks. /GX EH frame. ret 0xc.
 //
 // @early-stop
-// large /GX export wall: same shape as SaveBmp - the inline strlen+strcpy, header
-// field stores and the nested bottom-up row-write loop are logic/offset/CFG-faithful,
-// but the frame spill scheduling + EH-state numbering diverge; deferred to the sweep.
 RVA(0x00144900, 0x227)
 i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     static_cast<void>(pal);
@@ -602,11 +577,6 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
 // buffer (width even), runs RunDecode1/3 then Blit. ret 0x10. No /GX frame.
 //
 // @early-stop
-// branch-scheduling wall (~87%): the format/convert dispatch, the width%2 parity guard,
-// the grayscale-ramp copy loop and the alloc/decode/blit/free merge schedule the saved
-// regs + the spilled width/height/fmt/palette in an order MSVC reproduces only for one
-// allocation; logic + offsets + CFG + the run-decoder dispatch are exact (the base
-// disasm is structurally byte-faithful). Deferred to the final sweep.
 RVA(0x00144b30, 0x250)
 i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode) {
     if (src == 0) {

@@ -17,14 +17,6 @@ i32 IsPrime(i32 n) {
 
 // 0x182940 - ScatterSamples(out, start, end, count).
 // @early-stop
-// regalloc/LICM wall (~59%): logic + block structure byte-exact, but MSVC5 /O2
-// makes two non-steerable optimizer choices. (1) It assigns prime->ebx + array->ebp
-// where retail uses prime->ebp + s->ebx + array->edi (the ebx<->ebp swap cascades).
-// (2) It hoists the inner-loop-invariant r=(s*count)%prime out + strength-reduces
-// s*count to a running `+= count`, where retail re-reads count from [esp+0x2c] each
-// outer iteration (count stays in memory) and recomputes the `imul` inside the loop.
-// Same class as docs/patterns/blowfish-feistel-unroll-regalloc.md (identical logic,
-// different callee-saved reg pick). Inline-recompute / step=(i32)used both regressed.
 RVA(0x00182940, 0x13c)
 void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {
     if (start >= end) {

@@ -108,14 +108,6 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 // read (RezAlloc + read the text, parse the name back, read the four ints, then
 // seed the back-pointers/m_14 from the context arg and stamp m_28=0x3e9).
 // @early-stop
-// TU-partition /GX wall (sibling 0x16f4a0 same): the accumulators are REAL CRT
-// ostrstream/istrstream stack temps now (<strstrea.h>; the ctor+vbase-flag, the
-// inlined pcount() vbdisp probe, str()->?str@strstreambuf and the scope-end
-// ~ostrstream+~ios pair all byte-match retail under /GX-). The ONLY residue: this
-// unit is compiled /GX (its claimed 0x139xx ctor/dtor band needs EH frames) while
-// retail's 0x16cxxx-0x16fxxx band has NO EH frames - two retail TUs conflated in
-// one unit, so cl wraps the temps in an EH frame retail lacks. Fix = split the
-// movinglogic TU at the band boundary (docs/exe-map partition work), not source.
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (arc == 0) {
@@ -165,22 +157,6 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
 
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete reconstruction (~92%). Logic + control flow + every member store are
-// byte-faithful; the residual is three documented codegen walls verified by
-// llvm-objdump -dr base vs target (0x16ea90):
-//   1. regalloc (dominant): in the worker-scroll block MSVC pins the bound object
-//      m_10 in a CALLEE-SAVED reg (edi) and carries it across into the MoveToward
-//      block (one live range), whereas retail re-fetches m_10 into SCRATCH (eax/edx)
-//      per use and reloads a fresh edi in the MoveToward block (two live ranges).
-//      A reload-vs-reuse coin-flip; not source-steerable (using m_10-> directly
-//      already yields the aliasing reloads; the reg CLASS choice is the allocator's).
-//   2. x87 latency-fill: the two (int)m_38.m_40 / (int)m_38.m_48 snapshots let cl
-//      hoist the second `fldl m_48` into the __ftol return-latency gap ahead of the
-//      `mov m_140` store; retail keeps store-then-load. A scheduler fill, not steerable.
-//   3. const-fld order: `m_28 *= g_motionNegHalf` emits `fld g_motionNegHalf; fmul
-//      m_28` because g_motionNegHalf is a `const double` global (cl loads the const
-//      operand first) vs retail `fld m_28; fmul g_motionNegHalf`; operand-swap in
-//      source does not change it (docs/patterns/x87-fp-stack-schedule.md).
 RVA(0x0016ea90, 0x234)
 void CMovingLogic::MovingSlot16() {
     // Snapshot the integer positions, then step the kinematic state by the
@@ -267,9 +243,6 @@ void CMovingLogic::MovingSlot16() {
 // accumulators are CRT ostrstream/istrstream stack temps (<strstrea.h>).
 //
 // @early-stop
-// TU-partition /GX wall (see 0x16e7f0 above): real ostrstream/istrstream temps
-// byte-match retail under /GX-; this unit builds /GX for its 0x139xx ctor/dtor
-// band, so cl adds an EH frame retail lacks here. Split the TU to fix.
 RVA(0x0016f4a0, 0x1da)
 i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (arc == 0) {

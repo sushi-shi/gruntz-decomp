@@ -132,24 +132,6 @@ i32 CLightFxRender::AllocSurface() {
 // the descriptor bank + the game ref table, then unlocks.
 // ===========================================================================
 // @early-stop
-// zero-register-pinning WALL (docs/patterns/zero-register-pinning.md, INVERSE case).
-// Three real defects were fixed here first: (1) the decay if/else was INVERTED - retail
-// `jb` skips to the subtract, so the clamp-to-zero is the `if` body; (2) both buffer-copy
-// arms are the `else` sides, not early-out `continue`s - retail parks them at the tail
-// (`cmp eax,-1 / je <far>`, `cmp g_timer100,0x32 / jae <far>`) and falls through into
-// them; (3) g_timer100 is compared UNSIGNED (`jae`), and the alt->color pick is a
-// `switch`, not an if-else chain - and (4) that switch's case list STARTS AT 0:
-// retail dispatches `mov ecx,edi / sub ecx,0x0 / je c0 / dec / je c1 / dec / jne c0`,
-// and `sub ecx,0` is cl subtracting the LOWEST case value, so `case 0:` is spelled
-// out even though its body equals `default:` (they tail-merge onto the +0x8 arm).
-// Omitting it makes cl start the range at 1 and emit `dec / je / dec / je`
-// (56.8 -> 59.6). Both instruction streams are now 239 long. What is left is the
-// allocation: retail pins `this` in ebp with a 2-slot frame and stores immediates
-// (`mov [ebp+0x438],0`), while our cl materialises the constant 0 in esi for the
-// prologue tests, caches m_tileGrid->m_width in ebp (retail re-reads it at each of
-// its 3 uses) and therefore has to spill `alt` to a 3rd frame slot where retail
-// keeps it in edi - a 1-instr phase shift that renames every register through the
-// 755B body, plus a cold-block placement difference at the tail.
 RVA(0x000a3460, 0x2f3)
 i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (rebuild == 0) {
@@ -283,23 +265,6 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 // the work surface to it, then draw the border framing the live world rect.
 // ===========================================================================
 // @early-stop
-// Three real defects fixed: (1) the centering/halving was hand-spelled
-// `(x - (x>>31)) >> 1`, which emits `sar reg,0x1f`; retail's `cdq; sub eax,edx;
-// sar eax,1` IS cl's lowering of a plain signed `x / 2`. (2) The world rect is read
-// through a RECT* cursor (`add eax,0x40` once, then [eax]/[eax+4]/...), not four
-// `plane->m_viewRect.<field>` loads with +0x40 folded into each disp8
-// (docs/patterns/member-aggregate-copied-not-field-by-field.md). (3) The border rect
-// is built IN PLACE in the local RECT - retail stores each `>> 5` straight into the
-// box slot (dead stores the scaling then overwrites), which loose i32 temporaries
-// never produce. (4) The scale min/clamp are SEEDED IFs, not ternaries: retail seeds
-// the destination with the THEN value and branches over the copy-back
-// (`cmp edx,eax / jge / mov eax,edx`), where cl lowers `a>=b ? b : a` the other way
-// round and rewrites `s = s>3 ? 3 : s` as an in-place `if`. Residual is a
-// spill-choice wall: retail keeps `surf` in ecx across the whole body and spills
-// `qx` to a frame slot; our cl spills `surf` and keeps qx, so every `[ecx+0x1c]`
-// becomes a reload through `[esp+0x10]`. Also cl fuses `right*s + s - 1` into
-// `(right+1)*s - 1` (`inc/imul/dec`) where retail keeps `imul` + `lea [r+s-1]`; no
-// statement spelling tried blocks that reassociation.
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     CDDSurface* surf = m_surface;
@@ -379,16 +344,6 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 // lock/unlock (the caller owns them). Returns void.
 // ===========================================================================
 // @early-stop
-// The vertical-edge loop body now matches retail instruction-for-instruction (two
-// bare stores + two adds of a hoisted step + dec/jne): the row step MUST be a local
-// (`lp += m_surface->m_pitch` in the loop re-loads this->m_surface every iteration -
-// the u16 stores defeat cl's CSE across them) AND the two cursors must be real
-// POINTERS, so cl folds `base` in once in the preheader instead of emitting
-// base-indexed `[eax+ebp]` stores. Residual is the register-colouring split: retail
-// spills `this` (`push ecx` + `mov [esp+0x10],ecx`) and so has ebp free for `color`
-// and ebx as scratch, while our cl keeps `this` in ebx, pins `base` in ebp and
-// re-loads `color` from its argument slot at each edge. That one allocation choice
-// also makes retail RE-READ m_pitch/m_bytesPerPixel at each use where we CSE them.
 RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
@@ -446,12 +401,6 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
 // column down each row. The fill at each edge is the inlined u16-memset idiom.
 // ===========================================================================
 // @early-stop
-// 71 -> 88%: the vertical edges keep BYTE OFFSETS and index the locked base at each
-// store (`mov [eax+ebx],dx`) with the row step hoisted into a register - absolute
-// `char*` cursors plus `lp += surf->m_pitch` re-loaded the pitch every iteration.
-// Residual is the commutative-imul operand pick (docs/patterns/commutative-imul-
-// operand-in-eax.md: retail `mov ecx,top; imul ecx,[pitch]`, cl the other way round)
-// plus the load scheduling around it - proven not source-steerable.
 RVA(0x000a3b50, 0xfa)
 void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
     CDDSurface* surf = ctx->m_surface;
@@ -558,27 +507,6 @@ i32 CLightFxRender::BuildShape(i32 shape) {
 // All eight generators share one icon layout and differ only in the palette.
 // ===========================================================================
 // @early-stop
-// Two shared defects are fixed here; both were in all eight generators.
-// (1) The PALETTES: cl CSEs a repeated per-channel `(v>>down)<<up` term into a stack
-//     slot, and a previous read of the disassembly took each of those slots for a
-//     SEPARATE single-channel colour - see
-//     docs/patterns/cse-partial-term-is-not-a-separate-constant.md. The 21 colours
-//     are now decoded symbolically from the retail body and verified against it.
-// (2) The STORE PROGRAM: every run of adjacent same-colour pixels is a LOOP, not a
-//     list of assignments. cl5 gives a loop its FILL expansion - the value is
-//     duplicated into a dword (`mov cx,ax / shl ecx,0x10 / mov cx,ax`) and the range
-//     is written with DWORD stores (`rep stos` when long, unrolled `mov DWORD PTR
-//     [esi+N],eax` when short, `+ stos WORD` when the count is odd) - while separate
-//     assignments emit one 16-bit store each. Converting the 67 short runs took the
-//     eight from 82.7-85.4% to 98.5-99.5% and, as a side effect, moved the frame
-//     from 20 to 21 dwords, which dissolved the "retail enregisters g_rDown in ebx /
-//     our cl gives ebx to colour #0" split previously filed as this family's wall.
-//     docs/patterns/adjacent-same-value-stores-are-a-loop.md
-// Residual (all eight): the scheduler places the buf[257] store one slot later than
-// retail inside the second FillSpan's push sequence (retail pairs push/store, we
-// emit push,push,store,store); Shape2/5/6/7 additionally flip the R-vs-G term order
-// in one or two colours and Shape5 permutes two stack slots. Statement reordering
-// and both Pack() operand orders were tried and are byte-identical.
 RVA(0x000a3dc0, 0x85f)
 i32 CLightFxRender::Shape1() {
     u16* buf = m_buf;
@@ -710,10 +638,6 @@ void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
 // membership - they are the case 2/5/7/8 generators).
 // ===========================================================================
 // @early-stop
-// Palette + store program re-decoded from the retail body and verified against it
-// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
-// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
-// scheduler placement of the buf[257] store.
 RVA(0x000a4890, 0x852)
 i32 CLightFxRender::Shape2() {
     u16* buf = m_buf;
@@ -824,10 +748,6 @@ i32 CLightFxRender::Shape2() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body and verified against it
-// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
-// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
-// scheduler placement of the buf[257] store.
 RVA(0x000a5310, 0x855)
 i32 CLightFxRender::Shape3() {
     u16* buf = m_buf;
@@ -939,10 +859,6 @@ i32 CLightFxRender::Shape3() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body and verified against it
-// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
-// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
-// scheduler placement of the buf[257] store.
 RVA(0x000a5d90, 0x825)
 i32 CLightFxRender::Shape4() {
     u16* buf = m_buf;
@@ -1053,10 +969,6 @@ i32 CLightFxRender::Shape4() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body and verified against it
-// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
-// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
-// scheduler placement of the buf[257] store.
 RVA(0x000a67d0, 0x864)
 i32 CLightFxRender::Shape5() {
     u16* buf = m_buf;
@@ -1167,10 +1079,6 @@ i32 CLightFxRender::Shape5() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body and verified against it
-// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
-// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
-// scheduler placement of the buf[257] store.
 RVA(0x000a7260, 0x8c0)
 i32 CLightFxRender::Shape6() {
     u16* buf = m_buf;
@@ -1286,10 +1194,6 @@ i32 CLightFxRender::Shape6() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body and verified against it
-// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
-// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
-// scheduler placement of the buf[257] store.
 RVA(0x000a7d50, 0x94f)
 i32 CLightFxRender::Shape7() {
     u16* buf = m_buf;
@@ -1411,10 +1315,6 @@ i32 CLightFxRender::Shape7() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body and verified against it
-// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
-// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
-// scheduler placement of the buf[257] store.
 RVA(0x000a8900, 0x926)
 i32 CLightFxRender::Shape8() {
     u16* buf = m_buf;

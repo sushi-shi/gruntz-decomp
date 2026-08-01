@@ -26,11 +26,6 @@ CGruntSpawnConfig::~CGruntSpawnConfig() {
 // run BuildVoiceList(); return its result negated/double-negated (a BOOL).
 //
 // @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): structurally
-// byte-exact (every offset/immediate/call matches) but retail materializes 0 late
-// via `test eax,eax` + a `lea esi,[ecx+8]` store-group, while the recompile pins
-// xor edx,edx early (cmp edx,eax) and stores flat - a 1-instr phase shift not
-// source-steerable. ~55% on a 68-byte fn; deferred to the final sweep.
 RVA(0x0011adc0, 0x44)
 BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
     if (owner == 0) {
@@ -55,11 +50,6 @@ BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
 // pairs. The Remove call shape matches retail byte-exact.
 //
 // @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): the loop
-// bound (i<GetSize()) and `e!=0`/`p!=0` checks let MSVC pin a callee-saved zero
-// (ebp) across the whole body, where retail keeps only ebx and uses `test`/fresh
-// zeros + a 3-way pointer-grouped tail zeroing. Logic byte-exact in the middle
-// (Remove call, idiv-free); ~68% from the zero-reg phase shift. Deferred.
 RVA(0x0011ae30, 0x95)
 void CGruntSpawnConfig::Clear() {
     for (i32 i = 0; i < m_voiceLists.GetSize(); i++) {
@@ -107,11 +97,6 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
 // ClearSprites (0x11af90): null the m_08/m_0c voice-sprite pair. Out-of-line
 // (retail emits it standalone; the inline member folded away and never emitted).
 // @early-stop
-// base-register-bias wall (82%): the m_voices[2] loop form reproduces retail's
-// advanced-base addressing ([base]/[base+4]; was this-relative at 67.8); the last
-// line is the coalesce: retail folds the base into ecx (`add ecx,8`, this dead)
-// with the zero in eax; cl leas into eax with the zero in ecx. Likely an inlined
-// embedded-pair member in retail; not worth a struct+macro for 2 bytes.
 RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
     CGruntVoice** p = m_voices;
@@ -131,20 +116,6 @@ void CGruntSpawnConfig::ClearSprites() {
 // /GX EH frame from the two CString temporaries.
 //
 // @early-stop
-// /GX EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md, topic:eh):
-// the instruction selection, the volume-duck branch tree, the stream open/configure
-// path, and the two CString Format/dtor temporaries are byte-faithful; the residual
-// is the trylevel slot threading + the shared scope-exit dtor block the /GX state
-// machine emits (the early-out gotos all funnel through one CString teardown, where
-// retail's state ids differ). Logic complete; deferred to the final sweep.
-// g_gameReg viewed for the LCG rand (__thiscall, ecx = the registry) + the master
-// volume the duck halves.
-// The bute config gate IS the CGrunt itself: its +0x10 bound CGameObject holds the
-// currently-active voice id at +0x188 (the ex CSpawnButeConfig / CSpawnActiveVoice /
-// CSpawnGate / CSpawnGateInner views are all dissolved onto the two real classes). The two owned
-// voice streams (m_10/m_14) are real Dsndmgr StreamVoices (SetSource 0x1374c0 /
-// Configure 0x137520 / the embedded StreamVoiceFeeder at +0x6c).
-// (OpenStream lives on the SoundStream at m_configTree->m_soundStream; see the header.)
 
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
@@ -278,14 +249,6 @@ static __inline i32 GameRand() {
 // the second CString, and derives the ducking object id from the grunt instead of
 // taking it as an argument.
 // @early-stop
-// ~75% (from 0.73%). The prior note here claimed "the return-0 stub scores 73-83%" and
-// reverted a complete body on that basis - the stub actually scored 0.73/0.83%, a
-// decimal-point misreading, so the reconstruction was 60x better all along. Two residual
-// causes: (1) the callee-saved COLOURING is swapped - retail takes `this` into edi and
-// &m_voices[0] into ebx, cl5 does the reverse, which moves every ModRM byte; (2) retail
-// DUPLICATES the `~CString; xor eax,eax; jmp` scope-exit at each of the five early
-// returns where our cl5 cross-jumps them all to one shared copy (the same tail-merge the
-// sibling LoadGruntSpawnConfig @0x11afb0 hits).
 RVA(0x0011b3b0, 0x338)
 i32 CGruntSpawnConfig::SpawnVoiceDriver(
     CGrunt* who,
@@ -387,7 +350,6 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
 // there is no grunt to read it off, and CGruntVoice::Setup's trailing flag is 1 here
 // where the six-argument overload passes 0.
 // @early-stop
-// ~76% (from 0.83%); same two residual causes as the six-argument overload above.
 RVA(0x0011b7c0, 0x304)
 i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 objId,
@@ -485,12 +447,6 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
 // grunt or out-of-range selector returns 0.
 //
 // @early-stop
-// jump-table scoring-artifact wall (docs/patterns/jumptable-data-overlap.md): the
-// dispatch, the index/jump table, and every case body are byte-IDENTICAL to retail
-// (verified by raw byte-compare of the head + case blocks in source-case order).
-// objdiff scores ~73% only because the inline `.text` jump-table region carries a
-// base reloc against a $L label vs the target's switchdataD self-reloc. The code
-// IS matched; the % undercounts it. No source change applies - stop chasing.
 RVA(0x0011bba0, 0x280)
 i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     if (config == 0) {
@@ -595,23 +551,6 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
 // (`and esi,0x10000; neg; sbb; not; and esi,edi`).
 //
 // @early-stop
-// seed-coalescing wall (~93%): every branch, offset, immediate, call and the whole
-// control-flow graph match retail. The residual is ONE register-coalescing tie-break,
-// in the two re-roll arms only. Retail coalesces the re-roll `seed` onto ecx - the
-// register already holding the value-numbered g_randSeed - so the lazy arm pays the
-// copy (`call ebp; mov ecx,eax`) and `al` stays free for the flag (`or al,1; mov
-// [g_randSeeded],al`). cl 5.0 here instead binds `seed` to timeGetTime's eax, so the
-// CACHED arm pays the copy (`mov eax,ecx` + a `jmp`) and, with al clobbered, the flag
-// update degrades to the memory form (`or BYTE PTR [g_randSeeded],1`). Both spellings
-// are the same instruction count; it is purely which side of the phi gets the move.
-// Five source spellings were measured against it: lazy-arm-first if/else (91.96),
-// arm-local `seed = g_randSeed` pre-init (91.96, adds cl/al shuffles), LCG as a
-// self-update (worse - swaps esi/edi roles too), cached-arm-first if/else (92.66, kept
-// - it at least restores the hoisted `mov al,[g_randSeeded]`), and hoisting the flag
-// into its own u8 to force the register form (89.57). `permute fn` also exhausted 300
-// iterations with no change. Site 1's non-loop roll and the whole list walk are exact;
-// the same coloring flip is what shifts the GetName/ResolveQualified tail scheduling.
-// The two `fs:0` prologue/epilogue rows are the usual /GX reloc-display artifact.
 RVA(0x0011bee0, 0x230)
 CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     if (voiceId < 0) {

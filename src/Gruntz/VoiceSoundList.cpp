@@ -9,12 +9,6 @@
 #include <rva.h>
 
 // @early-stop
-// /GX EH-state + regalloc wall (~79%): complete body - the n bounds guards, the four
-// CString temps, the [SG<n>] DIR/sub-key g_buteMgr reads, the VOICES_<dir>[_<sub>]
-// name format, the 'WAV'-resolve filter and the heap CSpawnList accumulation all
-// align with retail.  Residual: the per-CString-temp destruct trylevel slot index
-// + the descending dtor sweep on the failure path are the documented /GX EH-state
-// wall (docs/seh-eh.md).  Deferred to the final sweep.
 RVA(0x0011c210, 0x29d)
 CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
     if (n <= 0) {

@@ -59,14 +59,6 @@ char g_secretMsgB[0x80];          // 0x62ae50  encoded line B (strB extent 0x80,
 // then the level/world-completed banner, then the WARP-letterz status line.
 // ===========================================================================
 // @early-stop
-// /GX EH-frame wall (~98%): complete + correct, verified instruction-by-instruction.
-// Residual = the delinked target's `Unwind@..`/no-`__except_list` EH representation
-// vs cl's `$L..`+`__except_list` frame (docs/seh-eh.md), plus a callee-saved-reg
-// NAMING choice in the post-loop banner/WARP blocks (cl hoists the 0x24 rect-top
-// constant into ebx, retail into edi; equivalent). Logic + all externs/strings named.
-// reloc-fidelity: FOLDED - now the real CBootyState:: method (was a BzState view + a
-// SYMBOL override). m_sink@+0xc == inherited CState::m_c; the CState-slot-8 activator
-// (StateImages::InputVirtual) binds to this canonical symbol structurally.
 RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
@@ -136,16 +128,6 @@ void CBootyState::ShowLevelCompleteMessage() {
 // many cipher-decoded row pairs (each row offset by the level's rowBase).
 // ===========================================================================
 // @early-stop
-// /GX EH-frame + nested-temp wall: complete + correct reconstruction (the
-// m_secretBannerOnce/AllRecordsInBounds banner arm, the GroupRatio*scale -> 1/2/3
-// grading, the rowBase=(m_levelIndex-1)/4 row index, the per-(category,row) SetRect
-// coordinate table, and the `-=0x3d` SetAt decode cipher). Residual = the delinked
-// `Unwind@..` EH frame (docs/seh-eh.md) + the per-CString-temp EH-state ordering /
-// callee-saved regalloc across the many destructible RECT+CString locals. Logic +
-// externs/strings named.
-// reloc-fidelity: FOLDED - now the real CBootyState:: method (was a BzState view + a
-// SYMBOL override). RegisterMultiNamespaces == inherited CState::FadeInTitle (0xfa1f0).
-// StateImages::InputVirtual binds to this canonical symbol structurally.
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0 && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {
@@ -230,18 +212,6 @@ i32 CBootyState::ShowSecretBonusMessage() {
 // idiom) reusing the shared CBootyState helpers above.
 // ===========================================================================
 // @early-stop
-// /GX EH-frame + sub-object-regalloc wall: complete + correct reconstruction (the
-// 0xc7/0xc8 guard, the m_suppressGate PostMessage arm, the m_initOnce init path with
-// the wand-cue sound, the 4-player loop + WARP jump-table CString build, the
-// trailing-sprite geometry loop, and the m_initOnce!=0 step/tick arms grading the
-// secret bonus). Residual = the delinked `Unwind@..` EH frame (docs/seh-eh.md) +
-// callee-saved regalloc across the many engine sub-objects reached by raw
-// this+offset. Logic + externs/strings named.
-// reloc-fidelity: FOLDED - now the real CBootyState:: method (was a BzState view + a
-// SYMBOL override), so BootyStateActivate's slot 12/14/17 tail-callers bind structurally.
-// RegisterMultiNamespaces == CState::FadeInTitle (0xfa1f0), StartTimer ==
-// CState::RetireScene (0xfa8f0, ex "BuildPage"), PassClickToPlayState ==
-// CGruntzMgr::PassClickToPlayState (0x8d780, ecx=reg).
 RVA(0x0001ce60, 0x450)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     i32 state = m_activation;

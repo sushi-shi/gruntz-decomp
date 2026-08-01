@@ -23,9 +23,6 @@ CBattlezData::~CBattlezData() {
 // 0xfca10 - Init: zero the scalar band + the matrices, then the four large
 // zeroed bands (each a rep-stosd run Init open-codes).
 // @early-stop
-// ~81%, logic byte-exact. Zero-register pinning wall (docs/patterns/zero-register-pinning.md):
-// retail holds the zero in eax (re-zeroing after ClearFlags/ClearWins), we pin
-// it in callee-saved edi; pure regalloc coin-flip, no source lever flips it.
 RVA(0x000fca10, 0x8a)
 void CBattlezData::Init() {
     m_count = 0;
@@ -353,9 +350,6 @@ i32 CBattlezData::SumGroupField08() {
 // 0xfced0 - the record's win/score value at the wrap index, or m_scoreValue when the
 // wrapped index lands on the last record.
 // @early-stop
-// ~76%, logic byte-exact. Two non-steerable codegen choices: retail's `lea
-// esi,[eax-1]` (vs our mov+dec for `last=m_count-1`) and the base/index SIB
-// canonicalization `[eax+ecx+0x28]` vs `[ecx+eax+0x28]` (same address).
 RVA(0x000fced0, 0x31)
 i32 CBattlezData::GetRecordValue(i32 b) {
     i32 last = m_count - 1;
@@ -395,10 +389,6 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 // grids/bands are streamed in counted loops. The op==4 (write) test is the
 // forward `je`; op==7 (read) is the fall-through block.
 // @early-stop
-// ~92%, logic byte-exact. Residual is the shrink-wrapped prologue
-// (docs/patterns/shrink-wrapped-callee-save-push.md): retail defers push
-// edi/ebx past the null guard (pushing only ecx/ebp/esi upfront), which shifts
-// every spill-slot offset (`[esp+0x18]` vs `[esp+0x14]`) downstream. Not source-steerable.
 RVA(0x000fd3f0, 0x425)
 i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
     i32* p;

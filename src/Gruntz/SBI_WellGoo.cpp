@@ -41,9 +41,6 @@ VTBL(CSBI_WellGoo, 0x001eadfc); // vtable_names -> code (RTTI game class)
 // Select if/endif - not inside the node!=0 arm. Fixing (2) also settled the ebx/ebp
 // colouring by itself: it was a symptom, not the wall.
 // @early-stop
-// Residual: the `found = 0` store schedules BEFORE the two Lookup argument pushes
-// where retail sinks it after them (3 sites), cl duplicates the m_fgFrame guard's
-// epilogue that retail shares, and it shrink-wraps `pop edi` into the m_srcRect copy.
 RVA(0x000e6020, 0x288)
 i32 CSBI_WellGoo::Setup(
     CStatusBarMgr* owner,
@@ -218,15 +215,6 @@ i32 CSBI_WellGoo::Render() {
 // frame's owned-blitter shade node from the sprite-ref selector.
 //
 // @early-stop
-// ~83%: logic byte-shaped end to end (the mode sub-chain dispatch - mode 8 is the
-// fall-through `switch` case, key to the block layout; the field round-trips; the two
-// name+index frame legs with the g_serialCounter bumps + inline strlen/memset; the
-// mode-8 MakeAndAddB / GetSel / Notify rebind). The `mgr` cache reproduces retail's
-// spill of g_gameReg->m_30 (frame 0x8c, without it the 4-byte-smaller frame shifted
-// every displacement -> 0%). Residue is the megafunction tail: the mgr spill lands in
-// [esp+0x18] vs retail [esp+0x14] (regalloc), several engine-call relocs reached
-// direct where retail uses ILT thunks + the differently-named folded base leg, and
-// the inline repne-scas/rep-stos scheduling. Not source-steerable; final sweep.
 RVA(0x000e64c0, 0x3e7)
 i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
     if (arc == 0) {

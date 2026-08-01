@@ -250,9 +250,6 @@ i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
 // 0x3d41); otherwise post a WM_COMMAND (0x8023 in selection mode m_24==5, else 0x8027).
 // Always returns 1. arg2 is unused (the mouse-message middle word).
 // @early-stop
-// RECT/POINT stack-frame codegen plateau (~50%): logic (PtInRect hit-test -> Activate
-// else WM_COMMAND) is byte-faithful; the residual is the RECT/POINT locals' stack-slot
-// layout + the branchless wParam select form, not source-steerable.
 RVA(0x000394b0, 0x86)
 i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
     RECT rc;
@@ -284,9 +281,6 @@ i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
 // keys, resolve the attract state into m_2c, fade the title in, apply the configured
 // brightness, transition the page, and build the menu page.
 // @early-stop
-// 81.2%: logic byte-faithful (the twin of CAttract::LoadTitleConfig). Residual is the
-// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md)
-// on the FadeInTitle fail return-0 + the sprintf stack-buffer slot layout. Not steerable.
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     CDDrawSurfaceMgr* root = m_world;
@@ -327,12 +321,6 @@ i32 CCreditsState::InitAttractTitle() {
 // gates are live) the static credit. GDI via the IAT; GetDC/ReleaseDC are the DDraw COM
 // slots (+0x44/+0x68). CString temp -> /GX frame.
 // @early-stop
-// 87.83% (was 85.33). SIGNEDNESS FIX 2026-07-28: all three timer drains are retail `jb`,
-// not `jl` - g_frameDelta is u32 (see <Rez/FrameClock.h>), which also makes the (double)
-// cast lower as the zero-extended `fild qword` retail emits and brings the frame to
-// 0x24. Residual: register naming through the GDI/DrawTextA tail (eax/ecx/edx permuted
-// at identical instruction count) plus the FP/int interleave around the RECT copy. All
-// logic + externs/strings named; the 3 FP-constant relocs stay differently-named.
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
     if (m_world == 0) {
@@ -407,15 +395,6 @@ i32 CCreditsState::DrawScrollingCredits() {
 // the offscreen DDraw surface's HDC to set the scroll rect, then seed the scroll
 // accumulator. (Was hosted on the fake CCreditzOwner this-view.)
 // @early-stop
-// unsigned->double lowering order (99.90%): the ONLY residue is which half of the int64
-// conversion temp is delayed past the numerator's fld/fmul - retail emits hi(ebx=0) then
-// lo(eax), cl emits lo then hi and the scheduler always delays the SECOND-emitted store:
-//   base   mov [ebp+1f4],eax / mov [esp+18],eax / fld / fmul / mov [esp+1c],ebx
-//   retail mov [ebp+1f4],eax / mov [esp+1c],ebx / fld / fmul / mov [esp+18],eax
-// lo-then-hi is baked into cl5's (double)(unsigned) lowering - five source spellings
-// (i32 local, unsigned local, double denom local, hoisted numerator, member-store-last)
-// all reproduce it; only a union/type-pun would emit hi first, which no dev wrote.
-// Everything else, incl. the GetDC/ReleaseDC COM slots, is byte-exact.
 RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
     // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'
@@ -467,9 +446,6 @@ i32 CCreditsState::FinishState() {
 // The draw chain is the real one: m_c->m_drawTarget (CDDrawSubMgrPages) -> the +0x14 / +0x18
 // surface pages -> their CDDSurface (m_2c) and the page's own BltFast source RECT (m_1c).
 // @early-stop
-// scheduling coin-flip wall (~95%): 49/51 instructions byte-identical; the sole residual
-// is the BltFast `this` (src->m_2c) load scheduled one push earlier in retail + scratch-
-// reg rotation. Complete + correct body; not source-steerable (zero-register-pinning.md).
 RVA(0x00039c60, 0x7a)
 i32 CCreditsState::StepVideo() {
     if (!m_videoPlaying) {
@@ -497,10 +473,6 @@ i32 CCreditsState::StepVideo() {
 // re-roll timer (m_1bc) has expired, roll a fresh random RGB color, reset the timer to
 // 0x12c, latch it at m_1b8 and return it. Otherwise return the held color.
 // @early-stop
-// byte-insert RGB pack wall (~70%): the value-correct (b<<16)|(g<<8)|r packs via
-// `mov ch,al; mov cl,bl; shl 8; or esi` in retail (g/b land in byte regs) vs two
-// `shl 8; or` here, compounded by a shrink-wrapped callee-save push. See docs/patterns/
-// rgb-pack-byte-insert.md + shrink-wrapped-callee-save-push.md; not steerable.
 RVA(0x00039d00, 0x8c)
 i32 CCreditsState::FlashColor() {
     i32 color = 0xffffff;

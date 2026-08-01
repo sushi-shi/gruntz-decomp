@@ -79,17 +79,6 @@ static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 }
 
 // @early-stop
-// jump-table-data scoring artifact + regalloc-cascade wall (verified base-vs-target
-// with llvm-objdump -dr): the head is byte-faithful (g_gameReg->m_world / m_attrMgr,
-// the m_24->m_mainPlane grid gate + early return, the AllocGrid call, the five
-// Brickz-section GetInt threshold sums with the correct pooled strings). Two
-// divergences drag the whole symbol to ~0% and neither is source-steerable here:
-// (1) the two dense switches (the [0x12f,0x149] colour selector + the 0x99-case
-// cell-flag packer) emit byte-index LUT + jump-table data whose self-relocs the
-// delinker types REL32 where cl emits $L (same wall as CMapMgr::ComputeCellFlags);
-// (2) MSVC5 pins `this` in ebp + defers the esi save (frame 0x48) where retail pins
-// `this` in esi + shrink-wraps only edi (frame 0x40), a whole-function regalloc
-// cascade. Parked for the final sweep (a leaf-first redo).
 RVA(0x000810f0, 0x8b4)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;

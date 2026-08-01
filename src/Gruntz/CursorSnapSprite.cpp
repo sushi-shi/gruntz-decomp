@@ -71,8 +71,6 @@ i32 CursorSnapWorkerPump(CGameObject* owner) {
 // image-ani geometry, bind the "A" bute node, then flag the sub-object (+0x08
 // bit 2, +0x40 bit 1).
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_CURSORSNAPSPRITE");
@@ -86,8 +84,7 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
 
 RVA(0x0003a5b0, 0x102)
 void CCursorSnapSprite::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
         CActHandler* e2 = (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));
         (this->*((*e2)))();

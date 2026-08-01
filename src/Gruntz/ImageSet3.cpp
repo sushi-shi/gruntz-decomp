@@ -31,9 +31,6 @@ i32 CImageSet3::GetStride() {
 // and - only when the width is the matching power of two - allocates and copies the
 // tile pixels from the record at +0x10 (inline memcpy). TRUE on a successful copy.
 // @early-stop
-// regalloc wall (~88%): retail parks the width in callee-saved edi (push edi, mov
-// edi,ecx) and multiplies via edx; cl keeps the width in edx and multiplies into
-// ecx (one fewer move). Logic + memcpy byte-exact; not source-steerable.
 RVA(0x00166d70, 0x8d)
 i32 CImageSet3::Parse(void* record) {
     i32* p = static_cast<WwdTileImageRecord*>(record)->m_fields;
@@ -78,8 +75,6 @@ i32 CImageSet3::ScanUp(i32 x, i32 y, i32* outY, i32* outVal) {
 // 0x166f20 (slot 13): scan UP for the first row whose column-x pixel EQUALS `val`;
 // report the row in *outY. Pointer walk (the value gate uses the free register).
 // @early-stop
-// ~82% regalloc wall (same instr count; value gate + coord out compete for the
-// callee-saved reg, flipping this/base spill). docs/patterns/zero-register-pinning.md.
 RVA(0x00166f20, 0x52)
 i32 CImageSet3::ScanUpGate(i32 x, i32 y, i32 val, i32* outY) {
     u8* p = m_pixels + ((y << m_heightLog2) + x);
@@ -97,8 +92,6 @@ i32 CImageSet3::ScanUpGate(i32 x, i32 y, i32 val, i32* outY) {
 // 0x166f80 (slot 14): scan RIGHT for the first column whose pixel differs from (x,y)'s;
 // report it + its value. Stops at the m_width-1 edge.
 // @early-stop
-// ~78% regalloc wall: the lim (m_width-1) local competes with `this` for a callee-
-// saved reg (the lim-free ScanUp is 100%); same instrs, swapped operands.
 RVA(0x00166f80, 0x68)
 i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
@@ -119,7 +112,6 @@ i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
 // 0x166ff0 (slot 15): scan RIGHT for the first column whose pixel EQUALS `val`; report
 // the column in *outX. Pointer walk, stops at the m_width-1 edge.
 // @early-stop
-// ~72% regalloc wall (lim + pointer-walk + value-gate pressure). Logic byte-faithful.
 RVA(0x00166ff0, 0x52)
 i32 CImageSet3::ScanRightGate(i32 x, i32 y, i32 val, i32* outX) {
     i32 lim = m_width - 1;
@@ -138,8 +130,6 @@ i32 CImageSet3::ScanRightGate(i32 x, i32 y, i32 val, i32* outX) {
 // 0x167050 (slot 16): scan DOWN for the first row whose column-x pixel differs from
 // (x,y)'s; report it + its value. Stops at the m_height-1 edge.
 // @early-stop
-// ~70% regalloc wall: retail keeps this in ebp (found-block m_pixels re-read) + spills
-// lim; our cl spills this + keeps lim. Same instrs. docs/patterns/zero-register-pinning.md.
 RVA(0x00167050, 0x74)
 i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
@@ -160,7 +150,6 @@ i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
 // 0x1670d0 (slot 17): scan DOWN for the first row whose column-x pixel EQUALS `val`;
 // report the row in *outY. Offset form, stops at the m_height-1 edge.
 // @early-stop
-// ~94% regalloc coin-flip (lim vs this callee-saved coloring). Logic byte-faithful.
 RVA(0x001670d0, 0x5d)
 i32 CImageSet3::ScanDownGate(i32 x, i32 y, i32 val, i32* outY) {
     i32 off = (y << m_heightLog2) + x;

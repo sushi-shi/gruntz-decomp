@@ -20,28 +20,6 @@
 // placeholders; only the OFFSETS + code bytes matter.
 //
 // @early-stop
-// ~63% /GX menu builder; LOGIC COMPLETE. The /GX EH frame + Order-A prologue are now
-// reproduced (Phase B leaf-ctor unblock, 37%->63%): the item ctors are NOT inlined
-// destructible-member ctors as previously believed - they are TINY (verified: base
-// ctor 0x1005d0 / CSBI_RectOnly ctor 0x101fa0 just zero four fields + stamp a vtable)
-// and retail CALLS them OUT OF LINE (call 0x1e88). That opaque may-throw call is what
-// makes cl register the `new`-expression operator-delete-on-ctor-throw cleanup and
-// raise the frame. Declaring CSBI_Image's ctor out-of-line (below) emits that exact
-// `call ??0CSbMenuItem; stamp derived vtable+tag` shape and the frame with this->esi/
-// Order-A. The briefing branch is also now the sunk (`!=` fall-through) block matching
-// retail's `je` layout. RESIDUAL WALLS (deep MSVC lowering, not steerable from source):
-//   (1) new-expression TEMP unification - retail stores the operator-new result
-//       directly into the `it` slot BEFORE the ctor (one slot; the EH cleanup + failure
-//       `delete it` share it), while cl keeps a separate cleanup temp then copies to
-//       `it` after the ctor -> +8 B frame (sub 0x20 vs retail 0x18), shifting every
-//       [esp+N]. Tried per-item scoped locals and exact-derived-type locals; neither
-//       fuses the temp.
-//   (2) EH state numbering is rotated +2 (retail main items = states 2..8, ours 0..6)
-//       because retail numbers the sunk briefing block's cleanup first in source order;
-//       our `!=` fall-through numbers it last. Briefing-first source gives the right
-//       numbering but the WRONG (inline) layout.
-// Both are documented codegen walls (docs/patterns/gx-frame-outofline-ctor.md);
-// re-attack in the final sweep.
 #include <rva.h>
 #include <Gruntz/TriggerMgr.h>    // m_cmdGrid's real class (m_phase/m_3ec)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)

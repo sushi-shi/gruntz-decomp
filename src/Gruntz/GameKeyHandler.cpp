@@ -31,24 +31,6 @@
 
 // ===========================================================================
 // @early-stop
-// ~78.5% (from a 5.4% "return 1" stub) - the full 5850-byte dispatcher is
-// reconstructed run-by-run: 5-flag guard, 3-way modal split, ~40 key handlers
-// (letter/digit/numpad cheats), the recorder-node free-list churn, and the
-// two-level F-key jump table all match retail's LOGIC. Residual = a holistic
-// megafunction regalloc cascade: retail pins the four callee-saved regs to
-// {esi=this, edi=key, ebx=0, ebp=1} and RELOADS this->m_4/this->m_2dc per block;
-// caching them as `host`/`level` locals (what scores highest) instead pins
-// ebp=host and spills level, flipping ebp's role in every handler's register
-// operands and holding the frame at `sub esp,0x8` vs retail's `sub esp,0x10`
-// (so every `add esp,0x8`/`ret` epilogue + all [esp+N] slot offsets shift).
-// Spelling this->m_4/m_2dc inline (macro, reloaded) DOES recover retail's exact
-// ebx=0/ebp=1 allocation but scores LOWER (74%), because the per-use reload
-// `mov reg,[esi+N]` instructions insert/delete against the objdiff sequence more
-// than the register-operand diffs cost - i.e. the byte-correct spelling loses to
-// the cached-locals spelling on the fuzzy metric. Three spellings measured
-// (locals-both 78.5 / host-inline+level-local 75.9 / both-inline 74.1); locals
-// banked. Deferred to the final sweep. See docs/patterns/
-// megafunction-cached-locals-vs-reload-regalloc.md.
 RVA(0x000cbcc0, 0x1770)
 i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     CPlay* self = this;

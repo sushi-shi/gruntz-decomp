@@ -7,12 +7,6 @@
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CDDrawWorkerHost (m_mainPlane +0x5c)
 
 // @early-stop
-// ~95%: logic byte-exact except (1) the TileSwitch (0x1640) arg-setup: retail
-// loads ecx=this before the call (a thiscall-shaped dispatch whose body ignores ecx)
-// while the shared free-__stdcall model emits no receiver load - one dead mov; and
-// (2) the on-screen clip-rect check's addressing mode (reading the CDDrawWorkerHost
-// +0x40 origin/extent fields directly vs a materialized rect pointer). Both accepted
-// regalloc/addressing ripple (structure phase).
 RVA(0x000f7d90, 0x171)
 i32 CGrunt::StepPeerTracking() {
     m_defenderX = m_lastTilePxX;

@@ -147,10 +147,6 @@ void CPathHazard::FireActivation(i32 id) {
 // node; otherwise integrate the sub-pixel movement vector into m_60/m_68 and
 // write the snapped, waypoint-clamped tile position back to the bound object.
 // @early-stop
-// x87 FP movement-integrator wall (docs/patterns/x87-fp-stack-schedule.md): the
-// integer scaffolding (the visibility gate, the arrival/leg blocks) is byte-exact;
-// the residual is the x87 stack-slot scheduling of the dx/dy integrator (the same
-// wall CKitchenSlime::Tick carries). Logic byte-for-byte correct.
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -271,13 +267,6 @@ i32 CRainCloud::Tick() {
 // the on-screen visibility/hit gate, and on arrival fire BeginLeg + re-bind the
 // "A" bute node. Integer-only; returns 0.
 // @early-stop
-// ~86%: the integer scaffolding (the i64 strike-window compares, the visibility
-// gate, the arrival/BeginLeg + bute re-bind) is byte-correct. The residual is two
-// documented tails: (1) the TU models g_gameReg as ?g_gameReg while the retail
-// obj names it _g_mgrSettings, so its repeated DIR32 data relocs stay fuzzy (a
-// TU-wide rename, the matcher.md reloc-naming artifact); (2) the dual signed-i64
-// `>=` window compares lay the expire/check branches in a different order than
-// retail's hi-dword `jg/jl; cmp lo; jae` materialization. Logic correct; deferred.
 RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {

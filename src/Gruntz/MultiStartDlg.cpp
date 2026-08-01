@@ -107,14 +107,6 @@ i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 // the lobby's current name, then all three are disabled. thiscall member, /GX
 // (destructible CString temporaries).
 // @early-stop
-// regalloc + EH-state wall. Complete correct reconstruction: the session-active
-// branch (four GetItem/child fetches, the null-guard chain, the empty-slot table
-// probe SlotIndex*71*8+0x16c and the enable/disable) and the out-of-session
-// branch (CB_SETCURSEL -1, the m_5b0 gate, the two by-value CString name fetches,
-// the inline strcmp resync, and the disable trio) all align by shape (llvm-objdump
-// -dr). Residual is MSVC5 permuting the four item pointers across edi/ebp/ebx and
-// the dead arg/temp stack slots between the two branches, shifting [esp+N] operands
-// - plus the demangled-vs-mangled MFC/CString reloc names - not steerable.
 RVA(0x000c1aa0, 0x2f8)
 i32 CMultiStartDlg::UpdateColorItems() {
     if (g_multiState->m_isHost != 0) {
@@ -179,10 +171,6 @@ i32 CMultiStartDlg::UpdateColorItems() {
 // slot-occupancy probes), seed the list with the count + the dialog's selection.
 // /GX EH frame for the new-expression's ctor unwind.
 // @early-stop
-// regalloc/scheduling wall (docs/patterns/zero-register-pinning.md): the new-expr,
-// the count cascade, the inlined GetSafe1c null-check, and the three list calls are
-// all logic-faithful; the residual is the callee-saved register assignment for the
-// count/pi/selection values (ebp-vs-edi choice) cascading into push scheduling. ~89%.
 RVA(0x000c1e60, 0x115)
 i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
@@ -217,11 +205,6 @@ i32 CMultiStartDlg::BuildSlotList() {
 // occupancy, then push the dialog selection (with the registry color pair, unless
 // already committed) into the slot list. Returns 1 (0 when the control is absent).
 // @early-stop
-// regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): GetDlgItem gate,
-// the 0x238-stride slot probe, the inlined GetSafe1c, and the committed/color
-// Method3396 branch are byte-faithful; the inlined GetSafe1c result lands in ecx
-// (retail keeps it in eax), cascading into the g_multiState register + the final push
-// schedule. A pure allocator choice, no source lever. ~92%.
 RVA(0x000c1fd0, 0x99)
 i32 CMultiStartDlg::UpdateSlot() {
     CWnd* w = GetDlgItem(0x527);
@@ -261,12 +244,6 @@ i32 CMultiStartDlg::UpdateSlot() {
 //     MultiMap) and each slot's name-edit text back into the m_host slot array.
 // SendMessageA is hoisted into pSend; /GX EH frame for the CString temps.
 // @early-stop
-// ~95.6%: complete + correct (LOAD/SAVE both align by shape, arg-eval order matched
-// by pre-loading each control's HWND before the SendMessage constant args). Residual is
-// the zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail pins
-// the persistent 0 constant to ebx, our cl to esi - cascading through every null-compare
-// / ehstate store - plus the eax/ecx/edx colouring of the per-control HWND reads and the
-// save loop's induction-variable choice (typed slots[i] base-hoist vs retail's byte off).
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
@@ -406,8 +383,6 @@ const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
 // callers load CMultiStartDlg into ecx, and its body is identical to the adjacent
 // member GetCtrlA..D accessors except for the control IDs.
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) -
-// docs/patterns/jumptable-data-overlap.md.
 RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
     CWnd* result = 0;
@@ -433,7 +408,6 @@ CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
 // control-ID table, each case returning this->GetDlgItem(constID). SAME shape as
 // CBattlezDlg::GetCtrlA..D; the inline .rdata jump table reloc-masks.
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x000c26c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
@@ -455,7 +429,6 @@ CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
 }
 
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x000c2740, 0x60)
 CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
@@ -477,7 +450,6 @@ CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
 }
 
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x000c27c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
@@ -499,7 +471,6 @@ CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
 }
 
 // @early-stop
-// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x000c2840, 0x60)
 CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;

@@ -33,11 +33,6 @@
 // (world pos @+0x5c/+0x60, flags @+0x08).
 
 // @early-stop
-// Regalloc wall on the tail (~90%): `this` is dead after the spawn, so retail reuses
-// esi for the re-read `this->m_38` (mov esi,[esi+0x38]) and reads the arm/consume gates
-// via esi; cl keeps this in esi and caches m_38 in eax (mov eax,[esi+0x38]) + reads via
-// eax/ecx. Same instructions, only the ModRM register field differs; not source-
-// steerable (a cached-pointer local didn't flip it). Logic + all relocs exact.
 RVA(0x000476b0, 0x69)
 i32 CExplosion::Update() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) == 1) {

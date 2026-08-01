@@ -129,11 +129,6 @@ i32 CDemo::Render() {
 
 RVA(0x0003c300, 0x183)
 // @early-stop
-// Structure exact (switch mode-dispatch sub/je/dec/jne matches, x87 scale-multiply
-// + plane loop + RecomputePlaneCoords all correct). Residual is a regalloc butterfly:
-// retail pins the level in esi (freeing edi for the plane-loop counter i), cl pins it
-// in edi (spilling i to a 3rd stack slot -> sub esp,0xc vs 0x8) + holds curY in
-// edx/[esp+0x20] vs retail's ecx/[esp+0x1c]. Not source-steerable; ~73% code-correct.
 i32 DemoAutoScrollStep(CGameObject* owner) {
     AnimWorkerObj* st = owner->m_7c;
     switch (st->ActKey()) {
@@ -202,12 +197,6 @@ bool SameCellTag(const GruntEntranceCell* a, const GruntDirectionCell* b) {
 }
 
 // @early-stop
-// Counter-register regalloc wall: retail pins the loop counter in edi (push edi at
-// entry, callee-saved) which frees edx for the m_4 temp + esi for the `e` pointer,
-// so it materializes `e` once (lea edx,[eax*4+tbl]; mov esi,edx) and reads e[0..2]
-// via [esi]. cl assigns count to edx (scratch), reads e[0] directly via [tbl+eax*4]
-// then re-leas the base for e[1..2]. Same instrs, ~correct; not source-steerable (a
-// count-copy local didn't flip it). Logic + the table DIR32 reloc are exact.
 RVA(0x0003c850, 0x38)
 void Orient3::StepA(i32 count) {
     if (count > 0) {
@@ -221,7 +210,6 @@ void Orient3::StepA(i32 count) {
 }
 
 // @early-stop
-// Same counter-register regalloc wall as StepA (edi vs edx); logic + table reloc exact.
 RVA(0x0003c8a0, 0x38)
 void Orient3::StepB(i32 count) {
     if (count > 0) {
@@ -329,19 +317,6 @@ RVA_COMPGEN(0x0003cbc0, 0x14, ??_Difstream@@QAEXXZ)
 RVA_COMPGEN(0x0003cbf0, 0x14, ??_Dofstream@@QAEXXZ)
 
 // @early-stop
-// 98.84% - logic + instruction-selection byte-exact (verified base-vs-target
-// llvm-objdump); two residuals, both proven artifacts:
-//   (1) the /GX prologue `push <scopetable>`: base references its local unwind
-//       table `$L17759 + 0`, retail references the shared `Unwind@005d9ca8 +
-//       0xb`. objdiff masks the symbol but the addend (0x0 vs 0xb) differs -
-//       the per-unit unwind-record-layout wall (retail packed this fn's unwind
-//       record at +0xb of a shared table; an isolated single-fn unit emits it
-//       at +0 of a local symbol; not source-steerable).
-//   (2) one `mov ecx,esi` (ParseGroup's `this`-setup) scheduled at slot 1 of
-//       the third inlined Reset()'s store run (mine) vs slot 3 (retail) - a
-//       pure MSVC5 list-scheduler tie-break; same opcode/operands, identical
-//       everywhere else. Tried moving the `result=true` init + an explicit
-//       tree pointer; neither flips it (one regressed to 96.3%).
 RVA(0x0003cc20, 0x14e)
 bool CButeMgr::Parse(CString filename, int streamBase) {
     // the third ctor arg is the header default `= filebuf::openprot` - the caller

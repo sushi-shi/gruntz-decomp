@@ -59,30 +59,6 @@ CSbiHlRow::CSbiHlRow() {
 }
 
 // @early-stop
-// 0xc7ec0 is CPlay's slot-1 override (RTTI),
-// and this body now runs entirely on canonical classes: the ModeObj 37-slot placeholder
-// view, the Parent/Arg1/Peer/Rec78/Ctl1c/Rec50 satellites AND the last one - Worker630,
-// the hand-inlined CStatusBarMgr ctor - are all gone. The three dispatched slots are the
-// real virtuals (LoadImageBanks 29 / LoadByMode 30 / Vslot24 36), the four sub-objects
-// are real `new` expressions on real classes, and both previously-noted bugs are fixed
-// (a1 - not m_guts - is the ResetClockGlobals receiver; m_40 is the i32 CState field).
-//
-// WHAT THE /GX REWRITE BOUGHT: the old wall here was "EH-frame ABSENCE" - retail emits
-// the full C++-EH frame (mov eax,fs:0 / push handler / mov fs:0,esp) because the 0x630
-// worker's member arrays are REAL C++ arrays whose element ctors register per-element
-// unwind cleanup, while this file hand-drove them through extern-"C" calls that carry no
-// EH semantics, so MSVC5 emitted NO frame at all. With CStatusBarMgr's real inline ctor
-// (member CPtrList[8] via __ehvec_ctor, CSbiSlot[5], CSbiHlRow[3]/[12] via the
-// vector-ctor iterator, ::CPtrArray) plus the real `new CChatBoxOwner` /
-// `new CTileTriggerContainer`, the constructions ARE EH-tracked and the frame is emitted.
-//
-// WHAT REMAINS (the honest residual): retail's EH STATE NUMBERING still differs. Retail
-// numbers the states 0/1 (the m_tabLists __ehvec_ctor), 3/2 (the `delete`-inlined
-// ~CStatusBarMgr), 4..7 (the container's four CPtrList members) and 8 (the CTimer), which
-// assumes a particular ctor-inlining order; and the CTimer alloc is `operator new` +
-// Init() (0x286f binds EXACT as ?Init@CTimer@@QAEPAV1@XZ - a real method, NOT a ctor), so
-// it contributes no state at all on our side. Logic, member identities, call targets and
-// every fail-path shape are complete and binary-proven against the full 0x5f5 disasm.
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     using namespace modeinit;

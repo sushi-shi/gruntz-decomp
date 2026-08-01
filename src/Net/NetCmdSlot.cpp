@@ -50,12 +50,6 @@ i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
 }
 
 // @early-stop
-// regalloc/scheduling wall (~85%): instruction sequence byte-faithful, but retail
-// centers the per-slot store base at slot+8 (keeping edi=slot for the thiscall
-// `this`) and spills the loop counter to [esp+0x10]; this cl uses one pointer
-// (esi=slot) + counter in edi.  Same store order/values; callees+pool reloc-masked.
-// 0xbf000  Reset: recycle each channel slot, clear the id-map + record table,
-// then drain the recycled-node free pool.
 RVA(0x000bf000, 0xd5)
 void CNetSession::ResetSync() {
     m_mgr = 0;
@@ -142,12 +136,6 @@ void RecycleCmd(void* cmd) {
 }
 
 // @early-stop
-// regalloc cascade (~63%): logic byte-faithful; retail pins `this` in edi, hoists
-// the slot `== 3` test constant into esi, and parks `len` in the reused incoming
-// arg slot (3 distinct stack locals).  This cl pins `this` in esi and coalesces a
-// stack local into a register; the consequent register renames cascade the body.
-// 0xbf5a0  Poll: advance active slots by `delta`, then drain the endpoint's
-// incoming packet queue, dispatching foreign packets.
 RVA(0x000bf5a0, 0x110)
 i32 CNetSession::Poll(i32 delta) {
     CNetCmdSlot* s = m_slots;
@@ -264,11 +252,6 @@ i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg) {
 }
 
 // @early-stop
-// regalloc tie (~85%): instruction sequence byte-identical except retail holds
-// `this` in ebp where this cl holds it in ebx (cascading esi/edi/ebx renames);
-// the callee-save register pick is function-specific and non-steerable.
-// 0xbf9e0  Tick: at the reconcile boundary, snapshot every channel's grunt
-// state into the current record, broadcast, then flush the pending batches.
 RVA(0x000bf9e0, 0xfe)
 i32 CNetSession::Tick() {
     if (m_snapshotDone == 0 && (m_tick + 1) % m_period == 0) {
@@ -345,12 +328,6 @@ i32 CNetSession::SendAll() {
 // 0xbfc70  CNetSession::SendGruntRecord - the same `m_netMgr->SetData(m_localDesc->m_id,
 // <peer dpid>, 0, msg, len)` send shape as SendOne @0xbfeb0, one slot's grunt record.
 // @early-stop
-// two regalloc/idiom residuals (90.3%): (a) retail parks `seq` in esi (freeing cl to
-// preload the flag byte one instruction early), cl parks it in ecx; (b) the `== 0`
-// return lowers to `xor edx,edx / test eax,eax / sete dl / mov eax,edx` in retail vs
-// cl's `neg eax / sbb eax,eax / inc eax` - the same value, a different MSVC5 boolean
-// idiom. `== 0`, `!x` and an if/else-return all produce cl's neg/sbb/inc form (tested);
-// no source lever. Structure, owner and every store are byte-faithful. Final sweep.
 RVA(0x000bfc70, 0x9c)
 i32 CNetSession::SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo) {
     if (!rec) {
@@ -420,8 +397,6 @@ i32 CNetSession::SendBatch() {
 }
 
 // @early-stop
-// regalloc cascade (~84%): logic byte-exact; ecx/edx + esi/eax allocation for the
-// modulo index and arg differ, plus the M_c0fd0 sibling (Boundary_0c0fd0) reloc.
 RVA(0x000bfeb0, 0xfa)
 i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
     if (!slot) {
@@ -688,10 +663,6 @@ i32 CNetSession::Verify() {
 // drain its queue and reset both command ranges.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc wall (74%): logic + field-store order are byte-faithful, but retail
-// keeps the constant 0 in eax (caller-saved, re-`xor`ed after ClearCmds) and the
-// args in edx/ecx/edi, whereas cl pins 0 in edi (callee-saved, no re-zero) and
-// the args in ecx/eax. A zero-register + arg-register coin-flip; not source-steerable.
 RVA(0x000c0b10, 0x72)
 i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
     if (desc == 0) {
@@ -771,15 +742,6 @@ void CNetCmdSlot::FullReset() {
 // CNetCmdSlot::ProcessCmd (0x0c0c70, __thiscall) - parse one incoming command record.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc + this-residency wall (~75%): the full control flow is byte-faithful -
-// the opcode/parity dispatch, the bit-7 relay, the FindCmdSlot ack-flag set, the
-// RaiseMax/NetCmdIdAdd/NetCmdIdClear/NetCmdIdFind/AdvanceSeq window updates, the
-// Unmatched_bf530 packet alloc + inline payload memcpy + AddCmd, and the per-entry
-// Single/MultiCommand parse loop with the vtable-slot-7 dispatch + EnqueueCommand.
-// Three unsteerable MSVC5 /O2 choices remain: (a) cl pins `this` in ebp where retail
-// keeps it in esi + a [esp+0x18] reload; (b) the redundant `mov ecx,esi` retail
-// refreshes before each __stdcall NetCmdId* call; (c) retail walks the header through
-// an advancing cursor with grouped byte-counter decrements. No source lever; final sweep.
 RVA(0x000c0c70, 0x20f)
 i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     if (rec == 0) {
@@ -886,9 +848,6 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
 // the high-water window.
 // ---------------------------------------------------------------------------
 // @early-stop
-// this-in-ecx residency wall (86.6%): logic + control flow byte-exact. Retail
-// refreshes `mov ecx,esi` (this) before each __stdcall NetCmdId* call even though
-// the convention ignores ecx (4 redundant moves cl omits); not source-steerable.
 RVA(0x000c0f10, 0x6e)
 void CNetCmdSlot::AdvanceSeq(i32 id) {
     if (m_baseSeq + 1 == id) {
@@ -960,10 +919,6 @@ void CNetCmdSlot::ResetTriple(i32* p) {
 // "%d,"-joined debug string in the shared g_idListBuf accumulator.
 // ---------------------------------------------------------------------------
 // @early-stop
-// frame-slot-selection wall (95.36%): the whole body is byte-faithful. The only
-// real residue is where the spilled 3->0 counter lives: retail REUSES the dead arg1
-// home slot ([esp+0x14]) with a zero-extra frame, while cl allocates a fresh local
-// (`push ecx`/`pop ecx`, counter at [esp+0x10]). Not source-steerable.
 RVA(0x000c10d0, 0x7c)
 char* __stdcall NetCmdIdToString(i32* arr) {
     g_idListBuf[0] = 0;
@@ -1062,9 +1017,6 @@ void CNetCmdSlot::ClearCmds() {
 // (+0x1c) -> m_session -> m_slots[], gated by m_ackFlags (+0x3c).
 // ---------------------------------------------------------------------------
 // @early-stop
-// induction-var/regalloc wall (~79%): logic byte-exact. Retail keeps `sess` in
-// esi and recomputes the slot via `lea ecx,[esi+eax+0x20]` each iteration; cl folds
-// sess+offset into one running slot pointer and counts i<4. An IV-selection coin-flip.
 RVA(0x000c1320, 0x4a)
 i32 CNetCmdSlot::Ready() {
     CMulti* mgr = m_owner;

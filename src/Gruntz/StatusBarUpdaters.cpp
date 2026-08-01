@@ -25,12 +25,6 @@
 // its real owner (the leaf callers at 0x112820/0x112840 bind here).
 // switch coords: m_08 == tile X, m_key0c == tile Y, m_linkGate (+0x14) == down/up state.
 // @early-stop
-// ~72% CSE/regalloc wall: the int(1) return (was void) is now correct, but retail
-// RE-DERIVES `g_gameReg->m_world->m_level->m_mainPlane` for the store leg (pinning
-// g_gameReg in edi), while our cl CSEs the two identical grid chains into one eax
-// (keeping grid, not g_gameReg, in a callee-saved reg). The whole register layout
-// cascades from that CSE choice. No source spelling defeats MSVC5's CSE of the two
-// identical multi-level loads without an intervening store. Logic byte-correct.
 RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* g = g_gameReg->m_world->m_level->m_mainPlane;
@@ -69,8 +63,6 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 // returns 1. The leaf override (CTileTimeTriggerSwitchLogic::SwitchUp @0x112860) calls this
 // base and normalizes to a bool.
 // @early-stop
-// ~70% CSE/regalloc wall (same as SwitchDown): int(1) return now correct; residual is the
-// grid-chain CSE that pins grid instead of g_gameReg. Logic exact.
 RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* g = g_gameReg->m_world->m_level->m_mainPlane;

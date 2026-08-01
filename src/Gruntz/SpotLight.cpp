@@ -10,10 +10,6 @@
 #include <Gruntz/TriggerMgr.h>      // CTriggerMgr::m_grid (+0x1c 4x15 placed-cell grid)
 
 // @early-stop
-// x87 fp-stack scheduling wall (docs/patterns/x87-fp-stack-schedule.md, topic:wall):
-// the mode gate, the target/anchor fold, the m_gridCol+m_gridRow*15 cell lookup and the
-// "A" bute re-resolve match; the residual is the rotation fld/fmul/fsub tree's fxch
-// interleave (and the frame-delta fild hoist), not source-steerable under MSVC5 /O2.
 RVA(0x000b1ee0, 0x11d)
 int CSpotLight::Update() {
     if (m_object->m_114 == 1) {

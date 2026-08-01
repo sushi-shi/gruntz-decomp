@@ -125,10 +125,6 @@ void CStatusBarMgr::SetGauge(i32 value) {
 // (when `commit` is set and the active object accepts the scroll) latch the placed
 // column/row and reload the camera sprite. Always returns 1 past the two probes.
 // @early-stop
-// 70.9 -> 97.8 via the shared-exit spelling; residual is one store-schedule slot.
-// Both probes are POSITIVE-form so their two `return 0` exits tail-merge into
-// retail's single bottom epilogue instead of each getting an inline 4-instruction
-// copy - docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     i32 col = g_curPlayer;
@@ -188,15 +184,6 @@ void CStatusBarMgr::ToggleStat(i32 idx) {
 
 // Find the index of the first enabled hit-test rect containing (x,y); -1 none.
 // @early-stop
-// bool-materialization wall (80.6%): retail keeps the redundant inner `p->m_enabled`
-// test (same ebx, so the LOAD was CSE'd but the branch was not) and materializes the
-// predicate as `mov ecx,1 / jmp / xor ecx,ecx / test ecx,ecx / jne` instead of
-// branching straight out of the `&&` chain. Measured and REFUTED as levers: a
-// `static __inline` predicate helper, a class-scope chain, an explicit
-// `if (...) hit = 1; else hit = 0;` materialization - cl folds all three identically.
-// The sibling HitTestRects spells the same chain inline and retail does NOT
-// materialize there, so retail's HitTest went through a construct MSVC5 inlined
-// LATER than its branch-folding pass; not reachable from C at /O2 /Ob1.
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_hitTestDisabled == 0) {
@@ -230,11 +217,6 @@ void CStatusBarMgr::ResetGroupA() {
 // makes cl share ONE `xor eax,eax` zero across both hi stores AND emit the lo store
 // before the hi one, exactly as retail. The flat-halves spelling reorders both pairs.
 // @early-stop
-// one instruction: cl still defers the m_state store two slots (past the intervalLo
-// store + the `xor eax,eax`) where retail emits it in source order, between the `z`
-// load and its use. 13 statement orderings and both the flat/i64 spellings were
-// measured; CSIL (counter/state/interval/last) is the unique minimum. A Pentium
-// pair-scheduling choice, not a source lever.
 RVA(0x001066f0, 0x3b)
 void CStatusBarMgr::SetHudRectA(i32 y0, i32 x0, i32 z) {
     m_machineA.m_counter = y0;
@@ -245,7 +227,6 @@ void CStatusBarMgr::SetHudRectA(i32 y0, i32 x0, i32 z) {
 
 // Latch HUD-rect group B from three args + a global dword.
 // @early-stop
-// same one-instruction m_state store deferral as SetHudRectA above.
 RVA(0x00106740, 0x3b)
 void CStatusBarMgr::SetHudRectB(i32 y0, i32 x0, i32 z) {
     m_machineB.m_counter = y0;
@@ -344,16 +325,6 @@ void CStatusBarMgr::NotifyAllSlots() {
 // table (count m_ptrPool.GetSize()), each element streamed as 8 bytes. Field buffers are
 // addressed by offset (the codegen is naming-independent here).
 // @early-stop
-// The `op` dispatch at the top is a SWITCH, not an if/else-if chain: retail is
-// `mov eax,ebx / sub eax,4 / je <case4> / sub eax,3 / je <case7> / dec eax / jne <out>`
-// with the case-8 body as the fallthrough and cases 4 and 7 sunk to 0x108e2a/0x108e18
-// near the end of the function. An if-chain emits `cmp ebx,4 / jne` and keeps its first
-// arm inline, which is what we had. 72.33 -> 76.04 on that one conversion.
-// The LATER two-way `op == 4 / op == 7` transfers are genuinely if-chains - retail
-// compares them with a plain `cmp ebx,0x4` - so they stay as written.
-// Residual: still 134 B short of retail's 0x96c and 109 vs 111 branches, so something
-// structural is still missing besides the old note's regalloc claim (that note said
-// ~95.6% and was stale; the function measured 72.33 before this change).
 
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
@@ -599,11 +570,6 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
 //      not one: the streamed seq id has its own slot and the pooled-ptr count shares
 //      the OTHER slot with the 3-group counter.
 // @early-stop
-// residual is ONE displacement byte: retail's 3-group counter lives in the `push ecx`
-// slot (with the seq id) and the pooled count in the `s` parameter home; ours groups
-// counter+count instead. Measured over the three variable groupings x four declaration
-// positions - cl decides which local gets the dead parameter home and no spelling in
-// that space flips it (docs/patterns/macro-local-decl-order-picks-param-home.md).
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == 0) {
@@ -710,19 +676,6 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 // The frame holds TWO scratch dwords (the streamed seq id / 3x4 group counter, and the
 // pooled-ptr count), plus the lookup out-param - same shape as Serialize.
 // @early-stop
-// 94.73 -> 96.11 -> ~99.9. 2026-07-29: the "zero-pin colouring wall" was THREE real
-// source bugs. (1)+(2) the two stream scratch dwords are NOT zero-initialised - retail
-// declares `i32 seq;` / `i32 cnt;` and lets Read fill them; the spurious `= 0` emitted
-// two stores retail does not have AND swapped the two frame slots (seq@0x14/obj@0x1c).
-// (3) the resolved sprite is a NULL-JOIN, not an early-out: retail's `obj == 0` arm
-// materialises `xor eax,eax; jmp` into the join register and falls into the SHARED
-// `m_barSprite = m8; if (m8 == 0 && seq) return 0;` pair, so both the store and the gate
-// live inside the lookup-success branch. Pre-seeding `m8 = 0` above the `if` let cl skip
-// the store entirely (that is the je/jne polarity jcc_sieve reported).
-// Residual is ONE instruction: retail sinks the `obj = 0` out-param store past the two
-// argument pushes (`push ecx / mov ecx,[ebx] / push edx / add ecx,0x48 / mov [esp],ebp`),
-// which is the known-immovable out-param zero-init position - measured over five
-// spellings (statement split, hoisted map ref, decl at the top of the body).
 RVA(0x00109520, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == 0) {
@@ -1140,11 +1093,6 @@ i32 CStatusBarMgr::ClearTabSprites(i32 idx) {
 // head at +0) is offset-addressed: the typed array view would overlap the
 // matched m_30/m_34 ints, so the raw access is the codegen-faithful model here.
 // @early-stop
-// ~97.2%: the two notify-list walks + teardown are byte-exact; the residual is a
-// 3-instr regalloc choice in the cursor-rect prologue (retail loads g_gameReg via
-// `mov eax,moffs` and computes the two `-0x45/-0x30` offsets with non-destructive
-// `lea` into fresh regs; the recompile loads into ecx and uses `sub` in place).
-// Not steerable from C - logic byte-correct; deferred to the final sweep.
 RVA(0x00100cb0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == kSubtypeTag) {
@@ -1289,18 +1237,6 @@ i32 CStatusBarMgr::Activate() {
 }
 
 // @early-stop
-// ~80.8%: logic + offsets + the advance-tail are byte-faithful. Residual is a
-// constant/register-pinning coin-flip: retail keeps a 4th callee-saved reg (ebp) live
-// and PINS the constant 1 in ecx, reusing it for `item->m_active=1`, the `==1` gate
-// and the Toggle(...,1) arg (`mov ecx,1; ... push ecx`); this toolchain uses fewer
-// registers and emits the 1 as inline immediates instead. Already spelled with a
-// shared `i32 one=1` local, which MSVC5 declines to keep in a register - a regalloc
-// pressure coin-flip, not source-steerable; deferred to the final sweep.
-// 0x104e60 is a real CStatusBarMgr method (ToggleStat calls it unqualified on `this`),
-// typed against the canonical layout (m_statFlags @+0x114, m_hitRects @+0x150,
-// m_statObj @+0x18c, m_activeTab, m_position). The +0x150 element's toggle facet is the
-// same CSbiRect (m_enabled/+0x44 m_44). The +0x68 "unit-record table"
-// IS CTriggerMgr - its +0x1c slot array is m_grid.
 RVA(0x00104e60, 0xed)
 i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     if (m_statFlags[idx] == value) {
@@ -1356,9 +1292,6 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
 // not 0x10). The other half was the cue-global pair: read g_sndEnabled/g_sndCueTag
 // TOGETHER above the gate (retail loads both into ecx/edx before the test).
 // @early-stop
-// ~99.8%: the sole residual is the ecx/eax/edx naming of the
-// `g_gameReg->m_world->m_soundRegistry` chain temp (retail chains in eax off an edx
-// global temp; cl uses three registers). Five receiver spellings measured identical.
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     // The 5 grunt-oven cooking tabs ARE this class's own +0x220 slot records
@@ -1425,12 +1358,6 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 // the conveyor runs out (m_508 >= 0x1c7) it stops (m_4e8 = 0). A final
 // ChipGrinderFinishStep runs while the widget is live and a step happened.
 // @early-stop
-// ~80.7%: instruction count matches retail exactly (164==164); logic + all offsets/
-// stores/advance-tail are byte-faithful. Residual is a pervasive zero-register-pinning
-// role swap (docs/patterns/zero-register-pinning.md): retail pins 0 in ebx and the
-// phase-constant 3 in edi, this toolchain pins 0 in edi + spills a second zero into
-// ebp - a 1-instr phase shift cascading through every `mov [field],0` store. A
-// regalloc coin-flip, not source-steerable; deferred to the final sweep.
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     // Every offset is the canonical member - the grinder conveyor
@@ -1527,10 +1454,6 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 // calls o->Init(this,a,b,c) on it (the void* owner is the CStatusBarMgr back-ptr).
 // Typed against the canonical <Gruntz/WarpStoneFly.h> layout.
 // @early-stop
-// ~91.3%: the residual is frame packing - retail spills dxv into the DEAD arg4 (phase)
-// home so its locals fit `sub esp,0x14`, where cl allocates a fresh slot (0x18); every
-// esp displacement below shifts with it. Same "which local gets the dead parameter
-// home" allocator choice as CStatusBarMgr::Serialize.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
     m_owner = static_cast<CStatusBarMgr*>(owner);
@@ -1618,13 +1541,6 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
 // DestructButtonWarningDelay, after which the 64-bit retrigger clock is restamped
 // and the new frame pushed into the widget (the +0x30 virtual). State 0 = idle.
 // @early-stop
-// ~94.7%: logic + the 64-bit compare + every field store are byte-exact. The sole
-// residual (in BOTH symmetric cases) is a store-scheduling coin-flip: retail emits
-// `mov [+560],retriggerLo; mov [+564],0; mov ecx,[+570](widget)` in source order,
-// while MSVC's scheduler hoists the widget load between the two retrigger stores and
-// defers the `m_retriggerHi=0` store past it. Tried a single 64-bit retrigger store
-// and an inlined widget test; neither pins the store order. Not source-steerable;
-// deferred to the final sweep.
 RVA(0x0010b320, 0x167)
 void CStatusBarMgr::UpdateDestructButtonStatusBar() {
     // The destruct-warning block is this class's own +0x558 state machine:
@@ -1701,16 +1617,6 @@ i32 CStatusBarMgr::GetActiveValue() {
 // first enabled rect whose span contains the point, else null. Same point-in-rect
 // predicate as HitTest, materialized to a bool per retail.
 // @early-stop
-// ~95.3%: the walk is now byte-exact instruction-for-instruction (the CPtrList
-// GetNext two-copy idiom - cur=n; n=n->m_next; r=cur->m_payload - reproduces retail's
-// `mov eax,esi; mov esi,[esi]; mov eax,[eax+8]` in all three loops; raised 94.08->95.27).
-// Residual is a pure esi<->edx register-naming
-// SWAP: retail loads the loop cursor into the callee-saved esi (after `push esi`) and
-// puts the {enabled,hit} temps in edx; MSVC's prologue scheduler pulls the head-load
-// `mov edx,[ecx+0x30]` up BEFORE `push esi`, pinning the cursor in edx and forcing the
-// temps into esi. The whole allocation cascades from that one scheduling choice - the
-// same regalloc coin-flip as ResetWidgets/ClearTabGroup, not source-steerable. Logic
-// byte-correct; deferred to the final sweep.
 RVA(0x000ffcb0, 0xe2)
 CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     POSITION n = m_tabLists[0].GetHeadPosition();
@@ -1813,11 +1719,6 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
 // each payload, then RemoveAll - then (when keepHost is set) flag the +0x8 host as
 // aborted, and finally zero the whole widget/notify field block.
 // @early-stop
-// ~78%: instruction selection + scheduling are byte-identical end to end (the
-// 8-list walk, the host flag-OR, every field zero, both rep-stos memsets), but
-// MSVC pins `this` in ebx / the zero in ebp where the recompile uses esi/ebx -
-// the same regalloc register-naming coin-flip as ClearTabGroup. Not steerable
-// from C; documented regalloc wall, deferred to the final sweep.
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
@@ -1933,10 +1834,6 @@ void CStatusBarMgr::ExitMode() {
 // those are memsets, not unrolled per-element loops - and walks a base pointer for the
 // case-4 / case-5 pointer runs (`lea ecx,[this+0x204]` + [ecx+0..0x10]).
 // @early-stop
-// ~69%: objdiff cannot see the fix. cl /Gy emits each jump-table arm as its own COMDAT
-// label ($L....), so the base symbol for this function ENDS at `jmp [eax*4]` and only
-// the head is scored (the delinker jump-table dup-symbol undercount). The head's own
-// residual is the `this`/zero register naming (retail ebx/ebp, cl esi/ebx).
 RVA(0x00100b00, 0x139)
 void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == 0) {
@@ -2012,11 +1909,6 @@ void CStatusBarMgr::ClearTabGroup() {
 // rest, gated per case by m_hlBusy (busy => early-return 1). Banks A (1-5), B
 // (0x1f4-0x1fa), C (0x324/0x325), D (0x327/0x328). `state` is the sprite index arg.
 // @early-stop
-// ~85.5% (1305 B): the 5-sprite guard, both jump-table dispatches and every
-// Show/Hide sequence are byte-correct; the residual is the shared-tail merging
-// retail performs across adjacent cases (the `jmp` convergence at the m_tabSprite3/m_tabSprite4
-// and bank-B tails) which the recompile duplicates per case instead. A
-// scheduling/tail-merge wall on a big switch; not steerable from C. Deferred.
 RVA(0x00100d70, 0x519)
 i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
     if (m_tabSprite0 == 0 || m_tabSprite1 == 0 || m_tabSprite2 == 0 || m_tabSprite3 == 0
@@ -2205,14 +2097,6 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
 // cursor for the offset command. The fallback (any gate fails) drives the tab
 // highlight directly. Single-exit, success-deepest (shared fallback tail).
 // @early-stop
-// 89.07 -> ~99 (2026-07-29). The "identical-return-epilogue tail-merge wall" was a real
-// source bug: the fallback tail RETURNS the highlight call's result (retail's shared
-// epilogue carries no `mov eax,1`). Writing `Update...(); return 1;` both added that
-// store and gave cl a third identical `return 1` to merge the `r == 0` early exit into,
-// where retail duplicates it inline. Residual is ONE instruction: retail tests the tab
-// with `mov esi,[esi+0x10]; dec esi` (self-clobbering the dead `r`), the recompile with
-// `mov eax,[esi+0x10]; cmp eax,1` - `r->m_tab - 1 == 0` gets the `dec` but into edx,
-// so the register, not the idiom, is what is left.
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
@@ -2336,15 +2220,6 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
 // ready. Validate handle 0x66, play the GAME_TABHIGHLIGHT1 cue on the draw-clock
 // window, then latch the active slot, mark its value, and notify its pointer.
 // @early-stop
-// 71.11 -> 83.63 (measured 2026-07-27). The old note had the tail-merge direction
-// BACKWARDS: base 6 rets / retail 4 - it is cl that inlines and retail that merges.
-// Four refusals (busy gate + both arms' cursor-frame gate + the indexed state gate)
-// share ONE block at retail 0x10bda2, so they are `goto notActivated;` over a single
-// bottom `notActivated: return 0;`; the scan-exhausted miss is the exception and keeps
-// its own fall-through exit. The "one-instruction eager read" was the `while` peel -
-// spelling the scan `for (;;) { if (ready) break; ...; if (slot >= 5) return 0; }`
-// removes it (retail has one `cmp [eax],2` at the loop top, not two).
-// Residual is scheduling in the cue-play block.
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     // ONE shared refusal block (retail 0x10bda2) for the busy gate and both arms'
@@ -2525,9 +2400,6 @@ i32 CStatusBarMgr::RefreshState() {
 // (m_8->m_5c/m_60) and mirror it into m_24/m_28. Bails (0) if there is no render
 // object. Returns 1.
 // @early-stop
-// ~96.7%: every store/offset is byte-correct; the residual is a regalloc choice -
-// retail keeps `y` unloaded until after the m_8 reload (y in edx, m_8 in esi),
-// while the recompile parks y in esi loaded early. Not source-steerable; deferred.
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     if (m_barSprite == 0) {
@@ -2565,10 +2437,6 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 // `SetAtGrow(GetSize(), ...)` reuses the loop bound. The hit path exits via `goto
 // insert;` so its block lands at the BOTTOM, past the append, as in retail.
 // @early-stop
-// residual is the prologue regalloc: retail colors the free-list head into edx and
-// its ->m_next into the callee-saved esi, and reads arg `a` before the first push;
-// cl colors the head into eax and sinks the `a` load into the if-body. An early
-// `i32 ax = a;` local does not move it. Coin-flip; final sweep.
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     CoordPoolNode* head = g_coordPool.m_freeHead;
@@ -2617,38 +2485,6 @@ void CStatusBarMgr::ReportTab(i32 tab) {
 // Finishes with three validity probes; returns 0 on any failure, else latches
 // m_tabsBuilt = 1 and returns 1.
 // @early-stop
-// /GX EH-frame wall - identical archetype to StatusBarGameMenu::BuildGameMenu (also
-// @early-stop ~37%). The dominant residual is structural: retail carries a /GX frame +
-// a per-item incrementing EH state machine because each item's operator-new + ctor is
-// inlined and its setup call is a delete-on-throw region; modeled here with real
-// polymorphic sub-widget classes (CSbiRectSub / CSBI_MenuItem, whose ctors MSVC
-// auto-stamps - no manual vtable stamp), cl's EH bookkeeping + the by-value rect arg
-// scheduling diverge, shifting the frame. The rect sub-widget's true class CStatusBarMgr
-// collides with the HOST name so its vtable stays reloc-masked; the CSBI_MenuItem vtable
-// is now correctly named. Logic complete; deferred to the final sweep (re-attack once
-// the CSBI_* item ctors land and the frame can be reproduced).
-// @early-stop (~57%, DOWN from 71.6 - and the drop is the point)
-// The old 71.6% was propped up by a LIE: the leaves derived from a fabricated 13-slot
-// CSbiTab base where retail has 11 (rect widget) and 12 (menu item). Deleting it fixes the
-// emitted vtables and kills 13 unresolved externals; the number falls because the wrong
-// vtable happened to score better. Correct shape over the number - the vtable was a
-// shipping bug, not a cosmetic one.
-//
-// THE REMAINING GAP IS ARG MATERIALIZATION, AND I DID NOT CRACK IT. Retail builds the
-// slot-2 rect argument as a BY-VALUE STRUCT copied into the outgoing frame -
-// `sub esp,0x10; mov ecx,esp; mov [ecx],..; mov [ecx+4],..; mov [ecx+8],..; mov [ecx+0xc],..`
-// - not four `push`es, which is what the canonical CStatusBarItem::Setup(10 loose ints)
-// makes the caller emit. Callee-side the two are ABI-identical (10 dwords, same `ret`), so
-// ONLY the call site can distinguish them, and it says by-value.
-// I TRIED the obvious fix - retyping slot 2 as Setup(a1,a2,a3,a4, RECT rc, a9,a10)
-// across the family - and it made things WORSE, not better (this fn 56.7 -> 52.2, and it
-// cratered CSBI_MenuItem::DecCounter 92 -> 74). So the by-value observation is right but
-// that spelling is not the source shape; REVERTED rather than banked. Whoever picks this up
-// should start from the caller bytes, not from my guess. The struct-copy is real; the
-// signature that produces it is not yet known.
-// Retail INLINES the CStatusBarItem base ctor at this function's `new` sites (BuildTabzDialog,
-// which needs the out-of-line CALL, is in its own TU). This TU leaves SBI_ITEM_OWN_CTOR
-// off, so the base ctor inlines here - the retail spelling.
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -3009,13 +2845,6 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
 // summed with the prior entry), apply the (5,3) rect, and - if the placement query
 // succeeds - refresh. Returns 1 (0 on probe failure).
 // @early-stop
-// ~93.7%: every store/offset/GetInt-sum is byte-exact vs retail. Residual is the
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail pins
-// the constant 0 in edi + view-x/y in ebx/ebp, while MSVC5 here pins 0 in ebx +
-// view-x in edi - a 1-instr phase shift cascading through every =0 store, the
-// running-sum reload registers, and the trailing `push 0`. Plus the SetRect import
-// (ff 15 -> __imp_SetRect vs PTR_SetRect) + g_gameReg DIR32 naming. Not source-
-// steerable under /O2; deferred to the final sweep.
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_c = world;
@@ -3099,38 +2928,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 // fire the +0x30 and active-tab notify lists (slot 0x14) and refresh the +0x54c object.
 // The trailing +0xd8 list (slot 0x28 then 0x14) runs for every subtype. Returns 1.
 // @early-stop
-// the two stack-struct arg builds (the +0x14 rect handed to SetRectXY and the frame-draw
-// args) are byte-correct in content but MSVC schedules the interleaved local stores /
-// packs the 0x14 frame differently than retail (the statement-schedule wall shared with
-// Setup); the three notify walks + the config lookup are byte-faithful. Residual is that
-// scheduling plus the g_gameReg / GAME_STATUSBAR_MAINBAR DIR32 naming. Deferred.
-// NEIGHBOR TRIGGER: the sibling cue functions (HlClickGroup*/HiCue*), and now the
-// CSbiMusicHost::m_map10 real-member de-cast, reshuffle this function's
-// MainBarDrawFrame arg-block register allocation (the documented MSVC5 cross-function
-// codegen leak), dropping the byte-match 95.6%->88.6% with NO source change here; the
-// frame-draw args are still byte-content-correct. Accepted per the de-cast mandate.
-// A second trigger (the one-TU merge): absorbing the updater/warpstone/serialize
-// cluster into this TU re-fired the same stack-store/arg-block reshuffle
-// (95.6% -> 88.6% again, no source change here). Accepted per the merge mandate.
-// A third trigger (the BuildTabzDialog un-merge): removing that 3019-byte
-// function from this TU fired the SAME 95.6% -> 88.6% reshuffle a third time, again with
-// no source change here. A/B ruled out the SBI_ITEM_OWN_CTOR knob (with the knob forced
-// back ON it still read 88.55), so the trigger was purely this TU's /O2 budget.
-//
-// AND IT IS NOW BACK AT 95.64 - the leak was never a wall, it was a TU-COMPOSITION
-// READOUT. Finishing the un-merge restored it: CWarpStoneFly /
-// CStatzTabBuilder carved out to their own TUs, CStatusBarMgr::Sync RE-MERGED in (the binary
-// wants it here - see its note). No source change to this function in any of it. So this
-// function is effectively a sensor for "is this TU's content right?", and it reads
-// correct only when the TU holds exactly the objs retail compiled together. If it drops
-// again, the TU's membership changed, not this code.
 // @early-stop
-// 99.71%: 8 instructions, two residues. (1) cl sinks the `below.left` store past the
-// other three where retail emits it first - measured over ALL 24 assignment orders, none
-// reaches 0 and the natural l/t/r/b ties the best, so it is not an ordering artifact.
-// (2) an ecx<->edx role swap on the `m_c->m_imageRegistry->m_10map` receiver chain
-// (retail: chain in edx, the Lookup out-arg address in ecx; ours swapped) - the
-// pointer-chain-hoist lever does not reach it because the chain is already one hop.
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != kSubtypeTag) {
@@ -3261,18 +3059,6 @@ static __inline void HiPost(i32 cmdId) {
 // resource/gruntz/game tabs gate on m_354 + the active object's tab-highlight-enable
 // flag (m_68->m_400). Returns 1 (0 on an out-of-range command).
 // @early-stop
-// COMPLETE reconstruction of a 2958-byte 7-way widget-kind switch (jump table
-// 0x4ff4a0) with three nested command sub-switches lowered by MSVC to byte-indexed
-// jump tables (0x4ff4bc / 0x4ff4ec+0x4ff4e0 / 0x4ff51c+0x4ff50c / 0x4ff528). Walls:
-// (1) each dense sub-switch is a separate-COMDAT jump table (docs/patterns/
-// switch-jumptable-separate-comdat.md, ~75-80%) and the byte-index tables aren't
-// source-steerable; (2) the ~15 inlined cue-play blocks + PostMessage tails
-// tail-merge/schedule differently. Logic is byte-faithful; deferred to the final
-// sweep. (The shared-global DIR32 operands -- g_gameReg/g_sndCueTag/
-// ::PostMessageA/GAME_TABHIGHLIGHT1 $SG -- are RELOC-MASKED by objdiff, so their
-// symbol names are scoring-neutral; the singleton at 0x24556c is now referenced by
-// its canonical extern-C _g_mgrSettings, not the colliding ?g_gameReg@@ alias that
-// also names the real g_gameReg at 0x245460. The residual is purely the code bytes.)
 RVA(0x000fe910, 0xb8e)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CStatusBarItem* w = HitTestRects(a2, a3);
@@ -3513,16 +3299,6 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
 // fire the notify value `arg` down the three per-tab notify lists (+0x30, active tab,
 // +0xd8) plus the +0x54c notifier. Returns 1.
 // @early-stop
-// 97.25 -> 99.82 (2026-07-28): binding the map to a named local
-// (`CMapStringToPtr* map = &host->m_10;`) before the Lookup is what makes cl chase the
-// g_gameReg->m_world->m_soundRegistry chain in its own register and emit retail's
-// `mov ecx,[chain+0x28]; add ecx,0x10` instead of collapsing into `lea ecx,[eax+0x10]`
-// (docs/patterns/named-local-keeps-deref-base-in-own-register.md).
-// Residual is ONE register-role pair: retail loads m_world into edx and the `&found`
-// address into ecx, cl reuses eax for the chain and takes edx for the lea - the
-// ecx/edx scratch PHASE of docs/patterns/global-store-temp-alternates-ecx-edx.md, whose
-// lever is a missing pool temp upstream, not a local spelling (four upstream spellings
-// measured byte-identical). The same phase break caps LoadMainStatusBarSprite's Lookup.
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_soundEnabled != 0) {
@@ -3615,12 +3391,6 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 // 0x7fffffff); then, on the gauge tab and not the cursor subtype, play the
 // GAME_GOOCOOKING1 cue on the draw-clock window if the music gate is free. Returns 1.
 // @early-stop
-// ~96.7%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr base vs
-// target). The residual is purely the reloc-symbol-naming scoring tail - this TU models
-// the shared singletons as ?g_gameReg@@... / ?g_frameTime@@... / ?g_sndEnabled@@... etc.
-// while retail names them _g_mgrSettings / _g_645588 / ?g_sndEnabled@@... / ?g_sndCueTag@@
-// ... / _g_killCueClock (+ the GAME_GOOCOOKING1 $SG string), so those DIR32 operands
-// don't pair. A TU-wide rename, not a per-function fix; matcher.md reloc artifact.
 RVA(0x001055b0, 0x109)
 i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* sp = &m_slots[idx];
@@ -3676,9 +3446,6 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
 // the REZBELTRETURN/REZBELTBACKUP cues on the gauge tab. After the switch each slot's
 // notifier is fired with the current counter.
 // @early-stop
-// complete reconstruction; residual is the 64-bit draw-clock gate scheduling +
-// zero/1-register pinning across the 3-slot loop + the shared-global DIR32 naming
-// (g_gameReg/g_frameTime/g_sndEnabled...); documented regalloc/scheduling walls.
 RVA(0x00105990, 0x398)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
@@ -3813,25 +3580,6 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 // found) or DROP (full), arming m_groupSlots[col] + playing the cue. Then set the
 // conveyor-belt timer, feed the snooze/lever stat, and refresh the display object.
 // @early-stop
-// complete reconstruction; residual is the 64-bit draw-clock gates + MSVC cross-jump/
-// tail-merge of the shared GetIntDef/SetStatBar sequences + zero-register pinning +
-// shared-global DIR32 naming (g_gameReg/g_frameTime/g_buteMgr/g_sndEnabled). Walls.
-//
-// FALSE ALARM, resolved 2026-08-01 - do not re-open it. Counting call sites makes this
-// body look structurally wrong: retail issues TWELVE `call CButeMgr::GetDwordDef`
-// instructions and we issue FOURTEEN, with `LeftMachineSnoozingDelay` appearing once in
-// retail against three times here. It is not a missing/extra statement. Retail hoists
-// each arm-pair's shared `push 0x64 / push <key> / push StatusBar / mov ecx,g_buteMgr`
-// block ABOVE the branch and then CROSS-JUMPS the two arms into other blocks' calls:
-//   case 1 `>8`   `jmp 0x106404`  lands in the 0x2a block's call, because both arms are
-//                                 the identical `SetHudRectA(1, 1, GetDwordDef(...
-//                                 "LeftMachineSnoozingDelay", 0x64))`
-//   case 1 else   `jle 0x10616e`  lands PAST case 2's else-arm `push` of
-//                                 LeftMachineWakingDelay, straight onto its call, and
-//                                 consumes case 1's own already-pushed arguments
-// So retail's source has fourteen call sites too; cl merged two pairs and ours did not.
-// Both of our sites are already byte-for-byte the same expression (verified), which is
-// the precondition for the merge - there is nothing left to change in the source.
 RVA(0x00105e40, 0x62c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiHlRow* pA = &m_machineB;
@@ -4052,9 +3800,6 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
 // latched per phase; the tail pushes the composed rect into the falling-item notifier
 // and fires the fall-rect refresh.
 // @early-stop
-// complete reconstruction; residual is the 64-bit belt gates + heavy MSVC cross-jump/
-// tail-merge of the shared GetSpeed/GetIntDef sequences and the two flag-set tails +
-// zero-register pinning + jump-table reloc typing + shared-global DIR32 naming. Walls.
 RVA(0x00106bb0, 0x7bc)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
@@ -4254,9 +3999,6 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 // pointer loses both. Staging the RELATIVE rect in the same local instead regresses
 // it to 78.45 - retail's one RECT is the destination one.
 // @early-stop
-// register-assignment residual: retail pins the notify ptr in ebp (callee-saved) and
-// spills the computed `left` to the RECT slot to free a register for m_rect10.top; cl
-// keeps the ptr in ecx and has a register to spare, so it drops the spill. Coin flip.
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
@@ -4318,12 +4060,6 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
 // pooled ptr to the free-list, clear the +0x530 collection and the reset block, free the
 // +0x54c notifier, and finish. The trailing i32 arg is ABI-accepted but unused.
 // @early-stop
-// ~90.5%: the prologue, tab-force, memset, both config loops, and the free-list return
-// loop are byte-exact (the free-loop matched once m_ptrPool.GetData() was typed void**). Residual:
-// (1) the teardown tail reorders the m_2b0/2b8/2b4/2bc zero-block vs the m_retabNotify load / m_hlBusy
-// store (a store-vs-load MSVC scheduling coin-flip; an explicit-temp rewrite was neutral)
-// and (2) the g_gameReg + StartingGruntz/Multiplayer/Battlez string DIR32 naming. Not
-// source-steerable; deferred to the final sweep.
 RVA(0x00107ae0, 0x1aa)
 void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     BuildGameTabPauseButton();

@@ -5,16 +5,6 @@
 #include <rva.h>
 
 // @early-stop
-// regalloc-cascade wall (~54%; shared with the sibling fader rasterizers
-// CFaderRadial::Build / ImageRotateBlit, both ~30%): the circular-band walk, the
-// per-row integer sqrt, the table remap `table[pix*m_spanCount + clippedX]`, the
-// horizontal-mirror + vertical-mirror plots and the four bounds-clip loop variants
-// are reconstructed in shape/order. Residue cascades from the initial `this`
-// register pick: retail pins `this` in ESI + lays a 0x20-byte frame, MSVC5 here
-// picks EDI + a 0x24 frame, which re-assigns every spilled stack slot across the
-// circle-distance/imul block downstream. No source lever flips the `this` register;
-// verified base-vs-target with `gruntz sema disasm 0x00180fb0 --diff`.
-// docs/patterns/zero-register-pinning.md.
 RVA(0x00180fb0, 0x534)
 // Names from the one caller, CFaderLight::RenderFrame @0x180640:
 //   Render(row, rad * rad, rad, lut, m_srcBits, m_dstBits)

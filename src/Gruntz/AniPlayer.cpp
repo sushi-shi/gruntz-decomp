@@ -50,10 +50,6 @@ i32 CAniPlayer::Start(
 // frame between the two range endpoints, restamp the window (duration = m_3c,
 // start = now). Returns 1. The command param is ignored.
 // @early-stop
-// 92% - logic + control flow byte-exact; residual is the i64 window compare's
-// register/store scheduling (m_38/duration/start restamp) - the codegen
-// entropy tail shared by the timed-play family. Final sweep.
-// ===========================================================================
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 param) {
     if (static_cast<__int64>(g_frameTime) - m_start64 >= m_window64) {
@@ -71,9 +67,6 @@ i32 CAniPlayer::TickToggle(i32 param) {
 // from the record table by frame (0 when out of range), record it, and - when present -
 // blit it onto the active surface context at the rect base + cel offset. Returns 1.
 // @early-stop
-// 98.1% - logic + externs byte-exact; residual is the m_34/m_38 register
-// pairing in the range test (same regalloc entropy tail as the slot-5 Ticks). Final sweep.
-// ===========================================================================
 RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel() {
     CDDrawWorker* tbl = m_34;
@@ -102,10 +95,6 @@ i32 CAniPlayer::RenderCel() {
 // (start clock + duration, +0x58/+0x60) through the archive (mode 4 = Write @+0x30,
 // mode 7 = Read @+0x2c). Returns 1.
 // @early-stop
-// ~88%: logic byte-correct. Residue is the base-serialize call reloc naming + minor
-// field-address regalloc - the reloc-scoring artifact + regalloc family shared by
-// the serialize cluster.
-// ===========================================================================
 RVA(0x000e5c90, 0x87)
 i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
     if (arc == 0) {

@@ -219,13 +219,6 @@ void SoundStream::Free() {
 // DSoundCloneInst derivation: plain `new T` over the ::operator-new(==RezAlloc)
 // allocator now emits the retail /GX frame (byte-identical prologue).
 // @early-stop
-// ONE exit, and it must stay a `goto done`: retail's six gates each emit
-// `xor eax,eax / jmp` into a single fs:0-restoring epilogue (1 ret). Spelling them
-// as six `return 0;` MEASURED 65.38 -> 40.70 - under /GX cl5 duplicates the WHOLE
-// epilogue (fs:0 restore + 4 pops + add esp) at every return, giving 7 rets vs
-// retail's 1. The per-gate `xor eax,eax` is cl's own return-value materialization
-// into the shared exit, NOT evidence of a per-gate return. Residual is the
-// callee-saved count/order (same family as SoundDevice::CreateBuffer).
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamBuffer(
     WaveFormatX* fmt,
@@ -316,15 +309,6 @@ done:
 // create a streaming buffer for it, seed the voice's feeder window, then arm the
 // feeder; on a feeder failure, destroy the voice.
 // @early-stop
-// zero-materialization + out-param-slot wall (2026-08-01 re-audit; branch sequences
-// AGREE). Two coupled residuals: (a) the two ParseWave out-params land in the
-// opposite stack slots (retail dataOff@[esp+0x10] / dataLen@[esp+0x2c], we have
-// them swapped) - swapping the DECLARATION order is a measured NO-OP, so the slots
-// are assigned by address-taken order in the call, not by declaration; (b) we
-// materialize the constant 0 into eax BEFORE the voice null test (`xor eax,eax /
-// cmp esi,eax` where retail has `test esi,esi`) so cl can reuse it for the
-// m_loop/m_sourceOffset zero stores, which also hoists those two stores above
-// m_windowLength. Retail keeps the zeros as late immediates.
 RVA(0x00137900, 0xc6)
 StreamVoice* SoundStream::OpenStream(
     CParseSource* src,
@@ -435,18 +419,6 @@ i32 SoundStream::TickSubManagers(i32 time) {
 // fmt/data chunks, copying the 18-byte PCM header into fmtBuf and reporting the
 // data chunk's offset+length. Returns 1 only when both fmt and data were seen.
 // @early-stop
-// 99.82% (was 98.26; the fmt-chunk cap is an UNSIGNED min - see below). Residual is the
-// local-coalescing wall, now measured exactly: retail's three 4-byte header buffers sit
-// at entry-0x04, entry-0x0c and **entry+0x04 - the incoming `src` argument slot** (it is
-// dead once esi holds it), so retail needs only `sub esp,0xc`. cl gives each of ours its
-// own local (sub esp,0x10) and never writes over an arg slot, which shifts every [esp+N]
-// by 4. Body + control flow byte-exact.
-// Declaration-site axes matrix RULED OUT as the lever (config/axes/parsewave.json,
-// 72 cells: every permutation of the three header-buffer declarations, merged-vs-
-// separate declarations, three `end` spellings, three chunk-local spellings). EVERY
-// cell scored identically to baseline - the argument-slot reuse is an MSVC frame
-// packer decision, not a source one. See
-// docs/patterns/same-sites-different-per-function-optimum.md.
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
     CParseSource* src,
@@ -532,11 +504,6 @@ StreamFeeder::~StreamFeeder() {
 // depth, create (or adopt) the streaming buffer, arm, FeedData (slot 1) and
 // prime via Tick.
 // @early-stop
-// regalloc eax/edx wall: retail pins the format-pointer (arg2) and the format-value
-// (arg4) into a fixed eax/edx pair; MSVC here assigns the opposite pair. Body +
-// control flow byte-exact, only the two-arg register choice differs - a
-// register-allocation plateau (docs/patterns/zero-register-pinning.md family).
-// Logic complete, deferred to the final sweep.
 RVA(0x00137d10, 0xab)
 i32 StreamFeeder::FeederStart(
     SoundDevice* owner,

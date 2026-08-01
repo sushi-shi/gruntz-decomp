@@ -11,13 +11,6 @@
 
 // @source: decomp-xref
 // @early-stop
-// /GX EH-state megafunction wall: the body is reconstructed in full (the seeded
-// CString, the flat grunt-array double walk, the 0x16-case type->weapon switch,
-// the 18-field wsprintf line + two appends, the ReportVersionMsg handoff and the
-// destructor). The byte residual is the documented /GX exception-state numbering +
-// jump-table base reloc typing around the CString temp (cf. the sibling
-// megafunctions RollingBall/TerrainTileLoader): not source-steerable. See
-// docs/patterns/big-seh-fuzzy-desync.md + eh-state-numbering-base.md.
 RVA(0x000bf1d0, 0x249)
 void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100];

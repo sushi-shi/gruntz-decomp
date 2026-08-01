@@ -43,14 +43,6 @@ RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 // block is filled through a single base pointer (lea &m_14). __thiscall, ret 0x28.
 // (re-homed from src/Stub/GapFunctions.cpp; attribution vtable-proven, ??_7CStatusBarItem+0x8.)
 // @early-stop
-// 90.0%: every field/store + control flow byte-faithful (the same body as the derived
-// override CSBI_RectOnly::Setup @0xe86e0 minus its m_4 = 1 store). Retail materializes a
-// base pointer for the +0x14 sub-block (lea edx,[ecx+0x14] -> [edx+4/8/c] stores) while
-// MSVC5 folds it to ecx-relative disp8 stores with an alternating eax/edx pair. A pure
-// instruction-selection/scheduling residual (docs/patterns/statement-schedule-faithful.md);
-// direct, struct-member, and struct-pointer spellings all fold identically and the permuter
-// finds no operand fix - same non-steerable coin-flip as its 0xe86e0 sibling. Final sweep.
-// ---------------------------------------------------------------------------
 RVA(0x00100660, 0x50)
 i32 CStatusBarItem::Setup(
     CStatusBarMgr* owner,

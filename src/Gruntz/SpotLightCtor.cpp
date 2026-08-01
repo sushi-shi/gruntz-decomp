@@ -43,13 +43,6 @@ RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
 RVA(0x000b1200, 0x2cb)
 // @early-stop
-// x87 fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md, topic:wall):
-// the /GX EH frame, the folded CUserLogic(obj) base init, the bute "A" re-resolve,
-// the 0x20-grid snap + m_124/m_120 adjust, the SpotLightTime/settings tuning and
-// every integer field store are byte-faithful; the residual is the rotation block
-// that derives m_60/m_68/m_80/m_88 from m_70/m_78 - its fld/fsub/fxch stack
-// ordering is not steerable from C (same wall as CSpotLight::Update @0xb1ee0).
-// Logic complete; deferred to the final sweep.
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
@@ -122,12 +115,6 @@ void CSpotLight::FireActivation(i32 id) {
 // (m_58..m_90) + the +0x98 focus reference (serialize/resolve its id) + the three
 // tail ints (m_9c/m_a0/m_a4); 8 = re-apply the level's draw-fill color.
 // @early-stop
-// 99.96% - entropy-tail regalloc coin-flip (topic:regalloc): the whole body (the two
-// chains, the mode switch, all sixteen 8-byte double transfers, the g_serialCounter
-// bump, the mode-8 draw-fill, the Write serialize-id, and the Read MFC CMapPtrToPtr
-// Lookup + branchless `(GetTypeId()==5)?obj:0` resolve) is byte-faithful. Sole residual:
-// the Write-id load `id = m_focus->m_188` uses ecx here vs eax in retail (a 1-byte
-// callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d) {
     if (CUserLogic::SerializeMove(arc, mode, c, d) == 0) {
@@ -211,16 +198,6 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
 // activate the target and emit the alternate cue. Otherwise fall through to the 2D
 // rotation of the light offset (angle m_90 advanced by g_frameDelta * rate m_58).
 // @early-stop
-// ~52% - megafunction frame/regalloc + x87 fp-stack-schedule wall
-// (docs/patterns/x87-fp-stack-schedule.md, topic:wall topic:regalloc): the control
-// flow (mode gate, probe, target/type checks, "B" bute re-resolve, coord copy, the
-// m_114 laser-vs-activate branch, and the 2D rotation) is a complete reconstruction,
-// but retail's frame reserves 0x18 (the CString name + the fp scratch temps
-// [esp+0x10..0x20]) vs our 0xc, and it hoists g_gameReg->m_68 into the prologue - so
-// every [esp+N] slot + register assignment shifts, cascading through the whole body.
-// Compounded by the inlined seed*0x343fd+0x269ec3 rand LCG (lea-chain) and the
-// fld/fsin/fcos/fxch rotation stack-scheduling (the SAME wall the CSpotLight ctor +
-// Update carry). Logic complete; the frame/regalloc/fp codegen is the wall.
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     CGruntzMgr* reg = g_gameReg;

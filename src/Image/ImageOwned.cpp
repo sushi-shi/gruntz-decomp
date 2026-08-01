@@ -47,13 +47,6 @@ void CDDrawShadeBlit::Teardown() {
 // so the literal path falls through inline and the key path floats to the tail via
 // the forward `je` (docs/patterns/nested-if-success-deepest-error-tail.md).
 // @early-stop
-// 97.75% - the whole RLE state machine + the two run-scan extend loops + the m_rleData
-// byte-copy + the m_palette palette dword-copy are byte-identical to retail. The only
-// residual is the /GX scope-table EH-frame artifact: retail emits `sub esp,0x18` /
-// `push 0x8` (scope cookie) / `add esp,0x24` where MSVC5 here emits `sub esp,0x14` /
-// `push 0x0` / `add esp,0x20`, shifting every [esp+N] local by 4. Not source-
-// steerable (docs/patterns/gx-scoped-local-eh-frame-size.md). Logic complete.
-// ---------------------------------------------------------------------------
 RVA(0x00148d40, 0x202)
 i32 CDDrawShadeBlit::BuildRle(
     void* pixels,
@@ -167,19 +160,6 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
 // hardware buffer, then the pixels are copied into a fresh m_rleData. When m_srcBpp
 // came out as 2 the pixels are run through the palette-remap helper. __thiscall, ret 0xc.
 // @early-stop
-// 79.7% - body byte-faithful through the palette-loop entry (prologue, flag-byte
-// branches, m_colorKey/m_rleLen setup, the operator-new + 0xfffffd00 stride, the do-while
-// counter structure with the mid-body `i += 3` and `cmp 0x300/jl` all exact). The
-// residual is the zero/const-register-pinning wall (docs/patterns/
-// zero-register-pinning.md): retail pins the constant 2 in `bl` across the whole
-// body (used for the m_srcBpp/m_dstBpp byte stores AND the trailing `cmp [0x28],bl`)
-// and keeps the m_palette palette pointer in `edi` inside the loop; our cl puts m_palette in
-// `ebx` (clobbering bl -> a reload `mov bl,2` before the compare) and folds the
-// induction var `i` into the address base (`lea (i,src)` + `m_rleLen` as index) where
-// retail forms `src+m_rleLen` as the base + `i` as the scaled index. The downstream
-// memcpy-remainder + Remap-tail register naming all cascade from that one loop
-// allocation. No source lever flips it under /O2. Logic complete; deferred to the
-// final sweep.
 RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
     i32 flags = src->flags;
@@ -279,15 +259,6 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
 // branch chain (0x3d/0xbd | 0x100 | 0x80) is emitted, the result clobbered without a
 // write. We keep the assignment (the only faithful source) so the chain stays live.
 // @early-stop
-// ~90% dead-store + regalloc wall: the m_srcBpp guard, the whole descriptor build, the
-// by-value CString + rep-movs desc passing, and the DecodeFrame tail are byte-exact.
-// The residual is a register coin-flip in the (dead) flags computation: retail pins
-// m_palette in eax and the flags accumulator in esi (so `or esi,0x100` / `or esi,0x80`,
-// 32-bit), where our cl pins flags in eax / m_palette in esi (`or ah,1` / `or al,0x80`,
-// 8-bit sub-register). Retail also ELIMINATES the `mov [..],flags` store entirely
-// (a partial-DCE artifact) while cl keeps it parked past the struct copy (dead).
-// Neither the register pinning nor the half-DCE is source-steerable under /O2.
-// ---------------------------------------------------------------------------
 RVA(0x001493b0, 0xfd)
 // f4/f5 are PidHeader::offsetX/offsetY (the descriptor is that struct - see the note
 // on CImageFrameRebuildDesc in <DDrawMgr/DDrawShadeBlit.h>).

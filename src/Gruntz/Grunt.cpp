@@ -215,18 +215,6 @@ static void GruntScratchTeardown() {
 // ~CUserBase. Every teardown callee is external/reloc-masked.
 //
 // @early-stop
-// EH-state-base-numbering wall (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md
-// + eh-state-numbering-base.md): the real polymorphic CUserBase<-CUserLogic<-CGrunt
-// chain now auto-emits the /GX frame, the three vptr restamps (0x5e8754 -> 0x5e705c
-// -> 0x5e70b4), the per-member __ehvec_dtor + ~CString/~CPtrList/~EngStr teardowns in
-// retail order, and the descending trylevel chain - all byte-faithful in
-// shape/order (55.5% -> 94.9%). The COUNT of EH states matches (8), but retail numbers
-// them 1..8 (UserLogicVfunc9 region=7, six members 6..1, base m_18=8) while MSVC numbers
-// mine 0..7 (off by one) because retail reserves state 0 for the CUserLogic base
-// subobject construction, and it reserves an extra local dword (`sub esp,8` vs my
-// `push ecx`; `add esp,0x14` vs `0x10`). Closing this needs the base construction
-// state propagated into the derived dtor's state table (the CUserLogic ctor visible in
-// this TU) - deferred to the final sweep.
 RVA_COMPGEN(0x0000f2c0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
 RVA(0x0000f2f0, 0xc8)
 CGrunt::~CGrunt() {
@@ -243,18 +231,6 @@ DATA(0x0020d404)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // @early-stop
-// member-init/body-split wall (~67%): logic/CFG/field offsets/moving-init all
-// byte-faithful. CGrunt rides the Gruntz-module SNAPSHOT of CMovingLogic (lean 0x30;
-// Grunt.h) - the +0x120 header-layout fix, so every field-init hits its true retail
-// offset (m_400 @+0x400 etc.). The base ctor's intermediate vptr stamp now emits the
-// REAL ??_7CMovingLogic (0x5e87ac binds; the ex-CGruntMovingBase rename made it an
-// unbindable reloc). Remaining residue: (b) MSVC runs the six owned value-member ctors
-// (m_animSetName/m_31c/m_338/m_448/m_44c/m_468[9]) in the member-init PHASE while retail
-// interleaves them among the scalar inits - but they must stay value-typed for ~CGrunt's
-// auto __ehvec_dtor/~CString/~CPtrList teardown (94.9%). (c) the +0x810 timer band's
-// lo/hi dword interleave + the /GX EH-state numbering. All entropy/ordering class; the
-// vptr residue is byte-verified (llvm-objdump: only the intermediate stamp reloc differs).
-// Deferred to the final sweep.
 
 RVA_COMPGEN(0x00013c40, 0x1e, ??_GCMovingLogic@@UAEPAXI@Z)
 RVA(0x00047a10, 0x770)
@@ -526,16 +502,6 @@ DATA(0x00229ad0)
 i32 g_serialCounter;
 
 // @early-stop
-// reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
-// llvm-objdump), but the two free-pool globals (g_coordPool.m_freeHead/Base) and the
-// three engine calls (Coll::Reset, List::RemoveHead, node deleter) are unnamed,
-// so their DIR32/REL32 operands pair to differently named retail symbols and
-// score fuzzy. Naming the whole referent set is a final-sweep task.
-// CGrunt::UserLogicVfunc9() @0x48360 - tears down the per-grunt name/animation
-// caches: walks a small list at +0x320 returning each node's +0x8 buffer to a
-// global free pool (head/base at 0x645544/0x64554c), empties the collection at
-// +0x31c, then drains the name CPtrList at +0x338 (count = PayloadHead()->m_8; each node
-// freed via the engine deleter).
 RVA(0x00048360, 0x7e)
 void CGrunt::UserLogicVfunc9() {
     if (CoordCount() != 0) {
@@ -761,11 +727,6 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
 }
 
 // @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-// instruction MULTISET byte-identical vs retail (verified), logic/CFG/offsets exact;
-// residue = retail SINKS the `out=0` store past the Lookup arg pushes + stores the
-// table member before the temp-dtors where cl hoists/reorders, permuted per block
-// across 22 near-identical Lookup blocks. Source-invariant. ~76%.
 RVA(0x00049c60, 0x8d1)
 void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (kind == 0) {
@@ -875,14 +836,6 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
 // the entrance player's geometry + per-cell frame from the m_474 cell tables, and
 // latches the record into m_entranceCell. `range` (1000) is unused here.
 // @early-stop
-// regalloc/frame plateau (~62%): the full dispatch CFG, all 7 type-code arms (the
-// bool-eq inline-strcmp setcc form), the 4 geometry arms, the 3 cell tables
-// (0x468/0x474/0x470, (3*col+row)*0x68), and the record latch are byte-exact in
-// shape/order. Residue = retail reserves a 0xc scratch frame + spills rec fields
-// where mine keeps them in regs (cellrec pinned ebp vs ebx), plus the merged
-// E/IDLE GetName tail and per-arm esi/edx placement - pure register/spill
-// scheduling, no source lever flips it. Closing this brought PlayMoveSound to 100%.
-// Deferred to the final sweep.
 RVA(0x0004ac10, 0x402)
 void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     static_cast<void>(range);
@@ -994,29 +947,7 @@ store:
 }
 
 // @early-stop
-// ONE instruction out of position (99.3%): cl hoists the `m_arrivalFlags` load to the
-// head of the zero-store run where retail leaves it in source position (after the four
-// reroll stores). Every store-order / local / chained-assignment / inline-helper
-// spelling emits the same hoist. The two real bugs here ARE fixed: the tile notify is
-// a __thiscall CTriggerMgr method reached through m_tileMgr (the receiver load was
-// missing - docs/patterns/dead-receiver-load-proves-a-method.md), and the claim test is
-// an `&&` chain whose else-arm legitimately re-tests m_tileClaimed (a nested `if`
-// lets cl prove the re-test redundant and delete it).
-// CGrunt::CommitArrival() @0x4b130 - finalizes the grunt's arrival on its tile.
-// If already arrived (m_arrived) returns 1 immediately. Otherwise, if not yet
-// claimed (m_tileClaimed==0): in alt-mode (registry m_134==2) it just notifies the tile
-// owner; else it seeds the arrival defender block (m_arrivalRerollLo/m_arrivalRerollWindowLo/.., m_tileClaimed, m_arrivalState,
-// m_arrivalFlags &= mask) and records the entrance pos. Then runs the six HUD sprite
-// creators and latches m_arrived=1.
 // @early-stop
-// 99.33%: ONE instruction out of place - cl hoists the `m_arrivalFlags` load to the top
-// of the else-arm block, retail emits it between the four reroll-timer stores and the
-// m_tileClaimed/m_arrivalState pair. Measured 2026-07-29: all three spellings of the
-// read-modify-write (`i32 f = m & mask; ... m = f;` at either position, and the compound
-// `m &= mask;`) put the load at the block head; only a store cl cannot prove non-aliasing
-// for would pin it, which points at the four reroll stores being something other than four
-// direct member stores in retail (an inlined sub-object method ends a store run - see
-// docs/patterns/imm-store-floats-to-end-of-store-run.md). Needs that model, not a respell.
 RVA(0x0004b130, 0xc8)
 i32 CGrunt::CommitArrival() {
     if (m_arrived != 0) {
@@ -1078,16 +1009,6 @@ void CGrunt::ClearAllSprites() {
 }
 
 // @early-stop
-// shuttle-register regalloc wall: logic exact; the target threads the four
-// passthrough args (c..f) through one saved esi (push esi; mov esi,[..]; push
-// esi x4) while MSVC here pre-loads them into eax/ecx/edx. Pure arg-marshalling
-// schedule coin-flip; no source lever flips it (entropy-class).
-// CGrunt::TileSwitch(col, row, arrivalPhase, maskA, clearFlag, maskCIn) @0x4b320 -
-// scale the two grid coords to
-// tile-pixel centers (*0x20 + 0x10) and forward all six args to the engine
-// tile-switch helper. __thiscall: the body never reads `this` (byte-identical
-// either way, ret 0x18), but every retail caller loads a grunt into ecx - which
-// only the member spelling reproduces at the ~25 reconstructed sites.
 RVA(0x0004b320, 0x34)
 i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn) {
     return StepArrivalDrop(
@@ -1458,19 +1379,6 @@ reProbe:
 // sprites, 0xe -> re-stamp the walk geometry).
 //
 // @early-stop
-// record-CSE-liveness regalloc wall (62.4%, up from 5.2%): CFG, every board/
-// coord/tile access, both compass picks (shared bd + tgtTile locals), the
-// corner-cut diagonal else-if chain, the aliased row-table reloads in the
-// occupancy commit, and the reason dispatch are reconstructed byte-for-byte
-// where the stack slots align. Residue (llvm-objdump base vs target): after the
-// first compass pick retail keeps rec.m_0/m_4/m_8's VALUES live in edi/ebp +
-// scratch spills [esp+0x2c]/[esp+0x30] all the way to the first PlaySound sites
-// (across the board fetch + 2 calls) IN ADDITION to rec's home [esp+0x3c..0x44]
-// -> 0x38 frame; a clean recompile serves those sites from the home and re-uses
-// caller-saved regs -> 3 fewer stores/arm-region, 0x30 frame, and the -2-slot
-// shift retypes ~every [esp+N] operand byte. Tried: element-wise (best),
-// pick-struct + rec=pick copy (52.1), scalars d0-d2 + join copy (61.6),
-// by-value GruntDirectionCell temp (48.9). No spelling extends the CSE ranges.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
@@ -1964,14 +1872,6 @@ label_ret1:
 }
 
 // @early-stop
-// reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
-// llvm-objdump), residual is the two unnamed free-pool globals (g_coordPool.m_freeHead/
-// Base) + the Coll::Reset call pairing to differently named retail symbols.
-// CGrunt::SetEntrancePos(a, b) @0x4d060 - records the grunt's current tile as
-// its committed entrance position (m_174/m_178 = m_lastTilePxX/m_lastTilePxY), clears the
-// arrival timers (m_210); if `a`, also clears m_450/m_arrivalActive; and if `b` and the
-// grunt is not a special kind (m_arrivalState!=0x11) it drains the name list at +0x320
-// into the global free pool and resets the collection at +0x31c.
 RVA(0x0004d060, 0x98)
 void CGrunt::SetEntrancePos(i32 a, i32 b) {
     m_210 = 0;
@@ -1998,8 +1898,6 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
 }
 
 // @early-stop
-// same ecx/edx SetHealthGlyph temp phase as CreateToyTimeSprite @0x4d3e0 (four bytes);
-// see the mechanism + the exhausted wall-breaker run there.
 RVA(0x0004d130, 0xb5)
 i32 CGrunt::CreateHealthSprite() {
     if (m_healthSprite || m_health <= 0) {
@@ -2059,8 +1957,6 @@ i32 CGrunt::CreateToySprite() {
 }
 
 // @early-stop
-// same ecx/edx SetHealthGlyph temp phase as CreateToyTimeSprite @0x4d3e0 (four bytes);
-// see the mechanism + the exhausted wall-breaker run there.
 RVA(0x0004d2f0, 0xb4)
 i32 CGrunt::CreateStaminaSprite() {
     if (m_staminaSprite || m_stamina == 0x64) {
@@ -2088,24 +1984,6 @@ i32 CGrunt::CreateStaminaSprite() {
 }
 
 // @early-stop
-// caller-saved temp-register PHASE (99.72%): every byte matches except which of ecx/edx
-// carries the SetHealthGlyph arg2/arg3 temps - retail loads m_toyTime into edx and
-// m_tileOwnerLo into ecx, cl takes them in its ecx-then-edx preference order (arg1 is in
-// eax on both sides, and the load + push ORDER is identical). Four bytes: two modrm
-// fields and the two `push` opcodes. CreateHealthSprite / CreateStaminaSprite /
-// CreateWingzTimeSprite carry the SAME four bytes from the same call shape. Not source-
-// steerable: explicit `i32` locals for the two values are copy-propagated away by cl and
-// the pick does not move, and match_variants --state-trials 48 --max-depth 3 exhausted 256
-// variants without a win. Same family as global-store-temp-alternates-ecx-edx.md.
-// 2026-07-29: a FAITHFUL standalone replica (same 6-arg thiscall CreateSprite + the cdecl
-// notify fn-ptr + the `inner`/`reg` chain) reproduces our exact bytes, and 22 further
-// spellings through it all emit the SAME ecx/edx pick - the cell pair passed as a
-// by-value 2-int struct (byte-identical to the two scalars), inline accessors on any
-// subset of the three args, the args pre-read into locals in either order or through a
-// stack array, `this->`-qualified reads, the receiver with/without the `inner` local
-// (dropping it moves the pick but breaks the surrounding chain), the result bound to a
-// local, the test inverted, the guard order flipped, and the failure block's stores
-// reordered. The pick is not reachable from the source.
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_toyTime == 0) {
@@ -2142,8 +2020,6 @@ i32 CGrunt::CreateToyTimeSprite() {
 }
 
 // @early-stop
-// same ecx/edx SetHealthGlyph temp phase as CreateToyTimeSprite @0x4d3e0 (four bytes);
-// see the mechanism + the exhausted wall-breaker run there.
 RVA(0x0004d520, 0xe3)
 i32 CGrunt::CreateWingzTimeSprite() {
     if (m_wingzTimeSprite || m_wingzEnabled == 0 || m_wingzTime == 0) {
@@ -2265,22 +2141,6 @@ i32 CGrunt::CreateSelectedSprite() {
 // last of the twelve args, and the value lands in CGrunt::m_tileMgr (+0x260).
 // ===========================================================================
 // @early-stop
-// ~81% (was a 0.x% stub bound to the wrong class). The instruction STREAM is
-// essentially retail's - 280 base instructions vs 284, same order bar four windows.
-// Residues, all codegen placement:
-//   * FRAME SIZE. retail is `sub esp,0x18`, cl is `sub esp,0x10`: retail reserves two
-//     dwords at [esp+0x10]/[esp+0x14] that NOTHING in the body reads or writes (verified
-//     over the whole 0x423), so its RECT sits at +0x18 and every [esp+disp] in the body
-//     is 8 higher than ours. Declaring two extra ints ahead of the rect does not
-//     reproduce it (cl enregisters them and keeps the frame at 0x10) - it is a dead
-//     regalloc spill slot, not a source-visible local.
-//   * cl sinks `mov ebx,1` into all THREE arms of the head mask nest where retail
-//     hoists one copy above the branch, and loads the `kind` argument before the
-//     `sub esp` rather than after the three callee-saved pushes.
-//   * the board-stamp tail: retail pre-reads +0x1f0 and spills it to the (dead) arg2
-//     home so the final OR is register-to-register; cl folds it into the `or` as a
-//     memory operand. Spelling it with a local costs 0.5% (measured, reverted).
-// topic:wall topic:regalloc.
 RVA(0x0004d800, 0x423)
 i32 CGrunt::Place(
     CTriggerMgr* board,
@@ -2458,13 +2318,6 @@ static inline void ConstructGrownSlots() {
 // runs the pending-fx / kind-0x14 group reinit finishers.
 // ===========================================================================
 // @early-stop
-// first-pass reconstruction banked at ~61% (was a 0.08% stub): the head guards +
-// shared fail exit, the full 53-arm switch (both tables auto-emitted), the toy
-// g_typeColl slot construction, the powerup windows and the common tail are in
-// place. Residual: per-arm micro-iteration (the fail-label block placement is
-// hoisted next to its last goto where retail keeps it at 0x50004; arg-eval
-// scheduling in the wingz calls; the toy-arm shared strcmp tails) - resume with
-// sema disasm --diff per arm.
 RVA(0x0004dd50, 0x22c0)
 i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
     char eq;
@@ -3798,32 +3651,6 @@ fail:
 // base-side table against nothing (73.18 -> 79.72 on extending the extent).
 //
 // @early-stop
-// ~80%: COMPLETE and shape-correct. Every block, both board dirty-rect clips, the
-// 16-way arrival-state switch, the 8-way tile-kind switch, the three countdown ramps
-// and the powerup-kind tail reconstruct; the call multiset is identical (72 = 72) and
-// the per-member access counts now match everywhere except the six duplicated 64-bit
-// timer reads below. The residual is ONE whole-function register-allocation
-// divergence with three visible faces, and the wall-breaker has exhausted on it
-// (gruntz.permute.permute 40 iters: no change; match_variants 256 candidates from 445
-// atomic mutations + 48 TU-state trials: best +0.003%):
-//   (1) CONSTANT PINNING - retail dedicates TWO callee-saved registers to constants
-//       for the whole body: ebp = 0 and edi = 0x10000 (`mov edi,0x10000` @0x5de2f,
-//       and both are RE-materialised at 0x5e1d4 after the 0x11 arm's CString fixup
-//       loop clobbers them). cl5 keeps both as immediates here. A named
-//       `i32 retireBit = 0x10000;` local does not steer it - constant propagation
-//       folds it straight back (docs/patterns/const-materialize-into-reg-vs-immediate).
-//   (2) 64-BIT CSE, a consequence of (1) - with ebp/edi free, cl reassociates
-//       `duration - now + clock` to `(duration + clock) - now`, CSEs the sum and
-//       carries it across the __ftol call; retail, out of registers, recomputes each
-//       of the six timer expressions in full. This is the ONLY remaining member-read
-//       count difference (each of 0x810/0x818/0x860/0x890/0x898/0x8a0/0x8a8 is read
-//       once here and twice in retail).
-//   (3) BLOCK PLACEMENT - retail parks the `m_arrivalState != 0x11` arm PAST the
-//       epilogue (0x5e55b, jumping back into the kind dispatch at 0x5e1db). Both the
-//       plain `else` and an explicit `goto` to a block written last in the function
-//       compile to BYTE-IDENTICAL output: cl5 straightens the back-edge and lays that
-//       ~60-instruction arm immediately before its join either way.
-// ---------------------------------------------------------------------------
 RVA(0x0005d210, 0x1554)
 void CGrunt::XferName(char* /*name*/) {
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_struckClock64 >= m_struckTimer64) {
@@ -4556,15 +4383,6 @@ kindDispatch:
 // ---------------------------------------------------------------------------
 // CGrunt::MovingSlot16()   @0x5f310   (ret 0)
 // @early-stop
-// TRUNCATED reconstruction (~9%): the coord-probe head (claim the head coord's tile if
-// free, else retry within m_coordRetryCount) + the scratch-resolver "D" reject are the
-// only reconstructed part. Retail is 938 insns; the base is ~132. The missing ~800 are
-// the arrival-commit block at 0x5f490 (a second ScratchResolve/scratch-teardown + a
-// "D"-gated arrival-processing body: pathfinder re-probe, tile release/claim, the
-// per-direction m_cells[base] {m_dirX..m_stepY} double movement-integration tail). This
-// is the same arrival-commit tail inlined into StepArrivalDrop; nothing stands in for
-// it here. Needs a dedicated leaf-first reconstruction of that tail (shared with
-// StepArrivalDrop) - deferred to the final sweep, NOT a codegen wall.
 RVA(0x0005f310, 0xb5e)
 void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {

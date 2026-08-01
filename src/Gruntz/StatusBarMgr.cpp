@@ -25,35 +25,11 @@ VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
 // frame (the just-created item is EH-rolled-back if a later Configure throws).
 //
 // @early-stop
-// ~83.7% (was 24.1% -> 44.8% -> here); the BODY IS COMPLETE - all five tabs fully
-// reconstructed in retail PHYSICAL order (Gruntz/Resource/Multiplayer/Statz/Game):
-//   Gruntz    - TITLE + GRUNTOVEN loop + WELL/OVENZ/WELLTEXT/WELLGOO
-//   Resource  - TITLE + MAIN/UPPER/WINDOW bg + BELT x3 + GREYCHIPZ + SHREDDER 4x3 grid
-//               + MACHINE (CSBI_GruntMachine -> BuildResourceTabStatusBar) + machine
-//               foreground (CSBI_ImageInline) + 2 conveyor CSBI_ImageSetAni + NORMCHIPZ
-//   Multi     - TITLE + 4 WARLORDHEAD slots + HEAD per-player loop + SMALLICONZ 15-loop
-//   Statz     - TITLE + mode-gated 15-iter arrow(ConfigureEx)/grunt-bar loop
-//   Game      - TITLE + WARPSTONE Probe-gated run + BuildGameMenu
-// The prologue is byte-exact Order-A (this->esi, code spilled [esp+0x10], bx->ebx,
-// by->ebp; docs/patterns/gx-this-esi-via-cache-store-pressure.md) and every loop
-// (SHREDDER/SMALLICONZ/Statz/HEAD) reproduces retail's ebp=item induction byte-for-byte.
-//
-// RESIDUALS (all documented regalloc/codegen coin-flips, none a logic error):
-//  (1) by<->it swap in the SEQUENTIAL tail items: retail spills `by` to [esp+0x20]
-//      GLOBALLY (freeing ebp for the item pointer across the MACHINE-tail sequential
-//      items) and reads by from memory there; cl here restores `by` to ebp after the
-//      SHREDDER loop and spills `it` to a stack slot instead - the same callee-saved
-//      coin-flip as the whole-body allocation (only tips with by permanently evicted).
-//      This also holds the frame at 0x30 vs retail 0x34 (the missing by-spill dword).
-//  (2) m_368 machine-foreground rect.top: retail reads a precomputed stack slot; cl
-//      recomputes `leal 0x1a6(ebp)` inline (value is a best-fit placeholder).
-//  (3) per-item store-scheduling / vtable-stamp-position coin-flips in the inline ctors.
-// All are matcher.md regalloc/scheduling walls; logic + offsets + call shape are exact.
 RVA(0x00102250, 0x1dcd)
 RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host (spilled to [esp+0x10] in retail)
-    i32 bx = m_rect10.left;                // base x
+    i32 bx = m_rect10.left;       // base x
     i32 by = m_rect10.top;        // base y
     // The item locals are typed by what each leaf actually IS. `it` covers every widget
     // that has the slot-11 setup (CSBI_ImageSet / WellGoo / WarlordHead all derive from
@@ -103,7 +79,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // incremented [esp+0x18]/[esp+0x28]/[esp+0x20] induction variables.
             {
                 CSBI_ImageSet** aptr = m_slotNotify; // +0x204, stride 4
-                i32* bptr = &m_slots[0].m_value;                  // +0x224, stride 0x18
+                i32* bptr = &m_slots[0].m_value;     // +0x224, stride 0x18
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
@@ -135,10 +111,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    (static_cast<CDDrawWorker*>(set->m_34))
-                        ->SetAllTypes(10);
-                    (static_cast<CDDrawWorker*>(set->m_34))
-                        ->SetAllFormats(sel);
+                    (static_cast<CDDrawWorker*>(set->m_34))->SetAllTypes(10);
+                    (static_cast<CDDrawWorker*>(set->m_34))->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;
@@ -429,7 +403,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // (&m_4a8[row]) at -0x10/0/+0x10; the id `c` walks 0xd7.. and each column
             // uses c-4/c/c+4. ebp is reused as the item pointer (by is dead here).
             {
-                i32* cfgp = &m_hlGrid[4].m_value;                     // +0x3dc, stride 0x18
+                i32* cfgp = &m_hlGrid[4].m_value;        // +0x3dc, stride 0x18
                 CSBI_ImageSet** cachep = &m_hlNotify[4]; // +0x4a8, stride 4
                 i32 y = by + 0x155;
                 i32 c = 0xd7;

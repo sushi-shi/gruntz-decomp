@@ -67,23 +67,6 @@ i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
 // the previewed DIB (g_previewImage, 8bpp -> DIB_PAL_COLORS else DIB_RGB_COLORS) into
 // a 320x240 box inside the preview item (0x51d). /GX EH frame (the pool ctor/dtor).
 // @early-stop
-// ~81%: logic byte-faithful (the msg sub-chain dispatch, the pool new/SetHandles/
-// BuildLevelTitleString init, the Free+delete teardown, the rect-centre math, the
-// 8bpp/rgb StretchDIBits branch). Residue is three codegen walls, not logic:
-// (1) the /GX SEH prologue order (`push -1` vs `mov eax,fs:0` first + esi/edi
-// shrink-wrap; docs/patterns/shrink-wrapped-callee-save-push.md, topic:wall);
-// (2) epilogue tail-merge - retail funnels every return to ONE shared `mov eax,1` +
-// epilogue via jmp, cl duplicates the epilogue per return. HALF of this is fixed
-// (measured 2026-07-27, 80.35 -> 85.15): base 4 rets / retail 1; writing the
-// WM_INITDIALOG SetHandles failure as `break` merged it with the switch DEFAULT, which
-// is what parks the default block at the bottom (retail 0xe37ae) and inverts the
-// ladder's last compare so WM_COMMAND falls through. The rest does NOT come out: the
-// single-result-variable form (`i32 result; ... done: return result;`) was re-tested
-// this pass and regressed 85.15 -> 79.79, so cl will not fold the remaining three
-// epilogues here - unlike the sibling CBootyState::LoadGameAssetNamespaces where the
-// same spelling worked. Reverted; (3) the pool local coloring - cl reuses the hDlg-arg
-// stack slot [esp+0x78] where retail reuses the msg slot [esp+0x7c], shifting the
-// front-half displacements. None are source-steerable.
 RVA(0x000e3690, 0x2ec)
 i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -283,14 +266,6 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
 }
 
 // @early-stop
-// 98.7%. The RVA span covers the four inline jump tables (retail's code is 0x3d6 and
-// the switchdataD_ tables run 0xe4318..0xe43b8, so the true extent is 0x478 - see
-// docs/patterns/rva-span-must-cover-inline-jump-tables.md); that alone was worth
-// 84.6 -> 98.7. Residual: retail's frame is `sub esp,0x24`, ours `sub esp,0x20` -
-// retail reserves one unused 4-byte slot ABOVE `name` (name sits at the bottom of the
-// locals at esp+0x10 in both), which costs the frame constant in the prologue and in
-// the five epilogues. No declared local reproduces it (i32-before/after `name` tested,
-// both enregister and leave the frame at 0x20).
 RVA(0x000e3f40, 0x478)
 i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     i32 c;
@@ -857,12 +832,6 @@ i32 CSaveGame::Register(SaveSlot* slot) {
 // order is byte-PROVEN (this body compiled standalone with cl /O2 is byte-identical
 // to retail 0xe5410, incl. `mov edi,[esp+0xc]` landing BEFORE the store-back).
 // @early-stop
-// TU-state regalloc: inside savegame.obj cl additionally copies the counter into ebx
-// (`mov ebx,ecx` + a third push) and makes ebx the imul destination, where retail
-// multiplies the reloaded byte by ecx in place. Insensitive to source spelling - 11
-// spellings tested (operand order both ways, *= with an explicit destination local,
-// no-&0xff, u8-cast key, acc = acc + ...) all emit the identical ebx form, while the
-// SAME body in a scratch TU emits retail's bytes exactly. Needs --state-trials.
 RVA(0x000e5410, 0x3d)
 i32 CSaveGame::Encode(u8* buf) {
     if (buf == 0) {
@@ -880,11 +849,6 @@ i32 CSaveGame::Encode(u8* buf) {
 // ---------------------------------------------------------------------------
 // CSaveGame::Decode  (0x000e5460)
 // @early-stop
-// regalloc-tiebreak churn (~84%): body byte-identical to the pre-pristine 100%
-// match; the pristine field renames elsewhere in the TU perturbed MSVC5's
-// identifier-interning-driven register coloring, tipping this Encode/Decode
-// checksum-loop family's fragile edi/edx spill choice (same wall as Encode). Not
-// source-steerable; deferred to the final sweep (recover the edi/edx pin).
 RVA(0x000e5460, 0x3f)
 i32 CSaveGame::Decode(u8* buf) {
     if (buf == 0) {

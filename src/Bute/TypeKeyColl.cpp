@@ -141,14 +141,6 @@ CVariantSlot g_symTabErrorSlot("zSymTab: ");
 // Records the descent cursor / candidate so a following Insert can splice in.
 // ===========================================================================
 // @early-stop
-// regalloc-coloring wall (~90.6%): structure, every offset, the inline
-// strlen/strcmp idioms, the null-path global-load hoist and the GetCallerRetAddr
-// helper are byte-exact. Residual is one global coloring decision: retail pins the
-// descent bit `b` in edx (so the cursor load lands in eax and the child stays in
-// eax across the loop), whereas cl colors `b` into eax (strlen leaves eax=0) -
-// cascading a symmetric ebp<->ebx (key/mask) + eax/ecx (child) transposition and a
-// couple of member reloads. Not source-steerable (tried slot-form, node-reuse,
-// mask-local, name-hoist). See docs/patterns/zero-register-pinning.md. Final sweep.
 RVA(0x0016d190, 0x101)
 void* zPTree::Find(const char* key) {
     if (key == 0) {
@@ -202,13 +194,6 @@ zBitVec::~zBitVec() {
 // release this band (RezFree) and reallocate to the source's word count (or OOM), then
 // memcpy m_capacity/8 bytes from the source (heap band or inline SBO word).
 // @early-stop
-// 99.84% - ONE instruction of 172, and only its modrm byte: the `m_capacity =
-// that.m_capacity` store at the capacities-differ JOIN (reached both from the
-// that.m_capacity<=0x20 shortcut and from malloc-succeeded) uses eax in retail and ecx in
-// cl. Retail re-LOADS [that+8] there even on the path where eax already holds it, exactly
-// as we do, so the shape is identical; cl simply will not spend eax at a join whose other
-// predecessor left the malloc result there. No source lever reaches a single scratch pick;
-// match_variants --state-trials 64 --max-depth 3 exhausted 512 variants without a win.
 RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
 RVA(0x0016d2f0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {
@@ -241,14 +226,6 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
 // (to size the bit-set to max(minSize, maxIndex)); pass 2 re-scans and sets each
 // listed bit, expanding "N-M" ranges. Bad arg / bad char fire the container error sink.
 // @early-stop
-// regalloc wall (zero-register-pinning.md family): the two-pass logic, the
-// isspace/isdigit/strchr(" ,-") validation, the max-index sizing, the SBO bit-set and
-// the "N-M" range expansion are all byte-faithful, but cl pins the pass-1 cursor in
-// edi where retail keeps it in esi (retail: esi=cursor, ebp=value, edi=sawSep flag).
-// That swap spills the flag to an extra [esp+0x10] slot and cascades esi/edi through
-// every [cursor] access. Splitting the pass-2 cursor into its own var did not move the
-// pass-1 assignment; no source lever reaches the allocator here. ~79.8%, logic
-// complete; deferred to the final sweep.
 RVA(0x0016d3a0, 0x344)
 zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
     i32 maxv = 0;
@@ -537,11 +514,6 @@ zErrHandling::~zErrHandling() {
 // fill, update bounds.
 // ===========================================================================
 // @early-stop
-// regalloc wall (~80%): retail pins idx in ebx / this in esi / realloc result
-// in ebp (arg-before-this); our recompile assigns idx->ebp / this->ebx, which
-// cascades into the two-block branch distances. `#pragma function(memcpy)`
-// recovered the out-of-line memcpy call (62%->80%); the residual is the
-// register assignment, not source-steerable. Logic exact.
 RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
     void* p;
@@ -589,21 +561,6 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
 // arg / OOM) through the +0x04 error sink.
 // ===========================================================================
 // @early-stop
-// regalloc-coloring + block-layout wall (~53%) on a 518-byte crit-bit splice. The
-// frame is byte-exact (the `push ecx` critbit local appears once Insert is typed
-// void* to keep `value` live for the trailing return load), the error paths, the
-// alloc pair, the inline strlen+rep-movs strcpy and the KeyPrefixBits/RezAlloc/Set
-// calls all match. Residue: retail colors `newbit`/candidate into ecx/eax (cl picks
-// the transpose), emits `add reg,-7` where cl picks `sub reg,7`, keeps `node` in esi
-// across the splice with address-merge stores, and tail-merges the two `m_root=node`
-// (cursor==0 / cur2==0) exits into one cold block - none reliably source-steerable
-// on a body this size. Complete + correct logic; deferred to the final sweep.
-// PARTLY cracked 2026-07-27 (53.39 -> 60.47) by the exit-count test: base 5 rets /
-// retail 4. The extra one was the final displaced-subtree link written as two arms
-// (`if (dir) m_child[0] = leaf; else m_child[1] = leaf;`), each with its own success
-// epilogue; retail 0x16dfe3 SELECTS the slot (`lea eax,[esi+4]` / `je` / `mov eax,esi`)
-// and stores once. The two `m_root=node` exits still do not merge.
-// docs/patterns/zero-register-pinning.md, const-materialize-into-reg-vs-immediate.md.
 RVA(0x0016db90, 0x206)
 void* zPTree::Insert(const char* key, void* value) {
     if (m_lookupPending == 0) {
@@ -727,13 +684,6 @@ RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
 // allocation throws).
 //
 // @early-stop
-// vptr-position wall (~96%, up from 67% as a plain method). Modeling this as a
-// real ctor over a destructible error-sink base recovered the whole /GX state
-// frame (push -1 / push handler / fs:0 chain / trylevel write) that the plain
-// method could not emit - the bulk of the old gap. Residue: cl schedules the
-// implicit ??_7 stamp BEFORE the m_lo/m_hi/m_base/m_stride stores, but retail
-// sinks it AFTER them, plus a minor regalloc swap in the lo/hi/stride/scratch
-// load sequence. Not source-steerable; deferred to the final sweep.
 RVA(0x0016de30, 0xe7)
 _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
     : zErrHandling(&g_dynamicArrayErrorSlot) { // -> zErrHandling ctor @0x16d9c0
@@ -993,12 +943,6 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 // record insert/update/remove over the global table at the cursor's m_04.
 // ===========================================================================
 // @early-stop
-// Structure fixed 2026-07-21 (18% -> 88%): the INSERT path (idx==-1) is INLINE and the
-// UPDATE/REMOVE path (idx!=-1) is OUT-OF-LINE (retail `cmp idx,-1; jne <update-far>`),
-// and BOTH array shifts are `memcpy` (not memmove). The reconstruction had them reversed +
-// memmove. Residual (~12%) is the genuine callee-saved register-preference wall: MSVC pins
-// val->ebx/key->edi where retail uses key->ebx/val->edi, cascading through the stores.
-// Not source-steerable; deferred.
 RVA(0x0016e360, 0x11a)
 void* CVariantSlot::Add(void* key, void* val) {
     int count = g_recCount23;

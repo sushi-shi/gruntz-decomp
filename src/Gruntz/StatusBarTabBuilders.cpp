@@ -61,10 +61,6 @@ namespace StatusBarTabBuilders {
 // merges all 5 guards" symptom was caused by the `||` in the ENTRY guard, which puts cl in
 // cross-jump mode for the whole function.
 // @early-stop
-// Residual: the two ENTRY guards now inline their epilogues where retail jumps both to the
-// final one, the second Lookup's receiver lands in a different register (`lea ecx,[eax+0x10]`
-// vs `mov ecx,..; add ecx,0x10`), and the final range check lands m_config/m_frameIdxB in the
-// opposite regs. Allocator/layout coin-flips; logic complete.
 RVA(0x000e8a70, 0x18c)
 i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     CStatusBarMgr* owner,
@@ -235,36 +231,6 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 // CStatusBarItem::SerializeFields (retail `call 0x1848`) and 0/1-normalise.
 // ===========================================================================
 // @early-stop
-// stack-slot recoloring wall, 99.89%: EVERY instruction is byte-identical except the
-// frame size (mine 0x8c vs retail 0x88) and the -4 shift it puts on every esp-relative
-// offset. Retail packs 2 local dwords + buf: out@0x10, buf@0x18, and ONE slot @0x14
-// time-shared by the `reg` spill (written once at the top, reloaded to esi twice in the
-// first, index-less name block) and then by v/idx. cl gives `reg` its own home @0x18.
-// The sibling CSBI_SideTab::SerializeFields, character-for-character the same spelling
-// but whose FIRST mode-7 block already reads an idx, is 100.00 EXACT - so the shape is
-// right and the packer's choice turns on when idx first appears.
-// Tried, none moved the frame: swapping the out/idx decl order; declaring idx after the
-// first block; wrapping reg+switch in a bare block; declaring buf before reg; dropping
-// the `i32 i = idx;` copy. Declaring `reg` per-case (case 4 / case 7) DOES produce the
-// 0x88 frame - which proves the extra dword is reg's function-scope home - but it costs
-// the top-of-function spill and reschedules the first block, so it is a net loss.
-//
-// 2026-07-28 re-audit - the arithmetic says the shape CANNOT be spelled any other way.
-// cl5 sizes the frame as (function-scope locals) + (max over sibling nested blocks), and
-// packs only across DISJOINT lexical scopes: that is why `v` (case 4) and `out` (case 7)
-// already share esp+0x10 here. The three address-taken locals therefore need
-//   buf 0x80 + reg 4  (function scope)  +  max({v}, {out,idx}) = 8  =  0x8c,
-// and 0x88 is reachable only if reg has NO function-scope home, i.e. only if the world
-// pointer is reg∪idx-packed by LIVE RANGE - which retail's cl did (reg dies into esi in
-// the index-less first block, idx is born in the second) and ours will not. Re-measured
-// both escapes:
-//   * `if (g_gameReg->m_world == 0) return 0;` + per-case `reg`  -> frame 0x88, but cl
-//     keeps g_gameReg (not m_world) in eax and REMATERIALISES `[eax+0x30]` per case, so
-//     the top loses `mov [esp+0x14],eax` AND the `test`ed value can no longer double as
-//     the `return 0` (retail has no `xor eax,eax` on that exit). Scores 92.79 vs 99.89.
-//   * the same with the null test hoisted into its own bare block: identical output -
-//     the block-scope pointer is DCE'd and cl rematerialises exactly as above.
-// The current spelling is the maximum; the residue is pure stack-slot packing.
 RVA(0x000e8e00, 0x41a)
 i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
@@ -423,8 +389,6 @@ namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
 // The (right-left)/2 sites here ARE signed divides (retail `cdq; sub eax,edx; sar`),
 // unlike CSBI_WellGoo::Setup's bare `sar` - do not "unify" them.
 // @early-stop
-// Residual: the final m_topFrame guard's success/fail blocks are the opposite way round
-// (a positive gate compiles identically - tested, no change), plus lea/register naming.
 RVA(0x000e9600, 0x18c)
 i32 CSBI_SideTab::BuildStatzTabStatusBar(
     CStatusBarMgr* parent,
@@ -532,14 +496,6 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 // resolve its glyph through the "SMALLICONZ" sprite set into m_34. Returns the draw
 // gate: 0 if the tab is idle (mode 0) or the unit slot is empty, else 1.
 // @early-stop
-// 86% (zero-register-pinning + constant-materialization wall, docs/patterns/
-// zero-register-pinning.md): the whole control flow - mode dispatch, the
-// ability/badge/health-band derive, the unit-table index, the changed-value glyph
-// Lookup + range-gate - is byte-correct, BUT retail pins this->edi / val->esi and
-// uses immediate `1` everywhere, while cl pins this->esi / val->edi and CSE's the
-// constant 1 into ebx (an extra callee-save push + ebx-form stores/cmp/returns).
-// Same family wall as CSBI_StatzTabGruntBar::Update (91.7%); no source lever flips
-// the allocation. Logic complete; deferred to the final sweep (whole-hierarchy model).
 RVA(0x000e9850, 0x111)
 i32 CSBI_SideTab::BuildHandle() {
     i32 mode = m_sampleMode;
@@ -772,8 +728,6 @@ void CSBI_StatzTabArrow::SetDirectionAlt(i32 position, i32 animate) {
 // STATZ arm, so the gate is spelled `selMode != 0`); the string-to-arm binding was
 // already correct.
 // @early-stop
-// Residual: the two entry guards inline their epilogues where retail jumps both to the
-// last one; the per-arm Lookup receivers land in different registers.
 RVA(0x000ea1f0, 0x1fa)
 i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CStatusBarMgr* owner,

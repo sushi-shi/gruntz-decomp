@@ -70,10 +70,6 @@ void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefau
 // frame number. The reinterpreting casts are the authentic union access.)
 // ===========================================================================
 // @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-// the `mov [&spr],0` sinks past the arg pushes + the extra frame arg flips the
-// sprite/frame eax<->ecx allocation; identical instruction multiset, ~84%. Same
-// wall as the sibling ApplyName (89%). Logic complete.
 RVA(0x001504d0, 0x6c)
 void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     CDDrawWorker* spr = 0;
@@ -137,11 +133,6 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 // this->m_c->m_soundRegistry->map; on a hit cache it at +0x19c and return 1. __thiscall, ret 4.
 // ===========================================================================
 // @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md)
-// and NOTHING else since 2026-07-28: the miss must be the EARLY RETURN (`if (spr == 0)
-// return 0;`), not the positive `if (spr) { ...; return 1; }` - retail lays the miss
-// inline as the `jne` fall-through and reuses the already-zero eax, where the positive
-// form makes cl lay the FOUND block inline and emit a separate `xor eax,eax` tail.
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
     CDDrawWorker* spr = 0;
@@ -173,11 +164,6 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // bottom+1}; if disjoint, blit each record separately. Only one armed -> that
 // record. Each rect is {x,y,x+w,y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
 // @early-stop
-// ~74% tail-merge + regalloc wall (twin of CWwdGameObjectC::Slot34 @76%): logic/CFG/
-// the IntersectRect/UnionRect union path + the four {x,y,x+w,y+h} BltEx sites over the
-// one shared rc buffer all reproduced, but cl cross-jumps (tail-merges) the identical
-// BltEx(rc,b->m_surface,rc,...) calls where retail keeps them inline, plus a callee-saved
-// record-base coloring swap. Not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x001506b0, 0x1ec)
 void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     i32 rc[4]; // reused src+dst blit rect buffer
@@ -266,14 +252,6 @@ void CWwdGameObjectA::BltDirtyRegions(
 // then bounds-check against either the camera rect (when the 0x40000 flag is set)
 // or the plane grid limits. __thiscall, 0 args.
 // @early-stop
-// 83.1% (was 73.25). The REAL residual under the old "regalloc wall" note was that the two
-// grid extents were read at their compare sites: retail hoists BOTH (`mov ecx,[eax+0x10];
-// mov eax,[eax+0x14]`) above the first bounds test, and naming the centre/anchor reads
-// (sx/ax/sy/ay) puts the screenX load first and fixes the lea operand order. What is left
-// IS a colouring: m_layer takes esi here and edi in retail, which cascades left->eax
-// (retail esi) and forces `mov edx,[ecx+8]` where retail tests m_flags straight from
-// memory. Dropping the `e` local and every declaration order were compiled; the pair
-// does not flip.
 RVA(0x001509c0, 0xab)
 i32 CWwdGameObjectA::Test() {
     if (m_layer == 0) {
@@ -463,15 +441,6 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
 // `CObArray m_items`, so it made +0x10 look like an array vptr). Corrected there.
 // ---------------------------------------------------------------------------
 // @early-stop
-// ~97% scheduling wall. Re-audited 2026-07-27 with the identity settled: the two
-// sides emit the SAME instruction multiset, and the source's statement order is
-// already retail's order exactly - only cl's /O2 scheduler differs. It hoists the
-// three post-Init reloads (m_5c/m_60 for the m_ac/m_b0 stores, m_7c for the flag
-// fold) to the top of the block and slides the three 0x80000000 stores into the
-// zero-fill run; retail issues all three loads together, just-in-time, after the
-// m_b4 store. There is no statement permutation left to try (writing the loads
-// later is what the source already does), so this is TU-cumulative scheduler state,
-// not a source lever - `match_variants --state-trials` is the only remaining shot.
 RVA(0x00150d60, 0x14d)
 i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     CResolveNode::SetPosition(x, y); // qualified = retail direct rel32 -> 0x164790
@@ -556,16 +525,6 @@ i32 CGameObject::EnsureWorker80(AnimWorkerObj* src) {
 // up in the world's CMapStringToOb (m_0c -> +0x14 -> +0x10), then feed the found
 // handler through the matching lazy worker slot (Hit -> 80, Attack -> 88, Bump -> 90).
 // @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-// body byte-exact EXCEPT the `handlerOb = 0` slot-init lands one push early (push &out;
-// STORE; push key) where retail schedules it after both pushes (push &out; push key;
-// STORE). Measured 2026-07-28: the store DOES sink when a code-generating statement
-// precedes it (binding `OwnerMgr()->m_workerCache` or `&...->m_10` to a local puts the
-// store exactly where retail has it) - but binding the receiver also changes the
-// receiver's own codegen (`lea ecx,[eax+0x10]` / an interleaved push instead of
-// retail's `mov ecx,[edx+0x14]; add ecx,0x10` after the store), so no spelling gets
-// both halves. The un-hoisted expression is retail's receiver code; the store is the
-// coin-flip.
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
     CObject* handlerOb = 0;
@@ -597,7 +556,6 @@ i32 CGameObject::EnsureWorker88(AnimWorkerObj* src) {
 }
 
 // @early-stop
-// same `handler = 0` scheduling coin-flip as AddLogicHit.
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
     CObject* handlerOb = 0;
@@ -627,7 +585,6 @@ i32 CGameObject::EnsureWorker90(AnimWorkerObj* src) {
 }
 
 // @early-stop
-// same `handler = 0` scheduling coin-flip as AddLogicHit.
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
     CObject* handlerOb = 0;
@@ -640,31 +597,6 @@ void CGameObject::AddLogicBump(char* key) {
 // through animation states 0x50..0x53 around the inner step.
 // ---------------------------------------------------------------------------
 // @early-stop
-// cross-jump layout wall, 355 of 373 bytes. Two REAL bugs were fixed out of the old
-// "tail-merge wall" note first (it had called the whole residual non-steerable):
-//   * the notify ran on the held worker (`w->m_notify(this)`) where retail reloads
-//     (`mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`) - 4x3 bytes, -25 -> +3;
-//   * the four `m_7c == 0` gates each emitted their own 11-byte epilogue where retail
-//     jumps to ONE shared block - the `goto fail` spelling below, +3 -> -18.
-// What is left is purely cl's cross-jump/block-placement choice, and the byte
-// accounting closes exactly (ours | retail):
-//   prologue     48 | 44   (our switch-default `ja` is near, retail's is short)
-//   case 3       62 | 71   (retail keeps its own post-call tail and FALLS THROUGH
-//                           into the Dispatch tail, which retail places 2nd)
-//   case 4       50 | 70   (retail keeps its own; ours jmps to a shared tail)
-//   case 7       58 | 27   (retail jumps INTO case 8's dance at 0x15129b, sharing all
-//                           of it; ours emits a full copy)
-//   case 8       94 | 117  (retail leaves the two `m_carrier = 0` stores separate -
-//                           `mov [esi+0x98],eax` reusing the Lookup return on the
-//                           lookup-fail arm and `,edi` on the node==0 arm; ours
-//                           cross-jumps them into one)
-//   Dispatch tail 37 | 35, fail block 9 | 9
-// So retail has THREE dance copies (3, 4, and 7-into-8) where cl gives us two, and
-// keeps two stores cl merges. Measured: none of it is source-steerable - per-case
-// locals do not break the merge, and all eight source orders of the four cases were
-// compiled (best 360 at 3/4/8/7, worst 344; the natural 3/4/7/8 kept here gives 355).
-// Since objdiff refuses to score a length mismatch at all, no ordering scores either,
-// so the natural order stays. Logic is complete and every instruction is accounted for.
 RVA(0x00151150, 0x175)
 i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
     if (ar == 0) {
@@ -959,14 +891,6 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
 // (OwnerMgr()->m_childGroup->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
 // caller arg; a null key or a lookup miss clears m_98. __thiscall, ret 4.
 // @early-stop
-// Logic complete + verified (74.6%). Residual is a pure MSVC5 block-layout tiebreak:
-// retail lays the lookup-MISS block inline (fall-through of `jne`, reusing the tested
-// eax=0 for `m_98 = 0`) with the FOUND block out-of-line, and sinks the `found = 0`
-// init store to just after the two arg pushes. cl unconditionally lays the then-block
-// (found) inline (`je`) and hoists the init store; every source polarity (==0 / !=0 /
-// if-else / temp-hit) canonicalizes to the same found-inline shape (permuter: no
-// change). Not source-steerable.
-// ---------------------------------------------------------------------------
 RVA(0x00151b90, 0x70)
 i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (gate == 0) {

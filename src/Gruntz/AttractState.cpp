@@ -90,14 +90,6 @@ void CAttract::ReleaseResources() {
 // its voice + latch the idle timeout (or a 0x1f40 default), then poke each g_actorList
 // actor's slot-5 virtual. Returns 1. Re-homed from src/Stub/GapFunctions.cpp.
 // @early-stop
-// 98.3%: the whole 425B body - the /GX frame, the ShowCursor roll, the TITLE%d format +
-// RunTitleSeq, the page fade, the inline MS-CRT LCG + %2 pick, the wsprintfA, the
-// CMapStringToOb::Lookup host (re)acquire, the sound/idle branch and the actor slot-5
-// loop - is byte-faithful. The only residue is a pair of register-selection coin-flips:
-// retail seats m_c in eax across the Lookup argument setup where cl uses ecx, and loads
-// the actor's vptr through eax where cl uses edx. A pure regalloc choice (operand-order /
-// spelling variations do not flip it; docs/patterns/zero-register-pinning.md family).
-// Deferred to the final sweep.
 RVA(0x00014120, 0x1a9)
 i32 CAttract::Vslot09(i32 arg) {
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__

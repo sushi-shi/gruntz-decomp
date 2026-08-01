@@ -218,12 +218,6 @@ static void GruntScratchTeardown() {
 // ---------------------------------------------------------------------------
 // CGrunt::RunEntranceMove()   @0x67850   (ret 0)
 // @early-stop
-// large-state-machine plateau: the armed-but-not-running sub-player gate, the
-// scratch-resolver "D" re-latch (ScratchResolve + the scratch CString teardown),
-// the on-arrival HUD-stat-sprite creation, the entrance-cell frame re-stamp, and the
-// +0x1a0 move-mode dispatch are reconstructed in shape/order. Residue is the
-// scratch loop-strength-reduction (shared, no source spelling), the short-circuit
-// gate branch ordering, and the cross-arm regalloc. Deferred to the final sweep.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -297,10 +291,6 @@ i32 CGrunt::RunEntranceMove() {
 // homogeneous-predicate-chain-and-shared-tail.md) instead of inlining 3 epilogues -
 // CFG + tail now byte-exact (35%->83%).
 // @early-stop
-// load-result register coin-flip: the resolved `other` lands in edx where retail
-// reuses the dead index reg eax (`mov eax,[edx+eax*4+0x1c]`), cascading the edx/eax
-// pairing through the m_17c/m_180 loads. Source-invariant on a leaf (reorder /
-// grid-base-first / typed-grid all keep edx). Deferred to the final sweep.
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     CGrunt* other = m_tileMgr->m_grid[col * TM_GRID_COLS + row];
@@ -521,14 +511,6 @@ i32 CGrunt::LoadEntranceConfig() {
 // up the tile under the grunt's HUD point and either claims it (SetTile drop +
 // owner) or marks the entrance committed (m_1fc=1). __thiscall, ret 0.
 // @early-stop
-// scheduling tail: logic/CFG/member-offsets/calls exact (same entrance cell-math
-// `(3*col+row+0xb)*0x68` - cl folds the +0x478 ItemName offset into the index because
-// 0x478 == 0x68*11 exactly; SetGeoSourceR/SetGeometry/CString::GetBuffer/SetAnimFrame/
-// LookupTile/SetTile all match). Residue = retail re-materializes the m_1a0 sub-object
-// pointer (`add eax,0x1a0`, then [eax+0x28]/[eax+0x20]) where cl indexes m_38 directly
-// at [eax+0x1c8]/[eax+0x1c0]. Spelling the sub-object as a `CAniAdvanceCursor*` local
-// does NOT flip it - it costs ~7 points (96.9 -> 90.1, measured) by also rewriting the
-// call-site scheduling. Same entropy-class as ResetGeometry @0x616e0.
 RVA(0x00068370, 0x14c)
 i32 CGrunt::RearmEntranceDrop() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -579,13 +561,6 @@ i32 CGrunt::RearmEntranceDrop() {
 // on-screen spawn cue when in view, drive the _ITEM geometry, and re-stamp the
 // entrance-cell frame name. Returns 0.
 // @early-stop
-// ~98.7%: FRAME NOW REPRODUCED. The dead m_entranceCell.reason spill (`sub esp,0xc`) IS
-// a by-value 3-int struct copy (GruntEntranceCell cell = *ptr) - MSVC5 loads all
-// three, dead-stores `reason`; the prior "un-reproducible DCE miss" verdict was wrong
-// (a 3-explicit-locals source DCEs it, a struct copy does not). GruntStrGetBuffer is
-// the real __thiscall CString::GetBuffer (ecx=&cell). Residue = an edx<->ecx coin-flip
-// in the m_prevEntranceDesc/SetGeometry(m_poseItem[GRUNT_ITEM1]) tail + the m_5c/m_60 load-order
-// schedule in the PlayMoveSoundAtTile block (pure regalloc, no source lever).
 RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     StepAnimDispatchB();
@@ -679,15 +654,6 @@ i32 CGrunt::StartBombGruntRun() {
 // WALK/IDLE walking set. Both paths finish by re-stamping the current entrance-cell
 // frame keyed by the active anim type code ("D" = walk pose, "A" = idle pose).
 // @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-// every cell operator=, the 8 Lookup blocks, the cue, the ScratchResolve/strcmp tail
-// and the entrance-cell frame re-stamp are byte-correct in shape/offsets/symbols/CFG.
-// Residue (compounded over 8 lookups): retail reuses the consumed `enable` arg slot as
-// the single lookup `out` local (esp+0x20, 21 refs) under a `sub esp,0xc` frame that
-// also spills a dead `reason=m_entranceCell.reason`, and SINKS each lookup's `out=0` store
-// past the &out/key pushes; cl allocates a fresh out slot (esp+0x14, no frame) and
-// hoists the zero-init. Source-invariant (the documented Lookup-family scheduling
-// coin-flip); deferred to the final sweep. ~75%.
 RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     CAniElement* _out;
@@ -831,14 +797,6 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // bumps the HUD z-clamp (m_object->m_74 = m_60 + 0x186a0; m_8 |= 0x20000).
 //
 // @early-stop
-// reloc-masked-extern plateau: CFG, every member offset/gate, the board index math
-// (stride 7, attr bit 0x80), the z-clamp constant 0x186a0, and all call shapes are
-// byte-faithful. Residue = the engine callees reached through incremental-link
-// thunks (SetGeoSourceR/SetGeometry/GetBuffer/SetAnimFrame/LookupAnimSet, the
-// CreateHealthSprite/Stamina/Toy creators, LoadGruntTypeTable/SetEntrancePos/the apply
-// + CommitArrivalMove thunks) are unnamed externals, so their `call rel32`
-// displacements pair to differently-named retail thunks and score fuzzy. Naming
-// that whole referent set is a final-sweep task.
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -918,17 +876,6 @@ i32 CGrunt::UpdateEntranceAnim() {
 // geometry + first frame). __thiscall, ret 0.
 //
 // @early-stop
-// global zero-pin regalloc wall (~1.8%): the J-block `sub esp,0xc` frame is NOW
-// reproduced (GruntEntranceCell by-value copy) and GruntStrGetBuffer is the real
-// __thiscall CString::GetBuffer. The alignment-collapsing residue is a GLOBAL
-// register-allocation decision: retail SINKS `xor ebx,ebx` (ebx=0 for the finalize
-// sprite-clear/m_1a4 stores + the GetBuffer arg) to after the 10-way strcmp cascade,
-// so every arm tests with `test eax,eax`/`mov bl,[edi]` scratch; my 0x850 body's many
-// zero-uses drive cl to HOIST `xor ebx,ebx` to entry, so all 10 arms emit `cmp eax,ebx`
-// and the literal byte can't land in bl. Proven not locally steerable: a standalone
-// repro of the exact first-check + `bool eq` cascade does NOT pin (uses test) - the pin
-// only emerges at this body's size/zero-density. No source lever; the entry-vs-sunk
-// materialization desync rolls the faithful carcass to ~2%. Final sweep.
 RVA(0x000692f0, 0x850)
 i32 CGrunt::StepArrivalCommit() {
     if (m_entranceCommitted == 0) {
@@ -1151,11 +1098,6 @@ finalize:
 // DEATHZ_UNFREEZE geometry, fire the on-screen 6-arg entrance cue (0x35c) when the
 // grunt's HUD point is in view, and set the +0x240/+0x23c latches. Returns 0.
 // @early-stop
-// callee-save rematerialization wall (docs/patterns/shrink-wrapped-callee-save-push):
-// retail reloads m_lastTilePxX/Y for CommitArrivalMove, so the tile-read uses 4 regs
-// (no ebp push); cl caches them in a callee-saved reg, pushing ebp and shifting the
-// 64-bit idle-timer compare's regalloc. Body byte-exact apart from that one-register
-// cascade (~87.4%). Logic complete; deferred to the final sweep.
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1212,18 +1154,6 @@ i32 CGrunt::FinishEntranceMove() {
 }
 
 // @early-stop
-// jump-table-placement wall (0.4% stub -> 22%): logic is complete and correct -
-// the intro (bute GetDwordDef -> m_400 double, the board tile-attr sample, the
-// sel = g_gameReg->m_curState->+0x20 selector) is byte-exact, and BOTH dense switches
-// lower to the retail two-level byte-index+jptr tables with the 8 compass bodies
-// laid out in retail's .text order (case groups reordered per
-// docs/patterns/switch-cases-source-order.md, +6% over ascending-value order).
-// Residual: cl (this build) emits each switch's inline jump-table DATA *between*
-// the indirect `jmpl` and the case bodies, whereas retail pools BOTH switches'
-// tables past the `ret` at the function end (0x6a4a0+, outside the 0x43d body) -
-// a ~200-byte data insertion in the middle that shifts every case body offset and
-// desyncs objdiff's alignment. Not source-steerable in MSVC5 (same family as
-// docs/patterns/switch-jumptable-separate-comdat.md). Final sweep.
 RVA(0x0006a060, 0x43d)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_400 = 16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
@@ -1431,12 +1361,6 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 // ---------------------------------------------------------------------------
 // CGrunt::StepAnimDispatchB()   @0x6a6d0   (ret 0)
 // @early-stop
-// large-state-machine + zero-register-pinning plateau: the 12-way type-code cascade,
-// the m_1a0 mode sub-dispatch, the K arrival arm, the coord recycle, and the
-// LookupAnimSet re-latch are reconstructed in shape/order. Residue: retail pins the
-// strcmp sentinels 0/-1 in callee-saved ebx/ebp
-// (docs/patterns/zero-register-pinning.md), the scratch loop-strength-reduction, the
-// grid/board raw-offset chains, and cross-arm regalloc. Deferred to the final sweep.
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::StepAnimDispatchB() {
     bool eq;

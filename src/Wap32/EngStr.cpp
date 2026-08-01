@@ -10,10 +10,6 @@
 // worker with the config's font draw-method pointer spliced in as the 4th arg.
 // 0x115440.
 // @early-stop
-// tail-merge wall (identical-return-epilogue-tailmerge.md): the BODY is byte-
-// exact, but retail emits the null-guard `ret` INLINE (test;jne body;ret) while
-// cl tail-merges the early-out into the body's shared `ret` (test;je end). No
-// source ordering (if(!cfg)return / ==0 / else) splits the bare void ret here.
 RVA(0x00115440, 0x45)
 void EngStr_DrawText(
     CDDrawSurfaceMgr* obj,

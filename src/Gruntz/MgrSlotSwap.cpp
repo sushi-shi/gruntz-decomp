@@ -9,18 +9,6 @@
 
 // ---------------------------------------------------------------------------
 // @early-stop
-// Register-naming wall (~88%, structure byte-exact). Retail has higher register
-// pressure: it keeps mgr(edi)/idx/grp live, spills newTok to a stack local
-// ([esp+0x1c]/[esp+0x10]) and RE-WALKS the m_world->m_level->m_5c->cells chain for the
-// write instead of CSE-ing the cell address. Two levers reproduced that shape and
-// took this 54.9 -> 88: (1) cache g_gameReg in a local `mgr` (raises pressure);
-// (2) idx/grp read-once locals shared between the cell index and the Notify args;
-// (3) crucially, WRITE the cell through the un-cached global g_gameReg while
-// READING via mgr -- this defeats MSVC's read/write address-CSE, forcing the
-// spill+rewalk (62 -> 88). Residual is pure regalloc naming: retail mgr=edi/idx=eax/
-// grp=ecx vs base mgr=ecx/idx=edx/grp=eax, plus the idx leaf-read scheduled after
-// W/L (interleaved) vs hoisted before -- an unsteerable allocator/scheduler coin-flip
-// at identical instruction count. See docs/patterns/cse-defeat-uncached-global-rewalk.md.
 RVA(0x001128b0, 0x88)
 i32 CSlotHolder::DoSwap() {
     i32 oldTok = this->m_34;

@@ -170,11 +170,6 @@ i32 CMenuState::Vslot06() {
 // argument is a BRANCHED select not `e ? 2 : 1` (which folds to xor/setne/inc), and the
 // three success paths share ONE bottom `return 1` epilogue instead of inlining two.
 // @early-stop
-// 99.88%: ONE modrm byte left - the second LoadPageImage's receiver chain takes edx in
-// retail (`mov edx,[esi+0xc]`) where cl reuses the dead `this` register esi. Seven
-// receiver spellings measured (menuRoot()/m_world/this->m_world/locals/&&-chain/a
-// re-assigned mode local); menuRoot() is the unique spelling that gets the FIRST call's
-// chain right, and none of them moves the second.
 RVA(0x000fa1f0, 0xc6)
 i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     static_cast<void>(a);
@@ -219,11 +214,6 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
 // Bail (0) if the menu root (m_c), state machine (m_8), or active state (m_2c) is
 // null; otherwise flip the menu page's render target and return 1.
 // @early-stop
-// regalloc chain-staging coin-flip (docs/patterns/zero-register-pinning.md): body
-// byte-identical except ONE modrm in the m_04->m_10->m_2c->Flip chain - retail
-// stages the penultimate deref through eax (8b 40 10) then ecx, the recompile
-// switches to ecx one deref early (8b 48 10). The SAME inline chain matches in
-// Vslot07 (different surrounding pressure) - a pure allocator choice, no source lever.
 RVA(0x000fa300, 0x3a)
 i32 CState::RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_world) {
@@ -295,10 +285,6 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
 
 // 0xfa550: two-channel type-2 emitter (4 args). Blt channel A onto channel B.
 // @early-stop
-// 98.7% - logic byte-faithful. Residual is store/arg scheduling: cl hoists the
-// m_18=a1 temp store before the Add-arg push where retail hoists m_1c=a2, and the
-// deferred winapi_17e620 branch picks ecx/edx vs retail's eax/ecx for the two arg
-// temporaries. Both are /O2 instruction-scheduling choices, not source-steerable.
 RVA(0x000fa550, 0x10c)
 i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
@@ -363,12 +349,6 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 
 // 0xfa790: two-channel type-3 emitter (3 args).
 // @early-stop
-// 99.1% - logic byte-faithful. Residual is the chanA/chanB esi<->edi regalloc
-// swap (docs/patterns/zero-register-pinning.md family): retail gives the
-// longer-lived cached channel (chanB) the preferred callee-saved esi and the
-// re-derived channel (chanA) edi, while cl's greedy allocator assigns them the
-// other way round; identical structure, a few push/mov reg bytes differ. Not
-// source-steerable (computation order is pinned by the chain walk).
 RVA(0x000fa790, 0x104)
 i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
@@ -417,9 +397,6 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
 // the CState resource-chain facet - so it IS a CState-level helper. m_faderMgr is the
 // CState +0x10 member; walks the m_world (+0x0c) draw-target chain directly.
 // @early-stop
-// 98.4% - logic byte-faithful. Same chanA/chanB esi<->edi regalloc swap as
-// 0xfa790 plus the deferred-branch arg-temp register choice (see those notes);
-// /O2 scheduling/regalloc, not source-steerable.
 RVA(0x000fa8f0, 0x118)
 i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     CFaderMgr* mgr = m_faderMgr;
@@ -515,18 +492,6 @@ i32 CState::Vslot07() {
 }
 
 // @early-stop
-// /GX frame-packing artifact (~96%): the instruction stream is byte-faithful, but
-// retail reserves `sub esp,0x14` and builds the splash block's tail two dwords in
-// the transient arg-push area, where this cl reserves the whole block (`sub esp,
-// 0x1c`), shifting every esp-relative displacement by 8; plus the EH scope-table
-// symbol is named/represented differently by the delinker.  Logic is complete.
-// CState's slot-8 base virtual (data-ref @0x1ea23c == ??_7CState@@6B@+0x20;
-// base-called by the CBootyState/CMultiBootyState/CImageState/CPlay slot-8
-// overrides): hide the cursor, gate on the level being ready, draw the "loading
-// imagez" splash (once), resolve the GAME_IMAGEZ rez and load it into the
-// image-set, then seed the input latches. (Ex the CMgrPersistObj fake facet's
-// "Init" + a SYMBOL name override - both DISSOLVED by the +0x1a8..+0x1b0
-// family re-base.)
 RVA(0x000face0, 0x17c)
 i32 CState::InputVirtual() {
     if (m_world == 0) {

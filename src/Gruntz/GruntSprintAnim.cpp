@@ -14,23 +14,6 @@
 // BuildGruntSprintAnimation @0x019920
 // ===========================================================================
 // @early-stop
-// regalloc/scheduling wall (~80%): complete + correct, verified instruction-by-
-// instruction vs retail. The prologue, /GX exception frame (sub esp,0x18; the EH
-// state thread at [esp+0x30]/0x34/0x3c), the g_gameReg->m_spriteFactory lookup, the whole
-// CString jump-table build ("GRUNTZ_NORMALGRUNT_" + dir + "_WALK"), the two
-// operator+ temps, both CacheFirstFrame/ApplyLookupGeometry receivers, and the
-// this=ebp / array=esi induction all match byte-for-byte (modulo reloc names).
-// Residual: in the {m_58,m_50,m_4c} field-store block retail caches the sprite
-// pointer in eax across the three stores (one `mov eax,[esi]`), while this /O2
-// recompile re-reads m_204[i-1] (=[esi]) per store because the store to
-// spr->m_58 may alias the array slot - MSVC's reload-vs-cache choice here is a
-// register-pressure artifact (all four callee-saved regs are pinned to
-// this/array/const-1/counter, so `spr` is memory-homed; homing it in a `spr`
-// local instead flips array<->spr and regresses to ~73%). Plus the inline
-// jump-table base (jmpl *0x1c4(,%eax,4) vs our $L DIR32 reloc) and the loop-bound
-// strength-reduction form ((i-1)<8 vs i<=8) are documented scoring/scheduling
-// walls. See docs/patterns/pin-local-for-callee-saved-reg.md +
-// jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1f0)
 i32 CBootyState::BuildGruntSprintAnimation() {
     CShadeTable* h = g_gameReg->m_spriteFactory->GetSel(0, 0);

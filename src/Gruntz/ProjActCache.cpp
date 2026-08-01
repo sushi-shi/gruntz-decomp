@@ -16,16 +16,6 @@
 // the container error sink, returning 0.
 // ===========================================================================
 // @early-stop
-// Partly cracked (measured 2026-07-27, 58.21 -> 63.58) by the exit-block-layout test:
-// base had 4 rets against retail's 3. The extra one was the final child splice written
-// as `if (selfdir) nn->m_0 = m_20; else nn->m_4 = m_20;` - two stores, each followed by
-// its own success epilogue. Retail 0x1935eb SELECTS the slot (`lea eax,[ecx+4]; je;
-// mov eax,ecx`) and stores once, so there is one success tail; the same slot-select
-// appears at 0x1935da and in both descent loops, which is why the children are now
-// modelled as the real `m_child[2]` array they are.
-// Residual is register assignment: cl puts the hot pointers in different callee-saved
-// registers than retail (this->ebx vs ebp, key->edi vs esi, zero->ebp vs ebx) and
-// spills 4 fewer dwords (0x78 vs 0x88 frame). Deferred to the final sweep.
 RVA(0x001933b0, 0x28f)
 void* CProjActMap::Insert(const char* key, void* value) {
     i32 path[28];

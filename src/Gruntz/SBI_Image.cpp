@@ -25,13 +25,6 @@ VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
 // fields, then (if a key is supplied) look up the config record through the host
 // map and latch its value into m_30. Returns whether a non-zero value was latched.
 // @early-stop
-// ~65% (zero-register-pinning INVERSE wall): logic + every field store/value/guard
-// is correct, but with four `== 0` null tests and two `field = 0` stores MSVC5 here
-// PINS 0 in edi (extra push edi/pop edi + `cmp edi,reg` everywhere) while retail
-// uses `test reg,reg` + immediate `mov [field],0` stores. Documented coin-flip
-// regalloc wall (docs/patterns/zero-register-pinning.md, inverse case) - "no
-// init-list/assignment/reorder lever flips it". Also a reloc-masked `call Lookup`.
-// Deferred to the final sweep.
 RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
     CStatusBarMgr* owner,
@@ -113,11 +106,6 @@ i32 CSBI_Image::Render() {
 // the base leg (CStatusBarItem::SerializeFields). Re-attributed from CSBI_MenuItem
 // (dossier #16: vtbl 0x1eac0c slot [1] thunk 0x2077).
 // @early-stop
-// ~85% regalloc + stack-packing wall (CTimer::Serialize family): the switch, the
-// vtable transfer, the strlen/Lookup/frame-range probe + the memset/reverse-lookup are
-// byte-correct. The residual is a register-naming coin-flip (retail pins ar in
-// ebx + this in esi; the recompile swaps them) plus the dead-spill-slot packing
-// (retail's temps share a slot, shifting the esp+ frame offsets by 4). Deferred.
 RVA(0x000e6e40, 0x17c)
 i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     if (ar == 0) {

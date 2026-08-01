@@ -103,13 +103,6 @@ void CCheatMgr::Empty() {
 // the named `found` local is what makes our cl emit the EXPLICIT `and` + test
 // (vs the fused `test reg,reg` a plain inline expression yields).
 // @early-stop
-// regalloc/instruction-selection wall (98.57%) - complete & correct: the whole
-// body byte-matches except the 1-region duplicate guard, where our cl spills the
-// masked `found` to its stack slot (`mov [esp+N],eax`) + uses ecx for the value,
-// while retail keeps it register-only (`and eax,edx; test eax,eax`, no spill).
-// Same compiler; no source spelling reproduced the no-spill explicit AND (the
-// inline forms all fold to a fused `test reg,reg`, scoring lower at 97.76%). See
-// docs/patterns/branchless-mask-and-explicit-vs-fused-test.md.
 RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     void* existing = 0;
@@ -167,9 +160,6 @@ void CCheatMgr::RegisterCheats() {
 // code -> "Value" WM_COMMAND (flag 1 when "NonCheat"==1, else 0). The two
 // destructible CString temps force the /GX EH frame.
 // @early-stop
-// CString/EH + SYSTEMTIME-WORD wall: logic + control-flow + every bute/AddCheat
-// extern correct; the residual is the /GX EH-state plateau plus the wYear/wMonth
-// WORD reads (retail `mov dword + and 0xffff` vs cl's movzx). Not source-steerable.
 RVA(0x00022e60, 0x1be)
 void CCheatMgr::LoadCheatConfig() {
     CString defStr(static_cast<const char*>(g_emptyString));
@@ -210,9 +200,6 @@ void CCheatMgr::LoadCheatConfig() {
 // post the WM_COMMAND to the owner (m_owner) and update the armed-cheat state.
 // The by-value CString forces the /GX EH frame.
 // @early-stop
-// CString/EH plateau: logic + the branchless Lookup mask-AND idiom + the SetAt
-// de-obfuscation loop are byte-exact; the residual is the /GX EH-state tracking
-// around the by-value CString teardown. Not source-steerable.
 RVA(0x00023090, 0xfc)
 BOOL CCheatMgr::CheckCode(CString code) {
     code.MakeUpper();

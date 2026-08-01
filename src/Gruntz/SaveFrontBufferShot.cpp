@@ -22,9 +22,6 @@ void SaveFrontBufferShot(
 }
 
 // @early-stop
-// identical-return-epilogue tail-merge wall (docs/patterns): cl shares one pop;ret
-// tail across the two null guards; retail emits the inline ret at each site. Deref
-// chain + 6-arg re-push forward are byte-faithful.
 RVA(0x00114f00, 0x3e)
 void SaveFrontBufferShotImpl(
     Utils::RegistryHelper* bute,

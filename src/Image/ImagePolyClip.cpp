@@ -152,19 +152,6 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
 }
 
 // @early-stop
-// regalloc + x87-schedule wall (~36%, complete + correct - signature and structure
-// recovered from the retail callee + its three real callers, 2026-07-12). The pivot
-// resolution, the centered-box extents, the per-corner 2D rotation+scale+translate,
-// the source-quad texel assignment, and the 10-arg RotateRasterize hand-off (clip
-// default -1,-1,-1,-1) are all faithful: the prod[4]/mtx[4] ClipVtx pair reproduces
-// retail's twin 0x1c-stride scratch arrays and lifts the frame to sub esp,0x104 (vs
-// retail 0x100). The residual is two coupled MSVC5 codegen walls not source-steerable:
-// (1) retail colours the hot loop over FOUR callee-saved regs (ebx/ebp/esi/edi) on a
-// 0x100 frame; cl uses one fewer + a 0x104 frame, shifting every [esp+N] local/arg
-// offset by 4 across the whole body; (2) the software-pipelined fld/fxch/fstp corner
-// schedule (retail recomputes products and re-fxch's per store; cl hoists) - the same
-// x87 wall as the sibling RotateRasterize 0x146550 and CFaderRadial::Build. permute
-// cannot grow the frame or recolour, so it does not apply.
 RVA(0x00145f60, 0x242)
 void ImageRotateBlit(
     i32 destX,
@@ -245,13 +232,6 @@ void ImageRotateBlit(
 // [a3 (top) .. a5 (bottom)] in four inlined Sutherland-Hodgman passes.
 // ===========================================================================
 // @early-stop
-// x87-schedule wall (docs/patterns/x87-fp-stack-schedule.md): the per-edge
-// interpolation (slope via fdivp, the clip*slope+base lerp) is reconstructed
-// byte-for-structure, but MSVC5's exact fld/fxch/fdivp/fmulp ordering across the
-// four near-identical inlined passes does not reproduce from this C spelling, and
-// the int->float arg conversion's slot reuse + the repeated float compares differ.
-// Clip topology, edge selection, the ping-pong buffers and the /28 vertex-count
-// magic divide are all correct; the FP scheduling parks it. Final-sweep candidate.
 RVA(0x001461b0, 0x399)
 i32 ImagePolyClipRect(
     ClipVtx* poly,
@@ -387,17 +367,6 @@ i32 ImagePolyClipRect(
 }
 
 // @early-stop
-// x87 scheduling wall (~53%, complete + correct; RE-PROVEN 2026-07-05 - the old
-// "25-35%" note was stale). Dominant residual confirmed via --diff: retail's per-edge
-// crossing lerp RE-COMPUTES the division (cur->x - prev->x) and reloads cur->x/prev->x
-// for EACH of the three interpolated attributes (x87 stack pressure won't hold `t`),
-// emitting its own fld/fld/fsub/fxch/fsub/fdivp/fmulp/fadd interleave per attribute;
-// this build computes `t` once and reuses it (fdivp once + fmul st,st(1)). MSVC5 does
-// not expose that x87 recompute/fxch schedule to source ordering - same wall as the
-// sibling ImageRotateBlit 0x145f60 and CFaderRadial::Build. Secondary steerable diffs
-// (the clip-crossing `(A>=B)!=(C>=B)` materializes a 0/1 bool where retail re-branches
-// on fcom; the clipFlag `-1` compares against a memory operand not an imm) are below
-// the x87 ceiling and not worth chasing per the x87 re-prove-and-move doctrine.
 RVA(0x00146550, 0x4ca)
 i32 RotateRasterize(
     ClipVtx* verts,
@@ -540,19 +509,6 @@ i32 RotateRasterize(
 }
 
 // @early-stop
-// x87/regalloc scheduling wall (~50%). Retail keeps the ebp frame here (push ebp;
-// mov ebp,esp; locals via [ebp-N]) - that is cl's own per-function FPO decision under
-// plain /O2, NOT a compiland flag: the same object is frameless in WarpIsPow2 and
-// ProjectWallQuad. The ex per-unit `framed` (/Oy-) profile this body used to get was
-// only possible while it sat in a one-function TU of its own, and it is gone with the
-// merge (2026-07-29): 49.45 framed -> 50.50 base, so it was not even buying anything.
-// Residual is regalloc + x87: retail
-// keeps minY/maxY MEMORY-resident ([ebp-8]/[ebp-4], immediate stores) under the edge-
-// build's x87 register pressure while this /O2 build registers minY in esi, and the
-// per-edge fixed-point gradient build is the same MSVC x87 fild/fmul/__ftol pipeline
-// interleave + ~15 global-scratch reloc operands as the sibling FP rasterizers - not
-// source-steerable from clean C. The three inner pixel loops (copy/skip-zero/skip-
-// colorkey), the surface lock/unlock and the span u/v interpolation match by shape.
 
 // The row cursor advances by the surface PITCH (bytes) while the span is written as
 // 16bpp pixels - the byte-row -> word-span conversion is the surface API's, so it
@@ -777,16 +733,6 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
 // maxYi, reads the two edge x's, orders them and `rep stosw`s the span with `color`,
 // stepping the row base by the surface pitch. Finally Unlocks the held surface. ret 1.
 // @early-stop
-// FRAME + FP-scheduling + stack-slot wall (~57%): logic, offsets and the reloc-masked
-// Lock/Unlock/ftol are faithful. Retail keeps an ebp frame here and reuses the two
-// incoming arg slots ([ebp+8]/[ebp+0xc]) as the prev/cur temps, where our cl (a) picks
-// FPO for this body and (b) spills to fresh negative locals; the x87 endpoint
-// evaluation and the edge-slope idiv also schedule differently. The frame used to be
-// forced with a per-unit `framed` (/Oy-) profile on a one-function TU (60.10); that TU
-// was a shard of THIS object, which retail compiled at plain /O2 (WarpIsPow2 and
-// ProjectWallQuad in it are frameless), so the flag was buying 3 points with a false
-// partition. Merged 2026-07-29, 60.10 -> 57.03. The remaining lever is a source
-// spelling that makes cl keep the frame, not a compiland flag. topic:wall.
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     ClipVtx* prev = &verts[count - 1];
@@ -882,15 +828,6 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
 #pragma intrinsic(atan2, sin, cos, sqrt, fabs)
 
 // @early-stop
-// x87-spill wall (37.46). CORRECTNESS FIX 2026-07-28 (jcc_sieve OTHER): both vertex
-// passes rewrite each record IN PLACE and the translate pass STARTS OVER at record 0 -
-// we were storing to `v[-8]/v[-7]`, i.e. 32 bytes BEFORE the (x,y) just read (out of
-// bounds on the first iteration), and letting the translate pass run over records 3..6.
-// Both loop guards now match retail's strength-reduced signed `cmp eax,g_rasterVtxB+0x74
-// / jl`. The transcendentals inline (the #pragma intrinsic above - fpatan/fsin/fcos/fsqrt
-// match retail). Remaining: our 7 double locals spill to an 8-aligned ebp frame
-// (`and esp,-8`) while retail keeps the whole transform on the x87 stack, frameless.
-// Needs the FP-temp restructure (fewer live doubles across statements).
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,

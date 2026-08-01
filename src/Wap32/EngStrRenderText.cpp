@@ -5,17 +5,6 @@
 #include <Font/Font.h> // canonical FontRenderer + CRect (RenderText IS DrawWrapped @0x17a460)
 
 // @early-stop
-// WapRect-by-value wall CRACKED (53 -> 60): the two render-arg builds match retail exactly.
-// Retail SPLITS the two by-value rect builds - the shadow pass INLINES a 4-mov copy of the
-// local sh, the main pass CALLs the operator= 0x115b30 (the "Copy" reloc). The dissolve keeps
-// that split: the shadow's rect is passed as a CRect lvalue (*(CRect*)&sh) so the trivial
-// copy ctor inlines, while the main pass's `CRect rect; rect = *rc;` keeps the EXTERNAL
-// operator= -> a call. The rect-slot collapse drops sub esp,0x20 -> 0x10 so every [esp+N]
-// realigns; all 10 callees (SetFont/CopyRect/OffsetRect/SetColor x2/CString x2/DrawWrapped x2
-// + the CRect Copy) pair. Residual: the font-size sparse switch byte-index-table + jump-table
-// are separate $L COMDATs (delinker-inline artifact, docs/patterns/
-// switch-jumptable-separate-comdat.md) plus a 2-byte `add eax,-100` imm8-vs-imm32
-// encoding in the switch prologue - not source-steerable.
 RVA(0x00115930, 0x15b)
 i32 EngStr_RenderText(
     void* self,

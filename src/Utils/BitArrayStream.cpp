@@ -27,12 +27,6 @@ ostream& operator<<(ostream& accum, const zBitVec& bits) {
         accum.flags(saved);
         accum.osfx();
         // @early-stop
-        // 91.5%: size 181 = retail, relocs 6/6, instruction ORDER exact. The only
-        // residual is that retail interleaves `pop ebx/ebp/esi` into the flags-store
-        // sequence and cl emits them after the osfx call - epilogue pop scheduling.
-        // (A 36-cell matrix found `osfx(); flags(saved);` scores 93.87, but that emits
-        // `call osfx` BEFORE the flags store, inverting retail's proven order - a
-        // higher-scoring lie, not a match. Rejected.)
     }
     return accum;
 }

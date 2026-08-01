@@ -130,10 +130,6 @@ void CTimer::Reset() {
 // via the constant-divisor magic-division chain.
 // ---------------------------------------------------------------------------
 // @early-stop
-// big function (605 B): the magic-division decode chain + the g_gameReg notify
-// dispatch through the FindByKey helper; reconstruction is logically complete
-// but the leading-zero-guard branch scheduling + 64-bit clamp regalloc plateau.
-// Deferred to the final sweep / a leaf-first redo.
 RVA(0x0009bca0, 0x25d)
 i32 CTimer::Tick(i32 dt) {
     if (!m_running) {
@@ -317,15 +313,6 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 // Read(+0x2c)/Write(+0x30) virtuals.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc wall (~88%): retail pins `this`->ebp and `kind`->ebx; our cl swaps
-// them (this->ebx, kind->ebp), a register rename that cascades through every
-// per-block `cmp kind` + `lea edi,[this+N]`. Logic (call mapping, slot mapping,
-// pointer-advance, ret 0x10) exact; see docs/patterns/zero-register-pinning.md.
-// The three kind dispatches are SWITCHES, not `if (kind==4) ... else if (kind==7)`.
-// Retail's ladder is `cmp ebx,4 / je <case4> / cmp ebx,7 / jne <out>` with the case-7
-// body as the FALLTHROUGH and case 4 sunk below it - which is a switch's layout, not an
-// if-chain's (an if-chain keeps its first arm inline, which is what we emitted).
-// 87.94 -> 99.43 on this one edit.
 RVA(0x0009c1c0, 0xdb)
 i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     if (ar == 0) {

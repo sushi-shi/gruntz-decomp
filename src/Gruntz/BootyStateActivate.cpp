@@ -107,9 +107,6 @@ void CBootyState::ReleaseResources() {
 // enabled by g_sndEnabled) re-trigger it on a rate-limited timer keyed off the
 // g_killCueClock frame counter vs the entry's last-played stamp + interval.
 // @early-stop
-// regalloc wall (~95%): retail holds `set` (reg->m_world->m_soundRegistry) in eax and the play entry
-// `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and spills/reloads
-// `res` at the Play call. Logic + all externs/strings named/folded.
 RVA(0x00018d30, 0xcd)
 i32 CBootyState::Vslot09(i32) {
     while (ShowCursor(FALSE) >= 0)
@@ -142,10 +139,6 @@ i32 CBootyState::Vslot09(i32) {
 // DirectSound buffer is playing, re-trigger it (CloneAndPlay) and spin the audio-kill
 // voice reaper until the buffer stops. Returns 1.
 // @early-stop
-// regalloc register-assignment wall (~79%): logic byte-exact, but retail keeps the
-// looked-up cue in esi (this in edi), whereas cl allocates this->esi and strength-
-// reduces &found->m_10 into edi. A pure esi<->edi coin-flip on two loop-live base
-// pointers; not steerable.
 RVA(0x00018e40, 0x81)
 i32 CBootyState::FrameSlot28(i32) {
     void* obj = 0;
@@ -173,8 +166,6 @@ i32 CBootyState::FrameSlot28(i32) {
 // CState) - so it could never have been called, as it is, on a CBootyState's own `this`.
 // Its ONLY caller is 0x18830 = CBootyState's vtable slot 1, via `mov ecx,esi`.
 // @early-stop
-// 88.1%: logic byte-faithful. Residual is the branchless-select codegen for the per-letter
-// `(i != m_letterIdx) ? 1 : 3` kind + the per-iteration g_gameReg reload scheduling.
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CGruntzMgr* reg = g_gameReg;
@@ -224,9 +215,6 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
 // still holding the 1 the `m_sortKey != 1` comparisons materialised - so it returns
 // 0/1, not void.
 // @early-stop
-// regalloc wall (~80%): the float branch is byte-exact (sin/cos/__ftol chain matches);
-// the residual is the two integer letter-loops + the final latch block, a pure
-// register-allocation coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x000196c0, 0x1d3)
 i32 CBootyState::StepGlitterAnim() {
     if (m_initGate) {
@@ -307,9 +295,6 @@ i32 CBootyState::StepGlitterAnim() {
 // letters one cell (+/-4 px) along its compass direction (an 8-way jump table), flagging
 // any that leave the [0,0x280]x[0,0x1e0] play field.
 // @early-stop
-// regalloc wall (~60%): logic/offsets/control-flow/jump-table all match; the residual is
-// pure register allocation (docs/patterns/zero-register-pinning.md). The 8-way switch
-// body itself is byte-aligned.
 RVA(0x00019b90, 0xd7)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
@@ -377,13 +362,6 @@ void CBootyState::MoveLettersByDir() {
 // divide-by-1000 then /60), score, and "%d of %d" progress into `buf`. Every stat is
 // read via STAT(getter, field). The default case writes "???".
 // @early-stop
-// jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
-// 960-byte switch body is CODE-BYTE-EXACT (verified llvm-objdump -dr base vs retail:
-// every stat sibling-guard block, the MM:SS unsigned /1000-then-/60 divide magic, the
-// "%d of %d" clamp, the 13 stats-thiscall getters, and the sprintf pushes all match;
-// the ~24 g_gameReg loads are the retail A1 moffs32 form). Residual ~2.5% is the
-// inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
-// operands, neither source-steerable. ~97.5%.
 RVA(0x0001af70, 0x3e0)
 void CBootyState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
@@ -494,17 +472,6 @@ i32 CBootyState::CheckPerfectBonus() {
 // and finally the secret-bonus message. Every arm merges into the shared frame tail
 // (kill-cue tick, worker walk, front-page Flip + overlay BltFast, voice reap).
 // @early-stop
-// 67% objdiff / CODE BYTE-EXACT bar one 7-instruction scheduling window. Verified by a
-// reloc-masked raw byte compare of base vs 0x1c210..0x1c6c5: the ONLY reordering is the
-// switch preamble - cl hoists `mov eax,[esi+0x1bc]` (the m_activation load) and its
-// `add/cmp` ABOVE the four throttle-stamp stores, where retail issues them after
-// `mov edi,0x64` and the +0x1c0/+0x1c4 pair. Both spellings (plain i32 stores and
-// `*(i64*)&m_1c8 = ...` pair stores) emit byte-identical output, so the hoist is not
-// alias-blockable from source. The rest of the gap is the DOCUMENTED jump-table-data
-// scoring artifact (docs/patterns/jumptable-data-overlap.md): the 6-case index+jump
-// table pair lands in a `$L` COMDAT whose reloc operands can never match the delinked
-// self-relocs, and it is counted against the function (same artifact caps
-// CBootyState::FormatHudText in this TU).
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -695,20 +662,6 @@ i32 CBootyState::Vslot0c(i32, i32) {
 //   * finally the captured-fortress flag row, spread by the per-count offset table.
 //
 // @early-stop
-// ~80%: complete and shape-correct - the /GX prologue, the five bank lookups, the
-// AREA%i (count-1)%36/4+1 index, the sound install, the ShowCursor drain, all three
-// loops, every CString EH state (0..7) and the single shared epilogue byte-match.
-// Residual is ONE register-allocation cascade: retail pins the constant 1 in ebx for
-// the whole body (every `m_drawActive = 1`, every `|= 1`, the EH-state-1 store via
-// `bl`, and the `mov eax,ebx` return) and keeps `this` in ebp / `i` in edi, which
-// leaves only eax/ecx/edx for each best-pickup scan - so retail SPILLS that loop's
-// cursor and bestIdx to [esp+0x18]/[esp+0x20]. cl gives this body one more free
-// callee-saved register, keeps the cursor in edx and rematerialises the 1, and the
-// whole allocation diverges from there. Not source-steerable.
-// MEASURED COST OF THE CORRECT SHAPE (kept per clean-room): spelling
-// BuildPowerupIconKeys/GetWarlordName as the __thiscall MEMBERS they are (the seven
-// `mov ecx,<this>` receiver loads retail emits) scores 80.30 where the wrong free
-// __stdcall spelling scores 85.57 - the lie scored better; the bytes say member.
 RVA(0x0001d440, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
@@ -1144,7 +1097,6 @@ i32 CMultiBootyState::Vslot09(i32) {
 // voice-loop driver to CBootyState::FrameSlot28 (0x18e40) - the two sibling states
 // share the ambient-loop spin.
 // @early-stop
-// same regalloc esi<->edi coin-flip wall as CBootyState::FrameSlot28 (0x18e40).
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::FrameSlot28(i32) {
     void* obj = 0;
@@ -1172,14 +1124,6 @@ i32 CMultiBootyState::FrameSlot28(i32) {
 // middle. Kept as a pointer cursor (`p++` == retail's `add eax,0x238`); an indexed
 // m_options[i] would cost an imul on the non-power-of-two stride.
 // @early-stop
-// Retail BIASES the induction pointer into the middle of the record: its cursor holds
-// &m_options[i].m_clearedRound, so the three loads encode as [eax+4]/[eax]/[eax-0x24].
-// Our cl keeps the cursor at the record base and encodes [eax+0x24]/[eax+0x28]/[eax],
-// which costs the displacement bytes (~74% vs the ~94% the old raw-offset spelling got).
-// That spelling reached 94% only by hand-writing `(char*)g_gameReg + 0x174` - a banned
-// offset-cast that hid the array behind a byte cursor. The typed form is the real shape;
-// the residual is cl choosing a different induction bias, plus the tail's `inc ecx` vs
-// `add eax,0x238` order. MAX keeps the 94%.
 RVA(0x0001ecf0, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
     GruntzPlayer* p = g_gameReg->m_options;
@@ -1205,13 +1149,6 @@ static __inline i32 sumRun(i32* p, i32 n) {
 
 // @source: string-xref
 // @early-stop
-// induction-variable strength-reduction wall (~85%): the whole structure, all
-// externs/strings, the /GX frame size and register roles match retail. The residual is
-// the 6-column player loop: retail strength-reduces the per-column offsets into a
-// specific induction-variable/register layout; the /O2 recompile derives an
-// equivalent-but-differently-registered set cascading a scheduling/operand-byte drift.
-// Documented regalloc wall, not source-steerable (cf. docs/patterns/
-// loop-invariant-multiply-strength-reduce-vs-memreread.md).
 RVA(0x0001ed30, 0x549)
 void CMultiBootyState::DrawBattleStats() {
     CString s;

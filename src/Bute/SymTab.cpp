@@ -96,10 +96,6 @@ CParseSource::CParseSource() {
 // stack args (ret 0x2c). f4/str2/f6/arr are forwarded by the caller but consumed by a
 // later stage, not stored here.
 // @early-stop
-// reloc-name plateau: all 141 instructions are byte-identical to retail (verified
-// llvm-objdump base vs target). The 96.30% residual is purely the one ::operator new
-// `call rel32` pairing base's ??2@YAPAXI@Z against the delinker's name for 0x1b9b46
-// (RezAlloc) - the same documented scoring artifact the CSymTab ctor below carries.
 RVA(0x00139710, 0x8d)
 void CParseSource::Build(
     CSymTab* owner,
@@ -270,16 +266,6 @@ i32 CParseSource::SetPos(i32 pos) {
 // `jbe` limit/empty tests.
 // ===========================================================================
 // @early-stop
-// regalloc/scheduling wall (docs/patterns/pin-local-for-callee-saved-reg.md +
-// reread-member-view-pointer.md): logic + control-flow byte-exact (same 3-way
-// dispatch, shared return-0 epilogue, both inline rep movsd/movsb memcpys, the
-// vtable call). The "je-vs-jbe 1-byte branch encoding on the empty check" WAS steerable
-// (jcc_sieve 2026-07-28, 91.20 -> 92.72): `test ebp,ebp / jbe` is the negation of an
-// UNSIGNED `want > 0`, not `want != 0` - CF is always clear after `test`, so the two
-// branches are the same and only the source operator picks the encoding.
-// 92.72 -> 94.67: `base += pos` must be its OWN statement - as one expression cl
-// reassociates the mapped base past pos and stops folding `sub esi,[sd+0xc]`.
-// Residue is allocator/selection only. SetPos is 100%.
 RVA(0x00139af0, 0xcc)
 i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (seekPos != -1) {
@@ -331,11 +317,6 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
 // cl reorders, so the source order is not the emitted order and the 3-fourcc
 // overload's spelling (which is 100%) does NOT transfer.
 // @early-stop
-// ~99.35%: the four remaining rows are a key<->owner GPR naming swap on the two
-// trailing arg reloads (retail edx/eax, cl eax/edx). Allocator coin-flip. The
-// 3-arg overload's body order (m_key / m_record / m_scope) fixes the GPR naming but
-// scores WORSE overall (95.55%) - objdiff weights the two extra store rows it costs
-// higher than the four it saves. Six body orders + four local-binding forms measured.
 RVA(0x00139bf0, 0x71)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTable(d) {
     m_symNode.m_record = this;
@@ -379,11 +360,6 @@ CSymRec::~CSymRec() {
 // transition before it falls out), then store the remaining fields and re-point m_34
 // at this. Returns this.
 // @early-stop
-// reloc-name plateau: every CODE byte matches retail. The residual is purely
-// differently-named reloc operands (the two CHashBase::Construct = 0x184960
-// ctor calls, ::operator new vs the delinked _RezAlloc, and the +0x20 vtable named
-// by the delinker after its containing PTR_LAB) - the documented scoring artifact,
-// not a logic gap. Confirm with llvm-objdump -dr base vs target.
 RVA(0x00139de0, 0xd4)
 CSymTab::CSymTab(
     CSymParser* owner,
@@ -419,9 +395,6 @@ CSymTab::CSymTab(
 // the /GX member-teardown frame (docs/patterns/eh-dtor-model-members-as-
 // destructible.md).
 // @early-stop
-// this-register + /GX-frame wall (88.7%): logic + both member-teardown walks are
-// byte-faithful; retail pins this->ebp where cl uses ebx, and the /GX scopetable push
-// immediate (0xb vs 0x0) is reloc-masked. A callee-saved coin-flip. Final sweep.
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
     // The cursor is the LIVE variable and `cur` a copy taken at the top of the body
@@ -651,12 +624,6 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 // node), splice it in and bump the parser's longest-leaf-name counter. Returns the
 // slot (0 when the name already existed / the pop failed). __thiscall, ret 0xc.
 // @early-stop
-// regalloc wall (~88%): every instruction is structurally byte-exact (verified via
-// --diff); the residual is the MSVC5 callee-save coin-flip - retail keeps `rec` in ebp
-// and re-`lea`s &rec->m_valTable + puts m_owner in edx, while cl keeps &m_valTable in
-// ebp + m_owner in ecx, cascading the reg names through the body. The permuter finds no
-// operand-order fix (not source-steerable); same wall its sibling ApplyRecursive
-// @early-stop on. Banked for the final sweep.
 RVA(0x0013a400, 0xa9)
 CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
@@ -738,11 +705,6 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
 // and the guard jumps straight to the 4-pop epilogue with eax already holding 1, which
 // only a single-exit `return ok` produces. That took it 70.47 -> 91.22.
 // @early-stop
-// callee-saved ROLE swap (91.2%): every instruction now matches; retail pins arg3 in ebx
-// and the shared 0 constant in ebp (then re-uses them for arg2/arg4 in the recursion push
-// block), the recompile pins them the other way round, which renames ebx<->ebp through
-// the whole body. Same pool-preference class as global-store-temp-alternates-ecx-edx.md;
-// no declaration/statement order tried moves the pick.
 RVA(0x0013a580, 0xb2)
 i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
     i32 ok = 1;
@@ -777,13 +739,6 @@ i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 
 }
 
 // @early-stop
-// >512 B (0x2f7) /GX leaf-builder loop: the body reproduces both record arms (sub-scope
-// merge into m_subTabs incl. the `new CSymTab` ctor-throw cleanup, and the leaf arm's
-// FindOrAddSym + +0x24 Walk + the 11-fourcc builder + the dword-array copy). The plateau is
-// the documented heavy-regalloc + /GX trylevel wall plus the tail max-accumulator (a dead
-// store retail keeps but cl DCE's) and the differently-named Walk/builder reloc operands.
-// The 0x139710 builder's callee-cleanup (ret 0x2c) is inferred from the absence of an
-// `add esp,0x2c` after the call; the fourcc order is the reversed push sequence at 0x13a893.
 RVA(0x0013a640, 0x2f7)
 i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
     m_10 = 0;
@@ -935,14 +890,6 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
 // +0x80 list. Seeds the parse-config defaults; leaves m_34/m_38 untouched. The
 // destructible m_hash/m_list members force the /GX EH frame.
 // @early-stop
-// vptr-first-schedule wall (~72.6%, the SAME plateau as the sibling buf-ctor
-// 0x13ab00): every field store + the member Init call is byte-faithful. Residual:
-// making CSymParser real-polymorphic makes cl auto-stamp ??_7CSymParser @+0 at ctor
-// ENTRY, where retail defers it to AFTER the m_hash member ctor (late) - and that
-// pressure shift makes cl cache the constant 1 in ebx (extra push/pop ebx + reg
-// stores) where retail re-materializes the `$1` immediates. Plus the /GX scopetable
-// state-numbering (push 0xb vs relative 0). Non-source-steerable; see
-// docs/patterns/eh-state-numbering-base.md + the buf-ctor's note.
 RVA(0x0013aa10, 0xdc)
 CSymParser::CSymParser() {
     m_list.m_head = 0;
@@ -994,12 +941,6 @@ RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
 // ret 0xc; returns `this`. (The default ctor 0x13aa10 the temp uses lives in another,
 // unmatched TU - a reloc-masked call.)
 // @early-stop
-// ~74.8% (real polymorphic now, ALL-VTABLES phase): the primary vptr is auto-
-// stamped by cl @+0 at ctor entry; the
-// /GX frame, the member-init store sequence (m_list, the +0x80 hash Init(1), the
-// +0x88 node-list), the discarded default-temp ctor/dtor pair and the ParseBuffer
-// 3-fourcc tail are byte-faithful. Residual is the /GX trylevel state-NUMBERING wall
-// (docs/patterns/eh-state-numbering-base.md) + the vptr-first schedule. Final sweep.
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
     // cl auto-stamps ??_7CSymParser @+0 at ctor entry, and the m_list member ctor
@@ -1069,13 +1010,6 @@ CSymParser::~CSymParser() {
 }
 
 // @early-stop
-// 0x3b8 (952 B) /GX text/binary loader. The body reproduces the buffer recache
-// (free+strdup m_cachedSourceBuffer), the Classify dispatch, both reader builds (operator-new +
-// ctor-throw cleanup states 0..4), the reader->Read / ReadRaw virtual calls, the root
-// `new CSymTab` (MakeSymSeed leftover-args trick), and the binary-header field copies +
-// magic validation. The plateau is the documented /GX trylevel state-machine + the
-// heavy regalloc across the four allocation sites, plus the differently-named
-// reader-ctor / 0x139de0 / 0x13b300 reloc operands (scoring artifact). Logic complete.
 RVA(0x0013ad00, 0x3b8)
 i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_40 = a;
@@ -1194,15 +1128,6 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 // dir new, 1 for the file new). Called by RezSync::Init to mount GRUNTZ.VRZ/.ZZZ/
 // .XXX. Ghidra-mislabeled CRezDir::Stub_13b0c0.
 // @early-stop
-// 98.3% - STRUCTURALLY byte-exact (verified llvm-objdump -dr base vs target): every
-// opcode/ModRM, both nothrow-new null checks AND all three /GX ctor-throw state
-// writes (mov [esp+ehstate], 0 / 1 / -1) match retail exactly. The sole residual is
-// the MSVC5 scratch-register coin-flip on ~5 load-then-push fourcc sites (the two m_64
-// free cleanups, the ParseRecords/ApplyRecursive/Read fourcc loads): retail rotates
-// eax<-ecx<-edx where cl picks ecx<-edx<-eax for the same temps - identical
-// instruction stream, opposite scratch assignment, not source-steerable
-// (docs/patterns regalloc coin-flip). Plus the reloc-masked node-ctor / operator-new
-// / ParseRecords / ApplyRecursive operands. Parked for the final sweep.
 RVA(0x0013b0c0, 0x238)
 i32 CSymParser::LoadEntry(char* name, i32 flag) {
     if (m_40 == 0) {
@@ -1269,16 +1194,6 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 }
 
 // @early-stop
-// 0x545 (1349 B) /GX recursive directory loader: enumerates `path` with
-// _findfirst/_findnext, skips "." / "..", recurses into subdirectories (CreateSub +
-// self-call) and folds files into the scope (FindOrAddSym / Insert / the leaf record
-// build). This is a structural reconstruction of the control flow + every scope/parser
-// call; the >1KB /GX stack frame + alloca probe, the many inline strlen/strcpy/strcmp
-// idioms, and the differently-named _findfirst/CSymTab reloc operands are the documented
-// walls. Correcting the fd view to the real _finddata_t (name +0x20->+0x14) was
-// match-NEUTRAL (55.42%): cl places fd at a wholly different [esp+N] than retail, so
-// every fd access diverges on the frame displacement regardless of the intra-struct
-// offset - the frame-layout wall dominates. Logic shape complete; parked for the final sweep.
 RVA(0x0013b300, 0x545)
 i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) {
     char pattern[0x500];
@@ -1364,19 +1279,6 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
 // free the heap root CSymTab + the cached source buffer, then null m_parseArmed. The fourcc is unused;
 // the return is the active node's slot[5] (Detach) result, left in eax.
 // @early-stop
-// 6-byte scheduler canonicalization at +0x38 (99.55%; everything else is byte-exact,
-// registers included - the old "edi/esi pin" note was stale). In the block the
-// delete's null test falls into, retail emits STORE then LOAD
-//     89 6f 20   mov [edi+0x20],ebp    ; m_activeNode = 0
-//     8b 77 14   mov esi,[edi+0x14]    ; p = m_list.m_head
-// while cl emits the pair the other way round (load before store). cl CANONICALIZES
-// the block to loads-before-stores: writing the source in the load-first order
-// produces the same load-first code, so the order is not expressible from source.
-// Nine spellings tried, all byte-identical to each other: for / while / do-while /
-// `while (m_list.m_head != 0)` with the fetch inside the body / p declared before
-// the delete / p fetched before the null-store / `this->m_activeNode = 0` / a
-// CParserObjList* local for the whole list / one for the head reads only.
-// See docs/patterns/load-before-store-block-canonicalization.md.
 RVA(0x0013b850, 0xa8)
 i32 CSymParser::Clear(i32 final) {
     static_cast<void>(final);
@@ -1659,11 +1561,6 @@ i32 CSymParser::Classify(char* name) {
 // re-reads `node->m_buffer[j]` for the Insert argument (retail reloads +0x8 after the
 // m_record store, which an `el` local elides).
 // @early-stop
-// 77.13 -> 98.22. One 3-instruction window left: retail materialises the Remove
-// argument into eax and sets ecx before pushing (`lea eax,[esi+0x1c] / mov ecx,edi /
-// push eax`), cl leas into ecx, pushes, then reloads ecx. Eleven spellings of the tail
-// (reuse of `e`, a typed `out` local, a CParserHash* receiver local, an early return,
-// hoisting the lea out of the guard) are byte-identical to each other.
 RVA(0x0013c0c0, 0x14b)
 CParseSource* CSymParser::PopParseSlot() {
     void* rec = 0;

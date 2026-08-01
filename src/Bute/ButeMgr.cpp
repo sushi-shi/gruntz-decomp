@@ -939,12 +939,6 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 // scalar types copy 1-2 dwords, the string assigns the CString, and the Ref5/6/7/8
 // blobs copy 16/8/24/16 bytes. Returns `this`.
 // @early-stop
-// 65% - the dense ButeType jump table + all 8 case bodies (incl. cases 1&3 tail-
-// merged, the string CString::operator= call, and the kButeRef7 rep-movsd) are
-// reproduced with correct logic. The residual is per-case register allocation:
-// retail schedules each same-shape copy into different registers (e.g. the early
-// `mov eax,ebx` return-value hoist in some cases), which is not source-steerable
-// from the switch body. Documented switch/regalloc wall; deferred to the final sweep.
 RVA(0x00172040, 0xfc)
 CButeValue* CButeValue::CopyValue(CButeValue* other) {
     switch (type) {
@@ -993,12 +987,6 @@ CButeValue* CButeValue::CopyValue(CButeValue* other) {
 // distinct case bodies map to the four jump-table arms (string / {2,6} / {0,3,7} /
 // {1,5,8}). __thiscall, no args.
 // @early-stop
-// ~65-80% per-arm regalloc wall, the twin of CButeValue::CopyValue (0x172040): the
-// jump table, the four arms, the string null-guarded ~CString teardown and the
-// plain-delete bodies are all byte-faithful, but retail schedules each identical
-// `operator delete` arm into a different scratch register (eax / ecx / edx), which
-// is not source-steerable from the switch body. Logic 100% correct; deferred to the
-// final sweep (documented switch/regalloc wall).
 RVA(0x00172160, 0x80)
 CButeValue::~CButeValue() {
     switch (type) {
@@ -1339,9 +1327,6 @@ bool CButeMgr::ParseTagLine() {
 // groups.
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
 // @early-stop
-// jump-table scoring artifact (95%): the 6-way `jmp *tbl[eax*4]` dispatch + all case
-// bodies match, but objdiff mis-pairs the inline .rdata jump-table region against the
-// code (base `jmp *(,eax,4)` vs retail `jmp *0x1e4(,eax,4)`). CODE bytes match. Final sweep.
 RVA(0x001704c0, 0x200)
 bool CButeMgr::Parse() {
     const i32 kLexStartState = 0x11;
@@ -1426,22 +1411,6 @@ bool CButeMgr::Parse() {
 // /GX. `this` is a `ButeMgr` == its `CButeMgr` base (offset 0) -- reached directly
 // through inheritance, no cast/view.
 // @early-stop
-// this-register-pin + EH-frame-layout regalloc wall. Logic/CFG are complete and
-// correct: all 11 value-type cases, both STORE (new+Insert) and WRITE-BACK (getter +
-// formatted accum append) modes, byte-correct case bodies. Reconstruction is now
-// maximally faithful + clean: no `(CButeMgr*)this` cast (real single-inheritance from
-// CButeMgr), no `(CString*)GetString(...)` cast (retail calls CString(const char*) on
-// the char* return), the shared value slot is a union (not `*(DWORD*)&v`/`*(float*)&v`
-// reinterprets), and m_pText->accum is recomputed per use exactly as retail does (it
-// does NOT cache it). The residual is the register coin-flip: retail pins `this` in EBP
-// (`mov ebp,ecx`), MSVC here picks ESI (rotation this/&m_token/&m_str104 = ebp/esi/edi
-// retail vs esi/edi/ebp here) -> every `[this+N]` encodes a different mod/rm byte
-// fn-wide -- coupled with retail's 0x54 frame (staging the rect/point copies + rep movs)
-// vs our 0x28 (direct field store). NOT source-steerable: tried accum cache-vs-recompute
-// (the cache form scores ~5% higher by luck but the retail bytes prove no cache -> kept
-// the faithful recompute), explicit tok/key base locals (codegen-neutral), and the
-// permuter (no change). Deferred to the final sweep (see docs/patterns/
-// stack-buffer-size-drives-frame.md + o2-optimizer-bailout-framed.md).
 RVA(0x00170750, 0x9d8)
 bool ButeMgr::ParseAttributeFile() {
 
@@ -1769,11 +1738,6 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key) {
 }
 
 // @early-stop
-// zero-register coin-flip (84.2%): identical to GetRef5/6 (both 100%) but the
-// magic-static `s_default` field-zeroing crosses cl's threshold to pin 0 in ebp
-// (`push ebp; xor ebp,ebp; mov [X],ebp` + `cmp ebp,eax`) where retail uses
-// immediate stores + `test eax,eax`. Retail's own codegen is inconsistent across
-// the identical GetRef5/7 pair; not steerable without regressing GetRef5. Final sweep.
 RVA(0x00174240, 0xe3)
 CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key) {
     static CButeRef7 s_default;
@@ -1796,8 +1760,6 @@ CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key) {
 }
 
 // @early-stop
-// zero-register coin-flip (85.5%): see GetRef7 - retail immediate zero-stores +
-// `test eax,eax`, cl pins 0 in ebp. Not steerable without regressing GetRef5. Final sweep.
 RVA(0x001747c0, 0xcf)
 CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key) {
     static CButeRef8 s_default;
@@ -1928,12 +1890,6 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
 // bump the line counter on the count-flag, track the newline flag, and advance
 // the position (m_pos).
 // @early-stop
-// 88.67% scheduling/materialization wall: body/CFG/EOF-test/offsets are
-// byte-identical; only the tail differs -- retail interleaves `mov m_curChar,al`
-// between cmp and `sete cl` and stores the bool without pre-zeroing ecx, while
-// MSVC here emits `xor ecx,ecx` + floats the m_curChar store past the sete. An
-// identical instruction multiset, permuted (statement-schedule-faithful /
-// outparam-zeroinit-scheduling family); no source spelling flips it.
 RVA(0x00170390, 0x50)
 void CButeMgr::NextChar() {
     i32 delta = m_stream->get() - m_streamBase;
@@ -1976,13 +1932,6 @@ void CButeMgr::ScanState(i16 state, char c) {
 // failing on a parse error or any non-continuation token. Type 4 continues the
 // loop (re-running the attribute-file driver).
 // @early-stop
-// 78% block-layout wall: the body is byte-identical AFTER fixing the tag test to
-// retail's order (t == 2 || t == 1, i.e. cmp 2 then cmp 1 - the prior model had
-// them reversed). The ONLY remaining divergence is the two 3-byte cold exit
-// blocks `xor al,al`(false) / `mov al,1`(true) emitted in swapped .text order vs
-// retail (false-first), which shifts the branch displacements that target them.
-// A block-placement coin-flip; while/break, nested success-deepest, and continue
-// forms all leave the order fixed.
 RVA(0x00171160, 0x45)
 bool CButeMgr::SkipToTag() {
     while ((static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
@@ -2006,13 +1955,6 @@ bool CButeMgr::SkipToTag() {
 // type -- either accept the group (1), parse a tag line (2) and walk its
 // matching nodes, or recurse. Loops while the current token stays a group.
 // @early-stop
-// 94.6%: two residuals, both walls. (1) The node-walk callback push references
-// the static apply-fn at 0x1712b0 (an un-named recovery-gap function) so the
-// reloc is masked (push $0 vs retail's section-offset push); naming it is a
-// separate reconstruction. (2) A loop-rotation difference at the bottom: retail
-// loops back with a bare `jne loopTop`, MSVC duplicates the ParseTagLine call
-// onto the fall-through edge. CFG/offsets/the shared token-classify tail are
-// otherwise byte-identical.
 RVA(0x00171580, 0xba)
 bool CButeMgr::ParseGroup() {
     NextChar();
@@ -2078,45 +2020,18 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
 // Ghidra never carved, homed by RVA neighbourhood (all inside ButeMgr's .text).
 // ---------------------------------------------------------------------------
 // @early-stop
-// 0x1714e0 (102 B) - a Bute "write section to stream" helper. DECODED (GO1): free
-// __cdecl(const char* name, CButeTree* tree, ostream* os); `ret` (no N) + args read at
-// [esp+8]/[esp+0xc]/[esp+0x10] past the `push esi`. Body:
-//   *os << (unsigned char)'\n' << <manip 0x171570>;   x2   (blank line + endl)
-//   *os << g_str_613efc << name << g_str_613eec;            (3 chained operator<<)
-//   tree->Walk(0x1712b0 /*node writer cb*/, os, 0);         (call 0x193340)
-// GAME code that USES iostreams - NOT library: 0x16be60 (??6ostream@@QAEAAV0@PBD@Z) and
-// 0x192060 (??6ostream@@QAEAAV0@E@Z) are LIBCIMT/HIGH carve-outs, but 0x171550 (the
-// inline `operator<<(ostream&(*)(ostream&))` manipulator overload, emitted as a COMDAT
-// into this TU) and 0x193340 (ButeTree.cpp) are ours. Reconstruction BLOCKED on modelling
-// the MSVC iostream `ostream` + the manipulator overload; identity recovered, body parked.
-// @dead-code
-// reached ONLY from @dead-code Gap_171640 (its sole address-taking, +0x28e) which is
-// itself zero-ref - so this inline ostream<< manipulator COMDAT is transitively dead.
 RVA(0x001714e0, 0x66)
 i32 Gap_1714e0(void) {
     return 0;
 }
 
 // @early-stop
-// 0x171640 (1010 B) - a large ButeMgr worker (contains a small 0x52-byte leaf head
-// then the body); homed pending leaf-first reconstruction (>512 B).
-// @dead-code
-// zero-ref: no rel32 caller, no data-slot, no .text address-taking anywhere in
-// the image (gruntz sema xref --tree). A large ButeMgr worker retail kept without
-// /OPT:REF; its owner/receiver identity cannot be traced from a reference that does
-// not exist.
 RVA(0x00171640, 0x3f2)
 i32 Gap_171640(void) {
     return 0;
 }
 
 // @early-stop
-// 0x173dd0 (911 B) = a Bute value-store / projectile-action-map builder (attributed via
-// callee xref: CButeTree::Find/Insert, CButeValue::CopyValue/~CButeValue, CButeCfgNode174d
-// @0x174d00 ctor, CProjActMap::Insert, and the value-node ctor 0x1741b0 which it new(8)s;
-// it is 0x1741b0's ONLY caller). A switch jump-table (jmpl *0x574184) function - single fn,
-// NOT a merge. Homed pending leaf-first reconstruction (>512 B; owner class a CButeMgr/
-// CProjActMap loader, TBD).
 RVA(0x00173dd0, 0x38f)
 i32 LoadProjActMap(void) {
     return 0;

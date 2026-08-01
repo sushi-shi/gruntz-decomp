@@ -30,10 +30,6 @@ i32 ValidateGameTime(CGameInfoTime* t) {
 // Month/Day/Year, so it is typed there.
 // ORPHAN: only caller is a boundarylowermethods placeholder (C1181d0::Update).
 // @early-stop
-// regalloc/scheduling wall (~92%): the logic + the reloc-masked GetCurrentTime/
-// GetLocalTm calls are byte-faithful, but retail keeps each tm field in eax (reusing
-// the GetLocalTm return reg) and defers the out-store past the next call's lea-ecx
-// setup, while our /O2 stages it in ecx/edx and stores before the lea.
 RVA(0x00118330, 0x57)
 i32 BuildGameDate(CGameInfoTime* out) {
     if (out == 0) {

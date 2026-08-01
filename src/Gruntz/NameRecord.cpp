@@ -10,13 +10,6 @@
 // (+0x04..+0xd7) before the copies. Returns 0 on any rejection, 1 on success.
 // ===========================================================================
 // @early-stop
-// Unsigned-compare scheduling micro-idiom (~96.6%): retail lowers each
-// `strlen(name) > N` as `dec ecx; js Lfail; cmp ecx,N; jle Lok`, reusing the
-// inline-strlen `dec ecx` flags for a free `len<0` (= unsigned-huge) half before
-// the signed `cmp;jle`. Body is otherwise byte-exact; the `(i32)`-cast spelling
-// (closest) emits the signed `cmp;jle` WITHOUT the free `js` - `(u32)` emits a
-// single `jbe` (worse), an explicit `n<0||n>N` reschedules (much worse). The `js`
-// is a cl scheduling artifact off the live dec flags, not steerable from C.
 RVA(0x00118040, 0xb6)
 i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (name == 0) {

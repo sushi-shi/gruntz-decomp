@@ -16,12 +16,6 @@ CSBI_RectOnly::CSBI_RectOnly() {
 // the object id (a2) or the owner (a1) is null; otherwise stores the eight live
 // args into the base-region fields, marks m_4 = 1 (active) and returns 1.
 // @early-stop
-// 90.4%: every field/store and the control flow are correct, BUT retail writes the
-// +0x14 sub-block through a `lea edx,[ecx+0x14]` base (strict sequential load-store)
-// while MSVC5 here folds it to ecx-relative disp8 stores and interleaves the loads.
-// A pure instruction-selection/scheduling residual (docs/patterns/
-// statement-schedule-faithful.md) - direct, array, and struct-pointer spellings all
-// fold the same; not steerable from C. Deferred to the final sweep.
 RVA(0x000e86e0, 0x53)
 i32 CSBI_RectOnly::Setup(
     CStatusBarMgr* owner,

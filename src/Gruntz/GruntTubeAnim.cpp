@@ -15,14 +15,6 @@
 #include <string.h>     // intrinsic strcmp ("D")
 
 // @early-stop
-// const-materialize-into-reg wall (docs/patterns/const-materialize-into-reg-vs-
-// immediate.md): the {-1,-1,1,1}/{0,0,0,0} rect-block init, the kind latch, the
-// TOOB(WATER)GRUNT name select + Register, the three reset helpers, the gated
-// entrance re-init, the g_typeColl resolve + g_typeColl.m_alloc reset loop, the inline
-// strcmp("D") and the matched-branch GetBuffer/CacheFirstFrame/blit-param/descriptor
-// slot build are byte-faithful. Residual: the interleaved xor/mov const-into-reg
-// scheduling of the two rect blocks + the dead m_entranceCell.reason spill - the
-// MSVC5 scheduler coin-flip, not source-steerable.
 RVA(0x00050a50, 0x1c5)
 i32 CGrunt::SetupTubeAnim(i32 isWater) {
     m_reachRectLeft = -1;

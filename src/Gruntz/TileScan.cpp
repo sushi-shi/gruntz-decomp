@@ -24,13 +24,6 @@ static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
 }
 
 // @early-stop
-// 71%: the gate (threshold + tile-state probe via the +0x150 sub-base), the inlined
-// grid lookup, the flag tests (0x939 / 2), and the notify+clear are byte-faithful in
-// operations/offsets. The residual is a loop-induction regalloc wall: retail
-// materializes each 3x3 bound via two independent `sar 5` copies + in-place dec/add
-// and SPILLS three bounds to the 0x14-byte frame (sub esp,0x14), while cl shares one
-// `sar` per centre + `lea` for the bounds and keeps them in registers (push ecx). A
-// pure inner-loop register-pressure choice; no source reorder reproduced the spill.
 RVA(0x00035f10, 0x155)
 i32 CBattlezMapConfig::Scan(CGrunt* arg) {
     if (arg->m_dwell <= m_0c8) {

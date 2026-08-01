@@ -67,17 +67,6 @@ DATA(0x0024e0c0)
 u8 g_ratings_64e0c0[344] = {0}; // per-device rating bytes
 
 // @early-stop
-// MSVC5 u16-global codegen wall (~74%): the full control flow - the SFMAN32.DLL
-// load/factory/instantiate chain, the per-device caps+rating query loop, the three
-// sprintf traces, the highest-rating selection with Select-fail retry, and the
-// final caps/id readback + 4x &0x7f id-byte unpack - is reconstructed and matches
-// retail's logic/calls/strings (frame is frameless/FPO, no stack slot, like
-// retail). Residual is the pervasive 16-bit codegen shape: retail reads the WORD
-// globals used as array indices via dword-load + `and 0xffff` while this /O2
-// recompile uses a word-load + `xor;mov cx,dx` zero-extend; retail hoists the
-// 0x20 rating constant into bl and places the two flag-handler stores out-of-line
-// (`test;jne`) while ours inlines them. Not source-steerable (the word-global
-// load width + small-block placement are the allocator's). Logic complete.
 RVA(0x000f8970, 0x3b4)
 i32 SFManager_SelectBestDevice() {
     g_sfDll = LoadLibraryA("SFMAN32.DLL");

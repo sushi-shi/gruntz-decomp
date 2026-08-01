@@ -96,19 +96,6 @@ enum GruntDeathType {
     } while (0)
 
 // @early-stop
-// switch tail cross-jump wall (~big body): the prologue (anim-state teardown, the 7
-// HUD-sprite retire chain, the powered-up reset gate, the CommitStruckTile, the "C"
-// anim-set re-latch, the m_154/m_object dirty stamps, the arrival-notify gate) and every
-// one of the 16 death-type cases (LookupValue / m_10map.Lookup resolve, SetGeometryEx
-// / m_1a0.SetGeometry, the GameApplyLookupSprite first-frame stamp, the FALL/QUICKFALL
-// tile-attribute split, the on-screen CueA/CueSpawn cues, the NORMALGRUNT_DEATH + m_38c
-// finalize tail) are byte-faithful in shape/offsets/symbols/constants. Residue: retail
-// cross-jumps the shared cue-emit (0x60d0c), entrance-drop finalize (0x60d15) and
-// m_170==1 geometry path (0x60c0a) into the middle of the case body (between case 11 and
-// case 12) - structured C++ places them after the switch, permuting the block layout +
-// the ebx/edi/ebp zero/0x10000/0x20000 register pins across the 16 near-identical cases.
-// Source-invariant (the documented switch-tail-merge + register-pin wall); deferred to
-// the final sweep.
 RVA(0x00060150, 0xd90)
 i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     if (m_deathAnimStarted != 0) {

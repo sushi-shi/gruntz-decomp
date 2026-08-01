@@ -18,12 +18,6 @@ RVA_COMPGEN(0x00012070, 0x44, ??1CGruntStaminaSprite@@UAE@XZ)
 // @confidence: high
 // @source: rtti-vptr
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (94.76%): real polymorphic base, body+offsets
-// byte-identical (byte-verified vs 0x0007fae0); the single residual is the leaf vptr
-// re-stamp (mov [esi],&??_7) which MSVC5's /GX EH-state machine sinks INTO the first
-// throwing call's state 0 instead of retail's eager post-base-ctor stamp. NOT
-// source-steerable (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the
-// final sweep.
 RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);

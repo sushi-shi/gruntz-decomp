@@ -93,12 +93,6 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
 // RezAlloc'd array (m_indices, length m_count). /GX frame for the local
 // CStringArray + per-token CString temporaries.
 // @early-stop
-// /GX CStringArray + tokenizer: complete reconstruction at ~97%. The whole body
-// (tokenize / SetAtGrow / RezAlloc / per-token GetAt+Lookup+store / EH unwind) is
-// byte-correct; the residual is the named-local slot coin-flip in the per-token
-// loop (retail puts the Lookup-out at [esp+0x10] and the CString temp at [esp+0x14];
-// cl flips them - not decl-order-steerable) + reloc operand names. Documented
-// regalloc/slot wall - parked for the final sweep.
 RVA(0x00168d00, 0x14c)
 void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str) {
     if (owner == 0 || str == 0) {

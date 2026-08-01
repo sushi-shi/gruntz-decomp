@@ -28,13 +28,6 @@ const double g_slopeNegTwo = -2.0;
 // <Gruntz/DirectionClassify.h>; identity @identity-TODO.
 
 // @early-stop
-// ~96% - structure + logic + all FP thresholds/relocs exact (the 9-way octant tree,
-// the __ftol conversions reading st0, the fcom/fcomp `<=` cascades, the on-cell
-// short-circuit). Residual is confined to the initial dx/dy delta materialization: cl
-// computes dx via `fld this.x; fsub other.x` and lands dy=ebx/dx=edi, retail computes
-// dx via `fld other.x; fld this.x; fxch; fsubp` and lands dy=edi/dx=ebx; that register
-// swap ripples through the sign tests. x87-stack-schedule + regalloc wall; permuter
-// found no closing spelling.
 RVA(0x0004a780, 0x1ec)
 GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == 0) {

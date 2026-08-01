@@ -400,10 +400,6 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
 // bytes when m_rowPad==0, else row-by-row through the m_rowOffsets table (each
 // row m_width bytes from the running source).
 // @early-stop
-// shrink-wrapped callee-save push wall (~83%): body byte-identical otherwise. Retail
-// saves only ebx/esi at entry and defers `push edi`/`push ebp` past the DecodeBmpHeader
-// early-out (which restores just esi/ebx); cl pushes all four upfront. Not source-
-// steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
 RVA(0x00175930, 0xc6)
 i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
     if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
@@ -428,10 +424,6 @@ i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount
 // The 2nd stack arg is the selector (`this` is the ecx-passed surface node); the four
 // pass-through args match the AddSurfaceOp call site (buf, kind, hdc, ctrl).
 // @early-stop
-// jump-table-data-overlap scoring artifact (docs/patterns/jumptable-data-overlap.md):
-// retail's inline jump table is scored against our $L-symbol table; plus a per-case
-// arg-forward schedule (regalloc). Dispatch + cases logically exact; relocs now align
-// to the real CRezImage decoders.
 RVA(0x00175a00, 0x90)
 i32 CRezImage::DispatchDecode(void* buf, i32 kind, HDC dc, i32 ctrl) {
     switch (kind) {
@@ -468,9 +460,6 @@ i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
 // Build a fresh 16bpp RGB555 copy of the 8bpp `src` surface through the
 // `pal` 256-entry RGB table (8 bytes in). Returns TRUE on success.
 // @early-stop
-// regalloc wall: retail pins `palette` in ebp across the whole function while our
-// recompile spills it to the stack and reloads it in the inner loop; that cascades
-// into different register encodings throughout. Conversion logic is byte-faithful.
 RVA(0x00175b80, 0x105)
 i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
     if (pal == 0) {
@@ -536,12 +525,6 @@ i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, i32 bitCount, i32 flag) {
 // BACK to the parameter's home slot before the loop - the signature of an assignment
 // to the parameter that MSVC sinks into each use block.
 // @early-stop
-// 94.1%, two residues, both compiler-canonicalisation: (1) the size multiply -
-// cl loads the LOWER-offset operand (`mov ecx,[m_height]; imul ecx,[m_stride]`)
-// whichever way the source spells it (both operand orders tried, identical output),
-// retail loads m_stride; (2) the loop preheader's mask - cl picks the memory RMW
-// `and [esp+0x14],0xff` where retail computes it in eax and `jmp`s past the body's
-// reload; a `masked` temp for the value is folded back into the RMW.
 RVA(0x00175d50, 0xad)
 void CRezImage::Fill(i32 value) {
     if (m_rowPad == 0) {
@@ -564,16 +547,6 @@ void CRezImage::Fill(i32 value) {
 }
 
 // @early-stop
-// 99.62%: the whole `buf`/`bitcount` two-register role swap that used to cap this at
-// 96.7 was the TAIL CALL spelling - `return DecodeBlit(...)` vs binding the result to
-// a named local first (docs/patterns/call-result-local-flips-callee-saved-set.md).
-// The single residue left is the `lea esi,[buf+biSize+0x400]` SIB byte: retail has
-// base=buf/index=biSize, cl emits base=biSize/index=buf. Measured 2026-07-28 over 14
-// spellings (constant-first, parenthesised, `&p[i]` index form, the legal `i[p]`
-// form, an integer-cast round trip, a `u8*` base local, a hoisted size local at three
-// declaration positions, a `u8*`-typed `src`): all byte-identical. That is exactly the
-// bound recorded in docs/patterns/sib-base-index-follows-local-decl-order.md - with
-// only ONE named local in play (`src`) there is no declaration-order lever.
 RVA(0x00175e00, 0x3d)
 i32 CRezImage::DecodeResData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
@@ -746,27 +719,6 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
 }
 
 // @early-stop
-// 72.8% is CODEGEN RESIDUE, NOT A LOGIC BUG - do not go hunting for one. Both
-// grammars were re-derived from the bytes and differentially tested against the
-// 29,798 shipped PID resources (tools/gruntz-oracle): the ctrl test, the token
-// grammars, the row-end rule and the fill semantics below all reproduce retail
-// exactly. Two things here look like mistakes and are faithful:
-//
-//   * the 0xC0 arm does NOT clamp a run to the scanline. `n -= count` may go
-//     negative and `dst += count` may spill into the next row - that is retail
-//     (0x176646 `rep stos` of the full count, unclamped), and it is what makes
-//     this decoder DIFFER from CDDSurface::RunDecode1 @0x145270, which clamps
-//     and carries the remainder into the next row. The two consume a DIFFERENT
-//     number of tokens once a run crosses a row, so they desynchronise for
-//     good. No shipped sprite contains such a run, which is why nothing has
-//     ever noticed. Do not "fix" this arm to match RunDecode1.
-//   * the row advance is `x >= m_width` (0x176597 `cmp edx,[eax+0x438]`), NOT
-//     `m_width - 1`. CDDrawShadeBlit::EncodeRle16 @0x149694 uses `width - 1` on
-//     its own stream; see the note there before reconciling them.
-//
-// Residual is register/scheduling: retail keeps the row cursor and the token
-// index in esi/ebp across both arms and re-derives `this` from the frame after
-// each rep-stos, where cl spills them.
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     PidHeader* hdr = static_cast<PidHeader*>(buf);
@@ -891,16 +843,6 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
 // (m_pixels, rows of m_width bytes, m_height rows) top-to-bottom by swapping
 // row i with row (m_height-1-i) through a m_width-byte scratch row.
 // @early-stop
-// 47.36% (was 41.61). Fix 2026-07-28 (jcc_sieve OTHER `jl -> jne`): the row width is
-// HOISTED into a local. `x < m_width` re-reads [esi+0x438] every iteration, which pins the
-// guard as `cmp edx,ecx / jl`; with the width in a register cl strength-reduces the first
-// two byte loops to retail's `dec edi / jne` trip count. Logic verified exact: guard
-// (m_height<=1), ::operator new(m_width) scratch, the height/2 row-pair swap, RezFree.
-// Residue (2 branches): retail keeps the THIRD byte loop and the outer pair loop as
-// UP-counted index compares (`cmp edi,esi / jl`, `cmp eax,ecx / jl`) while cl down-counts
-// both, and fuses the copies into merged inductions where one register is BOTH the scratch
-// index and the source offset (`[eax+ecx-1]`, `[edx+ebp-1]`) with the row offsets in spill
-// slots. Tried per-iteration multiply vs pointer-accumulator forms (40.3 -> 43.6).
 RVA(0x00176840, 0x11f)
 void CRezImage::FlipVertical() {
     if (m_height <= 1) {
@@ -946,14 +888,6 @@ void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
 // CRezImage::Save(filename, paletteObj) - the format-guard dispatch: only 8bpp
 // surfaces are BMP-writable; 16bpp (and anything else) return 0.
 // @early-stop
-// codegen block-merge divergence (~62.6%). Logic is exact: retail is a switch on
-// m_bitCount (+0x440) with `case 8 -> SaveBmp`, `case 0x10 -> return 0`, default
-// `return 0`. Retail MSVC5 keeps the identical `case 0x10` and default `return 0`
-// as two separate blocks (emits `cmp 0x10; je`); this wine MSVC5 proves them equal
-// and drops the `cmp 0x10` comparison entirely. Not source-steerable (every
-// spelling - switch/no-default/if-chain - collapses the redundant block) and the
-// permuter only reorders operands, it can't un-merge a block. First 4 insns + the
-// SaveBmp tail match byte-exact; only the dropped 16bpp block differs.
 RVA(0x00176b00, 0x2c)
 i32 CRezImage::Save(const char* filename, void* paletteObj) {
     switch (m_bitCount) {
@@ -974,23 +908,6 @@ i32 CRezImage::Save(const char* filename, void* paletteObj) {
 // the scanlines bottom-up (m_pixels + m_rowOffsets[row], width bytes each). The
 // destructible stack CFile temp forces the exception frame (push -1 / handler / fs:0).
 // @early-stop
-// zero-register-pinning regalloc wall (58.17 -> 73.13 after the 2026-07-27 record fix:
-// the 0x428 byte buffer became the declared `Bmp256Info` (BITMAPINFOHEADER + the full
-// 256-entry table), the colour-table de-interleave was writing TWO BYTES LOW (ct[0]/
-// ct[-1]/ct[-2] off the table base, corrupting biClrImportant - retail's three `lea`
-// bases at esp+0x5c/0x5b/0x5a run against a cursor seeded at pal+2, i.e. rgbRed/
-// rgbGreen/rgbBlue of entry i), and the file header is an inline strcpy of the
-// 0x61aabc "BM" template over a zeroed record, not a 14-byte copy loop). Fixed a REAL
-// bug earlier too: the CFile temp
-// is 0x10 B on the frame (ctor@[esp+0x24], info@[esp+0x34]=file+0x10), not 0x440 -
-// the oversized view had inflated the frame to sub esp,0x878; now 0x448 (retail 0x44c,
-// off by one consequent spill slot). The EH prologue matches (push -1 + scope-table
-// reloc + old-fs, reloc-masked). Residual: retail pins esi=0 as a whole-function zero
-// register and holds `this` in ebp, so every null-check is `cmp esi,edx` and every
-// BITMAPINFOHEADER zero-store reads esi; this build keeps `this` in esi + uses
-// `test`/immediate-0, diverging ~40% of the body. A documented regalloc coin-flip
-// (docs/patterns/zero-register-pinning.md), not source-steerable; logic + reloc-masked
-// CFile ctor/Open/Write/dtor all faithful. The +4 frame is the extra spill slot.
 RVA(0x00176b30, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     void* obj = paletteObj;
@@ -1259,11 +1176,6 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
 // and hand it to BuildPalette(table, arg). The CFile stack object forces the
 // /GX EH frame. __thiscall, ret 8.
 // @early-stop
-// 93.9% de-interleave-loop induction-phase wall: the EH frame + open/seek/read +
-// BuildPalette call are byte-exact, but retail phases the dst induction variable at
-// base+1 (`add ecx,4` after the FIRST byte store, the four writes at [iv-1]/[iv-4]/
-// [iv-3]/[iv-2], the zero-store LAST) while clean C reorders the +4 and the zero
-// store; not source-steerable. Logic 100% correct (256 RGB triples -> RGBQUAD).
 RVA(0x001772e0, 0x117)
 i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     CFile file;
@@ -1299,12 +1211,6 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
 // (peFlags = 0) and realize it; needs at least 0x300 bytes.
 // ===========================================================================
 // @early-stop
-// byte-copy-loop scheduling wall (~88.6%): the prologue/size-check/tail all match
-// and the loop produces the identical palette, but MSVC schedules the four per-
-// entry byte stores (R/G/B + the peFlags=0) in a different order and picks a
-// different `d` base displacement than retail (retail: R,G,B,flags from d=buf+1;
-// recompile: R,flags,G,B from d=buf+2). Not source-steerable (cf. the entropy-
-// prone decoder tails in Image.cpp). Logic byte-faithful.
 RVA(0x00177400, 0x76)
 i32 ApiCallerStubs::CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
     PALETTEENTRY pal[256];

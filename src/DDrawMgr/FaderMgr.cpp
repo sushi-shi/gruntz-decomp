@@ -49,10 +49,6 @@ void CFaderMgr::FreeAll() {
 // to the array - tracing + deleting the fader on any failure. /GX EH frame; the
 // SetAtGrow(GetSize(), pNew) append is inlined.
 // @early-stop
-// EH-state + inlined-SetAtGrow wall: six near-identical cases each wrap a
-// destructible CFaderInit local (embedded ~CString) in a per-case /GX try region;
-// MSVC5's EH-state machine + the inlined CObArray grow do not reproduce
-// byte-for-byte from this spelling. Logic complete; parked for the final sweep.
 RVA(0x0017d9c0, 0x786)
 CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
     CFader* fader = 0;
@@ -252,9 +248,6 @@ RVA_COMPGEN(0x0017e160, 0x8, ??1CFxModeT1@@QAE@XZ)
 // __thiscall, one arg.
 // ===========================================================================
 // @early-stop
-// Regalloc wall: logic byte-for-byte correct, but MSVC5 assigns this->ebp /
-// pFader->ebx while retail uses this->ebx / pFader->ebp (and reads m_nSize into a
-// fresh temp vs a kept reg). Not source-steerable. ~67%.
 RVA(0x0017e170, 0x5b)
 void CFaderMgr::Remove(CFader* pFader) {
     i32 i = 0;
@@ -329,10 +322,6 @@ RVA_COMPGEN(0x0017e240, 0x51, ??1CFaderArray@@UAE@XZ)
 // reloc-masked. (Was a declared-only slot in <Gruntz/FaderMgr.h>.)
 // ===========================================================================
 // @early-stop
-// regalloc wall (~81%, same family as TArray::Serialize @0x39fa0 / the ArraySerialize
-// twin): the SetSize load/grow/shrink logic + the store/load branch senses are byte-
-// faithful, but retail pins this->ebx / ar->esi while cl lands ebp/edi, cascading the
-// scratch edx/ecx picks through the realloc lea chains. Not source-steerable.
 RVA(0x0017e2a0, 0x188)
 RVA_COMPGEN(0x0017e430, 0x1e, ??_GCFaderArray@@UAEPAXI@Z)
 void CFaderArray::Serialize(CArchive& ar) {

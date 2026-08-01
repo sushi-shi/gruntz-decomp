@@ -8,9 +8,6 @@
 // ::SendMessageA call is an uncached memory-indirect `ff 15 [::SendMessageA]` (the
 // global is called directly, never hoisted into a register).
 // @early-stop
-// Both gates are POSITIVE-form so their `return 0` exits tail-merge into retail's
-// shared /GX epilogue (docs/patterns/positive-gate-enables-shrink-wrap.md);
-// residual is the callee-saved assignment (retail this->edi, next->esi, data->ebp).
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     if (m_list.GetCount() > 0) {
