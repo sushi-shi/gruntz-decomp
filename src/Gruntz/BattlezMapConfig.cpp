@@ -3075,20 +3075,51 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
     while (g != 0) {
         if (g->m_7c->m_notify == &CreateInGameIcon && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
+            // The table at 0x42c528 has FOURTEEN entries and every one of them lands on
+            // 0x2c32e, so cl5 still had fourteen case labels when it ran the density
+            // test and tail-merged the arms afterwards. Fourteen labels falling through
+            // to ONE body is already a single arm by then, and cl emits a plain
+            // `sub/cmp/ja` range check with no table - each label needs its own body.
             switch (g->m_124) {
                 case 0x33:
+                    special = 1;
+                    break;
                 case 0x34:
+                    special = 1;
+                    break;
                 case 0x35:
+                    special = 1;
+                    break;
                 case 0x36:
+                    special = 1;
+                    break;
                 case 0x37:
+                    special = 1;
+                    break;
                 case 0x38:
+                    special = 1;
+                    break;
                 case 0x39:
+                    special = 1;
+                    break;
                 case 0x3a:
+                    special = 1;
+                    break;
                 case 0x3b:
+                    special = 1;
+                    break;
                 case 0x3c:
+                    special = 1;
+                    break;
                 case 0x3d:
+                    special = 1;
+                    break;
                 case 0x3e:
+                    special = 1;
+                    break;
                 case 0x3f:
+                    special = 1;
+                    break;
                 case 0x40:
                     special = 1;
                     break;

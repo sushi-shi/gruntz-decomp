@@ -822,12 +822,8 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
 // the container's serialize walk (117280).
 // Retail lowers the tag test as a JUMP TABLE: `lea eax,[ecx-1]; cmp eax,7; ja
 // 0x1176ab; jmp [eax*4+0x5176b4]`, and that eight-entry table at 0x1176b4 is part of
-// this COMDAT - hence the 0xa4 extent. cl5 merges our two identical arms and emits a
-// `cmp eax,7 / cmp eax,8` range test with no table at all; retail keeps the arms
-// distinct (the 1-7 arm `jne`s forward to the shared `mov eax,1`, the 8 arm falls
-// into it and so inverts to `je`). Keeping the arms unmergeable is what is left.
+// this COMDAT - hence the 0xa4 extent.
 // ---------------------------------------------------------------------------
-// @early-stop
 RVA(0x00117630, 0xa4)
 i32 __stdcall
 SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o) {
@@ -836,27 +832,62 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
     }
     i32 tag = o->m_typeId;
     s->Write(&tag, 4);
+    // The table at 0x1176b4 has EIGHT entries - seven on 0x117666 and one on 0x117686 -
+    // so cl5 still had eight case labels when it made the density decision. It counts
+    // labels only AFTER folding identical arms, so each tag needs its own arm; the seven
+    // then tail-merge back to the single block retail shows.
     switch (tag) {
         case 1:
+            // Retail's branch polarity gives the spelling: 1-7 is `test eax,eax; jne
+            // 0x1176a1` into the shared `mov eax,1`, with its zero exit falling through
+            // locally (reusing the call's eax) - i.e. `if (v) break; return 0;`.
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 2:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 3:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 4:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 5:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 6:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 7:
-            // retail keeps tags 1-7 and tag 8 as TWO jump-table arms (table 0x5176b4)
-            // and materializes the result branchily: one shared `mov eax,1; ret` at
-            // 0x1176a1 that arm 1-7 `jne`s forward to (its failure exit is a local
-            // `pop edi; pop esi; ret 0x14` reusing the call's zero), while arm 8 falls
-            // INTO it and so inverts to `je 0x1176ab` (the shared `xor eax,eax`).
-            // cl5 folds every `if (c) return 1; return 0;` spelling back to neg/sbb/neg
-            // and then cross-jumps the two arms into one range-tested block.
-            return o->ValidateByType(s, mode, typeId, pObj) != 0;
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 8:
-            return o->ValidateByType(s, mode, typeId, pObj) != 0;
+            // Arm 8 sits immediately above that shared tail and so inverts: `test
+            // eax,eax; je 0x1176ab` into the shared `xor eax,eax`, falling INTO the
+            // `mov eax,1` - i.e. `if (!v) return 0; break;`. Spelling both arms the
+            // same way lets cl5 merge them, which kills the 8-entry table at 0x1176b4.
+            if (o->ValidateByType(s, mode, typeId, pObj) == 0) {
+                return 0;
+            }
+            break;
         default:
             return 0;
     }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -866,7 +897,6 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
 // 0x1d39` -> 0x113d40), the rest CTileTriggerLogic::ValidateByType (0x1abe ->
 // 0x113a90); returns success.  __stdcall helper of the serialize walk (117280).
 // ---------------------------------------------------------------------------
-// @early-stop
 RVA(0x00117710, 0xc0)
 i32 __stdcall
 SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o) {
@@ -875,22 +905,46 @@ SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLog
     }
     i32 tag = o->m_typeTag;
     s->Write(&tag, 4);
+    // Six entries in the table at 0x1177b8 on three targets, so six case labels were
+    // still alive at cl5's density decision - one arm per label, tail-merging after.
+    // Retail shares one `mov eax,1; ret` at 0x1177a5; arms 0x16 and 0x15/17/18/19 `jne`
+    // to it with a local zero-return fallthrough, and arm 0x1a falls into it so its
+    // guard inverts to `je 0x1177af`. Block order in .text is 0x16, the group, 0x1a.
     switch (tag) {
         case 0x16:
-            // as in ApplyA: retail shares one `mov eax,1; ret` at 0x1177a5; arms 0x16
-            // and 0x15/17/18/19 `jne` to it with a local zero-return fallthrough, and
-            // arm 0x1a falls into it so its guard inverts to `je 0x1177af`.
-            return (static_cast<CGiantRockLogic*>(o))->ApplyByType(s, mode, typeId, pObj) != 0;
+            if ((static_cast<CGiantRockLogic*>(o))->ApplyByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 0x15:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 0x17:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 0x18:
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 0x19:
-            return o->ValidateByType(s, mode, typeId, pObj) != 0;
+            if (o->ValidateByType(s, mode, typeId, pObj)) {
+                break;
+            }
+            return 0;
         case 0x1a:
-            return o->ValidateByType(s, mode, typeId, pObj) != 0;
+            if (o->ValidateByType(s, mode, typeId, pObj) == 0) {
+                return 0;
+            }
+            break;
         default:
             return 0;
     }
+    return 1;
 }
 
 static void* RegSwitchTail(

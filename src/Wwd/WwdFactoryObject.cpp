@@ -852,8 +852,9 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 // 3..8) is part of this COMDAT - hence the 0x5c extent. Four of its six slots point
 // at the shared `mov eax,1; ret 0x10` tail, i.e. retail did NOT fold the empty arms
 // into the default; cl5 folds ours, so we emit sub/je/dec/je/sub/jne instead and the
-// table is missing. That fold is what is left to steer.
-// @early-stop
+// table is missing. The inactive arms therefore each need their own `return 1;` so
+// they survive cl5's identical-arm fold into the density test (the active arms keep
+// their `break` - see docs/patterns/switch-empty-arms-dedup-before-jumptable.md).
 RVA(0x0015c900, 0x5c)
 i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) {
     if (ar == 0) {
@@ -861,25 +862,23 @@ i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) 
     }
     switch (type) {
         case 3:
-            break;
+            return 1;
         case 4:
             if (Serialize(ar) == 0) {
                 return 0;
             }
             break;
         case 5:
-            break;
+            return 1;
         case 6:
-            break;
+            return 1;
         case 7:
             if (Deserialize(ar) == 0) {
                 return 0;
             }
             break;
         case 8:
-            break;
-        default:
-            break;
+            return 1;
     }
     return 1;
 }
