@@ -35,8 +35,15 @@ i32 Font::AllocateMemory(i32 count) {
 
     for (i32 i = 0; i < m_count; i++) {
         m_surfaces[i] = 0;
-        m_glyphs[i].width = 0;
-        m_glyphs[i].height = 0;
+        // A whole-Glyph copy, not two member stores: retail loads m_glyphs ONCE per
+        // iteration (0x17977a `mov edi,[esi+0xc]`) and materialises the zero TWICE
+        // (edx for the surface slot + the height, ecx for the width) - the signature
+        // of a struct assignment after constant propagation. Writing the two members
+        // through m_glyphs[i] makes cl reload the member between them.
+        Glyph g;
+        g.width = 0;
+        g.height = 0;
+        m_glyphs[i] = g;
     }
 
     m_maxHeight = 0;
