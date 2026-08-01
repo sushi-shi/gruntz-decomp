@@ -127,8 +127,8 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_38->m_1a0.Advance(g_engineFrameDelta);
     }
     CAniAdvanceCursor* anim = &m_38->m_1a0;
-    i32 active = m_38->m_1a0.m_28;
-    if (active != 0 && anim->m_20 == 0) {
+    i32 active = m_38->m_1a0.m_finished;
+    if (active != 0 && anim->m_frameTicksLeft == 0) {
         if (anim != 0) {
             anim->Recompute(1);
         }

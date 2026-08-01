@@ -169,7 +169,7 @@ i32 CLightFx::RebindNode() {
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    if (m_38->m_1a0.m_28 && !m_38->m_1a0.m_20 && m_anchorB) {
+    if (m_38->m_1a0.m_finished && !m_38->m_1a0.m_frameTicksLeft && m_anchorB) {
         m_38->m_flags |= 0x10000;
     }
     return 0;

@@ -85,7 +85,7 @@ void CSingleAnimation::RegisterActs() {
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
+    if (m_38->m_1a0.m_finished != 0 && m_38->m_1a0.m_frameTicksLeft == 0) {
         m_38->m_flags |= 0x10000;
     }
     return 0;

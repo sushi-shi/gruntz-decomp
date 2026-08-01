@@ -220,7 +220,7 @@ i32 CGrunt::RunEntranceMove() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     // The +0x1a0 cursor's done-gates (m_28 paused-done, m_20 per-frame timer).
     CAniAdvanceCursor* cur = &m_38->m_1a0;
-    if (!((cur->m_28 != 0 && cur->m_20 == 0) || m_moveMode == 0)) {
+    if (!((cur->m_finished != 0 && cur->m_frameTicksLeft == 0) || m_moveMode == 0)) {
         return 0;
     }
 
@@ -492,7 +492,7 @@ i32 CGrunt::LoadEntranceConfig() {
         LoadAnimNameTable(0, 0);
     }
 
-    if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
+    if (m_38->m_1a0.m_finished == 0 || m_38->m_1a0.m_frameTicksLeft != 0) {
         return 0;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -512,7 +512,7 @@ RVA(0x00068370, 0x14c)
 i32 CGrunt::RearmEntranceDrop() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
+    if (m_38->m_1a0.m_finished != 0 && m_38->m_1a0.m_frameTicksLeft == 0) {
         m_22c = 0;
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseItem[GRUNT_ITEM2]);
@@ -797,7 +797,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
+    if (m_38->m_1a0.m_finished == 0 || m_38->m_1a0.m_frameTicksLeft != 0) {
         return 0;
     }
 
@@ -1110,7 +1110,7 @@ finalize:
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
+    if (m_38->m_1a0.m_finished != 0 && m_38->m_1a0.m_frameTicksLeft == 0) {
         if (m_freezeUnfrozen != 0) {
             m_entranceActive = 0;
             ReadConfigFromButeMgr();
@@ -1151,7 +1151,7 @@ i32 CGrunt::FinishEntranceMove() {
     // 0x15c360 = CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* cur = &m_38->m_1a0; // one +0x1a0 sub-object base, two member reads
-    if (cur->m_28 == 0 || cur->m_20 != 0) {
+    if (cur->m_finished == 0 || cur->m_frameTicksLeft != 0) {
         return 0;
     }
     if (m_36c == 0) {

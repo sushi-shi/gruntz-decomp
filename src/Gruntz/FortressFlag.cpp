@@ -405,7 +405,7 @@ RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_38;
-    if (o->m_1a0.m_28 != 0 && o->m_1a0.m_20 == 0) {
+    if (o->m_1a0.m_finished != 0 && o->m_1a0.m_frameTicksLeft == 0) {
         o->m_flags |= 0x10000;
     }
     return 0;

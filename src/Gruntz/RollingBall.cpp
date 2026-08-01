@@ -226,7 +226,7 @@ i32 CRollingBall::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* anim = m_38;
-    if (anim->m_1a0.m_28 != 0 && anim->m_1a0.m_20 == 0) {
+    if (anim->m_1a0.m_finished != 0 && anim->m_1a0.m_frameTicksLeft == 0) {
         anim->m_flags |= 0x10000;
         return 0;
     }

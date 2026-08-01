@@ -304,7 +304,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             // sub-mgr reports active-but-not-idle, then done.
             for (i32 i = 0; i < 8; i++) {
                 CWwdGameObjectA* e = m_expl[i];
-                if (e->m_1a0.m_28 != 0 && e->m_1a0.m_20 == 0) {
+                if (e->m_1a0.m_finished != 0 && e->m_1a0.m_frameTicksLeft == 0) {
                     e->m_stateFlags |= 1;
                 }
             }
@@ -386,7 +386,7 @@ i32 CBootyState::LevelMsgHudDriver() {
     // latch the already-landed explosion sprites active.
     for (i32 j = 0; j < m_slot; j++) {
         CWwdGameObjectA* e = m_expl[j];
-        if (e->m_1a0.m_28 != 0 && e->m_1a0.m_20 == 0) {
+        if (e->m_1a0.m_finished != 0 && e->m_1a0.m_frameTicksLeft == 0) {
             e->m_stateFlags |= 1;
         }
     }

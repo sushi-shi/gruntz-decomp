@@ -616,7 +616,7 @@ i32 CGrunt::StepAttackFire() {
 
     // finish tail (0x61f74): bail while the cursor is still un-armed or running.
     CWwdGameObjectA* r = m_38;
-    if ((r->m_1a0.m_28 == 0 || r->m_1a0.m_20 != 0) && flag == 0) {
+    if ((r->m_1a0.m_finished == 0 || r->m_1a0.m_frameTicksLeft != 0) && flag == 0) {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
@@ -856,7 +856,7 @@ RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
     i32 ready = m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         if (m_arrived != 0) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -1251,7 +1251,7 @@ tail:
         // The armed-but-not-running gate, same as LoadVehicleGruntAnimations':
         // retail `cmp [eax+0x1c8],edi; je <ret>` then `cmp [eax+0x1c0],edi; jne <ret>`
         // = m_28 != 0 && m_20 == 0. Both terms were inverted here.
-        if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
+        if (m_38->m_1a0.m_finished != 0 && m_38->m_1a0.m_frameTicksLeft == 0) {
             ResetEntranceAnimation(0, 0, 0);
         }
         return 0;
@@ -1457,7 +1457,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         if (m_arrived) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -1666,10 +1666,10 @@ RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 == 0) {
+    if (sub->m_finished == 0) {
         return 0;
     }
-    if (sub->m_20 != 0) {
+    if (sub->m_frameTicksLeft != 0) {
         return 0;
     }
     if (m_deathType == GRUNT_DEATH_WARPOUT) {
@@ -1931,7 +1931,7 @@ RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 == 0 || sub->m_20 != 0) {
+    if (sub->m_finished == 0 || sub->m_frameTicksLeft != 0) {
         return 0;
     }
     if (m_health <= 0) {
@@ -1975,7 +1975,7 @@ i32 CGrunt::StepArrivalCommitB() {
     // 0x15c360 is CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 == 0 || sub->m_20 != 0) {
+    if (sub->m_finished == 0 || sub->m_frameTicksLeft != 0) {
         return 0;
     }
     m_entranceActive = 0;
@@ -2161,7 +2161,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
         );
     }
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         m_entranceActive = 0;
         ResetEntranceAnimation(1, 0, 0);
     }
@@ -2191,7 +2191,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         );
     }
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 == 0 || sub->m_20 != 0) {
+    if (sub->m_finished == 0 || sub->m_frameTicksLeft != 0) {
         return 0;
     }
     m_entranceActive = 0;

@@ -394,7 +394,7 @@ i32 CWwdGameObjectC::SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl
 RVA(0x0015c290, 0x2f)
 void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
     m_boundObject = src;
-    m_28 = 1;
+    m_finished = 1;
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
@@ -429,8 +429,8 @@ void CAniAdvanceCursor::Setup(CAniElement* src) {
         e = 0;
     }
     m_element = e;
-    m_20 = 0;
-    m_28 = 0;
+    m_frameTicksLeft = 0;
+    m_finished = 0;
     v = e->m_drawValue;
     m_pendingDraw = v;
     m_curDraw = v;
@@ -457,13 +457,13 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
         e = 0;
     }
     m_element = e;
-    m_28 = 0;
+    m_finished = 0;
     i32 v = e->m_drawValue;
     m_scale = 1.0f;
     m_pendingDraw = v;
     m_curDraw = v;
     if (resetGate != 0) {
-        m_20 = 0;
+        m_frameTicksLeft = 0;
     }
 }
 
@@ -478,24 +478,24 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     }
 
     // --- per-frame timer decrement --------------------------------------------
-    if (m_20 > 0) {
+    if (m_frameTicksLeft > 0) {
         if (m_24 != 0) {
-            if (elapsed >= m_20) {
-                m_20 = 0;
+            if (elapsed >= m_frameTicksLeft) {
+                m_frameTicksLeft = 0;
                 m_curDraw = m_pendingDraw;
             } else {
-                m_20 -= elapsed;
+                m_frameTicksLeft -= elapsed;
                 return m_curDraw;
             }
         } else {
-            m_20 -= 1;
+            m_frameTicksLeft -= 1;
             return m_curDraw;
         }
     } else {
         m_curDraw = m_pendingDraw;
     }
 
-    if (m_28 == 0) {
+    if (m_finished == 0) {
         CWwdGameObjectA* ctx = m_boundObject;
         CAniDesc* d = m_element;
 
@@ -674,12 +674,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         // --- reload the per-frame timer (optionally float-scaled) -------------
         CAniDesc* rd = m_element;
         i32 reload = rd->m_frameTime;
-        m_20 = reload;
+        m_frameTicksLeft = reload;
         m_24 = (~rd->m_flags) & 1;
         // retail compares the float's RAW BITS against 0x3f800000 with an integer
         // `cmp` (no FPU compare), so the 1.0f test is spelled on the bit-pattern arm
         if (m_scaleBits != 0x3f800000) {
-            m_20 = static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
+            m_frameTicksLeft =
+                static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }
 
         // --- select the NEXT descriptor (10-way loop-mode on rd->m_loopMode) --------
@@ -693,13 +694,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         CAniDesc* nd;
         switch (modeWord & 0xffff) {
             case 9: // pause
-                m_28 = 1;
+                m_finished = 1;
                 break;
             case 8: { // reset to the first descriptor and unscaled timing
                 if (m_14 != 0) {
                     m_index = 0;
                     m_element = static_cast<CAniDesc*>(m_14->AtChecked(0));
-                    m_28 = 0;
+                    m_finished = 0;
                     m_scale = 1.0f;
                     m_pendingDraw = m_element->m_drawValue;
                     m_curDraw = m_element->m_drawValue;
@@ -714,8 +715,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     m_element = static_cast<CAniDesc*>(m_14->AtChecked(0));
                 }
                 if (m_element != 0) {
-                    m_28 = 0;
-                    m_20 = 0;
+                    m_finished = 0;
+                    m_frameTicksLeft = 0;
                     m_curDraw = m_pendingDraw;
                     m_pendingDraw = m_element->m_drawValue;
                 }
@@ -828,7 +829,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
     // --- return the per-frame draw value, consuming it when buffer-owned ------
     if (m_2c != 0) {
-        if (m_20 != 0) {
+        if (m_frameTicksLeft != 0) {
             i32 r = m_curDraw;
             m_curDraw = 0;
             return r;
@@ -837,7 +838,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         m_pendingDraw = 0;
         return r;
     }
-    if (m_20 != 0) {
+    if (m_frameTicksLeft != 0) {
         return m_curDraw;
     }
     return m_pendingDraw;
@@ -895,9 +896,9 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
         return 0;
     }
     ar->Write(&m_index, 4);
-    ar->Write(&m_20, 4);
+    ar->Write(&m_frameTicksLeft, 4);
     ar->Write(&m_24, 4);
-    ar->Write(&m_28, 4);
+    ar->Write(&m_finished, 4);
     ar->Write(&m_2c, 4);
     ar->Write(&m_pendingDraw, 4);
     ar->Write(&m_curDraw, 4);
@@ -925,9 +926,9 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
         return 0;
     }
     ar->Read(&m_index, 4);
-    ar->Read(&m_20, 4);
+    ar->Read(&m_frameTicksLeft, 4);
     ar->Read(&m_24, 4);
-    ar->Read(&m_28, 4);
+    ar->Read(&m_finished, 4);
     ar->Read(&m_2c, 4);
     ar->Read(&m_pendingDraw, 4);
     ar->Read(&m_curDraw, 4);
@@ -961,8 +962,8 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
             m_element = e;
         }
         if (m_element != 0) {
-            m_20 = 0;
-            m_28 = 0;
+            m_frameTicksLeft = 0;
+            m_finished = 0;
             m_curDraw = m_pendingDraw;
             m_pendingDraw = m_element->m_drawValue;
         }

@@ -734,7 +734,7 @@ RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         ResolveMovingAnimation();
     }
     return 0;
@@ -833,7 +833,7 @@ RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
         if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
             h->m_pendingFx = 0;
@@ -850,7 +850,7 @@ RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         ResolveMovingAnimation();
     }
     return 0;
@@ -884,7 +884,7 @@ RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         CWwdGameObjectA* o = m_object;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;

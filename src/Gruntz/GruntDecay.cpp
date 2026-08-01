@@ -38,10 +38,10 @@ i32 CGrunt::LoadGruntDecayConfig() {
         }
     }
     CAniAdvanceCursor* sub = &m_38->m_1a0;
-    if (sub->m_28 == 0) {
+    if (sub->m_finished == 0) {
         return 0;
     }
-    if (sub->m_20 != 0) {
+    if (sub->m_frameTicksLeft != 0) {
         return 0;
     }
     i32 mode = m_deathType;

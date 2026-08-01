@@ -670,7 +670,7 @@ i32 CProjectile::DetachRenderObj() {
     // matching the cast-at-use pattern of the sibling site below (~line 1322).
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWwdGameObjectA* r = m_38;
-    if (r->m_1a0.m_28 != 0 && r->m_1a0.m_20 == 0) {
+    if (r->m_1a0.m_finished != 0 && r->m_1a0.m_frameTicksLeft == 0) {
         r->m_flags |= 0x10000;
     }
     return 0;

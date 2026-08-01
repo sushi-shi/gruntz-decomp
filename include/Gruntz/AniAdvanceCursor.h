@@ -56,16 +56,16 @@ public:
     // m_stateFlags/m_screenX/m_screenY, and its m_frameCursor/m_frameSeq/m_curFrame
     // (+0x190/+0x194/+0x198) are CWwdGameObjectA::m_190/m_sprite/m_layer.
     CWwdGameObjectA* m_boundObject;
-    CAniElement* m_14;   // +0x14  descriptor playlist (the resolved geo source;
-                         //        ex "m_srcRef" - the serialize map value)
-    CAniDesc* m_element; // +0x18  current descriptor/element (transient)
-    i32 m_index;         // +0x1c  playlist index
-    u32 m_20;            // +0x20  per-frame timer remaining (ticks)
-    i32 m_24;            // +0x24  "decrement-each-tick" flag
-    i32 m_28;            // +0x28  paused/done flag
-    i32 m_2c;            // +0x2c  owns-buffer flag (consume the draw value on read)
-    i32 m_pendingDraw;   // +0x30  pending draw value
-    i32 m_curDraw;       // +0x34  current draw value
+    CAniElement* m_14;    // +0x14  descriptor playlist (the resolved geo source;
+                          //        ex "m_srcRef" - the serialize map value)
+    CAniDesc* m_element;  // +0x18  current descriptor/element (transient)
+    i32 m_index;          // +0x1c  playlist index
+    u32 m_frameTicksLeft; // +0x20  per-frame timer remaining (ticks)
+    i32 m_24;             // +0x24  "decrement-each-tick" flag
+    i32 m_finished;       // +0x28  paused/done flag
+    i32 m_2c;             // +0x2c  owns-buffer flag (consume the draw value on read)
+    i32 m_pendingDraw;    // +0x30  pending draw value
+    i32 m_curDraw;        // +0x34  current draw value
     // +0x38 float speed/scale multiplier. Advance tests it against 1.0f with an
     // INTEGER compare on 0x3f800000 (no FPU compare), so the same four bytes are read
     // as a float and as a word - both readings are named.

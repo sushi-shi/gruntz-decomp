@@ -356,7 +356,7 @@ dispatch:
     }
     {
         CAniAdvanceCursor* sub = &m_38->m_1a0;
-        if (sub->m_28 != 0 && sub->m_20 == 0) {
+        if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {

@@ -41,6 +41,7 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 //
 // targetType (arg7, [esp+0x2c]) is never read: retail threads the trigger/clear
 // coordinates through the masked posX/posY pair and the CellHitTest out-params.
+// @early-stop
 RVA(0x000d1b60, 0xc90)
 i32 CPlay::ExecCommand(
     i32 targetIndex,

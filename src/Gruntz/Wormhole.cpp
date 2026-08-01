@@ -267,7 +267,7 @@ i32 CWormhole::SpawnPartners() {
     // Gate: only spawn partners when the object is "open" (m_1c8 set) and not
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).
     CWwdGameObjectA* g = m_38;
-    if (g->m_1a0.m_28 == 0 || g->m_1a0.m_20 != 0) {
+    if (g->m_1a0.m_finished == 0 || g->m_1a0.m_frameTicksLeft != 0) {
         return 0;
     }
     g->m_flags |= 0x10000;
@@ -463,7 +463,7 @@ i32 CGruntPuddle::Remove() {
     }
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_38;
-    if (o->m_1a0.m_28 != 0 && o->m_1a0.m_20 == 0) {
+    if (o->m_1a0.m_finished != 0 && o->m_1a0.m_frameTicksLeft == 0) {
         if (m_placed != 0) {
             o->m_stateFlags |= 1;
         } else {
@@ -684,10 +684,10 @@ RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
-    if (m_38->m_1a0.m_28 == 0) {
+    if (m_38->m_1a0.m_finished == 0) {
         return 0;
     }
-    if (m_38->m_1a0.m_20 != 0) {
+    if (m_38->m_1a0.m_frameTicksLeft != 0) {
         return 0;
     }
 
@@ -713,7 +713,7 @@ RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWwdGameObjectA* a = m_38;
-    if (a->m_1a0.m_28 != 0 && a->m_1a0.m_20 == 0) {
+    if (a->m_1a0.m_finished != 0 && a->m_1a0.m_frameTicksLeft == 0) {
         if (m_object->m_124 == 1) {
             a->m_flags |= 0x10000;
         } else {
