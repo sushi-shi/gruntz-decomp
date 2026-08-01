@@ -51,7 +51,12 @@ inline CInputDevRoot::CInputDevRoot() {
 inline CInputDevBase::CInputDevBase() {}
 
 inline CInputDevice::CInputDevice() {
-    memset(m_keyTable, 0, sizeof(m_keyTable));
+    // Loop, not memset: cl expands both to the same `rep stos` of 0x20 dwords, but the
+    // memset spelling makes the loop's zero look loop-invariant and steals the
+    // callee-saved register `this` needs in InitA (see the zero-store-spelling pattern).
+    for (i32 i = 0; i < 0x20; i++) {
+        m_keyTable[i] = 0;
+    }
     m_modeFlags = 0;
 }
 
@@ -134,10 +139,14 @@ void DirectInputMgr2::Shutdown() {
 // object exists, new's a 0x338-byte CInputDevice, inits its fields + stamps its
 // foreign vftable, then CreateDev(m_directInput, GUID_SysKeyboard, m_owner, flags). On failure
 // scalar-deletes it (m_deviceA) and returns 0; on success keeps it in m_deviceA, returns 1.
-// @early-stop
-// zero-register-pin wall (docs/patterns/zero-register-pinning.md): logic + offsets
-// byte-exact, residual is the this<->0 ebx/esi swap + the rep-stos `lea edi` hoist
-// scheduling, no /O2 source lever flips it. 86.5%.
+// (ex-wall, RETIRED 2026-08-01 - EXACT. The "this<->0 ebx/esi swap" was real but its
+// cause was NOT here: CInputDevice's inline ctor cleared m_keyTable with `memset`, which
+// makes cl treat the clear's zero as loop-invariant and hoist it into the callee-saved
+// register `this` needs. Spelling the same clear as a `for` loop - cl emits the identical
+// `rep stos` of 0x20 dwords - frees ebx for `this` and lands retail's colouring exactly.
+// 86.35 -> 100. A 400-cell forests x islands search (25 AST mutations x 24 TU-state
+// trials, `permute variants --state-trials 24`) had already come back completely flat on
+// this function, which is what said the residue was a SOURCE bug, not codegen noise.)
 RVA(0x00132e20, 0xb1)
 i32 DirectInputMgr2::InitA(u32 flags) {
     IDirectInputA* di = m_directInput;
@@ -577,9 +586,13 @@ void CInputDevice::ReleaseDevices() {
 // epilogue pop-scheduling wall, 94.6%: body + both flag tests are byte-exact (the
 // pointer-local store routes index 0 so cl re-reads m_modeFlags and reuses al=1 across both
 // `if (m_modeFlags & MODE_ASYNC)` tests; see docs/patterns/pointer-store-defeats-flag-cse.md). Residual
-// is only the else-branch epilogue: retail interleaves `pop edi`/`pop esi` between the
-// last two stores, cl hoists both pops to the block head - a scheduler choice no source
-// spelling steers. Deferred to the final sweep.
+// is only the else-branch epilogue: retail interleaves `pop edi` between the last two
+// DIK stores, cl hoists both pops to the block head. SEARCHED 2026-08-01 and it did not
+// move: 9 hand spellings (all-m_keyTable, all-pointer, mixed, memset, memset-via-pointer,
+// `& MODE_ASYNC != 0`, pointer-indexed second block, pointer only on the last store) plus
+// a 280-cell forests x islands run (46 AST mutations x 48 TU-state trials,
+// `permute variants 0x00133c30 --max-depth 3 --limit 280 --state-trials 48`) - every one
+// of the 280 cells scored exactly 94.5946 with size 201. Genuine scheduler wall.
 RVA(0x00133c30, 0xc9)
 void CInputDevice::SetupKeyTable() {
     u32* keyTable = m_keyTable;
