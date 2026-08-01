@@ -272,6 +272,13 @@ def compare(bi, ti, max_flips=4):
         # has two destinations that begin with DIFFERENT instructions. A guard's
         # destination is the same code on both sides. (Found on CTriggerMgr::
         # SetupTubeAnim @0x50a50, whose two arms push different string relocs.)
+        #
+        # VALIDATED against every row with a known verdict (2026-08-01): the three
+        # confirmed real defects were temporarily reverted and re-sieved, and all come
+        # back GUARD - CGrunt::RectContains #9 `jl->jge=dest`, RectContainsGated #10,
+        # and RectSegProbe #1/#4/#11 (its #8 is a genuine arm selector). SetupTubeAnim
+        # #0/#10 correctly demote to =arm. Four functions, seven rows, no
+        # misclassification either way - so the 43->9 cut is aggressive but correct.
         at_b = {off: (mn, op) for off, mn, op in bi}
         at_t = {off: (mn, op) for off, mn, op in ti}
         guard = []
