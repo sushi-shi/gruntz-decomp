@@ -511,7 +511,8 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     return 0;
 }
 
-// @early-stop  (94.46% - logic/frame/branches all faithful)
+// @early-stop  (95.8% - logic/frame/branches all faithful; the CFG is now
+// block-for-block identical with retail, verified with `sema disasm --blocks --diff`)
 // Residual is three documented walls, not logic:
 //   (1) prologue order + callee-save shrink-wrap: retail emits `push -1` before
 //       `mov eax,fs:0` and pushes esi/edi UPFRONT; our /O2 swaps the first pair
@@ -522,6 +523,9 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 //   (3) the 4 wsprintfA + 1 SetDlgItemTextA calls are `call [__imp__*]` (DIR32
 //       reloc) vs retail's absolute IAT slot - reloc-typing scoring artifact,
 //       code bytes identical (reloc-typing-vptr-global.md).
+//   (4) frame slot order in the 0x18-byte block below `title`: retail is
+//       CFile@+0x10 / temp-flag@+0x20 / CString-temp@+0x24, ours is flag@+0x10 /
+//       CString@+0x14 / CFile@+0x18. `title`@+0x28 and `readBuf`@+0xa8 agree.
 RVA(0x000e44e0, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];

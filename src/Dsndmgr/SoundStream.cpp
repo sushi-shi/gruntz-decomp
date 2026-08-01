@@ -225,14 +225,9 @@ void SoundStream::Free() {
 // rezalloc-placement-new-no-eh-frame.md) fell with the real StreamVoice :
 // DSoundCloneInst derivation: plain `new T` over the ::operator-new(==RezAlloc)
 // allocator now emits the retail /GX frame (byte-identical prologue).
-// @early-stop
-// 40.7 -> 54.7 via the shared-exit spelling; residual is the callee-saved count
-// (retail pins arg `dsFlags` in ebp, 4 saves vs our 3).
-// Every early-out `return 0` is a `goto fail` onto ONE shared bottom exit, which
-// is what retail emits: a single fs:0-restoring epilogue that all six gates
-// `jmp` into (the per-return spelling inlined the whole 8-instruction unwind at
-// each of them - 7 rets vs retail's 1).
-// docs/patterns/positive-gate-enables-shrink-wrap.md (shared-exit half).
+// ONE exit: retail's six gates each emit `xor eax,eax / jmp` into a single
+// fs:0-restoring epilogue and the success path `mov eax,<reg>` right above it, i.e.
+// the result is a variable returned once - not a `fail:` label with its own unwind.
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamBuffer(
     WaveFormatX* fmt,
@@ -245,19 +240,19 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     IDirectSoundBuffer* out;
     DSBUFFERDESC desc;
     i32 hr;
-    StreamVoice* voice;
+    StreamVoice* voice = 0;
 
     if (m_initialized == 0) {
-        goto fail;
+        goto done;
     }
     if (bytes == 0) {
-        goto fail;
+        goto done;
     }
     if (fmt == 0) {
-        goto fail;
+        goto done;
     }
     if (fmt->wFormatTag != 1) {
-        goto fail;
+        goto done;
     }
 
     wf.wFormatTag = fmt->wFormatTag;
@@ -280,10 +275,10 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
-        goto fail;
+        goto done;
     }
     if (out == 0) {
-        goto fail;
+        goto done;
     }
 
     // Plain `new StreamVoice` - ::operator new IS RezAlloc (0x1b9b46; reloc-masked
@@ -295,9 +290,8 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     voice->m_sampleRate = fmt->nAvgBytesPerSec;
     voice->m_sampleCount = bytes;
     voice->ComputeDuration();
+done:
     return voice;
-fail:
-    return 0;
 }
 
 // ---------------------------------------------------------------------------
