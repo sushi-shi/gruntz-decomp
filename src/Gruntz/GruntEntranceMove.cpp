@@ -791,7 +791,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // name CString, latches m_entranceStamped=1, and kicks the move-kind apply (m_moveVariant ? : m_moveKind).
 // On a later pass (m_entranceStamped!=0) it (when arrived) builds the three HUD stat sprites,
 // re-latches the "A"(idle) anim-set node into m_objAux->m_1c, drives the move state
-// (LoadGruntTypeTable(m_19c,1,0,0)), clears m_entranceActive, then either - when the
+// (LoadGruntTypeTable(m_toolId,1,0,0)), clears m_entranceActive, then either - when the
 // grunt's last tile carries the 0x80 attribute - commits the arrival move
 // (SetEntrancePos(1,1); tileMgr->CommitArrivalMove(this, lastX, lastY)) or else
 // bumps the HUD z-clamp (m_object->m_74 = m_60 + 0x186a0; m_8 |= 0x20000).

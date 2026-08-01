@@ -157,7 +157,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         overrideVal = -1;
         selectVal = 0;
         // ASSIGN-then-override, not `?:`. Retail hoists the else-value into the
-        // destination BEFORE the compare (`mov eax,edx / jle / mov eax,[m_19c]`),
+        // destination BEFORE the compare (`mov eax,edx / jle / mov eax,[m_toolId]`),
         // so the low arm needs no jump at all; a `?:` gives cl two arms joined by
         // a `jmp`, which is two extra instructions on each of the two sites.
         i32 cap = level;

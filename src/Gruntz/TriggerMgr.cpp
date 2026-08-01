@@ -81,11 +81,6 @@ static char s_CombatTimeout[] = "CombatTimeout";
 // of grid row g->m_tileOwnerHi for the live cell whose display object (cell->m_10) is nearest g's
 // tile position, but only when that squared distance is below the cutoff 2*g->m_defenderRadius.
 // @early-stop
-// 84->89.5: the m_5c distance term now loads BEFORE m_60 (dx declared before dy) matching
-// retail's load order. Residual (~89.5%) is the tx/ty callee-saved coloring: retail homes
-// tx->ebp (via `mov ebp,edx`) and ty->eax, computing tx>>5 before rowIdx*15; our cl colors
-// tx->ebx, ty->ebp and schedules rowIdx*15 first. Every instruction + offset matches modulo
-// register names; not source-steerable. topic:wall topic:regalloc.
 RVA(0x00077f80, 0xab)
 CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
     i32 tx = g->m_lastTilePxX >> 5;
@@ -126,11 +121,6 @@ CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
 // or arm a foe's combat state (health sprite + CombatTimeout clock).
 
 // @early-stop
-// regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
-// logic + instruction selection match, but cl pins `this`->ebx (retail ebp) and CSEs
-// view->m_viewport once where retail reloads it per rect pair (a symmetric ebx<->ebp swap).
-// this CTriggerMgr: the "+0x1c grunt slots" are m_grid, "+0x22c viewHost" is
-// m_level, and the combat facets are the canonical CGrunt/CGameLevel shapes.)
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, i32 flag) {
     CGameLevel* view = m_world->m_level;
@@ -176,9 +166,6 @@ void CTriggerMgr::HudRect(RECT r, i32 flag) {
 // tick the overlay if it owns (x,y), recycle the node and RemoveAt the +0x240 list; ret 1.
 // ret 0 when no record. (__stdcall: ret 0xc.)
 // @early-stop
-// regalloc wall: retail pins this->ebp and the selection counter in [esp+0x1c]; under
-// our cl's pressure this spills to [esp+0x10] and is reloaded. Logic + offsets + the
-// free-list recycle byte-exact; the record-scan/goal/overlay path matches. topic:wall.
 RVA(0x00078260, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
     if (fromSelection != 0) {
@@ -246,25 +233,7 @@ found:
 // referenced grid cell's sprites (grid[ y + 15*x ] @+0x1c) and recycle the node to
 // the free list; RemoveAll the +0x240 list, run StopPendingFx, flag the goal (+0x23c).
 // @early-stop
-// 99.39% - TRIGGER: TU recomposition. First the Phase-1 TriggerMgrEh merge (100%
-// ->99.39, /GX EH-state artifact), later recovered; the wave2-G dossier-10b
-// one-TU merge re-flipped it: the residual is `add ecx,eax` vs `add eax,ecx` on
-// the idx = payload[1]+15*payload[0] sum plus an ecx->edx coloring of the
-// g_coordPool.m_freeHead load - pure /O2 environment sensitivity (same source scored 100 in
-// the smaller TU). Operand-commutation respell is canonicalized away; the
-// permuter finds no better spelling (FINAL 99.024, no change). The same merges
-// IMPROVED siblings (DestroyGroup 64.8->66.4, ToggleRegionA 68.9->75.4,
-// BuildRockBreakParticles 81.1->83.9). Accepted per the migration mandate.
 // @early-stop
-// 99.39% (was 100.00) - HEADER-SHAPE RIPPLE from the CSBI_RectOnly/CStatusBarMgr host split
-// (2026-07-12). Not one line of this function changed. What changed is the class this TU
-// includes for world->m_2dc: the 0x630 status-bar host stopped pretending to be a
-// polymorphic CStatusBarItem (vptr at +0) and took its true non-polymorphic shape - an i32
-// at +0 and eight REAL MFC CPtrList members at +0x2c. CPtrList is a full class with
-// virtuals, so pulling its definition into the host's body moves MSVC5's per-TU /O2
-// inlining budget, which recolours registers here (and costs TriggerCell -7.10 /
-// CenterOnGroup -4.04 the same way). Residual is one scheduling pair; logic byte-identical.
-// Correct shape, accepted cost - do NOT revert to recover the 0.61%.
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
     POSITION pos = m_recList.GetHeadPosition();
@@ -441,11 +410,6 @@ void CTriggerMgr::ClearRecords() {
 }
 
 // @early-stop
-// /O2 x87 scheduling wall (~63%): logic byte-for-byte identical, but retail
-// materialises the screen pos in GP regs and spills them to stack temps for the
-// int->float `fild` (register pressure from the m_level->m_level->m_5c walk reusing
-// edx), then uses `fmul mem`+fxch; our /O2 emits the shorter `fild [struct]`
-// direct + `fmulp`. Confirmed NOT /O1 (o1 profile 45%). Pure scheduling/regalloc.
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src = m_grid[m_recX * TM_GRID_COLS + m_recY]->m_object;
@@ -508,13 +472,6 @@ void CTriggerMgr::OverlayTick() {
 // coordinate sub-tables (DAT_00683ea0..eb4), building/dispatching the per-kind object and
 // stashing the rebuilt cell. ret 1. (__thiscall: ret 0x8.) Reconstructed to plateau.
 // @early-stop
-// The BLOCK-H TAIL IS STILL A STUB - this is unfinished reconstruction, not a wall. Retail's
-// dense per-kind dispatch at 0x78e09 (kind-1 -> the 0x4792cc byte table -> the 0x479298 jump
-// table, ~12 stanzas including the WrapCoord write-back to cell+0x414..0x428) has no
-// counterpart here, which is also why the head's frame differs (`sub esp,0xc` vs retail's
-// 0x18 of pre-allocated tail spill slots). The span now covers the two tables (0x845 ->
-// 0x8a0, the real extent); until the tail exists that costs ~1% of current fuzzy, which is
-// the correct trade - the extent is a fact about retail, not a tuning knob. topic:wall.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     // Decode the single record cell (row*15 + col into the placed grid).
@@ -610,17 +567,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 // matching cursor / lightfx / warpstone sprite; on factory success Init it and report it.
 // ret 1 (0 on flag-clear / placement failure). (__stdcall: ret 0x1c.)
 // @early-stop
-// Reconstructed from-scratch 46.7->75.6% (was structurally wrong: a boolean-selector
-// sel=0/1/2 dispatch). arg6 IS the selector: when nonzero sel=selector; else classify by
-// hit/cell into sel 1/2/3, dispatched by a dec-ladder switch to three stanzas that
-// report (ReportRecordsA / ReportRecordsB(flag) / EnqueueSingle) then per-stanza
-// CreateSprite("LightFx")+notify with kindArg 2/1/3, sharing the Arm tail; stanzaB/C
-// hit-owner gates funnel to a shared SpawnVoiceDriver reportError. Two block-layout
-// inversions were needed (cell-decode je-layout, classify cell!=0-inline). Residual is
-// the this/hit callee-saved coloring (retail this=edi/hit=esi, cl this=esi/hit=edi) and
-// the x/y register-vs-stack-spill in the PlaceA/CreateSprite calls - an intra-fn
-// coloring wall that cascades through every operand; not source-steerable. topic:wall
-// topic:regalloc.
 RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::ResetGroup(
     i32 x,
@@ -693,10 +639,10 @@ i32 CTriggerMgr::ResetGroup(
                     if (hit != cell) {
                         goto reportError;
                     }
-                    i32 v = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
+                    i32 v = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_toolId;
                     if (v != 0xf) {
                         i32 v2 =
-                            (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
+                            (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_toolId;
                         if (v2 != 0x13) {
                             goto reportError;
                         }
@@ -777,9 +723,6 @@ reportError:
 //     called PlaceObjectFull(oy, ox); retail pushes the Y term first, so the X term is the
 //     FIRST parameter - PlaceObjectFull(ox, oy), matching its own (i32 x, i32 y) decl.
 // @early-stop
-// /GX new+ctor wall: the placement-new lifetime + the teardown-on-failure path carry the EH
-// frame whose state numbering + partial-object cleanup diverge from retail; the alloc/ctor/
-// teardown shape is faithful. topic:wall topic:eh.
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
     CActionOptionsMenuBar* ov = m_overlay;
@@ -848,8 +791,6 @@ i32 CTriggerMgr::ByteTableHas(i32 b) {
 // the (col,row) target, lazily re-init the status-bar item (+0x2dc) and either flag it done or
 // recycle the record node; mark +0x284 done. (__stdcall: ret 0x8.) Reconstructed to plateau.
 // @early-stop
-// /GX CString-temp wall: the Level%i Format temporary forces the EH frame whose state +
-// cleanup diverge; the Format/GetColor/hit-test/status path is faithful. topic:wall topic:eh.
 RVA(0x00079b80, 0x194)
 i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (m_284 != 0) {
@@ -931,9 +872,6 @@ void CTriggerMgr::ResetSpawnState() {
 // (the bit path) map (anchorIndex-1) into the world's 4 fx anchors and spawn there. ret 1.
 // __stdcall free function (cleans its own 3 args; retail ends in `ret 0xc`).
 // @early-stop
-// regalloc wall (~81%): body + offsets + the tile double-index byte-exact; retail homes
-// gameReg in edi, the grid in esi and the width in ebx (3 callee-saved regs), our cl uses
-// gameReg=esi/width=edi (2 regs). Not source-steerable. topic:wall topic:regalloc.
 RVA(0x00079ea0, 0xc2)
 i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     if (g_gameReg->m_134 != 1) {
@@ -968,14 +906,6 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
 // bit + reset the plane cell, null the grid slot, decrement the per-row count and, when z
 // set, bump the per-row alt count and re-arm; mark the cell notified. (__stdcall: ret 0xc.)
 // @early-stop
-// 50.7->76.6 this audit: fixed the tile-attr column stride (*28 = 7 dwords, the SAME grid
-// HitTestCell walks - the old *8 was a logic bug), RecallCell's real arg order (cell,x,y),
-// tg cached once (only ->m_8 re-read: retail holds the CMapMgr ptr in edx across both
-// stores), and the z!=0 path inline / z==0 far. Residual: retail homes the pos pair to a
-// sub esp,8 frame with two DEAD stores while forwarding the regs (its spill pick; plain
-// locals / whole-struct copy / inlined out-param getter all get DSE'd by our cl - measured
-// 75.4/76.6/75.4), which cascades into the esi<->edi coloring + the late push ebp.
-// topic:wall topic:regalloc.
 RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 idx = col * TM_GRID_COLS + row; // grid[col][row] base
@@ -1009,7 +939,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         m_rowStateB[col] += 1;
         k = cell->m_entranceReason;
         if (k > 0x16) {
-            k = cell->m_19c;
+            k = cell->m_toolId;
         }
         if (k != 0x14) {
             goto mark;
@@ -1026,7 +956,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     }
     k = cell->m_entranceReason;
     if (k > 0x16) {
-        k = cell->m_19c;
+        k = cell->m_toolId;
     }
     if (k == 0x14) {
         this->ResetSpawnState();
@@ -1065,9 +995,6 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 // record list twice (full (x,y) match, then x-only when count>0x3b) flagging+unlinking each
 // matching node, then RemoveAll the list. (__thiscall: ret 0x8.)
 // @early-stop
-// regalloc + dual-loop scheduling wall: the two record-walk loops + the found/unlinked flags
-// spill to different stack slots than retail and the (x,y)==busy fast-path goto reorders.
-// Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     CGruntPuddle* tgt = static_cast<CGruntPuddle*>(sprite->m_7c->m_logic);
@@ -1219,8 +1146,6 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*un
 // lists, the goal/overlay/state words. ret 0 when ar/level null or the overlay write fails.
 // (__thiscall: ret 0x4.) [the manager's Serialize]
 // @early-stop
-// big serializer wall: 60+ archive Write calls; the grid/list write loops pin esi(ar)/ebx
-// /edi differently than retail and the scratch slots differ. Logic + offsets byte-exact.
 RVA(0x0007a760, 0x373)
 i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     if (ar == 0) {
@@ -1329,11 +1254,6 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
 // grid + list loads resolve each stored key through the level's map, validating the
 // found descriptor's type/sub-object; the overlay sub-object is rebuilt via new+Load.
 // @early-stop
-// /GX EH-state wall (same family as DestroyGroup / ApplySwitch in this TU): the
-// full read/lookup/list-load body and the field offsets are faithful, but the
-// overlay new-expression's partial-object cleanup states and the heavy stack-slot
-// reuse (retail folds `this` and the lookup-out param into one slot) number/allocate
-// differently than retail's __ehfuncinfo. topic:wall topic:eh.
 RVA(0x0007abc0, 0x4b6)
 i32 CTriggerMgr::Load(CFileMemBase* ar) {
     if (ar == 0) {
@@ -1524,12 +1444,6 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 // m_198+0xc8 published into +0x2a8. Every other kind does nothing. Then Refresh + Record.
 // ret 1. (ret 0x8.)
 // @early-stop
-// 91.19% (was 89.09). CORRECTNESS FIX 2026-07-28 (jcc_sieve TOPOLOGY): the generic +0xc8
-// arm was a sibling `else if (kind != 0)` keyed off the CLASSIFY RESULT; retail nests it
-// under kind==3 and keys it off `cell->m_198` - the very value it compares against 0x1e.
-// We were firing the cursor-sprite path for every non-zero kind other than 2/3 and
-// publishing `kind + 0xc8` as the sprite id. Residual: regalloc - the cmp/je ladder pins
-// ebx (world) and esi (cell) differently than retail, and the fx arg pushes spill.
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
@@ -1549,7 +1463,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     if (kind == 2) {
         i32 alt = cell->m_entranceReason;
         if (alt > 0x16) {
-            alt = cell->m_19c;
+            alt = cell->m_toolId;
         }
         if (alt == 0x13) {
             g_gameReg->m_cmdGrid
@@ -1598,19 +1512,6 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
 
 // @source: string-xref
 // @early-stop
-// regalloc/loop-strength-reduction wall: the logic - the M400c prep call, the
-// radius rect, the doubly-nested tile scan, the col/row clamp, the cell-type
-// dispatch (0x1e/0x1f rock-break + Particlez sprite + rate-limited sound,
-// 0x21 giant-rock resurrect + "No giant rock logic found" CString diagnostic,
-// 0x97/0x98/0x99 hazard reconcile), the PtInRect gate and the return-1/return-0
-// tails - is byte-faithful (instruction selection, calls, constants, strings). The
-// residual is the induction-variable set: retail carries pixelX/pixelY, the packed
-// (tileX<<8) cell base and the loop bounds as spilled strength-reduced accumulators
-// on a 0x1c frame, and pins the two loop counters (tileX->ebp, tileY->edi) with a
-// specific spill coloring the /O2 recompile re-derives differently, cascading a
-// +N [esp+N] shift across the body. Not source-steerable (see
-// docs/patterns/loop-invariant-multiply-strength-reduce-vs-memreread.md +
-// zero-register-pinning.md). Logic complete.
 RVA(0x0007b440, 0x3f0)
 i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
     CombatCue(cx, cy, r, 6, flag);
@@ -1733,16 +1634,6 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 }
 
 // @early-stop
-// prologue-scheduling + grid-pointer-register regalloc wall (~82%): the body is
-// byte-correct in shape/offsets/symbols/CFG (the 4x15 grid scan, the +-((r<<5)+7)
-// AABB, the tail-merged tier-1/6/7 ApplyCellEffect cases, the tier-2 teleport
-// re-roll loop, the tier-3/5/4 health/toyz/freeze LightFx flashes + shared Activate
-// tail all match instruction-for-instruction). Residual is the documented prologue
-// coin-flip: retail spills `this` to esp+0x14 and materialises the running grid
-// pointer with `lea 0x1c(ecx),eax` (this preserved, pointer in eax/memory), while cl
-// spills `this` to esp+0x10 and reuses ecx via `add 0x1c,ecx` (pointer in ecx) - a
-// one-slot shift that cascades displacement bytes through the whole prologue + loop
-// control. Source-invariant; deferred to the final sweep.
 RVA(0x0007b930, 0x3e0)
 i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
     i32 r = radius << 5;
@@ -1881,13 +1772,6 @@ void CTriggerMgr::StopPendingFx() {
 }
 
 // @early-stop
-// regalloc/frame-layout wall (~65%): instruction selection, calls, constants,
-// strings + the rect/loop/spawn structure are byte-faithful, but retail
-// frame-allocates the `node` loop variable (a dedicated 4-byte slot at [esp+0x14]
-// inside a 0x18 frame) while this /O2 recompile reuses an incoming-arg slot, yielding
-// a 0x14 frame and a +4 cascade across every [esp+N] operand. Not source-steerable
-// (the slot-vs-frame choice is the allocator's). Logic complete. See
-// docs/patterns/zero-register-pinning.md + const-materialize-into-reg-vs-immediate.md.
 RVA(0x0007be60, 0x21e)
 i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     RECT rect;
@@ -1976,8 +1860,6 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 // failure flag the goal and ret 0, else stash the cell + bump the per-row counters. ret 1.
 // (__stdcall: ret 0x10.)
 // @early-stop
-// regalloc + free-column-scan wall: the inner "first free col" loop and the snap arithmetic
-// pin ebp/edi differently than retail; the placement-failure goal-flag path tail-merges.
 RVA(0x0007c110, 0x166)
 i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     CGrunt* src = m_grid[col * TM_GRID_COLS + a1c];
@@ -1998,7 +1880,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     i32 sy = (o->m_screenY & ~0x1f) + 0x10;
     i32 k = src->m_entranceReason;
     if (k > 0x16) {
-        k = src->m_19c;
+        k = src->m_toolId;
     }
     i32 vis = src->m_198;
     this->CellDispatch(col, row, 0, a18);
@@ -2069,17 +1951,6 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 }
 
 // @early-stop
-// Dense 6-case switch (~61%). Collapsing the two separate address-taken locals
-// (void* p_ob + LeafCue* p) into ONE reused LeafCue* p removed a spurious `push ecx`
-// stack-slot alloc (retail colors the single local into the dead `state` arg slot):
-// 55->61. Remaining residuals, all confirmed by llvm-objdump -dr base vs target:
-// (1) the jump-table artifact - MSVC emits the table as a separate $L COMDAT, the
-// delinker inlines it - documented ~79% ceiling, docs/patterns/
-// switch-jumptable-separate-comdat.md. (2) case-1 /O2 scheduling: MSVC re-materializes
-// edi=0 with a redundant `xor edi,edi` inside case 1 and reorders the p=0 store vs the
-// m_soundRegistry member load; the window check `(clock-m_14) >= m_18` folds the
-// memory operands into sub/cmp in retail but loads them to regs here. (3) case-block
-// physical ordering (case 2/4/6 tails) differs. Not source-steerable.
 RVA(0x0007c3d0, 0x1d0)
 void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
     switch (state) {
@@ -2352,8 +2223,6 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
 // list, RemoveAll it (+0x2d0), then allocate a fresh node per record-list entry (+0x244)
 // copying its (x,y) payload; reset +0x3e8. ret 1.
 // @early-stop
-// regalloc wall (~86%): the free-list recycle + node-alloc bodies are byte-exact; retail
-// pins this/idx-base differently across the two list walks. topic:wall.
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     CPtrList* sel = &m_selLists[idx];
@@ -2467,12 +2336,6 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // but retail discards that return and re-reads the `doSelect` ARGUMENT ([esp+0x28])
 // - `mov eax,[esp+0x28]` right after the call.
 // @early-stop
-// 98.8% - two residues left: (1) the commutative `add` destination on the tail
-// grid-hash - retail `add ecx,edx` keeps the x*15 product as the SIB index, cl picks
-// `add edx,ecx` (the head[1] operand); tried both operand orders and hoisting the
-// product into its own local, none flip it. docs/patterns/commutative-imul-operand-in-eax.md
-// (2) the `mov ecx,ebx` receiver reload schedules one store later in retail, which
-// falls out of (1).
 RVA(0x0007cf40, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     POSITION pos = m_recList.GetHeadPosition();
@@ -2613,9 +2476,6 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
 // selection lists (+0x2d4, stride 0x1c) for a node whose payload (x,y) matches
 // (key,y); ret the first matching list index, 0xa on a second match, else 0.
 // @early-stop
-// loop-rotation + interleaved-epilogue wall: the list-walk body is byte-exact, but
-// retail loops with `jl top` (fall-through exit) and interleaves `mov eax,0xa` between
-// the pops; our cl emits `jge end; jmp top` + a clean epilogue. topic:wall.
 RVA(0x0007d2a0, 0x64)
 i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
     if (key != g_curPlayer) {
@@ -2646,10 +2506,6 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
 // type-descriptor (obj+0x7c) slot-4 matches the switch tag, then stop the three sound
 // channels (+0x3f0, +0x3f4, and the active grunt's +0x618).
 // @early-stop
-// regalloc wall (98.8): retail homes the row counter in ebx and the zero const in ebp;
-// our cl swaps them. The list walk is the cur/next split (cur=node; node=node->m_next;
-// cur->m_obj - flipped 96.5 -> 98.8); the residual coloring swap is permute-immune.
-// Externs reloc-masked (DirectSoundMgr::StopAndRewind, ReadConfigFromButeMgr tag). topic:wall.
 RVA(0x0007d330, 0xd3)
 void CTriggerMgr::DestroyAllAnims() {
     CGrunt** cell = m_grid;
@@ -2716,13 +2572,6 @@ void CTriggerMgr::DestroyAllAnims() {
 // for the active record cell of the magic group, gate on CanShowStamina and dispatch by its
 // logic kind (+0x170/+0x19c): kind 0x13 => ResetGroup, else set a pending fx (+0x2a8). ret 1.
 // @early-stop
-// 58.8->76.6 this audit: the cell decode is the negated-far if/else (`count!=1 -> cell=0`
-// inline, lookup FAR - retail's je/xor/jmp layout) and the v==0x13 ResetGroup body sits
-// INLINE with the pending-fx tail far. Residual: the pos-pair dead-store frame (retail
-// homes cell->m_pos into a sub esp,8 frame while forwarding the regs into the ResetGroup
-// pushes; struct copy / unused copy / i32[2] array spellings all DSE'd by our cl - same
-// wall as NotifyCell) + the m_2a8=0 per-branch stores our cl hoists above the test.
-// topic:wall topic:regalloc.
 RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
@@ -2752,7 +2601,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     i32 v = cell->m_entranceReason;
     if (v > 0x16) {
-        v = cell->m_19c;
+        v = cell->m_toolId;
     }
     if (v == 0x13) {
         Coord pt;
@@ -2772,8 +2621,6 @@ i32 CTriggerMgr::ToggleRegionA() {
 // the active record cell, gate on +0x170<0x17 and dispatch by +0x198: 0x1e => ResetGroup on
 // the cell's display pos, 0 => just tick, else set a pending fx (+0x2a8). ret 1.
 // @early-stop
-// regalloc wall (~82%): logic + offsets + externs byte-exact; retail pins this->esi and the
-// magic const into edi across the dispatch ladder. topic:wall.
 RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleRegionB() {
     if (m_pendingFxKind != 0) {
@@ -2823,11 +2670,6 @@ i32 CTriggerMgr::ToggleRegionB() {
 // initialiser: `char x` is NOT zero-seeded in retail, and the x latch is stored
 // AFTER the cell index is folded.  89.59 -> 96.39.
 // @early-stop
-// ~96.4%: three bytes left, the `and edx,0xff` that widens the u8 count for
-// EnqueueMulti's `i32` third parameter. Retail pushes the count slot as a raw dword
-// (`mov edx,[esp+0x1c]; push edx`), which only a `char` parameter permits - but
-// 0x23ca0's own body forwards all eight args as dwords and is EXACT with `i32`, so
-// re-typing the parameter trades one function for another. Left as declared.
 RVA(0x0007d6e0, 0xea)
 i32 CTriggerMgr::EnqueueGroupCells() {
     if (m_groupFlag == 0) {

@@ -18,23 +18,6 @@ static const char s_grunt[] = "Grunt";                               // 0x60a9ec
 static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 
 // @early-stop
-// Reconstructed against the REAL engine classes (xref-recovered, no fake views): the
-// handler is CGruntzMgr, the world->m_68 grid is CTriggerMgr (PlaceObject/ClearCell/
-// CellHitTest/ApplyTriggerA/ApplyTriggerB/ResetAll/ResetCell), the cells are CGrunt, and
-// the movement target is CGrunt::SetArrivalTarget (called on the grunt g, NOT the handler
-// - the prior this-receiver was a bug). De-hoisted to match retail's register discipline
-// (localP + grid read lazily per-case so `world` stays in a reg across the switch;
-// case-0 Refresh reloads g_gameReg->m_68; the address-taken CellHitTest outputs reuse
-// the ret-0x1c'd &cmdKind/&targetType param slots) + a permuter operand-order pass.
-// 15.9%->~23.7%.
-// The span used to stop at the last `ret` (0xc2f), leaving the three switch tables at
-// 0x4d2790/0x4d27bc/0x4d27cc outside the claimed extent (22.2 -> 29.8 on the span alone).
-// Beyond that: a global-regalloc wall (retail pins `this` in ebx and g in esi with NO
-// frame, whereas the correct g-receiver makes cl contend g against this and park `this`
-// in ebp + spill it + reserve a 4-B frame for the shared case-3/4 discriminator; retail
-// emits cases 3/4 as two full separate blocks with no runtime discriminator, and
-// splitting them here regresses because MSVC5 tail-merges the identical suffixes) PLUS
-// the still-open parameter-home slot-assignment debt described below.
 RVA(0x000d1b60, 0xc90)
 // The seven command words are i32, not the narrow char/i16 they used to be modelled
 // as (2026-07-29). PROOF: retail's case-3 probe call at 0xd1f6b pushes

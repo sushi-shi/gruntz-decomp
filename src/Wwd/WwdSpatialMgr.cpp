@@ -42,9 +42,6 @@ void CWwdSpatialMgr::FreeGrids() {
 // here blamed a scheduling wall and deferred the by-value unification as cross-TU work;
 // CWwdGrid::Query is called from HERE ONLY, so retyping it was a two-file change.)
 // @early-stop
-// Size 225 and relocs 3/3 are EXACT; the only residual is that cl sinks the two
-// m_scroll{X,Y} member stores 8 insns into the first Query arg block where retail emits
-// them at the jne target. config/axes/scrollto.json: 15 cells, all tie at 93.85.
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     if (m_scrollX == dx && m_scrollY == dy) {
@@ -119,13 +116,6 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
 // retail emits it - flags bit 0x800000 picks grid1, 0x1000000 picks grid2, neither
 // picks grid0.
 // @early-stop
-// 86.9% (from 0.65%). Four cached locals carried it there: the per-object flags word
-// (retail loads it ONCE for each of the two gate groups, not per test), the +0x7c
-// worker, the &obj->m_region pointer (retail reaches m_x/m_y/m_object through it with
-// disp8) and the pair of screen coordinates loaded together. The residual is one extra
-// SPILL retail makes and cl5 does not - it parks the region pointer in [esp+0x18] as
-// well as ebp (ebp is clobbered by the third arm's saved act key), which shifts every
-// box temporary one slot down.
 RVA(0x00168500, 0x3af)
 i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
     i32 count = 0;

@@ -105,14 +105,6 @@
     }
 
 // @early-stop
-// The span used to stop at the last `ret` (0x1193), leaving the TWELVE 22-entry
-// priority jump tables at 0x4f5484..0x4f58a4 outside the claimed extent - they scored
-// as pure mismatch (27% -> 51% on the span alone). The body is within 75 B of retail's
-// 0x1193 of code; what is left is a frame/slot cascade: retail reserves 0x40 and pins
-// `this` in edi (spilled to [esp+0x10]), this cl reserves 0x44 (one extra dword local)
-// and pins `this` in ebx, so every [esp+N] operand past [esp+0x20] is renumbered.
-// Retail also spills more locals (it touches [esp+0x4c] and [esp+0x50], which the base
-// never does) - find the extra local and the slot numbering should fall in.
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;

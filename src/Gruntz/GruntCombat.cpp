@@ -1732,7 +1732,7 @@ L_moveDone:
 // (m_17c/m_180) being clear of the spawn-block bit; build the HUD health sprite,
 // re-arm the combat-timer block (CombatTimeout config), then resolve the neighbour
 // grunt from the tile-mgr's 15-wide cell grid (m_260 + (15a+b)*4 + 0x1c), gate it
-// (live, both committed, not anim "F"); dispatch on m_170/m_19c (==1 -> a move
+// (live, both committed, not anim "F"); dispatch on m_170/m_toolId (==1 -> a move
 // config) else on the current anim type code ("I" -> arrival re-notify; "N" -> the
 // align-down/drop-ready/snap re-latch); finally run the shared combat finalize:
 // commit the in-flight move, latch m_220, build the neighbour's HUD health sprite +
@@ -1783,7 +1783,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 0;
     }
     // ONE reason variable, overwritten in place - not two conditions. Retail's
-    //   mov eax,[m_170] / xor ecx,ecx / cmp eax,0x16 / jle L / mov eax,[m_19c]
+    //   mov eax,[m_170] / xor ecx,ecx / cmp eax,0x16 / jle L / mov eax,[m_toolId]
     //   L: cmp eax,1 / jne J / mov ecx,eax / J: test ecx,ecx
     // reaches `cmp eax,1` on BOTH paths, so an m_entranceReason of exactly 1 also
     // fires the move config. The `jle` lands on the compare, not past it.
