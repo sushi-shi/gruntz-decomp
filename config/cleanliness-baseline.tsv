@@ -1,9 +1,9 @@
-m_<hex> fields	7407
+m_<hex> fields	7403
 Unknown ids	0
 g_<hex> globals	0
 Method/Stub/FUN/Gap	2
 virtual slot placeholders	0
-positional arg placeholders	71
+positional arg placeholders	59
 placeholder classes	0
 .cpp-local views	0
 placeholder vtable slots	0
