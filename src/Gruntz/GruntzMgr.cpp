@@ -2413,19 +2413,12 @@ void CGruntzMgr::RecomputeViewScale() {
 // CGruntzMgr::BroadcastCmd (0x093460; ret 0x10). Fans a 4-arg archive operation out
 // to every serializable subsystem, short-circuiting (return 0) on the first that
 // rejects it. Kind 4 first runs SaveState and kind 7 first runs LoadState (each must
-// succeed), both then clearing the +0x60 spawn-config sprite pair; other kinds skip
+// succeed); only the LoadState arm then clears the +0x60 spawn-config sprite pair;
+// other kinds skip
 // straight to the fan-out. Order: the four player slots, the +0x68 trigger grid, the
 // live play state, the +0x6c command manager, the +0x70 map object (vtbl slot 1), a
 // free map serializer, and finally the +0x7c battle-data object, whose result
 // (normalized to 0/1) is returned.
-// @early-stop
-// ~78% block-layout wall: logic is exact and the cmd==7 arm + the whole fan-out
-// (options loop, m_cmdGrid/source/m_cmdSubMgr/m_tileGrid/hook/m_scoreHud) match byte
-// for byte. Retail
-// emits the cmd==4 arm OUT-OF-LINE at the function tail (`cmp 4; je <end>`; the
-// 4-block jmps back into the shared m_cueSink->ClearSprites), but MSVC here keeps it
-// inline between the gate and the cmd==7 test, shifting that one block. Pure basic-block
-// placement; case reorder doesn't move it (see docs/patterns/switch-cases-source-order.md).
 // NOTE: the trace size was 0x124 but the real function runs to 0x15c (the cmd==4
 // tail + the bool-normalizing HUD epilogue past the under-counted Ghidra bound).
 RVA(0x00093460, 0x15c)
@@ -2435,10 +2428,13 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 typeId, i32 pObj) {
     }
     switch (cmd) {
         case 4:
+            // NO ClearSprites here: retail 0x935ae `jne 0x934ab` lands on the fan-out,
+            // PAST the 0x934a3 `mov ecx,[esi+0x60]; call ClearSprites` that only the
+            // LoadState arm falls into. Not sharing that tail is also why cl places
+            // this arm out-of-line at the function end.
             if (SaveState(ar) == 0) {
                 return 0;
             }
-            m_cueSink->ClearSprites();
             break;
         case 7:
             if (LoadState(ar) == 0) {
@@ -2448,8 +2444,9 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 typeId, i32 pObj) {
             break;
     }
 
-    GruntzPlayer* slot = m_options;
-    for (i32 i = 0; i < 4; i++) {
+    i32 i;
+    GruntzPlayer* slot;
+    for (i = 0, slot = m_options; i < 4; i++) {
         if (slot == 0 || slot->Serialize(ar, cmd, typeId, pObj) == 0) {
             return 0;
         }
@@ -3709,27 +3706,19 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     return 1;
 }
 
-// @early-stop
-// zero-register-pinning + /GX EH-frame wall (docs/patterns/zero-register-pinning.md):
-// the file open/read/SubstringMatch logic, the >= 0x5f4 header gate, the "Battlez"
-// constant and the by-value CString-arg teardown all pair byte-faithfully. Residue:
-// retail pins `0` in ebx (xor ebx,ebx + push ebx, reusing %bl for the /GX trylevel
-// byte writes), which shifts every stack local up 4 (CFile at [esp+4] not [esp+0]);
-// our cl emits immediate-0 trylevel writes + no ebx save. No source lever forces the
-// pin under /O2; also the EH scope-table cookie (Unwind vs $L) is not steerable.
 RVA(0x00093be0, 0x107)
 i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     CFile file;
+    char hdr[0x5f4];
     if (file.Open(path, 0, 0)) {
-        if (file.GetLength() >= 0x5f4) {
-            char hdr[0x5f4];
-            file.Read(hdr, 0x5f4);
+        if (file.GetLength() < 0x5f4) {
             file.Close();
-            if (SubstringMatch(hdr + 0x10, "Battlez")) {
-                return 1;
-            }
-        } else {
-            file.Close();
+            return 0;
+        }
+        file.Read(hdr, 0x5f4);
+        file.Close();
+        if (SubstringMatch(hdr + 0x10, "Battlez")) {
+            return 1;
         }
     }
     return 0;

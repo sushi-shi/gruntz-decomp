@@ -328,9 +328,6 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
 // fields (+0x880..+0x88c); for the magic row (== g_curPlayer), when not forced recycle the
 // (row,col) record node onto the free list, AddTail it to +0x240, and run ResetMagic. ret 1
 // only when a magic cell was recycled, else 0. (__stdcall: ret 0x10.)
-// @early-stop
-// regalloc + free-list-recycle scheduling wall: the node-bias recycle and the GetInt arg
-// push order pin ebx/edi differently than retail. Logic + offsets byte-exact. topic:wall.
 RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     i32 idx = col * TM_GRID_COLS + row;
@@ -352,14 +349,15 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         cell->m_hudRetireClockHi = 0;
         return 0;
     }
-    if (force != 0) {
-        if (keep == 0) {
-            if (RemoveCellRecord(col, row, 0) != 0) {
-                return 1;
-            }
+    if (force == 0) {
+        // RECOVERED 2026-08-01: retail 0x6c063 `call 0x36ed` is the ILT thunk to
+        // 0x78430 = ?ResetAll@CTriggerMgr@@QAEXXZ, NOT ResetSpawnState (0x79d90).
+        // assert_relocs flagged the old binding the moment this fn reached 100%.
+        ResetAll();
+    } else if (keep == 0) {
+        if (RemoveCellRecord(col, row, 0) != 0) {
+            return 1;
         }
-    } else {
-        this->ResetSpawnState(); // self-call 0x6c068 (reloc-masked)
     }
     CoordPoolNode* node = g_coordPool.m_freeHead;
     Coord* slot = 0;

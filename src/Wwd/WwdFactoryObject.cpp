@@ -32,6 +32,7 @@
 // the only residue is one `call ??0WwdRegion` inside 0x15b390.
 #define WWDREGION_OOL_CTOR
 #define CGAMEOBJECT_OOL_CTOR
+#define ANIADVANCECURSOR_OOL_CTOR // this TU emits the 0x15b730 COMDAT
 
 #include <Mfc.h>
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
@@ -228,7 +229,7 @@ void CGameObject::Notify(void* p) {
 
 RVA(0x0015b6a0, 0xb)
 i32 CAniAdvanceCursor::IsLoaded() {
-    return m_10 != 0;
+    return m_boundObject != 0;
 }
 
 RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
@@ -250,7 +251,7 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(field04, field08, owner) {
-    m_10 = 0;
+    m_boundObject = 0;
     m_14 = 0;
     m_element = 0;
 }
@@ -417,7 +418,7 @@ i32 CWwdGameObjectC::SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl
 // coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
 RVA(0x0015c290, 0x2f)
 void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
-    m_10 = src;
+    m_boundObject = src;
     m_28 = 1;
     m_14 = 0;
     m_scale = 1.0f;
@@ -433,7 +434,7 @@ void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
 
 RVA(0x0015c2c0, 0xc)
 void CAniAdvanceCursor::Unload() {
-    m_10 = 0;
+    m_boundObject = 0;
     m_14 = 0;
     m_element = 0;
 }
@@ -533,13 +534,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     }
 
     if (m_28 == 0) {
-        CWwdGameObjectA* ctx = m_10;
+        CWwdGameObjectA* ctx = m_boundObject;
         CAniDesc* d = m_element;
 
         // --- step the active frame sequence one step (7-way on d->m_stepMode) --------
         switch (d->m_stepMode - 1) {
             case 0: { // advance + wrap-to-first on overrun
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
@@ -555,7 +556,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 1: { // wrap-to-last when at first, else step back
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
@@ -570,7 +571,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 2: { // jump to an explicit frame (d->m_param)
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 i32 frame = d->m_param;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
@@ -581,7 +582,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 3: { // reset to first
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
@@ -592,7 +593,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 4: { // reset to last
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
@@ -603,7 +604,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 5: { // advance by d->m_param, clamp-last on overrun
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
@@ -618,7 +619,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 6: { // retreat by d->m_param, clamp-first on underrun
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
@@ -637,17 +638,17 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         // --- apply the per-frame position delta (3-way on d->m_posMode) ------------
-        ctx = m_10;
+        ctx = m_boundObject;
         ctx->m_plotDX = 0;
         ctx->m_plotDY = 0;
         d = m_element;
         switch (d->m_posMode) {
             case 1:
-                m_10->m_plotDX = d->m_posDX;
-                m_10->m_plotDY = d->m_posDY;
+                m_boundObject->m_plotDX = d->m_posDX;
+                m_boundObject->m_plotDY = d->m_posDY;
                 break;
             case 2: {
-                CWwdGameObjectA* c = m_10;
+                CWwdGameObjectA* c = m_boundObject;
                 i32 x = c->m_screenX;
                 if (c->m_stateFlags & 0x2) {
                     i32 dy = d->m_posDY;
@@ -663,15 +664,15 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 3:
-                m_10->m_screenX = d->m_posDX;
-                m_10->m_screenY = d->m_posDY;
+                m_boundObject->m_screenX = d->m_posDX;
+                m_boundObject->m_screenY = d->m_posDY;
                 break;
             default:
                 break;
         }
 
         // --- per-frame draw/sound trigger -------------------------------------
-        CWwdGameObjectA* c = m_10;
+        CWwdGameObjectA* c = m_boundObject;
         i32 fire = 1;
         if (!(c->m_flags & 0x2000000) && !(m_element->m_flags & 0x8)) {
             if (c->m_dirty.m_armed == -1) {
@@ -759,7 +760,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 1: { // advance only when the cursor's frame reached the descriptor param
-                CWwdGameObjectA* c2 = m_10;
+                CWwdGameObjectA* c2 = m_boundObject;
                 if (c2->m_190 == m_element->m_param) {
                     if (modeWord != 9) {
                         CAniElement* a = m_14;
@@ -779,7 +780,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 2: { // advance only when the cursor reached the seq low frame
-                CWwdGameObjectA* c2 = m_10;
+                CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_minIndex) {
                     goto loop_restart;
@@ -787,7 +788,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 3: { // advance only when the cursor reached the seq high frame
-                CWwdGameObjectA* c2 = m_10;
+                CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_maxIndex) {
                     goto loop_restart;
@@ -795,7 +796,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 4: { // advance one past the seq low frame
-                CWwdGameObjectA* c2 = m_10;
+                CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_minIndex + 1) {
                     goto loop_restart;
@@ -825,7 +826,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             case 5: { // advance only when the cursor reached one before the high frame
-                CWwdGameObjectA* c2 = m_10;
+                CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_maxIndex - 1) {
                     if (modeWord != 9) {

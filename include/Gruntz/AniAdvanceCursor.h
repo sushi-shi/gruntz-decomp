@@ -55,7 +55,7 @@ public:
     // m_screenX-Y/+0x5c-60 are CLoadable::m_flags + CResolveNode::m_10/m_14/m_dirty.m_armed/
     // m_stateFlags/m_screenX/m_screenY, and its m_frameCursor/m_frameSeq/m_curFrame
     // (+0x190/+0x194/+0x198) are CWwdGameObjectA::m_190/m_sprite/m_layer.
-    CWwdGameObjectA* m_10;
+    CWwdGameObjectA* m_boundObject;
     CAniElement* m_14;   // +0x14  descriptor playlist (the resolved geo source;
                          //        ex "m_srcRef" - the serialize map value)
     CAniDesc* m_element; // +0x18  current descriptor/element (transient)
@@ -75,5 +75,23 @@ public:
     };
 };
 SIZE_UNKNOWN();
+
+// INLINE by default - the same /Gy COMDAT arrangement as the wwd node ctors (see
+// <Gruntz/WwdGridIter.h>). PROVEN by the two sites that build a CWwdGameObjectA
+// in place: CDDrawWorkerHost::ReadPlaneObjects @0x162af0 and CDDrawChildGroup::
+// CreateObject @0x1598d0 both `call ??0CLoadable` (0x156cb0) for the base and then
+// spell this ctor's own tail inline - `mov [p],??_7CAniAdvanceCursor / [p+0x10]=0 /
+// [p+0x14]=0 / [p+0x18]=0`. That split (out-of-line BASE, inline DERIVED) is exactly
+// what a header-inline definition delegating to the OUT-OF-LINE 3-arg CLoadable
+// produces; the standalone 0x15b730 COMDAT spells the base stores itself instead.
+//   ANIADVANCECURSOR_OOL_CTOR -> WwdFactoryObject.cpp (0x15b730)
+#ifndef ANIADVANCECURSOR_OOL_CTOR
+inline CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
+    : CLoadable(owner, field04, field08) {
+    m_boundObject = 0;
+    m_14 = 0;
+    m_element = 0;
+}
+#endif
 
 #endif // GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H

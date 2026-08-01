@@ -119,11 +119,13 @@ class CDDSurface;
 // four length-prefixed strings INLINE. ReadPlaneObjects is the reader and the stream
 // cursor advances by the byte count it returns, which is the layout.
 struct PlaneObjectRecord {
-    i32 m_id;          // +0x00
-    u32 m_nameLen;     // +0x04
-    u32 m_logicLen;    // +0x08
-    u32 m_imageSetLen; // +0x0c
-    u32 m_soundLen;    // +0x10
+    i32 m_id; // +0x00
+    // SIGNED: 0x162af0 gates each copy with `test edx,edx; jle`, and the four lengths
+    // are the head of the same dword cursor the +0x28 field stream is read through.
+    i32 m_nameLen;     // +0x04
+    i32 m_logicLen;    // +0x08
+    i32 m_imageSetLen; // +0x0c
+    i32 m_soundLen;    // +0x10
     i32 m_x;           // +0x14
     i32 m_y;           // +0x18
     i32 m_z;           // +0x1c

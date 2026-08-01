@@ -1,0 +1,45 @@
+{
+ "schema": 1,
+ "source": "src/Gruntz/PathHazard.cpp",
+ "rva": "0xb35a0",
+ "axes": [
+  {
+   "name": "snap_order",
+   "find": "    m_object->m_screenX = snapX;\n    m_posX = static_cast<double>(snapX);\n    m_object->m_screenY = snapY;\n    m_posY = static_cast<double>(snapY);",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "stores_then_converts",
+     "replace": "    m_object->m_screenX = snapX;\n    m_object->m_screenY = snapY;\n    m_posX = static_cast<double>(snapX);\n    m_posY = static_cast<double>(snapY);"
+    },
+    {
+     "name": "converts_then_stores",
+     "replace": "    m_posX = static_cast<double>(snapX);\n    m_posY = static_cast<double>(snapY);\n    m_object->m_screenX = snapX;\n    m_object->m_screenY = snapY;"
+    },
+    {
+     "name": "x_pair_then_y_pair_swapped",
+     "replace": "    m_posX = static_cast<double>(snapX);\n    m_object->m_screenX = snapX;\n    m_posY = static_cast<double>(snapY);\n    m_object->m_screenY = snapY;"
+    }
+   ]
+  },
+  {
+   "name": "sortkey_flags",
+   "find": "    if (m_object->m_sortKey != 0xcf850) {\n        m_object->m_sortKey = 0xcf850;\n        m_object->m_flags |= 0x20000;\n    }",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "flags_temp",
+     "replace": "    if (m_object->m_sortKey != 0xcf850) {\n        m_object->m_sortKey = 0xcf850;\n        i32 fl = m_object->m_flags;\n        m_object->m_flags = fl | 0x20000;\n    }"
+    },
+    {
+     "name": "flags_selfassign",
+     "replace": "    if (m_object->m_sortKey != 0xcf850) {\n        m_object->m_sortKey = 0xcf850;\n        m_object->m_flags = m_object->m_flags | 0x20000;\n    }"
+    }
+   ]
+  }
+ ]
+}

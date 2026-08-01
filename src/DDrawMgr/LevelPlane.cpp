@@ -802,9 +802,17 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 }
 
 // @early-stop
-// The `call 0x15b390` half is now reproduced (the CGAMEOBJECT_OOL_CTOR guard at the
-// top of this file; 69.9 -> 75.0 %). Residual is this 2054-byte function's own
-// regalloc/scheduling, not the ctor shape.
+// 2026-08-01, 75.0 -> 85.8: four transcription bugs fixed (the four record strings
+// were ROTATED across their use sites - retail's worker-cache Lookup key is `logic`
+// [esp+0x18], the sprite lookup is `imageSet` [esp+0x20] keyed by m_gridIndex
+// [esp+0x40] not z, and +0xdc takes `name` [esp+0x1c]; the copy blocks default the
+// terminator index to 0), plus the single record cursor and the header-inline
+// CAniAdvanceCursor ctor. Residual: our cl SHARES the /GX CString-teardown blocks
+// between exits (2 copies) where retail emits one per return site (4 copies, two of
+// which are byte-identical - so cl5 is not cross-jumping them), which also outlines
+// the `src == 0` and `tmpl == 0` bails instead of leaving them inline. No source
+// spelling found that suppresses the share; the return-expression form
+// (`strCursor - (const char*)src` vs `+ 0x11c`) is canonicalised byte-identical.
 RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
@@ -812,15 +820,20 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
+    // ONE cursor walks the whole record - the eight header dwords from m_nameLen
+    // here, then the +0x28 field stream below. Retail 0x162b0e materialises it as
+    // `lea ebp,[esi+4]` and spends eight `add ebp,4` before it reaches m_tail;
+    // m_id is the one header field read off `src` directly (`mov edi,[esi]`).
+    const i32* p = &src->m_nameLen;
+    i32 nameLen = *p++;
+    i32 logicLen = *p++;
+    i32 imageSetLen = *p++;
+    i32 soundLen = *p++;
+    i32 x = *p++;
+    i32 y = *p++;
+    i32 z = *p++;
+    i32 gridIndex = *p++;
     i32 id = src->m_id;
-    u32 nameLen = src->m_nameLen;
-    u32 logicLen = src->m_logicLen;
-    u32 imageSetLen = src->m_imageSetLen;
-    u32 soundLen = src->m_soundLen;
-    i32 x = src->m_x;
-    i32 y = src->m_y;
-    i32 z = src->m_z;
-    i32 gridIndex = src->m_gridIndex;
 
     // `new CWwdGameObjectA(...)`: cl CALLS the shared CGameObject ctor COMDAT
     // (0x15b390) and inlines the A part - the +0x1a0 cursor (whose own CLoadable
@@ -836,35 +849,41 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     const char* strCursor = src->m_strings;
     char buf[0x400];
 
-    i32 n;
-    n = static_cast<i32>(nameLen);
-    if (n > 0) {
-        memcpy(buf, strCursor, n);
-        strCursor += n;
+    // The terminator index defaults to 0 - a length <= 0 copies nothing AND writes
+    // buf[0] (retail `xor ecx,ecx` / `xor eax,eax` ahead of each `test len; jle`).
+    // Using the raw length would index buf[negative] for a corrupt record.
+    i32 n = 0;
+    if (nameLen > 0) {
+        memcpy(buf, strCursor, nameLen);
+        strCursor += nameLen;
+        n = nameLen;
     }
     buf[n] = 0;
     CString name(buf);
 
-    n = static_cast<i32>(logicLen);
-    if (n > 0) {
-        memcpy(buf, strCursor, n);
-        strCursor += n;
+    n = 0;
+    if (logicLen > 0) {
+        memcpy(buf, strCursor, logicLen);
+        strCursor += logicLen;
+        n = logicLen;
     }
     buf[n] = 0;
     CString logic(buf);
 
-    n = static_cast<i32>(imageSetLen);
-    if (n > 0) {
-        memcpy(buf, strCursor, n);
-        strCursor += n;
+    n = 0;
+    if (imageSetLen > 0) {
+        memcpy(buf, strCursor, imageSetLen);
+        strCursor += imageSetLen;
+        n = imageSetLen;
     }
     buf[n] = 0;
     CString imageSet(buf);
 
-    n = static_cast<i32>(soundLen);
-    if (n > 0) {
-        memcpy(buf, strCursor, n);
-        strCursor += n;
+    n = 0;
+    if (soundLen > 0) {
+        memcpy(buf, strCursor, soundLen);
+        strCursor += soundLen;
+        n = soundLen;
     }
     buf[n] = 0;
     CString sound(buf);
@@ -885,9 +904,9 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     // language-forced - CDDrawWorkerCache::CreateWorker @0x1652c0 is that map's only
     // writer and every value it stores is a ??_7AnimWorkerObj@@6B@-stamped record.
     AnimWorkerObj* tmpl = 0;
-    if (imageSet.GetLength() != 0) {
+    if (logic.GetLength() != 0) {
         CObject* foundOb = 0;
-        OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
+        OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(logic), foundOb);
         tmpl = static_cast<AnimWorkerObj*>(foundOb);
     }
     if (tmpl == 0) {
@@ -919,12 +938,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    // Apply name -> sprite first-frame cache (indexed when src[?] != -1).
-    if (logic.GetLength() != 0) {
-        if (z != -1) {
-            obj->ApplyLookupSprite(static_cast<const char*>(logic), z);
+    // imageSet -> sprite, keyed by the record's frame index `i` (+0x20). Retail
+    // 0x162ebc reads [esp+0x40] = m_gridIndex here, NOT z ([esp+0x44], which only
+    // ever reaches Setup's 3rd arg); -1 means "no frame" and takes the by-name arm.
+    if (imageSet.GetLength() != 0) {
+        if (gridIndex != -1) {
+            obj->ApplyLookupSprite(static_cast<const char*>(imageSet), gridIndex);
         } else {
-            obj->ApplyName(static_cast<const char*>(logic));
+            obj->ApplyName(static_cast<const char*>(imageSet));
         }
     }
 
@@ -934,14 +955,13 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->LookupAnimSprite(static_cast<const char*>(sound));
     }
 
-    // Apply imageSet -> the object's +0xdc name CString.
-    if (imageSet.GetLength() != 0) {
-        obj->m_dc = static_cast<const char*>(imageSet);
+    // Apply name -> the object's +0xdc name CString.
+    if (name.GetLength() != 0) {
+        obj->m_dc = static_cast<const char*>(name);
     }
 
-    // Scatter the trailing record fields. `p` advances through the record from
-    // its dynamic-flags field onward.
-    const i32* p = src->m_tail; // record +0x28 (skip m_addFlags @+0x24)
+    // Scatter the trailing record fields; the same cursor continues from +0x24.
+    p++; // skip m_addFlags @+0x24 -> record +0x28
 
     obj->m_flags |= static_cast<u32>(*p++); // dynamicFlags       (+0x08)
     obj->m_stateFlags = *p++;               // drawFlags          (+0x40)

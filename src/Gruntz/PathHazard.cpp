@@ -59,62 +59,66 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // (m_leg/m_strike zeroed by CHazardTimer's ctor, before this body.)
     m_38->m_flags |= 0x2000002;
 
-    CWwdGameObjectA* o = m_object;
-    i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
-    i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
-    o->m_screenX = snapX;
+    // retail re-reads m_10 (m_object) after every store made THROUGH it: cl cannot
+    // disambiguate `[o]+0x5c` from `this+0x10`, so a cached local kills three reloads.
+    i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
+    i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = snapX;
+    m_object->m_screenY = snapY;
     m_posX = static_cast<double>(snapX);
-    o->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (o->m_sortKey != 0xcf850) {
-        o->m_sortKey = 0xcf850;
-        o->m_flags |= 0x20000;
+    if (m_object->m_sortKey != 0xcf850) {
+        m_object->m_sortKey = 0xcf850;
+        m_object->m_flags |= 0x20000;
     }
 
-    m_wp[0].x = o->m_screenX;
-    m_wp[0].y = o->m_screenY;
-    m_wp[1].x = (o->m_extent.left << 5) + 0x10;
-    m_wp[1].y = (o->m_extent.top << 5) + 0x10;
-    m_wp[2].x = (o->m_extent.right << 5) + 0x10;
-    m_wp[2].y = (o->m_extent.bottom << 5) + 0x10;
-    m_wp[3].x = (o->m_area.left << 5) + 0x10;
-    m_wp[3].y = (o->m_area.top << 5) + 0x10;
-    m_wp[4].x = (o->m_area.right << 5) + 0x10;
-    m_wp[4].y = (o->m_area.bottom << 5) + 0x10;
-    m_wp[5].x = (o->m_switchRect.left << 5) + 0x10;
-    m_wp[5].y = (o->m_switchRect.top << 5) + 0x10;
-    m_wp[6].x = (o->m_switchRect.right << 5) + 0x10;
-    m_wp[6].y = (o->m_switchRect.bottom << 5) + 0x10;
-    m_wp[7].x = (o->m_clip.left << 5) + 0x10;
-    m_wp[7].y = (o->m_clip.top << 5) + 0x10;
-    m_wp[8].x = (o->m_clip.right << 5) + 0x10;
-    m_wp[8].y = (o->m_clip.bottom << 5) + 0x10;
-    m_wp[9].x = (o->m_7c->m_switchRectA.left << 5) + 0x10;
-    m_wp[9].y = (o->m_7c->m_switchRectA.top << 5) + 0x10;
-    m_wp[10].x = (o->m_7c->m_switchRectA.right << 5) + 0x10;
-    m_wp[10].y = (o->m_7c->m_switchRectA.bottom << 5) + 0x10;
-    m_wp[11].x = (o->m_7c->m_switchRectB.left << 5) + 0x10;
-    m_wp[11].y = (o->m_7c->m_switchRectB.top << 5) + 0x10;
-    m_wp[12].x = (o->m_7c->m_switchRectB.right << 5) + 0x10;
-    m_wp[12].y = (o->m_7c->m_switchRectB.bottom << 5) + 0x10;
+    m_wp[0].x = m_object->m_screenX;
+    m_wp[0].y = m_object->m_screenY;
+    m_wp[1].x = (m_object->m_extent.left << 5) + 0x10;
+    m_wp[1].y = (m_object->m_extent.top << 5) + 0x10;
+    m_wp[2].x = (m_object->m_extent.right << 5) + 0x10;
+    m_wp[2].y = (m_object->m_extent.bottom << 5) + 0x10;
+    m_wp[3].x = (m_object->m_area.left << 5) + 0x10;
+    m_wp[3].y = (m_object->m_area.top << 5) + 0x10;
+    m_wp[4].x = (m_object->m_area.right << 5) + 0x10;
+    m_wp[4].y = (m_object->m_area.bottom << 5) + 0x10;
+    m_wp[5].x = (m_object->m_switchRect.left << 5) + 0x10;
+    m_wp[5].y = (m_object->m_switchRect.top << 5) + 0x10;
+    m_wp[6].x = (m_object->m_switchRect.right << 5) + 0x10;
+    m_wp[6].y = (m_object->m_switchRect.bottom << 5) + 0x10;
+    m_wp[7].x = (m_object->m_clip.left << 5) + 0x10;
+    m_wp[7].y = (m_object->m_clip.top << 5) + 0x10;
+    m_wp[8].x = (m_object->m_clip.right << 5) + 0x10;
+    m_wp[8].y = (m_object->m_clip.bottom << 5) + 0x10;
+    m_wp[9].x = (m_object->m_7c->m_switchRectA.left << 5) + 0x10;
+    m_wp[9].y = (m_object->m_7c->m_switchRectA.top << 5) + 0x10;
+    m_wp[10].x = (m_object->m_7c->m_switchRectA.right << 5) + 0x10;
+    m_wp[10].y = (m_object->m_7c->m_switchRectA.bottom << 5) + 0x10;
+    m_wp[11].x = (m_object->m_7c->m_switchRectB.left << 5) + 0x10;
+    m_wp[11].y = (m_object->m_7c->m_switchRectB.top << 5) + 0x10;
+    m_wp[12].x = (m_object->m_7c->m_switchRectB.right << 5) + 0x10;
+    m_wp[12].y = (m_object->m_7c->m_switchRectB.bottom << 5) + 0x10;
 
     i32 i = 1;
     i32 found = 0;
-    while (found == 0) {
+    while (i < 13) {
+        if (found != 0) {
+            break;
+        }
         if (m_wp[i].x == 0x10 && m_wp[i].y == 0x10) {
             found = 1;
         } else {
             i++;
         }
-        if (i >= 13) {
-            break;
-        }
     }
     m_wpCount = i;
     m_wpIndex = 0;
 
-    if (o->m_7c->m_bc == 0) {
-        o->m_7c->m_bc = g_buteMgr.GetDwordDef("Hazardz", "PathHazardTimePerTile", 1000);
+    // held in edi ACROSS the GetDwordDef call in retail (`mov edi,[eax+0x7c]` before
+    // the test, `mov [edi+0xbc],eax` after) - a local, not a re-read.
+    AnimWorkerObj* w = m_object->m_7c;
+    if (w->m_bc == 0) {
+        w->m_bc = g_buteMgr.GetDwordDef("Hazardz", "PathHazardTimePerTile", 1000);
     }
 
     if (BeginLeg() == 0) {

@@ -126,41 +126,59 @@ i32 CMapMgr::SearchEdge(
 // and re-set it if any opposite neighbour pair (UP/DOWN, RIGHT/LEFT, UR/DL, UL/DR)
 // is both passable (no 0x939 bit). Clears m_5c and returns 1.
 // @early-stop
-// The dirty gate is POSITIVE-form so its `return 1` tail-merges with the normal
-// exit into retail's single bottom epilogue (the early-return spelling emitted a
-// separate inline `mov eax,1; pop ebp; add esp,0x1c; ret 4`) -
-// docs/patterns/positive-gate-enables-shrink-wrap.md. Residual is the 4 stack-slot
-// diagonal-neighbour layout.
+// Control flow is byte-for-byte retail's (34/34 branches, same targets, 47 blocks).
+// Residue is register COLOURING only, worth exactly 8 bytes: retail colours `cell`
+// ebx and `right` ebp, we colour `cell` ebp and `up` edx. ebp as the cell base forces
+// a disp8 on all four `[cell]` derefs and on `lea ebp+/-0x1c` (+6), plus cl keeps
+// m_width alive over `lea ecx,[eax-1]` where retail spends `dec edx` (+2); retail
+// pays 1 back on `test [ebp+0x0],0x939`. The 24-cell counter-decl x neighbour-decl
+// matrix (config/axes/updatediagonals.json) is inert on the colouring: every
+// counter_decl spelling ties, only `up_last` moves it (90.02 -> 90.17).
 RVA(0x00082030, 0x1a1)
 i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     BrickzCell* cell = m_cellPool;
     if (m_dirty != 0) {
         for (u32 r = 0; r < m_height; r++) {
             for (u32 c = 0; c < m_width; c++) {
-                i32 nf = cell->m_0;
-                if ((nf & 0x100) != 0) {
-                    BrickzCell* up = (r != 0) ? cell - m_width : 0;
-                    BrickzCell* down = (r < m_height - 1) ? cell + m_width : 0;
-                    BrickzCell* right = (c < m_width - 1) ? cell + 1 : 0;
-                    BrickzCell* left = (c != 0) ? cell - 1 : 0;
-                    BrickzCell* ur = (up && right) ? up + 1 : 0;
-                    BrickzCell* dl = (down && left) ? down - 1 : 0;
-                    BrickzCell* ul = (up && left) ? up - 1 : 0;
-                    BrickzCell* dr = (down && right) ? down + 1 : 0;
-                    nf &= ~0x1000;
-                    cell->m_0 = nf;
-                    if (up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939)) {
-                        goto setbit;
+                if ((cell->m_0 & 0x100) != 0) {
+                    BrickzCell* down = 0;
+                    BrickzCell* right = 0;
+                    BrickzCell* left = 0;
+                    BrickzCell* up = 0;
+                    BrickzCell* ur = 0;
+                    BrickzCell* ul = 0;
+                    BrickzCell* dr = 0;
+                    BrickzCell* dl = 0;
+                    if (r != 0) {
+                        up = cell - m_width;
                     }
-                    if (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939)) {
-                        goto setbit;
+                    if (r < m_height - 1) {
+                        down = cell + m_width;
                     }
-                    if (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939)) {
-                        goto setbit;
+                    if (c < m_width - 1) {
+                        right = cell + 1;
                     }
-                    if (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939)) {
-                    setbit:
-                        cell->m_0 = nf | 0x1000;
+                    if (c != 0) {
+                        left = cell - 1;
+                    }
+                    if (up && right) {
+                        ur = up + 1;
+                    }
+                    if (up && left) {
+                        ul = up - 1;
+                    }
+                    if (down && right) {
+                        dr = down + 1;
+                    }
+                    if (down && left) {
+                        dl = down - 1;
+                    }
+                    cell->m_0 &= ~0x1000;
+                    if ((up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939))
+                        || (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939))
+                        || (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939))
+                        || (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939))) {
+                        cell->m_0 |= 0x1000;
                     }
                 }
                 cell++;
