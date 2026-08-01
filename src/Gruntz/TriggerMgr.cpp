@@ -648,10 +648,10 @@ i32 CTriggerMgr::ResetGroup(
                     if (hit != cell) {
                         goto reportError;
                     }
-                    i32 v = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
+                    i32 v = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_toolId;
                     if (v != 0xf) {
                         i32 v2 =
-                            (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
+                            (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_toolId;
                         if (v2 != 0x13) {
                             goto reportError;
                         }
@@ -948,7 +948,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         m_rowStateB[col] += 1;
         k = cell->m_entranceReason;
         if (k > 0x16) {
-            k = cell->m_19c;
+            k = cell->m_toolId;
         }
         if (k != 0x14) {
             goto mark;
@@ -965,7 +965,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     }
     k = cell->m_entranceReason;
     if (k > 0x16) {
-        k = cell->m_19c;
+        k = cell->m_toolId;
     }
     if (k == 0x14) {
         this->ResetSpawnState();
@@ -1472,7 +1472,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     if (kind == 2) {
         i32 alt = cell->m_entranceReason;
         if (alt > 0x16) {
-            alt = cell->m_19c;
+            alt = cell->m_toolId;
         }
         if (alt == 0x13) {
             g_gameReg->m_cmdGrid
@@ -1889,7 +1889,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     i32 sy = (o->m_screenY & ~0x1f) + 0x10;
     i32 k = src->m_entranceReason;
     if (k > 0x16) {
-        k = src->m_19c;
+        k = src->m_toolId;
     }
     i32 vis = src->m_198;
     this->CellDispatch(col, row, 0, a18);
@@ -2603,7 +2603,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     i32 v = cell->m_entranceReason;
     if (v > 0x16) {
-        v = cell->m_19c;
+        v = cell->m_toolId;
     }
     if (v == 0x13) {
         Coord pt;

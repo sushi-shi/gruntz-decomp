@@ -743,7 +743,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             i32 st = unit->m_entranceReason;
                             if (st > 0x16) {
-                                st = unit->m_19c;
+                                st = unit->m_toolId;
                             }
                             if (st == 3 && unit->m_2d8 == 0) {
                                 unit->m_2d8 = 0xa;
@@ -815,7 +815,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     if (!eq) {
                                                         i32 st2 = unit->m_entranceReason;
                                                         if (st2 > 0x16) {
-                                                            st2 = unit->m_19c;
+                                                            st2 = unit->m_toolId;
                                                         }
                                                         if (st2 == 3 && unit->m_arrivalState == 4
                                                             && unit->m_defenderState == 6) {
@@ -870,7 +870,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             i32 st = unit->m_entranceReason;
                             if (st > 0x16) {
-                                st = unit->m_19c;
+                                st = unit->m_toolId;
                             }
                             if (st != 0xf && unit->m_2d8 == 9) {
                                 unit->m_arrivalCol = -1;
@@ -895,7 +895,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             i32 st = unit->m_entranceReason;
                             if (st > 0x16) {
-                                st = unit->m_19c;
+                                st = unit->m_toolId;
                             }
                             if (st == 7) {
                                 i32 d8 = unit->m_2d8;
@@ -921,7 +921,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             i32 st = unit->m_entranceReason;
                             if (st > 0x16) {
-                                st = unit->m_19c;
+                                st = unit->m_toolId;
                             }
                             if (st != 7 && unit->m_2d8 == 6) {
                                 unit->m_arrivalCol = -1;
@@ -1415,7 +1415,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 {
                                                     i32 st3 = unit->m_entranceReason;
                                                     if (st3 > 0x16) {
-                                                        st3 = unit->m_19c;
+                                                        st3 = unit->m_toolId;
                                                     }
                                                     if (st3 == 0x13 && unit->m_health > 0x1a) {
                                                         if (rand() % g_diffTier == 0) {
@@ -1671,7 +1671,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         goto LC;
                     }
                 LB:
-                    if (unit->m_19c != 0x16) {
+                    if (unit->m_toolId != 0x16) {
                         goto nexti;
                     }
                     if (cell & 2) {
@@ -1888,14 +1888,14 @@ spellHit: {
 flagsArm: {
     i32 ok = 1;
     if (cell & 8) {
-        if ((unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x12
-            && (unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x16) {
+        if ((unit->m_entranceReason > 0x16 ? unit->m_toolId : unit->m_entranceReason) != 0x12
+            && (unit->m_entranceReason > 0x16 ? unit->m_toolId : unit->m_entranceReason) != 0x16) {
             ok = 0;
         }
     }
     if (cell & 0x200) {
-        if ((unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x12
-            && (unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x16) {
+        if ((unit->m_entranceReason > 0x16 ? unit->m_toolId : unit->m_entranceReason) != 0x12
+            && (unit->m_entranceReason > 0x16 ? unit->m_toolId : unit->m_entranceReason) != 0x16) {
             ok = 0;
         }
     }
@@ -2073,7 +2073,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         scratchA = *srcA;
         i32 prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_19c;
+            prim = unit->m_toolId;
         }
         // --- scratchB: the tile record under the unit's LIVE screen cell (secondary
         //     gate). Retail reads the y from the first probe and the x from the second. ---
@@ -2123,7 +2123,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         //     0x20 cell and the first's is not a 0x2 cell, fire the coord trigger. ---
         i32 entranceMode = unit->m_entranceReason;
         if (entranceMode > 0x16) {
-            entranceMode = unit->m_19c;
+            entranceMode = unit->m_toolId;
         }
         if (entranceMode == 0x11 && unit->CoordCount() >= 2) {
             CoordNode* node = unit->CoordHead();
@@ -2214,7 +2214,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (sA & 0x200) {
             i32 p = unit->m_entranceReason;
             if (p > 0x16) {
-                p = unit->m_19c;
+                p = unit->m_toolId;
             }
             if (p != 0x16) {
                 return 0;
@@ -2225,14 +2225,14 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (hi) {
                 i32 p = unit->m_entranceReason;
                 if (p > 0x16) {
-                    p = unit->m_19c;
+                    p = unit->m_toolId;
                 }
                 if (p == 0x16) {
                     return 1;
                 }
                 i32 entranceMode2 = unit->m_entranceReason;
                 if (entranceMode2 > 0x16) {
-                    entranceMode2 = unit->m_19c;
+                    entranceMode2 = unit->m_toolId;
                 }
                 if (entranceMode2 == 0x12) {
                     return 1;
@@ -2242,7 +2242,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (lo2) {
                 i32 p = unit->m_entranceReason;
                 if (p > 0x16) {
-                    p = unit->m_19c;
+                    p = unit->m_toolId;
                 }
                 if (p == 0x16) {
                     return 1;
@@ -2278,7 +2278,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (sA & 0x40) {
             i32 p = unit->m_entranceReason;
             if (p > 0x16) {
-                p = unit->m_19c;
+                p = unit->m_toolId;
             }
             if (p != 0x16) {
                 if (prim == 0xd) {
@@ -2294,7 +2294,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (sA & 0x2) {
             i32 p = unit->m_entranceReason;
             if (p > 0x16) {
-                p = unit->m_19c;
+                p = unit->m_toolId;
             }
             if (p == 0x16) {
                 return 0;
@@ -2306,7 +2306,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         i32 pk = unit->m_entranceReason;
         if (pk > 0x16) {
-            pk = unit->m_19c;
+            pk = unit->m_toolId;
         }
         if (pk != 0x7) {
             return 1;
@@ -2430,21 +2430,21 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         i32 flags = 0;
         i32 prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_19c;
+            prim = unit->m_toolId;
         }
         if (prim == 0x12) {
             flags = 0x100;
         }
         prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_19c;
+            prim = unit->m_toolId;
         }
         if (prim == 0x16) {
             flags = 0x942;
         }
         prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_19c;
+            prim = unit->m_toolId;
         }
         if (prim == 0xe) {
             flags = 0x1000;
@@ -2695,7 +2695,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(CGrunt* unit, CGrunt* tgt) {
         ->CommitNeighbor(unit->m_tileOwnerHi, unit->m_tileOwnerLo, ul3->m_screenX, ul3->m_screenY);
     i32 prim = tgt->m_entranceReason;
     if (prim > 0x16) {
-        prim = tgt->m_19c;
+        prim = tgt->m_toolId;
     }
     if (prim != 0x11) {
         return 1;
@@ -3036,7 +3036,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
     }
     i32 prim = unit->m_entranceReason;
     if (prim > 0x16) {
-        prim = unit->m_19c;
+        prim = unit->m_toolId;
     }
     if (prim != 0) {
         return 0;
@@ -3125,7 +3125,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
                 } else {
                     i32 entranceMode = unit->m_entranceReason;
                     if (entranceMode > 0x16) {
-                        entranceMode = unit->m_19c;
+                        entranceMode = unit->m_toolId;
                     }
                     if (entranceMode == 0) {
                         if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
@@ -3240,7 +3240,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     own = *osrc;
 
     i32 maskFlags = own.m_0 & 0xdfffffff;
-    i32 type = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+    i32 type = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
 
     // ---- door (dest.flags & 0x400, m_2d4==3, type!=8) ----
     if ((dest.m_0 & 0x400) && g->m_defenderState == 3 && type != 8) {
@@ -3341,7 +3341,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     // ---- 0x20 -> type dispatch ----
     if (maskFlags & 0x20) {
-        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 1 || t == 0x11) {
             if (t == 1) {
                 m_triggerMgr->ApplyTriggerA(
@@ -3378,7 +3378,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     // ---- 0x4000 path, type 0xf (teleport) ----
     if (maskFlags & 0x4000) {
-        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 0xf) {
             CTileActionEvent* r = m_cellQuery->FindByField0C((fcx << 8) + fcy);
             if (r != 0) {
@@ -3400,7 +3400,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     // ---- 0x8000 path, type 0xf ----
     if (maskFlags & 0x8000) {
-        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 0xf) {
             ARR_RECYCLE(g);
             winapi_02dfa0_IntersectRect(g, fcx, fcy, 1);
@@ -3410,7 +3410,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     // ---- 0x20 path, type 5 ----
     if (maskFlags & 0x20) {
-        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 5) {
             if (maskFlags & 0x4000) {
                 CTileActionEvent* r = m_cellQuery->FindByField0C((fcx << 8) + fcy);
@@ -3454,9 +3454,9 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     // ---- 0x40 path ----
     if (maskFlags & 0x40) {
-        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t != 0x16) {
-            i32 t2 = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+            i32 t2 = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
             if (t2 == 0xd) {
                 m_triggerMgr->ApplyTriggerA(
                     g->m_tileOwnerHi,
@@ -3477,7 +3477,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 1;
     }
     {
-        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 0x16) {
             return 1;
         }
@@ -3990,20 +3990,20 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
     i32 prim = unit->m_entranceReason;
     i32 t = prim;
     if (prim > 0x16) {
-        t = unit->m_19c;
+        t = unit->m_toolId;
     }
     if (t == 0x12) {
         flags = 0x100;
     }
     t = prim;
     if (prim > 0x16) {
-        t = unit->m_19c;
+        t = unit->m_toolId;
     }
     if (t == 0x16) {
         flags = 0x942;
     }
     if (prim > 0x16) {
-        prim = unit->m_19c;
+        prim = unit->m_toolId;
     }
     if (prim == 0xe) {
         flags = 0x1000;
@@ -4216,14 +4216,14 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                         i32 flags = 0x4020;
                         i32 sec = unit->m_entranceReason;
                         if (sec > 0x16) {
-                            sec = unit->m_19c;
+                            sec = unit->m_toolId;
                         }
                         if (sec == 0x16) {
                             flags = 0x4962;
                         }
                         i32 prim = unit->m_entranceReason;
                         if (prim > 0x16) {
-                            prim = unit->m_19c;
+                            prim = unit->m_toolId;
                         }
                         if (prim == 0x12) {
                             flags |= 0x100;
@@ -4429,7 +4429,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         // Band A: the unit must currently be idle (m_entranceReason/m_19c clear).
         i32 cur = unit->m_entranceReason;
         if (cur > 0x16) {
-            cur = unit->m_19c;
+            cur = unit->m_toolId;
         }
         if (cur != 0) {
             return 1;
@@ -4534,7 +4534,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         // the unit's coord nodes for the 0x12 / 0x16 modes.
         i32 cur2 = unit->m_entranceReason;
         if (cur2 > 0x16) {
-            cur2 = unit->m_19c;
+            cur2 = unit->m_toolId;
         }
         if (cur2 == 0) {
             (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
@@ -5109,14 +5109,14 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     i32 flags = 0x60;
     i32 sec = unit->m_entranceReason;
     if (sec > 0x16) {
-        sec = unit->m_19c;
+        sec = unit->m_toolId;
     }
     if (sec == 0x16) {
         flags = 0x962;
     }
     i32 prim = unit->m_entranceReason;
     if (prim > 0x16) {
-        prim = unit->m_19c;
+        prim = unit->m_toolId;
     }
     if (prim == 0x12) {
         flags |= 0x100;
@@ -5739,20 +5739,20 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
         i32 flags = unit->m_254;
         i32 t = prim;
         if (prim > 0x16) {
-            t = unit->m_19c;
+            t = unit->m_toolId;
         }
         if (t == 0x12) {
             flags |= 0x100;
         } else {
             t = prim;
             if (prim > 0x16) {
-                t = unit->m_19c;
+                t = unit->m_toolId;
             }
             if (t == 0xe) {
                 flags |= 0x1000;
             } else {
                 if (prim > 0x16) {
-                    prim = unit->m_19c;
+                    prim = unit->m_toolId;
                 }
                 if (prim == 0x16) {
                     flags |= 0x942;
@@ -5807,20 +5807,20 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
     i32 flags = unit->m_254;
     i32 t = prim;
     if (prim > 0x16) {
-        t = unit->m_19c;
+        t = unit->m_toolId;
     }
     if (t == 0x12) {
         flags |= 0x100;
     } else {
         t = prim;
         if (prim > 0x16) {
-            t = unit->m_19c;
+            t = unit->m_toolId;
         }
         if (t == 0xe) {
             flags |= 0x1000;
         } else {
             if (prim > 0x16) {
-                prim = unit->m_19c;
+                prim = unit->m_toolId;
             }
             if (prim == 0x16) {
                 flags |= 0x942;

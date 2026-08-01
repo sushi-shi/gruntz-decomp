@@ -162,12 +162,12 @@ i32 CSBI_StatzTabGruntBar::Update() {
         // a `jmp`, which is two extra instructions on each of the two sites.
         i32 cap = level;
         if (level > 0x16) {
-            cap = unit->m_19c;
+            cap = unit->m_toolId;
         }
         if (cap != 0) {
             abilityVal = level;
             if (level > 0x16) {
-                abilityVal = unit->m_19c;
+                abilityVal = unit->m_toolId;
             }
             if (abilityVal == 3) {
                 abilityVal = unit->m_194 + 0x11;

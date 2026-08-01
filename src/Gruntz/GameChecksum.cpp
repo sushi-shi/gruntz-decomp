@@ -29,7 +29,7 @@ i32 CNetSession::Checksum() {
                 i32 n = obj->m_entranceReason;
                 i32 d = n;
                 if (n > 0x16) {
-                    d = obj->m_19c;
+                    d = obj->m_toolId;
                 }
                 sum +=
                     obj->m_198 + obj->m_entranceCommitted + obj->m_entranceActive + obj->m_224 + d;

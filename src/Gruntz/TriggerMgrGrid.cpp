@@ -675,7 +675,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     }
     i32 k = cell->m_entranceReason;
     if (k > 0x16) {
-        k = cell->m_19c;
+        k = cell->m_toolId;
     }
     if (k == 0x13 && cell->CanShowStamina() != 0) {
         if (cellTileX != argTileX || cellTileY != argTileY) {
@@ -687,7 +687,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (cellTileX == argTileX && cellTileY == argTileY) {
         i32 kSame = cell->m_entranceReason;
         if (kSame > 0x16) {
-            kSame = cell->m_19c;
+            kSame = cell->m_toolId;
         }
         if (kSame != 0xf) {
             return 0;
@@ -700,7 +700,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     }
     i32 kDiag = cell->m_entranceReason;
     if (kDiag > 0x16) {
-        kDiag = cell->m_19c;
+        kDiag = cell->m_toolId;
     }
     if (kDiag == 1) {
         // reason 1 = the diagonal walk: an off-axis step is only legal on the 45 deg line
@@ -737,7 +737,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     i32 bute = map->m_rows[by >> 5][bx >> 5].m_10; // target tile's bute type code
     i32 kind = cell->m_entranceReason;
     if (kind > 0x16) {
-        kind = cell->m_19c;
+        kind = cell->m_toolId;
     }
     // Case ORDER is retail's source order, proven by the physical arm layout in the
     // image (5 @0x6dd8e, 13 @0x6ddd9, 7 @0x6ddea, 15 @0x6de5a, 3 @0x6de7a + the shared
@@ -833,14 +833,20 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (cell == 0 || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
+    i32 cellTileX = cell->m_lastTilePxX >> 5;
+    i32 cellTileY = cell->m_lastTilePxY >> 5;
+    i32 argTileX = worldX >> 5;
+    i32 argTileY = worldY >> 5;
     CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->m_lastTilePxX) {
-        if (o->m_screenY != cell->m_lastTilePxY) {
-            return -1;
-        }
+        return -1;
     }
-    if (o->m_screenX == cell->m_lastTilePxX && o->m_screenY == cell->m_lastTilePxY
-        && cell->m_198 != 0x1e && g_traitorMode == 0) {
+    if (o->m_screenY != cell->m_lastTilePxY) {
+        return -1;
+    }
+    // retail compares the SNAPPED TILE coords here, not the pixel pair
+    if (cellTileX == argTileX && cellTileY == argTileY && cell->m_198 != 0x1e
+        && g_traitorMode == 0) {
         return 0;
     }
     i32 by = (worldY & ~0x1f) + 0x10;
@@ -855,11 +861,10 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, 5);
     if (hit == 0) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-        i32 tx = worldX >> 5;
-        i32 ty = worldY >> 5;
         i32 flags = 1;
-        if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
-            flags = map->m_rows[ty][tx].m_0;
+        if (static_cast<u32>(argTileX) < map->m_width
+            && static_cast<u32>(argTileY) < map->m_height) {
+            flags = map->m_rows[argTileY][argTileX].m_0;
         }
         if ((flags & 0x40939) != 0 || (flags & 0x82) != 0) {
             return 0;
@@ -1010,7 +1015,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     }
     i32 k = cell->m_entranceReason;
     if (k > 0x16) {
-        k = cell->m_19c;
+        k = cell->m_toolId;
     }
     if (k != 0x14) {
         return;

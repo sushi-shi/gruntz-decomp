@@ -139,7 +139,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         } else if (m_buttonState[1] == 3) {
             m_buttonState[1] = 1;
         }
-        i32 prim = (grunt->m_entranceReason > 0x16) ? grunt->m_19c : grunt->m_entranceReason;
+        i32 prim = (grunt->m_entranceReason > 0x16) ? grunt->m_toolId : grunt->m_entranceReason;
         m_buttonIcon[0] = prim;
         if (prim == 0) {
             m_buttonIcon[0] = 0x21;

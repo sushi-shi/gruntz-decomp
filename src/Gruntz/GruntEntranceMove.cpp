@@ -834,7 +834,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    LoadGruntTypeTable(m_19c, 1, 0, 0);
+    LoadGruntTypeTable(m_toolId, 1, 0, 0);
     m_entranceActive = 0;
 
     CGruntzMgr* g = g_gameReg;
@@ -875,6 +875,16 @@ i32 CGrunt::UpdateEntranceAnim() {
 // reset, commit the tile, re-latch the "Q" anim set, and apply the DEATHZ_FREEZE
 // geometry + first frame). __thiscall, ret 0.
 //
+// Retail's strcmp cascade is NOT uniform, and the earlier note here ("retail sinks
+// `xor ebx,ebx` past the whole cascade") mis-read it. Arms 1-2 are the `!= 0` form
+// (`test eax,eax / setne cl / test cl,cl / je`) and their inline strcmp keeps `bl` as
+// the second-operand scratch (`mov bl,[edi] / cmp dl,bl`), because no zero register is
+// live yet. Arm 3 ("I") is the `== 0` form and materialises the zero itself - retail
+// emits `xor ebx,ebx` on BOTH exits of that strcmp, since the loop clobbered bl. From
+// arm 4 on retail is byte-identical to ours: ebx pinned to 0, `cmp dl,[edi]` memory
+// compare, `cmp eax,ebx / sete cl / test cl,cl / jne`.
+// Remaining gap is real body divergence past the cascade (base 669 instructions vs
+// retail's 698, streams desynced by ~line 300), not the zero pin.
 // @early-stop
 RVA(0x000692f0, 0x850)
 i32 CGrunt::StepArrivalCommit() {
@@ -883,12 +893,14 @@ i32 CGrunt::StepArrivalCommit() {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
-    if (eq) {
+    // The first two rejects are spelled `!= 0` (retail: test eax,eax / setne cl / je) - only
+    // from the third on does cl need a zero in ebx, which is where retail materialises it.
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") != 0);
+    if (!eq) {
         goto finalize;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
-    if (eq) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) != 0);
+    if (!eq) {
         goto finalize;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
@@ -992,7 +1004,7 @@ idleReseed:
     if (m_entranceReason == 0x1e) {
         g_gameReg->m_cueSink->StopVoice(m_object->m_188);
     }
-    LoadGruntTypeTable(m_19c, 1, 0, 0);
+    LoadGruntTypeTable(m_toolId, 1, 0, 0);
     {
         i32 z = m_object->m_screenY + 0x186a0;
         if (m_object->m_sortKey != z) {
@@ -1431,7 +1443,7 @@ i32 CGrunt::StepAnimDispatchB() {
     }
 
 idleReseed:
-    LoadGruntTypeTable(m_19c, 1, 0, 1);
+    LoadGruntTypeTable(m_toolId, 1, 0, 1);
     goto modeDispatch;
 
 modeDispatch: {

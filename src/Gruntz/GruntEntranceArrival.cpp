@@ -586,7 +586,7 @@ i32 CGrunt::StepAttackFire() {
                 );
                 i32 t = tgt->m_entranceReason;
                 if (t > 0x16) {
-                    t = tgt->m_19c;
+                    t = tgt->m_toolId;
                 }
                 if (t == 1 && m_gruntKind != GRUNT_INVULNERABLE) {
                     m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCol);
@@ -864,7 +864,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         }
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
-        LoadGruntTypeTable(m_19c, 1, 0, 0);
+        LoadGruntTypeTable(m_toolId, 1, 0, 0);
         m_entranceActive = 0;
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->m_tileGrid;
@@ -1465,7 +1465,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         }
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId(s_animKeyA);
-        LoadGruntTypeTable(m_19c, 1, 0, 0);
+        LoadGruntTypeTable(m_toolId, 1, 0, 0);
         m_entranceActive = 0;
 
         CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -1823,7 +1823,7 @@ reject:
     if (m_entranceReason == 0x1e) {
         g_gameReg->m_cueSink->StopVoice(m_object->m_188);
     }
-    LoadGruntTypeTable(m_19c, 1, 0, 1);
+    LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
         CWwdGameObjectA* h = m_object;
         i32 v = h->m_screenY + 0x186a0;

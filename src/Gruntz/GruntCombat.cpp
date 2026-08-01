@@ -1793,7 +1793,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     i32 flag = 0;
     i32 v = m_entranceReason;
     if (v > 0x16) {
-        v = m_19c;
+        v = m_toolId;
     }
     if (v == 1) {
         flag = v;

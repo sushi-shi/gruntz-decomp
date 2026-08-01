@@ -393,7 +393,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_198 = 0;
     m_194 = 0;
     m_gruntKind = 0;
-    m_19c = 0;
+    m_toolId = 0;
     m_animSetName = s_NORMALGRUNT;
     m_neighborRow = -1;
     m_entranceCommitted = 1;
@@ -2383,7 +2383,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
     fresh = 0;
     defer = 0;
     if (m_entranceReason < 0x17) {
-        m_19c = m_entranceReason;
+        m_toolId = m_entranceReason;
     }
     switch (kind) {
         case 0: {
@@ -3267,7 +3267,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             return 1;
         }
         case 0x39: {
-            m_19c = m_entranceReason;
+            m_toolId = m_entranceReason;
             m_reachRectLeft = -1;
             m_reachRectTop = -1;
             m_reachRadius = 1;
@@ -3299,7 +3299,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             break;
         }
         case 0x3a: {
-            m_19c = m_entranceReason;
+            m_toolId = m_entranceReason;
             m_reachRectLeft = -1;
             m_reachRectTop = -1;
             m_reachRadius = 1;
@@ -3907,7 +3907,7 @@ void CGrunt::XferName(char* /*name*/) {
             i32 reason = m_entranceReason;
             i32 pose = reason;
             if (reason > 0x16) {
-                pose = m_19c;
+                pose = m_toolId;
             }
             if (pose == 8) {
                 goto afterTile;
@@ -4347,7 +4347,7 @@ kindDispatch:
                             ps->m_flags |= 0x10000;
                             m_powerupSprite = 0;
                         }
-                        i32 typeId = m_19c;
+                        i32 typeId = m_toolId;
                         m_entranceReason = -1;
                         LoadGruntTypeTable(typeId, 1, 0, 0);
                         break;

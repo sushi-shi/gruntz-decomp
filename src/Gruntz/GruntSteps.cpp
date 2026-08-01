@@ -1051,7 +1051,7 @@ idleReseed:
     if (m_entranceReason == 0x1e) {
         g_gameReg->m_cueSink->StopVoice(m_object->m_188); // 0x11c730 (ex EmitMoveCueShort)
     }
-    LoadGruntTypeTable(m_19c, 1, 0, 1);
+    LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
         i32 px = m_object->m_screenY + 0x186a0;
         if (m_object->m_sortKey != px) {
@@ -1429,7 +1429,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_194, 4);
     ar->Write(&m_entranceReason, 4);
     ar->Write(&m_198, 4);
-    ar->Write(&m_19c, 4);
+    ar->Write(&m_toolId, 4);
     ar->Write(&m_moveMode, 4);
     ar->Write(&m_1a4, 4);
     ar->Write(&m_1a8, 4);

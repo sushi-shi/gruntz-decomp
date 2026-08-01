@@ -2361,7 +2361,7 @@ i32 CGrunt::SeekTarget() {
 
     i32 reason = this->m_entranceReason;
     if (reason > 0x16) {
-        reason = this->m_19c;
+        reason = this->m_toolId;
     }
     if (reason == 0 && (reason = this->m_arrivalCol, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
@@ -2397,7 +2397,7 @@ i32 CGrunt::SeekTarget() {
         if (((dy ^ (dy >> 31)) - (dy >> 31)) < 2 && ((dx ^ (dx >> 31)) - (dx >> 31)) < 2) {
             i32 r2 = slot->m_entranceReason;
             if (r2 > 0x16) {
-                r2 = slot->m_19c;
+                r2 = slot->m_toolId;
             }
             if (r2 != 0x14 && r2 != 1) {
                 slot->LoadGruntTypeTable(r2, 1, 0, 0);
@@ -2423,7 +2423,7 @@ i32 CGrunt::SeekTarget() {
 
     reason = this->m_entranceReason;
     if (reason > 0x16) {
-        reason = this->m_19c;
+        reason = this->m_toolId;
     }
     if (reason == 0) {
         if (this->CoordCount() == 0) {
@@ -2440,10 +2440,11 @@ i32 CGrunt::SeekTarget() {
                     i32 k = sv->m_entranceReason;
                     i32 kk = k;
                     if (k > 0x16) {
-                        kk = sv->m_19c;
+                        kk = sv->m_toolId;
                     }
                     if (kk != 0 && kk != 0x14 && kk != 1
-                        && !(k > 0x16 ? (sv->m_19c == 0x14) : false) && sv->m_gruntKind != 0x36) {
+                        && !(k > 0x16 ? (sv->m_toolId == 0x14) : false)
+                        && sv->m_gruntKind != 0x36) {
                         i32 ex = sv->m_object->m_screenX >> 5;
                         i32 ddx = ex - (this->m_object->m_screenX >> 5);
                         i32 ey = (sv->m_object->m_screenY >> 5) - (this->m_object->m_screenY >> 5);

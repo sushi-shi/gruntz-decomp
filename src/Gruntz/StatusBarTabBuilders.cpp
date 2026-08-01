@@ -513,7 +513,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == 2) {
         i32 level = unit->m_entranceReason; // the multiplexed current-tool kind (>0x16 = melee)
         if (level > 0x16) {
-            val = unit->m_19c;
+            val = unit->m_toolId;
             if (val == 0) {
                 m_sampleMode = 1;
             }

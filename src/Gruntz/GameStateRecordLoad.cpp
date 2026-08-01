@@ -117,7 +117,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_194, 4);
     ar->Read(&m_entranceReason, 4);
     ar->Read(&m_198, 4);
-    ar->Read(&m_19c, 4);
+    ar->Read(&m_toolId, 4);
     ar->Read(&m_moveMode, 4);
     ar->Read(&m_1a4, 4);
     ar->Read(&m_1a8, 4);

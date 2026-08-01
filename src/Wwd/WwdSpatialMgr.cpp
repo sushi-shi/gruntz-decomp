@@ -36,6 +36,15 @@ void CWwdSpatialMgr::FreeGrids() {
 // position and re-bucket every grid by the (origin -> new) delta, accumulating
 // the three grid-scroll results.
 // ===========================================================================
+// The deferred cross-TU retype flagged here in 2026-07-14 is DONE (2026-08-01):
+// canonical CWwdGrid::Query now takes `(WwdRect rect, i32 doRemove)`, matching retail's
+// three by-value call blocks (`push 1 / sub esp,0x10 / mov ebp,esp / mov [ebp+N],..`).
+// Byte-neutral for the callee - the by-value rect and four scalars occupy the same 0x14
+// of stack, so Query @0x1918c0 is unchanged at 99.93%.
+// What is left: retail emits the m_scrollX/m_scrollY (0x68/0x6c) stores eagerly at the
+// jne target and keeps the running total on the STACK (`mov [esp+0x2c],eax` after each
+// Query, ebp reserved for the arg-block pointer); cl sinks the two stores into the first
+// rect setup and enregisters the total in ebp. One reused rect variable scores identically.
 // @early-stop
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
@@ -50,21 +59,21 @@ i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     r0.m_minY = dy - m_org0y;
     r0.m_maxX = m_org0x + dx;
     r0.m_maxY = m_org0y + dy;
-    i32 n = m_grid0->Query(r0.m_minX, r0.m_minY, r0.m_maxX, r0.m_maxY, 1);
+    i32 n = m_grid0->Query(r0, 1);
 
     WwdRect r1;
     r1.m_minX = dx - m_org1x;
     r1.m_minY = dy - m_org1y;
     r1.m_maxX = m_org1x + dx;
     r1.m_maxY = m_org1y + dy;
-    n += m_grid1->Query(r1.m_minX, r1.m_minY, r1.m_maxX, r1.m_maxY, 1);
+    n += m_grid1->Query(r1, 1);
 
     WwdRect r2;
     r2.m_minX = dx - m_org2x;
     r2.m_minY = dy - m_org2y;
     r2.m_maxX = m_org2x + dx;
     r2.m_maxY = m_org2y + dy;
-    n += m_grid2->Query(r2.m_minX, r2.m_minY, r2.m_maxX, r2.m_maxY, 1);
+    n += m_grid2->Query(r2, 1);
 
     return n;
 }

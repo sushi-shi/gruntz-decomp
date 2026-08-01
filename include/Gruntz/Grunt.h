@@ -525,7 +525,7 @@ public:
     i32 m_toyBlendPct;                  // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
     i32 m_194;                          // +0x194
     i32 m_198;                          // +0x198
-    i32 m_19c;                          // +0x19c
+    i32 m_toolId;                       // +0x19c
     i32 m_moveMode;                     // +0x1a0
     i32 m_1a4;                          // +0x1a4
     i32 m_1a8;                          // +0x1a8 (serialized)

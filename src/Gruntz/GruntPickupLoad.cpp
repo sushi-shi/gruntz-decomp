@@ -50,7 +50,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
     if (type >= PICKUP_REDBRICK && type <= PICKUP_BLACKBRICK) {
         i32 st = m_entranceReason;
         if (st > 0x16) {
-            st = m_19c;
+            st = m_toolId;
         }
         if (st != 3) {
             return 0;

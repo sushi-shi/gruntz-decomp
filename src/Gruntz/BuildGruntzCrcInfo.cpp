@@ -99,7 +99,7 @@ void CNetSession::BuildGruntzCrcInfo() {
             }
             i32 tool = type;
             if (type > 0x16) {
-                tool = grunt->m_19c;
+                tool = grunt->m_toolId;
             }
             wsprintfA(
                 szLine,
