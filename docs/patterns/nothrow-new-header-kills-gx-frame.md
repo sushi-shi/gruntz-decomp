@@ -64,6 +64,29 @@ Include `<new.h>`, never `<new>`, in a TU that (a) needs placement new and (b) c
 #include <new.h>
 ```
 
+## Scope — it bites ONLY when the delete is the region's SOLE throw point
+
+Swept all 11 remaining `#include <new>` TUs (2026-08-01, `<new>` vs `<new.h>`, per-symbol
+objdiff on each): **10 of 11 are exact no-ops**, and the 11th moved one unrelated function
+by +0.7. Nothing else in the tree was losing a frame. The reason is the mechanism itself —
+the exception spec only decides the unwind state when the `delete` is the *only* call in
+the protected region:
+
+| TU class | why it is a no-op |
+|---|---|
+| `flags = "base"` (no `/GX` at all) — `zvec`, `gruntstatestep`, `grunttilescan` | there is no frame to drop |
+| no destructor with a base sub-object — `warlord`, `gruntcombat`, `gruntarrivalscan`, `modeobjinit` | nothing registers an unwind action in the first place |
+| a destructor that ALSO calls something else — `grunt` (`~CGrunt`), `gruntzmgr` (`~CGruntzMgr`, `~CDemo`), `tiletriggercontainer`, `battlezmapconfig` | member/base dtors and MFC calls are already throw points, so the frame exists either way and they are already 100% |
+
+So the diagnostic is narrow and precise: **a minimal destructor whose entire body is
+`if (m_p) delete m_p;`** (or `::operator delete`), in a `/GX` unit, missing retail's frame.
+
+**Do not sweep the tree for this.** `<new.h>` is a *smaller* header, so it shifts cl's
+internal symbol counter and RENUMBERS every `$S<n>` local-static COMDAT in the TU
+(measured: `_s_FreezeRadius$S33024` -> `$S32890` in `GruntCombat.cpp`). In a TU that has
+such statics that is churn for no gain. Change the include only where the frame is
+actually missing.
+
 ## Evidence
 
 - `src/Rez/RezBufferObjectDtor.cpp`, `??1CRezBufferObject@@UAE@XZ` @ 0x17f330:
