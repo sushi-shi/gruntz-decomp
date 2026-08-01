@@ -255,6 +255,18 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.lpszClassName = m_gameInfo.szWindowClassName;
 }
 
+// @early-stop
+// 99.15%, size 267 == retail, relocs 2/2, ONE 3-row hunk. The final store block is a
+// chain of memory-to-memory copies; retail allocates the SAME scratch (eax) to all
+// three (`load eax / store / load eax / store / load eax / store`), cl alternates
+// eax,ecx,eax and the pairing pass then hoists the ecx load above the hInstance store.
+// Every long-lived value IS allocated as retail (ebx=x, edi=cx, ebp=cy, edx=exStyle,
+// ecx=style; hMenu/y spilled to the same [esp+0x10]/[esp+0x14] slots) - only the
+// short-lived copy temp differs, so there is nothing above it to fix. A 216-cell
+// Cartesian over the store-block spelling (explicit temps for hInstance/hMenu/y, a
+// CREATESTRUCTA* alias), the hMenu declaration, and the style/x/y declaration types
+// scored FLAT at 99.146670 / size 267 in 180 of 216 cells; the only movement was the
+// pointer-alias option, which REGRESSED to 80.35 / 263. Not source-steerable.
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
     // retail: `mov ecx,0xc; xor eax,eax; lea edi,[esi+0x210]; rep stosd` == an inline

@@ -280,18 +280,34 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 // pProgress, aborting on *pCancel). Restores the cwd on success/failure. __thiscall.
 // ===========================================================================
 // @early-stop
-// 85.1% (was 84.5). Two real source bugs fixed since the old note:
+// 89.1% (was 85.3). Three real source bugs fixed so far:
 //   - the chunk branch polarity was inverted. Retail is
 //     `if (copied + 0x8000 > payloadLen) chunk = payloadLen - copied; else chunk = 0x8000;`
 //     (`cmp eax,esi; jbe <chunk=0x8000>; sub esi,ebp`), not the `<=` form.
 //   - `m_index[i]` (operator[] -> DWORD&) instead of `m_index.GetData()[i]`, so /O2 keeps
 //     retail's element ADDRESS (`lea edi,[edx+ecx*4]`) across the Seek call.
-// Residual is the ebp tie-break the old note names, and it IS real: retail merges the
-// entry zero-constant with `copied` in ebp and recomputes `lea esi,[ebx+0x124]` per
-// iteration; cl pins the zero in esi, hoists &m_stream into ebp and gives `copied` a
-// stack home (hence our frame is 0x23c vs retail's 0x238 - one extra dword). Tested:
-// `copied` declared at fn top / before the loop / at the loop top, i32-vs-u32 copied and
-// chunk, `!done` spelling, decoded hoisted - all byte-identical.
+//   - THE THREE FAILURE ARMS ARE NOT A SHARED `goto fail` - they are three inline
+//     `_chdir(cwd); return 0;` copies. That is provable from retail's bytes: a shared
+//     label emits ONE block, but retail has THREE (0x17bef9 / 0x17bf00 / 0x17bf07),
+//     each `lea <reg>,[esp+0x44]; push <reg>; jmp 0x17bf0c`, with a DIFFERENT scratch
+//     register (eax / ecx / edx) - which is precisely what stops cl cross-jumping them,
+//     and precisely what you get when the allocator picks a free scratch independently
+//     at three separate sites. Writing the three copies out reproduces retail's register
+//     sequence exactly and merges the common `call _chdir` tail the same way.
+// Residual is ONE allocator tie-break, and every remaining block-level difference is
+// downstream of it: retail merges the entry zero-constant with `copied` in ebp
+// (`xor ebp,ebp` at entry serves both, hence retail's loop-entry `jmp` over the loop-top
+// `xor ebp,ebp`) and rematerializes `lea esi,[ebx+0x124]` per outer iteration plus
+// `lea ecx,[ebx+0x124]` inside the inner loop. cl instead keeps &m_stream loop-carried in
+// ebp, so the inner loop needs FOUR callee-saved values (this / &m_stream / chunk /
+// &m_copyBuf) and `copied` is pushed to a stack home - hence our frame is 0x23c vs
+// retail's 0x238. Tested and byte-identical across 339 cells: `copied` at fn top /
+// before the loop / at the loop top, i32-vs-u32 copied+chunk+done, `register` on every
+// candidate (MSVC5 /O2 ignores it), the chunk if/else as a ternary, a `char* buf` local,
+// `!done`, and FIVE `CFile*` local-pointer spellings (per-outer-iteration, per-inner-
+// iteration, and a scoped one for the pre-loop Seek) - cl folds every local pointer back
+// into the same CSE. Only `m_stream.Seek(0xf, 0)` moved ahead of `CFile file;` changed
+// anything, and it REGRESSED (83.2). Not source-steerable.
 RVA(0x0017bcd0, 0x28b)
 i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     if (m_readOpen == 0 || m_openGate == 0) {
@@ -315,15 +331,18 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     for (u16 i = 0; i < static_cast<u32>(m_fileCount); i++) {
         u32 copied = 0;
         if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
-            goto fail;
+            _chdir(cwd);
+            return 0;
         }
         char decoded[0x100];
         FecDecode(m_entry.m_name, decoded, m_entry.m_nameLen);
         if (file.Open(decoded, 0x1002, 0) == 0) {
-            goto fail;
+            _chdir(cwd);
+            return 0;
         }
         if (m_stream.Seek(static_cast<i32>(m_index[i]), 0) != static_cast<i32>(m_index[i])) {
-            goto fail;
+            _chdir(cwd);
+            return 0;
         }
         i32 done = 0;
         while (done == 0) {
@@ -356,10 +375,6 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
 
     _chdir(cwd);
     return 1;
-
-fail:
-    _chdir(cwd);
-    return 0;
 }
 
 RVA(0x0017bf70, 0x65)
