@@ -164,21 +164,22 @@ i32 CGruntzMgr::MakeRezPath() {
     i32 found = 1;
 
     // --- main archive: cwd\Gruntz.REZ, fall back to <drive>:\DATA\Gruntz.REZ ---
-    {
-        CString rez(s_rezName);
-        m_haveRez = 0;
-        RezFormat(&m_strRezPath, s_join, cwd, static_cast<LPCTSTR>(rez));
-        if (!RezFileExists(m_strRezPath)) {
-            if (drive) {
-                RezFormat(&m_strRezPath, s_dataPath, drive, static_cast<LPCTSTR>(rez));
-                if (RezFileExists(m_strRezPath)) {
-                    m_haveRez = 1;
-                } else {
-                    found = 0;
-                }
+    // `rez` is FUNCTION-scoped, not block-scoped: retail's /GX state ids in the second
+    // half run one HIGHER than a scoped `rez` produces, i.e. it is still live (still an
+    // unwind action) while the three movie CStrings are built.
+    CString rez(s_rezName);
+    m_haveRez = 0;
+    RezFormat(&m_strRezPath, s_join, cwd, static_cast<LPCTSTR>(rez));
+    if (!RezFileExists(m_strRezPath)) {
+        if (drive) {
+            RezFormat(&m_strRezPath, s_dataPath, drive, static_cast<LPCTSTR>(rez));
+            if (RezFileExists(m_strRezPath)) {
+                m_haveRez = 1;
             } else {
                 found = 0;
             }
+        } else {
+            found = 0;
         }
     }
 

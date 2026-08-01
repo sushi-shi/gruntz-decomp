@@ -38,6 +38,14 @@ public:
     i32 OnFail();                                                       // 0x17b5a0
     i32 AddFile(const char* name, i32* pCancel, void* pProgress);       // 0x17b950
     i32 ExtractArchive(const char* dir, i32* pCancel, void* pProgress); // 0x17bcd0
+    // MEMBERS, not free functions (binary fact): each has exactly ONE caller
+    // (AddFile / ExtractArchive respectively) and BOTH set `mov ecx,<this>`
+    // immediately before the call - a __stdcall free call never touches ecx. Both
+    // bodies ignore `this` (they should have been static), and __thiscall's stack
+    // layout + callee cleanup (`ret 8` / `ret 0xc`) are identical to __stdcall's, so
+    // the callee bytes are unchanged.
+    void FecEncode(const char* src, char* dst);          // 0x17bf70
+    void FecDecode(const char* src, char* dst, u16 len); // 0x17bfe0
 
     i32 m_openGate;     // +0x00  open-gate (must be nonzero)
     i32 m_readOpen;     // +0x04  read-open flag
@@ -54,11 +62,5 @@ public:
     char m_copyBuf[0x8000]; // +0x14c  32 KB streaming copy buffer
 };
 SIZE(0x814c);
-
-// File-scope prototypes moved from the .cpp: an unqualified
-// declaration at file scope has EXTERNAL linkage, so it belongs in
-// the owner header.
-void __stdcall FecEncode(const char* src, char* dst);
-void __stdcall FecDecode(const char* src, char* dst, unsigned short len);
 
 #endif // CRYPTO_FECCRYPT_H

@@ -171,10 +171,18 @@ i32 CFecFile::CreateArchive(const char* name) {
 // finally patches the header file-count at offset 0xb. __thiscall; 1 on success.
 // ===========================================================================
 // @early-stop
-// ~82% regalloc/scheduling wall: full control flow + /GX EH frame + record build + copy
-// loop + finalize are reconstructed and reloc-match retail. Residuals are the `this`
-// register colouring (ebp vs ebx), the seek-fail/abort undo tail-merge layout, and the
-// name-padding `mov dh,dl` byte-extract scheduling residue. Not source-steerable.
+// 82.9% (was 82.0). The "`this` colouring ebp vs ebx" part of the old note was wrong -
+// the colouring agreed; what was missing was that FecEncode is a __thiscall MEMBER
+// (retail sets `mov ecx,this` right before the call; see the header note), and the
+// name-padding loop is a do-while (retail has no zero-trip skip).
+// Real residuals, all verified against retail's bytes:
+//   - our /GX frame is 4 B short (0x38 vs 0x3c) - retail keeps one more 4-byte local,
+//     and every [esp+N] slot below it is shifted;
+//   - retail does NOT tail-merge the two early-fail arms: the `file.Open` failure and
+//     the `file.Seek(0,0)` failure each get their own inline epilogue, ours jump to a
+//     shared one (`negated-condition-far-block` did not reproduce it: 80.5%);
+//   - the padding loop's `and edx,0xff` + `mov dh,dl` byte-duplication residue;
+//   - the `[edi+esi-1]` vs `[esi+edi-1]` SIB base/index coin-flip (see MonoClear).
 RVA(0x0017b950, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     if (m_writeOpen == 0 || m_openGate == 0) {
@@ -204,10 +212,13 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     operator delete(enc);
 
     if (base.GetLength() < 0x100) {
+        // do-while: the guard above already proves c >= 1, and retail's loop has no
+        // zero-trip skip (`mov edi,0x100; sub edi,eax` straight into the body).
         char* p = m_entry.m_name + base.GetLength();
-        for (i32 c = 0x100 - base.GetLength(); c != 0; c--) {
+        i32 c = 0x100 - base.GetLength();
+        do {
             *p++ = static_cast<char>((rand() % 0xff));
-        }
+        } while (--c);
     }
 
     m_entry.m_scramble = static_cast<u16>((rand() % 0x400 + 0x2b8));
@@ -352,7 +363,7 @@ fail:
 }
 
 RVA(0x0017bf70, 0x65)
-void __stdcall FecEncode(const char* src, char* dst) {
+void CFecFile::FecEncode(const char* src, char* dst) {
     for (unsigned short i = 0; i < strlen(src); i++) {
         if (i % 2 == 0) {
             dst[i] = src[i] + 0x4f;
@@ -367,7 +378,7 @@ void __stdcall FecEncode(const char* src, char* dst) {
 // `len` bytes, then NUL-terminate dst[len]. `len` is a WORD. __stdcall.
 // ===========================================================================
 RVA(0x0017bfe0, 0x5d)
-void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
+void CFecFile::FecDecode(const char* src, char* dst, u16 len) {
     for (unsigned short i = 0; i < len; i++) {
         if (i % 2 == 0) {
             dst[i] = src[i] - 0x4f;
