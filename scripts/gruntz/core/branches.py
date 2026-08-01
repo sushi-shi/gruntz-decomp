@@ -260,6 +260,34 @@ def compare(bi, ti, max_flips=4):
         res["moved_same_mnem"] = [(i, bt_f[i], tt_f[i])
                                   for i in range(len(bb))
                                   if i not in flipped and bt_f[i] != tt_f[i]]
+        # GUARD vs ARM SELECTOR - measured false positive of the =dest screen.
+        # `sym_target` names a destination by BLOCK INDEX. When a branch selects between
+        # the two ARMS of one construct (a ternary, an if/else), swapping the arms swaps
+        # BOTH the polarity and which arm each index denotes, so index equality survives
+        # while the behaviour is identical. `=dest` is therefore NECESSARY BUT NOT
+        # SUFFICIENT: decisive for a GUARD (both sides branching to a shared
+        # continuation/exit), not for an arm selector.
+        # The discriminator is the destination's CONTENT: retail's
+        #   je <armB> / push A / jmp <join> / armB: push B / join:
+        # has two destinations that begin with DIFFERENT instructions. A guard's
+        # destination is the same code on both sides. (Found on CTriggerMgr::
+        # SetupTubeAnim @0x50a50, whose two arms push different string relocs.)
+        at_b = {off: (mn, op) for off, mn, op in bi}
+        at_t = {off: (mn, op) for off, mn, op in ti}
+        guard = []
+        for i, _, _ in flips:
+            if bt_f[i] != tt_f[i]:
+                continue
+            bd, td = bb[i][2], tb[i][2]
+            if bd is None or td is None:      # unresolvable target: keep the row
+                guard.append(i)
+                continue
+            hb, ht = at_b.get(bd), at_t.get(td)
+            if hb is None or ht is None or hb == ht:
+                guard.append(i)               # same destination content => GUARD
+        res["same_dest"] = guard
+        res["arm_selector"] = [i for i, _, _ in flips
+                               if bt_f[i] == tt_f[i] and i not in guard]
         return res
     # Same mnemonics everywhere: the only thing left that a masked diff can hide is a
     # branch landing on a different block.

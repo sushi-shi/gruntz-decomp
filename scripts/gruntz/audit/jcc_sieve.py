@@ -48,7 +48,11 @@ def render(res):
     same = set(res.get("same_dest") or ())
     # `=dest` marks a flip whose two sides land on the SAME symbolic destination: the
     # condition is inverted, not the block layout. Those are the rows worth opening.
-    out = ["#%d %s->%s%s" % (i, a, b, "=dest" if i in same else "")
+    arm = set(res.get("arm_selector") or ())
+    # `=arm` = same block index but the two destinations begin with DIFFERENT code:
+    # an if/else or ternary whose arms are swapped, so the flip cancels. Not a defect.
+    out = ["#%d %s->%s%s" % (i, a, b,
+                             "=dest" if i in same else "=arm" if i in arm else "")
            for i, a, b in res["rows"]]
     # `=mnem` rows: the mnemonic AGREES but the target moved - invisible before, and on
     # at least one function it was the row that explained the whole divergence.
@@ -97,6 +101,8 @@ def sieve(unit_filter=None, max_flips=4):
                 stats["same-dest (predicate)"] += 1
             if res.get("moved_same_mnem"):
                 stats["=mnem target moved"] += 1
+            if res.get("arm_selector"):
+                stats["=arm (swapped arms, not a defect)"] += 1
             hits.append((res["kind"], unit, name,
                          float(f.get("fuzzy_match_percent") or 0.0), res["nbr"],
                          render(res), res["rets"][0], res["rets"][1]))
