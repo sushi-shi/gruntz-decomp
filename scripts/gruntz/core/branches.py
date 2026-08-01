@@ -237,6 +237,19 @@ def compare(bi, ti, max_flips=4):
                        "OTHER" if "OTHER" in kinds else "POLARITY")
         res["rows"] = flips
         res["je_jne_only"] = all({a, b} == {"je", "jne"} for _, a, b in flips)
+        # THE SCREEN (measured 2026-08-01: 7 POLARITY rows opened, 1 was a real bug).
+        # A mnemonic flip alone does not distinguish a wrong PREDICATE from mere block
+        # LAYOUT, because reaching a `return` through a shared exit rather than a local
+        # copy flips the mnemonic without changing behaviour. The targets decide:
+        #   both sides land on the SAME symbolic destination -> the condition itself is
+        #     inverted, i.e. a real predicate bug. OPEN IT.
+        #   destinations of different KIND (short/local vs far/shared exit) -> layout.
+        # `rets N->M` corroborates but does not decide - CBattlezMapConfig::RouteUnitTo
+        # is four pure je/jne flips at EQUAL ret counts and is still layout.
+        bt_f = [sym_target(bb, t) for _, _, t in bb]
+        tt_f = [sym_target(tb, t) for _, _, t in tb]
+        res["same_dest"] = [i for i, _, _ in flips if bt_f[i] == tt_f[i]]
+        res["flip_dests"] = [(i, bt_f[i], tt_f[i]) for i, _, _ in flips]
         return res
     # Same mnemonics everywhere: the only thing left that a masked diff can hide is a
     # branch landing on a different block.

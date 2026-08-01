@@ -45,7 +45,11 @@ def render(res):
     """The one-line detail for a hit, in the shape the worklist prints."""
     if res["kind"] == "TOPOLOGY":
         return "  ".join("#%d ->blk%s not blk%s" % (i, y, x) for i, x, y in res["rows"])
-    return "  ".join("#%d %s->%s" % (i, a, b) for i, a, b in res["rows"])
+    same = set(res.get("same_dest") or ())
+    # `=dest` marks a flip whose two sides land on the SAME symbolic destination: the
+    # condition is inverted, not the block layout. Those are the rows worth opening.
+    return "  ".join("#%d %s->%s%s" % (i, a, b, "=dest" if i in same else "")
+                     for i, a, b in res["rows"])
 
 
 def sieve(unit_filter=None, max_flips=4):
@@ -84,6 +88,8 @@ def sieve(unit_filter=None, max_flips=4):
             if res.get("je_jne_only"):
                 stats["je/jne only"] += 1
             stats[res["kind"]] += 1
+            if res.get("same_dest"):
+                stats["same-dest (predicate)"] += 1
             hits.append((res["kind"], unit, name,
                          float(f.get("fuzzy_match_percent") or 0.0), res["nbr"],
                          render(res), res["rets"][0], res["rets"][1]))
