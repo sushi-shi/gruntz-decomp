@@ -1,0 +1,12 @@
+# Stable compiler/source-induced helper bodies that are not independent reconstruction targets.
+#
+# rva	size	target_rva	role	evidence
+0x000201f0	0x5	0x00139330	RegistryHelper destructor forward	only entry is ILT 0x00004115; inline destructor calls RegistryHelper::Close
+0x00094750	0x5	0x0013cfb0	CGameWnd Destroy forward	only entry is ILT 0x00001a9b; emitted inside CGruntzWnd destructor path
+0x0009a4a0	0x5	0x001b9cde	CString destructor forward	called through ILT 0x000022b6 by CSpawnList::DeleteAllEntries
+0x0009e720	0x5	0x0000250e	CMapArrayA destructor forward	CMapMgr destructor calls ILT 0x00002a31; target ILT resolves to CMapArrayA::~CMapArrayA
+0x0009e840	0x5	0x0000273e	CMapArrayB destructor forward	CMapMgr destructor calls ILT 0x00002b17; target ILT resolves to CMapArrayB::~CMapArrayB
+0x00139c70	0x5	0x00184a40	CHashBase RemoveAll forward	called only by Unwind@005e0a30/50/70
+0x00139dd0	0x5	0x00184a40	CHashBase RemoveAll forward	called only by Unwind@005e0a7b/0b5e/0b9b
+0x00139ec0	0x5	0x00184a40	CHashBase RemoveAll forward	called only by Unwind@005e0a90/0ab0
+0x00139ed0	0x5	0x00184a40	CHashBase RemoveAll forward	called only by Unwind@005e0a9b/0abb

@@ -1,4 +1,4 @@
-# config/ — the 13 tracked config files
+# config/ — tracked configuration and recovered evidence
 
 Three kinds, three handling rules. NEVER resolve a merge conflict here with a
 blanket `--ours`/`--theirs` (that broke main twice) — see the per-kind rule.
@@ -37,6 +37,14 @@ and let the tool re-roll; never hand-pick a whole file.
   `gruntz.audit.fid_generate` (the `fid/` masked-byte matcher) + hand-carves
   (e.g. an RTTI-proven MFC dtor). KEPT TRACKED deliberately: the exports came
   from Ghidra 11.4.2, which carves more function starts than 12.x.
+- **`compiler-generated-functions.tsv`** — observed MSVC-private `$E<n>` helper
+  RVAs, sizes, and owner units. The unstable compiler ordinal is evidence, not a
+  source annotation.
+- **`compiler-helper-functions.tsv`** — proven standalone compiler/source-induced
+  forwarding helpers, including their exact retail jump targets.
+- **`ghidra_function_fixes.csv`** — manually audited corrections to Ghidra's
+  function model. `apply.py` validates and applies these before exporting the
+  authoritative boundary list used by delinking and classification.
 - **`library_vtables.csv`** — the MFC/CRT vtable catalog; with source VTBL()
   bindings it must cover every vtable `vtable_scan` finds (coverage gate).
 - **`zlib_labels.csv`** — the vendored zlib-1.0.4 TU labels

@@ -43,6 +43,7 @@ from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
 from gruntz.core import branches
+from gruntz.core import function_universe
 from gruntz.core import report
 from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, labels, synth_pdb
@@ -110,6 +111,50 @@ class TestLibraryLabels(unittest.TestCase):
                 "0x3000,low,LIBCMT,LOW,test\n"
             )
             self.assertEqual(library_labels.active_rvas(labels), {0x1000, 0x2000})
+
+
+class TestFunctionUniverse(unittest.TestCase):
+    def test_every_filter_uses_typed_source_claims_and_tracked_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "build/ghidra-enrich/exports").mkdir(parents=True)
+            (root / "build/gen").mkdir(parents=True)
+            (root / "config").mkdir()
+            (root / "build/ghidra-enrich/exports/functions.csv").write_text(
+                "entry_rva,byte_size,name\n"
+                "0x1000,8,data_at_code\n"
+                "0x1100,8,source_function\n"
+                "0x1200,10,FUN_1200\n"
+                "0x1300,20,library_high\n"
+                "0x1400,20,library_low\n"
+                "0x1500,8,Unwind@1500\n"
+                "0x1600,5,thunk_FUN_1600\n"
+                "0x1700,5,named_forward\n")
+            (root / "build/gen/symbol_names.csv").write_text(
+                "rva,name,unit,size,kind\n"
+                "0x1000,data_label,u,,data\n"
+                "0x1100,source_function,u,0x8,func\n")
+            (root / "config/library_labels.csv").write_text(
+                "rva,name,lib,confidence,source\n"
+                "0x1300,library_high,LIBCMT,HIGH,test\n"
+                "0x1400,library_low,LIBCMT,LOW,test\n")
+            (root / "config/compiler-generated-functions.tsv").write_text(
+                "0x00001200\t0xa\t_$E1\tu\ttest\n")
+            (root / "config/compiler-helper-functions.tsv").write_text(
+                "0x00001700\t0x5\t0x00001800\tforward\ttest\n")
+
+            rows, meta = function_universe.classify(root, strict=False)
+            cats = {row["rva"]: (row["category"], row["claimed"]) for row in rows}
+            self.assertEqual(cats[0x1000], ("target", False))
+            self.assertEqual(cats[0x1100], ("target", True))
+            self.assertEqual(cats[0x1200], ("compiler", False))
+            self.assertEqual(cats[0x1300], ("library", False))
+            self.assertEqual(cats[0x1400], ("target", False))
+            self.assertEqual(cats[0x1500], ("eh", False))
+            self.assertEqual(cats[0x1600], ("thunk", False))
+            self.assertEqual(cats[0x1700], ("compiler", False))
+            self.assertEqual([row["rva"] for row in meta["unmatched"]],
+                             [0x1000, 0x1400])
 
 
 # --------------------------------------------------------------------------- #

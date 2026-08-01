@@ -2,8 +2,9 @@
 """gruntz.core.exe_map - a queryable map of retail GRUNTZ.EXE's .text space.
 
 Answers "what lives where" across the whole binary: every carved function in RVA
-order, WHAT OWNS IT (a src/ TU / MFC / CRT / zlib / an EH funclet / a linker jump
-thunk / still-unknown), and where the GAPS between functions are.
+order, HOW IT IS CLASSIFIED (a src/ TU / MFC / CRT / zlib / compiler helper /
+an EH funclet / a linker jump thunk / still-unknown), and where the GAPS between
+functions are.
 
 Data sources (all products of `gruntz build`):
   build/ghidra-enrich/exports/functions.csv - every carved fn (entry_rva,byte_size,
@@ -12,6 +13,8 @@ Data sources (all products of `gruntz build`):
       the "owned by a TU" set, regenerated every build from the `RVA()` annotations.
   config/library_labels.csv                  - FID-identified CRT/MFC/zlib/EH library
       code (rva->name,lib,confidence).
+  config/compiler-generated-functions.tsv   - compiler-private `$E<n>` helpers.
+  config/compiler-helper-functions.tsv      - proven forwarding helpers.
   config/units.toml                          - unit -> source path (the FILENAME an
       owned function maps back to).
 
@@ -19,9 +22,10 @@ Classification precedence mirrors gruntz.match.status.engine_universe, so the
 categories here line up with the README's carve-out rows:
   1. claimed by a src/ unit  -> "unit"   (owner = its source file)
   2. linker jump thunk       -> "thunk"  (leading ILT jmp-table + thunk_* + tiny FF25/glue)
-  3. FID library             -> mfc/crt/zlib/eh/asm  (split by the FID `lib` column)
-  4. Unwind@ EH funclet      -> "eh"
-  5. otherwise               -> "unknown" (a real game/engine body not yet reconstructed)
+  3. proven compiler helper  -> "compiler"
+  4. FID library             -> mfc/crt/zlib/eh/asm  (split by the FID `lib` column)
+  5. Unwind@ EH funclet      -> "eh"
+  6. otherwise               -> "unknown" (a real game/engine body not yet reconstructed)
 
 Usage:
   python -m gruntz.core.exe_map                        # whole-binary overview
@@ -37,19 +41,16 @@ Usage:
 Add --json to any command for machine-readable output.
 """
 import argparse
-import csv
 import json
 import re
 import sys
 from pathlib import Path
 
-from gruntz.core.library_labels import active_rows
+from gruntz.core.function_universe import classify as classify_function_universe
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
 FUNCS_CSV = REPO / "build/ghidra-enrich/exports/functions.csv"
-SYM_CSV = REPO / "build/gen/symbol_names.csv"
-LIB_CSV = REPO / "config/library_labels.csv"
 UNITS_TOML = REPO / "config/units.toml"
 
 # FID `lib` column -> our category. NAFXCW is the static MFC lib; LIBCMT/LIBCIMT the
@@ -73,13 +74,15 @@ CATEGORIES = {
     "zlib":    ("ZLIB",  "zlib, statically linked"),
     "asm":     ("ASM",   "hand-written game asm (FID GAME-ASM)"),
     "eh":      ("EH",    "compiler /GX EH unwind funclet"),
+    "compiler":("COMP",  "compiler-generated static-object/forwarding helper"),
     "thunk":   ("THUNK", "linker ILT jmp-table / import glue"),
 }
 
 # Compact owner word for the per-row "owner" column (non-unit rows).
 OWNER_WORD = {
     "unknown": "unknown (unreconstructed)", "mfc": "MFC library", "crt": "CRT library",
-    "zlib": "zlib", "asm": "game asm", "eh": "EH funclet", "thunk": "linker jump-thunk",
+    "zlib": "zlib", "asm": "game asm", "eh": "EH funclet",
+    "compiler": "compiler-generated helper", "thunk": "linker jump-thunk",
 }
 
 
@@ -143,41 +146,6 @@ def _load_units():
     return out
 
 
-def _load_symbols():
-    """rva -> {"unit","name","kind"} from symbol_names.csv (prefer a func row)."""
-    out = {}
-    if not SYM_CSV.is_file():
-        return out
-    for r in csv.DictReader(SYM_CSV.open()):
-        try:
-            rva = _rint(r["rva"])
-        except (ValueError, KeyError):
-            continue
-        kind = (r.get("kind") or "func").strip()
-        # A func row wins over a data row sharing the rva (rare, but code owns the slot).
-        if rva in out and out[rva]["kind"] == "func" and kind != "func":
-            continue
-        out[rva] = {"unit": (r.get("unit") or "").strip(),
-                    "name": (r.get("name") or "").strip(), "kind": kind}
-    return out
-
-
-def _load_library():
-    """rva -> {"name","lib","confidence"} from library_labels.csv."""
-    out = {}
-    if not LIB_CSV.is_file():
-        return out
-    for r in active_rows(LIB_CSV):
-        try:
-            rva = _rint(r["rva"])
-        except (ValueError, KeyError):
-            continue
-        out[rva] = {"name": (r.get("name") or "").strip(),
-                    "lib": (r.get("lib") or "").strip(),
-                    "confidence": (r.get("confidence") or "").strip()}
-    return out
-
-
 def load():
     """Build the ordered, classified function list.
 
@@ -187,57 +155,43 @@ def load():
     if not FUNCS_CSV.is_file():
         raise SystemExit("missing %s - run `gruntz build` first" % FUNCS_CSV)
 
-    rows = []
-    for r in csv.DictReader(FUNCS_CSV.open()):
-        try:
-            rva, sz = _rint(r["entry_rva"]), int(r["byte_size"])
-        except (ValueError, KeyError):
-            continue
-        if r.get("in_text", "1") != "1":  # honor an older export's in_text column
-            continue
-        rows.append((rva, sz, (r.get("name") or "")))
-    rows.sort(key=lambda t: t[0])
-
-    sym = _load_symbols()
-    lib = _load_library()
+    universe, universe_meta = classify_function_universe(REPO)
     units = _load_units()
 
-    # The leading contiguous run of <=5-byte functions is the linker's ILT jump table;
-    # real code begins at the first >5-byte function. (Same bound status.py uses.)
-    ilt_end = min((rva for rva, sz, _n in rows if sz > 5), default=0)
-
     funcs = []
-    for rva, sz, gname in rows:
+    for row in universe:
+        rva, sz, gname = row["rva"], row["size"], row["ghidra_name"]
         rec = {"rva": rva, "size": sz, "end": rva + sz, "ghidra_name": gname,
                "unit": "", "source": "", "lib": "", "confidence": "", "name": gname}
-        is_thunk = gname.startswith("thunk_")
 
-        if rva in sym:                       # (1) claimed by a src/ unit
+        if row["category"] == "target" and row["claimed"]:
             cat = "unit"
-            rec["unit"] = sym[rva]["unit"]
-            rec["source"] = units.get(sym[rva]["unit"], "")
-            rec["name"] = sym[rva]["name"] or gname
-        elif rva < ilt_end or is_thunk:      # (2) ILT jmp-table + Ghidra thunk_*
-            cat = "thunk"
-        elif sz <= 7 and (gname.startswith("FUN_") or gname.startswith("Unmatched_")):
-            cat = "thunk"                    # (2b) tiny FF25 IAT / compiler glue stub
-        elif rva in lib:                     # (3) FID-identified library code
-            info = lib[rva]
-            cat = LIB_CATEGORY.get(info["lib"], "crt")
-            rec["lib"] = info["lib"]
-            rec["confidence"] = info["confidence"]
-            rec["name"] = info["name"] or gname
-        elif gname.startswith("Unwind@"):    # (4) compiler /GX EH unwind funclet
-            cat = "eh"
-        else:                                # (5) real body, not yet reconstructed
+            rec["unit"] = row["unit"]
+            rec["source"] = units.get(row["unit"], "")
+            rec["name"] = row["source_name"] or gname
+        elif row["category"] == "target":
             cat = "unknown"
+        elif row["category"] == "thunk":
+            cat = "thunk"
+        elif row["category"] == "compiler":
+            cat = "compiler"
+            rec["name"] = row["role"] or gname
+        elif row["category"] == "library":
+            cat = LIB_CATEGORY.get(row["lib"], "crt")
+            rec["lib"] = row["lib"]
+            rec["confidence"] = row["confidence"]
+            rec["name"] = row["source_name"] or gname
+        elif row["category"] == "eh":
+            cat = "eh"
+        else:
+            raise ValueError("unknown function-universe category %r" % row["category"])
 
         rec["category"] = cat
         rec["tag"] = CATEGORIES[cat][0]
         funcs.append(rec)
 
     lo, hi = _text_bounds(funcs)
-    meta = {"text_lo": lo, "text_hi": hi, "ilt_end": ilt_end,
+    meta = {"text_lo": lo, "text_hi": hi, "ilt_end": universe_meta["ilt_end"],
             "units": units, "sections": _sections()}
     return funcs, meta
 

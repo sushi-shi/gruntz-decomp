@@ -310,6 +310,11 @@ The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>
 Beyond names, the Ghidra DB is enriched from generated, source-derived metadata so
 nothing important lives only in the `.gpr` blob — it is all reproducible:
 
+- `config/ghidra_function_fixes.csv`: audited **function-boundary corrections**
+  to Ghidra auto-analysis. `apply.py` validates the observed child/owner sizes,
+  applies merges/removals/creations before any naming, and makes the corrected
+  model the source of the exported `functions.csv`. A false analyzer entry is
+  corrected here rather than hidden by a reporting filter.
 - `build/gen/functions.json` (`labels.py`): per-RVA **signatures** — class, return
   type, calling convention, and named parameters. Derived by joining the IR
   rva-map with `llvm-undname` (authoritative return/cc/class/param-types) and the
@@ -354,9 +359,11 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
    already carrying a `USER_DEFINED` name (`human skipped`), so a human rename is
    never demoted or clobbered mid-run — even a deliberately mangled-looking one.
 
-A re-run is a fixed point: the DB does not change and names do not flap (only a
+A re-run is a fixed point: the corrected boundary model does not change and names
+do not flap (only a
 small set of already-correct names is re-asserted, to the identical value). Every
-layer's applied / skipped / conflict tally — incl. `src-claimed skipped`, `human
+layer's applied / skipped / conflict tally — including boundary fixes,
+`src-claimed skipped`, `human
 skipped`, and the byte-exact locals coverage (`locals.json sets` / `reached` /
 `human slots preserved`) — is written to
 `build/ghidra-named/exports/enrichment_apply_report.txt`.

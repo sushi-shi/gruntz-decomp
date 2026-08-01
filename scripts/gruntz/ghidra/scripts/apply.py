@@ -19,6 +19,8 @@
 #     5. STRUCTS / ENUMS  - build/gen/structs.json + enums.json (clang record layouts
 #                           over the src/ TUs), defined in the DTM; each struct
 #                           is applied as the `this` type on its class's methods.
+#     6. FUNCTION BOUNDARIES - config/ghidra_function_fixes.csv: audited fixes to
+#                           auto-analysis splits/omissions, applied before export.
 #   Win32/CRT types resolve against the windows_vs12_32 archive in the DTM; custom
 #   types against the generated structs; anything unresolved falls back to void*/int.
 #
@@ -63,6 +65,7 @@ ROOT = os.environ.get("GRUNTZ_DIR") or str(next(
 #   build/gen/globals.json      <- labels.py   (rva -> declared global type)
 #   build/gen/structs.json      <- ghidra_metadata_generate.py  (clang record layouts of the src/ TUs)
 #   build/gen/enums.json        <- ghidra_metadata_generate.py  (clang over the src/ TUs)
+#   config/ghidra_function_fixes.csv <- manually audited analyzer boundary corrections
 CSV_SYMBOL   = ROOT + "/build/gen/symbol_names.csv"
 FUNCTIONS_JSON = ROOT + "/build/gen/functions.json"
 LOCALS_JSON  = ROOT + "/build/gen/locals.json"
@@ -70,6 +73,7 @@ GLOBALS_JSON = ROOT + "/build/gen/globals.json"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
 CSV_FID    = ROOT + "/config/library_labels.csv"
+CSV_FUNCTION_FIXES = ROOT + "/config/ghidra_function_fixes.csv"
 # Round-trip: human edits captured from the DB by export_user.py (`gruntz capture`),
 # TRACKED in git, re-applied here LAST so they survive a clean rebuild.
 USER_ANN   = ROOT + "/config/user_annotations.json"
@@ -587,6 +591,74 @@ tx = prog.startTransaction("gruntz-enrichment")
 ok = False
 try:
     init_fallbacks()
+
+    # ---- (0) repair proven Ghidra function-boundary mistakes ----
+    # The auto-analyzer is an input, not ground truth.  Corrections are tracked so
+    # a cold database and every ghidra-refresh reproduce the same authoritative
+    # functions.csv.  Validate the observed split before changing it; accepting an
+    # unexpected body would silently corrupt the delink model.
+    n_fnfix_merged = 0; n_fnfix_removed = 0; n_fnfix_created = 0; n_fnfix_already = 0
+    fnfix_rows = load_csv_rows(CSV_FUNCTION_FIXES) if os.path.exists(CSV_FUNCTION_FIXES) else []
+    for row in fnfix_rows:
+        if not row or row[0] == "action":
+            continue
+        if len(row) < 6:
+            raise RuntimeError("malformed ghidra function fix row: %r" % (row,))
+        action = row[0].strip().lower()
+        rva = int(row[1], 16)
+        size = int(row[2], 16)
+        owner_rva = int(row[3], 16) if row[3] else 0
+        owner_size = int(row[4], 16) if row[4] else 0
+        addr = toaddr(rva)
+        fn = fm.getFunctionAt(addr)
+
+        if action == "merge":
+            owner_addr = toaddr(owner_rva)
+            owner = fm.getFunctionAt(owner_addr)
+            if owner is None:
+                raise RuntimeError("function-fix merge owner missing at 0x%08x" % owner_rva)
+            if fn is None:
+                if owner.getBody().getNumAddresses() == owner_size \
+                        and owner.getBody().contains(addr):
+                    n_fnfix_already += 1
+                    continue
+                raise RuntimeError("function-fix child missing at 0x%08x" % rva)
+            if fn.getBody().getNumAddresses() != size:
+                raise RuntimeError("function-fix child 0x%08x size %d, expected %d" %
+                                   (rva, fn.getBody().getNumAddresses(), size))
+            body = AddressSet(owner.getBody())
+            body.add(fn.getBody())
+            if body.getNumAddresses() != owner_size:
+                raise RuntimeError("function-fix merged 0x%08x body size %d, expected %d" %
+                                   (owner_rva, body.getNumAddresses(), owner_size))
+            if not fm.removeFunction(addr):
+                raise RuntimeError("function-fix could not remove child at 0x%08x" % rva)
+            owner.setBody(body)
+            n_fnfix_merged += 1
+        elif action == "remove":
+            if fn is None:
+                n_fnfix_already += 1
+                continue
+            if fn.getBody().getNumAddresses() != size:
+                raise RuntimeError("function-fix remove 0x%08x size mismatch" % rva)
+            if not fm.removeFunction(addr):
+                raise RuntimeError("function-fix could not remove 0x%08x" % rva)
+            n_fnfix_removed += 1
+        elif action == "create":
+            if fn is not None:
+                if fn.getBody().getNumAddresses() != size:
+                    raise RuntimeError("function-fix create 0x%08x already has wrong size" % rva)
+                n_fnfix_already += 1
+                continue
+            body = AddressSet(addr, addr.add(size - 1))
+            created = fm.createFunction(None, addr, body, GEN)
+            if created is None:
+                raise RuntimeError("function-fix could not create 0x%08x" % rva)
+            n_fnfix_created += 1
+        else:
+            raise RuntimeError("unknown ghidra function-fix action %r" % action)
+    R("function-boundary fixes: merged=%d removed=%d created=%d already=%d" %
+      (n_fnfix_merged, n_fnfix_removed, n_fnfix_created, n_fnfix_already))
 
     # ---- (A) define structs (generated JSON preferred; hardcoded = fallback) ----
     import json as _json

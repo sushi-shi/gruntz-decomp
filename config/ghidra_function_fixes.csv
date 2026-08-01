@@ -1,0 +1,2 @@
+action,rva,size,owner_rva,owner_size,evidence
+merge,0x0009356c,0x38,0x00093460,0x15c,interior block of CGruntzMgr::BroadcastCmd; unbalanced standalone stack and parent branch at 0x00093562

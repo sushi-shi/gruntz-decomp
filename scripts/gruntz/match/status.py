@@ -80,7 +80,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from gruntz.core.library_labels import active_rvas
+from gruntz.core.function_universe import classify as classify_function_universe
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -90,10 +90,8 @@ DEFAULT_REPORT = REPO / "build" / "objdiff" / "report.json"
 
 # Reconstruction-target universe (the match-% denominator) + the carve-out
 # categories that are NOT independent reconstruction targets, so are EXCLUDED from
-# the %: linker jump thunks (the leading ILT jmp-table + Ghidra thunk_*), FID-
-# identified CRT/MFC library code, and compiler-emitted EH unwind funclets (named
-# Unwind@*, which reappear automatically when their parent function matches, just
-# as the ILT thunks do when their target body does). objdiff's report.json only
+# the %: linker jump thunks, explicitly evidenced compiler helpers, FID-identified
+# CRT/MFC library code, and compiler-emitted EH unwind funclets. objdiff's report.json only
 # totals the functions we've pulled into units; for honest progress we weigh
 # `exact` against the real
 # engine and surface the carve-outs as their own README rows (counted, not hidden).
@@ -124,128 +122,25 @@ def engine_universe():
     not counted in the %)."""
     if not (FUNCS_CSV.is_file() and FID_CSV.is_file()):
         return None
-    import csv
-
-    def rint(s):
-        s = str(s).strip()
-        return int(s, 16) if s.lower().startswith("0x") else int(s)
-
-    rows = []  # (rva, size, name, is_thunk); in-.text only
-    with open(FUNCS_CSV) as f:
-        for r in csv.DictReader(f):
-            try:
-                rva, sz = rint(r["entry_rva"]), int(r["byte_size"])
-            except Exception:
-                continue
-            # honor an older export's in_text column; drop anything off .text.
-            if r.get("in_text", "1") != "1":
-                continue
-            name = r.get("name", "")
-            # jump thunks are named thunk_* (the enriched export carries no is_thunk
-            # column; honor it when an older export still does).
-            is_thunk = name.startswith("thunk_") or r.get("is_thunk", "0") == "1"
-            rows.append((rva, sz, name, is_thunk))
-    lib = active_rvas(FID_CSV)
-
-    # Functions already pulled into a unit (the objdiff "started" set, from the
-    # build's symbol map). A carve-out that's been claimed/reconstructed is a real
-    # target, not boilerplate - e.g. the zlib module functions FID also tags as
-    # library - so it counts toward the denominator. This keeps started <= real
-    # (everything in a unit is in the universe) instead of inflating the carve-outs.
-    claimed: set[int] = set()
-    sym = REPO / "build" / "gen" / "symbol_names.csv"
-    if sym.is_file():
-        for line in sym.read_text().splitlines():
-            head = line.split(",", 1)[0].strip()
-            if head.lower().startswith("0x"):
-                try:
-                    claimed.add(int(head, 16))
-                except ValueError:
-                    pass
-
-    # IAT import thunks are 6-byte `FF25 jmp [__imp__...]` (or `FF15 call`) that carry
-    # the IMPORTED name (VerQueryValueA, ImageList_Read, Ordinal_1, ...), not a
-    # placeholder - so the <=7B FUN_/Unmatched_ name filter below misses them and they
-    # inflate real_fn. Catch them by OPCODE from the retail bytes (a real 6-byte vtable
-    # method is `mov eax,imm; ret`, not FF25, so it stays a real target). Best-effort:
-    # if the EXE isn't present (fresh worktree) fall back to the name-only rule.
-    import os
-    import struct
-
-    iat_thunks: set[int] = set()
-    exe = os.environ.get("GRUNTZ_EXE") or str(REPO / "build" / "exe" / "GRUNTZ.EXE")
-    try:
-        d = Path(exe).read_bytes()
-        e = struct.unpack_from("<I", d, 0x3C)[0]
-        nsec = struct.unpack_from("<H", d, e + 6)[0]
-        optsz = struct.unpack_from("<H", d, e + 20)[0]
-        secs = []
-        for i in range(nsec):
-            b = e + 24 + optsz + i * 40
-            va = struct.unpack_from("<I", d, b + 12)[0]
-            rsz = struct.unpack_from("<I", d, b + 16)[0]
-            rp = struct.unpack_from("<I", d, b + 20)[0]
-            secs.append((va, rsz, rp))
-
-        def _off(rva):
-            for va, rsz, rp in secs:
-                if va <= rva < va + rsz:
-                    return rp + (rva - va)
-            return None
-
-        for rva, sz, _n, _t in rows:
-            if sz <= 7 and rva not in claimed:
-                o = _off(rva)
-                if o is not None and d[o] == 0xFF and d[o + 1] in (0x25, 0x15):
-                    iat_thunks.add(rva)
-    except (OSError, struct.error, IndexError):
-        iat_thunks = set()
-
-    # The leading contiguous run of <=5-byte functions is the linker's ILT jump
-    # table - 5-byte `jmp rel32` forwarders, each named after the body it targets.
-    # They aren't named thunk_*, so a name filter misses them; instead bound the
-    # table by RVA: real code begins at the first >5-byte function, so anything
-    # below that is a thunk (verified: no real fn lives in the leading block, while
-    # the few legit <=5-byte vtable-dispatch methods sit far above it, kept real).
-    ilt_end = min((rva for rva, sz, _n, _t in rows if sz > 5), default=0)
-
-    # Disjoint carve-outs (first match wins); a claimed function is always real,
-    # so only UNCLAIMED carve-outs are excluded - everything else is a real target.
-    acc = {"thunk": [0, 0], "lib": [0, 0], "eh": [0, 0]}
-    real_fn = real_code = 0
-    for rva, sz, name, is_thunk in rows:
-        if rva in claimed:                 # claimed/reconstructed -> real target
-            real_fn += 1
-            real_code += sz
-            continue
-        if rva < ilt_end or is_thunk or rva in iat_thunks:  # ILT jmp-table + thunk_* + FF25/FF15 IAT
-            k = "thunk"
-        elif sz <= 7 and (name.startswith("FUN_") or name.startswith("Unmatched_")):
-            # Scattered import/glue thunks the leading-ILT + thunk_* filters miss:
-            # 6-byte `FF25 jmp [__imp__...]` IAT thunks + tiny (1-5B) compiler-glue
-            # stubs/mis-carves, all still on placeholder names (a real game function
-            # is far larger; a legit tiny method that gets reconstructed becomes
-            # `claimed` above and re-counts as real). Verified: the unclaimed
-            # <=7B FUN_/Unmatched_ set is entirely glue, no genuine targets.
-            k = "thunk"
-        elif rva in lib:
-            k = "lib"
-        elif name.startswith("Unwind@"):   # compiler /GX EH unwind funclet
-            k = "eh"
-        else:
-            real_fn += 1
-            real_code += sz
-            continue
-        acc[k][0] += 1
-        acc[k][1] += sz
+    rows, meta = classify_function_universe(REPO)
+    counts, code = meta["counts"], meta["code"]
     categories = [
-        ("EH unwind funclets", *acc["eh"],
+        ("EH unwind funclets", counts.get("eh", 0), code.get("eh", 0),
          "compiler /GX EH; match with their parent function"),
-        ("CRT/MFC library", *acc["lib"], "FID-identified, statically linked"),
-        ("jump thunks", *acc["thunk"],
-         "linker ILT jmp-table (RVA <%#x) + thunk_*" % ilt_end),
+        ("compiler-generated helpers", counts.get("compiler", 0),
+         code.get("compiler", 0), "static-object and forwarding helpers"),
+        ("CRT/MFC library", counts.get("library", 0), code.get("library", 0),
+         "FID-identified, statically linked"),
+        ("jump thunks", counts.get("thunk", 0), code.get("thunk", 0),
+         "linker ILT jmp-table (RVA <%#x) + thunk_*" % meta["ilt_end"]),
     ]
-    return {"real_fn": real_fn, "real_code": real_code, "categories": categories}
+    return {
+        "real_fn": counts.get("target", 0),
+        "real_code": code.get("target", 0),
+        "unmatched_fn": len(meta["unmatched"]),
+        "unmatched_rvas": [row["rva"] for row in meta["unmatched"]],
+        "categories": categories,
+    }
 
 
 def _md_table(headers: list[str], aligns: str, rows: list[list[str]]) -> list[str]:
@@ -842,8 +737,11 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
             f"{fzmax:.1f}%",
         ])
     if eng:
-        un_fn = max(0, tot_fn - started_fn)
-        rows.append(["`(unmatched)`", "—", f"0 / {un_fn:,} (0.0%)", "0.0%", "0.0%"])
+        un_fn = eng["unmatched_fn"]
+        if un_fn:
+            rows.append(
+                ["`(unmatched)`", "—", f"0 / {un_fn:,} (0.0%)", "0.0%", "0.0%"]
+            )
     table = _md_table(
         ["Module", "Units", "Functions exact", "Fuzzy", "Fuzzy Max"], "lrrrr", rows)
 
@@ -882,9 +780,9 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
         "",
         "_Totals are vs the whole engine = every in-`.text` reconstruction-target "
         "function; the generated/library categories tabled below (compiler EH "
-        "funclets, CRT/MFC library, jump thunks) are excluded from the denominator. "
-        "The bulk we have not started is the `(unmatched)` row. `Fuzzy` = code-"
-        "weighted partial credit (how close); `Fuzzy Max` = the same with every "
+        "funclets and helpers, CRT/MFC library, jump thunks) are excluded from the denominator. "
+        "Any unclaimed reconstruction targets appear in an `(unmatched)` row. "
+        "`Fuzzy` = code-weighted partial credit (how close); `Fuzzy Max` = the same with every "
         "function at its best-ever fuzzy% - a gap above `Fuzzy` is entropy churn "
         "since the last `update`._",
         "",
@@ -928,6 +826,8 @@ def cmd_summary(args) -> int:
             "overall": overall,
             "engine_universe": ({
                 "real_functions": eng["real_fn"], "real_code": eng["real_code"],
+                "unmatched_functions": eng["unmatched_fn"],
+                "unmatched_rvas": eng["unmatched_rvas"],
                 "excluded_categories": [
                     {"label": l, "functions": fn, "code": c, "note": note}
                     for (l, fn, c, note) in eng["categories"]],

@@ -275,6 +275,13 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 > 100% EXACT thunks mislabeled `??_G__non_rtti_object` — and the `g_buteTreeArg`
 > global mislabeled `__fpclear`).
 >
+> A LOW row is not a carve-out merely because it has a plausible library name.
+> The unmatched-function audit promoted 44 individually reviewed static CRT/MFC
+> bodies to MED with `source=manual-unmatched-library-audit`; the remaining LOW
+> rows stay diagnostic and remain reconstruction targets unless stronger evidence
+> is added. This keeps classification per-RVA and reviewable instead of widening a
+> name- or address-range heuristic.
+>
 > **The one deliberate coexistence — vendored library.** zlib 1.0.4 is compiled from
 > real vendored source (`vendor/zlib-1.0.4/*.c`, named for the delinker via
 > `config/zlib_labels.csv`) **and** FID-identifies as library, so its ~42 functions
