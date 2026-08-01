@@ -924,6 +924,12 @@ void CProjectile::ScanTargets(i32 impact) {
 // temp) where retail needs three - retail coalesces the 7-down-counter temp with `key`
 // (both live at [esp+0x18]), which no declaration order or scope reproduces. That one
 // extra dword makes the frame 0x118 vs retail 0x114 and shifts every [esp+N] by 4.
+// 2026-08-01 (91.62 -> 94.34, jcc-sieve `#13 jl->jne` closed): the WRITE branch's
+// 7-frame loop needed two changes together - a `CAniElement**` cursor instead of
+// `m_frames[n]`, and a loop counter SEPARATE from the shadow-id variable. Sharing one
+// `n` kept it live past the loop, so cl could not reverse the count and emitted
+// `inc n / cmp n,7 / jl` against retail's `dec / jne`. Both, or neither: the cursor
+// alone bought 1.5 points and left the flip standing.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObject* pObj) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
@@ -1031,18 +1037,26 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             s->Write(&m_targetId, 4);
             s->Write(&m_ownerId, 4);
 
-            i32 n;
-            for (n = 0; n < 7; n++) {
+            // A CURSOR, not `m_frames[n]`: retail's back-edge is `add <cursor>,4 /
+            // dec <ctr> / jne` over TWO stack slots (the cursor at [esp+0x14] seeded
+            // `lea ecx,[ebp+0x1e0]`, the counter at [esp+0x10] initialised to 7 and
+            // counted DOWN, which the shadow id then re-uses). Indexing spells
+            // `inc n / cmp n,7 / jl` and re-forms `[ebp+n*4+0x1e0]` every pass, and
+            // sharing the counter variable with the id keeps it live past the loop so
+            // cl cannot reverse it (jcc sieve #13 jl->jne).
+            CAniElement** fp = m_frames;
+            for (i32 fi = 0; fi < 7; fi++) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
-                if (m_frames[n] != 0) {
-                    strcpy(buf, reg->m_animRegistry->KeyOfValue(m_frames[n]));
+                if (*fp != 0) {
+                    strcpy(buf, reg->m_animRegistry->KeyOfValue(*fp));
                 }
                 s->Write(buf, 0x80);
+                fp++;
             }
 
             g_serialCounter++;
-            n = 0; // n is re-used as the shadow-object id
+            i32 n = 0; // retail re-uses the loop's [esp+0x10] slot for the id
             if (m_shadow != 0) {
                 n = m_shadow->m_188;
             }

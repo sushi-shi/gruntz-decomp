@@ -576,6 +576,11 @@ void CMultiStartDlg::OnColorSlot3() {
 // Same wall family as the sibling CBattlezDlg::ShowCustomDlg (Dialogs.cpp): /GX EH trylevel
 // numbering (retail 0/1/2/-1 vs 0/1/-1), the child!=0 branch polarity, and an esi-save
 // shrink-wrap our newer codegen does that MSVC5 didn't - none source-steerable.
+// The jcc sieve reports the polarity as `#3 je->jne=dest`; re-verified 2026-08-01 that
+// it is NOT a behaviour bug - both sides send child==0 to the same `~CString([esp+0x64])
+// / ~CBattlezDlgCustom([esp+0x8])` tail. The flip exists only because retail needs a
+// SEPARATE predecessor block to store trylevel 1 (ours stores 1 for that path and the
+// success path alike, retail stores 1 and 2). The trylevel count is the whole residue.
 // ~CBattlezDlgCustom is compiler-generated (what the binary says; the dtor COMDAT
 // is 100%). Body byte-faithful.
 RVA(0x000c3cb0, 0x128)

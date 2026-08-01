@@ -868,11 +868,20 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
 // switch jump-table-vs-cmp-tree wall (~57%): logic identical; retail lowers the
 // 8-tag switch to a jmp[tbl+(tag-1)*4] table, the recompile to a range-check tree
 // (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
-// Measured 2026-08-01: retail's two table bodies are spelled with OPPOSITE gates
-// (`test eax,eax / jne <ret 1>` vs `test eax,eax / je <ret 0>`), but writing the
-// arms that way to stop cl merging them does NOT buy the table - it emits two
-// cmp-tree bodies instead and costs 18 points (57.31 -> 39.02). The table is cl's
-// lowering decision, not a source shape.
+// The jump table at 0x5176b4 was READ (2026-08-01): cases 1..7 -> 0x117666, case 8 ->
+// 0x117686, and those two blocks are BYTE-IDENTICAL (same four pushes, same
+// `call 0x277f`) - they differ only in which exit each uses. So the jcc-sieve rows
+// `#1 jle->ja=dest` and `#3 jne->je=dest` are the tree-vs-table lowering, NOT a
+// missing case handler; there is no behaviour difference to fix here.
+// Spelling levers TRIED and rejected, each rebuilt + measured:
+//   * different if/return spellings per arm - still merged, 57.31;
+//   * retail's OPPOSITE gates (`test eax,eax / jne <ret 1>` vs `.. / je <ret 0>`) to
+//     stop the merge - emits two cmp-tree bodies instead, 57.31 -> 39.02;
+//   * `default: goto fail;` with the shared tail - kills the neg/sbb/neg but
+//     duplicates the tail, 40.00.
+// cl merges the arms before the density decision, and that merge is not
+// source-steerable while the bodies are equivalent. The table is cl's lowering
+// decision, not a source shape.
 RVA(0x00117630, 0x82)
 i32 __stdcall
 SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o) {

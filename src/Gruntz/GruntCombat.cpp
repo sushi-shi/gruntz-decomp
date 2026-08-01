@@ -803,6 +803,11 @@ void CGrunt::DestroyAnims() {
 //  3. block PLACEMENT of the cold `grid->Clip(0); return 0` copy that carries the
 //     ~CPtrList (retail 0x58686, at the very end of the function; cl emits it inline
 //     right after the first empty-list test). Sizes are identical, position is not.
+//     This is the whole of what the jcc sieve reports as `#44 =mnem ->blk60 not
+//     blk47` + `#46 jne->je`: BOTH sides guard with the same two `[esp+X]==0` tests
+//     and both reach ONE cleanup copy - retail by two `je`s to the sunk block, ours
+//     by one `je` plus the `jne`'s fallthrough. Verified 2026-08-01, not a
+//     behaviour difference; do not re-open it as one.
 // No source lever found for any of the three; the permuter is the right tool if this
 // is re-attacked.
 RVA(0x00057db0, 0x8f8)
@@ -1801,16 +1806,17 @@ L_moveDone:
 // re-arm the attack anim. __thiscall, ret 0x10; returns 1 on success, 0 on bail.
 //
 // @early-stop
-// 94.7% (was 89.6). Three REAL bugs came out of the old "grid-regalloc plateau" note:
-//   * the move-config gate was `v = m_170; if (v > 0x16) v = m_19c;` - it fired
-//     RunMoveConfig whenever m_entranceReason itself was 1. Retail zeroes the flag up
-//     front and only assigns it inside the m_19c==1 arm (both conditions required);
-//   * the `if (redo)` arm was MISSING the `SetupTubeAnim(m_coordToggle)` call
-//     (0x5b32f -> ILT 0x1e47 -> CGrunt::SetupTubeAnim @0x50a50);
-//   * the two tile latches m_17c/m_180 are hoisted into registers before the compare.
-// Residue: cl constant-propagates `v = m_19c` inside the `m_19c == 1` arm (immediate
-// `mov eax,1` + a memory compare) where retail keeps the load and copies the register,
-// plus the arg-evaluation LOAD order (retail loads m_screenX before m_screenY, cl the
+// Bugs fixed here: the `if (redo)` arm was MISSING the `SetupTubeAnim(m_coordToggle)`
+// call (0x5b32f -> ILT 0x1e47 -> CGrunt::SetupTubeAnim @0x50a50); the two tile latches
+// m_17c/m_180 are hoisted into registers before the compare; and the move-config gate
+// (see below) was rewritten TWICE in the wrong direction - a lane replaced the correct
+// `v = m_170; if (v > 0x16) v = m_19c;` with a two-condition AND, on the theory that
+// retail's `xor ecx,ecx` proved both were required. It does not: retail's `jle` lands
+// ON the `cmp eax,1`, so m_170 itself is compared when it is <= 0x16. The jcc sieve's
+// arm-selector screen had demoted that flip because retail holds the flag in ecx and
+// we held it in eax - a register difference, not an arm swap (see head_key in
+// gruntz.core.branches).
+// Residue: arg-evaluation LOAD order (retail loads m_screenX before m_screenY, cl the
 // reverse - the same left-to-right-vs-push-order difference seen across this TU).
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
@@ -1854,23 +1860,23 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     if (eq) {
         return 0;
     }
-    // The move-config gate needs BOTH conditions: retail zeroes a flag up front
-    // (`xor ecx,ecx`) and only assigns it inside the m_19c==1 arm, so an
-    // m_entranceReason <= 0x16 never reaches RunMoveConfig. The old `v = m_170;
-    // if (v > 0x16) v = m_19c;` form ran it whenever m_entranceReason itself was 1.
-    i32 v = 0;
-    if (m_entranceReason > 0x16) {
-        // ASSIGN-then-cancel, not test-then-assign. Retail's `mov eax,[m_19c] /
-        // cmp eax,1 / jne <join> / mov ecx,eax` keeps the LOADED value in a
-        // register and copies it; every test-first spelling lets cl const-prop the
-        // `== 1` into `cmp mem,1` + an immediate `mov eax,1`, whose different
-        // colouring cascades through the rest of the function.
+    // ONE reason variable, overwritten in place - not two conditions. Retail's
+    //   mov eax,[m_170] / xor ecx,ecx / cmp eax,0x16 / jle L / mov eax,[m_19c]
+    //   L: cmp eax,1 / jne J / mov ecx,eax / J: test ecx,ecx
+    // reaches `cmp eax,1` on BOTH paths, so an m_entranceReason of exactly 1 also
+    // fires the move config. The `jle` lands on the compare, not past it.
+    // Flag and reason are separate variables: the flag is zeroed before the
+    // diamond and assigned the (already-loaded) reason inside the ==1 arm, which
+    // is why cl copies a register instead of materialising an immediate 1.
+    i32 flag = 0;
+    i32 v = m_entranceReason;
+    if (v > 0x16) {
         v = m_19c;
-        if (v != 1) {
-            v = 0;
-        }
     }
-    if (v != 0) {
+    if (v == 1) {
+        flag = v;
+    }
+    if (flag != 0) {
         RunMoveConfig(c >> 5, d >> 5);
         return 1;
     }

@@ -182,6 +182,38 @@ def rets(insns, stop=None):
                if mn.startswith("ret") and (stop is None or off < stop))
 
 
+# A general-purpose register anywhere in an operand. `head_key` blanks these because
+# the destination-content test below must survive REGISTER ALLOCATION, which differs
+# between our build and retail on nearly every sub-100% function.
+GPR = re.compile(r"%(?:e?(?:ax|bx|cx|dx|si|di|bp|sp)|[abcd][lh])\b")
+
+
+def head_key(mn, op):
+    """The comparison key for the FIRST instruction of a branch destination.
+
+    Registers are blanked; immediates and displacements are KEPT, and a jump/call
+    operand is dropped entirely (it is an address, and addresses shift).
+
+    **Why the raw text is not the key.** The GUARD-vs-ARM screen asks "do the two
+    sides' destinations hold the same code?". Comparing raw operands answers a
+    different question - "did cl colour the destination identically?" - and the
+    answer to that is routinely NO on a function that is sub-100% in the first
+    place. Measured cost of getting this wrong: `CGrunt::CommitNeighbor` @0x5b050
+    is a genuine inverted guard (retail `v = m_170; if (v > 0x16) v = m_19c;`
+    against our `if (m_170 > 0x16) { v = m_19c; ... }`, so retail also fires the
+    move-config path when m_170 itself is 1). Both sides' destination is the same
+    `test <reg>,<reg> / je` block - but retail holds the flag in ecx and we hold it
+    in eax, so the raw-text test called it an arm selector and hid the bug.
+
+    The bias is deliberate: an over-reported GUARD costs one reading, an
+    under-reported one hides a behaviour bug. Immediates stay in the key because
+    that is exactly what distinguishes two real arms - `?PolyIsConvexCW` stores
+    `1` on one side and `2` on the other, and must stay an ARM."""
+    if mn.startswith("j") or mn.startswith("call"):
+        return (mn, "")
+    return (mn, GPR.sub("%r", op))
+
+
 def sym_target(brs, tgt):
     """Name a branch target symbolically: the index of the first branch at or after it.
 
@@ -273,14 +305,22 @@ def compare(bi, ti, max_flips=4):
         # destination is the same code on both sides. (Found on CTriggerMgr::
         # SetupTubeAnim @0x50a50, whose two arms push different string relocs.)
         #
-        # VALIDATED against every row with a known verdict (2026-08-01): the three
-        # confirmed real defects were temporarily reverted and re-sieved, and all come
-        # back GUARD - CGrunt::RectContains #9 `jl->jge=dest`, RectContainsGated #10,
-        # and RectSegProbe #1/#4/#11 (its #8 is a genuine arm selector). SetupTubeAnim
-        # #0/#10 correctly demote to =arm. Four functions, seven rows, no
-        # misclassification either way - so the 43->9 cut is aggressive but correct.
-        at_b = {off: (mn, op) for off, mn, op in bi}
-        at_t = {off: (mn, op) for off, mn, op in ti}
+        # `head_key` - NOT the raw text - is what "same content" means here: raw operands
+        # make REGISTER ALLOCATION look like two different arms, which demoted a real
+        # guard (`CGrunt::CommitNeighbor` #16, where retail holds the flag in ecx and we
+        # held it in eax while both destinations were the same `test/je` block).
+        #
+        # VALIDATION HISTORY, because the first pass was not enough:
+        #  * Known-verdict test (4 functions, 7 rows): the confirmed defects come back
+        #    GUARD - RectContains #9, RectContainsGated #10, RectSegProbe #1/#4/#11 -
+        #    and SetupTubeAnim #0/#10 come back ARM. No misclassification.
+        #  * That sample MISSED the regalloc trap entirely: none of those four exhibit
+        #    it. A tree-wide census then found 19 of 51 =arm rows differing only in the
+        #    OPERAND, i.e. wrongly demoted. Small samples confirm; only a census refutes.
+        # The bias is deliberate: an over-reported guard costs one reading, an
+        # under-reported one hides a behaviour bug.
+        at_b = {off: head_key(mn, op) for off, mn, op in bi}
+        at_t = {off: head_key(mn, op) for off, mn, op in ti}
         guard = []
         for i, _, _ in flips:
             if bt_f[i] != tt_f[i]:
