@@ -278,14 +278,14 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     i32 acc = 0;
     if (rc.left != 0) {
         i32 prev = 0;
+        i32 i = 0;
         while (acc < rc.left) {
             Glyph g;
             prev = acc;
-            m_font->GetGlyph(g, text[startChar]);
-            acc += g.width;
-            startChar++;
+            acc += m_font->GetGlyph(g, text[i]).width;
+            i++;
         }
-        startChar--;
+        startChar = i - 1;
         firstCol = rc.left - prev;
     }
 
@@ -300,8 +300,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         if (rc.right >= 0) {
             do {
                 Glyph g;
-                m_font->GetGlyph(g, text[j]);
-                w += g.width;
+                w += m_font->GetGlyph(g, text[j]).width;
                 j++;
             } while (w <= rc.right);
             endChar = j;

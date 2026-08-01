@@ -864,7 +864,11 @@ i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
 // ---------------------------------------------------------------------------
 // Lock: pass-through IDirectSoundBuffer::Lock; on DSERR_BUFFERLOST reacquire + retry once.
 // The `return 1` is the function's LAST statement and both success exits fall into
-// it (retail's 0x136430 block is the final one); every failure returns inline.
+// it (retail's 0x136430 block is the final one). The reacquire gate is the POSITIVE
+// form with a bare `else { return 0; }` so that exit is a plain `xor eax,eax` block
+// cl can cross-jump onto the 0x386 report's tail (0x136427) - the `if (... == 0)
+// return 0;` early-out instead let cl notice eax was already 0 and emit its own
+// ret, which is the DUP-EXIT `sema disasm --branches --diff` reports.
 RVA(0x00136370, 0xcc)
 i32 DirectSoundMgr::Lock(
     u32 off,
@@ -884,13 +888,15 @@ i32 DirectSoundMgr::Lock(
         // retail bytes carry the same dead test (0x1363bd `cmp eax,0x88780096` sits
         // AFTER the neg/sbb/neg), so it is the original code's bug, not ours.
         if (hr == DSERR_BUFFERLOST) {
-            if (m_reacquireOwner->ReacquireBuffer() == 0) {
-                return 0;
-            }
-            hr = m_buffer->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags)
-                 != 0;
-            if (hr != 0) {
-                GetErrorString(DSNDMGR_FILE, 0x37c, hr);
+            if (m_reacquireOwner->ReacquireBuffer() != 0) {
+                hr = m_buffer
+                         ->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags)
+                     != 0;
+                if (hr != 0) {
+                    GetErrorString(DSNDMGR_FILE, 0x37c, hr);
+                    return 0;
+                }
+            } else {
                 return 0;
             }
         } else {
