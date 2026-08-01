@@ -135,5 +135,13 @@ and say so in the note. This is the boundary of
 [map-lookup-ternary-ifconverts.md](map-lookup-ternary-ifconverts.md): its statement form beats the
 *ternary*, but when the result feeds only a branch, the two-compare `||` beats both.
 
+`CInGameIcon::Reposition` @0x098a90 repeats the verdict with the pointer actually DEREFERENCED
+(`or [eax+8],0x10000`), so "the value is only null-tested" is NOT the discriminator: retail is
+again the value form (`test eax,eax / je L / mov eax,[found] / L: test eax,eax`), and cl still
+loses — `owner = 0; if (hit) owner = found;` **92.83**, explicit if/else **93.26**, against
+**97.43** for the plain `if (Lookup(k, found) && found != 0)` chain. Here the pre-zero costs a
+whole extra callee-saved register (`push ebp` retail does not have). Two independent functions,
+five spellings: on this shape, take the chain and record the numbers.
+
 **Screen first:** apply when retail's low arm is a bare fall-through with no `jmp` of its own.
 If retail has two real arms joined by a `jmp`, the `?:`/if-else form is already right.

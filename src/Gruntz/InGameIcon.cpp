@@ -945,6 +945,14 @@ i32 CInGameIcon::Reposition() {
             cellVal = 0;
         }
         if (cellVal != 0) {
+            // Retail resolves the owner as a VALUE (`test eax,eax / je L /
+            // mov eax,[found] / L: test eax,eax`) so the Lookup miss joins the
+            // shared null test. cl will not emit that from any value spelling:
+            // measured 2026-08-01, `owner = 0; if (hit) owner = found;` 92.83 and
+            // the explicit if/else 93.26, both WORSE than this `&&` chain's 97.43 -
+            // the pre-zero costs a whole extra callee-saved register (`push ebp`).
+            // Same verdict as CDDrawChildGroup::PruneOrphans @0x15b1d0; see
+            // docs/patterns/default-hoists-into-destination-no-jmp.md.
             void* found = 0;
             if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found) && found != 0) {
                 (static_cast<CGameObject*>(found))->m_flags |= 0x10000;

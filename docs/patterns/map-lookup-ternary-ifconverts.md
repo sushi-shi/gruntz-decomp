@@ -73,3 +73,6 @@ resolved pointer's ONLY consumer is a null test, the statement form still if-con
 the two-compare `||` chain — which is NOT retail's shape — scores higher than any value
 spelling: 85.93 (`owner=0; if(hit) owner=found;`) / 85.93 (ternary) / 88.18 (explicit
 if/else) vs **93.75** for `if (Lookup(k,found) == 0 || found == 0)`. Keep the `||` there.
+`CInGameIcon::Reposition` @0x098a90 repeats it with the pointer DEREFERENCED afterwards
+(92.83 / 93.26 vs **97.43** for the `&&` chain), so "only null-tested" is not the
+discriminator. Measure both spellings on this shape rather than assuming.
