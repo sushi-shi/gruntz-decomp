@@ -40,7 +40,7 @@ void StateMgrBZ::Setup() {
 // jumptable-data-overlap scoring artifact: every code instruction matches; the
 // residual is the inline .rdata jump-table data block + the reloc-masked switch-
 // base / AddControllerArr symbol names. See docs/patterns/jumptable-data-overlap.md.
-RVA(0x000383b0, 0x19c)
+RVA(0x000383b0, 0x1c0)
 i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     if (src == 0) {
         return 0;
@@ -95,15 +95,8 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(0))
                                   : 0;
             m_joystick = d;
-            m_deviceList = static_cast<SbzDeviceList*>(src->AddControllerArr(
-                m_keyboard,
-                d,
-                0,
-                0,
-                0,
-                0,
-                0
-            ));
+            m_deviceList =
+                static_cast<SbzDeviceList*>(src->AddControllerArr(m_keyboard, d, 0, 0, 0, 0, 0));
             break;
         }
         case 8: {
@@ -113,29 +106,17 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
                                   : 0;
             m_joystick = d;
             m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
-            m_deviceList = static_cast<SbzDeviceList*>(src->AddControllerArr(
-                m_keyboard,
-                d,
-                m_joystick2,
-                0,
-                0,
-                0,
-                0
-            ));
+            m_deviceList = static_cast<SbzDeviceList*>(
+                src->AddControllerArr(m_keyboard, d, m_joystick2, 0, 0, 0, 0)
+            );
             break;
         }
         case 7:
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
-            m_deviceList = static_cast<SbzDeviceList*>(src->AddControllerArr(
-                m_keyboard,
-                m_joystick2,
-                0,
-                0,
-                0,
-                0,
-                0
-            ));
+            m_deviceList = static_cast<SbzDeviceList*>(
+                src->AddControllerArr(m_keyboard, m_joystick2, 0, 0, 0, 0, 0)
+            );
             break;
         case 0:
             m_keyboard = 0;

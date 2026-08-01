@@ -500,7 +500,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // dispatch, the index table and every case body are byte-identical to retail
 // (verified by raw byte-compare). Effectively matched; deferred only for the
 // jump-table reloc-typing fix.
-RVA(0x00097680, 0xf5)
+RVA(0x00097680, 0x110)
 i32 CInGameIcon::HandleInput() {
     CWwdGameObjectA* obj = m_object;
     i32 cmd = obj->m_124;

@@ -432,7 +432,7 @@ i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount
 // retail's inline jump table is scored against our $L-symbol table; plus a per-case
 // arg-forward schedule (regalloc). Dispatch + cases logically exact; relocs now align
 // to the real CRezImage decoders.
-RVA(0x00175a00, 0x74)
+RVA(0x00175a00, 0x90)
 i32 CRezImage::DispatchDecode(void* buf, i32 kind, HDC dc, i32 ctrl) {
     switch (kind) {
         case 2:

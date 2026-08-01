@@ -58,7 +58,7 @@ void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ddThirdEnabled = third;
 }
 
-RVA(0x00141400, 0x835)
+RVA(0x00141400, 0x870)
 void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
     char szCode[64];  // local_340 - error-code name
     char szMsg[256];  // local_300 - description

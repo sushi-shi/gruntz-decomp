@@ -627,7 +627,7 @@ void CDroppedObject::RegisterActs() {
 // modrm register field through the landing block. Not source-steerable (tried
 // reordering the x/grid declarations - identical codegen). Parked for the final
 // sweep.
-RVA(0x000c7090, 0x21b)
+RVA(0x000c7090, 0x230)
 i32 CDroppedObject::ActA() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;

@@ -131,7 +131,7 @@ void CTileTriggerContainer::DtorBase() {
 // is the known delinker jump-table artifact - the `jmp [eax*4+<table>]` DIR32 points
 // at a size-0 duplicate symbol for the .rdata table, so objdiff cannot pair those
 // bytes (docs: delinker-jumptable-dup-symbol-undercount). Nothing to fix in source.
-RVA(0x00115f60, 0x2de)
+RVA(0x00115f60, 0x300)
 CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     i32 tag,
     i32 col,

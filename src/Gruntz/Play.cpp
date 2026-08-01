@@ -2725,7 +2725,7 @@ enum World {
     WORLD_GRUNTZ_IN_SPACE = 8,   // "Gruntz in Space"
 };
 
-RVA(0x000d95f0, 0x756)
+RVA(0x000d95f0, 0x830)
 i32 CPlay::DrawLevelInfoText() {
     CString s0; // line 1: current World name (LoadString)
     CString s1; // stage/status    (line 2)

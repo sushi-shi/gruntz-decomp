@@ -384,7 +384,7 @@ void CBootyState::MoveLettersByDir() {
 // the ~24 g_gameReg loads are the retail A1 moffs32 form). Residual ~2.5% is the
 // inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
 // operands, neither source-steerable. ~97.5%.
-RVA(0x0001af70, 0x3c0)
+RVA(0x0001af70, 0x3e0)
 void CBootyState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
         case 0: {

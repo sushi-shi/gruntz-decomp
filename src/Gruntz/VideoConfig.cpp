@@ -570,7 +570,7 @@ namespace ApiCallerStubs {
 // eax only for the switch, and RE-READS code from the stack in the voice/chip blocks;
 // that register permutation shifts most operand bytes (consistent ebp<->edi/eax swap,
 // llvm-objdump -dr). ~85%.
-RVA(0x00037260, 0x1fd)
+RVA(0x00037260, 0x220)
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     if (!hCtrl) {
         return;

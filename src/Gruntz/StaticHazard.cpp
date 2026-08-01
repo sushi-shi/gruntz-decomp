@@ -96,7 +96,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
 // the Hazardz/AniPad GetIntDef), but the dense bound-object field stores spill
 // against retail's stack-slot schedule and the jump-table data region scores as
 // the jumptable-data-overlap artifact. Parked for the final sweep.
-RVA(0x000fb7a0, 0x2d4)
+RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
     m_value = m_38->m_1a0.m_14;

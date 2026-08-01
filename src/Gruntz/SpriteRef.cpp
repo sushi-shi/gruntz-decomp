@@ -18,7 +18,7 @@
 // jump table scores fuzzy because cl emits local $L-label DIR32 relocs vs the
 // delinked target's self-relocs. ~93.7% unit, the remainder is that data region.
 #include <Io/GameSave.h> // g_savedMenuCmd (ex .cpp extern)
-RVA(0x000e2df0, 0x39f)
+RVA(0x000e2df0, 0x3f0)
 i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
     m_cache = cache;
     m_alphaKey = static_cast<CShadeTable*>(shade);

@@ -620,7 +620,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 // to the sibling grid validator at 0x17cbe0 (stubbed ?Unmatched_17cbe0, modeled here as
 // CMoviePlayer::CheckGrid), and the switch jump table ($L385 vs switchdataD_0057d2a0).
 // topic:scoring-artifact - no further code change possible.
-RVA(0x0017cfc0, 0x2dd)
+RVA(0x0017cfc0, 0x2f0)
 i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     if (origin) {
         if (origin->x > m_screenWidth) {

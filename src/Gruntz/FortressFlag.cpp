@@ -127,7 +127,7 @@ RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical (incl. the m_124 jump table); residual is the /GX leaf-vptr
 // re-stamp position + EH-state ids.
-RVA(0x00045d30, 0x203)
+RVA(0x00045d30, 0x220)
 CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;

@@ -879,7 +879,7 @@ void CGameLevel::NotifyAllPlanes() {
 // symbols where the delinked target packs it inside the function symbol
 // (jumptable-data-overlap). The tail ResolveLevelName arg list was a real bug - it passed
 // typeId twice, dropping mode; retail pushes mode/typeId/pObj (fixed earlier).
-RVA(0x00160f70, 0xfa)
+RVA(0x00160f70, 0x120)
 i32 CGameLevel::EditDispatch(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
@@ -959,7 +959,7 @@ i32 CGameLevel::LoadName(CFileMemBase* s) {
 // MoveHandler sites) where retail interleaves an arg reload between pushes (2 regs)
 // and MSVC pre-loads (3 regs). docs/patterns/pin-local-for-callee-saved-reg.md.
 // Logic/offsets/CFG exact; deferred to the final sweep.
-RVA(0x0015dfb0, 0x15b)
+RVA(0x0015dfb0, 0x180)
 i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     if (m_flags & 4) {
         return ApplyMove(target, destX, destY, moveFlags);

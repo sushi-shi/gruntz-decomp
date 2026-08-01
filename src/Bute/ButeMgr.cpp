@@ -1342,7 +1342,7 @@ bool CButeMgr::ParseTagLine() {
 // jump-table scoring artifact (95%): the 6-way `jmp *tbl[eax*4]` dispatch + all case
 // bodies match, but objdiff mis-pairs the inline .rdata jump-table region against the
 // code (base `jmp *(,eax,4)` vs retail `jmp *0x1e4(,eax,4)`). CODE bytes match. Final sweep.
-RVA(0x001704c0, 0x1e3)
+RVA(0x001704c0, 0x200)
 bool CButeMgr::Parse() {
     const i32 kLexStartState = 0x11;
     i32 kind = kLexStartState;

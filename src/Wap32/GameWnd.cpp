@@ -139,7 +139,7 @@ void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
     }
 }
 
-RVA(0x0013cff0, 0x35c)
+RVA(0x0013cff0, 0x3a0)
 LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     CGameWnd* pWnd = g_activeGameWnd;
     if (!pWnd) {

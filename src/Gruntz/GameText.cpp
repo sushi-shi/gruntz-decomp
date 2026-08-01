@@ -103,7 +103,7 @@ static CString g_statLabel[8] = {
 // (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
 // and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
 // shape-correct; see the delinker-jumptable memory note for the pipeline fix.
-RVA(0x0001ec20, 0x8d)
+RVA(0x0001ec20, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
     // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
