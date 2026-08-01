@@ -1,53 +1,35 @@
-// GruntSteps.cpp - the SECOND original grunt TU (retail text 0x50ca0-0x55160):
-// the grunt movement-step / move-sound / tile-claim / serialize family, carved
-// out of the conflated Grunt.cpp (grunt-region partition).
-//
-// original TU: filename unknown (@identity-TODO; named for the dominant
-// movement-step family). Evidence this is its OWN obj:
-//   * its private .data extent (0x20dbf8, StepCompassMove's statics) sits
-//     between the 0x4dd50 userlogic extent and the 0x56f80 grunt-combat extent
-//     in the 98%-monotone .data contribution order.
-//   * the TU_MIGRATION extent-overlap claim "0x50ca0+0x56f80 = one obj" is
-//     REFUTED: it was driven by the .bss act-registry singleton band (0x2445xx),
-//     which is provably NOT obj-ordered (wormholeacts/warlord/secrettrigs
-//     interleave there); the initialized-.data band has NO overlap.
-//   * gamestaterecordload (0x555e0) + gruntdatarecord (0x56da0) sit between
-//     this interval and 0x56f80 in text - one obj spanning both would have to
-//     contain them (no evidence does).
-// In-interval fold: LoadVehicleGruntSprites @0x50ce0 is text-contained
-// (between 0x50ca0 and 0x511b0 - contiguity-forced).
-// GruntTubeAnim.cpp (0x50a50, gap 139 before 0x50ca0) is a PROBABLE head of this
-// TU but stays split (no privates/frags to prove it; noted there).
-#include <Bute/ButeTree.h>        // CButeTree::Find - g_buteTree @0x6bf620
-#include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
-#include <Gruntz/Brickz.h>        // the real 0x1c-byte tile-cell layout
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+
+
+#include <Bute/ButeTree.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
-#include <Gruntz/TypeKeyColl.h>       // g_typeColl (folded CAnimNameResolver anim registry)
-#include <Gruntz/ActReg.h>            // CActReg::ResolveEntry
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/GameStateRecord.h> // CWapX::Chain (0x8c00) - the ex-CSerialObjRef
+#include <Gruntz/GameStateRecord.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/GruntSpawnConfig.h> // StopVoice on m_cueSink
+#include <Gruntz/GruntSpawnConfig.h>
 #include <rva.h>
-#include <Pix16.h> // the byte-stride / dword-field tile record views
+#include <Pix16.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/TileGrid.h>   // the registry +0x70 tile occupancy grid
-#include <Gruntz/GruntzMgr.h>  // the MFC-side registry view (vehicle path)
-#include <Gruntz/PickupType.h> // the toy/vehicle grunt-kind id band
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr::ApplySwitch
+#include <Gruntz/TileGrid.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/TriggerMgr.h>
 
 DATA(0x002448d8)
 GruntDirectionCell g_gruntMoveDirNorth = GruntDirectionCell(0, 1, 1);
@@ -69,28 +51,25 @@ DATA(0x00244918)
 GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, 8);
 
 static char s_TimePerTile[] = "TimePerTile";
-static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
-static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
-static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_0060e1a0
-static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
-static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
+static char s_Grunt[] = "Grunt";
+static char s_EntranceSafeTime[] = "EntranceSafeTime";
+static char s_IdleDelay[] = "IdleDelay";
+static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
+static char s_CombatTimeout[] = "CombatTimeout";
 
 DATA(0x0020dbf8)
-static char s_ToyTiles[] = "ToyTiles"; // s_ToyTiles_0060dbf8
+static char s_ToyTiles[] = "ToyTiles";
 DATA(0x0020da6c)
-static const char s_BABYWALKERGRUNT[] = "BABYWALKERGRUNT"; // s_..._0060da6c
+static const char s_BABYWALKERGRUNT[] = "BABYWALKERGRUNT";
 DATA(0x0020da48)
-static const char s_BIGWHEELGRUNT[] = "BIGWHEELGRUNT"; // s_..._0060da48
+static const char s_BIGWHEELGRUNT[] = "BIGWHEELGRUNT";
 DATA(0x0020da38)
-static const char s_GOKARTGRUNT[] = "GOKARTGRUNT"; // s_..._0060da38
+static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";
 DATA(0x0020d9fc)
-static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT"; // s_..._0060d9fc
+static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";
 
-// The tile records are 0x1c bytes walked with BYTE strides (the grid is exposed as
-// char** for exactly that), while each record's flag word is a dword at +0.
 static inline i32 TileFlags(const char* rec) {
-    // the mixed byte-stride / dword-field view IS the tile table's own design, so
-    // both readings of the record base are named (<Pix16.h>)
+
     Pix16CPtr r;
     r.m_chars = rec;
     return *r.m_dwords;
@@ -136,13 +115,11 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
         return 1;
     }
     char* cur = board->m_rowBytes[ty] + tx * 7 * 4;
-    // TileFlags(const char*) walks the board by BYTE stride - the sibling reads here
-    // are at odd byte offsets (cur[0x1d], cur[stride + 1]), so the row cursor's byte
-    // and dword readings are both named (<Pix16.h>).
+
     Pix16Ptr row;
     row.m_dwords = tgt;
     char* tg = row.m_chars;
-    i32 stride = board->m_width * 7 * 4; // bytes per board row
+    i32 stride = board->m_width * 7 * 4;
     if (dx > 0) {
         if (dy > 0) {
             if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (TileFlags(tg - 0x1c) & 0x2000)
@@ -184,23 +161,6 @@ static __inline void SerRecord(CFileMemBase* ar, i32 mode, void* p) {
     }
 }
 
-// ===========================================================================
-// The 5 grunt movement / anim-name dispatch state machines (formerly the
-// CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
-// resolves the grunt's current anim-set node name
-// (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// ScratchResolve form) and dispatches on its single-letter type code
-// (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
-// its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
-// a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
-// reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
-//
-// These are the CGrunt analogues of CBattlezMapConfig::StepBoard /
-// ChooseIdleBehavior (the documented large-state-machine + grid-regalloc walls). Each is
-// reconstructed complete in shape/order; all carry @early-stop on those walls.
-// Raw-offset member access (the campaign style used by the cluster above) keeps the
-// giant ~0x46c layout tractable.
-
 static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
@@ -212,9 +172,7 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
 
 RVA(0x00050ca0, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
-    // the real callee is CGrunt::LoadGruntTypeTable (0x4dd50, a CGrunt method);
-    // its result rides through the two trailing stores as this fn's return
-    // (callers pass the eax straight out - proven at 0x67a54's tail).
+
     i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
     m_moveMode = -1;
     m_1a4 = 0;
@@ -228,12 +186,7 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     m_moveMode = -1;
 
     CString name;
-    // Region init is copy-pasted into every arm (retail repeats it 10x, byte-identical):
-    // region0 = {-1,-1,1,1}, region1 = {0,0,0,0}, in address order.
-// Each arm re-seeds both rects. Retail emits the pair as two 16-byte block copies
-// (`lea ebx,[esi+0x2b0]` + four register stores, then the same at +0x2c0, the four
-// value registers recycled to 0 in between) - i.e. two RECT assignments, not eight
-// scalar stores.
+
 #define REGION_INIT()                                                                              \
     do {                                                                                           \
         RECT a;                                                                                    \
@@ -296,12 +249,10 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    // i32 row, not char: retail's read is `mov eax,[eax+ebp*4+0x10]` (scale 4, disp 0x10);
-    // the char* spelling lowered to a sign-extending `movsx ...[eax+ebp+4]`.
     i32 code = g_gameReg->m_tileGrid->m_rowInts[m_lastTilePxY >> 5][(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
-            // retail pushes (this, x, y) - ret 0xc.
+
             m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         }
@@ -464,14 +415,12 @@ void CGrunt::SnapToLastTile(i32 a) {
     }
     SetEntrancePos(a, 1);
     if (m_arrivalPending != 0) {
-        // 0x6c130 = CTriggerMgr::WireTileSwitchLogic (the settled-move commit).
+
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         m_arrivalPending = 0;
     }
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::RectContains(x, y)   @0x51850   (__thiscall, ret 8)
 // @early-stop
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
@@ -497,7 +446,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
-            // rect2 degenerate: test the point against rect1 only.
+
             if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
                 return 1;
             }
@@ -505,14 +454,9 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
         }
         return 0;
     }
-    // both rects live: the point must sit inside rect1 and (left/top of) rect2.
+
     if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
-        // `py < r2.top`, not `py >= r2.top`: this is the OUTSIDE-rect2 test and the
-        // fourth term must mirror the second (`px < r2.left`). Retail's last arm of
-        // the || chain is inverted to a `jge` jump-to-fail, i.e. the term itself is
-        // `py < top`. With `py >= top` the third term (`py >= bottom`) is subsumed -
-        // top <= bottom - so the whole vertical span collapsed to `py >= top` and a
-        // point genuinely INSIDE rect2 was reported outside.
+
         if (px >= r2.right || px < r2.left || py >= r2.bottom || py < r2.top) {
             return 1;
         }
@@ -520,8 +464,6 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::RectContainsGated(x, y)   @0x51a20   (__thiscall, ret 8)
 // @early-stop
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
@@ -556,12 +498,7 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
         return 0;
     }
     if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
-        // `py < r2.top`, not `py >= r2.top`: this is the OUTSIDE-rect2 test and the
-        // fourth term must mirror the second (`px < r2.left`). Retail's last arm of
-        // the || chain is inverted to a `jge` jump-to-fail, i.e. the term itself is
-        // `py < top`. With `py >= top` the third term (`py >= bottom`) is subsumed -
-        // top <= bottom - so the whole vertical span collapsed to `py >= top` and a
-        // point genuinely INSIDE rect2 was reported outside.
+
         if (px >= r2.right || px < r2.left || py >= r2.bottom || py < r2.top) {
             return 1;
         }
@@ -569,7 +506,6 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -583,7 +519,7 @@ i32 CGrunt::StepCompassMove() {
     GruntDirectionCell voice;
 
     if (s_TileFlags(board, tx, ty) & 0x80) {
-        // The current tile carries a move command at field +0x10 (4th dword).
+
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
         switch (cmd - 0xb) {
             case 8:
@@ -651,8 +587,7 @@ i32 CGrunt::StepCompassMove() {
         i32 mty = moveY >> 5;
         i32 tflags = s_TileFlags(board, mtx, mty);
         if ((tflags & 0x20000000) && !(tflags & 0x80)) {
-            // The target is occupied by another owner: notify the tile mgr (the tile's
-            // +0x4 owner id is split into its low two bytes).
+
             i32 owner;
             if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
                 || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
@@ -665,7 +600,6 @@ i32 CGrunt::StepCompassMove() {
         goto commit;
     }
 
-    // The current tile is a plain walkable tile.
     if (m_toyTileIndex != 0) {
         CString str;
         switch (m_entranceReason - 0x17) {
@@ -737,8 +671,6 @@ i32 CGrunt::StepCompassMove() {
         goto commit;
     }
 
-    // The toy-tile bag: random-pick each of the 8 compass directions in turn and
-    // commit the first that validates.
     {
         ::CByteArray bag;
         bag.SetAtGrow(bag.GetSize(), 1);
@@ -804,8 +736,7 @@ i32 CGrunt::StepCompassMove() {
     }
 
 commit:
-    m_tileMgr->ApplySwitch(this, m_lastTilePxX,
-                           m_lastTilePxY); // real 0x6d300
+    m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
     PlaySound(0x3e8, voice);
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
@@ -832,17 +763,6 @@ commit:
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ClaimSwitchTile()   @0x52c70   (__thiscall, ret 0)
-// Pick a neighbour tile by the entrance-cell direction code (m_entranceCell.direction,
-// 1..8 -> the 8 compass deltas; anything else keeps the current tile), test the
-// level board's occupancy flags there; if the tile is clear of the blocking bits
-// (0x20000939 / 0x80), apply the tile switch (tile mgr), move the occupancy record
-// from the old tile to the new one (clear bit 5 of the old tile's flag byte, stamp
-// the new tile's owner = (ownerHi<<8)|ownerLo + set bit 5), re-anchor the grunt to
-// the new pixel pos, recompute the facing (ComputeFacing(1.0)), latch
-// m_arrivalPending=1, and return 1. On an obstructed tile return 0.
-//
 // @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
@@ -895,11 +815,8 @@ i32 CGrunt::ClaimSwitchTile() {
         return 0;
     }
 
-    m_tileMgr->ApplySwitch(this, m_lastTilePxX,
-                           m_lastTilePxY); // real 0x6d300
+    m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
 
-    // Release the grunt's old tile: clear bit 5 of the old tile's flag byte, set
-    // its owner record to -1.
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
@@ -908,7 +825,6 @@ i32 CGrunt::ClaimSwitchTile() {
     gb->m_rowInts[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
     *&gb->m_rowInts[oldTy][oldTx * 7 * 4 + 4] = -1;
 
-    // Claim the new tile: set bit 5 of its flag byte, stamp the owner id.
     i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
     gb->m_rowInts[ty][tx * 7 * 4 + 3] |= 0x20;
     *&gb->m_rowInts[ty][tx * 7 * 4 + 4] = owner;
@@ -920,11 +836,6 @@ i32 CGrunt::ClaimSwitchTile() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::SetArrivalTarget(a, b, c, d)   @0x52ed0   (__thiscall, ret 0x10)
-// Seed the arrival/defender block: m_arrivalCol=a, m_arrivalRow=b, m_arrivalActive=1, and the two defender
-// pixel coords m_defenderX/Y = (c/d aligned down to the tile grid) + 0x10.
-//
 // @early-stop
 RVA(0x00052ed0, 0x42)
 void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
@@ -935,14 +846,6 @@ void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
     m_defenderY = (d & ~0x1f) + 0x10;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ConsiderArrival(a)   @0x52f40   (__thiscall, ret 4)
-// If the grunt's HUD point (aligned to the tile grid + 0x10) does not already sit
-// on its last occupied tile, ask the drop-ready predicate whether to defer; when it
-// is NOT ready, snap to the last tile (SnapToLastTile(a)). When the HUD point IS on
-// the last tile, snap unconditionally. Modeled void: retail never sets eax on the
-// tail path (no `xor eax,eax`), so the slot is morally void.
-//
 // @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
@@ -957,8 +860,6 @@ void CGrunt::ConsiderArrival(i32 a) {
     SnapToLastTile(a);
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::StepAnimDispatchA(x, y, c, d)   @0x52fb0   (ret 0x10)
 // @early-stop
 RVA(0x00052fb0, 0x96e)
 i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
@@ -981,9 +882,9 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
     if (eq) {
-        // code "I": arrival cue (m_170==0x13) then re-notify the tile mgr.
+
         if (m_entranceReason == 0x13) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_188); // 0x11c730 (ex EmitMoveCueShort)
+            g_gameReg->m_cueSink->StopVoice(m_object->m_188);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1013,7 +914,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0);
     if (eq) {
-        // code "O": commit the move directly.
+
         SnapToLastTile(1);
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxY, m_lastTilePxX);
         goto applyTail;
@@ -1024,8 +925,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "J") == 0);
     if (eq) {
-        // code "J": clear the entrance gate, re-latch a fresh anim set, drive the
-        // geometry sub-player.
+
         m_entranceActive = 0;
         if (m_poweredUp == 0 && m_neighborValid == 0) {
             m_entranceCommitted = 0;
@@ -1036,8 +936,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_objAux->m_1c = ActFindId(s_codeD);
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
-        // Stamp the first entrance-cell frame from m_cells[base].WalkName(). The by-value
-        // cell copy dead-spills `direction` (esp+0x1c) -> `sub esp,0xc`; base = 3*row+column.
+
         GruntDirectionCell cell = m_entranceCell;
         i32 col = cell.column + cell.row * 2;
         i32 base = cell.row + col;
@@ -1050,9 +949,9 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     }
 
 idleReseed:
-    // codes G/L/P: drive the move state by m_toolId and (m_170==0x1e) fire the cue.
+
     if (m_entranceReason == 0x1e) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_188); // 0x11c730 (ex EmitMoveCueShort)
+        g_gameReg->m_cueSink->StopVoice(m_object->m_188);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
@@ -1070,7 +969,7 @@ idleReseed:
     ClearSubA();
 
 applyTail:
-    // The shared movement-apply tail: re-set the geometry, recycle coords.
+
     if (m_wingzEnabled != 0) {
         LoadWingzGruntSprites(0);
     }
@@ -1078,7 +977,7 @@ applyTail:
         m_entranceCommitted = 0;
         ResetEntranceAnimation(1, 0, 0);
     }
-    // The inlined drop-apply tail that closes this arm is not reconstructed yet.
+
     return 1;
 
 modeDispatch: {
@@ -1109,25 +1008,23 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* p
     if (ar == 0) {
         return 0;
     }
-    // chain the base-class serialize on `this` (0x16e7f0 = CMovingLogicBase::Serialize)
+
     if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
-    // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
-    // CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a DIRECT second base at mdisp
-    // +0x150 (past the 0x150 CMovingLogic spine) - MI1 landed, so it is a base call.
+
     if (CWapX::Chain(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
     switch (mode) {
         case 4:
-            // mode-4 save path = CGrunt::Save (0x53f90)
+
             if (Save(ar) == 0) {
                 return 0;
             }
             break;
         case 7:
-            // mode-7 load path: CGrunt::LoadStateRecord @0x555e0 (GameStateRecordLoad.cpp)
+
             if (LoadStateRecord(ar) == 0) {
                 return 0;
             }
@@ -1154,36 +1051,12 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* p
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::Save(ar) @0x53f90 - serializes the whole grunt state into a custom
-// archive (each member -> ar->Write(&field, size) via vtable slot 0x30). Bails
-// (return 0) if the archive is null or the world root (m_158->m_0c, the owning
-// CDDrawSurfaceMgr) is unset.
-// The 4560-byte body is, in order: 7 sprite-id blocks (each bumps the global
-// serialize counter and writes the sprite's m_188, or 0 if the slot is empty);
-// 3 name strings (a 0x80-byte buffer copy); 18 anim-name-id blocks (look the id
-// up in mgr->m_animRegistry's name map and copy the resolved name in); then
-// ~100 plain field writes; then the 3x3 walk of the +0x468 CGruntCellRec table;
-// finally the two CPtrList tails (m_31c count + 8-byte nodes, m_338 count +
-// 0x2c-byte nodes). The serialize counter is the global g_serialCounter.
 RVA(0x00053f90, 0x11d0)
 i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;
     }
-    // retail 0x53fb8: `mov eax,[ebp+0x158]; mov eax,[eax+0xc]` = m_3c->m_ownerCtx, spilled
-    // to [esp+0x14]; the 18 name-id blocks then each reload it and take a SECOND hop
-    // `mov ecx,[edx+0x2c]` @0x5425b before `call 0x152d30` (KeyOfValue). +0x2c IS
-    // CDDrawSurfaceMgr::m_animRegistry, so m_0c is the MANAGER, not the leaf - the
-    // old one-load reading (and its reinterpret to CDDrawSubMgrLeaf*) was wrong.
-    // Slot order is load-bearing, and it pins the SCOPES. cl5 hands the local area
-    // out to FUNCTION-scope locals in reverse declaration order descending from the
-    // top of the frame, then merges all mutually-disjoint BLOCK-scope locals into
-    // the leftover slot(s). Retail's 0x8c frame is buf@[esp+0x1c] over exactly three
-    // dwords: n@0x18 (own slot), mgr@0x14 (shared with the 3x3 row pointer),
-    // tmp@0x10 - and 0x10 is ALSO the 3x3 `row` counter, so the sprite-id temp is a
-    // BLOCK-scope local (one per sprite block, all merged), while the list-tail
-    // count `n` is function-scope, declared between mgr and buf.
+
     CDDrawSurfaceMgr* mgr = m_3c->m_ownerCtx;
     if (!mgr) {
         return 0;
@@ -1259,11 +1132,11 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, m_448); // CString::operator LPCTSTR
+    strcpy(buf, m_448);
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, m_44c); // CString::operator LPCTSTR
+    strcpy(buf, m_44c);
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
@@ -1528,10 +1401,6 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_2e8, 4);
     ar->Write(&m_288, 8);
 
-    // retail 0x55083-0x550ce: a 3x3 walk of the +0x468 cell table (outer stride
-    // 0x138 = 3 * sizeof(CGruntCellRec), inner 0x68), each cell's string block
-    // through the 0x3bf7 thunk -> CGruntCellRec::SerializeStrings @0x56da0; a
-    // zero return aborts the whole save.
     {
         i32 row, col;
         for (row = 0; row < 3; row++) {
@@ -1542,9 +1411,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
             }
         }
     }
-    // the two CPtrList tails: each writes GetCount() from a stack temp
-    // (0x550d0 [ebp+0x328], 0x55107 [ebp+0x344] = the lists' m_nCount) and then
-    // every node's +8 data slot.
+
     {
         n = m_31c.GetCount();
         ar->Write(&n, 4);

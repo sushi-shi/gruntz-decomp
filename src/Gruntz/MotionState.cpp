@@ -1,14 +1,14 @@
 #define CMOTIONSTATE_STANDALONE_CTOR
-#include <Gruntz/MovingLogic.h> // own extern surface
+#include <Gruntz/MovingLogic.h>
 #include <Gruntz/MotionState.h>
 #include <math.h>
 #include <rva.h>
-#include <Gruntz/Projectile.h> // g_movingLogicMax (ex .cpp extern)
+#include <Gruntz/Projectile.h>
 
 DATA(0x001f0500)
-const double g_motionZero = 0.0; // 0x5f0500 (owner-TU def; decl in MotionState.h)
+const double g_motionZero = 0.0;
 DATA(0x001f0508)
-const double g_motionNegTwo = -2.0; // 0x5f0508  discriminant term (owner-TU def)
+const double g_motionNegTwo = -2.0;
 
 RVA(0x000136d0, 0x184)
 CMotionState::CMotionState() {
@@ -122,7 +122,6 @@ void CMotionState::SetZ(double z) {
             v = posClamp;                                                                          \
     } while (0)
 
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x0016ecd0, 0x6e6)
 void CMotionState::Step(double dt) {

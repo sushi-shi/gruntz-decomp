@@ -1,12 +1,7 @@
-#include <Net/LatencyList.h> // CLatencyList / CLatencyItem (+ <Mfc.h>: CPtrList/CString/windows.h)
+#include <Net/LatencyList.h>
 #include <rva.h>
-#include <MsgParam.h> // the window-message parameter's pointer/word pair
+#include <MsgParam.h>
 
-// The control lookup + the four combo messages go through the engine's cached USER32
-// function-pointer globals (::GetDlgItem / ::SendMessageA), not the raw imports:
-// retail has no free callee-saved register here (this/next/data hold them), so each
-// ::SendMessageA call is an uncached memory-indirect `ff 15 [::SendMessageA]` (the
-// global is called directly, never hoisted into a register).
 // @early-stop
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
@@ -38,8 +33,6 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     return 0;
 }
 
-// 0x38120 (re-homed from src/Stub/BoundaryTail.cpp): CLatencyItem::GetName - return
-// the row-label CString member (offset 0) by value. Called by FillCombo above.
 RVA(0x00038120, 0x1d)
 CString CLatencyItem::GetName() {
     return m_text;

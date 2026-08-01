@@ -4,55 +4,27 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem
-#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SBI_Image.h>
+#include <Gruntz/SerialArchive.h>
 
 class CDDrawSurfaceMgr;
 
-// (CMiCue DISSOLVED 2026-07-21: it was a .cpp-reached view of LeafCue - the cue-map
-// value class in <Gruntz/LeafCue.h>. m_10/m_14/m_18 are LeafCue's player/last-clock/
-// interval; SetState's throttle block IS LeafCue::PlayIfElapsed inlined.)
-
 class CSBI_MenuItem : public CSBI_Image {
 public:
-    // The REAL inline default ctor. Retail has no out-of-line ??0: it INLINES this body
-    // at every `new CSBI_MenuItem` site, in exactly this store order, right after the
-    // compiler's own vptr stamp. PROVEN identically at two independent TUs' retail bytes:
-    //
-    //   statusbargamemenu.c.obj @0x85 | sbi_tabzdialog_eh.c.obj @0x53a
-    //     IMAGE_REL_I386_DIR32 ??_7CSBI_MenuItem@@6B@   <- cl's vptr store
-    //     movl $0x2, 0x8(%eax)                          <- m_kind   = 2
-    //     movl %ebp, 0x34(%eax)                         <- m_state  = 0
-    //     movl %ebp, 0x30(%eax)                         <- m_30     = 0
-    //     movl %ebp, 0x38(%eax)                         <- m_record = 0
-    //
-    // This ctor was missing from the canonical: only the ex-"CSBI_MenuItemDlg" view (in
-    // SbiTabzDialogViews.h) carried it, so every canonical `new CSBI_MenuItem` site
-    // under-emitted the four stores. Recovered here as part of dissolving that view.
     CSBI_MenuItem() {
         m_kind = 2;
         m_state = 0;
         m_frame = 0;
         m_record = 0;
     }
-    // Real vtable shape (sema class: vtbl@0x1eab4c, 12 slots; overrides 0/1/3/4/5/11).
-    // The out-of-line ~ (0x1007d0, calls Reset) lives in SBI_MenuItem.cpp via
-    // the CHAIN-DTOR device (see StatusBarItem.h).
-    virtual ~CSBI_MenuItem() OVERRIDE; // slot 0
-    // slot 1 (vtbl 0x1eab4c thunk 0x100a -> 0xe8520): the menu-item serialize leg;
-    // tail-chains CSBI_Image::SerializeFields. Was the non-virtual `Serialize` beside a
-    // fabricated 0-arg `SbiVfunc0` placeholder that held the slot.
-    virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8520
-    virtual void Reset() OVERRIDE;       // slot 3 - 0xe81a0 (ex ClearFrame2)
-    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
-    virtual i32 Render() OVERRIDE;       // slot 5 - 0xe82a0 (ex DecCounter, decrement-and-blit)
-    // slot 11 (0xe80e0), the CSBI_Image::SetupImage override. This USED to be split in two:
-    // a body-less `virtual` here to pin the slot, plus the real body as a separate
-    // non-virtual `InitItem`. Its arg model looked different (it called arg9 `obj` and
-    // arg10 `key`) but is the SAME: arg1 owner, arg2 host, arg3 cmd, arg4 -> m_10,
-    // args5..8 the rect, and its `ResolveFrame(obj, key)` is really
-    // ResolveFrame(<asset key>, <frame index>) - i.e. arg9 IS the key and arg10 the frame,
-    // exactly as the base and CSBI_ImageSet have it. One function, one slot.
+
+    virtual ~CSBI_MenuItem() OVERRIDE;
+
+    virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE;
+    virtual void Reset() OVERRIDE;
+    virtual i32 Refresh(i32 a) OVERRIDE;
+    virtual i32 Render() OVERRIDE;
+
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
@@ -62,31 +34,15 @@ public:
         const char* key,
         i32 frame,
         i32 unused
-    ) OVERRIDE; // slot 11  0xe80e0
+    ) OVERRIDE;
 
-    // ----- reconstructed methods (RVA-ascending) -----
-    // (0xe6d90 ClearFrame + 0xe6e40 SerializeChain are the real CSBI_Image slot-3/
-    // slot-1 bodies - re-attributed to SBI_Image.h/.cpp, dossier #16.)
-    // (InitItem was the real 0xe80e0 body under a second name - it IS the slot-11
-    // SetupImage override declared above.)
-    i32 ResolveFrame(const char* key, i32 a); // 0xe81e0
-    i32 SetState(i32 state, i32 a);           // 0xe8310
-    i32 ProbeState(i32 state);                // 0xe8480
-    i32 Blit();                               // 0xe84f0  conditional blit
-    // (0xe8520 was declared here as a non-virtual `Serialize` - it IS the slot-1
-    // SerializeFields override declared above.)
-    // (0x10bfc0 SerializeFields is the real CStatusBarItem slot-1 base leg -
-    // decl on the base in StatusBarItem.h; body stays in SBI_MenuItem.cpp.)
+    i32 ResolveFrame(const char* key, i32 a);
+    i32 SetState(i32 state, i32 a);
+    i32 ProbeState(i32 state);
+    i32 Blit();
 
-    // ----- own fields (after CSBI_Image @0x34) -----
-    i32 m_state; // +0x34  menu state tag
-    // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores the real CDDrawWorker
-    // the image registry yields, Serialize (case 7) stores the CDDrawWorker view of that
-    // same record. Same physical shape, distinct modeled classes reached on
-    // different code paths -> kept void*.
-    // +0x38  resolved cue/config record. Typed CDDrawWorker*; the serialize leg's
-    // Lookup result was spelled CDDrawWorker - the SAME +0x14/+0x24/+0x64/+0x68 shape
-    // (the CDDrawWorker==CDDrawWorker duplicate-class question; see the session report).
+    i32 m_state;
+
     CDDrawWorker* m_record;
 };
 SIZE_UNKNOWN();

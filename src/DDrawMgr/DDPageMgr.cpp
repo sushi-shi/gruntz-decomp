@@ -1,13 +1,13 @@
-#include <DDrawMgr/DDPageMgr.h> // C-linkage carriers for the GUID defs
-#include <Mfc.h>                // CString + windows.h (afx-first)
+#include <DDrawMgr/DDPageMgr.h>
+#include <Mfc.h>
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
-#include <afxwin.h> // the REAL MFC CWnd (m_videoWnd) + AfxRegisterWndClass
+#include <afxwin.h>
 #include <Ints.h>
 #include <rva.h>
-#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
-#include <smack.h>     // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
+#include <ComOutRef.h>
+#include <smack.h>
 #undef u8
 #undef u16
 #undef u32
@@ -16,14 +16,14 @@
 #undef s16
 #undef s32
 #undef s64
-#include <ddraw.h> // real IDirectDraw/IDirectDrawSurface (DirectDrawCreate, IID_*, DDSURFACEDESC)
-#include <Io/MoviePlayer.h>         // canonical CMoviePlayer
-#include <Crypto/FecCrypt.h>        // the +0x540 decode store IS a CFecFile (Close @0x17b570)
-#include <Io/FileStream.h>          // DDPageMgr's former god-TU include env
-#include <DDrawMgr/DirectDrawMgr.h> // CMoviePlayer, DDModeInfo, CPageRec (canonical)
-#include <DDrawMgr/DDScreen.h>      // canonical CMoviePlayer + CTileInfo
+#include <ddraw.h>
+#include <Io/MoviePlayer.h>
+#include <Crypto/FecCrypt.h>
+#include <Io/FileStream.h>
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/DDScreen.h>
 #include <stdio.h>
-#include <string.h> // memset / inlined memcpy (rep movsd)
+#include <string.h>
 
 DATA(0x001ef848)
 const GUID IID_IDirectDraw2 = {
@@ -31,14 +31,14 @@ const GUID IID_IDirectDraw2 = {
     0x2B43,
     0x11CF,
     {0xA2, 0xDE, 0x00, 0xAA, 0x00, 0xB9, 0x33, 0x56},
-}; // 0x5ef848
+};
 DATA(0x001ef888)
 const GUID IID_IDirectDrawSurface3 = {
     0xDA044E00,
     0x69B2,
     0x11D0,
     {0xA1, 0xD5, 0x00, 0xAA, 0x00, 0xB8, 0xDF, 0xBB},
-}; // 0x5ef888
+};
 
 // @early-stop
 RVA(0x0017c040, 0x25d)
@@ -50,9 +50,6 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
-    // ONE 12-byte local, not three ints: retail interleaves the three loads and
-    // stores (`mov ecx,[eax]; mov [esp+0x10],ecx; ...`) - a struct assignment - and
-    // the else arm seeds the same three contiguous slots with immediates.
     DDModeInfo info;
     if (mode != 0) {
         info = *mode;
@@ -81,7 +78,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     memset(&m_primaryDesc, 0, sizeof(m_primaryDesc));
-    m_primaryDesc.dwSize = sizeof(DDSURFACEDESC); // 0x6c
+    m_primaryDesc.dwSize = sizeof(DDSURFACEDESC);
     m_primaryDesc.dwFlags = DDSD_CAPS;
     m_primaryDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
     if (m_dd2->CreateSurface(&m_primaryDesc, &m_primaryRaw, 0) != 0) {
@@ -95,9 +92,6 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
-    // Snapshot the system palette into the +0x108 table (retail pushes the WINDOW
-    // - `mov eax,[esp+0x20]` - not the width; the old `OnModeSet(w)` fake-alias
-    // decl mis-read both the callee class and the argument).
     Snapshot(static_cast<HWND>(window));
 
     if (mode->bpp == 8) {
@@ -127,16 +121,13 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     m_screenHeight = info.height;
     m_bpp = info.bpp;
     m_window = window;
-    m_streamOpen = 0; // +0x08, NOT m_0c: retail's tail store is `mov [esi+0x8],edi`
+    m_streamOpen = 0;
     ShowCursor(0);
     m_initialized = 1;
     FreeAll();
     return 1;
 }
 
-// CMoviePlayer::CreateVideoWindow (0x17c2a0) - register a private window class, refuse
-// if the window exists, create a screen-sized top-level MFC CWnd "Smacker Video
-// Window", focus it, then hand its HWND to the host's Init.
 // @early-stop
 RVA(0x0017c2a0, 0x14e)
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
@@ -162,8 +153,7 @@ int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
     }
     m_videoWnd->SetFocus();
     HWND h = m_videoWnd ? m_videoWnd->m_hWnd : 0;
-    // The bring-up is CMoviePlayer::Init @0x17c040 on this same object; the old
-    // ?Init@CMoviePlayer@@ fake-alias decl left this rel32 unresolved.
+
     return Init(h, mode, coopFlags);
 }
 
@@ -222,12 +212,12 @@ void CMoviePlayer::Teardown() {
     }
     CloseSmacker();
     FreeAll();
-    m_window = 0; // +0x00 plain data (no vptr evidence; zeroed at teardown)
+    m_window = 0;
     m_initialized = 0;
     HandleError();
     if (m_videoWnd) {
         m_videoWnd->DestroyWindow();
-        delete m_videoWnd; // virtual dtor -> the compiler's own null-guarded slot-1 dispatch
+        delete m_videoWnd;
         m_videoWnd = 0;
     }
     ShowCursor(1);
@@ -239,14 +229,10 @@ i32 CMoviePlayer::OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RE
     if (!m_initialized) {
         return 0;
     }
-    // m_514 is latched BEFORE the sound-mode call: retail's `mov [esi+0x514],edi`
-    // sits inside the call's argument setup, not after the call returns.
+
     m_514 = mode;
     SmackSoundUseDirectSound(m_directSound);
-    // ASSIGN-then-override: retail hoists `flags = 0` above the compare
-    // (`xor eax,eax / cmp ebx,1 / jne`), so the else arm only stores m_useDS and
-    // does it with an immediate. Zeroing `flags` inside the else arm instead makes
-    // cl reuse that register for the m_538 store.
+
     u32 flags = 0;
     if (useDS == 1) {
         m_useDS = useDS;
@@ -281,11 +267,10 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT
     if (!m_initialized) {
         return 0;
     }
-    // m_514 is latched BEFORE the sound-mode call: retail's `mov [esi+0x514],edi`
-    // sits inside the call's argument setup, not after the call returns.
+
     m_514 = mode;
     SmackSoundUseDirectSound(m_directSound);
-    // ASSIGN-then-override, as in OpenLo above.
+
     u32 flags = 0;
     if (useDS == 1) {
         flags = 0x100000;
@@ -294,8 +279,7 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT
         m_useDS = 0;
     }
     flags |= 0xff000;
-    // CFecFile::Lookup hands back m_stream.m_hFile (a Win32 file HANDLE) and Smack's
-    // first argument is dual-use - a path, or a handle when the flags say so.
+
     SmackSource src;
     src.m_handle = srcHandle;
     m_smackHandle = SmackOpen(src.m_path, flags, -1);
@@ -608,8 +592,6 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     }
 }
 
-// CMoviePlayer::Configure (0x17cfc0) - derive the tile grid + scroll origin for a layout
-// `mode` (0..3), validating the caller's optional origin/clip against the screen first.
 // @early-stop
 RVA(0x0017cfc0, 0x2f0)
 i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
@@ -730,8 +712,6 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     return 1;
 }
 
-// CMoviePlayer::CheckMode16 (0x17d2b0) - popcount the current display mode's R/G/B masks
-// and classify a 16-bit mode (5/5/5 -> 0x80000000, 5/6/5 -> 0xc0000000).
 // @early-stop
 RVA(0x0017d2b0, 0xe4)
 i32 CMoviePlayer::CheckMode16() {
@@ -781,8 +761,6 @@ i32 CMoviePlayer::CheckMode16() {
     return 0;
 }
 
-// CMoviePlayer::RemoveAt (0x17d600) - drop the 1-based idx-th CPageRec: free its three
-// owned buffers, shift the tail down one slot, decrement the count, free the record.
 RVA(0x0017d600, 0xad)
 i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (!m_initialized) {
@@ -791,8 +769,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (m_playlist.GetSize() < idx) {
         return 0;
     }
-    // The "page record" IS the playlist clip (PLAYLISTINFOSTRUCT); its three owned
-    // buffers are the three ::operator delete calls retail makes at 0x17d63e/50/63.
+
     PLAYLISTINFOSTRUCT* rec = m_playlist[idx - 1];
     if (rec->m_src) {
         ::operator delete(rec->m_src);
@@ -806,8 +783,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
         ::operator delete(rec->m_rect);
         rec->m_rect = 0;
     }
-    // the tail shuffle + count decrement retail emits IS CArray::RemoveAt inlined
-    // (memmove(m_pData+i, m_pData+i+1, ...); m_nSize -= 1).
+
     m_playlist.RemoveAt(idx - 1);
     ::operator delete(rec);
     return 1;
@@ -824,9 +800,7 @@ i32 CMoviePlayer::FreeAll() {
             return 0;
         }
     }
-    // retail's `operator delete(m_pData); m_pData=0; m_nMaxSize=0; m_nSize=0` IS
-    // CArray::RemoveAll inlined (delete[] (BYTE*)m_pData; m_pData=NULL;
-    // m_nSize = m_nMaxSize = 0).
+
     m_playlist.RemoveAll();
     return 1;
 }
@@ -839,7 +813,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
     i32 iter = 1;
     do {
         for (i32 i = 0; i < m_playlist.GetSize(); i++) {
-            PLAYLISTINFOSTRUCT* clip = m_playlist[i]; // inline CArray::operator[] == m_pData[i]
+            PLAYLISTINFOSTRUCT* clip = m_playlist[i];
             if (clip->m_src == 0) {
                 return 0;
             }

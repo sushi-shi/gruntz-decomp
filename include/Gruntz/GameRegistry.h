@@ -6,23 +6,22 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/TileGrid.h>
 
-class CDDrawChildGroup; // +0x30 -> +0x08 the object collection / sprite factory (CreateSprite)
+class CDDrawChildGroup;
 namespace Utils {
-    class RegistryHelper; // the +0x38 settings writer (<Utils/RegistryHelper.h>)
+    class RegistryHelper;
 }
 class CGruntSpawnConfig;
 
-class CState;         // +0x2c current game-state; CState.h completes it
-class CWorldSoundSet; // +0x54 active-level input/spatial-sound object (WorldSoundSet.h)
+class CState;
+class CWorldSoundSet;
 class CTriggerMgr;
-class CBattlezData;       // +0x7c the HUD/score accumulator (BattlezData.h completes it)
-struct CDDrawSubMgrPages; // +0x30->+0x04 active draw surface (m_drawContext at +0x14)
+class CBattlezData;
+struct CDDrawSubMgrPages;
 class CDDrawWorkerRegistry;
 
 class CSpriteRefTable;
 class CLightFxMgr;
 
-
-class CShadeTableCache; // +0x50 shade-table cache (<DDrawMgr/ShadeTableCache.h>)
+class CShadeTableCache;
 
 #endif // GRUNTZ_GRUNTZ_CGAMEREGISTRY_H

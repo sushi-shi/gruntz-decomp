@@ -1,7 +1,7 @@
 #include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
-#include <MsgParam.h> // the window-message parameter's pointer/word pair
+#include <MsgParam.h>
 
 typedef enum AdvancedOptionsDlgId {
     IDC_DISABLE_VIDEO = 0x46c,
@@ -12,16 +12,9 @@ typedef enum AdvancedOptionsDlgId {
     IDC_DEFAULTS = 0x426,
 } AdvancedOptionsDlgId;
 
-// File-scope globals. The RegistryHelper span is exactly 0x21c. Keep the real
-// source-level static name. Fresh COFF inspection proves MSVC emits it as
-// `_g_registryHelper$S17365`; bind by semantic prefix because only the `$S`
-// ordinal is unstable.
 DATA_SYMBOL(0x002295d8, 0x21c, _g_registryHelper$S*)
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;
-
-// g_registryHelper's file-scope construction/destruction family. The _$E<n>
-// suffixes are unique placeholders; the compiler-private numbers are unstable.
 
 RVA(0x0000b110, 0x32)
 void SaveOption(
@@ -98,11 +91,11 @@ INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wPara
             return 1;
 
         case WM_COMMAND:
-            if (wParam == 2) { // IDCANCEL
+            if (wParam == 2) {
                 EndDialog(hWnd, 0);
                 return 1;
             }
-            if (wParam == 1) { // IDOK
+            if (wParam == 1) {
                 SaveOptions(hWnd, &g_registryHelper);
                 EndDialog(hWnd, 1);
                 return 1;

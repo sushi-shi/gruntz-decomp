@@ -1,14 +1,13 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (m_backPair/m_overlayPair)
-#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair::m_surface (CDDSurface*)
-#include <Gruntz/GruntzMgr.h>          // CGruntzMgr::m_world -> CDDrawSurfaceMgr::m_drawTarget
-#include <Gruntz/ChainForward.h>       // this TU's own owner decls
-#include <Gruntz/SaveScreenshot.h>     // SaveScreenshot (0x114ff0) owner decl
-#include <Utils/RegistryHelper.h>      // Utils::RegistryHelper (forwarded bute param)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ChainForward.h>
+#include <Gruntz/SaveScreenshot.h>
+#include <Utils/RegistryHelper.h>
 
-// ChainForward14 (0x114f50) - the +0x14 (back-pair) sibling of ChainForward below.
 RVA(0x00114f50, 0x3e)
 i32 ChainForward14(
     Utils::RegistryHelper* bute,

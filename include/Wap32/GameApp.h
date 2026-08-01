@@ -1,4 +1,3 @@
-// GameApp.h - the GameApp TU's exported globals/data.
 #ifndef GRUNTZ_WAP32_GAMEAPP_H
 #define GRUNTZ_WAP32_GAMEAPP_H
 

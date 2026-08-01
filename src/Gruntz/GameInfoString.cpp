@@ -1,15 +1,15 @@
-#include <Gruntz/GameInfoString.h> // this TU's external declarations
-#include <Mfc.h>  // real MFC CTime (GetCurrentTime / GetLocalTm) - the BuildGameDate clock
-#include <time.h> // struct tm (GetLocalTm's return record)
+#include <Gruntz/GameInfoString.h>
+#include <Mfc.h>
+#include <time.h>
 #include <rva.h>
-#include <stdio.h>           // sprintf (reloc-masked)
-#include <string.h>          // strlen/strcat/memset (inlined /O2)
-#include <Gruntz/GameInfo.h> // the shared CGameInfo / CGameInfoTime record (NameRecord shares it)
+#include <stdio.h>
+#include <string.h>
+#include <Gruntz/GameInfo.h>
 
 DATA(0x0024ebf8)
-char g_infoScratch[0x100] = {0}; // 0x64ebf8  per-piece scratch
+char g_infoScratch[0x100] = {0};
 DATA(0x0024ecf8)
-char g_infoMaster[0x800] = {0}; // 0x64ecf8  query accumulator
+char g_infoMaster[0x800] = {0};
 
 RVA(0x001182f0, 0xc)
 i32 CGameInfo::Check1() {
@@ -21,14 +21,6 @@ i32 ValidateGameTime(CGameInfoTime* t) {
     return t != 0;
 }
 
-// ---------------------------------------------------------------------------
-// BuildGameDate (0x118330; RVA-homed from src/Stub/BoundaryTail.cpp) - fill a
-// calendar-date record from the current local time: sample CTime::GetCurrentTime()
-// then read its broken-down struct tm three times (CTime::GetLocalTm @0x1b30f0), so
-// month = tm_mon+1, day = tm_mday, year = tm_year+1900. Fails (0) if out is null.
-// __cdecl, 1 stack arg. The out record's +0xc/+0x10/+0x14 IS CGameInfoTime's
-// Month/Day/Year, so it is typed there.
-// ORPHAN: only caller is a boundarylowermethods placeholder (C1181d0::Update).
 // @early-stop
 RVA(0x00118330, 0x57)
 i32 BuildGameDate(CGameInfoTime* out) {

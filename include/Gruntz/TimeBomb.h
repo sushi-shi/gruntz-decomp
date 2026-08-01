@@ -2,28 +2,28 @@
 #define GRUNTZ_CTIMEBOMB_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CTimeBomb : CUserLogic)
+#include <Gruntz/UserLogic.h>
 
 class CTimeBomb : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00012a20, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TIMEBOMB;
-    } // slot 2
+    }
+
 public:
-    CTimeBomb(CGameObject* obj);                  // 0x0e1b90 (1-arg leaf ctor)
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x0e1830
-    static void RegisterActs(); // 0x0e1990 (binds the logic handler to key "A"; static:
-                                //  no this, called this-less by the game-object factory)
-    i32 LoadAttributes();       // 0x0e1e60 (per-frame timer/detonate step)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    i32 m_fastPhase; // +0x54  0 = slow phase (re-arms to fast on expiry), 1 = fast phase (detonates)
-    i64 m_startTime; // +0x58  phase-start running-clock snapshot (lo dword of the i64 base)
-    i64 m_duration;  // +0x60  phase duration (lo dword of the i64)
+    CTimeBomb() {}
+    CTimeBomb(CGameObject* obj);
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
+
+    i32 LoadAttributes();
+
+    i32 m_fastPhase;
+    i64 m_startTime;
+    i64 m_duration;
 };
 SIZE(0x68);
-
 
 #endif // GRUNTZ_CTIMEBOMB_H

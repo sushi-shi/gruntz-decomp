@@ -1,15 +1,15 @@
 #include <rva.h>
-#include <Gruntz/SoundFont.h> // shared decls (CGruntzMgr::Run boot audio path)
+#include <Gruntz/SoundFont.h>
 
-#include <Win32.h>  // LoadLibraryA / GetProcAddress / FreeLibrary
-#include <stdio.h>  // sprintf (0x11f890)
-#include <string.h> // memset (rep stos intrinsic)
+#include <Win32.h>
+#include <stdio.h>
+#include <string.h>
 
-#include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
+#include <Dsndmgr/SfManager.h>
 
-#include <Gruntz/SoundFontPath.h>  // g_sfDeviceId (ex .cpp extern)
-#include <Gruntz/SFSelectDevice.h> // own exported globals (ex Globals.h)
-#include <ProcAddr.h>              // the FARPROC / real-prototype pair
+#include <Gruntz/SoundFontPath.h>
+#include <Gruntz/SFSelectDevice.h>
+#include <ProcAddr.h>
 DATA(0x00213dff)
 char g_id0_613dff = 0;
 DATA(0x00213e00)
@@ -20,7 +20,7 @@ DATA(0x00213e02)
 char g_id3_613e02 = 0;
 
 DATA(0x0024da80)
-u16 g_idx_64da80 = 0; // current device index
+u16 g_idx_64da80 = 0;
 DATA(0x0024da84)
 DWORD g_ratingRaw_64da84 = 0;
 DATA(0x0024da88)
@@ -48,23 +48,23 @@ CSFCapsObject g_sfCaps;
 DATA(0x0024df98)
 u16 g_remaining_64df98 = 0;
 DATA(0x0024df9c)
-DWORD g_sfRouterId = 0; // packed router/device id (SF_GetRouterID out-param)
+DWORD g_sfRouterId = 0;
 DATA(0x0024dfa0)
 char g_sfDir[0x100];
 DATA(0x0024e0a0)
-DWORD g_sfVer = 0; // build/version selector
+DWORD g_sfVer = 0;
 DATA(0x0024e0a4)
-u16 g_sfDeviceCount = 0; // SFMAN32 device count
+u16 g_sfDeviceCount = 0;
 DATA(0x0024e0a8)
-void* g_sfDll = 0; // SFMAN32.DLL handle
+void* g_sfDll = 0;
 DATA(0x0024e0ac)
-SfManagerFactory* g_factory_64e0ac = 0; // the "SFManager" data export (ptr-to-fnptr)
+SfManagerFactory* g_factory_64e0ac = 0;
 DATA(0x0024e0b0)
-SFMANL101API* g_sfDevice = 0; // SFMAN32 device interface
+SFMANL101API* g_sfDevice = 0;
 DATA(0x0024e0b8)
-i32 g_sfReady = 0; // device-selected flag (1 = ready); every use is a 0/1 test
+i32 g_sfReady = 0;
 DATA(0x0024e0c0)
-u8 g_ratings_64e0c0[344] = {0}; // per-device rating bytes
+u8 g_ratings_64e0c0[344] = {0};
 
 // @early-stop
 RVA(0x000f8970, 0x3b4)
@@ -73,7 +73,7 @@ i32 SFManager_SelectBestDevice() {
     if (g_sfDll == 0) {
         return 0;
     }
-    // GetProcAddress hands the address back as a FARPROC (<ProcAddr.h>)
+
     ProcAddr<SfManagerFactory*> mgrProc;
     mgrProc.m_raw = GetProcAddress(g_sfDll, "SFManager");
     SfManagerFactory* fn = mgrProc.m_fn;

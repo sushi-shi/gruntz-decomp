@@ -5,36 +5,31 @@
 #include <rva.h>
 
 class CStatusBarMgr;
-class CFileMemBase; // the serialize stream (Sync)
+class CFileMemBase;
 
-class CImage; // <Image/CImage.h> - the drawn sprite frame
+class CImage;
 
 class CWarpStoneFly {
 public:
-    CWarpStoneFly(); // 0x109bb0  clears m_sprite/m_owner, returns this
-    // 0x109bd0 (body in SBI_RectOnly.cpp, its own RVA band): record the owner, resolve
-    // the warp-tab fly frame + per-phase screen target, seed the fly velocity. Ex the
-    // EngineLabelBacklog::UpdateWarpStoneStatusBar placeholder def (was CSbiMode54c::Init).
-    // ARG ORDER from the retail frame: the switch/frame index reads arg4 (entry+0x10),
-    // the two subtractions read arg2/arg3 - so it is (owner, srcX, srcY, phase).
-    i32 Init(void* owner, i32 srcX, i32 srcY, i32 phase);
-    i32 Tick(i32 dt); // 0x10a0f0  integrate toward target, snap, notify on arrival
-    i32 Draw();       // 0x10a2f0  blit the sprite at the rounded position
-    // The fly's own serialize pass, dispatched from CStatusBarMgr::Sync.
-    i32 Sync(CFileMemBase* s, i32 op, i32 typeId, i32 pObj); // 0x109e00, ILT 0x402306
+    CWarpStoneFly();
 
-    // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    i32 m_arrivalMode; // +0x00  mode value poked into the registry tab array on arrival
-    i32 m_targetX;     // +0x04  target x (integer)
-    i32 m_targetY;     // +0x08  target y (integer)
+    i32 Init(void* owner, i32 srcX, i32 srcY, i32 phase);
+    i32 Tick(i32 dt);
+    i32 Draw();
+
+    i32 Sync(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
+
+    i32 m_arrivalMode;
+    i32 m_targetX;
+    i32 m_targetY;
     char m_padc[0x10 - 0xc];
-    double m_currentX;      // +0x10  current x (float)
-    double m_currentY;      // +0x18  current y (float)
-    double m_velocityScale; // +0x20  velocity scale
-    double m_xDirection;    // +0x28  x direction/sign gate
-    double m_yDirection;    // +0x30  y direction/sign gate
-    CImage* m_sprite;       // +0x38  the drawn sprite frame (CImage::RenderFrame)
-    CStatusBarMgr* m_owner; // +0x3c  back-pointer to the owning CStatusBarMgr
+    double m_currentX;
+    double m_currentY;
+    double m_velocityScale;
+    double m_xDirection;
+    double m_yDirection;
+    CImage* m_sprite;
+    CStatusBarMgr* m_owner;
 };
 SIZE(0x40);
 SIZE_UNKNOWN();

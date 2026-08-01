@@ -4,11 +4,11 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/CoordNode.h> // Coord - the {x,y} the pool's nodes carry inline
+#include <Gruntz/CoordNode.h>
 
 struct CoordPoolNode {
-    CoordPoolNode* m_next; // +0x00  free-list link
-    Coord m_coord;         // +0x04  the {x,y} payload handed to the caller
+    CoordPoolNode* m_next;
+    Coord m_coord;
 };
 SIZE(0xc);
 
@@ -26,23 +26,18 @@ public:
         m_linkOffset = 0;
     }
 
-    void Push(void* p); // 0x0311b0
+    void Push(void* p);
 
-    // The payload->node back-step every recycle site performs: the element pointer
-    // minus m_linkOffset is its CoordPoolNode. byte-forced - m_linkOffset is a RUNTIME
-    // field (the pool's design), so this is one seam, not open-coded per site.
     CoordPoolNode* NodeOf(void* payload) {
-        // Same container-of as elemOf in <Dsndmgr/SoundVoiceList.h>, and the same
-        // MEASURED verdict: a union spelling makes cl materialise a stack temporary
-        // where the cast form stays a register expression. Address arithmetic, not
-        // two readings of stored data - language-forced, at one seam, here.
+
+        // Language-forced container-of adjustment; a union spelling changes codegen.
         return reinterpret_cast<CoordPoolNode*>(static_cast<char*>(payload) - m_linkOffset);
     }
 
-    CoordPoolNode* m_block;    // +0x00  owned backing block
-    CoordPoolNode* m_freeHead; // +0x04  free-list head
-    i32 m_count;               // +0x08  element count of m_block
-    i32 m_linkOffset;          // +0x0c  payload offset inside a node (Push subtracts it)
+    CoordPoolNode* m_block;
+    CoordPoolNode* m_freeHead;
+    i32 m_count;
+    i32 m_linkOffset;
 };
 SIZE(0x10);
 

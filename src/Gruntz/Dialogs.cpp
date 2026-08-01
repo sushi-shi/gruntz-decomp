@@ -1,18 +1,19 @@
-#include <Gruntz/Grunt.h> // C linkage for the definitions below (inherited, not restated)
+#include <Gruntz/Grunt.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
+#include <Gruntz/Random.h>
+#include <Gruntz/ParseSource.h>
+#include <Bute/ButeMgr.h>
+#include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
+#include <Utils/RegistryHelper.h>
 #include <rva.h>
-#include <string.h>   // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
-#include <MsgParam.h> // the window-message parameter's pointer/word pair
+#include <stdio.h>
+#include <string.h>
+#include <MsgParam.h>
 
-// The retail bytes at 0x1e88b0 are an 8-byte AFX_MSGMAP {&CDialog::messageMap
-// (0x5eb068), &_messageEntries[0] (0x5e88b8)}, not the 4-byte `const i32` this TU
-// used to declare - and the declared value 6205544 (0x5eabe8) was not even the base
-// map's address. 0x1e88b8 is the 26-entry AFX_MSGMAP_ENTRY table below; every pfn
-// resolves through its ILT thunk to a CBattlezDlg method already reconstructed here.
 DATA(0x001e88b0)
 const AFX_MSGMAP CBattlezDlg::messageMap = {
     &CDialog::messageMap,
@@ -21,64 +22,66 @@ const AFX_MSGMAP CBattlezDlg::messageMap = {
 
 DATA(0x001e88b8)
 const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
-    // The four per-option dropdowns are combo boxes (the accessors drive them with
-    // CB_GETCURSEL 0x147 / CB_SETCURSEL 0x14e), so notify code 1 is CBN_SELCHANGE.
-    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0) // 0x15de0
-    ON_CBN_SELCHANGE(0x50e, CBattlezDlg::ApplyOption1) // 0x15e60
-    ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2) // 0x15ee0
-    ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3) // 0x15f60
-    // The next three entries ARE ON_WM_MEASUREITEM/DRAWITEM/PAINT, written out because
-    // those SDK macros take the handler's address UNQUALIFIED (`&OnMeasureItem`), which
-    // only cl accepts - clang (the label pass) requires `&Class::Member`. MFC erases
-    // every handler to AFX_PMSG, so the pointer-to-member cast is the SDK's, not ours.
-    {WM_MEASUREITEM,
-     0,
-     0,
-     0,
-     AfxSig_vOWNER,
-     // The reason rides on the cast's OWN line: cast_ledger's window is three lines, and
-     // when clang-format exploded these entries one-element-per-line it pushed a heading
-     // comment out of range and un-explained the second cast (440 -> 441 OPEN, FATAL).
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnMeasureItem)}, // 0x16570  API-forced
+
+    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0) ON_CBN_SELCHANGE(
+        0x50e,
+        CBattlezDlg::ApplyOption1
+    ) ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2)
+        ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3)
+
+            {WM_MEASUREITEM,
+             0,
+             0,
+             0,
+             AfxSig_vOWNER,
+
+             reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnMeasureItem)}, // API-forced MFC seam.
     {WM_DRAWITEM,
      0,
      0,
      0,
      AfxSig_vOWNER,
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)},   // 0x165a0  API-forced
-    ON_BN_CLICKED(0x501, CBattlezDlg::ApplyColorSlot0)        // 0x16cd0
-    ON_BN_CLICKED(0x503, CBattlezDlg::ApplyColorSlot1)        // 0x16dc0
-    ON_BN_CLICKED(0x505, CBattlezDlg::ApplyColorSlot2)        // 0x16e90
-    ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3)        // 0x16f60
-    ON_BN_CLICKED(0x42b, CBattlezDlg::ShowCustomDlg)          // 0x17030
-    ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild) // 0x171b0
-    // Notify codes 0x200/0x300 are the owner-draw slot control's own two
-    // notifications; MFC has no name for them, so they stay raw ON_CONTROL.
-    ON_CONTROL(0x200, 0x50a, CBattlezDlg::OnActionBtn0) // 0x172c0
-    ON_CONTROL(0x200, 0x50b, CBattlezDlg::OnActionBtn1) // 0x172e0
-    ON_CONTROL(0x200, 0x50c, CBattlezDlg::OnActionBtn2) // 0x17300
-    ON_CONTROL(0x200, 0x50d, CBattlezDlg::OnActionBtn3) // 0x17320
-    ON_CONTROL(0x300, 0x50b, CBattlezDlg::OnStubBtn1)   // 0x174e0
-    ON_CONTROL(0x300, 0x50a, CBattlezDlg::OnStubBtn0)   // 0x174c0
-    ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnStubBtn2)   // 0x17500
-    ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnStubBtn3)   // 0x17520
-    // API-forced: the ON_WM_PAINT() entry, qualified (see the note above).
-    {WM_PAINT, 0, 0, 0, AfxSig_vv, reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnPaint)}, // 0x14b10
-    ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0)                             // 0x17560
-    ON_CBN_SELCHANGE(0x520, CBattlezDlg::SaveOptionCombo1)                             // 0x175a0
-    ON_CBN_SELCHANGE(0x521, CBattlezDlg::SaveOptionCombo2)                             // 0x175e0
-    ON_CBN_SELCHANGE(0x522, CBattlezDlg::SaveOptionCombo3)                             // 0x17620
-    {0, 0, 0, 0, AfxSig_end, 0},
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)}, // API-forced MFC seam.
+    ON_BN_CLICKED(0x501, CBattlezDlg::ApplyColorSlot0) ON_BN_CLICKED(
+        0x503,
+        CBattlezDlg::ApplyColorSlot1
+    ) ON_BN_CLICKED(0x505, CBattlezDlg::ApplyColorSlot2)
+        ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3)
+            ON_BN_CLICKED(0x42b, CBattlezDlg::ShowCustomDlg)
+                ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild)
+
+                    ON_CONTROL(0x200, 0x50a, CBattlezDlg::OnActionBtn0)
+                        ON_CONTROL(0x200, 0x50b, CBattlezDlg::OnActionBtn1)
+                            ON_CONTROL(0x200, 0x50c, CBattlezDlg::OnActionBtn2)
+                                ON_CONTROL(0x200, 0x50d, CBattlezDlg::OnActionBtn3)
+                                    ON_CONTROL(0x300, 0x50b, CBattlezDlg::OnStubBtn1)
+                                        ON_CONTROL(0x300, 0x50a, CBattlezDlg::OnStubBtn0)
+                                            ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnStubBtn2)
+                                                ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnStubBtn3)
+    // API-forced MFC message-map representation seam.
+    {WM_PAINT, 0, 0, 0, AfxSig_vv, reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnPaint)},
+    ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0)
+        ON_CBN_SELCHANGE(0x520, CBattlezDlg::SaveOptionCombo1)
+            ON_CBN_SELCHANGE(0x521, CBattlezDlg::SaveOptionCombo2)
+                ON_CBN_SELCHANGE(0x522, CBattlezDlg::SaveOptionCombo3){0, 0, 0, 0, AfxSig_end, 0},
 };
 
 DATA(0x001e8d10)
 const i32 g_msgmap_CBattlezDlgColors = 6205544;
 
-VTBL(CBattlezDlg, 0x001e8bac);       // vtable_names -> code (RTTI game class)
-VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
-VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
+VTBL(CBattlezDlg, 0x001e8bac);
+VTBL(CBattlezDlgColors, 0x001e8d94);
+VTBL(CBattlezDlgCustom, 0x001e8ee4);
 DATA(0x00229d10)
-WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)
+WNDPROC g_savedDlgWndProc;
+DATA(0x00229c50)
+i32 g_battlezLastColors[4];
+DATA(0x00229cf0)
+i32 g_battlezLastDifficulties[4];
+DATA(0x00229d00)
+i32 g_battlezLastMaxGruntz[4];
+DATA(0x00229d14)
+i32 g_battlezResetOptions;
 
 RVA(0x00014b10, 0x5)
 long CBattlezDlg::OnPaint() {
@@ -91,58 +94,258 @@ CBattlezDlg::CBattlezDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc0, pParent
     m_customNameFlag = 0;
 }
 
-// ~CBattlezDlg @0x14c90 - destroy the CString member m_6c, then chain the NAFXCW ~CDialog
-// base dtor (both reloc-masked), under a /GX EH frame that unwinds the half-torn object
-// across the member dtor.
-//
-// IT IS COMPILER-GENERATED, so there is no definition here to hang an RVA() on - the class
-// declares no dtor (see <Gruntz/Dialogs.h>) and cl emits the COMDAT because the vtable slot
-// needs its address. That is not a workaround, it is what the bytes say: retail's 71-byte
-// body has NO `mov [esi],??_7CBattlezDlg` re-stamp at entry, and cl emits that stamp for
-// every user-written dtor body. Declaring the dtor cost exactly those 6 bytes (the old
-// "vptr-restamp-presence wall", ~94.4%) and forced GruntzMgr.cpp to carry a second
-// definition of the class under the same name. Both are gone.
 RVA_COMPGEN(0x00014c60, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
 RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
-// @confidence: low
-// @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
-// @early-stop
 RVA(0x00014d00, 0xa68)
-void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {}
+void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
+    Utils::RegistryHelper* reg = g_gameReg->m_settings;
+    char key[0x100];
+    i32 i;
 
-// ---------------------------------------------------------------------------
-// The MFC GDI COMDAT pool this TU emits (its code lands between the CBattlezDlg
-// ctor and CBattlezDlgCustom). OnDrawItem's stack CDC/CBrush make cl instantiate
-// the inline MFC dtors out-of-line for the vtables + /GX unwind funclets, and the
-// linker kept THIS TU's copies (first CBrush user in link order; MSVC5 keeps one
-// COMDAT per mangled name). RTTI ground truth for the vtables they stamp:
-//   0x1e8cb4 = ??_7CObject@@6B@      0x1e8cd4 = ??_7CGdiObject@@6B@
-//   0x1e8cf4 = ??_7CBrush@@6B@       (auto-named via config/vtable_names.csv when
-// this obj emits the ??_7 COMDATs). Byte-proof: a scratch /GX+/O2 TU with a stack
-// CBrush reproduces every body below exactly (mod relocs). The former fake
-// CImgHolderBase/CImgHolder2/CImgHolder hierarchy (+ the "CImageList holder"
-// story) is RTTI-refuted (see the header note above).
+    if (!pDX->m_bSaveAndValidate) {
+        i32 defaultMax = g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
+        for (i = 0; i < 4; i++) {
+            sprintf(key, "LastMaxGruntz%d", i);
+            g_battlezLastMaxGruntz[i] = reg->GetValueDword(key, defaultMax);
+            sprintf(key, "LastDiff%d", i);
+            g_battlezLastDifficulties[i] = reg->GetValueDword(key, 1);
+            sprintf(key, "LastColour%d", i);
+            g_battlezLastColors[i] = reg->GetValueDword(key, g_gameReg->m_options[i].m_008);
+            g_gameReg->m_options[i].m_008 = g_battlezLastColors[i];
+        }
+
+        CWnd* combo = GetDlgItem(0x4ff);
+        CWnd* comboChild = CWnd::FromHandle(::GetWindow(combo->m_hWnd, GW_CHILD));
+        if (comboChild == 0) {
+            return;
+        }
+        ::SendMessageA(comboChild->m_hWnd, EM_SETREADONLY, 1, 0);
+        comboChild->SetWindowTextA(g_emptyString);
+
+        CSymTab* worlds = static_cast<CSymTab*>(m_slots->m_symParser->ResolvePath("GAME_BATTLEZ"));
+        if (worlds == 0) {
+            return;
+        }
+        CSymRec* record = static_cast<CSymRec*>(worlds->FirstSym());
+        CParseSource* entry =
+            record == 0 ? 0 : static_cast<CParseSource*>(worlds->NextSym2(record));
+        i32 first = 1;
+        while (entry != 0) {
+            CString upper(entry->m_name);
+            upper.MakeUpper();
+            CString display;
+            for (i = 0; i < upper.GetLength(); i++) {
+                char c = upper[i];
+                if (c == '.') {
+                    break;
+                }
+                display += c;
+            }
+            ::SendMessageA(
+                combo->m_hWnd,
+                CB_ADDSTRING,
+                0,
+                reinterpret_cast<LPARAM>(static_cast<const char*>(display))
+            );
+            if (first != 0) {
+                first = 0;
+                comboChild->SetWindowTextA(display);
+            }
+            entry = static_cast<CParseSource*>(worlds->NextSym3(entry));
+        }
+        ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
+        g_savedDlgWndProc =
+            reinterpret_cast<WNDPROC>(::GetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC));
+        ::SetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC, reinterpret_cast<LONG>(&WndProc_15a10));
+
+        GetDlgItem(0x512)->SetWindowTextA("Battlez Setup");
+        g_sharedFlag = m_hWnd;
+
+        for (i = 0; i < 4; i++) {
+            CWnd* ctrl = GetCtrlA(i);
+            if (i == 0) {
+                ::SendMessageA(ctrl->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
+            } else {
+                ::SendMessageA(ctrl->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
+                ::SendMessageA(
+                    ctrl->m_hWnd,
+                    CB_ADDSTRING,
+                    0,
+                    reinterpret_cast<LPARAM>("Computer (easy)")
+                );
+                ::SendMessageA(
+                    ctrl->m_hWnd,
+                    CB_ADDSTRING,
+                    0,
+                    reinterpret_cast<LPARAM>("Computer (normal)")
+                );
+                ::SendMessageA(
+                    ctrl->m_hWnd,
+                    CB_ADDSTRING,
+                    0,
+                    reinterpret_cast<LPARAM>("Computer (difficult)")
+                );
+            }
+        }
+        SetCurSelA(0, 0);
+        SetCurSelA(1, 2);
+        SetCurSelA(2, 2);
+        SetCurSelA(3, 2);
+
+        if (g_battlezResetOptions == 0) {
+            for (i = 1; i < 4; i++) {
+                i32 difficulty = g_battlezLastDifficulties[i];
+                if (difficulty == -1) {
+                    SetCurSelA(i, 0);
+                } else {
+                    SetCurSelA(i, difficulty + 1);
+                    m_slots->m_options[i].m_configId = difficulty;
+                }
+            }
+        } else {
+            m_slots->m_options[1].m_014 = 1;
+            m_slots->m_options[2].m_014 = 1;
+            m_slots->m_options[3].m_014 = 1;
+        }
+
+        SetCtrlBText(0, "Player");
+        SetCtrlBText(1, g_emptyString);
+        SetCtrlBText(2, "Serra");
+        SetCtrlBText(3, "Jebediah");
+        for (i = 0; i < 4; i++) {
+            SetCurSelC(i, defaultMax);
+        }
+        for (i = 0; i < 4; i++) {
+            if (g_battlezResetOptions == 0) {
+                SetCurSelC(i, g_battlezLastMaxGruntz[i]);
+                m_slots->m_options[i].m_comboSel = g_battlezLastMaxGruntz[i];
+            }
+            m_slots->m_options[i].m_liveGate = 1;
+        }
+        for (i = 0; i < 4; i++) {
+            CWnd* edit = GetCtrlB(i);
+            if (edit != 0) {
+                ::SendMessageA(edit->m_hWnd, EM_LIMITTEXT, 9, 0);
+            }
+        }
+
+        combo->EnableWindow(1);
+        GetDlgItem(0x42b)->EnableWindow(1);
+        GetDlgItem(IDOK)->EnableWindow(1);
+        GetDlgItem(IDCANCEL)->EnableWindow(1);
+        for (i = 0; i < 4; i++) {
+            CWnd* ctrlA = GetCtrlA(i);
+            CWnd* ctrlB = GetCtrlB(i);
+            CWnd* ctrlC = GetCtrlC(i);
+            CWnd* ctrlD = GetCtrlD(i);
+            ctrlB->EnableWindow(1);
+            ::SendMessageA(ctrlB->m_hWnd, EM_SETREADONLY, 0, 0);
+            ctrlC->EnableWindow(1);
+            ctrlA->EnableWindow(1);
+            ctrlD->EnableWindow(1);
+            if (Query015d00(i) == 0) {
+                ctrlB->EnableWindow(0);
+                if (i != 0) {
+                    ctrlC->EnableWindow(0);
+                    ctrlD->EnableWindow(0);
+                }
+            }
+        }
+        GetDlgItem(IDOK)->EnableWindow(Query015d00(1) || Query015d00(2) || Query015d00(3));
+
+        i32 customMap = reg->GetValueDword("CustomMap", 2);
+        if (customMap == 2) {
+            CString mapName;
+            if (mapName.LoadStringA(0x81ab)) {
+                comboChild->SetWindowTextA(mapName);
+                SetCurSelC(0, 15);
+                SetCurSelC(1, 1);
+                SetCurSelC(2, 1);
+                SetCurSelC(3, 1);
+                m_slots->m_options[0].m_comboSel = 15;
+                m_slots->m_options[1].m_comboSel = 1;
+                m_slots->m_options[2].m_comboSel = 1;
+                m_slots->m_options[3].m_comboSel = 1;
+                for (i = 1; i < 4; i++) {
+                    SetCurSelA(i, 1);
+                    GetCtrlB(i)->EnableWindow(1);
+                    GetCtrlA(i)->EnableWindow(1);
+                    GetCtrlC(i)->EnableWindow(1);
+                    GetCtrlD(i)->EnableWindow(1);
+                }
+            }
+            m_customNameFlag = 0;
+        } else {
+            char mapName[0x100];
+            DWORD size = sizeof(mapName);
+            reg->GetValueString("LastMap", mapName, &size, g_emptyString);
+            m_customNameFlag = customMap;
+            if (customMap == 0) {
+                comboChild->SetWindowTextA(mapName);
+            } else {
+                sprintf(key, "custom\\%s", mapName);
+                FILE* file = fopen(key, "rb");
+                if (file != 0) {
+                    comboChild->SetWindowTextA(mapName);
+                    fclose(file);
+                }
+            }
+        }
+    } else {
+        CWnd* combo = GetDlgItem(0x4ff);
+        CWnd* comboChild = CWnd::FromHandle(::GetWindow(combo->m_hWnd, GW_CHILD));
+        if (comboChild == 0) {
+            return;
+        }
+        comboChild->GetWindowTextA(m_6c);
+        reg->SetValueString("LastMap", m_6c);
+        reg->SetValueDword("CustomMap", m_customNameFlag);
+
+        for (i = 0; i < 4; i++) {
+            CWnd* edit = GetCtrlB(i);
+            if (edit != 0) {
+                CString name;
+                edit->GetWindowTextA(name);
+                m_slots->m_options[i].m_name = name;
+            }
+        }
+        for (i = 0; i < 4; i++) {
+            i32 selection = Query015d00(i);
+            if (selection == 0) {
+                m_slots->m_options[i].m_liveGate = 0;
+                m_slots->m_options[i].m_configId = 1;
+            } else {
+                m_slots->m_options[i].m_liveGate = 1;
+                m_slots->m_options[i].m_configId = selection - 1;
+            }
+        }
+        g_battlezResetOptions = 0;
+        g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
+        for (i = 0; i < 4; i++) {
+            sprintf(key, "LastMaxGruntz%d", i);
+            reg->SetValueDword(key, Query015d30(i));
+            sprintf(key, "LastDiff%d", i);
+            i32 difficulty =
+                m_slots->m_options[i].m_liveGate == 0 ? -1 : m_slots->m_options[i].m_configId;
+            reg->SetValueDword(key, difficulty);
+            sprintf(key, "LastColour%d", i);
+            reg->SetValueDword(key, g_gameReg->m_options[i].m_008);
+        }
+        g_sharedFlag = 0;
+    }
+    FlashCtrlD();
+}
+
 RVA_COMPGEN(0x000163e0, 0x20, ??_GCObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x00016410, 0x7, ??1CObject@@UAE@XZ)
 RVA_COMPGEN(0x00016430, 0x1e, ??_GCGdiObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x00016460, 0x46, ??1CGdiObject@@UAE@XZ)
-// ??_GCBrush @0x164d0 + ??_7CBrush @0x1e8cf4 are forced by the INLINE CBrush
-// default ctor in FlashCtrlD's scratch brush (0x160f0, below) - which is part of
-// THIS retail .obj. (It used to be split out into a FlashRect.cpp; that split was
-// artificial - 0x160f0 sits inside this TU's own 0x14b30..0x18086 block - and has
-// been reunited here, so this obj emits the ??_G/??_7 pair as retail's did.)
+
 RVA_COMPGEN(0x000164d0, 0x1e, ??_GCBrush@@UAEPAXI@Z)
 RVA_COMPGEN(0x00016500, 0x46, ??1CBrush@@UAE@XZ)
 RVA_COMPGEN(0x00016da0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
 
-// ~CBattlezDlgCustom @0x17140 - destroy the CString member m_customName, then chain the
-// NAFXCW ~CDialog base dtor, under a /GX EH frame for the member unwind. COMPILER-GENERATED
-// (see <Gruntz/Dialogs.h>), so there is no definition to hang an RVA() on: retail's body
-// carries no `mov [esi],??_7CBattlezDlgCustom` re-stamp, and cl only emits that for a
-// user-written dtor body. Declaring it (even `inline ... {}`) added exactly that stamp -
-// a "vptr-restamp-presence wall" that capped both this body (~94.4%) and the copy
-// ShowCustomDlg inlines (~92.9%).
 RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
 
@@ -152,7 +355,7 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 RVA(0x00015a10, 0x70)
 i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
-        // API-forced: Win32 hands the item text through LPARAM
+
         MsgParam text;
         text.m_lparam = lParam;
         if (strcmp(g_emptyString, text.m_str) == 0) {
@@ -167,15 +370,6 @@ const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
     return &messageMap;
 }
 
-// ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;
-// on IDOK, if its custom-name CString m_customName is non-empty, uppercase it and shove it
-// into the child window of the 0x4ff combo (GetWindow(GW_CHILD) -> FromHandle ->
-// SetWindowText), then latch m_68. The /GX EH frame + inlined ~CBattlezDlgCustom
-// (member ~CString m_customName + base ~CDialog) unwind the local dialog. The dialog ctor
-// (0x1ccb thunk), DoModal, MakeUpper, GetDlgItem, FromHandle, SetWindowText, and
-// the CString ctor/dtor are all NAFXCW/thunk calls that reloc-mask. Marking
-// ~CBattlezDlgCustom `inline` is what makes /Ob1 inline the teardown here (retail
-// inlined it too - separate ~CString + ~CDialog calls, not one ??1 call).
 // @early-stop
 RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
@@ -202,21 +396,14 @@ CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* mgr, i32 slotIndex, i32 a2, CWn
     m_68 = a2;
 }
 
-// CBattlezDlgColors::DoDataExchange (0x179b0): the MFC DDX for the colour-picker
-// listbox (control 0x515). SAVE (m_bSaveAndValidate): read the selected item's
-// data (the colour index) into m_pickedColor, clamped to 0x10. LOAD: for each of
-// the 17 colours, mark it taken if any of the 4 occupied player slots (m_slots,
-// stride 0x238) already uses it; add the free ones as "Color" items (item-data =
-// colour index), then select the first. GetDlgItem(0x515) runs in both branches
-// (the compiler hoists the shared push of the control id).
 RVA(0x000179b0, 0xcb)
 void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM);
     if (pDX->m_bSaveAndValidate) {
         CWnd* lb = GetDlgItem(0x515);
         pSend = ::SendMessageA;
-        long sel = pSend(lb->m_hWnd, 0x188, 0, 0);    // LB_GETCURSEL
-        long data = pSend(lb->m_hWnd, 0x199, sel, 0); // LB_GETITEMDATA
+        long sel = pSend(lb->m_hWnd, 0x188, 0, 0);
+        long data = pSend(lb->m_hWnd, 0x199, sel, 0);
         m_pickedColor = data;
         if (data >= 0x11) {
             m_pickedColor = 0x10;
@@ -226,34 +413,30 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         pSend = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
             i32 avail = 1;
-            GruntzPlayer* rec =
-                m_slots->m_options; // the per-player slots (color=m_008, occupancy=m_liveGate)
+            GruntzPlayer* rec = m_slots->m_options;
             for (i32 j = 0; j < 4; j++) {
-                if (rec->m_liveGate != 0
-                    && rec->m_008 == i) { // occupied slot already using color i
+                if (rec->m_liveGate != 0 && rec->m_008 == i) {
                     avail = 0;
                 }
                 rec++;
             }
             if (avail) {
-                // LB_ADDSTRING carries the item text in the LPARAM word (<MsgParam.h>)
+
                 MsgParam name;
                 name.m_str = "Color";
-                long idx = pSend(lb->m_hWnd, 0x180, 0, name.m_lparam); // LB_ADDSTRING
-                pSend(lb->m_hWnd, 0x19a, idx, i);                      // LB_SETITEMDATA
+                long idx = pSend(lb->m_hWnd, 0x180, 0, name.m_lparam);
+                pSend(lb->m_hWnd, 0x19a, idx, i);
             }
         }
-        pSend(lb->m_hWnd, 0x186, 0, 0); // LB_SETCURSEL
+        pSend(lb->m_hWnd, 0x186, 0, 0);
     }
 }
 
 RVA(0x00017ac0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
-    // API-forced: MFC's message-map global is emitted as a raw datum and
-    // GetMessageMap's return type is fixed by CCmdTarget.
-    return reinterpret_cast<const AFX_MSGMAP*>(
-        &g_msgmap_CBattlezDlgColors
-    ); // msgmap global still a placeholder type
+    // API-forced MFC message-map representation seam.
+
+    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlgColors);
 }
 
 RVA(0x00017ae0, 0x20)
@@ -263,19 +446,6 @@ void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
 
-// ---------------------------------------------------------------------------
-// CBattlezDlg control accessors: switch(index) over a 4-entry control-ID table,
-// each case tail-calling this->GetDlgItem(constID) (which returns the child
-// CWnd*). Default (index>3) returns null. Four families, identical shape over
-// different ID tables. The inline .rdata jump table reloc-masks.
-//
-// The dispatch + all four case bodies are byte-exact vs retail (verified by
-// llvm-objdump base-vs-target); the ~70% plateau is the inline jump-table DATA
-// region + its base reloc scored as mismatched (docs/patterns/jumptable-data-
-// overlap.md). The result-var spelling forces the retail edx-index/xor-eax-eax
-// dispatch (docs/patterns/switch-pointer-default-result-var.md).
-// ---------------------------------------------------------------------------
-// @early-stop
 RVA(0x00015ac0, 0x60)
 CWnd* CBattlezDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
@@ -296,7 +466,6 @@ CWnd* CBattlezDlg::GetCtrlA(i32 index) {
     return result;
 }
 
-// @early-stop
 RVA(0x00015b40, 0x60)
 CWnd* CBattlezDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
@@ -317,7 +486,6 @@ CWnd* CBattlezDlg::GetCtrlB(i32 index) {
     return result;
 }
 
-// @early-stop
 RVA(0x00015bc0, 0x60)
 CWnd* CBattlezDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
@@ -338,7 +506,6 @@ CWnd* CBattlezDlg::GetCtrlC(i32 index) {
     return result;
 }
 
-// @early-stop
 RVA(0x00015c40, 0x60)
 CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
@@ -470,25 +637,6 @@ void CBattlezDlg::ApplyOption3() {
     }
 }
 
-// -------------------------------------------------------------------------
-// Per-color-slot apply handlers (0x16cd0/16dc0/16e90/16f60): pop the modal
-// CBattlezDlgColors picker for slot N (a0=m_slots, a1=N), and on IDOK store the
-// picked value (dlg.m_pickedColor) into slot N, refresh (RefreshOptionState), then invalidate the
-// swatch control (0x501 + 2*N). The /GX EH frame unwinds the local dialog; the
-// ctor/DoModal/dtor + SetSlotValue/RefreshOptionState/GetDlgItem chain + InvalidateRect
-// import all reloc-mask. The four bodies differ only in N (the a1 arg, the
-// SetSlotValue index, and the control ID).
-// -------------------------------------------------------------------------
-// The swatch refresh is the MFC inline CWnd::InvalidateRect member (afxwin2.inl:
-// `::InvalidateRect(m_hWnd, lpRect, bErase)`), NOT the global import spelled on a
-// hoisted handle. That is what fixes both halves of the old residual: the CWnd*
-// is evaluated FIRST as the inline's `this` (retail pushes 0x501/call GetDlgItem
-// before push 1/push 0), and because eax stays live as that `this`, the m_hWnd
-// load lands in edx - `mov edx,[eax+0x1c]; push 1; push 0; push edx`, byte-exact.
-// (Was @early-stop'd as an "eh-dtor vptr-restamp wall, not source-steerable" at
-// 91.1%; that diagnosis was wrong - there is no restamp in this diff at all. The
-// four bodies scoring an identical 91.1% was the shared ARG-ORDER residual, not a
-// shared structural wall.)
 RVA(0x00016cd0, 0x98)
 void CBattlezDlg::ApplyColorSlot0() {
     CBattlezDlgColors dlg(m_slots, 0, 0, 0);
@@ -533,11 +681,6 @@ void CBattlezDlg::ApplyColorSlot3() {
     }
 }
 
-// CopyComboSelToChild (0x171b0): read the current selection text of the 0x4ff
-// combo (CB_GETCURSEL via the ::SendMessageA global fn-ptr, then GetLBText into a
-// local CString) and, if non-empty, push it into the combo's child edit
-// (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
-// frame unwinds the local CString.
 // @early-stop
 RVA(0x000171b0, 0xca)
 void CBattlezDlg::CopyComboSelToChild() {
@@ -550,7 +693,7 @@ void CBattlezDlg::CopyComboSelToChild() {
         return;
     }
     CString s;
-    (static_cast<CComboBox*>(combo))->GetLBText(sel, s); // CComboBox::GetLBText @0x1ce7db
+    (static_cast<CComboBox*>(combo))->GetLBText(sel, s);
     if (s.GetLength() != 0) {
         CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
         if (child != 0) {
@@ -560,9 +703,6 @@ void CBattlezDlg::CopyComboSelToChild() {
     }
 }
 
-// ReadCtrlBText (0x17340): read the `index` control's text into a local CString via
-// GetCtrlB(index)->GetWindowText, then measure the resulting C-string. The /GX EH
-// frame guards the half-built local CString.
 // @early-stop
 RVA(0x00017340, 0x73)
 void CBattlezDlg::ReadCtrlBText(i32 index) {
@@ -599,9 +739,7 @@ void CBattlezDlg::FlashCtrlD() {
         if (it == 0) {
             continue;
         }
-        // The child rect is mapped corner-by-corner: MFC's CRect::TopLeft() /
-        // BottomRight() ARE the two CPoints the RECT is made of, so the
-        // ex-`(LPPOINT)&rc` / `+1` pun is just the named accessor pair.
+
         CRect rc;
         ::GetClientRect(it->m_hWnd, &rc);
         cts(it->m_hWnd, &rc.TopLeft());
@@ -632,13 +770,6 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
 
-// CBattlezDlg::OnDrawItem (0x165a0): owner-draw the four team-color swatch static
-// controls (0x501/0x503/0x505/0x507). Each maps to slot index 0..3; if the
-// matching child window is enabled, fill the item rect with the slot's team color
-// (the 17-entry palette-index -> COLORREF switch, inlined per control); a disabled
-// child paints light gray. Always chains the base CWnd owner-draw default. /GX EH
-// frame unwinds the CDC/CBrush locals.
-//
 RVA(0x000165a0, 0x5c0)
 void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
@@ -950,10 +1081,3 @@ RVA_COMPGEN(0x000180b0, 0x1e, ??_GCBattlezDlgCustom@@UAEPAXI@Z)
 void CBattlezDlg::OnOkCommand() {
     OnOK();
 }
-
-// (The old "three DISTINCT image-holder classes" story here was RTTI-refuted: the
-// vtables 0x1e8cb4/0x1e8cd4/0x1e8cf4/0x1ea2a4 carry RTTI COLs naming CObject/
-// CGdiObject/CBrush/CRgn - the real MFC GDI family, whose ??1/??_G/??_7 COMDATs
-// this TU (and the rect/creditz TUs for CRgn) first-instantiated. The ??_7 datums
-// auto-name from config/vtable_names.csv when this obj emits the real COMDATs, and
-// the function COMDATs are pinned by the RVA_COMPGEN block above.)

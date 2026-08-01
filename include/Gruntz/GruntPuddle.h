@@ -3,10 +3,10 @@
 
 #include <rva.h>
 
-#include <Mfc.h> // CObject base + <windows.h>
+#include <Mfc.h>
 
-#include <Gruntz/ActReg.h>    // CActReg (the slot-4 activation-dispatch table)
-#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
+#include <Gruntz/ActReg.h>
+#include <Gruntz/UserLogic.h>
 
 class CFileMemBase;
 
@@ -15,53 +15,39 @@ SIZE_UNKNOWN();
 
 extern "C" u32 g_engineFrameDelta;
 
-extern char g_puddleSpriteKey[]; // s_..._0060c1c0
+extern char g_puddleSpriteKey[];
 
 class CGruntPuddle : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00010cc0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPUDDLE;
-    } // slot 2
+    }
+
 public:
-    CGruntPuddle(CGameObject* obj); // 0x040490
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    CGruntPuddle() {}
+    CGruntPuddle(CGameObject* obj);
 
-    // The act-"A" (idle) slot the registrar binds (ILT 0x4021f8 -> 0x040c10):
-    // retail is the bare `xor eax,eax; ret`, i.e. "nothing to do, not finished".
-    i32 Idle();                                                  // 0x040c10
-    i32 Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3); // 0x040c30 (a3: see the body)
-    i32 Remove();                                                // 0x040d20
-    void SetBute(char* key);                                     // 0x07d810
-    // FireActivation (0x40750): slot-4 (UserLogicVfunc2) override - resolve `id` in
-    // the class dispatch table g_logicDispatch_6445e8; if the resolved entry holds a
-    // handler, re-resolve and dispatch it __thiscall on `this`. Same archetype as
-    // CTeleporter::FireActivation.
+    i32 Idle();
+    i32 Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3);
+    i32 Remove();
+    void SetBute(char* key);
+
     virtual void FireActivation(i32 id) OVERRIDE;
-    // Serialize (0x40e50): two-chain (CUserLogic base + the +0x34 sub-object) then a
-    // tag-dispatched field round-trip - tag 4 writes / tag 7 reads the 7 own i32
-    // fields via the archive vtable, tag 8 re-resolves the placed sprite from the
-    // game registry. Same archetype as CGruntHealthSprite::Serialize.
 
-    // --- CGruntPuddle own fields (placeholders; offsets load-bearing) ---
-    // (This class is ALSO the CTriggerMgr::m_baseList element the spawn/resurrect
-    //  scans walk - the ex "CTmCandidate" view, folded 2026-07-16; identity proof
-    //  in <Gruntz/TriggerMgr.h>.)
-    i32 m_tileX;      // +0x54  owner tile X (m_object->m_screenX >> 5)
-    i32 m_tileY;      // +0x58  owner tile Y (m_object->m_screenY >> 5)
-    i32 m_pending;    // +0x5c  not-yet-placed gate (ctor 1; cleared once placed;
-                      //         the spawn/resurrect scans skip a nonzero one)
-    i32 m_placed;     // +0x60  "placed" flag
-    i32 m_placeArg3;  // +0x64  Place() arg3 snapshot
-    i32 m_gruntType;  // +0x68  the dead owner's grunt-type index (Place() a0 snapshot;
-                      //         the trigger-mgr resurrect re-creates via PlaceObject(type,..))
-    i32 m_placeIndex; // +0x6c  selector/icon index (Place() a1 snapshot; GetSel draws by
-                      //         it, the resurrect passes it through as PlaceObject a6)
+    i32 m_tileX;
+    i32 m_tileY;
+    i32 m_pending;
+
+    i32 m_placed;
+    i32 m_placeArg3;
+    i32 m_gruntType;
+
+    i32 m_placeIndex;
 };
 SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

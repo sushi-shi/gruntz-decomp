@@ -1,8 +1,8 @@
-#include <Bute/ButeTree.h> // CVariantSlot::Set (EnsureSize failure reporting)
+#include <Bute/ButeTree.h>
 #include <Wap32/zBitVec.h>
 
-#include <stdlib.h> // realloc, malloc
-#include <string.h> // memset, memcpy
+#include <stdlib.h>
+#include <string.h>
 #include <rva.h>
 
 RVA(0x00193640, 0x40)
@@ -12,7 +12,7 @@ zBitVec* zBitVec::SetBit(u32 idx) {
         if (static_cast<u32>(m_capacity) > 0x20) {
             p = m_words;
         } else {
-            p = &m_inline; // the union's inline arm - same slot, no cast
+            p = &m_inline;
         }
         p[idx >> 5] |= 1 << (idx & 0x1f);
     }

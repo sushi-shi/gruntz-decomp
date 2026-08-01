@@ -588,19 +588,10 @@ final sweep" is a complete, acceptable outcome — not a failure.
 **Mark every early-stop in the source with `// @early-stop`.** When you stop a method below 100%,
 its body stays — a **complete, correct reconstruction** (this is NOT a half-written "partial"); it
 is the *byte-match* that is parked, not the logic. Record that so the method is not mistaken for a
-finished 100% match: an `// @early-stop` marker line directly above its `RVA()`, with the reason
-(the wall / blocker / what is left) on the next comment line. No `%` — the baseline tracks that.
-Follow **`docs/wall-instructions.md`** (the matcher doctrine in reverse): name the wall MECHANISM
-at the assembly level (regalloc/spill recolor, frame-size shift, vptr-stamp position, shrink-wrap
-pushes, tail-merge, demangled-vs-mangled reloc-name mismatch, …) verified with `llvm-objdump -dr`,
-and when a % moved because of an UNRELATED change (a neighbor in the same aggregate TU, a
-shared-base edit), record that trigger too — so the next worker `@early-stop`s on recognition
-instead of re-grinding.
-
-    // @early-stop
-    // regalloc wall — MSVC pins the loop counter in edi; see docs/patterns/zero-register-pinning.md
-    RVA(0x000457b0, 0x180)
-    int CGrunt::ResolveAnimation() { /* complete body */ }
+finished 100% match: an `// @early-stop` marker line directly above its `RVA()`. Do not attach
+percentages or causal wall narratives: both become stale and have repeatedly discouraged valid
+reconstruction work. Re-derive the current residue from `gruntz sema disasm --diff --lite`; put a
+reproducible mechanism in `docs/patterns/` rather than on one function.
 
 Invariant: a reconstructed method is **either ~100% (unmarked) or carries `@early-stop`** — so
 `rg '@early-stop' src` is exactly the deferred-work set the final sweep re-attacks. Distinct from

@@ -1,17 +1,17 @@
-#define GRUNTZ_MENUITEM_TU // own the 0x185510 Dispatch0c label (see MenuItem.h)
+#define GRUNTZ_MENUITEM_TU
 #include <rva.h>
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Image/CImage.h>
-#include <DDrawMgr/DDrawWorker.h> // CDDrawWorker - the resolved m_sprite (frame strip Place indexes)
+#include <DDrawMgr/DDrawWorker.h>
 
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // CDDrawSurfaceMgr - m_owner (the catalog root)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // its +0x10 registry: the m_10map name->item catalog
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/MenuItem.h>
-#include <Gruntz/MenuPage.h> // CMenuPage - Init's a0 / m_template (ex CMenuItemTemplate view)
+#include <Gruntz/MenuPage.h>
 #include <Gruntz/MenuItem2.h>
 
-#include <stdio.h> // engine sprintf (reloc-masked; CMenuItem2::Init)
+#include <stdio.h>
 
 VTBL(CMenuItem, 0x001f08c0);
 
@@ -75,9 +75,6 @@ RVA_COMPGEN(0x001847c0, 0x1e, ??_GCMenuItem2@@UAEPAXI@Z)
 RVA(0x001847e0, 0xa6)
 CMenuItem2::~CMenuItem2() {
     Dispatch0c();
-    // compiler stamps ??_7CMenuItem2@@6B@ at entry, then the base ~CMenuItem is
-    // inlined here: it stamps ??_7CMenuItem@@6B@, runs its Dispatch0c hook, and
-    // destroys m_58/m_54/m_50/m_4c/m_14/m_10 (reverse declaration order).
 }
 
 RVA(0x00184890, 0x1a)
@@ -117,11 +114,7 @@ i32 CMenuItem::Init(
     }
     if (!OnInit()) {
         CObject* slot = 0;
-        // ?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z @0x1b8008.  NOT a COMDAT fold
-        // with CMapStringToPtr::Lookup - MSVC5 has no /OPT:ICF, and CMapStringToPtr's
-        // Lookup is its own body at 0x1b8438 in a different .obj band.  The two classes
-        // are code-identical, which is why every FID row there is AMBIG; the binary
-        // names them itself (mfc_class 0x1b8008).
+
         m_owner->m_imageRegistry->m_10map.Lookup(spriteKey, slot);
         m_sprite = slot;
         if (!slot) {
@@ -132,7 +125,7 @@ i32 CMenuItem::Init(
 }
 RVA(0x00185510, 0x5)
 void CMenuItem::Dispatch0c() {
-    Reset(); // devirtualized tail-jmp in retail (5 B)
+    Reset();
 }
 
 RVA(0x00185520, 0x2c)
@@ -174,8 +167,7 @@ i32 CMenuItem::NotifyCmd() {
     }
     return 1;
 }
-// place the item: pick the row out of the sub-page (m_28), have it lay
-// itself out at the cached or argument coordinates, then cache the placed rect.
+
 RVA(0x001855d0, 0x6)
 i32 CMenuItem::Detach() {
     return 1;
@@ -192,10 +184,7 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     if (!page) {
         return 0;
     }
-    // The placed coordinates overwrite the PARAMETERS - no new locals. The else arm
-    // is then a compiler-generated materialisation of the two argument homes, which is
-    // why retail loads them y-before-x there while the if arm is x-before-y; two fresh
-    // locals force both arms into source order and swap the ebx/ebp colouring.
+
     if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
         x = m_fixedX;
         y = m_fixedY;
@@ -254,8 +243,7 @@ i32 CMenuItem::Hit(i32 x, i32 y) {
     }
     return y <= m_hitBottom;
 }
-// configure from a template + strings (chaining CMenuItem::Init), then
-// resolve the three per-state sprites by "<key>_NORMAL/_SELECTED/_DISABLED".
+
 // @early-stop
 RVA(0x00185750, 0x123)
 i32 CMenuItem2::Init(
@@ -277,7 +265,7 @@ i32 CMenuItem2::Init(
     m_70 = 0x64;
 
     char buf[0x80];
-    CObject* sprite; // CMapStringToOb's value slot (Lookup @0x1b8008 takes CObject*&)
+    CObject* sprite;
 
     sprintf(buf, "%s_NORMAL", spriteKey);
     sprite = 0;
@@ -324,12 +312,10 @@ i32 CMenuItem2::Notify(u32 a) {
     m_6c = m_6c - a;
     return 1;
 }
-// the slot-9 Place override: draw the current animation frame at the placed (or
-// argument) coordinates, then cache the resulting hit rect.
-// @early-stop
+
 RVA(0x001858d0, 0x72)
 i32 CMenuItem2::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
-    // Same shape as CMenuItem::Place: the placed coordinates overwrite the parameters.
+
     if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
         x = m_fixedX;
         y = m_fixedY;
@@ -357,19 +343,14 @@ CDDrawWorker* CMenuItem2::GetCurrentSprite() {
     }
     return 0;
 }
-// resolve the frame at the current cursor; if absent, rewind the cursor
-// to the sprite's first index and try once more.
-// @early-stop
+
 RVA(0x00185970, 0x4d)
 CImage* CMenuItem2::GetCurrentFrame() {
     CDDrawWorker* s = GetCurrentSprite();
     if (!s) {
         return 0;
     }
-    // ONE `f` carried in edx to a single `mov eax,edx` exit (0x1859b8), shared by the
-    // first hit and by the retry's out-of-range zero; the retry's HIT gets a duplicated
-    // copy of that exit with `pop edi` scheduled into it (0x1859ab). Two separate
-    // `return`s give two independent epilogues instead.
+
     CImage* f = s->GetAt(m_frameIdx);
     if (f == 0) {
         m_frameIdx = s->m_minIndex;

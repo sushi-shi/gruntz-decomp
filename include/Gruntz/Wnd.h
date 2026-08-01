@@ -3,7 +3,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Wap32/Object.h> // CObject (the real MFC one; pulls <Mfc.h> -> afx.h FIRST)
+#include <Wap32/Object.h>
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif

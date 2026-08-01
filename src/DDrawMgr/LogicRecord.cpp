@@ -1,19 +1,13 @@
-#include <DDrawMgr/LogicRecord.h> // own extern surface
+#include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/AnimWorkerObj.h>
-#include <Utils/MapTyped.h>           // MapLookupById (the id->void* key pun at one boundary)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c (the owner/world root)
-#include <DDrawMgr/DDrawChildGroup.h> // m_childGroup->m_map48 (the id->object resolver)
-#include <Gruntz/UserLogic.h> // CUserLogic (m_logic SerializeMove dispatch) + CGameObject (m_170)
+#include <Utils/MapTyped.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
 #include <rva.h>
-#include <Mfc.h>        // CMapPtrToPtr::Lookup (0x1b8760)
-#include <Io/FileMem.h> // CFileMemBase complete type (the CFileMemBase Read/Write dispatch)
+#include <Mfc.h>
+#include <Io/FileMem.h>
 
-// ---------------------------------------------------------------------------
-// Dispatch (0x164830, __thiscall). Run one of the record's six actions selected
-// by `mode` (3..8): refresh the cached value (m_174 from m_170->m_188), Load,
-// the alternate Save-path (0x164d80), or re-resolve m_170 via the level grid.
-// Then, when a sub-record is present, forward to its per-frame step
-// (m_logic->SerializeMove, CUserBase slot 1); a falsey result short-circuits.
 // @early-stop
 RVA(0x00164830, 0xec)
 i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
@@ -28,13 +22,13 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
             }
             break;
         case 4:
-            // the serialize walk (ForEachSerialize, WRITES the stream)
+
             if (Save(a) == 0) {
                 return 0;
             }
             break;
         case 7:
-            // the deserialize walk (Deserialize, READS the stream)
+
             if (Load(a) == 0) {
                 return 0;
             }
@@ -47,7 +41,7 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
                                                                 : static_cast<CGameObject*>(0);
             }
             break;
-        default: // 5, 6
+        default:
             break;
     }
     if (m_logic) {
@@ -228,11 +222,6 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ResolveTarget (0x1651b0, __thiscall). The standalone Dispatch-case-8 hook:
-// when a cached reference id (m_174) is present, re-resolve the target pointer
-// (m_170) by looking the id up in the level grid's CMapPtrToPtr resolver.
-// Returns 0 on a null argument, 1 otherwise.
 // @early-stop
 RVA(0x001651b0, 0x5d)
 i32 AnimWorkerObj::ResolveTarget(void* a) {

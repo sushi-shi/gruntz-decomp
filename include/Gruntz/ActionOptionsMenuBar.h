@@ -2,8 +2,8 @@
 
 class CFileMemBase;
 
-class CImage;       // the menu-bar drawable (m_frame; RenderFrameClipped 0x153810)
-class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
+class CImage;
+class CDDrawWorker;
 
 class CActionOptionsMenuBar {
 public:
@@ -19,23 +19,21 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 LoadAssets();
 
-    int Deserialize(CFileMemBase* s); // 0x00009bb0
+    int Deserialize(CFileMemBase* s);
 
-    i32 m_gridX;     // +0x00  grid X
-    i32 m_gridY;     // +0x04  grid Y
-    i32 m_screenX;   // +0x08  screen X (clamped)
-    i32 m_screenY;   // +0x0c  screen Y (adjusted)
-    CImage* m_frame; // +0x10  menu-bar frame 1 (the drawable)
-    // Three 2-element ARRAYS, not six scalars: Serialize writes them as
-    // `ar->Write(m_buttonState, 8)` / `ar->Write(m_buttonIcon, 8)`, and Refresh /
-    // HitClick walk each pair with one cursor. Layout is unchanged.
-    i32 m_buttonState[2];           // +0x14  per-button state
-    CImage* m_buttonFrame[2];       // +0x1c  per-button resolved frame
-    i32 m_buttonIcon[2];            // +0x24  per-button icon
-    i32 m_active;                   // +0x2c  active flag
-    CDDrawWorker* m_normChipSprite; // +0x30  norm-chip sprite
-    CDDrawWorker* m_highChipSprite; // +0x34  high-chip sprite
-    CDDrawWorker* m_greyChipSprite; // +0x38  grey-chip sprite
-    i32 m_loaded;                   // +0x3c  loaded flag
+    i32 m_gridX;
+    i32 m_gridY;
+    i32 m_screenX;
+    i32 m_screenY;
+    CImage* m_frame;
+
+    i32 m_buttonState[2];
+    CImage* m_buttonFrame[2];
+    i32 m_buttonIcon[2];
+    i32 m_active;
+    CDDrawWorker* m_normChipSprite;
+    CDDrawWorker* m_highChipSprite;
+    CDDrawWorker* m_greyChipSprite;
+    i32 m_loaded;
 };
 SIZE_UNKNOWN();

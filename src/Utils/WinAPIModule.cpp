@@ -1,9 +1,9 @@
 #include <rva.h>
-#include <string.h> // inline memcpy (rep movs)
+#include <string.h>
 
 #include <Win32.h>
 #include <tlhelp32.h>
-#include <ProcAddr.h> // the FARPROC / real-prototype pair
+#include <ProcAddr.h>
 
 typedef HANDLE(WINAPI* PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
 typedef BOOL(WINAPI* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
@@ -11,12 +11,6 @@ typedef BOOL(WINAPI* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
 namespace Utils {
     namespace WinAPI {
 
-        // ---------------------------------------------------------------------------
-        // LegacyFindModule
-        // Snapshots the module list of process th32ProcessID, finds the module whose
-        // th32ModuleID equals moduleID, and copies bufSize bytes of its MODULEENTRY32
-        // into outBuf. Returns nonzero iff the module was found.
-        //
         // @early-stop
         RVA(0x00118f60, 0x134)
         i32 LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void* outBuf, DWORD bufSize) {
@@ -28,8 +22,6 @@ namespace Utils {
                 return 0;
             }
 
-            // GetProcAddress hands the address back as a FARPROC; the caller knows
-            // the export's prototype (<ProcAddr.h>)
             ProcAddr<PFNCREATESNAPSHOT> snapProc;
             snapProc.m_raw = GetProcAddress(k32, "CreateToolhelp32Snapshot");
             PFNCREATESNAPSHOT pCreateSnapshot = snapProc.m_fn;

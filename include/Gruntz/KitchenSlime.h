@@ -3,32 +3,26 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGameObject / CFileMemBase)
-#include <Gruntz/ActReg.h>      // CActReg (for the extern below)
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/ActReg.h>
 
 class CKitchenSlime : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x000130b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_KITCHENSLIME;
-    } // slot 2
+    }
+
 public:
-    static void RegisterType(); // 0x0b2aa0 (level-load class registrar)
+    static void RegisterType();
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 Tick();
     i32 LoadSprites();
-    CKitchenSlime(CGameObject* obj); // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    CKitchenSlime() {}
+    CKitchenSlime(CGameObject* obj);
 
-    // The bound CGameObject IS the slime's level/anim data (inherited m_object == m_38,
-    // the same object). The two accessors keep the two distinct base-member loads
-    // retail emits (level state read through m_object, the anim/frame-cache facet
-    // fields (m_screenX/m_screenY, m_124, m_12c, m_extent.left..m_extent.bottom, m_area.left, m_7c->
-    // m_bc via AnimWorkerObj) cast-free, and reaches the leaf-embedded +0x1a0
-    // CAniAdvanceCursor / the +0x190.. frame-cache role-union by documented address.
     CGameObject* Level() {
         return m_object;
     }
@@ -36,30 +30,16 @@ public:
         return m_38;
     }
     char m_pad54[0x58 - 0x54];
-    double m_speed;   // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
-    double m_posX;    // +0x60  sub-pixel X position accumulator
-    double m_posY;    // +0x68  sub-pixel Y position accumulator
-    double m_dirX;    // +0x70  unit X travel direction (-1.0 / 0.0 / +1.0)
-    double m_dirY;    // +0x78  unit Y travel direction (-1.0 / 0.0 / +1.0)
-    i32 m_tileX;      // +0x80  current target tile X (pixels)
-    i32 m_tileY;      // +0x84  current target tile Y (pixels)
-    double m_stepMag; // +0x88  per-step magnitude
+    double m_speed;
+    double m_posX;
+    double m_posY;
+    double m_dirX;
+    double m_dirY;
+    i32 m_tileX;
+    i32 m_tileY;
+    double m_stepMag;
 };
 SIZE(0x90);
-
-// The activation-registry entry record: its first dword is a PMF of CKitchenSlime
-// (single inheritance -> a 4-byte code pointer). FireActivation dispatches it on
-// `this` (proven by the 0x46080-family `call [entry]`), RegisterType stores the
-// activation handler. Declared AFTER the complete class so the PMF stays 4 bytes.
-// (Retail's grow-path allocs 0xc-byte nodes, so the real record may carry 2 more
-// fields at +4/+8 that no code touches - @identity-TODO; the addressing stride is a
-// runtime DATA value, so the 4-byte model is byte-exact here.)
-
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
 
 extern const double g_slimeSpeedNum;
 #endif // GRUNTZ_CKITCHENSLIME_H

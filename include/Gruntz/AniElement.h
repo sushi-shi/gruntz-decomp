@@ -2,49 +2,44 @@
 #define GRUNTZ_CANIELEMENT_H
 
 #include <Ints.h>
-#include <Mfc.h>                  // CObject / CObArray (real NAFXCW layout)
-#include <Wap32/Object.h>         // CObject - the shared engine grand-base
-#include <Gruntz/AniRecordView.h> // shared minimal frame-record view (real: CAniRecord)
-#include <rva.h>                  // OVERRIDE
+#include <Mfc.h>
+#include <Wap32/Object.h>
+#include <Gruntz/AniRecordView.h>
+#include <rva.h>
 
 SIZE_UNKNOWN();
 
 struct CAniSource {
     char m_pad00[0x8];
-    i32 m_flags; // +0x08 flags (or'd into the element's m_flags)
-    i32 m_count; // +0x0c record count
-    // UNSIGNED: CAniElement::Build's name-copy loop guards are jbe/jb, not jle/jl
-    // (0x16549b / 0x1654b7) - the length is an unsigned byte count.
-    u32 m_namelen; // +0x10 name length in bytes
+    i32 m_flags;
+    i32 m_count;
+
+    u32 m_namelen;
     char m_pad14[0xc];
-    char m_data[1]; // +0x20 name bytes followed by the record stream
+    char m_data[1];
 };
 SIZE_UNKNOWN();
 
 class CAniElement : public CObject {
 public:
-    // Inline ctor (retail inlines it at the CDDrawSubMgrLeaf ANI factory new-sites:
-    // base stamp, m_records CObArray-construct @+0x08 via the NAFXCW ctor, own
-    // stamp, zero m_flags/m_name). Was the DDrawSubMgrLeaf.cpp-local ctor-shape
-    // view CAniElementObj (m_04/CAniElemSub/m_1c) - one class, one def.
     CAniElement() {
         m_flags = 0;
         m_name = 0;
     }
-    virtual ~CAniElement() OVERRIDE;                     // 0x152e30 (DDrawSubMgrLeaf.cpp)
-    CObject* AtChecked(i32 i) const;                     // 0x06b270 (MFC CObject array element)
-    i32 Build(void* ctx, CAniSource* src, i32 flags);    // 0x165460
-    i32 Configure(void* ctx, void* entry, i32 flags);    // 0x1655c0
-    i32 LoadFile(void* ctx, void* filename, i32 unused); // 0x165620 (eh TU; retail never
-                                                         // reads the third slot)
-    void DeleteAll();                                    // 0x165730 (CAniElementCollection.cpp)
+    virtual ~CAniElement() OVERRIDE;
+    CObject* AtChecked(i32 i) const;
+    i32 Build(void* ctx, CAniSource* src, i32 flags);
+    i32 Configure(void* ctx, void* entry, i32 flags);
+    i32 LoadFile(void* ctx, void* filename, i32 unused);
 
-    i32 m_flags;        // +0x04
-    CObArray m_records; // +0x08  (0x14 bytes)
-    char* m_name;       // +0x1c
-    float m_scale;      // +0x20
-    i32 m_total;        // +0x24
-}; // size = 0x28
+    void DeleteAll();
+
+    i32 m_flags;
+    CObArray m_records;
+    char* m_name;
+    float m_scale;
+    i32 m_total;
+};
 SIZE(0x28);
 
 #endif // GRUNTZ_CANIELEMENT_H

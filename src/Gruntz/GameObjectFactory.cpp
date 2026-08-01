@@ -1,19 +1,9 @@
-#include <Gruntz/GameObjectFactory.h> // the shared RegisterGameObjectTypes decl
+#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
-#include <Gruntz/ObjTypeRegistrars.h>  // real per-type registrar entry points (reloc fidelity)
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSurfaceMgr - the ctx (m_workerCache @+0x14)
-#include <DDrawMgr/DDrawWorkerCache.h> // CDDrawWorkerCache::CreateWorker (slot 9, 0x1652c0)
+#include <Gruntz/ObjTypeRegistrars.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
 
-// Reloc-fidelity bindings for the factory-fn pointers the registrar pushes.
-// Each `push offset _CreateXxx` (DIR32) relocates in retail to that create-fn's
-// ILT jmp-thunk (a 5-byte `e9 <rel32>` in the <0x7c20 thunk band jumping to the
-// real ctor body). The reference is reloc-masked, so the byte match already
-// holds; these labels bind the undefined `_CreateXxx` external to the exact
-// thunk RVA so reloc_fidelity scores them CORRECT (verified: every RVA is an E9
-// thunk, and none collide with functions.csv / another symbol). The four thunks
-// also used as placed-object type markers in Play.cpp (GiantRock/CoveredPowerup/
-// InGameIcon/GruntStartingPoint) are bound here ONCE; Play.cpp references the
-// same `_CreateXxx` symbol (its old `g_objIdThunk_<rva>` view was the same thunk).
 DATA_SYMBOL(0x00002d2e, 0x0, _CreateGrunt)
 DATA_SYMBOL(0x00002d15, 0x0, _CreateGlobalAmbientSound)
 DATA_SYMBOL(0x00002158, 0x0, _CreateAmbientSound)
@@ -30,12 +20,6 @@ DATA_SYMBOL(0x00001b09, 0x0, _CreateLevelTime)
 DATA_SYMBOL(0x00002bbc, 0x0, _CreateCursorSnapSprite)
 DATA_SYMBOL(0x00002eb9, 0x0, _CreateDemoMover)
 DATA_SYMBOL(0x0000448a, 0x0, _CreateDemoSign)
-//
-// The five former RegHelper CALL sites are now real static-member calls
-// (CProjActObj::RegisterType / C{TileTriggerTransition,ToobSpikez,TimeBomb,
-// VoiceTrigger}::RegisterActs). Each registrar's home TU declares it `static`
-// (SAXXZ), so the retail this-less `call rel32` binds to its exact RVA with no
-// `mov ecx` inserted (the bodies never touch `this`). Reloc-fidelity CORRECT.
 
 RVA(0x0000a3b0, 0x6e2)
 void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
@@ -93,7 +77,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateTileSecretTrigger, "TileSecretTrigger", 4);
     CTileTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateBrickz, "Brickz", 4);
-    CBrickz::RegisterActs(); // 0x10ebe0 (ex 'CCheckpointTrigger::' - the shift-by-one)
+    CBrickz::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateTileTriggerTransition, "TileTriggerTransition", 4);
     CTileTriggerTransition::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateGruntStartingPoint, "GruntStartingPoint", 4);
@@ -103,7 +87,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateFortressFlag, "FortressFlag", 4);
     CFortressFlag::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateExitTrigger, "ExitTrigger", 4);
-    CExitTrigger::RegisterActs(); // 0x3f3f0 (ex 'CWormhole::' - CExitTrigger's act cluster)
+    CExitTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateGiantRock, "GiantRock", 4);
     CTileTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateCoveredPowerup, "CoveredPowerup", 4);
@@ -125,7 +109,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateDroppedObjectShadow, "DroppedObjectShadow", 4);
     CDroppedObjectShadow::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateCheckpointTrigger, "CheckpointTrigger", 4);
-    CCheckpointTrigger::RegisterActs(); // 0x10f340 (ex 'CTileSecretTrigger::')
+    CCheckpointTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateTeleporter, "Teleporter", 4);
     CTeleporter_RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);

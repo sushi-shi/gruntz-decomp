@@ -17,6 +17,6 @@ i32 SaveScreenshot(
     i32 height,
     char* name,
     i32 saveFlag
-); // 0x114ff0
+);
 
 #endif // GRUNTZ_SAVESCREENSHOT_H

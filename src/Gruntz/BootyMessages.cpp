@@ -1,18 +1,18 @@
 #include <Ints.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/BootyMessages.h> // SecretMsgRow (this TU owns the tables)
+#include <Gruntz/BootyMessages.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/LeafCue.h> // LeafCue + SoundStream (the CDDrawSubMgrLeafScan+0x2c stream) via SoundCue.h
-#include <Mfc.h>            // CString temps (/GX) + RECT/CopyRect/SetRect
+#include <Gruntz/LeafCue.h>
+#include <Mfc.h>
 
-#include <Gruntz/GameMode.h> // canonical CBootyState : CState (the folded booty state)
-#include <Gruntz/BzState.h>  // the deferred g_gameReg sub-object views (BzSink is dissolved)
+#include <Gruntz/GameMode.h>
+#include <Gruntz/BzState.h>
 
 #include <rva.h>
-#include <Gruntz/BootyWalkAnim.h> // ex Globals.h
-#include <Gruntz/SoundState.h>    // ex Globals.h transitive
-#include <Utils/MapTyped.h>       // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Gruntz/BootyWalkAnim.h>
+#include <Gruntz/SoundState.h>
+#include <Utils/MapTyped.h>
 
 DATA(0x001e8fe4)
 BzGeomPair g_idleGeom[4] = {
@@ -22,7 +22,7 @@ BzGeomPair g_idleGeom[4] = {
     {146, 525},
 };
 DATA(0x001e93b0)
-float g_secretRatioScale = 100.0f; // 0x5e93b0
+float g_secretRatioScale = 100.0f;
 
 DATA(0x0020b838)
 RECT g_levelMsgRectsA[8] = {
@@ -47,17 +47,13 @@ RECT g_levelMsgRectsB[8] = {
     {245, 392, 417, 462}
 };
 DATA(0x00229ef8)
-CString g_levelMsgStrings[8]; // 0x629ef8
+CString g_levelMsgStrings[8];
 
 DATA(0x00229f30)
-SecretMsgRow g_secretMsgRows[24]; // 0x629f30  (0xa0 stride)
-char g_secretMsgA[0x20];          // 0x62ae30  encoded line A
-char g_secretMsgB[0x80];          // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
+SecretMsgRow g_secretMsgRows[24];
+char g_secretMsgA[0x20];
+char g_secretMsgB[0x80];
 
-// ===========================================================================
-// ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,
-// then the level/world-completed banner, then the WARP-letterz status line.
-// ===========================================================================
 // @early-stop
 RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
@@ -120,13 +116,6 @@ void CBootyState::ShowLevelCompleteMessage() {
     }
 }
 
-// ===========================================================================
-// ShowSecretBonusMessage @0x18f00 - draws the "Secret Bonus" overlay. With a
-// completed single record (m_secretBannerOnce + AllRecordsInBounds) it shows the
-// static "Secret of Secretz" banner + the two cipher-decoded lines; otherwise it
-// grades the group ratio into 1/2/3 rows and draws "Secret Bonus Acquired:" + that
-// many cipher-decoded row pairs (each row offset by the level's rowBase).
-// ===========================================================================
 // @early-stop
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
@@ -202,15 +191,6 @@ i32 CBootyState::ShowSecretBonusMessage() {
     return 1;
 }
 
-// ===========================================================================
-// BuildBootyGruntIdleAnimation @0x1ce60 - the per-frame booty/secret idle-grunt
-// animation state machine. On the first entry in state 0xc7/0xc8 it installs the
-// "bg" namespace, seeds the four player idle grunts (visibility + the per-player
-// "GRUNTZ_PICKUPS_<W/A/R/P>" or "GRUNTZ_NORMALGRUNT" cycle) and the trailing idle
-// sprites, then kicks the loader + timer; on later ticks it grades the secret bonus
-// and advances/ends the state. Sibling of CGruntSprintAnim (same CString cycle-name
-// idiom) reusing the shared CBootyState helpers above.
-// ===========================================================================
 // @early-stop
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
@@ -277,7 +257,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             m_world->m_drawTarget->TransExit();
             m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
             m_world->m_drawTarget->TransTitle();
-            RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
+            RetireScene(0x50, 0x3e8, 0, 1);
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
             }
@@ -290,7 +270,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 0;
             }
             m_world->m_drawTarget->TransExit();
-            RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
+            RetireScene(0x50, 0x3e8, 0, 1);
             m_activation = 0xfffffffe;
             return 1;
         }
@@ -303,7 +283,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             return 0;
         }
         m_world->m_drawTarget->TransExit();
-        RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
+        RetireScene(0x50, 0x3e8, 0, 1);
         return 1;
     }
 
@@ -313,11 +293,10 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (sub != 0) {
             sub->Stop();
         }
-        g_gameReg->ChangeState(3); // g_gameReg IS the CGruntzMgr singleton (see below)
+        g_gameReg->ChangeState(3);
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8021, 0);
     } else {
-        // 0x8d780: DISASM-PROVEN receiver ecx = *0x24556c (the CGruntzMgr singleton),
-        // NOT `this`; g_gameReg IS that singleton, so cast the view to its real class.
+
         g_gameReg->PassClickToPlayState((rec2->m_count % 0x28) + 1, 0, 1);
     }
     return 1;

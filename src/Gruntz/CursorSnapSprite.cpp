@@ -1,11 +1,11 @@
 #include <Gruntz/CursorSnapSprite.h>
-#include <Bute/ButeTree.h> // g_buteTree
+#include <Bute/ButeTree.h>
 
-#include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (CursorSnapWorkerPump)
-#include <Gruntz/UserLogic.h> // the dispatched CUserLogic slot layout
+#include <Gruntz/AnimWorker.h>
+#include <Gruntz/UserLogic.h>
 #include <rva.h>
 #include <rva.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
 RVA(0x00011880, 0x47)
 i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
@@ -15,22 +15,12 @@ i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObje
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible
-// members beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store
-// the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to ~CFortressFlag
-// (0x010e90) / ~CTeleporter (0x010dd0); the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CCursorSnapSprite() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
 RVA(0x0003a200, 0xf1)
 i32 CursorSnapWorkerPump(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -66,10 +56,6 @@ i32 CursorSnapWorkerPump(CGameObject* owner) {
     return 1;
 }
 
-// CCursorSnapSprite::CCursorSnapSprite @0x03a340 - fold the shared CUserLogic(obj)
-// init, name the bound object, snapshot its geometry id (+0x40), apply the single-
-// image-ani geometry, bind the "A" bute node, then flag the sub-object (+0x08
-// bit 2, +0x40 bit 1).
 // @early-stop
 RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

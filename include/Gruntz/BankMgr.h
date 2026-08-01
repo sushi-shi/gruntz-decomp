@@ -2,7 +2,7 @@
 #define GRUNTZ_GRUNTZ_CBANKMGR_H
 
 #include <Ints.h>
-#include <rva.h> // SIZE_UNKNOWN class-metadata macro
+#include <rva.h>
 
 class CSymTab;
 

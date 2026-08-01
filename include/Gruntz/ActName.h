@@ -3,6 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h> // real CString (CActName was a fake view over it)
+#include <Mfc.h>
 
 #endif // GRUNTZ_GRUNTZ_CACTNAME_H

@@ -1,11 +1,11 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/GameRegistry.h>     // g_gameReg canonical view (0x24556c)
-#include <Gruntz/TileTriggerLogic.h> // this IS CTileTriggerLogic (m_08/m_0c coord x/y)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/TileTriggerLogic.h>
 
 // @early-stop
 RVA(0x00110860, 0x2a0)

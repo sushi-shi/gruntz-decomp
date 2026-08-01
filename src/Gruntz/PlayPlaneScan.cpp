@@ -1,32 +1,25 @@
-#include <Gruntz/PlayPlaneScan.h> // this TU's external declarations
+#include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/StatusBarMgr.h> // InsertPtr is a method of the 0x630 host, not the SBI leaf
+#include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
-#include <Gruntz/Play.h>      // canonical CPlay (one shape)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (the RTTI-true *g_gameReg type; EnterModalUI)
+#include <Gruntz/Play.h>
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
-#include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (the +0x10 list host)
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/String.h>
 
-#include <Gruntz/GameObjectFactory.h> // the real GameObjNotifyFn registrants (plane-type markers)
-#include <Gruntz/ImageSets.h>         // CImageSet1::GetCollisionAt (slot 8)
-#include <Gruntz/TileTriggerContainer.h> // the m_beginMarker sink (AddLogic/AddToList1)
-#include <Gruntz/UserLogic.h>            // CGameObject + AnimWorkerObj (the placed objects)
-#include <Gruntz/GameLevel.h>            // CGameLevel + CDDrawWorkerHost (the tile grid)
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/ImageSets.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/GameLevel.h>
 
-// ---------------------------------------------------------------------------
-// ScanBuildTiles (0x0d53d0): walk the renderer plane list; for each rock plane
-// rebuild its record onto the record sink (m_beginMarker->AddToList1), for each
-// covered-tile plane sample the tile grid then feed the big draw. Reports "Bad
-// rock"/"Bad covered powerup"
-// (and bails) on a failed insert.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CDDrawSurfaceMgr* v = m_world;
-    // retail null-tests the +0x10 list-facet address then walks its head node
+
     CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {
         return 0;
@@ -49,9 +42,9 @@ i32 CPlay::ScanBuildTiles() {
         if (p->m_clip.left == static_cast<i32>(0x80000000)) {
             p->m_clip.left = 0;
         }
-        GameObjNotifyFn vf = p->m_7c->m_notify;
+        GameObjNotifyFn vf = p->m_animWorker->m_notify;
         if (vf == CreateGiantRock) {
-            i32 buf[9]; // the extent/area/config bands as a 3x3 record
+            i32 buf[9];
             buf[0] = p->m_extent.left;
             buf[1] = p->m_extent.top;
             buf[2] = p->m_extent.right;
@@ -105,13 +98,13 @@ i32 CPlay::ScanBuildTiles() {
             if (cell == static_cast<i32>(0xeeeeeeee) || cell == static_cast<i32>(0xffffffff)) {
                 tile = 0;
             } else {
-                // the m_imageSets CObArray element's slot-8 per-pixel collision query
+
                 tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
                            ->GetCollisionAt(subX, subY);
             }
             if (m_beginMarker->AddLogic(
                     tile,
-                    0x1a, // TRIGID: the CCoveredPowerupLogic factory arm
+                    0x1a,
                     p->m_164,
                     p->m_168,
                     p->m_id,
@@ -119,8 +112,8 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_area,
                     p->m_switchRect,
                     p->m_clip,
-                    p->m_7c->m_switchRectA,
-                    p->m_7c->m_switchRectB,
+                    p->m_animWorker->m_switchRectA,
+                    p->m_animWorker->m_switchRectB,
                     p->m_124,
                     p->m_11c,
                     p->m_118,
@@ -141,17 +134,11 @@ i32 CPlay::ScanBuildTiles() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ScanShuffleQuads (0x0d9290): build a 4-element index array [0,1,2,3], Fisher-
-// Yates it with rand() into a random permutation, then walk the renderer plane
-// list applying the permutation - remapping m_quadIndex for the five ordinary quad
-// types and scatter-permuting the four m_blockF corners for the special type.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
-    // retail null-tests the +0x10 list-facet address then walks its head node
+
     CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {
         return 0;
@@ -182,7 +169,7 @@ i32 CPlay::ScanShuffleQuads() {
         if (p == 0) {
             continue;
         }
-        GameObjNotifyFn vf = p->m_7c->m_notify;
+        GameObjNotifyFn vf = p->m_animWorker->m_notify;
         if (vf == CreateGruntCreationPoint || vf == CreateExitTrigger || vf == CreateFortressFlag
             || vf == CreateWayPoint || vf == CreateGuardPoint) {
             p->m_124 = perm[p->m_124];
@@ -199,7 +186,7 @@ i32 CPlay::ScanShuffleQuads() {
             if (p->m_clip.left == static_cast<i32>(0x80000000)) {
                 p->m_clip.left = 0;
             }
-            // scatter-permute the four extent-quad corners
+
             i32 scatter[4];
             scatter[perm[0]] = p->m_extent.left;
             scatter[perm[1]] = p->m_extent.top;

@@ -2,19 +2,16 @@
 #define GRUNTZ_GRUNTZ_BZSTATE_H
 
 #include <Ints.h>
-#include <Mfc.h>                      // CMapStringToPtr (the embedded find table)
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>         // CGameObject (the created idle-grunt sprites)
+#include <Mfc.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
 
 #include <rva.h>
-#include <Gruntz/BattlezData.h> // CBattlezData (g_gameReg->m_scoreHud)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // the real keyed sound-cue cache
-#include <Gruntz/LeafCue.h>               // the real cue element
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/BattlezData.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/GameRegMfcPtr.h>
 
-class CString; // <Mfc.h>; used by reference in BzState::FormatHudText's declaration
-
-
-
+class CString;
 
 #endif // GRUNTZ_GRUNTZ_BZSTATE_H

@@ -5,7 +5,7 @@
 
 #include <Crypto/BlowfishPi.h>
 
-#include <string.h> // memcpy - retail's S-box reload is one inline `rep movsd` of 0x400 dwords
+#include <string.h>
 
 DATA(0x0021aeb0)
 u32 g_bfP[18] = BF_PI_P_INIT;
@@ -92,8 +92,7 @@ i16 InitializeBlowfish(const char* key, i16 keybytes) {
 
     j = 0;
     for (i = 0; i < 18; i++) {
-        // the schedule reads the key as UNSIGNED bytes (retail zero-extends each one:
-        // `xor eax,eax; mov al,BYTE PTR [...]`), so each byte is widened here.
+
         data = (static_cast<u32>(static_cast<u8>(key[j])) << 24)
                | (static_cast<u32>(static_cast<u8>(key[(j + 1) % keybytes])) << 16)
                | (static_cast<u32>(static_cast<u8>(key[(j + 2) % keybytes])) << 8)

@@ -3,37 +3,26 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (CToobSpikez : CUserLogic)
-#include <Gruntz/ActReg.h> // CActReg (for the extern below)
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/ActReg.h>
 
 class CToobSpikez : public CUserLogic, public CWapX {
 public:
 public:
-    CToobSpikez(CGameObject* obj); // 0x1145c0 (ctor body in UserLogic.cpp)
-    // The per-frame act handler ("A" PMF): advance the bound anim cursor.
-    i32 AdvanceAnim(); // 0x114bc0
-    // The class's own CUserLogic slot overrides, reconstructed as regular methods
-    // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
-    // 0x00012ba0 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
+    CToobSpikez() {}
+    CToobSpikez(CGameObject* obj);
+
+    i32 AdvanceAnim();
+
     RVA(0x00012ba0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TOOBSPIKEZ;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    virtual void FireActivation(i32 id) OVERRIDE;                     // 0x114860 (vtable slot 4)
-    static void RegisterActs(); // 0x1149c0 (binds the logic handler to key "A";
-    //  static: no this, called this-less by the factory)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
 };
 SIZE(0x54);
-
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

@@ -1,31 +1,31 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ObjectDropper.h>     // CObjectDropper : CUserLogic (ctor 0xc59f0)
-#include <Rez/FrameClock.h>           // frame-clock band (g_frameDelta/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h>     // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/ObjectDropper.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/zBitVec.h>        // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/DroppedObject.h> // CDroppedObject : CUserLogic (ctor 0xc68b0)
-#include <Gruntz/DroppedObjectShadow.h> // CDroppedObjectShadow : CUserLogic (ctor 0xc7490)
+#include <Wap32/zBitVec.h>
+#include <Io/FileMem.h>
+#include <Gruntz/DroppedObject.h>
+#include <Gruntz/DroppedObjectShadow.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GameLevel.h> // CGameLevel (holder->m_24) + CDDrawWorkerHost (its m_mainPlane wrap extent)
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
-#include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
+#include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/TriggerMgr.h>        // canonical CTriggerMgr (m_cmdGrid; FindGruntAt @0x75c60)
-#include <Gruntz/LightFxMgr.h>        // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/SerialArchive.h>     // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Gruntz/UserLogic.h>         // canonical CGameObject / CGameObjLayer (the bound object)
-#include <Image/CImage.h>             // the +0x198 cached frame (ex CGameObjLayer view)
-#include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
-#include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/LightFxMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
+#include <Image/CImage.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/State.h>
 
-#include <string.h>         // inline strcmp for the direction-name match
-#include <Gruntz/ActName.h> // CActName (shared)
+#include <string.h>
+#include <Gruntz/ActName.h>
 #include <Gruntz/XferArchive.h>
 #include <rva.h>
 #include <rva.h>
@@ -34,9 +34,9 @@ VTBL(CDroppedObjectShadow, 0x001e787c);
 VTBL(CDroppedObject, 0x001e78d4);
 VTBL(CObjectDropper, 0x001e7a9c);
 DATA(0x001ea9f0)
-const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
+const double g_objDropDiv = 32.0;
 DATA(0x001eaa00)
-double g_dropFallBias = -0.5; // 0x5eaa00  landed = m_fallY - g_dropFallBias
+double g_dropFallBias = -0.5;
 
 template<> DATA(0x0024be90)
 CActReg CActRegPool<CObjectDropper>::s_table(2000, 2010);
@@ -45,7 +45,7 @@ CActReg CActRegPool<CDroppedObject>::s_table(2000, 2010);
 template<> DATA(0x0024bf00)
 CActReg CActRegPool<CDroppedObjectShadow>::s_table(2000, 2010);
 
-struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CString;
 
 static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
@@ -69,11 +69,6 @@ static inline CActHandler* DropLookup(i32 coord) {
     return (CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
 }
 
-// The same two lookups one inline level shallower: the grow-fail tail stays as the
-// out-of-line zErrHandling::Report call (0x34960) instead of expanding. cl5 spends its
-// inline budget from the outside in, so the TWO-key registrar keeps the tail outlined
-// at three of its four lookups while the one-key registrars expand both.
-// docs/patterns/act-registrar-report-outline-budget.md
 static inline CString* ActNameLookupCallReport(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
@@ -87,44 +82,24 @@ static inline CString* ActNameLookupCallReport(i32 id) {
 }
 
 typedef enum DropperDir {
-    DROPDIR_NORTH = 1, // "LEVEL_OBJECTDROPPER_NORTH", (dx,dy) = ( 0,-1)
-    DROPDIR_EAST = 2,  // "LEVEL_OBJECTDROPPER_EAST",  (dx,dy) = ( 1, 0)
-    DROPDIR_SOUTH = 3, // "LEVEL_OBJECTDROPPER_SOUTH", (dx,dy) = ( 0, 1)
-    DROPDIR_WEST = 4   // "LEVEL_OBJECTDROPPER_WEST",  (dx,dy) = (-1, 0)
+    DROPDIR_NORTH = 1,
+    DROPDIR_EAST = 2,
+    DROPDIR_SOUTH = 3,
+    DROPDIR_WEST = 4
 } DropperDir;
 
-// ===========================================================================
-// The three low-band /GX leaf dtors (the 0x124f0..0x126b4 ctor-band pocket).
-// Each folds the bare CUserLogic teardown: store the CUserLogic vptr (0x5e705c),
-// inline-destruct the +0x18 link (the embedded ~EngStr call 0x16d2a0), store the
-// CUserBase vptr (0x5e70b4). The destructible link forces the /GX EH frame; the
-// leaf vptr store is dead-eliminated. Byte-identical in shape to ~CTimeBomb
-// @0x012a70; the empty bodies are enough for cl.
-// ===========================================================================
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CObjectDropper() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x000124c0, 0x1e, ??_GCObjectDropper@@UAEPAXI@Z)
 RVA_COMPGEN(0x000124f0, 0x44, ??1CObjectDropper@@UAE@XZ)
 
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CDroppedObject() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012580, 0x1e, ??_GCDroppedObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x000125b0, 0x44, ??1CDroppedObject@@UAE@XZ)
 
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CDroppedObjectShadow() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012640, 0x1e, ??_GCDroppedObjectShadow@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
 RVA(0x000c5630, 0xf4)
 i32 CreateObjectDropper(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_7c;
+    AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(aux->ActKey())) {
         case 0: {
             aux->SetActKey(0x3e8);
@@ -162,7 +137,7 @@ i32 CreateObjectDropper(CGameObject* obj) {
 
 RVA(0x000c5770, 0xf1)
 i32 CreateDroppedObject(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_7c;
+    AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(aux->ActKey())) {
         case 0: {
             aux->SetActKey(0x3e8);
@@ -200,7 +175,7 @@ i32 CreateDroppedObject(CGameObject* obj) {
 
 RVA(0x000c58b0, 0xf1)
 i32 CreateDroppedObjectShadow(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_7c;
+    AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(aux->ActKey())) {
         case 0: {
             aux->SetActKey(0x3e8);
@@ -236,14 +211,6 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
     return 1;
 }
 
-// ===========================================================================
-// CObjectDropper::CObjectDropper @0xc59f0 - fold the shared CUserLogic(obj) init,
-// bind the cycle geometry + "A" bute node, snap the bound object to the tile grid,
-// match the dropper's direction name (LEVEL_OBJECTDROPPER_{NORTH,EAST,SOUTH,WEST})
-// to seed the travel vector + direction id, then read the per-tile time
-// (ObjectDropperTimePerTile) into the per-frame speed and seed the bound sprite's
-// draw state.
-//
 // @early-stop
 RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -318,14 +285,6 @@ void CObjectDropper::FireActivation(i32 actId) {
     }
 }
 
-// CObjectDropper::RegisterActs (0xc60e0): register "A" in the shared name registry
-// (first caller only), then bind Update into the class registry slot.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
     i32 id = ActFindId("A");
@@ -377,10 +336,7 @@ i32 CObjectDropper::Update() {
                             || static_cast<u32>(cy) >= static_cast<u32>(plane->m_height)) {
                             flags = 1;
                         } else {
-                            // the row table is typed i32** on CMapMgr; the row's cells are
-                            // the canonical 0x1c-byte BrickzCell (its m_0 = packed terrain
-                            // flags). @fold-TODO in MapMgr.h tracks retyping m_8 to
-                            // BrickzCell** tree-wide.
+
                             flags = static_cast<u32>(plane->m_rows[cy][cx].m_0);
                         }
                         if ((flags & 2) == 0) {
@@ -446,8 +402,6 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
         return 0;
     }
 
-    // The drop-timing i64 pair (m_lastDropTime/m_dropInterval), streamed through a
-    // walking typed cursor.
     i64* p = &m_lastDropTime;
     switch (tag) {
         case 4:
@@ -462,7 +416,6 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
             break;
     }
 
-    // The move/state field list (+0x58..+0x80); mode 8 seeds a draw-fill instead.
     switch (tag) {
         case 4:
             ar->Write(&m_speed, 8);
@@ -496,16 +449,6 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
     return 1;
 }
 
-// ===========================================================================
-// CDroppedObject::CDroppedObject(CGameObject*) @0xc68b0 - the 1-arg leaf ctor:
-// the standard CUserLogic(obj) init (folded inline) plus the dropped-object tail
-// - cache the anim-set node off the "A" bute key, snapshot m_38->m_1a0.m_14, apply the
-// dropped-object sprite/geometry, raise the bound object's logic/collision bits,
-// snap the bound object's screen position to the tile grid, then bias its Y by the
-// bute "DroppedObjectYOffset" (storing the result as a double) and seed the
-// per-tile time as 32.0 / bute "DroppedObjectTimePerTile". Constructs a throwing
-// CUserBaseLink, so MSVC emits the /GX EH frame.
-//
 // @early-stop
 RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -540,15 +483,6 @@ void CDroppedObject::FireActivation(i32 coord) {
     }
 }
 
-// CDroppedObject::RegisterActs @0x0c6d30 - intern the "A" and "B" activation keys
-// and bind each to its per-frame handler (0xc7090 / 0xc7be0) in the dropped-object
-// registry. Two back-to-back single-key registrations; the SAME archetype as
-// CTimeBomb::RegisterActs done twice.
-//
-// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
-// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
-// it as the out-of-line zErrHandling::Report call.
-// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
     i32 id = ActFindId("A");
@@ -568,9 +502,7 @@ void CDroppedObject::RegisterActs() {
         g_typeCounter++;
     }
     *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id)) =
-        // the static_cast to the base PMF is the whole conversion (CUserLogic is the
-        // primary base, so it is a zero-delta bit copy); CActHandler IS that type, so no
-        // reinterpret is needed on top of it
+
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA);
 
     i32 id2 = ActFindId("B");
@@ -593,23 +525,6 @@ void CDroppedObject::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB);
 }
 
-// CDroppedObject::ActA @0x0c7090 - the per-frame "A" activation handler (bound into
-// the registry by RegisterActs via the DropActA_c7090 address alias). Advance the
-// fall animation, integrate the drop by the frame delta, and once the object has
-// fallen past its landing row, look up the grid cell it lands on: over deep water
-// (cell & 0x900) spawn a GAME_WATER ripple; over shallow/hazard water (cell & 2, not
-// the 0x40 solid) spawn a LEVEL_DEATHSPLASH (gated by the fx-mode selector), then in
-// all landed cases apply the LEVEL_DROPPEDOBJECTHIT geometry, intern the "B"
-// activation key, and post the tile-hit event to the registry's tile-manager.
-//
-// The 0x21b claim is SHORT on purpose. Retail's `jmp [eax*4+0x4c7...]` jump table sits
-// at 0xc72ac (five entries, ending 0xc72c0) and is genuinely part of this COMDAT, so
-// the true extent is 0x230; claiming it scores this function 92.55 -> 96.45. But the
-// delinker then drops the DIR32 on CDroppedObject::UserLogicVfunc5 @0xc7350, whose
-// first instruction is `mov eax,[0x6bf3bc]` (_g_engineFrameDelta) - assert_relocs goes
-// 0 -> 1 WRONG. Reloc fidelity outranks the 3.9 points, so the table stays outside
-// until the delinker handles a carve that ends this close to a 144-byte int3 gap.
-//
 // @early-stop
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
@@ -722,15 +637,6 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
     return 1;
 }
 
-// ===========================================================================
-// CDroppedObjectShadow::CDroppedObjectShadow(CGameObject*) @0xc7490 - the 1-arg
-// leaf ctor: the standard CUserLogic(obj) init (folded inline) plus the shadow
-// tail - cache the anim-set node off the "A" bute key, snapshot m_38->m_1a0.m_14,
-// apply the shadow sprite/geometry to the bound object, raise its logic/collision
-// flag bits, and seed the bound object's render state (m_4c from the game
-// registry, m_50=7/m_58=1, the 0xcf84f tile-key + its dirty bit). Constructs a
-// throwing CUserBaseLink, so MSVC emits the /GX EH frame.
-//
 // @early-stop
 RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -756,14 +662,6 @@ void CDroppedObjectShadow::FireActivation(i32 coord) {
     }
 }
 
-// CDroppedObjectShadow::RegisterActs (0xc78b0): same archetype as
-// CObjectDropper::RegisterActs, binding Advance into the class registry.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
     i32 id = ActFindId("A");
@@ -786,11 +684,6 @@ void CDroppedObjectShadow::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 
-// CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance
-// the bound object's +0x1a0 anim sub-mgr, and on the drop frame (Advance == 2)
-// spawn the "DroppedObject" sprite at the bound object's screen position (the
-// shadow heralds the drop); then raise the object's redraw bit if the anim
-// latched active while idle-clear (same idle tail as CDroppedObject::UserLogicVfunc5).
 // @early-stop
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
@@ -825,5 +718,5 @@ i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGame
 
 RVA(0x000c7be0, 0x5)
 i32 CDroppedObject::ActB() {
-    return UserLogicVfunc5(); // retail: the bare `jmp [vtbl+0x1c]` tail-dispatch
+    return UserLogicVfunc5();
 }

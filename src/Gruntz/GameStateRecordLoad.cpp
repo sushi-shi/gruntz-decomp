@@ -1,23 +1,23 @@
-#include <Gruntz/GameStateRecordLoad.h> // this TU's external declarations
+#include <Gruntz/GameStateRecordLoad.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Rez/RezAlloc.h>             // RezAlloc/RezFree
-#include <Gruntz/Grunt.h>             // canonical CGrunt (this) + CGruntHud + CDDrawChildGroup
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (the name map host, holder +0x2c)
-#include <Wwd/WwdGameObjectFamily.h>  // CGameObject::GetClassId (the ==5 probe)
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Rez/RezAlloc.h>
+#include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Io/FileMem.h>
 #include <Gruntz/SpriteRefTable.h>
-#include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
-#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
-#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c)
-#include <Mfc.h>                  // CPtrList (CRecPtrList fold)
+#include <Bute/ButeMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Mfc.h>
 #include <rva.h>
-#include <string.h> // inline strlen / memset (rep scas / rep stos)
+#include <string.h>
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Utils/MapTyped.h>      // MapLookupById - the forced id->void* key pun
+#include <Gruntz/FreeNodePool.h>
+#include <Utils/MapTyped.h>
 
-static const char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
-static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
+static const char s_Powerupz[] = "Powerupz";
+static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
 
 #define SERIALREF(field)                                                                           \
     do {                                                                                           \
@@ -66,7 +66,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     i32 id;
-    void* obj; // the CMapPtrToPtr value type; the CObject-map call below re-types it
+    void* obj;
     char buf[0x80];
 
     m_struckSlotSound = 0;
@@ -77,7 +77,6 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     m_struckClockHi = 0;
     m_struckTimerHi = 0;
 
-    // 7 serial-id object refs (unrolled).
     SERIALREF(m_selectedSprite);
     SERIALREF(m_toySprite);
     SERIALREF(m_healthSprite);
@@ -86,12 +85,10 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     SERIALREF(m_wingzTimeSprite);
     SERIALREF(m_powerupSprite);
 
-    // 3 CString fields.
     READCSTR(m_animSetName);
     READCSTR(m_448);
     READCSTR(m_44c);
 
-    // 18 name-ref fields (0x394..0x3d8 step 4, unrolled).
     NAMEREF(m_poseWalk);
     NAMEREF(m_poseAttack[GRUNT_ATTACK1]);
     NAMEREF(m_poseAttack[GRUNT_ATTACK2]);
@@ -111,7 +108,6 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     NAMEREF(m_poseItem[GRUNT_ITEM2]);
     NAMEREF(m_pickupGeoSrc);
 
-    // ~100 plain scalar/struct reads (in retail order).
     ar->Read(&m_18c, 4);
     ar->Read(&m_toyBlendPct, 4);
     ar->Read(&m_194, 4);
@@ -213,7 +209,6 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_2e8, 4);
     ar->Read(&m_288, 8);
 
-    // 3x3 array of 0x68-byte sub-records (outer stride 0x138, inner 0x68).
     CGruntCellRec* row = m_cells;
     for (i32 gi = 0; gi < 3; ++gi) {
         CGruntCellRec* cell = row;
@@ -226,7 +221,6 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         row += 3;
     }
 
-    // Drain the m_320 list back to the engine free-list, then RemoveAll(m_31c).
     if (m_31c.GetCount() != 0) {
         POSITION pos = m_31c.GetHeadPosition();
         if (pos != 0) {
@@ -244,7 +238,6 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_31c)->RemoveAll();
     }
 
-    // Rebuild m_31c from a count of 8-byte free-list nodes.
     i32 count;
     ar->Read(&count, 4);
     for (i32 a = 0; a < count; ++a) {
@@ -259,13 +252,11 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_31c)->AddTail(item);
     }
 
-    // Drain + free the m_338 list.
     while (m_338.GetCount() != 0 && m_338.GetHead() != 0) {
         void* rem = (&m_338)->RemoveHead();
         RezFree(rem);
     }
 
-    // Rebuild m_338 from a count of new(0x2c) nodes (zero-init, read 0x2c each).
     ar->Read(&count, 4);
     for (i32 b = 0; b < count; ++b) {
         void* mem = operator new(0x2c);
@@ -278,8 +269,6 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_338)->AddTail(item);
     }
 
-    // Push the level-config event(s) into the grunt's HUD object (the
-    // m_4c/m_50/m_58 move-icon triple, the SelectMoveIcon idiom).
     i32 flag = (m_entranceReason >= 0x17);
     CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, flag);
     CWwdGameObjectA* cb = m_object;

@@ -2,41 +2,36 @@
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
-#include <afxwin.h> // AfxGetApp() -> CWinApp (CCmdTarget::Begin/EndWaitCursor in Save)
+#include <afxwin.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/FontConfig.h>
-#include <Image/ImagePool.h>           // the canonical CImagePool (g_previewMgr)
-#include <Image/Image.h>               // CRezImage (g_previewImage; the DIB StretchDIBits reads)
-#include <Gruntz/GruntzMgr.h>          // CGruntzMgr (RunModalDialog/FillSaveInfo, DrawSaveGameMenu)
-#include <Gruntz/Play.h>               // CPlay - m_curState real class (m_levelIndex)
-#include <Gruntz/CheatMgr.h>           // CCheatMgr - m_124 "a cheat was used" latch
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::TransEnter (the Save page flip)
-#include <Gruntz/ChainForward.h>       // ChainForward (the Save thumbnail grab)
-#include <Io/GameSave.h>               // SaveGame (the object-graph snapshot writer)
-#include <Utils/RegistryHelper.h>      // Utils::RegistryHelper (CGruntzMgr::m_settings)
-#include <stdio.h>                     // sprintf (reloc-masked)
+#include <Image/ImagePool.h>
+#include <Image/Image.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/CheatMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/ChainForward.h>
+#include <Io/GameSave.h>
+#include <Utils/RegistryHelper.h>
+#include <stdio.h>
 #include <rva.h>
 
-#include <stdlib.h> // _itoa
-#include <string.h> // memset -> inline rep stos
+#include <stdlib.h>
+#include <string.h>
 
-char* g_areaNames[8]; // 0x6454e8
+char* g_areaNames[8];
 DATA(0x00213a9c)
 i32 g_savedMenuCmd = -1;
 DATA(0x0024c814)
-CImagePool* g_previewMgr; // 0x64c814
+CImagePool* g_previewMgr;
 DATA(0x0024c864)
-SaveSlot* g_slotState; // 0x64c864  the record the save/load dialogs describe
+SaveSlot* g_slotState;
 DATA(0x0024c868)
-void* g_previewImage; // 0x64c868  (CRezImage* previewed DIB)
+void* g_previewImage;
 DATA(0x0024c86c)
-CSaveGame* g_saveDlgSink = 0; // 0x64c86c  the save dialog's active CSaveGame
+CSaveGame* g_saveDlgSink = 0;
 
-// The GAME_SAVE modal proc, re-homed here from SpriteRef.cpp. Evidence: retail's
-// ILT thunk 0x1041 (the one CGruntzMgr's GAME_SAVE RunModalDialog pushes) resolves
-// to 0xe35f0; the body calls DrawSaveGameMenu/FillSaveDialog (0xe3f40/0xe44e0, this
-// TU) and drives g_savedMenuCmd + g_saveDlgSink, whose rva 0x24c86c is the next word
-// after this TU's g_slotState (0x24c864) in the same .bss run.
 RVA(0x000e35f0, 0x77)
 i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -48,7 +43,7 @@ i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
             if (DrawSaveGameMenu(hDlg, wParam, g_saveDlgSink) != 0) {
                 return 1;
             }
-            // falls through to the shared "return 0" default
+
         default:
             return 0;
         case 0x110: {
@@ -61,11 +56,6 @@ i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
     }
 }
 
-// LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
-// builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)
-// frees the preview image + destroys the pool + closes; WM_PAINT centre-stretch-blits
-// the previewed DIB (g_previewImage, 8bpp -> DIB_PAL_COLORS else DIB_RGB_COLORS) into
-// a 320x240 box inside the preview item (0x51d). /GX EH frame (the pool ctor/dtor).
 // @early-stop
 RVA(0x000e3690, 0x2ec)
 i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -109,9 +99,8 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     img->m_width,
                     img->m_height,
                     img->m_pixels,
-                    // API-forced: BITMAPINFO is a BITMAPINFOHEADER immediately followed
-                    // by its colour table, which is exactly CRezImage +0x00 m_bih +
-                    // +0x28 m_pal - the SDK has no separate "header+table" type
+                    // API-forced BITMAPINFO header/palette view.
+
                     reinterpret_cast<BITMAPINFO*>(&img->m_bih),
                     DIB_PAL_COLORS,
                     SRCCOPY
@@ -128,9 +117,8 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     img->m_width,
                     img->m_height,
                     img->m_pixels,
-                    // API-forced: BITMAPINFO is a BITMAPINFOHEADER immediately followed
-                    // by its colour table, which is exactly CRezImage +0x00 m_bih +
-                    // +0x28 m_pal - the SDK has no separate "header+table" type
+                    // API-forced BITMAPINFO header/palette view.
+
                     reinterpret_cast<BITMAPINFO*>(&img->m_bih),
                     DIB_RGB_COLORS,
                     SRCCOPY
@@ -145,12 +133,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 return 1;
             }
             g_previewMgr = new CImagePool;
-            // Retail dataflow (byte-proven at 0xe37c6..0xe3803): BOTH the pool's
-            // second handle and the title call's window are edi = the dialog's own
-            // hDlg (stack arg), and the gate is g_gameReg->m_saveSink pushed raw -
-            // the old spelling passed g_previewMgr through two nonsense casts.
-            // the failure exit is the switch's shared `return 0` (retail 0xe37ae is
-            // the DEFAULT arm's block, reached by fall-through from this gate)
+
             if (g_previewMgr->SetHandles(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
                 break;
             }
@@ -180,8 +163,8 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
     switch (msg) {
         case 0x110:
             if (g_slotState == 0) {
-                // API-forced: EndDialog's nResult is an INT_PTR and retail pushes the
-                // just-loaded (provably null) record pointer straight into it.
+                // API-forced INT_PTR boundary.
+
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
@@ -208,8 +191,8 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg) {
         case 0x110:
             if (g_slotState == 0) {
-                // API-forced: EndDialog's nResult is an INT_PTR and retail pushes the
-                // just-loaded (provably null) record pointer straight into it.
+                // API-forced INT_PTR boundary.
+
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
@@ -278,7 +261,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         c = cmd;
     }
 
-    // Latch a pending command from a control notification.
     if (HIWORD(c) == 0x100) {
         switch (LOWORD(c)) {
             case 0x435:
@@ -314,7 +296,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         }
     }
 
-    // GAME_INFO buttons.
     i32 info = -1;
     switch (c) {
         case 0x49a:
@@ -359,7 +340,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         return 0;
     }
 
-    // GAME_DELETE buttons.
     i32 del = -1;
     switch (c) {
         case 0x4a4:
@@ -408,9 +388,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         return 0;
     }
 
-    // Save / overwrite buttons. Each arm sets BOTH the slot index and the matching
-    // name-edit control id: retail materializes `mov esi,n` + `mov eax,0x435+n` in
-    // every arm (0xe4179..0xe41e7), not a `lea eax,[esi+0x435]` at the merge.
     i32 slot = -1;
     i32 nameId;
     switch (c) {
@@ -455,9 +432,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             nameId = 0x43e;
             break;
     }
-    // The trailing `return 0` is the function's ONE shared failure tail: retail
-    // funnels six sites into the last block (0xe430c), so the save arm is the
-    // positive `if`, not an early-out.
+
     if (slot != -1) {
         char name[0x20];
         GetDlgItemTextA(hDlg, nameId, name, 0x20);
@@ -486,28 +461,8 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     return 0;
 }
 
-// @early-stop  (95.8% - logic/frame/branches all faithful; the CFG is now
-// block-for-block identical with retail, verified with `sema disasm --blocks --diff`)
-// Residual is three documented walls, not logic:
-//   (1) prologue order + callee-save shrink-wrap: retail emits `push -1` before
-//       `mov eax,fs:0` and pushes esi/edi UPFRONT; our /O2 swaps the first pair
-//       and shrink-wraps esi/edi past the null guards (shrink-wrapped-callee-save
-//       -push.md, topic:wall topic:regalloc - not source-steerable).
-//   (2) the CString("Training") EH cleanup funclet is emitted inline at our tail
-//       but lives in a separate COMDAT in retail (delinked target omits it).
-//   (3) the 4 wsprintfA + 1 SetDlgItemTextA calls are `call [__imp__*]` (DIR32
-//       reloc) vs retail's absolute IAT slot - reloc-typing scoring artifact,
-//       code bytes identical (reloc-typing-vptr-global.md).
-//   (4) frame slot order in the 0x18-byte block below `title`: retail is
-//       CFile@+0x10 / temp-flag@+0x20 / CString-temp@+0x24, ours is flag@+0x10 /
-//       CString@+0x14 / CFile@+0x18. `title`@+0x28 and `readBuf`@+0xa8 agree.
-//       Declaration-site axes matrix RULED THIS OUT as source-steerable
-//       (config/axes/buildleveltitlestring.json, 24 cells): all twelve cells that
-//       keep `CFile f;` where it is score IDENTICALLY, whatever the buffer order or
-//       an added 4-byte scalar, and all twelve that hoist it crater to 77% because
-//       hoisting the declaration hoists the constructor past the null guards. MSVC
-//       lays the destructible-object block out in source order, so retail's order
-//       is unreachable without moving the ctor. Frame packer, not source.
+// @early-stop
+
 RVA(0x000e44e0, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];
@@ -523,11 +478,8 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
         return;
     }
 
-    // m_isCustom/m_isBattlez are re-read at each use (not cached) to match retail's reloads.
     if (lev->m_isCustom == 0 && lev->m_isBattlez == 0) {
-        // Standard questz/training level. The "Training" CString lives inside the
-        // wsprintf full-expression so its construction is branch-conditional and
-        // its destruction flag-guarded (the /GX temp).
+
         i32 n = lev->m_levelId;
         wsprintfA(
             title,
@@ -537,14 +489,10 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
                                    : g_areaNames[(n - 1) / 4]
         );
     } else if (lev->m_isBattlez != 0 && lev->m_isCustom == 0) {
-        // Battlez level (named). BOTH fields are tested again here - retail's
-        // 0xe45ee/0xe45f2 pair is the two-test else-if, entered mid-way when the
-        // first `if` already proved m_isBattlez != 0.
+
         wsprintfA(title, "Battlez: %s", lev->m_levelName);
     } else {
-        // Custom level: format "Custom <mode> Level[: <basename>]". The mode-keyed
-        // format strings are branched (if/else) so cl tail-merges to one wsprintf
-        // call with two literal pushes (boolarg-branch-push-not-sete).
+
         char* bs = strrchr(lev->m_levelName, '\\');
         if (bs != 0) {
             if (lev->m_isBattlez) {
@@ -566,9 +514,6 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
         }
     }
 
-    // Open the level file & extract the embedded preview image. Inverted guards
-    // (Open == 0 / Read != full) put the g_previewImage=0 failure store inline
-    // after each test (retail's jne-to-success / je-to-success layout).
     CFile f;
     if (f.Open(lev->m_savePath, 0x8000, 0) == 0) {
         g_previewImage = 0;
@@ -630,7 +575,7 @@ void CSaveGame::Init() {
     for (i32 i = 0; i < 10; i++) {
         SaveSlot* p = GetSlot(i);
         if (p != 0) {
-            memset(p, 0, sizeof(SaveSlot)); // retail: mov ecx,0x40 / rep stos dword
+            memset(p, 0, sizeof(SaveSlot));
         }
     }
 }
@@ -650,15 +595,6 @@ i32 CSaveGame::Load() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Save  (0x000e4ea0) - rewrite the .sav file, then (when `path` is
-// non-null) also write the matching screenshot/quicksave bundle: page-flip the
-// draw target, put the `msgId` string resource on the status line, run the
-// object-graph SaveGame(), and grab the 0x140x0xf0 thumbnail via ChainForward.
-// An MFC CWaitCursor brackets the whole thing: its inlined ctor/dtor are exactly
-// retail's AfxGetApp()->Begin/EndWaitCursor pair, and it is the EH state-0 object
-// (the CFile is state 1) - see the `mov [esp+0x24],0` before the CFile ctor and the
-// `state=-1` store that precedes the inlined EndWaitCursor at both exits.
 RVA(0x000e4ea0, 0x18c)
 i32 CSaveGame::Save(char* path, i32 msgId) {
     CWaitCursor wait;
@@ -689,17 +625,12 @@ i32 CSaveGame::Save(char* path, i32 msgId) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::ComputeAll  (0x000e50a0)
-// Sum Encode() over all ten slots; store header fields (@+0x08..+0x14).
-// Returns 1 - the `mov eax,1` retail emits before the store block IS the return
-// value, CSE'd into `m_header[1] = 1` (the sole caller, Save, ignores it).
 RVA(0x000e50a0, 0x3e)
 i32 CSaveGame::ComputeAll() {
     i32 sum = 0;
     for (i32 i = 0; i < 10; i++) {
-        // byte-forced: Encode is a byte checksum - retail walks `mov dl,[ecx+esi*1]`
-        // over all 0x100 bytes of the record, XOR-folding byte i with i.
+        // Byte-forced checksum view.
+
         sum += Encode(reinterpret_cast<u8*>(GetSlot(i)));
     }
     m_header[0] = 0;
@@ -713,7 +644,7 @@ RVA(0x000e50f0, 0x2f)
 i32 CSaveGame::Verify() {
     i32 sum = 0;
     for (i32 i = 0; i < 10; i++) {
-        // byte-forced: Decode is the byte-wise inverse of Encode over the 0x100-byte record
+        // Byte-forced checksum view.
         sum += Decode(reinterpret_cast<u8*>(GetSlot(i)));
     }
     return m_header[2] == sum;
@@ -775,13 +706,6 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::VerifySlot  (0x000e52c0)
-// Re-derive the slot's level rez-path id and validate it: fail (with an "does
-// not exist" notice) if the registry can't resolve it, fail (with a "has
-// changed" notice) if it no longer matches the slot's stored checksum (+0x10),
-// else succeed. Same name-fallback (g_emptyString) and BuildLevelRezPath shape
-// as Register.
 RVA(0x000e52c0, 0x99)
 i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == 0) {
@@ -808,10 +732,6 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Register  (0x000e5390)
-// Build a CString from the slot's name (or the empty string) and hand the slot's
-// level id / flags to g_gameReg->BuildLevelRezPath().
 RVA(0x000e5390, 0x59)
 i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == 0) {
@@ -820,18 +740,10 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     i32 fc = slot->m_pathHi;
     i32 f8 = slot->m_pathLo;
     const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
-    // the by-value CString arg constructs INTO the pushed slot (callee-destroyed;
-    // a named local instead forces a caller EH frame retail doesn't have)
+
     return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, CString(name));
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Encode  (0x000e5410)
-// Running XOR-fold checksum over a 0x100-byte slot (forward key). Checksums the
-// PLAINTEXT byte (pre-XOR) FIRST, then writes the XOR'd byte back - that statement
-// order is byte-PROVEN (this body compiled standalone with cl /O2 is byte-identical
-// to retail 0xe5410, incl. `mov edi,[esp+0xc]` landing BEFORE the store-back).
-// @early-stop
 RVA(0x000e5410, 0x3d)
 i32 CSaveGame::Encode(u8* buf) {
     if (buf == 0) {
@@ -846,9 +758,6 @@ i32 CSaveGame::Encode(u8* buf) {
     return acc;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Decode  (0x000e5460)
-// @early-stop
 RVA(0x000e5460, 0x3f)
 i32 CSaveGame::Decode(u8* buf) {
     if (buf == 0) {
@@ -873,8 +782,7 @@ SaveSlot* CSaveGame::GetSlot(i32 i) {
 
 RVA(0x000e54e0, 0x25)
 i32 CSaveGame::FillSlotByIndex(i32 idx, const char* name, void* src) {
-    // retail forwards to FillSlot (0xe5130, the const char* name-string variant), not
-    // FillSlot2 (0xe5240).
+
     return FillSlot(GetSlot(idx), name, src);
 }
 
@@ -897,10 +805,6 @@ i32 CSaveGame::CloseTempFile(SaveSlot* p) {
     return 1;
 }
 
-// SetMaxLevel (0x0e5620): clamped update of the highest-reached level. Out-of-line
-// (retail emits it standalone; the inline member folded away and never emitted).
-// ONE store reached from the whole predicate - duplicating `m_maxLevel = v; return;`
-// per arm tail-merges to the same blocks but flips the eax<->edx pairing.
 RVA(0x000e5620, 0x27)
 void CSaveGame::SetMaxLevel(i32 v) {
     if ((v < 0x21 && (static_cast<u32>(v) > m_maxLevel || m_maxLevel > 0x24))
@@ -919,7 +823,7 @@ void CSaveGame::SetCurLevel(i32 v) {
     }
     m_curLevel = v;
     if (v == 0x20) {
-        SetMagic(); // 0xe56b0 (retail calls the magic-stamp here, not Init 0xe4d50)
+        SetMagic();
     }
 }
 

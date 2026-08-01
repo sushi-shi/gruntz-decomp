@@ -1,12 +1,12 @@
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 
 DATA(0x001eab40)
-float g_zeroF = 0.0f; // 0x5eab40
+float g_zeroF = 0.0f;
 
 RVA(0x000fc9c0, 0x17)
 i32 CBattlezData::InitWithRecords(void* records) {
@@ -20,8 +20,6 @@ CBattlezData::~CBattlezData() {
     Init();
 }
 
-// 0xfca10 - Init: zero the scalar band + the matrices, then the four large
-// zeroed bands (each a rep-stosd run Init open-codes).
 // @early-stop
 RVA(0x000fca10, 0x8a)
 void CBattlezData::Init() {
@@ -347,8 +345,6 @@ i32 CBattlezData::SumGroupField08() {
     return sum;
 }
 
-// 0xfced0 - the record's win/score value at the wrap index, or m_scoreValue when the
-// wrapped index lands on the last record.
 // @early-stop
 RVA(0x000fced0, 0x31)
 i32 CBattlezData::GetRecordValue(i32 b) {
@@ -362,7 +358,7 @@ i32 CBattlezData::GetRecordValue(i32 b) {
 
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
-    BattlezRecord* rec = &m_records[index - 1]; // 1-based slot index
+    BattlezRecord* rec = &m_records[index - 1];
     if (phase == 0) {
         rec->m_populated = 1;
         rec->m_08 = m_score;
@@ -384,10 +380,6 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
     }
 }
 
-// 0xfd3f0 - flat serialize: op 7 reads, op 4 writes. The 17 leading scalars
-// (m_count..m_scoreValue) are streamed UNROLLED; the m_counts band and the four nested 4xN
-// grids/bands are streamed in counted loops. The op==4 (write) test is the
-// forward `je`; op==7 (read) is the fall-through block.
 // @early-stop
 RVA(0x000fd3f0, 0x425)
 i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {

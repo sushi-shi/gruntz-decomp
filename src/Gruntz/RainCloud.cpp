@@ -1,35 +1,17 @@
-#include <Gruntz/RainCloud.h> // CRainCloud : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
-#include <Gruntz/LightFxMgr.h> // reg->m_logicPump (+0x78): the shade-table pump the fill arg reads
-#include <Gruntz/GruntzMgr.h>  // complete CGruntzMgr
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag (HitTest's kill-sound gate)
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_cmdGrid: CellDispatch @0x6bcb0)
-#include <Rez/FrameClock.h>    // g_frameTime/g_killCueClock (strike deadline + cue clock)
-#include <Bute/ButeMgr.h>      // g_buteMgr (the RainCloudFlashTime window bute)
+#include <Gruntz/RainCloud.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Rez/FrameClock.h>
+#include <Bute/ButeMgr.h>
 #include <rva.h>
 
-VTBL(CRainCloud, 0x001e7324); // vtable_names -> code (RTTI game class)
-// ~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor: no
-// destructible members of its own, so it folds the bare CUserLogic teardown (store
-// the CUserLogic vptr, inline-destruct the +0x18 link's ~EngStr, store the CUserBase
-// vptr; the throwing link forces the /GX EH frame). IDENTITY (vtable-owner probe):
-// ??_7CRainCloud @0x1e7324 (RTTI-named, <Gruntz/RainCloud.h>) slot 0 -> ILT thunk ->
-// the sdd 0x13310 -> THIS body (it was once misbound as ~CPathHazard).
-//
-// IMPLICIT (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B): a
-// user-declared `~CRainCloud() {}` emits the leaf-vptr restamp, and the CWapX base
-// EH state blocks the dead-store elision that used to hide it. THIS obj emits
-// ??_7CRainCloud -> ??_G -> the implicit ??1 COMDAT (the ctor above is what needs
-// the vtable), so the pin resolves here - PathHazard.cpp never emits it.
+VTBL(CRainCloud, 0x001e7324);
+
 RVA_COMPGEN(0x00013310, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
 
-// CRainCloud::HitTest @0x0b4640 (slot-20 override; ??_7CRainCloud[20] is the
-// body's ONLY referent - the base default @0x13230 is what CPathHazard/CUFO
-// keep) - arm the strike-window timer (deadline =
-// now, window = bute RainCloudFlashTime), fire the cue gate, and play the
-// "LEVEL_CLOUDHAZARDKILL" positional sound on the bound object when it is on-screen
-// and the per-emitter cooldown has elapsed.  Integer-only; returns 1.  __thiscall,
-// 2 args.
 RVA(0x000b4640, 0x104)
 i32 CRainCloud::HitTest(i32 a, i32 b) {
     m_strikeArmed = 1;
@@ -69,7 +51,7 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
-    CShadeTable* n = g_gameReg->m_logicPump->m_tables[5]; // reg->+0x78->+0x28
+    CShadeTable* n = g_gameReg->m_logicPump->m_tables[5];
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0x7;
     o->m_drawFillArg = n;
@@ -81,11 +63,6 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     m_object->m_area.bottom = 1;
 }
 
-// CRainCloud::SerializeMove @0xb4cb0 (slot-1 override; ??_7CRainCloud[1] is the
-// body's ONLY vtable referent - it was misattributed as "CUFO::Method_b4cb0"):
-// chain the CPathHazard leg, then on the tag-8 re-seed pass restore the ctor's
-// draw-fill triple (fill cmd 7 + the logic pump's shade table) - the exact
-// stores CRainCloud::CRainCloud performs at spawn.
 RVA(0x000b4cb0, 0x56)
 i32 CRainCloud::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
     if (!CPathHazard::SerializeMove(stream, tag, c, d)) {

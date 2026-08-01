@@ -3,37 +3,33 @@
 
 #include <rva.h>
 
-#include <Mfc.h> // CObject base + <windows.h>
+#include <Mfc.h>
 
-#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, CGameObject
+#include <Gruntz/UserLogic.h>
 #include <Gruntz/ActReg.h>
-#include <Wap32/ZVec.h>           // zDArray<member-fn-ptr> (the dispatch table)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Wap32/ZVec.h>
+#include <Gruntz/SerialArchive.h>
 
 class CFileMemBase;
 
 class CInGameText : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00011d70, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMETEXT;
-    } // slot 2
+    }
+
 public:
-    CInGameText(CGameObject* obj); // 0x099110 (folds CUserLogic(obj) + on-screen tail)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    CInGameText() {}
+    CInGameText(CGameObject* obj);
 
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x099460
-    i32 Update();                                 // 0x0997c0
+    virtual void FireActivation(i32 id) OVERRIDE;
+    i32 Update();
 
-    // --- CInGameText own fields (offsets load-bearing) ---
-    i32 m_cachedAreaId; // +0x54  Update: cached hit-test area id; serialized scalar
-    i32 m_cachedSubId;  // +0x58  Update: cached hit-test sub id; serialized scalar
+    i32 m_cachedAreaId;
+    i32 m_cachedSubId;
 };
 SIZE_UNKNOWN();
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
 
 #endif // GRUNTZ_GRUNTZ_CINGAMETEXT_H

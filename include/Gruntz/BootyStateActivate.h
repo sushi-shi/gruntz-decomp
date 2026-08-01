@@ -1,8 +1,7 @@
-// BootyStateActivate.h - the BootyStateActivate TU's external declarations.
 #ifndef GRUNTZ_BOOTYSTATEACTIVATE_H
 #define GRUNTZ_BOOTYSTATEACTIVATE_H
 
-#include <Mfc.h> // afx.h FIRST (umbrella for any Win32 types below)
+#include <Mfc.h>
 #include <Ints.h>
 #include <rva.h>
 
@@ -18,6 +17,6 @@ void ShowHudMessageAlt(
     i32 d,
     i32 e,
     i32 f
-); // 0x115520
+);
 
 #endif // GRUNTZ_BOOTYSTATEACTIVATE_H

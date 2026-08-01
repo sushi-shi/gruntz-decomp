@@ -1,9 +1,9 @@
-#include <Mfc.h> // wsprintfA (USER32, reloc-masked)
+#include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (g_gameReg->EnterModalUI)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (arc->Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialCounter.h>
+#include <Io/FileMem.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
 #include <rva.h>
 
 RVA(0x00013610, 0x8c)

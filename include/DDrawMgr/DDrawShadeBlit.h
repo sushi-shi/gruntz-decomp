@@ -2,34 +2,17 @@
 #define GRUNTZ_CDDRAWSHADEBLIT_H
 
 #include <Ints.h>
-#include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the shade/LUT record (was duplicated here as CShadeTable)
+#include <DDrawMgr/ShadeTableCache.h>
 #include <rva.h>
 
-class CString;    // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
-class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDSurface.h>
+class CString;
+class CDDSurface;
 
-typedef struct tagRECT ShadeRect; // (incomplete-ok: unifies with windows.h's tagRECT)
+typedef struct tagRECT ShadeRect;
 SIZE_UNKNOWN();
 
-// Build decodes the PID/RID resource blob, so its source is the ONE canonical
-// `struct PidHeader` in <DDrawMgr/DDSurface.h> (SIZE 0x20 + the PidFlags enum).
-// This header used to carry a second padded view of it named CImageBuildDesc
-// (`char _00[4]; i32 m_flags; i32 m_width; i32 m_height; char _10[8]; u8 m_srcKey;
-// char _19[7]; u8 m_frameData[1];`) - dissolved 2026-07-27 together with
-// <Image/CImage.h>'s CImageFrameDesc: CImage::LoadDispatch hands the SAME pointer to
-// Build on one arm and to CDDSurface::DecodePcxData (declared PidHeader*) on the
-// other, and all three shapes agree field for field. The flags Build tests are the
-// enum's: 0x80 = PID_EMBEDDED_PALETTE (the trailing 768-byte VGA palette), 0x40/0x200
-// = PID_SRC_8BPP_SHADE / PID_SRC_8BPP (the payload is 8bpp indices), 0x100 =
-// PID_FILL_IS_WORD. The pixel payload begins one header past `src`.
 struct PidHeader;
 
-// This is field-for-field <DDrawMgr/DDSurface.h>'s PidHeader (formatTag, flags, width,
-// height, offsetX, offsetY, fill, unk1) - DecodeFrame @0x149250 writes it out as the
-// 0x20-byte header in front of the RLE stream, and Rebuild @0x1493b0 fills f2/f3 from
-// m_width/m_height, f4/f5 from its two arguments and f6 from m_colorKey. Folding the
-// two would be the right cleanup (it is a duplicate definition of one retail struct);
-// left as a lead because it changes DecodeFrame's mangled parameter type.
 struct CImageFrameRebuildDesc {
     i32 f0;
     i32 f1;
@@ -40,110 +23,71 @@ struct CImageFrameRebuildDesc {
     i32 f6;
     i32 f7;
 };
-SIZE(0x20); // 8-dword by-value frame descriptor
+SIZE(0x20);
 
 class CDDrawShadeBlit {
 public:
-    // --- build / decode side (former CImageOwned; src/Image/ImageOwned.cpp) -----
-    CDDrawShadeBlit(); // 0x148ce0
-    i32 BuildRle(
-        void* pixels,
-        i32 width,
-        i32 height,
-        i32 stride,
-        i32 keyVal,
-        void* palette
-    );                                       // 0x148d40  (/GX, CByteArray RLE encode)
-    i32 LoadFromFile(CString name, i32 fmt); // 0x148fc0  (/GX, open + slurp + Build)
-    // Lock a source DirectDraw surface, RLE-encode its locked bits (via BuildRle) with
-    // the surface's own width/height/pitch, then unlock it. Returns BuildRle's result.
-    i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette); // 0x148f50
-    i32 Build(PidHeader* src, i32 size, i32 fmt);                      // 0x1490d0
-    // 0x1495d0 (body: src/Image/ImageRle16Encode.cpp; ex the fake CImageRle16 view).
-    // Two-pass RLE re-encode: expands the 8bpp token stream through a palette->16bpp
-    // table into a fresh 16bpp RLE buffer. Build uses it as the srcBpp==2 remap.
+    CDDrawShadeBlit();
+    i32 BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal, void* palette);
+    i32 LoadFromFile(CString name, i32 fmt);
+
+    i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette);
+    i32 Build(PidHeader* src, i32 size, i32 fmt);
+
     void* EncodeRle16(const u8* src);
-    void Teardown();                                            // 0x148d10
-    i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250 (body: ImageSaveBmp.cpp)
-    // the two arguments are the PID draw-anchor pair: they land in the descriptor's
-    // f4/f5, which are PidHeader::offsetX/offsetY.
-    i32 Rebuild(CString name, i32 offsetX, i32 offsetY); // 0x1493b0
-    i32 Decompress(void* dest);                          // 0x1494b0 (RLE expand)
+    void Teardown();
+    i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc);
 
-    // --- blit side (src/DDrawMgr/DDrawShadeBlit.cpp) -----------------------------
-    // Position the sprite at (x,y) on `dstSurf`: build a {x,y,x+w-1,y+h-1} destination
-    // rect + a {0,0,w-1,h-1} clip rect from m_width/m_height, then forward to Blit.
-    // `vflip` is the flag every BlitMode_* sibling below already spells that way -
-    // Blit forwards it untouched into whichever of them m_drawType selects.
-    i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);              // 0x149780
-    i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip); // 0x1497f0
-    // 0x14dd90 - latch the draw type and select the shade/palette descriptor: writes
-    // m_drawType (+0x14) = mode, then m_palDescr (+0x1c) = descr, or, when descr is null,
-    // the mode's global default from g_shadeDescr208..220. This is the REAL owner of that
-    // rva (the disasm writes exactly [ecx+0x14] and [ecx+0x1c] - this class's own two
-    // fields). It used to wear FOUR names: a declared-only CDDrawShadeBlit::Notify, a
-    // whole fake `ShadeSelector` class that the body was BOUND to, a `CImageFormat::SetType`
-    // on the deleted ImageFrame.h view, and a __stdcall `ImageNotify` free function - which
-    // was not even the right calling convention (retail leaves ecx = m_owned from the null
-    // test at 0x152ffb and calls straight through, i.e. __thiscall on the owned sprite).
-    void Select(i32 mode, CShadeTable* descr); // 0x14dd90
-    // The unselected (h-aligned) RLE blit; sel picks the h-flipped sibling. The
-    // big inner loops decode the high-bit RLE sprite stream (m_rleData/m_rleLen) into
-    // the Lock'd destination surface, clipping x to [clip->left, clip->right].
-    void BlitMode_149950(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip); // 0x149950
-    void BlitMode_149d00(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip); // 0x149d00
-    void BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);         // 0x14a200
-    void BlitMode_14b770(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip); // 0x14b770
-    // The per-row format converter the inner blit loops call: dispatches on
-    // (m_drawType - 2) to one of nine palette/blend conversions over a row.
-    void ConvertRow(u8* dst, u8* src, i32 count); // 0x14c9f0
-    // The h-flipped (right-to-left) twin of ConvertRow: same nine (m_14-2) blend
-    // cases, but dst is walked DOWN and the saved-dest scratch line is read back to
-    // front. Used by the selected (mirrored) blit path BlitMode_14b770.
-    void ConvertRowFlip(u8* dst, u8* src, i32 count); // 0x14cfc0
-    // The forward (left-to-right) twin of ConvertRowDouble: same dual-write (dst and
-    // dst+rowDelta), but dst and the saved-dest scratch line walk UP. Dense (m_14-2)
-    // jump table over cases 2/3/7/8 (4/5/6 fall through). Case 3 is symmetric (both
-    // rows get the m_light LUT of the saved dest; src is unused).
-    void ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d5e0
-    // The dual-write (vertical-double) row converter: each pixel is written to dst
-    // and dst+rowDelta. Five (m_14-2) blend cases (2/3/7/8); 4/5/6 fall through.
-    void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950
+    i32 Rebuild(CString name, i32 offsetX, i32 offsetY);
+    i32 Decompress(void* dest);
 
-    i32 m_00;       // +0x00
-    i32 m_width;    // +0x04 sprite row width (Build: src->width)
-    i32 m_height;   // +0x08 height (Build: src->height)
-    u8* m_rleData;  // +0x0c RLE sprite-stream base (decoded pixel buffer; new / RezFree)
-    i32 m_rleLen;   // +0x10 RLE sprite-stream length (byte bound; pixel byte count)
-    i32 m_drawType; // +0x14 draw type / row-convert selector (switch tag; ctor default 1)
-    i32 m_light; // +0x18 light level (ctor default 0x80): >>3 selects the LUT bank (Blit); low index into m_palDescr->m_data (cases 3/4); alpha (case 6); fill byte (case 5)
-    CShadeTable* m_palDescr; // +0x1c palette / source-descriptor pointer (ctor default 0)
-    // +0x20 the 256-entry (0x400 B) source palette (Build/BuildRle; new 0x400 /
-    // RezFree). PALETTEENTRY, not bytes: EncodeRle16 reads r/g/b at +0/+1/+2 of a
-    // stride-4 record and DecodeFrame writes exactly those three bytes per entry.
+    i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);
+    i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip);
+
+    void Select(i32 mode, CShadeTable* descr);
+
+    void BlitMode_149950(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    void BlitMode_149d00(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    void BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);
+    void BlitMode_14b770(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+
+    void ConvertRow(u8* dst, u8* src, i32 count);
+
+    void ConvertRowFlip(u8* dst, u8* src, i32 count);
+
+    void ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta);
+
+    void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta);
+
+    i32 m_00;
+    i32 m_width;
+    i32 m_height;
+    u8* m_rleData;
+    i32 m_rleLen;
+    i32 m_drawType;
+    i32 m_light;
+    CShadeTable* m_palDescr;
+
     PALETTEENTRY* m_palette;
-    i32 m_colorKey; // +0x24 color key (ctor default -1)
-    u8 m_srcBpp; // +0x28 source pixel size in bytes (1 or 2); RLE run stride, ==1 gate; ctor default 1
-    u8 m_dstBpp; // +0x29 dest pixel size in bytes (= blend mode, used as row stride); ctor default 1
+    i32 m_colorKey;
+    u8 m_srcBpp;
+    u8 m_dstBpp;
     char _2a[0x2c - 0x2a];
-    i32 m_blendVariant; // +0x2c pixel-format blend variant flag (RGB555/565 shift check)
-    // The three blend LUT banks are word tables (every read site indexes them as
-    // u16); the seeds keep byte-granular g_clut arithmetic (odd interior offsets).
-    u16* m_lutBank0; // +0x30 blend LUT bank 0 (g_clut interior plane R, +0x20002)
-    u16* m_lutBank1; // +0x34 blend LUT bank 1 (g_clut interior plane G, +0x2)
-    u16* m_lutBank2; // +0x38 blend LUT bank 2 (g_clut interior plane B, +0x10002)
+    i32 m_blendVariant;
+
+    u16* m_lutBank0;
+    u16* m_lutBank1;
+    u16* m_lutBank2;
 };
 SIZE(0x3c);
 
-// The shade-descriptor table (src/DDrawMgr/DDrawShadeBlit.cpp) - ONE contiguous
-// .bss run: the scratch line then the seven per-mode descriptors.
-extern u8 g_scratch[];               // 0x002bed08
-extern CShadeTable* g_shadeDescr208; // 0x002bf208
-extern CShadeTable* g_shadeDescr20c; // 0x002bf20c
-extern CShadeTable* g_shadeDescr210; // 0x002bf210
-extern CShadeTable* g_shadeDescr214; // 0x002bf214
-extern CShadeTable* g_blendDescr;    // 0x002bf218
-extern CShadeTable* g_shadeDescr21c; // 0x002bf21c
-extern CShadeTable* g_shadeDescr220; // 0x002bf220
+extern u8 g_scratch[];
+extern CShadeTable* g_shadeDescr208;
+extern CShadeTable* g_shadeDescr20c;
+extern CShadeTable* g_shadeDescr210;
+extern CShadeTable* g_shadeDescr214;
+extern CShadeTable* g_blendDescr;
+extern CShadeTable* g_shadeDescr21c;
+extern CShadeTable* g_shadeDescr220;
 
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

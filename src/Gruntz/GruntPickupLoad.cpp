@@ -1,20 +1,20 @@
-#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/TypeKeyColl.h> // the shared zDArray (g_typeColl @0x6bf650)
+#include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
 #include <string.h>
-#include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)
-#include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
+#include <Bute/ButeMgr.h>
+#include <Gruntz/PickupType.h>
 
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/Play.h>         // CPlay (m_curState downcast; m_guts @+0x2dc)
-#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::GetActiveValue (the MEGAPHONE count path)
-#include <Utils/MapTyped.h>      // typed MFC map lookups
+#include <Gruntz/Play.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Utils/MapTyped.h>
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
@@ -24,10 +24,9 @@
         m_pickupGeoSrc = geo;                                                                      \
     } while (0)
 
-// @early-stop
 RVA(0x00065e80, 0x12b8)
 i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 countStats) {
-    CAniElement* geo; // the resolved pickup anim (retail reuses the dead unused slot)
+    CAniElement* geo;
     if (m_gruntKind == 0x39 || m_gruntKind == 0x3a) {
         return 0;
     }
@@ -35,8 +34,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
         if (m_entranceActive != 0) {
             return 0;
         }
-        // GetNameRecord IS the _zdvec::IndexToPtr call (0x310f0) with the band's CString
-        // element type put back on at that one accessor seam - no cast needed here.
+
         if (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "A") != 0
             && strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), s_codeD) != 0
             && strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "E") != 0) {
@@ -96,7 +94,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
     m_objAux->m_1c = ActFindId("J");
 
     i32 id = 0;
-    forced = 0; // force-cue local (reuses the consumed arg2 slot)
+    forced = 0;
     switch (type) {
         case PICKUP_NONE:
             return 1;
@@ -409,7 +407,6 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
             return 0;
     }
 
-    // shared tail
     if (m_pickupGeoSrc == 0) {
         return 0;
     }

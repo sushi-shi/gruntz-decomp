@@ -1,12 +1,12 @@
-#include <Mfc.h>                 // real MFC types (NAFXCW, reloc-masked) - afx-first
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <Mfc.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Ints.h>
 #include <rva.h>
 
-#include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections + the CPoolItem* family
-#include <Image/Image.h>                  // the single-source CDDSurface extras' records
-#include <ddraw.h>                        // IDirectDrawSurface (UpdateOverlay passthrough)
-#include <string.h>                       // memset (inlined to rep stos at /O2 /Oi)
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Image/Image.h>
+#include <ddraw.h>
+#include <string.h>
 
 RVA(0x00148840, 0x47)
 i32 CFileImageSurface::LoadKeyed(
@@ -17,8 +17,7 @@ i32 CFileImageSurface::LoadKeyed(
     i32 caps,
     i32 key
 ) {
-    // Direct (non-virtual) dispatch to the slot-3 body: qualified call suppresses the
-    // vtable indirection (retail direct-calls 0x13e0d0 here).
+
     if (CDDSurface::BlitSurf(surf, width, height, bitDepth, caps | 0x40) == 0) {
         return 0;
     }
@@ -75,13 +74,6 @@ i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 
     return 1;
 }
 
-// CDDSurface::LoadByExt - load an image by inspecting its file
-// extension. Forces the IMAGEZ flag (|0x40), finds the extension, and dispatches
-// to LoadFile2 (.BMP) / LoadFile (.PCX) / DecodePcxEx (.PID) or the default loader
-// (Load @0x144270, the same __thiscall `this`). On a successful load (except the
-// .PID path) it fills the palette from a4 when a4 != -1.
-// @source: string-xref (.BMP/.PCX/.PID extension table)
-//
 RVA(0x00148940, 0x102)
 i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
     flags |= 0x40;
@@ -109,11 +101,6 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
     return 1;
 }
 
-// CPoolItemA88::Blit7 (0x148a50, slot 9): build a 0x6c-byte DDSURFACEDESC on the
-// stack (mode 7, ddsCaps = caps|0x80, pitch fields), then run the base surface init
-// (CDDSurface::Init1 @0x13e0a0, the descriptor-driven Apply) and return success.
-// __thiscall, 4 args. (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view
-// dissolved onto the real CPoolItemA88.)
 // @early-stop
 RVA(0x00148a50, 0x6b)
 i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 width, i32 height, i32 caps) {
@@ -169,23 +156,6 @@ i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CPoolItemAB8::InstallColorFormat (0x148b80, slot 10, __thiscall, no args).
-// The sibling of ComputeColorMasks (0x143b20) below: derives the live screen
-// RGB-format shift/loss globals, but reads the channel bitmasks straight from
-// this surface's already-cached DDPIXELFORMAT fields (m_rMask/m_gMask/m_bMask)
-// rather than a GetSurfaceDesc. The "up" shift is the channel's lowest set-bit
-// index; the "down" loss is 8 - popcount. Then re-applies (Boundary_13f740).
-// ---------------------------------------------------------------------------
-// All three channel blocks use the SAME two spellings, and both are load-bearing
-// (the old 99.70% "entropy tail" was the R block using the other one of each):
-//   - the per-channel reseed is `count = 0; m = <mask>; shift = -1;` in THAT order,
-//     which is what interleaves retail's `xor edi,edi` / mask load / `or edx,-1`
-//     across the previous channel's Down store;
-//   - the result pair is written DOWN-then-UP in the source, which is what makes cl
-//     materialize `mov eax,8` ahead of the Up store and keep the 8-count in eax
-//     (writing Up first recycles the shift register for it instead).
-// Now EXACT.
 RVA(0x00148b80, 0xb5)
 i32 CPoolItemAB8::InstallColorFormat() {
     u32 m = m_rMask;
@@ -238,13 +208,6 @@ i32 CPoolItemAB8::InstallColorFormat() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CPoolItemAE8::Blit47 (0x148c40, slot 9): build a 0x6c-byte DDSURFACEDESC on the
-// stack (mode 0x47, ddsCaps = capsExtra|caps|0x20000, dwZBufferBitDepth), then run the
-// base surface init (CDDSurface::Init1 @0x13e0a0) and return success. __thiscall,
-// 7 args (slot 6 unused - retail never reads its home).
-// (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view dissolved onto the real
-// CPoolItemAE8.)
 // @early-stop
 RVA(0x00148c40, 0x75)
 i32 CPoolItemAE8::Blit47(

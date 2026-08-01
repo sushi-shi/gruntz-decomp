@@ -2,68 +2,49 @@
 #define SRC_BUTE_BUTETREE_H
 
 #include <rva.h>
-#include <AddrWord.h>       // the act-id-in-a-void*-slot pair
-#include <Bute/PTreeNode.h> // the RTTI-real zErrHandling/CButeNodeEntry/zPTree base hierarchy
+#include <AddrWord.h>
+#include <Bute/PTreeNode.h>
 
-// The keyed error-handling slot: it is BOTH the variant slot (m_callback/word/tag/label,
-// via Set) and the key-table cursor (Find/Add over the global g_recs23 table). The ex
-// CKeyFinder "reduced view" was this same 0x18-byte object (byte-identical layout, and its
-// Add IS this Add @0x16e360); that cast-based view is dissolved here
-// (m_index->m_04, m_owner->m_label).
 struct CVariantSlot {
-    CVariantSlot(char* label);              // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
-    void Set(void* obj, void* item, i32 b); // 0x16d850  (item: the reported record/name)
-    i32 Find(i32 key);                      // 0x16e1d0 (binary-search the g_recs23 key table)
-    void* Add(void* key, void* val);        // 0x16e360 (keyed insert/update/remove; val==0 removes)
-    void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this]; the error callback)
-    i32 m_04;        // +0x04 probe/found index (Find writes it; ex m_index)
-    u16 m_valueWord; // +0x08 word storage
-    u16 m_0a;        // +0x0a
-    i32 m_typeTag;   // +0x0c type tag (1/2/4; the cursor ctor sets 2)
-    i32 m_10;        // +0x10 (the cursor ctor sets 2)
-    char* m_label;   // +0x14 label / format text / cursor owner (ex m_owner)
+    CVariantSlot(char* label);
+    void Set(void* obj, void* item, i32 b);
+    i32 Find(i32 key);
+    void* Add(void* key, void* val);
+    void(__cdecl* m_callback)(char* buf, i32 v);
+    i32 m_04;
+    u16 m_valueWord;
+    u16 m_0a;
+    i32 m_typeTag;
+    i32 m_10;
+    char* m_label;
 };
 SIZE(0x18);
 
 struct TypeKeyRec {
-    i32 m_key; // +0x00  the key (CVariantSlot::Find subtracts the probe key from it)
-    void* m_4; // +0x04  value, or the __cdecl set-fn Set dispatches (variant slot)
-    short m_8; // flag / word slot
+    i32 m_key;
+    void* m_4;
+    short m_8;
     short m_a;
 };
 SIZE_UNKNOWN();
 
 struct CButeTreeNode {
-    CButeTreeNode* m_child[2]; // +0x00 / +0x04
-    i32 m_bit;                 // +0x08  crit-bit index
-    char* m_key;               // +0x0c  owned key copy
-    void* m_value;             // +0x10  stored value
+    CButeTreeNode* m_child[2];
+    i32 m_bit;
+    char* m_key;
+    void* m_value;
 };
 SIZE(0x14);
 
-// Find / Insert / Walk moved to the zPTree base (<Bute/PTreeNode.h>) - see the note
-// there: all three data-less zPTree subclasses use them, so declaring them on this one
-// sibling is what forced the sibling-to-sibling reinterprets. CButeTree adds no data
-// and no operations of its own; it is the g_buteTree instantiation's class.
 class CButeTree : public zPTree {
 public:
     CButeTree(void(__cdecl* teardown)(void*), i32 n);
 };
 SIZE_UNKNOWN();
-VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)
+VTBL(CButeTree, 0x001f04e0);
 
 extern CButeTree g_buteTree;
 
-// PROVEN-heterogeneous slot, not a mis-model: CButeTree::Find's void* is genuinely
-// per-INSTANCE typed. CButeMgr's trees (Tree()/Tree48()) store record pointers -
-// GetStringDef/GetRef5..8 @0x173180/0x173720.. all return real CButeRefN*/CString*
-// from the same Find @0x16d190 - while THIS instance (g_buteTree, teardown =
-// ButeTreeNopFree, a no-op) stores small integer act ids: ActInsertId writes
-// g_typeCounter and every reader feeds the result to ActNameLookup(id), which
-// INDEXES g_typeColl by it. So the boundary reinterpret belongs here, once, rather
-// than at each of the ~15 call sites.
-// PROVEN (see above): THIS tree instance stores small integer act ids in the void*
-// value slot, so the slot has both readings - AddrWord names them.
 static inline i32 ActFindId(const char* key) {
     AddrWord v;
     v.m_addr = g_buteTree.Find(key);

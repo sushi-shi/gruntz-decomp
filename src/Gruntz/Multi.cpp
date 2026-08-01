@@ -1,49 +1,49 @@
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <DDrawMgr/DDrawPtrCollections.h> // m_ptrColl full type (m_device -> FlipToGDISurface)
-#include <ddraw.h>                // IDirectDraw2::FlipToGDISurface (the ex manual +0x28 dispatch)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
-#include <Net/LobbyDialogs.h>     // the four modal DlgProcs RunErrorDialog runs
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <ddraw.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Net/LobbyDialogs.h>
 #include <rva.h>
-#include <MsgParam.h>         // the window-message parameter's pointer/word pair
-#include <Gruntz/CurPlayer.h> // g_curPlayer
-#include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
+#include <MsgParam.h>
+#include <Gruntz/CurPlayer.h>
+#include <Rez/FrameClock.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (CWorld::m_68; ClearGridRange)
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
-#include <Io/FileStream.h> // CFile (the static MFC CFile global at 0x646778; 0x0b5400 ctor)
+#include <Io/FileStream.h>
 #include <DDrawMgr/DDSurface.h>
-#include <Dsndmgr/SoundStream.h> // SoundStream : SoundDevice - the REAL m_c->m_soundStream (+0x20)
-#include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan - the REAL m_c->m_soundRegistry (name->cue map + emit gate)
+#include <Dsndmgr/SoundStream.h>
+#include <Gruntz/SoundCue.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawWorkerList.h> // renderer B - the real CDDrawWorkerList (PruneWorkers)
-#include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_childGroup object manager
+#include <DDrawMgr/DDrawWorkerList.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
 #include <Net/NetLobby.h>
-#include <Net/NetMgr.h> // CNetPlayerListNode - the real OpenPlayer result (ex CMultiPlayer view)
-#include <Gruntz/Attract.h> // g_attractStateCount (attract-title-index divisor)
+#include <Net/NetMgr.h>
+#include <Gruntz/Attract.h>
 
-#include <Gruntz/GruntzMgr.h>        // CGruntzMgr - the REAL CState::m_4 game mgr
-#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; PauseAllVoices)
-#include <Gruntz/Dialogs.h> // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
-#include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/Dialogs.h>
+#include <Gruntz/LightFxRender.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_c->m_drawTarget->m_overlayPair->m_surface Fill)
-#include <Wap32/EngStr.h>             // THE canonical EngStr_DrawText (0x115440) lean decl
-#include <stdio.h>                    // engine sprintf (reloc-masked)
-#include <stdlib.h>                   // srand (reloc-masked)
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Wap32/EngStr.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <Utils/DebugTiming.h>     // ActiveWait (ex .cpp extern)
-#include <Net/NetMgrReportError.h> // ex Globals.h
-#include <Gruntz/SoundState.h>     // ex Globals.h transitive
-#include <Net/InterfaceObject.h>   // the shared DirectPlay group-node class (Find/predicates)
+#include <Utils/DebugTiming.h>
+#include <Net/NetMgrReportError.h>
+#include <Gruntz/SoundState.h>
+#include <Net/InterfaceObject.h>
 #include <Gruntz/LeafCue.h>
 #include <Bute/SymParser.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -52,116 +52,79 @@
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Net/NetMgr.h>
-#include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
+#include <Net/NetPackets.h>
 #include <rva.h>
-#include <string.h>              // memset (inlined rep stosl for the version packet)
-#include <stdio.h>               // sprintf (the chat-line formatter)
-#include <stdlib.h>              // atoi (0x11ffb0) / srand (0x11fed0)
-#include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
-#include <Gruntz/GruntzCmdMgr.h> // CGruntzMgr::m_cmdSubMgr command manager (ResetPlayerCommands Dispatch)
-#include <Gruntz/SoundCue.h> // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
-#include <Bute/SymParser.h>  // the REAL CSymParser (CState::m_8; ResolvePath @0x13c030)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
-#include <Gruntz/Play.h>               // ChannelSlots_InitAll (ex .cpp extern)
-VTBL(CNetMgr, 0x001ea42c);             // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/SoundCue.h>
+#include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/Play.h>
+VTBL(CNetMgr, 0x001ea42c);
 DATA(0x002455fc)
-i32 g_optionsCursor = 0; // decl in Multi.h
+i32 g_optionsCursor = 0;
 
-// (`Cdb200` is gone. Its ONE call site below holds a GruntzPlayer* and reads back the very
-// +0x08 field the method writes, so 0xdb200 IS GruntzPlayer::SwapChannel - the xref that
-// closes Play.cpp's @identity-TODO. Its `M(void*)` was a PHANTOM (?M@Cdb200@@QAEHPAX@Z,
-// defined by no obj); the call now binds to the real ?SwapChannel@GruntzPlayer@@QAEHH@Z.)
-
-// (The former local CGruntzMgr shadow is gone: m_4's game-mgr methods are now declared
-// directly on the game mgr, so m_4->Method() needs no cross-cast.)
-// LoadGameAssetNamespaces (0xf9ea0) is now CState::LoadGameAssetNamespaces; CMulti
-// (: CPlay : CState) inherits it and calls it cast-free (the CAssetLoader this-view
-// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   (The m_4 game-mgr / m_5c chat-log helpers are now real methods on the game mgr /
-//     CNetChatLog; CSymParser is the real <Bute/SymParser.h> class (m_8 typed);
-//     the CNetConnectThis shell and the CNetConnectSlotView PMF vtable-slot view are
-//     DISSOLVED - the four connect-driver dispatches are the real CState/CPlay-chain
-//     virtuals, see LoadGameAssetNamespaces, the slot-1 driver.)
-//   * (char*)static_cast<const char*>(aCString): MFC CString -> LPCTSTR (operator) -> char* to feed a
-//     char*-taking engine API; both casts are required.
-//   * (IDirectPlay4Z*)m_releaseIface etc.: DirectPlay COM downcast off the abstract
-//     INetReleasable slot; DirectX interfaces are foreign SDK types.
-//   * manual vtable stamps (*(void**)this=&g_netMgrVtbl) and the +0x1c/+0x38/+0x54 CObList
-//     offset dtors are documented terminal @early-stop walls (vtbl un-catalogued / member-
-//     by-value modeling deferred to the final sweep).
-
-// The "no DirectPlay service provider selected" sentinel g_serviceId carries.
 typedef enum NetServiceId {
-    NETSERVICE_NONE = 999, // 0x3e7 - the combo has no selection yet
+    NETSERVICE_NONE = 999,
 } NetServiceId;
 
-// g_localVersion (0x20fa70), g_remoteVersion (0x20fa74) and g_dplayAppGuid (0x20fab8)
-// used to be DEFINED here. They are not this object's data. Retail's .data is laid
-// out one contiguous run per contributing .obj, and CMulti's run is [0x211d88,
-// 0x2121e0) - g_dropPlayerId, then ??_R0?AVCNetMgr@@@8 and every MULTI_*/net literal.
-// The three above sit 8 KB lower, in the run [0x20fa70,0x20fae0) that ALSO holds
-// g_pendingFrame (0x20fac8, already homed in GruntzMgr.cpp) and is immediately
-// followed by the CGameLevel area titles + the CGameMgr/CGruntzMgr RTTI + every
-// CGruntzMgr::Run/Close/HandleCommand literal. One .obj cannot own two runs, so they
-// are the GruntzMgr-family object's - and CGruntzMgr::Run (0x83450) is the only
-// WRITER of g_localVersion (it loads it from GRUNTZ.CFG [General] RezSync). Their
-// definitions now live in src/Gruntz/GruntzMgr.cpp; CMulti only reads them.
 DATA(0x00211d88)
-i32 g_dropPlayerId = -999; // 0x211d88  saved dropped-player id (sentinel -999)
+i32 g_dropPlayerId = -999;
 DATA(0x00211d8c)
-// Retail's [0x211d8c,+4) holds 000003e7 == NETSERVICE_NONE; it was declared extern in
-// Multi.h and DEFINED NOWHERE (an UNDEFINED-DATA link defect). It is the second word of
-// CMulti's own .data run, right after g_dropPlayerId.
-i32 g_serviceId = NETSERVICE_NONE; // 0x211d8c  selected DirectPlay service provider id
+
+i32 g_serviceId = NETSERVICE_NONE;
 DATA(0x00211ec4)
-char s_GameKey[] = "GAME_KEY"; // 0x211ec4  registry value-name literal
+char s_GameKey[] = "GAME_KEY";
 DATA(0x00246378)
-u8 g_chanStat423_flag; // 0x246378
+u8 g_chanStat423_flag;
 DATA(0x0024637c)
-i32 g_chanStat423_id; // 0x24637c
+i32 g_chanStat423_id;
 DATA(0x00246380)
-i32 g_chanStat423_val; // 0x246380
+i32 g_chanStat423_val;
 DATA(0x00246fd8)
-u8 g_chanStat422_flag; // 0x246fd8
+u8 g_chanStat422_flag;
 DATA(0x00246fdc)
-i32 g_chanStat422_id; // 0x246fdc
+i32 g_chanStat422_id;
 DATA(0x00246fe0)
-i32 g_chanStat422_val; // 0x246fe0
+i32 g_chanStat422_val;
 DATA(0x00248ce0)
-HWND g_sharedFlag = 0; // 0x248ce0
+HWND g_sharedFlag = 0;
 DATA(0x00248d04)
-i32 g_pauseGuard; // 0x248d04  OnMultiPause reentrancy guard
+i32 g_pauseGuard;
 DATA(0x00248d08)
-i32 g_optionzGuard; // 0x248d08  OnMultiOptionz reentrancy guard
+i32 g_optionzGuard;
 DATA(0x00248d0c)
-i32 g_syncToggle; // 0x248d0c  FrameSyncWait alternating low-bit flag
+i32 g_syncToggle;
 DATA(0x00248d10)
-i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
+i32 g_dropGuard;
 DATA(0x00248d14)
-u32 g_ackThrottleDeadline; // 0x248d14  drop-throttle deadline
+u32 g_ackThrottleDeadline;
 
 enum {
-    DISPATCH_RESYNC = 0x4cc,     // post the resync WM_COMMAND
-    DISPATCH_RESET = 0x4cd,      // reset command buffers only
-    DISPATCH_ABORT = 0x4ce,      // reset buffers + post the abort WM_COMMAND
-    DISPATCH_PLAYERLEFT = 0x4ea, // report + broadcast the leaving player
+    DISPATCH_RESYNC = 0x4cc,
+    DISPATCH_RESET = 0x4cd,
+    DISPATCH_ABORT = 0x4ce,
+    DISPATCH_PLAYERLEFT = 0x4ea,
 };
 
 enum {
-    STAT_DROP_ANNOUNCE = 0x3e8,    // RecordDropPlayer2: announce a pending drop (sent twice)
-    STAT_CHAT = 0x3f0,             // BroadcastChatLine: a chat line
-    STAT_CHANNEL_TABLE = 0x3f8,    // BroadcastChannelTable: the whole four-channel table
-    STAT_PLAYER_JOINED = 0x3f9,    // CreateLocalPlayer: local player join announce
-    STAT_CHANNEL_ONE = 0x3fa,      // BroadcastOneChannel: a single channel descriptor
-    STAT_CHANNEL_LEFT = 0x3fb,     // DropChannelPlayer: a channel's player has left
-    STAT_PAUSE = 0x407,            // OnPauseChannel: announce a pause
-    STAT_PLAYERLEFT = 0x410,       // broadcast: a player has left
-    STAT_PLAYERLEFT_LOCAL = 0x411, // report: the local view of the leaving player
-    STAT_CONNECTING = 0x415,       // announce: connection attempt in progress
-    STAT_CONFIG = 0x416,           // SaveConfig: the command-timing config blob
-    STAT_VERSIONPACKET = 0x417,    // the version-announce packet stat id
-    STAT_VERSIONMISMATCH = 0x418,  // announce: host/client version mismatch
-    STAT_ACKLATENCY = 0x421,       // report: current worst ack latency
+    STAT_DROP_ANNOUNCE = 0x3e8,
+    STAT_CHAT = 0x3f0,
+    STAT_CHANNEL_TABLE = 0x3f8,
+    STAT_PLAYER_JOINED = 0x3f9,
+    STAT_CHANNEL_ONE = 0x3fa,
+    STAT_CHANNEL_LEFT = 0x3fb,
+    STAT_PAUSE = 0x407,
+    STAT_PLAYERLEFT = 0x410,
+    STAT_PLAYERLEFT_LOCAL = 0x411,
+    STAT_CONNECTING = 0x415,
+    STAT_CONFIG = 0x416,
+    STAT_VERSIONPACKET = 0x417,
+    STAT_VERSIONMISMATCH = 0x418,
+    STAT_ACKLATENCY = 0x421,
 };
 
 DATA(0x00248cec)
@@ -171,77 +134,51 @@ DATA(0x002473d8)
 CString g_sessionName;
 
 DATA(0x00248d00)
-HWND g_netPlayerListHwnd; // owner def (zero-init .bss)
+HWND g_netPlayerListHwnd;
 
 DATA(0x00248cf0)
-i32 g_hostServicesMode; // owner def (zero-init .bss)
+i32 g_hostServicesMode;
 
 DATA(0x00248cf4)
-CNetMgr* g_groupEnumMgr; // owner def (zero-init .bss)
+CNetMgr* g_groupEnumMgr;
 
 enum {
-    STAT_VERIFY_REQUEST = 0x41c,  // guest -> host: request the level-verify vote
-    STAT_VERIFY_AGREE = 0x41d,    // host: all players agree on the level
-    STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
+    STAT_VERIFY_REQUEST = 0x41c,
+    STAT_VERIFY_AGREE = 0x41d,
+    STAT_VERIFY_DISAGREE = 0x41e,
 };
 
-// The four modal DlgProcs the OnMulti* handlers below hand to RunErrorDialog are
-// NetLobby::HostWait/JoinWait/SessionWait/NetGameDlgProc (<Net/LobbyDialogs.h>).
-// Retail's /INCREMENTAL link routes each address-take through an ILT jmp-thunk
-// (0x113b -> 0xbd850, 0x27fc -> 0xbda70, 0x301c -> 0xbddd0, 0x3387 -> 0xbe0a0), which
-// is a CODE address - it needs no DATA_SYMBOL here, and the four that used to name
-// them (_MultiPauseCallback & co.) are gone.
-
-// ===========================================================================
-// CMulti::~CMulti  @ 0x08d270  - the most-derived /GX dtor. Runs the slot-2
-// ReleaseResources (ex "Teardown") first, then tears the CString/CByteArray run while stamping the CMulti ->
-// CPlay -> CState vtables in turn over the sub-objects.
-// ===========================================================================
 // @early-stop
 RVA(0x0008d270, 0x124)
 CMulti::~CMulti() {
-    // cl's implicit vptr store (??_7CMulti) stamps here at dtor entry (CMulti's own
-    // virtual dtor); no manual stamp is needed at the most-derived level.
-    CMulti::ReleaseResources(); // 0xb6110 (own slot-2 override, ex "Teardown";
-                                // in-dtor static bind -> direct rel32)
-    // CMulti sub-object teardown (high block).
+
+    CMulti::ReleaseResources();
+
     m_604.~CDWordArray();
     m_5b8.~CString();
     m_5b4.~CString();
     m_hostName.~CString();
     m_groupName.~CString();
     m_598.~CString();
-    // CPlay/CState sub-objects (m_488, m_cueText, m_3a4[], m_startMarkers, m_1b4, ...)
-    // are torn down by the compiler-chained ~CPlay -> ~CState base destructors now that
-    // CMulti : CPlay. No manual base teardown here.
 }
 
 DATA(0x00246778)
 CFile g_obj646778;
 
-// (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
-// cleanup (0x2207) then the 4 members reverse-destruct (states 0xf..0x12).
 // @early-stop
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    // Connect-state fields reached cast-free through the real classes: `this` is a
-    // CMulti (its CPlay/CState base carries the 0x2c..0x4b8 connect-state members and
-    // CMulti owns 0x520..0x600), and NetGameMgr() is the CState::m_4 game-mgr's network
-    // facet (ex-CNetGameMgr, the 0xac/0x110/0x114/0x12c guards). Both were the TF()/MF()
-    // offset-access macros; the offsets are now named members (see Multi.h/Play.h/State.h,
-    // NetMgr.h).
-    // @early-stop
+
     g_gameReg->m_134 = 2;
     if (mgr == 0) {
         return 0;
     }
-    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
     if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
         return 0;
     }
     g_connectRptMgr = this;
 
-    // --- zero the connect-state field block (disasm order) ---
     m_region0Gate = 0;
     m_region1Gate = 0;
     m_region2Gate = 0;
@@ -280,7 +217,6 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_58c = 0;
     m_594 = 0;
 
-    // m_channelLatency[0..3] + the four g_gameReg slots (+0x37c / +0x380)
     i32* clat = m_channelLatency;
     for (i32 i = 0; i < 4; i++) {
         *clat++ = 0;
@@ -301,7 +237,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
         if (StartTitle() == 0) {
             NetGameMgr()->m_modalBusy = 0;
-            ReleaseResources(); // slot 2 (+0x08) virtual dispatch, ex "Abort"
+            ReleaseResources();
             return 0;
         }
     } else {
@@ -317,13 +253,13 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         m_58c = 1;
     }
     NetGameMgr()->m_modalBusy = 0;
-    memset(&m_saveSlot, 0, sizeof(m_saveSlot)); // rep stos over the save record
+    memset(&m_saveSlot, 0, sizeof(m_saveSlot));
     m_590 = NetGameMgr()->m_isEffectsEnabled;
     NetGameMgr()->m_isEffectsEnabled = 1;
-    if (LoadImageBanks() == 0) { // slot 29 (+0x74) virtual dispatch, ex "OnStart"
+    if (LoadImageBanks() == 0) {
         return 0;
     }
-    Vslot24(); // slot 36 (+0x90) virtual dispatch, ex "OnReady"
+    Vslot24();
     m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MULTI"));
     if (m_2c == 0) {
         return 0;
@@ -337,7 +273,6 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
 
-    // --- custom-level path ---
     if (m_5b0 != 0) {
         NetGameMgr()->m_12c = 0;
         NetGameMgr()->m_strWorldFile = "custom\\" + GetConfigNameB();
@@ -349,13 +284,9 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
 
-    // (2) interface object - a CChatBoxOwner (the CNetIface view is gone)
     CChatBoxOwner* iface = new CChatBoxOwner();
     m_hitTest = iface;
-    // CChatBoxOwner::Attach RETURNS i32 (constant 1), and retail TESTS it here - VERIFIED
-    // at 0xb5460+0x349: `call 0x3e77; test eax,eax; jne <continue>` with the same
-    // Deactivate+RezFree+return-0 teardown CPlay::LoadGameAssetNamespaces has. The Attach `== 0` guard
-    // is REAL: Attach returns a failure signal (see ChatBoxOwner.cpp).
+
     if (iface->Attach(m_world, NetGameMgr()->m_chatLog) == 0) {
         CChatBoxOwner* io = m_hitTest;
         if (io == 0) {
@@ -369,10 +300,6 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_hitTest->m_10 = 0;
     m_hitTest->Configure(1);
 
-    // (3) session - the 0x630 CStatusBarMgr (the CNetSess view is gone). The two
-    // out-of-band stamps that used to sit here (m_barFrameGate = 0x1e0; m_544 = 1) are
-    // GONE: they are ctor initialisers, and CStatusBarMgr now has its real inline ctor
-    // (<Gruntz/StatusBarMgr.h>), which this `new` expands exactly as retail does.
     CStatusBarMgr* sess = new CStatusBarMgr;
     m_guts = sess;
     if (sess->LoadBattlezItemConfig(m_world) == 0) {
@@ -380,15 +307,12 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         if (so == 0) {
             return 0;
         }
-        so->Teardown(); // the view's ~CNetSess body; the members then tear down
+        so->Teardown();
         delete so;
         m_guts = 0;
         return 0;
     }
 
-    // (4) command manager - the tile-trigger CONTAINER (retail: `push 0x78; call
-    // ??2` + four inlined CPtrList(0xa) ctors at +0x00/+0x1c/+0x38/+0x54 +
-    // `[+0x74]=0`; size 0x78, not CTileTriggerSwitchLogic's 0x8c).
     CTileTriggerContainer* cmd = new CTileTriggerContainer();
     m_beginMarker = cmd;
     if (cmd->GetFlag74() == 0) {
@@ -401,8 +325,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
 
-    // --- kick off the connect wait + first poll ---
-    if (LoadByMode(1, 1) == 0) { // slot 30 (+0x78) virtual dispatch, ex "OnConnect"
+    if (LoadByMode(1, 1) == 0) {
         return 0;
     }
     m_pumpGuard = 1;
@@ -438,8 +361,7 @@ void CMulti::ReleaseResources() {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
     }
-    // The +0x520 session object is destroyed as ~CNetSession (0xb6220, non-virtual) - its
-    // real dtor (ResetSync + vector-destroy the 4 CNetCmdSlot slots) - then the engine free.
+
     CNetSession* session = m_session;
     if (session) {
         delete session;
@@ -449,10 +371,7 @@ void CMulti::ReleaseResources() {
         delete m_netGate;
         m_netGate = 0;
     }
-    // The +0x320 attract overlay is destroyed via CLightFxRender::Ctor (0xa3360) - the
-    // engine reuses the field-zeroing "ctor" as the pre-free cleanup - then the engine
-    // free. (Was the CLobbyObjA decl-only view; m_lightFx is the i32 gate reused
-    // as the CLightFxRender* here.)
+
     CLightFxRender* lightFx = m_lightFx;
     if (lightFx) {
         lightFx->Ctor();
@@ -460,7 +379,7 @@ void CMulti::ReleaseResources() {
         m_lightFx = 0;
     }
     Mgr()->m_isEffectsEnabled = m_590;
-    // Chain CPlay's slot-2 body (0xc8700, ex "CPlayDtorBody") - qualified -> direct.
+
     CPlay::ReleaseResources();
 }
 
@@ -474,22 +393,17 @@ CNetCmdSlot::~CNetCmdSlot() {
     ResetAll();
 }
 
-// Slot-32 override: a pure forwarder - cl /O2 tail-jumps the base body (retail
-// 0xb6310 = `jmp` -> ILT 0x3f30 -> ?OnExit@CPlay 0xcb400; vtable holds thunk 0x33be).
 RVA(0x000b6310, 0x5)
 void CMulti::OnExit() {
     CPlay::OnExit();
 }
 
-// CMulti::Vslot09 (0x0b6330): chain the base ResetForMode gate; on success run the
-// manager per-frame tick, restore the saved game clock, and re-seed the net drain /
-// frame timer block (two timeGetTime samples), then push a net stat when connected.
 RVA(0x000b6330, 0x89)
 i32 CMulti::Vslot09(i32 arg) {
-    if (CPlay::Vslot09(arg) == 0) { // qualified: the BASE leg, not this override
+    if (CPlay::Vslot09(arg) == 0) {
         return 0;
     }
-    m_mgr->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
+    m_mgr->RefreshGameClock();
     g_frameTime = m_savedClock;
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
     m_drainTimer = 0;
@@ -505,16 +419,10 @@ i32 CMulti::Vslot09(i32 arg) {
     return 1;
 }
 
-// ===========================================================================
-// CMulti::FrameSlot28  @ 0x0b63f0  (vtable slot 10 / +0x28) - the HUD status/
-// pause overlay.  BYTE-IDENTICAL to CPlay::FrameSlot28 (Play.cpp): both freeze
-// m_60, stash the game clock, (m_40) run the notify, clear the present surface,
-// then draw the LoadString(0x81a9) banner + tick the status message.
-// ===========================================================================
 // @early-stop
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
-    m_mgr->m_cueSink->PauseAllVoices(); // 0x20a4 -> CGruntSpawnConfig::PauseAllVoices @0x11c7b0
+    m_mgr->m_cueSink->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
@@ -531,16 +439,16 @@ i32 CMulti::FrameSlot28(i32 arg) {
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited via CPlay, cast-free)
+    RetireScene(0x50, 0x3e8, 0, 1);
     if (m_mgr && m_mgr->m_cmdGrid) {
-        m_mgr->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
+        m_mgr->m_cmdGrid->ClearGridRange(5);
     }
     return 1;
 }
 
 RVA(0x000b6560, 0x5)
 i32 CMulti::Vslot15() {
-    return CPlay::Vslot15(); // retail: a bare `jmp` to the CPlay body (the base delegation)
+    return CPlay::Vslot15();
 }
 
 RVA(0x000b6580, 0x1eb)
@@ -567,8 +475,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_curSlotId = m_session->m_tick - 1;
     m_574 = 0;
-    // The CPlay slot-30 default body (0xca200) - qualified -> direct rel32 (this
-    // method IS the CMulti override of that slot; ex the "LoadLevelByMode" alias).
+
     if (CPlay::LoadByMode(mode, 0) == 0) {
         return 0;
     }
@@ -585,7 +492,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
             e->m_038.Clear();
         }
     }
-    ResetPlayState(); // inherited CPlay::ResetPlayState (0xd60b0; call site byte-proven)
+    ResetPlayState();
     srand(m_rngSeed);
     g_frameDelta = 0;
     g_lastNow = 0;
@@ -602,16 +509,11 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_curSlotId = m_session->m_tick - 1;
     m_574 = 0;
     Mgr()->m_chatLog->FreeNodes();
-    m_session->Reset(); // 0xbf150
+    m_session->Reset();
     Mgr()->m_cueSink->PauseAllVoices();
     return 1;
 }
 
-// ===========================================================================
-// CMulti::Connect  @ 0x0b67f0  - probe the chosen session on m_logic; on failure
-// report the netbind error, else run the connect-wait pump (m_pumpGuard reentrancy
-// guard) and mark m_connected on success.
-// ===========================================================================
 // @early-stop
 RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
@@ -631,22 +533,15 @@ i32 CMulti::Connect(i32 mode) {
     return 1;
 }
 
-// ===========================================================================
-// CMulti::Render  @ 0x0b6890  (slot-5 override, ex "Tick") - the per-frame lobby
-// pump: redraw, advance the
-// frame clock off timeGetTime, step the lobby object, arm the next slot, then
-// either keep ticking, flag out-of-sync, or finish + present.
-// ===========================================================================
 // @early-stop
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = 0;
-    HandleDragMove(0, m_cursorX, m_cursorY); // slot 31 (+0x7c) virtual dispatch
+    HandleDragMove(0, m_cursorX, m_cursorY);
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
-    // The accumulator adds the STORED delta (retail `sub eax,edi; mov [esi+0x5d8],eax;
-    // add edx,eax`), not a second `t - oldT` (which cl computes twice).
+
     m_frameDelta = t - oldT;
     m_accumTime += m_frameDelta;
     i32 newId = m_session->m_tick;
@@ -661,8 +556,7 @@ i32 CMulti::Render() {
         }
         if (node) {
             node->m_submitted = 1;
-            // A signed MODULO, not a hand-rolled abs/mask/re-sign: retail is MSVC's
-            // `cdq / xor / sub / and 0x7f / xor / sub` power-of-two `%` sequence.
+
             i32 v = m_curSlotId + static_cast<i32>(m_5a4) * 2;
             node->m_targetType = static_cast<u8>(v % 128);
         }
@@ -672,32 +566,30 @@ i32 CMulti::Render() {
     if (static_cast<u32>(dt) >= g_frameDelta) {
         dt = static_cast<i32>(g_frameDelta);
     }
-    m_packetsRcvd = m_session->Poll(dt); // 0xbf5a0
+    m_packetsRcvd = m_session->Poll(dt);
     m_packetsSent = 0;
-    // Zero-arm first (retail `jb` into the subtract, fall-through stores 0).
+
     if (static_cast<u32>(m_frameDelta) >= static_cast<u32>(m_drainTimer)) {
         m_drainTimer = 0;
     } else {
         m_drainTimer = m_drainTimer - m_frameDelta;
     }
     if (m_drainTimer == 0) {
-        m_packetsSent = m_session->Tick(); // 0xbf9e0
+        m_packetsSent = m_session->Tick();
         m_drainTimer = m_drainReload;
     }
     i32 fin = 0;
-    if (m_session->Advance() && m_pollAbort == 0) { // 0xc01d0
+    if (m_session->Advance() && m_pollAbort == 0) {
         fin = 1;
     }
-    TickStateMgrs(); // slot 38 (+0x98) virtual dispatch (ex the view's "PostRedraw")
-    CDDrawWorkerHost* mainPlane = m_world->m_level->m_mainPlane; // the level MAIN plane
+    TickStateMgrs();
+    CDDrawWorkerHost* mainPlane = m_world->m_level->m_mainPlane;
     if (mainPlane) {
-        mainPlane->CenterScrollA(); // 0x163300
+        mainPlane->CenterScrollA();
     }
-    // `!= 0`, not `== 0`: retail's `cmp edi,ebx / je` puts the Verify/out-of-sync path
-    // in the fall-through, i.e. it runs when the Advance()+no-abort latch IS set; the
-    // `== 0` spelling inverts the whole tail (jcc_sieve POLARITY #9 jne->je).
+
     if (fin != 0) {
-        if (m_session->Verify() == 0 && m_574 == 0) { // 0xc04f0
+        if (m_session->Verify() == 0 && m_574 == 0) {
             if (m_isHost != 0) {
                 SendStatFlag(0x404, 1);
                 OnOutOfSync();
@@ -716,10 +608,10 @@ i32 CMulti::Render() {
     SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
-        win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
-        win->TickSubManagers(now); // 0x137ac0
+        win->PurgeVoiceList(now);
+        win->TickSubManagers(now);
     }
-    ActiveWait(2); // FUN_0013dfe0 ActiveWait(2)
+    ActiveWait(2);
     return 1;
 }
 
@@ -731,8 +623,7 @@ i32 CMulti::PumpA() {
         PumpB();
         return 1;
     }
-    // g_frameDelta is stored FIRST (retail `mov ds:0x645584,edx` precedes the two
-    // accumulator stores).
+
     g_frameDelta = 0x21;
     g_lastNow += 0x21;
     g_frameTime += 0x21;
@@ -746,9 +637,7 @@ i32 CMulti::PumpA() {
             if (g_gameReg->m_musicEnabled != 0) {
                 Mgr()->m_sound->PlayByName(name, 1);
             } else {
-                // The bank manager is held in a local across the probe + latch
-                // (retail `mov edi,[edx+0x48]` ... `mov [edi+0x1c],eax`) and only
-                // RE-READ for the current-bank test.
+
                 CGruntzSoundZ* snd = Mgr()->m_sound;
                 CGruntzSoundInnerZ* p = snd->FindBank(name);
                 if (p) {
@@ -761,7 +650,7 @@ i32 CMulti::PumpA() {
             m_ambientInitDone = 1;
         }
     }
-    Mgr()->m_cmdSubMgr->ScanTargets(m_curSlotId % 128); // 0x20b3 -> 0x23a10
+    Mgr()->m_cmdSubMgr->ScanTargets(m_curSlotId % 128);
     m_session->Checksum();
     g_frameTicks++;
     u32 t1 = g_timer32 ? g_timer32 : 0x32;
@@ -794,19 +683,18 @@ i32 CMulti::PumpA() {
     } else {
         g_timer500 = t5 - g_frameDelta;
     }
-    m_world->m_childGroup->TickKillCues(0); // retail pushes ebp (the pinned 0), NOT g_frameDelta
+    m_world->m_childGroup->TickKillCues(0);
     m_world->m_childGroup->CollideBroadcast();
     Mgr()->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
     m_guts->LoadDestructButtonSprite(g_frameDelta);
     SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
-        win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
-        win->TickSubManagers(now); // 0x137ac0
+        win->PurgeVoiceList(now);
+        win->TickSubManagers(now);
     }
     m_beginMarker->FilterList2(g_frameDelta);
-    (static_cast<CMapMgr*>(Mgr()->m_tileGrid))
-        ->UpdateDiagonals(Mgr()); // CMapMgr is a view of CGruntzMapMgr (+0x70)
+    (static_cast<CMapMgr*>(Mgr()->m_tileGrid))->UpdateDiagonals(Mgr());
     if (ready == 0) {
         PumpB();
     }
@@ -912,12 +800,6 @@ void CMulti::PumpB() {
     }
 }
 
-// ===========================================================================
-// CMulti::StartTitle  @ 0x0b72c0  - /GX: pick a randomized "TITLE%d" backdrop,
-// load it, reset the view + cursor, then bind the DirectPlay host (m_netGate) to the
-// resolved descriptor, open the local player, and stash the host/group strings.
-// Returns 1 on a fully-bound session.
-// ===========================================================================
 // @early-stop
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
@@ -927,7 +809,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     CSymTab* saved = m_2c;
-    CSymTab* st = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
+    CSymTab* st = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT"));
     m_2c = st;
     if (!st) {
         return 0;
@@ -935,16 +817,14 @@ i32 CMulti::StartTitle() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString title;
     title.Format("TITLE%d", idx);
-    // 0xfa350 CState::RunTitleSeq (inherited; ex the "LoadTitleScreen" alias).
+
     if (RunTitleSeq(title, 0, 0, 1, 0) == 0) {
         m_2c = saved;
         return 0;
     }
-    // m_c->m_drawTarget IS a CDDrawSubMgrPages (its 0x158dc0 leaf is that class's
-    // PresentBackPage); retail loads the VALUE at [m_c+4], not its address.
+
     m_world->m_drawTarget->PresentBackPage();
-    // The +0x1c chain is m_ptrColl->m_device (the held DirectDraw device); slot +0x28
-    // with no args is FlipToGDISurface - flip to GDI before the ShowCursor loop below.
+
     m_world->m_ptrColl->m_device->FlipToGDISurface();
     m_2c = saved;
     while (::ShowCursor(1) < 0) {
@@ -956,45 +836,37 @@ i32 CMulti::StartTitle() {
     if (!desc) {
         return 0;
     }
-    m_isHost = (desc->m_dwFlags & 2) ? 1 : 0; // DPLCONNECTION_JOINSESSION
-    // 0x178170 Init(lobby, appGuid-by-value): retail pushes m_lobby (the ecx live
-    // from the b73ec load) + the 4 GUID dwords stored into the sub-esp,0x10 slot.
+    m_isHost = (desc->m_dwFlags & 2) ? 1 : 0;
+
     if (m_netGate->Init(Mgr()->m_lobby, g_dplayAppGuid) == 0) {
         return 0;
     }
-    m_netGate->ClearPlayerList();                                               // 0x178750
-    CNetPlayerListNode* player = m_netGate->AddPlayerNode(desc->m_sessionDesc); // 0x1786d0
+    m_netGate->ClearPlayerList();
+    CNetPlayerListNode* player = m_netGate->AddPlayerNode(desc->m_sessionDesc);
     if (player == 0) {
         return 0;
     }
-    m_netGate->m_playerSel = player; // +0x74 latch
+    m_netGate->m_playerSel = player;
     CString hostName(desc->m_playerName->m_shortName);
     SetServiceName(hostName);
     char* grp = player->GroupName();
     CString grpName(grp);
     ApplyDynSetting(grpName);
-    // 0xbc460 SetupTcpIpConfig (host) / 0xbc750 CreateLocalPlayer (guest) - the
-    // real bodies below (ex the "RebindHostAlt"/"RebindHost" alias decls).
+
     i32 r = m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer();
     return r ? 1 : 0;
 }
 
-// CNetPlayerListNode::GroupName (0xb76a0): return the session/group name copied into
-// the descriptor at m_desc.m_lpszName (+0x34). Out-of-lined into this TU (lone caller).
 RVA(0x000b76a0, 0x4)
 char* CNetPlayerListNode::GroupName() {
     return m_desc.m_lpszName;
 }
 
-// Assign the supplied game/group name into the multiplayer state. The by-value
-// CString parameter is significant: retail assigns from the incoming stack
-// object and destroys it in this callee.
 RVA(0x000b76c0, 0x4f)
 void CMulti::ApplyDynSetting(CString s) {
     m_groupName = s;
 }
 
-// Same by-value assignment shape for the local player/service name.
 RVA(0x000b7730, 0x4f)
 void CMulti::SetServiceName(CString s) {
     m_hostName = s;
@@ -1005,9 +877,9 @@ i32 CMulti::Open() {
     if (!Peer()) {
         return 0;
     }
-    RunTitleSeq("BACKGND", 0, 0, 1, 0);            // 0xfa350 (CState base)
-    m_world->m_drawTarget->PresentBackPage();      // m_c->m_4
-    InterfaceObject* descriptor = SetupServices(); // 0xb78b0 (the selected provider node)
+    RunTitleSeq("BACKGND", 0, 0, 1, 0);
+    m_world->m_drawTarget->PresentBackPage();
+    InterfaceObject* descriptor = SetupServices();
     if (!descriptor) {
         return 0;
     }
@@ -1016,26 +888,18 @@ i32 CMulti::Open() {
     }
     if (g_hostServicesMode) {
         m_isHost = 1;
-        if (!DetectConnectionConfig()) { // 0xb82e0
+        if (!DetectConnectionConfig()) {
             return 0;
         }
     } else {
         m_isHost = 0;
-        if (!JoinSession()) { // 0xb7fe0
+        if (!JoinSession()) {
             return 0;
         }
     }
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::SetupServices  (__thiscall; ret 0 args; /GX EH frame).
-// Enumerates the peer's DirectPlay service providers (m_peer->EnumServiceProviders);
-// on failure reports the connect error and returns 0. On success it dispatches the
-// host or join services command (per g_hostServicesMode) and, when that succeeds and
-// the m_4->+0x38 config store exists, persists the config: the selected service id
-// (unless "none" == 0x3e7), the local player name, and - host only - the game name.
-// Returns the peer's selected provider (m_groupSel).
 RVA(0x000b78b0, 0x17f)
 InterfaceObject* CMulti::SetupServices() {
     if (Peer()->EnumServiceProviders(0) != 0) {
@@ -1084,35 +948,9 @@ CString CMulti::GetString59c() {
     return m_groupName;
 }
 
-// ---------------------------------------------------------------------------
-// NetSetupDlgProc  (Win32 DialogProc, __stdcall; ret 0x10, 4 args).
-// The multiplayer host/join service-setup dialog. Runs the shared base proc first;
-// on WM_INITDIALOG it fills the service-provider combo (control 0x3fc), selects the
-// current service, and seeds the Player_Name/Game_Name edits (0x51b/0x51c) from the
-// settings config; on WM_COMMAND it handles Cancel (2 -> EndDialog(0)) and OK (1):
-// validates the service name (0x51b, beep on empty), records it (host mode also
-// records the game name), latches the selected service id, reads the group
-// selection, and closes the dialog (EndDialog(1)).
-// EXACT 2026-07-28 (was 87.16, filed a "regalloc callee-save-count wall"). Five
-// source fixes, no register problem: (a) the three g_p* import function-pointer
-// globals replaced by the real ::EndDialog/::GetDlgItemTextA/::MessageBeep imports,
-// which is what lets cl CSE the load into a register (`mov edi,[__imp_..]; call edi`
-// twice); (b) ONE set of buffers at FUNCTION scope - retail's two GetDlgItemTextA
-// calls share gameBuf's slot, and cl packs the stack by SCOPE, not live range;
-// (c) GetDlgItem is its own statement, so its call precedes SendMessage's constant
-// pushes; (d) the wParam==1 body lives inside the `if` and falls out into one shared
-// `ret_false:` (base had 7 rets, retail 6); (e) gameBuf is 0x44, not 0x40 - retail's
-// locals span exactly 0x50 with gameBuf at +0xc - and `cap` is scoped to the
-// WM_INITDIALOG case, which lets cl overlay it and the WM_COMMAND CString temp's
-// esp-bookkeeping on the SAME dead hDlg parameter slot.
 RVA(0x000b7b10, 0x27c)
 INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    // FUNCTION scope, not case scope: retail's frame is exactly 0xc + 0x40 (+ the
-    // GetValueString cap, which cl parks in the dead hDlg parameter slot), and the
-    // WM_COMMAND path re-reads BOTH edits into gameBuf's slot - i.e. one set of
-    // buffers shared across the switch. Per-case arrays cannot overlap the
-    // WM_COMMAND ones (cl packs the stack by scope, not by live range) and grow the
-    // frame to 0x90.
+
     char nameBuf[0xa];
     char gameBuf[0x44];
     g_setupDlgHwnd = hDlg;
@@ -1131,7 +969,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 ::SendMessageA(combo, 0x186, 0, 0);
             }
 
-            DWORD cap = 0xa; // GetValueString's in/out count IS the registry LPDWORD
+            DWORD cap = 0xa;
             g_gameReg->m_settings->GetValueString(
                 const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                 nameBuf,
@@ -1145,10 +983,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 &cap,
                 "Multiplayer_Gruntz"
             );
-            // The GetDlgItem result is its OWN statement: retail calls it BEFORE
-            // pushing SendMessage's constants (`push 0x51b/esi; call ebp` then
-            // `push 0/9/0xc5; push eax; call edi`); nesting it pushes the constants
-            // first.
+
             HWND edName = ::GetDlgItem(hDlg, 0x51b);
             ::SendMessageA(edName, 0xc5, 9, 0);
             ::SetDlgItemTextA(hDlg, 0x51b, nameBuf);
@@ -1167,13 +1002,9 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         ::EndDialog(hDlg, 0);
         return 1;
     }
-    // The wParam==1 body is INSIDE the `if` and falls out into the shared ret_false:
-    // a `goto ret_false;` here inlines a second copy of the return-0 (base 7 rets,
-    // retail 6).
+
     if (wParam == 1) {
-        // Both edits are read into gameBuf: retail's two GetDlgItemTextA calls share one
-        // address (`lea ecx,[esp+0x1c]` == gameBuf's slot), so the WM_COMMAND path reuses
-        // the WM_INITDIALOG game-name scratch rather than owning buffers of its own.
+
         ::GetDlgItemTextA(hDlg, 0x51b, gameBuf, 0xa);
         if (gameBuf[0] == 0) {
             ::MessageBeep(0);
@@ -1245,33 +1076,6 @@ i32 CMulti::JoinSession() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// MultiJoinDlgProc (0x0b8020) - the MULTI_JOIN "wait for players" modeless dialog
-// proc (Win32 DialogProc, __stdcall; ret 0x10, 4 args). Its address is registered
-// through the MultiJoinHandler ILT thunk (0x222f) above. Runs the shared base proc
-// first (screensaver/monitor-power swallow); then:
-//   * WM_INITDIALOG (0x110): cache the player listbox (GetDlgItem 0x3fc), clear the
-//     create-context's player-sel latch (+0x74), arm a 2500 ms poll timer, and
-//     self-post the first WM_TIMER. Bails (EndDialog(0)) if the listbox or context
-//     is missing.
-//   * WM_COMMAND (0x111): Cancel(2) -> KillTimer + EndDialog(0); OK(1) -> KillTimer,
-//     confirm the join (OnJoinConfirm) -> EndDialog(1) on success, else beep + re-arm
-//     the poll timer and stay open.
-//   * WM_TIMER (0x113): re-enumerate the session players (EnumPlayersInto); on a
-//     lost/errored session close the dialog, else refresh the player list, restore
-//     the selection, and re-arm the timer (2000 ms, or 5000 ms on a slow-link
-//     provider - InterfaceObject::IsInterface2).
-// The g_pSendMessageA/GetDlgItem imports go through the engine's cached fn-ptr
-// globals (::SendMessageA / ::GetDlgItem); EndDialog/MessageBeep via g_p*; KillTimer/
-// SetTimer are direct USER32 imports. The re-arm-timeout probe (+0x70 IsInterface2)
-// recurs in the WM_TIMER and WM_COMMAND-OK-fail paths.
-// EXACT 2026-07-28: the "block-duplication wall" was where the shared-exit gates put
-// their BODY. cl places a shared label right after the LAST `goto` that targets it, so
-// `if (wParam != 1) goto ret_false;` and `if (g_groupEnumMgr == 0) goto close;` each
-// inlined their target block; spelling both as `if (<ok>) { body... }` with the body
-// inside and the bare goto/fall-out after reproduces retail's `je <far shared tail>`.
-// The OnJoinConfirm test is failure-first for the same reason (and retail then reuses
-// the known-zero eax as MessageBeep's argument).
 RVA(0x000b8020, 0x22f)
 INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     g_setupDlgHwnd = hDlg;
@@ -1279,14 +1083,12 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
         goto ret_true;
     }
     switch (msg) {
-        case 0x110: // WM_INITDIALOG
+        case 0x110:
             g_netPlayerListHwnd = ::GetDlgItem(hDlg, 0x3fc);
             if (g_netPlayerListHwnd == 0) {
                 goto close;
             }
-            // Body inside the `if`, with the bare `goto close;` after it: retail's
-            // `je <far close>` falls through into the INITDIALOG tail, where a
-            // trailing `goto close;` gate inlines the close block right here.
+
             if (g_groupEnumMgr != 0) {
                 g_groupEnumMgr->m_playerSel = 0;
                 SetTimer(hDlg, 1, 0x9c4, 0);
@@ -1294,19 +1096,16 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 return 1;
             }
             goto close;
-        case 0x111: // WM_COMMAND
+        case 0x111:
             if (wParam == 2) {
                 KillTimer(hDlg, 1);
                 ::EndDialog(hDlg, 0);
                 return 1;
             }
-            // `== 1` with the body inside, falling out of the switch into ret_false:
-            // a trailing `goto ret_false;` makes cl inline that 6-byte return-0 here
-            // instead of reaching retail's shared block by `jne`.
+
             if (wParam == 1) {
                 KillTimer(hDlg, 1);
-                // Failure-first: retail's `jne` puts the beep/re-arm path in the
-                // fall-through (and reuses the known-zero eax for MessageBeep's arg).
+
                 if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) == 0) {
                     ::MessageBeep(0);
                     i32 t = 0x7d0;
@@ -1321,12 +1120,10 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 return 1;
             }
             break;
-        case 0x113: // WM_TIMER
+        case 0x113:
             KillTimer(hDlg, 1);
             {
-                i32 sel = static_cast<i32>(
-                    ::SendMessageA(g_netPlayerListHwnd, 0x188, 0, 0)
-                ); // LB_GETCURSEL
+                i32 sel = static_cast<i32>(::SendMessageA(g_netPlayerListHwnd, 0x188, 0, 0));
                 i32 hr = g_groupEnumMgr->EnumPlayersInto(0, 0);
                 if (hr == static_cast<i32>(0x88770118)) {
                     goto close;
@@ -1341,7 +1138,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 FillPlayerList(g_netPlayerListHwnd, g_groupEnumMgr);
                 if (sel != -1) {
-                    ::SendMessageA(g_netPlayerListHwnd, 0x186, sel, 0); // LB_SETCURSEL
+                    ::SendMessageA(g_netPlayerListHwnd, 0x186, sel, 0);
                 } else {
                     ::SendMessageA(g_netPlayerListHwnd, 0x186, 0, 0);
                 }
@@ -1363,19 +1160,6 @@ ret_true:
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::DetectConnectionConfig  (__thiscall; ret 0 args; /GX EH frame).
-// Resolves the connection class from the peer's selected service provider
-// (m_groupSel): the InterfaceObject GUID predicates pick IPX / TcpIp / Modem /
-// Serial (else "Other"), seeding the command-timing defaults (m_cmdDelay/m_resend).
-// It then overrides those from the config store's "<section>_CmdDelay/_Resend" keys
-// (if present), latches the local player name into the channel table, and joins the
-// session (JoinAndRegisterChannel); on success it records the result into the peer's
-// player-selection latch and returns 1, else 0.
-// EXACT 2026-07-28: the "/GX CString-temp cluster wall" was two source bugs - the
-// name latch was a named CString local where retail assigns the by-value RETURN
-// (`call GetString5a0; push eax`), and the JoinAndRegisterChannel test was spelled
-// success-first, which swapped the two dtor-chain tails.
 RVA(0x000b82e0, 0x230)
 i32 CMulti::DetectConnectionConfig() {
     m_5ac = 0;
@@ -1418,14 +1202,10 @@ i32 CMulti::DetectConnectionConfig() {
     }
 
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
-    // The by-value return IS the temporary operator= receives: retail feeds it the
-    // call's own eax (`call GetString5a0; push eax`), where a named local re-leas
-    // the slot (`lea edx,[esp+0x18]; push edx`).
+
     ch0->m_name = GetString5a0();
     ch0->m_008 = 0;
 
-    // Failure first: retail's `jne` puts the return-0 dtor chain in the fall-through
-    // and the m_playerSel latch in the branch target.
     CNetPlayerListNode* r = JoinAndRegisterChannel();
     if (r == 0) {
         return 0;
@@ -1459,20 +1239,20 @@ i32 CMulti::ShowMultiStartDlg() {
             }
             rec->m_liveGate = 0;
             ChannelSlots_Set(rec->m_008, 1);
-            BroadcastChannelTable(0); // 0xba810 (ILT 0x1d70)
+            BroadcastChannelTable(0);
         }
         if (m_isHost == 0 && m_538 == 0) {
-            SendStatFlag(0x3ea, 1); // 0xb9240 (ILT 0x2e82)
+            SendStatFlag(0x3ea, 1);
         }
         return 0;
     }
-    // r == 1
+
     if (m_isHost != 0) {
-        ApplyCmdDelayDefaults(); // 0xb85a0 (ILT 0x386e)
+        ApplyCmdDelayDefaults();
     } else {
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_emitGate == 0) {
-            void* rec_ob = 0; // CMapStringToPtr::Lookup takes a void*& out-param
+            void* rec_ob = 0;
             reg->m_10.Lookup(s_GameKey, rec_ob);
             LeafCue* rec = static_cast<LeafCue*>(rec_ob);
             if (rec != 0) {
@@ -1492,30 +1272,8 @@ i32 CMulti::ShowMultiStartDlg() {
     return 1;
 }
 
-// ~CMultiStartDlg @0x0b8960 - the COMPILER-GENERATED dtor (destroy CStringList
-// m_74, then CString m_70, then chain the NAFXCW ~CDialog base; all reloc-masked).
-// CMultiStartDlg declares no dtor (see Dialogs.h), so there is no source body to
-// hang an RVA() on: cl emits it as a COMDAT in every using obj, and THIS obj is
-// one - ShowMultiStartDlg below stack-constructs the dialog, which is exactly why
-// retail placed the COMDAT here at 0xb8960, right after ShowMultiStartDlg's
-// 0xb86c0+0x206. (Was defined in a dedicated src/Gruntz/ShowMultiDlg.cpp holding
-// TU; that fiction existed only to host the user-declared dtor, and the
-// declaration was itself the vptr-restamp mis-model. Deleted.)
-// docs/patterns/eh-dtor-vptr-restamp-presence.md
-//
 RVA_COMPGEN(0x000b8960, 0x59, ??1CMultiStartDlg@@UAE@XZ)
 
-// ---------------------------------------------------------------------------
-// FillPlayerList() - 0x0b89e0. __stdcall(HWND hList, CNetMgr* sess): clear the
-// listbox, then walk the CNetMgr +0x38 player CObList (head @+0x3c via
-// GetHeadPosition, running cursor cached in m_playerSelId @+0x80) - for each node's
-// CNetPlayerDesc payload (+0x8) format its NAME key out of the +0x34 profile
-// (NetFormatKeyed) into a scratch buffer, add that string (or the raw profile on a
-// format miss), and stash the payload as the new item's data. No-op if either arg
-// is null. The standalone twin of CNetMgr::PopulatePlayerList (0x178790) - same list
-// walk, same canonical CNetListNode / CNetPlayerDesc types; the Session/PlayerNode/
-// PlayerRecord views it used to carry ARE this CNetMgr + its player-list node/payload.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000b89e0, 0xc8)
 void FillPlayerList(HWND hList, CNetMgr* sess) {
@@ -1533,20 +1291,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
             ? static_cast<CNetPlayerListNode*>(sess->m_players.GetNext(sess->m_playerSelId))
             : 0;
     while (player) {
-        // NOTE (jcc_sieve POLARITY, 2026-07-28): retail pushes the string in EACH arm and
-        // cl tail-merges everything after it (`push ecx / jmp` vs `push edx`, then the
-        // shared `push 0 / push 0x180 / push edi / call`, 0xb8a74) - i.e. the LB_ADDSTRING
-        // call is duplicated into both arms, not fed a selected pointer. That spelling was
-        // measured at 95.41 (vs 92.72 here) but needs a SECOND reinterpret_cast<LPARAM>,
-        // which trips the reinterpret_casts ratchet (440 -> 441, FATAL). Reverted; apply
-        // the shape where the duplicated argument needs no cast. See
-        // docs/patterns/positive-gate-enables-shrink-wrap.md sec.5.
-        // The LB_ADDSTRING call is DUPLICATED into both arms (retail's `push ecx / jmp`
-        // vs `push edx`, then the tail-merged `push 0 / push 0x180 / push edi / call` at
-        // 0xb8a74): only the string push differs, so cl tail-merges the rest. The union
-        // carries the pointer into the LPARAM slot, so no second cast is needed.
-        // `buf`, NOT `buf + 4`: retail's `lea eax,[esp+0x14]` (one push deep in a
-        // 0x110-byte frame) resolves to buf[0]; the `+ 4` put our lea one dword high.
+
         MsgParam name;
         i32 idx;
         if (NetFormatKeyed(buf, player->m_desc.m_lpszName, "NAME")) {
@@ -1561,9 +1306,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
             cookie.m_ptr = player;
             ::SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
         }
-        // @early-stop residue: retail reads m_playerSelId TWICE here (`mov eax,[ebp+0x80]`
-        // for the guard + GetAt, `mov ecx,[ebp+0x80]` for GetNext); cl CSEs the two into one
-        // load. A local copy feeding the guard/GetAt does NOT defeat the CSE (measured).
+
         if (sess->m_playerSelId != 0) {
             player = static_cast<CNetPlayerListNode*>(sess->m_players.GetAt(sess->m_playerSelId));
             sess->m_players.GetNext(sess->m_playerSelId);
@@ -1573,31 +1316,18 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::JoinAndRegisterChannel  (__thiscall; ret 0 args; /GX EH frame).
-// Builds the command-timing config string in a 0x100 stack buffer (section seed +
-// "CMDDELAY"/"RESEND"/"LEVEL" appends), enumerates the host group into it (via the
-// group-enum mgr's EnumGroupsInto), and on success creates the local player
-// (m_peer->CreatePlayer) and registers the local channel (RegisterChannelFrom over
-// the channel-table name at m_4+0x150). Returns the enum result iff the channel
-// registered, else 0; a failed enum / player-create reports the connect error.
 // @early-stop
 RVA(0x000b8b10, 0x175)
 CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
-    Cfg_SetSection(buf, "%s", m_groupName); // CString -> LPCTSTR (its buffer handle)
+    Cfg_SetSection(buf, "%s", m_groupName);
     Cfg_AppendKeyVal(buf, "CMDDELAY", m_5a4);
     Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
 
-    CNetPlayerListNode* enumResult = g_groupEnumMgr->EnumGroupsInto(
-        4, // dwMaxPlayers - the 4-player Gruntz cap
-        buf,
-        0,
-        g_emptyString
-    );
+    CNetPlayerListNode* enumResult = g_groupEnumMgr->EnumGroupsInto(4, buf, 0, g_emptyString);
     if (enumResult == 0) {
         g_connectRptMgr->ReportNetError(0);
         return 0;
@@ -1613,23 +1343,11 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     m_hostIndex = node->m_id;
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
     i32 chField = ch0->m_008;
-    // The FAILURE flag is materialized at the call (retail `neg ebx; sbb ebx,ebx;
-    // inc ebx` BEFORE the name CString's dtor - eax cannot survive it), and the
-    // enum-result mask is then derived FROM that flag after the dtor
-    // (`neg bl; sbb; not; and ebx,ebp`). Keeping the raw result in a callee-saved
-    // register and masking at the end is one register and two instructions off.
+
     i32 failed = (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0);
     return failed ? 0 : enumResult;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::OnJoinConfirm  (__thiscall; ret 0x4, 1 arg; /GX EH frame).
-// The join dialog's confirm handler. Reads the selected player from the dialog's
-// list box (ReadPlayerSel on control 0x3fc), resolves the local player against it
-// (EnumPlayersCb under the local name) and, on success, parses the peer's config
-// blob (CMDDELAY/RESEND/dyn/LEVEL keys) into the command-timing fields, then builds
-// and ships the 0x28-byte "player joined" packet (stat 0x3f9) carrying the local
-// player id + name. Returns 1 on success, 0 on any bail.
 // @early-stop
 RVA(0x000b8cf0, 0x23b)
 i32 CMulti::OnJoinConfirm(void* hDlg) {
@@ -1643,19 +1361,14 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    // No `node` local: retail stores straight into m_5bc, compares the MEMBER
-    // (`cmp dword ptr [ebp+0x5bc],ebx`) and re-reads it for the id latch.
     m_5bc = Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), g_emptyString, 0);
     if (LocalPlayer() == 0) {
         ReportNetError(0);
         return 0;
     }
 
-    // 0x100, not 0x28: retail's frame is 0xd8 bytes larger than ours, exactly
-    // 0x100-0x28 - the same 0x100 config scratch JoinAndRegisterChannel builds.
     char buf[0x100];
-    // The config string is re-read per call (`mov eax,[esi+0x34]` before each): a
-    // local would survive Cfg_GetKey in a register, which retail does not do.
+
     if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "CMDDELAY")) {
         m_5a4 = atoi(buf);
     }
@@ -1676,9 +1389,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     memset(&packet, 0, sizeof(packet));
     packet.m_flags |= 0x80;
     packet.m_statId = 0x3f9;
-    // The host id is latched THIRD here (retail stores [esp+0x28] before the byte
-    // run), and the last two bytes go 0x0e-then-0x0d - unlike CreateLocalPlayer,
-    // whose retail order defers the id to the end.
+
     packet.m_hostIndex = m_hostIndex;
     packet.m_present = 1;
     packet.m_kind = 0;
@@ -1692,28 +1403,6 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::VerifyCustomLevel  (__thiscall; /GX EH frame).
-// Confirms every player is on the same custom level before the match starts.
-// No-op (0) on a null token pair or when the config isn't loaded (m_530 == 0; that
-// path just pumps the receive queue). Builds the level rez path from the active
-// config name (GetConfigNameB when a custom id m_5b0 is set, else GetConfigNameA),
-// hands it to the active session's Poll, and reports: Poll failure -> re-disable +
-// "unable to verify"; verified-but-mismatch (m_levelVerifyResult still 0) -> "not all players
-// have the same level"; agreement -> 1. The by-value CString rez-path arg + the
-// name temp run under the /GX frame.
-// EXACT 2026-07-28 (6.20 -> 23.46 -> 100). The "/GX CString-by-value EH-frame-layout
-// wall" was three source defects and no frame problem at all:
-//   1. the config name is a CONDITIONAL CLASS TEMPORARY passed by value in ONE call
-//      (`BuildLevelRezPath(..., m_5b0 ? GetConfigNameB() : GetConfigNameA())`). THAT
-//      is retail's destructor-FLAG word (ebx bit0/bit1) with both `test bl,N`-gated
-//      dtors after the call - two per-branch scoped CStrings destroy inside their own
-//      arm, need no flag, and cost the 8-byte frame delta blamed on EH bookkeeping.
-//   2. `m_5b0` is BuildLevelRezPath's `lo` argument, not `hi` - the two zeros around
-//      it hid a genuinely wrong parameter position (retail `push ebp/edi/ebp/ebp`).
-//   3. the m_530 gate holds the BODY (`if (m_530 != 0) { ... }` with PollSession
-//      after it) and the verify test is success-first; the `goto notVerified;`
-//      spelling inlines each shared block at its gate.
 RVA(0x000b8fc0, 0x151)
 i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (h == 0) {
@@ -1722,16 +1411,10 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (playerTok == 0) {
         goto notVerified;
     }
-    // The BODY is inside the `if`, with the PollSession refusal after it: retail's
-    // `je` puts that block LAST (falling into the shared return-0), where
-    // `if (m_530 == 0) { PollSession(); goto notVerified; }` inlines it at the gate.
+
     if (m_530 != 0) {
-        i32 cfgId = m_5b0; // held in edi across the name build and the arg push
-        // ONE call with a CONDITIONAL class temporary as the by-value argument. That
-        // is what produces retail's destructor-FLAG word (ebx: bit0 = the B temp at
-        // [esp+0x2c], bit1 = the A temp at [esp+0x28]) with both `test bl,N`-gated
-        // dtors AFTER the call, at the end of the full-expression - two per-branch
-        // scoped locals destroy inside their own arm and need no flag.
+        i32 cfgId = m_5b0;
+
         i32 token = (g_gameReg)->BuildLevelRezPath(
             0,
             0,
@@ -1746,8 +1429,7 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
             g_gameReg->EnterModalUI("Unable to verify custom level with other players");
             goto notVerified;
         }
-        // Success-first: retail's `je` sends the mismatch report away and falls
-        // through to `mov eax,1`.
+
         if (g_connectRptMgr->m_levelVerifyResult != 0) {
             return 1;
         }
@@ -1760,9 +1442,6 @@ notVerified:
     return 0;
 }
 
-// Both arguments are pure non-zero gates - retail reads [esp+0x4] and [esp+0xc], tests
-// each for zero and never touches them again - and 0xb9180 has NO caller in .text, so
-// there is no site to read their meaning off. Left as a1/a2 deliberately (2026-07-29).
 RVA(0x000b9180, 0x4a)
 i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
     if (a1 == 0) {
@@ -1878,16 +1557,6 @@ i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     return hr == 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::PollSession  (__thiscall).
-// Pumps the DirectPlay receive queue. Bails (returns 0) if there is no local
-// player. Asks the peer's interface how many messages are pending for the local
-// player (GetMessageCount, slot 0x44), then receives + dispatches up to that
-// many (each Receive into the shared g_recvBuffer, slot 0x64): a nonzero HRESULT
-// is reported (NetMgr.h:0x141) and breaks; a message not addressed from the
-// local player is handed to the engine dispatcher (Stub_0b9750) and counted.
-// Stops early if the abort latch (m_pollAbort) is set. Returns the dispatched
-// count.
 // @early-stop
 RVA(0x000b95f0, 0x10f)
 i32 CMulti::PollSession() {
@@ -1900,26 +1569,20 @@ i32 CMulti::PollSession() {
         count = 0;
     } else {
         IDirectPlay4Z* dp = Peer()->m_directPlay;
-        // The out-param is its OWN (uninitialized) local, not `count`: retail passes
-        // `lea ebx,[esp+0x10]` with no preceding zero store and lands the masked
-        // result in a register (`mov ebx,eax`), where writing back into the
-        // address-taken slot pins `count` to memory for the whole function.
+
         i32 n;
         i32 hr = dp->GetMessageCount(LocalPlayer()->m_id, &n);
-        count = hr ? 0 : n; // branchless mask (neg/sbb/not/and)
+        count = hr ? 0 : n;
     }
     if (count <= 0) {
         return 0;
     }
 
-    // sender is seeded FIRST (retail stores [esp+0x14] then [esp+0x10]).
     i32 dispatched;
     i32 sender;
     sender = 0;
     dispatched = 0;
-    // The count test stays at the TOP of the loop body (retail's back edge is the
-    // `hr == 0` test, `test edi,edi; je <top>`); a `while (count > 0)` rotates it to
-    // the bottom and needs an extra `jmp`.
+
     for (;;) {
         if (count <= 0) {
             break;
@@ -1931,13 +1594,9 @@ i32 CMulti::PollSession() {
         i32 size = 0x800;
         i32 idTo = LocalPlayer()->m_id;
         IDirectPlay4Z* dp = Peer()->m_directPlay;
-        // lpidFrom is `&sender` - THAT is why retail keeps sender in a stack slot
-        // ([esp+0x14], the `lea edx,[esp+0x24]` pushed 5th). Passing `&size` twice
-        // dropped the out-param entirely.
+
         i32 hr = dp->Receive(&sender, &idTo, 1, g_recvBuffer, &size);
-        // SIBLING guards, not nested: retail re-tests hr AFTER the report
-        // (`test edi,edi; jne <end>`); nesting the break folds the report block
-        // out of line into the exit.
+
         if (hr) {
             CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
         }
@@ -1959,7 +1618,7 @@ i32 CMulti::PollSession() {
 // @early-stop
 RVA(0x000b9750, 0x810)
 i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
-    // the receive buffer at its wire shapes (see CNetWireMsg in <Net/NetMgr.h>)
+
     CNetWireMsg wire;
     wire.m_bytes = buf;
     CNetMsg* msg = wire.m_msg;
@@ -1967,8 +1626,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         return 0;
     }
     if (sender == 0) {
-        // sender 0 = the DirectPlay SYSTEM channel - the same buffer carries the
-        // control-record wire format
+
         return HandleControlMsg(wire.m_ctrl, size);
     }
 
@@ -2106,8 +1764,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
-            // the 0x3f9 arm's wire record IS the 0x28-byte channel-registration
-            // packet - RegisterChannelRec reads the same bytes back through it.
+
             CNetChannelPacket* chan = wire.m_chan;
             if (ChannelSlots_Get(chan->m_kind) == 0) {
                 chan->m_kind = static_cast<u8>(ChannelSlots_FindFree());
@@ -2302,20 +1959,11 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
     return 1;
 }
 
-// The per-player record's display name (+0x8 CString by value). Ex the CNetMgr
-// "GetName" inline - every retail receiver is a CNetSessionNode.
 RVA(0x000ba170, 0x20)
 CString CNetSessionNode::GetName() {
     return m_name;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::HandleControlMsg  (__thiscall).
-// Dispatches a network control message on its +0x0 code: 3 -> the sprite/menu
-// handler; 5 -> the player-left path (when sub-code 1, report+teardown then set
-// the shared player-left flag); 0x31 -> latch m_sessionTerminated; 0x101 ->
-// latch m_useChannelLatency. Anything else (or a null/out-of-range code) -> 0;
-// the matched cases return 1.
 // @early-stop
 RVA(0x000ba1a0, 0x1a0)
 i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 unused) {
@@ -2370,8 +2018,6 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     slot->m_liveGate = 0;
     ChannelSlots_Set(slot->m_008, 1);
 
-    // 0x1f450 GruntzPlayer::GetName (ILT 0x3e54) - the +0x4 m_name, NOT the
-    // session-node +0x8 read the old CNetMgr cross-cast forced.
     CString line = slot->GetName() + " has left the game.";
     (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
         ->AddItem(const_cast<char*>(static_cast<const char*>(line)), 0x20, 0x11);
@@ -2415,7 +2061,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     }
     CNetSessionNode* node = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(ev->m_id));
     if (node == 0) {
-        // node is provably null in this arm, so the 4th arg is the same zero
+
         node = Peer()->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, 0);
         if (node == 0) {
             return 0;
@@ -2463,17 +2109,6 @@ i32 CMulti::ResolveLocalPlayer() {
     return LocalPlayer() != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::BroadcastChannelTable  (__thiscall).
-// Serializes the whole four-channel ack/state table (m_4 + 0x150, stride 0x238)
-// into a 0x88-byte stat packet (stat id 0x3f8) - one 0x20-byte record per channel
-// (each carries the channel's gate/id bytes plus its name copied in via the
-// engine GetName CString + inline strcpy) - then ships it: to one recipient via
-// SendStatPairRaw when given, else to the local player's group via SendStatFrom.
-// 2026-07-28: the send RESULT is the return value - each arm `if (Send... == 0) return
-// 0;` with one shared bottom `return 1`, which is what produces retail's `test eax,eax /
-// jne <shared mov eax,1>` per arm and its eax-is-already-0 fall-through epilogues.
-// 2026-07-29 EXACT: the row is addressed WITHOUT a `rec` local - see below.
 RVA(0x000ba810, 0x11c)
 i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     CNetChannelTablePacket packet;
@@ -2481,12 +2116,6 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     packet.m_flags |= 0x80;
     packet.m_statId = STAT_CHANNEL_TABLE;
 
-    // NO `CNetChannelRow* rec` local: the row is subscripted at every field. cl
-    // strength-reduces the subscripts into ONE walking cursor either way, but the BIAS
-    // it picks differs - a named row pointer anchors it at rows+2 (`lea ebx,[esp+0x22]`)
-    // and a walking `rec += 1` at rows+0, where the subscripted form gives retail's
-    // rows+1 (`lea ebx,[esp+0x21]`). Eight displacement bytes + the strcpy `lea`.
-    // Same fix as ParseChannelTable below.
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != 0) {
@@ -2507,9 +2136,6 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
         }
     }
 
-    // The send RESULT is the return value: retail's per-branch fall-through epilogue
-    // returns eax untouched (== 0 from the `test eax,eax`) and both branches `jne`
-    // into one shared `mov eax,1`, i.e. `return <call> != 0;`, not a bare `return 1`.
     if (recipient != 0) {
         if (SendStatPairRaw(recipient, &packet, sizeof(packet), 1) == 0) {
             return 0;
@@ -2522,18 +2148,6 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::ParseChannelTable  (__thiscall).
-// The inverse of BroadcastChannelTable: parses a received 0x88 packet back into
-// the four-channel table. Bails (0) on a null packet; (re)initializes the global
-// net-slot table when not channel-latency mode, then for each channel copies the
-// record bytes back, restores its name CString, and - in non-channel mode for a
-// newly active channel - frees its net slot (ChannelSlots_Set(id, 0)).
-// 2026-07-29 EXACT: the row is subscripted at every field, with NO `CNetChannelRow* rec`
-// local. cl strength-reduces the subscripts into one walking cursor; the local anchors
-// that cursor at rows+2 (`lea edi,[esi+0xa]`) and a walking `rec += 1` at rows+0, while
-// the subscripted form gives retail's rows+1 (`lea edi,[esi+0x9]`). Also note the
-// readyFlag normalisation must stay an if/else - a `?:` if-converts to `setne`.
 RVA(0x000ba980, 0xca)
 i32 CMulti::ParseChannelTable(void* packet) {
     if (packet == 0) {
@@ -2572,15 +2186,6 @@ i32 CMulti::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
     return RegisterChannel(name, b, 1, 0, e, f);
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::RegisterChannel  (__thiscall; /GX EH frame).
-// Creates or refreshes one channel slot. Bails (0) if the table is full
-// (m_4->CountActiveChannels >= 4). Tries the requested index (idx in [0,4]) when
-// its slot is free, else linear-scans for the first inactive slot; bails if none.
-// Stores the supplied fields into the slot (name CString into +0x4, id/flags) and
-// marks it active. The CString temp's dtor runs under the /GX frame.
-// EXACT 2026-07-28: not an EH-cookie wall at all - the scan loop's counter/pointer
-// init+bump order and the CString TEMPORARY (vs a named scoped local) closed it.
 RVA(0x000baac0, 0x12e)
 i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
     if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
@@ -2595,11 +2200,7 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
         }
     }
     if (ch == 0) {
-        // The counter is seeded FIRST and bumped FIRST: retail is
-        // `xor ecx,ecx` before the `add eax,0x150` slot-base, and `inc ecx`
-        // before the `add eax,0x238` advance - i.e. both live in the for
-        // clauses, counter first (a body-tail `p++` emits the pointer bump
-        // first and does not match).
+
         i32 i;
         GruntzPlayer* p;
         for (i = 0, p = NetGameMgr()->m_options; i < 4; i++, p++) {
@@ -2615,9 +2216,7 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
     }
 
     ChannelSlots_Set(id, 0);
-    // A TEMPORARY, not a named scoped local: retail feeds operator= the
-    // CString ctor's return value (`call ??0CString; push eax`), where a named
-    // local re-takes its address (`lea ecx,[esp+0x2c]; push ecx`).
+
     ch->m_name = CString(name);
     ch->m_008 = id;
     ch->m_014 = c;
@@ -2728,12 +2327,6 @@ void CMulti::OnOutOfSync() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::BroadcastOneChannel  (__thiscall).
-// Serializes one channel descriptor into a 0x2c-byte stat packet (stat id 0x3fa,
-// the same record byte layout as a single BroadcastChannelTable slot plus the
-// channel name strcpy'd in) and ships it to the local player's group via
-// SendStatFrom.
 RVA(0x000baf00, 0xb2)
 i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     CNetOneChannelPacket packet;
@@ -2808,15 +2401,6 @@ i32 CMulti::SendChannelStat423() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::BroadcastChatLine  (__thiscall).
-// Assembles a chat line and broadcasts it (stat 0x3f0). Bails (0) on a null/empty
-// text. Caps the text at 0x80 chars and trims up to two trailing control chars.
-// When toChat is set it prefixes the local player's name ("<name>: <text>") via
-// sprintf; otherwise the raw text is used. When showWnd is set the line is either
-// posted to a Win32 chat control (ShowChatLine) or appended to the in-game chat
-// log (m_4->m_5c->AddItem). Finally the line is stamped into the static chat
-// packet and shipped through SetGroupDataFrom.
 // @early-stop
 RVA(0x000bb190, 0x1c5)
 i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
@@ -2832,11 +2416,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
         text[0x80] = 0;
         len = 0x80;
     }
-    // SIBLING trims, not nested. Retail falls from the first char test straight into
-    // the SECOND `len > 0` test (`jge 0xbb1fb`), and its first `len > 0` jle is
-    // threaded onto the shared exit - both only make sense if the two guards are
-    // peers. Nesting them made cl exit on the first non-control char and spill the
-    // byte through dl instead of comparing memory against the hoisted `al = ' '`.
+
     if (len > 0 && text[len - 1] < 0x20) {
         text[len - 1] = 0;
         len--;
@@ -2847,9 +2427,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 
     char line[0x12c];
     if (toChat != 0) {
-        // ONE nested expression: retail pushes GetName's hidden return-slot pointer
-        // FIRST (`lea eax,[esp+0x10]; push eax`) and only then evaluates the
-        // FindOptionsSlot receiver - a `player` local evaluates the slot lookup first.
+
         sprintf(
             line,
             "%s: %s",
@@ -2862,13 +2440,10 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
         strcpy(line, text);
     }
 
-    // SIBLING gates, not nested: retail re-tests showWnd in the else arm
-    // (`cmp ecx,ebx; je <after>` a second time).
     if (showWnd != 0 && hWnd != 0) {
         NetLobby::AppendEditLine(static_cast<HWND>(hWnd), line);
     } else if (showWnd != 0) {
-        // A null slot is a FAILURE return here, not a skipped AddItem: retail
-        // `cmp eax,ebx; jne <add>; xor eax,eax; <epilogue>; ret 0x10`.
+
         GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
         if (player == 0) {
             return 0;
@@ -2877,8 +2452,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     }
 
     g_chatPacket_id = STAT_CHAT;
-    // The length is its own value (retail `not ecx; dec ecx` then `add edx,0xd`);
-    // spelling `strlen(line) + 0xd` inline lets cl fuse it into `not ecx; add ecx,0xc`.
+
     i32 n = strlen(line);
     g_chatPacket_val = 0;
     strcpy(&g_chatPacket_buf, line);
@@ -2888,8 +2462,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 }
 
 namespace NetLobby {
-    // __stdcall(edit, str): append `str` to an edit control, prefixing a CRLF when
-    // the control is non-empty, then scroll to keep the caret in view.
+
     RVA(0x000bb3e0, 0xe5)
     void WINAPI AppendEditLine(HWND edit, char* str) {
         if (!edit || !str || !str[0]) {
@@ -2914,16 +2487,6 @@ namespace NetLobby {
     }
 } // namespace NetLobby
 
-// ---------------------------------------------------------------------------
-// CNetMgr::DropChannelPlayer  (__thiscall).
-// Drops the player owning channel[idx]. Bails (0) on an out-of-range index
-// ([0,4)), no peer (m_528), or a null channel. Looks the channel player's data
-// up in the peer (GetPlayerData by the channel's +0x18 id); when the channel's
-// +0x14 "active" gate is set it reports the player-left to the rest (stat 0x3fb
-// via SendStatPair when the data is present, else just clears below). Removes the
-// channel (RemoveChannel(idx)) and, on success, rebroadcasts the channel table
-// (BroadcastChannelTable(0)) and latches the player-left flag. Returns 1 when a
-// channel was dropped, else 0.
 // @early-stop
 RVA(0x000bb510, 0x9d)
 i32 CMulti::DropChannelPlayer(i32 idx) {
@@ -2940,9 +2503,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
     }
 
     void* data = Peer()->GetPlayerData(ch->m_slotKey);
-    // Cached, not re-read per arm: retail's single `mov ecx,[edi+0x14]` before the
-    // `test eax,eax` is the CSE'd local; spelling `ch->m_014` in both arms makes cl
-    // emit the load twice.
+
     i32 active = ch->m_014;
     if (data == 0) {
         if (active != 0) {
@@ -2960,17 +2521,6 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::RecordDropPlayer2  (__thiscall).
-// Records a pending player-drop into the m_dropIds id array. No-op once the host
-// latch m_534 is set, or for the local player (m_localPlayerId). Skips a player already
-// recorded; otherwise fills the first empty m_dropIds slot, bailing if the array is
-// full. Then, once the number of recorded drops reaches the number of
-// command slots in state 3 (the m_520 sub-object, stride 0x64), it announces the
-// drop twice (stat 0x3e8) and latches m_534.
-// EXACT 2026-07-28: the "this/id register pinning" was a CSE artifact - the third
-// (occupancy) scan re-reads GetSize(), because the `m_604[slot] = id` store above it
-// aliases the array header; reusing the cached `count` kept it in the wrong register.
 RVA(0x000bb5e0, 0xd9)
 void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
     if (m_534 != 0) {
@@ -3009,9 +2559,6 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
         p++;
     }
 
-    // GetSize() is re-read here: the `m_604[slot] = id` store above aliases the
-    // array header, so retail reloads m_nSize (`mov ecx,[esi+0x60c]`) before the
-    // occupancy scan instead of reusing the cached `count`.
     i32 total = m_604.GetSize();
     i32 recorded = 0;
     for (i = 0; i < total; i++) {
@@ -3028,15 +2575,6 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
     m_534 = 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::WaitForOtherPlayers (0xbb700, /GX) - after clearing the per-slot vote
-// scratch, if the peer is ready (or no slot is still in state 3) latch m_534 and
-// return 1. Otherwise announce the wait (stat 0x3ed), draw the "Waiting for other
-// playerz..." status string, and spin (Sleep(50) + PollSession) with a 5s resend
-// timer (AckJoinFailure + re-announce) and a 120s abort timer (DropTimeout), while
-// accumulating elapsed time onto each state-3 slot, until m_534 latches or ESC is
-// pressed. On exit republish the frame clock and, if ambient sound is enabled, play
-// the "AMBIENT%d" cue. The "Waiting..." CString is the /GX frame's destructible.
 // @early-stop
 RVA(0x000bb700, 0x265)
 i32 CMulti::WaitForOtherPlayers() {
@@ -3061,12 +2599,7 @@ i32 CMulti::WaitForOtherPlayers() {
             SendStatFlag(0x3ed, 1);
             CString waitStr("Waiting for other playerz...");
             CGruntzMgr* g = g_gameReg;
-            // The mode pair goes through its own local before the rect. Retail's /GX
-            // frame is 8 bytes larger than a bare RECT needs (0x5c vs 0x54) and it
-            // emits a dead modeW/modeH store pair just below the rect; cl folds this
-            // copy away entirely (no slots) but the extra step reproduces retail's
-            // load order and arg schedule (80.5 -> 94.4). The 8-byte frame delta is
-            // NOT closed by it - that remains an open spill/regalloc residual.
+
             SIZE
             mode;
             mode.cx = g->m_modeW;
@@ -3116,9 +2649,8 @@ i32 CMulti::WaitForOtherPlayers() {
             }
 
             g_scoreTimeBase = timeGetTime();
-            // The global is RE-READ here (retail `mov edx,ds:g_gameReg`), not the `g`
-            // local the text block loaded - which cl would have to spill across the loop.
-            if (g_gameReg->m_musicEnabled != 0) { // the CGameMgr base's music-on gate
+
+            if (g_gameReg->m_musicEnabled != 0) {
                 char buf[0x40];
                 wsprintfA(buf, "AMBIENT%d", GetAmbientId());
                 NetGameMgr()->m_sound->PlayByName(buf, 1);
@@ -3126,35 +2658,12 @@ i32 CMulti::WaitForOtherPlayers() {
             return 1;
         }
     }
-    // retail 0xbbc44: ONE shared latch-and-return block both no-wait gates `je` into
+
 ready:
     m_534 = 1;
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::Poll (0xbba10, __thiscall) - block (pumping the session) until the
-// custom-level verify vote resolves (m_verifyDone latches) or the timer runs out.
-//
-// Two modes on the is-host latch m_528:
-//   guest (m_528==0): ship the verify request (stat 0x41c), spin with a 5s resend
-//     timer and a 15s abort timer; on each 5s lapse re-arm (AckJoinFailure) and
-//     re-send. Exits 1 once PollSession latches m_verifyDone, 0 on the 15s timeout.
-//   host  (m_528!=0): clear the per-record ack/vote latches, spin with a 15s abort
-//     timer, and each pass scan the four active session records - if every present
-//     record has acked (m_recordAcked[i]) then vote agree/disagree by whether every ack
-//     token (m_recordToken[i]) matches ours, push the result stat (0x41d agree / 0x41e
-//     disagree), record it (m_levelVerifyResult) and latch m_verifyDone. Exits 1 on resolve, 0 on timeout.
-//
-// 2026-07-29 EXACT (was 94.22, filed a block-layout wall). Two source bugs:
-//  (1) the guest spin is a `while`, not a `do..while`. The seed `m_verifyDone = 0;`
-//      makes them equivalent, but the do-while form leaves cl a bottom test that it
-//      merges into the function's other `return 1` (jne <shared>; jmp <top>) where the
-//      while form gives retail's `je <top>` + its own inlined `mov eax,1 / pop.. / ret`.
-//  (2) the record scan has NO `CGruntzMgr* mgr = g_gameReg;` local: naming the base
-//      makes cl bump the CSE'd pointer IN PLACE (`add eax,0x170`), where the
-//      subscript expression stays a temp and gives retail's `lea eax,[edx+0x170]`.
-//      (Same expression-temp-vs-named-local lever as CStatusBarMgr::Activate.)
 RVA(0x000bba10, 0x1fb)
 i32 CMulti::Poll(i32 token) {
     if (m_isHost == 0) {
@@ -3162,8 +2671,7 @@ i32 CMulti::Poll(i32 token) {
         i32 resend = 0x1388;
         i32 abort = 0x3a98;
         m_verifyDone = 0;
-        // A `while`, not a `do..while` - the seed above makes them equivalent, but see
-        // the block-layout note on the RVA.
+
         while (m_verifyDone == 0) {
             u32 start = timeGetTime();
             Sleep(0x32);
@@ -3213,10 +2721,7 @@ i32 CMulti::Poll(i32 token) {
 
         i32 allAcked = 1;
         i32 allAgree = 1;
-        // g_gameReg is the game-manager singleton; its +0x150 channel table is
-        // the same m_options[4] channel records the net mgr drives (retail walks it
-        // from +0x170 == channel.m_20, reading back to m_18/m_14). NO `mgr` local -
-        // naming the base turns retail's `lea eax,[edx+0x170]` into an in-place `add`.
+
         for (i32 i = 0; i < 4; i++) {
             GruntzPlayer* ch = &g_gameReg->m_options[i];
             if (ch->m_slotKey != m_hostIndex && ch->m_liveGate != 0 && ch->m_014 != 0) {
@@ -3242,16 +2747,6 @@ i32 CMulti::Poll(i32 token) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::CreateSession  (__thiscall; /GX EH frame).
-// Stands up the DirectPlay command session: enumerate the host's group (via the
-// peer's EnumGroupsRange over the create-context record), resolve the local
-// player, then allocate + construct the 0x20bb0-byte CNetSession (operator new +
-// the 4-slot vector-ctor + ResetAll), wire it (Init with the game sub-object,
-// this manager and the peer), latch the local player and derive the resync tick
-// byte (m_resyncTick), and finally seed one command slot per channel with a per-channel
-// owner code (1 inactive, 2 local, 3 remote). The new'd session is the /GX-tracked
-// object. Returns 1 once every slot is created, 0 on any failure.
 // @early-stop
 RVA(0x000bbc90, 0x1b8)
 i32 CMulti::CreateSession() {
@@ -3287,8 +2782,7 @@ i32 CMulti::CreateSession() {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         i32 code = 1;
         if (ch->m_liveGate != 0 && ch->m_014 != 0) {
-            // default-then-override, NOT a ternary: retail branches
-            // (`mov ecx,2; je; mov ecx,3`); the ternary folds to `setne cl; add ecx,2`.
+
             code = 2;
             if (ch->m_slotKey != m_hostIndex) {
                 code = 3;
@@ -3301,18 +2795,6 @@ i32 CMulti::CreateSession() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::CNetCmdSlot  (__thiscall; /GX EH frame).
-// Constructs the queued-command list (CPtrList m_cmds, default nBlockSize 10),
-// then resets the slot to its empty state: zero the scalar header, drain the
-// queue (ClearCmds), zero the command fields and splat both command ranges.
-// The CObList member's dtor pulls in the /GX EH frame.
-// EXACT since 2026-07-29. The recorded "zero-register-pinning wall (78.8%)" was a
-// mislabeled source bug: the four m_ackFlags zeros were four constant-index stores,
-// which cl folds into the SAME zero constant as the eight header stores - so the
-// constant has to live across ClearCmds and gets pinned in callee-saved edi (with the
-// extra push/pop edi). Writing that group as a LOOP gives it its own zero constant,
-// which is retail's second `xor eax,eax` after ClearCmds clobbers the first.
 RVA(0x000bbec0, 0x81)
 CNetCmdSlot::CNetCmdSlot() {
     m_state = 0;
@@ -3324,9 +2806,7 @@ CNetCmdSlot::CNetCmdSlot() {
     m_maxSeq = 0;
     m_owner = 0;
     ClearCmds();
-    // the four-slot zero fill is a LOOP: that gives the group its OWN zero constant
-    // (retail's second `xor eax,eax` after ClearCmds clobbers it) instead of sharing
-    // the pre-call zero, which is what forces cl's `push edi` / pinned-edi zero.
+
     for (i32 i = 0; i < 4; i++) {
         m_ackFlags[i] = 0;
     }
@@ -3334,13 +2814,6 @@ CNetCmdSlot::CNetCmdSlot() {
     ResetTriple(m_rangeB);
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::ResetAll (0xbbf80, __thiscall) - full session reset: zero the
-// scalar header (m_1c latched to 1), reset every one of the four inline command
-// slots (the same field-wipe + ClearCmds + ResetTriple sequence as
-// CNetCmdSlot::ResetAll, inlined here), clear the 0x200-byte resync scratch
-// block, then zero all 0x80 resync entries.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000bbf80, 0xb7)
 void CNetSession::ResetAll() {
@@ -3365,9 +2838,7 @@ void CNetSession::ResetAll() {
         slot->m_maxSeq = 0;
         slot->m_owner = 0;
         slot->ClearCmds();
-        // The four-slot zero fill is a LOOP, exactly as in CNetCmdSlot's ctor: that
-        // gives the group its OWN zero constant (retail's `xor eax,eax` after the
-        // ClearCmds call clobbers the pre-call one).
+
         for (i32 k = 0; k < 4; k++) {
             slot->m_ackFlags[k] = 0;
         }
@@ -3388,15 +2859,6 @@ void CNetSession::ResetAll() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::FrameSyncWait  (__thiscall).
-// Paces the network frame: samples timeGetTime, records the delta since the
-// last call (m_lastFrameDelta) and the new stamp (m_lastFrameTime). If the frame came in under 0x1f
-// ms it busy-waits the remainder (ActiveWait) and re-stamps; otherwise, if the
-// frame ran long (> 0x28 ms) and the sync gate m_syncGate is set, it flips the
-// global low-bit sync toggle and returns it.
-// The early exit is `return ret;`, not `return 0;` - retail emits `mov eax,ebx` there,
-// i.e. it reads the same variable the tail returns.
 // @early-stop
 RVA(0x000bc070, 0x73)
 u32 CMulti::FrameSyncWait() {
@@ -3465,12 +2927,6 @@ i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     return r;
 }
 
-// ===========================================================================
-// CMulti::DropTimeout  @ 0x0bc2d0  - /GX: if a player has been silent past the
-// throttle deadline, run the join-failure ack (rate-limited via g_ackThrottleDeadline), then
-// look up the long-timeout slot, copy its host name into the session-name global
-// (g_sessionName), and push the drop stat + OnDropPlayer.
-// ===========================================================================
 RVA(0x000bc2d0, 0xd2)
 void CMulti::DropTimeout() {
     if (m_session->FindSlot(0x1388) == 0) {
@@ -3485,15 +2941,11 @@ void CMulti::DropTimeout() {
         return;
     }
     g_dropPlayerId = slot->m_desc->m_slotKey;
-    g_sessionName = slot->BuildHostName(); // NRVO: nm constructed directly from m_desc->GetName()
+    g_sessionName = slot->BuildHostName();
     SendNetStat(0x40c, g_dropPlayerId, 1);
     OnDropPlayer();
 }
 
-// ---------------------------------------------------------------------------
-// 0x0bc3f0: the slot's host name, returned BY VALUE (NRVO). Forwards the caller's
-// return buffer straight into m_desc's 0x1f450 GetName (GruntzPlayer::GetName), which
-// itself returns CString by value. Same by-value shape as GetName.
 RVA(0x000bc3f0, 0x1e)
 CString CNetCmdSlot::BuildHostName() {
     return m_desc->GetName();
@@ -3506,13 +2958,6 @@ void CMulti::AckJoinFailure() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::SetupTcpIpConfig  (__thiscall; ret 0 args; /GX EH frame).
-// The TcpIp-specific connection setup: fixes the config section to "TcpIp" with its
-// timing defaults (m_cmdDelay=5/m_resend=0x3c), overrides them from the config
-// store's "TcpIp_CmdDelay/_Resend" keys, latches the local player name into the
-// channel table, then creates the local player (m_peer->CreatePlayer) and registers
-// the local channel (RegisterChannelFrom). Returns whether the channel registered.
 // @early-stop
 RVA(0x000bc460, 0x24e)
 i32 CMulti::SetupTcpIpConfig() {
@@ -3533,12 +2978,10 @@ i32 CMulti::SetupTcpIpConfig() {
     }
 
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
-    // The by-value RETURN is the temporary operator= receives (retail `push eax`).
+
     ch0->m_name = GetString5a0();
     ch0->m_008 = 0;
 
-    // No `lp`/`node` local: retail stores straight into m_5bc and RE-READS it for
-    // the null test (`mov [esi+0x5bc],eax` ... `mov eax,[esi+0x5bc]; test eax,eax`).
     m_5bc = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
         const_cast<char*>(static_cast<const char*>(ch0->GetName())),
         g_emptyString,
@@ -3551,27 +2994,13 @@ i32 CMulti::SetupTcpIpConfig() {
 
     m_hostIndex = LocalPlayer()->m_id;
     i32 chField = ch0->m_008;
-    // The name is a TEMPORARY (destroyed right after the call): retail reuses the
-    // GetString5a0 temp's slot [esp+0x18] for it, which a named local cannot do -
-    // cl gives named CStrings their own slot and the frame grows by one dword.
-    // TWO literal returns, not `return ok != 0;`, and the `== 0` lives INSIDE the
-    // full-expression: that way it is evaluated - and materialized as `!result`
-    // (neg/sbb/inc) - BEFORE the temporary's dtor clobbers the flags, which is what
-    // retail's `test bl,bl; je` tests. A named `ok` local moves the compare AFTER
-    // every dtor and cl keeps the raw result live instead (`cmp esi,ebx; jne`).
+
     if (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0) {
         return 0;
     }
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::CreateLocalPlayer  (__thiscall; /GX EH frame).
-// Registers the local player with the peer manager under the local name, latches
-// its DirectPlay id (m_localPlayerId), blocks until the host admits it, and announces the
-// join. Bails (reports + 0) when the peer rejects the player or the connect wait
-// times out. The two name CString temps run under the /GX frame; the join packet's
-// name field is filled with an inline strcpy.
 // @early-stop
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
@@ -3594,17 +3023,14 @@ i32 CMulti::CreateLocalPlayer() {
 
     CNetChannelPacket pkt;
     memset(&pkt, 0, 0x28);
-    // Read-modify-write, not a plain store: retail re-reads the just-memset byte
-    // (`mov dl,[esp+0x14]; or dl,0x80; mov [esp+0x18],dl`).
+
     pkt.m_flags |= 0x80;
     pkt.m_statId = STAT_PLAYER_JOINED;
     pkt.m_present = 1;
     pkt.m_kind = 0;
     pkt.m_slot = 1;
     pkt.m_flagsB = 0;
-    // Descending, as retail emits them (`[esp+0x26],bl` then `[esp+0x25],0xf` then
-    // `[esp+0x24],0x63`): cl keeps a run of byte stores in source order, so the
-    // ascending spelling produces the reversed stream.
+
     pkt.m_0e = 0;
     pkt.m_0d = 0xf;
     pkt.m_configId = 0x63;
@@ -3618,7 +3044,7 @@ i32 CMulti::CreateLocalPlayer() {
 
 RVA(0x000bc910, 0xf6)
 i32 CMulti::OpenHostChannel(
-    void* a0, // @identity-TODO: null-checked and never dereferenced; no caller in .text
+    void* a0,
     const char* name,
     i32 channelId,
     i32 cmdDelay,
@@ -3643,28 +3069,10 @@ i32 CMulti::OpenHostChannel(
         ReportNetError(0);
         return 0;
     }
-    m_hostIndex = m_5bc->m_id; // +0x04 on the session node
+    m_hostIndex = m_5bc->m_id;
     return RegisterChannelFrom(name, channelId, -1, m_hostIndex) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::WaitForConnect  (__thiscall).
-// Blocks (pumping the session) until the local player is admitted to the host's
-// game or the attempt fails. Bails immediately if there is no DirectPlay
-// interface (m_peer) or local player descriptor (m_localPlayer). Announces "connecting"
-// (stat 0x415), clears the admit flag m_admitted, then loops: each pass times out at
-// 60s or on Esc (-> status 0x8022, fail), pumps the receive queue, and reports +
-// fails on any of the session-state flags (terminated / removed / closed / full
-// / version-mismatch). Returns 1 once m_admitted latches (admitted), 0 on any failure.
-// 2026-07-28/29 EXACT (was 74.08). The "tail-merge wall" was the loop SHAPE - retail is
-// a plain `while (m_58c == 0) {...} return 1;` with ONE `mov eax,1` block that the entry
-// test jne's into, where `if (latched) return 1; do {...} while (!latched); return 1;`
-// duplicates it - plus a real DEADLINE variable (`timeGetTime() + 60000` folded once in
-// the preheader) instead of comparing against a start stamp. The last 4 bytes were a
-// single-use local: a named `u32 now = timeGetTime();` gives the sample a live range, so
-// cl colours the two cached import thunks ebx/ebp (retail: timeGetTime=ebp,
-// GetAsyncKeyState=ebx). Calling it inside the condition drops the live range and the
-// colouring falls back to retail's.
 RVA(0x000bca50, 0x155)
 i32 CMulti::WaitForConnect() {
     if (Peer() == 0) {
@@ -3676,15 +3084,11 @@ i32 CMulti::WaitForConnect() {
 
     SendStatFlag(STAT_CONNECTING, 1);
     m_58c = 0;
-    // A DEADLINE, not a start stamp: retail folds the +60s once in the preheader
-    // (`mov edi,eax; add edi,0xea60`) and compares the raw sample against it.
+
     u32 deadline = timeGetTime() + 60000;
 
-    // A `while`, not `if (latched) return 1; do {...} while (!latched);` - retail has
-    // ONE `mov eax,1` return that the entry test `jne`s into and the bottom test falls
-    // into; the do-while spelling duplicates it.
     while (m_58c == 0) {
-        // NO `u32 now` local - see the register note above.
+
         if (timeGetTime() > deadline
             || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
             ReportStatusId(0x8022, 0);
@@ -3718,71 +3122,33 @@ i32 CMulti::WaitForConnect() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::AutoTuneCmdDelay  (__thiscall).
-// Derives the command-timing config (m_cmdDelay/m_resend) from the measured peer
-// ping. No-op (returns) once the config-loaded gate m_530 is set. Samples the
-// ping (MeasurePing), divides it by 9 (the 0x88888889 reciprocal-multiply) and
-// adds 2 -> a base command delay clamped to a minimum of 3; bumps it by 1 plus a
-// further 1 when a secondary probe (CountReadyOptionsSlots(0)) exceeds 2, stores it as
-// m_cmdDelay, and picks a resend window (10 for <=5, else 30 or 20 for >8) before
-// persisting the pair (ApplyCmdDelayDefaults via the 0-arg overload).
-// 2026-07-28: EXACT. Four real source bugs, closed in order - the `+1` belongs to the
-// BUMP (`(probe>2) ? 2 : 1`, giving retail's `setg cl / inc ecx / add edi,ecx`, not a
-// fused `lea eax,[edi+ecx+1]`); the resend arms are spelled `<=8 ? 20 : 30` (cl negates,
-// yielding retail's `setg al / and al,0xf6 / add 0x1e`); BOTH arms assign one `resend`
-// variable stored once at the bottom, which tail-duplicates the `m_5a8 = resend;
-// SaveConfig(0)` pair and gives retail's `mov eax,0xa`; and the unsigned clamp is a
-// TERNARY, not an init-then-if (see below) - that last one also flipped the esi/edi
-// callee-saved roles back to retail's.
 RVA(0x000bcc10, 0x8e)
 i32 CMulti::AutoTuneCmdDelay() {
     if (m_530 != 0) {
         return 1;
     }
 
-    // An UNSIGNED max, spelled as a TERNARY whose 3 is the *taken* arm. Written as
-    // `i32 base = 3; if (tuned >= 3) base = tuned;` cl CSEs the initialiser's 3 into the
-    // holding register and compares register-to-register (`mov esi,3 / cmp edx,esi`);
-    // with both arms in one expression the literal survives into the compare, giving
-    // retail's `mov edi,3 / cmp edx,3 / jb / mov edi,edx` - and that also flips the
-    // callee-saved assignment back to retail's this=esi / base=edi.
     u32 ping = static_cast<u32>(GetMaxAckLatency());
     u32 tuned = ping / 30 + 2;
     i32 base = (tuned < 3) ? 3 : static_cast<i32>(tuned);
 
-    i32 probe = Mgr()->CountReadyOptionsSlots(0); // retail calls the probe on m_4 (the game mgr)
-    // The +1 belongs to the BUMP, not to the sum: retail is `setg cl / inc ecx /
-    // add edi,ecx` (base updated in place). Two statements `bump += 1; base += bump;`
-    // still let cl fuse both adds into one `lea eax,[edi+ecx+1]` and land the result
-    // in a fresh register.
+    i32 probe = Mgr()->CountReadyOptionsSlots(0);
+
     i32 bump = (probe > 2) ? 2 : 1;
     base += bump;
     m_5a4 = base;
-    // ONE resend variable stored once at the bottom: retail materializes the value
-    // into eax in each arm (`mov eax,0xa` / the mask arithmetic) and tail-duplicates
-    // the shared `m_5a8 = resend; SaveConfig(0);` into both, which a per-arm
-    // `m_drainReload = <literal>` cannot produce (cl stores the immediate direct).
+
     i32 resend;
     if (base <= 5) {
         resend = 0xa;
     } else {
-        // Spelled <=8 first: cl NEGATES the ternary's condition for the setCC form,
-        // so `<=8 ? 20 : 30` yields retail's `setg al / dec / and al,0xf6 / add 0x1e`
-        // where `>8 ? 30 : 20` yields `setle dl / dec / and edx,0xa / add 0x14`.
+
         resend = (base <= 8 ? 0x14 : 0x1e);
     }
     m_drainReload = resend;
     return SaveConfig(0);
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::SaveConfig  (__thiscall; ret 4; /GX EH frame).
-// Serializes the command-timing config into a 0x11c-byte stat-0x416 blob and
-// ships it: the config word (m_5b0), the two config names formatted in with
-// wsprintfA, and the four timing dwords (m_cmdDelay/m_resend/m_600/m_2d8). When a
-// recipient is given it goes point-to-point (SendStatPairRaw), else it broadcasts
-// (SendStatFrom). The two config-name CString temps run under the /GX frame.
 RVA(0x000bccd0, 0x141)
 i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     CNetConfigBlob blob;
@@ -3815,7 +3181,6 @@ i32 CMulti::LoadConfig(void* cfg) {
         return 0;
     }
 
-    // the same CNetConfigBlob SaveConfig ships
     CNetConfigBlob* c = static_cast<CNetConfigBlob*>(cfg);
     m_5b0 = c->m_8;
     m_5b4 = c->m_nameA;
@@ -3827,14 +3192,6 @@ i32 CMulti::LoadConfig(void* cfg) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::ResetPlayerCommands  (__thiscall).
-// Flushes the resend buffers for one player's command slot. No-op unless
-// connected (m_connected). Looks the player's slot up in the session (m_session); if found
-// and not already reset (slot->m_isRemote == 0), latches it, then for each command
-// sequence number in the slot's window ([(seq0+1)..(seq0+1)+3] scaled by the
-// per-command delay m_cmdDelay) re-dispatches the command through m_4's queue and
-// drops it from the slot. Finally clears the slot's two command ranges.
 // @early-stop
 RVA(0x000bcf20, 0xaf)
 i32 CMulti::ResetPlayerCommands(i32 id) {
@@ -3854,9 +3211,7 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     i32 seq = (slot->m_baseSeq + 1) * static_cast<i32>(m_5a4);
     i32 end = seq + static_cast<i32>(m_5a4) * 3;
     for (; seq < end; seq++) {
-        // The params are i32, NOT char: retail pushes both operands whole
-        // (`mov eax,[edx]; push eax`), which a char param would have narrowed to
-        // `mov al,[edx]`.
+
         NetGameMgr()->m_cmdSubMgr->RemoveMatchingTarget(slot->m_desc->m_playerIndex, seq);
         slot->RemoveCmd(seq / static_cast<i32>(m_5a4));
     }
@@ -3882,8 +3237,7 @@ u32 CMulti::GetMaxAckLatency() {
             }
         }
     } else {
-        // retail folds m_channels[i] member disps onto the mgr base (+0x164/+0x170/
-        // +0x37c per 0x238 slot) - the unhoisted spelling reproduces that encoding
+
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
             if (mgr->m_options[i].m_014 && mgr->m_options[i].m_liveGate) {
@@ -3928,15 +3282,6 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::AnnounceVersion  (__thiscall).
-// Builds a 0x20-byte version-announce packet on the stack (flag byte, the
-// CButeMgr config word, g_cfgWord, stat id 0x417, and the local/remote version
-// pair) and ships it through the engine stat dispatcher as stat 0x417.
-// m_statId is at packet+0x04 (the header said +0x10 - a real layout bug, fixed): the
-// `mov DWORD PTR [esp+0x18],0x417` sits at a 3-push esp, i.e. packet+4. cl emits the
-// two middle field stores in REVERSE source order, so bute-then-cfg here reproduces
-// retail's `[+0x0c] then [+0x08]`.
 // @early-stop
 RVA(0x000bd180, 0x66)
 void CMulti::AnnounceVersion(CNetSessionNode* param) {
@@ -3971,7 +3316,7 @@ i32 CMulti::Vslot0b(i32 key, i32 flag) {
         }
         return 1;
     }
-    return CPlay::Vslot0b(key, flag); // qualified: the BASE leg, not this override
+    return CPlay::Vslot0b(key, flag);
 }
 RVA(0x000bd3c0, 0x9)
 void CMulti::TickStateMgrs() {

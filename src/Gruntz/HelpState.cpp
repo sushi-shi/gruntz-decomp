@@ -1,27 +1,25 @@
-#include <Mfc.h> // ShowCursor (afx-first)
+#include <Mfc.h>
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::PagesReady (the page gate)
-#include <DDrawMgr/DDrawSurfacePair.h> // the front pair's held surface (Render's busy probe)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 
-#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup (inherited m_8) -> CSymTab
-#include <Gruntz/Demo.h>         // CDemo (its Update body rides this TU's band)
-#include <Gruntz/GruntzMgr.h>    // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
-#include <Gruntz/HelpState.h>    // canonical CHelpState (was defined locally here)
-#include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the typed CState::m_c holder)
-#include <Gruntz/Attract.h>      // CMenuRoot chain (m_c): Render's busy surface + attract registrar
-#include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
-#include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
-#include <Gruntz/FixedPtrArray32.h>  // the game-controller poll list (g_actorList)
-#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
+#include <Gruntz/BankMgr.h>
+#include <Gruntz/Demo.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HelpState.h>
+#include <Gruntz/SplashState.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Attract.h>
+#include <DDrawMgr/DDSurface.h>
+#include <ddraw.h>
+#include <Gruntz/FixedPtrArray32.h>
+#include <DinMgr2/DirectInputMgr2.h>
 #include <rva.h>
 
 DATA(0x002111b0)
-// The retail bytes at 0x2111b0 are "HELP\0" (then padding to the next .data string),
-// so this is the help screen's title STRING - it was declared as a lone u8 holding
-// its first character, 72 == 'H', which is why every use had to cast its address.
+
 char g_titleBuf[] = "HELP";
 
 RVA(0x0008cee0, 0x6)
@@ -31,7 +29,7 @@ GameStateId CHelpState::Update() {
 
 RVA(0x0008cf30, 0x55)
 CHelpState::~CHelpState() {
-    CState::ReleaseResources(); // 0xfa150 (the base slot-2 teardown; qualified -> direct)
+    CState::ReleaseResources();
 }
 
 RVA(0x0008cfb0, 0x6)
@@ -41,7 +39,7 @@ GameStateId CSplashState::Update() {
 
 RVA(0x0008d000, 0x55)
 CSplashState::~CSplashState() {
-    CSplashState::ReleaseResources(); // 0xf9840 (own slot-2 override; in-dtor static bind)
+    CSplashState::ReleaseResources();
 }
 
 RVA(0x0008d080, 0x6)
@@ -51,7 +49,7 @@ GameStateId CDemo::Update() {
 
 RVA(0x00095090, 0x6e)
 i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
@@ -67,14 +65,13 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
 
 RVA(0x00095120, 0x5)
 void CHelpState::ReleaseResources() {
-    CState::ReleaseResources(); // retail: a bare `jmp` to the CState body
+    CState::ReleaseResources();
 }
 
 RVA(0x00095140, 0x6e)
 i32 CHelpState::Vslot09(i32 arg) {
     m_mgr->RestoreVideoMode(0);
-    // The pages ptr is re-read at each call (retail does NOT cache it in a reg across
-    // the HasOverlay call - a caching local would pin it in edi and mismatch).
+
     if (m_world->m_drawTarget->HasOverlay() == 0
         && m_world->m_drawTarget->CreateOverlay(0, 0x30000) == 0) {
         return 0;
@@ -82,7 +79,7 @@ i32 CHelpState::Vslot09(i32 arg) {
     if (FadeInTitle(g_titleBuf, 0, 0, 0, 0, 1) == 0) {
         return 0;
     }
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
+    RetireScene(0x50, 0x3e8, 0, 1);
     return 1;
 }
 
@@ -91,16 +88,6 @@ i32 CHelpState::FrameSlot28(i32) {
     return 1;
 }
 
-// CHelpState::Render (0x951f0, slot 5) - the help/attract per-frame poll/draw: when the
-// menu page's busy surface reports idle AND the InputVirtual slot reports idle, report the
-// exit error (0x8006/0x445) and bail; else stop the registrar's pooled resource, run every
-// attract actor's Update(), and if any actor raised its flags post the exit WM_COMMAND
-// (0x8036) and clear the app run gate.
-// EXACT. The old "res-chain regalloc coin-flip" (retail `mov eax,[eax+0x28] / mov
-// ecx,[eax+0x2c]` vs our collapsed `mov ecx,[eax+0x28] / mov ecx,[ecx+0x2c]`) was the
-// spelling: latching ->m_2c into a local lets cl reuse one register for the whole chain.
-// Name the REGISTRY and read ->m_2c off it twice (null test + call), as the sibling
-// CAttract::Render does. docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -140,8 +127,7 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = RunTitleSeq(g_titleBuf, 0, 0, 1,
-                        0); // 0xfa350 (CState base method)
+    i32 r = RunTitleSeq(g_titleBuf, 0, 0, 1, 0);
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -154,8 +140,7 @@ i32 CHelpState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(g_titleBuf, 0, 0, 1,
-                       0); // 0xfa350 (CState base method)
+    return RunTitleSeq(g_titleBuf, 0, 0, 1, 0);
 }
 
 RVA(0x000953f0, 0x37)

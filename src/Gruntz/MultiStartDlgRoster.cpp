@@ -1,19 +1,19 @@
-#include <Gruntz/Grunt.h> // C linkage for the definitions below (inherited, not restated)
+#include <Gruntz/Grunt.h>
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
-#include <EmptyString.h>   // g_emptyString
-#include <Gruntz/Multi.h>  // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
-#include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
-#include <Net/LatencyList.h>     // CLatencyList : CKeyedList (m_slotList; its dtor is 0xc5280)
-#include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
+#include <Gruntz/Random.h>
+#include <EmptyString.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Net/LatencyList.h>
+#include <Net/NetMgr.h>
 #include <rva.h>
-#include <MsgParam.h> // the window-message parameter's pointer/word pair
-#include <string.h>   // strcat (inline CRT, reloc-masked)
+#include <MsgParam.h>
+#include <string.h>
 
-#include <Gruntz/GruntzPlayer.h> // canonical GruntzPlayer (GetName)
+#include <Gruntz/GruntzPlayer.h>
 
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
@@ -72,9 +72,9 @@ void CMultiStartDlg::ReconcileChannel3() {
 // @early-stop
 RVA(0x000c2ab0, 0x161)
 void CMultiStartDlg::SyncChannelSlot(i32 ch) {
-    CWnd* owner = GetCtrlE(ch); // 0x1929  the list whose selection drives the slot
+    CWnd* owner = GetCtrlE(ch);
     CWnd* c1 = GetCtrlB(ch);
-    CWnd* c2 = GetCtrlD(ch); // 0x30da -> 0xc2840
+    CWnd* c2 = GetCtrlD(ch);
     GetCtrlC(ch);
     GetCtrlA(ch);
     GruntzPlayer* s = &m_host->m_options[ch];
@@ -116,17 +116,9 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg::OnInitDialog (0x0c2cb0): the WM_INITDIALOG handler - vtable slot 49
-// (== ??_7CMultiStartDlg@@6B@+0xc4, reached via ILT thunk 0x16fe; declared in Dialogs.h).
-// The former AreaTimerDlg @identity-TODO is DISSOLVED: the vtable DATA-ref proved this is
-// CMultiStartDlg's own OnInitDialog override, not a separate dialog. It chains the base
-// CDialog::OnInitDialog (0x1bac5e, reloc-masked) then arms a 50 ms repaint timer; m_hWnd
-// is CWnd::m_hWnd (+0x1c), inherited via CDialog.
-// ---------------------------------------------------------------------------
 RVA(0x000c2cb0, 0x1f)
 i32 CMultiStartDlg::OnInitDialog() {
-    CDialog::OnInitDialog(); // 0x1bac5e ?OnInitDialog@CDialog@@UAEHXZ (base call, exempt)
+    CDialog::OnInitDialog();
     ::SetTimer(m_hWnd, 1, 0x32, 0);
     return 1;
 }
@@ -184,9 +176,7 @@ i32 CMultiStartDlg::FlashCtrlD() {
         if (it == 0) {
             continue;
         }
-        // The child rect is mapped corner-by-corner: MFC's CRect::TopLeft() /
-        // BottomRight() ARE the two CPoints the RECT is made of, so the
-        // ex-`(LPPOINT)&rc` / `+1` pun is just the named accessor pair.
+
         CRect rc;
         ::GetClientRect(it->m_hWnd, &rc);
         cts(it->m_hWnd, &rc.TopLeft());
@@ -209,12 +199,6 @@ i32 CMultiStartDlg::FlashCtrlD() {
     return 1;
 }
 
-// CMultiStartDlg::OnDrawItem (0xc3100): owner-draw the four team-color swatch static
-// controls (0x501/0x503/0x505/0x507) of the multiplayer roster - the exact twin of
-// CBattlezDlg::OnDrawItem, over this dialog's GetCtrlD (0xc2840) + the m_host slot
-// array's per-slot color index (+0x158, stride 0x238). Disabled child -> light gray;
-// then chains the base CWnd owner-draw default. /GX EH frame unwinds the CDC/CBrush.
-//
 RVA(0x000c3100, 0x5c0)
 void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
@@ -475,14 +459,6 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     CWnd::OnDrawItem(nIDCtl, lpdis);
 }
 
-// ---------------------------------------------------------------------------
-// Per-slot colour handlers (0xc3830/0xc3950/0xc3a70/0xc3b90). Slot N owns swatch
-// control 0x501+2*N. The pick is allowed when the host set the slot's colour gate
-// (m_164==0) or when it is unlocked (m_16c==0) and owned by us (m_168==m_hostIndex).
-// The swatch refresh is the MFC inline CWnd::InvalidateRect member, not the global
-// ::InvalidateRect import on a hoisted HWND: the CWnd* stays live in eax as the
-// inline's `this`, so the handle load lands in ecx (`mov ecx,[eax+0x1c]; push 1;
-// push 0; push ecx`). Same fix as CBattlezDlg::ApplyColorSlotN (Dialogs.cpp).
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnColorSlot0() {
     CMulti* mp = g_multiState;
@@ -551,17 +527,6 @@ void CMultiStartDlg::OnColorSlot3() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// OnCustomWorld (0xc3cb0): double-click the world combo (0x4ff). Host-only: run the
-// modal CBattlezDlgCustom name dialog, and on IDOK with a non-empty name uppercase it
-// into the combo's edit child and commit it as the game's custom world/host name.
-// ---------------------------------------------------------------------------
-// EXACT. The former "/GX trylevel numbering + esi shrink-wrap wall" was a source bug
-// after all: the child==0 path is an early RETURN (its own trylevel store, and it owns
-// the fall-through of retail's `jne <continue>`), not the negative arm of an
-// `if (child != 0) { ... }` wrapper - and the GetDlgItem lookup is its own statement,
-// which is why retail calls it BEFORE pushing GW_CHILD (an inline arg list makes cl
-// push the constant first). Both trylevels and the esi save fell out on their own.
 RVA(0x000c3cb0, 0x128)
 void CMultiStartDlg::OnCustomWorld() {
     if (g_multiState->m_isHost == 0) {
@@ -569,14 +534,10 @@ void CMultiStartDlg::OnCustomWorld() {
     }
     CBattlezDlgCustom dlg(0);
     if (dlg.DoModal() == 1 && dlg.m_customName.GetLength() != 0) {
-        // GetDlgItem runs BEFORE the GW_CHILD push (retail `push 0x4ff; call
-        // GetDlgItem; push 0x5; push edx`), so the lookup is its own statement -
-        // inline in the arg list, cl pushes the constant first.
+
         CWnd* item = GetDlgItem(0x4ff);
         CWnd* child = CWnd::FromHandle(::GetWindow(item->m_hWnd, GW_CHILD));
-        // Early RETURN, not a positive `if (child != 0)` wrapper: retail's
-        // `jne <continue>` leaves the child==0 block as the FALL-THROUGH, and that
-        // block is an early return with its own /GX trylevel store.
+
         if (child == 0) {
             return;
         }
@@ -598,8 +559,7 @@ void CMultiStartDlg::CommitWorldHost() {
             i32 r = ::SendMessageA(item->m_hWnd, 0x147, 0, 0);
             if (r != -1) {
                 CString name;
-                (static_cast<CComboBox*>(item))
-                    ->GetLBText(r, name); // CComboBox::GetLBText @0x1ce7db
+                (static_cast<CComboBox*>(item))->GetLBText(r, name);
                 if (name.GetLength() != 0) {
                     m_6c = 0;
                 }
@@ -619,19 +579,14 @@ void CMultiStartDlg::OnChatSend() {
         return;
     }
     CString a, b;
-    GetCtrlB(GetSlotIndex())->GetWindowTextA(a); // a = the local player's name
+    GetCtrlB(GetSlotIndex())->GetWindowTextA(a);
     a += " says: ";
-    input->GetWindowTextA(b); // b = the typed message
+    input->GetWindowTextA(b);
     if (b.GetLength() != 0) {
         a += b;
         AppendChatLine(const_cast<char*>(static_cast<const char*>(a)));
         input->SetWindowTextA(g_emptyString);
-        g_multiState->BroadcastChatLine(
-            const_cast<char*>(static_cast<const char*>(a)),
-            0,
-            0,
-            0
-        ); // CMulti::BroadcastChatLine @0xbb190
+        g_multiState->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(a)), 0, 0, 0);
     }
 }
 
@@ -640,7 +595,7 @@ void CMultiStartDlg::Drive() {
     CMulti* netMgr = g_multiState;
     if (netMgr->m_isHost != 0) {
         netMgr->BroadcastChannelTable(0);
-        UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
+        UpdatePlayers(1);
     } else {
         g_multiState->BroadcastOneChannel(m_host->FindOptionsSlot(netMgr->m_hostIndex));
     }
@@ -660,7 +615,6 @@ i32 CMultiStartDlg::EnableControls() {
     return 1;
 }
 
-// __thiscall(force): refresh every player row from the roster + selection owner.
 // @early-stop
 RVA(0x000c4230, 0x38e)
 i32 CMultiStartDlg::UpdatePlayers(i32 force) {
@@ -730,7 +684,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                 GetCtrlB(idx)->SetWindowTextA(g_emptyString);
                 ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 0, 0);
             }
-            this->SyncChannelSlot(idx); // 0x3ffd thunk -> 0xc2ab0 reconcile (== SyncChannelSlot)
+            this->SyncChannelSlot(idx);
         }
     next:
         off += 0x238;
@@ -909,7 +863,7 @@ void CMultiStartDlg::OnOK() {
         EnableWindow(1);
     } else if (g_multiState->m_levelVerifyResult == 0) {
         g_multiState->m_530 = 1;
-        CDialog::OnOK(); // 0x1bacc3 direct base call (?OnOK@CDialog@@MAEXXZ, reloc-masked)
+        CDialog::OnOK();
     } else {
         g_multiState->m_530 = 0;
         EnableWindow(0);
@@ -946,9 +900,6 @@ void CMultiStartDlg::OnSlotSelect3() {
     Drive();
 }
 
-// CommitLatencyOption (0xc5020): host-only. Split the battle-latency combo's (control
-// 0x527) selection into its lo/hi words; if either is set, commit them into the CMulti
-// session config (m_5a4 / m_drainReload) and re-save, else flag "none selected" (m_600).
 // @early-stop
 RVA(0x000c5020, 0x95)
 void CMultiStartDlg::CommitLatencyOption() {
@@ -968,8 +919,6 @@ void CMultiStartDlg::CommitLatencyOption() {
     }
 }
 
-// __thiscall(idx): toggle slot idx's ready flag from its checkbox, then either re-sync
-// the whole roster (host) or just refresh that one slot.
 RVA(0x000c50f0, 0x9b)
 void CMultiStartDlg::ToggleReady(i32 idx) {
     CWnd* it = GetCtrlA(idx);
@@ -999,13 +948,13 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
 
 RVA(0x000c5240, 0x2c)
 i32 CMultiStartDlg::DestroyWindow() {
-    CLatencyList* p = m_slotList; // +0x60 connection-latency slot list
+    CLatencyList* p = m_slotList;
     if (p) {
-        p->CKeyedList::~CKeyedList(); // 0xc5280 (qualified, non-virtual - direct near call)
-        ::operator delete(p);         // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
+        p->CKeyedList::~CKeyedList();
+        ::operator delete(p);
         m_slotList = 0;
     }
-    return CWnd::DestroyWindow(); // 0x1bbb7c ?DestroyWindow@CWnd@@UAEHXZ (base, eax passthrough)
+    return CWnd::DestroyWindow();
 }
 
 RVA(0x000c52f0, 0x43)

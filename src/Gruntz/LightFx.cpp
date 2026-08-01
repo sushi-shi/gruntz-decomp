@@ -1,44 +1,32 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ActNameRegistry.h>   // the shared activation-name registry archetype
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>              // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
-#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
+#include <Io/FileMem.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/LightFx.h>
-#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
+#include <Gruntz/XferArchive.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
-#include <Image/ImageSet.h>    // CDDrawWorker - the spec Lookup result (frames + index range)
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // the m_0c world root (spec/effect stores)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (the spec store; Ob 0x1b8008)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // m_animRegistry (the effect store; Ptr 0x1b8438)
-#include <Gruntz/LogicTypeTableInline.h>  // unrolled built-in logic-type registration
-#include <Gruntz/SerialArchive.h>         // CFileMemBase Read(+0x2c)/Write(+0x30) for SerializeMove
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
+#include <Gruntz/LightFxMgr.h>
+#include <Image/ImageSet.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/LogicTypeTableInline.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Wap32/ZVec.h>
-#include <Utils/MapTyped.h> // typed MFC map lookups
+#include <Utils/MapTyped.h>
 
-// CActRegPool<CLightFx>::s_table (0x00245ad0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00245ad0)
 CActReg CActRegPool<CLightFx>::s_table(2000, 2010);
 
 VTBL(CLightFx, 0x001e7af4);
 
-// CLightFx::~CLightFx (0x12430) - the /GX leaf dtor. CLightFx adds no destructible
-// members beyond CUserLogic and shares its vtable, so the most-derived vptr store
-// is dead-eliminated and the dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr
-// call 0x16d2a0), store the CUserBase vptr (0x5e70b4). Byte-identical in shape to
-// the established leaf-dtor archetype.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CLightFx() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012400, 0x1e, ??_GCLightFx@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
@@ -50,15 +38,6 @@ void CLightFx::FireActivation(i32 id) {
     }
 }
 
-// CLightFx::RegisterActs @0x9d320 - bind the per-frame handler (AdvanceAnim
-// @0x9d7b0) to the activation key "A" via the shared name registry. The SAME
-// archetype as CGruntCreationPoint::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0009d320, 0x18d)
 void CLightFx::RegisterActs() {
     i32 id = ActFindId("A");
@@ -81,30 +60,21 @@ void CLightFx::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 
-// ===========================================================================
-// CLightFx::Activate  (0x9d520)  - look the effect spec up in the bound object's
-// spec map, run the per-frame logic push, prime the bound object's resolved-node
-// triple from the effect node, latch the (anchorA, anchorB) pair, look the effect
-// up in the effect map (twice), feed it to the layer descriptor, and rebind.
-// ===========================================================================
 // @early-stop
 RVA(0x0009d520, 0xfd)
 i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     void* node = 0;
     CObject* nodeOb = 0;
-    // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
-    // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
+
     m_3c->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
     node = nodeOb;
     void* found = node;
     g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, 7);
     if (found != 0) {
-        // The spec lookup result IS a CDDrawWorker (it is pushed to the pump as one);
-        // read the lowest-indexed frame in its [m_minIndex, m_maxIndex] range.
+
         CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
         i32 key = en->m_minIndex;
-        // m_194/m_layer(+0x198) are CGameObject's role-union fields (source-def /
-        // z-clamp descriptor); LightFx overwrites them with the resolved set/frame.
+
         m_38->m_sprite = en;
         CImage* val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
@@ -119,8 +89,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     m_38->m_flags |= 2;
     m_anchorA = anchorA;
     m_anchorB = anchorB;
-    // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
-    // context (CGameObject::m_0c @+0xc); out is void*&.
+
     MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, effect, node);
     if (node != 0) {
         node = 0;
@@ -152,7 +121,7 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject*
         case 8:
             g_gameReg
                 ->m_logicPump
-                // the union's sprite arm - the same slot Setup() parked the worker in
+
                 ->Push(m_38->m_sprite, m_anchorA, 7);
             break;
     }
@@ -177,7 +146,7 @@ i32 CLightFx::AdvanceAnim() {
 
 RVA(0x0009cdc0, 0xf1)
 i32 CreateLightFx(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_7c;
+    AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(static_cast<size_t>(aux->ActKey()))) {
         case 0:
             aux->SetActKey(0x3e8);
@@ -214,10 +183,6 @@ i32 CreateLightFx(CGameObject* obj) {
     return 1;
 }
 
-// CLightFx::CLightFx (0x9cf00) - the /GX EH-framed ctor (the EngStr temp the shared
-// CUserLogic(obj) prologue builds forces the frame). This TU inlines the built-in
-// logic-type registration (the "unrolled" prologue); the per-class tail seeds the
-// leaf anchors (m_anchorA = 2, m_anchorB = 1).
 // @early-stop
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

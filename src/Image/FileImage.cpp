@@ -1,54 +1,38 @@
-#include <Mfc.h> // CFile (the export path slurps through the real MFC CFile) - afx-first
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <Mfc.h>
+#include <DDrawMgr/PixelShift.h>
 
-#include <Image/Image.h>            // the single-source CDDSurface (the DIRSURF surface)
-#include <Image/FileImageRecords.h> // BmpFileHeader / PcxHeader / TgaHeader
-#include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
+#include <Image/Image.h>
+#include <Image/FileImageRecords.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
 
-#include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
+#include <ddraw.h>
 
-#include <string.h>          // memcpy / strlen (inlined to rep movs / repne scas)
-#include <Image/ImagePool.h> // ex Globals.h
-#include <Image/FileImage.h> // own exported globals (ex Globals.h)
-#include <Pix16.h>           // the byte-cursor unions (RecordBytes / Pix16Ptr)
+#include <string.h>
+#include <Image/ImagePool.h>
+#include <Image/FileImage.h>
+#include <Pix16.h>
 
 enum {
     PCX_HEADER_SIZE = 0x80
-}; // the fixed PCX file header (pixel runs follow)
+};
 
 DATA(0x00283ee0)
 HINSTANCE g_resModule;
 
-// All four scratch palettes are PALETTEENTRY[256], not 0x400 loose bytes: every
-// writer below lays down r/g/b at +0/+1/+2 of a 4-byte record and zeroes +3, and
-// each is then handed to Blit/BlitDirect as the `palette` argument alongside
-// CDDrawPtrCollections::m_palette (same shape).
 DATA(0x00283ef0)
-PALETTEENTRY g_paletteRampBuf[0x100]; // 0x683ef0
-static PALETTEENTRY s_palBmp[0x100];  // 0x6842f0
+PALETTEENTRY g_paletteRampBuf[0x100];
+static PALETTEENTRY s_palBmp[0x100];
 DATA(0x002846f0)
-static PALETTEENTRY s_palPcx[0x100]; // 0x6846f0
+static PALETTEENTRY s_palPcx[0x100];
 DATA(0x00284af0)
-u8 g_grayRamp[0x401];                    // 0x684af0  (indices [1..0x400] written)
-static u8 s_palPidData[0x400];           // 0x684ef0 (CDDSurface::DecodePid)
-static PALETTEENTRY s_palPcxData[0x100]; // 0x6852f0 (CDDSurface::DecodePcxData)
+u8 g_grayRamp[0x401];
+static u8 s_palPidData[0x400];
+static PALETTEENTRY s_palPcxData[0x100];
 
-// ---------------------------------------------------------------------------
-// DecodeRun - decode a whole BMP file image (`srcv`) into
-// `info`. The source format is its +0x1c word (8/0x18); a convert pass runs when it
-// differs from info's current format (+0x538): an 8-bit source builds an RGB-reversed
-// ramp from its +0x36 palette into g_paletteRampBuf; a 24-bit-into-8-bit uses info's palette
-// (+0x53c) when present. BlitSurf preps the target; the convert path runs Blit, the
-// straight path BlitDirect. ret 0x10. No /GX frame.
-//
 // @early-stop
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
-    // `srcv` is a whole BMP file image: BITMAPFILEHEADER, then BITMAPINFO (header +
-    // the 256-entry RGBQUAD palette at +0x36), then the bits at bfOffBits. The
-    // ex-DecodeSrc pad-view spelled exactly these fields as m_0a/m_12/m_16/m_1c -
-    // bfOffBits/biWidth/biHeight/biBitCount - and LoadBmp below already reads the same
-    // buffer through the real Win32 types.
+
     BmpFileImage* img = static_cast<BmpFileImage*>(srcv);
     i32 srcFmt = img->info.bmiHeader.biBitCount;
     if (srcFmt != 8 && srcFmt != 0x18) {
@@ -67,10 +51,10 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     void* pal = 0;
     if (convert) {
         if (srcFmt == 8) {
-            RGBQUAD* p = img->info.bmiColors; // the 256-entry palette at +0x36
+            RGBQUAD* p = img->info.bmiColors;
             i32 i = 0;
             do {
-                // BGR -> RGB: the ramp is the reversed palette
+
                 g_paletteRampBuf[i].peRed = p->rgbRed;
                 g_paletteRampBuf[i].peGreen = p->rgbGreen;
                 g_paletteRampBuf[i].peBlue = p->rgbBlue;
@@ -91,12 +75,10 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     }
 
     if (CDDSurface::BlitSurf(info, img->info.bmiHeader.biWidth, img->info.bmiHeader.biHeight, 0, b)
-        == 0) { // direct (qualified) slot-3 call
+        == 0) {
         return 0;
     }
 
-    // bfOffBits is a RUNTIME offset the file itself carries (from the start of the
-    // image), so the bits sit at no fixed member - RecordBytes names the byte cursor.
     RecordBytes base;
     base.m_rec = img;
     void* run = base.m_bytes + img->fh.bfOffBits;
@@ -112,11 +94,6 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// LoadFile2 - open `path` via the real MFC CFile, slurp it whole into a heap
-// buffer and hand it to DecodeRun. Each failure unwinds the CFile + returns 0; the
-// buffer is freed after DecodeRun (and on a short read). /GX EH frame. ret 0xc.
-//
 RVA(0x00143e60, 0x15b)
 i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFile file;
@@ -142,8 +119,7 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
-    // The read buffer IS a BmpFileImage, so the info header is a named member -
-    // no byte arithmetic needed to skip the 14-byte file header.
+
     BmpFileImage* bmp = static_cast<BmpFileImage*>(buf);
     BITMAPINFOHEADER* ih = &bmp->info.bmiHeader;
     i32 width = ih->biWidth;
@@ -158,8 +134,8 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
         if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
             void* palette = 0;
             if (remap && bitcount == 8) {
-                u8* src = static_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER)
-                          + sizeof(BITMAPINFOHEADER); // the BMP palette
+                u8* src =
+                    static_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
                 i32 i = 0;
                 do {
                     s_palBmp[i].peRed = src[2];
@@ -232,10 +208,7 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     if (!hg) {
         return 0;
     }
-    // An RT_BITMAP resource IS a BITMAPINFOHEADER, then the palette, then the bits.
-    // The ex-RtBitmapResHeader view spelled it m_0/m_4/m_8/m_e = biSize/biWidth/
-    // biHeight/biBitCount, and typed +0x08 as a CDDrawPtrCollections* purely so the
-    // Init1 call below would compile - retail passes this function's OWN pool arg.
+
     BITMAPINFOHEADER* bih = static_cast<BITMAPINFOHEADER*>(LockResource(hg));
     if (!bih) {
         return 0;
@@ -250,12 +223,10 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     m_width = bih->biWidth;
     m_descFlags = 7;
     m_height = height;
-    if (!CDDSurface::Init1(a, 0)) { // direct (qualified) call - retail does not dispatch
+    if (!CDDSurface::Init1(a, 0)) {
         return 0;
     }
-    // byte-evidenced: retail forms the bits pointer as base + biSize + 0x400 in one
-    // lea - `mov ecx,[ebx]` (biSize) then `lea edx,[ebx+ecx*1+0x400]`. biSize is a
-    // RUNTIME value, so the 256-entry RGBQUAD palette cannot be skipped by type.
+
     RecordBytes ib;
     ib.m_rec = bih;
     BlitDirect(ib.m_bytes + bih->biSize + 256 * sizeof(RGBQUAD), 2);
@@ -266,30 +237,20 @@ RVA(0x00144350, 0x5f)
 i32 CDDSurface::SaveDispatch(char* path, void* pal, i32 flag) {
     switch (m_bitDepth) {
         case 0x18:
-            return SaveTga(path, pal, flag); // 24bpp -> 0x144900
+            return SaveTga(path, pal, flag);
         case 0x10:
             return SaveRle16(path, pal, flag);
         case 8:
-            return SaveBmp(path, pal, flag); // 8bpp -> 0x1443b0
+            return SaveBmp(path, pal, flag);
         default:
             return 0;
     }
 }
 
-// ---------------------------------------------------------------------------
-// SaveBmp - write this 8-bit image to a BMP file. Validates the surface
-// (IsValid), the filename (non-null, non-empty), the 8-bit depth, and the palette
-// source (arg2->m_0c). Builds a BITMAPINFOHEADER + a 256-entry RGBQUAD palette (the
-// source palette's bytes 0/1/2 swizzled across the quad lanes), a 14-byte file header
-// (the "BM" magic strcpy'd from g_bmpHeaderTemplate + the size/offset fields), locks the
-// surface, opens the file (mode 0x2001 / 0x1001 by `mode`), seeks past the magic,
-// writes the headers + the rows bottom-up, then unlocks. /GX EH frame (the local
-// CFile). ret 0xc.
-//
 // @early-stop
 RVA(0x001443b0, 0x284)
 i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
-    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
+    if (this->IsValid() == 0) {
         return 0;
     }
     if (path == 0) {
@@ -309,10 +270,6 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         return 0;
     }
 
-    // ONE record, not a header plus an adjacent stack array: the single
-    // `Write(&info, 0x428)` below only works because the 0x400-byte colour table
-    // directly follows the 0x28-byte header - that is Bmp256Info, which
-    // <Image/FileImageRecords.h> already names for exactly this writer.
     Bmp256Info info;
     memset(&info.bmiHeader, 0, sizeof(info.bmiHeader));
     i32 height = m_height;
@@ -329,7 +286,6 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         return 0;
     }
 
-    // PALETTEENTRY -> RGBQUAD: the R/B swap (retail stores +2 then +1 then +0).
     {
         i32 i = 0;
         i32 n = 0x100;
@@ -345,7 +301,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
-    strcpy(fh.m_bytes, g_bmpHeaderTemplate); // the BM magic over the leading bytes
+    strcpy(fh.m_bytes, g_bmpHeaderTemplate);
     fh.m_hdr.bfSize = info.bmiHeader.biSize * m_width + 0x436;
     fh.m_hdr.bfOffBits = 0x436;
 
@@ -360,7 +316,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
             m_ddSurface->Unlock(0);
             return 0;
         }
-        file.Seek(0, 2); // append mode: seek to end (create mode writes at 0)
+        file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, 0)) {
             m_ddSurface->Unlock(0);
@@ -371,11 +327,6 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     file.Write(&fh.m_hdr, 0xe);
     file.Write(&info, 0x428);
 
-    // The row walker re-reads m_height off `this` (`mov esi,[ebp+0x18]`) - the
-    // `height` local above is retail's DEAD store at [esp+0x30], written for the
-    // biHeight field and never read again. And the pre-test rides the decrement's
-    // own flags (`dec esi; js`), which is the `--row` guard, not a `test/jl` on a
-    // separately-formed `height - 1`.
     i32 row = m_height;
     while (--row >= 0) {
         file.Write(buf + row * m_pitch, m_width);
@@ -385,21 +336,10 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::SaveRle16 (0x144640, ret 0xc) - the 16bpp surface -> 24bpp BMP file
-// writer (DIRSURF.CPP). Bail unless the surface is valid (slot-5 IsValid), the
-// name buffer `a1` is non-null and non-empty (*a1 != 0) and the surface is 16bpp
-// (m_bitDepth == 0x10). Build a packed BITMAPFILEHEADER ("BM", bfSize = 3*w*h + 0x3a,
-// bfOffBits = 0x3a) + a zeroed BITMAPINFOHEADER (biSize 0x28, biWidth/biHeight =
-// surface w/h, biPlanes 1, biBitCount 0x18), operator-new a one-scanline 24bpp
-// buffer, Lock the surface, open the CFile (mode 0x2001 / 0x1001 by a3), write
-// the two headers, then walk the rows bottom-up expanding each 16bpp pixel into a
-// BGR triple and writing the scanline. On any failure Unlock + free + close +
-// return 0; on success return 1. The CFile stack object -> a /GX EH frame.
 // @early-stop
 RVA(0x00144640, 0x2be)
 i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
-    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
+    if (this->IsValid() == 0) {
         return 0;
     }
     if (path == 0) {
@@ -413,9 +353,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     }
 
     BmpFileHeaderStamp bfh;
-    // Retail clears the header at 0x14468e (`mov ecx,0xb; rep stosd`) and the
-    // field-wise spelling reproduces it - biPlanes|biBitCount go down as one dword,
-    // which is the arm BmpInfoHeaderStamp names.
+
     BmpInfoHeaderStamp bih;
     bih.m_biSize = 0;
     bih.m_biWidth = 0;
@@ -427,14 +365,12 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     bih.m_ih.biClrUsed = 0;
     bih.m_ih.biClrImportant = 0;
 
-    // Retail INLINES strcpy here: `mov edi,0x61aabc; repnz scas al` then `rep movs`
-    // into the 14-byte bfh at [esp+0x18]; a bfType word store emits neither.
     strcpy(bfh.m_bytes, "BM");
     bfh.m_hdr.bfReserved1 = 0;
     bfh.m_hdr.bfReserved2 = 0;
 
-    i32 height = this->m_height; // dwHeight
-    i32 width = this->m_width;   // dwWidth
+    i32 height = this->m_height;
+    i32 width = this->m_width;
     bih.m_ih.biHeight = height;
     bih.m_ih.biWidth = width;
     bfh.m_hdr.bfSize = 3 * width * height + 0x3a;
@@ -492,19 +428,11 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SaveTga - write this 24-bit image to a TGA file. Mirrors SaveBmp but for
-// the 0x18-bpp case: validates the surface / filename / 24-bit depth, builds an
-// 0x2c-byte header (the "BM" magic + width/height + the width*height*3+0x3a size and
-// the plane/bitcount words), locks, opens (mode 0x2001 / 0x1001), seeks past the
-// magic, writes the header then the rows bottom-up (each row re-written width times,
-// matching retail), and unlocks. /GX EH frame. ret 0xc.
-//
 // @early-stop
 RVA(0x00144900, 0x227)
 i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     static_cast<void>(pal);
-    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
+    if (this->IsValid() == 0) {
         return 0;
     }
     if (path == 0) {
@@ -517,19 +445,13 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         return 0;
     }
 
-    // BITMAPINFO, not a bare BITMAPINFOHEADER: retail's clear is `mov ecx,0xb;
-    // rep stosd` = 44 bytes, which is sizeof(BITMAPINFOHEADER) + the trailing
-    // RGBQUAD bmiColors[1] - and the cleared span ends flush against the EH
-    // record with that last dword never read again (it is the unused colour
-    // entry a 24bpp DIB does not need). Reading it as a 40-byte header made the
-    // clear a 4-byte stack overflow, and the Write below a size literal.
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
     i32 height = m_height;
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
     i32 width = m_width;
-    strcpy(fh.m_bytes, g_bmpHeaderTemplate); // the BM magic over the leading bytes
+    strcpy(fh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;
     bi.bmiHeader.biSize = 0x28;
     bi.bmiHeader.biWidth = width;
@@ -551,7 +473,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
             m_ddSurface->Unlock(0);
             return 0;
         }
-        file.Seek(0, 2); // append mode: seek to end (create mode writes at 0)
+        file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, 0)) {
             m_ddSurface->Unlock(0);
@@ -576,27 +498,13 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Decode - decode a run-length image (src) into this image. Validates the
-// src, derives width/height from its int16 box (+0x4..+0xa) and the source format
-// from +0x41 (1=8-bit, 3=24-bit). When the source format differs from the info's
-// current format (+0x538) a convert pass runs: an 8-bit source builds a grayscale
-// ramp from its trailing 0x300 palette, a 24-bit source into an 8-bit target uses the
-// info palette (+0x53c) when present. BeginDecode (slot +0x0c) locks/preps the target;
-// the straight path runs DecodeRun8/24 in place, the convert path allocates a scratch
-// buffer (width even), runs RunDecode1/3 then Blit. ret 0x10. No /GX frame.
-//
 // @early-stop
 RVA(0x00144b30, 0x250)
 i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode) {
     if (src == 0) {
         return 0;
     }
-    // NB the two locals keep retail's argument ORDER but their old names were
-    // backwards: +0x08-+0x04 is m_xMax-m_xMin, the WIDTH, and +0x0a-+0x06 the height.
-    // Renamed to what they hold; every downstream use is swapped to match, so this is
-    // a pure rename. That does mean RunDecode1/3 receive (height, width) in their
-    // slots - worth checking their parameter roles against the disasm.
+
     i32 width = src->m_xMax - src->m_xMin + 1;
     i32 height = src->m_yMax - src->m_yMin + 1;
 
@@ -621,8 +529,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
     void* palette = 0;
     if (convert) {
         if (srcFmt == 8) {
-            // build the grayscale ramp from the source's trailing 0x300 palette
-            // (PCX: the 0x300 palette trails the image data, at a RUNTIME offset)
+
             RecordBytes sb;
             sb.m_rec = src;
             u8* p = sb.m_bytes + len - 0x300;
@@ -646,12 +553,11 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
         }
     }
 
-    if (this->BlitSurf(info, width, height, 0, mode) == 0) { // slot-3 virtual dispatch (+0x0c)
+    if (this->BlitSurf(info, width, height, 0, mode) == 0) {
         return 0;
     }
 
-    // PCX: the run data begins one fixed header past the buffer - byte-forced
-    void* run = src->m_pixels; // the RLE stream at +0x80
+    void* run = src->m_pixels;
     void* buf = 0;
     i32 result;
     if (convert == 0) {
@@ -743,7 +649,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
             if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
                 void* palette = 0;
                 if (remap && bitcount == 8) {
-                    u8* src = hdr->m_pixels + size - 0x380; // the file's trailing palette
+                    u8* src = hdr->m_pixels + size - 0x380;
                     i32 i = 0;
                     do {
                         s_palPcx[i].peRed = *src++;
@@ -840,17 +746,6 @@ i32 CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
 
 #pragma optimize("", off)
 
-// ---------------------------------------------------------------------------
-// CDDSurface::RunDecode1 (ret 0x10) - the plain-buffer 8bpp variant of
-// DecodeRun8: RLE-decode `src` into `dst` (no surface Lock; dimensions explicit).
-// Each row starts at dstp + width*y; same token grammar as DecodeRun8.
-//
-// /Od SLOT LAYOUT: at /Od cl assigns [ebp-N] slots in the order its local symbol
-// HASH TABLE iterates, i.e. by variable NAME - declaration order only breaks ties
-// inside one hash bucket, and there the LATER-declared local takes the EARLIER
-// slot. Retail's layout is sp -4, hold -8, tok -c, y -10, len -14, dstp -18,
-// k -1c, cols -20; this name set + declaration order reproduces it exactly.
-// See docs/patterns/od-local-slot-ordering.md.
 RVA(0x00145270, 0x17a)
 i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
     u8* sp;
@@ -907,14 +802,6 @@ i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::RunDecode3 (ret 0x10) - the plain-buffer 24bpp variant of
-// DecodeRun24: three stride-3 channel passes per row into `dstp` (channels at +0,
-// +1, +2), row base = dstp + y*width*3 (cached once per row). No surface Lock.
-//
-// Same /Od slot layout as RunDecode1 (the name set + declaration order below
-// reproduce retail's sp -4, hold -8, tok -c, y -10, len -14, dstp -18, k -1c,
-// cols -20, base -24); see docs/patterns/od-local-slot-ordering.md.
 RVA(0x001453f0, 0x3ac)
 i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
     u8* sp;
@@ -1050,7 +937,7 @@ i32 CDDSurface::DecodePcxData(
     i32 flags = static_cast<i32>(hdr->flags);
     i32 w = hdr->width;
     i32 h = hdr->height;
-    u8* data = hdr->pixels; // the pixel stream at +0x20
+    u8* data = hdr->pixels;
 
     if (w & 3) {
         return 0;
@@ -1075,7 +962,7 @@ i32 CDDSurface::DecodePcxData(
         if (static_cast<u32>(size) <= 0x300) {
             return 0;
         }
-        // PID: the 0x300 palette trails the pixel data, at a RUNTIME offset
+
         RecordBytes hb;
         hb.m_rec = hdr;
         u8* src = hb.m_bytes + size - 0x300;
@@ -1099,7 +986,7 @@ i32 CDDSurface::DecodePcxData(
         }
     }
 
-    if (!CDDSurface::BlitSurf(dst, w, h, 0, caps)) { // direct (qualified) slot-3 call
+    if (!CDDSurface::BlitSurf(dst, w, h, 0, caps)) {
         return 0;
     }
 
@@ -1163,7 +1050,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
     i32 flags = static_cast<i32>(hdr->flags);
     i32 width = hdr->width;
     i32 height = hdr->height;
-    u8* p = hdr->pixels; // the pixel stream at +0x20
+    u8* p = hdr->pixels;
 
     if (!(width & 3) && m_width == width && m_height == height) {
         void* palette = 0;
@@ -1181,10 +1068,10 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
             if (size <= 0x300) {
                 return 0;
             }
-            // PID: the 0x300 palette trails the pixel data - byte-forced
+
             RecordBytes hb;
             hb.m_rec = hdr;
-            u8* src = hb.m_bytes + size - 0x300; // trailing palette
+            u8* src = hb.m_bytes + size - 0x300;
             i32 i = 0;
             do {
                 s_palPidData[i] = *src++;

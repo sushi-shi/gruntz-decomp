@@ -1,27 +1,27 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/Demo.h>
-#include <Gruntz/Grunt.h>       // GruntDirectionCell (the compass-table triple)
-#include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
-#include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
-#include <Gruntz/FixedPtrArray32.h>  // the game-controller poll list (g_actorList)
-#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (m_currentKeys press-edge flags)
-#include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)
-#include <string.h>  // strlen (inline repne scas in the editor dialog proc)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/DemoHelpers.h>
+#include <Io/FileMem.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/FixedPtrArray32.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <fstream.h>
+#include <string.h>
 #include <rva.h>
 
-#include <Bute/ButeMgr.h>         // CButeMgr (Parse @0x3cc20)
-#include <Bute/SymTab.h>          // the shared CSymTab (ResolveQualified 0x13be40)
-#include <Gruntz/AnimWorker.h>    // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/GameLevel.h>     // canonical CGameLevel + CDDrawWorkerHost (RecomputePlaneCoords)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialRecords.h>     // CTriRecord
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>         // the dispatched CUserLogic leaves' slot layout
-#include <Gruntz/GameLevel.h> // m_world->m_level (CGameLevel; ex-CWorldState view dissolved)
+#include <Bute/ButeMgr.h>
+#include <Bute/SymTab.h>
+#include <Gruntz/AnimWorker.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/GameLevel.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Ints.h>
-#include <stdlib.h> // rand (0x11fee0, the engine LCG)
+#include <stdlib.h>
 
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FortressFlag.h>
@@ -37,12 +37,12 @@
 DATA(0x0020d008)
 const i32 g_rotTableA_60d008[27] = {
     0, 1, 1, 0, 2, 2, 1, 2, 3, 0, 0, 8, 1, 1, 0, 2, 2, 4, 1, 0, 7, 2, 0, 6, 2, 1, 5,
-}; // CW transitions
+};
 DATA(0x0020d078)
 const i32 g_rotTableB_60d078[27] = {
     1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
-}; // CCW transitions
-// The editor dialog's text buffer + length word (first-referenced here).
+};
+
 DATA(0x0022c450)
 i32 g_buteEditLen;
 DATA(0x0022c458)
@@ -60,7 +60,7 @@ i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 areaArg, i32 a2) {
 
 RVA(0x0003c010, 0x5)
 void CDemo::ReleaseResources() {
-    CPlay::ReleaseResources(); // retail: a bare `jmp` to the CPlay body
+    CPlay::ReleaseResources();
 }
 
 RVA(0x0003c030, 0x22)
@@ -69,11 +69,6 @@ i32 CDemo::Vslot15() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDemoSetup (the attract/demo-mode actor seeding; @identity-TODO owner genuinely
-// unrecovered) is modeled in <Gruntz/DemoHelpers.h>, not as a .cpp-local view.
-// SetupDemoActors @0x3c070 - seed the two attract-mode demo HUD sprites
-// ("DemoMover", "DemoSign") through the bound world's sprite factory.
 RVA(0x0003c070, 0x47)
 i32 CDemoSetup::SetupDemoActors() {
     m_c->m_childGroup->CreateSprite(1, 0, 0, 0, "DemoMover", 0x40003);
@@ -84,7 +79,7 @@ i32 CDemoSetup::SetupDemoActors() {
 class CParseSource;
 
 RVA(0x0003c0e0, 0xfb)
-i32 CDemo::BuildWorldLevelPath(i32 unused) { // slot-42 override (ex BuildWorldLevelKey)
+i32 CDemo::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
@@ -96,15 +91,10 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) { // slot-42 override (ex BuildWorldL
         return 0;
     }
     m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->m_flags |= 4; // the CLoadable +0x08 flag word
+    m_world->m_level->m_flags |= 4;
     return 1;
 }
 
-// 0x3c220 - CDemo::Render (slot 5, +0x14): the demo/attract per-frame render poll.
-// Runs the CPlay base render, scans the g_actorList for the 0x100 exit-request flag
-// (posting WM_COMMAND 0x8023 to the top-level HWND on the first match), counts the
-// idle timer m_520 down by the frame delta, and posts WM_COMMAND 0x8027 when it
-// expires. Returns 1.
 RVA(0x0003c220, 0xa4)
 i32 CDemo::Render() {
     CPlay::Render();
@@ -127,13 +117,13 @@ i32 CDemo::Render() {
     return 1;
 }
 
-RVA(0x0003c300, 0x183)
 // @early-stop
+RVA(0x0003c300, 0x183)
 i32 DemoAutoScrollStep(CGameObject* owner) {
-    AnimWorkerObj* st = owner->m_7c;
+    AnimWorkerObj* st = owner->m_animWorker;
     switch (st->ActKey()) {
         case 1: {
-            // step the current scroll position one unit toward the target.
+
             CGameLevel* gh = st->m_ownerCtx->m_level;
             i32 curX = gh->m_mainPlane->m_viewRect.left;
             i32 curY = gh->m_mainPlane->m_viewRect.top;
@@ -147,7 +137,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             } else if (curY > st->m_scrollTargetY) {
                 curY--;
             }
-            // apply the (optionally parallax-scaled) coords to the main plane + recompute.
+
             CDDrawWorkerHost* mg = gh->m_mainPlane;
             float fx = static_cast<float>(curX);
             float fy = static_cast<float>(curY);
@@ -158,8 +148,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             mg->m_scaledX = fx;
             mg->m_scaledY = fy;
             mg->RecomputePlaneCoords();
-            // apply the same coords to every plane layer (the m_planes CObArray;
-            // the element cast is the devs' own - CObArray stores CObject*).
+
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
                 CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
                 float px = static_cast<float>(curX);
@@ -172,14 +161,14 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
                 p->m_scaledY = py;
                 p->RecomputePlaneCoords();
             }
-            // reached the target -> back to mode 0.
+
             if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {
                 st->m_1c = 0;
             }
             return 1;
         }
         case 0: {
-            // pick a fresh random per-axis target within the main plane's wrap range.
+
             i32 rx = st->m_ownerCtx->m_level->m_mainPlane->m_wrapW;
             st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
             i32 ry = st->m_ownerCtx->m_level->m_mainPlane->m_wrapH;
@@ -239,42 +228,12 @@ i32 CTriRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// The two bute-config debug editor DialogProcs. INT_PTR CALLBACK, /GX. Identical
-// shape, differing only in the key strings + the DAT_ edit buffers (0x62c458/
-// 0x62c450 vs 0x63f790/0x643790):
-//   WM_INITDIALOG(0x110): CString from the lowercase key ("attributez.txt" /
-//     "dwrects.txt") via g_pButeDefaults [0x169fb0], read the buffer,
-//     SetDlgItemTextA(0x435, ...).
-//   WM_COMMAND(0x111): wParam==1(OK): GetDlgItemTextA(hDlg,0x435, DAT buf, 0xffff/
-//     0x4000); strlen->DAT len; CString from the mixed-case key [0x16a670];
-//     CButeMgr::Parse(CString, 1) on g_resButeMgr [thunk 0x38e6 -> 0x3cc20, below];
-//     EndDialog(hDlg,1). wParam==2 (Cancel): EndDialog(hDlg,0).
-// ---------------------------------------------------------------------------
-
-// 0x3c990: the "Attributez.txt" editor dialog proc (edit control 0x435).
-// WM_INITDIALOG loads attributez.txt into the edit box through a SCOPED ifstream;
-// IDOK writes the box back (Attributez.txt) through a SCOPED ofstream, re-parses
-// g_buteMgr, and closes with EndDialog(hDlg, 1); IDCANCEL EndDialog(hDlg, 0).
-// The two scoped streams are exactly what makes cl emit the ??_Difstream /
-// ??_Dofstream vbase-destructor COMDATs retail carries at 0x3cbc0/0x3cbf0
-// (byte-identical to a cl 5.0 probe; retail keeps them unreferenced - no /OPT:REF).
-// 100% EXACT (2026-07-27). The exit-count screen read base 4 rets / retail 2 and the
-// fix needed BOTH halves: (a) the msg dispatch is a SWITCH, not chained `if (msg == ..)`
-// compares - retail's `sub eax,0x110 / je / dec eax / jne` ladder - and the command
-// dispatch is a nested switch on wParam (`dec eax / je / dec eax / je`); (b) the
-// not-handled exit is shared by the msg default AND the command default, and both
-// handled commands fall into the ONE `return 1`. With (b) alone the score went
-// 27.94 -> 14.94; only the pair lands it.
 RVA(0x0003c990, 0x1bc)
 INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
-    // ONE not-handled exit (retail 0x3c9c2), shared by the msg-switch default and the
-    // command switch's default; both handled commands fall into the ONE `return 1`.
-    // Both dispatches are SWITCHes - retail's `sub eax,0x110 / je / dec eax / jne` and
-    // `dec eax / je / dec eax / je` ladders, not chained `if (msg == ...)` compares.
+
     switch (msg) {
-        case 0x110: { // WM_INITDIALOG
+        case 0x110: {
             ifstream in("attributez.txt", ios::nocreate | ios::binary);
             if (in.fail()) {
                 EndDialog(hDlg, 1);
@@ -287,9 +246,9 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
             }
             return 1;
         }
-        case 0x111: // WM_COMMAND
+        case 0x111:
             switch (wParam) {
-                case 1: { // IDOK
+                case 1: {
                     GetDlgItemTextA(hDlg, 0x435, g_buteEditBuf, 0xffff);
                     ofstream out("Attributez.txt", ios::binary);
                     g_buteEditLen = strlen(g_buteEditBuf);
@@ -299,7 +258,7 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
                     EndDialog(hDlg, 1);
                     return 1;
                 }
-                case 2: // IDCANCEL
+                case 2:
                     EndDialog(hDlg, 0);
                     return 1;
             }
@@ -308,22 +267,16 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
     return 0;
 }
 
-// The two 0x14-byte fns at 0x3cbc0/0x3cbf0 are the compiler-generated
-// ??_Difstream@@QAEXXZ / ??_Dofstream@@QAEXXZ vbase destructors the dialog proc's
-// unwind funclets make cl emit (COMDATs; bound below by RVA_COMPGEN). The old
-// hand-written COwnerWithSubs::DtorSubC/DtorSub8 bodies - and their banned
-// this+0xc/+0x8 vbase-offset casts - are GONE: no dev ever wrote that code.
 RVA_COMPGEN(0x0003cbc0, 0x14, ??_Difstream@@QAEXXZ)
 RVA_COMPGEN(0x0003cbf0, 0x14, ??_Dofstream@@QAEXXZ)
 
 // @early-stop
 RVA(0x0003cc20, 0x14e)
 bool CButeMgr::Parse(CString filename, int streamBase) {
-    // the third ctor arg is the header default `= filebuf::openprot` - the caller
-    // materializes it as a load+push of ?openprot@filebuf@@2HB (retail 0x5f03e0)
+
     ifstream* s = new ifstream(filename, ios::in | ios::nocreate);
     m_stream = s;
-    if (s->fail()) { // ios state & (failbit|badbit), behind the vbase adjust
+    if (s->fail()) {
         return false;
     }
 
@@ -341,47 +294,21 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
         result = false;
     }
 
-    // m_stream is the base istream* member; here the concrete stream IS the ifstream `s`
-    // just constructed, so downcast to it to call ifstream::sync + run its dtor via delete
-    // (authentic downcast to the known concrete type, not a placeholder). Reloading THROUGH
-    // the member - not the typed local `s`, which cl would keep in a register - is what
-    // reproduces retail's two member reloads. The istream subobject sits at offset 0 of
-    // ifstream (MSVC5), so the downcast is zero-adjust: byte-neutral vs the old void* model.
     (static_cast<ifstream*>(m_stream))->sync();
     delete static_cast<ifstream*>(m_stream);
     return result;
 }
 
-// The dwrects.txt editor dialog's text buffer + length word (the length sits
-// immediately past the buffer's 0x4000 bytes, so a full-buffer read's NUL
-// terminator lands ON the length - retail's, not ours).
 DATA(0x0023f790)
 char g_dwRectsEditBuf[0x4000];
 DATA(0x00243790)
 i32 g_dwRectsEditLen;
 
-// 0x3cdd0: the "dwrects.txt" editor dialog proc - the exact twin of
-// ButeAttributezDlgProc @0x3c990 above, which is 100% EXACT, so the same two-part
-// spelling applies: BOTH dispatches are SWITCHes (retail's `sub eax,0x110 / je /
-// dec eax / jne` and `dec eax / je / dec eax / je` ladders, not chained `if (msg ==
-// ..)` compares), and the not-handled exit at 0x3ce06 is shared by the msg default
-// and the command default while both handled commands fall into the ONE `return 1`.
-// The old @early-stop here claimed a "same CString/ResButeMgr + /GX-trylevel
-// blocker"; there is no CString and no ResButeMgr in this function at all.
-//
-// Differences from the twin, all read off the retail bytes:
-//   * one string literal, "dwrects.txt" @0x60d138, used by BOTH streams (the twin
-//     has two, "attributez.txt" and "Attributez.txt");
-//   * the buffer is 0x4000, not 0xffff;
-//   * IDOK does NOT re-parse g_buteMgr - it just writes and closes.
-// The stream modes are retail's immediates: 0xa0 = nocreate|binary for the ifstream,
-// 0x80 = binary for the ofstream; the trailing `push 1` on each ctor is MSVC's
-// hidden most-derived flag (both classes have ios as a virtual base).
 RVA(0x0003cdd0, 0x19f)
 INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
     switch (msg) {
-        case 0x110: { // WM_INITDIALOG
+        case 0x110: {
             ifstream in("dwrects.txt", ios::nocreate | ios::binary);
             if (in.fail()) {
                 EndDialog(hDlg, 1);
@@ -394,9 +321,9 @@ INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
             }
             return 1;
         }
-        case 0x111: // WM_COMMAND
+        case 0x111:
             switch (wParam) {
-                case 1: { // IDOK
+                case 1: {
                     GetDlgItemTextA(hDlg, 0x435, g_dwRectsEditBuf, 0x4000);
                     ofstream out("dwrects.txt", ios::binary);
                     g_dwRectsEditLen = strlen(g_dwRectsEditBuf);
@@ -405,7 +332,7 @@ INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                     EndDialog(hDlg, 1);
                     return 1;
                 }
-                case 2: // IDCANCEL
+                case 2:
                     EndDialog(hDlg, 0);
                     return 1;
             }
@@ -416,7 +343,7 @@ INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 
 RVA(0x0003d2b0, 0xf1)
 i32 CreateGruntStartingPoint(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -454,7 +381,7 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
 
 RVA(0x0003d3f0, 0xf1)
 i32 CreateExitTrigger(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -492,7 +419,7 @@ i32 CreateExitTrigger(CGameObject* owner) {
 
 RVA(0x0003d530, 0xf1)
 i32 CreateGruntCreationPoint(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -530,32 +457,32 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
 
 RVA(0x0003d670, 0xf1)
 i32 CreateWormhole(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
             CUserLogic* sub = new CWormhole(owner);
-            sub->Activate(); // slot 6 (+0x18): activate
+            sub->Activate();
             rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
@@ -568,7 +495,7 @@ i32 CreateWormhole(CGameObject* owner) {
 
 RVA(0x0003d7b0, 0xf1)
 i32 CreateGruntPuddle(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -606,7 +533,7 @@ i32 CreateGruntPuddle(CGameObject* owner) {
 
 RVA(0x0003d8f0, 0xf1)
 i32 CreateTeleporter(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -644,7 +571,7 @@ i32 CreateTeleporter(CGameObject* owner) {
 
 RVA(0x0003da30, 0xf1)
 i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -682,7 +609,7 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
 
 RVA(0x0003db70, 0xf4)
 i32 CreateWarlord(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -720,7 +647,7 @@ i32 CreateWarlord(CGameObject* owner) {
 
 RVA(0x0003dcb0, 0xf1)
 i32 CreateFortressFlag(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -758,7 +685,7 @@ i32 CreateFortressFlag(CGameObject* owner) {
 
 RVA(0x0003ddf0, 0xf1)
 i32 CreateSecretLevelTrigger(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);

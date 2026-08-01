@@ -2,362 +2,271 @@
 #define NET_NETMGR_H
 
 #include <Ints.h>
-#include <string.h>       // memset (CNetPlayerListNode's inline ctor zeroes m_desc)
-#include <rva.h>          // SIZE_UNKNOWN/VTBL class-metadata macros used below
-#include <Wap32/Object.h> // CObject - the shared CObject-like grand-base
+#include <string.h>
+#include <rva.h>
+#include <Wap32/Object.h>
 
 #include <Mfc.h>
-#include <wtypes.h>   // HRESULT (Mfc.h's lean windows.h does NOT expose it - the reason
-#include <basetyps.h> // STDMETHOD / STDMETHOD_ / PURE - the real COM interface macros for the
+#include <wtypes.h>
+#include <basetyps.h>
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/ObList.h>
-#include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator the node factories use
+#include <Rez/RezMgr.h>
 #include <Gruntz/String.h>
-#include <Gruntz/GruntzPlayer.h> // the ONE 0x238 per-player/channel record
+#include <Gruntz/GruntzPlayer.h>
 
-void ActiveWait(u32 milliseconds); // 0x13dfe0
+void ActiveWait(u32 milliseconds);
 
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
-class GruntzPlayer;     // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
-class CGruntzMgr;       // <Gruntz/GruntzMgr.h> - CNetSession::m_mgr (its m_options[4] IS
-                        //                       the per-channel roster CreateSlot binds)
-class CGruntzCmdMgr;    // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
-class CNetMgr;          // defined below; the command slot caches one as its +0x1c owner
-class CMulti;           // <Gruntz/Multi.h> - the multiplayer game-state (owns CNetSession::Init a2)
-struct GruntRec;        // the lobby-sync grunt-state record (defined below CNetCmdSlot)
-class CDDrawSurfaceMgr; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
+class GruntzPlayer;
+class CGruntzMgr;
 
-extern i32 g_dropPlayerId; // 0x611d88  saved dropped-player id
+class CGruntzCmdMgr;
+class CNetMgr;
+class CMulti;
+struct GruntRec;
+class CDDrawSurfaceMgr;
 
-// The session-identity trio. All three are DEFINED in src/Gruntz/GruntzMgr.cpp: they
-// are one contiguous retail .data run [0x20fa70,0x20fae0) together with g_pendingFrame
-// (0x20fac8), 8 KB below CMulti's own run [0x211d88,0x2121e0). CMulti only reads them.
-extern "C" i32 g_localVersion; // 0x60fa70  rez-sync version; CGruntzMgr::Run reloads it
-extern i32 g_remoteVersion;    // 0x60fa74  the build's protocol word (never written)
-// The DirectPlay application GUID. CNetMgr::Init copies it as FOUR DWORDS
-// interleaved with its selection-latch zeroing (retail stores [eax+0]/[eax+4]/
-// [eax+8]/[eax+0xc] between the m_groupSel/m_playerSel/m_sessionSel writes) while
-// every SDK hand-off takes the same 16 bytes whole - both readings are named.
+extern i32 g_dropPlayerId;
+
+extern "C" i32 g_localVersion;
+extern i32 g_remoteVersion;
+
 union NetGuid {
-    GUID m_guid;    // the SDK view (DPSESSIONDESC2::guidApplication)
-    i32 m_words[4]; // the four dwords Init threads through the store block
+    GUID m_guid;
+    i32 m_words[4];
 };
 
-extern NetGuid g_dplayAppGuid;  // 0x60fab8  the DirectPlay app GUID CMulti binds with
-extern "C" i32 g_cfgWord;       // 0x645550
-extern "C" i32 g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
+extern NetGuid g_dplayAppGuid;
+extern "C" i32 g_cfgWord;
+extern "C" i32 g_buteMgrField4;
 
 struct CNetVersionMsg {
     char m_pad0[0x18];
-    i32 m_remoteVersion; // +0x18  host remote-version word
-    i32 m_localVersion;  // +0x1c  host local-version word
+    i32 m_remoteVersion;
+    i32 m_localVersion;
 };
-SIZE_UNKNOWN(); // host-version msg view (only +0x18/+0x1c pinned); size TBD
+SIZE_UNKNOWN();
 
 struct CNetVersionPacket {
-    u8 m_0; // +0x00  flag byte (bit7 set)
+    u8 m_0;
     char m_pad1[3];
-    // +0x04, NOT +0x10: CMulti::AnnounceVersion (0xbd180) writes the 0x417 stat id
-    // with `mov DWORD PTR [esp+0x18],0x417` at a 3-push esp, i.e. packet+4. The ex
-    // +0x10 placement put the id four dwords too high and left +0x04 as padding.
-    i32 m_statId;     // +0x04  stat id (0x417)
-    i32 m_buteConfig; // +0x08  CButeMgr config word
-    i32 m_cfgWord;    // +0x0c  g_cfgWord
-    char m_pad10[8];
-    i32 m_remoteVersion; // +0x18  g_remoteVersion
-    i32 m_localVersion;  // +0x1c  g_localVersion
-};
-SIZE(0x20); // fully-known stack packet
 
-// (CNetSessionNode DISSOLVED: it was a second view of CNetSessionNode - same
-// m_sessions payload, id @+0x4, name CString @+0x8,
-// GetName the same +0x8 fetch. All entry-typed methods take CNetSessionNode* now.)
-class CNetSessionNode; // defined below (the m_sessions per-player record)
+    i32 m_statId;
+    i32 m_buteConfig;
+    i32 m_cfgWord;
+    char m_pad10[8];
+    i32 m_remoteVersion;
+    i32 m_localVersion;
+};
+SIZE(0x20);
+
+class CNetSessionNode;
 
 struct CNetStatPacket {
-    u8 m_0; // +0x0  flag byte (bit7 set)
+    u8 m_0;
     char m_pad1[3];
-    i32 m_statId;   // +0x4  stat id
-    i32 m_value;    // +0x8  value / player id
-    char m_padc[4]; // +0xc  (0x10 total)
+    i32 m_statId;
+    i32 m_value;
+    char m_padc[4];
 };
-SIZE_UNKNOWN(); // 0x10-byte stat-packet header view; full record size TBD
+SIZE_UNKNOWN();
 
-// The 0x28-byte channel-registration record that rides the stat channel. Written
-// field-for-field by CMulti::BroadcastChannel and read back by
-// CMulti::RegisterChannelRec - the two agree on every offset, which is the layout.
 #pragma pack(push, 1)
 struct CNetChannelPacket {
-    u8 m_flags;               // +0x00  bit7 set
-    char m_pad01[3];          // +0x01
-    i32 m_statId;             // +0x04  0x3f9
-    u8 m_present;             // +0x08  gate: 0 = no channel in this record
-    u8 m_kind;                // +0x09  -> RegisterChannel arg 2
-    u8 m_slot;                // +0x0a  -> arg 3
-    u8 m_flagsB;              // +0x0b  -> arg 4
-    u8 m_configId;            // +0x0c  -> arg 5
-    u8 m_0d;                  // +0x0d
-    u8 m_0e;                  // +0x0e
-    char m_pad0f[1];          // +0x0f
-    i32 m_hostIndex;          // +0x10  -> arg 6
-    char m_name[0x28 - 0x14]; // +0x14  the channel name (strcpy'd)
+    u8 m_flags;
+    char m_pad01[3];
+    i32 m_statId;
+    u8 m_present;
+    u8 m_kind;
+    u8 m_slot;
+    u8 m_flagsB;
+    u8 m_configId;
+    u8 m_0d;
+    u8 m_0e;
+    char m_pad0f[1];
+    i32 m_hostIndex;
+    char m_name[0x28 - 0x14];
 };
 SIZE(0x28);
 
-// The 0x2c SINGLE-channel record that also rides the stat channel (a different
-// layout from the 0x28 above). BroadcastOneChannel writes it and ParseOneChannel
-// reads it back; the two agree on every offset, which is the layout.
 struct CNetOneChannelPacket {
-    u8 m_flags;               // +0x00  bit7 set
-    char m_pad01[3];          // +0x01
-    i32 m_statId;             // +0x04  STAT_CHANNEL_ONE
-    i32 m_playerIndex;        // +0x08  the roster slot this record describes
-    u8 m_present;             // +0x0c  = 1
-    u8 m_008;                 // +0x0d  GruntzPlayer::m_008
-    u8 m_014;                 // +0x0e  GruntzPlayer::m_014
-    u8 m_configId;            // +0x0f
-    char m_pad10[1];          // +0x10
-    u8 m_comboSel;            // +0x11
-    u8 m_readyFlag;           // +0x12
-    char m_pad13[1];          // +0x13
-    i32 m_slotKey;            // +0x14
-    char m_name[0x2c - 0x18]; // +0x18  the channel name (strcpy'd)
+    u8 m_flags;
+    char m_pad01[3];
+    i32 m_statId;
+    i32 m_playerIndex;
+    u8 m_present;
+    u8 m_008;
+    u8 m_014;
+    u8 m_configId;
+    char m_pad10[1];
+    u8 m_comboSel;
+    u8 m_readyFlag;
+    char m_pad13[1];
+    i32 m_slotKey;
+    char m_name[0x2c - 0x18];
 };
 SIZE(0x2c);
 
-// The 0x88 channel-TABLE broadcast: an 8-byte stat header then four 0x20 rows.
-// BroadcastChannelTable writes it and ParseChannelTable reads it back; the two
-// agree field-for-field, which is the layout.
 struct CNetChannelRow {
-    u8 m_liveGate;            // +0x00
-    u8 m_008;                 // +0x01
-    u8 m_014;                 // +0x02
-    u8 m_configId;            // +0x03
-    u8 m_pad04;               // +0x04
-    u8 m_comboSel;            // +0x05
-    u8 m_readyFlag;           // +0x06
-    u8 m_pad07;               // +0x07
-    i32 m_slotKey;            // +0x08
-    char m_name[0x20 - 0x0c]; // +0x0c
+    u8 m_liveGate;
+    u8 m_008;
+    u8 m_014;
+    u8 m_configId;
+    u8 m_pad04;
+    u8 m_comboSel;
+    u8 m_readyFlag;
+    u8 m_pad07;
+    i32 m_slotKey;
+    char m_name[0x20 - 0x0c];
 };
 SIZE(0x20);
 
 struct CNetChannelTablePacket {
-    u8 m_flags;               // +0x00  bit7 set
-    char m_pad01[3];          // +0x01
-    i32 m_statId;             // +0x04
-    CNetChannelRow m_rows[4]; // +0x08 .. +0x87
+    u8 m_flags;
+    char m_pad01[3];
+    i32 m_statId;
+    CNetChannelRow m_rows[4];
 };
 SIZE(0x88);
 #pragma pack(pop)
 
-// (CNetCmd + CNetCmdPacket DISSOLVED 2026-07-27: both were views of GruntRec, the
-// ONE queued/resync command record. PROVEN by the pool allocator Unmatched_bf530
-// @0xbf530 - `push 0x410; call ??2@YAPAXI@Z` and a `rep stos` of 0x104 dwords, i.e.
-// sizeof(GruntRec) - and by the field roles: ProcessCmd @0xc0c70 fills the fresh
-// record +0x00=seq, +0x04=the header dword at hdr+0x8, +0x08(byte)=hdr+0xc, +0x0c=len,
-// +0x10=payload, and SendGruntRecord @0xbfc70 ships exactly those back out as
-// m_checksum/m_count/m_payload. CNetSession::Verify's compare
-// (`FindCmd(seq)->+0x4 != m_records[..].m_checksum`) closes it: +0x04 IS the checksum
-// on both sides. CNetCmdPacket's "m_owner" (+0x04 = the slot `this`) was fabricated -
-// retail stores the header checksum there.)
-
-// (SlotInfo DISSOLVED 2026-07-27: it was a fake view of GruntzPlayer. PROVEN by
-// CNetSession::CreateSlot @0xbfff0, whose descriptor argument is computed as
-// `[this+0x00] + 0x238*index + 0x150` == &CGruntzMgr::m_options[index] (the 4x0x238
-// per-player array at +0x150), and by CMulti::CreateSession @0xbbc90, which walks the
-// SAME `[CMulti+0x04] + 0x150 + i*0x238` records (`edi` steps 0x238 to 0x8e0) reading
-// their +0x14/+0x18/+0x20 before calling CreateSlot. Field map:
-//   m_cmdWord -> m_playerIndex (+0x00), m_currentOwnerPlayerId -> m_008 (+0x08),
-//   m_netId -> m_slotKey (+0x18), m_dirty -> m_doneFlag (+0x2c).
-// The ex-m_playerId (+0x04) never existed: the only read of a descriptor +0x04 as an
-// integer DPID was 0xbfc70, which is CNetSession::SendGruntRecord (not a slot method)
-// reading its OWN m_localDesc->m_id. GruntzPlayer +0x04 is the m_name CString that
-// GetName @0x1f450 (`add ecx,4` + CString copy-ctor) returns.
-
 struct CNetCmdSlot {
-    i32 m_state;      // +0x0   "armed"/slot-state flag (AckDropPlayer sets it to 1; ==3 => active)
-    i32 m_isRemote;   // +0x4  0 = local channel (the ex-"m_resetGuard" ==0 tests
-                      // were the same local-channel gate - ONE role)
-    i32 m_latchedSeq; // +0x8  latched sequence (Touch copies m_baseSeq here)
-    GruntzPlayer* m_desc; // +0xc  the roster record this channel drives: a pointer
-                          //       straight into CGruntzMgr::m_options[index]
-    i32 m_latency;        // +0x10  the channel activity clock (+= elapsed; CheckLatency
-                          // compares vs the cap - the ex-"m_timer" was the same counter)
-    i32 m_baseSeq;        // +0x14  base command sequence number (both views)
-    i32 m_maxSeq;         // +0x18  high-water sequence (RaiseMax keeps the max; the
-                          // ex-"m_sentSeq" reads were the same counter)
-    CMulti* m_owner; // +0x1c  owning CMulti back-pointer (reaches m_session/m_4/DispatchRecvMsg;
-                     //         sync cleared the same slot as m_1c). One canonical name.
-    // CPtrList, not CObList: AddCmd/RemoveCmd/ClearCmds/ResetSync all call the
-    // band-A list bodies (ctor 0x1b4867 / AddTail 0x1b4991 / RemoveHead 0x1b4a03),
-    // whose vtable 0x1eb054 slot-0 GetRuntimeClass names "CPtrList". (CNetMgr's own
-    // group/player/session lists below DO call band B = the real CObList.)
-    CPtrList m_cmds;   // +0x20  queued-command list (CPtrList, 0x1c bytes)
-    i32 m_ackFlags[4]; // +0x3c  per-player ack-flag array (ProcessCmd sets m_ackFlags[pid])
-    i32 m_rangeA[3];   // +0x4c  command-range A (reset to -1) (sync sub-object m_4c)
-    i32 m_rangeB[3];   // +0x58  command-range B (reset to -1) (sync sub-object m_58)
+    i32 m_state;
+    i32 m_isRemote;
 
-    CNetCmdSlot();            // bbec0  construct m_cmds (/GX EH) + reset fields
-    ~CNetCmdSlot();           // b62a0  ResetAll + tear down m_cmds (CObList) [multi]
-    void ResetAll();          // c0bb0  zero all fields + ranges
-    void AdvanceSeq(i32 id);  // c0f10  fold an ack id into the high-water window
-    void RaiseMax(i32 v);     // c0fa0  keep the high-water sequence
-    void ResetTriple(i32* p); // c10a0  splat -1 over three dwords
-    // The three command-id-window helpers (0xc0fd0/0xc1010/0xc1060, __thiscall). Retail
-    // passes the window (m_rangeA/m_rangeB) explicitly and ignores `this`, so at every
-    // call site cl loads ecx = this even though the body never reads it - modeling them as
-    // members reproduces that (and binds SendBatch/SendOne's cross-view calls).
-    i32 NetCmdIdFind(i32* arr, i32 v);   // c0fd0  is `v` one of the three ids in `arr`?
-    void NetCmdIdAdd(i32* arr, i32 v);   // c1010  add `v` to the first free (-1) slot
-    void NetCmdIdClear(i32* arr, i32 v); // c1060  clear (-1) the first slot equal to `v`
-    void AddCmd(GruntRec* cmd);          // c1170  enqueue a command (dedup by seq)
-    void RemoveCmd(i32 seq);             // c11b0  drop one queued command
-    void GetRange(i32* pMin, i32* pMax); // c1230  min/max queued sequence
-    GruntRec* FindCmd(i32 seq);          // c12b0  find a queued command by seq
-    void ClearCmds();                    // c12e0  drain + recycle the queue
-    void Touch();                        // c1390  latch the slot (sets +4, +8)
-    void FullReset();                    // c0c20  zero the command fields + both ranges
-    void ClearAckFlags(); // bf120  zero the +0x3c..+0x48 ack-flag dwords (sync InitSub3c)
-    CString
-    BuildHostName(); // bc3f0  the slot's host name (by-value NRVO, fwds m_desc->GetName) [multi]
-    i32 Init(
-        CMulti* owner,
-        GruntzPlayer* desc,
-        i32 state
-    ); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
-    i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
-    // Slot-readiness check 0xc1320 (CNetSession::Verify dispatches it on each slot cursor).
-    // `this` is the slot: reads m_owner (+0x1c) -> m_session -> m_slots[], gated by this
-    // slot's m_ackFlags (+0x3c). (Was a stray CNetSyncCheck view; folded back to the slot.)
-    i32 Ready(); // c1320
+    i32 m_latchedSeq;
+    GruntzPlayer* m_desc;
+
+    i32 m_latency;
+
+    i32 m_baseSeq;
+    i32 m_maxSeq;
+
+    CMulti* m_owner;
+
+    CPtrList m_cmds;
+    i32 m_ackFlags[4];
+    i32 m_rangeA[3];
+    i32 m_rangeB[3];
+
+    CNetCmdSlot();
+    ~CNetCmdSlot();
+    void ResetAll();
+    void AdvanceSeq(i32 id);
+    void RaiseMax(i32 v);
+    void ResetTriple(i32* p);
+
+    i32 NetCmdIdFind(i32* arr, i32 v);
+    void NetCmdIdAdd(i32* arr, i32 v);
+    void NetCmdIdClear(i32* arr, i32 v);
+    void AddCmd(GruntRec* cmd);
+    void RemoveCmd(i32 seq);
+    void GetRange(i32* pMin, i32* pMax);
+    GruntRec* FindCmd(i32 seq);
+    void ClearCmds();
+    void Touch();
+    void FullReset();
+    void ClearAckFlags();
+    CString BuildHostName();
+    i32 Init(CMulti* owner, GruntzPlayer* desc, i32 state);
+    i32 ProcessCmd(i32 playerId, void* rec, i32 size);
+
+    i32 Ready();
 };
-SIZE(0x64); // fully-laid-out inline command slot (array stride 0x64)
+SIZE(0x64);
 
-// The 13-byte on-the-wire header a command record carries in front of its payload
-// (ProcessCmd walks it field-by-field then advances the cursor by exactly 13). Packed
-// like its NetCmdSendMsg/NetGruntRecMsg siblings - the wire has no padding.
 #pragma pack(push, 1)
 struct CNetCmdHdr {
-    i32 m_sequence;   // +0x0  sequence
-    i32 m_windowBase; // +0x4  window base
-    i32 m_checksum;   // +0x8  game-state checksum (lands in the record's GruntRec::m_checksum;
-                      //       Verify compares it against the resync ring's copy)
-    u8 m_entryCount;  // +0xc  entry count
+    i32 m_sequence;
+    i32 m_windowBase;
+    i32 m_checksum;
+
+    u8 m_entryCount;
 };
-SIZE(0xd); // 4+4+4+1, packed: ProcessCmd's cursor advances +4/+4/+5 over exactly these
+SIZE(0xd);
 #pragma pack(pop)
 
-// (CNetCmdBuf DISSOLVED 2026-07-27: the "0x238-byte command buffer array" was
-// CGruntzMgr itself - its 0x150 header plus the GruntzPlayer m_options[4] array whose
-// element stride IS 0x238. CMulti::CreateSession @0xbbc90 passes `[CMulti+0x04]`
-// (CState::m_4, the CGruntzMgr singleton) as CNetSession::Init's a1.)
-
 struct GruntRec {
-    i32 m_seq;             // +0x00 sequence number
-    i32 m_checksum;        // +0x04 state checksum (the Verify compare)
-    unsigned char m_count; // +0x08 grunts serialized into this record
+    i32 m_seq;
+    i32 m_checksum;
+    unsigned char m_count;
     char pad09[3];
-    i32 m_payloadLen;             // +0x0c payload length
-    char m_payload[0x410 - 0x10]; // +0x10 payload
+    i32 m_payloadLen;
+    char m_payload[0x410 - 0x10];
 };
 SIZE(0x410);
 
 class CGruntzCommand;
-struct CNetCtrlMsg; // the receive-buffer message header (ex the duplicate `LobbyMsg`)
-struct CNetMsg;     // <Net/NetPackets.h> - the per-player message header
+struct CNetCtrlMsg;
+struct CNetMsg;
 
-// The receive buffer at its wire shapes. DirectPlay hands the buffer back as raw
-// BYTES and the sender/opcode decides WHICH record it is, so all of these are real
-// readings of one pointer - named here instead of punned at every decode site.
 union CNetWireMsg {
-    char* m_bytes;             // what the transport fills
-    CNetMsg* m_msg;            // the per-player message header
-    CNetCtrlMsg* m_ctrl;       // the SYSTEM-channel control record
-    CNetChannelPacket* m_chan; // the 0x3f9 channel-registration record
-    CNetVersionMsg* m_version; // the 0x417 host-version record
-    CNetCmdHdr* m_cmdHdr;      // the reliable-command header
+    char* m_bytes;
+    CNetMsg* m_msg;
+    CNetCtrlMsg* m_ctrl;
+    CNetChannelPacket* m_chan;
+    CNetVersionMsg* m_version;
+    CNetCmdHdr* m_cmdHdr;
 };
 
-void* Unmatched_bf530(i32 zero); // bf530
-void RecycleCmd(void* cmd);      // bf580  __cdecl
+void* Unmatched_bf530(i32 zero);
+void RecycleCmd(void* cmd);
 
 struct CNetSession {
-    // per offset, so each carries a single canonical (typed/semantic) name - the
-    // former hex/command-view aliases (m_00/m_4/m_8/m_c/m_10/m_14/m_18/m_1c/m_1b0)
-    // are folded onto them.
-    CGruntzMgr* m_mgr; // +0x00  the game-manager singleton (Init a1 == CMulti::m_4);
-                       //        CreateSlot hands slot[i] &m_mgr->m_options[i]
-    CMulti*
-        m_session; // +0x04  owning CMulti (Init a2, kept as an i32 handle re-passed to CreateSlot)
-    CNetMgr* m_netMgr;            // +0x08  the DirectPlay CNetMgr peer (Init a3; endpoint at +0x18)
-    CNetSessionNode* m_localDesc; // +0x0c  the LOCAL player session record; its m_id (+0x4)
-                                  //        is the `idFrom` every SetData send passes
-    i32 m_tick;                   // +0x10  sub-tick counter (also the lobby slot-count-id base)
-    i32 m_snapshotDone;           // +0x14  per-period snapshot-built flag
-    i32 m_seq;                    // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
-    i32 m_period;                 // +0x1c  ticks per period / cached owner m_cmdDelay (the modulus)
-    CNetCmdSlot m_slots[4];       // +0x20  four inline command slots (0x64 each)
-    CGruntzCommand*
-        m_idMap[0x80]; // +0x1b0  armed-command ptr table (GetSlotPtr) / 0x200-byte resync scratch
-    GruntRec m_records[0x80]; // +0x3b0  the resync grunt-record ring (the ex-
-                              // CNetResyncEntry was a placeholder twin of GruntRec)
 
-    CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
-    void ResetCmdBuffers();                 // c0070
-    i32 AllSlotsReachedSeq(i32 seq);        // c0320  1 unless an active slot's m_maxSeq < seq
-    void AdvanceAllSlots(i32 id);           // c0370  AdvanceSeq(id) over every active slot
-    void RaiseAllSlotsMax(i32 v);           // c03b0  RaiseMax(v) over every active slot
-    i32 CheckLatency(i32 cap);              // c04a0  any active slot with m_10 > cap?
-    CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
-    i32 Verify();                                  // c04f0  resync consistency check (0-arg)
-    void ResetAll();                               // bbf80  full reset: header + 4 slots + entries
-    void Reset();      // bf150  re-init header/slots/scratch/entries (session-level reset)
-    i32 Verify(i32 n); // c0290  slot-window validation against sequence n
-    // Scan the four inline command slots for the first active (m_state==3),
-    // un-reset (m_isRemote==0) slot whose latency exceeds key (unsigned).
-    CNetCmdSlot* FindSlot(u32 key); // c0460
-    // Wiring init (caches the owner pointers then Reset()s). CMulti::CreateSession
-    // @0xbbc90 pushes ([CMulti+0x04] = CGruntzMgr*, this, [CMulti+0x524] = CNetMgr*).
-    i32 Init(CGruntzMgr* mgr, class CMulti* owner, CNetMgr* netMgr); // bef80 (reads owner->m_5a4)
+    CGruntzMgr* m_mgr;
 
-    // --- lobby-sync methods (ex-CLobbySync, folded onto the same object) ---
-    ~CNetSession();      // b6220  ResetSync + vector-destroy the 4 slots [multi]
-    void ResetSync();    // bf000  clear header, recycle each slot, drain pool
-    i32 Poll(i32 delta); // bf5a0  advance active channels; drain the endpoint
-    i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c);   // bf700
-    i32 DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg); // bf7c0 (forwarded to HandleControlMsg)
-    i32 Tick();                                   // bf9e0  snapshot -> broadcast -> flush
-    i32 SendAll();                                // bfb40
-    // Ship one grunt-state record to `dpTo` (0xbfc70). Retail's receiver is the
-    // SESSION, not a slot: it reads [this+0x08] as the CNetMgr peer and [this+0x0c]+4
-    // as `idFrom` - exactly SendOne's `m_netMgr->SetData(m_localDesc->m_id, ...)`
-    // shape - and SendAll @0xbfb40 passes it the saved `this` ([esp+0x24]), not
-    // &m_slots[0]. (Was declared on CNetCmdSlot, which forced a CNetMgr* pun on the
-    // slot's m_latchedSeq and an integer read of m_desc+0x04.)
-    i32 SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo); // bfc70
-    i32 SendBatch();                                                          // bfd40
-    i32 SendOne(CNetCmdSlot* s, i32 v);                                       // bfeb0
-    void Reconcile();                                                         // c00f0
-    i32 Advance();                                                            // c01d0
-    CGruntzCommand* GetSlotPtr(i32 v); // c0430  id-map fetch (ex "GlyphTable::Get")
-    // `parity` is a BYTE parameter: the caller ships only dl (`mov dl,..; shl dl,1;
-    // push edx`, CMulti::Render) and the callee zero-extends it (`mov edx,[esp+8];
-    // and edx,0xff`) - an i32 parameter forces a caller-side `and edx,0xff`.
-    void ArmSlot(void* node, u8 parity); // c03f0  id-map store (ex "GlyphTable::Set")
-    // Checksum @0xc0590: the game-state signature accumulator over the 4x15
-    // placed-grunt roster (defined in src/Gruntz/GameChecksum.cpp; ex the
-    // "CGameSyncSig" view). Step2437 is a per-frame poke with no bound RVA,
-    // kept declared so the CMulti dispatch compiles.
-    i32 Checksum(); // c0590
-    // 0xbf1d0 (/GX): a CRC/sync-diagnostic dump - walk the level's 4x15 placed-grunt
-    // roster (m_session->Mgr()->m_cmdGrid->m_grid) and report a per-grunt CRC line
-    // through m_session->ReportVersionMsg. Defined out-of-line in BuildGruntzCrcInfo.cpp.
+    CMulti* m_session;
+    CNetMgr* m_netMgr;
+    CNetSessionNode* m_localDesc;
+
+    i32 m_tick;
+    i32 m_snapshotDone;
+    i32 m_seq;
+    i32 m_period;
+    CNetCmdSlot m_slots[4];
+    CGruntzCommand* m_idMap[0x80];
+    GruntRec m_records[0x80];
+
+    CNetCmdSlot* FindCmdSlot(i32 playerId);
+    void ResetCmdBuffers();
+    i32 AllSlotsReachedSeq(i32 seq);
+    void AdvanceAllSlots(i32 id);
+    void RaiseAllSlotsMax(i32 v);
+    i32 CheckLatency(i32 cap);
+    CNetCmdSlot* CreateSlot(i32 index, i32 owner);
+    i32 Verify();
+    void ResetAll();
+    void Reset();
+    i32 Verify(i32 n);
+
+    CNetCmdSlot* FindSlot(u32 key);
+
+    i32 Init(CGruntzMgr* mgr, class CMulti* owner, CNetMgr* netMgr);
+
+    ~CNetSession();
+    void ResetSync();
+    i32 Poll(i32 delta);
+    i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c);
+    i32 DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg);
+    i32 Tick();
+    i32 SendAll();
+
+    i32 SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo);
+    i32 SendBatch();
+    i32 SendOne(CNetCmdSlot* s, i32 v);
+    void Reconcile();
+    i32 Advance();
+    CGruntzCommand* GetSlotPtr(i32 v);
+
+    void ArmSlot(void* node, u8 parity);
+
+    i32 Checksum();
+
     void BuildGruntzCrcInfo();
 
-    // The engine routes global new/delete through RezAlloc/RezFree; model that as
-    // the class allocator so `new CNetSession()` emits a direct RezAlloc call.
     void* operator new(size_t n) {
         return RezAlloc(static_cast<u32>(n));
     }
@@ -365,30 +274,20 @@ struct CNetSession {
         RezFree(p);
     }
 
-    // Inline ctor so CNetMgr::CreateSession's `new CNetSession()` lowers to the
-    // 4-slot vector-construct + ResetAll (no out-of-line ctor call), matching the
-    // retail allocation shape.
     CNetSession() {
         ResetAll();
     }
 };
-SIZE(0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
+SIZE(0x20bb0);
 
 struct NetDPName {
-    u32 dwSize;           // +0x00
-    u32 dwFlags;          // +0x04
-    char* lpszShortNameA; // +0x08
-    char* lpszLongNameA;  // +0x0c
+    u32 dwSize;
+    u32 dwFlags;
+    char* lpszShortNameA;
+    char* lpszLongNameA;
 };
-SIZE(0x10); // DirectPlay DPNAME (only the two name pointers are used)
+SIZE(0x10);
 
-// The three dplayx enumeration callback ABIs, at the shape the bodies in
-// NetMgr.cpp actually define (all __stdcall, manager-as-context). They are the
-// SDK's DPENUMDPCALLBACK / DPENUMSESSIONSCALLBACK2 / DPENUMPLAYERSCALLBACK2 -
-// the pairing follows the slot map documented on IDirectPlay4Z below (slot 12
-// "EnumGroupsCb" is really EnumPlayers, slot 13 "EnumPlayers" is really
-// EnumSessions). Naming them here is what lets the call sites pass the function
-// directly instead of laundering it through void*.
 typedef i32(__stdcall* NetEnumProvidersCallback)(
     void* lpGuid,
     char* lpName,
@@ -411,44 +310,14 @@ typedef BOOL(__stdcall* NetEnumPlayersCallback)(
 );
 
 struct IDirectPlay4Z {
-    // External DirectPlay-shaped COM interface (abstract, __stdcall). STDMETHOD ==
-    // `virtual HRESULT __stdcall`, so `dp->Method(args)` lowers to `mov eax,[dp];
-    // call [eax+slot]` - the runtime COM slot the engine never link-resolves.
-    //
-    // IDENTITY (2026-07-27): this IS `IDirectPlay4` from vendor/directx6/Include/
-    // dplay.h - two names for one interface. Counting dplay.h's DECLARE_INTERFACE_
-    // (IDirectPlay4, IDirectPlay3) slot by slot lines every USED slot up with a real
-    // DirectPlay method of the SAME arity:
-    //     12 EnumGroupsCb(4)  = EnumPlayers(4)      13 EnumPlayers(5)  = EnumSessions(5)
-    //     14 Enum2(2)         = GetCaps(2)          17 GetMessageCount = GetMessageCount
-    //     19 GetGroupData(3)  = GetPlayerCaps(3)    20 GetData2(4)     = GetPlayerData(4)
-    //      6 CreatePlayer(6) = CreatePlayer(6)     (byte-proven, see the slot below)
-    //     22 GetPlayerData2(2)= GetSessionDesc(2)   24 EnumGroups(2)   = Open(2)
-    //     25 Receive          = Receive             26 SetData5(5)     = Send(5)
-    //     29 GetData5(4)      = SetPlayerData(4)
-    // so the local names below are FUNCTIONAL LABELS, and several are misleading
-    // (slot 24 "EnumGroups" is really Open; slot 26 "SetData5" is really Send).
-    // Slot 3 is the one that does NOT fit (ours takes 3 args, DirectPlay's slot 3 is
-    // AddPlayerToGroup(2)) - its ONE caller is CNetMgr::Init, whose receiver comes
-    // from the LOBBY, so that receiver is an IDirectPlayLobby (slot 3 =
-    // Connect(DWORD, LPDIRECTPLAY2*, IUnknown*), 3 args) and not this interface at all.
-    // DEFERRED FOLD: retype m_directPlay to the real IDirectPlay4 and rename all 11
-    // call sites in NetMgr.cpp/Multi.cpp to their real DirectPlay names; split
-    // CNetMgr::Init's receiver out as IDirectPlayLobby. Mechanical (same slot, same
-    // arity => same `call [eax+N]`) but wide, so it is its own change.
-    // Slots 0/1/2 are IUnknown's by the COM ABI (QueryInterface/AddRef/Release), which
-    // is what CNetMgr::Destroy's teardown of m_directPlay dispatches (slot 4 then slot 2).
-    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE; // slot 0
-    STDMETHOD(AddRef)() PURE;                                    // slot 1
-    STDMETHOD(Release)() PURE;                                   // slot 2  (+0x08)
-    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;               // slot 3  (+0x0c)
-    STDMETHOD(v04)() PURE;                                       // slot 4  (+0x10)
-    STDMETHOD(v05)() PURE;                                       // slot 5
-    // slot 6 (+0x18) - IDENTIFIED (2026-07-28) as dplay.h's IDirectPlay4::CreatePlayer:
-    // its one caller CNetMgr::CreatePlayer pushes SIX args (&idPlayer, &name, hEvent,
-    // 0, 0, 0) and the 0x10-byte struct it fills is exactly DPNAME
-    // {dwSize, dwFlags, lpszShortName, lpszLongName}. Was declared 5-arg (a dropped
-    // trailing dwFlags) with the out-id and the name pointer in the wrong slots.
+
+    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE;
+    STDMETHOD(AddRef)() PURE;
+    STDMETHOD(Release)() PURE;
+    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;
+    STDMETHOD(v04)() PURE;
+    STDMETHOD(v05)() PURE;
+
     STDMETHOD(CreatePlayer)
     (i32* lpidPlayer,
      NetDPName* lpPlayerName,
@@ -456,65 +325,54 @@ struct IDirectPlay4Z {
      void* lpData,
      u32 dwDataSize,
      u32 dwFlags) PURE;
-    STDMETHOD(v07)() PURE; // slot 7
-    STDMETHOD(v08)() PURE; // slot 8
-    STDMETHOD(v09)() PURE; // slot 9
-    STDMETHOD(v0a)() PURE; // slot 10
-    STDMETHOD(v0b)() PURE; // slot 11
-    STDMETHOD(EnumGroupsCb)(
-        void* desc,
-        NetEnumPlayersCallback callback,
-        void* ctx,
-        i32 flags
-    ) PURE; // slot 12 (+0x30)
+    STDMETHOD(v07)() PURE;
+    STDMETHOD(v08)() PURE;
+    STDMETHOD(v09)() PURE;
+    STDMETHOD(v0a)() PURE;
+    STDMETHOD(v0b)() PURE;
+    STDMETHOD(EnumGroupsCb)(void* desc, NetEnumPlayersCallback callback, void* ctx, i32 flags) PURE;
     STDMETHOD(EnumPlayers)(
         void* desc,
         void* a,
         NetEnumSessionsCallback callback,
         void* ctx,
         void* flags
-    ) PURE;                                                              // slot 13 (+0x34)
-    STDMETHOD(Enum2)(void* desc, void* ctx) PURE;                        // slot 14 (+0x38)
-    STDMETHOD(v0f)() PURE;                                               // slot 15
-    STDMETHOD(v10)() PURE;                                               // slot 16
-    STDMETHOD(GetMessageCount)(i32 idPlayer, i32* lpCount) PURE;         // slot 17 (+0x44)
-    STDMETHOD(v12)() PURE;                                               // slot 18
-    STDMETHOD(GetGroupData)(i32 id, void* lpData, i32 flags) PURE;       // slot 19 (+0x4c)
-    STDMETHOD(GetData2)(i32 id, void* lpData, u32* lpSize, u32 fl) PURE; // slot 20 (+0x50)
-    STDMETHOD(v15)() PURE;                                               // slot 21
-    STDMETHOD(GetPlayerData2)(void* in, void* out) PURE;                 // slot 22 (+0x58)
-    STDMETHOD(v17)() PURE;                                               // slot 23
-    STDMETHOD(EnumGroups)(void* desc, i32 flags) PURE;                   // slot 24 (+0x60)
-    STDMETHOD(Receive)(
-        i32* lpidFrom,
-        i32* lpidTo,
-        i32 flags,
-        void* lpData,
-        i32* lpSize
-    ) PURE;                                                              // slot 25 (+0x64)
-    STDMETHOD(SetData5)(i32 a, i32 b, i32 c, void* data, i32 size) PURE; // slot 26 (+0x68)
-    STDMETHOD(v1b)() PURE;                                               // slot 27
-    STDMETHOD(v1c)() PURE;                                               // slot 28
-    STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE;    // slot 29 (+0x74)
-    STDMETHOD(v1e)() PURE;                                               // slot 30
-    STDMETHOD(v1f)() PURE;                                               // slot 31
-    STDMETHOD(v20)() PURE;                                               // slot 32
-    STDMETHOD(v21)() PURE;                                               // slot 33
-    STDMETHOD(v22)() PURE;                                               // slot 34
-    STDMETHOD(v23)() PURE;                                               // slot 35
-    STDMETHOD(v24)() PURE;                                               // slot 36
-    STDMETHOD(v25)() PURE;                                               // slot 37
-    STDMETHOD(v26)() PURE;                                               // slot 38
-    STDMETHOD(v27)() PURE;                                               // slot 39
-    STDMETHOD(v28)() PURE;                                               // slot 40
-    STDMETHOD(v29)() PURE;                                               // slot 41
-    STDMETHOD(v2a)() PURE;                                               // slot 42
-    STDMETHOD(v2b)() PURE;                                               // slot 43
-    STDMETHOD(v2c)() PURE;                                               // slot 44
-    STDMETHOD(v2d)() PURE;                                               // slot 45
-    STDMETHOD(v2e)() PURE;                                               // slot 46
-    STDMETHOD(v2f)() PURE;                                               // slot 47
-    STDMETHOD(v30)() PURE;                                               // slot 48
+    ) PURE;
+    STDMETHOD(Enum2)(void* desc, void* ctx) PURE;
+    STDMETHOD(v0f)() PURE;
+    STDMETHOD(v10)() PURE;
+    STDMETHOD(GetMessageCount)(i32 idPlayer, i32* lpCount) PURE;
+    STDMETHOD(v12)() PURE;
+    STDMETHOD(GetGroupData)(i32 id, void* lpData, i32 flags) PURE;
+    STDMETHOD(GetData2)(i32 id, void* lpData, u32* lpSize, u32 fl) PURE;
+    STDMETHOD(v15)() PURE;
+    STDMETHOD(GetPlayerData2)(void* in, void* out) PURE;
+    STDMETHOD(v17)() PURE;
+    STDMETHOD(EnumGroups)(void* desc, i32 flags) PURE;
+    STDMETHOD(Receive)(i32* lpidFrom, i32* lpidTo, i32 flags, void* lpData, i32* lpSize) PURE;
+    STDMETHOD(SetData5)(i32 a, i32 b, i32 c, void* data, i32 size) PURE;
+    STDMETHOD(v1b)() PURE;
+    STDMETHOD(v1c)() PURE;
+    STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE;
+    STDMETHOD(v1e)() PURE;
+    STDMETHOD(v1f)() PURE;
+    STDMETHOD(v20)() PURE;
+    STDMETHOD(v21)() PURE;
+    STDMETHOD(v22)() PURE;
+    STDMETHOD(v23)() PURE;
+    STDMETHOD(v24)() PURE;
+    STDMETHOD(v25)() PURE;
+    STDMETHOD(v26)() PURE;
+    STDMETHOD(v27)() PURE;
+    STDMETHOD(v28)() PURE;
+    STDMETHOD(v29)() PURE;
+    STDMETHOD(v2a)() PURE;
+    STDMETHOD(v2b)() PURE;
+    STDMETHOD(v2c)() PURE;
+    STDMETHOD(v2d)() PURE;
+    STDMETHOD(v2e)() PURE;
+    STDMETHOD(v2f)() PURE;
+    STDMETHOD(v30)() PURE;
     STDMETHOD(SendEx)(
         i32 idFrom,
         i32 idTo,
@@ -525,122 +383,89 @@ struct IDirectPlay4Z {
         i32 timeout,
         LPVOID ctx,
         LPDWORD lpMsgId
-    ) PURE; // slot 49 (+0xc4)  (the DirectPlay SDK's own parameter types)
+    ) PURE;
 };
-SIZE_UNKNOWN(); // external DirectPlay COM interface (opaque object); size TBD
+SIZE_UNKNOWN();
 
-// (CNetPlayerObj DISSOLVED: it was a chimera view over two real classes - the
-// m_players walks (+0x34 "profile" = CNetPlayerListNode::m_desc.m_lpszName) and
-// the m_sessions player records (+0x20 position = CNetSessionNode::m_listPosition).
-// Each ex-use is typed to its real class; `SelfDestruct(1)` was `delete` through
-// the real virtual dtor.)
-class CNetPlayerListNode; // defined below (the m_players 0x58 node, vptr 0x5f0760)
+class CNetPlayerListNode;
 
-// The DirectPlay DPSESSIONDESC2 (<dplay.h>), spelled out field-for-field: the
-// engine builds it on the stack for EnumPlayers/EnumGroups and deep-copies it into
-// CNetPlayerListNode. Same 0x50 bytes, so every raw `desc + 0xNN` poke is a member.
 struct CNetSessionDesc {
-    i32 m_dwSize;           // +0x00  dwSize (forced to 0x50)
-    i32 m_dwFlags;          // +0x04  DPSESSION_xxx
-    GUID m_guidInstance;    // +0x08  guidInstance
-    GUID m_guidApplication; // +0x18  guidApplication (the app GUID)
-    i32 m_dwMaxPlayers;     // +0x28
-    i32 m_dwCurrentPlayers; // +0x2c  (read-only)
-    char* m_lpszName;       // +0x30  lpszSessionNameA
-    char* m_lpszPassword;   // +0x34  lpszPasswordA
-    i32 m_dwReserved1;      // +0x38
-    i32 m_dwReserved2;      // +0x3c
-    i32 m_dwUser1;          // +0x40
-    i32 m_dwUser2;          // +0x44
-    i32 m_dwUser3;          // +0x48
-    i32 m_dwUser4;          // +0x4c
+    i32 m_dwSize;
+    i32 m_dwFlags;
+    GUID m_guidInstance;
+    GUID m_guidApplication;
+    i32 m_dwMaxPlayers;
+    i32 m_dwCurrentPlayers;
+    char* m_lpszName;
+    char* m_lpszPassword;
+    i32 m_dwReserved1;
+    i32 m_dwReserved2;
+    i32 m_dwUser1;
+    i32 m_dwUser2;
+    i32 m_dwUser3;
+    i32 m_dwUser4;
 };
-SIZE(0x50); // == sizeof(DPSESSIONDESC2)
+SIZE(0x50);
 
-// The DirectPlay DPCAPS (<dplay.h>), spelled out the same way CNetSessionDesc
-// spells DPSESSIONDESC2 - this TU cannot include dplay.h (the DirectPlayEnumerate
-// -> ...A #define clashes, see DPlayImports.h). EnumSessions/GetGroupInfo build it
-// on the stack: memset 0x28 then store 0x28 into m_dwSize, which is what fixes the
-// size AND the identity (DPCAPS is exactly 0x28 bytes with dwSize first).
 struct CNetCaps {
-    i32 m_dwSize;            // +0x00  forced to 0x28
-    i32 m_dwFlags;           // +0x04  DPCAPS_xxx
-    i32 m_dwMaxBufferSize;   // +0x08
-    i32 m_dwMaxQueueSize;    // +0x0c  (obsolete)
-    i32 m_dwMaxPlayers;      // +0x10
-    i32 m_dwHundredBaud;     // +0x14
-    i32 m_dwLatency;         // +0x18  what EnumSessions2 returns
-    i32 m_dwMaxLocalPlayers; // +0x1c
-    i32 m_dwHeaderLength;    // +0x20
-    i32 m_dwTimeout;         // +0x24
+    i32 m_dwSize;
+    i32 m_dwFlags;
+    i32 m_dwMaxBufferSize;
+    i32 m_dwMaxQueueSize;
+    i32 m_dwMaxPlayers;
+    i32 m_dwHundredBaud;
+    i32 m_dwLatency;
+    i32 m_dwMaxLocalPlayers;
+    i32 m_dwHeaderLength;
+    i32 m_dwTimeout;
 };
-SIZE(0x28); // == sizeof(DPCAPS)
+SIZE(0x28);
 
 class CNetPlayerListNode : public CObject {
 public:
-    CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
-                            //        (name/password strdup'd in place at +0x34/+0x38)
-    __POSITION* m_54;       // +0x54  cached AddTail position
+    CNetSessionDesc m_desc;
 
-    // Zero the descriptor + m_54. Retail's AddPlayerNode (0x1786d0) inlines exactly
-    // this: the coalesced vptr stamp 0x5f0760, then `mov ecx,0x14; xor eax,eax;
-    // lea edi,[esi+4]; rep stosd` (== memset over the 0x50-byte descriptor), then
-    // `mov [esi+0x54],eax`.
+    __POSITION* m_54;
+
     CNetPlayerListNode() {
         memset(&m_desc, 0, sizeof(m_desc));
         m_54 = 0;
     }
-    virtual ~CNetPlayerListNode() OVERRIDE; // 0x1793b0 (NetSessionNode.cpp)
-    i32 Init(CNetSessionDesc* desc);        // 0x1795a0  copy + trim the descriptor
-    // Free the two strdup'd descriptor names (+0x34/+0x38) and clear the dwSize
-    // marker (0x179680, NetMgr.cpp). The dtor's only helper - retail's SINGLE
-    // caller is ??1 @0x1793db, and the dtor chain has exactly two vptr stamps
-    // (own 0x5f0760 -> CObject 0x5e8cb4), so the ex-"CWapNodeB" that carried it
-    // was a duplicate view of THIS class (its m_type/m_buf34/m_buf38 were
-    // m_desc.m_dwSize/m_lpszName/m_lpszPassword), not a base - DISSOLVED.
-    void FreeStrings(); // 0x179680
-    // Return the deep-copied session/group name (m_desc.m_lpszName @+0x34). Body is
-    // out-of-lined into the Multi TU (its lone caller, CMulti::StartTitle @0xb72c0).
-    char* GroupName(); // 0xb76a0
+    virtual ~CNetPlayerListNode() OVERRIDE;
+    i32 Init(CNetSessionDesc* desc);
+
+    void FreeStrings();
+
+    char* GroupName();
 };
-SIZE(0x58); // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
+SIZE(0x58);
 
 class CNetSessionNode : public CObject {
 public:
-    i32 m_id;                   // +0x04  the player/session id (FindPlayerById key)
-    CString m_name;             // +0x08  display name (GetName)
-    CString m_longName;         // +0x0c  second CString
-    i32 m_10;                   // +0x10
-    char* m_ownedBufferB;       // +0x14  owned buffer (freed second)
-    char* m_ownedBufferA;       // +0x18  owned buffer (freed first)
-    i32 m_1c;                   // +0x1c
-    __POSITION* m_listPosition; // +0x20  cached AddTail position
+    i32 m_id;
+    CString m_name;
+    CString m_longName;
+    i32 m_10;
+    char* m_ownedBufferB;
+    char* m_ownedBufferA;
+    i32 m_1c;
+    __POSITION* m_listPosition;
 
-    // The retail ctor AddSessionNode inlines: base stamp 0x5e8cb4, the two CString
-    // members' default ctors, final stamp 0x5f0778, then zero the 4 scalar fields.
     CNetSessionNode() {
         m_id = 0;
         m_listPosition = 0;
         m_ownedBufferA = 0;
         m_ownedBufferB = 0;
     }
-    virtual ~CNetSessionNode() OVERRIDE; // 0x179420 (NetSessionNode.cpp)
+    virtual ~CNetSessionNode() OVERRIDE;
 
-    // The 4-arg init the session-node ctor runs (0x1796c0): store the dword id
-    // (+0x4) and the second dword (+0x10), assign the two CStrings (+0x8/+0xc), and
-    // zero +0x14/+0x18/+0x1c. Returns TRUE.
-    i32 InitSession(i32 id, const char* nameA, const char* nameB, i32 d); // 0x1796c0
+    i32 InitSession(i32 id, const char* nameA, const char* nameB, i32 d);
 
-    // The session name fetched by value (NRV into the caller's slot); thiscall
-    // engine routine reached through an incremental-link thunk (no body here).
     CString GetName();
 };
-SIZE(0x24); // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
+SIZE(0x24);
 
-// The IDirectPlay4 interface id both QueryInterface sites pass BY ADDRESS
-// (retail `push 0x5f0588`, a DIR32 to the .rdata IID) - it is the 16-byte GUID
-// itself, not a pointer-sized slot holding one.
-extern "C" const GUID g_netDirectPlayRiid; // 0x5f0588  IID_IDirectPlay4A
+extern "C" const GUID g_netDirectPlayRiid;
 
 extern "C" BOOL __stdcall
 NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
@@ -649,84 +474,63 @@ extern "C" BOOL __stdcall
 NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
 
 struct INetReleasable {
-    // External COM interface (IUnknown-shaped, abstract, __stdcall). STDMETHOD form
-    // (== `virtual HRESULT __stdcall`); only Release (slot 2) and the slot-4 teardown
-    // hook the Destroy path calls are pinned, everything else is placeholder.
-    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE; // slot 0
-    STDMETHOD(v01)() PURE;                                       // slot 1
-    STDMETHOD(Release)() PURE;                                   // slot 2  (+0x08)
-    STDMETHOD(v03)() PURE;                                       // slot 3
-    STDMETHOD(Slot10)() PURE;                                    // slot 4  (+0x10)
-};
-SIZE_UNKNOWN(); // external COM interface (opaque object); size TBD
 
-// The receive-buffer message header. The ex-`LobbyMsg` (m_type/m_04/m_08) was a
-// second name for THIS record: CNetSession::DispatchMsg switches on +0x00 and hands
-// the SAME pointer to CMulti::HandleControlMsg (0xba1a0) on cases 49/257 - identical
-// storage, identical offsets, so the two reinterprets between them were a two-names-
-// one-class artefact. Folded 2026-07-27, keeping the semantic field names.
+    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE;
+    STDMETHOD(v01)() PURE;
+    STDMETHOD(Release)() PURE;
+    STDMETHOD(v03)() PURE;
+    STDMETHOD(Slot10)() PURE;
+};
+SIZE_UNKNOWN();
+
 struct CNetCtrlMsg {
-    // +0x0 is read TWO ways and the bytes prove both: CNetSession::DispatchMsg
-    // switches on the whole dword (3/5/49/257), while CNetSession::Dispatch @0xbf749
-    // reads it as a byte pair - `mov cl,BYTE PTR [esi]; test cl,0x80; test cl,0x1`
-    // then `xor eax,eax; mov al,BYTE PTR [esi+0x1]` as the destination slot index.
-    // A real overlay, so it is declared as one instead of reinterpreted at the site.
+
     union {
-        i32 m_code; // +0x0  message code (the DispatchMsg switch tag: 3/5/49/257)
+        i32 m_code;
         struct {
-            u8 m_routeFlags; // +0x0  bit7 = do not re-route, bit0 = per-slot route
-            u8 m_routeSlot;  // +0x1  destination slot index when bit0 is set
+            u8 m_routeFlags;
+            u8 m_routeSlot;
         } m_route;
     };
-    i32 m_subCode;  // +0x4  sub-code
-    i32 m_playerId; // +0x8  payload (player id on the player-left path)
+    i32 m_subCode;
+    i32 m_playerId;
 };
-SIZE_UNKNOWN(); // packed control-record view (3 dwords pinned); size TBD
+SIZE_UNKNOWN();
 
 struct MenuSelectEvent {
     char m_pad0[0x4];
-    i32 m_armed; // +0x4  armed gate (== 1; the CNetCtrlMsg m_4 sub-code)
-    i32 m_id;    // +0x8  player/slot id
+    i32 m_armed;
+    i32 m_id;
     char m_pad0c[0x20 - 0xc];
-    char* m_nameA; // +0x20  AddSessionNode name arg A
-    char* m_nameB; // +0x24  AddSessionNode name arg B
+    char* m_nameA;
+    char* m_nameB;
 };
-SIZE_UNKNOWN(); // menu-select control-message view (touched offsets pinned)
+SIZE_UNKNOWN();
 
-class CFontConfig; // <Gruntz/FontConfig.h> (the deref TUs include the real header)
+class CFontConfig;
 
-// (CNetGameMgr + CNetGameWnd DISSOLVED 2026-07-21: the "network facet" WAS
-// *g_gameReg - every field folded onto the real CGruntzMgr slots (m_gameWnd,
-// m_settings, m_sound, m_chatLog, m_cmdSubMgr, m_modalBusy, m_strWorldFile,
-// m_isEffectsEnabled, m_114, m_12c custom-level flag, m_options). Multi.h's
-// NetGameMgr() now returns the typed CGruntzMgr*.)
+extern "C" char g_recvBuffer[];
 
-extern "C" char g_recvBuffer[]; // 0x6467d8
+extern u8 g_chanStat422_flag;
+extern i32 g_chanStat422_id;
+extern i32 g_chanStat422_val;
+extern u8 g_chanStat423_flag;
+extern i32 g_chanStat423_id;
+extern i32 g_chanStat423_val;
 
-extern u8 g_chanStat422_flag; // 0x646fd8
-extern i32 g_chanStat422_id;  // 0x646fdc
-extern i32 g_chanStat422_val; // 0x646fe0
-extern u8 g_chanStat423_flag; // 0x646378
-extern i32 g_chanStat423_id;  // 0x64637c
-extern i32 g_chanStat423_val; // 0x646380
+extern "C" u8 g_chatPacket_flag;
+extern "C" i32 g_chatPacket_id;
+extern "C" i32 g_chatPacket_val;
+extern "C" char g_chatPacket_buf;
 
-extern "C" u8 g_chatPacket_flag;  // 0x6473e0
-extern "C" i32 g_chatPacket_id;   // 0x6473e4
-extern "C" i32 g_chatPacket_val;  // 0x6473e8
-extern "C" char g_chatPacket_buf; // 0x6473ec  (strcpy dest)
+extern "C" i32 g_playerLeftFlag;
+extern "C" i32 g_activePlayerCount;
 
-extern "C" i32 g_playerLeftFlag;    // 0x648ce4
-extern "C" i32 g_activePlayerCount; // 0x648cec  active-player refcount
-
-struct InterfaceObject; // the DirectPlay service-provider node (IsInterface2 probe)
-// (The CNetCreateCtx view is gone. Its g_netCreateCtx was DATA()-bound to 0x248cf4 -
-//  the very rva g_groupEnumMgr (CNetMgr*) is bound to - so the "create context" was a
-//  second view of CNetMgr: +0x70 m_serviceProvider IS m_groupSel, +0x74 m_74 IS
-//  m_playerSel. Both offsets and both types already agreed.)
+struct InterfaceObject;
 
 class CNetMgr : public CObject {
 public:
-    virtual ~CNetMgr() OVERRIDE; // slot 1  (dtor; ??1 @0xb6000, ??_G @0x260d thunk)
+    virtual ~CNetMgr() OVERRIDE;
 
     void OnMultiOptions();
     void OnMultiPause();
@@ -736,31 +540,17 @@ public:
     void ReportAckLatency();
     CNetSessionNode* FindPlayerById(i32 id);
 
-    // The menu-select event handler (0xba620, defined in NetMgrMenuSelect.cpp). Its
-    // event arg is that TU's local MenuSelectEvent view -> typed void* here so the
-    // shared class needs no menu-only type. It reaches the +0x524 sub-object (the
-    // REAL CNetMgr, see the header verdict - its GetPlayerData/AddSessionNode are
-    // genuine CNetMgr methods) through a cast of m_peer to that TU's PlayerMgr view.
-    i32 LoadMenuSelectSprite(void* ev); // 0xba620
+    i32 LoadMenuSelectSprite(void* ev);
 
-    // Find (0x179270): walk the +0x1c group CObList (m_pHead @+0x20, running
-    // POSITION cached @+0x7c) and return the first InterfaceObject payload whose
-    // GUID matches the service-provider class selected by `kind` (1/2/5).
     struct InterfaceObject* Find(i32 kind);
 
-    // The DirectPlay session-management wrapper run (engine CNetMgr base;
-    // ~0x178xxx). Each thin wrapper calls one IDirectPlay4 vtable slot on the
-    // m_18 interface and, on a nonzero HRESULT, routes it through the static
-    // ReportError diagnostic with this TU's __FILE__/__LINE__.
-    i32 RemovePlayerObj(CNetSessionNode* obj); // 0x178e20
-    i32 RemovePlayerById(i32 id);              // 0x178e60  GetPlayerData(id) -> RemovePlayerObj
-    i32 RemovePlayerNode(CNetPlayerListNode* node); // 0x1790e0  drop one +0x38 player node
-    i32 EnumSessions2(void* ctx); // 0x179240  enum into a 0x28 desc, return desc+0x18
-    void* GetPlayerData(i32 id);  // 0x178eb0
-    i32
-    SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size); // 0x178ef0
-    // Straight pass-through to IDirectPlay4::SendEx above - so it carries that
-    // interface's own parameter types, and the ex-i32 lpData/ctx/lpMsgId puns go.
+    i32 RemovePlayerObj(CNetSessionNode* obj);
+    i32 RemovePlayerById(i32 id);
+    i32 RemovePlayerNode(CNetPlayerListNode* node);
+    i32 EnumSessions2(void* ctx);
+    void* GetPlayerData(i32 id);
+    i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size);
+
     i32 SendEx(
         i32 idFrom,
         i32 idTo,
@@ -771,352 +561,160 @@ public:
         i32 timeout,
         LPVOID ctx,
         LPDWORD lpMsgId
-    );                                                      // 0x178f50
-    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size); // 0x178fc0
-    i32 Receive(
-        CNetSessionNode* from,
-        CNetSessionNode* to,
-        i32 flags,
-        void* lpData,
-        i32* lpSize
-    );                                                                     // 0x179010
-    i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size); // 0x179090
-    i32 GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags);           // 0x179190
-    i32 EnumSessions(void* desc, void* ctx);                               // 0x179130
+    );
+    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size);
+    i32 Receive(CNetSessionNode* from, CNetSessionNode* to, i32 flags, void* lpData, i32* lpSize);
+    i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size);
+    i32 GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags);
+    i32 EnumSessions(void* desc, void* ctx);
 
-    // The session-list cluster (engine CNetMgr base; ~0x178xxx). The three managed
-    // collections at +0x1c/+0x38/+0x54 each have a clear-loop that self-destructs
-    // every node's payload then RemoveAll's the list and zeroes a count/id pair.
-    void Destroy();          // 0x178230  full teardown (clears all three lists + COM)
-    void ClearGroupList();   // 0x178430  +0x1c list -> clear +0x7c/+0x70
-    void ClearPlayerList();  // 0x178750  +0x38 list -> clear +0x80/+0x74
-    void ClearSessionList(); // 0x178c70  +0x54 list -> clear +0x84/+0x78
-    // Two list-box selection readers: read the current selection's item-data and
-    // latch it into a per-list field if it is in range (Win32 SendMessageA).
-    i32 ReadGroupSel(void* hList);  // 0x178590  -> latch into +0x70 (count +0x28)
-    i32 ReadPlayerSel(void* hList); // 0x178820  -> latch into +0x74 (count +0x44)
-    // Two IDirectPlay4 enumeration wrappers: enumerate sessions/players into the
-    // COM interface at +0x18 and, on a nonzero HRESULT, route it through ReportError.
-    i32 EnumPlayersInto(void* a, void* b); // 0x178610
+    void Destroy();
+    void ClearGroupList();
+    void ClearPlayerList();
+    void ClearSessionList();
 
-    // The 0x178xxx session-management wrapper run (continued). Each thin wrapper
-    // fires one IDirectPlay4 slot on the m_18/+0x18 interface and, on a nonzero
-    // HRESULT, routes it through ReportError; the node factories operator-new a
-    // list node and AddTail it onto one of the managed CObLists.
-    i32 Init(void* a, NetGuid appGuid); // 0x178170  Open + QueryInterface + reset selections
-    //          (the app GUID by value - 4 dwords, like InitFromProvider)
-    CNetPlayerListNode* AddPlayerNode(void* playerDesc); // 0x1786d0  new player node -> +0x38 list
-    void PopulatePlayerList(void* hList);                // 0x178790  fill a Win32 player list box
-    CNetSessionNode* EnumPlayersCb(
-        CNetPlayerListNode* a,
-        const char* name,
-        const char* longName,
-        i32 d
-    );                                         // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
-    i32 EnumGroupsAll();                       // 0x178a40  EnumGroups (slot 0xc) wrapper
-    i32 EnumGroupsRange(void* rec, i32 flags); // 0x178a80  EnumGroups (slot 0xc) over a record
-    CNetSessionNode* AddSessionNode(
-        i32 id,
-        const char* nameA,
-        const char* nameB,
-        i32 d
-    ); // 0x178b30  (/GX) new session node -> InitSession + GetData5 -> +0x54 list
-    // `name` is the short name string: the body feeds it to DPNAME::lpszShortNameA AND
-    // to AddSessionNode(const char*), and both callers pass a const_cast<char*> literal.
-    CNetSessionNode* CreatePlayer(char* name, const char* longName, i32 c); // 0x178cb0
-    void PopulateSessionList(void* hList); // 0x178d40  (/GX) fill a Win32 session list box
+    i32 ReadGroupSel(void* hList);
+    i32 ReadPlayerSel(void* hList);
 
-    // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
-    i32 DropChannelPlayer(i32 idx); // 0xbb510  drop the player on channel[idx]
-    i32 LoadConfig(void* cfg);      // 0xbce80  copy the command-timing config in
-    i32 AutoTuneCmdDelay();         // 0xbcc10  derive m_cmdDelay/m_resend from the ping
+    i32 EnumPlayersInto(void* a, void* b);
 
-    // AutoTuneCmdDelay's external probes (incremental-link thunks; no body here so
-    // the call rel32 reloc-masks). MeasurePing samples the round-trip; WriteCmdDelay
-    // persists the tuned pair. (ProbeLatency moved to CGruntzMgr - probed on m_4.)
-    i32 WriteCmdDelay(i32 flag); // 0x... persist m_cmdDelay/m_resend (returns int; tail-returned)
+    i32 Init(void* a, NetGuid appGuid);
 
-    // The provider/group cluster (0x178xxx). InitFromProvider DirectPlayCreate's a
-    // fresh DP object for a selected service-provider GUID + queries IDirectPlay4;
-    // EnumServiceProviders refills the +0x1c group list via DirectPlayEnumerate;
-    // AddGroupNode operator-new's a 0x10 InterfaceObject node onto the +0x1c list;
-    // EnumGroupsInto probes a group's players + adds a player node (0x1786d0).
-    // a = the provider/session descriptor (its +0x4 is the DirectPlay GUID pointer);
-    // appGuid = the application GUID passed BY VALUE (its 4 dwords are recorded into the
-    // m_4 setup block). Proven by the NetSessionOpen.cpp caller (0xb77dd: sub esp,0x10 +
-    // 4 GUID stores + push descriptor) - the by-value struct IS the 4 trailing dwords.
-    i32 InitFromProvider(InterfaceObject* a, GUID appGuid); // 0x1780b0
-    i32 EnumServiceProviders(i32 validated);                // 0x178280
-    InterfaceObject* AddGroupNode(void* guid, void* name);  // 0x178360
+    CNetPlayerListNode* AddPlayerNode(void* playerDesc);
+    void PopulatePlayerList(void* hList);
+    CNetSessionNode*
+    EnumPlayersCb(CNetPlayerListNode* a, const char* name, const char* longName, i32 d);
+    i32 EnumGroupsAll();
+    i32 EnumGroupsRange(void* rec, i32 flags);
+    CNetSessionNode* AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d);
+
+    CNetSessionNode* CreatePlayer(char* name, const char* longName, i32 c);
+    void PopulateSessionList(void* hList);
+
+    i32 DropChannelPlayer(i32 idx);
+    i32 LoadConfig(void* cfg);
+    i32 AutoTuneCmdDelay();
+
+    i32 WriteCmdDelay(i32 flag);
+
+    i32 InitFromProvider(InterfaceObject* a, GUID appGuid);
+    i32 EnumServiceProviders(i32 validated);
+    InterfaceObject* AddGroupNode(void* guid, void* name);
     CNetPlayerListNode*
-    EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password); // 0x1788a0
+    EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password);
 
-    // The diagnostic error reporter (lives in the netmgrerror TU; static
-    // __cdecl). Declared here so the wrappers can route HRESULTs through it.
     static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
-    // Set the four reporting-mode globals ReportError consults. (0x177670, static
-    // __cdecl; lives in the netmgrerror TU next to ReportError.)
+
     static void SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third);
 
-    // Version-check cluster (engine CNetMgr base; ~0xbd0xx). HandleVersionCheck
-    // compares the host packet's version pair against the two locals and, on a
-    // mismatch, reports + announces; AnnounceVersion ships the version packet as
-    // stat 0x417 through the engine dispatcher.
     void HandleVersionCheck(CNetVersionMsg* msg);
     void AnnounceVersion(i32 param);
 
-    // CreateSession (0xbbc90, /GX EH): enumerate the host group, resolve the
-    // local player, allocate + construct the DirectPlay command-session
-    // (new CNetSession -> 4-slot vector-ctor + ResetAll), wire it (Init), derive
-    // the resync tick (m_resyncTick), and seed one command slot per active channel.
-    i32 CreateSession(); // 0xbbc90
+    i32 CreateSession();
 
-    // VerifyCustomLevel (0xb8fc0, /GX EH): build the level-name rez path from the
-    // config name CStrings, run it past the active session (Poll), and pop the
-    // appropriate g_gameReg error modal on failure / level mismatch.
-    i32 VerifyCustomLevel(void* h, CNetSessionNode* playerTok); // 0xb8fc0
+    i32 VerifyCustomLevel(void* h, CNetSessionNode* playerTok);
 
-    // Poll the active session for the verify response (0xbba10, reloc-masked).
-    i32 Poll(i32 token); // 0xbba10
+    i32 Poll(i32 token);
 
-    // The join-failure re-arm helper Poll fires on the resend deadline (0-arg
-    // __thiscall; external incremental-link thunk -> no body here so the call
-    // reloc-masks). Retail thunk 0x35e4 -> 0xbc420.
-    void AckJoinFailure(); // 0xbc420
-    void DropTimeout();    // 0xbc2d0 (drop a timed-out player)
+    void AckJoinFailure();
+    void DropTimeout();
 
-    // (WaitForOtherPlayers @0xbb700 moved to CMulti in the netmgr-vs-cmulti split.)
+    i32 CreateLocalPlayer();
+    CString GetString5a0();
 
-    // CreateLocalPlayer (0xbc750, /GX EH): register the local player with the peer
-    // under the local name, latch its id (m_localPlayerId), wait for the host to admit it,
-    // then announce the join (stat 0x3f9 packet carrying the name). Returns 1.
-    i32 CreateLocalPlayer(); // 0xbc750
-    CString GetString5a0();  // 0xb7ad0  the local player-name CString
+    i32 SaveConfig(CNetSessionNode* recipient);
 
-    // SaveConfig (0xbccd0, /GX EH): pack the command-timing config (m_5b0, the two
-    // config-name strings, m_cmdDelay/m_resend/m_600/m_2d8) into a 0x11c-byte stat
-    // 0x416 blob and ship it - to one recipient when given, else broadcast.
-    i32 SaveConfig(CNetSessionNode* recipient); // 0xbccd0
+    i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
+    void SendStatFlag(i32 id, i32 flag);
+    void SendNetStat(i32 id, u32 value, i32 flag);
+    i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);
+    i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);
 
-    // The stat-send family (matched in NetMgr.cpp). All ship a 0x10-byte
-    // CNetStatPacket (or a caller packet) to the local player's peer group
-    // through the DirectPlay set-data wrappers; SendStatFlag/SendNetStat build
-    // the header then funnel through SendStatBuf.
-    //   SendStatBuf   (b91f0) the core: SetGroupDataFrom(localPlayer, flag, pkt, 0x10)
-    //   SendStatFlag  (b9240) build {id, localPlayer.id} then SendStatBuf
-    //   SendNetStat   (b9290) build {id, value} then SendStatBuf
-    //   SendStatFrom  (b92e0) SetGroupDataFrom wrapper, null-guarded packet
-    //   SendStatPair  (b9330) SetGroupData2 wrapper, null-guarded packet
-    i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);                           // 0xb91f0
-    void SendStatFlag(i32 id, i32 flag);                                      // 0xb9240
-    void SendNetStat(i32 id, u32 value, i32 flag);                            // 0xb9290
-    i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);                      // 0xb92e0
-    i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c); // 0xb9330
-    // Three more stat-send variants in this cluster: each builds a 0x10-byte stat
-    // header on the stack (or forwards a caller packet) and ships it through one
-    // of the DirectPlay set-data wrappers.
-    i32 SendStatTo(CNetSessionNode* recipient, i32 id, i32 c); // 0xb93a0
-    // SendStatPair sibling: builds {m_4=id, m_8=value} to a specific recipient (the
-    // explicit-value form of SendStatTo, which uses localPlayer.id for m_8). // 0xb9490
+    i32 SendStatTo(CNetSessionNode* recipient, i32 id, i32 c);
+
     i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
-    i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c); // 0xb9500
-    i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0xb9570
-    // Session-ready gate (0xb9180): with both args set, polls the session once if the
-    // done-latch (m_534) is clear, then reports whether it is now set.
-    // a1/a2 are pure non-zero gates and 0xb9180 has no caller in .text - deliberately
-    // left positional (same note as <Gruntz/Multi.h>).
-    i32 PollSessionGated(i32 a1, i32 a2); // 0xb9180
-    // (GetConfigNameA @0xb6090 / GetConfigNameB @0xb60d0 moved to CMulti in the
-    // netmgr-vs-cmulti split - they return CMulti's m_5b4/m_5b8 config-name CStrings.
-    // GetName @0xba170 moved to CNetSessionNode - every retail receiver is the
-    // m_sessions per-player record, and the body reads its +0x8 m_name.)
-    // The control-message dispatch + the player-left handler.
-    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused); // 0xba1a0  switch on msg->m_0
-    i32 OnPlayerLeft(i32 playerId); // 0xba3b0  (/GX) report + tear down a leaving player
-    // The sprite/menu-message handler (case 3 of HandleControlMsg); its body lives
-    // in a sibling stub TU (ApiCallers.cpp), declared here no-body so the call
-    // reloc-masks.
-    void HandleSpriteMsg(CNetCtrlMsg* msg); // 0xba620
-    // The version-report diagnostic (logs a message string + zero) and the
-    // 4-arg stat-packet dispatcher AnnounceVersion fires. Both __thiscall engine
-    // routines reached through incremental-link thunks; no body here.
+    i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c);
+    i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);
+
+    i32 PollSessionGated(i32 a1, i32 a2);
+
+    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused);
+    i32 OnPlayerLeft(i32 playerId);
+
+    void HandleSpriteMsg(CNetCtrlMsg* msg);
+
     void ReportVersionMsg(const char* msg, i32 zero);
     void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag);
 
-    // ---- 0xbaxxx channel-table cluster -------------------------------------
-    // The per-channel ack/state table at (m_4 + 0x150) is serialized to / parsed
-    // from a 0x88-byte (whole-table) or 0x2c-byte (single) stat packet, and a
-    // pair of register/remove helpers create / tear down one channel slot.
-    // AckDropPlayer (0xba590) is declared with the bc0xx helper run below.
-    i32 ResolveLocalPlayer(); // 0xba7d0  m_localPlayer = peer->FindPlayerById(m_localPlayerId)
-    i32 BroadcastChannelTable(
-        CNetSessionNode* recipient
-    );                                   // 0xba810  serialize all channels -> 0x88 packet
-    i32 ParseChannelTable(void* packet); // 0xba980  parse a 0x88 packet -> channels
-    i32 RegisterChannelFrom(
-        const char* name,
-        i32 b,
-        i32 e,
-        i32 f
-    ); // 0xbaa90 tail-wrap into RegisterChannel
-    i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e); // 0xbaac0 (/GX)
-    i32 RegisterChannelRec(void* rec);         // 0xbac40  unpack rec -> RegisterChannel
-    i32 RemoveChannel(i32 idx);                // 0xbac90  free channel[idx]
-    i32 OnPauseChannel();                      // 0xbad00  m_580 ? SendStatFlag+OnMultiPause
-    i32 BroadcastOneChannel(GruntzPlayer* ch); // 0xbaf00  serialize one channel -> 0x2c packet
-    i32 ParseOneChannel(void* rec);            // 0xbaff0  parse one record -> channel[rec.idx]
-    i32 SendChannelStat422();                  // 0xbb0b0  build {0x422} -> SetGroupDataFrom
-    i32 SendChannelStat423();                  // 0xbb120  build {0x423} -> SetGroupDataFrom
-    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0xbb190
+    i32 ResolveLocalPlayer();
+    i32 BroadcastChannelTable(CNetSessionNode* recipient);
+    i32 ParseChannelTable(void* packet);
+    i32 RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f);
+    i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e);
+    i32 RegisterChannelRec(void* rec);
+    i32 RemoveChannel(i32 idx);
+    i32 OnPauseChannel();
+    i32 BroadcastOneChannel(GruntzPlayer* ch);
+    i32 ParseOneChannel(void* rec);
+    i32 SendChannelStat422();
+    i32 SendChannelStat423();
+    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd);
 
-    // AckDropPlayer's record helper is RecordDropPlayer2 (0xbb5e0, declared above);
-    // the former duplicate declared-only RecordDropPlayer alias was folded onto it.
+    u32 FrameSyncWait();
+    void OnDropPlayer();
+    i32 WaitForConnect();
+    i32 ResetPlayerCommands(i32 id);
 
-    // The chat-window dispatcher BroadcastChatLine fires when the show-window flag
-    // is set: posts the assembled line to a Win32 chat control (SendMessageA-based
-    // helper). __thiscall; external (sibling 0xbb3e0), no body here.
-
-    // ---- 0xbc0xx cluster ---------------------------------------------------
-    // The cluster's matched methods (defined in NetMgr.cpp).
-    u32 FrameSyncWait();             // 0xbc070
-    void OnDropPlayer();             // 0xbc110
-    i32 WaitForConnect();            // 0xbca50
-    i32 ResetPlayerCommands(i32 id); // 0xbcf20
-
-    // External engine helpers the cluster fires through incremental-link thunks
-    // (__thiscall on `this` unless noted; bodies external/no-body so the
-    // `call rel32` reloc-masks).
-    //   SendStat3      (b9410) the 3-arg stat sender (id, value, flag)
-    //   ReportVersionMsg (b7e30) status-bar diagnostic (string, level; a CMulti method)
-    //   ReportStatusId (b7ec0) status-bar diagnostic by string-resource id
-    //   AckDropPlayer  (ba590) finalize a dropped player (id)
-    //   ResetCmdBuffers(c0070) zero the four per-slot command buffers, no args
     void ReportStatusId(UINT strId, i32 level);
     void AckDropPlayer(i32 id);
-    // SendStat3 (b9410) + PollSession (b95f0) are matched in this TU. PollSession
-    // hands each received message to the engine dispatcher (Stub_0b9750), reached
-    // here through an incremental-link thunk; modeled no-body (reloc-masked).
-    i32 SendStat3(i32 id, u32 value, i32 flag);           // 0xb9410
-    i32 PollSession();                                    // 0xb95f0
-    i32 DispatchRecvMsg(i32 sender, char* buf, i32 size); // 0xb9750 (ret used by ProcessCmd)
 
-    // === CNetMgr layout: the REAL 0x8c-byte DirectPlay wrapper ================
-    // netmgr-vs-cmulti split DONE: the former +0x2d8..+0x60c multiplayer block and
-    // the 0xb5xxx-0xbdxxx method cluster belong to CMulti (<Gruntz/Multi.h>); this
-    // class is only the DirectPlay session wrapper CMulti holds at CMulti+0x524
-    // (CMulti::m_netGate, reached via Peer()). Constructed inline at
-    // CMulti::LoadGameAssetNamespaces (slot 1) @0xb560e: global `operator new(0x8c)`, the
-    // CObject base vptr stamp (0x5e8cb4), the three CObList ctors (nBlockSize 10),
-    // the derived vptr stamp (0x5ea42c), then zero +0x14/+0x18.
-    // (vptr implicit at +0x000)
-    // +0x004..+0x013: the DirectPlay application GUID (16 B). PROVEN from retail:
-    // Init/InitFromProvider do `lea eax,[esi+4]` then store the by-value GUID arg's
-    // four dwords at [eax+0/4/8/0xc]. The old m_4/m_8/m_c/pad quartet here was a
-    // phantom split of this one field - nothing in CNetMgr ever read those slots.
-    // Init copies it as FOUR DWORDS interleaved with the selection-latch zeroing
-    // (retail 0x1781.. stores [eax+0]/[eax+4]/[eax+8]/[eax+0xc] between the
-    // m_groupSel/m_playerSel/m_sessionSel writes), while EnumPlayers/CreateSession
-    // hand the same 16 bytes to the SDK whole - both readings are named.
+    i32 SendStat3(i32 id, u32 value, i32 flag);
+    i32 PollSession();
+    i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);
+
     NetGuid m_appGuid;
-    INetReleasable* m_releaseIface; // +0x014  secondary COM interface Destroy releases (slot 2)
-    IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
-    // The three managed collections (by-value MFC CObList, 0x1c bytes each; head at
-    // +0x4, count at +0xc within each). ~CNetMgr @0xb6000 tears them down in reverse
-    // (+0x54,+0x38,+0x1c) after Destroy(); the ctor default-constructs each. The
-    // Clear/Add/Populate methods reach them by name now; the named head/count reads
-    // use the assert-free MFC GetHeadPosition()/GetCount() inlines (byte-identical to
-    // the old m_3c/+0x20/+0x58 head and m_groupCount/m_playerCount +0x28/+0x44 reads).
-    CObList m_groups;   // +0x01c  service-provider group list  (head +0x20, count +0x28)
-    CObList m_players;  // +0x038  player-descriptor list        (head +0x3c, count +0x44)
-    CObList m_sessions; // +0x054  session / player-object list  (head +0x58, count +0x60)
-    // The three list-box selection latches + their walk-cursor ids. Each ReadXxxSel
-    // reader writes the selected item's data here in range; the clear-loops zero them.
-    InterfaceObject*
-        m_groupSel; // +0x070  group-list selected item data (ReadGroupSel / InitFromProvider);
-                    //        this IS the SELECTED SERVICE PROVIDER - the join dialog's
-                    //        slow-link timeout reads IsInterface2() off it
-    CNetPlayerListNode*
-        m_playerSel; // +0x074  player-list selected item data (ReadPlayerSel / StartTitle)
-    CNetSessionNode* m_sessionSel; // +0x078  session-list selected item data
-    POSITION m_groupSelId;         // +0x07c  group-list walk cursor (Find/PopulateGroupList)
-    POSITION m_playerSelId;        // +0x080  player-list walk cursor / selection id
-    POSITION m_sessionSelId;       // +0x084  session-list walk cursor / selection id
-    i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)
+    INetReleasable* m_releaseIface;
+    IDirectPlay4Z* m_directPlay;
 
-    // Inline ctor: the CObject base + three CObList members are auto-constructed by
-    // cl (base+member+derived vptr stamps), then this body zeroes +0x14/+0x18 -
-    // reproducing the peer construction inlined at the CMulti slot-1 driver @0xb560e.
+    CObList m_groups;
+    CObList m_players;
+    CObList m_sessions;
+
+    InterfaceObject* m_groupSel;
+
+    CNetPlayerListNode* m_playerSel;
+    CNetSessionNode* m_sessionSel;
+    POSITION m_groupSelId;
+    POSITION m_playerSelId;
+    POSITION m_sessionSelId;
+    i32 m_88;
+
     CNetMgr() {
         m_releaseIface = 0;
         m_directPlay = 0;
     }
 
-    // The managed-list teardown run of the destructor (~CNetMgr, 0x0b6000) is
-    // declared as `virtual ~CNetMgr()` in the vtable block above.
+    i32 DetectConnectionConfig();
+    i32 SetupTcpIpConfig();
+    i32 OnJoinConfirm(void* hDlg);
 
-    // (SetupServices/DispatchServices/GetGameName moved to CMulti in the
-    // netmgr-vs-cmulti split - the stale CNetMgr duplicates are gone.)
-    // SetupServices (0xb78b0, /GX): enumerate the peer's service providers and, on
-    // success, dispatch MULTI_HOST/JOINSERVICES and write the selected service /
-    // player-name / game-name into the engine config store; returns the selected
-    // provider. DispatchServices/GetGameName are its external helpers.
+    void ApplyDynSetting(CString s);
 
-    // JoinAndRegisterChannel (0xb8b10, /GX): build the command-timing config string,
-    // enumerate the host group into it, create the local player, and register the
-    // local channel; returns the enum result iff the channel registered.
-
-    // The connection-config family (all /GX). DetectConnectionConfig resolves the
-    // connection class from the selected provider + loads its "<section>_CmdDelay/
-    // _Resend" timing then joins; SetupTcpIpConfig is the TcpIp-specific variant that
-    // loads config + creates the local player + registers the channel inline;
-    // OnJoinConfirm reads the join dialog, resolves the player + config, and ships
-    // the "player joined" packet.
-    i32 DetectConnectionConfig();  // 0xb82e0
-    i32 SetupTcpIpConfig();        // 0xbc460
-    i32 OnJoinConfirm(void* hDlg); // 0xb8cf0
-    // The "dyn command-delay" config setter OnJoinConfirm applies (0xb76c0,
-    // __thiscall, CString by value); external/no-body so the call reloc-masks.
-    void ApplyDynSetting(CString s); // 0xb76c0
-
-    // The setup dialog's helpers: PopulateGroupList (0x178470, defined in NetMgr.cpp)
-    // fills the service-provider combo from the +0x1c group list, filtering by the
-    // caller's flag (bit1 -> drop IsInterface2, bit2 -> drop IsInterface1); SetServiceName
-    // records the entered service name (0xb7730, CString by value, reloc-masked no-body).
-    void PopulateGroupList(HWND hList, i32 flag); // 0x178470
-    void SetServiceName(CString s);               // 0xb7730
-
-    // (The multiplayer connect/init driver @0xb5460, ex "SetupMultiplayerSession",
-    // is NOT a CNetMgr method: it is CMulti's slot-1 LoadGameAssetNamespaces
-    // override (<Gruntz/Multi.h>; retail ??_7CMulti slot 1 = ILT 0x3fb2 -> 0xb5460),
-    // run on this=g_curMulti. The orphan alias decl that sat here is gone.)
+    void PopulateGroupList(HWND hList, i32 flag);
+    void SetServiceName(CString s);
 };
-SIZE(0x8c); // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
+SIZE(0x8c);
 
-// --- NetMgr.cpp's extern surface (C-linkage carriers; the defs inherit it) ---
-// (DirectPlayCreate/Enumerate import decls live in <Net/DPlayImports.h> -
-//  NetMgr.cpp-private, because dplay.h macro-renames DirectPlayEnumerate.)
-extern "C" i32 g_spEnumValidated; // 0x002bf840 (_g_spEnumValidated; def in NetMgr.cpp)
+extern "C" i32 g_spEnumValidated;
 class CNetMgr;
 struct NetDPName;
-extern "C" BOOL __stdcall NetEnumPlayerCb(
-    void* lpThisSD,
-    void* lpdwTimeout,
-    DWORD dwFlags,
-    CNetMgr* ctx
-); // 0x1786a0
-extern "C" BOOL __stdcall NetEnumCb(
-    u32 dpId,
-    DWORD dwType,
-    NetDPName* lpName,
-    DWORD dwFlags,
-    CNetMgr* ctx
-); // 0x178b00
+extern "C" BOOL __stdcall
+NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
+extern "C" BOOL __stdcall
+NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
 
 extern "C" i32 g_activePlayerCount;
 
-// File-scope prototypes moved from the .cpp: an unqualified
-// declaration at file scope has EXTERNAL linkage, so it belongs in
-// the owner header.
 static i32 __stdcall
 EnumProviderCb(void* lpGuid, char* lpName, u32 dwMajor, u32 dwMinor, void* lpContext);
 

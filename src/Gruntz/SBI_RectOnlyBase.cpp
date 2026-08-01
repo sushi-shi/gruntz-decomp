@@ -1,7 +1,7 @@
 #include <Mfc.h>
 
-#define SBI_RECTONLY_OWN_CTOR // this TU emits the out-of-line ??0CSBI_RectOnly COMDAT (0x101fa0)
-#include <Gruntz/SBI_Image.h> // the frameless chain (CSBI_RectOnly : CStatusBarItem)
+#define SBI_RECTONLY_OWN_CTOR
+#include <Gruntz/SBI_Image.h>
 #include <Ints.h>
 #include <rva.h>
 
@@ -10,11 +10,6 @@ CSBI_RectOnly::CSBI_RectOnly() {
     m_kind = 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_RectOnly::Setup - vtable slot 2 (0xe86e0). The 10-arg config setter (the
-// last two args are accepted by the ABI but unused). Bails (returns 0) if either
-// the object id (a2) or the owner (a1) is null; otherwise stores the eight live
-// args into the base-region fields, marks m_4 = 1 (active) and returns 1.
 // @early-stop
 RVA(0x000e86e0, 0x53)
 i32 CSBI_RectOnly::Setup(

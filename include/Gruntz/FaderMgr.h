@@ -3,20 +3,24 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h>          // CString (the Trace sink takes one by value) - afx-first
-#include <Wap32/Object.h> // CObject - the shared CObject-like grand-base
-#include <Gruntz/Fader.h> // the real polymorphic CFader element base (virtual ~CFader)
+#include <Mfc.h>
+#include <afxtempl.h>
+#include <Wap32/Object.h>
+#include <Gruntz/Fader.h>
 
 struct CFaderArray : public CObject {
-    virtual ~CFaderArray() OVERRIDE;               // slot 1 (retail dtor 0x17e430)
-    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2 (0x17e2a0, declared-only)
+    virtual ~CFaderArray() OVERRIDE;
+    virtual void Serialize(CArchive& ar) OVERRIDE;
 
-    CFader** m_pData; // +0x04 (manager +0x14)
-    i32 m_nSize;      // +0x08 (manager +0x18)
-    i32 m_nMaxSize;   // +0x0c (manager +0x1c)
-    i32 m_nGrowBy;    // +0x10 (manager +0x20)
+    CFader** m_pData;
+    i32 m_nSize;
+    i32 m_nMaxSize;
+    i32 m_nGrowBy;
 
     CFaderArray();
+    i32 Add(CFader* fader);
+    void SetAtGrow(i32 index, CFader* fader);
+    void SetSize(i32 size, i32 growBy = -1);
 };
 SIZE_UNKNOWN();
 
@@ -33,32 +37,76 @@ inline CFaderArray::~CFaderArray() {
     }
 }
 
+inline i32 CFaderArray::Add(CFader* fader) {
+    i32 index = m_nSize;
+    SetAtGrow(index, fader);
+    return index;
+}
+
+inline void CFaderArray::SetAtGrow(i32 index, CFader* fader) {
+    if (index >= m_nSize) {
+        SetSize(index + 1);
+    }
+    m_pData[index] = fader;
+}
+
+inline void CFaderArray::SetSize(i32 size, i32 growBy) {
+    if (growBy != -1) {
+        m_nGrowBy = growBy;
+    }
+
+    if (size == 0) {
+        if (m_pData) {
+            ::operator delete(m_pData);
+            m_pData = 0;
+        }
+        m_nSize = m_nMaxSize = 0;
+    } else if (m_pData == 0) {
+        m_pData = static_cast<CFader**>(::operator new(size * sizeof(CFader*)));
+        memset(m_pData, 0, size * sizeof(CFader*));
+        m_nSize = m_nMaxSize = size;
+    } else if (size <= m_nMaxSize) {
+        if (size > m_nSize) {
+            ConstructElements<CFader*>(m_pData + m_nSize, size - m_nSize);
+        }
+        m_nSize = size;
+    } else {
+        i32 grow = m_nGrowBy;
+        if (grow == 0) {
+            grow = m_nSize / 8;
+            grow = grow < 4 ? 4 : (grow > 0x400 ? 0x400 : grow);
+        }
+
+        i32 newMax = size < m_nMaxSize + grow ? m_nMaxSize + grow : size;
+        CFader** data = new CFader*[newMax];
+        memcpy(data, m_pData, m_nSize * sizeof(CFader*));
+        ConstructElements<CFader*>(&data[m_nSize], size - m_nSize);
+        delete[] m_pData;
+        m_pData = data;
+        m_nSize = size;
+        m_nMaxSize = newMax;
+    }
+}
+
 class CFaderMgr {
 public:
-    CFaderMgr();  // 0x17d8f0
-    ~CFaderMgr(); // 0x17d910
-    i32 SetConfig(
-        class CDDSurface* src,
-        class CDDSurface* dst,
-        class CDDrawPtrCollections* pool
-    );                                                     // 0x17d980
-    void FreeAll();                                        // 0x17d9a0
-    CFader* Add(i32 nFaderType, class CFxModeDesc* pInit); // 0x17d9c0 (pInit = the
-    // per-type transition descriptor)
-    void Remove(CFader* pFader); // 0x17e170
-    void DeleteAll();            // 0x17e1d0
-    // 0x17e230 - the release-build TRACE sink: an empty __thiscall member whose only
-    // emitted code is the by-value CString argument's destructor. It is a MEMBER, not a
-    // free function: every Add call site sets `mov ecx,<this>` right before the call.
+    CFaderMgr();
+    ~CFaderMgr();
+    i32 SetConfig(class CDDSurface* src, class CDDSurface* dst, class CDDrawPtrCollections* pool);
+    void FreeAll();
+    CFader* Add(i32 nFaderType, class CFxModeDesc* pInit);
+
+    void Remove(CFader* pFader);
+    void DeleteAll();
+
     void Trace(CString s);
 
-    class CDDSurface* m_timerArgA; // +0x00  default source surface handed to each fader
-    class CDDSurface* m_timerArgB; // +0x04  default dest surface
-    i32 m_active;                  // +0x08
-    i32 m_0c;                      // +0x0c
-    CFaderArray m_arr;             // +0x10 element array subobject
-    // +0x24  the DirectDraw manager handed to every fader's Set2c (retail binds
-    // 0 - see CFader::m_ptrColl). Ex the i32 "m_sharedSet2cArg".
+    class CDDSurface* m_timerArgA;
+    class CDDSurface* m_timerArgB;
+    i32 m_active;
+    i32 m_0c;
+    CFaderArray m_arr;
+
     class CDDrawPtrCollections* m_sharedPtrColl;
 };
 SIZE_UNKNOWN();

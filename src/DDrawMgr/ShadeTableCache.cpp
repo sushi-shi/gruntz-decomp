@@ -1,36 +1,36 @@
 #include <DDrawMgr/ShadeTableCache.h>
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
-#include <DDrawMgr/ColorHsv.h>   // the shared ColorHSV record + RgbToHsv (ex-.cpp-local Hsv view)
+#include <DDrawMgr/PixelShift.h>
+#include <DDrawMgr/ColorHsv.h>
 
-#include <math.h> // pow (__CIpow) in HsvShiftTable
+#include <math.h>
 #include <rva.h>
-#include <stdlib.h> // qsort in the palette-sort builders
-#include <string.h> // inlined memcpy (rep movsl) in FindRemove
+#include <stdlib.h>
+#include <string.h>
 
 DATA(0x002bf224)
-PALETTEENTRY* g_pal = 0; // 0x6bf224  (owner-TU definition)
+PALETTEENTRY* g_pal = 0;
 
 DATA(0x001efb40)
-float g_one = 1.0f; // 0x5efb40
+float g_one = 1.0f;
 DATA(0x001efb44)
-float g_255 = 255.0f; // 0x5efb44
+float g_255 = 255.0f;
 DATA(0x001efb48)
-float g_p01 = 0.01f; // 0x5efb48
+float g_p01 = 0.01f;
 DATA(0x001efb4c)
-float g_lumaR = 0.5859375f; // 0x5efb4c
+float g_lumaR = 0.5859375f;
 DATA(0x001efb50)
-float g_lumaG = 0.296875f; // 0x5efb50
+float g_lumaG = 0.296875f;
 DATA(0x001efb54)
-float g_lumaB = 0.109375f; // 0x5efb54
+float g_lumaB = 0.109375f;
 DATA(0x001efb58)
-float g_inv255 = 0.003921568859368563f; // 0x5efb58  (1/255, exact float)
+float g_inv255 = 0.003921568859368563f;
 DATA(0x001efb5c)
 float g_negone = -1.0f;
 
-void* ::operator new(u32); // matches ??2@YAPAXI@Z
+void* ::operator new(u32);
 
 inline CShadeTableArray::CShadeTableArray() {
-    // cl auto-stamps ??_7CShadeTableArray (0x5efb28) here (was m_vtbl = &g_shadeArrayVtbl).
+
     m_pData = 0;
     m_nGrowBy = 0;
     m_nMaxSize = 0;
@@ -38,25 +38,17 @@ inline CShadeTableArray::CShadeTableArray() {
 }
 
 inline CShadeTableArray::~CShadeTableArray() {
-    // cl resets the vptr to 0x5efb28 (entry), runs the free, then chains
-    // ~CObject which resets the CObject vtable (0x5e8cb4) - was the two
-    // manual m_vtbl stamps. This inline copy folds into ~CShadeTableCache
-    // (0x14de50, 100%); the standalone out-of-line ??1 (0x14fe30, called by the
-    // scalar-deleting dtor 0x150020) CANNOT also be homed here - defining the dtor
-    // out-of-line makes 0x14de50 CALL it (dropping 0x14de50 100% -> ~61%), so
-    // 0x14fe30 stays a standalone placeholder in BoundaryUpperEh.cpp (binary-proven).
+
     if (m_pData) {
         ::operator delete(m_pData);
     }
 }
-VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
+VTBL(CShadeTableArray, 0x001efb28);
 
-// A locked surface / packed image row is BYTES with a byte pitch, while the pixels
-// are 16bpp - the conversion is forced by the surface API, so it is named here.
 static inline u16* Pix16(void* p) {
     return static_cast<u16*>(p);
 }
-// const twin of the same API-forced byte-pitch -> 16bpp-pixel conversion
+
 static inline const u16* Pix16(const void* p) {
     return static_cast<const u16*>(p);
 }
@@ -97,15 +89,6 @@ void CShadeTableCache::FreeNodes() {
     m_arr.m_nSize = 0;
 }
 
-// ===========================================================================
-// 0x14df40 - FlashTable: a 256 x (nA+nB)-byte per-palette brightness-pulse ramp.
-// Each palette color gets an (nA+nB)-byte ramp: phase 1 fades the channel IN from
-// startPct% brightness to full over nA steps; the palette entry is then brightened
-// +16 (clamped, in place); phase 2 fades the (brightened) channel OUT toward
-// endPct% over nB steps. Every ramp byte is the nearest palette index of the
-// (r,g,b) triple. The element-array grow is inlined (RezAlloc/RezFree, the MFC
-// SetSize(nSize+1) algorithm), like AddFrom*. EH frame + x87.
-// ===========================================================================
 // @early-stop
 RVA(0x0014df40, 0x5f4)
 CShadeTable*
@@ -119,7 +102,6 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
         return 0;
     }
 
-    // Inline the element-array grow by one (MFC SetSize(nSize+1)).
     i32 oldSize = m_arr.m_nSize;
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
@@ -150,9 +132,7 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             }
         }
         i32 newMax = m_arr.m_nMaxSize + grow;
-        // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
-        // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
-        // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+
         if (newSize >= newMax) {
             newMax = newSize;
         }
@@ -170,7 +150,7 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
     for (i32 i = 0; i < 0x100; i++) {
         PALETTEENTRY* p = &pal[i];
         u8* ramp = &data[i * total];
-        // Phase 1: fade in from startPct% brightness to full over nA steps.
+
         for (i32 j = 0; j < nA; j++) {
             float tt = static_cast<float>(j) / static_cast<float>(nA);
             float inv = g_one - tt;
@@ -185,14 +165,14 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
             ramp[j] = NearestPaletteIndex(rn, pal, gn, bn);
         }
-        // Brighten the palette entry +16 (clamped) in place for the fade-out.
+
         i32 br = static_cast<i32>(p->peRed) + 0x10;
         p->peRed = static_cast<u8>((br < 0xff ? br : 0xff));
         i32 bg = static_cast<i32>(p->peGreen) + 0x10;
         p->peGreen = static_cast<u8>((bg < 0xff ? bg : 0xff));
         i32 bb = static_cast<i32>(p->peBlue) + 0x10;
         p->peBlue = static_cast<u8>((bb < 0xff ? bb : 0xff));
-        // Phase 2: fade the brightened channel out toward endPct% over nB steps.
+
         for (i32 k = 0; k < nB; k++) {
             float uu = static_cast<float>(k) / static_cast<float>(nB);
             float inv = g_one - uu;
@@ -214,16 +194,6 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
     return t;
 }
 
-// ===========================================================================
-// 0x14e540 - HsvShiftTable: a (256 x steps)-byte per-palette luma-gamma ramp
-// (__thiscall, ret 0x14 => FIVE args; Ghidra mis-derived the 3-arg `...HH@Z`
-// prototype). For each palette color i and each step j: compute the luminance
-// (r*lumaR + g*lumaG + b*lumaB), derive a pow()-based factor from the luminance
-// byte and the `gamma` exponent, blend it toward full over the step ratio scaled
-// by `pct`, offset each channel by `base` (arg5 & 0xff), 255-clamp, and map to the
-// nearest palette index. The luma/factor are recomputed inside the j loop exactly
-// as retail (MSVC5 /O2 does not hoist the pal reads across FindNearestColor).
-// EH frame + x87 (pow via __CIpow, channels via __ftol).
 // @early-stop
 RVA(0x0014e540, 0x2ea)
 CShadeTable*
@@ -235,9 +205,7 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     if (!t->Set(steps << 8, 0)) {
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -271,12 +239,6 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     return t;
 }
 
-// ===========================================================================
-// 0x14e830 - HueRampTable: a (256 x steps)-byte gradient table. For each palette
-// color i and each step j the channel is linearly blended toward the target
-// color (arg2): out = (1 - j/steps)*pal[i] + (j/steps)*color, then mapped to the
-// nearest palette index. Channels processed b,g,r. EH frame + x87. @early-stop
-// ===========================================================================
 // @early-stop
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
@@ -287,9 +249,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     if (!t->Set(steps << 8, 0)) {
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -318,13 +278,6 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     return t;
 }
 
-// ===========================================================================
-// 0x14e9f0 - GammaTable: a 0x10000-byte (256x256) two-palette cross-blend table.
-// For each (row i, col j) the per-channel value is the weighted blend
-// (pal[j].ch*wCol/100 + pal[i].ch*wRow/100) / ((wRow+wCol)/100), mapped back to
-// the nearest palette index. The /100 lowers to imul 0x51eb851f;sar 5; the final
-// /div is a runtime idiv. EH frame. @early-stop
-// ===========================================================================
 // @early-stop
 RVA(0x0014e9f0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
@@ -335,9 +288,7 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     if (!t->Set(0x10000, 0)) {
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -357,12 +308,6 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     return t;
 }
 
-// ===========================================================================
-// 0x14ec00 - LumaSortTable: build a 0x200-byte palette-remap table. Fill the
-// first 256 bytes with the identity, qsort them by luma (CompareLuma, 0x14ed10),
-// then write the inverse permutation into bytes [0x100..0x1ff]. The active
-// palette is published to g_pal for the comparator. EH frame.
-// ===========================================================================
 RVA(0x0014ec00, 0x10f)
 CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -372,9 +317,7 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     if (!t->Set(0x200, 0)) {
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -396,11 +339,6 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     return t;
 }
 
-// ===========================================================================
-// 0x14ed10 - CompareLuma: __cdecl qsort comparator. Converts the two palette
-// entries (indexed by the byte each arg points at) to a luminance byte
-// (b*lumaB + g*lumaG + r*lumaR, __ftol) and orders them ascending by luma.
-// ===========================================================================
 // @early-stop
 RVA(0x0014ed10, 0xcc)
 i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
@@ -425,10 +363,6 @@ i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     return 0;
 }
 
-// ===========================================================================
-// 0x14ede0 - HueSortTable: identical to LumaSortTable but the qsort comparator
-// is CompareHue (0x14fa60), so the palette is remapped in hue order. EH frame.
-// ===========================================================================
 RVA(0x0014ede0, 0x10f)
 CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -438,9 +372,7 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     if (!t->Set(0x200, 0)) {
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -462,11 +394,6 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     return t;
 }
 
-// ===========================================================================
-// 0x14eef0 - GreyTable: allocate a 0x20000-byte (64K-entry u16) identity remap.
-// Two loop variants gated on the RGB565 screen format. EH frame (documented wall:
-// the RezAlloc + external element ctor emits no /GX frame on MSVC5). @early-stop
-// ===========================================================================
 // @early-stop
 RVA(0x0014eef0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
@@ -479,9 +406,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
         ::operator delete(t);
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -503,12 +428,6 @@ CShadeTable* CShadeTableCache::GreyTable() {
     return t;
 }
 
-// ===========================================================================
-// 0x14f080 - AddTable: a 0x20000-byte additive/glow blend table. For each alpha
-// level v (0..240 step 16) and each quantized source color (r/g/b = 8..248 step
-// 16), brighten the channel by f = 1 + (v*scale)/255 and pack to RGB565. The
-// channels go through __ftol after a 255 ceiling clamp. EH frame. @early-stop
-// ===========================================================================
 // @early-stop
 RVA(0x0014f080, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
@@ -521,19 +440,13 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
         ::operator delete(t);
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
-    // The three INNER levels are trip-counted (`dec <n>; jne`, retail 0x14f29d /
-    // 0x14f2af / 0x14f2c5) with the channel value advanced separately; only the
-    // outer alpha level is the `v < 0x100` form. Spelling all four as
-    // `for (c = 8; c < 0x100; c += 0x10)` gives four `cmp 0x100; jl` back-edges -
-    // the three `jl -> jne` flips jcc_sieve reports.
+
     for (i32 v = 0; v < 0x100; v += 0x10) {
         i32 r = 8;
         for (i32 nr = 0x10; nr != 0; nr--) {
@@ -544,13 +457,9 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
                     u8 rc = static_cast<u8>((r < 0xff ? r : 0xff));
                     u8 gc = static_cast<u8>((g < 0xff ? g : 0xff));
                     u8 bc = static_cast<u8>((b < 0xff ? b : 0xff));
-                    // The three float constants are the NAMED file globals retail
-                    // references (`?g_inv255@@3MA` / `?g_negone@@3MA` / `?g_255@@3MA`),
-                    // not literals - a literal makes cl mint its own $T pool entry.
+
                     float f = static_cast<float>(v) * scale * g_inv255 - g_negone;
-                    // The three __ftol results are BYTES (retail `mov bl,al` /
-                    // `mov dl,al`), not i32 - an i32 local costs a frame dword and
-                    // a dword register apiece.
+
                     float fr = static_cast<float>(static_cast<i32>(rc)) * f;
                     u8 rn = static_cast<u8>(static_cast<i32>((fr < g_255 ? fr : g_255)));
                     float fg = static_cast<float>(static_cast<i32>(gc)) * f;
@@ -574,13 +483,6 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     return t;
 }
 
-// ===========================================================================
-// 0x14f310 - SubTable: a 0x20000-byte subtractive/darken blend table keyed by a
-// packed RGB color arg. For each level (15..0) and each quantized source color,
-// quantize src/15 and add the per-level color contribution color*level/15, then
-// pack to RGB565. Pure integer (the /15 lowers to imul 0x88888889; sar 3). EH
-// frame. @early-stop
-// ===========================================================================
 // @early-stop
 RVA(0x0014f310, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
@@ -593,9 +495,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
         ::operator delete(t);
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -604,8 +504,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     i32 cr = color & 0xff;
     i32 cg = (color >> 8) & 0xff;
     i32 cb = (color >> 0x10) & 0xff;
-    // `> -1`, not `>= 0`: retail's tail is `dec eax / cmp eax,0xffffffff / jg`,
-    // where `>= 0` lowers to `test eax,eax / jge`.
+
     for (i32 level = 0xf; level > -1; level--) {
         i32 subr = cr * level / 0xf;
         i32 subg = cg * level / 0xf;
@@ -630,10 +529,6 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     return t;
 }
 
-// ===========================================================================
-// 0x14f5b0 - AlphaTable: allocate a 0x200-byte (256-entry u16) table and fill it
-// with the RGB565 conversion of a 256-entry PALETTEENTRY palette (arg). EH frame.
-// ===========================================================================
 // @early-stop
 RVA(0x0014f5b0, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
@@ -646,9 +541,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
         ::operator delete(t);
         return 0;
     }
-    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
-    // reused for both the grow call and the slot store - hence the reference, not
-    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
@@ -667,13 +560,6 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     return t;
 }
 
-// ===========================================================================
-// 0x14f6c0 - AddFromArray: grow the element array by one (the MFC SetSize(n+1)
-// algorithm is inlined here, not the out-of-line SetSizeGrow other builders
-// call), allocate + push a CShadeTable, build a CString from the name arg, load
-// the table from it, and FindRemove it on failure. EH frame + inlined MFC array
-// growth + a CString temp. @early-stop
-// ===========================================================================
 // @early-stop
 RVA(0x0014f6c0, 0x1e1)
 CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
@@ -708,9 +594,7 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
             }
         }
         i32 newMax = m_arr.m_nMaxSize + grow;
-        // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
-        // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
-        // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+
         if (newSize >= newMax) {
             newMax = newSize;
         }
@@ -724,8 +608,7 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
     }
     m_arr.m_pData[oldSize] = t;
     CString cstr(name);
-    // CString -> LPCTSTR is the implicit operator (inline: returns m_pchData @+0), so
-    // this lowers to the same `mov reg,[cstr]` the ex-CStr view's `cstr.m_p` did.
+
     if (!t->LoadFromFile(cstr, 0)) {
         FindRemove(t);
         return 0;
@@ -733,12 +616,6 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
     return t;
 }
 
-// ===========================================================================
-// 0x14f8b0 - AddFromFile: as AddFromArray, but load the table from a raw (buffer,
-// size) memory blob via the element's LoadFile (0x150330 = CShadeTable::
-// LoadFromMem), which builds its own CMemFile internally. The element-array
-// growth is again inlined. EH frame.
-// ===========================================================================
 // @early-stop
 RVA(0x0014f8b0, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
@@ -773,9 +650,7 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
             }
         }
         i32 newMax = m_arr.m_nMaxSize + grow;
-        // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
-        // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
-        // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+
         if (newSize >= newMax) {
             newMax = newSize;
         }
@@ -795,11 +670,6 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     return t;
 }
 
-// ===========================================================================
-// 0x14fa60 - CompareHue: __cdecl qsort comparator. Converts the two palette
-// entries (indexed by the byte each arg points at) to HSV via RgbToHsv and
-// orders them by hue. Plain frame (no /GX): the Hsv locals are trivial.
-// ===========================================================================
 // @early-stop
 RVA(0x0014fa60, 0xd7)
 i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
@@ -819,12 +689,6 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     return 0;
 }
 
-// ===========================================================================
-// 0x14fb80 - FindRemove: locate the table whose +0 matches the key, destroy it,
-// and memmove the tail down one slot. __thiscall, one arg.
-// ===========================================================================
-// 0x14fb40 - linear-search the cache for the table whose m_key matches; return it
-// (or null). The index of the match materialises the returned m_pData[i].
 // @early-stop
 RVA(0x0014fb40, 0x3e)
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
@@ -836,11 +700,6 @@ CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     return 0;
 }
 
-// The plain member-subscript `for` is load-bearing: hoisting the walk into a local
-// `CShadeTable** w = m_arr.m_pData` before the loop makes cl emit the m_pData load
-// ABOVE the `test/jle` count guard and rotate the search test to the loop bottom
-// (`jge` exit + a duplicated `cmp`). Subscripting the member lets /O2 strength-reduce
-// into retail's `mov eax,edi` walker while the preheader load stays after the guard.
 RVA(0x0014fb80, 0x68)
 void CShadeTableCache::FindRemove(CShadeTable* key) {
     i32 n = m_arr.m_nSize;
@@ -864,11 +723,6 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
     }
 }
 
-// ===========================================================================
-// 0x14fbf0 - FindNearestColor: nearest-palette-color search. Mask the target to
-// bytes, seed the running best with entry 0's squared (r,g,b) distance, then scan
-// entries 1..255 keeping the minimum; return its index.
-// ===========================================================================
 // @early-stop
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
@@ -893,24 +747,8 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, 
     return best;
 }
 
-// 0x14fe30 - the standalone OUT-OF-LINE ~CShadeTableArray. cl already AUTO-EMITS this
-// body as the COMDAT ??1CShadeTableArray@@UAE@XZ (from the inline virtual dtor above,
-// which is required out-of-line for the vtable slot) - it stamps ??_7CShadeTableArray
-// (0x5efb28), frees the +0x4 element buffer, then folds the CObject grand-base
-// (0x5e8cb4). The inline copy still folds into ~CShadeTableCache @0x14de50 (RVA is
-// clang-only, MSVC-neutral, so 0x14de50's inlining is unchanged). Binding the
-// auto-emitted dtor directly makes its vptr stamp reloc-faithful and dissolves the old
-// C14fe30 placeholder view (whose ??_7C14fe30 stamp was UNBOUND).
 RVA_COMPGEN(0x0014fe30, 0x51, ??1CShadeTableArray@@UAE@XZ)
 
-// ===========================================================================
-// 0x14fe90 - CShadeTableArray::Serialize (CObject vtable slot 2): the MFC
-// CArray<CShadeTable*>::Serialize shape with SetSize inlined, but the element
-// buffer is Rez-heap (RezAlloc/RezFree) not operator new/delete. Storing: write
-// the element count then the raw pointer block. Loading: read the count, (re)size
-// the buffer (alloc / grow-with-copy / shrink-in-place per the MFC grow heuristic
-// m_nSize/8 clamped to [4,0x400]), then read the raw block.
-// ===========================================================================
 // @early-stop
 RVA(0x0014fe90, 0x188)
 void CShadeTableArray::Serialize(CArchive& arc) {
@@ -966,11 +804,6 @@ void CShadeTableArray::Serialize(CArchive& arc) {
     }
 }
 
-// CShadeTableArray::SetSizeGrow (0x150040) - the out-of-line MFC CArray::SetSize over
-// the 4-byte CShadeTable* element (its 6 callers are all CShadeTableCache table
-// builders). Re-homed from src/Stub/DiscoveredArray.cpp, where it was the placeholder
-// CDwArray::SetSize view - now dissolved onto the canonical CShadeTableArray (same 0x14
-// layout, m_pData/m_nSize/m_nMaxSize/m_nGrowBy at +4/+8/+c/+10).
 // @early-stop
 RVA_COMPGEN(0x00150020, 0x1e, ??_GCShadeTableArray@@UAEPAXI@Z)
 RVA(0x00150040, 0x136)

@@ -3,16 +3,11 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzWnd.h>
 #include <rva.h>
-#include <Net/NetLobby.h> // NetLobby::g_curDlg (0x64557c, active modeless-dialog HWND)
+#include <Net/NetLobby.h>
 
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
 
-// -------------------------------------------------------------------------
-// CGruntzWnd::`scalar deleting destructor' (0x094670) - the compiler-generated
-// ??_G thunk (call ~CGruntzWnd; if (flags & 1) operator delete(this); return this).
-// It has no source body (cl synthesizes it into the emitted vftable), so pin it by
-// mangled name; the dtor + delete rel32 calls reloc-mask.
 RVA_COMPGEN(0x00094670, 0x1e, ??_GCGruntzWnd@@UAEPAXI@Z)
 
 RVA(0x000946a0, 0x5f)
@@ -25,13 +20,6 @@ i32 CGruntzWnd::Wap32GameWndVfunc2(i32, i32, i32) {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzWnd::PreDispatchMessage (vtable slot 1). The window's pre-translate hook,
-// dispatched on three messages: WM_ERASEBKGND(0x14) is swallowed (1); WM_SYSCOMMAND
-// (0x112) blocks the screensaver / monitor-power sys-commands while the window is not
-// iconic and re-routes the rest to the active NetLobby dialog; the private 0x3b9 tick
-// pumps the manager RefreshGameClock when the game manager + its sound chain are live. All
-// other messages fall through as not-handled here (0 = keep dispatching).
 // @early-stop
 RVA(0x00094790, 0xcd)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -70,7 +58,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (wParam != 1) {
                 return 1;
             }
-            GameMgr()->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
+            GameMgr()->RefreshGameClock();
             return wParam;
         }
     }
@@ -201,10 +189,8 @@ i32 CGruntzWnd::OnPaint() {
     return 0;
 }
 
-// Out-of-line stubs so the CGruntzWnd vftable is emitted in this TU;
-// not matched / not @address-annotated.
 i32 CGruntzWnd::Wap32GameWndVfunc0() {
     return 0;
 }
 
-VTBL(CGruntzWnd, 0x001ea2d4); // vtable_names -> code (RTTI game class)
+VTBL(CGruntzWnd, 0x001ea2d4);

@@ -4,10 +4,8 @@
 #include <Mfc.h>
 
 // @identity-TODO
-// Retail's guarded static-destructor helpers prove that these recycle lists are
-// explicit specializations of a template static data member. The original
-// template/member names, and whether the command and network pools shared one
-// original template, are not recoverable from the stripped image.
+// Only static-storage construction/destruction sites survive; an original mangled
+// symbol or debug record would be needed to recover these source names.
 template<class T> struct CPtrListPool {
     static CPtrList s_freeList;
 };

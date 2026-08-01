@@ -1,7 +1,7 @@
 #include <Gruntz/ImageSets.h>
 #include <rva.h>
 
-#include <string.h> // memcpy
+#include <string.h>
 
 RVA(0x001614b0, 0x1c)
 void CImageSet3::FreePixels() {
@@ -26,10 +26,6 @@ i32 CImageSet3::GetStride() {
     return m_height * m_width + 0x10;
 }
 
-// CImageSet3::Parse (0x166d70, ??_7CImageSet3 slot +0x14). Reads tile width/height
-// from the record at +0x08/+0x0c, derives the height log2 shift and the byte size,
-// and - only when the width is the matching power of two - allocates and copies the
-// tile pixels from the record at +0x10 (inline memcpy). TRUE on a successful copy.
 // @early-stop
 RVA(0x00166d70, 0x8d)
 i32 CImageSet3::Parse(void* record) {
@@ -46,7 +42,7 @@ i32 CImageSet3::Parse(void* record) {
     if ((1 << m_heightLog2) != w) {
         return 0;
     }
-    // the (u8*) is language-forced (operator new returns void*), not a mis-model cast
+
     u8* dst = static_cast<u8*>(::operator new(m_byteSize));
     m_pixels = dst;
     if (dst == 0) {
@@ -72,8 +68,6 @@ i32 CImageSet3::ScanUp(i32 x, i32 y, i32* outY, i32* outVal) {
     return 0;
 }
 
-// 0x166f20 (slot 13): scan UP for the first row whose column-x pixel EQUALS `val`;
-// report the row in *outY. Pointer walk (the value gate uses the free register).
 // @early-stop
 RVA(0x00166f20, 0x52)
 i32 CImageSet3::ScanUpGate(i32 x, i32 y, i32 val, i32* outY) {
@@ -89,8 +83,6 @@ i32 CImageSet3::ScanUpGate(i32 x, i32 y, i32 val, i32* outY) {
     return 0;
 }
 
-// 0x166f80 (slot 14): scan RIGHT for the first column whose pixel differs from (x,y)'s;
-// report it + its value. Stops at the m_width-1 edge.
 // @early-stop
 RVA(0x00166f80, 0x68)
 i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
@@ -109,8 +101,6 @@ i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
     return 0;
 }
 
-// 0x166ff0 (slot 15): scan RIGHT for the first column whose pixel EQUALS `val`; report
-// the column in *outX. Pointer walk, stops at the m_width-1 edge.
 // @early-stop
 RVA(0x00166ff0, 0x52)
 i32 CImageSet3::ScanRightGate(i32 x, i32 y, i32 val, i32* outX) {
@@ -127,8 +117,6 @@ i32 CImageSet3::ScanRightGate(i32 x, i32 y, i32 val, i32* outX) {
     return 0;
 }
 
-// 0x167050 (slot 16): scan DOWN for the first row whose column-x pixel differs from
-// (x,y)'s; report it + its value. Stops at the m_height-1 edge.
 // @early-stop
 RVA(0x00167050, 0x74)
 i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
@@ -147,8 +135,6 @@ i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
     return 0;
 }
 
-// 0x1670d0 (slot 17): scan DOWN for the first row whose column-x pixel EQUALS `val`;
-// report the row in *outY. Offset form, stops at the m_height-1 edge.
 // @early-stop
 RVA(0x001670d0, 0x5d)
 i32 CImageSet3::ScanDownGate(i32 x, i32 y, i32 val, i32* outY) {

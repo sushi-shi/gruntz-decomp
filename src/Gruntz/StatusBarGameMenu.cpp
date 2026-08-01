@@ -1,52 +1,30 @@
-// StatusBarGameMenu.cpp - the in-game GAMETAB menu builder (RVA 0x101580).
-//
-// This was mislabeled `CSBI_ImageSet::CSBI_ImageSet` by the rtti-vptr heuristic; it
-// is NOT a constructor. It is the status-bar manager's "build the GAME-tab menu"
-// method: it creates each GAMETAB widget (RESUME/PAUSE/LOAD/SAVE/SETTINGS/HELP/
-// QUIT/DESTRUCT, or MISSIONSTATUS in the briefing variant), stamps its retail vtable
-// + type tag, configures it from a GAME_STATUSBAR_TABZ_GAMETAB_* asset key + a
-// geometry rect (tab base coords m_baseX/m_baseY plus per-item offsets), appends it
-// to the Game-tab CPtrList m_items, and stashes the created widget into a per-command
-// slot (m_tabSprite5..m_tabSprite10, m_slotDestruct). Built under a /GX EH frame (the
-// just-created item is rolled back if its Configure throws). Identical create idiom
-// to CStatusBarMgr::LoadTabSprites.
-//
-// Owner verified by the member writes: m_code (the configure `code` arg), the base
-// coords m_baseX/m_baseY, the m_items Game CPtrList, the m_itemKind==0x1fb gate,
-// the m_hitTestDisabled gate, the m_destructWarnActive/m_modeState/m_slotDestruct destruct-button
-// state, and the per-command slot stores. The widgets are REAL polymorphic
-// CSBI_ImageSet / CSBI_MenuItem leaves, so `new CSBI_ImageSet` makes cl auto-stamp
-// the retail vtable (config/vtable_names.csv); no manual stamp. Field names are
-// placeholders; only the OFFSETS + code bytes matter.
-//
+
+
 // @early-stop
 #include <rva.h>
-#include <Gruntz/TriggerMgr.h>    // m_cmdGrid's real class (m_phase/m_3ec)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h>
 #include <Gruntz/GameRegistry.h>
 
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
-#include <Gruntz/GameMenuMgrBuilders.h> // CGmFactory (the registry factory view)
-#include <Gruntz/StatusBarMgr.h>        // canonical CStatusBarMgr (== the ex-CGameMenuMgr)
-#include <Gruntz/SBI_MenuItem.h>        // canonical CSBI_MenuItem (12 slots, vtbl 0x5eab4c)
-#include <Gruntz/SBI_ImageSet.h>        // canonical CSBI_ImageSet  (13 slots, vtbl 0x5eac4c)
+#include <Gruntz/SbGeom.h>
+#include <Gruntz/GameMenuMgrBuilders.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/SBI_MenuItem.h>
+#include <Gruntz/SBI_ImageSet.h>
 
 RVA(0x00101580, 0x806)
 void CStatusBarMgr::BuildGameMenu() {
-    CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host
+    CDDrawSurfaceMgr* code = m_c;
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
     CSBI_Image* it;
     RECT r;
 
-    // Non-briefing path is the fall-through (retail `je` sinks the briefing block to
-    // the end): the `!=` gate keeps the common menu inline and the MISSIONSTATUS
-    // widget out of line.
     if (m_itemKind != 0x1fb) {
-        // ---- RESUME or PAUSE in the first slot ----
+
         if (m_hitTestDisabled != 0 && g_gameReg->m_frameGate != 0) {
             it = new CSBI_MenuItem;
             r.left = bx;
@@ -94,7 +72,6 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabSprite5 = static_cast<CSBI_MenuItem*>(it);
 
-        // ---- LOAD ----
         it = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0x125;
@@ -112,7 +89,6 @@ void CStatusBarMgr::BuildGameMenu() {
             it->m_enabled = 0;
         }
 
-        // ---- SAVE ----
         it = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0xfd;
@@ -130,7 +106,6 @@ void CStatusBarMgr::BuildGameMenu() {
             it->m_enabled = 0;
         }
 
-        // ---- SETTINGS ----
         it = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0x14d;
@@ -154,7 +129,6 @@ void CStatusBarMgr::BuildGameMenu() {
         m_tabLists[5].AddTail(it);
         m_tabSprite8 = static_cast<CSBI_MenuItem*>(it);
 
-        // ---- HELP ----
         it = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0x175;
@@ -172,7 +146,6 @@ void CStatusBarMgr::BuildGameMenu() {
             it->m_enabled = 0;
         }
 
-        // ---- QUIT (inlined ctor in retail) ----
         it = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0x19d;
@@ -187,7 +160,6 @@ void CStatusBarMgr::BuildGameMenu() {
         m_tabLists[5].AddTail(it);
         m_tabSprite10 = static_cast<CSBI_MenuItem*>(it);
 
-        // ---- DESTRUCT (CSBI_ImageSet, tag 4) ----
         it = new CSBI_ImageSet;
         r.left = bx + 0x22;
         r.top = by + 0x1be;
@@ -209,9 +181,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_modeNotify = static_cast<CSBI_ImageSet*>(
-            it
-        ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+        m_modeNotify = static_cast<CSBI_ImageSet*>(it);
         if (g_gameReg->m_134 != 1) {
             it->m_enabled = 0;
             m_modeState = 7;
@@ -221,10 +191,8 @@ void CStatusBarMgr::BuildGameMenu() {
         return;
     }
 
-    // ---- briefing variant: a single MISSIONSTATUS widget ----
     it = new CSBI_ImageSet;
-    i32 variant =
-        (g_gameReg->m_cmdGrid->m_phase == 1) ? 1 : 2; // MISSIONSTATUS variant = the round phase
+    i32 variant = (g_gameReg->m_cmdGrid->m_phase == 1) ? 1 : 2;
     r.left = bx;
     r.top = by + 0xd7;
     r.right = bx + 0x9f;

@@ -1,21 +1,21 @@
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Gruntz/ActNameRegistry.h>
+#include <Rez/FrameClock.h>
+#include <Image/CImage.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>       // the shared CActReg coordinate-registry archetype
-#include <Gruntz/LogicFnTable.h> // CActRegPool<CEyeCandy>::s_table's canonical CActReg type
-#include <Gruntz/FrontCandy.h> // 0xfa60 is CFrontCandy's slot-1 (??_7CFrontCandy+0x4), not CFrontCandyAni's
+#include <Gruntz/ActReg.h>
+#include <Gruntz/LogicFnTable.h>
+#include <Gruntz/FrontCandy.h>
 #include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/EyeCandy.h>
-#include <Gruntz/EyeCandyAni.h> // CEyeCandyAni (its TU folds in below, wave3-J)
+#include <Gruntz/EyeCandyAni.h>
 
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>
 #include <rva.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
 template<> DATA(0x002460b0)
 CActReg CActRegPool<CFrontCandyAni>::s_table(2000, 2010);
@@ -28,12 +28,6 @@ i32 CFrontCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d)
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CFrontCandy::~CFrontCandy @0x0fb00 - empty vtable-anchor dtor; folds the CUserLogic
-// teardown (the /GX leaf-dtor archetype). Adjacent to CFrontCandy::Serialize (0xfa60).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CFrontCandy() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x0000fad0, 0x1e, ??_GCFrontCandy@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fb00, 0x44, ??1CFrontCandy@@UAE@XZ)
 
@@ -45,12 +39,6 @@ i32 CFrontCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CFrontCandyAni::~CFrontCandyAni @0xfe90 - empty vtable-anchor dtor (??_7CFrontCandyAni
-// slot 0 -> sdd 0xfe60); folds the CUserLogic teardown (the /GX leaf-dtor archetype).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CFrontCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x0000fe60, 0x1e, ??_GCFrontCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fe90, 0x44, ??1CFrontCandyAni@@UAE@XZ)
 
@@ -62,12 +50,6 @@ i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CEyeCandyAni::~CEyeCandyAni @0x0ffc0 - empty vtable-anchor dtor; folds the
-// CUserLogic teardown (the /GX leaf-dtor archetype).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CEyeCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x0000ff90, 0x1e, ??_GCEyeCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 
@@ -81,9 +63,9 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (aux != 0) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_flags &= ~6;
-                m_object->m_7c->m_flags |= 1;
+            if (m_object->m_animWorker != 0) {
+                m_object->m_animWorker->m_flags &= ~6;
+                m_object->m_animWorker->m_flags |= 1;
                 m_38->m_flags &= ~0x1000002;
                 m_38->m_flags |= 0x800000;
             }
@@ -91,9 +73,6 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-// CEyeCandyAni::CEyeCandyAni (0xac870) - fold the shared CUserLogic(obj) init, bind
-// the "A" bute node, apply the cycle geometry, then run the shared eyecandy z-clamp
-// + BigActHeight de-prioritize tail (the SAME archetype as CEyeCandy/CBehindCandyAni).
 // @early-stop
 RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -115,9 +94,9 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (aux != 0) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_flags &= ~6;
-                m_object->m_7c->m_flags |= 1;
+            if (m_object->m_animWorker != 0) {
+                m_object->m_animWorker->m_flags &= ~6;
+                m_object->m_animWorker->m_flags |= 1;
                 m_38->m_flags &= ~0x1000002;
                 m_38->m_flags |= 0x800000;
             }
@@ -127,22 +106,12 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CEyeCandy>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this->*(*((CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id)))))();
     }
 }
 
-// CEyeCandyAni::RegisterActs @0x0acd10 - bind the class's per-frame handler
-// (AdvanceAnim @0x0acf10) to the activation key "A" via the shared name registry,
-// then bind id->entry in the class's coordinate registry (CActRegPool<CEyeCandy>::s_table
-// @0x646060, CActReg facet). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000acd10, 0x18d)
 void CEyeCandyAni::RegisterActs() {
     i32 id = ActFindId("A");
@@ -161,7 +130,7 @@ void CEyeCandyAni::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))) =
+    (*((CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
@@ -198,15 +167,6 @@ void CFrontCandyAni::FireActivation(i32 coord) {
     }
 }
 
-// CFrontCandyAni::RegisterActs @0x0ad310 - bind the class's per-frame handler
-// (AdvanceAnim @0x0ad510) to the activation key "A" via the shared name registry.
-// The SAME archetype as CBehindCandyAni::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000ad310, 0x18d)
 void CFrontCandyAni::RegisterActs() {
     i32 id = ActFindId("A");

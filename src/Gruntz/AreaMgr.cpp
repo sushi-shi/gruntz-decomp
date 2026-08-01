@@ -1,40 +1,28 @@
 #include <rva.h>
-#include <Image/CImage.h> // g_resourceInstallActive
+#include <Image/CImage.h>
 #include <Mfc.h>
 #include <Gruntz/AreaMgr.h>
 #include <Bute/SymTab.h>
 
-#include <stdio.h>  // sprintf (reloc-masked engine CRT)
-#include <string.h> // inline strcmp / strncmp
+#include <stdio.h>
+#include <string.h>
 
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CAniElement
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (the per-spawn registry holder)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 
-// g_pAreaMgr opens this object's retail .data run: the ordinary word at 0x21139c sits
-// between CInGameText's 'GAME_HELPBOOK' literal (0x21138c, previous object) and this
-// object's own 'IMAGEZ_%s'/'OBJECTZ_'/'SOUNDZ_%s'/'ANIZ_%s' literals (0x2113a0..0x2113cf)
-// - the same ordinary-then-COMDAT shape CMulti's run has at 0x211d88. Its initializer is
-// &g_areaMgr, defined right below. (It was declared in Play.cpp, whose only use is a
-// read in CPlay::LoadByMode.)
 DATA(0x0021139c)
 CAreaMgr* g_pAreaMgr = &g_areaMgr;
 
 DATA(0x002459b0)
 CAreaMgr g_areaMgr;
 
-// MSVC's compiler-private static-object family for g_areaMgr: ctor helper,
-// atexit registrar, and dtor helper. The decimal suffixes are temporary
-// globally-unique RVA-derived placeholders; see
-// docs/patterns/msvc-static-object-e-helper-family.md.
-
 RVA(0x00099ba0, 0x29)
 CAreaMgr::CAreaMgr() {
     m_currentAreaIndex = 0;
 }
 
-// ---------------------------------------------------------------------------
 inline CSpawnList::~CSpawnList() {
     DeleteAllEntries();
 }
@@ -48,19 +36,8 @@ void ForceEmitSpawnListDtor() {
 RVA(0x00099c20, 0x5f)
 CAreaMgr::~CAreaMgr() {
     Reset();
-    // m_spawnEntryList (the CSpawnList) is torn down here by the compiler-emitted
-    // /GX member teardown: the inline ~CSpawnList above folds in.
 }
 
-// ---------------------------------------------------------------------------
-// CSpawnList::~CSpawnList  (0x099ca0)
-// DeleteAllEntries, then the embedded CPtrList member dtor frees its blocks (the
-// trailing ~CPtrList under the /GX frame). Defined INLINE in this TU (its retail
-// home) so it folds into ~CAreaMgr's member-teardown below exactly as retail
-// (call DeleteAllEntries + call ~CPtrList, EH states 1 -> -1); other TUs see only
-// the SpawnList.h declaration and emit the retail extern call (e.g.
-// CGruntSpawnConfig::Clear's explicit dtor + RezFree). The standalone COMDAT
-// copy is forced by the depth-0 forcer and pinned by mangled name:
 RVA_COMPGEN(0x00099ca0, 0x49, ??1CSpawnList@@QAE@XZ)
 
 RVA(0x00099d10, 0x20)
@@ -69,11 +46,6 @@ i32 QueryToken(i32 arg) {
     return g_areaMgr.Dispatch(arg) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CAreaMgr::Dispatch  (0x099d40)
-// Guard the 1..40 range, reset the index word, record the index, then dispatch to
-// the matching per-area handler (40-way jump table).
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00099d40, 0x2c0)
 i32 CAreaMgr::Dispatch(i32 index) {
@@ -173,11 +145,6 @@ void CAreaMgr::Reset() {
     m_currentAreaIndex = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSpawnList::FindEntry (0x09a0d0) - find an entry by name, either via the
-// SpawnNameCmp hash helper (useHash) or an inline strcmp.  The search key is a
-// by-value CString (destroyed on exit); each node yields a CString name temp.
-// ---------------------------------------------------------------------------
 RVA(0x0009a0d0, 0x133)
 CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
     for (POSITION n = m_list.GetHeadPosition(); n != 0;) {
@@ -199,13 +166,6 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSpawnList::FindByName (0x09a290) - like FindEntry but the search key arrives
-// by reference (retail pushes the CString's ADDRESS - the old areamgr Extract
-// (char*) signature was refuted by the caller's `lea ecx,[esp+0x10]; push ecx`);
-// per node it inline-compares, and on a miss re-checks through SpawnNameCmp
-// against an empty CString before moving on. Was also declared as
-// CObjResBuilder::FindAdd by the LoadObject* reconcilers - same one function.
 // @early-stop
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
@@ -264,7 +224,6 @@ i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     return 1;
 }
 
-// @source: decomp-xref
 // @early-stop
 RVA(0x0009a510, 0x275)
 i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
@@ -296,8 +255,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
-        CDDrawWorker* obj =
-            static_cast<CDDrawWorker*>(toAdd.GetNext(dp)); // the pooled map values ARE workers
+        CDDrawWorker* obj = static_cast<CDDrawWorker*>(toAdd.GetNext(dp));
         entry->m_imageRegistry->RemoveWorker(obj);
     }
     toAdd.RemoveAll();
@@ -333,12 +291,6 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSpawnEntry::GetTail  (0x09a830)  (/GX EH frame)
-// Return the entry name past its 8-char group prefix; an empty string when the
-// name is empty or 8 chars or shorter. NRV: build a local, copy-construct it
-// into the caller's return slot, destruct the local (the /GX frame).
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x0009a830, 0xa4)
 CString CSpawnEntry::GetTail() {
@@ -353,7 +305,6 @@ CString CSpawnEntry::GetTail() {
     return tmp;
 }
 
-// @source: decomp-xref
 // @early-stop
 RVA(0x0009a910, 0x261)
 i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
@@ -422,7 +373,6 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     return 1;
 }
 
-// @source: decomp-xref
 // @early-stop
 RVA(0x0009ac20, 0x261)
 i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
@@ -455,9 +405,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         void* obj = toAdd.GetNext(dp);
-        entry->m_animRegistry->RemoveValue(
-            static_cast<CAniElement*>(obj)
-        ); // m_animRegistry is CDDrawSubMgrLeaf*
+        entry->m_animRegistry->RemoveValue(static_cast<CAniElement*>(obj));
     }
     toAdd.RemoveAll();
 
@@ -492,15 +440,6 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// CAreaMgr::SameGroup  (0x09b430)
-// Whether `a` (1-based) and the current index fall in the same group-of-four
-// within mod-36 index space: group(n) = ((n - 1) % 36) / 4 + 1.  Returns 0 for
-// a <= 0.
-// ---------------------------------------------------------------------------
-// The 40 per-area handlers (H01..H40, 0x09af30..0x09b410): every one is the
-// same `return 1` placeholder - per-area logic the devs never filled in.
 
 RVA(0x0009af30, 0x6)
 i32 CAreaMgr::H01() {
@@ -702,7 +641,6 @@ i32 CAreaMgr::H40() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x0009b430, 0x49)
 i32 CAreaMgr::SameGroup(i32 a) {

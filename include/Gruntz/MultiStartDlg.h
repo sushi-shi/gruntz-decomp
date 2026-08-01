@@ -1,4 +1,3 @@
-// MultiStartDlg.h - the MultiStartDlg TU's exported globals/data.
 #ifndef GRUNTZ_GRUNTZ_MULTISTARTDLG_H
 #define GRUNTZ_GRUNTZ_MULTISTARTDLG_H
 

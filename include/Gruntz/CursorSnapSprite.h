@@ -3,35 +3,28 @@
 
 #include <rva.h>
 
-#include <Gruntz/ActReg.h>        // CActReg (the slot-4 activation-dispatch table)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/UserLogic.h>     // CUserLogic base (CCursorSnapSprite : CUserLogic)
+#include <Gruntz/ActReg.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
 
 class CCursorSnapSprite : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00011860, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_CURSORSNAPSPRITE;
-    } // slot 2
+    }
+
 public:
-    // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,
-    // then (only on success) the +0x34 sub-object's chain; both run the same
-    // (ar, tag, c, d) tuple. Returns the second chain's success as a bool.
-    CCursorSnapSprite(CGameObject* obj); // 0x3a340
-    // FireActivation (0x3a5b0): slot-4 (UserLogicVfunc2) override - resolve `id`
-    // in the class dispatch table g_logicActReg_62bfa0; if the resolved entry holds
-    // a registered handler, re-resolve and dispatch it __thiscall on `this`. Same
-    // archetype as CTeleporter::FireActivation (double ResolveEntry + PMF dispatch).
+    CCursorSnapSprite() {}
+    CCursorSnapSprite(CGameObject* obj);
+
     virtual void FireActivation(i32 id) OVERRIDE;
-    // The act-"A" slot RegisterXLogic_62bfa0 (0x3a710) binds via ILT 0x401717:
-    // advance the bound sprite's anim cursor by the frame delta, report "not done".
-    i32 AdvanceAnim(); // 0x3a910
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+
+    i32 AdvanceAnim();
 };
 SIZE(0x54);
 
-SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CCURSORSNAPSPRITE_H

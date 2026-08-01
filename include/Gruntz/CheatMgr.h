@@ -4,42 +4,33 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Mfc.h> // CMapStringToPtr / CString / POSITION + <windows.h>
+#include <Mfc.h>
 
 struct CheatEntry {
-    i32 commandId; // +0x00  the WM_COMMAND id this cheat fires
-    i32 flag;      // +0x04  enable flag (always 1 for the built-ins)
+    i32 commandId;
+    i32 flag;
 };
 SIZE_UNKNOWN();
 
 class CCheatMgr {
 public:
-    BOOL Init(HWND owner);                                // 0x22ad0  seed +0, clear scalars
-    void Empty();                                         // 0x22b00  free entries + clear
-    BOOL AddCheat(const char* code, i32 cmdId, i32 flag); // 0x22be0
-    void RegisterCheats();                                // 0x22c80  seed built-ins + load
-    void LoadCheatConfig();                               // 0x22e60  bute/registry config loader
-    BOOL CheckCode(CString code);                         // 0x23090  player-typed cheat probe
-    ~CCheatMgr();                                         // 0x85e60
+    BOOL Init(HWND owner);
+    void Empty();
+    BOOL AddCheat(const char* code, i32 cmdId, i32 flag);
+    void RegisterCheats();
+    void LoadCheatConfig();
+    BOOL CheckCode(CString code);
+    ~CCheatMgr();
 
-    // --- fields (placeholders; offsets load-bearing) ---
-    HWND m_owner;          // +0x00  the window the armed cheat posts WM_COMMAND to
-    CMapStringToPtr m_map; // +0x04  (vptr@+0x04 .. +0x20) - 0x1c bytes
-    u8 m_flag;             // +0x20
+    HWND m_owner;
+    CMapStringToPtr m_map;
+    u8 m_flag;
     char m_21[0x120 - 0x21];
-    i32 m_120; // +0x120
-    i32 m_124; // +0x124
+    i32 m_120;
+    i32 m_124;
 };
 SIZE_UNKNOWN();
 
-// ---------------------------------------------------------------------------
-// The 19 built-in cheat-code strings (obfuscated byte buffers in .data). Each is
-// passed to AddCheat by address as the map key - reloc-masked DIR32 references.
-// These are bound to their real .data RVAs via DATA_SYMBOL(..) rows in CheatMgr.cpp
-// (a DATA() macro in a header is not seen by labels.py's per-.cpp text scan, and
-// the char[] array mangling diverges clang-vs-cl5, so DATA_SYMBOL names the exact
-// cl5 symbol `?s_cheat_<rva>@@3PADA`).
-// ---------------------------------------------------------------------------
 extern char s_cheat_20c920[];
 extern char s_cheat_20c918[];
 extern char s_cheat_20c90c[];

@@ -1,4 +1,4 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
+#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
 #include <Gruntz/RollingBall.h>
 #include <Gruntz/SpotLight.h>
@@ -7,7 +7,7 @@
 #include <Gruntz/RainCloud.h>
 #include <Gruntz/Ufo.h>
 
-#include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + LOGIC_WORKER_PUMP
+#include <Gruntz/WorkerHandler.h>
 
 RVA(0x000af0a0, 0xf4)
 i32 CreateRollingBall(CGameObject* owner){LOGIC_WORKER_PUMP(CRollingBall)}

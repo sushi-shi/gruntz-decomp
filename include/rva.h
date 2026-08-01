@@ -1,5 +1,3 @@
-// rva.h - RVA/data label macros for the binary-matching pipeline.
-
 #ifndef GRUNTZ_RVA_H
 #define GRUNTZ_RVA_H
 
@@ -24,15 +22,13 @@
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
 #define VTBL2(derived, base, addr)
 
-// @TODO: Match debt. Those macros should be with proper structure/inheritance modeled.
 #define VTBL_ABSENT(type) GRUNTZ_META("vtbl-absent class:" #type)
 #define DATA(addr) __attribute__((annotate("data:" #addr)))
 
-// @TODO: Most likely match debt.
 #define RVA_COMPGEN(addr, size, symbol)
 #define DATA_SYMBOL(addr, size, symbol)
 
-#else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
+#else
 
 #define RVA(addr, size)
 #define DATA(addr)

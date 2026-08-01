@@ -1,61 +1,41 @@
-// WwdObjMgr.cpp - the 0x1591e0-0x15b2b0 original TU (wave4-L dossier #15, block
-// H): the CDDrawChildGroup collection obj - the object list/map ops (RemoveAll/
-// InsertSorted/ForEach*/Prune*/FindBy*), the per-kind CreateObject factories +
-// their CreateNamed front-ends, the per-frame kill-cue tick, LoadObjects, the
-// CDDrawChildGroup walk dispatchers woven in (IDENTITY: CDDrawChildGroup IS
-// CDDrawChildGroup - see DDrawChildGroup.h), the CDDrawChildGroup pair (the factory IS
-// this collection under the sprite-creation view - see SpriteFactory.h), and the
-// three embedded sub-object ctors at the block tail. Held at the dossier-#9
-// boundaries 3/4 (0x1591e0 / 0x15b2c0); a correct partial - it may yet merge with
-// its neighbors.
-//
-// original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
-//
-// Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
 
-// This TU owns the out-of-line COMDAT copies of the two sub-object ctors its
-// factories CALL (retail 0x159250/0x159440/0x159600 all emit `call 0x15b270` /
-// `call 0x15b2a0`), so it must see a DECLARATION only - the guards below suppress
-// the header's inline definitions here and nowhere else. WwdRegion's ctor is
-// deliberately NOT guarded: retail folds it into 0x159250/0x159440 (which then
-// call the WwdGridNode base copy) and only 0x159600 calls it whole, and MSVC5 has
-// no per-call-site control, so the two-of-three reading wins.
+
 #define WWDDIRTYRECT_OOL_CTOR
 #define WWDGRIDNODE_OOL_CTOR
-// The other two the factories call, whose COMDAT copies live in WwdFactoryObject.cpp.
+
 #define CRESOLVENODE_OOL_CTOR
 #define ANIMWORKEROBJ_OOL_CTOR
 
 #include <rva.h>
-#include <AddrWord.h> // the address-in-an-int-slot pair
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <AddrWord.h>
+#include <Rez/FrameClock.h>
+#include <Rez/RezAlloc.h>
+#include <Io/FileMem.h>
 
-#include <DDrawMgr/DDrawChildGroup.h> // the shared object-collection manager class
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_drawTarget->m_backPair)
-#include <DDrawMgr/DDSurface.h> // CDDSurface - the frame surface DrawObjectDebugGeometry GetCaps()
-#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (level reader, Read @+0x2c)
-#include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_map2c/m_map48 layout)
-#include <Gruntz/Sprite.h> // CDDrawWorker (frame-data template value)
-#include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
-#include <Gruntz/ResolveNode.h>        // canonical CResolveNode (the factory base sub-object)
-#include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
-#include <Wwd/WwdFactoryObject.h>      // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
-#include <Gruntz/WwdGameObject.h>      // canonical flat CWwdGameObject (the managed objects)
-#include <Wwd/WwdGameObjectFamily.h>   // the concrete kinds A/B/C/F + the embedded records
-#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the walk dispatchers; IDENTITY == this)
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
-#include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/SerialArchive.h>
+#include <Mfc.h>
+#include <Gruntz/Sprite.h>
+#include <DDrawMgr/AnimWorkerObj.h>
+#include <Gruntz/ResolveNode.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Wwd/WwdFactoryObject.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
 #include <Gruntz/ObList.h>
-#include <Gruntz/UserLogic.h>          // CGameObject - the real class of the AABB pair
-#include <Wwd/WwdFile.h>               // CDDrawWorkerHost (m_parent->m_24->m_5c world transform)
-#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (DrawCount - ex the DrawHost_164380 view)
-#include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_level) + CDDrawWorkerHost
-#include <Win32.h>                     // SetRect + RECT
-#include <Wwd/WwdObjMgr.h>             // own exported globals (ex Globals.h)
+#include <Gruntz/UserLogic.h>
+#include <Wwd/WwdFile.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <Gruntz/GameLevel.h>
+#include <Win32.h>
+#include <Wwd/WwdObjMgr.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Utils/MapTyped.h>
 
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
@@ -64,8 +44,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// m_188 is the object id; m_map2c/m_map48 are ::CMapPtrToPtr, whose key type IS void*
-// - the same word read both ways, which AddrWord names.
 inline void* WwdKey(CGameObject* o) {
     AddrWord k;
     k.m_word = o->m_188;
@@ -81,8 +59,7 @@ RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
     CGameLevel* p = OwnerMgr()->m_level;
     if (p != 0) {
-        // m_mainPlane IS the plane/grid-owner CDDrawWorkerHost (the plane-family
-        // unification: slots 9/10 of ??_7CDDrawWorkerHost are CDDrawWorkerHost methods).
+
         CDDrawWorkerHost* q = static_cast<CDDrawWorkerHost*>(p->m_mainPlane);
         if (q != 0) {
             q->Prune();
@@ -101,13 +78,6 @@ void CDDrawChildGroup::DestroyChildren() {
     m_map48.RemoveAll();
 }
 
-// ===========================================================================
-// 0x159250 - CDDrawChildGroup::CreateObject for the C kind (0x190 bytes).
-// `new CWwdGameObjectC(...)`: cl emits operator new(0x190) + the null-guarded
-// inline ctor inside a /GX ctor-in-flight frame whose trylevel walks
-// 0 (raw memory) -> 1 (CResolveNode) -> 2 (m_region) -> 3 (m_shadow) -> 4 (m_dc)
-// -> 5 (the worker's own raw block) -> -1. __thiscall, 7 stack args (ret 0x1c).
-// ===========================================================================
 RVA(0x00159250, 0x185)
 CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
     int id,
@@ -121,20 +91,18 @@ CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
     CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), id, stateFlags);
     if (result->SetupFlagged(x, y, sortKey, tmpl, dotColor) == 0) {
         if (result != 0) {
-            delete result; // virtual scalar-deleting dtor (slot 1)
+            delete result;
         }
         return 0;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
-        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
-        result->m_7c->m_notify(result);
+
+        result->m_animWorker->m_notify(result);
     }
     return result;
 }
 
-// CreateNamed_1593e0 (__thiscall, ret 0x1c => 7 args). Resolve `name` through the
-// level string map to a value, then create the 7-arg kind with it as arg5.
 // @early-stop
 RVA(0x001593e0, 0x53)
 CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
@@ -148,10 +116,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
 ) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
-    // The out-param is CObject*& (CMapStringToOb's own interface), so the narrowing
-    // to the map's one real value type is language-forced: CDDrawWorkerCache::
-    // CreateWorker @0x1652c0 is the ONLY writer and every value it stores is a
-    // 0x17c-byte ??_7AnimWorkerObj@@6B@-stamped registration record.
+
     return CreateObject_159250(
         id,
         x,
@@ -163,29 +128,23 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
     );
 }
 
-// ===========================================================================
-// 0x159440 - CDDrawChildGroup::CreateObject for the F kind (0x18c bytes).
-// __thiscall, 4 stack args (ret 0x10).
-// ===========================================================================
 RVA(0x00159440, 0x170)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateObject_159440(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
     CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, stateFlags);
     if (result->SetupDeferred(sortKey, tmpl) == 0) {
         if (result != 0) {
-            delete result; // virtual scalar-deleting dtor (slot 1)
+            delete result;
         }
         return 0;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
-        result->m_7c->m_notify(result);
+        result->m_animWorker->m_notify(result);
     }
     return result;
 }
 
-// CreateNamed_1595b0 (__thiscall, ret 0x10 => 4 args). Resolve `name` -> value and
-// create the 4-arg kind with it substituted for arg3.
 // @early-stop
 RVA(0x001595b0, 0x44)
 CWwdGameObjectF*
@@ -195,10 +154,6 @@ CDDrawChildGroup::CreateNamed_1595b0(int id, int sortKey, const char* name, int 
     return CreateObject_159440(id, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
-// ===========================================================================
-// 0x159600 - CDDrawChildGroup::CreateObject for the A kind (0x1dc bytes): allocate
-// + construct, register it (InsertSorted), and - when `flags & 0x200000` - kick the
-// worker's m_notify. __thiscall, 6 stack args (ret 0x18).
 // @early-stop
 RVA(0x00159600, 0x1ab)
 CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
@@ -212,23 +167,17 @@ CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
     CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags);
     if (result->Setup(x, y, sortKey, tmpl) == 0) {
         if (result != 0) {
-            delete result; // virtual scalar-deleting dtor (slot 1)
+            delete result;
         }
         return 0;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
-        result->m_7c->m_notify(result);
+        result->m_animWorker->m_notify(result);
     }
     return result;
 }
 
-// CORRECTED 2026-07-29: args 2/3/4 were `geoB/geoA/hint`, three wrong names. 0x1597b0
-// forwards all six 1:1 to CreateObject_159600 (verified against the retail push order),
-// whose body hands args 2/3/4 to CGameObject::Setup(x, y, sortKey, tmpl) @0x150d60; the
-// game call sites pass the object's m_screenX/m_screenY there (Projectile.cpp,
-// Warlord.cpp, ExitTrigger.cpp) and TriggerMgrGrid passes (0, ax, ay, ay, "Grunt", ...),
-// i.e. the sort key is the screen y - the isometric depth order InsertSorted uses.
 RVA(0x001597b0, 0x57)
 CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     i32 id,
@@ -240,31 +189,15 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
 ) {
     CObject* tmpl_ob = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
-    // CORRECTED 2026-07-27: this was `static_cast<CDDrawWorker*>` - a WRONG downcast.
-    // m_workerCache->m_10 is the worker cache, not the image registry; its only writer
-    // CDDrawWorkerCache::CreateWorker @0x1652c0 news 0x17c bytes and stamps
-    // ??_7AnimWorkerObj@@6B@, so every value is an AnimWorkerObj registration record.
-    // (The wrong type is what made CGameObject::Setup's tmpl+0x10 read look like it was
-    // hitting `CObArray m_items`, and kept that identity "unsettled" for a session.)
+
     AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
     if (!tmpl) {
         return 0;
     }
-    // 0x159600 is CDDrawChildGroup::CreateObject_159600 (the factory IS the manager); the
-    // old ?CreateSpriteImpl@CDDrawChildGroup@ decl was a PHANTOM second name for it.
-    return CreateObject_159600(
-        id,
-        x,
-        y,
-        sortKey,
-        tmpl,
-        stateFlags
-    ); // the launder dies - one type now
+
+    return CreateObject_159600(id, x, y, sortKey, tmpl, stateFlags);
 }
 
-// ===========================================================================
-// CDDrawChildGroup::AttachSprite @0x159830 - initialise an already-allocated sprite
-// (arg0) against a named template. Returns 1 on success. __thiscall, ret 0x18.
 RVA(0x00159830, 0x92)
 i32 CDDrawChildGroup::AttachSprite(
     CWwdGameObject* obj,
@@ -279,8 +212,7 @@ i32 CDDrawChildGroup::AttachSprite(
     }
     CObject* tmpl_ob = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
-    // Same correction as CreateSprite above: the worker cache's values are
-    // AnimWorkerObj registration records, never CDDrawWorker sprites.
+
     AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
     if (!tmpl) {
         return 0;
@@ -289,21 +221,15 @@ i32 CDDrawChildGroup::AttachSprite(
     if (!obj->Setup(x, y, sortKey, tmpl)) {
         return 0;
     }
-    // 0x159e40 is CDDrawChildGroup::InsertSorted (the factory IS the object manager -
-    // same `this`); bind the real method (reloc-masked ?InsertSorted@CDDrawChildGroup).
+
     this->InsertSorted(obj, 1);
     if (stateFlags & 0x200000) {
-        // the worker fire callback - the same slot TickKillCues fires
-        obj->m_7c->m_notify(static_cast<CGameObject*>(obj));
+
+        obj->m_animWorker->m_notify(static_cast<CGameObject*>(obj));
     }
     return 1;
 }
 
-// ===========================================================================
-// 0x1598d0 - CDDrawChildGroup::CreateObject for the B kind (0x1fc bytes).
-// The one factory where RETAIL called the shared CGameObject ctor COMDAT (0x15b390)
-// instead of inlining it - the B ctor is the biggest of the four, so retail's inline
-// budget ran out one level up. __thiscall, 6 stack args (ret 0x18).
 // @early-stop
 RVA(0x001598d0, 0x13d)
 CWwdGameObject* CDDrawChildGroup::CreateObject_1598d0(
@@ -317,19 +243,17 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_1598d0(
     CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), id, stateFlags);
     if (result->Setup(x, y, sortKey, tmpl) == 0) {
         if (result != 0) {
-            delete result; // virtual scalar-deleting dtor (slot 1)
+            delete result;
         }
         return 0;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
-        result->m_7c->m_notify(result);
+        result->m_animWorker->m_notify(result);
     }
     return result;
 }
 
-// CreateNamed_159a10 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
-// the lookup produced nothing, bail; else create the 6-arg kind with the value as arg5.
 // @early-stop
 RVA(0x00159a10, 0x57)
 CWwdGameObject* CDDrawChildGroup::CreateNamed_159a10(
@@ -348,18 +272,10 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_159a10(
     return CreateObject_1598d0(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
-// ---------------------------------------------------------------------------
-// 0x159a70 (vtable slot 9): per-frame kill-cue tick. Advances the shared kill
-// clock (when `advance`), walks the sorted list running each object's cue
-// (m_7c->Consume(delta)); an expired cue (Consume==0) either decrements its
-// refcount (+0x24) or fires its callback (+0x10). Objects flagged 0x10000 /
-// 0x20000 are queued into two function-local static arrays; a post-pass then
-// (0x10000) unlinks+destroys them (unless flag 0x800 => destroy only) and
-// (0x20000) clears the flag and re-sorts them back into the list.
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
-    static CObArray killQueue; // 0x6bf3a8  the 0x10000 (destroy) queue
-    static CObArray sortQueue; // 0x6bf390  the 0x20000 (re-sort) queue
+    static CObArray killQueue;
+    static CObArray sortQueue;
     killQueue.SetSize(0, -1);
     sortQueue.SetSize(0, -1);
 
@@ -373,7 +289,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-        AnimWorkerObj* rec = obj->m_7c;
+        AnimWorkerObj* rec = obj->m_animWorker;
         if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
             i32* refc = &rec->m_24;
             if (*refc != 0) {
@@ -394,7 +310,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     for (i = 0; i < killQueue.GetSize(); i++) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
         if (obj->m_flags & 0x80000) {
-            AnimWorkerObj* rec = obj->m_7c;
+            AnimWorkerObj* rec = obj->m_animWorker;
             rec->SetActKey(0x1d);
             rec->m_notify(static_cast<CGameObject*>(obj));
         }
@@ -504,11 +420,6 @@ void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     InsertSorted(obj, 0);
 }
 
-// ---------------------------------------------------------------------------
-// 0x159e40: register `obj` - if its flag 0x800 is set, clear its POSITION cache
-// and bail; otherwise (when addToMaps) record it in both maps, then insert it
-// into the sorted list before the first node whose object has a larger sort key
-// and lacks flag 0x20000. The returned POSITION is cached in obj->+0x78.
 RVA(0x00159e40, 0xaa)
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (obj->m_flags & 0x800) {
@@ -537,15 +448,6 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
     DestroyChildren();
 }
 
-// ---------------------------------------------------------------------------
-// 0x159f00: CDDrawChildGroup::Slot40 (vtable slot 16, @+0x40). Pairwise
-// collision broadcast over the +0x14 child list: for every ordered pair (i<j)
-// of active objects (flag bit0 clear) that share the 0x40000 class bit, test
-// overlap and, on a hit, fire the registered +0x80/+0x88 collision callbacks,
-// the +0x128 damage budget latch, or CWwdFactoryObject::Notify. Two phases:
-// a RECT overlap (skipped when i&4 or j&0x80) using each object's +0x144.. AABB
-// and RectsOverlap, then a BOX overlap (skipped when j&4 or i&0x80) via
-// BoxesOverlap. __thiscall, no args.
 // @early-stop
 
 RVA(0x00159f00, 0x22e)
@@ -565,7 +467,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                 if ((fi ^ fj) & 0x40000) {
                     continue;
                 }
-                // --- RECT PHASE (skipped when i&4 or j&0x80) ---
+
                 if (!(fi & 4) && !(fj & 0x80)) {
                     i32 mask1 = static_cast<i32>(oj->m_collCategory) & oi->m_ec;
                     i32 mask2 = static_cast<i32>(oi->m_collCategory) & oj->m_f0;
@@ -596,7 +498,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                 AnimWorkerObj* nf = oj->m_attackWorker;
                                 if (nf != 0) {
                                     oj->m_8c = oi;
-                                    // (the E*->CGameObject* respell dies at the flat-merge typedef)
+
                                     nf->m_notify(oj);
                                 }
                             }
@@ -605,9 +507,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     i32 v = oi->m_placeMode - oj->m_120;
                                     oi->m_placeMode = v;
                                     if (v <= 0) {
-                                        // latch the worker's error/death state (m_1c is
-                                        // the documented int|ptr role-union)
-                                        oi->m_7c->SetActKey(0x1c);
+
+                                        oi->m_animWorker->SetActKey(0x1c);
                                     }
                                 } else {
                                     AnimWorkerObj* nf = oi->m_hitWorker;
@@ -620,7 +521,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                         }
                     }
                 }
-                // --- BOX PHASE (skipped when j&4 or i&0x80) ---
+
                 if (oj->m_flags & 4) {
                     continue;
                 }
@@ -646,15 +547,6 @@ void CDDrawChildGroup::CollideBroadcast() {
     }
 }
 
-// 0x15a130: bounding-box overlap test between two wide objects. Each box is its
-// screen pos (+0x5c/+0x60) plus a local AABB, and the two sides are ASYMMETRIC -
-// arg1 contributes its activation box m_area (+0x144..+0x150), arg2 its tile-switch
-// registrar rect m_switchRect (+0x154..+0x160) - which is what the parameter names
-// record. The one caller, CollideBroadcast's BOX phase @0x159f00, calls
-// BoxesOverlap(oj, oi) with oj the RECEIVER of that phase (mask1b = oj->m_ec &
-// oi->m_collCategory, and oj->Notify(oi) on a hit). Either box invalid (its first
-// AABB field == INT_MIN) -> no overlap. __stdcall, 2 args (ret 0x8).
-// @early-stop
 // @early-stop
 RVA(0x0015a130, 0xdc)
 i32 __stdcall BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
@@ -664,7 +556,7 @@ i32 __stdcall BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
     if (areaObj->m_area.left == static_cast<i32>(0x80000000)) {
         return 0;
     }
-    // retail materializes the two screen-space AABBs as 0x10-byte stack rects (0x20 frame)
+
     CDDrawRect ra, rb;
     i32 xi = areaObj->m_screenX;
     i32 yi = areaObj->m_screenY;
@@ -690,26 +582,11 @@ i32 __stdcall BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
     return ra.bottom >= rb.top;
 }
 
-// The surface-residency labels the geometry overlay stamps on each frame.
-// DrawLabel takes a mutable char* (it is the GDI DrawTextA argument), so these
-// are plain char arrays, not const.
 static char s_dbgRle[] = "RLE";
 static char s_dbgVid[] = "VID";
 static char s_dbgSys[] = "SYS";
-static char s_dbgNoCaps[] = "???"; // neither VIDEOMEMORY nor SYSTEMMEMORY in the caps
+static char s_dbgNoCaps[] = "???";
 
-// ---------------------------------------------------------------------------
-// 0x15a210 - the per-object debug-GEOMETRY overlay (twin of DrawObjectCounts below).
-// Five independent passes over the child list, one per debug flag bit:
-//   0x10000   box each object's activation area  (m_area)
-//   0x20000   box each object's tile-switch rect (m_switchRect)
-//   0x40000   box each object's collision extent (m_extent)
-//   0x100000  cross at each object's screen position
-//   0x1000000 label each A-kind sprite's cached frame with where its surface lives -
-//             "RLE" when the frame owns a shaded sprite, else the DirectDraw caps say
-//             "VID" (DDSCAPS_VIDEOMEMORY) or "SYS" (DDSCAPS_SYSTEMMEMORY), else "???".
-// The three box passes and the label pass call the plane's WrapCoord on both corners;
-// the cross pass INLINES the same wrap+translate on two scalars.
 // @early-stop
 RVA(0x0015a210, 0x432)
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
@@ -788,8 +665,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
                 i32 x = obj->m_screenX;
                 if (x != static_cast<i32>(0x80000000)) {
-                    // WrapCoord expanded on scalars (it takes i32* and retail has no
-                    // rect here).
+
                     i32 fl = view->m_flags;
                     i32 y = obj->m_screenY;
                     if (fl & 4) {
@@ -855,11 +731,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 if (fr->m_owned != 0) {
                     drawHost->DrawLabel(&rc, s_dbgRle);
                 } else {
-                    // The zero arm is a JOIN, not a hoisted initialiser: retail
-                    // emits `xor eax,eax; test eax,eax` at a merge the two failure
-                    // edges branch to (`je`/`jne` on the null surface and the
-                    // GetCaps HRESULT). Seeding `vid = 0` above the guard makes cl
-                    // pin the zero in a callee-saved register instead.
+
                     DDSCAPS caps;
                     i32 vid;
                     if (fr->m_surface != 0 && fr->m_surface->m_ddSurface->GetCaps(&caps) == 0) {
@@ -890,12 +762,6 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a650: per-object debug-count overlay. Only active when the +0x08 flag word
-// carries 0x200000. For each child in the +0x14 list, box its screen position,
-// world-wrap the top-left into the visible range, transform the bottom-right
-// through the viewport's WrapCoord, and draw the object's +0x74 count into the
-// resulting rect via the counter draw-host (m_parent->m_4->m_14). __thiscall.
 // @early-stop
 RVA(0x0015a650, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
@@ -946,26 +812,12 @@ void CDDrawChildGroup::DrawObjectCounts() {
         }
         rc.left = wl - view->m_viewRect.left + view->m_bounds50.left;
         rc.top = wt - view->m_viewRect.top + view->m_bounds50.top;
-        // Retail (0x15a712) hands WrapCoord `lea ecx,[esp+0x20]` / `lea eax,[esp+0x24]`
-        // - i.e. &rc.right and &rc.bottom of the SAME rect it then passes to
-        // DrawCount(RECT*, n), which passes it on to DrawTextA. So the two out-params
-        // are this Win32 RECT's own LONG fields, which is what fixes WrapCoord's
-        // declaration at LONG* (see <DDrawMgr/DDrawWorkerHost.h>) - no cast anywhere.
+
         view->WrapCoord(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != 0);
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a780: walk the sorted list; advance past the leading run of objects that
-// carry the 0x20000 flag to the first object WITHOUT it (the "anchor"), then scan
-// the rest. Each subsequent un-flagged object with a sort key >= the anchor's
-// becomes the new anchor; one with a SMALLER key triggers a status-probe (slot
-// +0x20) on BOTH the anchor and the offender. Always returns 1.
-// Loop A is a plain 3-condition `while` header (node / anchor / flag), and every
-// bail is a POSITIVE-form nest onto retail's single bottom `ret` - the
-// do-while + inline `return 1` spelling emitted a second epilogue and rotated the
-// loop. docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x0015a780, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder() {
     POSITION node = m_list.GetHeadPosition();
@@ -1021,19 +873,14 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a860: scan the sorted list for the first object whose status probe (slot
-// +0x20) is 5, whose +0x04 key matches `type`, and whose worker's +0x10 geometry
-// matches the requested key's +0x10. Returns 0 if none.
 RVA(0x0015a860, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
-            // the worker notify fn doubles as the kind marker - match it against the
-            // key worker (same idiom as the TriggerMgr grunt-notify compare)
-            AnimWorkerObj* worker = obj->m_7c;
+
+            AnimWorkerObj* worker = obj->m_animWorker;
             if (worker->m_notify == (static_cast<AnimWorkerObj*>(key))->m_notify) {
                 return obj;
             }
@@ -1042,13 +889,8 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// @identity-TODO: 0x15a8c0 unreferenced (dead / inlined-away), owner unrecovered.
-// `this`: a parent back-pointer @+0x0c and an intrusive child-list head @+0x14.
-// It Lookups `key` in the CMapStringToOb at parent->m_14 +0x10, then scans the
-// child list for the game object whose type tag (vtable slot 8, @+0x20) == 5,
-// whose +0x04 id == `id`, and whose +0x7c sub-object's +0x10 equals the looked-up
-// object's +0x10.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 // @early-stop
 RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find(i32 id, const char* key) {
@@ -1058,23 +900,20 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(m_list.GetNext(pos));
-        i32 tag = obj->GetClassId(); // vtable slot 8 (the type tag)
-        if (tag == 5 && obj->m_id == id && obj->m_7c->m_notify == fp->m_notify) {
+        i32 tag = obj->GetClassId();
+        if (tag == 5 && obj->m_id == id && obj->m_animWorker->m_notify == fp->m_notify) {
             return obj;
         }
     }
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a940: the +0xe8-field twin of FindByWorker.
 RVA(0x0015a940, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, i32 key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-        // the probed field IS the i32 +0xe8 category word - the key is that word,
-        // not one of the class's CMapPtrToPtr void* keys (retail compares dwords)
+
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type
             && obj->m_collCategory == key) {
             return obj;
@@ -1140,9 +979,6 @@ i32 CDDrawChildGroup::CountByKind(i32 kind) {
     return count;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15aa90: walk the list; for every object lacking flag 0x200, drop it from
-// the list + both maps and destroy it.
 RVA(0x0015aa90, 0x5d)
 void CDDrawChildGroup::PruneList() {
     POSITION pos = m_list.GetHeadPosition();
@@ -1158,8 +994,6 @@ void CDDrawChildGroup::PruneList() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x15aaf0: accumulate SUM over the list of index*(obj->m_screenX + m_74 + m_60 + m_04).
 // @early-stop
 RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
@@ -1241,7 +1075,7 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, i32 typeId) {
             CWwdGameObject* val = 0;
             MapGetNext(m_map48, pos, key, val);
             if (val != 0 && !(val->m_flags & 0x4000000)) {
-                // WriteSnapshot's 2nd slot is the one retail never reads (0x151c00)
+
                 val->WriteSnapshot(ar, typeId);
             }
         } while (pos != 0);
@@ -1249,12 +1083,6 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, i32 typeId) {
     return 1;
 }
 
-// ===========================================================================
-// CDDrawChildGroup::LoadObjects @0x15ad30 - iterate the level reader's `count` object
-// descriptors, dedup each against the active-set map (+0x48), publish its id to
-// g_wwdObjIdCounter, and dispatch by the object kind (5 / 0x16 / 0x1b / 0x1c) to
-// the matching factory; then build + link each object's child record.
-// ===========================================================================
 // @early-stop
 RVA(0x0015ad30, 0x2ec)
 i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
@@ -1274,8 +1102,6 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         savedCounter = g_wwdObjIdCounter;
         g_wwdObjIdCounter = desc.m_04;
 
-        // the common base of every kind the switch can build (A / F / B / the
-        // host-registered one) - the only member read below is CGameObject::m_7c
         CGameObject* createdObj = 0;
         switch (desc.m_08) {
             case 5: {
@@ -1316,8 +1142,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 break;
             }
             case 0x1c: {
-                // The callback's last word is its void** out-param (see HP_Callback),
-                // so the created object comes back through a void* slot and downcasts.
+
                 void* out = 0;
                 if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, &out) == 0) {
                     return 0;
@@ -1327,7 +1152,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                     return 0;
                 }
                 rec->m_id = desc.m_00;
-                // 0x159830 == CDDrawChildGroup::AttachSprite (the manager IS the factory)
+
                 if (AttachSprite(rec, desc.m_94, desc.m_98, desc.m_9c, desc.m_14, 0) == 0) {
                     return 0;
                 }
@@ -1342,11 +1167,11 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         if (createdObj == 0) {
             return 0;
         }
-        if (createdObj->m_7c == 0) {
+        if (createdObj->m_animWorker == 0) {
             return 0;
         }
         if (desc.m_10 != 0) {
-            // same callback ABI; the out-param is the bound logic object
+
             void* childOut = 0;
             if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_10, &childOut) == 0) {
                 return 0;
@@ -1355,16 +1180,13 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             if (child == 0) {
                 return 0;
             }
-            // the worker's owned bound-logic slot (AnimWorkerObj::m_logic)
-            createdObj->m_7c->m_logic = child;
+
+            createdObj->m_animWorker->m_logic = child;
         }
     }
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15b020: for each active m_map48 object, write its key to the archive then run
-// its +0x3c virtual; bail to 0 on a 0 result, else 1. Returns 0 if ar==0.
 RVA(0x0015b020, 0xc0)
 i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 typeId) {
     if (ar == 0) {
@@ -1386,10 +1208,6 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 typeId) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15b0e0: the read/load counterpart of ForEachSerialize - pull `count` object
-// keys back through the archive, resolve each in m_map48, require it present + alive
-// (+0x7c != 0), then run its +0x3c dispatch with (ar, 7, flag, obj).
 // @early-stop
 RVA(0x0015b0e0, 0xec)
 i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
@@ -1409,7 +1227,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
         if (obj == 0) {
             return 0;
         }
-        if (obj->m_7c == 0) {
+        if (obj->m_animWorker == 0) {
             return 0;
         }
         if (obj->Play(ar, 7, flag, obj) == 0) {
@@ -1419,9 +1237,6 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15b1d0: for each m_map48 object, look its key up in m_map2c; if absent, remove it
-// from m_map48 and destroy it. Returns the number removed.
 // @early-stop
 RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
@@ -1432,13 +1247,7 @@ i32 CDDrawChildGroup::PruneOrphans() {
         CWwdGameObject* val = 0;
         MapGetNext(m_map48, pos, key, val);
         if (val != 0) {
-            // Retail materialises the owner as a VALUE - `test eax,eax / je L /
-            // mov eax,[found] / L: cmp eax,esi` - where this `||` chain gives a
-            // second MEMORY compare and no load. Measured 2026-08-01: every value
-            // spelling is worse, because cl if-converts the select into
-            // `neg eax / sbb eax,eax / and eax,[found]` and spends a callee-saved
-            // register on it: `owner = 0; if (hit) owner = found;` 85.9,
-            // `hit ? found : 0` 85.9, explicit if/else 88.2, this `||` 93.8.
+
             void* found = 0;
             if (m_map2c.Lookup(WwdKey(val), found) == 0 || found == 0) {
                 m_map48.RemoveKey(WwdKey(val));
@@ -1451,10 +1260,6 @@ i32 CDDrawChildGroup::PruneOrphans() {
     }
     return n;
 }
-
-// The three embedded sub-object ctors at the block tail. Out-of-line (== not an
-// inline candidate under /Ob1) is load-bearing: every construction of them is a
-// CALL, which is what the four factories above emit.
 
 RVA(0x0015b270, 0x11)
 WwdDirtyRect::WwdDirtyRect() {

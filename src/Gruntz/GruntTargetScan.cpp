@@ -1,38 +1,19 @@
-// GruntTargetScan.cpp - CGrunt::ScanNearestTarget (0xf42f0), re-homed from
-// src/Stub/ApiCallers.cpp. A direct sibling of GruntArrivalScan.cpp's ArrivalScanA/B/C
-// (0xecc90/0xf0e20/0xf36a0) - it sits one slot after 0xf36a0 in retail and shares that
-// family's whole idiom: a nested scan over the tile-mgr's 4x15 grunt board
-// (m_tileMgr->m_grid / g_gameReg->m_cmdGrid->m_grid, == CGruntTileMgr), a
-// reason->priority switch (inlined 12x = 2 per compare site x 6 sites) that gates each
-// candidate, squared-distance min tracking, a PtInRect box gate, the m_defenderState
-// mode dispatch (0=wander/seek, 1=lock, 2=arrive), and a rand()-driven idle-wander tail
-// (idiv 0x7530 window + idiv m_extent.right/m_extent.bottom nearby jitter). All engine helpers +
-// the manager/grid globals are external (reloc-masked); every CGrunt/CGruntHud field is
-// reached through its real typed member on the canonical class (the old F/P raw-offset
-// cast-hiding macros are gone; only offsets + code bytes are load-bearing).
-//
-// GruntArrivalScan.cpp): CGruntScan IS CGrunt (this method's owner), CScanReg IS
-// CGameRegistry (g_gameReg), CScanTileMgr IS CGruntTileMgr (m_tileMgr / g_gameReg->
-// m_cmdGrid, the CGrunt* m_grid[4][15] board), CScanCueMgr's cue fire IS
-// CGruntSpawnConfig::CueA (cast-free), CScanSub30/CScanSub24 are the m_world->m_level chain
-// (CDDrawSurfaceMgr -> CGameLevel, board base at +0x5c). The tile board is the
-// canonical CGruntzMapMgr/CMapMgr object.
-//
-// @early-stop
-#include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
-#include <Gruntz/GruntSpawnConfig.h> // complete type for the cue calls
-#include <Gruntz/GameRegMfcPtr.h>    // g_gameReg at its REAL type (CGruntzMgr)
+
+
+#include <Mfc.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <string.h>
 
 #include <rva.h>
-#include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntSpawnConfig / CGameRegistry
-#include <Gruntz/TriggerMgr.h>   // the ONE CTriggerMgr (ex the CGruntTileMgr view)
-#include <Gruntz/GameRegistry.h> // CGameRegistry / CDDrawSurfaceMgr
-#include <Gruntz/GameLevel.h> // CGameLevel / CDDrawWorkerHost (world->m_24->m_mainPlane->m_viewRect.left)
-#include <Gruntz/GruntzMapMgr.h> // canonical tile board
-#include <stdlib.h>              // engine rand (0x11fee0)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <stdlib.h>
 
 #define PRIO(dst, r)                                                                               \
     switch (r) {                                                                                   \
@@ -104,7 +85,6 @@
             break;                                                                                 \
     }
 
-// @early-stop
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
@@ -113,7 +93,6 @@ i32 CGrunt::ScanNearestTarget() {
     i32 cx = m_lastTilePxX >> 5;
     i32 cy = m_lastTilePxY >> 5;
 
-    // Scan the tile-mgr grunt board for the nearest higher-or-equal-priority target.
     CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
     for (i32 row = 0; row < 4; row++) {
@@ -141,8 +120,6 @@ i32 CGrunt::ScanNearestTarget() {
         }
     }
 
-    // Recompute the scan box (center +- (m_2dc + m_298 + 1)) and reject `best` when its
-    // center falls outside it.
     i32 halfBox = m_defenderRadius + m_reachRadius + 1;
     Coord pt;
     GetScreenPos(&pt);
@@ -167,7 +144,6 @@ i32 CGrunt::ScanNearestTarget() {
         }
     }
 
-    // atTarget: `best` has reached its own last-tile pixel AND the tile probes free.
     i32 atTarget = 0;
     if (best != 0) {
         i32 x = best->m_object->m_screenX;
@@ -177,7 +153,6 @@ i32 CGrunt::ScanNearestTarget() {
         }
     }
 
-    // Powered-up reset gate (identical to ArrivalScanB's m_poweredUp path).
     if (m_poweredUp != 0) {
         if (m_neighborValid != 0) {
             m_neighborValid = 0;
@@ -215,12 +190,9 @@ i32 CGrunt::ScanNearestTarget() {
         return 1;
     }
 
-    // m_defenderState mode dispatch (switch -> retail's sub/dec ladder: tests 0, 1, then 2
-    // falls through; default (m_defenderState not 0/1/2) returns 1). Case bodies lay out
-    // case 2 nearest, case 0 (seek/wander) farthest, matching retail.
     switch (m_defenderState) {
         case 0: {
-            // seek / commit toward `best`, else idle wander.
+
             if (best == 0) {
                 goto L_wander;
             }
@@ -244,7 +216,6 @@ i32 CGrunt::ScanNearestTarget() {
                 }
             }
 
-            // seek: probe-move toward best's center, stamp the move, fire the cue.
             if (best == 0) {
                 goto L_wander;
             }
@@ -304,7 +275,7 @@ i32 CGrunt::ScanNearestTarget() {
             if (m_resetApplied != 0 || m_318 == 0 || static_cast<u32>(m_dwell) <= 0xbb8) {
                 return 1;
             }
-            // 64-bit elapsed = g_frameTime - {m_308:m_30c}; compare with window {m_310:m_314}.
+
             {
                 i32 lo = static_cast<i32>(g_frameTime) - m_arrivalRerollLo;
                 i32 hi = 0 - m_arrivalRerollHi
@@ -316,7 +287,7 @@ i32 CGrunt::ScanNearestTarget() {
                 if (hi > winHi
                     || (hi == winHi
                         && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
-                    // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
+
                     ResetEntranceAnimation(1, 1, 0);
                     m_arrivalRerollLo = 0;
                     m_arrivalRerollWindowLo = 0;
@@ -327,7 +298,7 @@ i32 CGrunt::ScanNearestTarget() {
                     m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                     m_arrivalRerollHi = 0;
                 } else {
-                    // not elapsed: jitter to a random nearby board cell.
+
                     CWwdGameObjectA* hud = m_object;
                     i32 baseCol = hud->m_extent.left;
                     i32 spanX = hud->m_extent.right - baseCol;

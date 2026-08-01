@@ -1,325 +1,279 @@
 #ifndef SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 #define SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 
-#include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (a typedef now - a fwd decl
+#include <Gruntz/MapMgr.h>
 #include <rva.h>
-#include <Clock64.h> // the {lo,hi} 64-bit clock pair at +0x078/+0x080
-#include <Mfc.h>     // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
+#include <Clock64.h>
+#include <Mfc.h>
 
 class CTriggerMgr;
-class CTileTriggerSwitchLogic; // FindChild's element type
-struct Coord;                  // <Gruntz/CoordNode.h> - m_0f0's element type
-class CTileTriggerContainer; // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
-class CGrunt;                // <Gruntz/Grunt.h> - the grid units the spawn machine drives
+class CTileTriggerSwitchLogic;
+struct Coord;
+class CTileTriggerContainer;
+class CGrunt;
 class CGruntzMgr;
-class CLevelInfo; // real level record (m_levelInfo member)
+class CLevelInfo;
 
 class CBattlezMapConfig {
 public:
-    // ---- load phase (BattlezMapConfig.cpp) --------------------------------
-    i32 LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff); // 0x025020
+    i32 LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff);
 
-    // ---- run phase (the BattlezMapConfig RUN-phase unit) -------------------------------
     CBattlezMapConfig();
     ~CBattlezMapConfig();
     void FreeArrays();
     i32 StepAllRowSpawns();
-    void Clear(); // 0x02ade0
+    void Clear();
     i32 EnterDefenderMode(CGrunt*, i32);
     i32 PathCrossesMarkedTile(CGrunt*);
     i32 IsCoordOccupied(CGrunt*, i32, i32);
     i32 SerializeState(CFileMemBase*, i32, i32, i32);
-    i32 PathToNearbyUnit(CGrunt*); // 0x02ed90
+    i32 PathToNearbyUnit(CGrunt*);
     i32 Serialize(void*);
     i32 Deserialize(void*);
     i32 ClaimCellFromRow(i32, i32, i32, i32);
     i32 TrySeedSpawnAt(i32, i32);
     i32 RepathToFreeCell(CGrunt*);
-    i32 ProbeUnoccupiedAt(i32, i32);    // 0x035210  unoccupied-candidate-at-(x,y) probe
-    i32 ForcePlaceFromReserve(CGrunt*); // 0x035550  spend-reserve forced place
+    i32 ProbeUnoccupiedAt(i32, i32);
+    i32 ForcePlaceFromReserve(CGrunt*);
     void* PickSpawnCoord(void*, CGrunt*, i32);
-    // The trailing three are CMapMgr::SearchEdge's own (clearFlag, maskA, maskC)
-    // slots, forwarded untouched; call sites pass masks like 0xd87 / 0x2000098b.
+
     i32 RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC, i32 clearFlag);
-    // The GetCoord-fronted twin: same two masks, clearFlag pinned to 0.
+
     i32 RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC);
-    i32 StepRowSpawn(i32 allowReserved); // 0x026470 (arg read at [esp+0x38]; callers pass 0/1)
+    i32 StepRowSpawn(i32 allowReserved);
     i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
     i32 ChooseIdleBehavior(CGrunt*);
     i32 ValidateUnitPath(CGrunt*);
-    // requireUnoccupied: on a 0x4000 tile, nonzero REJECTS a cell already claimed by
-    // m_curCell outright; zero still admits it when its action code is one of the
-    // twelve special ids (0x12f..0x149).
-    // VOID: retail never sets eax on any exit path, and MSVC5 C++ rejects a
-    // missing return (C2561), so the declared type cannot have been int.
+
     void ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
     i32 PathToNearestCandidate(CGrunt*, i32, i32, i32);
     i32 PathToNearestGoal(CGrunt*, i32, i32);
-    void* PickRandomIdleUnit(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
-    i32 AcceptAlways(CGrunt*);     // 0x02c080
-    i32 CheckQueuedSpawnTile(CGrunt*); // 0x034c70  board-tile spawn check for a queued unit
-    i32 RetargetIdleUnit(CGrunt*);     // 0x0358a0  idle-unit retarget / despawn / near-band keep
+    void* PickRandomIdleUnit(i32);
+    i32 AcceptAlways(CGrunt*);
+    i32 CheckQueuedSpawnTile(CGrunt*);
+    i32 RetargetIdleUnit(CGrunt*);
     i32 StepRowUnits();
     i32 RepathAroundBlockedTiles(CGrunt*);
-    CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH); // 0x2ab80
+    CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
     i32 winapi_02ae00_IntersectRect(CGrunt*, CGrunt*);
     i32 winapi_02c140_IntersectRect_PtInRect(CGrunt*);
-    // (col, row, requireUnoccupied) are handed straight to ClaimTilesAround.
+
     i32 winapi_02dfa0_IntersectRect(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
     i32 winapi_02e3a0_PtInRect(CGrunt*);
     i32 winapi_031ca0_IntersectRect(CGrunt*);
     i32 winapi_032060_IntersectRect(CGrunt*);
 
-    // ---- run phase, formerly modeled as the two SEPARATE .cpp-local views
-    // `CArriveMgr` and `CGruntMover` -----------------------------------------
-    // Both were views of THIS object: each names +0x08 the CTriggerMgr, +0x0c the
-    // CMapMgr/CMapMgr, +0x14 the cell-record query and +0x18 the band index -
-    // the exact head of the run view below. Their methods land here (RVA order), so
-    // the `this` casts and the duplicate layouts are gone.
-    i32 ResolveArrival(CGrunt* g); // 0x02c690  (was CArriveMgr::ResolveArrival)
-    i32 Step(CGrunt* g);           // 0x031610  (was CGruntMover::Step)
-    i32 Step33520(CGrunt* g);      // 0x033520  (was the CStepMgr view; GruntStateStep.cpp)
-    // 0x032ce0: the 10x10 trigger/goal scan. Its former CScanMgr view is this
-    // class: caller 0x267c0 passes this, +0x0c/+0xcc agree, and its +0xf4/+0xf8
-    // goal table is CPtrArray m_0f0's data/count pair.
+    i32 ResolveArrival(CGrunt* g);
+    i32 Step(CGrunt* g);
+    i32 Step33520(CGrunt* g);
+
     i32 ScanRegion(CGrunt* g);
-    // 0x035f10 (body in TileScan.cpp): the 3x3 dwell-gated tile scan. Its former
-    // CTileScan view is this class: StepRowUnits' m_2d8==0xb arm calls it on
-    // `this`; m_ctx/m_board/m_0c8 are the ex-view's m_4/m_c/m_c8.
+
     i32 Scan(CGrunt* g);
 
-    // ---- head block 0x000..0xdc: two phase-views of the same bytes ---------
-    // AUDIT 2026-07-21 (union-reconcile map; the arms are ONE field set):
-    //   m_ctx==m_levelInfo, m_triggerMgr==m_8, m_board==m_dims, m_cellQuery==m_14,
-    //   m_010 IS the load arm's CPlay* m_10 (run never touches it),
-    //   m_spawnPct@+0x30 IS DefenderChance, m_spawnInterval@+0x48 IS
-    //   GruntCreationTime (rescaled), m_repickInterval@+0x54 IS
-    //   ResourceCreationTime, m_060@+0x60 IS GauntletzChance. Merge = graft the
-    //   load arm's bute-key names onto the run skeleton (mechanical; deferred).
     union {
-        // Run-phase (spawn state-machine) view.
+
         struct {
-            i32 m_active;                       // +0x000  active gate (methods bail when 0)
-            CGruntzMgr* m_ctx;                  // +0x004  the level (== the LoadConfig `lvl` arg)
-            CTriggerMgr* m_triggerMgr;          // +0x008  the level's CTriggerMgr (4x15 grid)
-            CMapMgr* m_board;                   // +0x00c  the CBrickz pathfinding-grid / tile-map
-            i32 m_010;                          // +0x010  (untouched by run ctor)
-            CTileTriggerContainer* m_cellQuery; // +0x014  the level's tile-trigger container
-                                                //         (LoadConfig-seeded from m_10->m_2e4;
-                                                //         run phase drives FindChild/
-                                                //         FindByField0C on it)
-            i32 m_curCell;                      // +0x018  current cell index (=0)
-            i32 m_01c;                          // +0x01c  = 1
-            i32 m_020;                          // +0x020  = 0x40
-            i32 m_024;                          // +0x024  = 0x40
-            i32 m_028;                          // +0x028  = 0x40
-            i32 m_02c;                          // +0x02c  = 0x32
-            i32 m_spawnPct;                     // +0x030  = 0x32
-            i32 m_034;                          // +0x034
-            i32 m_038;                          // +0x038
-            i32 m_03c;                          // +0x03c
-            i32 m_040;                          // +0x040
-            i32 m_044;                          // +0x044
-            i32 m_spawnInterval;                // +0x048  = 0
-            i32 m_spawnTimer;                   // +0x04c  = 0
-            i32 m_spawnLastFire;                // +0x050  = 0
-            i32 m_repickInterval;               // +0x054  = 0
-            i32 m_repickLastFire;               // +0x058  = 0
-            i32 m_repickTimer;                  // +0x05c  = 0
-            i32 m_060;                          // +0x060
-            i32 m_064;                          // +0x064
-            i32 m_068;                          // +0x068
-            i32 m_06c;                          // +0x06c
-            i32 m_070;                          // +0x070
-            i32 m_budgetMul;                    // +0x074  = 0x19
-            // +0x078/+0x080 are the route-debounce clock pair: compared 64-bit,
-            // written (and serialized) as their dword halves - see <Clock64.h>.
+            i32 m_active;
+            CGruntzMgr* m_ctx;
+            CTriggerMgr* m_triggerMgr;
+            CMapMgr* m_board;
+            i32 m_010;
+            CTileTriggerContainer* m_cellQuery;
+
+            i32 m_curCell;
+            i32 m_01c;
+            i32 m_020;
+            i32 m_024;
+            i32 m_028;
+            i32 m_02c;
+            i32 m_spawnPct;
+            i32 m_034;
+            i32 m_038;
+            i32 m_03c;
+            i32 m_040;
+            i32 m_044;
+            i32 m_spawnInterval;
+            i32 m_spawnTimer;
+            i32 m_spawnLastFire;
+            i32 m_repickInterval;
+            i32 m_repickLastFire;
+            i32 m_repickTimer;
+            i32 m_060;
+            i32 m_064;
+            i32 m_068;
+            i32 m_06c;
+            i32 m_070;
+            i32 m_budgetMul;
+
             union {
-                Clock64 m_routeClock; // +0x078
+                Clock64 m_routeClock;
                 struct {
-                    i32 m_scratch78; // +0x078  = 0
-                    i32 m_scratch7c; // +0x07c  = 0
+                    i32 m_scratch78;
+                    i32 m_scratch7c;
                 };
             };
             union {
-                Clock64 m_routeWindow; // +0x080
+                Clock64 m_routeWindow;
                 struct {
-                    i32 m_scratch80; // +0x080  = 0
-                    i32 m_scratch84; // +0x084  = 0
+                    i32 m_scratch80;
+                    i32 m_scratch84;
                 };
             };
-            i32 m_088;           // +0x088  = 0x32
-            i32 m_08c;           // +0x08c  = 5
-            i32 m_090;           // +0x090  = 5
-            i32 m_094;           // +0x094  = 8
-            i32 m_098;           // +0x098  = 8
-            i32 m_09c;           // +0x09c  = 0x7d0
-            i32 m_0a0;           // +0x0a0  = 0x7d0
-            i32 m_0a4;           // +0x0a4  = 6
-            i32 m_0a8;           // +0x0a8  = 0x32
-            i32 m_0ac;           // +0x0ac  = 8
-            i32 m_0b0;           // +0x0b0  = 8
-            i32 m_reserveBudget; // +0x0b4  = 0x3e8
-            i32 m_0b8;           // +0x0b8  = 0x7d0
-            i32 m_moveBudget;    // +0x0bc  = 0x3e8
-            i32 m_0c0;           // +0x0c0  = 0xa
-            i32 m_repathBudget;  // +0x0c4  = 0xbb8
-            i32 m_0c8;           // +0x0c8  = 0x7530
-            i32 m_0cc;           // +0x0cc  = 0xbb8
-            i32 m_0d0;           // +0x0d0  (8 B with m_0d4)
-            i32 m_0d4;           // +0x0d4
-            i32 m_0d8;           // +0x0d8
+            i32 m_088;
+            i32 m_08c;
+            i32 m_090;
+            i32 m_094;
+            i32 m_098;
+            i32 m_09c;
+            i32 m_0a0;
+            i32 m_0a4;
+            i32 m_0a8;
+            i32 m_0ac;
+            i32 m_0b0;
+            i32 m_reserveBudget;
+            i32 m_0b8;
+            i32 m_moveBudget;
+            i32 m_0c0;
+            i32 m_repathBudget;
+            i32 m_0c8;
+            i32 m_0cc;
+            i32 m_0d0;
+            i32 m_0d4;
+            i32 m_0d8;
         };
-        // Load-phase (LoadConfig) view.
+
         struct {
-            i32 m_0;                     // +0x00  = 1
-            CGruntzMgr* m_levelInfo;     // +0x04  = mgr (the SAME slot + object as m_ctx;
-                                         //         the ex-"level" IS the manager)
-            CTriggerMgr* m_8;            // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
-            CMapMgr* m_dims;             // +0x0c  = lvl->m_dims        (== m_board)
-            class CPlay* m_10;           // +0x10  = mgr->m_curState (the play state;
-                                         //         its +0x2e4 spawn table feeds m_14)
-            CTileTriggerContainer* m_14; // +0x14 = m_10->m_2e4   (== m_cellQuery)
-            i32 m_ownerId;               // +0x18  = id (owner/team id)
+            i32 m_0;
+            CGruntzMgr* m_levelInfo;
+
+            CTriggerMgr* m_8;
+            CMapMgr* m_dims;
+            class CPlay* m_10;
+
+            CTileTriggerContainer* m_14;
+            i32 m_ownerId;
             char m_pad1c[0x30 - 0x1c];
-            DWORD m_defenderChance; // +0x30  DefenderChance
+            DWORD m_defenderChance;
             char m_pad34[0x48 - 0x34];
-            DWORD m_gruntCreationTime;    // +0x48  GruntCreationTime (rescaled)
-            DWORD m_4c;                   // +0x4c
-            i32 m_50;                     // +0x50
-            DWORD m_resourceCreationTime; // +0x54  ResourceCreationTime (rescaled)
-            i32 m_58;                     // +0x58
-            i32 m_5c;                     // +0x5c
-            DWORD m_gauntletzChance;      // +0x60  GauntletzChance
-            DWORD m_shovelzChance;        // +0x64  ShovelzChance
-            DWORD m_spyzChance;           // +0x68  SpyzChance
-            DWORD m_brickzChance;         // +0x6c  BrickzChance
-            DWORD m_gooberzChance;        // +0x70  GooberzChance
-            DWORD m_gruntRatio;           // +0x74  GruntRatio
-            i32 m_78;                     // +0x78
-            i32 m_7c;                     // +0x7c
-            i32 m_80;                     // +0x80
-            i32 m_84;                     // +0x84
+            DWORD m_gruntCreationTime;
+            DWORD m_4c;
+            i32 m_50;
+            DWORD m_resourceCreationTime;
+            i32 m_58;
+            i32 m_5c;
+            DWORD m_gauntletzChance;
+            DWORD m_shovelzChance;
+            DWORD m_spyzChance;
+            DWORD m_brickzChance;
+            DWORD m_gooberzChance;
+            DWORD m_gruntRatio;
+            i32 m_78;
+            i32 m_7c;
+            i32 m_80;
+            i32 m_84;
             char m_pad88[0x8c - 0x88];
-            i32 m_8c; // +0x8c  = 6
-            i32 m_90; // +0x90  = 6
-            i32 m_94; // +0x94  = 6
-            i32 m_98; // +0x98  = 6
+            i32 m_8c;
+            i32 m_90;
+            i32 m_94;
+            i32 m_98;
             char m_pad9c[0xa4 - 0x9c];
-            i32 m_a4; // +0xa4  = 8
+            i32 m_a4;
             char m_pada8[0xac - 0xa8];
-            u32 m_ac; // +0xac  = m_dims->m_c / 3
-            u32 m_b0; // +0xb0  = m_dims->m_c / 3
+            u32 m_ac;
+            u32 m_b0;
             char m_padb4[0xc0 - 0xb4];
-            u32 m_c0; // +0xc0  = m_dims->m_c >> 2
+            u32 m_c0;
             char m_padc4[0xd0 - 0xc4];
-            i32 m_markerX; // +0xd0  loop-2 fast-path marker X
-            i32 m_markerY; // +0xd4  loop-2 fast-path marker Y
+            i32 m_markerX;
+            i32 m_markerY;
             char m_padd8[0xdc - 0xd8];
         };
     };
 
-    // ---- shared array block 0xdc..0x12c -----------------------------------
-    CPtrArray m_candArray; // +0x0dc  CPtrArray  (LoadConfig loop-1 start-coord array)
-    CPtrArray m_0f0;       // +0x0f0  CPtrArray  (LoadConfig loop-3 start-coord array)
-    // CPtrArray hands out void*; the element type goes back on here, at one seam,
-    // rather than at each random-goal pick. No pun needed: void* -> Coord* is a plain
-    // pointer conversion, and CPtrArray::GetAt is the inline m_pData[i] that
-    // GetData()[i] also lowers to - same bytes, no reinterpret.
+    CPtrArray m_candArray;
+    CPtrArray m_0f0;
+
     Coord* CoordAt(i32 index) {
         return static_cast<Coord*>(m_0f0.GetAt(index));
     }
-    CDWordArray m_104; // +0x104  CDWordArray
-    CDWordArray m_118; // +0x118  CDWordArray
+    CDWordArray m_104;
+    CDWordArray m_118;
 
-    // ---- tail block 0x12c..0x1e8: two phase-views of the same bytes --------
-    // AUDIT 2026-07-21: the run arm's ascending "band threshold" tables ARE the
-    // load arm's cumulative per-item percent totals (LoadConfig seeds running
-    // sums of the [Battlez] keys; the roll compares ascending) - band-C = the
-    // brick Pcts, band-B = the toy Pcts, band-A = the toolz Pcts. One table;
-    // merge = array spelling + per-index bute-key comments (deferred with the head).
     union {
-        // Run-phase (spawn) view.
+
         struct {
-            i32 m_12c;        // +0x12c  (4-dword inline array)
-            i32 m_130;        // +0x130
-            i32 m_134;        // +0x134
-            i32 m_138;        // +0x138
-            i32 m_13c;        // +0x13c  = 0
-            i32 m_140;        // +0x140  = 0
-            i32 m_144;        // +0x144
-            i32 m_claimTimer; // +0x148  (cleared by 02c0a0)
-            i32 m_14c;        // +0x14c
-            // Idle-behaviour chooser config: m_bandSplitA/B split the top-level roll
-            // into three bands; m_band*Div are per-roll divisors; each m_band*Thresh[]
-            // is an ascending probability table mapping a roll to an anim/state index.
-            i32 m_bandSplitA;      // +0x150  band-A/B split bound
-            i32 m_bandSplitB;      // +0x154  band-B/C split bound
-            i32 m_bandDiv;         // +0x158  top-level band-selector roll divisor
-            i32 m_bandCThresh[3];  // +0x15c  band-C thresholds
-            i32 m_bandCDiv;        // +0x168  band-C roll divisor
-            i32 m_bandBThresh[9];  // +0x16c  band-B thresholds
-            i32 m_bandBDiv;        // +0x190  band-B roll divisor
-            i32 m_bandAThresh[20]; // +0x194  band-A thresholds
-            i32 m_bandADiv;        // +0x1e4  band-A roll divisor
+            i32 m_12c;
+            i32 m_130;
+            i32 m_134;
+            i32 m_138;
+            i32 m_13c;
+            i32 m_140;
+            i32 m_144;
+            i32 m_claimTimer;
+            i32 m_14c;
+
+            i32 m_bandSplitA;
+            i32 m_bandSplitB;
+            i32 m_bandDiv;
+            i32 m_bandCThresh[3];
+            i32 m_bandCDiv;
+            i32 m_bandBThresh[9];
+            i32 m_bandBDiv;
+            i32 m_bandAThresh[20];
+            i32 m_bandADiv;
         };
-        // Load-phase (LoadConfig) view: the same 0x150.. table is the per-item
-        // spawn-budget running totals seeded from the [Battlez] bute keys.
+
         struct {
             char m_padTail12c[0x140 - 0x12c];
-            i32 m_140b;             // +0x140 = 0
-            i32 m_144b;             // +0x144 = ((rand%4)+5)*125*8
-            i32 m_148;              // +0x148 = 0
-            i32 m_14cb;             // +0x14c = 0
-            i32 m_toolzPct;         // +0x150 ToolzPercent (running total seed)
-            i32 m_toyzPct;          // +0x154 ToyzPercent
-            i32 m_brickzPct;        // +0x158 BrickzPercent
-            i32 m_redBrickPct;      // +0x15c RedBrick
-            i32 m_blueBrickPct;     // +0x160 BlueBrick
-            i32 m_goldBrickPct;     // +0x164 GoldBrick
-            i32 m_blackBrickPct;    // +0x168 BlackBrick
-            i32 m_babyWalkerzPct;   // +0x16c BabyWalkerz
-            i32 m_beachBallzPct;    // +0x170 BeachBallz
-            i32 m_bigWheelzPct;     // +0x174 BigWheelz
-            i32 m_goKartzPct;       // +0x178 GoKartz
-            i32 m_jackInTheBoxzPct; // +0x17c JackInTheBoxz
-            i32 m_jumpRopezPct;     // +0x180 JumpRopez
-            i32 m_pogoStickzPct;    // +0x184 PogoStickz
-            i32 m_scrollzPct;       // +0x188 Scrollz
-            i32 m_squeakToyzPct;    // +0x18c SqueakToyz
-            i32 m_yoyozPct;         // +0x190 Yoyoz
-            i32 m_bombzPct;         // +0x194 Bombz
-            i32 m_boomerangzPct;    // +0x198 Boomerangz (+ Brickz)
-            i32 m_clubzPct;         // +0x19c Clubz
-            i32 m_gauntletzPct;     // +0x1a0 Gauntletz
-            i32 m_glovezPct;        // +0x1a4 Glovez
-            i32 m_gooberzPct;       // +0x1a8 Gooberz
-            i32 m_gravityBootzPct;  // +0x1ac GravityBootz
-            i32 m_gunHatzPct;       // +0x1b0 GunHatz
-            i32 m_nerfGunzPct;      // +0x1b4 NerfGunz
-            i32 m_rockzPct;         // +0x1b8 Rockz
-            i32 m_shieldzPct;       // +0x1bc Shieldz
-            i32 m_shovelzPct;       // +0x1c0 Shovelz
-            i32 m_springzPct;       // +0x1c4 Springz
-            i32 m_spyzPct;          // +0x1c8 Spyz
-            i32 m_swordzPct;        // +0x1cc Swordz
-            i32 m_timeBombzPct;     // +0x1d0 TimeBombz
-            i32 m_toobzPct;         // +0x1d4 Toobz
-            i32 m_wandzPct;         // +0x1d8 Wandz
-            i32 m_welderzPct;       // +0x1dc Welderz
-            i32 m_wingzPct;         // +0x1e0 Wingz
-            i32 m_1e4;              // +0x1e4 (final running total)
+            i32 m_140b;
+            i32 m_144b;
+            i32 m_148;
+            i32 m_14cb;
+            i32 m_toolzPct;
+            i32 m_toyzPct;
+            i32 m_brickzPct;
+            i32 m_redBrickPct;
+            i32 m_blueBrickPct;
+            i32 m_goldBrickPct;
+            i32 m_blackBrickPct;
+            i32 m_babyWalkerzPct;
+            i32 m_beachBallzPct;
+            i32 m_bigWheelzPct;
+            i32 m_goKartzPct;
+            i32 m_jackInTheBoxzPct;
+            i32 m_jumpRopezPct;
+            i32 m_pogoStickzPct;
+            i32 m_scrollzPct;
+            i32 m_squeakToyzPct;
+            i32 m_yoyozPct;
+            i32 m_bombzPct;
+            i32 m_boomerangzPct;
+            i32 m_clubzPct;
+            i32 m_gauntletzPct;
+            i32 m_glovezPct;
+            i32 m_gooberzPct;
+            i32 m_gravityBootzPct;
+            i32 m_gunHatzPct;
+            i32 m_nerfGunzPct;
+            i32 m_rockzPct;
+            i32 m_shieldzPct;
+            i32 m_shovelzPct;
+            i32 m_springzPct;
+            i32 m_spyzPct;
+            i32 m_swordzPct;
+            i32 m_timeBombzPct;
+            i32 m_toobzPct;
+            i32 m_wandzPct;
+            i32 m_welderzPct;
+            i32 m_wingzPct;
+            i32 m_1e4;
         };
     };
 };
 SIZE(0x1e8);
 
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
 extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
 extern const float g_diffScale;

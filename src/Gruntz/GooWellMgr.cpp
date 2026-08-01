@@ -1,32 +1,30 @@
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/TriggerMgr.h>       // the canonical class this TU's method extends
-#include <Wwd/WwdGameObjectFamily.h> // CGameObject (the wide-object family base)
+#include <Gruntz/TriggerMgr.h>
+#include <Wwd/WwdGameObjectFamily.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/Warlord.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>
-#include <Bute/ButeMgr.h>                // CButeMgr (g_buteMgr.GetDwordDef)
-#include <Gruntz/GameRegistry.h>         // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/ActionOptionsMenuBar.h> // the real +0x25c overlay (Activate @0x9300)
-#include <Gruntz/LeafCue.h>  // the name-map VALUE (its +0x10 DSoundCloneInst plays the cue)
-#include <Gruntz/Multi.h>    // CMulti : CPlay - the +0x594 battlez gate is ITS member
-#include <Gruntz/Play.h>     // the real CPlay (EnterOverlayDrag / ClearPlacedObjects)
-#include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan - the world holder's +0x28 named-cue registry
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + GruntObjEntry - the +0x08 id->object map
-#include <Utils/MapTyped.h>           // typed MFC map lookups
+#include <Bute/ButeMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/ActionOptionsMenuBar.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SoundCue.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Utils/MapTyped.h>
 
-// ---------------------------------------------------------------------------
-// 0x6eb80 (__thiscall, ret 4) - the per-frame goo-well / win-condition update.
 // @early-stop
 RVA(0x0006eb80, 0x5ef)
 i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     if (g_gameReg->m_soundEnabled) {
-        // LEVEL_ROLLINGBALL loop (m_rollingballLoop), wanted by m_rollingballWanted.
+
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
                 void* out_v = 0;
@@ -43,7 +41,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             m_rollingballLoop->StopAndRewind();
             m_rollingballLoop = 0;
         }
-        // GAME_TELEPORTLOOP loop (m_teleportLoop), wanted by m_teleportWanted.
+
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
                 void* out_v = 0;
@@ -64,7 +62,6 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     m_rollingballWanted = 0;
     m_teleportWanted = 0;
 
-    // Count joined-and-alive players; remember the last slot scanned.
     i32 count = 0;
     GruntzPlayer* pslot = 0;
     for (i32 k = 0; k < 4; k++) {
@@ -92,8 +89,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         }
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
             if (g_gameReg->m_134 == 2) {
-                // +0x594 lives past CPlay's tail: it is CMulti::m_594 (CMulti : CPlay),
-                // and the m_134 == 2 arm is exactly the mode where m_curState is a CMulti.
+
                 (static_cast<CMulti*>(g_gameReg->m_curState))->m_594 = 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
@@ -137,8 +133,8 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                                     out
                                 )
                                 && out) {
-                                if (out->m_7c->m_logic) {
-                                    (static_cast<CWarlord*>(out->m_7c->m_logic))
+                                if (out->m_animWorker->m_logic) {
+                                    (static_cast<CWarlord*>(out->m_animWorker->m_logic))
                                         ->ResolveDeathAnimation();
                                 }
                             }
@@ -157,8 +153,8 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                                     out
                                 )
                                 && out) {
-                                if (out->m_7c->m_logic) {
-                                    (static_cast<CWarlord*>(out->m_7c->m_logic))
+                                if (out->m_animWorker->m_logic) {
+                                    (static_cast<CWarlord*>(out->m_animWorker->m_logic))
                                         ->RaiseBattleAlert();
                                 }
                             }
@@ -171,7 +167,6 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             }
         }
 
-        // Tail: reached when the mode is 1, or no winner resolved.
         if (m_overlay) {
             m_overlay->Activate(off);
         }
@@ -192,19 +187,19 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             }
             return 0;
         }
-        // Goo respawn timer.
+
         if (static_cast<i64>(g_frameTime) - m_gooTimerBaseLo >= m_gooIntervalLo) {
             obj->m_guts->AdvanceGauge(1);
             m_gooIntervalLo = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimerBaseLo = g_frameTime;
         }
-        // Resource respawn timer.
+
         if (static_cast<i64>(g_frameTime) - m_resourceTimerBaseLo >= m_resourceIntervalLo) {
             obj->m_guts->UpdateRezMachineWakeStatusBar();
             m_resourceIntervalLo = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
             m_resourceTimerBaseLo = g_frameTime;
         }
-        // Last-player-standing: any other live player blocks the win Notify.
+
         for (i32 i = 0; i < 4; i++) {
             if (i == g_curPlayer) {
                 continue;

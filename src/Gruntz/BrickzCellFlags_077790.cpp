@@ -1,29 +1,18 @@
 #include <rva.h>
-#include <Gruntz/Grunt.h>      // CGrunt (== CGrunt) + CGruntHud - the grid cells
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindNearestEnemy's owner)
-#include <Mfc.h> // CObArray (CGameLevel::m_imageSets) + RECT/POINT/PtInRect (FindNearest)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Mfc.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/GameLevel.h>    // CGameLevel / CDDrawWorkerHost / CTileImageSet (ex Brickz* views)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (CMapMgr::m_attrMgr's real type)
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
 
-// ---------------------------------------------------------------------------
-// CMapMgr::ComputeCellFlags (0x077790) - terrain-grid cell-flag compute.
-// Look up the 1-based bute-type id for cell (x,y) through the m_78 attribute
-// manager (clamp x/y into the grid, index the flat id table; id 0xeeeeeeee /
-// 0xffffffff = empty), switch it to a packed flag value, OR in the preserved high
-// bits (0x1bf40000 / 0x20000000) of the old cell flags, stash id3 at +0xc and the
-// type id at +0x10, then run the 8-neighbour edge-update walk over the 3x3 block
-// around (x,y): for each in-bounds neighbour cell whose own flag bit 0x100 is set,
-// clear its 0x1000 bit and re-set it when one of the four opposite neighbour pairs
-// is both passable (no 0x939 bit).
 // @early-stop
 RVA(0x00077790, 0x630)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
-    // The target cell pointer is computed first and held in a callee-saved register
-    // across the whole body (retail's esi).
+
     BrickzCell* cell = &m_rows[y][x];
-    CGameLevel* level = m_attrMgr->m_level; // the world holder's CGameLevel (ex BrickzAttrMgr)
-    // Clamp the lookup coordinate into the main plane's extent.
+    CGameLevel* level = m_attrMgr->m_level;
+
     i32 cx = x;
     if (x < 0) {
         cx = 0;
@@ -47,10 +36,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     i32 oldFlags = cell->m_0;
     i32 keep = oldFlags & 0x1bf40000;
     i32 edgeBit = oldFlags & 0x20000000;
-    // Each case writes the packed flag value straight into cell->m_0 (the retail
-    // `mov [esi],imm` per body). The case GROUPS are written in retail's .text
-    // body-layout order (so the jump table + byte index LUT match); the preserved
-    // high bits are merged after.
+
     switch (typeCode - 1) {
         case 0:
             cell->m_0 = 0x1;
@@ -215,7 +201,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     cell->m_0 |= keep;
     cell->m_c = id3;
     cell->m_10 = typeCode;
-    // 8-neighbour edge-update walk over the 3x3 block around (x,y).
+
     i32 colCount = static_cast<i32>(m_width);
     for (i32 r = y - 1; r <= y + 1; r++) {
         if (r < 0 || static_cast<u32>(r) >= static_cast<u32>(m_height)) {
@@ -262,11 +248,6 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
     m_tileGrid[m_colOffsets[y] + x] = id;
 }
 
-// ---------------------------------------------------------------------------
-// 0x77df0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(w): of the live,
-// non-kind-0x36 cells in the 4x15 grid (skipping row w->m_1ec), pick the one nearest
-// the reference tile; null it unless it lands inside the reference object's
-// +/-(m_298+m_2dc+1) tile box. Tile coords are 1/32-pixel units (>>5).
 // @early-stop
 RVA(0x00077df0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {

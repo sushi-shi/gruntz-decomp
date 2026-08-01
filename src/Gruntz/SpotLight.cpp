@@ -1,13 +1,13 @@
 #include <rva.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Mfc.h>
 #include <math.h>
-#include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA (the "A" name->node bute map)
-#include <Gruntz/SpotLight.h>       // canonical CSpotLight : CUserLogic (size 0xa8)
-#include <Gruntz/GameRegistry.h>    // g_gameReg singleton (+0x68 CTriggerMgr* cmd grid)
-#include <Gruntz/TriggerMgr.h>      // CTriggerMgr::m_grid (+0x1c 4x15 placed-cell grid)
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/SpotLight.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/TriggerMgr.h>
 
 // @early-stop
 RVA(0x000b1ee0, 0x11d)
@@ -15,7 +15,7 @@ int CSpotLight::Update() {
     if (m_object->m_114 == 1) {
         double c = cos(m_90);
         double s = sin(m_90);
-        // hoist the m_90 advance so cl schedules the g_frameDelta term early (as retail)
+
         double newAngle = static_cast<double>(g_frameDelta) * m_58 + m_90;
         m_60 = -(m_88 * s + m_80 * c);
         m_68 = m_80 * s - m_88 * c;

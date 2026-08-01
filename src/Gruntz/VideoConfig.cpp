@@ -1,44 +1,30 @@
-// VideoConfig.cpp - original TU: options dialogs (@identity-TODO), interval
-// 0x0363a0-0x037900. ONE original TU per docs/exe-map/interval-dossiers.md #10c:
-// our videoconfig + gameoptionsdialog units + the NINE menustate dialog helpers
-// inside the interval were slices of this single file - the weave is
-// videoconfig | gameoptionsdialog | menustate | play | menustate | videoconfig |
-// menustate | gameoptionsdialog | videoconfig, and the menustate 27-frag init run
-// @0x35c40 directly precedes the interval. The REAL CMenuState core (0xa02c0+,
-// with its own frag runs) stays in MenuState.cpp.
-//
-// Contents (C:\Proj\Gruntz): GameOptionsDlgProc + VideoOptionsDlgProc + their
-// load/save/scroll/toggle helpers, the video-resolution combo pair, and
-// CPlay::ApplyGameOptions (dossier seam 0x36be0 - applies the dialog's staged
-// settings; @identity-TODO whether it is really a CPlay member or a free/dialog
-// helper).
-//
-// Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
-#include <Gruntz/VideoConfig.h> // C-linkage decls for the ex-wrapped defs
-#include <Mfc.h> // afx.h FIRST (before any windows.h): GameRegistry.h/GruntzMgr.h pull MFC
+
+
+#include <Gruntz/VideoConfig.h>
+#include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr - the 0x24556c settings singleton's one true shape
-#include <Gruntz/Play.h>      // CPlay (ApplyGameOptions host)
-#include <Gruntz/State.h>     // CState::Update (m_curState state probe)
-#include <Gruntz/LeafCue.h>   // LeafCue (the config-cue leaf: m_10/m_14/m_18) for ScrollDialog
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/State.h>
+#include <Gruntz/LeafCue.h>
 #include <Net/NetMgr.h>
-#include <Gruntz/Multi.h> // CMulti::SendChannelStat422/423 (dispatched on m_curState; netmgr-vs-cmulti split)
-#include <Gruntz/Wnd.h>        // the real MFC CWnd via <afxwin.h> (FromHandle; m_hWnd @+0x1c)
-#include <Gruntz/Enums.h>      // RES_640x480/RES_800x600/RES_1024x768
-#include <string.h>            // strcat (inline repnz scasb + rep movs under /O2 /Oi)
-#include <Rez/RezSync.h>       // ex Globals.h
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/Multi.h>
+#include <Gruntz/Wnd.h>
+#include <Gruntz/Enums.h>
+#include <string.h>
+#include <Rez/RezSync.h>
+#include <Gruntz/SoundState.h>
 #include <afxcmn.h>
-#include <Net/NetLobby.h> // NetLobby::g_curDlg
-#include <MsgParam.h>     // the window-message parameter's pointer/word pair
+#include <Net/NetLobby.h>
+#include <MsgParam.h>
 
 typedef enum VideoConfigDlgId {
-    IDC_RESCAPTION = 0x52d, // the "current resolution" static text ctrl
+    IDC_RESCAPTION = 0x52d,
 } VideoConfigDlgId;
 
 DATA(0x0020ccc4)
-i32 g_videoResolutionMode = 1; // retail .data initial value 1
+i32 g_videoResolutionMode = 1;
 
 DATA(0x0022bd64)
 i32 g_opt_22bd64 = 0;
@@ -62,21 +48,21 @@ DATA(0x0022bdd4)
 i32 g_opt_22bdd4 = 0;
 
 DATA(0x0022bdd8)
-HWND g_optHwndMusic = 0; // IDC 0x46d
+HWND g_optHwndMusic = 0;
 DATA(0x0022bddc)
-HWND g_optHwndVoice = 0; // IDC 0x475
+HWND g_optHwndVoice = 0;
 DATA(0x0022bde0)
-HWND g_optHwndSpeech = 0; // IDC 0x471
+HWND g_optHwndSpeech = 0;
 DATA(0x0022bde4)
-HWND g_optHwndEasy = 0; // IDC 0x455
+HWND g_optHwndEasy = 0;
 DATA(0x0022bde8)
-HWND g_optHwndResSlider = 0; // IDC 0x52c
+HWND g_optHwndResSlider = 0;
 DATA(0x0022bdec)
-HWND g_optHwndCk6 = 0; // IDC 0x472
+HWND g_optHwndCk6 = 0;
 DATA(0x0022bdf0)
-HWND g_optHwndCk7 = 0; // IDC 0x470
+HWND g_optHwndCk7 = 0;
 DATA(0x0022bdf4)
-HWND g_optHwndCk8 = 0; // IDC 0x476
+HWND g_optHwndCk8 = 0;
 
 RVA(0x000363a0, 0x41)
 i32 GetResolutionCode() {
@@ -91,40 +77,15 @@ i32 GetResolutionCode() {
     return RES_640x480;
 }
 
-// ---------------------------------------------------------------------------
-// GameOptionsDlgProc @0x036410, the master game-options dialog procedure.
-// WM_INITDIALOG loads the option checkboxes/slider from the settings singleton and
-// greys out the ones the current mode locks; WM_COMMAND routes each checkbox toggle
-// to its handler and IDOK/IDCANCEL commit + close (re-seeding the saved resolution);
-// WM_HSCROLL drives the resolution slider.
-//
-// Items (1) and (2) of the old note are GONE with the 0x36be0 phantom (2026-07-29,
-// 99.09 -> 100.00 EXACT): the IDCANCEL arm's `call 0x3f26` is a BARE call with no
-// receiver, and 0x36be0 opens `mov ecx,[g_gameReg]` without ever reading an incoming
-// ecx - it is a free, argument-less ApplyGameOptions(), not a CPlay __thiscall method.
-// Modelling it as a method emitted an 8-byte receiver load here that retail does not
-// have. Item (3), the
-// outer msg-switch default placement, is FIXED (2026-07-27, 96.05 -> 97.64): base 12
-// rets / retail 10; making the WM_COMMAND arm's trailing unrouted-notification exit a
-// `break` instead of `return FALSE` merges it with the switch default, which parks that
-// block at the bottom (retail 0x36564) and inverts the ladder's last compare so
-// WM_HSCROLL falls through. Item (4) is FIXED TOO (2026-07-29, 96.05 -> 99.09): the
-// sending control's HWND is named ONCE per message arm instead of re-derived from
-// lParam at each of the eight uses - retail caches it in a register, which the
-// per-use spelling could not express. The
-// cross-view dispatch (m_curState's game-manager/net dual role via the CNetMgr
-// cross-cast) is reloc-masked scaffolding pending those classes' shared modeling.
 RVA(0x00036410, 0x366)
 BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
 
     switch (msg) {
-        case WM_HSCROLL: { // 0x114
+        case WM_HSCROLL: {
             i32 code = static_cast<i32>((wParam & 0xffff));
             i32 pos = static_cast<i32>((wParam >> 0x10));
-            // WM_HSCROLL's lParam IS the scrollbar's window handle (<MsgParam.h>);
-            // it is named ONCE here instead of at each of the three uses - retail
-            // caches it in a register, which the per-use spelling cannot express.
+
             MsgParam from;
             from.m_lparam = lParam;
             HWND bar = from.m_hwnd;
@@ -136,16 +97,16 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             return TRUE;
         }
 
-        case WM_COMMAND: // 0x111
+        case WM_COMMAND:
             switch (wParam) {
-                case 2: // IDCANCEL: discard
+                case 2:
                     if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
-                case 1: { // IDOK: commit
+                case 1: {
                     if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
@@ -171,8 +132,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     return TRUE;
                 }
             }
-            // control notifications: route each checkbox to its handler. WM_COMMAND's
-            // lParam IS the sending control's window handle (Win32 ABI), named once.
+
             {
                 MsgParam from;
                 from.m_lparam = lParam;
@@ -193,18 +153,15 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     OnToggleEasyModeOption(hDlg);
                     return FALSE;
                 }
-                // the LAST checkbox does not return: it falls through into the same
-                // `return FALSE` the unrouted-notification path uses (retail's 0x36520
-                // is reached by this block's two guards AND by its fallthrough)
+
                 if (g_optHwndResSlider != 0 && ctrl == g_optHwndResSlider) {
                     OnToggleCk5Option(hDlg);
                 }
             }
-            // the unrouted-notification exit IS the switch default (retail 0x36564),
-            // so the ladder's last compare inverts and WM_HSCROLL falls through
+
             break;
 
-        case WM_INITDIALOG: { // 0x110
+        case WM_INITDIALOG: {
             LoadGameOptionsToDialog(hDlg);
             g_optHwndMusic = GetDlgItem(hDlg, 0x46d);
             g_optHwndVoice = GetDlgItem(hDlg, 0x475);
@@ -294,14 +251,6 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     );
 }
 
-// ReadMenuOptionsDialog @0x036a30 - commit the front-end options dialog's control
-// state into the game-manager settings: the master-enable checkbox (0x455), the
-// video-resolution slider (0x52c, clamped 0..100), and - unless globally muted -
-// the music/sound block (0x46d/0x470/0x475/0x476) and, when the speech channel is
-// present, the speech block (0x471/0x472). The trailing master/quality slider
-// (0x478) is always committed. A free __cdecl function (no `this`). The SAME
-// commit idiom as CPlay::ApplyGameOptions, with dialog reads as the value source.
-//
 // @early-stop
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
@@ -340,15 +289,6 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     }
 }
 
-// ===========================================================================
-// CPlay::ApplyGameOptions (0x036be0, dossier seam: play -> this TU) - push the
-// current staged option values into the game manager (*g_gameReg). Mirrors the
-// video-resolution mode global, stamps the easy/voice/scroll manager words, and -
-// unless the runtime lock gates say otherwise - forwards the input flag/state
-// options and (when the sound object's m_enabled gate is live) commits the music
-// state + XMIDI volume. The staged-value RESTORE twin of ReadMenuOptionsDialog
-// (the dlgproc's IDCANCEL path calls it to roll the live settings back).
-// ===========================================================================
 // @early-stop
 RVA(0x00036be0, 0xd3)
 void ApplyGameOptions() {
@@ -410,8 +350,7 @@ void OnToggleEasyModeOption(HWND hWnd) {
 }
 
 namespace ApiCallerStubs {
-    // __cdecl(hDlg, id, pos): set dialog item `id`'s scroll position (SIF_POS only,
-    // redraw). The 3-arg sibling of winapi_0371e0 (which also sets range/page).
+
     RVA(0x00036e50, 0x43)
     void winapi_036e50_GetDlgItem_SetScrollPos(HWND hDlg, i32 id, i32 pos) {
         HWND h = GetDlgItem(hDlg, id);
@@ -424,7 +363,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
     RVA(0x00036ec0, 0x41)
     i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id) {
         HWND h = GetDlgItem(hDlg, id);
@@ -481,7 +419,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
 }
 
 RVA(0x000370a0, 0xf1)
-void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 /*code*/, i32 /*pos*/) {
+void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
     CWnd* pCtrl = CWnd::FromHandle(static_cast<HWND__*>(hCombo));
     if (!pCtrl) {
         return;
@@ -512,7 +450,7 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 /*code*/, i32 /*pos*/
 }
 
 namespace ApiCallerStubs {
-    // __cdecl(hDlg, id, pos, max): set dialog item `id`'s scroll range/page/pos.
+
     RVA(0x000371e0, 0x5b)
     void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max) {
         HWND h = GetDlgItem(hDlg, id);
@@ -529,18 +467,6 @@ namespace ApiCallerStubs {
     }
 } // namespace ApiCallerStubs
 
-// ---------------------------------------------------------------------------
-// ScrollDialog (0x037260) - the options-dialog slider handler. Reads the control's
-// SCROLLINFO, adjusts nPos by the SB_* code, writes it back, then routes the new
-// value to the matching setting: 0x472/0x478 store directly (XMidi volume / scroll
-// speed); 0x476/0x470 store the flag AND (re)trigger a GAME_VOICE / GAME_CHIPFALLOUT
-// config cue if the kill-cue clock has elapsed. A free __cdecl(hDlg, hCtrl, code, pos)
-// helper GameOptionsDlgProc's WM_HSCROLL dispatches to.
-//
-// The config-cue chain matches PathHazard's: the CDDrawSubMgrLeafScan at m_world->m_soundRegistry gates on
-// m_emitGate, CSndFinder::Lookup resolves the named LeafCue, the g_sndEnabled/kill-
-// clock cooldown gate throttles, then LeafCue::m_10->ConfigureItem plays it.
-//
 // @early-stop
 RVA(0x00037260, 0x220)
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
@@ -664,9 +590,6 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
     return FALSE;
 }
 
-// 0x37870 (re-homed from src/Stub/BoundaryMisc.cpp): DialogInit - seed the two
-// video option checkboxes (IDC 0x46f / 0x4d5) from the settings singleton's
-// m_isHighDetail / m_isEffectsEnabled flags, via the cached CheckDlgButton import.
 RVA(0x00037870, 0x3c)
 void DialogInit(HWND hDlg) {
     if (g_gameReg == 0) {
@@ -676,9 +599,6 @@ void DialogInit(HWND hDlg) {
     CheckDlgButton(hDlg, 0x4d5, g_gameReg->m_isEffectsEnabled);
 }
 
-// 0x378c0: SaveVideoCheckboxes(hDlg) - latch the two video option checkboxes
-// (IDC 0x46f smooth-scroll, 0x4d5 show-fps) into the settings singleton. No-op
-// when the singleton is not yet live.
 // @early-stop
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {

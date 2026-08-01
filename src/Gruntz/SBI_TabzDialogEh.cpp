@@ -1,15 +1,15 @@
-#define SBI_ITEM_OWN_CTOR // out-of-line base ctor => retail's `call ??0CStatusBarItem`
+#define SBI_ITEM_OWN_CTOR
 
-#include <Mfc.h> // afx-first umbrella (CObject / CPtrList / ::CopyRect)
+#include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/TriggerMgr.h>         // m_cmdGrid's real class (m_phase/m_3ec)
-#include <Gruntz/GruntzMgr.h>          // the *0x24556c singleton (CGruntzMgr)
-#include <Gruntz/SbiTabzDialogViews.h> // the CSBI_Image / CSBI_MenuItem / CSBI_ImageSet leaves
-#include <Gruntz/StatusBarMgr.h>       // the REAL host: this fn is a CStatusBarMgr method
-#include <Gruntz/SBI_MenuItem.h>       // canonical CSBI_MenuItem (StatusBarMgr.h only fwd-decls it)
-#include <Gruntz/GameLevel.h>          // m_c->m_level->m_planeCtx (the dialog-centering rect)
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SbiTabzDialogViews.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/SBI_MenuItem.h>
+#include <Gruntz/GameLevel.h>
 
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
@@ -17,9 +17,6 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 1;
     }
 
-    // The centering rect: m_c (CDDrawSurfaceMgr) -> m_level (+0x24) -> m_planeCtx (+0x10).
-    // Retail @0x10a36e: mov eax,[ebx+0xc] / mov eax,[eax+0x24] / add eax,0x10, then four
-    // dword loads - the member-wise copy of the 4-int rect below lowers to exactly those.
     const LevelCoordRect& lr = m_c->m_level->m_planeCtx;
     RECT src;
     src.left = lr.left;
@@ -32,7 +29,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 cy = dst.top + (dst.bottom - dst.top) / 2;
 
     if (m_toggleHandle != 0) {
-        // ---- confirm dialog: AREYOUSURE + YES/NO ----
+
         CSBI_Image* areYouSure = new CSBI_Image;
         if (!areYouSure->SetupImage(
                 this,
@@ -85,7 +82,6 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 1;
     }
 
-    // ---- main tabz dialog: DIALOG then a mission/mode decision tree ----
     CSBI_Image* dialog = new CSBI_Image;
     if (!dialog->SetupImage(
             this,
@@ -105,7 +101,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 reason = g_gameReg->m_cmdGrid->m_3ec;
 
     if (g_gameReg->m_cmdGrid->m_phase == 1) {
-        // mission accomplished
+
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
                 this,
@@ -193,7 +189,6 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 1;
     }
 
-    // mission not complete
     CSBI_ImageSet* status = new CSBI_ImageSet;
     if (!status->SetupImage(
             this,
@@ -263,7 +258,6 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 1;
     }
 
-    // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
         if (g_gameReg->m_options[i].m_joined != 0 && g_gameReg->m_options[i].m_doneFlag == 0

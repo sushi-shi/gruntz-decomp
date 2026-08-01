@@ -1,17 +1,11 @@
 #include <Utils/RegistryHelper.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>
 #include <rva.h>
 #include <string.h>
-#include <MsgParam.h> // RegBuf / the message-parameter word pairs
+#include <MsgParam.h>
 
 namespace Utils {
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::Open
-    // Opens/creates a 4-deep chain of nested registry subkeys (rooted at hKey,
-    // default top subkey "Software") via GetRegistryKey, saving szKeyName2 and
-    // szLastKey into the m_keyNameBuf/m_lastKeyBuf buffers, then resolves the deepest value key
-    // through InitializeLastKey. Returns 1 on full success, 0 on any failure.
     RVA(0x00139210, 0x11c)
     i32 RegistryHelper::Open(
         char* szKeyName1,
@@ -45,10 +39,6 @@ namespace Utils {
         return 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::InitializeLastKey
-    // Resolves m_valueKey (the deepest value key): when szLastKey is null it aliases
-    // m_key4; otherwise it opens szLastKey under m_key4 via GetRegistryKey.
     RVA(0x00139370, 0x37)
     i32 RegistryHelper::InitializeLastKey(char* szLastKey) {
         if (!m_open) {
@@ -63,11 +53,6 @@ namespace Utils {
         return GetRegistryKey(m_key4, szLastKey, &m_valueKey) != 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::GetValueString
-    // Reads a REG_SZ value into szValueBuffer; on any failure copies szDefault
-    // into the buffer (and reports its length via *pValueBufferSize), or clears
-    // the size and returns 0 when there is no default.
     RVA(0x001394a0, 0x97)
     char* RegistryHelper::GetValueString(
         char* szValueName,
@@ -76,7 +61,7 @@ namespace Utils {
         char* szDefault
     ) {
         DWORD dwType;
-        RegBuf data; // the registry API's BYTE* view of this char buffer
+        RegBuf data;
 
         if (m_open && szValueName && szValueBuffer && *pValueBufferSize > 0) {
             if (RegQueryValueExA(
@@ -87,7 +72,7 @@ namespace Utils {
                     (data.m_chars = szValueBuffer, data.m_bytes),
                     pValueBufferSize
                 ) == 0
-                && dwType == 1 /*REG_SZ*/) {
+                && dwType == 1) {
                 return szValueBuffer;
             }
         }
@@ -102,12 +87,6 @@ namespace Utils {
         return 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::GetValueBinary
-    // Reads a REG_BINARY value into pBuffer (with *pBufferSize the in/out byte
-    // count); on any failure copies defaultSize bytes from pDefault (reporting the
-    // count via *pBufferSize), or clears the size and returns 0 when there is no
-    // default.
     RVA(0x00139540, 0x8a)
     void* RegistryHelper::GetValueBinary(
         char* szValueName,
@@ -127,7 +106,7 @@ namespace Utils {
                     static_cast<LPBYTE>(pBuffer),
                     pBufferSize
                 ) == 0
-                && dwType == 3 /*REG_BINARY*/) {
+                && dwType == 3) {
                 return pBuffer;
             }
         }
@@ -142,15 +121,12 @@ namespace Utils {
         return 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::GetValueDword
-    // Reads a REG_DWORD value, returning valueDefault on any failure.
     RVA(0x001395d0, 0x50)
     DWORD RegistryHelper::GetValueDword(char* szValueName, DWORD valueDefault) {
         DWORD dwType;
         DWORD dwData;
         DWORD cbData;
-        RegBuf data; // the registry API's BYTE* view of this DWORD
+        RegBuf data;
 
         if (m_open && szValueName) {
             cbData = 4;
@@ -162,7 +138,7 @@ namespace Utils {
                     (data.m_dword = &dwData, data.m_bytes),
                     &cbData
                 ) == 0
-                && dwType == 4 /*REG_DWORD*/) {
+                && dwType == 4) {
                 return dwData;
             }
         }
@@ -170,10 +146,6 @@ namespace Utils {
         return valueDefault;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::DeleteValue (0x139620) - RegDeleteValueA on the deepest key.
-    // Guards the open gate + a null name; returns success (LONG == ERROR_SUCCESS).
-    // Orphan copy (inlined at all call sites).
     RVA(0x00139620, 0x28)
     i32 RegistryHelper::DeleteValue(char* szValueName) {
         if (!m_open) {
@@ -185,10 +157,6 @@ namespace Utils {
         return RegDeleteValueA(m_valueKey, szValueName) == 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::SetValueString
-    // Writes szValue as a REG_SZ value (length includes the terminator).
-    // Returns nonzero on success.
     RVA(0x001393b0, 0x58)
     i32 RegistryHelper::SetValueString(const char* szValueName, const char* szValue) {
         if (!m_open) {
@@ -200,21 +168,18 @@ namespace Utils {
         if (!szValue) {
             return 0;
         }
-        RegBufC data; // the registry API's BYTE* view of this char buffer
+        RegBufC data;
         return RegSetValueExA(
                    m_valueKey,
                    szValueName,
                    0,
-                   1 /*REG_SZ*/,
+                   1,
                    (data.m_chars = szValue, data.m_bytes),
                    strlen(szValue) + 1
                )
                == 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::SetValueBinary
-    // Writes dataSize bytes of pData as a REG_BINARY value. Returns nonzero on success.
     RVA(0x00139410, 0x45)
     i32 RegistryHelper::SetValueBinary(char* szValueName, void* pData, u32 dataSize) {
         if (!m_open) {
@@ -226,20 +191,10 @@ namespace Utils {
         if (!pData) {
             return 0;
         }
-        return RegSetValueExA(
-                   m_valueKey,
-                   szValueName,
-                   0,
-                   3 /*REG_BINARY*/,
-                   static_cast<LPBYTE>(pData),
-                   dataSize
-               )
+        return RegSetValueExA(m_valueKey, szValueName, 0, 3, static_cast<LPBYTE>(pData), dataSize)
                == 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::SetValueDword
-    // Writes value as a 4-byte REG_DWORD value. Returns nonzero on success.
     RVA(0x00139460, 0x33)
     i32 RegistryHelper::SetValueDword(char* szValueName, DWORD value) {
         if (!m_open) {
@@ -248,22 +203,18 @@ namespace Utils {
         if (!szValueName) {
             return 0;
         }
-        RegBuf data; // the registry API's BYTE* view of this DWORD
+        RegBuf data;
         return RegSetValueExA(
                    m_valueKey,
                    szValueName,
                    0,
-                   4 /*REG_DWORD*/,
+                   4,
                    (data.m_dword = &value, data.m_bytes),
                    4
                )
                == 0;
     }
 
-    // -------------------------------------------------------------------------
-    // RegistryHelper::Close
-    // Closes the whole chain of opened keys (skipping the duplicate close when
-    // the last two keys are the same handle).
     RVA(0x00139330, 0x3d)
     void RegistryHelper::Close() {
         if (m_open) {
@@ -278,12 +229,6 @@ namespace Utils {
         }
     }
 
-    // lpClass is the shared empty mutable global string in .data (0x6293f4); bound
-    // to the canonical extern "C" _g_emptyString (the tree-wide keep-last winner).
-
-    // -------------------------------------------------------------------------
-    // RegistryHelper::GetRegistryKey  (static __stdcall)
-    // Creates/opens szSubKey under hKey with KEY_ALL_ACCESS; returns success.
     RVA(0x00139650, 0x32)
     i32 RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult) {
         DWORD dwDisposition;
@@ -293,7 +238,7 @@ namespace Utils {
                    0,
                    g_emptyString,
                    0,
-                   0xf003f /*KEY_ALL_ACCESS*/,
+                   0xf003f,
                    0,
                    phKeyResult,
                    &dwDisposition

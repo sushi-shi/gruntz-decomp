@@ -3,34 +3,26 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>
 
 class CSecretTeleporterTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x000109f0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SECRETTELEPORTERTRIGGER;
-    } // slot 2
+    }
+
 public:
-    CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    // Construct the class's activation-coordinate registry (g_actColl @0x644688)
-    // over the fixed [2000,2010] range; a free init thunk, reloc-masked.
-    // Bind SpawnTeleporter to the activation key "A" via the shared name registry
-    // (the same archetype as CSecretLevelTrigger::RegisterActs).
-    static void RegisterActs(); // 0x0422b0
-    // The two overridden CUserLogic virtuals reconstructed in UserLogic.cpp.
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x042150 (vtable slot 4)
-    // The registered point-activation callback 0x042b80 stamped into the
-    // coordinate registry by FireActivation. __thiscall, no args, returns int.
-    i32 SpawnTeleporter(); // 0x042b80
+    CSecretTeleporterTrigger() {}
+    CSecretTeleporterTrigger(CGameObject* obj);
+
+    static void RegisterActs();
+
+    virtual void FireActivation(i32 id) OVERRIDE;
+
+    i32 SpawnTeleporter();
 };
 SIZE(0x54);
-
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
 
 #endif // GRUNTZ_CSECRETTELEPORTERTRIGGER_H

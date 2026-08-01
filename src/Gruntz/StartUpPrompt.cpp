@@ -1,15 +1,15 @@
 #include <Mfc.h>
-#include <Utils/WinAPICdRom.h> // IsGruntzCDInAnyDrive (ex .cpp extern)
-#include <Gruntz/HeapDiag.h>   // FileExists (ex .cpp extern)
+#include <Utils/WinAPICdRom.h>
+#include <Gruntz/HeapDiag.h>
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
-#include <string.h> // inline strcpy intrinsic (/O2 /Oi)
+#include <string.h>
 
 #include <rva.h>
-#include <Gruntz/StartUpPrompt.h> // g_appResHandle decl
-#include <Gruntz/GruntzMgr.h>     // ex Globals.h
+#include <Gruntz/StartUpPrompt.h>
+#include <Gruntz/GruntzMgr.h>
 
 DATA(0x00251618)
 HINSTANCE g_appResHandle;

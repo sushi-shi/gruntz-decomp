@@ -2,23 +2,23 @@
 #define GRUNTZ_CDIRECTDRAWMGR_H
 
 #include <rva.h>
-#include <DDrawMgr/DDrawPtrCollections.h> // the ONE device/pool class
+#include <DDrawMgr/DDrawPtrCollections.h>
 
-#include <Mfc.h> // POSITION (CDDPalette::m_pos, the pool-B cached CPtrList handle) from the
+#include <Mfc.h>
 #include <DDrawMgr/DDSurface.h>
 
-struct IDirectDraw;        // <ddraw.h>: the raw device (m_dd1)
-struct IDirectDraw2;       // <ddraw.h>: the QI'd device (m_device)
-struct IDirectDrawPalette; // <ddraw.h>: the held palette
+struct IDirectDraw;
+struct IDirectDraw2;
+struct IDirectDrawPalette;
 
 void __cdecl DDrawLogLine(char* fmt, ...);
 
 struct CDdMode {
     char _0[8];
-    u32 m_8; // +0x08  key part A (height)
-    u32 m_c; // +0x0c  key part B (width)
+    u32 m_8;
+    u32 m_c;
     char _10[0x54 - 0x10];
-    u32 m_54; // +0x54  mode tag / bpp (Compare's tie-break is unsigned)
+    u32 m_54;
 };
 SIZE_UNKNOWN();
 
@@ -27,10 +27,8 @@ struct CDdModePair {
 };
 SIZE_UNKNOWN();
 
-struct CDDPalette { // struct (PAUCDDPalette mangling); consistent with the fwd decls
+struct CDDPalette {
 public:
-    // Pool-item construction (the CDDrawPtrCollections MakeB*/Create factories
-    // inline these): zero the fields; class operator new is the Rez heap 0x38 alloc.
     CDDPalette() {
         m_palette = 0;
         m_pos = 0;
@@ -47,113 +45,84 @@ public:
         return ::operator new(0x38);
     }
 
-    i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags); // 0x147410
-    // `entries` is the 256-entry block handed straight to IDirectDraw2::
-    // CreatePalette (retail 0x1473e2 pushes it as the LPPALETTEENTRY arg).
-    i32 Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags); // 0x147390
-    i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);       // 0x147590
-    i32 LoadPcx(IDirectDraw2* dd, char* filename, u32 flags);       // 0x147710
-    i32 CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags);          // 0x1474d0
-    i32 CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size,
-                           u32 flags);                            // 0x147840
-    i32 LoadPal(IDirectDraw2* dd, char* filename, u32 flags);     // 0x1478c0
-    i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags); // 0x1479e0
-    void Destroy();                                               // 0x147530
-    void GetEntries();                                            // 0x147c30
-    // start/count are UNSIGNED here (unlike SetRange's): the cache loop's guard at
-    // 0x147ab5 is `cmp ebp,edi / jae`. They are the DWORDs SetEntries takes.
-    i32 SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused); // 0x147aa0
-    // Expand a dynamically-allocated block of source entries into PALETTEENTRYs
-    // then SetAndNotify. Quad: 4-byte RGBQUAD source (R/B swapped). RGB: packed
-    // 3-byte RGB source (straight). Both return the SetAndNotify HRESULT.
-    i32 SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused); // 0x147b10
-    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused);         // 0x147ba0
-    // Linear time-based BLOCKING fade of the [start,start+count) range toward
-    // the solid color (r,g,b) over durationMs ms; finalizes with SetRange.
-    void FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b,
-                   i32 durationMs); // 0x147d50
-    // The NON-blocking per-frame fade machinery (the ex-PalCtx/PaletteLerp
-    // views, folded wave3-J): StartFade* arms the +0x14..+0x34 fade state, Tick
-    // lerps m_cacheA from m_sourcePalette toward the target each frame, Flush
-    // snaps to the final target and retires the fade.
-    void StartFadeToColor(i32 start, i32 count, char r, char g, char b,
-                          i32 durationMs); // 0x147f30
-    void StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target,
-                            i32 durationMs); // 0x147ff0
-    i32 Tick();                              // 0x1480a0
-    void Flush();                            // 0x148250
-    // Blend the range pct% (0..100) toward the solid color (r,g,b) once and
-    // push it to the DirectDraw palette (no cache/notify).
-    void BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g,
-                    u8 b);  // 0x1482c0
-    void Apply(i32 unused); // 0x147c80
-    i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
-                 u32 flags);    // 0x147cd0
-    i32 CaptureSystemPalette(); // 0x1485b0 (system-reserved entries -> m_cacheA)
+    i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags);
 
-    // --- layout ---------------------------------------------------------------
-    POSITION m_pos;                // +0x00  pool-B cached CPtrList POSITION (AddItemB
-                                   //        stamps it; RemoveItemB unlinks by it);
-                                   //        cleared by Destroy
-    IDirectDrawPalette* m_palette; // +0x04  the held palette interface
-    i32 m_8;                       // +0x08  cleared by Destroy
-    // The four caches are all one shape: 256 PALETTEENTRYs (0x400 B). Proof at
-    // 0x147cd0 SetRange - `mov [ebp+eax*4+0],bl / +1 / +2` writes r/g/b at the
-    // 0/1/2 bytes of a stride-4 record and `lea ecx,[ecx+edi*4]` forms &cache[start]
-    // for the IDirectDrawPalette::SetEntries LPPALETTEENTRY arg (0x147c30 GetEntries
-    // and 0x147d50 FadeRange hand m_cacheA/m_cacheB to the same SDK slot).
-    PALETTEENTRY* m_cacheA;        // +0x0c  cache A (the live palette)
-    PALETTEENTRY* m_cacheB;        // +0x10  cache B (GetEntries readback)
-    PALETTEENTRY* m_targetPalette; // +0x14  fade target entries (0 => fade to m_fixedColor)
-    PALETTEENTRY* m_sourcePalette; // +0x18  captured fade source (lazy 0x400 alloc; Destroy frees)
-    // +0x1c is ONE entry, not three loose bytes: Flush @0x148289 loads it with a
-    // single `mov eax,[esi+0x1c]` and re-reads r/g/b out of the copy.
-    PALETTEENTRY m_fixedColor; // +0x1c  fixed fade target colour
-    i32 m_durationMs;          // +0x20  fade duration (ms)
-    i32 m_startTimeMs;         // +0x24  fade start timestamp (timeGetTime)
-    i32 m_lastElapsedMs;       // +0x28  last applied elapsed (-1 = none yet)
-    i32 m_firstColorIndex;     // +0x2c  fade first color index
-    i32 m_colorCount;          // +0x30  fade color count
-    i32 m_active;              // +0x34  fade active/pending flag (cleared by Destroy/Flush)
+    i32 Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags);
+    i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);
+    i32 LoadPcx(IDirectDraw2* dd, char* filename, u32 flags);
+    i32 CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags);
+    i32 CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 flags);
+    i32 LoadPal(IDirectDraw2* dd, char* filename, u32 flags);
+    i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags);
+    void Destroy();
+    void GetEntries();
+
+    i32 SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused);
+
+    i32 SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused);
+    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused);
+
+    void FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs);
+
+    void StartFadeToColor(i32 start, i32 count, char r, char g, char b, i32 durationMs);
+    void StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs);
+    i32 Tick();
+    void Flush();
+
+    void BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b);
+    void Apply(i32 unused);
+    i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags);
+    i32 CaptureSystemPalette();
+
+    POSITION m_pos;
+
+    IDirectDrawPalette* m_palette;
+    i32 m_8;
+
+    PALETTEENTRY* m_cacheA;
+    PALETTEENTRY* m_cacheB;
+    PALETTEENTRY* m_targetPalette;
+    PALETTEENTRY* m_sourcePalette;
+
+    PALETTEENTRY m_fixedColor;
+    i32 m_durationMs;
+    i32 m_startTimeMs;
+    i32 m_lastElapsedMs;
+    i32 m_firstColorIndex;
+    i32 m_colorCount;
+    i32 m_active;
 };
-SIZE(0x38); // measured: the pool factories RezAlloc 0x38-byte items
+SIZE(0x38);
 
 struct DDModeInfo {
-    i32 width;  // +0x00
-    i32 height; // +0x04
-    i32 bpp;    // +0x08
+    i32 width;
+    i32 height;
+    i32 bpp;
 };
 SIZE_UNKNOWN();
 
 struct CPageRec {
-    u8* m_00; // +0x00  owned heap buffer (RemoveAt frees)
+    u8* m_00;
     char m_pad04[0x10 - 4];
-    u8* m_10; // +0x10  owned heap buffer
-    u8* m_14; // +0x14  owned heap buffer
+    u8* m_10;
+    u8* m_14;
 };
 SIZE_UNKNOWN();
 
 class CMoviePlayer;
 
-extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
+extern i32 RestoreLostSurfaces();
 
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void DdEnumModesCallback(); // 0x143390
+extern "C" void DdEnumModesCallback();
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern "C" const GUID IID_IDirectDraw2;                  // 0x5ef848
-extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
+extern "C" const GUID IID_IDirectDraw2;
+extern "C" int sprintf(char* buf, const char* fmt, ...);
 
 extern i32 (*g_restoreHandler)();
 class CDDrawPtrCollections;
 
 extern "C" CDDrawPtrCollections* g_DirectDrawMgr;
 
-// File-scope prototypes moved from the .cpp: an unqualified
-// declaration at file scope has EXTERNAL linkage, so it belongs in
-// the owner header.
 void BuildColorChannelTables();
 i32 __stdcall CreateDirectDrawVia(
     void* ctx,
@@ -162,16 +131,13 @@ i32 __stdcall CreateDirectDrawVia(
     IDirectDraw2*(__cdecl* factory)(void*, i32, i32)
 );
 
-// The two DirectDraw enumeration callbacks. Their reconstructions declare the
-// argument lists the retail BODIES actually use, which is not the SDK's prototype -
-// one code address, the SDK's reading and ours, both real.
 union DdDriverEnumFn {
     LPDDENUMCALLBACKA m_sdk;
     i32(__stdcall* m_body)(void*, i32, i32, IDirectDraw2*(__cdecl*)(void*, i32, i32));
 };
 union DdModeEnumFn {
     LPDDENUMMODESCALLBACK m_sdk;
-    void(__cdecl* m_body)(); // the reconstruction reads none of its arguments
+    void(__cdecl* m_body)();
 };
 
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

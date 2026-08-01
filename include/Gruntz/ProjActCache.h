@@ -2,37 +2,37 @@
 #define GRUNTZ_PROJACTCACHE_H
 
 #include <Ints.h>
-#include <Wap32/zBitVec.h> // canonical zErrHandling + zBitVec + CVariantSlot
+#include <Wap32/zBitVec.h>
 #include <rva.h>
 
-#include <string.h> // strlen/strcmp/memcpy the trie insert lowers to inlines
+#include <string.h>
 
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
+#include <Rez/RezAlloc.h>
 
-extern "C" i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
+extern "C" i32 FirstDiffBit(const char* a, const char* b);
 
 struct CTrieNode {
-    CTrieNode* m_child[2]; // +0x0/+0x4  the crit-bit children (retail indexes the
-                           // pair as one array: `lea eax,[node+4]` / `add eax,4`)
-    i32 m_8;               // +0x8  crit-bit index
-    char* m_c;             // +0xc  owned key copy
-    void* m_10;            // +0x10 stored value
+    CTrieNode* m_child[2];
+
+    i32 m_8;
+    char* m_c;
+    void* m_10;
 };
 SIZE_UNKNOWN();
 
 class CProjActMap {
 public:
-    void* Insert(const char* key, void* value); // 0x1933b0
+    void* Insert(const char* key, void* value);
 
-    char _vft0[4];     // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    CVariantSlot* m_4; // +0x04  error sink
+    char _vft0[4];
+    CVariantSlot* m_4;
     char m_pad8[0x14 - 0x8];
-    i32 m_14;        // +0x14  node count
-    CTrieNode* m_18; // +0x18  root
-    CTrieNode* m_1c; // +0x1c  descent cursor
-    CTrieNode* m_20; // +0x20  candidate child
-    i32 m_24;        // +0x24  key bit-length (strlen*8)
-    i32 m_28;        // +0x28  cleared on entry
+    i32 m_14;
+    CTrieNode* m_18;
+    CTrieNode* m_1c;
+    CTrieNode* m_20;
+    i32 m_24;
+    i32 m_28;
 };
 SIZE_UNKNOWN();
 

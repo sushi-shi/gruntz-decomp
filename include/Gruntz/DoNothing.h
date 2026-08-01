@@ -3,22 +3,20 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (CDoNothing : CUserLogic)
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
 
 class CDoNothing : public CUserLogic, public CWapX {
 public:
 public:
-    CDoNothing(CGameObject* obj); // 0xac1d0
-    // 0x0000f6b0 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
+    CDoNothing() {}
+    CDoNothing(CGameObject* obj);
+
     RVA(0x0000f6b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DONOTHING;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1 (0x2b26)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
 };
 SIZE(0x54);
 

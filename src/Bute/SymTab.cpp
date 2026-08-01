@@ -1,36 +1,29 @@
-// SymTab.cpp - the ButeMgr symbol-table ORIGINAL TU (interval
-// dossier #14A): one obj spanning retail 0x1396f0-0x13c22a. The former
-// cremusreadstream (ParseSource.cpp), symrec (SymRec.cpp) and symparser
-// (SymParser.cpp) units were text-A-B-A-woven slices of this file and are folded
-// in, in retail-RVA order: CParseSource (the positioned byte-reader / parse
-// slot), CParseSource, CSymRec (the leaf record), CSymTab (the scope tree)
-// and CSymParser (the parser/owner) - plus one stray fn that carries a Rez name
-// but whose text AND private .data cells sit inside this obj's band
-// (Load@CRezDirNode 0x13a0f0; @identity-TODO). 0x13c080 is Classify@CSymParser
-// (its callers ParseBuffer/LoadEntry pass ecx=this; ex the FindEntry@CRezDir guess).
-#include <Rez/DebugPrintf.h> // RezAssertFail (owning decl; varargs C linkage)
-#include <Bute/SymTab.h>     // own extern surface
-#include <Mfc.h>             // afx-first (RezMgr.h below pulls MFC/Win32 for the two Rez strays)
+
+
+#include <Rez/DebugPrintf.h>
+#include <Bute/SymTab.h>
+#include <AddrWord.h>
+#include <Mfc.h>
 #include <rva.h>
-#include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose (ParseRecords)
-#include <stdlib.h> // _splitpath (0x18c530) / atoi (0x11ff10)
-#include <string.h> // strchr/strncpy/inline strcpy+strlen/_strupr (0x18d330)
-#include <time.h>   // time (0x120210) - the MakeSymSeed clock seed
+#include <io.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-#include <Bute/SymParser.h>     // full CSymParser + CSymTab/CSymRec via SymTab.h
-#include <Gruntz/ParseSource.h> // canonical CParseSource (the 0x3c parse-slot record)
-#include <Rez/RezMgr.h>         // CRezDirNode/CRezDir/RezSrc (the two stray fns)
-#include <Rez/RezFile.h>        // g_wildcard (ex .cpp extern)
+#include <Bute/SymParser.h>
+#include <Gruntz/ParseSource.h>
+#include <Rez/RezMgr.h>
+#include <Rez/RezFile.h>
 
-#include <Dsndmgr/SoundBankLoad.h>     // g_dot (ex .cpp extern)
-#include <Gruntz/CustomWorldInfoDlg.h> // g_dotDot (ex .cpp extern)
+#include <Dsndmgr/SoundBankLoad.h>
+#include <Gruntz/CustomWorldInfoDlg.h>
 VTBL(CParseSlotHashNode, 0x001ef740);
 VTBL(CSymRecNode, 0x001ef744);
 VTBL(CSymTabNode, 0x001ef748);
-VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor stamp
+VTBL(CSymParser, 0x001ef750);
 VTBL(CParserObjList, 0x001ef75c);
 DATA(0x0020cff0)
-const char g_sepSlash[] = "\\"; // decl in <Bute/SymTab.h>
+const char g_sepSlash[] = "\\";
 
 inline void* operator new(u32, void* p) {
     return p;
@@ -55,46 +48,24 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
     return 0;
 }
 
-// ===========================================================================
-// 0x1396f0 - Init: initialize a fresh parse
-// slot - placement-construct the embedded hash-node (stamping its vptr @0x5ef740), null
-// the name/mapped/reader bookkeeping, self-link +0x30. Returns this. __thiscall.
-// The node is constructed with MSVC 5's EXPLICIT CONSTRUCTOR CALL (`obj.T::T()`), not
-// placement new: `new (&m_node1c) T` makes cl emit a null guard on the placement
-// pointer (`lea ecx,[this+0x1c]; cmp ecx,0; je`) and then address the node off ecx,
-// which retail does not have. The explicit call inlines the same ctor with NO guard and
-// addresses everything off `this` (eax) - byte-exact. See
-// docs/patterns/explicit-ctor-call-has-no-placement-null-guard.md.
-// ===========================================================================
-// The serialized symbol-table records are a PACKED byte stream walked with a moving
-// cursor, so pulling a dword out of it is byte-forced; the pun lives here, once.
-// CSlotNode derives from DSoundLink, so the list head IS the node at offset 0 - this is
-// a plain downcast off the generic link type the list stores.
 static inline CSlotNode* HeadSlotNode(DSoundList& list) {
     return static_cast<CSlotNode*>(list.m_head);
 }
 
-// byte-forced: the serialized record stream is packed bytes with a moving cursor,
-// so pulling a dword out of it has no declarable member; the pun lives here, once.
+// Byte-forced view of packed serialized storage.
 static inline i32 PeekI32(const char* p) {
     return *reinterpret_cast<const i32*>(p);
 }
 
 RVA(0x001396f0, 0x1a)
 CParseSource::CParseSource() {
-    // m_node1c's own ctor (vptr stamp + the +0x30 zero) runs implicitly ahead of this
-    // body - it is the leading `mov [eax+0x1c],??_7CParseSlotHashNode / mov [eax+0x30],0`.
+
     m_reader = 0;
     m_owner = 0;
     m_name = 0;
-    m_node1c.m_record = this; // the element's record IS this source (key = m_name @+0)
+    m_node1c.m_record = this;
 }
 
-// CParseSource::Build (0x139710): populate a freshly-popped leaf-record slot from a
-// parse-stream record. The name is duplicated through the throwing ::operator new
-// (0x1b9b46) when present, else stored as-is (null). __thiscall, callee-cleans its 11
-// stack args (ret 0x2c). f4/str2/f6/arr are forwarded by the caller but consumed by a
-// later stage, not stored here.
 // @early-stop
 RVA(0x00139710, 0x8d)
 void CParseSource::Build(
@@ -161,22 +132,6 @@ i32 CParseSource::GetEntryTag() {
     return *static_cast<i32*>(m_entry);
 }
 
-// ===========================================================================
-// 0x139810 - CParseSource::CurrentScopePath(dst, size): the `\`-joined qualified
-// path of the CURRENT scope, built into `dst` (which is returned). It walks the
-// CSymTab scope chain up through m_parent (+0x1c), prepending each node's m_name
-// (+0x00) via a heap scratch copy; a lone root (m_owner with no parent) is just
-// the separator. g_sepSlash @0x60cff0, g_emptyString @0x6293f4.
-//
-// The receiver IS CParseSource - the ex "@identity-TODO zero-ref orphan holding a
-// CSymTab* at +0x10" is exactly the +0x10 m_owner deref that its immediate neighbour
-// CurrentScopeName (0x139950, `mov eax,[ecx+0x10]; mov eax,[eax]`) already proved.
-// Two adjacent thiscall functions in the same .text block reading a CSymTab through
-// the same +0x10 slot are the same class; the "+0x10 roles disproven" note was
-// written before 0x139950 was resolved. Dead code in retail (no caller survives the
-// link), which is why the xref scan came up empty - absence of callers is not
-// absence of identity.
-// ===========================================================================
 RVA(0x00139810, 0x140)
 char* CParseSource::CurrentScopePath(char* dst, i32 size) {
     if (m_owner->m_parent == 0) {
@@ -201,8 +156,6 @@ char* CParseSource::CurrentScopePath(char* dst, i32 size) {
     return dst;
 }
 
-// 0x139950: the receiver IS CParseSource (its +0x10 == m_owner, the CSymTab whose
-// +0x00 is m_name) - the ex "unrecoverable orphan" stub dissolves onto the real class.
 RVA(0x00139950, 0x6)
 char* CParseSource::CurrentScopeName() {
     return m_owner->m_name;
@@ -259,12 +212,6 @@ i32 CParseSource::SetPos(i32 pos) {
     return 1;
 }
 
-// ===========================================================================
-// 0x139af0 - Read(dst, len, seekPos): optionally seek (seekPos != -1), clamp the
-// request to the remaining bytes, then copy from the live backing store. Returns
-// the byte count, or 0 on empty/short read. The unsigned length math yields the
-// `jbe` limit/empty tests.
-// ===========================================================================
 // @early-stop
 RVA(0x00139af0, 0xcc)
 i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
@@ -277,13 +224,11 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (want + pos > m_length) {
         want = m_length - pos;
     }
-    // `> 0`, not `!= 0`: `test ebp,ebp / jbe` is the negation of an UNSIGNED `> 0` (CF is
-    // always clear after `test`, so jbe == je - only the encoding differs).
+
     if (want > 0) {
         CSymTab* sd = m_owner;
         if (sd->m_mappedBuf) {
-            // retail folds `sub esi,[sd+0xc]` then adds the mapped base BEFORE pos:
-            // ((m_base - m_baseOffset) + m_mappedBuf) + pos, not (... + pos) + mapped.
+
             const char* base = m_base - sd->m_baseOffset + sd->m_mappedBuf;
             base += pos;
             memcpy(dst, base, want);
@@ -304,18 +249,6 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSymRec - the two leaf-record ctors + the /GX teardown (0x139bf0/0x139c80/
-// 0x139cf0), unified onto the canonical <Bute/SymTab.h> CSymRec. Both ctors stamp the +0x04 node prefix
-// (CSymRecNode's inlined ctor: vptr 0x1ef744 + zeroed payload), build the two
-// hash-table members (reloc-masked container ctors 0x184950/0x184960; the
-// destructible members force the /GX EH frame), then wire key/back-ptr/scope.
-// Xref: both ctors are called only by CSymTab::FindOrAddSym (0x13a940) and the
-// dtor only by ~CSymTab (0x139ee0) - the same original TU.
-// The statement order is record/scope/key: measured over ALL SIX permutations, only
-// that one reproduces retail's store order (m_key, m_symNode.m_record, m_scope) -
-// cl reorders, so the source order is not the emitted order and the 3-fourcc
-// overload's spelling (which is 100%) does NOT transfer.
 // @early-stop
 RVA(0x00139bf0, 0x71)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTable(d) {
@@ -353,12 +286,6 @@ CSymRec::~CSymRec() {
     m_symNode.m_record = 0;
 }
 
-// ctor (0x139de0): stamp the +0x20 hash-node vtable + a zeroed +0x34 (both in the
-// init list so they precede the member ctors), build the two embedded hash tables
-// (m_subTabs(subN) then m_symbols(symN) - the /GX member-construction trylevels go
-// -1 -> 0 -> 1), copy `name` through the throwing ::operator new (so the state-1
-// transition before it falls out), then store the remaining fields and re-point m_34
-// at this. Returns this.
 // @early-stop
 RVA(0x00139de0, 0xd4)
 CSymTab::CSymTab(
@@ -387,35 +314,23 @@ CSymTab::CSymTab(
     m_node20.m_record = this;
 }
 
-// ~CSymTab (0x139ee0): tear down the scope tree. Walk the leaf-symbol table
-// (m_symbols, +0x40) clearing+freeing each record, then the child-scope table
-// (m_subTabs, +0x38) recursing ~CSymTab on each, then free the owned buffers and
-// null the fields. The two hash-table members (CHashB then CHash) auto-destruct after the body, in
-// reverse declaration order (m_symbols then m_subTabs) at descending trylevels --
-// the /GX member-teardown frame (docs/patterns/eh-dtor-model-members-as-
-// destructible.md).
-// @early-stop
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
-    // The cursor is the LIVE variable and `cur` a copy taken at the top of the body
-    // (the MFC GetNext(pos) shape): retail keeps the cursor in esi and copies it into edi
-    // (`mov edi,esi`) before calling Next, then reuses edi for cur->m_record and re-zeroes
-    // it between the two walks. Hoisting `next` into its own local instead swaps both
-    // registers' roles and adds the `mov esi,edi` write-back at the latch.
+
     CHashElement* e;
     for (e = m_symbols.First(); e != 0;) {
         CHashElement* cur = e;
         e = cur->Next();
         m_symbols.Remove(cur);
         CSymRec* rec = static_cast<CSymRec*>(cur->m_record);
-        delete rec; // ~CSymRec non-virtual; CSymRec::operator delete inlines to RezFree (0x1b9b82)
+        delete rec;
     }
     for (e = m_subTabs.First(); e != 0;) {
         CHashElement* cur = e;
         e = cur->Next();
         m_subTabs.Remove(cur);
         CSymTab* sub = static_cast<CSymTab*>(cur->m_record);
-        delete sub; // ~CSymTab non-virtual; CSymTab::operator delete inlines to RezFree
+        delete sub;
     }
     if (m_name) {
         ::operator delete(m_name);
@@ -433,7 +348,6 @@ CSymTab::~CSymTab() {
     m_owner = 0;
     m_parent = 0;
     m_node20.m_record = 0;
-    // m_symbols, m_subTabs destruct here (reverse decl order, /GX trylevels).
 }
 
 RVA(0x0013a000, 0x37)
@@ -485,9 +399,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
     if (childFlag != 0) {
         for (CHashElement* n = m_kids.First(); n != 0; n = n->Next()) {
-            // CHashElement::m_record is the shared hash-node's generic (void*) payload
-            // slot - it holds a CSymTab*/CSymRec* in Bute and a CRezDirNode* here;
-            // typed to the concrete element type at this use site.
+
             (static_cast<CRezDirNode*>(n->m_record))->Load(1);
         }
     }
@@ -582,15 +494,9 @@ void* CSymTab::NextSym3(void* rec) {
     return n->m_record;
 }
 
-// CreateSub (0x13a330): add a child scope named `name`. If it already exists (the
-// m_subTabs walk hits), return 0; otherwise `new CSymTab` (Rez heap, ctor-throw
-// cleanup) a child inheriting the owner and parented at this, splice it into
-// m_subTabs via its +0x20 hash node, and grow the parser's longest-name counter.
 RVA(0x0013a330, 0xce)
 CSymTab* CSymTab::CreateSub(const char* name) {
-    // m_owner is RE-READ at each use, not cached in a local: retail's `mov ecx,[esi+0x18]`
-    // appears twice around the MakeSeed/ctor pair, which frees the callee-saved register
-    // it would otherwise pin (and lets &m_subTabs live in ebp across both calls).
+
     if (m_subTabs.Walk(name, m_owner->m_68 == 0) != 0) {
         return 0;
     }
@@ -608,8 +514,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
         return 0;
     }
     m_subTabs.Insert(&child->m_node20);
-    // ONE strlen: retail computes it once and walks the value with `dec ecx` / `inc ecx`
-    // around the compare - two `strlen(name)` calls emit two inline `repne scasb` runs.
+
     u32 len = strlen(name);
     if (m_owner->m_longestScopeNameLen <= len) {
         m_owner->m_longestScopeNameLen = len + 1;
@@ -617,12 +522,6 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     return child;
 }
 
-// AddNamedValue (0x13a400): find/create the int-keyed record for `key`, and if `name`
-// is not already present in that record's value sub-table (+0x24), pop a parse-slot,
-// build a leaf record into it (the same 11-fourcc MakeSeed leftover-args trick as
-// AddNodeEntry: str2/f3/f1 = 0, f2 = the seed, f6/arr = 0, stream = m_owner's active
-// node), splice it in and bump the parser's longest-leaf-name counter. Returns the
-// slot (0 when the name already existed / the pop failed). __thiscall, ret 0xc.
 // @early-stop
 RVA(0x0013a400, 0xa9)
 CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
@@ -664,9 +563,8 @@ CParseSource* CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRe
     slot->Build(
         this,
         name,
-        // Build's third arg is a polymorphic payload - the ScopeWalk caller above
-        // hands it &rec->m_valTable, an object address, so the parameter is void* and
-        // an integer key is API-forced back into it here
+
+        // API-forced pointer-key boundary.
         reinterpret_cast<void*>(key),
         rec,
         0,
@@ -696,14 +594,6 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
     return 1;
 }
 
-// ApplyRecursive (0x13a580): a2 == 0 is a no-op returning 1. Otherwise null each
-// child scope's m_dataOff, run the big range pass (ApplyRange, 0x13a640) over this
-// scope, then recurse into every child whose extent the pass set, ANDing the results.
-// The size guard is an UNSIGNED `> 0` (`cmp a2,0 / jbe`, not `je`), and the ApplyRange
-// failure sets `ok = 0` and falls into the SHARED `return ok` - it is not a `return 0`.
-// Both are visible in the CFG: retail shrink-wraps `push edi` INSIDE the a2 > 0 branch
-// and the guard jumps straight to the 4-pop epilogue with eax already holding 1, which
-// only a single-exit `return ok` produces. That took it 70.47 -> 91.22.
 // @early-stop
 RVA(0x0013a580, 0xb2)
 i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
@@ -756,7 +646,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
     char* end = buf + dataSize;
     while (p < end) {
         if (PeekI32(p) == 1) {
-            // sub-scope record: { tag, fA, fB, fC, name\0 }
+
             i32 fA = PeekI32(p + 4);
             p += 8;
             i32 fB = PeekI32(p);
@@ -784,7 +674,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
                 (static_cast<CSymTab*>(existing))->m_seed = fC;
             }
         } else {
-            // leaf record: { tag, f1, f3, f2, f4, f5(key), f6, name\0, str2\0, dwords[f6] }
+
             i32 f1 = PeekI32(p + 4);
             p += 8;
             i32 f3 = PeekI32(p);
@@ -826,20 +716,9 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             }
             if (!skip) {
                 CParseSource* slot = m_owner->PopParseSlot();
-                slot->Build(
-                    this,
-                    name1,
-                    // same polymorphic payload as above - API-forced
-                    reinterpret_cast<void*>(f4), // the DEAD slot - the record's dword
-                    rec,
-                    str2,
-                    f3,
-                    f1,
-                    f2,
-                    f6,
-                    arr,
-                    stream
-                );
+                AddrWord entry;
+                entry.m_word = f4;
+                slot->Build(this, name1, entry.m_addr, rec, str2, f3, f1, f2, f6, arr, stream);
                 rec->m_valTable.Insert(&slot->m_node1c);
                 m_10 = m_10 + slot->m_length;
                 if (static_cast<u32>(slot->m_base) < static_cast<u32>(m_baseOffset)) {
@@ -858,14 +737,9 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
     return 1;
 }
 
-// FindOrAddSym (0x13a940): look the int key up in m_symbols; if absent, `new CSymRec`
-// (Rez heap, ctor-throw cleanup) the right leaf-record flavor (4-fourcc when the parser's
-// m_6c is set, else 3-fourcc) and splice it into m_symbols via its +0x04 hash node.
 RVA(0x0013a940, 0xc2)
 CSymRec* CSymTab::FindOrAddSym(i32 key) {
-    // ONE variable, ONE exit: retail keeps the lookup result live in a callee-saved
-    // register across the alloc + ctor (`mov edi,eax; test edi,edi`) and re-uses it as
-    // the zero for the EH-state store - an early `return found;` gives it no live range.
+
     CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(static_cast<u32>(key)));
     if (!rec) {
         if (m_owner->m_6c != 0) {
@@ -881,14 +755,6 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
     return rec;
 }
 
-// ---------------------------------------------------------------------------
-// CSymParser::CSymParser() (0x13aa10) - the DEFAULT ctor (Ghidra-mislabeled
-// CSymParseConfig::Construct; xref proves it: the 3-fourcc buf-ctor 0x13ab00 builds
-// its discarded `CSymParser tmp;` through it, and RezSync::Init (0x83450) +
-// CGruntzMgr::LoadWorldMode (0x91a40) new one). cl auto-stamps ??_7CSymParser @+0;
-// the m_list member ctor auto-stamps ??_7CObjList @+0x10; m_hash.Construct(1) builds the
-// +0x80 list. Seeds the parse-config defaults; leaves m_34/m_38 untouched. The
-// destructible m_hash/m_list members force the /GX EH frame.
 // @early-stop
 RVA(0x0013aa10, 0xdc)
 CSymParser::CSymParser() {
@@ -924,27 +790,12 @@ CSymParser::CSymParser() {
     m_parseSlotBlockCount = 0x64;
 }
 
-// ---------------------------------------------------------------------------
-// 0x13aaf0 - ??1CParserObjList, the standalone out-of-line COMDAT copy of the parser
-// list's inline dtor (<Bute/SymParser.h>): 7 bytes, `mov [ecx],??_7CObjListBase; ret`
-// (the own-vtable re-stamp is dead-store-eliminated into the inlined ~CObjListBase base
-// stamp). It exists because CSymParser's /GX dtor unwind funclets (0x1e0b30/0x1e0b50/
-// 0x1e0b90 - xref-verified, its ONLY referents) take the member dtor's address.
-// Sibling of ??1CRezList @0x13ca30 (RezFile.cpp). An inline dtor can't hang an RVA(), so
-// it is pinned by mangled name.
 RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
 
-// 0x13ab00: the 3-fourcc buffer constructor. Construct the sub-object members (the +0x10
-// object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,
-// build-then-discard a default CSymParser temp, then drive the buffer through
-// ParseBuffer. The destructible members + the temp force the /GX EH frame. __thiscall,
-// ret 0xc; returns `this`. (The default ctor 0x13aa10 the temp uses lives in another,
-// unmatched TU - a reloc-masked call.)
 // @early-stop
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
-    // cl auto-stamps ??_7CSymParser @+0 at ctor entry, and the m_list member ctor
-    // auto-stamps ??_7CObjList @+0x10.
+
     m_list.m_head = 0;
     m_list.m_tail = 0;
     m_hash.Construct(1);
@@ -956,7 +807,7 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {
-    // cl auto-stamps ??_7CSymParser @+0 at dtor entry (polymorphic class).
+
     if (m_parseArmed) {
         Clear(0);
     }
@@ -964,11 +815,11 @@ CSymParser::~CSymParser() {
     for (p = m_list.m_head; p != 0; p = m_list.m_head) {
         m_list.Remove(p);
         m_list.m_count--;
-        delete p; // the slot-1 scalar-deleting dtor (delete emits the same null test)
+        delete p;
     }
     CSymTab* root = m_root;
     if (root) {
-        delete root; // ~CSymTab non-virtual; CSymTab::operator delete inlines to RezFree
+        delete root;
         m_root = 0;
     }
     if (m_cachedSourceBuffer) {
@@ -1005,8 +856,6 @@ CSymParser::~CSymParser() {
             node = HeadSlotNode(m_nodes);
         } while (node);
     }
-    // m_hash (RemoveAll) then m_list (vptr restore to 0x5ef760) auto-destruct here,
-    // in reverse declaration order, under the /GX member-teardown trylevels.
 }
 
 // @early-stop
@@ -1024,7 +873,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     strcpy(src, static_cast<char*>(buf));
     i32 tag = Classify(static_cast<char*>(buf));
     if (tag != 0) {
-        // text / structured stream
+
         if (m_40 == 0) {
             return 0;
         }
@@ -1055,7 +904,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         ParseRecords(reader, node, m_cachedSourceBuffer, 0);
         return 1;
     }
-    // binary stream
+
     CRezItmBase* reader = new CRezItm(this);
     if (reader == 0) {
         ::operator delete(m_cachedSourceBuffer);
@@ -1085,9 +934,9 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         m_root = node;
         return 1;
     }
-    // b == 0: read the 0xa8-byte binary header, copy its packed fields, validate magic.
+
     SymTabFileHeader hdr;
-    reader->Read(0, 0, 0xa8, &hdr); // [2] (the view's "ReadRaw")
+    reader->Read(0, 0, 0xa8, &hdr);
     m_50 = hdr.m_flag;
     m_30 = hdr.m_scopeCount;
     m_34 = hdr.m_leafCount;
@@ -1117,16 +966,6 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// LoadEntry (0x13b0c0) - mount one archive entry `name` into the scope tree.
-// Gate on m_40; cache `name` into m_cachedSourceBuffer; Classify() it. A
-// directory (Classify != 0) builds a CRezDir node, links it into m_list, opens
-// it and recurses ParseRecords into it. A file builds a CRezItm node, opens it,
-// Reads its 0xa8-byte header to fold the running max dims (+0x54..+0x60) and
-// runs the root scope's ApplyRecursive over it. The two `new X(...)` sites carry
-// the MSVC5 nothrow-new null check + /GX ctor-throw cleanup (trylevel 0 for the
-// dir new, 1 for the file new). Called by RezSync::Init to mount GRUNTZ.VRZ/.ZZZ/
-// .XXX. Ghidra-mislabeled CRezDir::Stub_13b0c0.
 // @early-stop
 RVA(0x0013b0c0, 0x238)
 i32 CSymParser::LoadEntry(char* name, i32 flag) {
@@ -1214,7 +1053,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             continue;
         }
         if ((fd.attrib & 0x10) == 0x10) {
-            // subdirectory: build a child scope and recurse into it
+
             char childpath[0x600];
             strcpy(childpath, pattern);
             strcpy(childpath + strlen(childpath), fd.name);
@@ -1229,8 +1068,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             ParseRecords(reader, static_cast<CSymTab*>(child), childpath, flag);
             continue;
         }
-        // A file: build its full path, split out the upper-case stem/extension,
-        // and resolve the extension-keyed leaf record.
+
         strcpy(full, pattern);
         strcpy(full + strlen(full), fd.name);
         char drive[_MAX_DRIVE];
@@ -1275,17 +1113,14 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
     return 1;
 }
 
-// Clear (0x13b850): drop the active node (m_activeNode) + the +0x10 object list,
-// free the heap root CSymTab + the cached source buffer, then null m_parseArmed. The fourcc is unused;
-// the return is the active node's slot[5] (Detach) result, left in eax.
 // @early-stop
 RVA(0x0013b850, 0xa8)
 i32 CSymParser::Clear(i32 final) {
     static_cast<void>(final);
-    i32 r = m_activeNode->Close(); // [5] (the view's "Detach")
+    i32 r = m_activeNode->Close();
     m_list.Remove(m_activeNode);
     m_list.m_count--;
-    delete m_activeNode; // slot-1 scalar dtor (delete emits the same null test)
+    delete m_activeNode;
     m_activeNode = 0;
     CRezItmBase* p;
     for (p = m_list.m_head; p != 0; p = m_list.m_head) {
@@ -1295,7 +1130,7 @@ i32 CSymParser::Clear(i32 final) {
         delete p;
     }
     if (m_root) {
-        delete m_root; // ~CSymTab non-virtual; CSymTab::operator delete inlines to RezFree
+        delete m_root;
         m_root = 0;
     }
     if (m_cachedSourceBuffer) {
@@ -1335,7 +1170,7 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
     if (!dst) {
         return;
     }
-    // the tag is unpacked byte-by-byte from a dword - the pun is the whole point
+    // Byte-evidenced dword/byte representation seam.
     u8* tb = reinterpret_cast<DwordBytes*>(&tag)->m_b;
     i32 len = 0;
     if (tb[3]) {
@@ -1401,10 +1236,6 @@ void CSymParser::SetDelims(char* s) {
     strcpy(m_delims, s);
 }
 
-// The scratch buffer is char[0x40] (retail `sub esp,0x40`), and the leading-delimiter
-// skip advances the PARAMETER (`++path`) with the token cursor `p` taken afterwards -
-// that one-variable prologue is what lets cl spill `path` to its own home slot and
-// strength-reduce buf[n] to the [&buf-p + p] running base retail uses.
 RVA(0x0013bae0, 0x1b9)
 void* CSymTab::ResolvePath(const char* path) {
     char buf[0x40];
@@ -1439,11 +1270,6 @@ void* CSymTab::ResolvePath(const char* path) {
     return (static_cast<CSymTab*>(sub))->ResolvePath(path + n);
 }
 
-// Scan BACKWARDS over the trailing token characters to split `name` into a scope
-// path prefix + a leaf symbol name; the loop runs WHILE the char is a token char
-// (it is stepping over the leaf) and stops on the first delimiter. The two stack
-// buffers are path[0x100] (the prefix, resolved to a scope) then leaf[0x20] - the
-// frame is 4 (the `this` home slot) + 0x120, i.e. the retail `sub esp,0x124`.
 RVA(0x0013bca0, 0x19c)
 void* CSymTab::FindQualified(const char* name) {
     char path[0x100];
@@ -1479,7 +1305,6 @@ void* CSymTab::FindQualified(const char* name) {
     return scope->Find(leaf);
 }
 
-// The write peer (Insert tail) of FindQualified - identical split, same buffers.
 RVA(0x0013be40, 0x1ac)
 CParseSource* CSymTab::ResolveQualified(const char* name, i32 fourcc) {
     char path[0x100];
@@ -1545,21 +1370,11 @@ i32 CSymParser::Classify(char* name) {
     if (_stat(name, &rec) != 0) {
         return 0;
     }
-    // Language-forced int-view over the fixed byte record: the entry's attribute
-    // dword sits at the packed (unaligned) offset +6 of the 0x24-byte find-record;
-    // bit 0x4000 marks a directory. Reading a dword from a byte buffer needs the cast.
+    // Language-forced view of packed record storage.
+
     return (*reinterpret_cast<i32*>((rec.raw + 6)) & 0x4000) == 0x4000;
 }
 
-// PopParseSlot (0x13c0c0): see SymParser.h. The slot block is `new CParseSource[n]` -
-// THAT is the whole of the ex "EH-state + regalloc wall". Array-new is what emits the
-// /GX frame, the trylevel 0/-1 bracket around the vector-ctor loop and the
-// `p ? (construct, p) : 0` null merge (`jmp` / `xor eax,eax`); spelling it as a manual
-// RezAlloc + hand-written ctor loop produced none of them, and the missing frame is
-// also what put node/this in the swapped callee-saved pair. CParseSource::Init was the
-// default CTOR (it returns `this`); it is declared as one now. The registration loop
-// re-reads `node->m_buffer[j]` for the Insert argument (retail reloads +0x8 after the
-// m_record store, which an `el` local elides).
 // @early-stop
 RVA(0x0013c0c0, 0x14b)
 CParseSource* CSymParser::PopParseSlot() {

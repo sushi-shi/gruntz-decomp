@@ -1,17 +1,16 @@
-#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
+#include <Gruntz/GruntzMapMgr.h>
 #include <Ints.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
-#include <stdlib.h> // rand (0x11fee0)
+#include <stdlib.h>
 
-#include <Gruntz/GameLevel.h>        // CGameLevel::PointInBounds (the on-screen voice gate)
-#include <Gruntz/Grunt.h>            // canonical CGrunt + CGruntHud + the WwdGameReg facets
-#include <Gruntz/GruntSpawnConfig.h> // the m_cueSink voice driver (SpawnVoiceDriver)
-#include <Gruntz/TriggerMgr.h>       // canonical CTriggerMgr (the +0x260 board)
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/TriggerMgr.h>
 
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
@@ -72,12 +71,9 @@ i32 CGrunt::ChargeStep() {
         return 1;
     }
 
-    // ---- m_poweredUp == 0: the charge state machine (switch -> sub/dec/dec dispatch;
-    // states 0 and 2 both end with CommitNeighbor(...);return 1 and MSVC tail-merges
-    // them). ----
     switch (m_defenderState) {
         case 0: {
-            // scan for a target on the wander tile
+
             if (g != 0) {
                 if (hitGate != 0 && m_stamina >= 100) {
                     CGameObject* gp = g->m_object;
@@ -111,8 +107,7 @@ i32 CGrunt::ChargeStep() {
                         m_defenderState = 1;
                         CWwdGameObjectA* mp = m_object;
                         CGruntzMgr* mgr = g_gameReg;
-                        // the visible-rect gate: play the "engaged" voice only when this
-                        // grunt is on screen (the rect sits 0x40 into the viewport object)
+
                         i32 los = CGameLevel::PointInBounds(
                             &mgr->m_world->m_level->m_mainPlane->m_viewRect,
                             mp->m_screenX,
@@ -158,7 +153,7 @@ i32 CGrunt::ChargeStep() {
             break;
         }
         case 1: {
-            // moving to the arrival tile
+
             CGrunt* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
             CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != 0 && cur != t) {
@@ -192,7 +187,7 @@ i32 CGrunt::ChargeStep() {
             break;
         }
         case 2: {
-            // arrived: re-check target then hold
+
             if (m_poweredUp != 0) {
                 CGrunt* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
                 if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0

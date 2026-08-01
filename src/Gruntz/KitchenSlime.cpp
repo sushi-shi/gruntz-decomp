@@ -1,28 +1,28 @@
-#include <Mfc.h> // real MFC CString (direction-name match temp; reloc-masked)
-#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Image/CImage.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
-#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Wap32/zBitVec.h>
+#include <Io/FileMem.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (CActRegPool<CKitchenSlime>::s_table)
+#include <Gruntz/ActReg.h>
 #include <Bute/ButeTree.h>
 #include <rva.h>
-#include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
-#include <string.h> // inline strcmp for the ctor's direction-name match
+#include <math.h>
+#include <string.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - the +0x1a0 sub-object
-#include <Gruntz/Sprite.h>        // CDDrawWorker (frame-data value; the looked-up direction sprite)
-#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/SerialArchive.h> // shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
 
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindGruntAt @0x75c60, CellDispatch)
+#include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/Grunt.h>
-#include <Rez/FrameClock.h> // g_frameDelta/g_engineFrameDelta (frame-clock band)
+#include <Rez/FrameClock.h>
 #include <Gruntz/KitchenSlime.h>
 
 VTBL(CKitchenSlime, 0x001e750c);
@@ -40,36 +40,14 @@ static inline CActHandler* KSlimeLookup(i32 coord) {
     return (CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
 }
 
-// CKitchenSlime::~CKitchenSlime @0x013100 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to the established leaf
-// dtors (UserLogic.cpp 0x10ab0 / 0x11540); the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CKitchenSlime() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x000130d0, 0x1e, ??_GCKitchenSlime@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 
-// CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
-// snap the bound object to the tile grid (m_posX/m_posY doubles + m_74 layer key +
-// the m_tileX/m_tileY tile coords), scale the raw target tile (m_164/m_168) to pixels
-// and compute the travel window (min/max of the start and target), match the
-// slime's direction name (LEVEL_KITCHENSLIME_{NORTH,EAST,SOUTH,WEST}) into the
-// direction id, then run LoadSprites for the first leg, bind the "A" bute node +
-// cycle geometry, and clear the bound sprite's rect.
-//
 // @early-stop
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
 
-    // NO cached `CWwdGameObjectA* o = m_object` local: every store THROUGH the bound
-    // object kills cl's cached `this->m_object`, so retail re-loads `mov e?x,[esi+0x10]`
-    // before each access - twelve reloads across the body, incl. one per m_area store.
-    // A local pins the pointer in a callee-saved register and drops all of them.
     i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_object->m_screenX = snapX;
@@ -91,11 +69,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_object->m_extent.left =
         (m_object->m_screenX < m_object->m_164) ? m_object->m_screenX : m_object->m_164;
-    // right/top/bottom are if-WIDEN forms, not ternaries: retail materializes the
-    // far edge FIRST (`mov ecx,[eax+0x164]` / `[eax+0x168]`), loads the screen coord
-    // second into edx, then `cmp edx,ecx` + a 2-byte skip (`jle`/`jge`) over
-    // `mov ecx,edx`. A ternary loads the CONDITION's left operand first and inverts
-    // the branch, which is what the three flipped guards were.
+
     i32 exRight = m_object->m_164;
     if (m_object->m_screenX > exRight) {
         exRight = m_object->m_screenX;
@@ -112,8 +86,6 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_object->m_extent.bottom = exBottom;
 
-    // The source record IS hoisted (retail loads `[ecx+0x194]` once into edi and
-    // reuses it for the `+0x24` - the CString ctor call would kill a re-read).
     char* rec = Anim()->m_194;
     if (rec != 0) {
         CString name;
@@ -155,14 +127,8 @@ static inline CString* TypeLookup(i32 key) {
     char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch(); // the slow-path element slot
+    return g_typeColl.Scratch();
 }
-
-// CKitchenSlime::RegisterType @0x0b2aa0 - the level-load class registrar. Assign
-// the slime class a type-id via the global bute-tree (registering its name on
-// first use), record the name into the shared type-name table, then store the
-// slime's activation handler (0x40180c) into the per-class activation table at
-// that id. A static initializer (no `this`); same archetype as CProjectile's.
 
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
@@ -182,7 +148,7 @@ void CKitchenSlime::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // ILT 0x40180c -> 0x0b2ca0 == CKitchenSlime::Tick; the slot IS a CActHandler.
+
     *KSlimeLookup(id) = static_cast<CActHandler>(&CKitchenSlime::Tick);
 }
 
@@ -195,13 +161,6 @@ void CKitchenSlime::FireActivation(i32 coord) {
     }
 }
 
-// CKitchenSlime::Tick @0x0b2ca0 - the per-frame driver. Advances the anim
-// sub-mgr, runs the on-screen visibility/scroll gate (unless the registry is in
-// the no-scroll mode), and if the slime has reached its destination tile asks
-// LoadSprites for the next leg; otherwise integrates the sub-pixel movement
-// vector (m_dirX/m_dirY unit signs * the per-frame step) into m_posX/m_posY, snapping to
-// the target tile on overshoot and writing the new grid position back to m_10.
-// The integer scaffolding + visibility/already-arrived blocks are byte-exact.
 // @early-stop
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
@@ -239,9 +198,7 @@ i32 CKitchenSlime::Tick() {
         newX = static_cast<i32>(floor(t));
         i32 tx = m_tileX;
         *m88d = fabs(m_posX - static_cast<double>(tx));
-        // The X axis never clamps (unlike Y), but retail still emits the compare
-        // (a min/max fold whose result equals the input); the empty-body test
-        // reproduces the cmp + m_tileX stack-spill shared with the fabs.
+
         if (newX > tx) {
             newX = newX;
         }
@@ -290,9 +247,7 @@ i32 CKitchenSlime::Tick() {
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
     CFileMemBase* s = stream;
-    // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
-    // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;
-    // Read; jmp; else: Transfer) - the retail dispatch order.
+
     if (tag != 4) {
         if (tag == 7) {
             s->Read(&m_speed, 8);
@@ -332,19 +287,19 @@ i32 CKitchenSlime::LoadSprites() {
             case 0:
                 tileX = m_tileX;
                 tileY = m_tileY - 0x20;
-                break; // north
+                break;
             case 1:
                 tileX = m_tileX + 0x20;
                 tileY = m_tileY;
-                break; // east
+                break;
             case 2:
                 tileX = m_tileX;
                 tileY = m_tileY + 0x20;
-                break; // south
+                break;
             case 3:
                 tileX = m_tileX - 0x20;
                 tileY = m_tileY;
-                break; // west
+                break;
         }
 
         i32 gx = tileX >> 5;
@@ -389,7 +344,7 @@ i32 CKitchenSlime::LoadSprites() {
     m_posY = 0;
     i32 changed = (Level()->m_124 != savedDir);
     switch (Level()->m_124 - 1) {
-        case 0: // north
+        case 0:
             m_posY = -m_stepMag;
             m_dirX = 0.0;
             m_dirY = -1.0;
@@ -397,7 +352,7 @@ i32 CKitchenSlime::LoadSprites() {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
-        case 1: // east
+        case 1:
             m_posX = m_stepMag;
             m_dirX = 1.0;
             m_dirY = 0.0;
@@ -405,7 +360,7 @@ i32 CKitchenSlime::LoadSprites() {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
-        case 2: // south
+        case 2:
             m_posY = m_stepMag;
             m_dirY = 1.0;
             m_dirX = 0.0;
@@ -413,7 +368,7 @@ i32 CKitchenSlime::LoadSprites() {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
-        case 3: // west
+        case 3:
             m_posX = -m_stepMag;
             m_dirX = -1.0;
             m_dirY = 0.0;
@@ -427,8 +382,8 @@ i32 CKitchenSlime::LoadSprites() {
     m_posY = static_cast<double>(Level()->m_screenY) + m_posY;
 
     u32 time;
-    if (Level()->m_7c->m_bc != 0) {
-        time = Level()->m_7c->m_bc;
+    if (Level()->m_animWorker->m_bc != 0) {
+        time = Level()->m_animWorker->m_bc;
     } else {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
@@ -437,10 +392,6 @@ i32 CKitchenSlime::LoadSprites() {
     m_tileX = tileX;
     m_tileY = tileY;
 
-    // The direction sprite + first-frame cache is the CGameObject frame-cache
-    // role-union: +0x194 (m_sprite) is the cached CDDrawWorker*, +0x198 (m_layer) doubles
-    // as the first-frame pointer - the same union access CGameObject's own ApplyName
-    // does.
     CWwdGameObjectA* player = Anim();
     CDDrawWorker* spr = player->m_sprite;
     if (changed != 0 && spr != 0) {

@@ -1,9 +1,9 @@
 #ifndef GRUNTZ_MFC_H
 #define GRUNTZ_MFC_H
 
-#define VC_EXTRALEAN // trim MFC: no OLE / DB / sockets / DAO
-#include <afx.h>     // CObject, CString, CFile, CException, CArchive (+ windows.h)
-#include <afxcoll.h> // CObList, CMapStringToOb, CByteArray, CPtrArray/List, ...
+#define VC_EXTRALEAN
+#include <afx.h>
+#include <afxcoll.h>
 
 typedef int INT_PTR;
 

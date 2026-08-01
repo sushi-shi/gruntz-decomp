@@ -3,21 +3,16 @@
 #include <Win32.h>
 
 #include <Gruntz/SpriteRefTable.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // m_spriteMgrHolder's canonical CDDrawSurfaceMgr
-#include <DDrawMgr/DDrawWorkerMapSmall.h> // its +0x18 m_workerMap (the sprite/palette registry)
-#include <DDrawMgr/AniRecordBase2.h>      // the map value class (m_buf = the work palette)
-#include <DDrawMgr/DirectDrawMgr.h>       // CDDPalette (m_cacheA = the live entries)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerMapSmall.h>
+#include <DDrawMgr/AniRecordBase2.h>
+#include <DDrawMgr/DirectDrawMgr.h>
 
 #include <rva.h>
 
-#include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette's name format
+#include <stdio.h>
 
-void* ::operator new(u32); // matches ??2@YAPAXI@Z
-
-// The object Lookup writes into `out` is a CAniRecordBase2 (the ONLY thing any writer of
-// CDDrawWorkerMapSmall::m_map1 stores), and its m_buf a CDDPalette - so the chain
-// out->m_buf->m_cacheA is the live PALETTEENTRY block the alpha factory consumes. The
-// ex CLookupResult / CLookupSprite reader views are dissolved onto those two classes.
+void* ::operator new(u32);
 
 RVA(0x000e2250, 0x26)
 i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
@@ -101,8 +96,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     if (!out) {
         return 0;
     }
-    // The map value is a CAniRecordBase2 (every m_map1 writer news one) and its m_buf a
-    // CDDPalette, whose m_cacheA is the live PALETTEENTRY block AlphaTable consumes.
+
     PALETTEENTRY* entries = (static_cast<CAniRecordBase2*>(out))->m_buf->m_cacheA;
     if (!entries) {
         return 0;
@@ -154,9 +148,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
 
 RVA(0x000e2980, 0x2cd)
 i32 CSpriteRefTable::LoadToolToyPalettes(CSymParser* src) {
-    // One short-circuit && chain so MSVC shares a single return-0 tail (each rung
-    // `test;je fail`), matching retail's layout (an if/return-0 per rung inlines 35
-    // epilogues and bloats the body).
+
     if (src && LoadGruntzPalette(src, "BLACKTOOL") && LoadGruntzPalette(src, "BLACKTOY")
         && LoadGruntzPalette(src, "DKBLUETOOL") && LoadGruntzPalette(src, "DKBLUETOY")
         && LoadGruntzPalette(src, "DKGREENTOOL") && LoadGruntzPalette(src, "DKGREENTOY")

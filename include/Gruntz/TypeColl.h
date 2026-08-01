@@ -9,10 +9,8 @@ struct CTypeNode {
 SIZE_UNKNOWN();
 
 struct CTypeColl {
-    // Find (0x16da80, == _zvec::GrowTo) is the slow id lookup, declared here so the
-    // registry probes call g_typeColl.Find(key, 0) with no (_zvec*) cast.
-    i32 Find(i32 key, i32 z); // 0x16da80  (external, reloc-masked)
-    // Lookup @0x437c = _zdvec::IndexToPtr; still cast at its call sites.
+
+    i32 Find(i32 key, i32 z);
 };
 SIZE_UNKNOWN();
 

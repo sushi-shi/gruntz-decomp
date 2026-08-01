@@ -1,6 +1,6 @@
-#include <Mfc.h> // afx.h FIRST (before ddraw.h's windows.h): <Io/MoviePlayer.h> below is
+#include <Mfc.h>
 #include <ddraw.h>
-#include <smack.h> // the genuine RAD Smacker SDK - the real Smack handle (m_smackHandle):
+#include <smack.h>
 #undef u8
 #undef u16
 #undef u32
@@ -9,18 +9,18 @@
 #undef s16
 #undef s32
 #undef s64
-#include <Io/MoviePlayer.h> // THE class (CMoviePlayer is a typedef alias of it)
+#include <Io/MoviePlayer.h>
 #include <Ints.h>
 #include <rva.h>
-#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
-#include <string.h>    // inline memset (rep stos) for the descriptor zero
+#include <ComOutRef.h>
+#include <string.h>
 
 RVA(0x0017cbe0, 0x97)
 i32 CMoviePlayer::CheckGrid() {
     memset(&m_srcDesc, 0, 0x6c);
     m_srcDesc.dwSize = 0x6c;
-    m_srcDesc.dwFlags = 7;            // DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH
-    m_srcDesc.ddsCaps.dwCaps = 0x840; // DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY
+    m_srcDesc.dwFlags = 7;
+    m_srcDesc.ddsCaps.dwCaps = 0x840;
     m_srcDesc.dwHeight = m_smackHandle->Height;
     m_srcDesc.dwWidth = m_smackHandle->Width;
     if (m_dd2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {

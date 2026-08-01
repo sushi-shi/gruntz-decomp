@@ -1,11 +1,10 @@
 #include <rva.h>
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Mfc.h>          // /GX EH-frame helpers
+#include <Rez/RezAlloc.h>
+#include <Mfc.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
-#include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)
+#include <Wwd/WwdSpatialMgr.h>
 
-// [5] the "plane loaded?" gate: both owned grid buffers must be bound.
 RVA(0x00163a90, 0x17)
 i32 CDDrawWorkerHost::IsLoaded() {
     if (m_tileGrid != 0 && m_colOffsets != 0) {
@@ -16,18 +15,12 @@ i32 CDDrawWorkerHost::IsLoaded() {
 
 RVA(0x00163ab0, 0x6)
 i32 CDDrawWorkerHost::GetClassId() {
-    return CLASSID_WORKERHOST; // 0x1a
+    return CLASSID_WORKERHOST;
 }
 
 RVA(0x00163ac0, 0x3)
 void CDDrawWorkerHost::VtSlot11_163ac0(i32) {}
 
-// ===========================================================================
-// 0x163af0 - ~CDDrawWorkerHost: stamp own vtable; if the worker is live run its
-// PruneCount (0x1688b0) and then delete it (its FreeGrids body 0x1682f0 + the +0x70
-// base-vtable restamp fold into the inline ~CWwdSpatialMgr); free the two owned
-// buffers; then the +0x9c CWorkerObArray member and ~CLoadable fold in.
-// ===========================================================================
 // @early-stop
 RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCDDrawWorkerHost@@UAEPAXI@Z)
 RVA(0x00163af0, 0xcd)
@@ -36,12 +29,7 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         m_scroll->PruneCount();
     }
     if (m_scroll != 0) {
-        // retail INLINES ~CWwdSpatialMgr here (`delete m_scroll` with the full
-        // class visible): its own null check (the double cmp), EH state, call FreeGrids
-        // (0x1682f0), the +0x70 ~m_iter ??_7CObject stamp (not reproducible from the
-        // reduced view without a manual vptr write - deliberately omitted), then the
-        // class operator delete == RezFree. Spelled explicitly so the call relocs bind
-        // to retail's own targets (a decl-only-dtor `delete` would mis-bind to 0x163a40).
+
         CWwdSpatialMgr* w = m_scroll;
         if (w != 0) {
             w->FreeGrids();
@@ -56,8 +44,6 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         RezFree(m_colOffsets);
         m_colOffsets = 0;
     }
-    // m_frameSets.~CWorkerObArray() (0x1b561c) + ~CLoadable() (field resets + grand-base
-    // vtable restore) fold here under the /GX frame.
 }
 
 VTBL(CDDrawWorkerHost, 0x001f0270);

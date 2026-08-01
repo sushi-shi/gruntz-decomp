@@ -1,60 +1,17 @@
-// ButeMgr.cpp - CButeMgr, the engine's `.att`/`.bute` attribute config-parser.
-// The attribute layer the whole game reads entity stats through: a two-level
-// keyed store (tag-group -> key -> typed value) built by a recursive-descent
-// lexer/parser and queried by a family of typed getters.
-//
-// Functions matched in this TU:
-//   CButeMgr::ScanToken    - token-expect
-//   CButeMgr::GetIntDef    - type 0, default
-//   CButeMgr::GetInt       - type 0
-//   CButeMgr::GetDwordDef  - type 1, default
-//   CButeMgr::GetDword     - type 1
-//   CButeMgr::GetFloat     - type 3 (or int)
-//   CButeMgr::GetDouble    - type 2 (or int)
-//   CButeMgr::GetStringDef - type 4, default
-//   CButeMgr::GetString    - type 4
-//   CButeMgr::GetRef5..8   - typed-reference getters (value type-tags 5..8;
-//                            return a pointer to the stored struct, or a shared
-//                            zero-default static on any miss)
-//   CButeMgr::ParseTagLine - one tag=value line
-//   CButeMgr::Parse        - the .att parser
-//
-// Lexer cluster (the CButeMgr set 0x170330-0x171a60):
-//   CButeMgr::Init           - reset counters + the +0x100/+0x104 scratch strings
-//   CButeMgr::SetErrCallback - store the +0x14 error callback
-//   CButeMgr::NextChar       - advance the input one char (the lexer's getch)
-//   CButeMgr::CharClass      - char -> lexer character-class index
-//   CButeMgr::PeekState/2    - read a transition-table column (state x class)
-//   CButeMgr::ScanState      - write m_tokType (+0xaa) + m_lexState (+0xac)
-//   CButeMgr::SkipToTag      - re-lex until a tag/group token
-//   CButeMgr::ParseGroup     - the recursive per-tag descent
-//   CButeMgr::Exists         - tag/key existence probe
-//   CButeMgr::~CButeMgr    - the EH-frame (/GX) scalar destructor (0x0213c0);
-//                            tears down the 3 zPTree sub-trees + 5 CStrings +
-//                            the +0x10f tail object (@early-stop on the EH-region
-//                            granularity wall; see its definition below).
-//
-// The getters funnel through one __thiscall find-by-key helper (zPTree::Find):
-// outer Find(tag) on m_tree (+0x18) yields the tag sub-tree;
-// inner Find(key) yields the typed value record { int type; void* pValue; }. Each
-// getter checks the record's type then reads the value through pValue. On any miss
-// (no tag / no key / type mismatch) it calls the variadic error reporter
-// and returns the default (or 0 / 0x80000000 / an empty CString).
-//
-// The error-string format literals are reloc-masked file-scope constants. The CRT
-// tokenizer helpers + the tree Find/Insert + the node ctor are external/no-body
-// engine calls (reloc-masked). ParseTagLine constructs a store node + carries a
-// C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
-#include <Bute/ButeMgr.h>
-#include <EmptyString.h>      // g_emptyString
-#include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
-#include <rva.h>
-#include <AddrWord.h> // the object-address-in-a-char*-slot return
 
-#include <fstream.h> // the REAL CRT iostream/ios (the ??_Diostream emission carrier)
-#include <float.h>   // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels
-#include <stdio.h>   // vsprintf (NAFXCW varargs formatter)
-#include <stdlib.h>  // atoi (0x11ffb0)
+
+#include <Bute/ButeMgr.h>
+#include <EmptyString.h>
+#include <Crypto/BitStreamBlowfish.h>
+#include <Crypto/BlowfishCopy.h>
+#include <rva.h>
+#include <AddrWord.h>
+
+#include <fstream.h>
+#include <float.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <strstrea.h>
 
 DATA(0x0021cf40)
 i16 g_charClass[256] = {
@@ -757,26 +714,20 @@ static i16 g_tokenLen;
 
 DATA(0x002240d0)
 static const char s_fmtFormatError[] =
-    "ButeMgr (%d):  A formatting error in the attribute file was encountered"; // 0x2240d0
+    "ButeMgr (%d):  A formatting error in the attribute file was encountered";
 DATA(0x002240a8)
-static const char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered."; // 0x2240a8
+static const char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";
 DATA(0x002241d4)
-static const char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s"; // 0x2241d4
+static const char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s";
 DATA(0x00224204)
-static const char s_fmtTypeMismatch[] = "ButeMgr:  Type mismatch - [%s]:%s"; // 0x224204
+static const char s_fmtTypeMismatch[] = "ButeMgr:  Type mismatch - [%s]:%s";
 DATA(0x00224228)
-static const char s_fmtInvalidTag[] = "ButeMgr:  Invalid tag specified - [%s]"; // 0x224228
+static const char s_fmtInvalidTag[] = "ButeMgr:  Invalid tag specified - [%s]";
 DATA(0x00224250)
-static const char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s"; // 0x224250
+static const char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s";
 
 static const float s_floatErr = FLT_MIN;
 static const double s_doubleErr = DBL_MIN;
-
-// The DATA() rows below bind the error-reporter string/const pool cells to their retail
-// .data/.rdata RVAs. cl decorates each file-scope static `_<name>$S<n>` with a per-OBJECT
-// CodeView counter that SHIFTS whenever this TU gains or loses any symbol, so labels.py
-// resolves the ordinal by prefix at label time (msvc5_data_symbol) - nothing to re-pin
-// here when the file changes.
 
 DATA(0x00224118)
 static const char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
@@ -801,59 +752,12 @@ static const char s_fmtRect2[] = "[%lf, %lf]";
 static const char s_strLBrack[] = "[";
 static const char s_strRBrack[] = "]";
 
-// ===========================================================================
-// 0x021310 - this TU's compiler-emitted copy of ??1zPTree (the store's INLINE
-// destructor): zPTree's own vtable 0x1e94ac slot 0 (sdd 0x212e0, via ILT 0x4372)
-// dispatches to it, so it really is plain ~zPTree as emitted in butemgr (MSVC5
-// without /Gy emits an inline member per obj while folding the vftable COMDAT).
-// Our cl emits the same ??1zPTree/??_GzPTree/??_EzPTree trio in this obj on its
-// own (the TU deletes stores); the RVA_COMPGEN pins below just NAME the retail
-// copies for the delink carve (no anchor is needed for compiler-emitted copies).
-// Its two ex-siblings were never copies at all: 0x174d70 is the real
-// ~CButeNode (butenode) and 0x21570 the real ~CBSecStream (below) - byte-identical
-// only because neither subclass adds destructible state. The inline ~zPTree
-// expands as: stamp both vptrs, ClearRecursive(0) (?ClearRecursive@zPTree@@
-// @0x16e070), fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base
-// (~zErrHandling 0x16da60). __thiscall, /GX.
-// 0x212e0 = the scalar-deleting destructor (vtable 0x1e94ac slot 0); 0x21600 = the
-// second-base adjustor flavor (vtable 0x1e949c slot 0, via ILT 0x1c30).
-// ===========================================================================
 RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
 RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
-
-// ---------------------------------------------------------------------------
-// 0x0213a0 - IDENTITY RECOVERED (was the CVBaseFieldHost @identity-TODO view):
-// `?rdbuf@ostrstream@@QBEPAVstrstreambuf@@XZ` - the out-of-line copy of the CRT
-// <strstrea.h> INLINE member `strstreambuf* ostrstream::rdbuf() const` (returns
-// `(strstreambuf*)ios::rdbuf()`, i.e. the `ios` VIRTUAL base's bp field: load
-// vbptr [this], disp = vbtable[1], read [this+disp+4]). MSVC5 cannot inline a
-// virtual-base access, so the caller's obj emits the copy out-of-line.
-// PROOF (retail bytes): the sole caller CChatBoxOwner::ProcessCheatInput
-// (0x205c0, via ILT 0x272f at 0x2087e) runs it on `esi` = the `new(0x58)` object
-// constructed by ??0ostrstream@@QAE@PADHH@Z @0x1698c0 (already manual-crt-reclass
-// in config/library_labels.csv; its ctor stamps the {0,8} vbtable @0x1f0388 and
-// ctor-flag-constructs the ios vbase at +8, whose vptr 0x1f0384 is the cataloged
-// library ??_7ostrstream) over the Blowfish cheat-decode output buffer
-// (BitStreamBlowfishDecode @0x16f760 writes it), then calls
-// ?out_waiting@streambuf@@QBEHXZ @0x21280 (pptr-pbase, another inline copy) on
-// the result to size the decrypted text. CRT LIBRARY code -> named in
-// config/library_labels.csv (manual-crt-reclass), not reconstructed here; the
-// full ostrstream construction is ProcessCheatInput's final-sweep redo
-// (src/Gruntz/ChatBoxOwner.cpp).
 
 RVA(0x000213c0, 0x14c)
 CButeMgr::~CButeMgr() {}
 
-// ---------------------------------------------------------------------------
-// 0x021570 - CBSecStream::~CBSecStream, the section-stream's REAL destructor (ex
-// "third ~zPTree copy"). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
-// CBSecStream's vtable 0x1f0510 slot 0 is the sdd 0x174d30, whose ~ call reaches
-// exactly this body via ILT 0x3567. The dtor is spelled INLINE in-class (retail's
-// was compiler-generated: ~CButeMgr INLINES its expansion, and a user out-of-line
-// def would be CALLED there instead - measured, 100 -> 41). cl then emits this
-// linker-kept COMDAT copy of it in THIS obj on its own (MSVC5 no-/Gy inline-member
-// emission); the RVA_COMPGEN pin below only NAMES that compiler-emitted copy for
-// the delink carve - no source body exists for it, and none must.
 RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
 
 RVA_COMPGEN(0x00021600, 0x8, ??_EzPTree@@W7AEPAXI@Z)
@@ -886,16 +790,6 @@ bool CButeMgr::ScanToken(i32 expectType) {
     return true;
 }
 
-// ===========================================================================
-// 0x171a40 - ??_Diostream@@QAEXXZ (the compiler-generated iostream vbase destructor)
-// ===========================================================================
-// Byte-identical to a cl 5.0 probe of the auto-emitted COMDAT (push esi; lea
-// esi,[ecx+0x14]; call ??1iostream; call ??1ios; pop esi; ret). Retail keeps it
-// UNREFERENCED (no call/DIR32 ref anywhere - no /OPT:REF): the emitting construct
-// did not survive into shipped code. The ex "CButeMgr::ClearHelper" hand-written
-// body (with its banned this+0x14 vbase-offset cast) is GONE - no dev wrote it.
-// The scoped stream below is the minimal cl-5.0 emission carrier (a throwing call
-// while the complete iostream is live -> the /GX funclet references ??_D).
 RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
 
 RVA(0x00171aa0, 0x50)
@@ -932,12 +826,6 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
     return static_cast<i32>(0x80000000);
 }
 
-// ---------------------------------------------------------------------------
-// CButeValue::CopyValue (@0x172040)
-// Copy `other`'s value payload into this value's pre-allocated storage, the copy
-// width chosen by THIS value's type-tag via a dense ButeType jump table. The
-// scalar types copy 1-2 dwords, the string assigns the CString, and the Ref5/6/7/8
-// blobs copy 16/8/24/16 bytes. Returns `this`.
 // @early-stop
 RVA(0x00172040, 0xfc)
 CButeValue* CButeValue::CopyValue(CButeValue* other) {
@@ -979,13 +867,6 @@ CButeValue* CButeValue::CopyValue(CButeValue* other) {
     return this;
 }
 
-// ---------------------------------------------------------------------------
-// CButeValue::~CButeValue (@0x172160)
-// Free the owned pValue storage. A dense ButeType jump table picks the teardown:
-// the string case (4) destructs the CString first (null-guarded ~CString + free),
-// every other type-group is a plain `operator delete(pValue)` (no guard). The four
-// distinct case bodies map to the four jump-table arms (string / {2,6} / {0,3,7} /
-// {1,5,8}). __thiscall, no args.
 // @early-stop
 RVA(0x00172160, 0x80)
 CButeValue::~CButeValue() {
@@ -1141,31 +1022,8 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
     return def;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::GetString
-// type-4 getter, no default: returns rec->pValue on a hit, else reports the
-// specific failure and returns a shared empty CString. The empty string is a
-// function-local static CString (MFC magic-static: one-shot guarded ctor +
-// atexit-registered dtor) returned by address on every error path.
-//
-// The three failure paths are an if/else CASCADE with ONE shared tail return, not
-// three early returns: that is what puts tag in ebx and key in edi (three separate
-// `return &s_empty;` statements weight the two params the other way and swap the
-// pair). The ReportError argument order is (fmt, tag, key), like every sibling
-// getter - a previous reconstruction had (fmt, key, tag), whose swapped pushes
-// cancelled against the swapped registers and so read as "body byte-exact".
 RVA(0x001731d0, 0xb6)
-// The error path returns the ADDRESS of the static empty CString, not its buffer:
-// retail ends it `mov eax,0x6bf698` == OFFSET s_empty, with no load. Writing
-// `(const char*)s_empty` would emit the m_pchData LOAD instead, so the cast
-// below is byte-forced.
-//
-// VERIFIED 2026-07-28 that s_empty really is a static CString and not a plain char[]
-// (which would need no cast at all): 0x1731d0's prologue carries the magic-static
-// guard and the atexit registration a char[] cannot have -
-//   mov cl,BYTE PTR ds:0x6bf6b8 / test al,cl / jne   (the guard byte)
-//   mov ecx,0x6bf698 / push 0x6293f4 / call 0x1b9d4c (CString::CString(const char*))
-//   push 0x573290 / call 0x11f490                    (atexit the dtor thunk)
+
 char* CButeMgr::GetString(const char* tag, const char* key) {
     static CString s_empty("");
 
@@ -1183,8 +1041,7 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
     } else {
         ReportError(s_fmtInvalidTag, tag);
     }
-    // retail ends here `mov eax,0x6bf698` == OFFSET s_empty with NO load, i.e. it
-    // returns the object's own address through the char* slot (<AddrWord.h>)
+
     AddrWord empty;
     empty.m_addr = &s_empty;
     return static_cast<char*>(empty.m_addr);
@@ -1205,33 +1062,6 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
     return def;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::GetRef5 / GetRef6 / GetRef7 / GetRef8
-// The typed-reference getter family (value type-tags 5..8). Each mirrors
-// GetString: a function-local `static T s_default;` (MFC magic-static: a guard
-// byte + inline zero-init + an atexit-registered dtor thunk) is returned by
-// address on every error path, and `(T*)rec->pValue` on the matching type hit.
-// The type check is the cmp-mem `if (rec->type == N)` form (success inline, the
-// three failure blocks float to the tail as the nested-else cascade). The
-// default struct's only role is its SIZE + non-trivial dtor (-> the magic-static
-// atexit shape); its fields are zero on every miss.
-//
-// MATCH STATUS: GetRef5/GetRef6 are byte-exact (100% fuzzy). GetRef7/GetRef8 sit
-// at the INVERSE zero-register-pinning wall (84-85%): retail uses immediate zero
-// stores (`mov [field],0`) + `test eax,eax` null tests, while MSVC here pins ebp=0
-// (`xor ebp,ebp` + `mov [field],ebp` + `cmp ebp,eax`) for the >=4-field zero-init.
-// GetRef5 (also 4 fields) DOES pin ebp in retail, so this is an isolated allocator
-// coin-flip - logic/CFG/offsets are byte-exact, only the zero-materialization +
-// null-test register differ. Init-list / assignment-body / reversed-order ctor
-// forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
-// (see docs/patterns/zero-register-pinning.md - the regalloc wall).
-//
-// Bind the two magic-static cells + the atexit dtor thunk cl emits for each
-// `static CButeRefN s_default;` to their retail RVAs. The guard ($S) + object
-// (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
-// pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
-// set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
-
 RVA(0x00173cb0, 0x4e)
 CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     void* grp = Tree()->Find(tag);
@@ -1247,15 +1077,6 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     return def;
 }
 
-// CButeValue::CButeValue (0x1741b0) - the two-arg "boxed value" ctor: tag
-// `this` with `type`, op-new an 8-byte CButeValue, copy `src`'s {type, pValue}
-// into it, and stow the boxed copy in this->pValue (or 0 on alloc failure). __thiscall
-// (type, src), returns this. Attributed via the 8-byte {type, pValue} receiver shape;
-// the only caller is the bute value-store builder 0x173dd0 (still a GapFunctions.cpp
-// gap, so the exact ButeType tag `type` carries stays TBD). Re-homed from GapFunctions.cpp.
-// `new CButeValue(*src)` - the implicit memberwise copy ctor inlines to the two
-// interleaved load/store pairs, and the new-expression's NULL-on-failure value is
-// what produces the `xor eax,eax` join. Same idiom as the Set* family.
 RVA(0x001741b0, 0x39)
 CButeValue::CButeValue(i32 type, CButeValue* src) {
     this->type = type;
@@ -1308,9 +1129,7 @@ bool CButeMgr::ParseTagLine() {
             return false;
         }
         CButeNode* node = new CButeNode(&ButeValueTeardown, 2);
-        // The node IS the per-tag keyed store; ParseAttributeFile reaches it through the
-        // shared zPTree store operations, so this is a plain upcast now (the ex
-        // CButeNode*->CButeTree* reinterpret was the sibling-class symptom).
+
         m_pNode = node;
         t->Insert(tok, node);
     }
@@ -1318,14 +1137,6 @@ bool CButeMgr::ParseTagLine() {
     return ScanToken(3) ? true : false;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::Parse
-// The recursive-descent token lexer: resets the token-length counter, then loops
-// through the transition table -- skipping any class > 5 -- and dispatches a
-// 6-way jump table on the token class to read identifiers/values/punctuation,
-// append chars to the token buffer, advance the lexer, and recurse for nested
-// groups.
-// Reports "Bad symbol encountered" (with m_lineNo) on the error class.
 // @early-stop
 RVA(0x001704c0, 0x200)
 bool CButeMgr::Parse() {
@@ -1336,32 +1147,32 @@ bool CButeMgr::Parse() {
     for (;;) {
         i16 cls = PeekState(static_cast<i16>(kind), m_curChar);
         switch (cls) {
-            case 0: // bad symbol
+            case 0:
                 ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;
 
-            case 1: // value char: scan, store to token buffer, echo, advance, loop
+            case 1:
                 kind = PeekState2(static_cast<i16>(kind), m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << static_cast<unsigned char>(m_curChar);
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 break;
 
-            case 2: // value char: scan, echo only, advance, loop
+            case 2:
                 kind = PeekState2(static_cast<i16>(kind), m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << static_cast<unsigned char>(m_curChar);
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 break;
 
-            case 3: // identifier: scan, store, echo, advance, recurse, terminate
+            case 3:
                 ScanState(static_cast<i16>(kind), m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << static_cast<unsigned char>(m_curChar);
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 if (m_tokType == 0) {
@@ -1370,10 +1181,10 @@ bool CButeMgr::Parse() {
                 m_token[g_tokenLen] = 0;
                 return true;
 
-            case 4: // identifier: scan, echo only, advance, recurse, terminate
+            case 4:
                 ScanState(static_cast<i16>(kind), m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << static_cast<unsigned char>(m_curChar);
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 if (m_tokType == 0) {
@@ -1382,7 +1193,7 @@ bool CButeMgr::Parse() {
                 m_token[g_tokenLen] = 0;
                 return true;
 
-            case 5: // identifier: scan, recurse, terminate (no echo, no advance)
+            case 5:
                 ScanState(static_cast<i16>(kind), m_curChar);
                 if (m_tokType == 0) {
                     Parse();
@@ -1393,30 +1204,9 @@ bool CButeMgr::Parse() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// ButeMgr::ParseAttributeFile
-// The "key = value" value-line driver (?ParseAttributeFile@ButeMgr@@QAE_NXZ).
-// Reads the key name (already lexed into m_token) into the scratch CString
-// m_str104, optionally probes the active store node (m_pNode) for a duplicate
-// key (reporting + flagging it), lexes the value-type token, then dispatches an
-// 11-way switch over the value-type token (m_tokType in 5..15) to either:
-//   - STORE mode (m_writeMode == 0, no duplicate): allocate a CButeValue, tag it,
-//     `new` a heap copy of the parsed value, and Insert it under the key; or
-//   - WRITE-BACK mode (m_writeMode != 0): read the existing typed value back through
-//     the matching getter and append a formatted representation of it to the
-//     value-text accumulator (m_pText->accum), using the per-type literal
-//     decorations ("(DWORD)", "(FLOAT)", "(a, b)", "<x, y, z>", "[x, y]", ...).
-// The token scanners + the heap value copies live under a C++ EH frame (each
-// inline value object + the CString string temp are destructible on unwind) ->
-// /GX. `this` is a `ButeMgr` == its `CButeMgr` base (offset 0) -- reached directly
-// through inheritance, no cast/view.
-// @early-stop
 RVA(0x00170750, 0x9d8)
 bool ButeMgr::ParseAttributeFile() {
 
-    // The shared 4-byte scalar value slot ([esp+0x10] in retail), zero-init at
-    // entry (`mov [esp+0x10],0`) and reused by the int/dword/float store paths -
-    // one slot, three views, so an honest union rather than reinterpret casts.
     union {
         i32 vi;
         DWORD vd;
@@ -1438,7 +1228,7 @@ bool ButeMgr::ParseAttributeFile() {
         return false;
     }
     if (m_writeMode) {
-        m_pText->accum << static_cast<unsigned char>(0x20);
+        (*m_pText) << static_cast<unsigned char>(0x20);
         m_captureText = 0;
     }
     if (!Parse()) {
@@ -1447,10 +1237,10 @@ bool ButeMgr::ParseAttributeFile() {
 
     switch (m_tokType) {
         case 6:
-        case 7: { // signed int -> type 0
+        case 7: {
             vi = atoi(m_token);
             if (m_writeMode) {
-                m_pText->accum << static_cast<int>(GetInt(m_tagName, m_str104));
+                (*m_pText) << static_cast<int>(GetInt(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1467,14 +1257,14 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 14: { // dword -> type 1
+        case 14: {
             if (!ScanToken(6)) {
                 return false;
             }
             vd = ButeRead_Dword(m_token, 0, 10);
             if (m_writeMode) {
-                m_pText->accum << s_strDword;
-                m_pText->accum << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
+                (*m_pText) << s_strDword;
+                (*m_pText) << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1491,14 +1281,13 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 15: { // float (FLOAT-tagged) -> type 3
+        case 15: {
             if (!ScanToken(8)) {
                 return false;
             }
             vf = static_cast<float>(ButeRead_Float(m_token));
             if (m_writeMode) {
-                (m_pText->accum << s_strFloat)
-                    << static_cast<double>(GetFloat(m_tagName, m_str104));
+                ((*m_pText) << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1515,11 +1304,11 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 16: { // float ('f'-tagged) -> type 3
+        case 16: {
             vf = static_cast<float>(ButeRead_Float(m_token));
             if (m_writeMode) {
-                m_pText->accum << static_cast<double>(GetFloat(m_tagName, m_str104));
-                m_pText->accum << s_strFloatSuffix;
+                (*m_pText) << static_cast<double>(GetFloat(m_tagName, m_str104));
+                (*m_pText) << s_strFloatSuffix;
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1536,10 +1325,10 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 8: { // double -> type 2
+        case 8: {
             double dv = ButeRead_Float(m_token);
             if (m_writeMode) {
-                m_pText->accum << static_cast<double>(GetDouble(m_tagName, m_str104));
+                (*m_pText) << static_cast<double>(GetDouble(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1556,16 +1345,16 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 10: { // (a, b, c, d) point4 -> type 5
+        case 10: {
             i32 a, b, c, d;
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (m_writeMode) {
                 CButeRef5* r = GetRef5(m_tagName, m_str104);
-                (m_pText->accum << s_strOpen) << static_cast<long>(r->a);
-                (m_pText->accum << s_strComma) << static_cast<long>(r->b);
-                (m_pText->accum << s_strComma) << static_cast<long>(r->c);
-                (m_pText->accum << s_strComma) << static_cast<long>(r->d);
-                m_pText->accum << s_strClose;
+                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->c);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->d);
+                (*m_pText) << s_strClose;
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1585,14 +1374,14 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 11: { // (a, b) point -> type 6
+        case 11: {
             i32 a, b;
             sscanf(m_token, s_fmtPoint2, &a, &b);
             if (m_writeMode) {
                 CButeRef6* r = GetRef6(m_tagName, m_str104);
-                (m_pText->accum << s_strOpen) << static_cast<long>(r->a);
-                (m_pText->accum << s_strComma) << static_cast<long>(r->b);
-                m_pText->accum << s_strClose;
+                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
+                (*m_pText) << s_strClose;
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1610,7 +1399,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 12: { // <x, y, z> rect3 -> type 7
+        case 12: {
             double x, y, z;
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
@@ -1618,10 +1407,10 @@ bool ButeMgr::ParseAttributeFile() {
                 double dx = r->x;
                 double dy = r->y;
                 double dz = r->z;
-                (m_pText->accum << s_strLt) << static_cast<double>(dx);
-                (m_pText->accum << s_strComma) << static_cast<double>(dy);
-                (m_pText->accum << s_strComma) << static_cast<double>(dz);
-                m_pText->accum << s_strGt;
+                ((*m_pText) << s_strLt) << static_cast<double>(dx);
+                ((*m_pText) << s_strComma) << static_cast<double>(dy);
+                ((*m_pText) << s_strComma) << static_cast<double>(dz);
+                (*m_pText) << s_strGt;
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1640,16 +1429,16 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 13: { // [x, y] rect2 -> type 8
+        case 13: {
             double x, y;
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (m_writeMode) {
                 CButeRef8* r = GetRef8(m_tagName, m_str104);
                 double dx = r->x;
                 double dy = r->y;
-                (m_pText->accum << s_strLBrack) << static_cast<double>(dx);
-                (m_pText->accum << s_strComma) << static_cast<double>(dy);
-                m_pText->accum << s_strRBrack;
+                ((*m_pText) << s_strLBrack) << static_cast<double>(dx);
+                ((*m_pText) << s_strComma) << static_cast<double>(dy);
+                (*m_pText) << s_strRBrack;
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1667,12 +1456,12 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 9: { // quoted string -> type 4
+        case 9: {
             if (m_writeMode) {
                 CString tmp(GetString(m_tagName, m_str104));
-                m_pText->accum << static_cast<unsigned char>(0x22);
-                m_pText->accum << tmp.GetBuffer(0);
-                m_pText->accum << static_cast<unsigned char>(0x22);
+                (*m_pText) << static_cast<unsigned char>(0x22);
+                (*m_pText) << tmp.GetBuffer(0);
+                (*m_pText) << static_cast<unsigned char>(0x22);
             } else if (!bDup) {
                 CString s(m_token);
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
@@ -1787,18 +1576,11 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     return this;
 }
 
-void EmitIostreamVbaseDtor(streambuf* b) { // non-static: cl elides unreferenced statics
+void EmitIostreamVbaseDtor(streambuf* b) {
     iostream s(b);
     s.flush();
 }
 
-// ===========================================================================
-// CButeValue::SetDword
-// ===========================================================================
-// `new u32(val)` - scalar new WITH an initializer. The initializer only runs when
-// the allocation succeeded, and the new-expression's value is NULL on failure, so
-// cl materializes that NULL into the join register (`xor eax,eax`) instead of
-// storing an immediate. See docs/patterns/scalar-new-with-initializer-null-join.md.
 RVA(0x00172000, 0x31)
 CButeValue* CButeValue::SetDword(i32 type, u32 val) {
     this->type = type;
@@ -1806,10 +1588,6 @@ CButeValue* CButeValue::SetDword(i32 type, u32 val) {
     return this;
 }
 
-// ===========================================================================
-// CButeValue::SetFloat
-// ===========================================================================
-// Allocates 4-byte float storage, stores the value. `new float(val)`; see SetDword.
 RVA(0x00172680, 0x31)
 CButeValue* CButeValue::SetFloat(i32 type, float val) {
     this->type = type;
@@ -1817,10 +1595,6 @@ CButeValue* CButeValue::SetFloat(i32 type, float val) {
     return this;
 }
 
-// ===========================================================================
-// CButeValue::SetInt
-// ===========================================================================
-// Allocates 4-byte int storage, stores the value. `new i32(val)`; see SetDword.
 RVA(0x00172b90, 0x31)
 CButeValue* CButeValue::SetInt(i32 type, i32 val) {
     this->type = type;
@@ -1828,10 +1602,6 @@ CButeValue* CButeValue::SetInt(i32 type, i32 val) {
     return this;
 }
 
-// ===========================================================================
-// CButeValue::SetDouble
-// ===========================================================================
-// Allocates 8-byte double storage, stores the value. `new double(val)`; see SetDword.
 RVA(0x00173140, 0x38)
 CButeValue* CButeValue::SetDouble(i32 type, double val) {
     this->type = type;
@@ -1882,13 +1652,6 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
     m_errCallback = cb;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::NextChar
-// Advance the input one char: pull the next byte position from the source
-// stream (+0xa0), compute the delta from the base (m_streamBase), and -- unless
-// the stream signals EOF (a self-indexed bitmap bit) -- record it as m_curChar,
-// bump the line counter on the count-flag, track the newline flag, and advance
-// the position (m_pos).
 // @early-stop
 RVA(0x00170390, 0x50)
 void CButeMgr::NextChar() {
@@ -1926,11 +1689,6 @@ void CButeMgr::ScanState(i16 state, char c) {
     m_lexState = g_transTable[state][CharClass(c)][2];
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::SkipToTag
-// Re-lex tokens until a tag/group token (type 1 or 2) is reached (return true),
-// failing on a parse error or any non-continuation token. Type 4 continues the
-// loop (re-running the attribute-file driver).
 // @early-stop
 RVA(0x00171160, 0x45)
 bool CButeMgr::SkipToTag() {
@@ -1949,11 +1707,6 @@ bool CButeMgr::SkipToTag() {
     return false;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::ParseGroup
-// The recursive per-tag descent: advance, lex, and -- depending on the token
-// type -- either accept the group (1), parse a tag line (2) and walk its
-// matching nodes, or recurse. Loops while the current token stays a group.
 // @early-stop
 RVA(0x00171580, 0xba)
 bool CButeMgr::ParseGroup() {
@@ -1973,8 +1726,7 @@ bool CButeMgr::ParseGroup() {
             return false;
         }
         if (m_writeMode) {
-            // The stored group node is the `new CButeNode` ParseTagLine inserts (its store
-            // ops come from the shared zPTree base).
+
             CButeNode* grp = static_cast<CButeNode*>(Tree48()->Find(m_tagName));
             if (grp) {
                 grp->Walk(&ButeGroup_Apply, m_pText, 0);
@@ -2015,42 +1767,134 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
     return false;
 }
 
-// ---------------------------------------------------------------------------
-// Homed from src/Stub/GapFunctions.cpp (matcher-5): three ButeMgr TU leaves that
-// Ghidra never carved, homed by RVA neighbourhood (all inside ButeMgr's .text).
-// ---------------------------------------------------------------------------
-// @early-stop
+RVA(0x001712b0, 0x204)
+void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
+    ostream& output = *static_cast<ostream*>(ctx);
+    CButeValue* value = static_cast<CButeValue*>(valuePtr);
+
+    output << "\r\n" << key << " = ";
+    switch (value->type) {
+        case kButeInt:
+            output << *static_cast<i32*>(value->pValue);
+            break;
+
+        case kButeDword:
+            output << s_strDword << *static_cast<DWORD*>(value->pValue);
+            break;
+
+        case kButeDouble:
+            output << *static_cast<double*>(value->pValue);
+            break;
+
+        case kButeFloat:
+            output << s_strFloat << static_cast<double>(*static_cast<float*>(value->pValue));
+            break;
+
+        case kButeString:
+            output << static_cast<unsigned char>('"') << static_cast<char*>(value->pValue)
+                   << static_cast<unsigned char>('"');
+            break;
+
+        case kButeRef5: {
+            CButeRef5* ref = static_cast<CButeRef5*>(value->pValue);
+            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
+                   << static_cast<long>(ref->b) << s_strComma << static_cast<long>(ref->c)
+                   << s_strComma << static_cast<long>(ref->d) << s_strClose;
+            break;
+        }
+
+        case kButeRef6: {
+            CButeRef6* ref = static_cast<CButeRef6*>(value->pValue);
+            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
+                   << static_cast<long>(ref->b) << s_strClose;
+            break;
+        }
+
+        case kButeRef7: {
+            CButeRef7* ref = static_cast<CButeRef7*>(value->pValue);
+            output << s_strLt << ref->x << s_strComma << ref->y << s_strComma << ref->z << s_strGt;
+            break;
+        }
+
+        case kButeRef8: {
+            CButeRef8* ref = static_cast<CButeRef8*>(value->pValue);
+            output << s_strLBrack << ref->x << s_strComma << ref->y << s_strRBrack;
+            break;
+        }
+    }
+}
+
 RVA(0x001714e0, 0x66)
-i32 Gap_1714e0(void) {
-    return 0;
+void ButeTag_Apply(char* key, void* value, void* ctx) {
+    ostream& output = *static_cast<ostream*>(ctx);
+    output << static_cast<unsigned char>('\n') << endl;
+    output << static_cast<unsigned char>('\n') << endl;
+    output << s_strLBrack << key << s_strRBrack;
+    static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, 0);
 }
 
-// @early-stop
+// @identity-TODO Original semantic name is not present in the retail evidence; the CButeMgr
+// receiver and no-argument signature are proven by field accesses and the thiscall prologue.
 RVA(0x00171640, 0x3f2)
-i32 Gap_171640(void) {
-    return 0;
+bool CButeMgr::Gap_171640() {
+    Init();
+    if (m_str108.IsEmpty()) {
+        return false;
+    }
+
+    m_writeMode = 1;
+    m_captureText = 1;
+
+    ifstream input(m_str108, ios::nocreate | ios::binary);
+    input.seekg(0, ios::end);
+    i32 length = input.tellg();
+    input.seekg(0);
+
+    char* sourceData = new char[length];
+    strstream source(sourceData, length, ios::in | ios::out);
+    if (m_10e) {
+        BitStreamBlowfishDecode(&input, &source);
+    } else {
+        char block[0x1000];
+        while (!input.eof()) {
+            input.read(block, sizeof(block));
+            source.write(block, input.gcount());
+        }
+        input.close();
+    }
+
+    streambuf* outputBuffer = 0;
+    if (m_10e) {
+        outputBuffer = new strstreambuf(length);
+        m_pText = new iostream(outputBuffer);
+    } else {
+        m_pText = new fstream(m_str108, ios::in | ios::out | ios::binary);
+    }
+    m_pText->precision(100);
+
+    source.seekg(0);
+    m_stream = &source;
+    ParseGroup();
+    m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
+    m_pText->seekg(0);
+
+    if (m_10e) {
+        ofstream output(m_str108, ios::binary);
+        BitStreamBlowfishEncode(m_pText, &output);
+        output.close();
+    }
+
+    delete[] source.str();
+    if (m_10e) {
+        delete outputBuffer;
+    }
+    delete m_pText;
+
+    m_captureText = 0;
+    m_writeMode = 0;
+    return true;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::SetValue (0x173dd0) - store `val` at (tag, key).
-//
-// Retail walks the three keyed stores in a shape that is asymmetric on purpose:
-// the FIRST store (m_tree) is only ever read - a hit updates the existing value
-// in place and returns. A tag hit with a key MISS falls through to the second
-// store (m_tree48); a tag MISS in the first store goes to the third (m_tree74).
-// Both of those two stores are read-write: a value hit updates, a key miss
-// inserts a fresh boxed value under the existing group, and a tag miss allocates
-// a `new CButeNode(2)` group, inserts it, and inserts the value under that.
-//
-// Every stored value is `CButeValue(6, val)` - the type-6 (kButeRef6) box whose
-// ctor op-news an 8-byte CButeValue and copies `val`'s {type, pValue} pair into
-// it. The three update sites are the same two statements; cl inlined the
-// ctor/CopyValue/dtor trio at the m_tree and m_tree48 sites (the type tag is the
-// literal 6 there, so ~CButeValue's ButeType jump table folds to a bare
-// `operator delete`) and left the m_tree74 site as three out-of-line calls.
-//
-// The destructible CButeValue temporaries give it the /GX frame (nine trylevels,
-// 0..8, one per allocation site).
 // @early-stop
 RVA(0x00173dd0, 0x38f)
 void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {

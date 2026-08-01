@@ -1,20 +1,20 @@
-#include <Mfc.h> // real ::CPtrArray (CGruntzMapMgr::m_arr) - MFC umbrella kept first
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 #include <Ints.h>
-#include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr : CMapMgr (the +0x70 grid container)
-#include <Gruntz/Brickz.h>            // BrickzCell (the 0x1c-byte grid cell)
-#include <Gruntz/GameRegistry.h>      // CGameRegistry (*0x64556c); m_world == CDDrawSurfaceMgr
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (object mgr + live list)
-#include <Gruntz/UserLogic.h>    // CGameObject (walked sprite) + AnimWorkerObj (m_7c) + g_buteMgr
-#include <Gruntz/GameLevel.h>    // CGameLevel (m_world->m_level; m_mainPlane @+0x5c)
-#include <Wwd/WwdFile.h>         // CDDrawWorkerHost - the raw tile-grid facet of the main plane
-#include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr @0x6453d8)
-#include <Gruntz/FreeNodePool.h> // g_coordPool @0x645540 + CoordPoolNode (recycled coord node)
-#include <Gruntz/GameObjectFactory.h> // CreateExitTrigger - the exit-footprint notify registrant
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/GameLevel.h>
+#include <Wwd/WwdFile.h>
+#include <Bute/ButeMgr.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameObjectFactory.h>
 
-#include <stdlib.h> // rand (0x11fee0, the engine rng)
+#include <stdlib.h>
 
 static __inline i32 PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
@@ -78,7 +78,6 @@ static __inline i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     return (r > 0x190) ? 0x149 : 0x148;
 }
 
-// @early-stop
 RVA(0x000810f0, 0x8b4)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
@@ -89,7 +88,6 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     AllocGrid(width, height, 0);
     m_90 = 0;
 
-    // Cumulative brick-colour thresholds off the "Brickz" bute section.
     i32 t1 = g_buteMgr.GetInt("Brickz", "Brown");
     i32 t2 = t1 + g_buteMgr.GetInt("Brickz", "Red");
     i32 t3 = t2 + g_buteMgr.GetInt("Brickz", "Blue");
@@ -105,10 +103,9 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             }
             cell->m_0 = 0;
             cell->m_4 = -1;
-            cell->m_8 = 0;
+            cell->m_objectId = 0;
             cell->m_c = -1;
 
-            // Editor mode: remap the two placeholder tiles in-place.
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 if (tileId == 0x105) {
                     tileId = 0x101;
@@ -119,7 +116,6 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 }
             }
 
-            // When NOT in test mode, roll a brick-colour id for the tile range.
             if (g_gameReg->m_134 != 1) {
                 switch (tileId) {
                     case 0x12f:
@@ -161,7 +157,6 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 grid->m_tileGrid[grid->m_colOffsets[col] + row] = tileId;
             }
 
-            // Inline ComputeCellFlags: look up the type code, pack the flags.
             i32 typeCode = m_attrMgr->m_level->LookupTile(row, col);
             i32 oldFlags = cell->m_0;
             i32 keep = oldFlags & 0x1bf40000;
@@ -331,7 +326,6 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             cell->m_c = tileId;
             cell->m_10 = typeCode;
 
-            // 8-neighbour diagonal-passability walk over the 3x3 block.
             if ((cell->m_0 & 0x100) != 0) {
                 i32 colCount = m_width;
                 for (i32 r = row - 1; r <= row + 1; r++) {
@@ -376,8 +370,6 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
         }
     }
 
-    // Freelist-recycle pass: for each moving object of the footprint kind, seed a
-    // 3x3 footprint of recycled free nodes, then commit them into the grid.
     CDDrawChildGroup* mgr = g_gameReg->m_world->m_childGroup;
     mgr->m_walkCursor = mgr->m_list.GetHeadPosition();
     CGameObject* obj;
@@ -387,18 +379,13 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
         obj = 0;
     }
     while (obj != 0) {
-        // The footprint kind is the object whose worker's post-create notify hook is
-        // &CreateExitTrigger (retail `cmp [worker+0x10],<reloc>`; the ex-0x40192e
-        // immediate was that thunk's address written out as a bare number).
-        if (obj->m_7c->m_notify == &CreateExitTrigger) {
+
+        if (obj->m_animWorker->m_notify == &CreateExitTrigger) {
             i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & 0x1f)) >> 5;
             i32 tileY = (obj->m_screenY + (obj->m_screenY >> 31 & 0x1f)) >> 5;
             for (i32 xo = -1; xo < 2; xo++) {
                 for (i32 yo = -1; yo < 2; yo++) {
-                    // Pop a CoordPoolNode off g_coordPool: the {x,y} payload (a Coord) sits
-                    // one link-offset (4) past the head, the m_next link is at head+0. Same
-                    // void* generic-free-list idiom as Grunt.cpp's recycle. Retail hardcodes
-                    // the +4 in the pop (and reads m_linkOffset only in the push below).
+
                     Coord* elem = 0;
                     if (g_coordPool.m_freeHead->m_next != 0) {
                         elem = &g_coordPool.m_freeHead->m_coord;
@@ -415,8 +402,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                     && static_cast<u32>(elem->m_y) < static_cast<u32>(m_height)) {
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_0 = 0x10;
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_c = 0;
-                    // Recycle: recover the raw node (payload - m_linkOffset) and relink onto
-                    // the free-list head (the Grunt.cpp void** idiom).
+
                     CoordPoolNode* node = g_coordPool.NodeOf(elem);
                     node->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = node;

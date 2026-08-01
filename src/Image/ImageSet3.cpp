@@ -1,8 +1,8 @@
 #include <rva.h>
 
-#include <Mfc.h> // CObject grand-base of the collapsed ~CImageSet3 (folds ??_7CObject @0x5e8cb4)
+#include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/ImageSets.h> // the canonical 18-slot CImageSet3 (RTTI vtbl 0x1f0228)
+#include <Gruntz/ImageSets.h>
 
 RVA(0x00161500, 0x58)
 CImageSet3::~CImageSet3() {
@@ -12,14 +12,6 @@ CImageSet3::~CImageSet3() {
     m_pixels = 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x166e00: from the pixel at (x,y), walk LEFT along the row while the pixel value
-// stays equal to that start pixel. On the first differing pixel, record its column
-// in *outX and its value in *outVal and return 1; if the row edge (x reaches 0) is
-// hit first, return 0. __thiscall, 4 args (ret 0x10).
-// 100%: the former SIB base/index-swap residual (a 99.778% @early-stop) flipped to
-// retail's pick when the TU regained its retail /GX profile + the collapsed dtor
-// (the *Eh.cpp merge) - the codegen residue was TU-composition-sensitive, not a wall.
 RVA(0x00166e00, 0x60)
 i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
@@ -36,8 +28,6 @@ i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
     return 0;
 }
 
-// 0x166e60 (slot 11): the val-gated form - scan LEFT for the first pixel that
-// EQUALS `val`, reporting only its column.
 RVA(0x00166e60, 0x48)
 i32 CImageSet3::ScanRunLeftGate_166e60(i32 x, i32 y, i32 val, i32* outX) {
     u8* p = m_pixels + ((y << m_heightLog2) + x);

@@ -1,28 +1,28 @@
-#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/Warlord.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>            // the shared CActReg (g_actionTable @0x644610)
-#include <Gruntz/TypeKeyColl.h>       // the shared zDArray (g_typeColl @0x6bf650)
-#include <Gruntz/Grunt.h>             // CGrunt + CGruntHud/g_buteTree/GruntRand
-#include <DDrawMgr/DDrawSurfaceMgr.h> // m_38->m_0c (the world root)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog; Lookup 0x1b8438)
-#include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record; ex CAnimElem)
-#include <Gruntz/AniElement.h>        // full CAniElement (ResolveIdleAnimation's desc walk)
-#include <Gruntz/TriggerMgr.h>     // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
-#include <Gruntz/GruntzMgr.h>      // CGruntzMgr (the RTTI-true singleton; ReportError @0x8dc60)
-#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
-#include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
-#include <Gruntz/Play.h>  // CPlay - m_curState real class (m_frameMarker timer)
-#include <Gruntz/Timer.h> // CTimer - the frame-marker (m_currentMs)
+#include <Gruntz/ActReg.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/AniAdvance.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/State.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/Timer.h>
 
-#include <Io/FileMem.h> // CFileMemBase - SerializeMove's archive (Read +0x2c / Write +0x30)
-#include <Gruntz/SerialCounter.h> // g_serialCounter (bumped per serialized field)
-#include <Bute/ButeTree.h>        // the real CButeTree (g_buteTree @0x6bf620)
-#include <Gruntz/FontConfig.h>    // CFontConfig - g_gameReg->m_chatLog (AddItem @0x21c60)
+#include <Io/FileMem.h>
+#include <Gruntz/SerialCounter.h>
+#include <Bute/ButeTree.h>
+#include <Gruntz/FontConfig.h>
 
 #include <rva.h>
-#include <new>      // placement new (the inlined ConstructElements grow loop)
-#include <stdlib.h> // rand (CRT PRNG, reloc-masked)
+#include <new>
+#include <stdlib.h>
 #include <Wap32/ZVec.h>
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
@@ -65,47 +65,6 @@ static const char s_keyF[] = "F";
 template<> DATA(0x00244610)
 CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 
-// ===========================================================================
-// RegisterWarlordActions  (0x0447a0)  - a free function, NOT a CWarlord method
-// ===========================================================================
-// Registers six single-letter Gruntz action-type keys ("A".."F") into the global
-// bute-name -> type-id tree (g_buteTree), growing the parallel type-key string
-// collection (g_typeColl, backed by g_typeColl.m_alloc/g_typeColl.m_grown) on a miss, then
-// stamps each resolved type-id's slot in the action-handler dispatch array
-// (g_actionTable @0x644610) with that action's handler entry point. The six
-// (key, handler) pairs are emitted inline (the same find-or-create block x6, via
-// the REGISTER_ACTION macro since cl declines to inline a helper this large). The
-// inlined SetAtGrow expands to IndexToPtr + the placement-new ConstructElements
-// grow loop (`::new(p) CString` = retail's `test esi,esi; je` null guard + the
-// `for(; n--; p++)` lea-recover trip count) + the CString key assign.
-//
-// The six handlers are CWarlord methods, PROVEN by decoding each ILT jmp thunk the
-// slot store references (`mov [eax],<ILT VA>`) and landing on this TU's own bodies
-// (`gruntz sema xref <target> --tree` reports the same edge from the other side):
-//   "A" thunk 0x003ba7 -> 0x044bb0 CWarlord::RearmMoving
-//   "B" thunk 0x001ce9 -> 0x044c00 CWarlord::LoadAttributes
-//   "C" thunk 0x0024f0 -> 0x044f80 CWarlord::BuildFortSplashParticles
-//   "D" thunk 0x003422 -> 0x044d10 CWarlord::LoadAttributes2
-//   "E" thunk 0x00431d -> 0x044e70 CWarlord::AdvanceMovingAnim
-//   "F" thunk 0x002725 -> 0x044f30 CWarlord::RearmMoving2
-// So they enter the table as ordinary member pointers (CUserLogic is CWarlord's
-// primary base, so the static_cast to the base PMF is a zero-delta bit copy - the
-// same spelling CObjectDropper::RegisterActs uses); no raw slot write is needed.
-//
-// The create path feeds the name-slot lookup the GLOBAL `g_typeCounter`, not the local
-// `id_` copy - that is what produces retail's `mov eax,[g_typeCounter]; push eax;
-// mov edi,eax`: cl CSEs the two reads (no call between them) into eax for the push
-// and copies to callee-saved edi for `id_`, which must survive the call. Passing `id_`
-// instead made cl coalesce straight into edi (`mov edi,[g_typeCounter]; push edi`) and
-// cost the last 2.7% in every one of the six blocks. The old note called that a "our
-// cl is smarter" regalloc wall; it was a source bug. 96.9% -> 100% EXACT.
-
-// The find-or-create half. The name slot is the INLINED `_zdvec::IndexToPtr`: retail
-// emits `call _zvec::IndexToPtr` (0x312a0, the plain byte accessor) followed by the
-// per-slot CString construction expanded in line - so the source spells the base
-// accessor and writes the ctor loop out, exactly as CGrunt's registrar does. Naming
-// the derived `SlotOf`/`_zdvec::IndexToPtr` here would bind 0x310f0, which retail's
-// warlord.obj never references.
 #define REGISTER_NAME(key)                                                                         \
     i32 id_ = ActFindId(key);                                                                      \
     if (id_ == 0) {                                                                                \
@@ -120,48 +79,21 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
         ++g_typeCounter;                                                                           \
     }
 
-// Blocks "A".."E" reach the handler slot through the same plain byte accessor
-// (`mov ecx,g_actionTable; call 0x312a0`), so the element type is re-applied at that
-// one seam.
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
-        /* language-forced: the slot holds a pointer-to-MEMBER; the plain byte    */               \
-        /* accessor above is the one seam where CActHandler goes back on.        */                \
+        /* Language-forced member-function representation seam; the byte accessor */               \
+        /* returns to CActHandler only here. */                                                    \
         *reinterpret_cast<CActHandler*>(CActRegPool<CWarlord>::s_table._zvec::IndexToPtr(id_)) =   \
             static_cast<CActHandler>(handler);                                                     \
     } while (0)
 
-// Block "F" alone reaches its slot through the TYPED zDArray<CActHandler>::Resolve
-// (retail: `mov ecx,g_actionTable; call 0x3544` -> 0x464e0, where the other five
-// blocks call 0x312a0 through 0x3864). Byte-identical codegen either way - the two
-// COMDATs have the same 0x74 body and MSVC5 has no /OPT:ICF - but the reference must
-// be bound to the address retail actually uses.
 #define REGISTER_ACTION_TYPED(key, handler)                                                        \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
         *CActRegPool<CWarlord>::s_table.Resolve(id_) = static_cast<CActHandler>(handler);          \
     } while (0)
-// ===========================================================================
-// CWarlord::~CWarlord  (0x0107f0)  - COMPILER-GENERATED, no source body
-// ===========================================================================
-// CWarlord adds one destructible member past the CUserLogic base - the +0x54
-// CString - so the IMPLICIT dtor emits the canonical most-derived teardown:
-//   1. ~CString(m_54)                      (retail EH state 1)
-//   2. store the CUserLogic vptr (0x5e705c); inline-destruct the +0x18 link's
-//      ~EngStr                             (retail EH state 2)
-//   3. store the CUserBase vptr (0x5e70b4)
-//
-// CWarlord declares NO destructor (see Warlord.h). Retail's dtor does not
-// re-stamp ??_7CWarlord at entry, and cl 5.0 only elides that store for an
-// IMPLICIT dtor - a user-declared one, even `~CWarlord() {}`, always emits it
-// (MEASURED both ways with cl 5.0 /O2 /GX). Declaring the dtor purely to hang an
-// RVA() on was the mis-model; the label moves to the RVA_COMPGEN pin below.
-// This TU's ctor emits ??_7CWarlord -> ??_GCWarlord -> ??1CWarlord, so the
-// implicit body is a COMDAT in this obj and the pin resolves against it.
-// docs/patterns/eh-dtor-vptr-restamp-presence.md
-//
-// @early-stop
+
 RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)
 RVA_COMPGEN(0x000107f0, 0x55, ??1CWarlord@@UAE@XZ)
 
@@ -183,39 +115,16 @@ typedef enum WarlordBattleTag {
     {                                                                                              \
         void* h = 0;                                                                               \
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);             \
-        /* CMapStringToPtr::Lookup's out-param is void*& - the element type is */                  \
-        /* API-forced back on at the call, and void*->T* is a static_cast       */                 \
+        /* Lookup exposes void*& at this API boundary; */                                          \
+        /* reapply the element type after the call. */                                             \
         dst = static_cast<CAniElement*>(h);                                                        \
     }
 
-// @early-stop  (~79%; complete correct body, up from a 3.7% stub)
-// The whole 1854-byte body is reconstructed and byte-faithful in logic/offsets/
-// calls/control-flow (base init, grid-snap, per-owner selector, 4-way owner switch,
-// the eleven unrolled name->handle lookups, the tail timer + moving-anim resolve).
-// The residual is the classic /GX-heavy-ctor regalloc + EH-state wall in the ~50-
-// instruction prologue (the eleven lookups + tail objdiff-match):
-//   * prologue regalloc: retail pins the bound object (arg) in edi across the whole
-//     base init and holds &m_link in ebx; cl keeps &m_link in edi and reloads arg
-//     from [esp+0x3c] - a register-role coin-flip in the shared inline CUserLogic(obj)
-//     under this leaf's higher pressure, cascading to the grid-snap `and al,0xe0`
-//     (cl: `and ecx,-0x20`), the m_object reload-vs-cache choices, and the bl EH-const.
-//   * emission order: retail seeds the tile-tail (m_34/m_38/m_3c) BEFORE the m_54
-//     CString member ctor; with `: CUserLogic` + a body TILE_LOGIC_SEED the seed
-//     necessarily emits AFTER the member ctor. Deriving CWarlord from the byte-
-//     neutral CTileLogic intermediate (its ctor seeds the tail before the member
-//     ctor) recovers exactly this order and measured +1.4% (79.15 -> 80.53) - an
-//     inheritance change owned by the Fable lane; left as a hand-off (see report).
-// Closed since: the sortKey test + flags RMW share ONE m_object read (retail reuses the
-// eax it already holds: `mov ecx,[eax+8] / or ecx,0x20000 / mov [eax+8],ecx`, not a
-// memory RMW through a reloaded pointer), and so do the three draw-state stores.
-// The COMDAT is code (0x73e) + a 2-byte align pad + the owner switch's 4-entry jump
-// table at 0x43480 (the `jmp [eax*4+0x443480]` reloc target), so the span is 0x750:
-// carved at 0x73e the delinked target obj lost the table and objdiff scored our 5 extra
-// rows (the `mov edi,edi` pad + 4 dwords) as inserts.
+// @early-stop
+
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
-    // Two 64-bit stamp/window cooldown timers, cleared.
     m_cooldownStampLo = 0;
     m_cooldownWindowLo = 0;
     m_cooldownStampHi = 0;
@@ -225,13 +134,9 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_timer2StampHi = 0;
     m_timer2WindowHi = 0;
 
-    // Snap the bound object onto the 32px tile grid (centered) + latch the warlord
-    // anim id and mark the geometry z-key dirty.
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    // ONE m_object read serves the sortKey test AND the flags RMW (retail reuses the
-    // eax it already loaded: `mov ecx,[eax+8] / or ecx,0x20000 / mov [eax+8],ecx`);
-    // spelled as two `m_object->` chains cl re-loads and degrades to a memory RMW.
+
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0xc3500) {
         o->m_sortKey = 0xc3500;
@@ -239,8 +144,6 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_38->m_flags |= 0x2000002;
 
-    // Resolve the per-owner sprite selector from the focus-slot config row (clamped to
-    // [0,0x11); fall back to row 1 when the selector resolves empty).
     i32 owner = m_object->m_124;
     i32 cfg = g_gameReg->m_options[owner].m_008;
     if (cfg < 0 || cfg >= 0x11) {
@@ -250,7 +153,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (sel == 0) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    CWwdGameObjectA* d = m_object; // one read for the three draw-state stores
+    CWwdGameObjectA* d = m_object;
     d->m_drawActive = 1;
     d->m_drawFillCmd = 0xa;
     d->m_drawFillArg = sel;
@@ -273,15 +176,11 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             m_ownerTag = WARLORD_TAG_VIKING;
             break;
         default:
-            // 0x8009 / 0x3e9 = the status-bar report id/tag (meaning unproven, kept literal).
-            // Dual-view bridge: the singleton IS the RTTI-true CGruntzMgr, whose
-            // ReportError @0x8dc60 (WPARAM,LPARAM) is the real symbol the rel32 binds
-            // (the CGameRegistry facet's (i32,i32) name resolved to nothing).
+
             (g_gameReg)->ReportError(0x8009, 0x3e9);
             return;
     }
 
-    // Register the warlord's asset namespace, then resolve every per-state handle.
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_54, 1, 0, 0);
 
     WARLORD_ANIM_LOOKUP(m_idleAnims[0], s__IDLE1);
@@ -305,78 +204,10 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 #undef WARLORD_ANIM_LOOKUP
 
-// @early-stop  (STUB - kept at 0% rather than regress; see the FRAME WALL below)
-// 0x43670 = CWarlord::SerializeMove (vtable slot 1, +0x4; origin CUserBase). Homed
-// from src/Stub/GapFunctions.cpp (matcher-5); attribution vtable-proven (??_7CWarlord
-// +0x4). A 3104-byte archive save/load round-trip.
-// WIRED (VT1): was the free fn `Gap_043670` - the identity above was already proven but
-// never joined to the slot, so ??_7CWarlord+0x4's reloc dangled onto a __cdecl free
-// symbol while the class's own `virtual SerializeMove OVERRIDE` had no definition.
-// Now the real override (gruntz.match.vtable_slot_binding).
-//
-// FULLY DECODED (R3, this session) - the complete body is understood; it is NOT a
-// blind stub. Signature: i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj)
-// where ar == CFileMemBase (Read @vtbl+0x2c / Write @vtbl+0x30), a4 is the referenced
-// object (int in the mangling, a CGameObject*). Structure:
-//   1. if (!CUserLogic::SerializeMove(ar,mode,a3,a4)) return 0;   (0x16e7f0)
-//   2. if (!ar) return 0;   (retail SHARES this ret-0 with the save-body null check @43c5c)
-//   3. header field (m_40 handle + m_44 0x10 blob):
-//        mode 7 LOAD : ar->Read(hbuf,0x80); ar->Read(&m_44,0x10); m_34=m_38=a4;
-//                      m_3c=a4->m_7c; m_40 = strlen(hbuf)? reg->m_10.Lookup(hbuf):0
-//        mode 4 SAVE : memset(buf); if(m_40) strcpy(buf, reg->KeyOfValue(m_40));
-//                      ar->Write(buf,0x80); ar->Write(&m_44,0x10)
-//   4. body (2nd switch on mode):
-//        mode 7 LOAD : ++g_serialCounter;Read(buf,0x80);m_54=buf; then 11 handles
-//                      m_58..m_80 by-name (Read name, Lookup or 0), then Read(&m_a8,4),
-//                      Read(&m_ownerTag,4).
-//        mode 4 SAVE : the same 11 handles reverse (KeyOfValue->name->Write), then
-//                      Write(&m_a8,4), Write(&m_ownerTag,4).
-//        mode 8 POST : re-derive the draw-fill selector (the ctor GetSel path, UNCLAMPED).
-//   5. tail: the two i64 timers m_88/m_90 then m_98/m_a0, Read (7) / Write (4), ret 1.
-//   The registry is the canonical CSerialObjRef.h chain: a4->m_7c (CSerialNameHolder)
-//   ->m_0c (CDDrawSurfaceMgr) ->m_animRegistry (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_object
-//   forward-Lookups a key (0x1b8438) and KeyOfValue (RVO CString) reverses it.
-//   Every callee/field/mode/chain above was verified against the retail disasm.
-//
-// The 0xc20 body, reconstructed 2026-07-29. The old note parked this at a stub over a
-// FRAME WALL: retail's frame is 0x130 because each of the eleven save-side KeyOfValue
-// CString temporaries gets its OWN slot, and it claimed "our MSVC5 /O2 /GX COALESCES
-// those eleven destructible temporaries into one slot ... No source spelling defeats the
-// coalescing (tried: unnamed temporary, eleven distinct named locals, function-scope
-// buffers)."
-//
-// The spelling that defeats it is the UNNAMED temporary consumed IN PLACE, and retail
-// says so itself: every one of those blocks ends `call KeyOfValue; mov edi,[eax]` -
-// reading the returned CString's m_pchData straight off the return-buffer pointer, which
-// is what an unnamed temporary compiles to. A NAMED local stores it and reloads
-// (`mov edi,[esp+N]`), and cl then coalesces the slots. Measured independently on
-// CInGameIcon::SerializeMove @0x98c90 this session: two named locals share one slot,
-// two unnamed temporaries take two. Frame accounting closes exactly:
-//   0x10 (2 dwords) + 0x18..0x97 (body buf 0x80) + 0x98..0xbf (10 temp slots)
-//   + 0xc0..0x13f (chain header buf 0x80) = 0x130.
-//
-// Structure, all read off the bytes: the CWapX::Chain half expanded in place (as in
-// CInGameIcon), then a three-way mode dispatch - 4 stores the name plus the eleven anim
-// keys, 7 loads them back through the anim registry, 8 re-seeds the bound object's fill
-// shade from the player's sprite row - then two cursor-walked 64-bit timer pairs shared
-// by both directions.
-//
-// Four more spellings were load-bearing, each measured:
-//   * the `ar == 0` gate and the STORE arm's `world == 0` gate share ONE exit (`goto
-//     fail`); the LOAD arm keeps its own, exactly as retail lays them out (91.8 -> 92.5);
-//   * the mode-8 arm hoists m_object into a local - spelled `m_object->` per statement,
-//     cl5 cannot rule out the stores aliasing the member and reloads before each of the
-//     three (92.5 -> 93.3);
-//   * the eleven LOAD blocks gate on `!= 0` so the lookup is on the fallthrough and the
-//     zero-store goes out of line - the MIRROR of the chain half above, which wants
-//     `== 0` (93.3 -> 99.5, the single biggest step);
-//   * the lookup's map address is taken into a local before the out-slot is zeroed, so
-//     the `0` store lands after both argument pushes as retail has it.
 // @early-stop
 RVA(0x00043670, 0xc20)
 i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj) {
-    // Two 0x80 buffers: the body buffer every per-anim block formats through, and the
-    // separate header buffer the chain half's READ arm fills.
+
     char buf[0x80];
     char hdr[0x80];
 
@@ -384,19 +215,17 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
         return 0;
     }
     if (ar == 0) {
-        // shares the STORE arm's `world == 0` exit - retail reaches one block from both
-        // (`test ebx,ebx; je 0x43c5c`); the LOAD arm keeps its own.
+
         goto fail;
     }
 
-    // --- the inlined CWapX::Chain half ---
     switch (mode) {
         case 7: {
             ar->Read(hdr, 0x80);
             ar->Read(m_blob, 0x10);
             m_34 = obj;
             m_38 = static_cast<CWwdGameObjectA*>(obj);
-            m_3c = obj->m_7c;
+            m_3c = obj->m_animWorker;
             if (strlen(hdr) == 0) {
                 m_value = 0;
             } else {
@@ -539,9 +368,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             g_serialCounter++;
             ar->Read(buf, 0x80);
             m_54 = buf;
-            // NOTE the eleven blocks below gate on `!= 0`, not `== 0` like the chain half
-            // above: retail puts the LOOKUP on the fallthrough here (`dec ecx; je <zero>`)
-            // and the zero-store out of line, the mirror of the chain half's shape.
+
             g_serialCounter++;
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
@@ -646,20 +473,13 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             break;
         }
         case 8: {
-            // Re-seed the bound sprite's fill shade from this player's sprite row; if the
-            // row has no table, fall back to row 1 and arm the decay fill-bar (cmd 0xa).
-            // The three draw stores are OUTSIDE the fallback `if` - retail's
-            // `test eax,eax / jne <stores>` takes the non-null path STRAIGHT to them
-            // with the first lookup's result, exactly like the ctor's selector block.
-            // Nesting them inside the if also made the seed conditional, which is wrong.
+
             CShadeTable* sel =
                 g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[m_object->m_124].m_008, 0);
             if (sel == 0) {
                 sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
-            // hoisted: retail loads m_object ONCE here and does all three stores off
-            // it. Spelled `m_object->` per statement, cl5 cannot rule out the stores
-            // aliasing the member itself and reloads before each - 8 bytes long.
+
             CWwdGameObjectA* sprite = m_object;
             sprite->m_drawActive = 1;
             sprite->m_drawFillCmd = 0xa;
@@ -668,9 +488,6 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
         }
     }
 
-    // The two 64-bit timer pairs, each walked by ONE advancing cursor (retail hoists the
-    // `lea` above the mode compare and steps it with `add r,8`). Braced so the `goto
-    // fail` above does not jump past the cursor initialisations.
     {
         i32* cooldown = &m_cooldownStampLo;
         switch (mode) {
@@ -708,8 +525,7 @@ VTBL(CWarlord, 0x001e7404);
 
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
-    // the handler is a __thiscall dispatched on this warlord (`mov ecx,this;
-    // call [slot2]`); a complete-class PMF gives the plain 4-byte code-ptr call.
+
     if (*CActRegPool<CWarlord>::s_table.ResolveEntry(key) != 0) {
         CActHandler h = *CActRegPool<CWarlord>::s_table.ResolveEntry(key);
         (this->*h)();
@@ -766,20 +582,6 @@ i32 CWarlord::LoadAttributes() {
     return 0;
 }
 
-// ===========================================================================
-// CWarlord::LoadAttributes2  (0x044d10)  - the single-player-aware variant
-// ===========================================================================
-// Same geo-sub re-arm gate; multiplayer raises the battle alert when the nearest
-// enemy is NOT inside the panic radius; single-player resolves the moving anim
-// while the level objective is open, else posts a fort battle event past the
-// cooldown window and re-arms a 0x7530 stamp. Returns int 0 on every path.
-//
-// The old "scratch ecx<->edx coin-flip" note was wrong: there is no `reg` LOCAL here.
-// Retail reaches the registry as `g_gameReg->...` at each of the four use sites; cl
-// CSEs the global load into edx and keeps it live across BOTH branches, leaving ecx
-// free for the thiscall receiver. Binding it to a named local instead makes the local
-// the ecx tenant and the receiver load consume it - which is what mirror-swapped every
-// scratch register in the body.
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) != 1) {
@@ -794,7 +596,7 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
     } else {
-        // the play state's frame-marker timer: not yet running / expired
+
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_frameMarker->m_currentMs == 0) {
             ResolveMovingAnimation();
             return 0;
@@ -809,26 +611,6 @@ i32 CWarlord::LoadAttributes2() {
     return 0;
 }
 
-// ===========================================================================
-// CWarlord::AdvanceMovingAnim  (0x044e70)  - per-frame moving-state handler
-// ===========================================================================
-// Advance the +0x1a0 anim sub-mgr off the global geo source; bail while it is
-// still animating (m_28==0 || m_20!=0). Once idle, if the fort battle-cue is armed
-// (h->m_288) and this warlord belongs to the local player, re-stamp the cue timer
-// (clear m_2a0, window m_298=0x3e8, start-stamp m_290=g_frameTime, zero the hi/window-
-// hi halves), then re-resolve the moving animation. Returns 0. The registry cue
-// helper is g_gameReg->m_cmdGrid viewed as the warlord threat/cue helper (the same
-// +0x68 multi-view slot LoadAttributes casts). Reached only through the action table.
-//
-// The gate is written in its POSITIVE form (`if (ready) { ... }` around the whole
-// body) rather than as an early return: that is what makes cl shrink-wrap `push edi`
-// past the gate exactly as retail does (the early-return spelling saved edi in the
-// prologue and cost ~5.5%). Same lever as the sibling BuildFortSplashParticles.
-//
-// The cue timer is reached through a POINTER to the CueTimer sub-object at +0x290, not
-// through four absolute member offsets: that is what makes cl materialize the base once
-// (`add eax,0x290`) and reach the remaining three stores with disp8, which is retail's
-// (5-byte-smaller) encoding. Same lever on BuildFortSplashParticles @0x44f80.
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -856,30 +638,6 @@ i32 CWarlord::RearmMoving2() {
     return 0;
 }
 
-// ===========================================================================
-// CWarlord::BuildFortSplashParticles  (0x044f80)
-// ===========================================================================
-// Re-arm the geo sub-player, and when ready-to-move, spawn the fort splash
-// particle at the warlord's clamped screen position (registry effect dispatch),
-// arm the panic timer on the registry sub-object, then flag the anim player.
-// Reconstructed from the decode + the CProjectile water/death-splash template
-// (CreateSprite(0,x,y,0xcf84f,"Particlez",0x40003) -> ApplyName/ApplyLookupGeometry)
-// and the CWarlord::AdvanceMovingAnim panic-timer block (the typed m_cmdGrid
-// members). The spawn is offset (screenX-30, screenY+10); the fort-splash
-// template is "LEVEL_FORTSPLASH"; the owner slot is g_gameReg->m_options[m_124] (the
-// 0x238-stride per-player record @+0x150).
-//
-// Returns i32 0, not void: retail exits `xor eax,eax; ret` on every path, and this is
-// one of the six act-table handlers (registered as "C" - see RegisterWarlordActions),
-// so it has the family's `i32 ()` signature.
-// The ready gate is written in its POSITIVE form (`if (ready) { ... }` wrapping the
-// body) rather than as an early return - that is what makes cl shrink-wrap `push esi`
-// past the gate the way retail does (retail's early exit jumps to 0x450a2, BELOW the
-// `pop esi`, proving the push is conditional). Positive form + declaring y before x
-// took this 93.1% -> 98.1%.
-//
-// The cue timer goes through the CueTimer sub-object pointer - see AdvanceMovingAnim
-// @0x44e70 for the addressing-mode lever.
 RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -931,33 +689,15 @@ i32 CWarlord::ResolveMovingAnimation() {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyB);
 
-    // one i64 store per timer half: the zero-extension IS retail's `mov [hi],ebx`, and
-    // spelling it as two i32 stores lets cl hoist the hi store above the divide.
     m_cooldownWindow64 = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
     m_cooldownStamp64 = static_cast<u32>(g_frameTime);
     return 1;
 }
 
-// ===========================================================================
-// CWarlord::NotifyFortUnderAttack  (0x045270)  - the fort-under-attack alert
-// ===========================================================================
-// Skipped while the warlord is dead (m_a8) or already running act "D". Otherwise:
-// in the pre-game/attract mode (g_gameReg->m_134 == 1) just fire cue 0x436 and set a
-// flat 30 s cooldown; in play, once the alert rate-limiter (m_timer2*, seeded from
-// "Warlordz"/"NotifyTimer", default 6000 ms) has expired AND this warlord is the local
-// player's pending-fx warlord, fire cue 0x440, push the "Warlordz"/"NotifyString" text
-// into the chat log (type 0, data 0x11) and re-arm the limiter. Either way the moving
-// cooldown is re-rolled to (rand()%0x5dc1 + 0x1770)*10 ms, the "_PANIC" animation is
-// applied, and act "D" is latched. /GX EH frame from the two CString temporaries the
-// `"GRUNTZ_" + m_54 + "_PANIC"` concatenation builds.
 // @early-stop
 RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
-    // Both guards are written POSITIVELY around the whole body, not as early returns:
-    // retail has ONE shared `xor eax,eax` bail block and it sits PAST the success
-    // epilogue (0x45504), which is what the single trailing `return 0` produces. The
-    // early-return spelling duplicated the /GX teardown at each guard and cost a
-    // callee-saved push (docs/patterns/positive-gate-enables-shrink-wrap.md).
+
     if (m_a8 == 0) {
         bool alreadyPanicking = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
         if (!alreadyPanicking) {
@@ -1061,7 +801,6 @@ i32 CWarlord::RaiseBattleAlert() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00045960, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {
     if (m_a8 != 0) {
@@ -1073,9 +812,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
         CWwdGameObjectA* h = m_object;
-        // the cue id is a LOCAL computed before the viewport test: retail hoists
-        // `lea ebx,[edi+0x431]` above the four compares (and pays a `push ebx` for it),
-        // exactly as in ResolveBattlecryAnimation.
+
         i32 cue = idx + 0x431;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -1103,7 +840,6 @@ i32 CWarlord::ResolveIdleAnimation() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00045b60, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
     if (m_a8 != 0) {

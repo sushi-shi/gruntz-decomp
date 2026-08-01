@@ -1,11 +1,11 @@
 #include <rva.h>
-#include <DDrawMgr/DDrawChildGroup.h> // the shared object-collection manager class
-#include <Gruntz/WwdGameObject.h>     // canonical CWwdGameObject (the managed sprites)
-#include <Wwd/WwdSpatialMgr.h>        // the canonical class (was defined locally here)
-#include <Gruntz/WwdGrid.h>     // canonical CWwdGrid (Add/Remove/Query/Clear @0x191840..0x191a70)
-#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor + WwdRegion + WwdRect (shared;
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Wwd/WwdSpatialMgr.h>
+#include <Gruntz/WwdGrid.h>
+#include <Gruntz/WwdGridIter.h>
 #include <Mfc.h>
-#include <Wap32/Object.h> // CObject - the shared engine grand-base (iterator's CObject prefix)
+#include <Wap32/Object.h>
 
 VTBL(CWwdGridIter, 0x001f02a8);
 RVA_COMPGEN(0x00163a20, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
@@ -31,16 +31,6 @@ void CWwdSpatialMgr::FreeGrids() {
     m_mgr = 0;
 }
 
-// ===========================================================================
-// 0x168340 - ScrollTo(dx, dy): if unchanged, return 0; else cache the new
-// position and re-bucket every grid by the (origin -> new) delta, accumulating
-// the three grid-scroll results.
-// ===========================================================================
-// Retail's arg block for each Query is `push 1; sub esp,0x10; mov [esp+0..c]` - the
-// rect goes BY VALUE, not as four pushed scalars, and the entry `sub esp,0x10`
-// reserves exactly one 16-byte WwdRect local reused by all three walks. (The old note
-// here blamed a scheduling wall and deferred the by-value unification as cross-TU work;
-// CWwdGrid::Query is called from HERE ONLY, so retyping it was a two-file change.)
 // @early-stop
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
@@ -69,9 +59,6 @@ i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     r.m_maxY = m_org2y + dy;
     i32 n2 = m_grid2->Query(r, 1);
 
-    // Three separate results summed at the end, not a running `n +=`: retail spills
-    // each result to a stack slot and only adds them in the epilogue, which is what
-    // frees ebp/edx to hold the m_org pair across each walk.
     return n0 + n1 + n2;
 }
 
@@ -83,19 +70,13 @@ i32 CWwdSpatialMgr::GetSize() {
     return n;
 }
 
-// ===========================================================================
-// 0x168460 - CountInRect(grid): walk the grid; for each object whose worker is
-// flagged (vtbl+8 bit 0x2, or its +0x7c worker bit 0x4), re-insert it into the
-// master manager and remove it from the grid; count how many were re-inserted.
-// /GX frame from the on-stack iterator object.
-// ===========================================================================
 RVA(0x00168460, 0x95)
 i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
         CGameObject* w = obj->m_object;
-        if ((w->m_flags & 0x2) || (w->m_7c->m_flags & 0x4)) {
+        if ((w->m_flags & 0x2) || (w->m_animWorker->m_flags & 0x4)) {
             m_mgr->InsertSorted(w, 1);
             grid->Remove(obj);
             ++count;
@@ -104,17 +85,6 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     return count;
 }
 
-// ===========================================================================
-// 0x168500 - Relocate(newX, newY): walk the master manager's object list and
-// re-bucket every object across the three plane grids by its flags, using 12
-// precomputed per-grid translated coordinate ranges. 943 bytes with a 3x
-// replicated dispatch; deferred to the final sweep (leaf-first redo) per the
-// >512 B "don't half-do it" rule.
-// ===========================================================================
-// The three grids differ only in their scroll-origin pair and in which grid the
-// re-bucketed node lands in, so the dispatch is written out three times exactly as
-// retail emits it - flags bit 0x800000 picks grid1, 0x1000000 picks grid2, neither
-// picks grid0.
 // @early-stop
 RVA(0x00168500, 0x3af)
 i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
@@ -137,12 +107,11 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
         POSITION cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_mgr->m_list.GetNext(pos));
         if (obj->m_flags & 0x40) {
-            // A far-culled object is destroyed outright rather than re-bucketed. The
-            // margin is the visible page plus one screen (0x140 x 0xdc).
+
             if (newX < m_bounds.left - 0x140 || newX > m_bounds.right + 0x140
                 || newY < m_bounds.top - 0xdc || newY > m_bounds.bottom + 0xdc) {
                 if (obj->m_flags & 0x80000) {
-                    AnimWorkerObj* w = obj->m_7c;
+                    AnimWorkerObj* w = obj->m_animWorker;
                     w->SetActKey(0x1d);
                     w->m_notify(obj);
                 }
@@ -179,7 +148,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 0;
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
-                        AnimWorkerObj* w = obj->m_7c;
+                        AnimWorkerObj* w = obj->m_animWorker;
                         w->SetActKey(0x1d);
                         w->m_notify(obj);
                     }
@@ -188,7 +157,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 1;
                 } else {
                     if (flags & 0x100000) {
-                        AnimWorkerObj* w = obj->m_7c;
+                        AnimWorkerObj* w = obj->m_animWorker;
                         i32 saved = w->ActKey();
                         w->SetActKey(0x1e);
                         w->m_notify(obj);
@@ -206,7 +175,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 0;
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
-                        AnimWorkerObj* w = obj->m_7c;
+                        AnimWorkerObj* w = obj->m_animWorker;
                         w->SetActKey(0x1d);
                         w->m_notify(obj);
                     }
@@ -215,7 +184,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 1;
                 } else {
                     if (flags & 0x100000) {
-                        AnimWorkerObj* w = obj->m_7c;
+                        AnimWorkerObj* w = obj->m_animWorker;
                         i32 saved = w->ActKey();
                         w->SetActKey(0x1e);
                         w->m_notify(obj);
@@ -233,7 +202,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 0;
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
-                        AnimWorkerObj* w = obj->m_7c;
+                        AnimWorkerObj* w = obj->m_animWorker;
                         w->SetActKey(0x1d);
                         w->m_notify(obj);
                     }
@@ -242,7 +211,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 1;
                 } else {
                     if (flags & 0x100000) {
-                        AnimWorkerObj* w = obj->m_7c;
+                        AnimWorkerObj* w = obj->m_animWorker;
                         i32 saved = w->ActKey();
                         w->SetActKey(0x1e);
                         w->m_notify(obj);
@@ -302,11 +271,6 @@ i32 CWwdSpatialMgr::FlushAll() {
     return n;
 }
 
-// ===========================================================================
-// 0x168990 - FlushGrid(grid): walk the grid with a scratch cursor; re-insert
-// every object into the master manager and unlink it from the grid; return the
-// count drained. /GX frame from the on-stack iterator.
-// ===========================================================================
 RVA(0x00168990, 0x85)
 i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     i32 count = 0;
@@ -331,11 +295,6 @@ i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
     return n;
 }
 
-// ===========================================================================
-// 0x168a70 - ForEachGrid(grid, cb): walk the grid with a scratch cursor, firing
-// the __cdecl callback on each object; return how many fired. /GX frame from the
-// on-stack iterator.
-// ===========================================================================
 RVA(0x00168a70, 0x73)
 i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*)) {
     i32 count = 0;

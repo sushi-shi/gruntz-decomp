@@ -1,17 +1,12 @@
-// GruntDecay.cpp - CGrunt's decay handlers from the original grunt-region TU
-// currently tracked as the `gruntbehaviorleaf` unit. The old
-// CGruntBehaviorLeaf owner was a layout-identical placeholder disproved by the
-// action registry, receiver offsets, ILT callees, and absence of RTTI/vtable
-// evidence.
-#include <Gruntz/Grunt.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/TriggerMgr.h> // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
-#include <Image/ImageSet.h>    // CDDrawWorker::SetAllTypes (m_drawState->m_194)
-#include <Bute/ButeTree.h>     // CButeTree::Find (the "R" animset key)
-#include <Bute/ButeMgr.h>      // CButeMgr getters (Grunt/DecayTime, WANDGRUNT/HealthLoss)
 
-// LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
-// anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.
+
+#include <Gruntz/Grunt.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Image/ImageSet.h>
+#include <Bute/ButeTree.h>
+#include <Bute/ButeMgr.h>
+
 // @early-stop
 RVA(0x000612a0, 0x23c)
 i32 CGrunt::LoadGruntDecayConfig() {
@@ -80,8 +75,6 @@ i32 CGrunt::LoadGruntDecayConfig() {
     return 0;
 }
 
-// LoadGruntDecayConfig2 (0x61570): if the timer has fully elapsed, fire the finish
-// (flag + finish anim); else refresh the 0..256 fill fraction on the draw command.
 // @early-stop
 RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {

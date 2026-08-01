@@ -1,19 +1,19 @@
 #ifndef GRUNTZ_FXMODET1_H
 #define GRUNTZ_FXMODET1_H
 
-#include <Mfc.h> // real MFC CString (the +0x24 member; ctor 0x1b9b93 / op= 0x1b9e74) - afx-first
+#include <Mfc.h>
 #include <rva.h>
 #include <Gruntz/FxModeDesc.h>
 
 class CFxModeT1 : public CFxModeDesc {
 public:
-    CFxModeT1(); // 0x17e7c0
+    CFxModeT1();
     i32 m_14;
     i32 m_18;
     i32 m_1c;
-    class CShadeTable* m_20; // the fader's shade table (null = none)
-    CString m_24;            // +0x24
-    class CDDPalette* m_28;  // +0x28  the flash fader's palette (ctor 0; only reader casts it)
+    class CShadeTable* m_20;
+    CString m_24;
+    class CDDPalette* m_28;
 };
 SIZE(0x2c);
 

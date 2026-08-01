@@ -1,8 +1,6 @@
 #include <Io/FileStream.h>
 #include <rva.h>
 
-// CFileLog::ReopenSharedFile - reopen the shared file object around a close. Ignores
-// `this`; the single stack arg is the path.
 // @early-stop
 RVA(0x000bd3e0, 0x34)
 void CFileLog::ReopenSharedFile(char* path) {

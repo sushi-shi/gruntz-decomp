@@ -1,34 +1,34 @@
 #include <Net/CmdPool.h>
-#include <Net/NetMgr.h>   // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
-#include <Gruntz/Multi.h> // CMulti - the real owner of the LoadMenuSelectSprite/OnPlayerLeft/... game-mgr methods (netmgr-vs-cmulti split); Init a2 is a CMulti
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr - CMulti::m_4's real type (its +0x6c m_cmdSubMgr is the CGruntzCmdMgr command manager)
-#include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr::EnqueueCommand (the +0x6c command manager)
-#include <Gruntz/GruntzCommand.h> // canonical CGruntzCommand/Single/Multi (slot-7 Parse)
+#include <Net/NetMgr.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzCommand.h>
 #include <Ints.h>
 #include <Rez/RezMgr.h>
-#include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
+#include <dplay.h>
 #include <rva.h>
-#include <Pix16.h>          // the byte-cursor unions
-#include <string.h>         // memcpy / memset / strcat (see #pragma intrinsic below)
-#include <Net/NetCmdSlot.h> // own exported globals (ex Globals.h)
+#include <Pix16.h>
+#include <string.h>
+#include <Net/NetCmdSlot.h>
 
 #pragma intrinsic(memcpy)
 #pragma intrinsic(strcat)
 
-char g_lobbyRecvBuf[0x800]; // 0x249858
+char g_lobbyRecvBuf[0x800];
 DATA(0x0024a058)
-NetCmdSendMsg g_netCmdSendMsg; // 0x24a058 (packed wire message; see NetCmdSlot.h)
+NetCmdSendMsg g_netCmdSendMsg;
 DATA(0x0024a8a8)
-NetGruntRecMsg g_netGruntRecMsg; // 0x24a8a8 (packed wire message; see NetCmdSlot.h)
+NetGruntRecMsg g_netGruntRecMsg;
 
 template<> DATA(0x0024aca8)
 CPtrList CPtrListPool<GruntRec>::s_freeList(0xa);
 
 DATA(0x0024b6a0)
-char g_idScratch[0x10]; // 0x24b6a0
+char g_idScratch[0x10];
 
 DATA(0x0024b6b0)
-char g_idListBuf[0x40]; // 0x24b6b0
+char g_idListBuf[0x40];
 
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
@@ -42,7 +42,7 @@ i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
         return 0;
     }
     m_mgr = mgr;
-    m_session = owner; // the owning CMulti (kept as the +0x4 handle CreateSlot re-passes)
+    m_session = owner;
     m_netMgr = netMgr;
     Reset();
     m_period = owner->m_5a4;
@@ -98,8 +98,6 @@ void CNetSession::ResetSync() {
     }
 }
 
-// ClearRange (0xbf120, absorbed from NetMgrMisc.cpp): zero the slot's +0x3c..+0x48
-// dword range. (== CLobbyChannel::InitSub3c, declared-only above.)
 RVA(0x000bf120, 0x11)
 void CNetCmdSlot::ClearAckFlags() {
     for (i32 i = 0; i < 4; i++) {
@@ -116,9 +114,7 @@ void CNetSession::Reset() {
     for (i = 0; i < 4; i++) {
         m_slots[i].FullReset();
     }
-    // a per-entry zero LOOP, not memset: cl expands it to the same `rep stosd`, but
-    // computes the destination `lea` FIRST (retail's order); the memset intrinsic puts
-    // the count/value first and the lea last.
+
     for (i = 0; i < 0x80; i++) {
         m_idMap[i] = 0;
     }
@@ -152,10 +148,7 @@ i32 CNetSession::Poll(i32 delta) {
         avail = 0;
     } else {
         i32 got;
-        // m_directPlay IS this interface: its GetMessageCount sits at slot 17 and
-        // Receive at slot 25, the same indices dplay.h gives IDirectPlay4 (see the
-        // IDirectPlay4Z note in <Net/NetMgr.h>), so the ex-reinterpret to the SDK name
-        // was a two-names-one-interface artefact, not a conversion.
+
         IDirectPlay4Z* ep = m_netMgr->m_directPlay;
         i32 r = ep->GetMessageCount(m_localDesc->m_id, &got);
         avail = (r == 0) ? got : 0;
@@ -177,8 +170,7 @@ i32 CNetSession::Poll(i32 delta) {
         received++;
         avail--;
         if (a != m_localDesc->m_id) {
-            // IDirectPlay4::Receive fills g_lobbyRecvBuf as an untyped 0x800-byte
-            // LPVOID blob; CNetWireMsg names its control-record reading.
+
             CNetWireMsg wire;
             wire.m_bytes = g_lobbyRecvBuf;
             Dispatch(a, wire.m_ctrl, len);
@@ -200,10 +192,7 @@ i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
         return 0;
     }
     obj->m_latency = 0;
-    // ONE variable, re-pointed in place - not a second `target` seeded from it.  That is
-    // what keeps the slot in eax across the merge (retail's `mov ecx,eax` at the call and
-    // the null exit falling straight through with eax already 0); a separate local makes
-    // cl park it in ecx and pay an extra `xor eax,eax` on the failure path.
+
     if (!(b->m_route.m_routeFlags & 0x80) && (b->m_route.m_routeFlags & 1)) {
         obj = &m_slots[b->m_route.m_routeSlot];
         if (!obj) {
@@ -213,18 +202,6 @@ i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
     return obj->ProcessCmd(a, b, c);
 }
 
-// (ex-wall note, RETIRED 2026-07-29: this is 100% EXACT now. It used to carry an
-// @early-stop reading "code bytes byte-identical (proven llvm-objdump -dr base vs
-// target); MSVC emits the 0xff-byte index table + jump table as separate $L symbols
-// while the delinker folds them into the fn symbol, so the table region can't pair."
-// The bytes were never the problem - the SPAN was. Text kept as history.)
-// The span below is the BASE COMDAT size (0x1b0), not the 0x95 code length: objdiff
-// sizes a symbol by next-symbol-start, so with the code-only span the two sides
-// disagree on the length and the function is not scored AT ALL (a hard 0%). Growing
-// the annotation to cover the inline 258-byte index table + 5-entry jump table makes
-// synth_pdb carve the target the same way the /Gy COMDAT is laid out on our side.
-// Same device as CTileActionEvent::MorphByTool @0x113420 (RVA size 0x350). The next
-// annotated function is 0xbf9e0, so the grown span does not overlap it.
 RVA(0x000bf7c0, 0x1b0)
 i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg) {
     if (!m) {
@@ -268,8 +245,7 @@ i32 CNetSession::Tick() {
             if (obj) {
                 NoopSync(obj);
                 rec->m_count++;
-                // remaining room in the 0x410-byte record - the byte view of the
-                // record base makes the pointer difference type-correct (<Pix16.h>)
+
                 RecordBytes rb;
                 rb.m_rec = rec;
                 payload += obj->Pack(payload, rb.m_chars - payload + 0x410);
@@ -287,10 +263,6 @@ i32 CNetSession::Tick() {
 RVA(0x000bfb20, 0x1)
 void NoopSync(CGruntzCommand*) {}
 
-// SendAll @0xbfb40 caches &m_slots[0] in [esp+0x28] and `this` in [esp+0x24], and the
-// SendGruntRecord call loads `mov ecx,[esp+0x28]` AFTER a `push ecx` has moved esp
-// down 4 - i.e. it reloads [esp_orig+0x24] == `this`. The old reading (receiver ==
-// &m_slots[0]) is what forced SendGruntRecord onto CNetCmdSlot.
 RVA(0x000bfb40, 0xe2)
 i32 CNetSession::SendAll() {
     i32 count = 0;
@@ -306,8 +278,7 @@ i32 CNetSession::SendAll() {
                     for (i32 v = lo; v <= hi; v++) {
                         GruntRec* r = outer->FindCmd(v);
                         if (r) {
-                            // retail stores this local with two BYTE immediates into a
-                            // dedicated dword slot and pushes the dword (`mov edx,[esp+0x18]`)
+
                             u8 flag = 1;
                             if (v == hi) {
                                 flag = 3;
@@ -325,8 +296,6 @@ i32 CNetSession::SendAll() {
     return count;
 }
 
-// 0xbfc70  CNetSession::SendGruntRecord - the same `m_netMgr->SetData(m_localDesc->m_id,
-// <peer dpid>, 0, msg, len)` send shape as SendOne @0xbfeb0, one slot's grunt record.
 // @early-stop
 RVA(0x000bfc70, 0x9c)
 i32 CNetSession::SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo) {
@@ -342,7 +311,7 @@ i32 CNetSession::SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 
     g_netGruntRecMsg.m_checksum = rec->m_checksum;
     g_netGruntRecMsg.m_count = rec->m_count;
     memcpy(g_netGruntRecMsg.m_payload, rec->m_payload, rec->m_payloadLen);
-    // header (0xf) + payload = the wire length.
+
     return m_netMgr->SetData(
                m_localDesc->m_id,
                dpTo,
@@ -421,7 +390,7 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
     g_netCmdSendMsg.m_checksum = entry->m_checksum;
     g_netCmdSendMsg.m_count = entry->m_count;
     memcpy(g_netCmdSendMsg.m_payload, entry->m_payload, entry->m_payloadLen);
-    // header (0xe) + payload = the wire length.
+
     return m_netMgr->SetData(
                m_localDesc->m_id,
                slot->m_desc->m_slotKey,
@@ -488,7 +457,7 @@ void CNetSession::Reconcile() {
         i32 n = 4;
         do {
             if (s && s->m_state == 3) {
-                s->FullReset(); // 0xc0c20
+                s->FullReset();
                 GruntzPlayer* p = s->m_desc;
                 s->m_state = 1;
                 p->m_doneFlag = 1;
@@ -500,7 +469,7 @@ void CNetSession::Reconcile() {
         i32 n = 4;
         do {
             if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_latchedSeq + 2) {
-                s->FullReset(); // 0xc0c20
+                s->FullReset();
                 GruntzPlayer* p = s->m_desc;
                 s->m_state = 1;
                 p->m_doneFlag = 1;
@@ -519,14 +488,14 @@ i32 CNetSession::Advance() {
         return 1;
     }
     Reconcile();
-    if (!Verify(nextSeq)) { // 0xc0290 (CNetSession::Verify(i32))
+    if (!Verify(nextSeq)) {
         return 0;
     }
     CNetCmdSlot* s = m_slots;
     i32 n = 4;
     do {
         if (s && s->m_state == 3 && s->m_isRemote == 0) {
-            s->RemoveCmd(m_seq - 4); // 0xc11b0
+            s->RemoveCmd(m_seq - 4);
         }
         s++;
     } while (--n);
@@ -591,17 +560,6 @@ void CNetSession::RaiseAllSlotsMax(i32 v) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::ArmSlot (0xc03f0, __thiscall) - store `node` at the (tick-biased)
-// wrapped slot of the +0x1b0 synced-object id-map. The setter biases the parity
-// by +m_tick, abs's it, masks to 7 bits, abs's again - MSVC emits a single cdq
-// feeding both branchless-abs pairs around the `% 128` (see
-// docs/patterns/signed-modulo-pow2-abs-restore.md). Ex fake view "GlyphTable"
-// (was 100% in its own base-flags TU).
-// EXACT 2026-07-28: the "eax/edx role swap" was the parameter TYPE - `parity` is a
-// u8, not an i32 (the callee's `mov edx,[esp+8]; and edx,0xff` IS the byte-param
-// zero-extend, and CMulti::Render ships only dl: `mov dl,..; shl dl,1; push edx`).
-// ---------------------------------------------------------------------------
 RVA(0x000c03f0, 0x29)
 void CNetSession::ArmSlot(void* node, u8 parity) {
     m_idMap[(m_tick + parity) % 128] = static_cast<CGruntzCommand*>(node);
@@ -612,13 +570,9 @@ CGruntzCommand* CNetSession::GetSlotPtr(i32 v) {
     return m_idMap[(v & 0xff) % 128];
 }
 
-// Scan the four inline command slots for the first active (m_state==3), un-reset
-// (m_isRemote==0) slot whose latency exceeds key (unsigned).
 RVA(0x000c0460, 0x2e)
 CNetCmdSlot* CNetSession::FindSlot(u32 key) {
-    // the slot pointer is re-formed from the index INSIDE the loop (not carried as a
-    // second induction variable): that is what makes cl emit the `lea` for m_slots
-    // before the key load and keep the counter in edx.
+
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* p = &m_slots[i];
         if (p && p->m_state == 3 && p->m_isRemote == 0 && static_cast<u32>(p->m_latency) > key) {
@@ -658,10 +612,6 @@ i32 CNetSession::Verify() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::Init (0xc0b10, __thiscall) - seed a fresh slot (owner/buffer),
-// drain its queue and reset both command ranges.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000c0b10, 0x72)
 i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
@@ -671,7 +621,7 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
     if (owner == 0) {
         return 0;
     }
-    m_owner = owner; // the session passes its owning CMulti in as an i32 handle
+    m_owner = owner;
     m_state = state;
     m_isRemote = 0;
     m_latchedSeq = 0;
@@ -680,9 +630,7 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
     m_baseSeq = 0;
     m_maxSeq = 0;
     ClearCmds();
-    // a LOOP (cl unrolls it): the four ack slots get their OWN zero constant, which is
-    // why retail re-materialises `xor eax,eax` after ClearCmds instead of parking the
-    // field block's zero in a callee-saved register across the call.
+
     for (i32 i = 0; i < 4; i++) {
         m_ackFlags[i] = 0;
     }
@@ -691,9 +639,6 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::ResetAll (0x0c0bb0, __thiscall) - full wipe.
-// ---------------------------------------------------------------------------
 RVA(0x000c0bb0, 0x47)
 void CNetCmdSlot::ResetAll() {
     m_state = 0;
@@ -705,9 +650,7 @@ void CNetCmdSlot::ResetAll() {
     m_maxSeq = 0;
     m_owner = 0;
     ClearCmds();
-    // a LOOP (cl unrolls it): the four ack slots get their OWN zero constant, which is
-    // why retail re-materialises `xor eax,eax` after ClearCmds instead of parking the
-    // field block's zero in a callee-saved register across the call.
+
     for (i32 i = 0; i < 4; i++) {
         m_ackFlags[i] = 0;
     }
@@ -715,11 +658,6 @@ void CNetCmdSlot::ResetAll() {
     ResetTriple(m_rangeB);
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::FullReset (0x0c0c20, __thiscall) - partial slot reset: keep m_state /
-// m_desc / m_owner, zero the sequence-tracking fields, drain the queue and splat
-// both command ranges. Called by CNetSession::Reset, CMulti::AckDropPlayer and
-// CNetSession::Reconcile (was the CCluster0c::Init view).
 RVA(0x000c0c20, 0x3f)
 void CNetCmdSlot::FullReset() {
     m_isRemote = 0;
@@ -728,9 +666,7 @@ void CNetCmdSlot::FullReset() {
     m_baseSeq = 0;
     m_maxSeq = 0;
     ClearCmds();
-    // a LOOP (cl unrolls it): the four ack slots get their OWN zero constant, which is
-    // why retail re-materialises `xor eax,eax` after ClearCmds instead of parking the
-    // field block's zero in a callee-saved register across the call.
+
     for (i32 i = 0; i < 4; i++) {
         m_ackFlags[i] = 0;
     }
@@ -738,9 +674,6 @@ void CNetCmdSlot::FullReset() {
     ResetTriple(m_rangeB);
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::ProcessCmd (0x0c0c70, __thiscall) - parse one incoming command record.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000c0c70, 0x20f)
 i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
@@ -772,7 +705,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         p++;
         rem--;
     }
-    // the reliable-command header at the byte cursor (see CNetWireMsg)
+
     CNetWireMsg wire;
     wire.m_bytes = p;
     CNetCmdHdr* h = wire.m_cmdHdr;
@@ -813,7 +746,6 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     }
     AdvanceSeq(seq);
 
-    // retail order: +0x08 count byte, +0x04 checksum, +0x00 seq, +0x0c length
     GruntRec* pkt = static_cast<GruntRec*>(Unmatched_bf530(0));
     pkt->m_count = count;
     pkt->m_checksum = checksum;
@@ -833,9 +765,8 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
             continue;
         }
         i32 consumed = obj->Parse(cursor, rem);
-        obj->m_submitted = 1; // "submitted" latch
-        // m_owner->m_4 is the game-mgr (CGruntzMgr); its +0x6c command manager is the
-        // real CGruntzCmdMgr member m_cmdSubMgr - no cross-cast to a net-facet view.
+        obj->m_submitted = 1;
+
         m_owner->m_mgr->m_cmdSubMgr->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
@@ -843,10 +774,6 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::AdvanceSeq (0x0c0f10, __thiscall) - fold an acknowledged id into
-// the high-water window.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000c0f10, 0x6e)
 void CNetCmdSlot::AdvanceSeq(i32 id) {
@@ -902,22 +829,14 @@ void CNetCmdSlot::NetCmdIdClear(i32* arr, i32 v) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::ResetTriple (0x0c10a0, __thiscall) - splat -1 over three dwords.
-// ---------------------------------------------------------------------------
 RVA(0x000c10a0, 0x12)
 void CNetCmdSlot::ResetTriple(i32* p) {
-    // a LOOP, fully unrolled by cl - three separate stores put the -1 in ecx and the
-    // pointer in eax; the loop form is what puts the pointer in ecx (retail's bytes).
+
     for (i32 i = 0; i < 3; i++) {
         p[i] = -1;
     }
 }
 
-// ---------------------------------------------------------------------------
-// NetCmdIdToString (0x0c10d0, __stdcall) - format the three-int player-id set as a
-// "%d,"-joined debug string in the shared g_idListBuf accumulator.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000c10d0, 0x7c)
 char* __stdcall NetCmdIdToString(i32* arr) {
@@ -947,9 +866,7 @@ void CNetCmdSlot::RemoveCmd(i32 seq) {
         GruntRec* cmd = static_cast<GruntRec*>(m_cmds.GetNext(pos));
         if (seq == cmd->m_seq) {
             if (pos != 0) {
-                // retail recovers the consumed node from the advanced position
-                // (`mov eax,[eax+4]`) instead of keeping a saved POSITION live -
-                // that is GetPrev's pPrev step, its returned data unused.
+
                 m_cmds.GetPrev(pos);
                 m_cmds.RemoveAt(pos);
             } else {
@@ -1010,12 +927,6 @@ void CNetCmdSlot::ClearCmds() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::Ready (0x0c1320, __thiscall) - dispatched by CNetSession::Verify on each
-// slot cursor: false (0) if any active, unreset command slot has not yet been acked
-// locally (per THIS slot's m_ackFlags); true (1) otherwise. `this` is the slot: m_owner
-// (+0x1c) -> m_session -> m_slots[], gated by m_ackFlags (+0x3c).
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000c1320, 0x4a)
 i32 CNetCmdSlot::Ready() {

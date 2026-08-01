@@ -1,16 +1,16 @@
 #include <rva.h>
-#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Image/CImage.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // name map at g_gameReg->m_world +0x10
+#include <Io/FileMem.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/SerialCounter.h>
-#include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CDDrawSurfaceMgr*)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (reader; Read @ vtable +0x2c)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/Timer.h>
-#include <Gruntz/Sprite.h>             // CDDrawWorker (the looked-up, index-gated frame table)
-#include <DDrawMgr/DDrawWorkerCache.h> // the +0x14 worker cache - Find (0x9cab0) is its method
-#include <string.h>                    // inline strlen (repne scasb) over the scratch buffer
+#include <Gruntz/Sprite.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
+#include <string.h>
 
 // @early-stop
 RVA(0x0009c650, 0x372)

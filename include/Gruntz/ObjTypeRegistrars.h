@@ -1,24 +1,24 @@
 #ifndef GRUNTZ_OBJTYPEREGISTRARS_H
 #define GRUNTZ_OBJTYPEREGISTRARS_H
 
-#include <Gruntz/MovingLogic.h> // CMovingLogic (CProjectile base) -> pulls CUserLogic
+#include <Gruntz/MovingLogic.h>
 #include <rva.h>
-#include <Gruntz/CBrickz.h>            // the REAL CBrickz (its static RegisterActs @0x10ebe0)
-#include <Gruntz/ExitTrigger.h>        // the REAL CExitTrigger (its static RegisterActs @0x3f3f0)
-#include <Gruntz/ObjectDropper.h>      // the REAL CObjectDropper (MI: CUserLogic + CWapX)
-#include <Gruntz/Particlez.h>          // the REAL CParticlez (MI: CUserLogic + CWapX)
-#include <Gruntz/RollingBall.h>        // the REAL CRollingBall (MI: CUserLogic + CWapX)
-#include <Gruntz/SecretLevelTrigger.h> // the REAL CSecretLevelTrigger (MI: CUserLogic + CWapX)
-#include <Gruntz/SecretTeleporterTrigger.h> // the REAL CSecretTeleporterTrigger (MI: CUserLogic + CWapX)
-#include <Gruntz/SingleAnimation.h>         // the REAL CSingleAnimation (MI: CUserLogic + CWapX)
-#include <Gruntz/StaticHazard.h>            // the REAL CStaticHazard (MI: CUserLogic + CWapX)
-#include <Gruntz/StatusBarSprite.h>         // the REAL CStatusBarSprite (MI: CUserLogic + CWapX)
-#include <Gruntz/TileTriggerSwitch.h>       // the REAL CTileTriggerSwitch (MI: CUserLogic + CWapX)
-#include <Gruntz/TileTriggerTransition.h> // the REAL CTileTriggerTransition (MI: CUserLogic + CWapX)
-#include <Gruntz/TimeBomb.h>              // the REAL CTimeBomb (MI: CUserLogic + CWapX)
-#include <Gruntz/ToobSpikez.h>            // the REAL CToobSpikez (MI: CUserLogic + CWapX)
-#include <Gruntz/VoiceTrigger.h>          // the REAL CVoiceTrigger (MI: CUserLogic + CWapX)
-#include <Gruntz/WarpStonePad.h>          // the REAL CWarpStonePad (MI: CUserLogic + CWapX)
+#include <Gruntz/CBrickz.h>
+#include <Gruntz/ExitTrigger.h>
+#include <Gruntz/ObjectDropper.h>
+#include <Gruntz/Particlez.h>
+#include <Gruntz/RollingBall.h>
+#include <Gruntz/SecretLevelTrigger.h>
+#include <Gruntz/SecretTeleporterTrigger.h>
+#include <Gruntz/SingleAnimation.h>
+#include <Gruntz/StaticHazard.h>
+#include <Gruntz/StatusBarSprite.h>
+#include <Gruntz/TileTriggerSwitch.h>
+#include <Gruntz/TileTriggerTransition.h>
+#include <Gruntz/TimeBomb.h>
+#include <Gruntz/ToobSpikez.h>
+#include <Gruntz/VoiceTrigger.h>
+#include <Gruntz/WarpStonePad.h>
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
@@ -30,9 +30,9 @@ struct CProjectile : public CMovingLogic {
 SIZE(0x228);
 
 struct CProjActObj {
-    static void RegisterType(); // 0x8240 (home: ActionArea.cpp; the ActionArea class registrar)
+    static void RegisterType();
 };
-SIZE_UNKNOWN(); // static-only registrar shell - never instantiated
+SIZE_UNKNOWN();
 struct CAniCycle {
     static void RegisterActs();
 };
@@ -46,7 +46,7 @@ struct CEyeCandyAni {
     static void RegisterActs();
 };
 struct CCheckpointTrigger {
-    static void RegisterActs(); // 0x10f340 (home: TileLogicPump.cpp; ex 'CTileSecretTrigger's')
+    static void RegisterActs();
 };
 struct CGruntCreationPoint {
     static void RegisterActs();

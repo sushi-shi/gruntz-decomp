@@ -1,18 +1,18 @@
-#include <Mfc.h>                  // afx-first: CString + <windows.h>; keep before any Win32 header
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)            // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
-#include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor::Setup (the +0x1a0 blit param)
-#include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
-#include <Gruntz/TypeKeyColl.h>  // g_typeColl (the CString anim-name band, _zvec::IndexToPtr)
-#include <Gruntz/GameRegistry.h> // g_gameReg
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/State.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/GameRegistry.h>
 
-#include <Wap32/ZVec.h> // _zvec
-#include <string.h>     // intrinsic strcmp ("D")
+#include <Wap32/ZVec.h>
+#include <string.h>
 
 // @early-stop
 RVA(0x00050a50, 0x1c5)
@@ -26,16 +26,13 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     m_2a4 = 0;
     m_2a8 = 0;
     m_2ac = 0;
-    // retail: `je` -> push 'TOOBGRUNT' (0x60dac0); the FALLTHROUGH arm pushes
-    // 'TOOBWATERGRUNT' (0x60dbe4), so the zero test owns the taken branch.
+
     m_animSetName = (isWater == 0) ? "TOOBGRUNT" : "TOOBWATERGRUNT";
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
-    // retail 0x50ae5: `cmp [esi+0x220],ebp; je skip` then `cmp [esi+0x21c],ebp;
-    // jne skip` - the block runs when m_poweredUp is NON-zero and m_neighborValid
-    // is zero. The old `m_poweredUp == 0` guard inverted the first test.
+
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
         m_combatActive = 0;
@@ -45,13 +42,12 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     }
 
     CString* node = g_typeColl.ScratchResolve(m_objAux->ActKey());
-    // the hand-inlined _zdvec::IndexToPtr fixup: m_alloc is the construction cursor over
-    // the same CString band, walked in steps of a CONSTANT 4 (retail 0x31156 `add ebx,4`)
+
     CString* p = g_typeColl.Slots();
     i32 count = g_typeColl.m_grown;
     for (i32 i = count; i != 0; i--) {
         if (p != 0) {
-            p->CString::CString(); // 0x1b9b93 re-init the freed registry slot
+            p->CString::CString();
         }
         p++;
     }
@@ -60,7 +56,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         GruntDirectionCell cell = m_entranceCell;
         i32 idx = cell.row * 3 + cell.column;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
-        m_38->ApplyName(buf); // 0x1504d0 (the player IS the created game object)
+        m_38->ApplyName(buf);
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
         return 1;

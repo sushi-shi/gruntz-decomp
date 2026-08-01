@@ -3,21 +3,11 @@
 #include <rva.h>
 
 DATA(0x00253c68)
-CGameWnd* g_activeGameWnd; // 0x653c68
+CGameWnd* g_activeGameWnd;
 VTBL(CGameWnd, 0x001ea344);
 
-// CGameWnd::~CGameWnd @0x094c10 - the STANDALONE out-of-line copy of the (inline,
-// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
-// cleanup on a ctor throw). ??_GCGameWnd above keeps folding its own inline copy; this
-// #pragma inline_depth(0) forcer (the UserLogicCtorEmit pattern) emits the out-of-line
-// COMDAT here so the unwind reference resolves and the RVA matches.
 RVA_COMPGEN(0x00094c10, 0x16, ??1CGameWnd@@UAE@XZ)
-// Out-of-line stubs so the vftable is emitted in this TU.
-// Not matched / not in symbol_names.csv; present only to anchor the vftable
-// relocation that the ctor stores (the full 22-slot CGameWnd vtable). ~CGameWnd
-// is inline in Wap32.h (Destroy + clear singleton); QuitMessageLoop is above.
-// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the
-// inline ~CGameWnd (call Destroy; clear g_activeGameWnd; conditional RezFree).
+
 RVA_COMPGEN(0x00094d80, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)
 
 RVA(0x0013cf00, 0x11)
@@ -60,7 +50,7 @@ i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
         return 0;
     }
 
-    ShowWindow(m_hwnd, 1 /*SW_SHOWNORMAL*/);
+    ShowWindow(m_hwnd, 1);
     return 1;
 }
 
@@ -80,10 +70,7 @@ RVA(0x0013d3a0, 0x6a)
 i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     i32 notifyCode = static_cast<i32>((wParam >> 16));
     i32 cmdId = static_cast<i32>((wParam & 0xffff));
-    // Win32 boundary: the raw LOWORD message id becomes a typed GruntzCommand for
-    // the two command virtuals (byte-neutral - GruntzCommand is int-width). The
-    // slot-2 window hook (Wap32GameWndVfunc2) is a separate vfunc chain that still
-    // takes the raw i32 id.
+
     if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)) {
         return 1;
     }
@@ -104,7 +91,7 @@ i32 CGameWnd::OnClose() {
 }
 
 RVA(0x0013d470, 0x12)
-i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
+i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM) {
     m_owner->m_appActive = wParam;
     return 0;
 }
@@ -150,16 +137,13 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         return 0;
     }
 
-    // Case order below is the ORIGINAL source order (MSVC emits the case bodies
-    // in source order, the jump tables index into them): window lifecycle, then
-    // keyboard, command, then mouse. The order is load-bearing for the byte match.
     switch (uMsg) {
-        case 0x0001 /*WM_CREATE*/:
+        case 0x0001:
             if (g_activeGameWnd->OnCreate(lParam)) {
                 return 0;
             }
             break;
-        case 0x0003 /*WM_MOVE*/:
+        case 0x0003:
             if (g_activeGameWnd->OnMove(
                     static_cast<i32>((lParam & 0xffff)),
                     static_cast<i32>((static_cast<u32>(lParam) >> 16))
@@ -167,7 +151,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0005 /*WM_SIZE*/:
+        case 0x0005:
             if (g_activeGameWnd->OnSize(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),
@@ -176,52 +160,52 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0002 /*WM_DESTROY*/:
+        case 0x0002:
             if (g_activeGameWnd->QuitMessageLoop()) {
                 return 0;
             }
             break;
-        case 0x000f /*WM_PAINT*/:
+        case 0x000f:
             if (g_activeGameWnd->OnPaint()) {
                 return 0;
             }
             break;
-        case 0x0010 /*WM_CLOSE*/:
+        case 0x0010:
             if (g_activeGameWnd->OnClose()) {
                 return 0;
             }
             break;
-        case 0x001c /*WM_ACTIVATEAPP*/:
+        case 0x001c:
             if (g_activeGameWnd->OnActivateApp(wParam, lParam)) {
                 return 0;
             }
             break;
-        case 0x0102 /*WM_CHAR*/:
+        case 0x0102:
             if (g_activeGameWnd->OnChar(wParam, lParam)) {
                 return 0;
             }
             break;
-        case 0x0100 /*WM_KEYDOWN*/:
+        case 0x0100:
             if (g_activeGameWnd->OnKeyDown(wParam, lParam)) {
                 return 0;
             }
             break;
-        case 0x0101 /*WM_KEYUP*/:
+        case 0x0101:
             if (g_activeGameWnd->OnKeyUp(wParam, lParam)) {
                 return 0;
             }
             break;
-        case 0x0104 /*WM_SYSKEYDOWN*/:
+        case 0x0104:
             if (g_activeGameWnd->OnSysKeyDown(wParam, lParam)) {
                 return 0;
             }
             break;
-        case 0x0111 /*WM_COMMAND*/:
+        case 0x0111:
             if (g_activeGameWnd->OnCommand(wParam, lParam)) {
                 return 0;
             }
             break;
-        case 0x0201 /*WM_LBUTTONDOWN*/:
+        case 0x0201:
             if (g_activeGameWnd->OnLButtonDown(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),
@@ -230,7 +214,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0202 /*WM_LBUTTONUP*/:
+        case 0x0202:
             if (g_activeGameWnd->OnLButtonUp(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),
@@ -239,7 +223,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0204 /*WM_RBUTTONDOWN*/:
+        case 0x0204:
             if (g_activeGameWnd->OnRButtonDown(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),
@@ -248,7 +232,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0205 /*WM_RBUTTONUP*/:
+        case 0x0205:
             if (g_activeGameWnd->OnRButtonUp(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),
@@ -257,7 +241,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0200 /*WM_MOUSEMOVE*/:
+        case 0x0200:
             if (g_activeGameWnd->OnMouseMove(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),
@@ -266,7 +250,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0203 /*WM_LBUTTONDBLCLK*/:
+        case 0x0203:
             if (g_activeGameWnd->OnLButtonDblClk(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),
@@ -275,7 +259,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
                 return 0;
             }
             break;
-        case 0x0206 /*WM_RBUTTONDBLCLK*/:
+        case 0x0206:
             if (g_activeGameWnd->OnRButtonDblClk(
                     wParam,
                     static_cast<i32>((lParam & 0xffff)),

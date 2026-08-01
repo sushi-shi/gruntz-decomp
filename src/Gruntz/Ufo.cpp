@@ -1,14 +1,14 @@
-#include <Gruntz/Ufo.h> // CUFO : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/SpotLight.h>         // CSpotLight - the spawned spotlight's bound logic leaf
-#include <Gruntz/SerialArchive.h>     // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
-#include <Gruntz/GruntzMgr.h>     // complete CGruntzMgr
+#include <Gruntz/Ufo.h>
+#include <Io/FileMem.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/SpotLight.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
-VTBL(CUFO, 0x001e72b4); // vtable_names -> code (RTTI game class)
+VTBL(CUFO, 0x001e72b4);
 RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
 RVA(0x000b4330, 0x8)
 i32 CUFO::Tick() {
@@ -16,8 +16,6 @@ i32 CUFO::Tick() {
     return 0;
 }
 
-// @confidence: high
-// @source: rtti-vptr
 // @early-stop
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
@@ -31,7 +29,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
-            AnimWorkerObj* sub = sl->m_7c;
+            AnimWorkerObj* sub = sl->m_animWorker;
             sl->m_114 = 1;
             sl->m_12c = 0;
             sl->m_124 = 2;
@@ -39,9 +37,8 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->m_118 = i;
             sl->m_120 = m_object->m_130;
             sub->m_notify(sl);
-            // The spotlight's bound logic leaf (CSpotLight): stash the UFO's owner
-            // game-object into its reused +0x98 focus slot (both CGameObject*).
-            (static_cast<CSpotLight*>(sl->m_7c->m_logic))->m_focus = m_object;
+
+            (static_cast<CSpotLight*>(sl->m_animWorker->m_logic))->m_focus = m_object;
         }
     }
     m_object->m_drawActive = 1;
@@ -67,9 +64,6 @@ i32 CUFO::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
     return 1;
 }
 
-// (0xb4cb0 - CRainCloud::SerializeMove - moved to its owner RainCloud.cpp.)
-
-// a hazard timing window (+0x108 leg, +0x120 strike) streams as its two 8-byte quads
 static inline void SerQuadPair(CFileMemBase* s, i32 tag, CHazardTimer* p) {
     if (tag != 4) {
         if (tag == 7) {

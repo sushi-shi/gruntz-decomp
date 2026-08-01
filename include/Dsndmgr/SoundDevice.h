@@ -3,113 +3,63 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/DirectSoundMgr.h> // DirectSoundMgr buffer wrapper + IDirectSound COM
-#include <Dsndmgr/SoundVoiceList.h> // shared DSoundList / DSoundLink / DSoundElem / PureSoundElem
-#include <Dsndmgr/WaveFormatX.h>    // WAVEFORMATEX-shaped PCM header
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/WaveFormatX.h>
 
 class SoundDevice;
 
-class DSoundCloneInst; // the concrete per-buffer leaf the factories mint
+class DSoundCloneInst;
 
-struct StreamVoice; // TickSubManagers instance-list node: the canonical per-stream voice
+struct StreamVoice;
 
 class SoundDevice {
 public:
-    SoundDevice();          // 0x136440  /GX EH base ctor (init lists, BuildVolumeTable, zero)
-    virtual ~SoundDevice(); // 0x136500  /GX EH dtor (vtable 0x5ef6c4) -> Shutdown; cl emits
-                            // ??_7SoundDevice@@6B@ + the ??_G scalar-deleting thunk (0x1364c0,
-                            // labelled by RVA_COMPGEN in SoundDevice.cpp).
-    void Shutdown();        // 0x136690  release every owned buffer, primary, device
-    void RemoveBuffer(DirectSoundMgr* node); // 0x136d80  reap voices + release + unlink one buffer
-    void StopAll();                          // 0x136de0  StopAndRewind+StopAllClones over the list
-    i32 FreeSamples();                // 0x136ed0  free + unlink every cached voice (+0x0c list)
-    i32 SetPrimaryFormat(void* fmt);  // 0x1371a0  CreatePrimaryBuffer + primary SetFormat; the
-                                      // fmt is an opaque WAVEFORMATEX buffer (callers pass their
-                                      // own pointer type), so it stays void*.
-    i32 StartPrimary();               // 0x137200  (extern) reads +0x78/+0x84, primary
-    i32 CreatePrimaryBuffer();        // 0x137260  (extern, defined elsewhere)
-    IDirectSoundBuffer* GetPrimary(); // 0x137300  ensure (lazily create) + return primary
-    DSoundCloneInst* CreateBuffer(
-        WaveFormatX* fmt,
-        u32 bytes,
-        u32 flags
-    ); // 0x1366f0  CreateSoundBuffer + wrap (mints the concrete DSoundCloneInst leaf)
-    DSoundCloneInst*
-    AcquireFile(char* path, u32 flags, u32 loadOpts); // 0x136860  fopen whole file -> Acquire
-    DSoundCloneInst* Acquire(
-        void* riff,
-        u32 flags,
-        u32 loadOpts
-    ); // 0x136910  parse RIFF + CreateBuffer + load
-    DSoundCloneInst* AcquireResource(
-        const char* name,
-        u32 flags,
-        u32 loadOpts
-    ); // 0x136a30  find/load/lock the named "WAVE" Win32 resource -> Acquire
-    i32 ReloadResource(
-        DirectSoundMgr* probe,
-        const char* name,
-        u32 loadOpts
-    ); // 0x136ce0  looping-gated "WAVE" resource -> ReloadRiff
-    i32 ValidateRestore(
-        DirectSoundMgr* buf,
-        WaveFormatX* fmt,
-        u32 size
-    ); // 0x136ab0  gate + PCM check + Restore(buf)
-    i32 ReloadRiff(
-        DirectSoundMgr* buf,
-        void* riff,
-        u32 loadOpts
-    ); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
-    i32 ReloadFile(
-        DirectSoundMgr* buf,
-        char* path,
-        u32 loadOpts
-    ); // 0x136b00  fopen whole file -> ReloadRiff (only when the buffer is looping)
+    SoundDevice();
+    virtual ~SoundDevice();
 
-    // Device bring-up (DSNDMGR.CPP; defined in DirectSoundMgr.cpp - they fall in that
-    // RVA range): DirectSoundCreate + cooperative level, then lazy primary buffer.
-    i32 Create(void* hwnd, u32 level, u32 flags);   // 0x136550  DirectSoundCreate + coop
-    i32 Compact();                                  // 0x136650  IDirectSound::Compact
-    i32 ReacquireViaCallback();                     // 0x1365e0  dispatch m_reacquireProc
-    i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
-    // Per-tick device-list housekeeping.
-    i32 PurgeVoiceList(i32 time); // 0x136e20  reap finished voices from m_voiceList
-    // (Retiring one instance-list voice is SoundStream::DestroyVoice @0x1379d0, and the
-    // per-tick TickSubManagers @0x137ac0 is a SoundStream method - both live on the
-    // derived class since their `this` drives the derived voice list + DestroyVoice.)
+    void Shutdown();
+    void RemoveBuffer(DirectSoundMgr* node);
+    void StopAll();
+    i32 FreeSamples();
+    i32 SetPrimaryFormat(void* fmt);
 
-    // The volume->attenuation curve (DSNDMGR.CPP): map a 0..100 volume to a DSound
-    // hundredths-of-dB attenuation via an acos/pow transfer (static, x87).
-    static i32 VolumeToAttenuation(i32 value); // 0x1350b0
-    static void BuildVolumeTable();            // 0x1351a0  fill g_volumeTable[0..100]
+    i32 StartPrimary();
+    i32 CreatePrimaryBuffer();
+    IDirectSoundBuffer* GetPrimary();
+    DSoundCloneInst* CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags);
+    DSoundCloneInst* AcquireFile(char* path, u32 flags, u32 loadOpts);
+    DSoundCloneInst* Acquire(void* riff, u32 flags, u32 loadOpts);
+    DSoundCloneInst* AcquireResource(const char* name, u32 flags, u32 loadOpts);
+    i32 ReloadResource(DirectSoundMgr* probe, const char* name, u32 loadOpts);
+    i32 ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size);
+    i32 ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts);
+    i32 ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts);
 
-    // --- layout ---------------------------------------------------------------
-    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is +0x04.
-    DSoundList m_bufferList; // +0x04  owned-buffer list {head@+4, tail@+8} (biased +4 links)
-    DSoundList m_voiceList;  // +0x0c  voice/channel sub-list {head@+0xc, tail@+0x10}
-    IDirectSound* m_device;  // +0x14  the IDirectSound device
-    // +0x18..+0x78: unused by the device shape (the per-buffer fields DirectSoundMgr
-    // uses in the same layout region; the device role never touches them).
+    i32 Create(void* hwnd, u32 level, u32 flags);
+    i32 Compact();
+    i32 ReacquireViaCallback();
+    i32 SetCooperativeLevel(void* hwnd, u32 level);
+
+    i32 PurgeVoiceList(i32 time);
+
+    static i32 VolumeToAttenuation(i32 value);
+    static void BuildVolumeTable();
+
+    DSoundList m_bufferList;
+    DSoundList m_voiceList;
+    IDirectSound* m_device;
+
     char m_reserved[0x78 - 0x18];
-    i32 m_initialized; // +0x78  "initialized" flag (gates every op)
-    i32 m_createFlag;  // +0x7c  cleared by Create; reused by PurgeVoiceList as a tick stamp
-    // +0x80  reacquire callback: a pointer-to-member on the device that
-    // ReacquireViaCallback (0x1365e0) tail-dispatches through. A single-inheritance
-    // member-fn-ptr is 4 bytes (just the code address), so this is layout-identical
-    // to the raw slot - and __thiscall by default, matching the retail dispatch.
+    i32 m_initialized;
+    i32 m_createFlag;
+
     i32 (SoundDevice::*m_reacquireProc)();
-    IDirectSoundBuffer* m_primaryBuffer; // +0x84  primary buffer
-    i32 m_coopLevel;                     // +0x88  cooperative level
-    u32 m_bufferFlags;                   // +0x8c  buffer-desc flags
-    i32 m_force8Bit;                     // +0x90  force-8-bit downconvert flag (Acquire reads)
-    // The device ENDS at 0x94. m_instanceHead (+0x94) used to be declared here and was even
-    // commented "derived instance-list head (SoundStream)" - a member parked in the wrong
-    // class. It pushed SoundStream's voice list to +0x98 and its sizeof to 0xa0, but retail
-    // allocates SoundStream at 0x9c and its ctor (0x1376d0) zeroes +0x94 AND +0x98 - one
-    // two-dword {head,tail} list at +0x94, owned by SoundStream. No SoundDevice method
-    // touches +0x94, and every m_instanceHead use in the tree was in SoundStream.cpp.
+    IDirectSoundBuffer* m_primaryBuffer;
+    i32 m_coopLevel;
+    u32 m_bufferFlags;
+    i32 m_force8Bit;
 };
-SIZE(0x94); // device base; SoundStream's own list starts at +0x94
+SIZE(0x94);
 
 #endif // DSNDMGR_SOUNDDEVICE_H

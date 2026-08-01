@@ -1,18 +1,18 @@
-#include <Mfc.h>                  // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
-#include <Gruntz/State.h>         // CState::Update (slot 4) - the live state's id tag
-#include <Gruntz/Play.h>          // CPlay::ExecCommand - the Select overrides' target
-#include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
-#include <Gruntz/GruntzMgr.h>     // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
-#include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_level: m_planeCtx + m_mainPlane)
-#include <Rez/RezSync.h>          // g_dlgVal_645538
+#include <Gruntz/State.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/WwdGameReg.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameLevel.h>
+#include <Rez/RezSync.h>
 #include <rva.h>
-// The 1<<i bit table (0x5e9608 = RVA 0x1e9608) the mask builder/scanner indexes.
+
 DATA(0x001e9608)
 const u16 g_cmdBitTable[16] = {
     1,
@@ -33,9 +33,9 @@ const u16 g_cmdBitTable[16] = {
     0x8000
 };
 
-VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
+VTBL(CGruntzSingleCommand, 0x001e9634);
 VTBL(CGruntzCommand, 0x001e9674);
-VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
+VTBL(CGruntzMultiCommand, 0x001e96b4);
 DATA(0x002451a4)
 i32 g_dlgVal_6451a4;
 DATA(0x00245268)
@@ -76,7 +76,7 @@ i32 CGruntzCommand::Parse(void*, i32) {
 }
 
 static inline i16 PeekI16(const void* p) {
-    // the command wire buffer is a packed byte stream; the field is a word
+
     return *static_cast<const i16*>(p);
 }
 static inline void PokeI16(void* p, i16 v) {
@@ -95,20 +95,11 @@ void CGruntzCmdMgr::ClearAndReset() {
     Clear();
 }
 
-// ---------------------------------------------------------------------------
-// ScanTargets: walk the base queue (by index, removing each as it is
-// processed) filtering for objects that are either selected (flag 0x2) or
-// active+keyed (flag 0x1 and the type byte matches `param`). When the game is in
-// the play state (id 0x11), latch each match into a 4-slot per-team table (keyed
-// by the object's index byte) for a deferred ordered select pass; otherwise
-// select+deselect it immediately. After the walk, in play state, run the deferred
-// select+deselect over the table. Returns 1.
 // @early-stop
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     CState* sp = m_38->m_curState;
-    // slot 4 (+0x10): the state reports its own id tag. 0x11 IS GAMESTATE_NONE (the
-    // PerFrameTick sentinel), not the PLAY id - the local's historical name is kept.
+
     i32 isPlay = (sp->Update() == GAMESTATE_NONE);
     CGruntzCommand* table[4];
     table[0] = 0;
@@ -119,7 +110,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
         CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.GetAt(pos));
-        i32 flags = obj->m_submitted; // +0x0c submit-context latch
+        i32 flags = obj->m_submitted;
         if (!(flags & 2)) {
             if (!(flags & 1)) {
                 continue;
@@ -220,9 +211,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
     }
     if (flag) {
         if (m_38->m_curState->Update() == GAMESTATE_PLAY) {
-            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 2; // submit-context = playing
+            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 2;
         } else if (m_38->m_curState->Update() == GAMESTATE_NONE) {
-            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 4; // submit-context = ready
+            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 4;
         }
         m_1c.AddTail(cmd);
     }
@@ -295,9 +286,7 @@ i32 CGruntzCommand::SetMaskFromList(
     if (!CGruntzCommand::SetParams(targetIndex, cmdKind, targetType, posX, posY)) {
         return 0;
     }
-    // +0x10 is dual-width: a 2-byte flag word here, a single byte at the
-    // m_10 = gruntIndex / m_10 = *list++ stores - retail writes both widths, so the
-    // char member plus this word pun is the faithful pair.
+
     m_flagWord = 0;
     for (i32 i = 0; i < (count & 0xff); i++) {
         m_flagWord |= g_cmdBitTable[gruntList[i]];
@@ -305,15 +294,10 @@ i32 CGruntzCommand::SetMaskFromList(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGruntzSingleCommand::Parse() - 0x023f90 (vtable slot 7). The inverse of Pack:
-// deserialize the flat byte buffer back into the five scalar params + m_10, plus the
-// conditional m_11 byte (when m_5 >= 8). The tag byte is skipped. Returns the byte
-// count consumed. The `len` arg is unused (the record is self-delimiting).
 // @early-stop
 RVA(0x00023f90, 0x48)
-i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
-    char* buf = static_cast<char*>(data) + 1; // skip the tag byte
+i32 CGruntzSingleCommand::Parse(void* data, i32) {
+    char* buf = static_cast<char*>(data) + 1;
     m_targetIndex = *buf++;
     m_5 = *buf++;
     m_targetType = *buf++;
@@ -322,22 +306,17 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
     m_a = PeekI16(buf);
     buf += 2;
     m_10 = *buf++;
-    // read m_5 as an unsigned byte (retail `cmp byte,8; jb`) via the &-address form so
-    // the codegen is identical to an unsigned member conversion without a member cast.
+
     if (static_cast<u8>(m_5) >= 8) {
         m_11 = *buf++;
     }
     return buf - static_cast<char*>(data);
 }
 
-// ---------------------------------------------------------------------------
-// CGruntzMultiCommand::Parse() - 0x024000 (vtable slot 7). The multi-target twin: the
-// +0x10 field is read as a full 16-bit flag mask (a WORD) rather than the conditional
-// byte pair. Returns the byte count consumed.
 // @early-stop
 RVA(0x00024000, 0x3e)
-i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
-    char* buf = static_cast<char*>(data) + 1; // skip the tag byte
+i32 CGruntzMultiCommand::Parse(void* data, i32) {
+    char* buf = static_cast<char*>(data) + 1;
     m_targetIndex = *buf++;
     m_5 = *buf++;
     m_targetType = *buf++;
@@ -351,7 +330,7 @@ i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
 }
 
 RVA(0x00024050, 0x57)
-i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
+i32 CGruntzSingleCommand::Pack(char* buf, i32) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
     *++buf = m_targetIndex;
@@ -372,7 +351,7 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
 }
 
 RVA(0x000240d0, 0x4d)
-i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
+i32 CGruntzMultiCommand::Pack(char* buf, i32) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
     *++buf = m_targetIndex;
@@ -390,18 +369,17 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
 
 RVA(0x00024140, 0x35)
 i32 CGruntzSingleCommand::Select(CState* state) {
-    CPlay* p = static_cast<CPlay*>(state); // protocol: commands run against the play state
+    CPlay* p = static_cast<CPlay*>(state);
     if (!p) {
         return 0;
     }
-    // ExecCommand's narrow (char/i16) params reproduce retail's mov al/mov dx
-    // member loads (the ex-CGruntzCmdTarget shim is dissolved; one signature).
+
     return p->ExecCommand(m_targetIndex, m_10, m_5, m_8, m_a, m_11, m_targetType);
 }
 
 RVA(0x00024190, 0x6c)
 i32 CGruntzMultiCommand::Select(CState* state) {
-    CPlay* p = static_cast<CPlay*>(state); // protocol: commands run against the play state
+    CPlay* p = static_cast<CPlay*>(state);
     if (!p) {
         return 0;
     }
@@ -456,7 +434,6 @@ i32 CGruntzCommand::Vslot05() {
     return 1;
 }
 
-// 0x24330 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
 RVA_COMPGEN(0x00024330, 0x20, ??_GCGruntzCommand@@UAEPAXI@Z)
 
 RVA(0x00024360, 0x2b)
@@ -622,16 +599,6 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGruntzCmdMgr::Serialize - 0x024890: (de)serialize the command queue through a
-// stream.
-//   mode 4 (write): gate on IsActive(stream); write the node count, then walk the
-//       base queue writing each command's tag byte followed by its Serialize(4)
-//       payload. Returns 1 (0 on a failed element / inactive).
-//   mode 7 (read): gate on IsActive2(stream); Clear() the queue; read the node
-//       count, then read that many (tag, payload) pairs, allocating a Single
-//       (tag 1) / Multi (tag 2) command, deserializing it, and AddTail'ing it onto
-//       the base queue. Returns 1 (0 on a bad tag / failed element / inactive).
 // @early-stop
 RVA(0x00024890, 0x18d)
 i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pObj) {
@@ -642,7 +609,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pOb
         if (mode != SERIAL_LOAD) {
             return 1;
         }
-        // read
+
         if (!IsActive2(stream)) {
             return 0;
         }
@@ -669,15 +636,13 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pOb
         }
         return 1;
     }
-    // write
+
     if (!IsActive(stream)) {
         return 0;
     }
     i32 count = m_base.GetCount();
     stream->Write(&count, 4);
-    // CPtrList::GetNext inlines to exactly this node walk (`n = pos;
-    // pos = n->pNext; return n->data`) - proved byte-neutral on
-    // CMenuPage::FocusForwardN/Backward, so the ex-GzCmdNode view is unnecessary.
+
     POSITION pos = m_base.GetHeadPosition();
     while (pos != 0) {
         CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));

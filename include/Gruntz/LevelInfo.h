@@ -4,69 +4,47 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CDDrawChildGroup; // <DDrawMgr/DDrawChildGroup.h> the walked object collection (m_coll)
+class CDDrawChildGroup;
 
-class CMapMgr;               // <Gruntz/MapMgr.h>   (== CMapMgr) the tile/path grid
-class CTriggerMgr;           // <Gruntz/TriggerMgr.h>
-struct CGameObject;          // <Gruntz/UserLogic.h>
-class CTileTriggerContainer; // <Gruntz/TileTriggerContainer.h>
-
-// (The ex CLevelSpawnInfo pad-view is dissolved (2026-07-27): its single member,
-// +0x2e4 -> the tile-trigger container, is CPlay::m_beginMarker, and the pointer it
-// was reached through is the registry's +0x2c m_curState. CTriggerMgr::BuildRockBreak
-// Particles now downcasts CState* -> CPlay* for real.)
+class CMapMgr;
+class CTriggerMgr;
+struct CGameObject;
+class CTileTriggerContainer;
 
 class CDDrawWorkerHost;
 
 struct CLevelViewHolder {
     char m_pad00[0x5c];
-    CDDrawWorkerHost* m_5c; // +0x5c  the plane/view mapper (WorldToScreen)
+    CDDrawWorkerHost* m_5c;
 };
 SIZE_UNKNOWN();
 struct CLevelList {
     char m_pad00[0x8];
-    CDDrawChildGroup* m_coll; // +0x08  the walked game-object collection (ex CQueueDrainHost view)
+    CDDrawChildGroup* m_coll;
     char m_pad0c[0x24 - 0xc];
-    CLevelViewHolder* m_view; // +0x24  (->m_5c = the world->screen mapper)
+    CLevelViewHolder* m_view;
 };
 SIZE_UNKNOWN();
 
-// CONFLATION, recorded 2026-07-27 (not yet split): the +0x04 / +0x35 / +0x75 /
-// +0xf8 / +0xfc run of this struct is field-for-field <Io/SaveGame.h>'s SaveSlot
-// (level id, the two char buffers at exactly those bases, the two trailing flag
-// dwords, and both end at 0x100) - BuildLevelTitleString has been re-pointed at
-// SaveSlot on that evidence. The +0x10 / +0x2c / +0x30 / +0x68 / +0x70 POINTER
-// members, which overlap SaveSlot's +0x14 and +0x35 buffers, are a different
-// object: they line up with CGruntzMgr's m_curState(+0x2c) / m_world(+0x30) /
-// m_cmdGrid(+0x68) / m_tileGrid(+0x70), which is what BattlezMapConfig.h already
-// calls `CGruntzMgr* m_ctx // the LoadConfig lvl arg`. Splitting the two is the
-// open work; nothing here is safe to fold until it is done.
 struct CLevelInfo {
     char m_pad00[0x4];
-    i32 m_levelNum;           // +0x04  level number (1..)
-    char m_pad08[0x10 - 0x8]; // +0x08
-    // +0x10: the run-phase spawn machine reads this off the SAME object it stores at
-    // CBattlezMapConfig+0x04 (`m_ctx`) - and that slot is exactly the `lvl` LoadConfig
-    // was handed. So the old .cpp-local `GruntSpawnCtx` view IS this class; its members
-    // fold in here (m_10 / m_objList / m_triggerMgr / m_dims). Retail 0x2d800 reads
-    // `mov eax,[ctx+0x10]; mov ecx,[eax+0x5c]; mov eax,[eax+0x60]` - the CGameObject
-    // pixel-position pair. (The view's "m_cellResolver" @+0x14 was a PHANTOM: retail
-    // fires FindChild/FindByField0C on `mov ecx,[this+0x14]` - CBattlezMapConfig's OWN
-    // m_cellQuery - not on ctx+0x14. Not modeled here; see BattlezMapConfig.h.)
-    CGameObject* m_10;            // +0x10  the level's active object (pixel pos @+0x5c/+0x60)
-    char m_pad14[0x2c - 0x14];    // +0x14
-    class CPlay* m_spawnInfo; // +0x2c  the live PLAY state (== the registry's m_curState)
-    CLevelList* m_objList;        // +0x30  object-list root (LoadConfig marker walk)
-    char m_pad34[0x35 - 0x34];    // +0x34
-    char m_path[0x68 - 0x35];     // +0x35  level file path (Open); buffer ends at m_68
-    CTriggerMgr* m_triggerMgr;    // +0x68  the level's trigger grid (-> CBattlezMapConfig::m_8)
-    char m_pad6c[0x70 - 0x6c];    // +0x6c
-    CMapMgr* m_dims;              // +0x70  the tile/path grid (-> CBattlezMapConfig::m_board)
-    char m_pad74[0x75 - 0x74];    // +0x74
-    char m_name[0xf8 - 0x75];     // +0x75  display name / custom level path
-    i32 m_isCustom;               // +0xf8  flag: custom level
-    i32 m_isBattlez;              // +0xfc  flag: battlez (vs questz)
+    i32 m_levelNum;
+    char m_pad08[0x10 - 0x8];
+
+    CGameObject* m_10;
+    char m_pad14[0x2c - 0x14];
+    class CPlay* m_spawnInfo;
+    CLevelList* m_objList;
+    char m_pad34[0x35 - 0x34];
+    char m_path[0x68 - 0x35];
+    CTriggerMgr* m_triggerMgr;
+    char m_pad6c[0x70 - 0x6c];
+    CMapMgr* m_dims;
+    char m_pad74[0x75 - 0x74];
+    char m_name[0xf8 - 0x75];
+    i32 m_isCustom;
+    i32 m_isBattlez;
 };
-SIZE_UNKNOWN(); // extends past +0xfc; total retail size not pinned
+SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_LEVELINFO_H

@@ -1,31 +1,25 @@
-#include <Net/NetMgr.h>      // the single shared CNetMgr (ReportError is a static member)
-#include <Net/EmptyString.h> // g_emptyString (owner-only decl header)
+#include <Net/NetMgr.h>
+#include <Net/EmptyString.h>
 #include <rva.h>
-#include <stdio.h>                 // engine sprintf (reloc-masked)
-#include <string.h>                // inline strcpy (rep movs / repne scasb)
-#include <Net/NetMgrReportError.h> // own exported globals (ex Globals.h)
+#include <stdio.h>
+#include <string.h>
+#include <Net/NetMgrReportError.h>
 
 DATA(0x002bf6e8)
-i32 g_logEnabled = 0; // drives the format-line path
+i32 g_logEnabled = 0;
 DATA(0x002bf6ec)
-i32 g_msgBoxEnabled = 0; // drives the MessageBox path
+i32 g_msgBoxEnabled = 0;
 DATA(0x002bf6f0)
-i32 g_beepEnabled = 0; // gates the startup beep
+i32 g_beepEnabled = 0;
 DATA(0x002bf6f4)
-i32 g_thirdEnabled = 0; // third "any output wanted" gate
+i32 g_thirdEnabled = 0;
 DATA(0x002bf6f8)
-i32 g_hr = 0; // the raw HRESULT, saved at entry
+i32 g_hr = 0;
 DATA(0x002bf6fc)
-i32 g_code = 0; // hr & 0xffff (the (%i) arg); also read by CMulti::ReportNetError
-// UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-// UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
+i32 g_code = 0;
 
 DATA(0x002293f4)
-char g_emptyString[] = ""; // decl in <Net/EmptyString.h>
+char g_emptyString[] = "";
 
 RVA(0x00177670, 0x27)
 void CNetMgr::SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third) {
@@ -37,7 +31,7 @@ void CNetMgr::SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third) {
 
 RVA(0x001776a0, 0xa01)
 void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
-    char szLine[512]; // the only stack buffer (the formatted output line)
+    char szLine[512];
 
     g_code = hr & 0xffff;
     g_hr = hr;

@@ -2,35 +2,27 @@
 #define GRUNTZ_CSINGLEFRAMEMESSAGE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CSingleFrameMessage : CUserLogic)
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/ActReg.h>
 
 class CSingleFrameMessage : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x0000f580, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SINGLEFRAMEMESSAGE;
-    } // slot 2
+    }
+
 public:
-    CSingleFrameMessage(CGameObject* obj); // 0x0ab310 (ctor body in UserLogic.cpp)
-    // Construct the class's activation-coordinate registry singleton
-    // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.
-    // Resolve the registry entry for id; run its bound handler as a PMF on this
-    // (ResolveEntry inlined twice). 0x0ab5b0.
+    CSingleFrameMessage() {}
+    CSingleFrameMessage(CGameObject* obj);
+
     virtual void FireActivation(i32 id) OVERRIDE;
-    // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
-    // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
-    static void RegisterActs(); // 0x0ab710
-    // The per-frame handler (@0x0ab910); Ghidra did not carve it (recovery gap),
-    // so it is declared only - RegisterActs takes its address as a reloc-masked
-    // handler-store operand.
+
+    static void RegisterActs();
+
     i32 AdvanceAnim();
-    // NO user-declared dtor: retail 0xf640 is COMPILER-GENERATED (implicit; pin in
-    // SingleFrameMessage.cpp).
 };
 SIZE(0x54);
-
-
 
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

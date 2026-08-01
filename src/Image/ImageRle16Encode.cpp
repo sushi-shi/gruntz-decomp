@@ -1,9 +1,9 @@
 #include <rva.h>
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <DDrawMgr/PixelShift.h>
 
 #include <Ints.h>
-#include <Rez/RezMgr.h>              // RezAlloc (_RezAlloc 0x1b9b46)
-#include <DDrawMgr/DDrawShadeBlit.h> // the real owner (ex the fake CImageRle16 view)
+#include <Rez/RezMgr.h>
+#include <DDrawMgr/DDrawShadeBlit.h>
 
 // @early-stop
 RVA(0x001495d0, 0x1a6)
@@ -16,7 +16,7 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
             u8 g = static_cast<u8>((static_cast<u8>(pal->peGreen) >> g_gDown));
             u8 r = static_cast<u8>((static_cast<u8>(pal->peRed) >> g_rDown));
             pal++;
-            // the blue read lands AFTER the cursor bump in retail - keep it there
+
             u8 b = static_cast<u8>((static_cast<u8>(pal[-1].peBlue) >> g_bDown));
             *t++ = static_cast<u16>(
                 ((static_cast<u32>(g) << g_gUp) | (static_cast<u32>(r) << g_rUp)
@@ -25,7 +25,6 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
         }
     }
 
-    // pass 1: size the output into m_rleLen.
     m_rleLen = 0;
     {
         i32 x = 0, row = 0, idx = 0;
@@ -50,7 +49,6 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
         }
     }
 
-    // pass 2: allocate + emit.
     u8* out = static_cast<u8*>(RezAlloc(m_rleLen));
     {
         i32 outidx = 0, srcidx = 0;

@@ -1,16 +1,12 @@
 #include <rva.h>
-#include <Gruntz/SerialCounter.h>     // g_serialCounter
-#include <string.h>                   // strlen / memset inline to repne scasb / rep stos
-#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (SnapshotChildren @0x156020)
-#include <Gruntz/GruntzMgr.h>         // canonical CGruntzMgr (the save host: m_world @ +0x30)
-#include <Io/GameSave.h>              // this TU's owner decls
+#include <Gruntz/SerialCounter.h>
+#include <string.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Io/GameSave.h>
 
-// The recursive snapshot run-callback handed to SnapshotChildren IS
-// SerialObjectFactory @0xd2a0 (SerialObjectFactory.cpp); retail's /INCREMENTAL
-// link routes the address-of through the ILT jmp-thunk 0x24e6 (reloc-masked).
-
-DATA(0x00229930)     // C linkage inherited from GameSave.h's extern "C" decl (as g_mapCurve)
-i32 g_saveBuf[0x24]; // the OWNER DEFINITION (zero-init, matching the retail datum)
+DATA(0x00229930)
+i32 g_saveBuf[0x24];
 
 RVA(0x0000d170, 0x74)
 i32 SaveGame(CGruntzMgr* host, char* name) {

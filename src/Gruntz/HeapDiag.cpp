@@ -1,12 +1,12 @@
-#include <Gruntz/HeapDiag.h> // own extern surface
-#include <Win32.h>           // OutputDebugStringA
-#include <malloc.h>          // _HEAPINFO / _heapchk / _heapwalk / _HEAPOK / _USEDENTRY
-#include <stdio.h>           // sprintf
-#include <string.h>          // memset
+#include <Gruntz/HeapDiag.h>
+#include <Win32.h>
+#include <malloc.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <rva.h>
 #include <tlhelp32.h>
-#include <ProcAddr.h> // the FARPROC / real-prototype pair
+#include <ProcAddr.h>
 
 RVA(0x00118930, 0x15)
 void SetActiveAndFocus(HWND hWnd) {
@@ -40,14 +40,11 @@ i32 FileExists(char* szPath) {
     if (!*szPath) {
         return 0;
     }
-    return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
+    return OpenFile(szPath, &of, 0x4000) != -1;
 }
 
-namespace ApiCallerStubs {} // namespace ApiCallerStubs
+namespace ApiCallerStubs {}
 
-// The walk gate is POSITIVE-form so cl shrink-wraps `push esi` into the
-// conditionally-entered walk block (retail saves only ebx/edi at entry) -
-// docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x00118a30, 0xda)
 int HeapCheckDump(int walkOnBad) {
     _HEAPINFO hinfo;
@@ -137,13 +134,6 @@ int HeapStats() {
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 
-// -------------------------------------------------------------------------
-// FindProcessByName
-// Scans running processes via a Toolhelp32 snapshot, case-insensitively comparing
-// each process's main-module name (its full path when `name` itself contains a
-// backslash, else its base name) against `name`. Counts matches; on the first match,
-// opens the process (PROCESS_QUERY_INFORMATION) into *pHandleOut. Returns 1 once
-// `wantCount` matches are seen, else 0.
 // @early-stop
 RVA(0x00118ce0, 0x1f5)
 i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
@@ -164,8 +154,6 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
         return 0;
     }
 
-    // GetProcAddress hands the address back as a FARPROC; the caller knows the
-    // export's prototype (<ProcAddr.h>)
     ProcAddr<PFN_CreateSnapshot> snapProc;
     snapProc.m_raw = GetProcAddress(hK32, "CreateToolhelp32Snapshot");
     PFN_CreateSnapshot pCreate = snapProc.m_fn;
@@ -193,8 +181,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     memset(&pe, 0, sizeof(pe));
     pe.dwSize = sizeof(pe);
     i32 matchCount = 0;
-    // retail 0x11914d: ONE CloseHandle + return-0 tail - the Process32First failure
-    // branches straight into it with hSnap still live, it is not its own exit
+
     if (pFirst(hSnap, &pe)) {
         do {
             MODULEENTRY32 me;

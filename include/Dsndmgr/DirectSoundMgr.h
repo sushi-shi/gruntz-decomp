@@ -2,55 +2,53 @@
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
 #include <rva.h>
-#include <stdio.h>                  // FILE (LoadFromFile stream arg)
-#include <Dsndmgr/SoundVoiceList.h> // DSoundLink / DSoundList intrusive list primitive
+#include <stdio.h>
+#include <Dsndmgr/SoundVoiceList.h>
 
-struct IDirectSound;       // forward-decl: real dsound.h interface (dispatched in the .cpp)
-struct IDirectSoundBuffer; // forward-decl: CreateSoundBuffer's out-param type
-class SoundDevice;         // owning device (m_owner); full def in SoundDevice.h
-class DirectSoundMgr;      // a clone (CloneNode::m_inst back-points at it)
-struct WaveFormatX;        // <Dsndmgr/WaveFormatX.h> - the PCM header ParseWaveChunks finds
+struct IDirectSound;
+struct IDirectSoundBuffer;
+class SoundDevice;
+class DirectSoundMgr;
+struct WaveFormatX;
 
 struct CloneNode : public DSoundLink {
-    DirectSoundMgr* m_inst; // +0x08  back-pointer to the owning buffer
+    DirectSoundMgr* m_inst;
 };
-SIZE(0xc); // {link.next, link.prev, inst}
+SIZE(0xc);
 
 class DirectSoundMgr {
 public:
-    DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x1351d0 ctor
-    virtual ~DirectSoundMgr(); // 0x135300  base-subobject dtor (implicit vptr reset)
+    DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner);
+    virtual ~DirectSoundMgr();
 
-    i32 Restore();                 // 0x135310  m_buffer->Restore()
-    i32 ReacquireBuffer();         // 0x135340  callback / owner reacquire (extern)
-    i32 StopAndRewind();           // 0x135380  Stop + SetCurrentPosition(0)
-    i32 IsPlaying();               // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
-    i32 IsLooping();               // 0x135440  GetStatus & DSBSTATUS_LOOPING
-    i32 IsInHardware();            // 0x135490  GetCaps & DSBCAPS_LOCHARDWARE
-    void SetField3(i32 on);        // 0x135510  toggle the +0x14 play-flag bit 0 (looping)
-    i32 SetVolume(i32 vol);        // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
-    i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx])
-    i32 GetVolume();               // 0x1355f0  GetVolume
-    i32 GetVolumePercent();        // 0x135640  GetVolume -> percent (0x135110)
-    i32 GetPanPercent();           // 0x135840  GetPan -> signed percent (0x135110)
-    i32 CloneAndPlay(i32 key, i32 mode, i32 slot); // 0x135660  reap + spawn a voice
-    i32 SetPan(i32 pan);                           // 0x135740  SetPan (caps DSBCAPS_CTRLPAN)
-    i32 SetPanByIndex(i32 idx);                    // 0x1357a0  SetPan(+/-g_panTable[idx]) by sign
-    i32 GetPan();                                  // 0x1357f0  GetPan
-    i32 SetFrequency(u32 freq); // 0x135880  SetFrequency (caps DSBCAPS_CTRLFREQUENCY)
-    i32 SetField2(i32 pct);     // 0x135920  freq-percent + duration recompute
-    void ComputeDuration();     // 0x1359a0  m_durationMs = m_sampleCount*1000/m_sampleRate
-    i32 Unlock(void* audioPtr1, u32 audioBytes1, void* audioPtr2, u32 audioBytes2); // 0x1359c0
-    // The DirectSound out-params are DWORD (`unsigned long`), not `unsigned int`:
-    // spelt out so &n binds to LPDWORD directly, and so this header stays Win32-free
-    // (same device as m_pan/m_volume below).
-    i32 GetCurrentPosition(unsigned long* play, unsigned long* write); // 0x135a20
-    i32 SetCurrentPosition(u32 pos);                                   // 0x135a70
-    i32 GetFormat(void* fmt, u32 size, unsigned long* written);        // 0x135ac0
-    i32 LoadFromFile(FILE* fp, u32 bytes, i32 offset);      // 0x135e10  fseek+Lock+fread+Unlock
-    i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
-    i32 Play();                                             // 0x136270  Play + reacquire-retry
-    i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d);    // 0x136300  apply params + play
+    i32 Restore();
+    i32 ReacquireBuffer();
+    i32 StopAndRewind();
+    i32 IsPlaying();
+    i32 IsLooping();
+    i32 IsInHardware();
+    void SetField3(i32 on);
+    i32 SetVolume(i32 vol);
+    i32 SetVolumeByIndex(i32 idx);
+    i32 GetVolume();
+    i32 GetVolumePercent();
+    i32 GetPanPercent();
+    i32 CloneAndPlay(i32 key, i32 mode, i32 slot);
+    i32 SetPan(i32 pan);
+    i32 SetPanByIndex(i32 idx);
+    i32 GetPan();
+    i32 SetFrequency(u32 freq);
+    i32 SetField2(i32 pct);
+    void ComputeDuration();
+    i32 Unlock(void* audioPtr1, u32 audioBytes1, void* audioPtr2, u32 audioBytes2);
+
+    i32 GetCurrentPosition(unsigned long* play, unsigned long* write);
+    i32 SetCurrentPosition(u32 pos);
+    i32 GetFormat(void* fmt, u32 size, unsigned long* written);
+    i32 LoadFromFile(FILE* fp, u32 bytes, i32 offset);
+    i32 LockConvert(void* src, u32 lockBytes, u32 convert);
+    i32 Play();
+    i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d);
     i32 Lock(
         u32 off,
         u32 bytes,
@@ -59,82 +57,62 @@ public:
         void** audioPtr2,
         unsigned long* audioBytes2,
         u32 flags
-    ); // 0x136370  Lock + reacquire-on-DSERR_BUFFERLOST retry
+    );
 
-    static void GetErrorString(char* file, i32 line, i32 hr); // 0x138150
+    static void GetErrorString(char* file, i32 line, i32 hr);
 
-    // --- layout (per-buffer wrapper base, size 0x58) --------------------------
-    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is +0x04.
-    // +0x04 is the device buffer-list link: when the concrete leaf (DSoundCloneInst)
-    // hangs in SoundDevice::m_bufferList, this DSoundLink is the biased element+4 the
-    // list threads (SoundDevice::Shutdown/StopAll/CreateBuffer/RemoveBuffer). Set by
-    // the list helpers, not the ctor.
-    DSoundLink m_link;            // +0x04  device buffer-list link {next@+4, prev@+8}
-    IDirectSoundBuffer* m_buffer; // +0x0c  the held sound buffer
-    SoundDevice* m_owner;         // +0x10  owning device back-pointer
-    u32 m_playFlags;              // +0x14  Play/looping flags (bit 0 = loop)
-    unsigned long m_freq;         // +0x18  cached frequency (DWORD - GetFrequency writes it)
-    long m_pan;                   // +0x1c  cached pan (LONG, the type GetPan writes;
-                                  //        spelt `long` so this header stays Win32-free)
-    long m_volume;                // +0x20  cached volume (LONG, GetVolume writes it)
-    u32 m_setFreq;                // +0x24  cached SetFrequency value
-    u32 m_durationMs;             // +0x28  duration (ComputeDuration)
-    u32 m_sampleCount;            // +0x2c  sample count (set by the clone ctor)
-    // +0x30  per-buffer reacquire callback (__cdecl fn-ptr taking (this, ctx)); a
-    // pointer is 4 bytes, so this is layout-identical to the raw i32 slot.
+    DSoundLink m_link;
+    IDirectSoundBuffer* m_buffer;
+    SoundDevice* m_owner;
+    u32 m_playFlags;
+    unsigned long m_freq;
+    long m_pan;
+
+    long m_volume;
+    u32 m_setFreq;
+    u32 m_durationMs;
+    u32 m_sampleCount;
+
     i32(__cdecl* m_reacquireCb)(DirectSoundMgr*, i32);
-    i32 m_reacquireCtx;    // +0x34  per-buffer reacquire callback context
-    i32 m_rateBase;        // +0x38  SetField2 percent base
-    u32 m_sampleRate;      // +0x3c  sample rate (SetField2 sets it; ComputeDuration divides by it)
-    u32 m_caps;            // +0x40  buffer capability flags (DSBCAPS_CTRLFREQUENCY/PAN/VOLUME)
-    CloneNode m_cloneNode; // +0x44  clone-list node by which this buffer hangs in a parent's list
-    i32 m_playKey;         // +0x50  clone play key
-    DirectSoundMgr* m_reacquireOwner; // +0x54  device/owner used to reacquire a lost buffer
+    i32 m_reacquireCtx;
+    i32 m_rateBase;
+    u32 m_sampleRate;
+    u32 m_caps;
+    CloneNode m_cloneNode;
+    i32 m_playKey;
+    DirectSoundMgr* m_reacquireOwner;
 };
-SIZE(0x58); // per-buffer wrapper base (fields end at +0x58)
+SIZE(0x58);
 
 class DSoundBaseSub : public DirectSoundMgr {
 public:
-    DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x136230
-    // Clone/dup ctor 0x136180: 2-arg ctor + records source (m_reacquireOwner), copies
-    // its sample/reacquire/rate block, recomputes duration.
-    DSoundBaseSub(
-        IDirectSoundBuffer* buf,
-        SoundDevice* owner,
-        DirectSoundMgr* original
-    );                                 // 0x136180
-    virtual ~DSoundBaseSub() OVERRIDE; // 0x136260  base-subobject dtor (vptr reset + chain)
+    DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner);
+
+    DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner, DirectSoundMgr* original);
+    virtual ~DSoundBaseSub() OVERRIDE;
 };
-SIZE(0x58); // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
+SIZE(0x58);
 
 class DSoundCloneInst : public DSoundBaseSub {
 public:
-    DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10
-    virtual ~DSoundCloneInst() OVERRIDE;                          // 0x135bb0  clone-drain dtor
+    DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner);
+    virtual ~DSoundCloneInst() OVERRIDE;
 
-    DirectSoundMgr* Clone(i32 a);            // 0x135c20  new a clone, dup the buffer, link it
-    void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink + delete one clone
-    void StopAllClones();                    // 0x136150  StopAndRewind each clone
-    // The UI sound-cue play path (the ex "DSoundCloneInst" view of THIS class - its
-    // Create @0x135c20 was Clone, its m_58 SBList was m_cloneList, its m_10
-    // "CStatusBarSurface" was m_owner (SoundDevice, +0x78 = m_initialized); the
-    // "DirectSoundMgr" pooled items are the clones, i.e. DirectSoundMgr):
-    DirectSoundMgr* GetItem(); // 0x135d70  pull a keyed, non-playing pooled clone (or mint one)
-    i32 ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop); // 0x1360d0  set params + Play
+    DirectSoundMgr* Clone(i32 a);
+    void RemoveClone(DirectSoundMgr* clone);
+    void StopAllClones();
 
-    DSoundList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
+    DirectSoundMgr* GetItem();
+    i32 ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop);
+
+    DSoundList m_cloneList;
 };
-SIZE(0x60); // buffer leaf: CreateBuffer RezAlloc(0x60)
+SIZE(0x60);
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-// The parser's three OUT-params are three separate variables: retail's Acquire /
-// ReloadRiff each pass three distinct addresses (two of them dead argument homes),
-// and 0x137110 writes only *fmtOut - the ex "ParseFmt" 3-dword struct was a view.
 extern "C" i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut);
 extern const char s_rb[];
 
-extern "C" i32 ConvertVolumeToPercent(i32 v); // 0x135110 (C linkage carrier)
+extern "C" i32 ConvertVolumeToPercent(i32 v);
 
 extern const double c_volScale;
 extern const double c_volNum;

@@ -1,21 +1,14 @@
-#include <string.h>               // memcpy -> the /Oi `rep movsd` that copies rect into m_block
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <string.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
 #include <rva.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 
-// The class itself now lives in <Gruntz/TileTriggerSwitchLogic.h> (real derived class, no
-// data members, sizeof 0x8c). BuildSmall is its slot-1 override; the base's slot-0 "build"
-// virtual (Setup) is the 8-arg builder it chains to.
 // @early-stop
 RVA(0x00112a50, 0xdd)
-// Slot names come from the base declaration in <Gruntz/TileTriggerSwitchLogic.h>
-// (typeId/tileX/tileY/cellKey/linkGate, proven there by CTileTriggerSwitchLogic::Setup's
-// own stores); `iconFrame` is this override's own: it gates the sprite build and is then
-// ApplyLookupSprite's FRAME index into the SMALLICONZ set (CGameObject::ApplyLookupSprite
-// @0x1504d0 bounds-checks it against the sprite's m_minIndex/m_maxIndex).
+
 i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     CTileTriggerContainer* owner,
     i32 typeId,
@@ -37,7 +30,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (typeId == 4 && rect[0].left == 0) {
         goto fail;
     }
-    memcpy(m_block, rect, sizeof(m_block)); // rep movsd, ecx=0x18 -> this+0x2c
+    memcpy(m_block, rect, sizeof(m_block));
     if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, a8, iconFrame)) {
         goto fail;
     }
@@ -50,7 +43,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (!spr) {
         goto fail;
     }
-    spr->m_7c->m_notify(spr);
+    spr->m_animWorker->m_notify(spr);
     spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", iconFrame);
     if (spr->m_layer == 0) {
         goto fail;

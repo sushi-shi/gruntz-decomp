@@ -1,49 +1,33 @@
 #ifndef GRUNTZ_GRUNTZ_CSTATE_H
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
-#include <Mfc.h> // afx-first umbrella: RECT (the +0x168..+0x1a4 save-under rects)
+#include <Mfc.h>
 #include <Ints.h>
-#include <rva.h>                // SIZE/VTBL vtable-catalog annotations
-#include <Gruntz/GameStateId.h> // Update()'s per-state id return type
+#include <rva.h>
+#include <Gruntz/GameStateId.h>
 
-class CDDrawSurfaceMgr; // +0x0c render/resource holder == CGameRegistry::m_world;
-class CSymParser;       // +0x08 the level/rez symbol parser (<Bute/SymParser.h>) - the manager's
-class CDDSurface;       // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
+class CDDrawSurfaceMgr;
+class CSymParser;
+class CDDSurface;
 class CSymTab;
 
-class CSymTab;      // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-class CFileMemBase; // HeaderWrite/HeaderRead's serialize stream (<Io/FileMem.h>)
-class CGruntzMgr;   // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
-class CFaderMgr;    // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
-class CString;      // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
-class CMulti;       // BuildAssetNamespacePrefixes' finishGate: the multiplayer state to ack
+class CSymTab;
+class CFileMemBase;
+class CGruntzMgr;
+class CFaderMgr;
+class CString;
+class CMulti;
 
 class CState {
 public:
     CState();
-    // dtor body INLINE so MSVC folds the vtable-restore + base cleanup into the
-    // synthesized scalar-deleting dtor ??_G (matched) rather than emitting a ??1.
-    // The qualified call is the guaranteed-direct spelling of the in-dtor
-    // statically-bound teardown (retail: every leaf dtor's trailing rel32 to
-    // ILT 0x3f53 -> 0xfa150).
+
     virtual ~CState() {
         CState::ReleaseResources();
-    } // slot 0
-    // slot 1 (+0x4) - the per-area GAME asset-namespace loader / state-entry hook.
-    // Default body @0xf9ea0 (GameAssetNamespaces.cpp; retail ??_7CState slot 1 =
-    // ILT 0x43a9 -> 0xf9ea0). Every leaf overrides it with its own asset/state
-    // loader (the ex-"Vfunc1"/LoadSounds/LoadAssets/LoadCreditzStateAssets/
-    // EnterAttractMode/SetupMultiplayerSession bodies are all THIS one slot -
-    // RTTI slot-map + ILT-proven) and chains back via the qualified
-    // CState::LoadGameAssetNamespaces() base call (direct rel32, the retail
-    // shape). Returns 1 on success, 0 on bail.
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 a3); // slot 1
-    // slot 2 (+0x8) - the resource teardown. Default body @0xfa150
-    // (StateReleaseResources.cpp; retail ??_7CState slot 2 = ILT 0x3f53 -> 0xfa150):
-    // release the four owned blit surfaces, clear m_ready. Leaf states override it
-    // and chain back via the qualified CState::ReleaseResources() base call.
-    // (Ex "CGameModeBase::BaseCleanup" - that class was a this-view of CState;
-    // RTTI proves CState is a root, so no such base ever existed.)
+    }
+
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 a3);
+
     virtual void ReleaseResources();
     RVA(0x0008c490, 0x4)
     virtual i32 IsActive() {
@@ -60,47 +44,40 @@ public:
     RVA(0x0008c4f0, 0x3)
     virtual i32 Vslot06() {
         return 0;
-    } // slot 6  (+0x18)  activation-ready poll
-    virtual i32 Vslot07(); // slot 7  (+0x1c)  lobby-host-ready poll
-    // slot 8 (+0x20) - per-frame input poll. Base body @0x0face0 (Attract.cpp;
-    // ??_7CState@@6B@+0x20): the shared image-load gate - hide the cursor, gate on
-    // the level being ready, draw the "loading imagez" splash, load GAME_IMAGEZ,
-    // then seed the input latches (m_inputWarmup1/2, m_inputHalfSel). Leaf slot-8
-    // overrides (CBootyState/CMultiBootyState/CImageState/CPlay) chain back via the
-    // qualified CState::InputVirtual() base call.
-    virtual i32 InputVirtual(); // slot 8  (+0x20)  per-frame input poll
+    }
+    virtual i32 Vslot07();
+
+    virtual i32 InputVirtual();
     RVA(0x0008c510, 0x8)
     virtual i32 Vslot09(i32) {
         return 1;
-    } // slot 9  (+0x24)  notify w/ state id
-    virtual i32 FrameSlot28(i32); // slot 10 (+0x28)  per-frame poll (leaf override)
-    // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
-    // 3-arg notification into these slots; the int return / arg shapes are what
-    // those forwarders' push/ret-N codegen needs (vtables not diffed).
+    }
+    virtual i32 FrameSlot28(i32);
+
     RVA(0x0008c550, 0x5)
     virtual i32 Vslot0b(i32, i32) {
         return 0;
-    } // slot 11 (+0x2c)
+    }
     RVA(0x0008c570, 0x5)
     virtual i32 Vslot0c(i32, i32) {
         return 0;
-    } // slot 12 (+0x30)
+    }
     RVA(0x0008c590, 0x5)
     virtual i32 Vslot0d(i32, i32) {
         return 0;
-    } // slot 13 (+0x34)
+    }
     RVA(0x0008c5b0, 0x5)
     virtual i32 Vslot0e(i32, i32, i32) {
         return 0;
-    } // slot 14 (+0x38)
+    }
     RVA(0x0008c5d0, 0x5)
     virtual i32 Vslot0f(i32, i32, i32) {
         return 0;
-    } // slot 15 (+0x3c)
+    }
     RVA(0x0008c5f0, 0x5)
     virtual i32 Vslot10(i32, i32, i32) {
         return 0;
-    } // slot 16 (+0x40)
+    }
     RVA(0x0008c610, 0x5)
     virtual i32 Vslot11(i32, i32, i32) {
         return 0;
@@ -108,36 +85,29 @@ public:
     RVA(0x0008c630, 0x5)
     virtual i32 Vslot12(i32, i32, i32) {
         return 0;
-    } // slot 18 (+0x48)
+    }
     RVA(0x0008c650, 0x5)
     virtual i32 Vslot13(i32, i32, i32) {
         return 0;
-    } // slot 19 (+0x4c)
-    // slot 20 (+0x50): seeds the begin-clear params. The base default returns 0; the
-    // role is named from CPlay's override (0x8c970), the only leaf whose body proves
-    // one - a CHOICE from the evidence, not a reading (retail carries no symbols).
+    }
+
     RVA(0x0008c670, 0x5)
     virtual i32 SetBeginClearParams(i32, i32, i32) {
         return 0;
     }
-    // slot 21 (+0x54): HandleCommand's 0x800e path polls it as a veto gate
-    // (`if (m_curState->Vslot15()) return 1;`) - the i32 return is proven there.
+
     RVA(0x0008c690, 0x3)
     virtual i32 Vslot15() {
         return 0;
     }
-    // slot 22 (+0x58): `33 c0 c3` (xor eax,eax; ret) proves an i32 return-0, not void.
+
     RVA(0x0008c6b0, 0x3)
     virtual i32 Vslot16() {
         return 0;
     }
-    // slot 23 (+0x5c, 0x0fa6b0): the frame-surface GDI text overlay (all states inherit
-    // it). GetDC on the frame surface, SetBkMode/SetTextColor, TextOutA(x,y,str), ReleaseDC.
+
     virtual i32 Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode);
-    // slots 24/25: named from CPlay's overrides (0xcee90/0xcef00), the only leaves whose
-    // bodies prove a role - a CHOICE from the evidence, not a reading. The i32 return is
-    // the bodies' (`QAEH`), not the void these placeholders guessed; both call sites in
-    // CGruntzMgr discard it.
+
     RVA(0x0008c6d0, 0x6)
     virtual i32 PauseGame() {
         return 1;
@@ -147,63 +117,21 @@ public:
         return 1;
     }
 
-    // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
+    i32 HeaderWrite(CFileMemBase* ar);
+    i32 HeaderRead(CFileMemBase* ar);
 
-    // The state-header serialize passes (defined in Attract.cpp, the 0xfa.. CState
-    // band). CPlay::HeaderSerialize (0xfafa0) dispatches: kind 4 -> HeaderWrite
-    // (streams the m_levelIndex..m_inputWarmup2 header block out via ar vtbl+0x30),
-    // kind 7 -> HeaderRead (the symmetric vtbl+0x2c read pass, plus m_inputHalfSel).
-    // (Ex the CMgrPersistObj fake facet's Load/Save - the view had the directions
-    // inverted; it is DISSOLVED into this class.)
-    i32 HeaderWrite(CFileMemBase* ar); // 0x0faff0
-    i32 HeaderRead(CFileMemBase* ar);  // 0x0fb1c0
+    i32 ShadeScreen(i32 pct);
 
-    // ShadeScreen (0x0fa6b0's sibling @0x0faf50): the once-suppressed screen dim. On the
-    // first call after the g_suppress latch is armed it consumes the latch (returns it);
-    // otherwise it shades the draw surface (m_c->m_drawTarget->m_backPair->m_2c->ShadeRect(pct,0)).
-    i32 ShadeScreen(i32 pct); // 0x0faf50 (reloc-masked; defined in StateDrawText.cpp)
+    i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e);
 
-    // The title-roll cluster (0xfa1f0/0xfa300/0xfa350). Each body reads ONLY CState
-    // members (m_c/m_8/m_2c), and every sibling state (CHelpState/CSplashState/
-    // CBootyState/CMultiBootyState/CAttract/...) calls them directly on its own `this`
-    // -> they ARE CState-level helpers. Definitions live in Attract.cpp (the attract
-    // unit owns the 0xfa1f0.. RVAs) as CState:: methods; the callers stay cast-free
-    // (CAttract is a sibling of CState, not a base). Reloc-masked.
-    i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
+    i32 DrawScreenTextImage(const char* name);
+    i32 RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e);
+    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);
 
-    // 0x0d5c10 - render the "\SCREENZ\<name>TEXT" PID page onto the back page at
-    // (0x140, 0x158) through a throwaway stack CImage. Identity recovered 2026-07-29
-    // from the field chain, not a caller (it has none): the body reads [this+0x2c] as
-    // the CSymTab it calls ResolveQualified on and [this+0x0c] as the CDDrawSurfaceMgr
-    // it seeds the CImage's m_ownerCtx with and walks ->m_drawTarget->m_backPair
-    // through - i.e. m_2c and m_world, and only CState pairs those two at those two
-    // offsets. Direct sibling of FadeInTitle above (same SymTab2c()->ResolveQualified
-    // on a sprintf'd "\SCREENZ\..." key). Body in src/Image/CImage.cpp, where the
-    // COMDAT pool put it.
-    i32 DrawScreenTextImage(const char* name);                     // 0x0d5c10
-    i32 RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e);       // 0x0fa300
-    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d); // 0x0fa350
-    // RetireScene (0xfa8f0): the two-channel screen-transition emitter every screen state
-    // runs on its own `this` (xref: CBootyState/CMultiBootyState/CCreditsState/CAttract/
-    // CPreviewState/CMulti/CPlay/... all call it). It reads the CState resource-chain facet
-    // (fxRes()/m_faderMgr) only, so it IS a CState-level helper. Definition lives in
-    // Attract.cpp (the
-    // attract unit owns 0xfa8f0.. RVAs) as a CState:: method; reloc-masked.
-    i32 RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay); // 0x0fa8f0
-    // Present (0xfaec0): per-frame present/refresh of the bound view - shade the back
-    // surface, flip the front. Same CState-level non-virtual shape as RetireScene, and the
-    // xrefs prove the receiver: CGruntzMgr::RunModalDialog calls it as `mov ecx,[esi+0x2c];
-    // call 0x1ec9` (CGruntzMgr+0x2c IS m_curState, a CState*), and CPlay::Vslot23 calls it on
-    // its own `this`. Direct rel32 => non-virtual. Definition in Attract.cpp (the unit that
-    // owns the 0xfa.. band).
-    void Present(i32 pct); // 0x0faec0
-    // (the ex FxResource* fxRes() reinterpret view is DISSOLVED: its +0x04 m_worker
-    // and +0x1c m_gate are m_world's own m_drawTarget/m_ptrColl.)
-    // (LoadGameAssetNamespaces is the slot-1 VIRTUAL above; the leaf loaders chain
-    // the default body with the qualified CState:: spelling - direct rel32.)
-    // The title cluster's typed views of the shared CState slots (m_c is the menu
-    // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
-    // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).
+    i32 RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay);
+
+    void Present(i32 pct);
+
     CDDrawSurfaceMgr* menuRoot() {
         return m_world;
     }
@@ -217,15 +145,6 @@ public:
         return (m_2c);
     }
 
-    // Register/unregister a "GRUNTZ_<name>" asset namespace across the state's three
-    // resource registries (m_c->m_imageRegistry/m_28/m_animRegistry) from the m_gruntzBank symbol
-    // tree (0xdca70). Non-virtual __thiscall on the base state; every caller reaches it
-    // on the active game-state (g_gameReg->m_curState, a CState* -> its concrete CPlay).
-    // (Ex the CNamespaceLoader fake-view facet - RTTI proves CState is a root and CPlay's
-    // only base is CState, so that "class" was this method wearing a view owner.)
-    // finishGate is the multiplayer state to poke between namespace installs: the body
-    // calls CMulti::AckJoinFailure on it (0x35e4, ecx = the arg), and every non-multi
-    // caller passes 0. Typed, not an i32 handle.
     i32 BuildAssetNamespacePrefixes(
         const CString& name,
         i32 mode,
@@ -233,114 +152,59 @@ public:
         class CMulti* finishGate
     );
 
-    // --- scalar members, at the offsets CState::CState pins ---
-    // +0x04  owner back-ptr == the game-manager singleton (*g_gameReg). PROVEN one
-    // object: m_4->m_c is the SAME field as g_gameReg->m_c (the active-selection gate),
-    // m_4->m_48 the same sound bank, m_4->m_8c..m_98 the same live video mode. The
-    // (the CGMOwner facet-view of m_4 is DISSOLVED - credits/menu reach the real CGruntzMgr).
     CGruntzMgr* m_mgr;
-    // +0x08  the level/rez symbol parser (ResolvePath @0x13c030; == mgr->m_symParser,
-    // cached by LoadGameAssetNamespaces). Ex `CBankMgr*` - a shell type every consumer
-    // bridged with a ((CSymParser*)m_8) cast; typed for real, the casts are gone.
+
     CSymParser* m_symParser;
-    // +0x0c  render/resource context. VERIFIED (matcher-2, sema): the SAME object as
-    // CGameRegistry::m_world (+0x30) == the canonical CDDrawSurfaceMgr - non-polymorphic;
-    // its +0x04 sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0
-    // @0x158ee0) and its +0x10 registrar is CDDrawWorkerRegistry (Install/LoadTree +0x48,
-    // LoadNamespace +0x4c). The state activators (CBootyState/CMultiBootyState/CImageState
-    // slot-8 loaders) reach it through this one holder. Its render sub-object facets
-    // live in <Gruntz/View.h>.
-    CDDrawSurfaceMgr* m_world;  // +0x0c
-    CFaderMgr* m_faderMgr;      // +0x10  fader mgr (RetireScene's Add/Remove target; the
-                                //         loader caches mgr->m_40 here - the +0x40 slot's
-                                //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
-    CDDSurface* m_blitSurface0; // +0x14  owned blit surface (ReleaseResources returns it
-                                //         to the m_c->m_ptrColl pool; ex-CGameModeBase typing)
-    CDDSurface* m_blitSurface1; // +0x18  owned blit surface (same pool)
-    i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
-    i32 m_levelType;  // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
-                      //         switches on it (4/5/8 land-death, 6 no-death) to pick the
-                      //         level death effect
-    // +0x24  the OUTGOING state's id: LoadGameAssetNamespaces stores its 3rd arg here,
-    // and CGruntzMgr::TransitionState passes `cur->Update()` for it; CCreditsState's
-    // `m_24 == 5` test therefore reads "we came from the MENU state" (case 5 of the
-    // TransitionState factory switch). (Renaming the member is the m_<hex> campaign's.)
+
+    CDDrawSurfaceMgr* m_world;
+    CFaderMgr* m_faderMgr;
+
+    CDDSurface* m_blitSurface0;
+
+    CDDSurface* m_blitSurface1;
+    i32 m_levelIndex;
+    i32 m_levelType;
+
     i32 m_24;
-    // +0x28  level asset bank; a Bute CSymTab (LookupSet == CSymTab::ResolvePath
-    // 0x13bae0), so every user reaches it as CSymTab* -> typed here (kills the casts).
-    // LoadGameAssetNamespaces stores the resolved "AREA%i" node here.
-    CSymTab* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
-    // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup
-    // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
-    // (splash) LoadGroup its "SOUNDZ" set; the attract path stashes its resolved
-    // TITLE state here. A 4-byte pointer slot.
-    CSymTab* m_2c; // +0x2c
-    // The cached asset source (m_2c) is a Bute CSymTab; one typed accessor for that
-    // facet so the state loaders drop the (CSymTab*)m_2c casts. <Bute/SymTab.h>.
+
+    CSymTab* m_levelBank;
+
+    CSymTab* m_2c;
+
     CSymTab* SymTab2c() {
         return (m_2c);
     }
-    CSymTab* m_gruntzBank; // +0x30  GRUNTZ asset bank (CSymTab; LoadImageBanks caches here)
-    CSymTab* m_gameBank;   // +0x34  GAME asset bank (CSymTab; GAME-namespace loaders' source)
-    i32 m_38;              // +0x38
-    i32 m_ready;           // +0x3c  active/ready gate (IsActive returns it)
-    i32 m_notifyLatch;     // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
-                           //         menu transition)
-    i32 m_44;              // +0x44  (LoadGameAssetNamespaces seeds -1; role unrecovered)
-    i32 m_48;              // +0x48  (LoadGameAssetNamespaces seeds -1; role unrecovered)
-    // +0x4c..+0x14b  the version-string buffer LoadGameAssetNamespaces sprintf's
-    // ("Alpha Version, Build %i, ..."); HeaderWrite/HeaderRead stream it raw as a
-    // 0x100 block.
-    char m_versionString[0x100];
-    i32 m_14c;         // +0x14c  (LoadGameAssetNamespaces clears; role unrecovered)
-    i32 m_cursorX;     // +0x150 live cursor X (ResetForMode GetCursorPos); BeginFrameClear arg
-    i32 m_cursorY;     // +0x154 live cursor Y
-    i32 m_snapOriginX; // +0x158 drag/select snap origin X
-    i32 m_snapOriginY; // +0x15c drag/select snap origin Y
-    // +0x160/+0x164: the two 64x64 scratch blit surfaces (LoadGameAssetNamespaces
-    // creates them via m_c->m_ptrColl->MakeAndAddB(0x40,0x40,...); ReleaseResources
-    // RemoveItemA's them back to the pool; StepInputA BltFast's the selected half).
-    // The old "axis value" reading was wrong. +0x168..+0x1a4 is the per-half
-    // src-RECT/edge block StepInputA feeds (four extents seeded 0x40 by the ctor
-    // - the 64x64 rect dims).
-    CDDSurface* m_scratchSurface0; // +0x160 first-half scratch surface
-    CDDSurface* m_scratchSurface1; // +0x164 second-half scratch surface
-    // +0x168..+0x1a4: the CURSOR SAVE-UNDER pair, two RECTs per half. `Src` is the
-    // region inside the 64x64 scratch surface (the ctor seeds {0,0,0x40,0x40} and
-    // CPlay::DrawCursorSaveUnder narrows right/bottom to the clipped cursor size);
-    // `Dst` is the screen rectangle that was saved - DrawCursorSaveUnder BltFast's the
-    // back buffer INTO the scratch through it, and the next frame's StepInputA blits
-    // the scratch back to Dst's top-left. (Ex four loose int blocks + a 2-dword `Edge`
-    // view of the Dst rects' first half - dissolved 2026-07-28: retail's 0xd0b30 writes
-    // all four dwords of each as left/right/top/bottom.)
-    RECT m_cursorSaveSrc0; // +0x168 (ctor {0,0,0x40,0x40})
-    RECT m_cursorSaveSrc1; // +0x178 (ctor {0,0,0x40,0x40})
-    RECT m_cursorSaveDst0; // +0x188
-    RECT m_cursorSaveDst1; // +0x198
-    // +0x1a8..+0x1b0: the StepInputA input latches. The slot-8 base body
-    // (InputVirtual @0xface0) seeds them (0/1/0) and HeaderWrite/HeaderRead
-    // serialize them, so they are CState fields, not CPlay's (which proved their
-    // roles): every leaf's first own member starts at +0x1b4.
-    i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
-    i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
-    i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
+    CSymTab* m_gruntzBank;
+    CSymTab* m_gameBank;
+    i32 m_38;
+    i32 m_ready;
+    i32 m_notifyLatch;
 
-    // BuildWarpStoneGlitterAnimation (0x19540) is a CMultiBootyState method (GameMode.h).
-    //
-    // LoadGruntEffectSprites (0x1a040), LevelMsgHudDriver (0x1a700) and FormatHudText
-    // (0x1af70) are CBootyState methods (proof on CBootyState in <Gruntz/GameMode.h>).
-    // None of them could ever have lived
-    // here: they touch [this+0x1d0], [this+0x264], [this+0x2c4] and write m_icons out to
-    // [this+0x31c], while CState is the base of the allocation-proven 0x1c0 CMenuState
-    // and is therefore <= 0x1c0. Their `this` comes from CBootyState's own vtable slot 1
-    // (0x18830, data-referenced at
-    // ??_7CBootyState@@6B@+0x4), which calls it with `mov ecx,esi`.
-    //
-    // BuildBootyWalkingGruntz (0x1b450) is a BzState method (BootyWalkAnim.cpp).
+    i32 m_44;
+    i32 m_48;
+
+    char m_versionString[0x100];
+    i32 m_14c;
+    i32 m_cursorX;
+    i32 m_cursorY;
+    i32 m_snapOriginX;
+    i32 m_snapOriginY;
+
+    CDDSurface* m_scratchSurface0;
+    CDDSurface* m_scratchSurface1;
+
+    RECT m_cursorSaveSrc0;
+    RECT m_cursorSaveSrc1;
+    RECT m_cursorSaveDst0;
+    RECT m_cursorSaveDst1;
+
+    i32 m_inputWarmup1;
+    i32 m_inputWarmup2;
+    i32 m_inputHalfSel;
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
-SIZE_UNKNOWN(); // local dtor-view (stamps ??_7CState in ~CMulti)
+SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 

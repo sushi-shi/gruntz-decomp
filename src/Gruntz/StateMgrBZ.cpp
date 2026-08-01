@@ -23,20 +23,14 @@ i32 StateMgrBZ::Init(DirectInputMgr2* src, i32 mode) {
 RVA(0x00038340, 0x46)
 void StateMgrBZ::Setup() {
     if (m_keyboard) {
-        m_keyboard->m_keyTable[0] = 0x10; // VK_SHIFT
-        m_keyboard->m_keyTable[1] = 0xd;  // VK_RETURN
-        m_keyboard->m_keyTable[2] = 0x20; // VK_SPACE
-        m_keyboard->m_keyTable[4] = 0x12; // VK_MENU
-        m_keyboard->m_keyTable[5] = 0x11; // VK_CONTROL
+        m_keyboard->m_keyTable[0] = 0x10;
+        m_keyboard->m_keyTable[1] = 0xd;
+        m_keyboard->m_keyTable[2] = 0x20;
+        m_keyboard->m_keyTable[4] = 0x12;
+        m_keyboard->m_keyTable[5] = 0x11;
     }
 }
 
-// ---------------------------------------------------------------------------
-// StateMgrBZ::Build (0x383b0; __thiscall, ret 8). Dense 9-way switch on the
-// control mode: wire up 0..3 device sources (and, for modes 6..8, register a
-// composite controller node) from the manager's device list. Returns 1 unless the
-// source is null.
-// @early-stop
 RVA(0x000383b0, 0x1c0)
 i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     if (src == 0) {
@@ -127,10 +121,6 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StateMgrBZ::Flush (0x385e0; __thiscall, ret 0). OR-fold the source devices'
-// packed current/edge key flags into m_18/m_1c, with a "suppress input" clear, and
-// snapshot into m_20.
 // @early-stop
 RVA(0x000385e0, 0x9f)
 i32 StateMgrBZ::Flush() {

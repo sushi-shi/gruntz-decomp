@@ -1,92 +1,71 @@
-// DDrawSubMgr.cpp - the 0x156cb0-0x1591c9 original TU (wave4-L dossier #15, block
-// G): the DDraw submgr worker-family obj - the CDDrawSubMgr base arg-ctor, the
-// family's dtor/IsReady/GetStateId quartets (registry-host, child-group-host,
-// leaf, leaf-scan tail bits), the CDDrawBlitParam cue-selector, the per-frame
-// sound trigger, the CDDrawSubMgrPages surface ops, and the CDrawSubWorker leaf.
-// Internally WOVEN (the #9 ~0x157a80/~0x1588f0 sub-splits are refuted); held at
-// the dossier-#9 boundaries 2/3 (0x156cb0/0x1591e0) - the keeper-argument LEANS
-// F==G (see dossier #15) but the escape (out-of-line tiny virtuals in a second
-// file) is unexcluded, so F and G stay two files.
-//
-// original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
-//
-// Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
 
-#include <DDrawMgr/DDrawSubMgr.h> // own extern surface
+
+#include <DDrawMgr/DDrawSubMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/ParseSource.h>     // canonical CParseSource - MUST precede the Leaf headers
-#include <Dsndmgr/DirectSoundMgr.h> // real DSound types (MatchSub GetFormat/SetPrimaryFormat)
+#include <Rez/FrameClock.h>
+#include <Gruntz/ParseSource.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundDevice.h>
-#include <Dsndmgr/SoundStream.h>      // the +0x2c held stream full def (base SoundDevice methods)
-#include <stdio.h>                    // sprintf (the %s%s%s path walkers)
-#include <stdlib.h>                   // abs (branchless cdq/xor/sub)
-#include <DDrawMgr/DDrawWorkerNode.h> // CDDrawWorkerBase/A/B (the list-spawned workers)
-#include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (hoisted; factories here)
-#include <DDrawMgr/DDrawWorkerMapSmall.h> // CDDrawWorkerMapSmall (hoisted; quartet here)
-#include <DDrawMgr/DDrawWorkerCache.h>    // CDDrawWorkerCache (dtor here)
-#include <DDrawMgr/DDrawPtrCollections.h> // the surface pool (CreateChildren children)
-#include <Io/FileMem.h>                   // CFileMem/CFileMemBase (the ctor/dtor pocket)
+#include <Dsndmgr/SoundStream.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <DDrawMgr/DDrawWorkerNode.h>
+#include <DDrawMgr/DDrawWorkerList.h>
+#include <DDrawMgr/DDrawWorkerMapSmall.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Io/FileMem.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniElement.h>
 #include <Wap32/Object.h>
 #include <rva.h>
-#include <Gruntz/StateId.h>  // StateId (GetStateId return type)
-#include <Utils/MapTyped.h>  // typed MFC map walks (the void*& pun at one seam)
-#include <Gruntz/Loadable.h> // CLoadable - the 9-slot loadable base (3-arg ctor def below)
-#include <Mfc.h>             // real MFC CMapStringToPtr / CString / POSITION
-#include <Bute/SymParser.h>  // CSymParser::GetRoot (ProbeWorkerKey's probe chain)
-#include <Bute/SymTab.h>     // CSymTab::FindSub
+#include <Gruntz/StateId.h>
+#include <Utils/MapTyped.h>
+#include <Gruntz/Loadable.h>
+#include <Mfc.h>
+#include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair
-#include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor
-#include <Gruntz/SerialArchive.h>      // the shared CFileMemBase stream
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CDDrawSurfaceMgr
-#include <Image/CImage.h> // CImage complete - PlaceFrame downcasts the CObArray band element
-#include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
-#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (the 3-map dtor-host twin)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (real polymorphic)
-#include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (the registry map values)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (the ANI catalog host)
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/SerialArchive.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Image/CImage.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (the m_ctx geometry chain)
-#include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
-#include <DDrawMgr/AniAdvance.h>      // CAniDesc / the anim cursor satellites
-#include <Gruntz/LeafCue.h>           // LeafCue::TriggerBlit (ex CAniBlitTrigger)
-#include <Wap32/WapObj.h>             // CWapObj : CObject
-#include <Gruntz/SoundState.h>        // ex Globals.h transitive
+#include <DDrawMgr/DDrawWorkerHost.h>
+#include <Gruntz/GameLevel.h>
+#include <DDrawMgr/AniAdvance.h>
+#include <Gruntz/LeafCue.h>
+#include <Wap32/WapObj.h>
+#include <Gruntz/SoundState.h>
 
-// The ctor 0x156cb0 stamps 0x5efc30 - CLoadable's OWN vtable - so CDDrawSubMgr IS
-// CLoadable under a second name (<Gruntz/Loadable.h> records the proof). The 3-arg
-// CLoadable base ctor is defined below at its retail RVA.
-// 0x155720 is CLoadable's ??_G scalar-deleting-dtor COMDAT copy (member-teardown ~ at
-// 0xd5d70, the CImage-band pool) - both are cl auto-emitted, byte-identical to
-// retail, and RVA_COMPGEN-bound as the REAL ??_GCLoadable/??1CLoadable in
-// DDrawWorkerRegistry.cpp.
-
-VTBL(CLoadable, 0x001efc30);            // ??_7CLoadable (the shared 9-slot loadable-base vtable)
-VTBL(CDDrawSubMgrLeaf, 0x001efc78);     // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
-VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7 (9-slot, LeafScanBase-derived)
-VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8
+VTBL(CLoadable, 0x001efc30);
+VTBL(CDDrawSubMgrLeaf, 0x001efc78);
+VTBL(CDDrawSubMgrLeafScan, 0x001efca0);
+VTBL(CDDrawWorkerMapSmall, 0x001efcc8);
 VTBL(CDDrawWorkerCache, 0x001efd00);
-VTBL(CDDrawWorkerRegistry, 0x001efd28); // ??_7CDDrawWorkerRegistry@@6B@ (23 slots)
-VTBL(CDDrawWorkerList, 0x001efd88);     // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
-VTBL(CDDrawChildGroup, 0x001efdc0);     // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
-VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
+VTBL(CDDrawWorkerRegistry, 0x001efd28);
+VTBL(CDDrawWorkerList, 0x001efd88);
+VTBL(CDDrawChildGroup, 0x001efdc0);
+VTBL(CDDrawSubMgrPages, 0x001efe08);
 VTBL(CFileMem, 0x001efe30);
 VTBL(CFileMemBase, 0x001efe68);
-VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
+VTBL(CDDrawWorkerA, 0x001efea0);
 VTBL(CDDrawWorkerB, 0x001efed0);
-VTBL(LeafCue, 0x001eff08); // ??_7LeafCue (9-slot CLoadable leaf; was g_leafElemVtbl)
+VTBL(LeafCue, 0x001eff08);
 DATA(0x001eff2c)
 float g_sndPanScale = 0.009999999776482582f;
 VTBL(CDDrawSurfacePair, 0x001eff30);
-VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
-VTBL(CDrawSubWorker, 0x001effa0);      // ??_7CDrawSubWorker (11-slot CLoadable leaf)
+VTBL(CDDrawSurfaceChildA, 0x001eff70);
+VTBL(CDrawSubWorker, 0x001effa0);
 
-// +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
     return p->m_10.GetCount();
 }
@@ -107,10 +86,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
         return 0;
     }
     LeafCue* p = static_cast<LeafCue*>(val);
-    // Throttle: when the interval has elapsed, restamp the clock and tail-return the
-    // (void-modeled) ConfigureItem result so the success epilogue falls through
-    // WITHOUT zeroing eax (retail's split-epilogue shape: the guard-failure paths
-    // return 0 via the trailing `xor eax,eax` exit, success is the fall-through).
+
     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
         p->m_14 = g_killCueClock;
         return p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -138,30 +114,15 @@ fail:
     return 0;
 }
 
-// [8] the class id (was a Ghidra recovery gap / declared-only).
 RVA(0x00156cf0, 0x6)
 i32 CDDrawWorkerMapSmall::GetClassId() {
-    return CLASSID_WORKERMAPSMALL; // 0x14
+    return CLASSID_WORKERMAPSMALL;
 }
 
-// ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): REAL virtual dtor. cl stamps
-// ??_7CDDrawWorkerMapSmall (masks 0x5efcc8) at entry, runs the map teardown
-// (DestroyAll, T obj), then destructs the three CMapStringToPtr members (reverse
-// decl order, descending trylevels) and the grand-base.
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// vptr-position wall (~94%, twin of CDDrawWorker::~CDDrawWorker): every
-// instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION (cl
-// stamps at base-dtor entry, retail sinks it after the field resets) + the
-// reloc-masked EH names. WALL RE-PROVEN for the clean polymorphic model
-// (eh-dtor-implicit-vptr-stamp-first.md sub-case 2 does NOT apply - three
-// destructible members intervene). Logic complete.
 RVA_COMPGEN(0x00156d00, 0x1e, ??_GCDDrawWorkerMapSmall@@UAEPAXI@Z)
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
     Unload();
-    // m_map3 / m_map2 / m_map1 (reverse decl order) and the grand-base
-    // auto-destruct here under the /GX member-teardown trylevels.
 }
 
 RVA(0x00156db0, 0x6)
@@ -179,45 +140,32 @@ i32 CDDrawWorkerRegistry::IsLoaded() {
 
 RVA(0x00156de0, 0x6)
 i32 CDDrawWorkerRegistry::GetClassId() {
-    return CLASSID_WORKERREGISTRY; // 0x12
+    return CLASSID_WORKERREGISTRY;
 }
 
-// ---------------------------------------------------------------------------
-// 0x156e10: ~CDDrawWorkerRegistry (real ??1; the compiler-generated ??_G at
-// 0x156df0 calls it). cl stamps ??_7CDDrawWorkerRegistry (0x5efd28) at entry, runs
-// Unload (slot 7, devirtualized in the dtor to the retail direct `call 0x154ac0`),
-// destructs the CMapStringToOb member (+0x10, retail `call 0x1b7ef2`), then the
-// inline ~CLoadable resets m_04/-1 m_08/0 m_0c/0 and the real CObject grand-base
-// sinks the 0x5e8cb4 re-stamp after them (the ~CDDrawWorker-proven model). /GX.
-// The cl-auto scalar-deleting destructor (vtable slot 1):
 RVA_COMPGEN(0x00156df0, 0x1e, ??_GCDDrawWorkerRegistry@@UAEPAXI@Z)
 RVA(0x00156e10, 0x68)
 CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
     Unload();
-    // implicit: ~m_10map (CMapStringToOb), then ~CLoadable (field resets + grand-base
-    // 0x5e8cb4 re-stamp) - reproduces retail's teardown order.
 }
 
 RVA(0x00156e80, 0x38)
 i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
     void* result = parser->GetRoot()->FindSub(key);
-    // retail: the InstallTree path is the fall-through, return 0 out-of-line at the tail.
+
     if (result != 0) {
-        return InstallTree(result, g_emptyString, "_"); // slot-18 self-dispatch
+        return InstallTree(result, g_emptyString, "_");
     }
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x156ec0: Lookup `key` in the map; if found, RemoveKey it and run the value's
-// scalar-deleting destructor (vtbl +0x4, arg 1).
 // @early-stop
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
     if (m_10map.Lookup(key, val)) {
         m_10map.RemoveKey(key);
-        delete (static_cast<CDDrawWorker*>(val)); // the map values ARE the keyed workers
+        delete (static_cast<CDDrawWorker*>(val));
     }
 }
 
@@ -236,14 +184,13 @@ fail:
 
 RVA(0x00156f20, 0x6)
 i32 CDDrawWorkerList::GetClassId() {
-    return CLASSID_WORKERLIST; // 0x11
+    return CLASSID_WORKERLIST;
 }
 
 RVA_COMPGEN(0x00156f30, 0x1e, ??_GCDDrawWorkerList@@UAEPAXI@Z)
 RVA(0x00156f50, 0x68)
 CDDrawWorkerList::~CDDrawWorkerList() {
     Unload();
-    // implicit: ~m_workers (CObList) then ~CLoadable (field resets + base restamp).
 }
 
 RVA(0x00156fc0, 0x6)
@@ -267,23 +214,9 @@ void* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
 RVA(0x00157080, 0x19)
 i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
     m_refCount = 2;
-    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y);
 }
 
-// ~CDDrawWorkerA (0x1570d0; ??_G wrapper 0x1570b0): poison the timing/marker
-// fields to their sentinels (the m_20/m_38 pair reset THREE times, via volatile
-// lvalues so cl keeps all three), null the header; retail then INLINES the whole
-// ~CResolveNode/~CLoadable chain down to the single CObject grand-base stamp.
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// (A)-form base-dtor wall (~59%, twin of ~CDDrawWorkerB): every poison/reset
-// store matches; the residual is (1) a tail `jmp ??1CResolveNode` where retail
-// inlined the base teardown (our ~CResolveNode is deliberately OUT-OF-LINE at
-// 0x154a50 - see ResolveNode.h; an extern base dtor cannot be inlined here), and
-// (2) the entry ??_7CDDrawWorkerA stamp the tail call keeps alive (retail's died
-// into the final CObject stamp). Fix = the family-wide inline/(B)-form dtor flip,
-// deferred with CLoadable's. Pre-rebase this was ~94% on a fake CObject base;
-// the CResolveNode truth is worth the drop (factories/Vfuncs all EXACT).
 RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawWorkerA@@UAEPAXI@Z)
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
@@ -299,14 +232,14 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     *pLo = -1;
     m_id = -1;
     m_flags = 0;
-    m_ownerCtx = 0; // the owner-ctx handle
+    m_ownerCtx = 0;
 }
 
 RVA(0x00157110, 0x20)
 i32 CDDrawWorkerA::Vfunc2C(i32 x, i32 y, i32 frame) {
     m_78b = static_cast<char>(frame);
     m_refCount = 2;
-    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y);
 }
 
 RVA(0x00157150, 0xa5)
@@ -339,15 +272,9 @@ i32 CDDrawWorkerBase::IsLoaded() {
 
 RVA(0x00157210, 0x6)
 i32 CDDrawWorkerBase::GetClassId() {
-    return CLASSID_WORKERNODE; // 8
+    return CLASSID_WORKERNODE;
 }
 
-// ~CDDrawWorkerB (0x157240; ??_G wrapper 0x157220). Mirror of ~CDDrawWorkerA -
-// the int-frame worker's m_78 is a DWORD here (byte in A).
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// (A)-form base-dtor wall (~59%): same residual as ~CDDrawWorkerA (tail
-// `jmp ??1CResolveNode` vs retail's inlined base teardown + the kept entry stamp).
 RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawWorkerB@@UAEPAXI@Z)
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
@@ -363,42 +290,40 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     *pLo = -1;
     m_id = -1;
     m_flags = 0;
-    m_ownerCtx = 0; // the owner-ctx handle
+    m_ownerCtx = 0;
 }
 
 RVA(0x00157280, 0x30)
 i32 CDDrawWorkerB::PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex) {
     Helper(key, frameIndex);
     m_refCount = 2;
-    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y);
 }
 
 RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
     CImage* frame;
     if (frameIndex >= src->m_minIndex && frameIndex <= src->m_maxIndex) {
-        // CObArray operator[] inline = m_pData[frameIndex]; CImage : CWapObj : CObject,
-        // so the band element downcasts (no reinterpret).
+
         frame = static_cast<CImage*>(src->m_items[frameIndex]);
     } else {
         frame = 0;
     }
     m_frame = frame;
     m_refCount = 2;
-    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y);
 }
 
 RVA(0x001572f0, 0x20)
 i32 CDDrawWorkerB::Vfunc2C(i32 x, i32 y, i32 frame) {
     m_78 = frame;
     m_refCount = 2;
-    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y);
 }
 
 RVA(0x00157310, 0x1a)
 void CDDrawWorkerBase::Unload() {
-    // void per the CLoadable slot; retail's eax residue is the INT_MIN the
-    // stores materialize.
+
     i32 v = static_cast<i32>(0x80000000);
     m_78 = 0;
     m_screenX = v;
@@ -462,39 +387,19 @@ fail:
     return 0;
 }
 
-// 0x1574b0 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
 RVA_COMPGEN(0x001574b0, 0x1e, ??_GCDDrawSubMgrPages@@UAEPAXI@Z)
 
 RVA(0x001574d0, 0x5b)
 CDDrawSubMgrPages::~CDDrawSubMgrPages() {
     Unload();
-    // implicit ~CLoadable (the three header resets) -> ~CObject grand-base re-stamp.
 }
 
-// 0x157550 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
 RVA_COMPGEN(0x00157550, 0x1e, ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z)
 
-// ---------------------------------------------------------------------------
-// 0x157570: the (non-deleting) destructor. Now a real virtual dtor: cl stamps
-// ??_7CDDrawSubMgrLeafScan (masks g_leafScanVtbl @0x5efca0) at entry, runs the VM18
-// cleanup (clears the map + zeroes +0x2c), the +0x10 map's own destructor, then the
-// LeafScanBase grand-base teardown (field resets + implicit ??_7-base re-stamp masking
-// 0x5e8cb4). No manual `m_vptr = &g_*Vtbl`. /GX EH frame (VM18 / map dtor may throw).
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// vptr-position wall (~95%, twin of CDDrawWorker/CDDrawSubMgrLeaf): every code
-// byte matches retail EXCEPT the grand-base re-stamp position (cl emits it before the
-// m_04/m_08/m_0c resets; the implicit base transition forces stamp-first, retail sinks
-// it after) + the reloc-masked EH unwind / VM18 / ~CMapStringToPtr / vtable symbol
-// names. objdiff-reloc-scoring.
 RVA(0x00157570, 0x68)
 CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
-    // Unload (0x157ae0) is slot [7] of this class's own vtable; a virtual call on
-    // `this` inside the dtor devirtualizes to the retail direct rel32, so no view
-    // cast is needed.
+
     Unload();
-    // m_10 (CMapStringToPtr) member dtor auto-fires here, then the ~CLoadable base
-    // destructor resets +0x04/+0x08/+0x0c and restamps the grand-base vtable.
 }
 
 RVA(0x001575e0, 0x16)
@@ -507,26 +412,13 @@ i32 CDDrawChildGroup::IsLoaded() {
 
 RVA(0x00157600, 0x6)
 i32 CDDrawChildGroup::GetClassId() {
-    return CLASSID_CHILDGROUP; // 0x10
+    return CLASSID_CHILDGROUP;
 }
 
-// ---------------------------------------------------------------------------
-// 0x157630: ~CDDrawChildGroup (real ??1; the cl-generated ??_G @0x157610 calls it).
-// cl stamps ??_7CDDrawChildGroup (0x5efdc0) at entry, runs Unload (slot 7,
-// devirtualized in the dtor to retail's direct `call 0x1591e0`), resets the three
-// header words, then the members auto-destruct in reverse decl order under the /GX
-// trylevels - ~m_map48/~m_map2c (CMapPtrToPtr @0x1b8665), ~m_list (CObList
-// @0x1b5a2b) - and ~CObject folds the grand-base re-stamp last.
-// (Reset-position residual RESOLVED by the : CLoadable re-base 2026-07-22: the
-// three header resets now come from ~CLoadable AFTER the member teardown -
-// retail.s exact order.)
-// The cl-auto scalar-deleting destructor (vtable slot 1):
 RVA_COMPGEN(0x00157610, 0x1e, ??_GCDDrawChildGroup@@UAEPAXI@Z)
 RVA(0x00157630, 0x82)
 CDDrawChildGroup::~CDDrawChildGroup() {
     Unload();
-    // implicit: ~m_map48, ~m_map2c, ~m_list, then ~CLoadable (the three header
-    // resets + grand-base re-stamp) - retail.s reset-after-members order.
 }
 
 RVA(0x001576c0, 0x6)
@@ -534,27 +426,11 @@ i32 CDDrawChildGroup::IsReady() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerCache dtor (0x157720; ??_G pin 0x157700).
-// Scalar-deleting destructor: run the real member-teardown ~, then operator
-// delete this if the low flag bit is set. RVA_COMPGEN pins the ??_G mangling.
 RVA_COMPGEN(0x00157700, 0x1e, ??_GCDDrawWorkerCache@@UAEPAXI@Z)
 
-// The real member-teardown destructor (0x157720, /GX): cl stamps
-// ??_7CDDrawWorkerCache (masks 0x5efd00) at entry, runs the class's own slot-7
-// DestroyAll (@0x165210, devirtualized in the dtor to `call 0x165210` - the
-// binary-proven single call site), then destructs the CMapStringToPtr member and
-// the grand-base. /GX member-teardown frame from the destructible map.
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CDDrawWorker): every
-// instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION + the
-// reloc-masked EH-state/teardown/vtable symbol names. Logic complete.
 RVA(0x00157720, 0x68)
 CDDrawWorkerCache::~CDDrawWorkerCache() {
     Unload();
-    // implicit: ~m_10 (CMapStringToPtr), then the grand-base field resets + the
-    // ??_7 re-stamp - reproduces retail's teardown order.
 }
 
 RVA(0x001577a0, 0x16)
@@ -570,26 +446,12 @@ fail:
     return 0;
 }
 
-// Scalar-deleting destructor: COMPILER-GENERATED from the class's virtual ~.
 RVA_COMPGEN(0x001577c0, 0x1e, ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z)
 
-// ---------------------------------------------------------------------------
-// 0x1577e0 - ~CDDrawSubMgrLeaf (real ??1 body; the ??_G at 0x1577c0 calls it):
-// real polymorphic teardown. cl stamps ??_7CDDrawSubMgrLeaf (masks 0x5efc78) at
-// entry, runs the cleanup virtual, then the embedded map dtor and the
-// CDDrawSubMgrGrandBase grand-base dtor. /GX EH frame.
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// vptr-position wall + reloc-masked EH-state push (~95%): byte-identical to retail
-// EXCEPT the grand-base re-stamp position + the entry `push <ehfuncinfo>` reloc
-// operand. docs/patterns/eh-state-numbering-base.md.
 RVA(0x001577e0, 0x68)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
-    // retail's dtor calls the non-virtual map teardown (0x152720) DIRECTLY, not the
-    // virtual Cleanup slot (0x152650, which merely tail-calls it) - bind to 0x152720.
+
     FreeAll();
-    // implicit: ~m_10 (CMapStringToPtr), then ~CDDrawSubMgrGrandBase (resets the three
-    // header fields + restamps the base vtable) - reproduces retail's teardown order.
 }
 
 RVA(0x00157850, 0x54)
@@ -599,7 +461,6 @@ CFileMemBase::CFileMemBase() {
     m_name.Empty();
 }
 
-// ~CFileMemBase (0x1578b0) - base teardown.
 // @early-stop
 RVA(0x001578b0, 0x51)
 CFileMemBase::~CFileMemBase() {
@@ -608,7 +469,7 @@ CFileMemBase::~CFileMemBase() {
 
 RVA(0x00157910, 0x5)
 void CFileMemBase::Close() {
-    Reset(); // retail: a bare `jmp [vptr+0xc]` self-dispatch of slot 3
+    Reset();
 }
 
 RVA(0x00157920, 0x20)
@@ -616,14 +477,6 @@ CString CFileMemBase::GetName() {
     return m_name;
 }
 
-// CFileMem::~CFileMem (0x157980): cl stamps the derived vtable at entry, run
-// Reset() (derived), destruct the inner CFile, call the base Reset(), then cl
-// folds the base vtable restamp + the CString member dtor on unwind.
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// EH-dtor scheduling wall (~59%): the teardown logic is byte-faithful, but the
-// virtual-dtor auto vtable restamps + the /GX trylevel store sequencing + the
-// member-dtor dispatch differ from retail's manual sequence.
 RVA(0x00157940, 0x4)
 i32 CFileMemBase::WantRead() {
     return m_mode;
@@ -635,13 +488,6 @@ i32 CFileMemBase::WantCreate() {
 }
 
 RVA_COMPGEN(0x00157960, 0x1e, ??_GCFileMemBase@@UAEPAXI@Z)
-RVA(0x00157980, 0x74)
-CFileMem::~CFileMem() {
-    Reset();
-    m_file.~CFile();
-    CFileMemBase::Reset();
-}
-
 RVA(0x00157a00, 0x4)
 i32 CFileMem::GetLength() {
     return m_length;
@@ -652,7 +498,6 @@ i32 CFileMem::GetOffset() {
     return m_offset;
 }
 
-RVA_COMPGEN(0x00157a20, 0x1e, ??_GCFileMem@@UAEPAXI@Z)
 RVA(0x00157a40, 0x10)
 void CFileMemBase::Reset() {
     m_4 = 0;
@@ -671,31 +516,9 @@ void CFileMem::Reset() {
 
 RVA(0x00157a70, 0x5)
 void CFileMem::Close() {
-    Reset(); // retail: the same `jmp [vptr+0xc]` slot-3 self-dispatch as the base
+    Reset();
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawSubMgrLeafScan::BindSoundStream (0x157a80) - IDENTITY SETTLED 2026-07-27.
-// It was declared CAniAdvanceCursor::SelectCue on a guess; the ONE retail caller
-// names the receiver outright:
-//     CDDrawSurfaceMgr::Init @0x155dee   mov ecx,[esi+0x28] / push 1 / call 0x157a80
-// and [esi+0x28] is the 0x38-byte object Init itself mints two blocks earlier,
-// stamping `mov [edi],0x5efca0` == ??_7CDDrawSubMgrLeafScan and `mov [edi+0xc],esi`
-// (its CLoadable m_ownerCtx = the CDDrawSurfaceMgr). So `this` is m_soundRegistry,
-// the owner IS the surface manager, and every offset lands on a canonical member:
-//   this+0x0c -> CLoadable::m_ownerCtx  -> OwnerMgr()
-//   mgr +0x20 -> CDDrawSurfaceMgr::m_soundStream (Init stores the 0x9c-byte
-//                object built by SoundStream::SoundStream @0x1376d0 there)
-//   snd +0x78 -> SoundDevice::m_initialized (inside the 0x94-byte device base)
-//   this+0x2c -> m_2c, already typed SoundStream* (the "held DSound stream")
-//   this+0x30 -> m_emitGate  (nonzero = suppress cue emission)
-// CAniAdvanceCursor merely shares the CLoadable header, which is why the wrong
-// class compiled and matched. The neighbouring Unload @0x157ae0 clears the SAME
-// +0x2c and calls it "the held stream" - it is this class's slot 7.
-// Role: (re)bind the owner's stream after the device came up or was torn down.
-// force=0 = only adopt a live, initialised stream; force=1 (Init's call) = adopt
-// whatever is there, recording "no stream" by opening the emit gate.
-// ---------------------------------------------------------------------------
 RVA(0x00157a80, 0x51)
 i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
@@ -712,7 +535,7 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
         }
     }
     if (stream == 0) {
-        m_emitGate = 1; // no device -> silent mode: RefreshAsset/Fire stop emitting
+        m_emitGate = 1;
     } else {
         m_emitGate = 0;
     }
@@ -722,18 +545,11 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
 }
 
 RVA(0x00157ae0, 0x11)
-void CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; clears the map)
+void CDDrawSubMgrLeafScan::Unload() {
     ClearMap();
-    m_soundStream = 0; // clear the held stream (+0x2c; retail movl [esi+0x2c],0)
+    m_soundStream = 0;
 }
 
-// ===========================================================================
-// CDDrawSubMgrLeafScan::RemoveByValue (0x157b00): remove one map entry by its value
-// (ex the CSoundResMap/CSoundRes view pair - the "sound registry" IS the leaf-scan
-// class and the values ARE LeafCue elements, same as ClearMap below)
-// pointer and delete the object (position-homed: the leaf/ani catalog IS the
-// sound-res map neighborhood - dossier #15).
-// ===========================================================================
 // @early-stop
 RVA(0x00157b00, 0xb2)
 void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
@@ -753,12 +569,6 @@ void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x157bc0: iterate every entry of the name-keyed map via GetNextAssoc, destroying
-// each value through its scalar-deleting destructor (vtbl +0x4 arg 1), then
-// RemoveAll. /GX EH frame for the local CString key.
-// VOID, proven: retail's epilogue never loads eax, and push esi/pop esi are
-// shrink-wrapped INSIDE the `if (pos)` block (see the twin FreeAll 0x152720).
 RVA(0x00157bc0, 0xa2)
 void CDDrawSubMgrLeafScan::ClearMap() {
     POSITION pos = m_10.GetStartPosition();
@@ -768,7 +578,7 @@ void CDDrawSubMgrLeafScan::ClearMap() {
         do {
             m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete (static_cast<LeafCue*>(val)); // the cache values ARE the LeafCue elements
+                delete (static_cast<LeafCue*>(val));
             }
         } while (pos != 0);
     }
@@ -797,18 +607,6 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
     return n;
 }
 
-// ---------------------------------------------------------------------------
-// 0x157d70: the 0x1c-byte cache-element factory. While not loading (m_30==0),
-// allocate the element, stamp its vtable + seed it from the map count (m_10's
-// m_nCount at this+0x1c) and the handle (this+0x0c), then run its Configure keyed
-// by `arg2`. On Configure failure, destroy the element via its scalar dtor and
-// return 0; on success link it into the map under `key` and stamp the redraw arg
-// (this+0x34). 2 stack args (ret 8). Returns the element (or 0).
-// EXACT. The parked "register-naming coin-flip" note was MIS-DIAGNOSED: the ecx/edx seed
-// reads had already come right, and the real residual was the LeafCue vptr stamp landing
-// 1st where retail has it 4th. LeafCue's ctor now DELEGATES the CLoadable header triple
-// (m_id/m_flags/m_ownerCtx) instead of spelling those three stores in its own body, so cl
-// emits the stamp between the base ctor and the derived member inits - retail's order.
 RVA(0x00157d70, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
     if (m_emitGate != 0) {
@@ -819,22 +617,14 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
         return 0;
     }
     if (e->Configure(static_cast<CParseSource*>(src)) == 0) {
-        delete e; // virtual scalar-deleting dtor (vtbl[1](1))
+        delete e;
         return 0;
     }
     m_10[key] = e;
-    e->m_18 = m_34; // +0x18 = redraw arg
+    e->m_18 = m_34;
     return e;
 }
 
-// ---------------------------------------------------------------------------
-// 0x157e00: the second cache-element factory. Byte-for-byte twin of
-// CreateEntry except the element configure goes through the file-path
-// LoadSoundB (0x158720) instead of the parsed Configure (0x158760): allocate +
-// seed the element from the map count (this+0x1c) and handle (this+0x0c), run
-// Configure2 keyed by `src`; on failure scalar-delete + return 0, on success
-// link into the map under `key` + stamp the redraw arg (this+0x34). 2 args (ret 8).
-// EXACT - same LeafCue base-ctor delegation as CreateEntry (see the note there).
 RVA(0x00157e00, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* src) {
     if (m_emitGate != 0) {
@@ -845,11 +635,11 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* src) {
         return 0;
     }
     if (e->LoadSoundB(src) == 0) {
-        delete e; // virtual scalar-deleting dtor (vtbl[1](1))
+        delete e;
         return 0;
     }
     m_10[key] = e;
-    e->m_18 = m_34; // +0x18 = redraw arg
+    e->m_18 = m_34;
     return e;
 }
 
@@ -891,9 +681,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
         count += ScanTree(node, buf, suffix);
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
-    // `file` stays void*: the outer leaf-table record has its next-link at +0x04 (NextSym)
-    // and its entry chain at +0x24 (NextSym2) - neither offset is CParseSource's, so this
-    // record's class is NOT proven here. Left honest rather than guessed.
+
     void* file = tree->FirstSym();
     if (file != 0) {
         do {
@@ -922,11 +710,6 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
     return count;
 }
 
-// ---------------------------------------------------------------------------
-// 0x1580b0: sum each matching entry's count. While not loading (m_30==0), walk
-// the map via GetNextAssoc; for each present value, when `str` is null/empty add
-// its count unconditionally, else add it only when the key strncmp-matches `str`
-// over strlen(str). Returns the accumulated count. /GX EH frame for the local key.
 // @early-stop
 RVA(0x001580b0, 0xf6)
 i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
@@ -1029,8 +812,7 @@ i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
     if (val == 0) {
         return 0;
     }
-    // Retail reads val->m_10 only to null-check it, then passes `val` itself to
-    // MatchSub (whose arg1->m_10 reaches the same held buffer).
+
     if (val->m_10 == 0) {
         return 0;
     }
@@ -1045,8 +827,7 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
     if (m_soundStream == 0) {
         return 0;
     }
-    // ONE WAVEFORMATEX (0x12 = 18 bytes): read the cue's format, then hand that same
-    // buffer to the primary buffer. Retail passes esp+0x4 to both calls.
+
     char fmt[0x12];
     if (cue->m_10->GetFormat(fmt, 0x12, 0) == 0) {
         return 0;
@@ -1080,19 +861,10 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
     return key;
 }
 
-// ---------------------------------------------------------------------------
-// 0x158680: ~LeafCue (the non-deleting destructor). cl auto-stamps ??_7LeafCue at
-// entry, runs Unload (slot 7, devirtualized in the dtor to retail's direct
-// `call 0x1587c0`), then the inline ~CLoadable resets the header words and the
-// real CObject grand-base sinks the 0x5e8cb4 re-stamp after them. /GX EH frame --
-// Unload runs while the base subobject is still live, so its teardown is unwind-
-// protected (the half-destructed-element cleanup edge).
-// The cl-auto scalar-deleting destructor (vtable slot 1):
 RVA_COMPGEN(0x00158660, 0x1e, ??_GLeafCue@@UAEPAXI@Z)
 RVA(0x00158680, 0x5b)
 LeafCue::~LeafCue() {
     Unload();
-    // implicit: ~CLoadable (m_04/-1 m_08/0 m_0c/0) + the grand-base re-stamp.
 }
 
 RVA(0x001586e0, 0x34)
@@ -1115,11 +887,6 @@ i32 LeafCue::LoadSoundB(void* src) {
     return m_10 != 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x158760: LeafCue::Configure. Parse the draw-source for its RIFF/WAVE
-// blob; if the parse failed, fail. Otherwise, when the owner's SoundDevice is up,
-// acquire a buffer for the blob into m_10. EndParse always runs; returns whether a
-// buffer was acquired (0 when the device is down). 1 stack arg (ret 4).
 // @early-stop
 RVA(0x00158760, 0x59)
 i32 LeafCue::Configure(CParseSource* src) {
@@ -1139,13 +906,6 @@ i32 LeafCue::Configure(CParseSource* src) {
     return ok;
 }
 
-// ---------------------------------------------------------------------------
-// 0x1587c0: LeafCue::Unload (vtable slot 7 - the CLoadable-scheme release hook; the
-// ex "Release_1587c0"). When a buffer is held and the owner's SoundDevice is still
-// up, remove the buffer through the device (reaps voices + releases + unlinks +
-// scalar-deletes), then clear the held pointer. VOID per the CLoadable slot -
-// the old i32 model was the documented "return-carrier residual" wall (~76%):
-// spelling `return r` forced edi homing + mov eax,edi that retail never had.
 RVA(0x001587c0, 0x23)
 void LeafCue::Unload() {
     if (m_10 != 0) {
@@ -1157,17 +917,6 @@ void LeafCue::Unload() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x1587f0: per-frame sound-cue trigger. Defaults the (center,range1,range2)
-// triple from the geometry context when non-positive, clamps the signed offset
-// (pos-center) to +/-min(range1,range2), scales it to a [-100,100] pan, derives
-// the volume, and hands both to the +0x10 sound player. __thiscall, 4 args
-// (ret 0x10). No-op (0) when sound is disabled.
-// EXACT. The old "no source lever picks ebp for `this`" note was wrong on all three
-// counts: the clamp writes back into the OFFSET variable (a separate `pan` costs a
-// mov per in-range arm), the negative arm uses abs() not a negate, and the volume
-// level is abs(neutral) - an opaque int with a memory home, not a folded literal.
-// Fixing those three made cl choose retail's allocation on its own.
 RVA(0x001587f0, 0xf1)
 i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     if (g_sndEnabled == 0) {
@@ -1182,35 +931,23 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     if (range2 <= 0) {
         range2 = OwnerMgr()->m_drawTarget->m_frontPair->m_width / 3;
     }
-    // The clamp writes back into the OFFSET, it is not a second variable: retail
-    // keeps the result in the register the offset already occupies (ecx), so the
-    // in-range case needs no move at all and simply falls through to the join.
-    // A separate `pan` costs a `mov` per in-range arm and rotates the allocation.
+
     i32 pan = pos - center;
     if (pan >= 0) {
-        // The OUT-of-range test is the `if` (retail `cmp ecx,edi; jge <clamp>;
-        // cmp ecx,esi; jl <join>`), so the clamp body owns the fall-through.
+
         if (pan >= range1 || pan >= range2) {
-            // Same min() spelling as the negative arm: retail's `cmp edi,esi; jge
-            // <range2>` leaves the range1 assignment as the fall-through, which is
-            // `range1 < range2 ? range1 : range2`.
+
             pan = range1 < range2 ? range1 : range2;
         }
     } else {
-        // abs(), not a plain negate: retail spells the branchless `cdq; xor; sub`
-        // here even though the offset is known negative (`-x` gives `neg`).
+
         i32 ad = abs(pan);
         if (ad >= range1 || ad >= range2) {
             pan = -(range1 < range2 ? range1 : range2);
         }
     }
     i32 vol = (pan * 100) / range2;
-    // retail: `mov eax,0x64; cdq; xor eax,edx; sub eax,edx` - abs() of the neutral
-    // (full) level. MSVC5's abs intrinsic does NOT constant-fold, so the level stays
-    // an opaque runtime int with a memory home and the float path loads it with
-    // `fild [slot]`; a plain `100` folds into an `fmul <float const>` instead.
-    // The scaled value is an OVERWRITE inside `!= neutral` (retail `cmp ecx,0x64;
-    // je <join>` leaves the float path as the fall-through), not an if/else.
+
     i32 vscale = abs(SND_CUE_NEUTRAL);
     if (g_sndCueTag != SND_CUE_NEUTRAL) {
         vscale = static_cast<i32>(vscale * (g_sndCueTag * g_sndPanScale));
@@ -1218,19 +955,15 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     return m_10->ConfigureItem(vscale, vol, 0, 0);
 }
 
-// slot 9 (CreateChildren, 0x1588f0): build the three owned children then run
-// their per-stage init; on any failure stamp the root's m_lastError
-// (0x7d1/0x7d2/0x7d3 if not already set) and return 0. /GX EH frame.
 // @early-stop
 RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, i32 bpp, i32 flags) {
-    // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
-    // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
+
     m_frontPair = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
     m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
 
-    if (m_frontPair->SetGeometry(w, h, bpp) == 0) { // slot-9 dispatch [vtbl+0x24]
+    if (m_frontPair->SetGeometry(w, h, bpp) == 0) {
         if (OwnerMgr()->m_lastError == 0) {
             OwnerMgr()->m_lastError = 0x7d1;
         }
@@ -1270,7 +1003,7 @@ void CDDrawSubMgrPages::Unload() {
 }
 
 RVA(0x00158b10, 0x2c)
-i32 CDDrawSubMgrPages::ResolvePageImage(CParseSource* src, i32 pageIndex) {
+i32 CDDrawSubMgrPages::ResolvePageImage(char* name, i32 pageIndex) {
     CDDrawSurfacePair* p;
     if (pageIndex == 2) {
         p = m_overlayPair;
@@ -1283,7 +1016,7 @@ i32 CDDrawSubMgrPages::ResolvePageImage(CParseSource* src, i32 pageIndex) {
             return 0;
         }
     }
-    return p->ResolveImage_163ee0(src);
+    return p->ResolveImage_163ee0(name);
 }
 
 RVA(0x00158b40, 0x2c)
@@ -1394,8 +1127,6 @@ void CDDrawSubMgrPages::ClearAllPages(u32 color) {
     }
 }
 
-// 0x158dc0: blt m_backPair's surface <- m_frontPair's surface; if the m_worker flag
-// bit1 is set, flip m_frontPair and re-blt.
 // @early-stop
 RVA(0x00158dc0, 0x7d)
 i32 CDDrawSubMgrPages::PresentBackPage() {
@@ -1432,8 +1163,6 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
     return hr2 == 0;
 }
 
-// 0x158e40: if m_overlayPair->IsLoaded(): blt m_overlayPair's surface <-
-// m_frontPair's surface, return (==0).
 // @early-stop
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
@@ -1516,19 +1245,9 @@ i32 CDrawSubWorker::GetClassId() {
 }
 
 RVA_COMPGEN(0x00158f90, 0x1e, ??_GCDrawSubWorker@@UAEPAXI@Z)
-// The inline ~CDrawSubWorker's linker-kept out-of-line COMDAT copy + its
-// cl-generated scalar-deleting dtor (vtable slot 1):
+
 RVA_COMPGEN(0x00158fb0, 0x19, ??1CDrawSubWorker@@UAE@XZ)
 
-// 0x158fd0 (slot 9): SetGeometry - cache the {w,h,bpp} pixel geometry and a
-// {0,0,w,h} src rect. ONE body, CDrawSubWorker's own: CDDrawSurfacePair INHERITS
-// it (both vtables' slot 9 hold this RVA - no ICF in MSVC5, so a shared slot
-// target can only be an inherited method; the old "shared body (ICF)" note was
-// the mis-model the 2026-07-22 rebase dissolved).
-// EXACT. m_width is assigned BEFORE m_bpp: cl emits the two stores in source order
-// (`[ecx+0x10]` then `[ecx+0x18]`), and bpp-first put them the other way round. The
-// rest of the schedule (bpp materialized up-front into edi, h reused for +0x14/+0x28)
-// falls out on its own - it was never a "regalloc coin-flip".
 RVA(0x00158fd0, 0x41)
 i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
@@ -1586,10 +1305,7 @@ i32 CDDrawSurfacePair::GetClassId() {
 RVA_COMPGEN(0x001590d0, 0x1e, ??_GCDDrawSurfacePair@@UAEPAXI@Z)
 RVA(0x001590f0, 0x56)
 CDDrawSurfacePair::~CDDrawSurfacePair() {
-    Unload(); // devirtualized in the dtor (slot-7 body @0x163e20)
-    // ~CDrawSubWorker (m_width=0) + ~CLoadable (m_04=-1, m_flags=0, m_0c=0) fold
-    // the base-field resets here, then the grand-base re-stamp - the stores the
-    // old flat model spelled by hand.
+    Unload();
 }
 
 RVA(0x00159150, 0x24)
@@ -1600,11 +1316,6 @@ i32 CDDrawSurfaceChildA::IsLoaded() {
     return 0;
 }
 
-// 0x1591b0: ~CDDrawSurfaceChildA (the ex "WapObjBase::BaseInit" view; its ??_G
-// @0x159190 is 0x1eff70's slot 1). The out-of-line body is EMPTY - retail's four
-// resets (+0x04/-1, +0x10/0, +0x08/0, +0x0c/0) are the inlined ~CDrawSubWorker
-// (m_width = 0) + ~CLoadable (header resets), and the entry own-vptr stamp is
-// dead-stored into the final CObject grand-base re-stamp.
 RVA(0x00159180, 0x6)
 i32 CDDrawSurfaceChildA::GetClassId() {
     return CLASSID_SURFACECHILDA;
@@ -1612,10 +1323,8 @@ i32 CDDrawSurfaceChildA::GetClassId() {
 
 RVA_COMPGEN(0x00159190, 0x1e, ??_GCDDrawSurfaceChildA@@UAEPAXI@Z)
 RVA(0x001591b0, 0x19)
-CDDrawSurfaceChildA::~CDDrawSurfaceChildA() {
-    // empty: ~CDrawSubWorker + ~CLoadable fold the resets + the grand-base stamp.
-}
+CDDrawSurfaceChildA::~CDDrawSurfaceChildA() {}
 RVA(0x001591d0, 0x8)
 void CDDrawSurfaceChildA::Unload() {
-    m_width = 0; // retail zeroes the +0x10 width sentinel, NOT the +0x2c surface slot
+    m_width = 0;
 }

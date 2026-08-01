@@ -3,7 +3,7 @@
 
 enum PickupType {
     PICKUP_NONE = 0,
-    // Toolz (1..22, alphabetical)
+
     PICKUP_BOMB = 1,
     PICKUP_BOOMERANG = 2,
     PICKUP_BRICK = 3,
@@ -23,11 +23,11 @@ enum PickupType {
     PICKUP_TIMEBOMB = 17,
     PICKUP_TOOB = 18,
     PICKUP_WAND = 19,
-    PICKUP_WARPSTONE = 20, // = 0x14 (excluded from the weapon stat counter)
+    PICKUP_WARPSTONE = 20,
     PICKUP_WELDER = 21,
-    PICKUP_WINGZ = 22, // = 0x16
-    // Toyz (23..32, alphabetical) - the "vehicle grunt" kinds (0x17..0x20)
-    PICKUP_BABYWALKER = 23, // = 0x17
+    PICKUP_WINGZ = 22,
+
+    PICKUP_BABYWALKER = 23,
     PICKUP_BEACHBALL = 24,
     PICKUP_BIGWHEEL = 25,
     PICKUP_GOKART = 26,
@@ -36,19 +36,19 @@ enum PickupType {
     PICKUP_POGOSTICK = 29,
     PICKUP_SCROLL = 30,
     PICKUP_SQUEAKTOY = 31,
-    PICKUP_YOYO = 32, // = 0x20
-    // Colored brickz
-    PICKUP_REDBRICK = 0x23,   // = 35
-    PICKUP_BLUEBRICK = 0x24,  // = 36
-    PICKUP_GOLDBRICK = 0x25,  // = 37
-    PICKUP_BLACKBRICK = 0x26, // = 38
-    // Megaphone (announces a unit-type count via the inner switch)
+    PICKUP_YOYO = 32,
+
+    PICKUP_REDBRICK = 0x23,
+    PICKUP_BLUEBRICK = 0x24,
+    PICKUP_GOLDBRICK = 0x25,
+    PICKUP_BLACKBRICK = 0x26,
+
     PICKUP_MEGAPHONE = 0x32,
-    // Health
+
     PICKUP_HEALTH1 = 0x33,
     PICKUP_HEALTH2 = 0x34,
     PICKUP_HEALTH3 = 0x35,
-    // Powerupz (gameplay: 0x36..0x3c count toward the powerup stat)
+
     PICKUP_GHOST = 0x36,
     PICKUP_SUPERSPEED = 0x37,
     PICKUP_INVULNERABILITY = 0x38,
@@ -56,21 +56,21 @@ enum PickupType {
     PICKUP_DEATHTOUCH = 0x3a,
     PICKUP_ROIDZ = 0x3b,
     PICKUP_REACTIVEARMOR = 0x3c,
-    // Powerupz (screen fx: 0x3d..0x40, set the force-cue flag)
+
     PICKUP_RANDOMCOLORZ = 0x3d,
     PICKUP_SCREENSHAKE = 0x3e,
     PICKUP_BLACKSCREEN = 0x3f,
     PICKUP_MINICAM = 0x40,
     PICKUP_STOPWATCH = 0x4b,
     PICKUP_COIN = 0x50,
-    // Warp letters (spell "WARP")
+
     PICKUP_W = 0x5a,
     PICKUP_A = 0x5b,
     PICKUP_R = 0x5c,
     PICKUP_P = 0x5d,
     PICKUP_HELPBOX = 0x5e,
-    // In-game-icon-only object type (no entrance/pickup sprite): the covered timebomb.
-    PICKUP_COVEREDTIMEBOMB = 0x63, // = 99
+
+    PICKUP_COVEREDTIMEBOMB = 0x63,
 };
 
 #endif // GRUNTZ_GRUNTZ_PICKUPTYPE_H

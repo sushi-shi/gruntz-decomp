@@ -3,32 +3,28 @@
 
 #include <rva.h>
 
-#include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
-#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
+#include <Gruntz/GruntIndicatorSprite.h>
+#include <Gruntz/GruntIndicatorSprite.h>
 
 class CGruntSelectedSprite : public CUserLogic, public CWapX {
 public:
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1 (0x07ea70)
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00011e30, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSELECTEDSPRITE;
-    } // slot 2
-    CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0 (ctor body in GruntSelectedSprite.cpp)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    }
+    CGruntSelectedSprite() {}
+    CGruntSelectedSprite(CGameObject* obj);
 
-    virtual void FireActivation(i32 id)
-        OVERRIDE;               // 0x07e660 (resolve the id's registered handler + dispatch it)
-    static void RegisterActs(); // 0x07e7c0 (register the class's activation handlers)
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
 
-    i32 SetCell(i32 x, i32 y); // 0x07e9c0
-    i32 Update();              // 0x07e9f0
-    i32 m_cellX;               // +0x54  grunt cell x
-    i32 m_cellY;               // +0x58  grunt cell y
+    i32 SetCell(i32 x, i32 y);
+    i32 Update();
+    i32 m_cellX;
+    i32 m_cellY;
 };
 SIZE_UNKNOWN();
-
-
 
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

@@ -1,57 +1,24 @@
-#include <Mfc.h> // MFC superset (CPtrList; timeGetTime/ShowCursor); was Win32.h
+#include <Mfc.h>
 #include <new>
 
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
-#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ResetClockGlobals; the a1 arg)
-#include <Gruntz/Play.h>      // canonical CPlay: 0xc7ec0 IS CPlay::LoadGameAssetNamespaces (slot 1)
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (m_guts; LoadBattlezItemConfig/Teardown)
-#include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (m_hitTest; Attach/Deactivate/Configure)
-#include <Gruntz/UserLogic.h>    // canonical CGameObject (m_scrollSink; m_stateFlags bit0)
-#include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (m_beginMarker; dtor 0xc8640)
-#include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
 
 #include <Gruntz/Timer.h>
 
-namespace modeinit {
-
-    // Compiler array-ctor helpers (reloc-masked) + their element ctor/dtor thunks.
-    // (The five hand-rolled compiler-helper externs are GONE - ElemCtor403774 /
-    // ElemDtor5b48c6 / ElemCtor403a3a / EhVecCtor / VecCtor. They were extern "C"
-    // PHANTOMS - nothing anywhere defined `_EhVecCtor` or `_VecCtor` - invented only to
-    // hand-drive the member-array construction of the 0x630 worker. Now that
-    // CStatusBarMgr has its real inline ctor, the COMPILER emits those helpers itself
-    // (??_L / ??_H / ??_M, the eh-vector-ctor / vector-ctor / eh-vector-dtor iterators,
-    // all real NAFXCW symbols) with the real element ctor/dtor pointers.)
-
-    // The 0x1c control block owned at this->m_2e0 IS the canonical CChatBoxOwner
-    // (Attach @0x3e77->0x204e0 / Deactivate @0x285b->0x20510 / Configure @0x171c->
-    // 0x20530); the inline nothrow ctor emulation below writes its real fields.
-
-    // [The former ModeObj 37-slot placeholder view IS the canonical CPlay (this fn is
-    // CPlay's slot-1 override): V74/V78/V90 are the RTTI-proven CPlay slots 29/30/36
-    // = LoadImageBanks (+0x74, 0xcffe0) / LoadByMode (+0x78, 0xca200) / Vslot24
-    // (+0x90, 0xd0030 - a bare `ret` empty body). Setup43a9 @0x43a9 IS
-    // CState::LoadGameAssetNamespaces (0xf9ea0); IsModeReady @0x35da IS
-    // CPlay::LoadCursorSprites (0xd0120). The Parent view was CGruntzMgr (m_chatLog/
-    // m_saveInfoRec/m_114), Arg1 the CGruntzMgr singleton (m_options[0] gates m_020/
-    // m_014 - the ex-GruntzPlayer m_active/m_14 view of the same +0x150 record),
-    // Peer the CGameObject m_scrollSink (m_stateFlags bit0), Ctl1c the CChatBoxOwner,
-    // Rec78 the CTileTriggerContainer, Rec50 the CTimer.
-    //
-    // `Worker630` (and its Sub530) was the
-    // hand-inlined CStatusBarMgr ctor - ~100 raw offset-cast dword stores plus manual
-    // EhVecCtor/VecCtor/CPtrArray-ctor calls. CStatusBarMgr now carries its REAL inline
-    // ctor + dtor (<Gruntz/StatusBarMgr.h>), so this TU is view-free: `new
-    // CStatusBarMgr` / `delete` emit the identical construction, and the compiler - not
-    // this file - owns the member-array iterators.]
-
-} // namespace modeinit
+namespace modeinit {}
 
 RVA(0x000c86d0, 0x11)
 CSbiHlRow::CSbiHlRow() {
-    // zero the two 64-bit pairs in retail's lo,lo,hi,hi store order
+
     m_lastLo = 0;
     m_intervalLo = 0;
     m_lastHi = 0;
@@ -66,12 +33,12 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (mgr == 0) {
             return 0;
         }
-        GruntzPlayer* sub = mgr->m_options; // &mgr->m_150 (never null; the null-check is emitted)
+        GruntzPlayer* sub = mgr->m_options;
         if (sub == 0) {
             return 0;
         }
-        sub->m_liveGate = 1; // live gate  (== the ex-GruntzPlayer::m_active view)
-        sub->m_014 = 1;      // armed gate (== the ex-GruntzPlayer::m_14 view)
+        sub->m_liveGate = 1;
+        sub->m_014 = 1;
         m_region0Gate = 0;
         m_region1Gate = 0;
         m_region2Gate = 0;
@@ -83,14 +50,14 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_scrollEdgeActive = 0;
         m_scrollEdgeLock = 0;
         m_frameMarker = 0;
-        // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
         if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
             return 0;
         }
 
         CChatBoxOwner* ctl = static_cast<CChatBoxOwner*>(RezAlloc(0x1c));
         if (ctl) {
-            // the inline nothrow ctor (no EH state)
+
             ctl->m_18 = 0;
             ctl->m_14 = 0;
             ctl->m_c = 0;
@@ -113,21 +80,13 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_hitTest->m_10 = 0;
         m_hitTest->Configure(1);
 
-        // (2) the guts/UI host - the canonical CStatusBarMgr, now with its REAL inline
-        // ctor (<Gruntz/StatusBarMgr.h>). This  expression IS the ~100-store block
-        // the local  view used to open-code here: the member arrays
-        // (m_tabLists[8] / m_slots[5] / m_groupSlots[3] / m_hlGrid[12] / m_ptrPool) are
-        // constructed by the compiler, in retail's order, with retail's iterators.
         m_guts = new CStatusBarMgr;
         if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
             CStatusBarMgr* w2 = m_guts;
             if (w2 == 0) {
                 return 0;
             }
-            //  inlines the real ~CStatusBarMgr: Teardown(), then the
-            // compiler-generated member teardown (??1CPtrArray on m_ptrPool, then
-            // __ehvec_dtor over m_tabLists), then operator delete - exactly retail's
-            // 0xc82b6 sequence under /GX states 3/2.
+
             delete w2;
             m_guts = 0;
             return 0;
@@ -135,7 +94,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
         CTileTriggerContainer* r78 = static_cast<CTileTriggerContainer*>(RezAlloc(0x78));
         if (r78) {
-            // the inline ctor: the four CPtrList(0xa) members + the m_74 gate
+
             new (&r78->m_base) CPtrList(0xa);
             new (&r78->m_list1) CPtrList(0xa);
             new (&r78->m_list2) CPtrList(0xa);
@@ -146,8 +105,8 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         }
         m_beginMarker = r78;
         if (m_beginMarker->GetFlag74() == 0) {
-            // RezFree IS ::operator delete (both 0x1b9b82), so this pair IS the delete.
-            delete m_beginMarker; // ~CTileTriggerContainer non-virtual (0xc8640) + ??3
+
+            delete m_beginMarker;
             m_beginMarker = 0;
             return 0;
         }
@@ -168,21 +127,21 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             }
         }
         m_1c4 = 1;
-        m_notifyLatch = 0; // the retail DWORD store
+        m_notifyLatch = 0;
         m_1c0 = 0;
-        memset(&m_saveSlot, 0, sizeof(m_saveSlot)); // +0x1d0..+0x2d0
-        mgr->ResetClockGlobals();                   // retail ecx = the A1 arg slot (mgr IS the mgr)
+        memset(&m_saveSlot, 0, sizeof(m_saveSlot));
+        mgr->ResetClockGlobals();
         m_savedClock = 0;
         m_rngSeed = timeGetTime();
         m_lightFx = 0;
         if (m_mgr->m_114 == 0) {
             m_mgr->m_saveInfoRec = 0;
         }
-        if (!LoadImageBanks()) { // slot 29 (+0x74) virtual dispatch
+        if (!LoadImageBanks()) {
             return 0;
         }
-        Vslot24();                     // slot 36 (+0x90) virtual dispatch (retail body: bare ret)
-        if (!LoadByMode(areaArg, 1)) { // slot 30 (+0x78) virtual dispatch
+        Vslot24();
+        if (!LoadByMode(areaArg, 1)) {
             return 0;
         }
         if (!LoadCursorSprites(0, 0)) {

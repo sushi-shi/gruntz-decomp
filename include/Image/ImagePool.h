@@ -1,12 +1,12 @@
 #ifndef SRC_IMAGE_IMAGEPOOL_H
 #define SRC_IMAGE_IMAGEPOOL_H
 
-#include <Mfc.h> // CPtrList + <windows.h> (HINSTANCE/HWND/HPALETTE/PALETTEENTRY)
+#include <Mfc.h>
 #include <Ints.h>
 #include <rva.h>
-#include <Io/SaveGame.h> // ex Globals.h
+#include <Io/SaveGame.h>
 
-class CRezImage; // <Image/Image.h> - the pool's DIB-surface node (pointer-only here)
+class CRezImage;
 namespace ApiCallerStubs {
     struct CImagePaletteNode;
 }
@@ -14,10 +14,6 @@ using ApiCallerStubs::CImagePaletteNode;
 
 class CImagePool {
 public:
-    // Inline ctor/dtor: the preview dialog is the only site that `new`s/`delete`s the
-    // pool (g_previewMgr), and retail inlines both there - the two CPtrList(10) member
-    // ctors + the five zeroed scalar fields, and a dtor that runs Clear() before the
-    // member CPtrList teardowns. Modeled inline so MSVC folds them into that dialog proc.
     CImagePool() : m_surfaces(0xa), m_palettes(0xa) {
         m_resourceModuleHandle = 0;
         m_sourceHwnd = 0;
@@ -29,50 +25,44 @@ public:
         Clear();
     }
 
-    i32 SetHandles(HINSTANCE resModule, HWND src, i32 c);                         // 0x174e90
-    void Clear();                                                                 // 0x174eb0
-    void Free(CRezImage* node);                                                   // 0x174ed0
-    void RemovePalette(CImagePaletteNode* node);                                  // 0x174f30
-    void ClearSurfaces();                                                         // 0x174f60
-    void ClearPalettes();                                                         // 0x174fa0
-    CImagePaletteNode* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);       // 0x1754f0
-    CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
-    CImagePaletteNode* AddImageFile(char* path, i32 arg);                         // 0x1755f0
-    CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
-    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 flag);    // 0x175710
-    void B(CRezImage* node, void* paletteNode, i32 b);                                        // 0x175780
+    i32 SetHandles(HINSTANCE resModule, HWND src, i32 c);
+    void Clear();
+    void Free(CRezImage* node);
+    void RemovePalette(CImagePaletteNode* node);
+    void ClearSurfaces();
+    void ClearPalettes();
+    CImagePaletteNode* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);
+    CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);
+    CImagePaletteNode* AddImageFile(char* path, i32 arg);
+    CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl);
+    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 flag);
+    void B(CRezImage* node, void* paletteNode, i32 b);
 
-    CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);           // 0x174fe0
-    CRezImage* AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag); // 0x1750e0
-    CRezImage* AddSurfaceOp(void* buf, i32 kind, i32 ctrl);                            // 0x1751f0
-    CRezImage* AddSurfaceRez(char* name, i32 ctrl);                                      // 0x1752f0
-    CRezImage* AddSurfaceConvert(CRezImage* src, void* pal);                                    // 0x1753f0
+    CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);
+    CRezImage* AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag);
+    CRezImage* AddSurfaceOp(void* buf, i32 kind, i32 ctrl);
+    CRezImage* AddSurfaceRez(char* name, i32 ctrl);
+    CRezImage* AddSurfaceConvert(CRezImage* src, void* pal);
 
-    HINSTANCE m_resourceModuleHandle; // +0x00  resource module handle (-> g_hResModule)
-    HWND m_sourceHwnd;                // +0x04  source HWND (GetDC/ReleaseDC)
-    i32 m_08;                         // +0x08
-    HPALETTE m_selectedPalette;       // +0x0c  selected HPALETTE to restore
-    CPtrList m_surfaces;              // +0x10  GDI surface nodes (m_pHead @+0x14)
-    CPtrList m_palettes;              // +0x2c  palette nodes (m_pHead @+0x30)
-    i32 m_48;                         // +0x48
+    HINSTANCE m_resourceModuleHandle;
+    HWND m_sourceHwnd;
+    i32 m_08;
+    HPALETTE m_selectedPalette;
+    CPtrList m_surfaces;
+    CPtrList m_palettes;
+    i32 m_48;
 };
 SIZE_UNKNOWN();
 
-extern "C" HINSTANCE g_hResModule; // 0x002bf6e0 (C linkage - the owner def's wrapper)
+extern "C" HINSTANCE g_hResModule;
 
-// --- C-linkage carriers for the TU's extern-C definitions (the defs
-// inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" HINSTANCE g_hResModule;
 
 extern char g_bmpHeaderTemplate[];
-
-// File-scope prototypes moved from the .cpp (external linkage
-// belongs in the owner header).
 
 namespace ApiCallerStubs {
     i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps();
     void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
 } // namespace ApiCallerStubs
-
 
 #endif // SRC_IMAGE_IMAGEPOOL_H

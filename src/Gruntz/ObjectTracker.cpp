@@ -1,10 +1,10 @@
-#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/GruntSpawnConfig.h>
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)
-#include <Gruntz/Grunt.h>      // canonical CGrunt (the ex-CObjectTracker identity) + CGameRegistry
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CDDrawWorkerHost (m_mainPlane +0x5c)
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GameLevel.h>
 
 // @early-stop
 RVA(0x000f7d90, 0x171)

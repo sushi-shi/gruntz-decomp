@@ -62,12 +62,21 @@ CDB = CDB_DIR / "compile_commands.json"
 # clangd JSON-RPC driver (Content-Length framed JSON over stdio). Modeled on
 # gruntz.core.clangd_query, extended with rename + workspace-edit caps.
 # ---------------------------------------------------------------------------
+def clangd_command():
+    return [
+        "clangd",
+        "--background-index",
+        "--log=error",
+        "--header-insertion=never",
+        "--rename-file-limit=0",
+        f"--compile-commands-dir={CDB_DIR}",
+    ]
+
+
 class Clangd:
     def __init__(self):
         self.proc = subprocess.Popen(
-            ["clangd", "--background-index", "--log=error",
-             "--header-insertion=never",
-             f"--compile-commands-dir={CDB_DIR}"],
+            clangd_command(),
             cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
         )
@@ -178,7 +187,7 @@ class Clangd:
         try:
             self._request("shutdown", {}, timeout=5)
             self._notify("exit", {})
-        except Exception:  # noqa: BLE001 - best-effort teardown
+        except (Exception, SystemExit):  # noqa: BLE001 - best-effort teardown
             pass
         self.proc.terminate()
 

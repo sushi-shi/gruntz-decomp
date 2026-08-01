@@ -1,23 +1,14 @@
 #include <Gruntz/ToyPeek.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Bute/ButeTree.h>        // g_buteTree
+#include <Rez/FrameClock.h>
+#include <Gruntz/SerialArchive.h>
+#include <Io/FileMem.h>
+#include <Bute/ButeTree.h>
 
-// CToyPeek::~CToyPeek @0x11c40 - empty vtable-anchor dtor; folds the CUserLogic
-// teardown (the /GX leaf-dtor archetype).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CToyPeek() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 #include <rva.h>
 RVA_COMPGEN(0x00011c10, 0x1e, ??_GCToyPeek@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
 
-// CToyPeek::CToyPeek (0x98140) - fold the shared CUserLogic(obj) init, then nudge
-// the owner up 0x18 px, lock its draw order to 0xdbba0, apply the small-icon
-// status-bar sprite, seed the +0x58..+0x64 countdown state and bind the "A" node.
 // @early-stop
 RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -47,8 +38,7 @@ i32 CToyPeek::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject*
     if (Chain(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
-    // The two i64 timer fields sit contiguous (m_startClock @+0x58, m_countdown
-    // @+0x60); retail walks one pointer over the blob.
+
     i32* p = &m_startClockLo;
     switch (mode) {
         case 4:

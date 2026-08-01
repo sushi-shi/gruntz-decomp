@@ -1,21 +1,21 @@
-#include <Mfc.h> // afx-first umbrella (GruntzMgr.h/ResMgr.h need the MFC classes)
+#include <Mfc.h>
 #include <rva.h>
-#include <Image/CImage.h> // g_resourceInstallActive
+#include <Image/CImage.h>
 
 #include <stdio.h>
-#include <Bute/SymParser.h>   // the shared CSymParser (ResolvePath 0x13c030)
-#include <Gruntz/State.h>     // CState: the real owner of the loader (all leaf states inherit it)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr - the manager arg (m_world/m_symParser/m_40/...)
-#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (m_10/m_ptrColl/m_28/m_animRegistry)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (HasKeyPrefix / ScanTree)
-#include <Gruntz/SpriteRefTable.h>        // the shared CSpriteRefTable (g_gameReg->m_spriteFactory)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry == CDDrawWorkerRegistry (InstallTree)
-#include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
-#include <Gruntz/FaderMgr.h>              // CFaderMgr - CState::m_faderMgr's real class
-#include <Gruntz/GameAssetNamespaces.h>   // own exported globals (ex Globals.h)
+#include <Bute/SymParser.h>
+#include <Gruntz/State.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Gruntz/FaderMgr.h>
+#include <Gruntz/GameAssetNamespaces.h>
 
 DATA(0x00251614)
-i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
+i32 g_buildNumber;
 
 // @early-stop
 RVA(0x000f9ea0, 0x21d)
@@ -23,8 +23,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_mgr = mgr;
     m_symParser = mgr->m_symParser;
     m_world = mgr->m_world;
-    // +0x40 SETTLED (2026-07-16): the mgr's m_faderMgr is the real CFaderMgr
-    // (Run news it + SetConfig @0x17d980, the src/DDrawMgr/FaderMgr.cpp method).
+
     m_faderMgr = mgr->m_faderMgr;
     m_levelIndex = areaArg;
     i32 t = (areaArg - 1) % 0x24;
@@ -64,7 +63,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         }
         m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(aniz), "GAME", "_");
     }
-    // Retail re-reads both through this->m_4 (spilled `this`, not the cached arg).
+
     if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_symParser) == 0) {
         return 0;
     }

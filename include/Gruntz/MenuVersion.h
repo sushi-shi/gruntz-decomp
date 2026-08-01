@@ -3,8 +3,8 @@
 
 #include <Ints.h>
 
-extern "C" i32 g_versionMajor; // 0x651608
-extern "C" i32 g_versionMid;   // 0x65160c  (selects 2- vs 3-number format)
-extern "C" i32 g_versionMinor; // 0x651610
+extern "C" i32 g_versionMajor;
+extern "C" i32 g_versionMid;
+extern "C" i32 g_versionMinor;
 
 #endif // GRUNTZ_MENUVERSION_H

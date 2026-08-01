@@ -1,20 +1,20 @@
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
-#include <Gruntz/GameRegMfcPtr.h>      // g_gameReg at its REAL type (CGruntzMgr)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
-#include <Image/CImage.h> // CImage::RenderFrameClipped (0x153810) - m_frame's clipped blit
-#include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
 
 #include <Gruntz/Grunt.h>
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid->m_grid (the 4x15 placed-grunt board @+0x1c)
+#include <Gruntz/TriggerMgr.h>
 #include <Wwd/WwdFile.h>
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level: planeCtx bar rect + main plane)
-#include <string.h> // inlined memset / strcpy in Serialize (rep stos / repne scas + rep movs)
+#include <Gruntz/GameLevel.h>
+#include <string.h>
 
-#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
-#include <Wwd/WwdFile.h> // CDDrawWorkerHost - the canonical plane (world->screen transform)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SerialArchive.h>
+#include <Wwd/WwdFile.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>
 
@@ -34,9 +34,6 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_loaded = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CActionOptionsMenuBar::LoadAssets - cache the four named sprites.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
@@ -127,16 +124,6 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
     return 1;
 }
 
-// The 0x190 span is the retail extent 0x9330..0x94c0 (Render's start); the code
-// ends at 0x9466 and the rest is nop/int3 pad, but objdiff sizes a symbol by
-// next-symbol-start so the label must carry the full extent.
-// Retail's gate is `if (grunt == 0)` with the zeroing as the FALLTHROUGH arm and
-// the populated arm laid out after the `ret`; and each switch arm stores its own
-// frame (retail tail-merges the three GetAt stores at 0x93d7 but keeps the
-// default's `mov [eax-8],ebp` separate, which a single post-switch store cannot
-// produce). The bounds test inside each arm is CDDrawWorker::GetAt inlined (it
-// returns 0 outside [m_minIndex, m_maxIndex]).
-// @early-stop
 RVA(0x00009330, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
     CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];
@@ -163,8 +150,7 @@ i32 CActionOptionsMenuBar::Refresh() {
             m_buttonState[0] = 1;
         }
     }
-    // Refresh both buttons: icon in m_buttonIcon[0]/m_buttonIcon[1], state in
-    // m_buttonState[0]/m_buttonState[1], resolved frame into m_buttonFrame[0]/m_buttonFrame[1].
+
     for (i32 i = 0; i < 2; i++) {
         if (m_buttonIcon[i] == 0) {
             m_buttonState[i] = 0;
@@ -189,16 +175,13 @@ i32 CActionOptionsMenuBar::Refresh() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CActionOptionsMenuBar::Render - paint the bar + chip indicators.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000094c0, 0x131)
 i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
         return 1;
     }
-    LONG sx = m_screenX; // LONG: WrapCoord's pair type (it also fills RECT fields)
+    LONG sx = m_screenX;
     LONG sy = m_screenY;
     (g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
 
@@ -217,9 +200,6 @@ i32 CActionOptionsMenuBar::Render() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CActionOptionsMenuBar::HitClick - hit-test a click against the two buttons.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00009650, 0xcf)
 i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
@@ -231,7 +211,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (unit == 0) {
         return 1;
     }
-    // Demote any held (==2) button back to armed (==1).
+
     i32* btn = m_buttonState;
     i32* p = btn;
     i32 k = 2;
@@ -246,14 +226,14 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     i32 ylo = y0 - 0xa;
     i32 yhi = y0 + 0xe;
     i32 x0 = m_screenX;
-    // Button[0] box.
+
     if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo) {
         if (*btn == 1) {
             *btn = 2;
         }
         return 1;
     }
-    // Button[1] box.
+
     if (mx < x0 + 0x1c && mx >= x0 + 0x4 && my < yhi && my >= ylo) {
         if (m_buttonState[1] == 1) {
             m_buttonState[1] = 2;
@@ -262,9 +242,6 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CActionOptionsMenuBar::HitHover - hover hit-test (returns a button id or 0).
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00009760, 0x6c)
 i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
@@ -278,9 +255,7 @@ i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo && m_buttonState[0] != 3) {
         return 2;
     }
-    // `!= 3`, like button 0: retail's last compare is `cmp edx,eax(3) / jne <keep eax=3>`
-    // (0x9cdd), so the hit is reported when the button is NOT in state 3 - we had `== 3`,
-    // which reports button 1 only while it is disabled and never otherwise.
+
     if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo && m_buttonState[1] != 3) {
         return 3;
     }
@@ -292,9 +267,6 @@ void CActionOptionsMenuBar::Deactivate() {
     m_active = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CActionOptionsMenuBar::Serialize - read this bar's state from an archive.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00009810, 0x2df)
 i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
@@ -377,15 +349,6 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CActionOptionsMenuBar::Deserialize (0x00009bb0) - the Serialize mirror: read the
-// raw field run back, then re-resolve the three chip sprites by name and the
-// frame / two button-frame refs by name+bounds-checked frame index through the
-// registry name map. __thiscall, ret 4; returns 1, or 0 if the stream / registry
-// is absent. [Re-homed from the ex TriggerLoadRec.cpp: "CTriggerLoadRec" was a
-// fake view of THIS class - its m_0..m_3c field IO is exactly this layout, and
-// the retail body 0x9bb0 sits directly after Serialize 0x9810 in this obj.]
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00009bb0, 0x367)
 i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
@@ -405,7 +368,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     CObject* out;
     i32 idx;
 
-    s->Read(this, 8); // m_gridX + m_gridY
+    s->Read(this, 8);
     s->Read(&m_screenX, 4);
     s->Read(&m_screenY, 4);
     s->Read(&m_loaded, 4);

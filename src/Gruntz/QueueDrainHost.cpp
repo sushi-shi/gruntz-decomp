@@ -1,6 +1,6 @@
 #include <rva.h>
-#include <DDrawMgr/DDrawChildGroup.h> // the real collection class (ex the CQueueDrainHost view)
-#include <Gruntz/UserLogic.h>         // ::CGameObject (the payload; GetClassId is vtable slot 8)
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
 
 RVA(0x00031250, 0x33)
 CGameObject* CDDrawChildGroup::Drain() {

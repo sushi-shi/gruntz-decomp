@@ -2,80 +2,59 @@
 #define GRUNTZ_GRUNTZ_CFADER_H
 
 #include <Ints.h>
-class CDDSurface; // the default source/dest surfaces the fader blits between
+class CDDSurface;
 #include <rva.h>
 
-#include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache / CShadeTable (the +0x04 cache)
+#include <DDrawMgr/ShadeTableCache.h>
 
 class CFader {
 public:
-    CFader();          // 0x17e450
-    virtual ~CFader(); // 0x17e4a0  (/GX EH frame; vtable slot 0)
-    // Slot roles PROVEN by the two run-drivers below: `count = GetFrameCount(); BeginFade();
-    // RenderFrame(0); ... RenderFrame(frame); ... RenderFrame(count); EndFade();`.
-    virtual void RenderFrame(i32 f) = 0; // slot 1 (__purecall in base; renders one fade frame)
-    virtual i32 GetFrameCount() = 0;     // slot 2 (__purecall in base; total fade frame count)
-    virtual void BeginFade();            // slot 3 (0x17e790, sibling TU; base = empty default)
-    virtual void EndFade();              // slot 4 (0x17e7a0, sibling TU; base = empty default)
+    CFader();
+    virtual ~CFader();
 
-    void Wait(i32 delay); // 0x17e510 - busy-wait until GetTickCount >= now+delay
-    void SetTimers(CDDSurface* src, CDDSurface* dst); // 0x17e760
-    void Set2c(class CDDrawPtrCollections* pool);     // 0x17e780
-    // 0x17e540 - the stepped counterpart of RunFade: prime frame 0, busy-wait the
-    // lead-in, then render every `step`-th frame from 1..GetFrameCount() back-to-back (no timing;
-    // optional per-frame vsync gate + RenderFrame(frame) each step), then finalize
-    // RenderFrame(count)/EndFade() and record
-    // the achieved frame rate in m_34. Used for the non-timed / max-speed transition.
-    void RunFadeStepped(i32 step, i32 lead, i32 vsync); // 0x17e540
+    virtual void RenderFrame(i32 f) = 0;
+    virtual i32 GetFrameCount() = 0;
+    virtual void BeginFade();
+    virtual void EndFade();
 
-    // 0x17e620 - drive the whole timed fade: prime frame 0, busy-wait the lead-in,
-    // then map elapsed/duration onto the [0..GetFrameCount()] frame index, with an optional
-    // per-frame vsync gate (m_ptrColl->m_device->WaitForVerticalBlank) + RenderFrame(frame)
-    // per newly-reached frame; records the achieved frame rate
-    // in m_34 and finalizes via EndFade(). (Was the standalone FaderRun view - dissolved.)
-    void RunFade(u32 dur, i32 lead, i32 vsync); // 0x17e620
+    void Wait(i32 delay);
+    void SetTimers(CDDSurface* src, CDDSurface* dst);
+    void Set2c(class CDDrawPtrCollections* pool);
 
-    // implicit vptr        // +0x00
-    CShadeTableCache m_cache; // +0x04 (0x18 bytes)
-    CShadeTable* m_table;     // +0x1c
-    i32 m_20;                 // +0x20  base field (left uninitialized by the base ctor)
-    CDDSurface* m_timerA;     // +0x24  default source surface (SetTimers)
-    CDDSurface* m_timerB;     // +0x28  default dest surface (SetTimers)
-    // +0x2c  the DirectDraw manager Set2c binds (retail always binds 0 - the vsync
-    // path is dev-only, kept alive by no /OPT:REF): RunFade's per-frame gate is
-    // m_ptrColl->m_device->WaitForVerticalBlank, and CFaderLight's Begin/EndFade
-    // use the same slot as the overlay surface pool. (Ex the i32 "m_set2cArg" the
-    // fake IFadeSink interface read through.)
+    void RunFadeStepped(i32 step, i32 lead, i32 vsync);
+
+    void RunFade(u32 dur, i32 lead, i32 vsync);
+
+    CShadeTableCache m_cache;
+    CShadeTable* m_table;
+    i32 m_20;
+    CDDSurface* m_timerA;
+    CDDSurface* m_timerB;
+
     class CDDrawPtrCollections* m_ptrColl;
-    i32 m_flag; // +0x30  teardown gate (=1 in the base ctor)
-    i32 m_34;   // +0x34  RunFade's measured frame rate
+    i32 m_flag;
+    i32 m_34;
 };
 SIZE(0x38);
 
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
+extern "C" i32 __ftol(double v);
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern const float g_faderScale_5f085c; // 0x5f085c  intensity->magnitude scale
-extern const double g_faderPowK;        // 2.0
-extern const float g_faderHalf;         // 0.5
-extern const double g_faderScale;       // 10000.0
-extern const double g_faderBiasR;       // -1.0  (r - K == r + 1.0)
-extern const float g_faderBiasFade;     // -1.0  (fade - K == fade + 1.0)
-extern const float g_faderOne;          // 1.0  (per-cell render threshold: fade - frame > 1.0)
-extern const float g_faderHalfPi;       // 1.570795 == 3.14159/2 (CFaderFlat's sine sweep)
-extern const float g_sineHalfPi;        // 1.570795 (CFaderSine's own copy @0x5f0860)
-extern const float g_sineOne;           // 1.0 (CFaderSine's whole-pixel carry gate)
-extern "C" int _access(const char* path, int mode); // 0x193900 CRT
+extern const float g_faderScale_5f085c;
+extern const double g_faderPowK;
+extern const float g_faderHalf;
+extern const double g_faderScale;
+extern const double g_faderBiasR;
+extern const float g_faderBiasFade;
+extern const float g_faderOne;
+extern const float g_faderHalfPi;
+extern const float g_sineHalfPi;
+extern const float g_sineOne;
+extern "C" int _access(const char* path, int mode);
 
 extern float g_fxBias;
 extern float g_fxEps;
 
-// File-scope prototypes moved from the .cpp (external linkage
-// belongs in the owner header).
-void __cdecl operator delete(void* p);        // ??3@YAXPAX@Z (0x1b9b82)
-void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
+void __cdecl operator delete(void* p);
+void ScatterSamples(i32* arr, i32, i32, i32);
 
 #endif // GRUNTZ_GRUNTZ_CFADER_H

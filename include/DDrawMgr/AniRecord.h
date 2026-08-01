@@ -1,4 +1,3 @@
-// AniRecord.h - the AniRecord TU's exported globals/data.
 #ifndef GRUNTZ_DDRAWMGR_ANIRECORD_H
 #define GRUNTZ_DDRAWMGR_ANIRECORD_H
 

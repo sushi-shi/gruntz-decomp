@@ -5,70 +5,43 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CWwdGameObjectA; // the owning wide game object (<Wwd/WwdGameObjectFamily.h>)
-class CAniDesc;        // the animation descriptor (playlist entry; == CAniRecord)
-class CAniElement;     // the descriptor playlist (<Gruntz/AniElement.h>; the ex
+class CWwdGameObjectA;
+class CAniDesc;
+class CAniElement;
 class CFileMemBase;
 
 class CAniAdvanceCursor : public CLoadable {
 public:
-    CAniAdvanceCursor() {} // default (view-embed)
-    // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
-    // header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes
-    // m_10/m_14/m_18; delegating to CLoadable's INLINE 3-arg overload (a different
-    // ctor from the out-of-line ??0CLoadable @0x156cb0) puts the stamp where retail
-    // has it, below the m_08 store.
+    CAniAdvanceCursor() {}
+
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
-    virtual ~CAniAdvanceCursor() OVERRIDE; // slot 1 (scalar-deleting dtor 0x15b6b0)
-    virtual i32 IsLoaded() OVERRIDE;       // slot 5  0x15b6a0
-    // slot 6 IsReady (0x001c08) + slot 8 GetClassId (0x154a00) are INHERITED from
-    // CLoadable (same body RVAs; audit: redeclare-nothing).
-    // slot 7 - clear the bound source refs (m_10/m_14/m_element). The ex
-    // "CDDrawBlitParam::Reset_15c2c0" - the body IS the Unload override.
-    virtual void Unload() OVERRIDE; // slot 7  0x15c2c0
+    virtual ~CAniAdvanceCursor() OVERRIDE;
+    virtual i32 IsLoaded() OVERRIDE;
 
-    // --- the runtime/serialize method set (ex-CDDrawBlitParam; bodies in
-    // WwdFactoryObject.cpp / DDrawSubMgr.cpp) ---
-    // Bind the owner. There is exactly ONE caller in retail - CWwdGameObjectA::Setup
-    // @0x15b940, which does `push esi / lea ecx,[esi+0x1a0] / call` i.e. passes its own
-    // `this`. (The old "role-dependent, also a worker source on the blit path" note was
-    // unsupported: sema xref --raw finds no second caller, and it was the sole reason
-    // the parameter stayed void* and m_10 wore the CAniRenderCtx view.)
-    void Construct(CWwdGameObjectA* src); // 0x15c290
-    void Setup(CAniElement* src);         // 0x15c2d0  bind a resolved geo source
-    void Recompute(i32 resetGate);        // 0x15c320  re-derive from the bound m_14 (nonzero
-                                          // also clears the +0x20 re-trigger gate)
-    i32 Serialize(CFileMemBase* ar);      // 0x15c970
-    i32 Deserialize(CFileMemBase* ar);    // 0x15ca70
-    // 0x15c900. The sole caller is CWwdGameObjectA::Play @0x150a70, which forwards its
-    // own slot-15 argument list verbatim; `a3`/`self` are the slot signature's trailing
-    // words and this body never reads them (retail only touches [esp+4] and [esp+8]),
-    // so `self` keeps the slot's `void*` type instead of forcing a ptr->int cast.
+    virtual void Unload() OVERRIDE;
+
+    void Construct(CWwdGameObjectA* src);
+    void Setup(CAniElement* src);
+    void Recompute(i32 resetGate);
+
+    i32 Serialize(CFileMemBase* ar);
+    i32 Deserialize(CFileMemBase* ar);
+
     i32 Find(CFileMemBase* ar, i32 type, i32 typeId, void* self);
-    i32 Advance(u32 elapsed); // 0x15c360 (advance / set-geo-source)
+    i32 Advance(u32 elapsed);
 
-    // (+0x0c is the inherited CLoadable owner slot m_0c: the game object /
-    // blit worker that owns this cursor - the ex "m_worker".)
-    // +0x10  the owning wide game object (a back-pointer to the object this cursor is
-    // embedded in at its +0x1a0). The ex-CAniRenderCtx view was that class read through
-    // pads: its m_flags/+0x08, m_posModeX-Y/+0x10-14, m_anchor/+0x38, m_byteFlags/+0x40,
-    // m_screenX-Y/+0x5c-60 are CLoadable::m_flags + CResolveNode::m_10/m_14/m_dirty.m_armed/
-    // m_stateFlags/m_screenX/m_screenY, and its m_frameCursor/m_frameSeq/m_curFrame
-    // (+0x190/+0x194/+0x198) are CWwdGameObjectA::m_190/m_sprite/m_layer.
     CWwdGameObjectA* m_boundObject;
-    CAniElement* m_14;    // +0x14  descriptor playlist (the resolved geo source;
-                          //        ex "m_srcRef" - the serialize map value)
-    CAniDesc* m_element;  // +0x18  current descriptor/element (transient)
-    i32 m_index;          // +0x1c  playlist index
-    u32 m_frameTicksLeft; // +0x20  per-frame timer remaining (ticks)
-    i32 m_24;             // +0x24  "decrement-each-tick" flag
-    i32 m_finished;       // +0x28  paused/done flag
-    i32 m_2c;             // +0x2c  owns-buffer flag (consume the draw value on read)
-    i32 m_pendingDraw;    // +0x30  pending draw value
-    i32 m_curDraw;        // +0x34  current draw value
-    // +0x38 float speed/scale multiplier. Advance tests it against 1.0f with an
-    // INTEGER compare on 0x3f800000 (no FPU compare), so the same four bytes are read
-    // as a float and as a word - both readings are named.
+    CAniElement* m_14;
+
+    CAniDesc* m_element;
+    i32 m_index;
+    u32 m_frameTicksLeft;
+    i32 m_24;
+    i32 m_finished;
+    i32 m_2c;
+    i32 m_pendingDraw;
+    i32 m_curDraw;
+
     union {
         float m_scale;
         i32 m_scaleBits;
@@ -76,15 +49,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-// INLINE by default - the same /Gy COMDAT arrangement as the wwd node ctors (see
-// <Gruntz/WwdGridIter.h>). PROVEN by the two sites that build a CWwdGameObjectA
-// in place: CDDrawWorkerHost::ReadPlaneObjects @0x162af0 and CDDrawChildGroup::
-// CreateObject @0x1598d0 both `call ??0CLoadable` (0x156cb0) for the base and then
-// spell this ctor's own tail inline - `mov [p],??_7CAniAdvanceCursor / [p+0x10]=0 /
-// [p+0x14]=0 / [p+0x18]=0`. That split (out-of-line BASE, inline DERIVED) is exactly
-// what a header-inline definition delegating to the OUT-OF-LINE 3-arg CLoadable
-// produces; the standalone 0x15b730 COMDAT spells the base stores itself instead.
-//   ANIADVANCECURSOR_OOL_CTOR -> WwdFactoryObject.cpp (0x15b730)
 #ifndef ANIADVANCECURSOR_OOL_CTOR
 inline CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(owner, field04, field08) {

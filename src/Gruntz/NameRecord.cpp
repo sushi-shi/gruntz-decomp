@@ -1,15 +1,7 @@
 #include <rva.h>
 #include <string.h>
-#include <Gruntz/GameInfo.h> // canonical CGameInfo / CGameInfoTime + BuildGameDate decl
+#include <Gruntz/GameInfo.h>
 
-// ===========================================================================
-// CGameInfo::SetNames (0x118040) - validate + store the record's name (m_14) and its
-// optional secondary/Location string (m_36). Rejects an empty or over-long (>16 char)
-// primary name; rejects a secondary-present + primary >64 chars (retail re-measures the
-// SAME primary name - reproduced verbatim); memset(&m_04, 0, 212) clears the whole body
-// (+0x04..+0xd7) before the copies. Returns 0 on any rejection, 1 on success.
-// ===========================================================================
-// @early-stop
 RVA(0x00118040, 0xb6)
 i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (name == 0) {
@@ -48,7 +40,7 @@ i32 CGameInfo::CopyBody(char* body) {
         i32 len = static_cast<i32>(strlen(body + 0x10));
         if (len > 0 && len < 16) {
             memcpy(&m_04, body, 212);
-            Check1(); // 0x1182f0 (same +0x08 ready flag)
+            Check1();
             return 1;
         }
     }
@@ -80,14 +72,8 @@ i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
     return 1;
 }
 
-// ===========================================================================
-// CGameInfo::CopyIfLarger (0x118260) - the RVA-contiguous TWIN of Update above (same
-// +0xb8 time box, same +0xd4 Type). Reject a null/absent source, or one that does not
-// exceed the current box; else copy the whole 7-dword CGameInfoTime in and stash Type.
-// __thiscall(src, type) ret 8. (Was the CBoundsCopy118::CopyIfLarger view, re-homed from
-// src/Stub/BoundaryLowerMethods.cpp.)
-// @identity-TODO: no direct caller (a bounds-grow updater); reached only via an ILT thunk.
-// ===========================================================================
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118260, 0x63)
 i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
     if (src == 0) {

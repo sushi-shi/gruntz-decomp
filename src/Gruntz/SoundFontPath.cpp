@@ -1,13 +1,13 @@
-#include <Gruntz/SoundFontPath.h> // own extern surface
+#include <Gruntz/SoundFontPath.h>
 #include <rva.h>
-#include <Gruntz/SoundFont.h> // shared decls (CGruntzMgr::Run boot audio path)
+#include <Gruntz/SoundFont.h>
 
-#include <Win32.h> // GetCurrentDirectoryA / FreeLibrary
+#include <Win32.h>
 
-#include <Dsndmgr/SfManager.h>     // real SFMANL101API device + the SFManager factory
-#include <stdio.h>                 // sprintf (0x11f890, _sprintf)
-#include <string.h>                // strlen (inline repne scas)
-#include <Gruntz/SFSelectDevice.h> // ex Globals.h
+#include <Dsndmgr/SfManager.h>
+#include <stdio.h>
+#include <string.h>
+#include <Gruntz/SFSelectDevice.h>
 
 RVA(0x000f8e20, 0x56)
 void CloseSoundFontDevice() {
@@ -28,10 +28,8 @@ i32 SfDeviceInitKeys() {
     g_sfMidiLocation.m_PresetIndex = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
         g_sfMidiLocation.m_BankIndex = static_cast<WORD>(i);
-        // byte-forced: retail calls this slot with TWO args, not the three the vendored
-        // SFMAN 1.01 header declares - 0x0f8ee6 `push 0x64dacc; push eax; call [ecx+0x34];
-        // add esp,0x8`. Gruntz was built against an earlier SFMAN revision, so the SDK's
-        // own prototype is wrong for this binary - byte-forced through the 2-arg type.
+
+        // Byte-evidenced two-argument vendor ABI.
         (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(
             g_sfDeviceId,
             &g_sfMidiLocation
@@ -88,5 +86,5 @@ i32 FileExistsCopyF90F0(char* szPath) {
     if (!*szPath) {
         return 0;
     }
-    return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
+    return OpenFile(szPath, &of, 0x4000) != -1;
 }

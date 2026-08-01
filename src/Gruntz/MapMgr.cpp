@@ -1,17 +1,17 @@
-#include <Mfc.h>          // afx-first umbrella (windows.h: RECT + IntersectRect for AllocGrid)
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Mfc.h>
+#include <Rez/RezAlloc.h>
+#include <Io/FileMem.h>
 #include <Gruntz/MapMgr.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Gruntz/Brickz.h>        // CMapMgr (the pathfinding core homed here)
-#include <Gruntz/GameMode.h> // canonical CGMVerRect g_versionRect (SetVersionRect's version RECT)
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GameMode.h>
 #include <rva.h>
-#include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
-#include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)
+#include <stdlib.h>
+#include <string.h>
 
 #include <Gruntz/FreeNodePool.h>
 
-VTBL(CMapMgr, 0x001ea3b4); // vtable_names -> code (RTTI game class)
+VTBL(CMapMgr, 0x001ea3b4);
 RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
     m_0 = 0;
@@ -19,9 +19,6 @@ CMapArrayA::CMapArrayA() {
     m_count = 0;
 }
 
-// CMapArrayA::Allocate(count): allocate count*0x24
-// bytes, then carve the block into a doubly-linked free list (next @elem+0x14,
-// prev @elem+0x18). Returns 0 on alloc failure, else 1.
 // @early-stop
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
@@ -66,9 +63,6 @@ CMapArrayB::CMapArrayB() {
     m_count = 0;
 }
 
-// CMapArrayB::Allocate(count): allocate count*0x0c
-// bytes, then carve the block into a doubly-linked free list (next @elem+0x08,
-// prev @elem+0x04). Returns 0 on alloc failure, else 1.
 // @early-stop
 RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
@@ -126,13 +120,6 @@ CMapMgr::~CMapMgr() {
     Reset();
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::AllocGrid (0x09ea60) - allocate + initialize the width x height grid:
-// new the flat cell pool (0x1c bytes/cell) + the per-row column table, zero the
-// pool, thread each row pointer, seed the two intrusive node pools (count*5
-// nodes each), record the per-step callback, and compute the grid bounding rect
-// (m_originX) via the Win32 IntersectRect (of the {0,0,width,height} box with itself),
-// from which m_gridW/m_gridH = the rect width/height. Returns 1, or 0 on any alloc fail.
 // @early-stop
 RVA(0x0009ea60, 0x168)
 i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
@@ -151,8 +138,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     memset(m_cellPool, 0, count * 0x1c);
     i32 stride = width;
     i32 off = 0;
-    // UNSIGNED row counter: retail guards the loop with `test ebx,ebx / jbe` and
-    // closes it with `jb` (0x09eabe / 0x09eada), not jle/jl.
+
     for (u32 i = 0; i < static_cast<u32>(height); i++) {
         m_rows[i] = m_cellPool + off;
         off += stride;
@@ -164,9 +150,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
         return 0;
     }
     m_stepCb = callback;
-    // Build the grid bounding rect: intersect the {0,0,width,height} box with
-    // itself into m_originX (the {left,top,right,bottom} at +0x60); on an empty result
-    // fall back to the box. m_gridW/m_gridH = the resulting width/height.
+
     RECT a;
     RECT b;
     a.left = 0;
@@ -206,13 +190,6 @@ void CMapMgr::Reset() {
     m_1c = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::Search (0x09eca0) - the A*-style grid search driver. Bounds-check the
-// start (x1,y1) and goal (x2,y2) against the grid origin (m_originX,m_originY) / size
-// (m_gridW,m_gridH); reject if the start cell fails the passability masks; reset the
-// per-cell open counts; seed the open list with the start record and expand
-// neighbours via Expand until the open list empties or the goal is popped. On
-// success the result path is recycled to g_brickzFreeList + handed to `list`.
 // @early-stop
 RVA(0x0009eca0, 0x2bd)
 i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC) {
@@ -238,7 +215,7 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     if ((maskA & flags) != 0 && (maskC & flags) != 0) {
         return 0;
     }
-    // Reset the per-cell open counts across all m_cellCount cells.
+
     if (m_cellCount != 0) {
         u32 i = 0;
         do {
@@ -253,7 +230,7 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     m_startX = x1;
     m_goalY = y2;
     m_startY = y1;
-    // Pop the seed record off the closed (m_30) list head.
+
     BrickzNode* seed = m_colA.m_block;
     BrickzNode* slot = seed->m_14;
     if (slot == 0) {
@@ -314,11 +291,7 @@ reached:
             rec->m_coord.m_y = p->m_4;
             g_coordPool.m_freeHead = rec->m_next;
         }
-        // RETAIL-PROVEN (0x9ef18): `mov ecx,[esp+0x24]; push eax; call 0x1b4967` ==
-        // ?AddHead@CPtrList@@QAEPAU__POSITION@@PAX@Z. The result list is the MFC
-        // CPtrList, NOT the Rez CObjList (0x1851e0) the old CRezList/CRezListNode
-        // reinterpret was binding to - a wrong-COMDAT band, exactly the CPlay::m_488
-        // class of bug. `slot` converts to the void* element with no cast.
+
         static_cast<CPtrList*>(list)->AddHead(slot);
         p = p->m_parent;
     } while (p != 0);
@@ -334,15 +307,6 @@ reached:
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::Expand (0x09f010) - relax one neighbour of `node` in the (dx,dy)
-// direction. Bounds-check the target cell, reject it on the passability masks
-// (m_edgeMask / m_maskA&m_maskC), and for a diagonal step (diag) reject corner-cutting via
-// the two orthogonal cells (m_maskB). If the cell is unvisited / improvable, take a
-// search record (reusing an open Find()ed record, a closed CellPop'd record, or
-// a fresh one off the m_30 pool), set its g = node->g + cost and f = g + h
-// (h = 2*(|gx-ncol| + |gy-nrow|)), parent = node, and Insert() it. Returns 1
-// (the open-list is unchanged only when out of records => 0).
 // @early-stop
 RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
@@ -497,11 +461,6 @@ i32 CMapMgr::Insert(BrickzNode* node) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::PopFront - detach the head of the m_openList list; promote its m_cellCount
-// successor (clearing the successor's back-link) and clear the popped links.
-// Returns the popped head (eax, consumed by Search). The return type does not
-// affect the callee's own bytes - head is already materialized in eax.
 RVA(0x0009f430, 0x2a)
 BrickzNode* CMapMgr::PopFront() {
     BrickzNode* head = m_openList;
@@ -519,9 +478,6 @@ BrickzNode* CMapMgr::PopFront() {
     return head;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::CellPush - allocate a bucket node from the m_40 free list and link it
-// into the grid cell m_rows[node->m_4][node->m_0]; record the slot in node->m_20.
 // @early-stop
 RVA(0x0009f470, 0x62)
 void CMapMgr::CellPush(BrickzNode* node) {
@@ -577,9 +533,6 @@ BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::Drain - move every node off the m_openList list onto the front of the m_30
-// list (re-threaded via m_cellCount/m_openList), then clear the m_openList head.
 // @early-stop
 RVA(0x0009f590, 0x2f)
 void CMapMgr::Drain() {
@@ -597,10 +550,6 @@ void CMapMgr::Drain() {
     m_openList = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::Reset - empty every grid cell: each bucket node's child (m_0) is
-// pushed onto the m_30 active list and the bucket node itself onto the m_40
-// free list; then the cell head is cleared.
 // @early-stop
 RVA(0x0009f5d0, 0x81)
 void CMapMgr::ResetCells() {
@@ -626,10 +575,6 @@ void CMapMgr::ResetCells() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::Unlink - remove node from the m_openList-headed doubly-linked list
-// (m_cellCount = next, m_openList = prev), repairing the neighbours and the head, then
-// clearing the node's links.
 // @early-stop
 RVA(0x0009f690, 0x5d)
 void CMapMgr::Unlink(BrickzNode* node) {
@@ -654,10 +599,6 @@ void CMapMgr::Unlink(BrickzNode* node) {
     node->m_14 = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::CellPop - remove node's bucket slot (node->m_20) from its grid cell's
-// doubly-linked bucket list (m_cellPool = prev, m_rows = next), clear node's links, return
-// the slot to the m_40 free list, and (if flag) push node onto the m_30 list.
 // @early-stop
 RVA(0x0009f710, 0xa7)
 void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
@@ -715,8 +656,6 @@ i32 CMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
     return 1;
 }
 
-// CMapMgr::Save (slot 2, 0x09f840): stream the scalar bookkeeping members out, then
-// the whole cell grid (m_cellPool[j*m_width + i], 0x1c bytes each) row-major over m_width x m_height.
 RVA(0x0009f840, 0x110)
 i32 CMapMgr::Save(CFileMemBase* ar) {
     if (ar == 0) {
@@ -742,8 +681,6 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
     return 1;
 }
 
-// CMapMgr::Load (slot 3, 0x09f9a0): the read counterpart of Save; after reading each
-// cell, zero its +0x18 runtime field (not a persisted value).
 RVA(0x0009f9a0, 0x12e)
 i32 CMapMgr::Load(CFileMemBase* ar) {
     if (ar == 0) {

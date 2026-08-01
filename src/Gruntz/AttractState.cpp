@@ -1,24 +1,24 @@
-#include <EmptyString.h>          // g_emptyString (ex .cpp extern)
-#include <Gruntz/String.h>        // MFC CString (Vslot09's key buffer); MFC-first
-#include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <EmptyString.h>
+#include <Gruntz/String.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Attract.h>
-#include <Bute/SymParser.h> // CSymParser (m_8: ResolvePath 0x13c030) + CSymTab (m_2c: FindSub 0x13a230)
-#include <Gruntz/GameRegistry.h> // CGameRegistry / g_gameReg (+ SoundCue chain: DirectSoundMgr/SoundDevice/SoundStream)
-#include <Gruntz/FixedPtrArray32.h>    // the game-controller poll list (g_actorList)
-#include <DinMgr2/DirectInputMgr2.h>   // CInputDevBase (Poll/ResetState/m_currentKeys)
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (Vslot09 BlitPage)
-#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
-#include <DDrawMgr/DDSurface.h>        // CDDSurface (Vslot07 Flip; m_10->m_2c)
-#include <ddraw.h>                     // IDirectDrawSurface (Render busy IsLost)
+#include <Bute/SymParser.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/FixedPtrArray32.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <ddraw.h>
 #include <rva.h>
 
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
-#include <Gruntz/SoundState.h>            // ex Globals.h transitive
-#include <Gruntz/Random.h>                // ex Globals.h transitive
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Random.h>
 
 VTBL(CAttract, 0x001ea194);
 VTBL(CState, 0x001ea21c);
@@ -27,13 +27,11 @@ char s_dat60b5bc[] = "2";
 
 RVA(0x00013fb0, 0xd5)
 i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
-    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
     if (CState::LoadGameAssetNamespaces(a, b, mode) == 0) {
         return 0;
     }
 
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -76,24 +74,14 @@ void CAttract::ReleaseResources() {
         reg->m_soundStream->Stop();
     }
     menuRoot()->m_soundRegistry->RemoveKeysEqual("ATTRACT", "_");
-    // Chain the base slot-2 teardown (0xfa150 IS CState::ReleaseResources - the
-    // CState vtable slot 2 default body; qualified -> direct call).
+
     CState::ReleaseResources();
 }
 
-// CAttract::Vslot09(arg) (slot 9 / +0x24, 0x014120): the full attract title-screen
-// entry (/GX EH frame from the CString format local). Hide the cursor, roll a random
-// TITLE%d and run it (as the siblings do), advance the active menu page (BlitPage),
-// then - via the inline MS-CRT LCG (== Rng::Next, seeded through the cached timeGetTime
-// fn-ptr) - build a random "ATTRACT_TITLE%s" key, look it up in the registrar's
-// CMapStringToPtr (m_28+0x10) to (re)acquire the host/sound sub-object (m_host), (re)play
-// its voice + latch the idle timeout (or a 0x1f40 default), then poke each g_actorList
-// actor's slot-5 virtual. Returns 1. Re-homed from src/Stub/GapFunctions.cpp.
 // @early-stop
 RVA(0x00014120, 0x1a9)
 i32 CAttract::Vslot09(i32 arg) {
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
+
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -119,9 +107,6 @@ i32 CAttract::Vslot09(i32 arg) {
     char buf[0x40];
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    // m_10 IS a CMapStringToPtr and retail calls the Ptr band (`call 0x1b8438`); the
-    // ex "dual-band keep" reinterpret_cast to CMapStringToOb bound the Ob-band Lookup
-    // COMDAT at 0x1b8008 instead - mfc_class --audit flagged it WRONG-CLASS.
     void* found = 0;
     menuRoot()->m_soundRegistry->m_10.Lookup(buf, found);
     m_host = static_cast<LeafCue*>(found);
@@ -141,15 +126,6 @@ i32 CAttract::Vslot09(i32 arg) {
     return 1;
 }
 
-// CAttract::FrameSlot28(arg) (slot 10 / +0x28, 0x014340): per-frame voice poll.
-// If the host's voice (m_host->m_10) is playing, (re)start it (Restart(0,0x1f4,1)),
-// then if it is still playing stop the registrar's pooled resource (Stop(-1)) and
-// loop while the voice keeps reporting playing. Returns 1.
-// EXACT. The "back-edge coin-flip" (retail `mov eax,[esi+0x1b8] / mov ecx,[eax+0x10]`
-// vs our collapsed `mov ecx,[esi+0x1b8] / mov ecx,[ecx+0x10]`) was the loop BODY's
-// spelling, not the back edge: reading the registry through a named local used TWICE
-// (the null test + the call) instead of latching ->m_2c into a local splits the chain.
-// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x00014340, 0x71)
 i32 CAttract::FrameSlot28(i32 arg) {
     if (m_host == 0) {
@@ -171,18 +147,6 @@ i32 CAttract::FrameSlot28(i32 arg) {
     return 1;
 }
 
-// CAttract::Render (slot 5 / +0x14, 0x143e0): the attract-mode per-frame poll/draw.
-// If the page's render-busy object reports idle AND the InputVirtual slot reports
-// idle, report the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's
-// pooled resource, tick the m_idleTimer timeout down by the frame delta, run every
-// actor's Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
-// EXACT. Two real bugs, both fixed: (1) the m_idleTimer countdown was a branch-polarity
-// bug - written `if (delta < timer) sub; else zero`, cl emitted `jae`->zero where retail
-// emits `jb`->sub; the `if (delta >= timer) zero; else sub` form (matching CDemo::Render)
-// flipped it. (2) the m_soundRegistry->m_2c chain collapsed into one register because
-// ->m_2c was latched into a local; naming the REGISTRY and reading ->m_2c twice off it
-// (null test + call) keeps the base in eax exactly as retail does.
-// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -222,13 +186,11 @@ i32 CAttract::Render() {
 
 RVA(0x00014520, 0xc3)
 i32 CAttract::InputVirtual() {
-    // The page "loaded?" gate is CDDrawSubMgrPages::PagesReady (0x158bc0), reached
-    // through the page's real class (the CMenuPage view's IsLoaded @0x158bc0 == this).
+
     if (menuRoot()->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
+
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -244,8 +206,7 @@ i32 CAttract::Vslot06() {
     if (IsActive() == 0) {
         return 0;
     }
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
+
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -281,8 +242,7 @@ i32 CAttract::Vslot07() {
     if (!CState::Vslot07()) {
         return 0;
     }
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
+
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);

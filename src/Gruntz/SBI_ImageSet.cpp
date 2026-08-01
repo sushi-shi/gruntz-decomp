@@ -1,31 +1,23 @@
-#define SBI_DTOR_CHAIN        // enable the inline base-dtor bodies (see StatusBarItem.h)
-#define SBI_OWN_IMAGESET_DTOR // this TU supplies the out-of-line ~CSBI_ImageSet (0x102000)
+#define SBI_DTOR_CHAIN
+#define SBI_OWN_IMAGESET_DTOR
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
+#include <Gruntz/SerialCounter.h>
+#include <Io/FileMem.h>
 #include <Mfc.h>
 #include <Ints.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawWorkerRegistry + CDDrawWorker)
-#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CFileMemBase (the frameless method view)
-#include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CDDrawSurfaceMgr m_world)
-#include <Gruntz/SbiConfig.h>    // canonical config-host family (SetupImage's map lookup)
-#include <Image/CImage.h>        // the resolved frame record (Render's blit)
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/Sprite.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/SBI_ImageSet.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SbiConfig.h>
+#include <Image/CImage.h>
 
 VTBL(CSBI_ImageSet, 0x001eac4c);
-// ---------------------------------------------------------------------------
-// CSBI_ImageSet::SetupImage (0xe72f0, vtable slot 11 - the CSBI_Image::SetupImage
-// override): validate + latch the config descriptor (subtype, command, the four
-// rect coords, the rect-test command), then look the record key up in the host's
-// map and, if found, resolve the start frame from the record's frame range/table.
-// Re-attributed from the SBI_RectOnly host TU's "ConfigureRect" (dossier #16:
-// vtbl 0x1eac4c slot [11] thunk 0x263a -> 0xe72f0; the fields are the thin chain's).
-// 52.2 -> 68.2 (2026-08-01). The old note's "reused edx = this+0x14 pointer" was NOT a
-// scheduling artifact - it is the WHOLE-STRUCT `m_rect14 = rect` copy (see below).
+
 // @early-stop
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
@@ -39,11 +31,7 @@ i32 CSBI_ImageSet::SetupImage(
     i32 extra
 ) {
     static_cast<void>(extra);
-    // ONE `||`: retail sends host, owner AND the record guard to a single shared
-    // `xor eax,eax; pop esi; ret 0x2c`. (Two separate `if`s inline all four exits
-    // and cost a point - the OPPOSITE of the sibling CSBI_ImageSetAni::Init, whose
-    // retail shape keeps a private epilogue per guard. Same site, different optimum:
-    // docs/patterns/same-sites-different-per-function-optimum.md.)
+
     if (host == 0 || owner == 0) {
         return 0;
     }
@@ -52,9 +40,7 @@ i32 CSBI_ImageSet::SetupImage(
     m_24 = host;
     m_28 = 0;
     m_enabled = 1;
-    // WHOLE-struct assignment: retail CSEs the destination into `lea edx,[esi+0x14]`
-    // and writes [edx]/[edx+4]/[edx+8]/[edx+0xc]; field-by-field stores keep the
-    // disp8 [esi+N] forms (the same fix that took CSBI_MenuItem::SetupImage 67->92).
+
     m_rect14 = rect;
     m_cmd = cmd;
     if (key == 0) {
@@ -72,9 +58,7 @@ i32 CSBI_ImageSet::SetupImage(
         f = rec->m_minIndex;
     }
     m_38 = f;
-    // ONE common `cel` register that both arms fill: retail's out-of-range arm is
-    // `xor ecx,ecx; mov [esi+0x30],ecx` (register), not an immediate store - which
-    // only a shared destination variable gives.
+
     CImage* cel;
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
         cel = static_cast<CImage*>(rec->m_items.GetAt(f));
@@ -91,11 +75,6 @@ void CSBI_ImageSet::Reset() {
     m_frame = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_ImageSet::Render (0xe7440, vtable slot 5): one play step that
-// re-resolves the frame from the record table and renders it: while cycles remain,
-// consume one, look up the frame (0 when out of range), record it, and - when
-// present - blit it. Returns 1. Ex CAniPlayer view (dossier #16).
 RVA(0x000e7420, 0x8)
 i32 CSBI_ImageSet::Refresh(i32) {
     return 1;
@@ -125,10 +104,6 @@ i32 CSBI_ImageSet::Render() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// vtable slot 1 (0xe74f0): serialize the config id + name. mode 7 = load (read id,
-// read name, resolve record), mode 4 = save (write id, write name from the record);
-// either way chain to the base serialize and return its normalized truth.
 RVA(0x000e74c0, 0x16)
 void CSBI_ImageSet::Notify(i32 id) {
     if (id != -1) {
@@ -154,9 +129,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pO
             s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CDDrawWorker* out;
-                // Zero-initialised: retail seeds the out-param slot with the (already
-                // zero) eax left by the strlen scan - `mov [esp+0x18],eax` before the
-                // Lookup call. An uninitialised declaration drops that store.
+
                 CObject* outOb = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
                 out = static_cast<CDDrawWorker*>(outOb);
@@ -175,7 +148,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pO
             s->Write(buf, 0x80);
             break;
     }
-    // QUALIFIED = the direct CSBI_Image base leg (0xe6e40); unqualified is recursion.
+
     return CSBI_Image::SerializeFields(s, mode, typeId, pObj) != 0;
 }
 

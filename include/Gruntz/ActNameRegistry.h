@@ -3,17 +3,16 @@
 
 #include <Bute/ButeTree.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/zBitVec.h> // ex Globals.h
+#include <Wap32/zBitVec.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
-#include <Bute/ButeMgr.h> // CButeTree::Find / Insert
+#include <Bute/ButeMgr.h>
 #include <Gruntz/ActReg.h>
-#include <Mfc.h> // real CString (CActName was a fake view over it)
+#include <Mfc.h>
 
-class CVariantSlot; // folded CActColl2
-struct CString;     // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+class CVariantSlot;
+struct CString;
 
-// The grow-scratch CString array base (the dtor sweeps walk it).
 static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
 }
@@ -34,10 +33,6 @@ static inline CString* ActNameLookup(i32 id) {
     return slot;
 }
 
-// The same lookup with the grow-fail tail left OUTLINED (`zErrHandling::Report`,
-// 0x34960) instead of expanded. Retail's shape at the FIRST key's name lookup in a
-// two-key registrar; the second key's still expands. See the ResolveEntryCallReport
-// note in <Wap32/ZVec.h>.
 static inline CString* ActNameLookupCallReport(i32 id) {
     g_typeColl.m_grown = 0;
     CString* slot;

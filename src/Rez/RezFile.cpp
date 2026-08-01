@@ -1,14 +1,9 @@
-#include <Bute/SymParser.h> // CSymParser - the proven m_parent owner (Retry, slot 2)
+#include <Bute/SymParser.h>
 #include <Rez/RezMgr.h>
-#include <Rez/RezFile.h> // CRezFile (this TU's own class; shared decls)
-#include <Rez/RezList.h> // CRezList AddHead (0x1851e0) - owner child-list enroll
+#include <Rez/RezFile.h>
+#include <Rez/RezList.h>
 #include <rva.h>
 
-// The two private fopen-mode literals referenced ONLY by Open@CRezItm + OpenFile@
-// CRezFile. cl mangles the `extern const char[]` reference with a `P` storage class
-// where clang's mangledName says `Q`; labels.py rewrites that (authority-checked
-// against rezfile.obj), so a plain DATA() binds.
-// (s_rb @0x20b668 is bound by DirectSoundMgr.cpp, which shares it.)
 DATA(0x0021a0a4)
 const char s_rPlusB[] = "r+b";
 DATA(0x0021a0a8)
@@ -18,23 +13,17 @@ VTBL(CRezDir, 0x001ef7a8);
 VTBL(CRezList, 0x001ef7c8);
 VTBL(CRezFile, 0x001ef7d0);
 DATA(0x0021a0a0)
-const char g_wildcard[] = "*.*"; // decl in RezFile.h
+const char g_wildcard[] = "*.*";
 
 RVA(0x0013c4d0, 0x1)
 void CRezList::V0() {}
 
 RVA(0x0013c4e0, 0x12)
 CRezItmBase::CRezItmBase(void* parent) {
-    // Language-forced cast: the ctor's parameter is `void*` in the retail ABI
-    // (mangled ??0CRezItmBase@@QAE@PAX@Z = PAX), while the stored member is the
-    // typed CSymParser* (the proven parent; ex CRezItmOwner view). Storing the void* param into the typed
-    // member requires the reinterpret.
+
     m_parent = static_cast<CSymParser*>(parent);
 }
 
-// The four cl-auto scalar-deleting destructors (vtable slot 1 of each class; the
-// compiler generates them from the virtual dtors - no source symbol to RVA()-pin,
-// so RVA_COMPGEN pairs the retail copies with the auto-emitted base COMDATs).
 RVA_COMPGEN(0x0013c500, 0x1e, ??_GCRezItmBase@@UAEPAXI@Z)
 
 RVA(0x0013c520, 0xe)
@@ -94,14 +83,6 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
     return got;
 }
 
-// ---------------------------------------------------------------------------
-// CRezItm::Write(base, off, count, buf)  (vtable slot 3)
-// The write counterpart of Read: invalidate the cursor (m_pos = -1), seek to the
-// absolute position (base+off) recovering through the owner's Retry() gate on a
-// seek failure, then fwrite `count` bytes from buf, retrying the write through
-// the same gate on a short write. Returns 0 on a zero count or a gate that gives
-// up; the write count otherwise. Unlike Read, the cursor is left invalid.
-// ---------------------------------------------------------------------------
 RVA(0x0013c6c0, 0x97)
 i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     m_pos = -1;
@@ -163,11 +144,6 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CRezItm::Close()  (vtable slot 5)
-// fclose the FILE*, retrying through the owner's Retry() gate; then free the
-// read buffer and reset the cursor. Returns 1 on success, 0 if there was no open
-// FILE* or the gate gave up.
 // @early-stop
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
@@ -224,11 +200,6 @@ i32 CRezItm::Check() {
     return Open(m_readBuf, m_readonly, 0) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CRezDir::CRezDir(parent, maxOpen)
-// Base ctor, then the two embedded child-collection list members auto-construct
-// (each stamps ??_7CRezList @0x1ef7c8 and zeroes head/tail), the derived vtbl
-// is stamped, then m_openCount=0, m_write=0, m_maxOpen=maxOpen, m_readonly=1.
 // @early-stop
 RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, i32 maxOpen) : CRezItmBase(parent) {
@@ -242,8 +213,7 @@ RVA_COMPGEN(0x0013c990, 0x1e, ??_GCRezDir@@UAEPAXI@Z)
 
 RVA(0x0013c9b0, 0x7f)
 CRezDir::~CRezDir() {
-    // Typed intrusive-list access: the children are CRezItmBase-derived nodes
-    // (each `delete` dispatches the node's slot-1 scalar-deleting dtor).
+
     while (m_openList.m_head != 0) {
         delete m_openList.m_head;
     }
@@ -252,11 +222,6 @@ CRezDir::~CRezDir() {
     }
 }
 
-// 0x13ca30 - the standalone out-of-line COMDAT copy of ~CRezList (inline in
-// <Rez/RezList.h>), emitted in this obj because ~CRezDir's EH unwind funclets
-// (0x1e0cb8/0x1e0cc3, the two member states) take the dtor's address. 7 bytes:
-// the own-vtable stamp is dead-store-eliminated into the inlined ~CObjListBase
-// base stamp (`mov [ecx],??_7CObjListBase; ret`).
 RVA_COMPGEN(0x0013ca30, 0x7, ??1CRezList@@QAE@XZ)
 
 RVA(0x0013ca40, 0x5)
@@ -277,9 +242,7 @@ i32 CRezDir::Open(char* name, i32 readonly, i32 write) {
 
 RVA(0x0013ca80, 0x1d)
 i32 CRezDir::Close() {
-    // The list stores CRezFile nodes; retrieve the head as its concrete type (the
-    // typed intrusive-list access - CRezFile's node base is at offset 0, so this is a
-    // zero-offset static downcast, matching-neutral). CloseFile() is a direct call.
+
     while (m_openList.m_head != 0) {
         (static_cast<CRezFile*>(m_openList.m_head))->CloseFile();
     }
@@ -299,12 +262,11 @@ RVA(0x0013cac0, 0x9b)
 CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
     m_dir = dir;
     m_handle = 0;
-    // operator new returns void*; char* needed for strcpy (language-forced).
+
     char* buf = static_cast<char*>(::operator new(strlen(nameSrc) + 1));
     m_name = buf;
     strcpy(buf, nameSrc);
-    // Enroll into the dir's closed list (new files start closed): `this` IS the node -
-    // CRezItmBase carries the +4/+8 links AddHead writes.
+
     m_dir->m_closedList.AddHead(this);
 }
 
@@ -404,8 +366,7 @@ i32 CRezFile::OpenFile() {
         return 1;
     }
     if (m_dir->m_openCount > m_dir->m_maxOpen) {
-        // Typed intrusive-list access: the LRU eviction candidate (the open list's
-        // tail) is a CRezFile (zero-offset static downcast; see CRezDir::Close).
+
         CRezFile* lru = static_cast<CRezFile*>(m_dir->m_openList.m_tail);
         if (lru != 0) {
             lru->CloseFile();
@@ -460,11 +421,5 @@ i32 CRezFile::CloseFile() {
 RVA(0x0013cef0, 0x1)
 void CRezFile::Noop() {}
 
-// (CRezDir::FindEntry @0x13c080 and CRezDirNode::Load @0x13a0f0 moved to
-// src/Bute/SymTab.cpp in wave4-K: both are text-contained in the ButeMgr sym
-// obj and Load's private .data cell 0x21a070 sits inside the sym band, BEFORE
-// this obj's 0x21a0a4 mode strings - dossier #14A. Their Rez-flavored names are
-// an @identity-TODO carried there.)
-
-VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
-VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
+VTBL(CRezItmBase, 0x001ef768);
+VTBL(CRezItm, 0x001ef788);

@@ -1,21 +1,18 @@
-#include <Mfc.h>           // MFC CString (ctor/dtor/op=/op+, all reloc-masked)
-#include <Io/FileStream.h> // CFile (0x1befd7 ctor / 0x1bf121 dtor / Open/Read/GetLength/Close)
-#include <string.h>        // inline memcpy (rep movsd) at /O2
-#include <stdio.h>         // sprintf (0x11f890)
+#include <Mfc.h>
+#include <Io/FileStream.h>
+#include <string.h>
+#include <stdio.h>
 
 #include <rva.h>
 
-#include <Bute/SymParser.h>      // the shared CSymParser (ResolvePath 0x13c030)
-#include <Gruntz/GruntzMgr.h>    // the REAL owner (was the LevelRezLoader view)
-#include <Gruntz/LevelRezPath.h> // LevelRezData (the 0x5f4 rez descriptor)
-#include <Gruntz/ParseSource.h>  // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
+#include <Bute/SymParser.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelRezPath.h>
+#include <Gruntz/ParseSource.h>
 
-// @source: decomp-xref
 // @early-stop
 RVA(0x00093d40, 0x473)
-// Slot names from the declaration in <Gruntz/GruntzMgr.h>, which the two SaveGame call
-// sites confirm: BuildLevelRezPath(pathHi == 0, slot->m_pathHi, slot->m_pathLo,
-// slot->m_levelId, name).
+
 i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name) {
     char scratch[16];
     LevelRezData buf;
@@ -38,8 +35,6 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         return 0;
     }
 
-    // Namespace path. Retail writes the Insert/BeginParse/memcpy/EndParse tail out
-    // inline per sub-path (no factoring), so it is duplicated here to match.
     if (isEmpty != 0) {
         sprintf(scratch, "AREA%i_WORLDZ", ((id - 1) % 0x24) / 4 + 1);
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(scratch));

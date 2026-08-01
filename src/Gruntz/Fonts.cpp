@@ -1,5 +1,5 @@
 #include <Font/Font.h>
-#include <Gruntz/Fonts.h> // the shared InitializeFonts decl (Run boot-calls it)
+#include <Gruntz/Fonts.h>
 #include <rva.h>
 
 DATA(0x0024eac0)
@@ -13,14 +13,11 @@ Font g_tinyFont;
 DATA(0x0024ead8)
 FontRenderer g_textObj;
 DATA(0x0024eb14)
-i32 g_loadedFlag = 0; // 0x24eb14  Fonts::EnsureLoaded once-gate
+i32 g_loadedFlag = 0;
 
 RVA(0x00115810, 0xa3)
 i32 InitializeFonts() {
-    // The already-loaded case + the all-loaded success case share the single
-    // `return 1` tail (the target's `jne <tail>` + the immediate flag store, not
-    // an eax-routed one): the flag-set lives INSIDE the not-yet-loaded block so it
-    // emits `mov dword[flag],1` (eax not yet live) before the shared `mov eax,1`.
+
     if (!g_loadedFlag) {
         if (!g_largeFont.LoadFont("large.fnt")) {
             return 0;

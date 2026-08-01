@@ -1,14 +1,12 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Ints.h>
-#include <Gruntz/GruntzMgr.h> // the REAL singleton class (+ CDDrawSurfaceMgr via GameRegistry.h)
-#include <Gruntz/GameLevel.h> // CGameLevel - m_world->m_level (the level; its m_mainPlane)
-#include <Wwd/WwdFile.h> // CDDrawWorkerHost/CDDrawWorkerHost - the canonical plane (the registry plane)
-#include <Gruntz/SlotHolder.h> // canonical CSlotHolder (the swapping game object)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameLevel.h>
+#include <Wwd/WwdFile.h>
+#include <Gruntz/SlotHolder.h>
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// @early-stop
 RVA(0x001128b0, 0x88)
 i32 CSlotHolder::DoSwap() {
     i32 oldTok = this->m_34;

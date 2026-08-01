@@ -1,13 +1,9 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/State.h>
-#include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections::RemoveItemA (0x142160) + CDDSurface
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // the m_c holder (m_ptrColl surface pool)
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 
-// 0x0fa150 - release the four owned blit surfaces (+0x160/+0x164/+0x14/+0x18) back to
-// the m_c holder's +0x1c surface pool (RemoveItemA @0x142160), then clear the ready
-// gate (+0x3c). __thiscall.
-//
 // @early-stop
 RVA(0x000fa150, 0x74)
 void CState::ReleaseResources() {

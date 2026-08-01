@@ -1,48 +1,48 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/SerialArchive.h>
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
-#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
-#include <Gruntz/ActReg.h> // CActReg (CActRegPool<CToobSpikez>::s_table); ResolveEntry + GetRetAddr/g_errOutOfMem
-#include <Gruntz/ActNameRegistry.h> // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
-#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
+#include <Gruntz/XferArchive.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Rez/FrameClock.h>
 #include <rva.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
 RVA_COMPGEN(0x00012c30, 0x1e, ??_GCToobSpikez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
 RVA(0x00114480, 0xf1)
 i32 CreateToobSpikez(CGameObject* obj) {
-    AnimWorkerObj* rec = obj->m_7c;
+    AnimWorkerObj* rec = obj->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
             CToobSpikez* inst = new CToobSpikez(obj);
-            inst->Activate(); // slot 6
+            inst->Activate();
             rec->m_logic = inst;
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9(); // slot 11
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8(); // slot 10
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC(); // slot 14
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB(); // slot 13
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA(); // slot 12
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD(); // slot 15
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x3e8:
             break;
@@ -80,17 +80,6 @@ i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
     return Chain(a, b, c, d) != 0;
 }
 
-// CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to ~CTimeBomb @0x012a70;
-// the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CToobSpikez() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
@@ -100,15 +89,6 @@ void CToobSpikez::FireActivation(i32 coord) {
     }
 }
 
-// CToobSpikez::RegisterActs @0x1149c0 - bind the logic handler to the activation
-// key "A" in the toob-spikez's OWN registry (CActRegPool<CToobSpikez>::s_table). See the registration
-// commentary above. The SAME archetype as CParticlez::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x001149c0, 0x18d)
 void CToobSpikez::RegisterActs() {
     i32 id = ActFindId("A");
@@ -127,8 +107,7 @@ void CToobSpikez::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    // s_table is a zDArray<CActHandler>, so ResolveEntry already returns CActHandler*
-    // (== i32 (CUserLogic::**)()); the cast that used to wrap it was a no-op.
+
     *CActRegPool<CToobSpikez>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CToobSpikez::AdvanceAnim);
 }

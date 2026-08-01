@@ -1,11 +1,11 @@
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/CurPlayer.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/SbiSideTabBuildViews.h> // (the settings view; the builder IS CStatusBarMgr)
+#include <Gruntz/SbiSideTabBuildViews.h>
 #include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/GruntzMgr.h> // the *0x24556c singleton (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 
 // @early-stop
 RVA(0x00105070, 0x10e)
@@ -22,9 +22,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             geomVal = m_rect10.right + 0x1c;
         }
         CSBI_SideTab* newobj = new CSBI_SideTab;
-        // `this` IS the builder - it is the parent the configure reads m_10/m_18 off. The
-        // old view typed that param CSBI_SideTab* purely to compile, which forced this
-        // cross-cast of a CStatzTabBuilder to an unrelated class.
+
         i32 ok = newobj->BuildStatzTabStatusBar(
             this,
             g_gameReg->m_world,

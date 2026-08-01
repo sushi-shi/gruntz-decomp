@@ -1,8 +1,7 @@
-// GruntzMgrCmd.h - the GruntzMgrCmd TU's external declarations.
 #ifndef GRUNTZ_GRUNTZMGRCMD_H
 #define GRUNTZ_GRUNTZMGRCMD_H
 
-#include <Mfc.h> // afx.h FIRST (umbrella for any Win32 types below)
+#include <Mfc.h>
 #include <Ints.h>
 #include <rva.h>
 
@@ -11,7 +10,7 @@ namespace Utils {
     class RegistryHelper;
 }
 
-i32 ParseSerial(CGruntzMgr* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
+i32 ParseSerial(CGruntzMgr* mgr, char* s);
 void SaveFrontBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* mgr,
@@ -19,6 +18,6 @@ void SaveFrontBufferShot(
     i32 h,
     char* name,
     i32 saveFlag
-); // saveFlag -> SaveScreenshot's own last slot
+);
 
 #endif // GRUNTZ_GRUNTZMGRCMD_H

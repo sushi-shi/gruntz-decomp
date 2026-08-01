@@ -1,19 +1,10 @@
-// DirectionClassify.cpp - 0x4a780, a Ghidra-missed 8-way direction classifier
-// (__thiscall(other, exact) -> GruntDirectionCell*). @identity-TODO: the owning entity class is
-// unrecovered (position-bearing, world coords as doubles at +0x78/+0x80, snapped cell
-// ints at +0x140/+0x144; leaf between LoadAnimNameTable 0x49c60 and the CopyRect helper
-// 0x4a9f0 in the CGrunt anim region). It returns the direction descriptor for the
-// heading from `this` to `other`, chosen by the sign of the delta and the slope ratio
-// against +-0.5 / +-2.0 (the 22.5/67.5-degree octant thresholds), with an exact-on-cell
-// short-circuit. Field names are placeholders; only offsets + code bytes are load-bearing.
+
+
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/DirectionClassify.h>
 #include <Gruntz/Grunt.h>
 
-// File-scope `const` has INTERNAL linkage in C++, so cl decorates each of these
-// `_<name>$S<n>` with a per-object ordinal - a plain DATA() label (clang's
-// undecorated mangledName) never matched the base obj and bound nothing.
 DATA(0x001e9750)
 const double g_slopeNegHalf = -0.5;
 
@@ -23,9 +14,6 @@ DATA(0x001e9760)
 const double g_slopePosTwo = 2.0;
 DATA(0x001e9768)
 const double g_slopeNegTwo = -2.0;
-
-// MotionEntity (the position-bearing entity Classify runs on) is defined in
-// <Gruntz/DirectionClassify.h>; identity @identity-TODO.
 
 // @early-stop
 RVA(0x0004a780, 0x1ec)
@@ -63,7 +51,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirNorth;
     }
-    if (dx >= 0) { // dy < 0
+    if (dx >= 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthWest;
         }
@@ -75,7 +63,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirWest;
     }
-    if (dy > 0) { // dx < 0
+    if (dy > 0) {
         if (onCell) {
             return &g_gruntMoveDirSouthEast;
         }
@@ -87,7 +75,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirEast;
     }
-    // dx < 0, dy < 0
+
     if (onCell) {
         return &g_gruntMoveDirSouthWest;
     }

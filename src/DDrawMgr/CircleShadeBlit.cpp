@@ -1,13 +1,12 @@
-#include <DDrawMgr/DDSurface.h>   // the real CDDSurface (m_pitch @+0x20) the blit reads
-#include <Gruntz/FaderSubtypes.h> // the canonical CFaderLight (this method's owner)
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/FaderSubtypes.h>
 #include <Ints.h>
-#include <math.h> // (double)int -> fild ; sqrt -> fsqrt ; (int) -> __ftol
+#include <math.h>
 #include <rva.h>
 
 // @early-stop
 RVA(0x00180fb0, 0x534)
-// Names from the one caller, CFaderLight::RenderFrame @0x180640:
-//   Render(row, rad * rad, rad, lut, m_srcBits, m_dstBits)
+
 void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
     i32 R = m_spanCount;
     if (R <= 0) {
@@ -35,7 +34,7 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
     if (cx >= mid && row0 <= cx) {
         i32 mirCol = 2 * (cx - row0);
         if (mirCol + row0 < m_surfHeight) {
-            // ---- both-halves variant (LOOP A) ----
+
             mirSrc = mirCol * srcpitch;
             mirDst = mirCol * dstpitch;
             if (len < radius - R) {
@@ -67,7 +66,7 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
             } while (len >= radius - m_spanCount);
             return;
         }
-        // ---- left-only variant (LOOP B) ----
+
         if (len < radius - R) {
             return;
         }
@@ -94,8 +93,7 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
         return;
     }
 
-    // ---- cx < mid (or row0 > cx) path ----
-    if (cx >= mid) { // row0 > cx
+    if (cx >= mid) {
         if (row0 >= mid) {
             return;
         }
@@ -104,7 +102,7 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
         i32 mirCol = 2 * dx;
         i32 right = len - mirCol;
         if (right < 0) {
-            // ---- left-only mirrored-negative variant (LOOP D) ----
+
             if (len < radius - R) {
                 return;
             }
@@ -130,7 +128,7 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
             } while (len >= radius - m_spanCount);
             return;
         }
-        // ---- both-halves shifted variant (LOOP C) ----
+
         mirSrc = mirCol * srcpitch;
         mirDst = mirCol * dstpitch;
         if (len < radius - R) {

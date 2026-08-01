@@ -1,14 +1,12 @@
 #include <Ints.h>
 #include <rva.h>
-#include <stdlib.h>            // rand (0x11fee0), the trailing signature component
-#include <Gruntz/Grunt.h>      // the real CGrunt roster entry + its CGameObject* m_10
-#include <Gruntz/Multi.h>      // CMulti (m_session pointee; its CState base m_4)
-#include <Gruntz/GruntzMgr.h>  // CGruntzMgr (m_4 pointee; m_cmdGrid @+0x68)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid @+0x1c, the 4x15 roster)
-#include <Net/NetMgr.h>        // CNetSession (the receiver; m_session @+0x04)
+#include <stdlib.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Net/NetMgr.h>
 
-// fold every team object's fields into a 32-bit game-state signature.
-//
 // @early-stop
 RVA(0x000c0590, 0x21c)
 i32 CNetSession::Checksum() {
@@ -17,9 +15,7 @@ i32 CNetSession::Checksum() {
     do {
         i32 cnt = 15;
         do {
-            // per-iteration reload of the 3-hop chain (retail re-derefs each time);
-            // the grid cell IS the placed CGrunt (the CGrunt/CGrunt conflation is
-            // the grid's own @identity question, not this reader's).
+
             CGrunt* obj = static_cast<CGrunt*>(m_session->m_mgr->m_cmdGrid->m_grid[idx]);
             if (obj != 0) {
                 CGameObject* sub = obj->m_object;

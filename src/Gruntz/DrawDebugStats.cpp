@@ -1,21 +1,21 @@
-#include <Gruntz/DrawDebugStats.h> // this TU's external declarations
-#include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8) + windows.h
+#include <Gruntz/DrawDebugStats.h>
+#include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
+#include <ddraw.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Play.h>              // the real CPlay : CState (the method owner)
-#include <Gruntz/View.h>              // the CDDrawSurfaceMgr chain (render state, draw surface)
-#include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (m_list.GetCount @+0x1c)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (the m_24 level + scroll origin)
-#include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (m_surface)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
-#include <Gruntz/GruntzMgr.h>          // CGruntzMgr (base CGameMgr::m_fps @+0x18)
-#include <stdio.h>                     // engine sprintf (reloc-masked)
-#include <string.h>                    // inline strcat/strlen intrinsics (/O2)
+#include <Gruntz/Play.h>
+#include <Gruntz/View.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/GameLevel.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GruntzMgr.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <rva.h>
-#include <Pix16.h> // the byte-cursor unions (RecordBytes / Pix16Ptr)
+#include <Pix16.h>
 
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {
@@ -23,10 +23,6 @@ void CPlay::DrawDebugStats() {
         return;
     }
 
-    // 0x200 + 0x40: the frame is sub esp,0x268 == 4 (hdc) + 4 (the CString) +
-    // 0x10 (dr) + 0x10 (lr) + 0x40 (scratch) + 0x200 (buf), with NO separate slot
-    // for the GetRect out-rect - retail hands GetRect the scratch buffer itself
-    // (see the reinterpret_cast below).
     char buf[0x200];
     char scratch[0x40];
     buf[0] = 0;
@@ -41,8 +37,7 @@ void CPlay::DrawDebugStats() {
     }
     if (g_debugDisplayFlags & 0x4) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
-        // The debug "Pos" is the plane's SNAPPED SCROLL ORIGIN (+0x84/+0x88), not
-        // m_viewRect (+0x40/+0x44) - retail reads [eax+0x84]/[eax+0x88].
+
         sprintf(scratch, " Pos = %i,%i", p->m_snappedX, p->m_snappedY);
         strcat(buf, scratch);
     }
@@ -80,10 +75,7 @@ void CPlay::DrawDebugStats() {
 
     if (buf[0] != 0) {
         RECT lr;
-        // The query rect IS the sprintf scratch buffer, and the frame PROVES it:
-        // retail passes esp+0x38 - the very slot the format buffer occupies - and
-        // sub esp,0x268 leaves no room for a third RECT. Dead storage by then (the
-        // last strcat is long past); RecordBytes names the overlay at this one seam.
+
         RecordBytes reuse;
         reuse.m_chars = scratch;
         CopyRect(&lr, g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec)));

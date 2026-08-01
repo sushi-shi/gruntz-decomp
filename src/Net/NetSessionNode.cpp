@@ -1,23 +1,14 @@
 #include <Ints.h>
-#include <Net/NetMgr.h> // canonical CNetPlayerListNode / CNetSessionNode / CNetSessionDesc
+#include <Net/NetMgr.h>
 #include <rva.h>
-#include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
-#include <string.h>     // strlen/memcpy (inlined repne scas / rep movs)
+#include <Rez/RezMgr.h>
+#include <string.h>
 
 RVA(0x001793b0, 0x46)
 CNetPlayerListNode::~CNetPlayerListNode() {
     FreeStrings();
 }
 
-// ===========================================================================
-// CNetSessionNode::~CNetSessionNode  @0x179420
-// Stamp the most-derived vtable (0x5f0778), clear m_04/m_20, free the two raw
-// buffers (m_18 then m_14), then the CString members + base subobject fold in.
-// ===========================================================================
-// Real polymorphic now: cl emits the implicit ??_7CNetSessionNode own-vptr stamp
-// in the ENTRY state, clears m_04/m_20, frees the two raw buffers, then the two
-// CString members + the empty ~CObject (grand-base re-stamp) fold in last.
-// /GX frame from the destructible CString members + base subobject.
 // @early-stop
 RVA(0x00179420, 0x8a)
 CNetSessionNode::~CNetSessionNode() {
@@ -31,7 +22,6 @@ CNetSessionNode::~CNetSessionNode() {
         RezFree(m_ownedBufferB);
     }
     m_ownedBufferB = 0;
-    // m_0c, m_08 CString members + base subobject (stamp 0x5e8cb4) fold here.
 }
 
 RVA(0x001795a0, 0xdb)

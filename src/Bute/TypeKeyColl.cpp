@@ -1,38 +1,36 @@
-#include <Gruntz/ProjActCache.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/UserLogic.h> // complete CUserLogic (ProjTypeXfer drives its [3]/[4]/[5] virtually)
+#include <Gruntz/ProjActCache.h>
+#include <Gruntz/UserLogic.h>
 #include <Mfc.h>
-#include <Bute/ButeTree.h>       // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
-#include <Bute/PTreeNode.h>      // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
-#include <Bute/ButeStore.h>      // zPTree / CButeTreeNode (the keyed-store family)
-#include <Wap32/zBitVec.h>       // zErrHandling / zBitVec + the container-error globals
-#include <Gruntz/UserBaseLink.h> // CUserBaseLink (the +0x18 link sub-object; embeds a zBitVec)
+#include <Bute/ButeTree.h>
+#include <Bute/PTreeNode.h>
+#include <Bute/ButeStore.h>
+#include <Wap32/zBitVec.h>
+#include <Gruntz/UserBaseLink.h>
 #include <rva.h>
-#include <AddrWord.h> // the address-in-an-int-slot pair (the g_recs23 key column)
-#include <ctype.h>    // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
-#include <stdlib.h>   // malloc (0x120b60) / realloc (0x125180) / free (0x120c30)
-#include <string.h>   // memset (rep stos) / inline strcpy / strchr / memmove / memcpy
+#include <AddrWord.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 #undef isspace
 #undef isdigit
 #pragma function(memcpy)
 
-#include <Gruntz/TypeKeyColl.h>    // the corrected _zvec/_zdvec/type-collection hierarchy
-#include <Gruntz/TypeKeyCollStr.h> // s_out_of_memory (owner-only decl header)
-#include <Gruntz/XferArchive.h>    // canonical CXferArchive/CXferField (ProjTypeXfer arg)
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TypeKeyCollStr.h>
+#include <Gruntz/XferArchive.h>
 #include <Wap32/ZVec.h>
 
 DATA(0x002bf428)
 void* g_retAddrBreadcrumb;
 
 DATA(0x002bf400)
-i32 g_helperRefCount; // owner def (zero-init .bss; C linkage via TypeKeyColl.h decl)
+i32 g_helperRefCount;
 
 inline CTypeCollRuntime::CTypeCollRuntime()
-    // language-forced: the ctor's 4th parameter is a void* - retail's own mangled name
-    // ??0_zdvec@@QAE@HHHPAX@Z pins it as PAX - and the value passed is the literal 1, a
-    // sentinel the container only ever tests. C++ has no implicit int -> void*.
+
     : _zdvec(sizeof(CString), 0x7d0, 0x7da, ZVecNoScratch()) {
-    CString* item = Slots(); // the construction cursor, typed at the container's seam
+    CString* item = Slots();
     i32 count = m_grown;
     if (item != 0 && count != 0) {
         do {
@@ -43,7 +41,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
 }
 
 CTypeCollRuntime::~CTypeCollRuntime() {
-    CString* item = Elem(m_lo); // the band's first element (m_base + 0)
+    CString* item = Elem(m_lo);
     i32 count = m_hi - m_lo + 1;
     if (item != 0 && count != 0) {
         do {
@@ -57,56 +55,31 @@ DATA(0x002bf650)
 CTypeCollRuntime g_typeColl;
 
 VTBL(zBitVec, 0x001f04c8);
-VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
+VTBL(zErrHandling, 0x001f04cc);
 VTBL(_zdvec, 0x001f04d0);
 VTBL(_zvec, 0x001f04d4);
 VTBL(CTypeCollRuntime, 0x001f04e4);
 
-VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
-// @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.
-// g_typeColl (0x6bf650) and the eight scalars around it are ONE object, not nine globals:
-//     g_typeColl +0x00   g_typeColl.m_errSink +0x04  g_typeColl.m_lo  +0x08  g_typeColl.m_hi    +0x0c
-//     g_typeColl.m_base +0x10   g_typeColl.m_spare   +0x14  g_typeColl.m_stride +0x18  g_typeColl.m_alloc +0x1c
-//     g_typeColl.m_grown +0x20
-// which is EXACTLY <Gruntz/ActReg.h>'s CActReg field map (m_coll/m_coll2/m_lo/m_hi/m_base/
-// m_cur/m_stride/pad1c/m_scratch), and GruntVoice.cpp's ActNameLookup is CActReg::ResolveEntry
-// hand-inlined over them, statement for statement. So the activation-NAME registry at
-// 0x6bf650 is a CActReg like every other one.
-// I promoted five of these to DEFINITIONS in this batch to clear them off the undefined-DATA
-// list, and that was WRONG - it fabricates five globals at interior offsets of a real object.
-// Reverted. The correct fix is to SUBSUME them onto one CActReg (as done for the two
-// registries in GruntVoice.cpp), but they are referenced by ~20 TUs, so that is its own pass -
-// not a drive-by. Left undefined and honest until then.
+VTBL(CButeNodeEntry, 0x001f04d8);
+// Interior fields of one CActReg; do not define overlapping globals.
 
-// g_defaultProjActSize (0x21ad28, i32 in zBitVec.h) - the fallback capacity the
-// default/HH zBitVec ctors size to.
 DATA(0x0021ad28)
 i32 g_defaultProjActSize;
 
 DATA(0x0021adf4)
-const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
+const char s_out_of_memory[] = "out of memory";
 
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
 DATA(0x002bf618)
 i32 g_recCount23;
 
-// Retail places this dynamic initializer immediately before the default zBitVec
-// constructor. The 0x18-byte object spans 0x6bf408..0x6bf41f; it was previously
-// mis-modeled as a char array containing the label.
 DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
-// Retail's 0x16d9b0 helper constructs this complete 0x18-byte fallback error
-// slot. Its storage belongs to TypeKeyColl's contiguous 0x6bf400 data band, and so
-// does zErrHandling's constructor (0x16d9c0, below), which selects it as the default.
+
 DATA(0x002bf430)
 CVariantSlot g_globalErrorSlot("Global Error: ");
 
-// The eight zErrHandling diagnostic message cells (declared in <Wap32/zBitVec.h>).
-// They exactly fill the .bss hole between g_globalErrorSlot (0x6bf430 + 0x18 =
-// 0x6bf448) and g_dynamicArrayErrorSlot (0x6bf468) - eight dwords, no slack - and the
-// zErrHandling ctor below installs a literal into each. Declared here in ADDRESS
-// order; the ctor assigns them in retail's own (different) store order.
 DATA(0x002bf448)
 char* g_errDataInvalid;
 DATA(0x002bf44c)
@@ -124,22 +97,12 @@ char* g_errNoFile;
 DATA(0x002bf464)
 char* g_errOutOfMem;
 
-// The dynamic-array 0x18-byte error slot, initialized by the retail helper at 0x16de20.
-// Its complete extent is 0x6bf468..0x6bf47f; the former u8 "tag" was only its
-// first byte viewed through an incorrect declaration.
 DATA(0x002bf468)
 CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
-// The adjacent zSymTab error slot is likewise one constructed CVariantSlot,
-// not the former void* placeholder. Retail's 0x16dfe0 helper supplies this
-// exact label immediately before the zPTree constructor.
+
 DATA(0x002bf480)
 CVariantSlot g_symTabErrorSlot("zSymTab: ");
 
-// ===========================================================================
-// CButeTree::Find (0x16d190) - descend the trie by the key's crit bits, then
-// strcmp the reached leaf's stored key; return the leaf value on a hit, else 0.
-// Records the descent cursor / candidate so a following Insert can splice in.
-// ===========================================================================
 // @early-stop
 RVA(0x0016d190, 0x101)
 void* zPTree::Find(const char* key) {
@@ -190,9 +153,6 @@ zBitVec::~zBitVec() {
     }
 }
 
-// zBitVec::operator= (0x16d2f0) - deep-copy the DWORD band. If the capacities differ,
-// release this band (RezFree) and reallocate to the source's word count (or OOM), then
-// memcpy m_capacity/8 bytes from the source (heap band or inline SBO word).
 // @early-stop
 RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
 RVA(0x0016d2f0, 0xac)
@@ -221,10 +181,6 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
     return *this;
 }
 
-// zBitVec(const char* tokens, int minSize) - the 836B whitespace/','/'-' number-list
-// PARSER ctor (0x16d3a0). Pass 1 validates the token syntax and finds the max index
-// (to size the bit-set to max(minSize, maxIndex)); pass 2 re-scans and sets each
-// listed bit, expanding "N-M" ranges. Bad arg / bad char fire the container error sink.
 // @early-stop
 RVA(0x0016d3a0, 0x344)
 zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
@@ -257,7 +213,6 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
         goto badchar;
     }
 
-    // ---- pass 1: validate + find max index ----
     start = p;
     while (*p != 0) {
         i32 v = 0;
@@ -293,7 +248,6 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
         goto oom;
     }
 
-    // ---- pass 2: set the bits ----
     q = start;
     while (*q != 0) {
         i32 v = 0;
@@ -367,13 +321,6 @@ inline zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
 RVA(0x0016d710, 0x76)
 CUserBaseLink::CUserBaseLink() {}
 
-// ===========================================================================
-// zBitVec(idx, sizehint) (0x16d790, ex ProjActCache.cpp) - construct the
-// zErrHandling error-tracking base (cl re-stamps the implicit most-derived
-// ??_7zBitVec vptr after it returns), size the bit-vector to cover `idx`, then
-// set bit `idx`; on a sizing failure record the caller return address and fire
-// the error sink. The destructible polymorphic base forces the /GX frame.
-// ===========================================================================
 RVA(0x0016d790, 0xb1)
 zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
     u32 n = static_cast<u32>(sizehint);
@@ -394,25 +341,8 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
     }
 }
 
-// ===========================================================================
-// 0x16d850 - variant/property setter (the HOT helper, ret 0xc).  Switches on the
-// slot's type tag (m_0c): 4 -> store the low word directly; otherwise probe the
-// global index table (when enabled) and, by tag 2/1, either dispatch through the
-// resolved table entry's fn / word slot, or (unresolved) format the slot's label
-// + invoke the slot's own +0x00 callback / store the word.  The index probe is
-// CVariantSlot::Find (0x16e1d0, defined below); the table + gate are globals.
-// (The ex-"reloc-typing entropy tail" was two real things: the message buffer is 0xa0
-// bytes, not 0x94 - retail's whole local area IS the buffer - and 0x18d0f0 is the CRT
-// strncat, so calling it by its real name pairs the reloc.)
-// ===========================================================================
-// CVariantSlot (the +0x00 callback / probe-index / word / type-tag / label slot)
-// is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
-
 RVA(0x0016d850, 0x11e)
-// `key` and `name` really are POINTERS at every call site (the reporting object,
-// a name/cache buffer) - the error registry keys entries by the reporter's ADDRESS
-// and binary-searches g_recs23 on it, so the pointer->i32 conversions below are the
-// language-forced half of a pointer-as-key table, not a mis-typed parameter.
+
 void CVariantSlot::Set(void* key, void* name, i32 value) {
     if (m_typeTag == 4) {
         m_valueWord = static_cast<u16>(value);
@@ -420,8 +350,7 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
     }
     i32 idx;
     if (g_recCount23 != 0) {
-        // g_recs23 keys on the CALLER'S ADDRESS through its signed-int key column
-        // (see <AddrWord.h>)
+
         AddrWord k;
         k.m_addr = key;
         idx = this->Find(k.m_word);
@@ -430,14 +359,10 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
     }
     if (idx == -1) {
         if (m_typeTag == 2) {
-            // 0xa0 of locals (retail `sub esp,0xa0`, buf at the frame bottom): the
-            // label copy plus the 0x4f-capped append, one 160-byte message buffer.
+
             char buf[0xa0];
             strcpy(buf, m_label);
-            // 0x18d0f0 IS the CRT strncat (LIBCMT/HIGH-confidence FID anchor): the
-            // reported record's NAME is appended to the label, capped at 79 chars.
-            // The void*->char* cast is language-forced: retail's own mangled name
-            // ?Set@CVariantSlot@@QAEXPAX0H@Z pins the 2nd parameter as PAX.
+
             strncat(buf, static_cast<const char*>(name), 0x4f);
             m_callback(buf, value);
         } else if (m_typeTag == 1) {
@@ -445,7 +370,7 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
         }
     } else {
         if (m_typeTag == 2) {
-            // the reported record's address rides the same int slot (<AddrWord.h>)
+
             AddrWord rec;
             rec.m_addr = name;
             (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(rec.m_word, value);
@@ -455,12 +380,6 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
     }
 }
 
-// GetRetAddr (0x16d990, ex src/Bute/GetRetAddr.cpp) - the caller-IP breadcrumb
-// helper. It sat in a one-function TU of its own whose only body landed at
-// 0x16d990, i.e. between CVariantSlot::Set (0x16d850 + 0x11e) and the
-// zErrHandling ctor below - INSIDE this object's contiguous .text block, which no
-// separate retail .obj can be. Its sibling GetCallerRetAddr (0x16e0f0) was already
-// here.
 RVA(0x0016d990, 0x3)
 __declspec(naked) void* GetRetAddr() {
     __asm {
@@ -470,24 +389,12 @@ __declspec(naked) void* GetRetAddr() {
     }
 }
 
-// ===========================================================================
-// zErrHandling::zErrHandling (0x16d9c0, ex GameText.cpp) - register with the
-// supplied error sink (or the constructed global one) and lazily install the
-// eight diagnostic message strings. Its RVA sits INSIDE this object's block
-// (between CVariantSlot::Set @0x16d850 and ~zErrHandling @0x16da60), it writes
-// the eight .bss cells that fill this object's 0x6bf448..0x6bf467 hole, and its
-// destructor was already here - so the ctor is this object's, not GameText's.
-// ===========================================================================
 RVA(0x0016d9c0, 0x75)
 RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
 zErrHandling::zErrHandling(CVariantSlot* errSink)
-    // +0x04 is a member-INIT, which is why retail's implicit vptr stamp lands after it
-    // (the stamp is the init-list/body divider). The arg is the sink to register with, not
-    // a string: ~zErrHandling loads +0x04 into ecx as a __thiscall `this` (see
-    // <Wap32/zBitVec.h>). A null argument selects the constructed global sink.
+
     : m_errSink(errSink ? errSink : &g_globalErrorSlot) {
-    // The out-of-memory cell (0x6bf464) doubles as the once-only guard; retail's
-    // store order is exactly this, and is NOT the cells' address order.
+
     if (g_errOutOfMem == 0) {
         g_errOutOfMem = "Out of memory";
         g_errDataInvalid = "Data structure is invalid";
@@ -502,17 +409,10 @@ zErrHandling::zErrHandling(CVariantSlot* errSink)
 
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
-    // 0x16e360 is CVariantSlot::Add (the cursor's insert/update/remove op; val==0 removes),
-    // called on the error sink to unregister this handler. m_errSink is a CVariantSlot* -
-    // no cast (the ex CKeyFinder view of it is dissolved).
+
     m_errSink->Add(this, 0);
 }
 
-// ===========================================================================
-// _zvec::GrowTo(idx, at) (0x16da80, ex ZVec.cpp) - realloc the element band so
-// index `idx` (relative to the `at` anchor) becomes addressable, shift/zero-
-// fill, update bounds.
-// ===========================================================================
 // @early-stop
 RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
@@ -551,15 +451,6 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     return p;
 }
 
-// ===========================================================================
-// CButeTree::Insert (0x16db90) - splice a new leaf for `key`/`value` at the
-// crit-bit where it diverges from the candidate the preceding Find recorded.
-// Allocates the 20-byte node + an owned key copy, sets the node's self-link at
-// its crit bit, walks to the insertion point (from the Find cursor, or from the
-// root when the cursor sits below the divergence bit), and links the node's other
-// child to the displaced subtree. Reports a fatal failure (no prior Find / null
-// arg / OOM) through the +0x04 error sink.
-// ===========================================================================
 // @early-stop
 RVA(0x0016db90, 0x206)
 void* zPTree::Insert(const char* key, void* value) {
@@ -594,7 +485,6 @@ void* zPTree::Insert(const char* key, void* value) {
         if (keybuf != 0) {
             strcpy(keybuf, key);
 
-            // The node's crit-bit child points back at itself (the leaf back-edge).
             i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
             if (dir) {
                 node->m_child[1] = node;
@@ -602,13 +492,12 @@ void* zPTree::Insert(const char* key, void* value) {
                 node->m_child[0] = node;
             }
 
-            // Find where critbit fits and re-point the parent at the new node.
             CButeTreeNode* cursor = m_descentCursor;
             i32 d2 = dir;
             if (cursor == 0) {
                 m_root = node;
             } else if (critbit < cursor->m_bit) {
-                // The Find cursor is below the divergence bit: walk from the root.
+
                 CButeTreeNode* p = m_root;
                 m_descentCursor = 0;
                 m_candidateLeaf = p;
@@ -644,9 +533,6 @@ void* zPTree::Insert(const char* key, void* value) {
                 *s1 = node;
             }
 
-            // Link the node's other child to the displaced subtree. Retail 0x16dfe3
-            // selects the SLOT and stores once (one success tail), it does not emit
-            // a store+epilogue per arm.
             CButeTreeNode** other = &node->m_child[1];
             if (dir) {
                 other = &node->m_child[0];
@@ -665,32 +551,21 @@ void* zPTree::Insert(const char* key, void* value) {
 
 RVA(0x0016dda0, 0x3c)
 _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch) : _zvec(stride, lo, hi, scratch) {
-    m_alloc = m_base;          // +0x1c  the fresh band base (was the m_cursor view)
-    m_grown = m_hi - m_lo + 1; // +0x20  its slot count (was the m_count view)
+    m_alloc = m_base;
+    m_grown = m_hi - m_lo + 1;
 }
 
 RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
 
-// ===========================================================================
-// _zvec::_zvec (0x16de30) - the allocating vector ctor. Builds the
-// zErrHandling base (0x16d9c0, was
-// the duplicate `CZArrayRoot` model), records the [lo, hi] bounds + element stride,
-// allocates the (hi-lo+1)*stride element band (+ a scratch element when none was
-// supplied), and reports a fatal "Inconsistent bounds" / "out of memory" through the
-// inherited error sink. cl emits the implicit ??_7zDArray vptr stamp and the /GX unwind
-// frame (the partially-built zErrHandling subobject must be destroyed if a later
-// allocation throws).
-//
 // @early-stop
 RVA(0x0016de30, 0xe7)
-_zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
-    : zErrHandling(&g_dynamicArrayErrorSlot) { // -> zErrHandling ctor @0x16d9c0
-    m_spare = static_cast<char*>(scratch);     // +0x14  scratch element (was the m_buf2 view)
+_zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch) : zErrHandling(&g_dynamicArrayErrorSlot) {
+    m_spare = static_cast<char*>(scratch);
     m_lo = lo;
     m_hi = hi;
-    m_base = 0; // +0x10  element band (was the m_buf view)
+    m_base = 0;
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -722,34 +597,20 @@ _zvec::~_zvec() {
     if (p) {
         free(p);
     }
-    // ~zErrHandling() is chained in by the compiler.
 }
 
-// ===========================================================================
-// CButeNodeEntry ctor (0x16df70, ex ButeNode.cpp): __thiscall(this, n, desc).
-// cl auto-stamps the ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8,
-// 0@+0xc. Clean leaf ctor, called out-of-line by the zPTree ctor's member-init.
-// (The ex "vptr-position wall": spelling all three stores as member-INITS leaves the
-// body empty, and cl then emits the implicit ??_7 stamp where retail has it. 100%.)
 RVA(0x0016df70, 0x22)
 CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*))
-    // all three are member-INITS: retail's vptr stamp is LAST, i.e. the body is empty
+
     : m_teardown(teardown), m_kind(static_cast<i16>(n)), m_nodeCount(0) {}
 
 RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GCButeNodeEntry@@UAEPAXI@Z)
 RVA(0x0016dfc0, 0x7)
 CButeNodeEntry::~CButeNodeEntry() {}
 
-// zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
-// ctor + the CButeNodeEntry second-base ctor, then cl auto-stamps the two
-// most-derived vptrs (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived
-// vtable @+8 = 0x5e949c) and zeroes the two child links. /GX unwind frame from
-// the two destructible base sub-objects.
-// (The ex "vptr-position wall": with m_root/m_lookupPending as member-INITS the MI
-// double stamp lands exactly where retail has it. 100%.)
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
-    // m_root / m_lookupPending are member-INITS: retail stamps ??_7zPTree AFTER them
+
     : zErrHandling(&g_symTabErrorSlot),
       CButeNodeEntry(n, teardown),
       m_root(0),
@@ -786,15 +647,6 @@ __declspec(naked) void* GetCallerRetAddr() {
     }
 }
 
-// ===========================================================================
-// zBitVec::SetSize(nbits) (0x16e100, ex EngStr.cpp) - round the requested bit
-// count up to whole 32-bit words, allocate + zero-fill the word band, and report
-// the realized bit capacity (nwords*32). A request of <=32 bits leaves no band
-// and reports 32.
-// The bit count is UNSIGNED end to end: retail's `cmp eax,0x20 / jbe` and its
-// `shr eax,5` both say so. Hoisting the u32 view into a local (rather than casting
-// at each use) also recovers retail's arg->eax flow and the `lea edx,[eax*4]` -
-// the reschedule a previous pass read as a regression is retail's own shape.
 RVA(0x0016e100, 0x7f)
 i32 zBitVec::SetSize(i32 nbits) {
     u32 n = static_cast<u32>(nbits);
@@ -819,9 +671,7 @@ RVA(0x0016e1a0, 0x23)
 CVariantSlot::CVariantSlot(char* label) {
     m_typeTag = 2;
     m_10 = 2;
-    // NOT "intentionally left unset" (the old comment): retail's ctor stores the default
-    // handler outright - `mov DWORD PTR [eax],0x56e220`, i.e. &TmErrorHandler, the one
-    // instruction this body was missing.
+
     m_callback = TmErrorHandler;
     m_valueWord = 0;
     m_label = label;
@@ -829,8 +679,7 @@ CVariantSlot::CVariantSlot(char* label) {
 
 RVA(0x0016e1d0, 0x4b)
 i32 CVariantSlot::Find(i32 key) {
-    // lo BEFORE hi: the SIB base/index roles in `lea eax,[esi+edi]` follow the local
-    // DECLARATION order, not the `hi + lo` operand order (which cl canonicalizes away).
+
     i32 lo = 0;
     i32 hi = g_recCount23 - 1;
     if (hi >= 0) {
@@ -851,20 +700,6 @@ i32 CVariantSlot::Find(i32 key) {
     return -1;
 }
 
-// ===========================================================================
-// TmErrorHandler (0x16e220) - the "C++ Tools error handler": the default callback
-// seeded into the CVariantSlot +0x00 slot (the g_keyFinderVtbl fn-ptr;
-// invoked by CVariantSlot::Set as m_callback(label, value) when a slot is unresolved).
-// Builds "<prefix> - error #<errNum> Caller IP = <hhhh>\n" into a bounded stack buffer
-// (the low 16 bits of the g_retAddrBreadcrumb caller-IP breadcrumb, 4 hex digits, and
-// clears the breadcrumb), MessageBeep(0), pops a MessageBoxA titled "C++ Tools error
-// handler", then FatalAppExitA + exit(1). __cdecl(prefix, errNum). The string operands
-// + the three Win32 imports (MessageBeep/MessageBoxA/FatalAppExitA) reloc-mask.
-// (re-homed from src/Stub/GapFunctions.cpp.)
-// ===========================================================================
-// (ex-wall, RETIRED 2026-07-29 - now EXACT. The old note read the [esp+0x15]-vs-
-// [esp+0x1b] shift as "a pure stack-slot-assignment coin-flip" that "buffer size ...
-// variations do not move". It was the buffer sizes: tmp was 16 bytes, retail's is 10.)
 RVA(0x0016e220, 0x139)
 void TmErrorHandler(char* prefix, i32 errNum) {
     char tmp[10];
@@ -877,11 +712,6 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         } while (errNum != 0);
     }
 
-    // FRAME-PROVEN sizes, not guesses: retail's `sub esp,0x60` with `&tmp[last]` at
-    // esp1+0x09 and `&msg[0x40]` at esp1+0x4c pins tmp to 10 bytes at esp1+0x00 and msg
-    // to esp1+0x0c..0x5f. (They used to be tmp[16]/msg[0x50], which shifted EVERY frame
-    // reference by 6 and shrank the frame to 0x5c.) 0x51..0x54 all round to the same
-    // 0x60 frame, so 0x54 - the exact extent the region provides - is the reading here.
     char msg[0x54];
     char* q = msg;
     while (0 != *prefix) {
@@ -903,7 +733,6 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         *q++ = *s++;
     }
 
-    // the return-address breadcrumb is a code pointer carried as a word
     AddrWord bc;
     bc.m_addr = g_retAddrBreadcrumb;
     u32 v = 0xffff & bc.m_uword;
@@ -912,9 +741,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     i32 i;
     i = 7;
     do {
-        // the cursor step is its own statement: retail sinks `dec edx` between the `mov
-        // ecx,esi` (read v) and the `and ecx,0xf` (the nibble), which the `*--hp = ...`
-        // combined form schedules after the whole digit computation instead.
+
         --hp;
         i32 d = v & 0xf;
         *hp = static_cast<char>((d > 9 ? d + 0x37 : d + 0x30));
@@ -938,10 +765,6 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     exit(1);
 }
 
-// ===========================================================================
-// CVariantSlot::Add (0x16e360, the ex-Reg23 facet) - fixed-capacity (32) keyed
-// record insert/update/remove over the global table at the cursor's m_04.
-// ===========================================================================
 // @early-stop
 RVA(0x0016e360, 0x11a)
 void* CVariantSlot::Add(void* key, void* val) {
@@ -951,7 +774,7 @@ void* CVariantSlot::Add(void* key, void* val) {
     }
     int idx;
     if (count != 0) {
-        // g_recs23 keys on the CALLER'S ADDRESS through its signed-int key column
+
         AddrWord k;
         k.m_addr = key;
         idx = Find(k.m_word);
@@ -1008,10 +831,10 @@ i32 FirstDiffBit(const char* a, const char* b) {
 static inline CString* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(key); // the container's own typed view of the band
+        return g_typeColl.Elem(key);
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return g_typeColl.Elem(key); // the container's own typed view of the band
+        return g_typeColl.Elem(key);
     }
     char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -1030,16 +853,11 @@ static inline void FreeNodes() {
     }
 }
 
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CUserLogic* ar) {
     CString* entry = TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
-    ar->XferName(entry->GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
+    ar->XferName(entry->GetBuffer(0));
     ar->FireActivation(ar->m_objAux->ActKey());
 
     entry = TypeResolve(ar->m_objAux->ActKey());
@@ -1048,11 +866,6 @@ i32 ProjTypeXfer(CUserLogic* ar) {
     return 1;
 }
 
-// g_buteTree is a real 0x2c-byte global object, not a pointer slot. Its static
-// definition makes VC5 emit the private _$E<n> initializer/atexit family: the
-// initializer calls zPTree's constructor on 0x6bf620 and stamps CButeTree's two
-// most-derived vptrs. The volatile helpers are recorded only in
-// config/compiler-generated-functions.tsv.
 DATA_SYMBOL(0x002bf620, 0x2c, ?g_buteTree@@3VCButeTree@@A)
 
 void ButeTreeNopFree(void*);
@@ -1061,34 +874,8 @@ __inline CButeTree::CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(te
 
 CButeTree g_buteTree = CButeTree(&ButeTreeNopFree, 0);
 
-// MSVC emits the inlined g_typeColl constructor and its atexit wrapper as a pair.
-// The local `$E` number is unstable; compiler-generated matching binds it by content.
 RVA_COMPGEN(0x0016e7a0, 0x48, ??__Fg_typeColl@@YAXXZ)
 
-// ===========================================================================
-// CButeTree::`scalar deleting destructor' ??_GCButeTree (0x16e9c0) - the compiler-
-// synthesized slot-0 scalar-deleting dtor of CButeTree's implicit virtual destructor:
-// cl inlines the dtor teardown (dtor-phase vptr re-stamps
-// 0x5e94ac @+0 / 0x5e949c @+8, ClearRecursive(0) @0x16e070, the second-base restore
-// @0x16dfc0 on the masked this+8, then the primary BaseDtor @0x16da60), then
-// ::operator delete when bit0 of the deleting-flag is set; returns this. It is NOT
-// dev source (a compiler ??_G thunk), so it is pinned by mangled name here, not
-// written as a method. (zPTree==CButeTree, the same 0x2c-byte class.)
-//
-// The dual-vtable phase change is expected, not an identity conflict:
-//   * construction (DynInitButeTree 0x16e6a0) stamps ??_7CButeTree     @0x5f04e0 /
-//     ??_7CButeStore@@6BCButeStoreSecond @0x5f04dc   (the CButeTree identity);
-//   * destruction (0x16e9c0 ??_G AND 0x16e6e0 atexit) stamps ??_7zPTree @0x5e94ac /
-//     ??_7CButeStore@@6BCButeNodeEntry  @0x5e949c    (the zPTree/zPTree identity).
-// RTTI proves that this is exactly what
-// `class CButeTree : public zPTree` (now modeled, <Bute/ButeTree.h>) with an EMPTY
-// ~CButeTree produces - the ctor re-stamps CButeTree's most-derived 0x5f04e0/0x5f04dc
-// after the zPTree base ctor; the empty derived dtor elides its protective re-stamp so
-// ??_G goes straight to ~zPTree (which stamps zPTree's 0x5e94ac/0x5e949c). Real classes
-// are zErrHandling(@0), zPtrColl(fabricated "CButeNodeEntry", @8), zPTree : those.
-// The authentic global definition above emits ??_G and both CButeTree vtables.
-// The private initializer/destructor ordinal helpers remain unclaimed because
-// _$E<n> names are not stable source identities.
 RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
 
 RVA(0x0016ea10, 0x1)

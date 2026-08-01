@@ -1,7 +1,7 @@
 #include <Gruntz/GuardPoint.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/LogicTypeTableInline.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 #include <rva.h>
 
 RVA(0x00010370, 0x47)
@@ -12,20 +12,10 @@ i32 CGuardPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
     return Chain(a, b, c, d) != 0;
 }
 
-// CGuardPoint::~CGuardPoint (0x10410) - the /GX leaf dtor folds the bare
-// CUserLogic teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the
-// +0x18 link (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr
-// (0x5e70b4). The leaf vptr store is dead-eliminated.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CGuardPoint() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x000103e0, 0x1e, ??_GCGuardPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010410, 0x44, ??1CGuardPoint@@UAE@XZ)
 VTBL(CGuardPoint, 0x001e7154);
 
-// CGuardPoint::CGuardPoint (0xae5f0) - fold the shared CUserLogic(obj) init (with
-// the built-in logic types inlined-registered), then flag the sub-object.
 // @early-stop
 RVA(0x000ae5f0, 0x18f)
 CGuardPoint::CGuardPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

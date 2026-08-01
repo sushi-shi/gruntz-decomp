@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Mfc.h> // CPtrList
+#include <Mfc.h>
 
 #include <Net/CmdPool.h>
 

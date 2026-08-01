@@ -12,8 +12,6 @@ CResolveNode::CResolveNode() {
     m_stateFlags = 0;
 }
 
-// CLoadable::GetClassId (0x154a00): the base-default class id - `xor eax,eax; ret`.
-// Concrete kinds override with their own CLASSID_*; this un-phantoms the slot-8 default.
 RVA(0x00154a00, 0x3)
 i32 CLoadable::GetClassId() {
     return CLASSID_NONE;

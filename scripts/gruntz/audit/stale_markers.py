@@ -35,12 +35,15 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 ROOTS = ("src", "include")
 MARKER = re.compile(r"^\s*//\s*@early-stop\b")
-# The OWNING function is the next plain `RVA(` below the marker. RVA_COMPGEN is
-# deliberately excluded: it labels a COMPILER-GENERATED body (a scalar-deleting dtor,
-# a vbase helper) that merely sits nearby, and those are usually already 100%. Matching
-# it made this tool report a live park as stale - e.g. the marker on
-# zBitVec::operator= (a real 99.84 park) resolved to the ??_GzBitVec compgen dtor.
+# The OWNING function is normally the next plain `RVA(` below the marker. RVA_COMPGEN is
+# excluded while that search succeeds: it labels a compiler-generated body (a
+# scalar-deleting dtor, a vbase helper) that may merely sit between the marker and its
+# real owner. Matching it made the marker on zBitVec::operator= resolve to the adjacent
+# ??_GzBitVec dtor. A directly marked RVA_COMPGEN is accepted only as a fallback when no
+# plain RVA follows; UserLogicCtorEmit deliberately binds an emitted inline constructor
+# that way.
 RVA = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)")
+RVA_COMPGEN = re.compile(r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)")
 
 
 def symbol_by_rva():
@@ -96,6 +99,12 @@ def scan():
                     if m:
                         addr = int(m.group(1), 16)
                         break
+                if addr is None:
+                    for j in range(i + 1, min(i + 4, len(lines))):
+                        m = RVA_COMPGEN.search(lines[j])
+                        if m:
+                            addr = int(m.group(1), 16)
+                            break
                 name = syms.get(addr) if addr is not None else None
                 if name is None or name not in pct:
                     unknown.append((rel, i + 1, addr))

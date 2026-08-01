@@ -1,24 +1,19 @@
-// AniPlayer.cpp - the timed-play SBI leaf's own obj (dossier #16, waveM-judgment):
-// the [0xe5800-frag-group .. 0xe5d17] block of the per-class SBI item obj sequence
-// (each class block in [0xe5ad0..0xe8733] is one original one-file-per-class TU,
-// headed by its 9-frag {0,1,1} static group). The ex-CAniPlayer slot bodies moved
-// to their vtable-proven owners (SBI_Image.cpp / SBI_ImageSet.cpp /
-// SBI_ImageSetAni.cpp); the 0xe6020 stub to SBI_WellGoo.cpp (slot 2). Only the
-// four timed-play leaf methods remain - see <Gruntz/AniPlayer.h> (@identity-TODO).
+
+
 #include <Gruntz/AniPlayer.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
-#include <Image/CImage.h>                 // the cel/frame record (RenderFrame @0x153790)
-#include <Mfc.h>                          // CMapStringToPtr (the config-host lookup)
+#include <Io/FileMem.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Image/CImage.h>
+#include <Mfc.h>
 #include <rva.h>
 
-#include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton
-#include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CDDrawWorker (the resolved record)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SbiConfig.h>
 
 RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
@@ -44,11 +39,6 @@ i32 CAniPlayer::Start(
     return 1;
 }
 
-// ===========================================================================
-// CAniPlayer::TickToggle (0x0e5b90) - a timed frame flip: when the timed-play window
-// (start clock @+0x58, i64) has elapsed against the running clock g_frameTime, flip the
-// frame between the two range endpoints, restamp the window (duration = m_3c,
-// start = now). Returns 1. The command param is ignored.
 // @early-stop
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 param) {
@@ -62,10 +52,6 @@ i32 CAniPlayer::TickToggle(i32 param) {
     return 1;
 }
 
-// ===========================================================================
-// CAniPlayer::RenderCel (0x0e5c10) - the render half of Tick: resolve the current cel
-// from the record table by frame (0 when out of range), record it, and - when present -
-// blit it onto the active surface context at the rect base + cel offset. Returns 1.
 // @early-stop
 RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel() {
@@ -89,23 +75,13 @@ i32 CAniPlayer::RenderCel() {
     return 1;
 }
 
-// ===========================================================================
-// CAniPlayer::Serialize (0x0e5c90) - bail on a null archive; chain the direct base
-// leg (CSBI_ImageSetAni::Serialize, 0xe7cd0); then round-trip the timed-play window
-// (start clock + duration, +0x58/+0x60) through the archive (mode 4 = Write @+0x30,
-// mode 7 = Read @+0x2c). Returns 1.
 // @early-stop
 RVA(0x000e5c90, 0x87)
 i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
     if (arc == 0) {
         return 0;
     }
-    // The base leg is CSBI_ImageSetAni's vtable slot-1 override, renamed Serialize ->
-    // SerializeFields with the rest of the family (StatusBarItem.h). NB: this class's own
-    // `Serialize` below is deliberately NOT renamed - CAniPlayer has no VTBL binding and
-    // no RTTI row, so whether 0xe5c90 is CAniPlayer's own slot 1 is unproven. Naming it
-    // SerializeFields would give it the base virtual's exact name+signature and silently
-    // make it an override (C++ implicit virtual), claiming a slot on no evidence.
+
     if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)
         == 0) {
         return 0;

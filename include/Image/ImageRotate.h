@@ -1,10 +1,9 @@
-// ImageRotate.h - the ImageRotate.cpp TU's exported globals/functions.
 #ifndef GRUNTZ_IMAGE_IMAGEROTATE_H
 #define GRUNTZ_IMAGE_IMAGEROTATE_H
 
 #include <Ints.h>
 
-class CDDSurface; // <DDrawMgr/DDSurface.h> - both the dest and the source surface
+class CDDSurface;
 
 void ImageRotateBlit(
     i32 destX,
@@ -12,10 +11,10 @@ void ImageRotateBlit(
     i32* pivot,
     CDDSurface* dst,
     CDDSurface* src,
-    float rot,   // arg6 (deg->rad rotation)
-    float scale, // arg7
-    i32 mode,    // arg8
-    i32 colorkey // arg9
+    float rot,
+    float scale,
+    i32 mode,
+    i32 colorkey
 );
 
 #endif // GRUNTZ_IMAGE_IMAGEROTATE_H

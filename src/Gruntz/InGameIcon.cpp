@@ -1,36 +1,36 @@
-#include <Mfc.h>              // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
-#include <Wap32/zBitVec.h>    // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
-#include <Io/FileMem.h>       // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
+#include <Mfc.h>
+#include <Wap32/zBitVec.h>
+#include <Io/FileMem.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
-#include <Gruntz/LeafCue.h> // LeafCue::PlayIfElapsed (the stale-ecx cue pokes)
-#include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/ToyPeek.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/InGameText.h> // CInGameText + CActRegPool<CInGameText>::s_table (its TU folds in below, wave3-J)
-#include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
-#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
-#include <Gruntz/SerialArchive.h>  // CFileMemBase (Read +0x2c / Write +0x30) for SerializeMove
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (the +0x1a0 sub-object sync)
-#include <Gruntz/Play.h>             // CPlay - g_gameReg->m_curState's concrete play state
+#include <Gruntz/InGameText.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/Play.h>
 
 #include <rva.h>
 
-#include <string.h>                   // inline strcmp: the ctor's icon-name dispatch chain
-#include <Bute/ButeMgr.h>             // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>               // _zdvec (the command-dispatch tables)
-#include <Gruntz/LogicFnTable.h>      // the shared CActReg dispatch-table shape
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/AniElement.h>        // CAniElement complete (KeyOfValue takes the CObject upcast)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // the anim registry (m_10 map + KeyOfValue)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // world sound registry and its keyed asset map
+#include <string.h>
+#include <Bute/ButeMgr.h>
+#include <Wap32/ZVec.h>
+#include <Gruntz/LogicFnTable.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/AniElement.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 
-#include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
-#include <Gruntz/Brickz.h>     // canonical BrickzCell - the 0x1c-byte tile cell at m_rows[y][x]
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
-#include <Gruntz/Random.h>     // ex Globals.h transitive
-#include <Utils/MapTyped.h>    // MapLookupById - the forced id->void* key pun
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Random.h>
+#include <Utils/MapTyped.h>
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
@@ -65,11 +65,6 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-// The same two resolvers one inline level shallower: the grow-fail tail stays as the
-// out-of-line zErrHandling::Report call (0x34960) instead of expanding. cl5 spends its
-// inline budget from the outside in, so the TWO-key registrar below keeps the tail
-// outlined at three of its four lookups while the one-key registrars expand both.
-// docs/patterns/act-registrar-report-outline-budget.md
 static inline CString* ResolveNameSlotCallReport(CTypeCollRuntime* v, i32 idx) {
     CString* r;
     v->m_grown = 0;
@@ -92,62 +87,16 @@ static inline CString* ResolveNameSlotCallReport(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-// (the act-table side of the same lever is zDArray<T>::ResolveEntryCallReport, called
-// DIRECTLY on s_table below - routing it through a wrapper here costs enough inline
-// budget that cl outlines the whole accessor.)
-
-// ===========================================================================
-// CInGameIcon::~CInGameIcon  (0x011d00)
-// ===========================================================================
-// The leaf adds no destructible members, so its dtor folds the bare CUserLogic
-// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
-// (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. The empty body is enough.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CInGameIcon() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00011cd0, 0x1e, ??_GCInGameIcon@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 
-// ===========================================================================
-// CInGameText::~CInGameText  (0x011dc0)
-// ===========================================================================
-// The leaf adds no destructible members, so its dtor folds the bare CUserLogic
-// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
-// (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. The empty body is enough.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CInGameText() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
-// ===========================================================================
-// CInGameIcon::CInGameIcon(CGameObject*)  (0x095b10)  -- the HUD-icon builder
-// ===========================================================================
-// Folds the shared CUserLogic(CGameObject*) init (link ctor + logic-type register
-// + the three built-in handlers + the data seed; see <Gruntz/UserLogic.h>), stamps
-// its own vftable (0x5e7d04), then:
-//   - snaps the owner's screen pos to the 0x20 tile grid centre,
-//   - flags the owner (+0x74 sentinel / +0x8 |= 0x20000),
-//   - swaps the aux bute node (old -> m_30) and seeds the cycle geometry,
-//   - the big inline-strcmp dispatch off the icon's type name (owner->m_194+0x24):
-//     a code id into owner->m_124 and a category-configure call (SetupSprite), with
-//     the treasure / powerup(red glitter) / secret(mission gate) / curse(green
-//     glitter) groups; the WarpStonez items also stash the waypoint {x,y} into the
-//     level record (g_gameReg->m_curState +0x384.. per index) and stamp m_128,
-//   - for a WarpStone in test mode, formats the per-level warp target name and
-//     re-applies it,
-//   - builds the glitter overlay sprite, then a HandleInput() gate either marks the
-//     owner's tile cell occupied (owner->m_188 -> cell+8, toggle 0x40000) or hides
-//     the icon (owner->m_8 |= 0x10000).
-//
 // @early-stop
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
+
     m_driftPos.m_lo = 0;
     m_driftThresh.m_lo = 0;
     m_driftPos.m_hi = 0;
@@ -157,7 +106,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_peekTimer.m_hi = 0;
     m_peekWindow.m_hi = 0;
 
-    // snap owner's screen pos to the 0x20 tile grid centre
     obj->m_screenX = (obj->m_screenX & ~0x1f) + 0x10;
     obj->m_screenY = (obj->m_screenY & ~0x1f) + 0x10;
 
@@ -166,7 +114,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         obj->m_flags |= 0x20000;
     }
 
-    // swap the aux bute node (save old into m_30) + seed the cycle geometry
     AnimWorkerObj* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
     aux->m_1c = ActFindId("A");
@@ -176,7 +123,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     SetupSprite(0);
 
-    // second zero batch (retail @0x95ca1)
     m_glitterSprite = 0;
     m_peekTimer.m_lo = 0;
     m_peekWindow.m_lo = 0;
@@ -184,7 +130,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_peekWindow.m_hi = 0;
 
     i32 glitter = 0;
-    char* rec = static_cast<CWwdGameObjectA*>(obj)->m_194; // the handed obj IS the A-kind sprite
+    char* rec = static_cast<CWwdGameObjectA*>(obj)->m_194;
     if (rec != 0) {
         CString name;
         name = rec + 0x24;
@@ -406,7 +352,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 
-    // WarpStone test-mode: re-apply the per-level warp target sprite name.
     if (m_object->m_124 == 0x14 && g_gameReg->m_134 == 1) {
         CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
         CString levelStr;
@@ -418,7 +363,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_placeMode = target;
     }
 
-    // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
         CWwdGameObjectA* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
@@ -443,7 +387,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         return;
     }
 
-    // mark the owner's tile cell occupied (or clear the occupancy bit)
     i32 mv = m_object->m_188;
     CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 col = m_object->m_screenX >> 5;
@@ -462,19 +405,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_stateFlags &= ~1;
 }
 
-// ===========================================================================
-// CInGameIcon::HandleInput  (0x097680)
-// ===========================================================================
-// Reads the owning CGameObject's input/command context (m_10): its command id
-// (+0x124), a (key,sub) pair (+0x114/+0x118) and a sub-command (+0x130). For the
-// 0x55 ("cursor-place") command in the 0x17..0x20 key band, it resolves a icon
-// id from the per-player icon table (g_gameReg+0x158, 71*8 stride) and fires the
-// factory probe; otherwise, for the 0x1e/0x13 commands it maps the sub-command
-// through a small jump table to a fixed icon id and fires. On a hit it stamps the
-// command id back into m_10 (+0x58/+0x50/+0x4c) and returns 1; the no-match
-// paths return 0.
-//
-// @early-stop
 RVA(0x00097680, 0x110)
 i32 CInGameIcon::HandleInput() {
     CWwdGameObjectA* obj = m_object;
@@ -540,18 +470,6 @@ void CInGameIcon::FireActivation(i32 id) {
     }
 }
 
-// ===========================================================================
-// RegisterIconActions  (0x0979e0)
-// ===========================================================================
-// Register two icon-action handlers into CActRegPool<CInGameIcon>::s_table: key A -> 0x4023d3,
-// key B -> 0x403c06. Each: bute-tree Find (Insert + cache the name into the
-// scratch zDArray<CString> when absent, bump the counter), resolve the table
-// slot for the key index, load the handler member-fn-ptr.
-// ---------------------------------------------------------------------------
-// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
-// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
-// it as the out-of-line zErrHandling::Report call.
-// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
     i32 idxA = ActFindId("A");
@@ -584,18 +502,6 @@ void CToyPeek::FireActivation(i32 id) {
     }
 }
 
-// ===========================================================================
-// RegisterIconState  (0x097f40)
-// ===========================================================================
-// Register one icon-state handler into CActRegPool<CToyPeek>::s_table (key A -> 0x40370b):
-// bute-tree Find (Insert + cache the name when absent, bump the counter),
-// resolve the table slot for the key index, load the handler member-fn-ptr.
-// ---------------------------------------------------------------------------
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
     i32 idx = ActFindId("A");
@@ -622,7 +528,7 @@ i32 CInGameIcon::RefreshCell() {
         if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
             BrickzCell* row = grid->m_rows[tileX];
-            cell = row[tileY].m_8;
+            cell = row[tileY].m_objectId;
         } else {
             cell = 0;
         }
@@ -635,17 +541,6 @@ i32 CInGameIcon::RefreshCell() {
     return 0;
 }
 
-// ===========================================================================
-// CInGameIcon::PeekCycle  (0x0984b0)
-// ===========================================================================
-// Per-frame peek update: advance the +0x1a0 anim cursor, then dispatch on the icon's
-// command id. For the 0x55 (cursor) command, if the icon's tile cell carries any
-// action/occupancy flag (& 0x939 or & 2) it clears that cell's occupancy and flags the
-// +0x38 object dirty. For the 0x13/0x1e (peek) commands, once the peek timer
-// ({m_peekTimer} vs {m_peekWindow}) elapses it rolls a random pickup sprite (the inline LCG rand()%17
-// -> GetSel), publishes it into the bound object's draw fields, and re-arms the timer
-// ({m_peekWindow}=0xfa, {m_peekTimer}=g_frameTime). Returns 0.
-//
 // @early-stop
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
@@ -668,7 +563,7 @@ i32 CInGameIcon::PeekCycle() {
             if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
                 BrickzCell* row0 = grid->m_rows[tileY];
-                row0[tileX].m_8 = 0;
+                row0[tileX].m_objectId = 0;
                 BrickzCell* row1 = grid->m_rows[tileY];
                 row1[tileX].m_0 &= ~0x40000;
             }
@@ -713,7 +608,7 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     i32 tileY = owner->m_screenX >> 5;
     if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
-        // the walk is transposed here: row = tileX, cell = tileY (7 ints per cell)
+
         i32 cellInt = tileY * 8 - tileY;
         i32* cell0 = grid->m_rowInts[tileX];
         cell0[cellInt + 2] = 0;
@@ -722,21 +617,9 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     }
 }
 
-// ===========================================================================
-// CInGameIcon::PlaceAt  (0x0986b0)
-// ===========================================================================
-// The cursor place/click handler. Resolves the per-player icon record from
-// g_gameReg->m_68 [(arg0*15 + arg1) dword index, +0x1c base], binds its sprite
-// set (LoadPickupSprites / LoadGruntTypeTable), optionally posts an input flush
-// when the icon is on-screen, clears the owner's tile-occupancy bit, and (the
-// full non-0x55 path) re-seeds the icon's animation/state fields from the bute
-// store. Returns 1 on a successful place, 0 on a reject.
-//
 // @early-stop
 RVA(0x000986b0, 0x30c)
-// Both callers (CGrunt @Grunt.cpp / GruntEntranceArrival.cpp) pass
-// (m_tileOwnerHi, m_tileOwnerLo), and the body's `idx = hi * 15 + lo` is the same
-// 15-wide grid index CTriggerMgr uses.
+
 i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 == 1 && tileOwnerHi != g_curPlayer && m_object->m_124 != 0x55) {
@@ -744,7 +627,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     }
     CWwdGameObjectA* obj = m_object;
     if (obj->m_124 == 0x55) {
-        // ---- selection/preview path ----
+
         i32 param = obj->m_118;
         i32 matchActive = 0;
         i32 flag = 1;
@@ -772,10 +655,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
             if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
                 && o->m_screenY < reg->m_viewBounds.bottom
                 && o->m_screenY >= reg->m_viewBounds.top) {
-                // The receiver IS m_cue. The ex-"stale ecx / no receiver load" reading
-                // was wrong: retail 0x986b0 loads `mov ecx,[esi+0x54]` for the null test
-                // above and NOTHING between there and the call touches ecx, so the
-                // thiscall simply reuses it. No cast, no tag-global stand-in.
+
                 m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 reg = g_gameReg;
             }
@@ -786,7 +666,6 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         return 1;
     }
 
-    // ---- full place path (cmd != 0x55) ----
     i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
     i32 idx = tileOwnerHi * 15 + tileOwnerLo;
@@ -812,7 +691,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         CWwdGameObjectA* o = m_object;
         if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
             && o->m_screenY < reg->m_viewBounds.bottom && o->m_screenY >= reg->m_viewBounds.top) {
-            // Same as the sibling site above: ecx is the m_cue the null test loaded.
+
             m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             reg = g_gameReg;
         }
@@ -841,19 +720,6 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     return 1;
 }
 
-// ===========================================================================
-// CInGameIcon::Reposition  (0x098a90)
-// ===========================================================================
-// Per-frame drift re-place: advance the +0x1a0 anim cursor, and once the drift
-// timer ({m_driftPos} vs {m_driftThresh}) has elapsed, re-seat the icon:
-//   - clear the +0x38 object's active bit (m_stateFlags &= ~1),
-//   - swap the aux bute node to "A" (saving the old into m_prevAnimSetNode),
-//   - resolve the tile the icon currently occupies; if that cell carries a bound
-//     object id, look it up in the world sprite factory's +0x48 map and flag it,
-//   - clear that cell's occupancy, then re-mark the owner's tile cell with its
-//     object id (m_188) - occupied (|=0x40000) when non-zero, cleared otherwise.
-// Returns 0.
-//
 // @early-stop
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
@@ -878,14 +744,7 @@ i32 CInGameIcon::Reposition() {
             cellVal = 0;
         }
         if (cellVal != 0) {
-            // Retail resolves the owner as a VALUE (`test eax,eax / je L /
-            // mov eax,[found] / L: test eax,eax`) so the Lookup miss joins the
-            // shared null test. cl will not emit that from any value spelling:
-            // measured 2026-08-01, `owner = 0; if (hit) owner = found;` 92.83 and
-            // the explicit if/else 93.26, both WORSE than this `&&` chain's 97.43 -
-            // the pre-zero costs a whole extra callee-saved register (`push ebp`).
-            // Same verdict as CDDrawChildGroup::PruneOrphans @0x15b1d0; see
-            // docs/patterns/default-hoists-into-destination-no-jmp.md.
+
             void* found = 0;
             if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found) && found != 0) {
                 (static_cast<CGameObject*>(found))->m_flags |= 0x10000;
@@ -916,35 +775,10 @@ i32 CInGameIcon::Reposition() {
     return 0;
 }
 
-// ===========================================================================
-// CInGameIcon::Serialize  (0x098c90)
-// ===========================================================================
-// The CArchive load/store of the icon state: guard on the archive, chain the
-// shared CUserLogic::SerializeMove, then a `sub 4 / sub 3 / dec` running tag
-// switch dispatching per-mode CArchive Read/Write (vtable +0x2c write / +0x30
-// read) of the +0x34..+0x78 fields, with inline strlen/strcpy CString round-trips
-// (repne scas / rep movs), a g_serialCounter bump, and two registry CMap lookups
-// (0x1b8438 / 0x1b8760) re-binding the +0x40/+0x54 ids.
-//
-// The span is 0x382 (898 B), NOT Ghidra's 0x31f (799): the body's branches reach 0x99000
-// and it runs on to a final `ret 0x10` at 0x9900f with nop padding to 0x99020. With the
-// short span the delinked target was truncated mid-instruction, which is what the old
-// stub called blocker (1).
-//
-// The opening block is CWapX::Chain (0x8c00) EXPANDED IN PLACE - same key buffer, same
-// m_blob, same m_34/m_38/m_3c seeds, same `m_3c->m_ownerCtx->m_animRegistry->m_10`
-// lookup - not a call to it. Retail duplicated it here rather than chaining, so it is
-// spelled out below; making Chain inline instead would reshape its real callers
-// (CAniCycle::SerializeMove @0xf470 and friends), which `call 0x8c00` it.
 // @early-stop
 RVA(0x00098c90, 0x382)
 i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* obj) {
-    // TWO 0x80 key buffers, not one - retail's frame is 0x10c and holds both (the
-    // inlined-Chain half formats through the upper one at esp+0x9c, the icon tail
-    // through the lower at esp+0x1c). Sharing one costs 0x80 of frame and shifts every
-    // local. Every mode test below is a SWITCH, not an if/else-if ladder: retail emits
-    // `cmp esi,4; je <store>; cmp esi,7; jne <skip>` - the 4-arm compared first, the
-    // 7-arm laid out first - which is what cl gives a switch whose cases read 7 then 4.
+
     char chainName[0x80];
 
     if (ar == 0) {
@@ -954,14 +788,13 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
         return 0;
     }
 
-    // --- the inlined CWapX::Chain half ---
     switch (mode) {
         case 7: {
             ar->Read(chainName, 0x80);
             ar->Read(m_blob, 0x10);
             m_34 = obj;
             m_38 = static_cast<CWwdGameObjectA*>(obj);
-            m_3c = obj->m_7c;
+            m_3c = obj->m_animWorker;
             if (strlen(chainName) == 0) {
                 m_value = 0;
             } else {
@@ -983,11 +816,6 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
         }
     }
 
-    // --- the two 64-bit timer pairs, each walked by ONE advancing cursor ---
-    // Retail hoists a single `lea edi,[this+N]` ABOVE the mode compare and steps it with
-    // `add edi,8`; two separate `&member` expressions emit two leas instead. The cursor is
-    // a Clock64* now that the members are typed: sizeof(Clock64) is 8, so `++` IS retail's
-    // `add edi,8` (this was an i32* stepping += 2 while the halves were untyped).
     Clock64* drift = &m_driftPos;
     switch (mode) {
         case 7:
@@ -1015,7 +843,6 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
             break;
     }
 
-    // --- the icon's own tail: the sound cue by name + the glitter sprite by id ---
     char tailName[0x80];
     switch (mode) {
         case 4: {
@@ -1035,9 +862,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
         }
         case 7: {
             ar->Read(tailName, 0x80);
-            // `== 0` here, unlike CWarlord::SerializeMove's eleven anim blocks which want
-            // `!= 0` - measured both ways on both functions; the arm cl puts on the
-            // fallthrough differs per function and only the diff says which.
+
             if (strlen(tailName) == 0) {
                 m_cue = 0;
             } else {
@@ -1058,7 +883,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
             if (sprite != 0) {
                 break;
             }
-            // A missing sprite is only tolerated when no id was stored at all.
+
             if (id != 0) {
                 return 0;
             }
@@ -1073,13 +898,6 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
     return 1;
 }
 
-// CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
-// (unless the registry is in the no-place mode m_134==2) bind the "A" bute node,
-// the cycle geometry, the "GAME_HELPBOX" sprite name; flag the sub-object; run the
-// on-screen visibility gate keyed by the bound object's place mode (m_128); and on
-// the visible path snap the screen position to the tile grid + seed the +0x74
-// layer key and the +0x54/+0x58 scalars to -1.
-//
 // @early-stop
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -1096,10 +914,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     i32 vis = m_object->m_placeMode;
     if (vis == 1) {
-        // ONE `||` guard. Retail emits only TWO hide-bodies for the whole gate:
-        // this arm's easy-mode exit CROSS-JUMPS onto the vis==2 body (0x992c4)
-        // and only the `m_134 != 1` exit keeps an inline copy. Splitting this into
-        // two `if ... return` statements gives each its own body - three copies.
+
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
             m_38->m_flags |= 0x10000;
             return;
@@ -1129,20 +944,6 @@ void CInGameText::FireActivation(i32 idx) {
     }
 }
 
-// ===========================================================================
-// RegisterTextLogic  (0x0995c0)
-// ===========================================================================
-// The file-scope static registration thunk for the text-logic handler: look the
-// key up in the bute tree; if absent, Insert it under the running counter and
-// cache the key name into the scratch zDArray<CString> slot (growing it), then
-// bump the counter. Either way, resolve the dispatch-table slot for the key index
-// and load it with the handler member-fn-ptr (FUN_00402013).
-// ---------------------------------------------------------------------------
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
     i32 idx = ActFindId("A");
@@ -1186,10 +987,9 @@ RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
     LeafCue* cue = 0;
     if (category != 0) {
-        // the singleton is read BEFORE the out-param is zeroed - retail's
-        // `mov edx,[g_gameReg]` precedes `mov [esp+8],ecx` - so it needs its own local
+
         CGruntzMgr* reg = g_gameReg;
-        void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
+        void* found = 0;
         reg->m_world->m_soundRegistry->m_10.Lookup(category, found);
         cue = static_cast<LeafCue*>(found);
     }

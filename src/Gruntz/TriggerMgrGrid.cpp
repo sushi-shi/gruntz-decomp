@@ -1,28 +1,11 @@
-// TriggerMgrGrid.cpp - the CTriggerMgr grid/placement/trigger-apply obj:
-// retail .text [0x6b640..0x6eb25], the FIRST of the three objs our old
-// `triggermgr` unit conflated (SPLIT verdict, docs/exe-map/TU_MIGRATION.md +
-// the 0x077f80 dossier). Original TU: filename unknown (@identity-TODO).
-//
-// Oracle evidence for the carve (own original obj, not an adjacent TU's tail):
-//   * its OWN CRT init-fragment run - 10 frags @0x6b370 directly precede this
-//     code block (the 0x77f80 obj has a separate 7-frag run @0x7d8f0; two
-//     table runs = two objs);
-//   * the block is contiguous [0x6b640..0x6eb25] and bounded by foreign objs
-//     (grunt-region COMDAT pocket + frags before, goowellmgr @0x6eb80 after);
-//   * in the init TABLE (link order) this obj sits right after the grunt
-//     region - the retail source neighborhood of Grunt.cpp.
-//
-// (The former SEAM is CLOSED: ?WireTileSwitchLogic@CTriggerMgr@@ @0x6c130 lives
-// below, between ResetCell (0x6bfd0) and ApplySwitch (0x6d300), as first-link
-//
-// Functions in retail-RVA order; shared views/externs in
-// <Gruntz/TriggerMgrViews.h>. /GX unit (ApplySwitch owns a CString temp).
-#include <Gruntz/ActReg.h> // CActReg + g_typeColl (the 0x6bf650 registry; ex the CTmNameReg view)
+
+
+#include <Gruntz/ActReg.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/Play.h>  // canonical CPlay (m_curState real class: ArmSnapshot et al.)
-#include <Gruntz/Timer.h> // CTimer - CPlay::m_frameMarker (the ex-CTmScoreSub @+0x3f4)
+#include <Gruntz/Play.h>
+#include <Gruntz/Timer.h>
 
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -31,20 +14,21 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/BattlezData.h>          // CBattlezData - the REAL +0x7c HUD/score board
-#include <DDrawMgr/DDrawChildGroup.h>    // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>            // canonical CUserLogic (switch/trigger logic virtuals)
-#include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (CPlay::m_beginMarker; FindChild)
-#include <Gruntz/TileTriggerSwitchLogic.h> // the 0x8c switch element (SwitchDown/m_key1)
-#include <Gruntz/TileTriggerLogic.h>       // the 0x9c logic child (FindIndexByKey/RecordMove)
-#include <Gruntz/TileGrid.h>               // canonical CMapMgr (the registry's +0x70 tile grid)
-#include <Bute/ButeMgr.h>                  // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h>                   // CDDrawWorkerHost - the canonical plane (dims here)
-#include <Gruntz/Grunt.h>                  // real CGrunt (the grid cells)
-#include <Gruntz/GruntPuddle.h>            // the m_baseList element (ApplyTriggerA case 7)
-#include <AddrWord.h>                      // PlaceObject spanWord: a RECT address in an int slot
+#include <Gruntz/BattlezData.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileGrid.h>
+#include <Bute/ButeMgr.h>
+#include <Wwd/WwdFile.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPuddle.h>
+#include <AddrWord.h>
 
-#include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
+#include <Gruntz/TriggerMgrViews.h>
 
 RVA(0x0006b640, 0x2f)
 i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
@@ -70,16 +54,6 @@ void CTriggerMgr::Cleanup() {
     ClearSelections();
 }
 
-// 0x6b6d0 PlaceObject(row, x, y, z, mode, kindDefault, ...) - the trigger-grid
-// object placer. Validates the pixel position against the tile-grid attribute word,
-// finds the first free cell of `row`, creates the "Grunt" sprite through the level's
-// child-group factory and hands its LOGIC leaf to CGrunt::Place. Retail's kind table
-// only runs while g_gameReg->m_134 == 1 (the battlez-setup mode); otherwise, and for
-// any unlisted aiType, the caller's `kindDefault` passes through untouched. Returns the
-// placed column, or -1. (__thiscall, ret 0x34 = 13 stack args.)
-//
-// The 13th slot carries a tile-span RECT address riding an int (see <AddrWord.h> and
-// the LevelTileValidation call site) - it lands in Place's `span` parameter.
 // @early-stop
 RVA(0x0006b6d0, 0x3f4)
 i32 CTriggerMgr::PlaceObject(
@@ -97,9 +71,7 @@ i32 CTriggerMgr::PlaceObject(
     i32 placeArg10,
     i32 spanWord
 ) {
-    // retail reaches ONE shared `or eax,-1` epilogue from every pre-creation reject
-    // (cl does not cross-jump return blocks - the merge is a source-level single exit;
-    // the extra scope only lets the gotos jump OUT past the locals' initializers).
+
     {
         CDDrawSurfaceMgr* world = m_world;
         if (world == 0) {
@@ -130,8 +102,7 @@ i32 CTriggerMgr::PlaceObject(
         if ((attr & 0x400) != 0) {
             goto fail;
         }
-        // `col` is live from here on and doubles as retail's zero register for the
-        // two tests below (`cmp edi,ebx` / `cmp eax,ebx`, not `test`).
+
         i32 col = 0;
         i32 onSpecialTile;
         if (wantSlot != col && (attr & 0x100) != 0) {
@@ -143,13 +114,9 @@ i32 CTriggerMgr::PlaceObject(
             onSpecialTile = 0;
         }
 
-        // first free cell of `row`. The scan looks one cell AHEAD, so an empty head
-        // cell short-circuits it entirely; the col>=15 exit threads straight into the
-        // shared reject.
         i32 base = row * TM_GRID_COLS;
         if (m_grid[base] != 0) {
-            // retail re-derives the cell pointer from `row` here rather than reusing
-            // the cached `base` (`lea` x2 off edi, not off the stored product).
+
             CGrunt** cells = &m_grid[row * TM_GRID_COLS];
             do {
                 if (col >= TM_GRID_COLS) {
@@ -167,11 +134,9 @@ i32 CTriggerMgr::PlaceObject(
         if (sprite == 0) {
             goto fail;
         }
-        sprite->m_7c->m_notify(sprite);
-        CGrunt* logic = static_cast<CGrunt*>(sprite->m_7c->m_logic);
+        sprite->m_animWorker->m_notify(sprite);
+        CGrunt* logic = static_cast<CGrunt*>(sprite->m_animWorker->m_logic);
 
-        // The battlez-setup kind table. Emission order is source order and is load-bearing
-        // (retail's arms run 1..8, 10, 11, 9, 13, 14, 12, 15, 16).
         i32 kindId;
         if (g_gameReg->m_134 == 1) {
             switch (aiType) {
@@ -281,8 +246,7 @@ i32 CTriggerMgr::PlaceObject(
             }
             hole->m_124 = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
         } else if (mode == 3 || mode == 2) {
-            // retail threads the `== 3` arm past this re-test; the `== 2` arm reaches it
-            // and falls straight through to the tail.
+
             if (mode == 3) {
                 logic->m_health = 0x19;
             }
@@ -333,10 +297,7 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
         NotifyCell(row, col, 0);
         return 0;
     }
-    // The grid cell is a real CGrunt (m_grid holds "Grunt" sprites); route it via the
-    // real CGrunt methods so the calls bind (ExitGrid==BuildGruntExitAnimation @0x641b0,
-    // Route==LoadGruntDeathAnimations @0x60150). The m_grid CGrunt*->CGrunt* retype is
-    // deferred cross-lane (FindGruntAt's return type ripples into Play.cpp et al.).
+
     if (kind == 0xd) {
         (static_cast<CGrunt*>(cell))->BuildGruntExitAnimation();
     } else {
@@ -345,9 +306,6 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
     return 1;
 }
 
-// 0x6bd40: ClearGridRange(startRow) - ResetAll, then for rows startRow..3 (5 = all)
-// flag each live cell's goal (+0x154) done and clear the cell, its parallel grid slot
-// (+0x11c) and the per-row state words (+0x10c/+0x20c/+0x21c); then ClearSelections.
 // @early-stop
 RVA(0x0006bd40, 0xb3)
 i32 CTriggerMgr::ClearGridRange(i32 startRow) {
@@ -363,10 +321,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     if (row <= last) {
         i32 n = last - row + 1;
         CGrunt** cell = &m_grid[row * TM_GRID_COLS];
-        // The three per-row bands the loop clears: m_rowCount (+0x10c), m_rowStateB
-        // (+0x20c) and m_rowStateC (+0x21c). The old spelling reached the first two
-        // through one cursor (`(char*)perRow - 0x100` and `perRow[4]`); they are
-        // named arrays, so index them.
+
         i32 r = row;
         i32 g2 = row * TM_GRID_COLS;
         do {
@@ -393,9 +348,6 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     return 1;
 }
 
-// 0x6be30: ScreenToCell - bias the input (sx,sy) by the level view's scroll origin
-// (view@m_24: scroll struct embedded at [m_5c]+0x40, origin @m_10/m_14) and forward to
-// CellHitTest.
 // @early-stop
 RVA(0x0006be30, 0x47)
 CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
@@ -405,9 +357,6 @@ CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 
     return CellHitTest(px, py, outRow, outCol, startRow);
 }
 
-// 0x6bea0: CellHitTest - scan the grid for the cell whose 30x30 object bounds contain
-// (px,py). startRow==5 means "rows 0..3"; otherwise just that one row. Writes the hit
-// (row,col) through the out-ptrs and returns the cell pointer (0 when none).
 // @early-stop
 RVA(0x0006bea0, 0xe2)
 CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
@@ -419,8 +368,7 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
         last = startRow;
         row = startRow;
     }
-    // ONE miss exit (retail 0x6bf76): the row gate and the row loop's bottom test
-    // both branch into it, so the outer back-edge is an unconditional jmp
+
     if (row <= last) {
         do {
             CGrunt** cell = &m_grid[row * TM_GRID_COLS];
@@ -449,11 +397,6 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
     return 0;
 }
 
-// 0x6bfd0: ResetCell(col, row, force, ...) - if grid[row*15+col] (+0x1c) is live: for a
-// non-magic row, run its three sub-state resetters then re-seed its CombatTimeout config
-// fields (+0x880..+0x88c); for the magic row (== g_curPlayer), when not forced recycle the
-// (row,col) record node onto the free list, AddTail it to +0x240, and run ResetMagic. ret 1
-// only when a magic cell was recycled, else 0. (__stdcall: ret 0x10.)
 RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     i32 idx = col * TM_GRID_COLS + row;
@@ -462,10 +405,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         return 0;
     }
     if (col != g_curPlayer) {
-        // RECOVERED (the view's RVAs for these were bogus - see <Gruntz/Grunt.h>). Retail
-        // calls three ILT thunks here (0x243c / 0x22de / 0x4246), which jump to 0x4d130 /
-        // 0x4d2f0 / 0x4d220: CGrunt's own CreateHealthSprite / CreateStaminaSprite /
-        // CreateToySprite, all already-claimed bodies. They were ResetA/B/C - phantoms.
+
         cell->CreateHealthSprite();
         cell->CreateStaminaSprite();
         cell->CreateToySprite();
@@ -476,9 +416,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         return 0;
     }
     if (force == 0) {
-        // RECOVERED 2026-08-01: retail 0x6c063 `call 0x36ed` is the ILT thunk to
-        // 0x78430 = ?ResetAll@CTriggerMgr@@QAEXXZ, NOT ResetSpawnState (0x79d90).
-        // assert_relocs flagged the old binding the moment this fn reached 100%.
+
         ResetAll();
     } else if (keep == 0) {
         if (RemoveCellRecord(col, row, 0) != 0) {
@@ -494,24 +432,19 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     m_recList.AddTail(slot);
-    // RECOVERED: the 0-arg i32 call in this function's set is the ILT thunk 0x24c8 ->
-    // 0x4b130 = ?CommitArrival@CGrunt@@QAEHXZ. `ResetMagic` was a phantom name for it.
+
     return cell->CommitArrival();
 }
 
-// @early-stop
 RVA(0x0006c130, 0xd62)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
-    // retail loads the play state early and spills it ([esp+0x10]); the switch
-    // container walks below read it back per arm.
+
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
 
     if (g != 0) {
         g->m_358 = 1;
     }
 
-    // Inlined LookupTileType(m_level->m_level, x, y): clamp (x,y) to the main plane,
-    // resolve the tile cell, ask its image set the collision kind at (subX, subY).
     CGameLevel* level = m_world->m_level;
     CDDrawWorkerHost* plane = level->m_mainPlane;
     i32 cx = x;
@@ -541,66 +474,349 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         return 0;
     }
 
-    // The 20-way per-kind switch (byte dispatch table on tag-0xb). First arm
-    // reconstructed: resolve the (tile,kind-7) switch element in the play state's
-    // trigger container, fire it, then run every 0x9c logic child claiming its key.
     CTileTriggerContainer* trig = state->m_beginMarker;
-    CTileTriggerSwitchLogic* sw = trig->FindChild((y >> 5) + ((x >> 5) << 8), TRIGID_TIME_SWITCH_7);
-    if (sw == 0) {
-        CString msg; // [esp+0x30] diagnostic temp
-        msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-        g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-        g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, 0x3eb);
-        return 0;
-    }
-    sw->SwitchDown(); // virtual slot 2 on the found switch element
-
-    // Run every m_list2 then m_list1 logic child that claims the switch's key.
-    i32 anyHit = 0;
+    i32 cellKey = (tx << 8) + ty;
+    CTileTriggerSwitchLogic* sw;
     POSITION pos;
-    trig = state->m_beginMarker;
-    pos = trig->m_list2.GetHeadPosition();
-    while (pos != 0) {
-        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list2.GetNext(pos));
-        if (el->FindIndexByKey(sw->m_key1) != 0) {
-            anyHit = 1; // retail branches into the shared success tail (0x6cc7e)
-            break;
+    i32 anyHit;
+    i32 stop;
+
+    switch (tag) {
+        case TILEKIND_ARROW_UP_A:
+        case TILEKIND_ARROW_UP_B:
+            if (g == 0 || g->m_entranceDropActive != 0) {
+                return 1;
+            }
+            g->m_entranceActive = 1;
+            g->StepArrivalDrop(x, y - 8, 0, -1, 1, 0);
+            return 1;
+
+        case TILEKIND_ARROW_DOWN_A:
+        case TILEKIND_ARROW_DOWN_B:
+            if (g == 0 || g->m_entranceDropActive != 0) {
+                return 1;
+            }
+            g->m_entranceActive = 1;
+            g->StepArrivalDrop(x, y + 8, 0, -1, 1, 0);
+            return 1;
+
+        case TILEKIND_ARROW_LEFT_A:
+        case TILEKIND_ARROW_LEFT_B:
+            if (g == 0 || g->m_entranceDropActive != 0) {
+                return 1;
+            }
+            g->m_entranceActive = 1;
+            g->StepArrivalDrop(x - 8, y, 0, -1, 1, 0);
+            return 1;
+
+        case TILEKIND_ARROW_RIGHT_A:
+        case TILEKIND_ARROW_RIGHT_B:
+            if (g == 0 || g->m_entranceDropActive != 0) {
+                return 1;
+            }
+            g->m_entranceActive = 1;
+            g->StepArrivalDrop(x + 8, y, 0, -1, 1, 0);
+            return 1;
+
+        case TILEKIND_ARROW_CURRENT:
+            if (g != 0 && g->m_entranceDropActive == 0) {
+                g->m_entranceActive = 1;
+                switch (g->m_entranceCell.direction) {
+                    case 1:
+                        g->StepArrivalDrop(x, y - 8, 0, -1, 1, 0);
+                        break;
+                    case 3:
+                        g->StepArrivalDrop(x + 8, y, 0, -1, 1, 0);
+                        break;
+                    case 5:
+                        g->StepArrivalDrop(x, y + 8, 0, -1, 1, 0);
+                        break;
+                    case 7:
+                        g->StepArrivalDrop(x - 8, y, 0, -1, 1, 0);
+                        break;
+                    default:
+                        g->StepArrivalDrop(x, y, 0, -1, 1, 0);
+                        break;
+                }
+                return 1;
+            }
+
+        case TILEKIND_CRUMBLEWATERBRIDGE: {
+            CTileTriggerLogic* logic = trig->AddLogicDefaults(
+                tag,
+                TRIGID_TILE_TRIGGER_24,
+                tx,
+                ty,
+                0,
+                0x9d,
+                0,
+                g_buteMgr.GetDword("Hazardz", "CrumbleTileDelay"),
+                0
+            );
+            if (logic != 0) {
+                logic->RecordMove();
+            }
+            return 1;
         }
-    }
-    trig = state->m_beginMarker;
-    pos = trig->m_list1.GetHeadPosition();
-    while (pos != 0) {
-        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
-        if (el->FindIndexByKey(sw->m_key1) != 0) {
-            el->RecordMove();
-            anyHit = 1;
+
+        case TILEKIND_CRUMBLEDEATHBRIDGE: {
+            i32 token = state->m_levelType > 4 ? 0x72 : 0x75;
+            CTileTriggerLogic* logic = trig->AddLogicDefaults(
+                tag,
+                TRIGID_TILE_TRIGGER_24,
+                tx,
+                ty,
+                0,
+                token,
+                0,
+                g_buteMgr.GetDword("Hazardz", "CrumbleTileDelay"),
+                0
+            );
+            if (logic != 0) {
+                logic->RecordMove();
+            }
+            return 1;
         }
+
+        case TILEKIND_SWITCH_A:
+        case TILEKIND_SWITCH_B:
+        case TILEKIND_SWITCH_C:
+            sw = trig->FindChild(cellKey, 0);
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            anyHit = 0;
+            stop = 0;
+            pos = trig->m_list1.GetHeadPosition();
+            while (pos != 0 && stop == 0) {
+                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_key1) != 0) {
+                    if (el->Tick() == 0) {
+                        stop = 1;
+                    }
+                    anyHit = 1;
+                }
+            }
+            if (anyHit != 0) {
+                return 1;
+            }
+            {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TRIGGER);
+            }
+            return 0;
+
+        case TILEKIND_MULTI_SWITCH:
+            sw = trig->FindChild(cellKey, TRIGID_MULTI_SWITCH_3);
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_MULTI_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            if (sw->VerifyBlockLinksB() == 0) {
+                return 1;
+            }
+            anyHit = 0;
+            stop = 0;
+            pos = trig->m_list1.GetHeadPosition();
+            while (pos != 0 && stop == 0) {
+                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_key1) != 0) {
+                    if (el->Tick() == 0) {
+                        stop = 1;
+                    }
+                    anyHit = 1;
+                }
+            }
+            if (anyHit != 0) {
+                return 1;
+            }
+            {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_MULTI_TRIGGER);
+            }
+            return 0;
+
+        case TILEKIND_EXCLUSIVE_SWITCH:
+            sw = trig->FindChild(cellKey, TRIGID_EXCLUSIVE_SWITCH_4);
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_EXCLUSIVE_SWITCH);
+                return 0;
+            }
+            if (sw->SwitchDown() == 0) {
+                return 1;
+            }
+            anyHit = 0;
+            stop = 0;
+            pos = trig->m_list1.GetHeadPosition();
+            while (pos != 0 && stop == 0) {
+                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_key1) != 0) {
+                    if (el->Tick() == 0) {
+                        stop = 1;
+                    }
+                    anyHit = 1;
+                }
+            }
+            if (anyHit != 0) {
+                return 1;
+            }
+            {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_EXCLUSIVE_TRIGGER);
+            }
+            return 0;
+
+        case TILEKIND_SECRET_SWITCH:
+            sw = trig->FindChild(cellKey, TRIGID_SECRET_SWITCH_6);
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SECRET_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            anyHit = 0;
+            pos = trig->m_list1.GetHeadPosition();
+            while (pos != 0) {
+                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_key1) != 0) {
+                    el->RecordMove();
+                    anyHit = 1;
+                }
+            }
+            if (anyHit != 0) {
+                g_gameReg->m_scoreHud->m_28++;
+                m_world->m_soundRegistry->RefreshAsset("GAME_SECRETSWITCH");
+                i32 cueX = g != 0 ? g->m_object->m_screenX : x;
+                i32 cueY = g != 0 ? g->m_object->m_screenY : y;
+                RECT* view = &g_gameReg->m_viewBounds;
+                if (cueX < view->right && cueX >= view->left && cueY < view->bottom
+                    && cueY >= view->top) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x3f2, -1, g == 0 ? 1 : 0, -1, -1);
+                }
+                return 1;
+            }
+            {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_SECRET_TRIGGER);
+            }
+            return 0;
+
+        case TILEKIND_TIME_SWITCH:
+            sw = trig->FindChild(cellKey, TRIGID_TIME_SWITCH_7);
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_TIME_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            pos = trig->m_list2.GetHeadPosition();
+            while (pos != 0) {
+                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list2.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_key1) != 0) {
+                    return 1;
+                }
+            }
+            anyHit = 0;
+            pos = trig->m_list1.GetHeadPosition();
+            while (pos != 0) {
+                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_key1) != 0) {
+                    el->RecordMove();
+                    anyHit = 1;
+                }
+            }
+            if (anyHit != 0) {
+                return 1;
+            }
+            {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TIME_TRIGGER);
+            }
+            return 0;
+
+        case TILEKIND_CHECKPOINT:
+            if (g_gameReg->m_134 != 1 || g == 0 || g->m_tileOwnerHi != g_curPlayer) {
+                return 0;
+            }
+            sw = trig->FindChild(cellKey, TRIGID_CHECKPOINT_SWITCH_8);
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for plate at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_CHECKPOINT);
+                return 0;
+            }
+            if (sw->m_28 == 0) {
+                sw->SwitchDown();
+            } else {
+                i32 gruntKind = g->m_entranceReason;
+                if (gruntKind > 0x16) {
+                    gruntKind = g->m_toolId;
+                }
+                if (sw->m_28 == gruntKind || sw->m_28 == g->m_198) {
+                    sw->SwitchDown();
+                } else {
+                    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    i32 gx = g->m_object->m_screenX;
+                    i32 gy = g->m_object->m_screenY;
+                    if (gx < view->right && gx >= view->left && gy < view->bottom
+                        && gy >= view->top) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x335, -1, 0, -1, -1);
+                    }
+                }
+            }
+            if (sw->VerifyBlockLinks() == 0) {
+                return 0;
+            }
+            anyHit = 0;
+            stop = 0;
+            pos = trig->m_list1.GetHeadPosition();
+            while (pos != 0 && stop == 0) {
+                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_key1) != 0) {
+                    if (el->Tick() == 0) {
+                        stop = 1;
+                    }
+                    anyHit = 1;
+                }
+            }
+            if (anyHit == 0) {
+                CString msg;
+                msg.Format("No trigger logic found for plate at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_CHECKPOINT_TRIGGER);
+            }
+            return 0;
     }
-    if (anyHit == 0) {
-        CString msg;
-        msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-        g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-        g_gameReg->ReportError(TRIGERR_LINK_BROKEN, 0x3ec);
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
-// 0x6d300: ApplySwitch(g, sx, sy) - the /GX switch-logic driver. Clamp (sx,sy) to the
-// plane, sample the tile attribute, decode the collision kind, then switch over that kind
-// (retail jump table @0x46d8b4, value table @0x46d8cc indexed by kind-0x34 over 0..0xe;
-// live arms 0x34/0x36/0x38/0x40/0x42, everything else falls through to `return 0`).
-// Each arm resolves the switch object via m_beginMarker->FindChild(((sx>>5)<<8)+(sy>>5), K)
-// with its OWN K (0x40->7, 0x34->0, 0x36->0, 0x38->3, 0x42->8) and, on a miss, Formats
-// "No switch logic found for switch at: x=%d, y=%d" (or "No trigger logic ...") with the
-// RAW sx/sy into a stack CString, EnterModalUI's it and ReportErrors a per-arm site id
-// 0x3f7..0x3fd. The CString scopes are the seven /GX EH states 0..6, in that source order.
-// ARITY FIXED (2026-07-14): retail ends `ret 0xc` = THREE dwords - every caller
-// (GruntSteps/Grunt.cpp/GruntCombat) pushes (grunt, x, y); the old 2-arg spelling
-// emitted `ret 8`. The grunt arg IS read - by the 0x42 arm only (it gates on
-// g->m_tileOwnerHi == g_curPlayer).
-// The arms read the RAW args from their incoming stack slots, NOT the clamped x/y: ebx/edi
-// hold subX/subY by the time the jump table fires, so every arm re-loads [esp+0x30]/[esp+0x34].
 // @early-stop
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
@@ -637,7 +853,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         kind = 0;
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));
-        kind = ts->GetCollisionAt(subX, subY); // slot 8 (+0x20)
+        kind = ts->GetCollisionAt(subX, subY);
     }
     switch (kind) {
         case 0x40: {
@@ -650,7 +866,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_40);
                 return 0;
             }
-            obj->SwitchUp(); // vtbl slot 3 (+0xc)
+            obj->SwitchUp();
             return 1;
         }
         case 0x34: {
@@ -677,8 +893,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 return 0;
             }
             obj->SwitchUp();
-            // every m_list1 child that claims this switch's key gets its slot-0 Tick;
-            // a child returning 0 stops the walk.
+
             POSITION pos = state->m_beginMarker->m_list1.GetHeadPosition();
             i32 found = 0;
             i32 stop = 0;
@@ -743,8 +958,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             return 1;
         }
         case 0x42: {
-            // the battlez-only arm: only the local player may flip it, and it always
-            // reports "not handled" (falls into the shared xor eax,eax exit).
+
             if (g_gameReg->m_134 != 1) {
                 return 0;
             }
@@ -773,10 +987,6 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     return 0;
 }
 
-// retail 0x6da60/0x6daa0 end at the void EnqueueSingle call with NO eax write, so void
-// (a `return 0` adds a spurious xor eax,eax). The bodies never read `this`; the
-// __thiscall linkage is proven by the receiver load at both call sites (see the
-// declaration note in TriggerMgr.h).
 RVA(0x0006da60, 0x27)
 void CTriggerMgr::GridAction6(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
@@ -787,20 +997,6 @@ void CTriggerMgr::GridAction7(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
 }
 
-// 0x6dae0: ApplyTriggerA(col, row, worldX, worldY) - look up grid[col*15+row]; if live,
-// un-pending and matching the snapped source pos, dispatch the cell's trigger logic by its
-// kind (the 0x13/0xf branch families); update its state and return the applier result. Else
-// -1 / 0. (__thiscall, 4 int args: ?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z, ret 0x10 - the
-// old "__stdcall: ret 0x1c / 6 args" note was wrong on both counts.)
-// worldX/worldY named 2026-07-29 from retail: with the frame at entry-0x24, @0x6db0e reads
-// [esp+0x30] and [esp+0x34] (args 3 and 4) and immediately `sar`s each by 5 - the /32 tile
-// snap - exactly as the twin ApplyTriggerB @0x6e120 does with its already-named
-// worldX/worldY. arg1*15+arg2 is the m_grid index, so arg1/arg2 are col/row.
-// Switch tables read out of the image: value table @0x46dfc4 (0x15 bytes, indexed by
-// kind-2 over 0..0x14), jump table @0x46df98 (11 slots). Retail spills all four tile
-// scalars - cellTileX@[esp+0x10], cellTileY@[esp+0x30], argTileX@[esp+0x28],
-// argTileY@[esp+0x2c] - keeps raw worldX in ebp, and carries two more stack homes for the
-// raw m_17c/m_180 loads (frame 0x14). Search: config/axes/applytriggera-head.json.
 // @early-stop
 RVA(0x0006dae0, 0x4b7)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
@@ -849,7 +1045,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         kDiag = cell->m_toolId;
     }
     if (kDiag == 1) {
-        // reason 1 = the diagonal walk: an off-axis step is only legal on the 45 deg line
+
         if (cellTileY != argTileY && cellTileX != argTileX) {
             if (abs(argTileY - cellTileY) != abs(argTileX - cellTileX)) {
                 return -1;
@@ -880,17 +1076,12 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
     CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-    i32 bute = map->m_rows[by >> 5][bx >> 5].m_10; // target tile's bute type code
+    i32 bute = map->m_rows[by >> 5][bx >> 5].m_10;
     i32 kind = cell->m_entranceReason;
     if (kind > 0x16) {
         kind = cell->m_toolId;
     }
-    // Case ORDER is retail's source order, proven by the physical arm layout in the
-    // image (5 @0x6dd8e, 13 @0x6ddd9, 7 @0x6ddea, 15 @0x6de5a, 3 @0x6de7a + the shared
-    // RunMoveConfig tail @0x6de96 that 13 jumps into, the merged BeginAttack body
-    // @0x6deb6, 20 @0x6decf). The jump-table SLOT numbering is by case value, so the
-    // four separate BeginAttack groups {2} {9,10,11} {17} {21,22} must stay separate
-    // groups - one merged group would collapse them to a single slot.
+
     switch (kind) {
         case 5:
             if (bute == 0x1e || bute == 0x1f || bute == 0x21 || bute == 0x97 || bute == 0x98
@@ -968,10 +1159,6 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     return 0;
 }
 
-// 0x6e120: ApplyTriggerB(a1c, col, row, a28, a2c, a30) - the exit variant of ApplyTriggerA:
-// same cell lookup + validation, then snap (a28,a2c) to a tile and route the cell's exit
-// logic; updates the arrival phase and returns the applier's boolean. (__stdcall: ret 0x10.)
-// Reconstructed to plateau.
 // @early-stop
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
@@ -990,7 +1177,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (o->m_screenY != cell->m_lastTilePxY) {
         return -1;
     }
-    // retail compares the SNAPPED TILE coords here, not the pixel pair
+
     if (cellTileX == argTileX && cellTileY == argTileY && cell->m_198 != 0x1e
         && g_traitorMode == 0) {
         return 0;
@@ -1100,12 +1287,6 @@ CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
     return 0;
 }
 
-// 0x6e800: ClearCell(col, row, arrivalPhase, worldX, worldY) - if grid[col*15+row] is live, reset its
-// trigger/anim sub-state (unless already cleared via +0x420), bail if it has a pending
-// flag (+0x1e4), look up its config name; when it equals "I" run the manager's fx with the
-// cell's pose; then StepArrivalDrop on the snapped (worldX, worldY) bounds and return its
-// boolean result.
-// (__stdcall: ret 0x14.)
 // @early-stop
 RVA(0x0006e800, 0x189)
 i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 worldY) {
@@ -1140,16 +1321,10 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 w
     return r != 0 ? 1 : 0;
 }
 
-// 0x6ea00: HitTestApply(x, y, kind) - hit-test the cell at (x,y); only for the magic group
-// (out-col == g_curPlayer) and a cell whose config name is NOT "B" and kind 0x14, add the world's
-// score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
-// and ClearRow(g_curPlayer). void - no path materialises a return value. (__stdcall: ret 0xc.)
 // @early-stop
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
-    // retail 0x6ea00 reads arg3 BOTH by value (the span rect) and by address (the
-    // out-column): `mov edx,[esp+0xc]` and `lea ecx,[esp+0x20]` resolve to the same
-    // E+0xc slot. HitSpanArg names both readings (see <Gruntz/TriggerMgr.h>).
+
     CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outCol, &y, 0);
     if (cell == 0 || span.m_outCol != g_curPlayer) {
         return;
@@ -1167,9 +1342,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
         return;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    // world->m_3f4 IS CPlay::m_frameMarker (the CTimer): read its i64 start stamp
-    // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
-    // timer's accum/lap/running/current block.
+
     CTimer* sub = world->m_frameMarker;
     i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - sub->m_startStamp.m_v;
     if (diff < 0) {
@@ -1178,11 +1351,11 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     g_gameReg->m_scoreHud->m_score += static_cast<i32>(diff);
     sub->m_40 = 0;
     sub->m_44 = 0;
-    sub->m_accumLo = 0;           // +0x30
-    sub->m_accumHi = 0;           // +0x34
-    sub->m_running = 0;           // +0x48
-    sub->m_currentMs = 0;         // +0x4c
-    world->ArmSnapshot(0, 0xbb7); // 0xd9240
+    sub->m_accumLo = 0;
+    sub->m_accumHi = 0;
+    sub->m_running = 0;
+    sub->m_currentMs = 0;
+    world->ArmSnapshot(0, 0xbb7);
     world->m_guts->SetMode(1);
     this->ClearRow(g_curPlayer);
 }

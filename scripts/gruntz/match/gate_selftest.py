@@ -38,10 +38,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gruntz.audit import tu_layout
+from gruntz.audit import rename_member, tu_layout
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
+from gruntz.core import branches
 from gruntz.core import report
 from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, labels, synth_pdb
@@ -49,6 +50,11 @@ from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import high_water, status
 from gruntz.permute import permute_sweep
 from gruntz.match import verify_unique_names as vun
+
+
+class RenameMemberToolTests(unittest.TestCase):
+    def test_whole_tree_rename_has_no_file_count_cap(self):
+        self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
 
 
 class _Tree:
@@ -72,6 +78,22 @@ class _Tree:
     def __exit__(self, *a):
         class_meta.SRC, class_meta.INC, class_meta.RVA_H = self._saved
         self._tmp.cleanup()
+
+
+class TestBranchDisassembly(unittest.TestCase):
+    def test_msvc_local_labels_stay_in_the_owning_function(self):
+        parsed = branches.parse_objdump(
+            "00000000 <?Switch@@YAHH@Z>:\n"
+            "       0: jne 0x10 <?Switch@@YAHH@Z+0x10>\n"
+            "00000010 <$L123>:\n"
+            "      10: movl %eax, %ebx\n"
+            "      12: retl\n"
+            "00000000 <?Next@@YAHXZ>:\n"
+            "       0: retl\n"
+        )
+        self.assertEqual(set(parsed), {"?Switch@@YAHH@Z", "?Next@@YAHXZ"})
+        self.assertEqual([offset for offset, _, _ in parsed["?Switch@@YAHH@Z"]],
+                         [0, 0x10, 0x12])
 
 
 # --------------------------------------------------------------------------- #

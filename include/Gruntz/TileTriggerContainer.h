@@ -1,81 +1,49 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
-#include <Mfc.h> // MFC CPtrList (the m_base/m_list1-3 sub-object list methods)
+#include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/SerialArchive.h>   // the shared CFileMemBase stream (Read @ +0x2c / Write @ +0x30)
-#include <Gruntz/TileActionEvent.h> // CTileActionEvent - the 0x28 m_list3 element (was TtcMark)
-#include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
-#include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
-#include <Rez/RezAlloc.h>             // RezAlloc/RezFree (the global allocator pair)
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileTriggerWiring.h>
+#include <rva.h>
+#include <Rez/RezAlloc.h>
 
 class CTileTriggerContainer;
-class CTileTriggerLogic;       // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
-class CGiantRockLogic;         // the 0xc8 m_list1 rock element (def in TileTriggerLogic.h)
-class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTriggerSwitchLogic.h)
+class CTileTriggerLogic;
+class CGiantRockLogic;
+class CTileTriggerSwitchLogic;
 
 extern "C" u32 g_frameTime;
 
-// `typeId`/`pObj` are the serialize family's forwarded factory context: they enter at
-// SerializeObjectFactory (0xd2a0, args 4+5 - the class tag and the `void** out` slot the
-// mode-9 object factory writes through), ride CGruntzMgr::BroadcastCmd -> CPlay::SyncState
-// down to every Serialize/ValidateByType leaf, and no leaf below the factory reads them
-// (0x113860 returns before touching [esp+0xc]/[esp+0x10]).
-i32 __stdcall SerializeApplyA(
-    CFileMemBase* s,
-    i32 mode,
-    i32 typeId,
-    i32 pObj,
-    CTileTriggerSwitchLogic* o
-); // 0x117630
 i32 __stdcall
-SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o); // 0x117710
+SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o);
+i32 __stdcall
+SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o);
 
 class CTileTriggerContainer {
 public:
-    // Inline ctor: the four CPtrList members construct (each `push 0xa; call
-    // ??0CPtrList`) and the m_74 latch zeroes - exactly the inlined sequence at
-    // BOTH retail construction sites (CMulti::LoadGameAssetNamespaces 0xb5460:
-    // `push 0x78; call ??2` + 4x CPtrList(0xa) + `[esi+0x74]=0`; CPlay::LoadGameAssetNamespaces
-    // 0xc7ec0 likewise). m_70 is NOT initialized there - follow the bytes.
     CTileTriggerContainer() {
         m_built = 0;
     }
 
-    // m_list1 stores CTileTriggerLogic leaves; the arg is always one of them
-    // (TriggerMgr passes a CGiantRockLogic*, TerrainTileLoader a FindInLists12
-    // result), so the parameter is the leaf type, not void*.
-    i32 DelFromList1(CTileTriggerLogic* elem); // 0x116e60
-    // Scan m_list1 then m_list2 for the logic element with m_10 == a and
-    // (b == 0 || m_typeTag == b).
-    CTileTriggerLogic* FindInLists12(i32 a, i32 b); // 0x116f20
-    i32 FilterList2(i32 arg);                       // 0x1170b0
-    i32 MoveList1ToList2(void* data);               // 0x117150
-    // m_list3 stores CTileActionEvent records; the only caller passes a
-    // FindByField0C result, so the parameter is that record type.
-    i32 DelFromList3(CTileActionEvent* evt); // 0x117200
+    i32 DelFromList1(CTileTriggerLogic* elem);
 
-    // The /GX dtor: runs DtorBase then destroys m_list3 / m_list2 / m_list1 /
-    // m_base (auto member teardown, reverse declaration order).
-    ~CTileTriggerContainer(); // 0xc8640
+    CTileTriggerLogic* FindInLists12(i32 a, i32 b);
+    i32 FilterList2(i32 arg);
+    i32 MoveList1ToList2(void* data);
 
-    // The per-id logic-leaf factory (0x116610): switches on `logicType` (0x15..0x1a),
-    // news the matching 0x9c CTileTriggerLogic leaf, fills it from the args + six
-    // CTrigParam blocks (into m_block), appends it to m_list1 (or m_list2 for id 0x17),
-    // and latches it into m_70 for id-0x15 board tiles 0x67/0x68.  Returns the leaf,
-    // 0 on alloc/double-init.  /GX (per-`new` trylevel EH frame).
+    i32 DelFromList3(CTileActionEvent* evt);
+
+    ~CTileTriggerContainer();
+
     CTileTriggerLogic* AddLogic(
         i32 tileType,
         i32 logicType,
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        // The six by-value blocks are ONE object's rect set, byte-aligned across both
-        // call sites: CPlay's covered-powerup scan (PlayPlaneScan.cpp) passes
-        // p->m_extent / m_area / m_switchRect / m_clip / m_7c->m_switchRectA /
-        // m_7c->m_switchRectB, and AddLogicFromRecord passes rec->m_134 / m_144 / m_154 /
-        // m_64 / m_7c->m_f0 / m_7c->m_100 - the same six offsets (+0x134/+0x144/+0x154 on
-        // CGameObject, +0x64 on CResolveNode, +0xf0/+0x100 on AnimWorkerObj).
+
         CTrigParam extent,
         CTrigParam area,
         CTrigParam switchRect,
@@ -87,8 +55,8 @@ public:
         i32 leadInSpan,
         i32 dutyOffSpan
     );
-    // 0x1163b0: forward to AddLogic with six default (zeroed) parameter blocks.
-    void AddLogicDefaults(
+
+    CTileTriggerLogic* AddLogicDefaults(
         i32 tileType,
         i32 logicType,
         i32 tileX,
@@ -99,14 +67,9 @@ public:
         i32 leadInSpan,
         i32 dutyOffSpan
     );
-    // 0x1164a0: forward with the five ids + six CTrigParam blocks from a source record.
+
     void AddLogicFromRecord(i32 tileType, i32 logicType, CTrigSourceRecord* rec);
 
-    // Allocates a 0x28-byte CTileActionEvent, initialises it from the call args,
-    // notifies it, and appends it to m_list3 (the +0x54 list).  /GX (the mark is a
-    // stack-tracked partial during ctor).
-    // player0..player3 land in m_playerFlags[0..3] (the per-player seen/active slots
-    // SetCell and CTileActionEvent::Process index with g_curPlayer).
     CTileActionEvent* AddToList3(
         i32 actionCode,
         i32 tileX,
@@ -116,11 +79,8 @@ public:
         i32 player1,
         i32 player2,
         i32 player3
-    ); // 0x116a40
+    );
 
-    // Allocates a 0xc8-byte CGiantRockLogic (type tag 0x16 == factory id 22), fills
-    // it (incl. the 9-dword rep-movs m_matrix block) and appends it to m_list1 (the
-    // +0x1c list).  /GX.
     CGiantRockLogic* AddToList1(
         i32 tileX,
         i32 tileY,
@@ -129,49 +89,26 @@ public:
         i32 powerupType,
         i32 textId,
         i32 dutyOffSpan
-    ); // 0x116cf0 (matrix = ARG 4, retail-proven)
+    );
 
-    // Twin of AddToList3 (0x116a40): allocates+constructs a 0x28-byte event, and
-    // (when its init flag is clear) fills it from the args plus the four m_playerFlags
-    // words chosen by a switch on `playerSlot` (0..3 = that player, PLAYERSLOT_ALL =
-    // all four), notifies it, and appends it to m_list3.
-    // Returns the event, or 0 on alloc/double-init failure.  /GX.
-    CTileActionEvent* AddToList3Switch(
-        i32 actionCode,
-        i32 tileX,
-        i32 tileY,
-        i32 cellKey,
-        i32 playerSlot
-    ); // 0x116b80
+    CTileActionEvent*
+    AddToList3Switch(i32 actionCode, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
 
-    // --- the walkers the thiscall-only tracer misfiled under CTileTriggerSwitchLogic ---
-    // (their receiver is THIS container: ModeObjInit 0xc7ec0 builds it - four in-place
-    // CPtrList ctors at +0x00/+0x1c/+0x38/+0x54 + [+0x74]=0 - and calls GetFlag74 on it;
-    // TriggerMgr/BattlezMapConfig drive the finders and then DelFromList1/3 on the SAME
-    // pointer; SetCell's "FindByKey @0x2838" / "AddMark @0x21df" / "RunFallback @0x377e"
-    // ILT thunks resolve to FindByField0C / FindInLists12 / ScanNeighborhood.)
-    i32 GetFlag74();                  // 0x115f00  test-and-set the m_74 latch
-    i32 RemoveByKeys(i32 k1, i32 k2); // 0x116320  m_base: delete the (k1,k2) element
-    // Scan m_base (the 0x8c switch-logic elements) for m_key1==k1 && (k2==0 || m_04==k2).
-    CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2); // 0x116ee0
-    // Scan m_list3 (the CTileActionEvent records) for m_c == key.
-    CTileActionEvent* FindByField0C(i32 key); // 0x1171d0
-    // 3x3 neighborhood probe around (x,y): FindInLists12((x'<<8)+y', 0x16) per
-    // cell - tag 0x16 is the giant rock, so a hit IS a CGiantRockLogic.
-    CGiantRockLogic* ScanNeighborhood(i32 x, i32 y); // 0x117ec0
-    // The switch-logic registrar/factory (0x115f60, thunk 0x1131; ex the stub
-    // `AddSwitchLogic_115f60` + LevelTileValidation's `TriggerRegistrar::
-    // RegisterSwitchLogic` view - CPlay::ValidateLevelTiles calls it on
-    // m_beginMarker, `mov ecx,[this+0x2e4]`, with the per-tag id {1..8} + the six
-    // by-value RECTs + isMatch). News the tag's CTileTriggerSwitchLogic subclass at
-    // 0x115f96, BuildSmall's it, appends to m_base. __thiscall ret 0x7c (31
-    // dword-args incl. the six 4-dword RECTs); returns the object (0 on failure).
+    i32 GetFlag74();
+    i32 RemoveByKeys(i32 k1, i32 k2);
+
+    CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2);
+
+    CTileActionEvent* FindByField0C(i32 key);
+
+    CGiantRockLogic* ScanNeighborhood(i32 x, i32 y);
+
     CTileTriggerSwitchLogic* AddSwitchLogic(
         i32 tag,
         i32 col,
         i32 row,
         i32 key,
-        // the same six rect blocks AddLogic takes (see its declaration above)
+
         RECT extent,
         RECT area,
         RECT switchRect,
@@ -181,43 +118,27 @@ public:
         i32 isMatch,
         i32 m120,
         i32 zero
-    ); // 0x115f60
+    );
 
-    // The big save/load serialize walk (0x117280).  op 4 = save: writes each list's
-    // count and serialize-applies every element across m_base/m_list1/m_list2/m_list3
-    // via SerializeApplyA/B and the per-element helpers.  op 7 = load: RemoveAll,
-    // then for each list reads a count and LoadElement's that many elements, AddTail'd
-    // into the matching list (m_list3 marks are alloc'd inline).  Returns 1/0.  /GX.
-    i32 Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj); // 0x117280
+    i32 Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
 
-    // Per-element LOAD helper of Serialize op 7: allocates+deserializes one element
-    // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
-    void* LoadElement(CFileMemBase* s, i32 op, i32 typeId, i32 pObj); // 0x117800
+    void* LoadElement(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
 
-    // The serialize-walk pre/post hooks: stream the m_74 latch. LoadFlag74 closes
-    // the load (op 7, read slot +0x2c); TransferFlag74 the save (op 4, write +0x30).
-    i32 LoadFlag74(CFileMemBase* s);     // 0x117e70
-    i32 TransferFlag74(CFileMemBase* s); // 0x117e20
+    i32 LoadFlag74(CFileMemBase* s);
+    i32 TransferFlag74(CFileMemBase* s);
 
-    // Empties all four lists (m_base + m_list1/2/3), inline-destroying every
-    // element, then clears m_70.  Invoked by DtorBase when m_74 is set.
-    void RemoveAll(); // 0x116fa0
+    void RemoveAll();
 
-    // Looks up the CTileActionEvent for cell (tileX,tileY) via FindByField0C; if present
-    // flags one (or, on PLAYERSLOT_ALL, all) of its m_playerFlags and re-commits it; else
-    // probes for a covered-powerup command (FindInLists12 tag 0x1a) or scans the
-    // neighborhood.
-    i32 SetCell(i32 tileX, i32 tileY, i32 playerSlot); // 0x117f60
+    i32 SetCell(i32 tileX, i32 tileY, i32 playerSlot);
 
-    // The base sub-object's own destructor; runs RemoveAll then clears +0x74.
-    void DtorBase(); // 0x115f30
+    void DtorBase();
 
-    CPtrList m_base;                  // +0x00 (head @ +0x04)  the base CPtrList sub-object
-    CPtrList m_list1;                 // +0x1c (head @ +0x20)
-    CPtrList m_list2;                 // +0x38 (head @ +0x3c)
-    CPtrList m_list3;                 // +0x54 (head @ +0x58)
-    CTileTriggerLogic* m_latchedLeaf; // +0x70  id-0x15 latches the built logic leaf here
-    i32 m_built; // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
+    CPtrList m_base;
+    CPtrList m_list1;
+    CPtrList m_list2;
+    CPtrList m_list3;
+    CTileTriggerLogic* m_latchedLeaf;
+    i32 m_built;
 };
 SIZE_UNKNOWN();
 

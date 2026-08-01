@@ -1,26 +1,11 @@
 #include <Gruntz/GruntzMapMgr.h>
 
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/FreeNodePool.h>
 
-VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
-// ===========================================================================
-// CGruntzMapMgr::Visit  (0x082430) - vtable slot 1, __thiscall
-// ===========================================================================
-// Stream the +0x7c pointer-array (m_pData@+0x80, m_nSize@+0x84) and the +0x90 scratch
-// dword through `ar` keyed by `mode`, then chain the base CMapMgr::Visit probe.
-// mode 4 = write-out (stream slot +0x30): write m_90, the count, then each non-null
-// node body (size 8). mode 7 = read-in (slot +0x2c): read m_90 and the new count, push
-// every existing node back onto g_coordPool.m_freeHead, resize the array to empty then
-// to count, and pull a fresh node off g_coordPool.m_freeHead per slot (body = node+4),
-// reading each (size 8). Returns the base probe's bool.
-//
-// (Was ?SerializeNodes@CMapLogic@@QAEHPAVCFileMemBase@@HHH@Z - a non-virtual method of
-// the conflated view. The name is the BASE SLOT's: an override must carry it. The tail
-// was spelled `((CMapMgr*)this)->CMapMgr::Visit(...)` through a cross-cast that only
-// existed because the view had no real relation to CMapMgr; with the true inheritance
-// it is the plain qualified base call it always was, and the cast is gone.)
+VTBL(CGruntzMapMgr, 0x001e9bb4);
+
 // @early-stop
 RVA(0x00082430, 0x161)
 i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
@@ -29,8 +14,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
     }
     switch (mode) {
         case 7: {
-            // read-in: m_90, the new count; recycle every existing node onto
-            // g_coordPool.m_freeHead; resize empty->count; pull a fresh node per slot.
+
             ar->Read(&m_90, 4);
             i32 count;
             ar->Read(&count, 4);
@@ -57,7 +41,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
             break;
         }
         case 4: {
-            // write-out: m_90, the count (a local copy of m_nSize), each node body.
+
             ar->Write(&m_90, 4);
             i32 wn = m_arr.GetSize();
             ar->Write(&wn, 4);
@@ -71,24 +55,10 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
             break;
         }
     }
-    // Retail tail: `mov ecx,this; call 0x26b2` (the ?Visit@CMapMgr@@ ILT thunk ->
-    // 0x9f7f0) - this override chaining its own base, non-virtually.
+
     return CMapMgr::Visit(ar, mode, typeId, pObj) != 0;
 }
 
-// ===========================================================================
-// CGruntzMapMgr::Reset  (0x085480) - vtable slot 0, __thiscall
-// ===========================================================================
-// Walk the +0x7c CPtrArray's pointer body, push each non-null element's node
-// (element - g_coordPool.m_linkOffset) back onto the global g_coordPool.m_freeHead,
-// then shrink the array to empty (SetSize(0, -1)) and chain the base grid cleanup.
-//
-// (Was ?FreeNodes@CMapLogic@@QAEXXZ. The tail `Reset()` was a declared-only
-// CMapLogic::Reset ALIAS whose RVA had to be hand-pinned as a data-symbol row
-// (?Reset@CMapLogic@@QAEXXZ at the ILT thunk 0x00001a91) - because 0x9ec30 already
-// carried CMapMgr::Reset's label and the dup-RVA guard rejects a second. With the
-// true inheritance that whole workaround dissolves: it is a qualified base call, the
-// same one ~CGruntzMapMgr below already makes.)
 RVA(0x00085480, 0x52)
 void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
@@ -100,7 +70,7 @@ void CGruntzMapMgr::Reset() {
         }
     }
     m_arr.SetSize(0, -1);
-    CMapMgr::Reset(); // @0x9ec30 (base slot-0 grid cleanup, direct call)
+    CMapMgr::Reset();
 }
 
 RVA(0x00085d10, 0xa7)
@@ -114,5 +84,5 @@ CGruntzMapMgr::~CGruntzMapMgr() {
         }
     }
     m_arr.SetSize(0, -1);
-    CMapMgr::Reset(); // @0x9ec30 (base slot-0 grid cleanup, direct call)
+    CMapMgr::Reset();
 }

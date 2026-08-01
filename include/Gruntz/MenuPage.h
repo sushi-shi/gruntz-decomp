@@ -11,16 +11,11 @@
 
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;
-class CDDrawWorker; // <DDrawMgr/DDrawWorker.h> - the m_subPage sprite strip
-class CChatBox;     // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
+class CDDrawWorker;
+class CChatBox;
 
 class CMenuPage {
 public:
-    // Inline (in-class) ctor - retail INLINES it at BuildMainMenuTree's 14 `new
-    // CMenuPage` sites (0xa1208...: member ctors +0x08/+0x0c/+0x10 CString +
-    // +0x14 CPtrList, then the body's zero stores in exactly this order:
-    // +0x00, +0x04, +0x60, +0x64, +0x30). No out-of-line ??0CMenuPage exists in
-    // retail (no other new-site), so the COMDAT never materializes.
     CMenuPage() {
         m_owner = 0;
         m_host = 0;
@@ -28,41 +23,22 @@ public:
         m_focus = 0;
         m_flags = 0;
     }
-    // Inline (in-class) dtor - retail INLINES it at the builder's `delete page`
-    // failure paths (call InitDefaults 0x1833a0 at the whole-object EH state,
-    // then the member teardown at descending states, then operator delete) and
-    // keeps the out-of-line COMDAT copy at 0x183250 for the non-EH-framed
-    // caller CChatBox::Clear (`call 0x183250`); that standalone copy is pinned
-    // by RVA_COMPGEN in ChatBox.cpp (an inline dtor cannot carry RVA()).
+
     ~CMenuPage() {
         InitDefaults();
     }
-    CString GetKey(); // 0x1832d0
-    // 0x1832f0: seed this page from the owning chat/menu box: m_owner <- host->m_page,
-    // m_host <- host, the label/parent CStrings, m_rect <- host->m_rect8 (16-byte block
-    // copy), headGap/rowSpacing <- host->m_18/m_1c, then resolve the catalog sub-page.
-    i32 Configure(
-        CChatBox* host,
-        const char* label,
-        const char* key,
-        const char* parent,
-        i32 flags
-    );                                   // 0x1832f0
-    void InitDefaults();                 // 0x1833a0  Clear + zero scalars
-    void Clear();                        // 0x1833c0  free child items + RemoveAll
-    i32 ResolveSubPage(const char* key); // 0x1833f0  catalog Lookup -> cache m_subPage
-    i32 Append(CMenuItem* item);         // 0x183430  AddTail(item) -> item->m_2c
-    // 0x183460 (ret 0x14 = 5 args, __thiscall): alloc + construct a CMenuItem,
-    // Init(this, a0..a4), append. Semantic sig (binary-proven: BuildMainMenuTree's
-    // pushes are $SG string relocs; Init routes label -> m_name, spriteKey -> the
-    // catalog Lookup, key -> m_key CStrings). Byte-neutral vs the old i32 x5
-    // typing (5 4-byte pushes either way); CMenuItem::Init itself keeps the
-    // mangling-pinned i32 slots (it is a virtual - retyping its params would
-    // rewrite the slot's mangled name), so the defs cast at the forward.
+    CString GetKey();
+
+    i32
+    Configure(CChatBox* host, const char* label, const char* key, const char* parent, i32 flags);
+    void InitDefaults();
+    void Clear();
+    i32 ResolveSubPage(const char* key);
+    i32 Append(CMenuItem* item);
+
     CMenuItem*
     AddItem(const char* label, const char* spriteKey, i32 cmdId, const char* key, i32 flags);
-    // 0x1835a0 (ret 0x1c = 7 args): like AddItem but two extra params seed the new
-    // item's m_1c (tag) and m_cmdParam/+0x30 (cmdParam); Init gets (this, a0,a1,a2,a5,a6).
+
     CMenuItem* AddSubItem(
         const char* label,
         const char* spriteKey,
@@ -71,25 +47,23 @@ public:
         i32 tag,
         const char* key,
         i32 flags
-    );                                         // 0x1835a0
-    i32 ReleaseAll();                          // 0x183990  release focus + items
-    i32 RestoreFocus();                        // 0x1839d0  focus saved name / first focusable
-    i32 SetFocus(CMenuItem* item, i32 notify); // 0x183ad0
-    i32 NotifyAll(u32 dt);                     // 0x183b30
-    i32 Layout(CDDrawSurfacePair* target);     // 0x183b60  measure/place children
-    i32 FocusNext();                           // 0x183c50
-    i32 FocusPrev();                           // 0x183d10
-    i32 Activate();                            // 0x183dd0  focus->vtable[+0x30]
-    i32 FocusAndSelect(i32 x, i32 y);          // 0x184070
-    i32 Click(i32 x, i32 y);                   // 0x1840a0
-    CMenuItem* HitTest(i32 x, i32 y);          // 0x184100
-    CMenuItem* FindByName(const char* s);      // 0x184150  /GX; walk + strcmp
-    i32 SelectForward();                       // 0x1843f0  /GX
-    i32 SelectBackward();                      // 0x1844d0  /GX
-    i32 LayoutOne(CDDrawSurfacePair* target);  // 0x183e50  single-column measure/place
+    );
+    i32 ReleaseAll();
+    i32 RestoreFocus();
+    i32 SetFocus(CMenuItem* item, i32 notify);
+    i32 NotifyAll(u32 dt);
+    i32 Layout(CDDrawSurfacePair* target);
+    i32 FocusNext();
+    i32 FocusPrev();
+    i32 Activate();
+    i32 FocusAndSelect(i32 x, i32 y);
+    i32 Click(i32 x, i32 y);
+    CMenuItem* HitTest(i32 x, i32 y);
+    CMenuItem* FindByName(const char* s);
+    i32 SelectForward();
+    i32 SelectBackward();
+    i32 LayoutOne(CDDrawSurfacePair* target);
 
-    // 0x74-item factories (derived item @0x5f08f8) - mirror AddItem/AddSubItem:
-    // ret 0x18 = 6 args; CMenuItem::Init(this, name, spriteKey, cmdId, key, flags) + SetFrame.
     CMenuItem2* AddItem2(
         const char* name,
         const char* spriteKey,
@@ -97,8 +71,8 @@ public:
         const char* key,
         i32 flags,
         i32 frame
-    ); // 0x1836f0
-    // The AddItem2 twin that also links the sub-item's command param + parent context.
+    );
+
     CMenuItem2* AddSubItem2(
         const char* name,
         const char* spriteKey,
@@ -108,43 +82,41 @@ public:
         const char* key,
         i32 flags,
         i32 frame
-    );                       // 0x183850
-    i32 Switch(i32 refocus); // 0x183df0  host SwitchToPage + refocus
-    i32 CanWrap();           // 0x183e30  focus-wrap gate
-    i32 FocusForwardN();     // 0x183f70  step focus +m_rowsPerCol nodes
-    i32 FocusBackwardN();    // 0x183ff0  step focus -m_rowsPerCol nodes
-    i32 SelectFwd2();        // 0x184230  /GX  m_focus GetField4c -> FindByName
-    i32 SelectBack2();       // 0x184310  /GX  m_focus GetField50 -> FindByName
+    );
+    i32 Switch(i32 refocus);
+    i32 CanWrap();
+    i32 FocusForwardN();
+    i32 FocusBackwardN();
+    i32 SelectFwd2();
+    i32 SelectBack2();
 
-    CDDrawSurfaceMgr* m_owner; // +0x00 owning holder (catalog via ->m_10->m_10map)
-    CChatBox* m_host;          // +0x04 render host (Draw/ReplaceNode/ScrollRow1; wrap flag @+0x20)
-    CString m_switchKey;       // +0x08 page-switch target key (Switch -> host SwitchToPage)
-    CString m_key;             // +0x0c this page/item key (GetKey)
-    CString m_focusName;       // +0x10 saved focus item name (RestoreFocus)
-    CPtrList m_items;          // +0x14 child items (m_pNodeHead @+0x18)
-    // Typed iteration over m_items: the ONE downcast to the stored item kind
-    // (this replaced the CMenuListNode raw-node view of the list internals).
+    CDDrawSurfaceMgr* m_owner;
+    CChatBox* m_host;
+    CString m_switchKey;
+    CString m_key;
+    CString m_focusName;
+    CPtrList m_items;
+
     CMenuItem* NextItem(POSITION& pos) {
         return static_cast<CMenuItem*>(m_items.GetNext(pos));
     }
     CMenuItem* PrevItem(POSITION& pos) {
         return static_cast<CMenuItem*>(m_items.GetPrev(pos));
     }
-    i32 m_flags;             // +0x30 flag bits: 0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw
-    RECT m_rect;             // +0x34  page rect (block-copied from CChatBox::m_rect8;
-                             //        initial y = m_offsetY + m_rect.top; x center =
-                             //        (right-left+1)/2 + m_offsetX + left)
-    i32 m_headGap;           // +0x44  gap after sub-page head item (template +0x18)
-    i32 m_rowSpacing;        // +0x48  per-item vertical advance (template +0x1c)
-    i32 m_colWidth;          // +0x4c  column width (grid wrap step)
-    i32 m_rowsPerCol;        // +0x50  rows per column / focus stride
-    i32 m_colOffset;         // +0x54  column x-offset
-    i32 m_offsetX;           // +0x58  layout x-offset (added to centered column x)
-    i32 m_offsetY;           // +0x5c  layout y-offset (added to initial row y)
-    CDDrawWorker* m_subPage; // +0x60 resolved image-registry sprite strip (catalog Lookup
-                             //        result; its CImage rows head the layout passes)
-    CMenuItem* m_focus;      // +0x64 current focused child item
+    i32 m_flags;
+    RECT m_rect;
+
+    i32 m_headGap;
+    i32 m_rowSpacing;
+    i32 m_colWidth;
+    i32 m_rowsPerCol;
+    i32 m_colOffset;
+    i32 m_offsetX;
+    i32 m_offsetY;
+    CDDrawWorker* m_subPage;
+
+    CMenuItem* m_focus;
 };
-SIZE(0x68); // op-new ground truth: `push 0x68` at the builder's 14 new-sites
+SIZE(0x68);
 
 #endif // GRUNTZ_MENUPAGE_H

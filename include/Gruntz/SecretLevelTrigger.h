@@ -3,26 +3,23 @@
 
 #include <rva.h>
 
-#include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
+#include <Gruntz/UserLogic.h>
 
 class CSecretLevelTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00010b90, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SECRETLEVELTRIGGER;
-    } // slot 2
+    }
+
 public:
-    CSecretLevelTrigger();                 // 0x010b20 (no-arg ctor; body in UserLogic.cpp)
-    CSecretLevelTrigger(CGameObject* obj); // 0x0424b0 (1-arg ctor; body in UserLogic.cpp)
-    static void RegisterActs();            // 0x0428c0 (register the class's activation handlers)
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x042760 (per-coord PMF dispatcher)
-    i32 Tick();                                   // 0x042ac0
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    //         AnimWorkerHandlers `new CSecretLevelTrigger`)
+    CSecretLevelTrigger();
+    CSecretLevelTrigger(CGameObject* obj);
+    static void RegisterActs();
+    virtual void FireActivation(i32 id) OVERRIDE;
+    i32 Tick();
 };
 SIZE(0x54);
-
 
 #endif // GRUNTZ_CSECRETLEVELTRIGGER_H

@@ -1,13 +1,13 @@
-#include <Mfc.h> // HKEY / windows.h via afx
+#include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
-#include <string.h> // inline strlen/strcat/strcpy
+#include <string.h>
 
 #include <Gruntz/PortalPath.h>
-#include <Gruntz/HeapDiag.h>  // FileExists (ex .cpp extern)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr - LaunchProcessInDir's owner class
+#include <Gruntz/HeapDiag.h>
+#include <Gruntz/GruntzMgr.h>
 DATA(0x0020c5b8)
-char g_nameFmt[] = "%s"; // owner def (retail .data bytes: 25 73 00 00)
+char g_nameFmt[] = "%s";
 
 RVA(0x00090550, 0x1e6)
 i32 __stdcall LaunchPortalExe(char* outPath) {

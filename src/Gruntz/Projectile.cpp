@@ -1,53 +1,47 @@
-#define CMOVINGLOGIC_INLINE_DTOR // ~CProjectile @0xdef60 FOLDS the base dtor chain in
-                                 // line (vptr re-stamp / ~EngStr / vptr re-stamp),
-                                 // so this TU takes the header's inline ~CMovingLogic
-// NO USERLOGIC_OOL_CTOR here: retail's CTimeBomb::CTimeBomb(CGameObject*) @0xe1b90
-// INLINES the whole CUserLogic body (the two vptr stamps, the EngStr member ctor at
-// +0x18, the m_0c/m_10/m_14 binds, the three AddLogic* registrations and the
-// m_28=0x3e9/m_2c=2 seeds all appear in its own span). CProjectile's ctor is
-// unaffected - it chains CMovingLogic, which retail calls out of line either way.
+#define CMOVINGLOGIC_INLINE_DTOR
+
 #include <Mfc.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/Boomerang.h> // CBoomerang::MovingSlot16 (@0xe08b0) is defined here, interleaved
+#include <Gruntz/Boomerang.h>
 #include <Gruntz/LightFx.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/GameRegistry.h> // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
-#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (m_cmdGrid: LoadExplosionSprites @0x7b330)
-#include <Gruntz/State.h>        // CState (reg->m_curState: the level-type descriptor)
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/State.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActReg.h>
-#include <Bute/ButeMgr.h>  // CButeTree (the type-registry funnel)
-#include <math.h>          // sin / cos (StepMotion's parabola)
-#include <string.h>        // memset (1-arg spawn ctor's +0x1e0 zero-fill)
-#include <Gruntz/Brickz.h> // BrickzCell - the 0x1c tile-grid cell m_rows walks
+#include <Bute/ButeMgr.h>
+#include <math.h>
+#include <string.h>
+#include <Gruntz/Brickz.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/StatusBarUpdatersViews.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection (CActReg)
+#include <Gruntz/HaznColl.h>
 #include <Gruntz/TimeBomb.h>
-#include <Gruntz/SerialArchive.h>     // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h>     // CFileMemBase (the inherited CWapX::Chain arg)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // the anim registry (m_10 Lookup; ex SerialObjRef.h pull)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_0c world root (ex SerialObjRef.h pull)
-#include <Gruntz/ActName.h>           // CActName (shared)
-#include <Gruntz/ActReg.h>            // CActReg::ResolveEntry (0xade60 dispatcher's real table)
-#include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor::Setup (0x15c2d0) for the m_1a0 forwarder
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ActName.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
 
-#include <Gruntz/FreeNodePool.h>  // the coord-node pool object @0x645540
-#include <Gruntz/SerialCounter.h> // g_serialCounter (SerializeMove's per-record bumps)
-#include <Gruntz/AniElement.h>    // CAniElement complete type (KeyOfValue's CObject* upcast)
-#include <Wap32/zBitVec.h>        // ex Globals.h
-#include <Utils/MapTyped.h>       // typed MFC map lookups (the id->void* key seam)
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/AniElement.h>
+#include <Wap32/zBitVec.h>
+#include <Utils/MapTyped.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
+#include <Gruntz/TypeKeyColl.h>
 
 VTBL(CTimeBomb, 0x001e771c);
 VTBL(CProjectile, 0x001e798c);
@@ -59,7 +53,7 @@ const double g_movingLogicMax = 2147483646.0;
 DATA(0x001eaa88)
 const double g_motionZScale = 0.0;
 DATA(0x001eab00)
-const double g_projPhase1 = 6.2831854; // 0x5eab00  2*pi phase wrap (m_phase > g_projPhase1)
+const double g_projPhase1 = 6.2831854;
 DATA(0x001f04e8)
 u32 g_defaultZ = 0;
 template<> DATA(0x0024c758)
@@ -67,23 +61,10 @@ CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
 template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
 
-// @confidence: high
-// @source: rtti-vptr
 RVA(0x000126e0, 0x1fc)
 CProjectile::CProjectile() {}
 
-// CTimeBomb::~CTimeBomb @0x012a70 - the leaf adds no destructible members beyond
-// CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to ~CKitchenSlime
-// @0x013100 / the established leaf dtors; the empty body is enough for cl.
-// @interleaver CTimeBomb - own-class COMDAT-pooled leaf dtor in the 0x12xxx dtor pool
-// (CTimeBomb shares this merged TU; kept here, RVA-placement artifact not conflation).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CTimeBomb() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @interleaver CTimeBomb::~CTimeBomb emitted in the 0x12xxx destructor COMDAT pool.
 RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
@@ -99,18 +80,13 @@ void CMovingLogic::FinalizeStep(char*) {
         m_deferredCallback = 0;
         m_28 = 0x3e9;
     }
-    MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
+    MovingSlot16();
 }
 
-// @confidence: med
-// @source: rtti-vptr / disasm
 // @early-stop
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
-    // CMovingLogic constructed the real m_motion member. This leaf applies its
-    // own bounds, step scale, and Z seed.
-    // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
-    // widened via fild (if/else, not ?:, so the constant branch stays a mov/mov copy).
+
     i32 lo0 = m_objAux->m_2c;
     if (lo0 == 0) {
         Motion()->m_70 = g_movingLogicMin;
@@ -148,9 +124,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
         static_cast<double>(g_frameTime) * g_motionZScale,
         0.0
     );
-    // The three vmax slots are SEPARATE assignments through the CMotionState cursor
-    // (retail stores +0xd8/+0xe0/+0xe8 in that order off the `lea edi,[this+0x38]` it
-    // already holds); a chained `a = b = c = v` runs them right-to-left off `this`.
+
     CMotionState* m = Motion();
     double z = static_cast<double>(g_defaultZ);
     m->m_d8 = z;
@@ -159,18 +133,12 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_148 = 0;
     m_14c = 0;
     m_object->m_moveMode = 7;
-    // The base per-frame update fired once at spawn - qualified = direct @0x16ea90
-    // (was the fake free-fn alias "Fn16ea90").
+
     CMovingLogic::MovingSlot16();
-    // Seed the CWapX base's back-pointers (the +0x150 second base; <Gruntz/UserLogic.h>).
-    // ASSIGNED IN THE BODY, not via a `CWapX(owner)` init-list base ctor: retail puts
-    // these three stores AFTER m_148/m_14c/m_moveMode/Fn16ea90, which a base ctor could
-    // not do (it must run before the body). So CWapX's ctor is trivial and every derived
-    // ctor assigns the inherited fields itself - see the ordering note in UserLogic.h.
-    // Typing them on the base also retires three `(i32)`/`(CGameObject*)` casts.
+
     m_34 = owner;
-    m_38 = static_cast<CWwdGameObjectA*>(owner); // the bound owner IS the A-kind sprite
-    m_3c = owner->m_7c;
+    m_38 = static_cast<CWwdGameObjectA*>(owner);
+    m_3c = owner->m_animWorker;
     m_38->m_flags |= 0x2000002;
     m_38->m_stateFlags |= 1;
     CWwdGameObjectA* o = m_object;
@@ -178,27 +146,11 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
         o->m_sortKey = 0xcf850;
         o->m_flags |= 0x20000;
     }
-    memset(&m_frames[0], 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
+    memset(&m_frames[0], 0, 0x1c);
     m_sound = 0;
     m_shadow = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CProjectile::~CProjectile (0xdef60) - the most-derived dtor. Stop+rewind the
-// launch sample, recycle each tracked-hit node back onto the global free-list,
-// RemoveAll the list, then the compiler auto-destructs the CPtrList member and the
-// CMovingLogic/CUserLogic/link base subobjects (the throwing link forces the /GX
-// frame). Field names are placeholders; the offsets are load-bearing.
-//
-// EXACT. The old note called the base-dtor tail unreachable "without un-emitting the
-// standalone base dtors (matched elsewhere)" - it is reachable with an OPT-IN inline:
-// <Gruntz/MovingLogic.h> carries `inline CMovingLogic::~CMovingLogic() {}` under
-// `#ifdef CMOVINGLOGIC_INLINE_DTOR`, this TU defines that macro (and no longer emits its
-// own unpinned out-of-line copy), so cl FOLDS the whole CMovingLogic/CUserLogic/
-// CUserBaseLink chain here exactly as retail does - the ??_7CMovingLogic re-stamp, the
-// ~EngStr call on +0x18 and the ??_7CUserBase re-stamp, with the EH states 2/1/3 in a
-// `sub esp,8` frame. Every other TU still calls the standalone 0x13bd0 unchanged.
-// ---------------------------------------------------------------------------
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
     if (m_sound != 0) {
@@ -208,7 +160,7 @@ CProjectile::~CProjectile() {
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
         void* data = m_hitList.GetNext(pos);
         if (data != 0) {
-            // authentic: freelist recycle - bias the node back to its list-link header
+
             CoordPoolNode* node = g_coordPool.NodeOf(data);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
@@ -218,12 +170,12 @@ CProjectile::~CProjectile() {
 }
 
 enum ProjectileKind {
-    PROJ_BOOMERANG = 2, // GRUNTZ_BOOMERANGGRUNT
-    PROJ_GUNHAT = 9,    // GRUNTZ_GUNHATGRUNT
-    PROJ_NERFGUN = 10,  // GRUNTZ_NERFGUNGRUNT
-    PROJ_ROCK = 11,     // GRUNTZ_ROCKGRUNT
-    PROJ_WELDER = 21,   // GRUNTZ_WELDERGRUNT
-    PROJ_WINGZ = 22,    // GRUNTZ_WINGZGRUNT
+    PROJ_BOOMERANG = 2,
+    PROJ_GUNHAT = 9,
+    PROJ_NERFGUN = 10,
+    PROJ_ROCK = 11,
+    PROJ_WELDER = 21,
+    PROJ_WINGZ = 22,
 };
 
 // @early-stop
@@ -244,36 +196,36 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     i32 count = 1;
 
     switch (kind) {
-        case PROJ_ROCK: // ROCK
+        case PROJ_ROCK:
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
             m_timePerTile = g_buteMgr.GetDwordDef("Projectile", "RockProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_GUNHAT: // GUNHAT
+        case PROJ_GUNHAT:
             key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "GunhatProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_BOOMERANG: // BOOMERANG
+        case PROJ_BOOMERANG:
             key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "BoomerangProjectileTimePerTile", 0xbb8);
             m_isArcing = 0;
             break;
-        case PROJ_NERFGUN: // NERFGUN
+        case PROJ_NERFGUN:
             key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "NerfGunProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_WELDER: // WELDER
+        case PROJ_WELDER:
             key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "WelderProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_WINGZ: { // WINGZ
+        case PROJ_WINGZ: {
             key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "WingzProjectileTimePerTile", 0xbb8);
@@ -297,33 +249,26 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             return 0;
     }
 
-    // Resolve the six numbered frame sprites; frame "1" is required.
-    CMapStringToPtr& map =
-        m_38->OwnerMgr()->m_animRegistry->m_10; // Lookup 0x1b8438 -> void& out-param
+    CMapStringToPtr& map = m_38->OwnerMgr()->m_animRegistry->m_10;
     void* out;
     out = 0;
     map.Lookup(key + "1", out);
-    m_frames[0] =
-        static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[0] = static_cast<CAniElement*>(out);
     if (m_frames[0] == 0) {
         return 0;
     }
     out = 0;
     map.Lookup(key + "2", out);
-    m_frames[1] =
-        static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[1] = static_cast<CAniElement*>(out);
     out = 0;
     map.Lookup(key + "3", out);
-    m_frames[2] =
-        static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[2] = static_cast<CAniElement*>(out);
     out = 0;
     map.Lookup(key + "4", out);
-    m_frames[3] =
-        static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[3] = static_cast<CAniElement*>(out);
     out = 0;
     map.Lookup(key + "5", out);
-    m_frames[4] =
-        static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[4] = static_cast<CAniElement*>(out);
     out = 0;
     map.Lookup(key + "IMPACT", out);
     m_frames[PF_IMPACT] = static_cast<CAniElement*>(out);
@@ -335,7 +280,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_38->m_1a0.Setup(m_frames[0]);
     m_38->ApplyName(key + "_OBJECT");
 
-    // Normalise the launch trajectory into the per-frame velocity + sign vectors.
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
     double len = sqrt(dx * dx + dy * dy);
     double t = static_cast<double>(totalTime);
@@ -346,7 +290,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_posY = dy / len;
     m_velX = vx;
     m_velY = dy / len;
-    // sign(dx): +0.5 / 0.0 / -0.5 (retail stores the two dwords of the double)
+
     if (vx > 0.0) {
         m_roundX = 0.5;
     } else if (vx < 0.0) {
@@ -366,14 +310,13 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_curY = owner->m_screenY;
     m_arrived = 0;
 
-    // Spawn the LightFx shadow companion + activate its two frames.
     CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
     m_shadow =
         (factory
              ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003));
     if (m_shadow != 0) {
-        m_shadow->m_7c->m_notify(m_shadow);
-        (static_cast<CLightFx*>(m_shadow->m_7c->m_logic))
+        m_shadow->m_animWorker->m_notify(m_shadow);
+        (static_cast<CLightFx*>(m_shadow->m_animWorker->m_logic))
             ->Activate(
                 static_cast<const char*>(key + "_SHADOW"),
                 static_cast<const char*>(key + "1"),
@@ -382,7 +325,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
     }
 
-    // Latch the class act key ("A"): save the old registry node, then re-point it.
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     return 1;
@@ -403,7 +345,7 @@ static inline CString* ProjTypeLookup(i32 key) {
     char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch(); // the slow-path element slot
+    return g_typeColl.Scratch();
 }
 
 RVA(0x000df9a0, 0x102)
@@ -414,15 +356,6 @@ void CProjectile::FireActivation(i32 coord) {
     }
 }
 
-// CProjectile::RegisterType @0x0dfb00 - the level-load class registrar (same
-// archetype as CKitchenSlime::RegisterType): assign the class a type-id via the
-// global bute-tree, record the name into the shared type-name table, then store
-// the projectile's activation handler (0x403896) into the per-class table.
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     i32 id = ActFindId("A");
@@ -441,22 +374,10 @@ void CProjectile::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // ILT 0x403896 -> 0x0e05e0 == CProjectile::DetachRenderObj; the slot IS a CActHandler.
+
     *ProjActLookup(id) = static_cast<CActHandler>(&CProjectile::DetachRenderObj);
 }
 
-// ===========================================================================
-// CProjectile::MovingSlot16 (0xdfd00) - per-frame trajectory advance +
-// impact-effect select. Runs each frame until the projectile reaches its target
-// tile (m_curX/m_curY catch up to m_targetX/m_targetY): integrate the parabola into the
-// render position (m_posX/m_posY), clamp the muzzle-tracked position against the
-// target, and for the arc kinds (m_isArcing) select one of five impact-effect sprite
-// tiers by the fractional distance-to-target. On arrival it stops the loop
-// sound, runs a final hit-scan, then - by the destination terrain flags - spills
-// the water / level death splash effect or installs the IMPACT/FALL sprite. The
-// one-shot m_arrived latch (0 while in flight; set on arrival) gates re-entry.
-// (WINGZ, kind 0x16, additionally loops its flight sound while over the level.)
-//
 // @early-stop
 RVA(0x000dfd00, 0x70c)
 void CProjectile::MovingSlot16() {
@@ -464,7 +385,7 @@ void CProjectile::MovingSlot16() {
         return;
     }
 
-    if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
+    if (m_kind == 0x16) {
         CWwdGameObjectA* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
         if (owner->m_screenX < reg->m_viewBounds.right && owner->m_screenX >= reg->m_viewBounds.left
@@ -478,7 +399,7 @@ void CProjectile::MovingSlot16() {
     }
 
     if (m_curX != m_targetX || m_curY != m_targetY) {
-        // -- in flight: integrate one frame + select the impact tier ----------
+
         if (m_kind == 0x16) {
             ScanTargets(0);
         }
@@ -577,7 +498,6 @@ void CProjectile::MovingSlot16() {
         return;
     }
 
-    // -- arrived at the target tile ------------------------------------------
     if (m_sound != 0) {
         m_sound->StopAndRewind();
         m_sound = 0;
@@ -599,10 +519,10 @@ void CProjectile::MovingSlot16() {
             || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_height)) {
             flags = 1;
         } else {
-            flags = plane->m_rowInts[tileY][tileX * 7]; // cell dword 0 = terrain flags
+            flags = plane->m_rowInts[tileY][tileX * 7];
         }
         if (flags & 0x900) {
-            // water tile: spill a splash then hide the projectile
+
             if (m_targetX < reg->m_viewBounds.right && m_targetX >= reg->m_viewBounds.left
                 && m_targetY < reg->m_viewBounds.bottom && m_targetY >= reg->m_viewBounds.top) {
                 CWwdGameObjectA* fx =
@@ -629,7 +549,7 @@ void CProjectile::MovingSlot16() {
                     case 6:
                         break;
                     default:
-                        // level death tile: spill the death-splash then hide
+
                         if (m_targetX < reg->m_viewBounds.right
                             && m_targetX >= reg->m_viewBounds.left
                             && m_targetY < reg->m_viewBounds.bottom
@@ -665,9 +585,7 @@ void CProjectile::MovingSlot16() {
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_38->m_stateFlags &= ~1u;
-    // The +0x1a0 anim sub-object IS a CAniAdvanceCursor (Advance @0x15c360); call
-    // it directly (retail's DetachRenderObj rel32s straight to 0x15c360, not a forwarder),
-    // matching the cast-at-use pattern of the sibling site below (~line 1322).
+
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWwdGameObjectA* r = m_38;
     if (r->m_1a0.m_finished != 0 && r->m_1a0.m_frameTicksLeft == 0) {
@@ -676,28 +594,13 @@ i32 CProjectile::DetachRenderObj() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CBoomerang::MovingSlot16 (0xe08b0) - the boomerang's per-frame motion step
-// (vtable slot 16, override of CMovingLogic's Update; the retail slot holds thunk
-// 0x317f -> 0xe08b0). Formerly mis-homed as CProjectile::StepMotion: it reads the
-// return-trajectory fields (m_dirX/m_originX/m_phase/m_launched at +0x230..+0x258)
-// which live in CBoomerang (sizeof 0x260), NOT CProjectile (sizeof 0x228). It stays
-// defined here (interleaved in the CProjectile .text band, sharing g_frameDelta /
-// g_projPhase* with CProjectile::MovingSlot16); CBoomerang inherits ScanTargets and
-// the render/motion members it also touches.
-//
-// On the launch frame it snaps the render objects to the muzzle (m_targetX/m_targetY);
-// once past the second phase threshold it expires (scan for the terminal impact, raise
-// the hide bit on the shadow + owner). Otherwise it integrates the sin/cos parabola
-// into the render position and rounds it into the render objects' screen coords.
-//
 // @early-stop
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::MovingSlot16() {
     i32 impact = 0;
     if (m_launched == 0) {
         if (m_phase > g_projPhase0) {
-            // launch frame: snap render objects to the muzzle, mark launched.
+
             m_object->m_screenX = m_targetX;
             m_object->m_screenY = m_targetY;
             if (m_shadow != 0) {
@@ -708,7 +611,7 @@ void CBoomerang::MovingSlot16() {
             goto step;
         }
     } else if (m_phase > g_projPhase1) {
-        // past the terminal threshold: deliver the impact scan + expire.
+
         ScanTargets(1);
         if (m_shadow != 0) {
             m_shadow->m_flags |= 0x10000;
@@ -719,7 +622,7 @@ void CBoomerang::MovingSlot16() {
     }
 step:
     ScanTargets(impact);
-    // integrate the sin/cos parabola into the render position.
+
     double s = sin(m_phase);
     double c = cos(m_phase);
     double amp = static_cast<double>(g_frameDelta);
@@ -738,24 +641,17 @@ step:
     }
 }
 
-// ---------------------------------------------------------------------------
-// CProjectile::ScanTargets (0xe0b10) - sweep the 15x15 grunt grid centered on the
-// projectile, AABB-test each grunt's 14x14 footprint against the projectile's
-// 0x20x0x20 box, and for each fresh overlap (not self, not already tracked) record
-// the grunt's spawn-cell key in the tracked-hit list and deliver the hit. The
-// self cell, when `impact` is set, triggers the grunt's self-impact handler.
-//
 // @early-stop
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
-    i32 tileY = 0;                            // [esp+0x10]  outer (row) counter
-    i32 projXlo = m_object->m_screenX - 0x10; // m_10 = owner CGameObject
+    i32 tileY = 0;
+    i32 projXlo = m_object->m_screenX - 0x10;
     i32 projXhi = projXlo + 0x20;
     i32 projYlo = m_object->m_screenY - 0x10;
     i32 projYhi = projYlo + 0x20;
-    i32 rowBase = 0; // [esp+0x18]  row base index into m_grid
-    i32 colOff;      // [esp+0x14]
-    i32 col;         // ebp
+    i32 rowBase = 0;
+    i32 colOff;
+    i32 col;
     do {
         col = 0;
         colOff = rowBase;
@@ -784,28 +680,27 @@ void CProjectile::ScanTargets(i32 impact) {
                 continue;
             }
             if (m_srcRow == tileY && m_srcCol == col) {
-                // self cell
+
                 if (impact != 0 && g->m_entranceCommitted != 0 && g->m_entranceReason == 0) {
                     g->LoadGruntTypeTable(2, 1, 0, 0);
                 }
                 return;
             }
-            // already-tracked? walk the hit list for this grunt's cell key.
+
             i32 keyX = g->m_tileOwnerHi;
             i32 keyY = g->m_tileOwnerLo;
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-                // MFC CPtrList stores the raw Coord payloads; GetNext returns void*
+
                 Coord* k = static_cast<Coord*>(m_hitList.GetNext(pos));
                 if (k->m_x == keyX && k->m_y == keyY) {
                     return;
                 }
             }
-            // fresh hit: pull a key node off the free-list, record + deliver.
+
             Coord* slot = 0;
-            CoordPoolNode* p =
-                static_cast<CoordPoolNode*>(g_coordPool.m_freeHead); // freelist head is void*
+            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             if (p->m_next != 0) {
-                slot = &p->m_coord; // the {x,y} payload overlays +4 (past the link word)
+                slot = &p->m_coord;
                 slot->m_x = keyX;
                 slot->m_y = keyY;
                 g_coordPool.m_freeHead = p->m_next;
@@ -818,18 +713,6 @@ void CProjectile::ScanTargets(i32 impact) {
     } while (rowBase < 0x3c);
 }
 
-// ---------------------------------------------------------------------------
-// 0xe0d40 - CProjectile::SerializeMove (slot 1; the vtable 0x1e798c[1] body).
-// FOLDED from the CProjLoadRec view (its own header carried the proof:
-// vtable_hierarchy resolves slot 1's ILT thunk 0x0034b3 here, and the view's
-// layout mirrored this class field-for-field). Dual-mode: 7 = read the
-// trajectory block + the 7 sprite frames by registry key + the shadow by object
-// id + the hit list via the coord pool; 4 = the write mirror. Then the
-// CMovingLogic base chain (the view's fabricated "ChainLoad") + the CWapX
-// record tail (m_34/m_38/m_3c/m_value/m_blob).
-// a4 carries the bound CGameObject* through the family's i32 slot-1 arg -
-// reinterpreted at use exactly like CUserLogic::SerializeMove does.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x000e0d40, 0x6c2)
 i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObject* pObj) {
@@ -864,14 +747,12 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             s->Read(&m_targetId, 4);
             s->Read(&m_ownerId, 4);
 
-            // ONE `void*&` out-slot serves both lookups (retail shares the stack slot -
-            // two separate locals cost the frame an extra dword each).
             void* out;
             for (i32 ni = 0; ni < 7; ni++) {
                 g_serialCounter++;
                 s->Read(buf, 0x80);
                 if (strlen(buf) != 0) {
-                    out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+                    out = 0;
                     reg->m_animRegistry->m_10.Lookup(buf, out);
                     m_frames[ni] = static_cast<CAniElement*>(out);
                 } else {
@@ -889,9 +770,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             } else if (out == 0) {
                 r = 0;
             } else {
-                // `out` is RE-READ for the ternary's value arm (retail
-                // `mov ecx,[esp+0x14]` after the GetClassId call): binding it to a
-                // local pins it in esi and costs the shared zero register.
+
                 r = (static_cast<CGameObject*>(out)->GetClassId() == CLASSID_SERIALREF)
                         ? static_cast<CGameObject*>(out)
                         : 0;
@@ -938,13 +817,6 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             s->Write(&m_targetId, 4);
             s->Write(&m_ownerId, 4);
 
-            // A CURSOR, not `m_frames[n]`: retail's back-edge is `add <cursor>,4 /
-            // dec <ctr> / jne` over TWO stack slots (the cursor at [esp+0x14] seeded
-            // `lea ecx,[ebp+0x1e0]`, the counter at [esp+0x10] initialised to 7 and
-            // counted DOWN, which the shadow id then re-uses). Indexing spells
-            // `inc n / cmp n,7 / jl` and re-forms `[ebp+n*4+0x1e0]` every pass, and
-            // sharing the counter variable with the id keeps it live past the loop so
-            // cl cannot reverse it (jcc sieve #13 jl->jne).
             CAniElement** fp = m_frames;
             for (i32 fi = 0; fi < 7; fi++) {
                 g_serialCounter++;
@@ -957,7 +829,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             }
 
             g_serialCounter++;
-            i32 n = 0; // retail re-uses the loop's [esp+0x10] slot for the id
+            i32 n = 0;
             if (m_shadow != 0) {
                 n = m_shadow->m_188;
             }
@@ -987,13 +859,13 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             s->Read(m_blob, 0x10);
             CGameObject* obj = pObj;
             m_34 = obj;
-            m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
-            m_3c = obj->m_7c;
+            m_38 = static_cast<CWwdGameObjectA*>(obj);
+            m_3c = obj->m_animWorker;
             if (strlen(buf) == 0) {
                 m_value = 0;
                 return 1;
             }
-            void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+            void* out = 0;
             m_3c->m_ownerCtx->m_animRegistry->m_10.Lookup(buf, out);
             m_value = static_cast<CAniElement*>(out);
             return 1;
@@ -1043,16 +915,6 @@ void CTimeBomb::FireActivation(i32 coord) {
     }
 }
 
-// CTimeBomb::RegisterActs @0x0e1990 - bind the per-frame logic handler to the
-// activation key "A" in the timebomb's OWN registry (CActRegPool<CTimeBomb>::s_table). See the
-// registration commentary above. The SAME archetype as CParticlez::RegisterActs /
-// RegisterSimpleAnimLogic.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
     i32 id = ActFindId("A");
@@ -1074,32 +936,8 @@ void CTimeBomb::RegisterActs() {
     *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::LoadAttributes);
 }
 
-// ---------------------------------------------------------------------------
-// CTimeBomb::CTimeBomb(CGameObject*) @0xe1b90 - the 1-arg leaf ctor: the standard
-// CUserLogic(obj) init (folded inline) plus the timebomb tail - raise the bound
-// object's logic/collision bits, set its z gate, apply the GAME_TIMEBOMB sprite,
-// cache the anim-set node off the "A" bute key, snapshot m_38->m_1a0.m_14, then pick
-// the FAST (per-tile-time>0) or SLOW (bute TimeBombSlowTime) geometry + running
-// clock, mark the collision-grid cell at the bound object's tile, and arm the
-// bound object's per-tile-time gate (-1). Constructs a throwing CUserBaseLink, so
-// MSVC emits the /GX EH frame.
-//
-// @early-stop  (53.7% -> 88.2%)
-// Three real defects fixed 2026-07-29:
-//  (1) The TU forced USERLOGIC_OOL_CTOR, so this ctor CALLED ??0CUserLogic where retail
-//      FOLDS the whole base init in line (both vptr stamps, the +0x18 EngStr member
-//      ctor, the m_0c/m_10/m_14 binds, the three AddLogic* registrations, m_28=0x3e9 /
-//      m_2c=2). The macro is gone: CProjectile's ctor is unaffected because it chains
-//      CMovingLogic, which retail calls out of line either way.
-//  (2) m_startTime/m_duration are ZERO-initialised in the mem-init list - retail's four
-//      `mov [this+0x58/0x60/0x5c/0x64],ebp` stores sit between the CWapX binds and the
-//      leaf vptr stamp, i.e. in the initialiser phase, not the body.
-//  (3) The sortKey test and the m_flags RMW share ONE m_object read (retail reuses eax:
-//      `mov ecx,[eax+8] / or ecx,0x20000 / mov [eax+8],ecx`); two `m_object->` chains
-//      made cl reload the pointer and emit a memory RMW.
-// Residue: three one-slot schedule swaps (the m_38 load hoisted above the zero-init
-// stores; the m_fastPhase constant store hoisted above the i64 stamp pair in BOTH
-// timer arms; the m_120 compare vs the m_value store).
+// @early-stop
+
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj)
     : CUserLogic(obj), CWapX(obj), m_startTime(0), m_duration(0) {
@@ -1158,15 +996,6 @@ static inline void TBombGridClear(CGameObject* obj) {
     }
 }
 
-// CTimeBomb::LoadAttributes @0x0e1e60 - the bomb's per-frame logic step. Read the
-// bomb's tile state; if it sits under a blocking/hazard cell, raise m_38's pending
-// flag, clear the cell's owner bit, and bail. Otherwise advance the anim sink and
-// gate on the 64-bit running-clock timer (m_startTimeLo/m_startTimeHi base vs m_durationLo/m_durationHi duration);
-// once it expires, either re-arm the FAST phase (m_fastPhase==0 -> apply GAME_TIMEBOMBFAST,
-// reload the Projectile/TimeBombFastTime duration) or, on the second expiry
-// (m_fastPhase!=0), detonate: raise m_38's flag, clear the cell, and post the tile event
-// to the registry's tile-manager (NotifyMoveAt). Returns 0 on every path.
-//
 // @early-stop
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::LoadAttributes() {
@@ -1177,10 +1006,7 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    // The POSITIVE form with one trailing `return 0`, not an early return: cl emits the
-    // i64 hi-word pair branch-if-FALSE first, so retail's `jl <trailing return 0> / jg
-    // <body>` is `if (elapsed >= m_duration) { body }` - the early-return spelling emits
-    // `jg <body> / jl <return>` instead. Every path returns 0 anyway.
+
     if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
         if (m_fastPhase == 0) {
             m_value = m_38->m_1a0.m_14;
@@ -1204,19 +1030,6 @@ i32 CTimeBomb::LoadAttributes() {
     return 0;
 }
 
-// CTimeBomb::SerializeMove @0xe2080 - vtable slot 1. Bail unless the resource
-// manager is loaded (g_gameReg->m_world); round-trip the 64-bit phase-start clock
-// (m_startTime) + the phase duration (m_duration) + the fast/slow phase flag
-// (m_fastPhase) through the archive stream (mode 4 = Write @+0x30, mode 7 = Read
-// @+0x2c), then chain the shared CUserLogic serialize helper (SerializeMove,
-// 0x16e7f0) and the +0x34 CSerialObjRef sub-object's Chain (0x8c00). Same two-chain
-// archetype as CGruntPuddle::Serialize.
-// The old "callee-saved coloring wall" note was wrong: retail's `lea edi,[this+0x58]`
-// hoisted above the mode branches + `add edi,8` between the two calls is an ordinary
-// POINTER WALK in the source (`i64* clock = &m_startTime; ... clock++;`). Spelled as
-// two independent `&m_startTime` / `&m_duration` operands the address has no cross-call
-// live range, so cl re-`lea`s per call and colors `this` into edi instead of ebx -
-// which is what cascaded through the whole body. EXACT.
 RVA(0x000e2080, 0xc1)
 i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (g_gameReg->m_world == 0) {
@@ -1250,22 +1063,6 @@ i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObjec
     return Chain(sa, mode, typeId, pObj) ? 1 : 0;
 }
 
-// ---------------------------------------------------------------------------
-// CProjectile::LaunchSound (0xe2190) - lazily create + play the launch sound the
-// first time. Look the effect up in the game-registry sound map by name, clone a
-// sample off the matched entry, store it at m_sound, and start it on the configured
-// channel. Returns 1 on success, 0 if already launched / any lookup gate fails.
-//
-// CProjectile::LaunchSound: retail shares ONE `return 0` epilogue (0xe220c) that
-// all five gates jump to; a per-gate `if (...) return 0` made cl emit the epilogue
-// inline per gate (the OLD note's "byte-exact reloc-artifact" claim was wrong - it
-// was a tail-merge structural miss). A shared `goto fail` reproduces the merged tail.
-// The last two residuals (the "not source-steerable block-layout coin-flip") were two
-// source bugs: (1) the FINAL gate is a positive `if (m_sound != 0) { play; return 1; }`
-// block - spelled as `if (== 0) goto fail;` cl inverts the branch and drops the shared
-// `return 0` epilogue inline between the gate and the play path; (2) `reg->m_world` is
-// its OWN local, hoisted right after the m_soundEnabled gate - inlined into the Lookup
-// receiver chain cl sinks the load past the arg setup. EXACT.
 RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
     CGruntzMgr* reg;
@@ -1289,8 +1086,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (entry->m_10 == 0) {
         goto fail;
     }
-    // GetItem returns the pooled DirectSound buffer (DirectSoundMgr in the cue-mgr
-    // view); the projectile owns the same buffer as its m_sound sound sample.
+
     m_sound = static_cast<DirectSoundMgr*>(entry->m_10->GetItem());
     if (m_sound != 0) {
         m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);

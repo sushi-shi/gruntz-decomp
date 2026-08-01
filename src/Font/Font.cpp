@@ -1,11 +1,10 @@
 #include <Mfc.h>
-// Retail's Font TU calls CString::GetAt OUT-OF-LINE (0x17b4f0 is the real MFC
-// COMDAT) - afx inlining is off here so cl emits/calls the same COMDAT.
+
 #undef _AFX_ENABLE_INLINES
-#include <DDrawMgr/DDSurface.h> // CDDSurface - the draw family's surface arg (m_height in DrawLine)
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Font/Font.h>
-#include <ddraw.h> // IDirectDrawSurface::Unlock (surf->m_8 COM dispatch in DrawGlyphRun)
+#include <ddraw.h>
 #include <rva.h>
 
 RVA(0x00179700, 0x10)
@@ -35,11 +34,7 @@ i32 Font::AllocateMemory(i32 count) {
 
     for (i32 i = 0; i < m_count; i++) {
         m_surfaces[i] = 0;
-        // A whole-Glyph copy, not two member stores: retail loads m_glyphs ONCE per
-        // iteration (0x17977a `mov edi,[esi+0xc]`) and materialises the zero TWICE
-        // (edx for the surface slot + the height, ecx for the width) - the signature
-        // of a struct assignment after constant propagation. Writing the two members
-        // through m_glyphs[i] makes cl reload the member between them.
+
         Glyph g;
         g.width = 0;
         g.height = 0;
@@ -80,7 +75,7 @@ i32 Font::LoadFont(CString szFileName) {
         return 0;
     }
 
-    CArchive ar(&file, 1 /*CArchive::load*/, 0x1000, 0);
+    CArchive ar(&file, 1, 0x1000, 0);
 
     ar >> m_count;
     AllocateMemory(m_count);
@@ -112,7 +107,7 @@ i32 Font::SaveFont(CString szFileName) {
         return 0;
     }
 
-    CArchive ar(&file, 0 /*CArchive::store*/, 0x1000, 0);
+    CArchive ar(&file, 0, 0x1000, 0);
 
     ar << m_count;
 
@@ -197,16 +192,6 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
     DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
-// FontRenderer::DrawGlyphRun (0x179e70, 0x5ec = 1516 B) - the inner glyph-run blit.
-// Clip `rc` against the surface (m_width/m_height) and the measured text extent
-// {0,0,mw,mh} (Win32 IntersectRect), Lock the surface, pack m_color into the screen
-// 16bpp format, walk the run left-to-right skipping glyphs left of rc.left and stopping
-// past rc.right, and for each visible glyph blit its 8bpp coverage buffer as 16bpp
-// pixels: opaque (any non-zero coverage writes m_color) when `blend`==0, else per-pixel
-// alpha-blended by the coverage byte (0=skip, 0xff=opaque, else src*cov+dst*(255-cov)).
-// The by-value CString `text` forces the /GX EH frame; the MeasureText call copy-
-// constructs a CString temp (destroyed by MeasureText); rc/x/y are text-space clip
-// coords, (x,y) positions the run on the surface.
 // @early-stop
 RVA(0x00179e70, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
@@ -226,7 +211,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         return;
     }
 
-    // Clip the run's extent to the surface (in-place widen/narrow of rc).
     if (x - rc.left + rc.right > surf->m_width) {
         rc.right = rc.right + rc.right - rc.left + x - surf->m_width;
     }
@@ -234,7 +218,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_height;
     }
 
-    // Intersect the clip rect with the measured text extent {0,0,mw,mh}.
     TextExtent m = MeasureText(text);
     RECT extent;
     extent.right = m.width;
@@ -257,7 +240,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
     i32 pitch = surf->m_pitch;
 
-    // Pack m_color into the screen 16bpp format.
     i32 destX = x;
     i32 red = m_color & 0xff;
     i32 green = (m_color >> 8) & 0xff;
@@ -269,8 +251,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         | (static_cast<u8>((static_cast<u8>(green) >> static_cast<u8>(g_gDown))) << g_gUp)
         | (static_cast<u8>(blue) >> static_cast<u8>(g_bDown));
 
-    // Left clip: skip glyphs entirely left of rc.left; firstCol is the sub-glyph
-    // column offset into the first partly-visible glyph.
     i32 startChar;
     i32 acc = 0;
     if (rc.left != 0) {
@@ -288,11 +268,9 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         startChar = 0;
     }
 
-    // Right clip: find the end char index + the right overshoot of the last glyph.
     i32 endChar;
     i32 w = 0;
-    // Negative form: retail's `cmp eax,ecx / je 0x17a108` jumps to the
-    // endChar = GetLength() arm and falls into the scan, so the scan is the `if`.
+
     if (rc.right != m.width) {
         i32 j = 0;
         endChar = 0;
@@ -309,7 +287,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         endChar = text.GetLength();
     }
 
-    // Blit each visible glyph's coverage buffer as 16bpp pixels.
     i32 lastChar = endChar - 1;
     for (i32 ci = startChar; ci < endChar; ci++) {
         Glyph g;
@@ -328,11 +305,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = startCol; col < clippedW; col++) {
                     u8 cover = glyphBuf[row * gw + col];
-                    // Negative form: retail's `cmp al,0xff / je 0x17a34f` jumps AWAY
-                    // to the opaque store and falls into the blend, so the blend is
-                    // the `if` arm. Spelt `== 0xff` first, cl makes the opaque store
-                    // the fallthrough and inverts the branch (the one polarity flip
-                    // `--branches --diff` reports for this function).
+
                     if (cover == 0) {
                     } else if (cover != 0xff) {
                         i32 inv = 255 - cover;
@@ -374,12 +347,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     surf->m_ddSurface->Unlock(0);
 }
 
-// =========================================================================
-// FontRenderer::DrawWrapped  (0x17a460, 0x7ec = 2028 B), the cluster's largest.
-// Word-wrap layout + draw: measures the block (MeasureWrapped) for vertical
-// centering when `hcenter` is set, then greedily breaks the run into lines (the
-// same skeleton as MeasureWrapped) and draws each line via DrawLine - centered
-// horizontally within [x0, right] using CRect::Width when `hcenter` is set.
 // @early-stop
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
@@ -414,10 +381,6 @@ void FontRenderer::DrawWrapped(
             }
         }
 
-        // Site-local optimum from the 96-cell axes matrix (batch_source_variants):
-        // DrawWrapped wants the extent read INLINE and the Right() count off the
-        // outer `len` - the opposite of MeasureWrapped/LayoutWrapped, whose 192-cell
-        // matrix picked the whole-struct copy + a fresh GetLength().
         if (MeasureText(text).width + x <= rc.right && !nl) {
             line += text;
             text = "";
@@ -433,9 +396,7 @@ void FontRenderer::DrawWrapped(
         } else {
             i32 i = 0;
             i32 breakNL = 0;
-            // text.GetLength() again, not the outer `len`: retail re-loads it here
-            // (0x17ae3a `mov edx,[ecx-8]`) and CSEs it with the newline test below,
-            // which is why the entry guard folds straight past that test.
+
             while (i < text.GetLength()) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
@@ -472,11 +433,7 @@ void FontRenderer::DrawWrapped(
                     x = headW + rc.left;
                 }
             } else {
-                // The LOOP CONDITION is the remaining head length; `y < rc.bottom` is
-                // a plain in-body break. cl rotates the CONDITION only, so retail's
-                // back-edge (0x17aa5d) lands on the y-test block at 0x17a925 - the
-                // loop HEAD. `while (y < rc.bottom)` makes cl rotate on the y-test
-                // instead and duplicate it at the bottom (one extra branch).
+
                 while (head.GetLength() > 0) {
                     if (y >= rc.bottom) {
                         break;
@@ -523,42 +480,24 @@ void FontRenderer::DrawWrapped(
     }
 }
 
-// =========================================================================
-// FontRenderer::MeasureText
-// Sum the advance widths of every glyph in `text` and pair it with the font's
-// line-height. With no font loaded the extent is {0,0}. The CString arg is
-// taken by value (the EH frame destroys it); the result is returned by value.
 // @early-stop
 RVA(0x0017ac50, 0xbd)
 TextExtent FontRenderer::MeasureText(CString text) {
     TextExtent ext;
-    // `g` is FUNCTION-scope and only its height is initialised. Retail's
-    // `mov [esp+0x10],esi` sits BEFORE the null-font branch and is never read - a
-    // dead store cl cannot eliminate because g's address escapes into GetGlyph. That
-    // places the declaration above the `if` and pins the init to exactly one field:
-    // 16-cell matrix (config/axes/measuretext-glyph.json) 72.52 -> 74.06, and it
-    // needs BOTH halves - hoisting alone ties, initialising alone ties, and zeroing
-    // BOTH fields drops to 72.44. (The inherited measuretext.json had tested a
-    // hoist-to-just-above-the-loop and an in-loop `g.height = 0` separately; neither
-    // puts the store before the branch.)
+
     Glyph g;
     g.height = 0;
     i32 i = 0;
     i32 width = 0;
     if (m_font == 0) {
-        // Axes-matrix optimum (48 cells): the null-path stores go height-then-width
-        // AND `i` keeps its declaration initialiser instead of being re-zeroed in the
-        // for-init. Neither wins alone - the for-init change on its own REGRESSES
-        // (71.6); only the pair reaches 72.5, because retail coalesces the loop
-        // counter's initial 0 with the constant 0 those stores need (esi).
+
         ext.height = 0;
         ext.width = 0;
         return ext;
     }
     for (; i < text.GetLength(); i++) {
         u8 c = text[i];
-        // retail reads the advance back through GetGlyph's RETURNED reference
-        // (`call GetGlyph / mov ecx,[eax] / add edi,ecx`), not off the local.
+
         width += m_font->GetGlyph(g, c).width;
     }
     ext.width = width;
@@ -566,15 +505,6 @@ TextExtent FontRenderer::MeasureText(CString text) {
     return ext;
 }
 
-// =========================================================================
-// FontRenderer::MeasureWrapped  (0x17ad10, 0x402 = 1026 B)
-// Greedy word-wrap bounding-box measurer. Walks `text` line by line from y=top
-// down to y<bottom, greedily breaking on spaces/newlines, and returns the box
-// {maxLineWidth - x0 + 1, lineHeight + (y - top) + 1}. A destructible CString
-// `line` accumulator plus per-break Left/Right temps under the /GX EH frame.
-// GetChar is dispatched on the `head` temp (the retail call takes a CString as
-// `this` - modeled by reinterpreting &head as the FontRenderer accessor, which
-// reads the same +0 char*; reloc-masked).
 // @early-stop
 RVA(0x0017ad10, 0x402)
 TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom) {
@@ -611,9 +541,7 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
         } else {
             i32 i = 0;
             i32 breakNL = 0;
-            // text.GetLength() again, not the outer `len`: retail re-loads it here
-            // (0x17ae3a `mov edx,[ecx-8]`) and CSEs it with the newline test below,
-            // which is why the entry guard folds straight past that test.
+
             while (i < text.GetLength()) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
@@ -625,10 +553,7 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                 breakNL = 1;
             }
             CString head = text.Left(i + 1);
-            // `he` is a real named copy of the extent - retail stores the height it
-            // never reads (0x17aea0 `mov ecx,[eax+4]` / `mov [esp+0x28],ecx`), which
-            // only a whole-struct copy produces; and the Right() count re-reads
-            // text.GetLength() (0x17aea3 `mov eax,[edx-8]`), not the outer `len`.
+
             TextExtent he = MeasureText(head);
             i32 headW = he.width;
             text = text.Right(text.GetLength() - i - 1);
@@ -648,12 +573,7 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                     x = headW + x0;
                 }
             } else {
-                // The LOOP CONDITION is `j < head.GetLength()`; `y < bottom` is a
-                // plain in-body break. cl rotates the CONDITION only - with j==0 the
-                // peeled entry test folds to `test ecx,ecx / jle` (0x17af96) and the
-                // back-edge (0x17b064 `jl 0x17af9e`) lands ON the y-test, the loop
-                // HEAD. `while (y < bottom) { ...; if (j >= len) break; }` makes cl
-                // rotate on the y-test and duplicate it at the bottom instead.
+
                 for (i32 j = 0; j < head.GetLength(); j++) {
                     if (y >= bottom) {
                         break;
@@ -686,13 +606,6 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
     return ext;
 }
 
-// =========================================================================
-// FontRenderer::LayoutWrapped  (0x17b120, 0x3c6 = 966 B) - the third wrap entry.
-// Greedily lays out `text` from y=`begin` down to y<`bottom`, line by line, the
-// same greedy-break skeleton as MeasureWrapped but accumulating a per-line char
-// count (totalChars) instead of a max width. Returns the final cursor
-// {x, lineHeight + y + 1} and writes totalChars to *outLen. The char-split path
-// consumes head[0] (index 0, unlike MeasureWrapped's per-char index).
 // @early-stop
 RVA(0x0017b120, 0x3c6)
 TextExtent
@@ -717,9 +630,6 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
             }
         }
 
-        // Site-local optimum from the 48-cell axes matrix: LayoutWrapped wants the
-        // outer extent read INLINE but keeps the whole-struct head copy and the
-        // fresh Right() count - a third distinct optimum over the same five sites.
         if (MeasureText(text).width + x <= right && !nl) {
             line += text;
             text = "";
@@ -730,9 +640,7 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
         } else {
             i32 i = 0;
             i32 breakNL = 0;
-            // text.GetLength() again, not the outer `len`: retail re-loads it here
-            // (0x17ae3a `mov edx,[ecx-8]`) and CSEs it with the newline test below,
-            // which is why the entry guard folds straight past that test.
+
             while (i < text.GetLength()) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
@@ -744,10 +652,7 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
                 breakNL = 1;
             }
             CString head = text.Left(i + 1);
-            // `he` is a real named copy of the extent - retail stores the height it
-            // never reads (0x17aea0 `mov ecx,[eax+4]` / `mov [esp+0x28],ecx`), which
-            // only a whole-struct copy produces; and the Right() count re-reads
-            // text.GetLength() (0x17aea3 `mov eax,[edx-8]`), not the outer `len`.
+
             TextExtent he = MeasureText(head);
             i32 headW = he.width;
             text = text.Right(text.GetLength() - i - 1);
@@ -764,13 +669,7 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
                     x = headW + x0;
                 }
             } else {
-                // The LOOP CONDITION is the remaining head length; `y < bottom` is a
-                // plain in-body break. cl rotates the CONDITION (peeling it to the
-                // 0x17b351 entry guard) and lands the back-edge (0x17b410 `jg
-                // 0x17b360`) on the y-test - so the y-test is the loop HEAD. Written
-                // the other way round (`while (y < bottom)` / a hand-rotated
-                // `do..while`) cl rotates on the y-test instead and duplicates it at
-                // the bottom, which is the one extra branch this function carried.
+
                 while (head.GetLength() > 0) {
                     if (y >= bottom) {
                         break;

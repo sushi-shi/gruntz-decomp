@@ -2,42 +2,35 @@
 #define GRUNTZ_CDROPPEDOBJECT_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CDroppedObject : CUserLogic)
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/ActReg.h>
 
 class CFileMemBase;
 
 class CDroppedObject : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    // The "B" act handler PMF (0xc7be0): virtual-dispatch Unload, return its residue.
-    i32 ActB(); // 0xc7be0
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+
+    i32 ActB();
     RVA(0x00012560, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECT;
-    } // slot 2
-    virtual i32 UserLogicVfunc5() OVERRIDE; // slot 7
+    }
+    virtual i32 UserLogicVfunc5() OVERRIDE;
+
 public:
-    CDroppedObject(CGameObject* obj);             // 0x0c68b0 (1-arg leaf ctor)
-    static void RegisterActs();                   // 0x0c6d30
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x0c6bd0
-    i32 ActA();                                   // 0x0c7090 (per-frame "A" activation handler)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
-    // slot reloc-masked, like CRollingBall::Serialize).
+    CDroppedObject() {}
+    CDroppedObject(CGameObject* obj);
+    static void RegisterActs();
+    virtual void FireActivation(i32 id) OVERRIDE;
+    i32 ActA();
+
     char m_pad54[0x58 - 0x54];
-    double m_timePerTile; // +0x58  per-tile time (32.0 / TimePerTile)
-    double m_fallY;       // +0x60  fall accumulator (adjusted screen Y)
-    i32 m_landY;          // +0x68  landing row (pre-offset screen Y)
+    double m_timePerTile;
+    double m_fallY;
+    i32 m_landY;
 };
 SIZE_UNKNOWN();
-
-// (ActB @0xc7be0 - the "B" PMF: virtual-dispatch Unload; declared on the class below.)
-
-
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
 
 extern const double g_objDropDiv;
 extern double g_dropFallBias;

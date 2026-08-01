@@ -1,37 +1,37 @@
-#include <Gruntz/String.h>        // MFC CString (the title-roll formats into one); MFC-first
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/String.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Bute/ButeMgr.h>
 #include <Gruntz/Attract.h>
-#include <Gruntz/GameMode.h> // CMenuState + CCreditsState: their slot overrides are DEFINED here (retail TU placement)
-#include <Gruntz/GameRegistry.h>      // the ONE game-registry shape (CGameRegistry / g_gameReg)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (LoadPageImage)
-#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
-#include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c: Flip + m_8)
-#include <ddraw.h>                     // IDirectDrawSurface (the flip surface's raw +0x8 COM iface)
-#include <Gruntz/SoundFxEmitter.h>     // CSoundFxEmitter (the screen-transition emitters)
-#include <Gruntz/Fader.h>              // CFaderMgr / CFader / CFxModeT2/T3
-#include <Bute/SymParser.h>            // CSymParser (m_symParser->ResolvePath)
-#include <Gruntz/SerialArchive.h>      // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
-#include <Gruntz/SplashParams.h>       // the "loading imagez" splash-caption params
-#include <Gruntz/Play.h>  // CPlay (HeaderSerialize 0xfafa0 is DEFINED here - retail TU placement)
-#include <Wap32/EngStr.h> // THE canonical EngStr_DrawText (0x115440) lean decl
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <ddraw.h>
+#include <Gruntz/SoundFxEmitter.h>
+#include <Gruntz/Fader.h>
+#include <Bute/SymParser.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SplashParams.h>
+#include <Gruntz/Play.h>
+#include <Wap32/EngStr.h>
 #include <rva.h>
 
-#include <stdio.h>  // sprintf (the "\SCREENZ\%s" path formatter)
-#include <string.h> // inline /Oi strlen (repnz scasb) for the Vslot17 TextOutA
+#include <stdio.h>
+#include <string.h>
 
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
-#include <Gruntz/LevelPreview.h>          // ex Globals.h
-#include <Image/ImageFormatTag.h>         // IMGTAG_XCP - ResolveQualified's screen-page format word
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/LevelPreview.h>
+#include <Image/ImageFormatTag.h>
 
 DATA(0x0024e360)
-i32 g_suppress_64e360 = 0; // 0x24e360
+i32 g_suppress_64e360 = 0;
 
 DATA(0x0024e35c)
 i32 g_playActive;
@@ -45,7 +45,6 @@ i32 CCreditsState::FrameSlot28(i32 unused) {
     return 1;
 }
 
-// CAttract::LoadTitleConfig - configure the attract/title sequence.
 RVA(0x000a03f0, 0x14b)
 i32 CMenuState::Vslot09(i32 mode) {
     char stateName[0x20];
@@ -63,10 +62,6 @@ i32 CMenuState::Vslot09(i32 mode) {
             return 0;
         }
 
-        // The m_2c restore sits INSIDE the failure arm and is repeated after it: cl
-        // hoists the common store above the branch (which is what retail shows) and
-        // the failure path then has to materialize the 0 (`xor eax,eax`). Written as
-        // one store before the `if`, cl proves eax is already 0 and drops the xor.
         i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
         if (faded == 0) {
             m_2c = (saved);
@@ -92,23 +87,16 @@ i32 CMenuState::Vslot09(i32 mode) {
         menuRoot()->m_drawTarget->TransExit();
     }
 
-    RetireScene(0x50, 0x3e8, 0,
-                1); // 0xfa8f0 CState::RetireScene
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
+    RetireScene(0x50, 0x3e8, 0, 1);
+
     if (ShowCursor(1) < 0) {
         do {
         } while (ShowCursor(1) < 0);
     }
-    StartMusic(); // 0xa05a0 (ex the phantom CAttract::CommitStage alias)
+    StartMusic();
     return 1;
 }
 
-// CAttract::Activate - virtual attract-screen (re)entry. Gates on slot-3
-// (IsActive); if it fails, returns that result. Otherwise resets the title
-// brightness target, picks a random TITLE state off the registry, resolves it,
-// runs the title fade, sets menu brightness, transitions the page, rebuilds the
-// menu page, forces the cursor visible, and returns 1.
 RVA(0x000a0a30, 0x110)
 i32 CMenuState::Vslot06() {
     char stateName[0x20];
@@ -132,8 +120,6 @@ i32 CMenuState::Vslot06() {
         return 0;
     }
 
-    // Same shape as Vslot09: the restore lives in the failure arm and is repeated
-    // after it, so cl hoists the store above the branch and materializes the 0.
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
     if (faded == 0) {
         m_2c = (saved);
@@ -148,10 +134,8 @@ i32 CMenuState::Vslot06() {
     );
     menuRoot()->m_drawTarget->TransTitle();
 
-    RetireScene(0x50, 0x3e8, 0,
-                1); // 0xfa8f0 CState::RetireScene
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
+    RetireScene(0x50, 0x3e8, 0, 1);
+
     if (ShowCursor(1) < 0) {
         do {
         } while (ShowCursor(1) < 0);
@@ -159,16 +143,6 @@ i32 CMenuState::Vslot06() {
     return 1;
 }
 
-// CState::FadeInTitle(name, a, b, c, d, e) (0x0fa1f0, 6 args, ret 0x18): resolve the
-// "\SCREENZ\<name>" fade page off m_2c (with the screen-type tag), then run the page
-// worker's fade (mode 2 when `e`, else 1); on `e` retry once with mode 1. ret 1 on a
-// started fade, else 0.
-// (The resolver callee is the REAL CSymTab::ResolveQualified @0x13be40 - the
-// ex-CAttractScreenObj::ResolveScreen "0x120120" was a misread; that rva is _strchr.)
-// The ex "frame-reservation wall" note was three source bugs, not a wall (75.37 ->
-// 99.88): the buffer is 0x40 (retail's `sub esp,0x40` reserves exactly it), the mode
-// argument is a BRANCHED select not `e ? 2 : 1` (which folds to xor/setne/inc), and the
-// three success paths share ONE bottom `return 1` epilogue instead of inlining two.
 // @early-stop
 RVA(0x000fa1f0, 0xc6)
 i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
@@ -185,21 +159,19 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_2c) {
         return 0;
     }
-    // retail reserves `sub esp,0x40`: the path buffer is 0x40, not 0x34.
+
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    CParseSource* page = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP); // 0x13be40
+    CParseSource* page = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
     if (page == 0) {
         return 0;
     }
-    // a BRANCHED select (`mov eax,1 / test / je / mov eax,2`), not `e ? 2 : 1`
-    // (which folds to xor/setne/inc) - boolarg-branch-push-not-sete.md.
+
     i32 mode = 1;
     if (e != 0) {
         mode = 2;
     }
-    // the page worker is re-derived per call (retail reloads m_world->m_drawTarget),
-    // and all three success paths share ONE bottom `return 1` epilogue.
+
     if (menuRoot()->m_drawTarget->LoadPageImage(page, mode) == 0) {
         if (e != 0) {
             if (menuRoot()->m_drawTarget->LoadPageImage(page, 1) == 0) {
@@ -210,9 +182,6 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     return 1;
 }
 
-// CState::RunTitle(...) (0x0fa300, 5 args, ret 0x14): the title-render entry.
-// Bail (0) if the menu root (m_c), state machine (m_8), or active state (m_2c) is
-// null; otherwise flip the menu page's render target and return 1.
 // @early-stop
 RVA(0x000fa300, 0x3a)
 i32 CState::RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e) {
@@ -283,7 +252,6 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     return 1;
 }
 
-// 0xfa550: two-channel type-2 emitter (4 args). Blt channel A onto channel B.
 // @early-stop
 RVA(0x000fa550, 0x10c)
 i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
@@ -347,7 +315,6 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     return 1;
 }
 
-// 0xfa790: two-channel type-3 emitter (3 args).
 // @early-stop
 RVA(0x000fa790, 0x104)
 i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
@@ -389,13 +356,6 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     return 1;
 }
 
-// CState::RetireScene(pct,dur,lead,useOverlay) (0xfa8f0): two-channel type-3 screen-transition
-// emitter; channel B chosen via a4 + CDDrawWorkerMgr::HasOverlay. No bank-stop
-// bracketing on this variant. On CState:
-// the retail caller graph shows every screen state (CPreviewState/CAttract/CBootyState/
-// CCreditsState/CMulti/CPlay/...) invokes it on its OWN `this`, and the body reads only
-// the CState resource-chain facet - so it IS a CState-level helper. m_faderMgr is the
-// CState +0x10 member; walks the m_world (+0x0c) draw-target chain directly.
 // @early-stop
 RVA(0x000fa8f0, 0x118)
 i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
@@ -497,8 +457,7 @@ i32 CState::InputVirtual() {
     if (m_world == 0) {
         return 0;
     }
-    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg.
+
     while (ShowCursor(0) >= 0)
         ;
     if (m_world->m_drawTarget->PagesReady() == 0) {
@@ -551,11 +510,6 @@ i32 CState::ShadeScreen(i32 pct) {
     return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);
 }
 
-// The state-header serialize/mode pre-step (CPlay::SyncState 0xd7520 calls it
-// `mov ecx,edi; push ar/mode/a2/a3`): mode 4 -> the HeaderWrite pass, mode 7 ->
-// HeaderRead. The body reads no members, so entry `this` rides ecx untouched
-// into the __thiscall CState callees (ex the __stdcall Validate_fafa0 view +
-// its Check4_2ce8/Check7_36bb alias decls - all dissolved).
 RVA(0x000fafa0, 0x3b)
 i32 CPlay::HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
@@ -576,8 +530,6 @@ i32 CPlay::HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     return 1;
 }
 
-// The kind-4 state-header WRITE pass (HeaderSerialize @0xfafa0 dispatches here):
-// stream the CState header block out via the archive's vtbl+0x30 Write.
 RVA(0x000faff0, 0x163)
 i32 CState::HeaderWrite(CFileMemBase* ar) {
     if (!ar) {
@@ -610,8 +562,6 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     return 1;
 }
 
-// The kind-7 state-header READ pass (HeaderSerialize's other arm; the symmetric
-// vtbl+0x2c Read, plus the m_inputHalfSel tail dword HeaderWrite never streams).
 RVA(0x000fb1c0, 0x168)
 i32 CState::HeaderRead(CFileMemBase* ar) {
     if (ar == 0) {

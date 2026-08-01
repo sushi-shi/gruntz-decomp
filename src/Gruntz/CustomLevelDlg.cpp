@@ -1,18 +1,13 @@
-#include <Gruntz/Dialogs.h> // CBattlezDlgCustom (: CDialog), CDataExchange, CListBox (afxwin)
+#include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (IsBattlezMapFile)
+#include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <rva.h>
 
-#include <io.h>       // _finddata_t / _findfirst / _findnext (the custom-level dir walk)
-#include <direct.h>   // _getcwd (0x11fc10; the "game dir" resolver == current directory)
-#include <MsgParam.h> // the window-message parameter's pointer/word pair
+#include <io.h>
+#include <direct.h>
+#include <MsgParam.h>
 
-// The retail bytes at 0x1e8e98 are an 8-byte AFX_MSGMAP {&CDialog::messageMap
-// (0x5eb068), &_messageEntries[0] (0x5e8ea0)} - NOT the 4-byte `void*` this TU
-// used to declare - and 0x1e8ea0 is a 2-entry AFX_MSGMAP_ENTRY table whose one
-// handler is the ILT thunk 0x3d5f -> 0x183f0 == PickIfSelected, on listbox 0x516
-// with notify code 2 (LBN_DBLCLK).
 DATA(0x001e8e98)
 const AFX_MSGMAP CBattlezDlgCustom::messageMap = {
     &CDialog::messageMap,
@@ -21,8 +16,7 @@ const AFX_MSGMAP CBattlezDlgCustom::messageMap = {
 
 DATA(0x001e8ea0)
 const AFX_MSGMAP_ENTRY CBattlezDlgCustom::_messageEntries[] = {
-    ON_LBN_DBLCLK(0x516, CBattlezDlgCustom::PickIfSelected) // 0x183f0
-    {0, 0, 0, 0, AfxSig_end, 0},
+    ON_LBN_DBLCLK(0x516, CBattlezDlgCustom::PickIfSelected){0, 0, 0, 0, AfxSig_end, 0},
 };
 
 // @early-stop
@@ -71,28 +65,16 @@ const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
     return &messageMap;
 }
 
-// ---------------------------------------------------------------------------
-// 0x183f0 (RVA-homed from src/Stub/ApiCallers.cpp) - CBattlezDlgCustom's
-// list-item confirm (the message-map handler at messageMap+0x1c, via thunk
-// 0x3d5f): GetDlgItem(0x516)'s window sends LB_GETCURSEL (0x188); on a valid
-// selection run CDialog::OnOK. IDENTITY RESOLVED (2026-07-16, ex the
-// `DlgHost_183f0` @identity-TODO shell): control 0x516 IS CBattlezDlgCustom's
-// custom-level listbox (its DoDataExchange @0x180e0 fills the same id), the
-// fn-table @0x5e8e98 IS that dialog's message map (GetMessageMap above returns
-// it), and the whole 0x183d0..0x18430 run is that dialog's MFC boilerplate
-// cluster, RVA-adjacent to its DDX.
 RVA(0x000183f0, 0x2e)
 void CBattlezDlgCustom::PickIfSelected() {
     HWND h = GetDlgItem(0x516)->m_hWnd;
     if (::SendMessageA(h, 0x188, 0, 0) != -1) {
-        CDialog::OnOK(); // 0x1bacc3 ?OnOK@CDialog@@MAEXXZ (qualified base call, reloc-masked)
+        CDialog::OnOK();
     }
 }
 
 RVA(0x00018430, 0xd)
 void EndWaitCursorOnThread() {
-    // AfxGetApp() IS the "+4 slot": afxCurrentWinApp is AfxGetModuleState()->m_pCurrentWinApp
-    // (AFXWIN.H), the first member past CNoTrackObject's vptr. Retail inlines exactly that -
-    // call AfxGetModuleState / mov ecx,[eax+4] / jmp EndWaitCursor.
+
     AfxGetApp()->EndWaitCursor();
 }

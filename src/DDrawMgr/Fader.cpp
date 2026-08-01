@@ -1,27 +1,27 @@
 #include <Gruntz/Fader.h>
-#include <EmptyString.h>  // g_emptyString
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree
+#include <EmptyString.h>
+#include <Rez/RezAlloc.h>
 #include <DDrawMgr/ShadeTableCache.h>
-#include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
+#include <Gruntz/FaderSubtypes.h>
 #include <Ints.h>
-#include <Mfc.h>                // superset of Win32.h; needed for CDDSurface (CPtrArray member)
-#include <ddraw.h>              // IDirectDrawSurface::Unlock (the ex manual slot dispatch)
-#include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the Surf/FShadeSurf/TileSurf/FxBox views)
-#include <DDrawMgr/DirectDrawMgr.h> // the real CDDPalette (its +0x0c m_cacheA is the
-#include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (CFaderLight BeginFade/EndFade)
-#include <Gruntz/FxModeT1.h>              // the CString-bearing CFxModeT1 (ex fxmodedesc)
-#include <Gruntz/FxModeDesc.h>            // CFxModeDesc + T2-T6 (ex fxmodedesc)
-#include <math.h>                         // acos/sin (fsin) / sqrt (fsqrt) intrinsics
-#include <string.h>                       // rep-movs / memset element copies
+#include <Mfc.h>
+#include <ddraw.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Gruntz/FxModeT1.h>
+#include <Gruntz/FxModeDesc.h>
+#include <math.h>
+#include <string.h>
 #include <rva.h>
 
 VTBL(CFader, 0x001f07a8);
 VTBL(CFaderMesh, 0x001f07c0);
-VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
+VTBL(CRezBufferObject, 0x001f07d8);
 DATA(0x001f07ec)
-float g_fxBias = -50.0f; // 0x5f07ec
+float g_fxBias = -50.0f;
 DATA(0x001f07f4)
-float g_fxEps = 1.0f; // 0x5f07f4
+float g_fxEps = 1.0f;
 
 VTBL(CFaderFlat, 0x001f07f8);
 VTBL(CFaderRadial, 0x001f0810);
@@ -29,9 +29,9 @@ VTBL(CFaderSine, 0x001f0848);
 VTBL(CFaderLight, 0x001f0870);
 VTBL(CFaderShape, 0x001f0890);
 DATA(0x002c279c)
-u8 g_fxRandSeeded; // 0x6c279c  seed-init flag (bit 0)
+u8 g_fxRandSeeded;
 DATA(0x002c27a8)
-i32 g_fxRandSeed; // 0x6c27a8  LCG seed
+i32 g_fxRandSeed;
 DATA(0x001f085c)
 const float g_faderScale_5f085c = 0.01f;
 DATA(0x001f0888)
@@ -80,7 +80,6 @@ void CFader::Set2c(CDDrawPtrCollections* pool) {
     m_ptrColl = pool;
 }
 
-// The base fade brackets (slots 3/4) default to no-ops; CFaderLight overrides both.
 RVA(0x0017e790, 0x1)
 void CFader::BeginFade() {}
 
@@ -107,7 +106,6 @@ CFxModeT1::CFxModeT1() {
     m_28 = 0;
 }
 
-// 0x17e840 - CFxModeT2(): base ctor, stamp the type-2 record.
 // @early-stop
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
@@ -165,22 +163,11 @@ CFxModeT6::CFxModeT6() {
 RVA(0x0017e940, 0x27)
 CFaderMesh::CFaderMesh() {}
 
-// 0x17e990 - ~CFaderMesh (the real class dtor). Empty body:
-// cl stamps ??_7CFaderMesh (masks 0x5f07c0), destroys the m_58 CRezBufferObject
-// member, then chains ~CFader (0x17e4a0). /GX frame from the destructible member
-// + base.
 // @early-stop
 RVA_COMPGEN(0x0017e970, 0x1e, ??_GCFaderMesh@@UAEPAXI@Z)
 RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
-// ===========================================================================
-// 0x17ef00 - CFaderMesh::RenderFrame(frame): the mesh-warp blit. Prime the dest surface
-// (m_3c): Blt the m_40 source if set, else Clear it. Then for each of the m_58
-// buffer's records (40 bytes = {srcRectA[4], dstRectB[4], _, _}): interpolate the
-// A->B rect by t = frame/GetFrameCount(), clip it to the dest surface, and BltEx from the m_38
-// source (srcRect = m_4c ? rectA : the clipped rectB). Finally Flip m_44.
-// ===========================================================================
 // @early-stop
 RVA(0x0017ef00, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
@@ -304,9 +291,7 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     w = m_srcBox->m_height;
     m_frameCount = w;
     p = desc->m_10;
-    // ONE `||`, not two `if`s: retail sends BOTH range guards to the same far fail block
-    // (`jl <fail> / jg <fail>`), where separate statements let cl place the first guard's
-    // target inline and invert the second into a jump to the body (`jle <body>`).
+
     if (p < 0 || p > 100) {
         goto fail;
     }
@@ -353,21 +338,17 @@ CFaderLight::~CFaderLight() {
     SubFree();
 }
 
-// CFaderLight::ApplyInit (0x1804a0): capture the descriptor's surface/palette/centre,
-// clip the centre to the surface rect (early-out if outside), fill the per-scanline span
-// tables, resolve the hue-ramp shade table into the base's m_table (m_flag = "we own it",
-// so ~CFader FindRemoves it from the cache).
 // @early-stop
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT2* d = static_cast<CFxModeT2*>(desc); // fader type 1 -> the id-2 mode record
+    CFxModeT2* d = static_cast<CFxModeT2*>(desc);
     m_20 = 0;
     CDDSurface* s = d->m_04;
     if (s == 0) {
-        s = m_timerA; // the base's default-surface dword
+        s = m_timerA;
     }
     m_surface = s;
-    CDDSurface* b = d->m_08; // desc dword holds a surface
+    CDDSurface* b = d->m_08;
     if (b == 0) {
         m_dstSurface = m_timerB;
     } else {
@@ -376,7 +357,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     m_lightGate = d->m_10;
     m_centerX = d->m_18;
     m_centerY = d->m_1c;
-    CDDPalette* pal = d->m_pal0c; // the mode tag selects this union arm
+    CDDPalette* pal = d->m_pal0c;
     m_palette = pal;
     i32 cnt = d->m_14;
     m_spanCount = cnt;
@@ -390,9 +371,9 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
         return 0;
     }
     RECT rect;
-    rect.right = m_surface->m_width; // +0x1c
+    rect.right = m_surface->m_width;
     m_surfWidth = rect.right;
-    rect.bottom = m_surface->m_height; // +0x18
+    rect.bottom = m_surface->m_height;
     m_surfHeight = rect.bottom;
     rect.left = 0;
     rect.top = 0;
@@ -435,27 +416,8 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
 RVA(0x00180630, 0x1)
 void CFaderLight::SubFree() {}
 
-// Retail clamps a span edge into [0, width] with a DOUBLE-EVALUATED select - the
-// `(v < 0 ? 0 : v)` half is emitted twice, once for the width compare and once for each
-// arm - which is what `min(max(v,0), w)` looks like when min/max are the usual two-
-// argument macros. A helper function would evaluate it once and lose the shape.
 #define FADER_CLAMPW(v, w) (((v) < 0 ? 0 : (v)) >= (w) ? (w) : ((v) < 0 ? 0 : (v)))
 
-// CFaderLight::RenderFrame (0x180640, vtable slot 1, 2412 B) - the expanding light
-// circle. Both surfaces (and, in the lit mode, the pooled overlay) stay Lock()ed for the
-// frame. m_spanStarts[]/m_spanEnds[] remember the horizontal span each scanline had last
-// frame, so every row only has to touch what CHANGED.
-//   * lit mode (m_lightGate): the circle of radius `m_frameCount - frame` is the lit
-//     area. Rows the circle has left get blacked out wholesale; rows it still covers get
-//     their newly-exposed left/right margins zeroed, and the m_spanCount-wide rim is
-//     shaded through the CShadeTable LUT, reading the overlay copy and writing the live
-//     surface. The rim walk is the same four-variant, four-quadrant rasterizer as the
-//     out-of-line Render @0x180fb0 (mirrored horizontally about m_centerX always, and
-//     vertically about m_centerY when the mirror row is on-screen).
-//   * unlit mode: the circle of radius `frame` is the RESTORED area - the newly-covered
-//     margins are copied back from m_dstSurface instead of cleared - and the rim is
-//     shaded by calling Render out of line with radius `frame + m_spanCount - 1`.
-// m_20 latches the frame reached, then the three surfaces are unlocked.
 // @early-stop
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
@@ -490,12 +452,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             }
             if (row >= m_centerY - r + 1 && row <= r + m_centerY - 1) {
                 i32 dyv = row - m_centerY;
-                // NEGATED half-chord: retail `neg eax`s the sqrt and then reaches both
-                // edges from it - `sub cx,(-h)` for the right (which is what leaves the
-                // sign flag the first clamp reads directly) and `lea (-h)+cx+1` for the
-                // left. The RIGHT edge is the double-evaluated clamp; the LEFT edge is
-                // not - its `(v < 0 ? 0 : v)` select is computed once and then plainly
-                // capped at the width.
+
                 i32 hv = -static_cast<i32>(sqrt(static_cast<double>((rr - dyv * dyv))));
                 i32 right = FADER_CLAMPW(m_centerX - hv, m_surfWidth);
                 i32 lv = hv + m_centerX + 1;
@@ -538,7 +495,7 @@ void CFaderLight::RenderFrame(i32 frame) {
                     if (cy >= mid && row <= cy) {
                         i32 mirRow = 2 * (cy - row);
                         if (mirRow + row < m_surfHeight) {
-                            // ---- both halves, mirror row BELOW (LOOP A) ----
+
                             mirSrc = mirRow * srcpitch;
                             mirDst = mirRow * dstpitch;
                             if (dist >= r - R) {
@@ -570,7 +527,7 @@ void CFaderLight::RenderFrame(i32 frame) {
                                 } while (dist >= r - m_spanCount);
                             }
                         } else if (dist >= r - R) {
-                            // ---- left/right only, mirror row off-screen (LOOP B) ----
+
                             do {
                                 if (xcur > cx) {
                                     break;
@@ -597,7 +554,7 @@ void CFaderLight::RenderFrame(i32 frame) {
                     } else if (cy < mid && row >= cy) {
                         i32 mirRow = 2 * dy;
                         if (row - mirRow < 0) {
-                            // ---- left/right only, mirror row above the top (LOOP D) ----
+
                             if (dist >= r - R) {
                                 do {
                                     if (xcur > cx) {
@@ -623,7 +580,7 @@ void CFaderLight::RenderFrame(i32 frame) {
                                 } while (dist >= r - m_spanCount);
                             }
                         } else {
-                            // ---- both halves, mirror row ABOVE (LOOP C) ----
+
                             mirSrc = mirRow * srcpitch;
                             mirDst = mirRow * dstpitch;
                             if (dist >= r - R) {
@@ -724,9 +681,6 @@ void CFaderLight::RenderFrame(i32 frame) {
     }
 }
 
-// CFaderLight::GetFrameCount (0x1814f0, vtable slot 2) - the fade frame count = the maximum
-// distance from the light centre to any active-surface corner (each squaring is
-// pow(x, 2.0), the largest hypotenuse __ftol'd into m_5c).
 // @early-stop
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
@@ -808,13 +762,6 @@ CFaderShape::CFaderShape() {
     m_20 = 0;
 }
 
-// ===========================================================================
-// 0x17e540 - CFader::RunFadeStepped(step, lead, vsync): the stepped counterpart
-// of RunFade. Primes frame 0, busy-waits the lead-in, then renders every `step`-th
-// frame from 1..count back-to-back (no elapsed/duration mapping), poking the
-// optional vsync gate + RenderFrame(frame) each step. Finalizes RenderFrame(count)/EndFade() and records
-// the achieved frame rate in m_34. NON-EH (base /O2) frame.
-// ===========================================================================
 // @early-stop
 RVA(0x0017e540, 0xd8)
 void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
@@ -889,15 +836,10 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     EndFade();
 }
 
-// ===========================================================================
-// 0x17ea00 - CFaderMesh::ApplyInit(desc): build the (m_54 x m_50) ellipse mesh
-// into this->m_58 from the transition descriptor. Returns 0 on a null gate, else 1.
-// ===========================================================================
 // @early-stop
 RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
-    // The arg is the type-6 CFxMode transition descriptor; m_58 is this fader's real
-    // growable mesh buffer (CRezBufferObject).
+
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
     CRezBufferObject* mesh = &m_meshBuf;
 
@@ -906,7 +848,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     if (cfg->m_10 == 0) {
         return 0;
     }
-    m_primeSrc = cfg->m_surf0c; // the mode tag selects these union arms
+    m_primeSrc = cfg->m_surf0c;
     m_flipTarget = cfg->m_surf10;
     m_48 = cfg->m_18;
     m_recOrderFlag = cfg->m_14;
@@ -915,9 +857,6 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
     mesh->SetSize(0, -1);
 
-    // The two "boxes" are surfaces: the geometry comes out of their DDSURFACEDESC cache
-    // (+0x18 dwHeight, +0x1c dwWidth). Offsets preserved from the old FxBox view, whose
-    // width/height names were swapped relative to the canonical descriptor.
     i32 halfW = m_dstSurface->m_height / 2;
     i32 halfH = m_dstSurface->m_width / 2;
     i32 dx = m_bltSrc->m_width / m_cols;
@@ -963,7 +902,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             pt64.bottom = dy;
             OffsetRect(&pt64, row, col);
 
-            i32 pt[10]; // the 40-byte mesh record (a RezElem40 slot)
+            i32 pt[10];
             if (m_recOrderFlag) {
                 pt[0] = pt64.right;
                 pt[1] = pt64.bottom;
@@ -986,7 +925,6 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             pt[8] = 0;
             pt[9] = 0x3f800000;
 
-            // Inlined MFC CArray::SetAtGrow(GetSize(), &pt).
             i32 idx = mesh->m_nSize;
             i32 newSize = idx + 1;
             if (newSize == 0) {
@@ -1017,9 +955,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                     }
                 }
                 i32 newMax = mesh->m_nMaxSize + grow;
-                // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
-                // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
-                // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+
                 if (newSize >= newMax) {
                     newMax = newSize;
                 }
@@ -1037,14 +973,6 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CRezBufferObject::SetSize (0x17f390) - the out-of-line MFC CArray<RezElem40>::SetSize
-// (CFaderMesh::ApplyInit @0x17ea00 calls it at 0x17ea79 on the buffer embedded at
-// CFaderMesh+0x58). sema xref: that is its ONLY caller, and +0x58 IS a CRezBufferObject,
-// so the method belongs to that class - it was never a free-standing "CArrayE40". The
-// element is POD here (ConstructElements = zero-fill), so grow/shrink inline memset/memcpy
-// around the engine allocator (RezAlloc 0x1b9b46 / RezFree 0x1b9b82).
-//
 // @early-stop
 RVA(0x0017f390, 0x164)
 void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
@@ -1098,7 +1026,7 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     CFxModeT5* s = static_cast<CFxModeT5*>(desc);
     CDDSurface* a = s->m_04;
     if (!a) {
-        a = m_timerA; // the base's default dword
+        a = m_timerA;
     }
     m_desc04 = a;
     if (s->m_08) {
@@ -1140,11 +1068,10 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     }
 
     if (cfg->m_14 == 0) {
-        // build the fade shade table from the descriptor's palette (m_cache is the
-        // CFader base's embedded CShadeTableCache at this+0x04)
-        CDDPalette* pal = cfg->m_pal10; // the mode tag selects this union arm
+
+        CDDPalette* pal = cfg->m_pal10;
         m_table = m_cache.HueRampTable(pal->m_cacheA, 0x10, 0);
-        m_flag = 1; // we own it: ~CFader will FindRemove it
+        m_flag = 1;
     } else {
         m_table = cfg->m_14;
         m_flag = 0;
@@ -1153,11 +1080,8 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
         return 0;
     }
 
-    // The source surface is the real CDDSurface: width @+0x1c, height @+0x18, pitch
-    // @+0x20, column stride @+0xb0, held IDirectDrawSurface @m_8. Lock() (0x13e6d0)
-    // returns the locked pixel base; UnlockThunk() is the m_8->vtbl[0x80] COM unlock.
     CDDSurface* s = m_srcSurface;
-    m_fadeDivisor = static_cast<float>(s->m_width) * g_faderHalf; // width * 0.5
+    m_fadeDivisor = static_cast<float>(s->m_width) * g_faderHalf;
     m_centerX = s->m_width / 2;
     m_centerY = s->m_height / 2;
     m_cells = static_cast<CFaderRadialCell*>(::operator new(s->m_height * s->m_width * 16));
@@ -1197,38 +1121,15 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     return 1;
 }
 
-// ===========================================================================
-// 0x17fc60 - CFaderRadial::RenderFrame(frame) (the vtable slot-1 render, hosted on the
-// CFaderRadialApply flat view): plot the precomputed radial-fade cells whose fade
-// threshold still exceeds `frame` into the m_3c dest surface. Alloc a per-width Rez
-// scratch (retail allocates it but leaves it unused, freed at the end), Clear + Lock
-// the dest, Lock the source (its base unused; the cells were precomputed by Build),
-// then per cell: if (fade - frame) > 1.0, displace the cell (centerX + vx/scaledFade,
-// centerY - vy/scaledFade) and, if in bounds, write the cell pixel into the locked
-// dest at [py*pitch + px]. Unlock both COM surfaces (inlined m_8->vtbl[0x80]).
-// ===========================================================================
-// Three things the retail bytes say and a cached-local reading hid:
-//   - nothing is cached: every use re-reads `m_dstSurface` (+0x3c) off `this`
-//     (`mov eax,[esi+0x3c]` recurs, including inside the bounds test),
-//   - the loop BOUND is re-evaluated every iteration - the latch reloads
-//     m_srcSurface and redoes `m_width * m_height` before `cmp ebp,edx; jl`,
-//     because the plot writes a byte through a u8* the optimizer cannot prove
-//     disjoint from the surface objects,
-//   - `frame` converts UNSIGNED: `mov [t],frame / mov [t+4],0 / fild QWORD [t]`
-//     is MSVC's u32->float sequence (a signed one would `cdq`). Written inline
-//     in the condition it is hoisted to the preheader and lives in st(1) for
-//     the whole loop, which is what the trailing `fstp st(0)` at both exits pops.
-// The old note called this an x87-stack-schedule wall; it was none of the three.
-//
 // @early-stop
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
-    void* scratch = RezAlloc(m_dstSurface->m_width); // per-width scratch (alloc'd, unused)
+    void* scratch = RezAlloc(m_dstSurface->m_width);
     m_dstSurface->Clear(0);
-    m_srcSurface->Lock(0);                              // lock source (base unused here)
-    u8* base = static_cast<u8*>(m_dstSurface->Lock(0)); // locked dest pixel base
-    if (m_table->m_data == 0) { // gate: is the shade table's buffer present?
-        return;                 // retail bails w/o unlock/free (matched)
+    m_srcSurface->Lock(0);
+    u8* base = static_cast<u8*>(m_dstSurface->Lock(0));
+    if (m_table->m_data == 0) {
+        return;
     }
 
     for (i32 i = 0; i < m_srcSurface->m_width * m_srcSurface->m_height; i++) {
@@ -1244,8 +1145,6 @@ void CFaderRadial::RenderFrame(i32 frame) {
         }
     }
 
-    // Inlined UnlockThunk: IDirectDrawSurface::Unlock(NULL) on both surfaces (COM slot
-    // 32, byte +0x80 - the ex void**-element "+0x20" spelling of the same slot).
     m_srcSurface->m_ddSurface->Unlock(0);
     m_dstSurface->m_ddSurface->Unlock(0);
     RezFree(scratch);
@@ -1299,7 +1198,6 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    // +0x60/+0x64 (etc) take the surface's +0x1c (dwWidth) then +0x18 (dwHeight).
     m_span = m_surfA->m_width;
     m_rowCount = m_surfA->m_height;
     m_spanB = m_surfB->m_width;
@@ -1325,8 +1223,6 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    // `<= 0` on the UNSIGNED mode, not `== 0`: retail's `test eax,eax / jbe` is the
-    // negation of an unsigned `> 0` guard (jbe == je after `test`, different encoding).
     if (static_cast<u32>(pInit->m_14) <= 0) {
         goto fail;
     }
@@ -1361,7 +1257,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 
     if (m_useLut != 0) {
         if (pInit->m_20) {
-            m_flag = 0; // a caller-supplied table: ~CFader must NOT FindRemove it
+            m_flag = 0;
             m_table = pInit->m_20;
         } else if (_access(pInit->m_24, 0) == 0) {
             m_table = m_cache.AddFromArray(pInit->m_24);
@@ -1373,14 +1269,6 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
             m_table = m_cache.FlashTable(pal->m_cacheA, 0x20, 0x20, 0x32, 0xc8);
         }
 
-        // The ramp spans a HALF period over the whole 2*halfWidth run: retail
-        // divides by `m`, not by m_halfWidth. Proof: the preheader's lone
-        // `fild [esp+0x10]` (the spilled `m`, the same slot `push ebx` used for
-        // the RezAlloc size) is loop-INVARIANT - it stays in st(1) across every
-        // iteration and is popped by the single `fstp st(0)` after the latch,
-        // while the loop body only does `fild [esp+0x18]` (i) + `fdiv st,st(1)`.
-        // Dividing by the member instead collapses to `fidiv [esi+0x58]` inside
-        // the loop and doubles the ramp's slope.
         i32 m = m_halfWidth << 1;
         m_shadeRamp = static_cast<u8*>(RezAlloc(m));
         for (i = 0; i < m; i++) {
@@ -1407,19 +1295,14 @@ fail:
     return 0;
 }
 
-// ===========================================================================
-// 0x182610 - RenderTile: assemble + write back one (2*m_halfWidth)-wide line per row.
-// ===========================================================================
 // @early-stop
 RVA(0x00182610, 0x2eb)
-// (col, stripWidth): CFaderShape::RenderFrame calls this as RenderTile(<column in the
-// span>, frame - m_20), and the body treats the second as the strip this frame adds -
-// `rowBytes = 2*m_halfWidth + stripWidth`, and it is the x0 the copy/zero strip starts at.
+
 void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
     if (stripWidth <= 0) {
         return;
     }
-    i32 stride = m_halfWidth * 2; // inner pixel count
+    i32 stride = m_halfWidth * 2;
     i32 rowBytes = stride + stripWidth;
     i32 bpp = m_surfA->m_bytesPerPixel;
 
@@ -1493,16 +1376,9 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
     }
 }
 
-// ===========================================================================
-// 0x181e50 - RenderWarpTile: the PI-scaled counterpart of RenderTile. Computes a
-// per-tile column split point from a circular (m_halfWidth * PI) arc scaling, then for
-// each of m_rowCount columns gathers a (2*m_halfWidth) line (straight bytes + the m_warpTable-tapped
-// remainder, or the m_useLut LUT path) and writes it back, with the m_stripCopy copy/zero
-// dest strip. param_2 = base pixel row, param_3 = leading width.
-// ===========================================================================
 // @early-stop
 RVA(0x00181e50, 0x7b9)
-// (col, stripWidth) - the warped twin of RenderTile; same two caller expressions.
+
 void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 stride = m_halfWidth * 2;
     if (stripWidth <= 0) {
@@ -1763,25 +1639,9 @@ i32 CFaderShape::GetFrameCount() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// The slot-1 render virtuals (RenderFrame(i32 frame)) of three CFader subtypes. Identity
-// recovered by data-ref: each RVA is its class's ??_7CFader<Sub>@@6B@+0x4 (vtable slot
-// 1), the RenderFrame the class already declares in FaderSubtypes.h. Defined here as the real
-// virtuals (were mis-homed Gap_* free-fn stubs from GapFunctions.cpp, matcher-5) so each
-// ??_7 slot 1 binds to its own body; bodies parked (>512 B leaf-first reconstructions).
-// ---------------------------------------------------------------------------
 DATA(0x001f080c)
-const float g_faderHalfPi = 1.570795f; // 0x5f080c  PI/2 == 3.14159/2 (one quarter sine sweep)
+const float g_faderHalfPi = 1.570795f;
 
-// CFaderFlat::RenderFrame (0x17f660, vtable slot 1, 742 B) - the "curtain" wipe. Both
-// surfaces are 16bpp and get Lock()ed for the whole frame (the raw lpSurface bases; the
-// row stride is m_pitch/2 u16s). The band of rows [base, base+span) is peeled open by a
-// quarter-sine: for each PAIR of rows the sine at that row gives two widths, and the pair
-// is copied outward in mirror image - the even row takes its left run from just LEFT of
-// the split column and its right run from just right of it, the odd row uses the
-// complementary column - so the picture appears to tear apart along a vertical seam. Every
-// row from the band down to `lastFrame` rows behind is then copied straight through, and
-// the frame index is latched in the base's m_20 so the next call knows where it left off.
 RVA(0x0017f660, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
     u16* srcBits = static_cast<u16*>(m_src->Lock(0));
@@ -1842,27 +1702,16 @@ void CFaderFlat::RenderFrame(i32 frame) {
         y2++;
     }
     m_20 = frame;
-    // The COM unlock, open-coded exactly as retail (both surfaces, source first).
+
     m_src->m_ddSurface->Unlock(0);
     m_desc04->m_ddSurface->Unlock(0);
 }
 
 DATA(0x001f0860)
-const float g_sineHalfPi = 1.570795f; // 0x5f0860  the sine sweep's quarter turn
+const float g_sineHalfPi = 1.570795f;
 DATA(0x001f0864)
-const float g_sineOne = 1.0f; // 0x5f0864  the whole-pixel carry threshold
+const float g_sineOne = 1.0f;
 
-// CFaderSine::RenderFrame (0x17ff30, vtable slot 1, 1218 B) - the "sine dissolve".
-// Both surfaces stay Lock()ed for the frame. m_scaledMag rows are in flight at any time
-// (the band [m_frameCount-frame, +m_scaledMag)); each row's TARGET pixel budget is a
-// quarter-sine of how far the row is through the band, scaled by the row width, and the
-// running total already spent lives in m_arr0[row]. The difference is spent this frame:
-// `whole` pixels immediately plus a fractional carry accumulated in m_arr2[row] (a float),
-// each pixel taken from the pre-shuffled permutation m_arr3[] through the per-row cursor
-// m_arr1[row], plus 2*step extra pixels at random positions. m_boxParam selects what a
-// "spent" pixel becomes: zeroed (fade to black) or copied from the destination surface
-// (cross-fade). Rows that have fully passed the band are finished off wholesale in the
-// trailing loop, and m_20 latches the frame reached.
 // @early-stop
 RVA(0x0017ff30, 0x4c2)
 void CFaderSine::RenderFrame(i32 frame) {
@@ -1881,9 +1730,7 @@ void CFaderSine::RenderFrame(i32 frame) {
     while (row < m_frameCount - frame + m_scaledMag) {
         if (row >= 0 && row < m_frameCount) {
             u8* srcRow = m_srcBits + m_srcBox->m_pitch * row;
-            // The row's phase runs UNSIGNED (retail's `fild QWORD` with a zeroed high
-            // half), so a row that has not entered the band yet wraps to a huge phase
-            // rather than a negative one.
+
             i32 delta = static_cast<i32>(
                             sin(static_cast<double>(static_cast<u32>(row + frame - m_frameCount))
                                 / m_scaledMag * g_sineHalfPi)
@@ -1891,9 +1738,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                         )
                         - m_arr0[row];
             if (m_boxParam != 0) {
-                // ONE counter variable throughout - retail keeps the carry, the pixel
-                // count and the random top-up count in a SINGLE stack slot (0x24, shared
-                // with the m_scaledMag fidiv temp), which is what the reuse below gives.
+
                 i32 n = 0;
                 double want = delta * step;
                 i32 whole = static_cast<i32>(want);
@@ -1971,7 +1816,6 @@ void CFaderSine::RenderFrame(i32 frame) {
         row++;
     }
 
-    // Every row the band has already left is finished off in one go.
     i32 y = m_20;
     while (y < frame) {
         i32 done = m_scaledMag - y + m_frameCount - 1;
@@ -2001,17 +1845,6 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
 }
 
-// CFaderShape::RenderFrame (0x181b00, vtable slot 1, 847 B) - the per-frame driver of the
-// two scanline compositors. It Lock()s the three surfaces into m_dstBase/m_straightBase/
-// m_gatherBase (surface C shares B's lock when they are the same surface), and on the very
-// first frame of a zero-strip transition primes the destination with a straight row copy.
-// Then it picks ONE compositor - RenderTile while the seam is still inside the plain band,
-// RenderWarpTile once it has crossed into the (m_halfWidth * PI) arc region - and calls it
-// once per active edge: mode 1 = the leading edge at `frame`, mode 2 = the trailing edge at
-// `m_span - frame - stride`, mode 3 = BOTH, with m_mode temporarily forced to 1 then 2 so
-// the compositor takes the matching arm, and restored to 3 afterwards. `frame - m_20` is the
-// number of columns to advance since the previous call, so the base's m_20 latches `frame`
-// on the way out, just before the three COM unlocks.
 // @early-stop
 RVA(0x00181b00, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
@@ -2022,7 +1855,7 @@ void CFaderShape::RenderFrame(i32 frame) {
         gather = static_cast<u8*>(m_surfC->Lock(0));
     }
     m_gatherBase = gather;
-    // The seam position is carried unsigned - both band tests below are `ja`/`jbe`.
+
     u32 seam = 0;
     i32 stride = m_halfWidth * 2;
     i32 arc = static_cast<i32>(static_cast<double>(m_halfWidth) * 3.14159);

@@ -1,16 +1,16 @@
 #include <DinMgr2/DirectInputMgr2.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <rva.h>
-#include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcpy (rep movs / repne scasb)
+#include <stdio.h>
+#include <string.h>
 
 #include <Win32.h>
 
 typedef enum DinCreateFlags {
-    DIDF_NO_DEVICE_B = 2,    // skip InitB (device B)
-    DIDF_NO_DEVICE_A = 4,    // skip InitA (device A)
-    DIDF_NO_CONTROLLERS = 8, // skip EnumGameControllers
+    DIDF_NO_DEVICE_B = 2,
+    DIDF_NO_DEVICE_A = 4,
+    DIDF_NO_CONTROLLERS = 8,
 } DinCreateFlags;
 
 typedef enum DinDeviceMode {
@@ -25,19 +25,19 @@ typedef enum DinBufferSize {
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
 DATA(0x00253aa4)
-i32 g_dinputLogEnabled; // 0x653aa4
+i32 g_dinputLogEnabled;
 DATA(0x00253aa8)
-i32 g_dinputMsgBoxEnabled; // 0x653aa8
+i32 g_dinputMsgBoxEnabled;
 DATA(0x00253aac)
-i32 g_dinputBeepEnabled; // 0x653aac
+i32 g_dinputBeepEnabled;
 DATA(0x00253ab0)
-i32 g_dinputThirdEnabled; // 0x653ab0
+i32 g_dinputThirdEnabled;
 
-VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
-VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
-VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
-VTBL(CInputDevRoot, 0x001ef670);  // grand-base subobject vtable (4 slots)
-VTBL(CInputDevBase, 0x001ef680);  // middle-base subobject vtable (6 slots)
+VTBL(CInputDevice, 0x001ef628);
+VTBL(CDeviceConfigB, 0x001ef640);
+VTBL(CDeviceConfigC, 0x001ef658);
+VTBL(CInputDevRoot, 0x001ef670);
+VTBL(CInputDevBase, 0x001ef680);
 
 inline CInputDevRoot::CInputDevRoot() {
     m_device = 0;
@@ -51,9 +51,7 @@ inline CInputDevRoot::CInputDevRoot() {
 inline CInputDevBase::CInputDevBase() {}
 
 inline CInputDevice::CInputDevice() {
-    // Loop, not memset: cl expands both to the same `rep stos` of 0x20 dwords, but the
-    // memset spelling makes the loop's zero look loop-invariant and steals the
-    // callee-saved register `this` needs in InitA (see the zero-store-spelling pattern).
+
     for (i32 i = 0; i < 0x20; i++) {
         m_keyTable[i] = 0;
     }
@@ -135,18 +133,6 @@ void DirectInputMgr2::Shutdown() {
     m_directInput = 0;
 }
 
-// DirectInputMgr2::InitA (__thiscall, ret 4 => 1 arg = flags). When the DInput
-// object exists, new's a 0x338-byte CInputDevice, inits its fields + stamps its
-// foreign vftable, then CreateDev(m_directInput, GUID_SysKeyboard, m_owner, flags). On failure
-// scalar-deletes it (m_deviceA) and returns 0; on success keeps it in m_deviceA, returns 1.
-// (ex-wall, RETIRED 2026-08-01 - EXACT. The "this<->0 ebx/esi swap" was real but its
-// cause was NOT here: CInputDevice's inline ctor cleared m_keyTable with `memset`, which
-// makes cl treat the clear's zero as loop-invariant and hoist it into the callee-saved
-// register `this` needs. Spelling the same clear as a `for` loop - cl emits the identical
-// `rep stos` of 0x20 dwords - frees ebx for `this` and lands retail's colouring exactly.
-// 86.35 -> 100. A 400-cell forests x islands search (25 AST mutations x 24 TU-state
-// trials, `permute variants --state-trials 24`) had already come back completely flat on
-// this function, which is what said the residue was a SOURCE bug, not codegen noise.)
 RVA(0x00132e20, 0xb1)
 i32 DirectInputMgr2::InitA(u32 flags) {
     IDirectInputA* di = m_directInput;
@@ -199,15 +185,6 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
     return 1;
 }
 
-// DinEnumDevicesCallback (0x132fc0) - the IDirectInput::EnumDevices callback
-// EnumGameControllers installs. For each attached game controller it new's a joystick
-// CDeviceConfigC, CreateDevJoystick's it with the enumerated GUID (lpddi->guidInstance,
-// at +4) + the manager's cached DInput/owner/flags, and on success appends the device
-// pointer to the manager's m_devices array (as a DWORD). Returns TRUE to keep enumerating.
-// (ex-wall, RETIRED 2026-08-01 - EXACT. The "SetAtGrow tail regalloc wall" was a source
-// bug: retail calls CPtrArray::Add, whose inline body evaluates `this` (`lea ecx,[edi+0x18]`)
-// and reads m_nSize BEFORE the argument pushes; hand-spelling it as
-// `SetAtGrow(GetSize(), dev)` interleaves the lea after the pushes. 93.8% -> 100.)
 RVA(0x00132fc0, 0xb8)
 i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
     if (instance == 0) {
@@ -310,7 +287,7 @@ void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused)
     if (devices == 0) {
         return 0;
     }
-    CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
+    CDeviceListNode* node = new CDeviceListNode;
     if (node->FillFrom(devices, n, unused) == 0) {
         if (node != 0) {
             node->Clear();
@@ -350,62 +327,22 @@ i32 CInputDevBase::ResetState() {
     return 1;
 }
 
-// (The two base-subobject destructors are defined inline in the header - each a
-// single ReleaseDevices cleanup - so cl inlines the full base unwind, stamp-by-stamp,
-// into every leaf's /GX destructor. cl ALSO emits standalone out-of-line copies of
-// both inline dtors into this obj - the leaf dtors' EH unwind funclets take their
-// addresses - and retail keeps those copies at 0x133370 / 0x1333b0; they are bound
-// below by RVA_COMPGEN, exactly like the auto-emitted ??_G scalar-deleting dtors.)
-
-// The four leaf/middle ??_G scalar-deleting destructors cl auto-emits for the
-// vtable slot-0s (each `push esi; call ~T; test [esp+8],1; conditional operator
-// delete; ret 4`, 0x1e B). Retail keeps them interleaved with the dtor bodies;
-// slot-0 of each retail vtable is the identity proof (0x5ef628->0x1332e0,
-// 0x5ef680->0x133420, 0x5ef658->0x133440, 0x5ef640->0x1334d0; each inner call
-// targets the matching ~dtor). They were FID false-positives
-// (??_G__non_rtti_object, AMBIG) in config/library_labels.csv - reclassed here.
 RVA_COMPGEN(0x001332e0, 0x1e, ??_GCInputDevice@@UAEPAXI@Z)
 
 RVA(0x00133300, 0x6a)
 CInputDevice::~CInputDevice() {
     ReleaseDevices();
 }
-// 0x133370 - ??1CInputDevRoot@@UAE@XZ: cl's auto-emitted out-of-line copy of the
-// header-inline grand-base dtor (`mov [ecx],??_7CInputDevRoot; jmp ReleaseDevices
-// @0x134d50` - byte-identical to the base-obj COMDAT, verified llvm-objdump -dr).
-// The leaf dtors' EH unwind funclets reference it, which is why cl emits the copy
-// alongside the inlined-in-leaves unwind. Was the DICfgC placeholder view (a
-// `(CInputDevRoot*)this` cast host stuck at ~50% because a plain method cannot
-// emit the vptr stamp) - dissolved: the compiler's own emission IS the function.
+
 RVA_COMPGEN(0x00133370, 0xb, ??1CInputDevRoot@@UAE@XZ)
 
-// 0x133380 - CInputDevRoot's SCALAR-DELETING DESTRUCTOR. cl auto-emits this ??_G COMDAT
-// into THIS obj (the class's vtable slot 0 needs its address); retail places it in this
-// same directinputmgr2 block (?DtorC@DICfgC @0x133370 before, ?DtorD1@DICfgD @0x1333b0
-// after). It has no source definition to hang RVA() on, so it is named verbatim - which
-// is what RVA_COMPGEN is for. The `deviceConfigRootTable` global is really
-// ??_7CInputDevRoot@@6B@ @0x1ef670 (bound just above).
 RVA_COMPGEN(0x00133380, 0x24, ??_GCInputDevRoot@@UAEPAXI@Z)
 
-// 0x1333b0 - ??1CInputDevBase@@UAE@XZ: cl's auto-emitted out-of-line copy of the
-// middle-base inline dtor, WITH the /GX frame ([esp+0x10] try-levels 0 / -1):
-// stamp ??_7CInputDevBase (0x5ef680), call the CInputDevBase::ReleaseDevices
-// override (0x1342b0), then the inlined ~CInputDevRoot (stamp 0x5ef670 + call
-// 0x134d50) - byte-identical to the base-obj COMDAT. Was the DICfgD placeholder
-// view (@early-stop eh-dtor-needs-base-subobject, ~34%): the real base-subobject
-// chain emits the frame + both stamps that the manual-vptr shape could not reach.
 RVA_COMPGEN(0x001333b0, 0x55, ??1CInputDevBase@@UAE@XZ)
 
 RVA_COMPGEN(0x00133420, 0x1e, ??_GCInputDevBase@@UAEPAXI@Z)
 RVA_COMPGEN(0x00133440, 0x1e, ??_GCDeviceConfigC@@UAEPAXI@Z)
 
-// CDeviceConfigC::~CDeviceConfigC (joystick, 0x133460) and CDeviceConfigB::~CDeviceConfigB
-// (mouse, 0x1334f0): the two sibling /GX multilevel deleting-dtors, same shape as
-// ~CInputDevice - cl auto-emits the EH frame + vptr re-stamp (leaf 0x5ef658/0x5ef640 ->
-// base 0x5ef680 -> root 0x5ef670) with the [esp+0x10] try-level stamps, then calls the
-// leaf teardown (the ReleaseDevices overrides, ex Free6d0/Free360) and
-// inlines each base cleanup (ReleaseDevices). Replaces the manual-vptr DevCfgChain
-// stamps that were @early-stop in BoundaryUpper2Eh.cpp.
 RVA(0x00133460, 0x6a)
 CDeviceConfigC::~CDeviceConfigC() {
     ReleaseDevices();
@@ -427,9 +364,9 @@ void SetDInputReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
 
 RVA(0x00133590, 0x5be)
 void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
-    char szCode[64];  // error-code name
-    char szMsg[256];  // description
-    char szLine[512]; // formatted output line
+    char szCode[64];
+    char szMsg[256];
+    char szLine[512];
 
     if (g_dinputBeepEnabled) {
         MessageBeep(MB_ICONEXCLAMATION);
@@ -549,7 +486,7 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
     if (owner == 0) {
         return 0;
     }
-    if (CInputDevBase::Create(di, cfg, owner) == 0) { // qualified -> direct call 0x134260
+    if (CInputDevBase::Create(di, cfg, owner) == 0) {
         return 0;
     }
     m_modeFlags = flags;
@@ -576,12 +513,9 @@ void CInputDevice::ReleaseDevices() {
         m_stateBuffer = 0;
         m_stateBufferSize = 0;
     }
-    CInputDevRoot::ReleaseDevices(); // qualified -> direct call (reloc-masked)
+    CInputDevRoot::ReleaseDevices();
 }
 
-// CInputDevice::SetupKeyTable (__thiscall, no args). Zeroes the m_keyTable scan-code
-// table (0x20 dwords) then writes the per-mode key codes selected by the m_modeFlags
-// async/buffered flag: the movement quad at [0..3] and the action quad at [0x1c..0x1f].
 // @early-stop
 RVA(0x00133c30, 0xc9)
 void CInputDevice::SetupKeyTable() {
@@ -590,28 +524,28 @@ void CInputDevice::SetupKeyTable() {
         keyTable[i] = 0;
     }
     if (m_modeFlags & MODE_ASYNC) {
-        // async (GetAsyncKeyState) virtual-key codes
-        keyTable[0] = 0x20;   // VK_SPACE
-        m_keyTable[1] = 0x11; // VK_CONTROL
-        m_keyTable[2] = 0x12; // VK_MENU
-        m_keyTable[3] = 0x10; // VK_SHIFT
+
+        keyTable[0] = 0x20;
+        m_keyTable[1] = 0x11;
+        m_keyTable[2] = 0x12;
+        m_keyTable[3] = 0x10;
     } else {
-        // DInput keyboard scan codes
-        keyTable[0] = 0x39;   // DIK_SPACE
-        m_keyTable[1] = 0x1d; // DIK_LCONTROL
-        m_keyTable[2] = 0x38; // DIK_LMENU
-        m_keyTable[3] = 0x2a; // DIK_LSHIFT
+
+        keyTable[0] = 0x39;
+        m_keyTable[1] = 0x1d;
+        m_keyTable[2] = 0x38;
+        m_keyTable[3] = 0x2a;
     }
     if (m_modeFlags & MODE_ASYNC) {
-        m_keyTable[0x1c] = 0x25; // VK_LEFT
-        m_keyTable[0x1d] = 0x27; // VK_RIGHT
-        m_keyTable[0x1e] = 0x26; // VK_UP
-        m_keyTable[0x1f] = 0x28; // VK_DOWN
+        m_keyTable[0x1c] = 0x25;
+        m_keyTable[0x1d] = 0x27;
+        m_keyTable[0x1e] = 0x26;
+        m_keyTable[0x1f] = 0x28;
     } else {
-        m_keyTable[0x1c] = 0xcb; // DIK_LEFT
-        m_keyTable[0x1d] = 0xcd; // DIK_RIGHT
-        m_keyTable[0x1e] = 0xc8; // DIK_UP
-        m_keyTable[0x1f] = 0xd0; // DIK_DOWN
+        m_keyTable[0x1c] = 0xcb;
+        m_keyTable[0x1d] = 0xcd;
+        m_keyTable[0x1e] = 0xc8;
+        m_keyTable[0x1f] = 0xd0;
     }
 }
 
@@ -713,10 +647,6 @@ i32 CInputDevice::Poll() {
         }
     }
 
-    // Edge-detection latch: m_edgeKeys = current snapshot; for each tracked bit, a fresh
-    // press (set in m_edgeKeys, not yet latched in m_latchedKeys) latches it and stays in m_currentKeys;
-    // a held key (already latched) is cleared from m_currentKeys (only the press edge counts);
-    // a released key clears the latch.
     m_edgeKeys = m_currentKeys;
     if (m_edgeKeys & 0x00000001) {
         if (m_latchedKeys & 0x00000001) {
@@ -782,12 +712,7 @@ i32 CInputDevice::Poll() {
         m_latchedKeys &= ~0x00000040;
     }
     {
-        // The 0x80 latch block alone runs off a mask VARIABLE, not the literal:
-        // retail keeps 0x80 in ebx (`or eax,ebx` - the immediate form would need
-        // the 5-byte `or eax,imm32`, unlike every other mask here) and then reuses
-        // the register for the tests too, `test bl,al`. With the literal spelled
-        // inline cl emits `test al,0x80` (same length, so the peephole ties and
-        // picks the immediate); the variable makes the register the operand.
+
         u32 bit = 0x00000080;
         if (m_edgeKeys & bit) {
             if (m_latchedKeys & bit) {
@@ -846,10 +771,10 @@ i32 CInputDevBase::Create(IDirectInputA* di, const void* guid, HWND hwnd) {
     if (hwnd == 0) {
         return 0;
     }
-    if (CInputDevRoot::Create(di, guid, hwnd) == 0) { // qualified -> direct call 0x134cb0
+    if (CInputDevRoot::Create(di, guid, hwnd) == 0) {
         return 0;
     }
-    ResetState(); // +0x14 dispatch (virtual, slot 5)
+    ResetState();
     return 1;
 }
 
@@ -866,7 +791,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u3
     if (owner == 0) {
         return 0;
     }
-    if (CInputDevBase::Create(di, cfg, owner) == 0) { // qualified -> direct call 0x134260
+    if (CInputDevBase::Create(di, cfg, owner) == 0) {
         return 0;
     }
     m_flags = flags;
@@ -904,10 +829,10 @@ typedef enum MouseKeyFlags {
     MOUSE_BTN1 = 0x00000002,
     MOUSE_BTN2 = 0x00000004,
     MOUSE_BTN3 = 0x00000008,
-    MOUSE_LEFT = 0x10000000,  // lX < 0
-    MOUSE_RIGHT = 0x20000000, // lX > 0
-    MOUSE_UP = 0x40000000,    // lY < 0
-    MOUSE_DOWN = 0x80000000,  // lY > 0
+    MOUSE_LEFT = 0x10000000,
+    MOUSE_RIGHT = 0x20000000,
+    MOUSE_UP = 0x40000000,
+    MOUSE_DOWN = 0x80000000,
 } MouseKeyFlags;
 
 #define MOUSE_EDGE(bit)                                                                            \
@@ -978,7 +903,7 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND o
     if (owner == 0) {
         return 0;
     }
-    if (CInputDevBase::Create(di, cfg, owner) == 0) { // qualified -> direct call 0x134260
+    if (CInputDevBase::Create(di, cfg, owner) == 0) {
         return 0;
     }
     m_flags = flags;
@@ -1011,7 +936,7 @@ i32 CDeviceConfigC::SetupAxes() {
     if (m_device2 == 0) {
         return 0;
     }
-    DIPROPRANGE range; // {diph{dwSize,dwHeaderSize,dwObj,dwHow}, lMin, lMax}
+    DIPROPRANGE range;
     range.diph.dwSize = 0x18;
     range.diph.dwHeaderSize = 0x10;
     range.diph.dwObj = 0;
@@ -1105,15 +1030,6 @@ i32 CDeviceConfigC::Poll() {
     return 1;
 }
 
-// ===========================================================================
-// 0x134be0 - FillFrom(src, n): reset then bulk-append. Rejects a null src or
-// n >= 32; zeroes the whole table (rep stos of 32 dwords), then Add()s each
-// non-null source entry, bailing (return 0) the first time Add fails.
-// (ex-wall, RETIRED 2026-08-01 - EXACT. The "retail keeps src in volatile edx / n in a
-// callee-saved reg" note was a source bug: with `src[i]` subscripting AND `i` declared in
-// the `for` init, /O2 builds the induction pointer in the preheader (`mov edi,edx`) and
-// keeps `n` in ebx. The pre-declared `i` + hand pointer-walk spelling spilled `n` instead.)
-// ===========================================================================
 RVA(0x00134be0, 0x7e)
 i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     if (!src) {

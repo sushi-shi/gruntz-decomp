@@ -1,16 +1,15 @@
 #include <Gruntz/UserLogic.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
+#include <Rez/FrameClock.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <rva.h>
 
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
-    AnimWorkerObj* w = obj->m_7c;
+    AnimWorkerObj* w = obj->m_animWorker;
     i32 state = w->ActKey();
     if (state != 0) {
         if (state == 5) {
-            CAniAdvanceCursor* a =
-                &static_cast<CWwdGameObjectA*>(obj)->m_1a0; // the handed obj IS the A-kind sprite
+            CAniAdvanceCursor* a = &static_cast<CWwdGameObjectA*>(obj)->m_1a0;
             a->Advance(g_engineFrameDelta);
             if (a->m_finished != 0 && a->m_frameTicksLeft == 0) {
                 obj->m_flags |= 0x10000;

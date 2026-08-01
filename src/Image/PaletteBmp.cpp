@@ -1,9 +1,9 @@
-#include <Image/ImagePaletteNode.h> // ApiCallerStubs::CImagePaletteNode (Build/ProcessPal)
-#include <Io/FileStream.h>          // CFile - the engine KERNEL32 file reader (0x1befd7..)
+#include <Image/ImagePaletteNode.h>
+#include <Io/FileStream.h>
 #include <Ints.h>
 #include <rva.h>
-#include <Image/ImagePool.h> // g_hResModule (ex .cpp extern)
-#include <DDrawMgr/DirPal.h> // Palette256 - the 0x400-byte colour table's two views
+#include <Image/ImagePool.h>
+#include <DDrawMgr/DirPal.h>
 
 namespace ApiCallerStubs {
 
@@ -28,9 +28,6 @@ namespace ApiCallerStubs {
             return 0;
         }
 
-        // retail's swizzle @0x177575 is a FLAT byte loop over the 0x400-byte BMP colour
-        // table (`mov cl,[esp+eax+0x452]` ... `add eax,4; cmp eax,0x400`); Palette256
-        // names both readings of those bytes, so the Build hand-off needs no pun.
         Palette256 out;
         for (i32 i = 0; i < 0x400; i += 4) {
             out.m_bytes[i + 0] = raw[i + 2];
@@ -41,8 +38,6 @@ namespace ApiCallerStubs {
         return Build(out.m_entries, 0);
     }
 
-    // __thiscall(path, arg): find/load/lock a PALETTE resource from the app resource
-    // module, then hand the locked data on to ProcessPal (0x176e70).
     RVA(0x001775f0, 0x62)
     i32 CImagePaletteNode::Apply(char* path, i32 arg) {
         HINSTANCE mod = g_hResModule;

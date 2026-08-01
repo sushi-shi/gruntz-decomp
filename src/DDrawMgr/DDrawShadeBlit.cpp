@@ -1,22 +1,15 @@
-#include <DDrawMgr/DDSurface.h>  // CDDSurface src arg (m_pitch/m_b0/Lock; m_8->Unlock COM)
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
-#include <Win32.h>               // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>               // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PixelShift.h>
+#include <Win32.h>
+#include <ddraw.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
 
 #include <rva.h>
-#include <Pix16.h>  // the byte-cursor / 16bpp-value pointer pair
-#include <string.h> // inline rep-movs memcpy intrinsic
+#include <Pix16.h>
+#include <string.h>
 
-// The shade-descriptor table is ONE contiguous .bss run of this object: the 640-px
-// scratch line followed by the seven mode descriptors. The ex ShadeDescrTable.cpp
-// held six of the seven while g_blendDescr (0x6bf218) sat here, i.e. the two files
-// INTERLEAVED at dword granularity (0x6bf214 there, 0x6bf218 here, 0x6bf21c there) -
-// which one retail .obj's contribution cannot do. Their .text is likewise one run
-// (this file 0x149780..0x14dcc7, then 0x14dcf0/0x14dd90), and that file already
-// defined a CDDrawShadeBlit method. Folded 2026-07-29.
 DATA(0x002bed08)
-u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-px 16bpp line)
+u8 g_scratch[1280];
 
 DATA(0x002bf208)
 CShadeTable* g_shadeDescr208 = 0;
@@ -33,11 +26,6 @@ CShadeTable* g_shadeDescr21c = 0;
 DATA(0x002bf220)
 CShadeTable* g_shadeDescr220 = 0;
 
-// The scratch line is read back as 8bpp bytes or RGB565 words depending on the
-// blit path - the one word-view of the buffer lives here.
-// The surface cursor is a BYTE pointer (pitch and the row deltas are in bytes)
-// while the pixels are 16bpp - that pun is forced by the API, so it lives in
-// these two accessors instead of at every store/load in the blit loops.
 static inline u16* Pix16(void* p) {
     return static_cast<u16*>(p);
 }
@@ -110,9 +98,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     }
     if (drawType == 8 || drawType == 0xb) {
         i32 bank = (m_light >> 3) * 0x800;
-        m_lutBank0 = Pix16(g_clut + 0x20002 + bank); // g_clut interior plane R (0x673ca0)
-        m_lutBank1 = Pix16(g_clut + 0x2 + bank);     // g_clut interior plane G (0x653ca0)
-        m_lutBank2 = Pix16(g_clut + 0x10002 + bank); // g_clut interior plane B (0x663ca0)
+        m_lutBank0 = Pix16(g_clut + 0x20002 + bank);
+        m_lutBank1 = Pix16(g_clut + 0x2 + bank);
+        m_lutBank2 = Pix16(g_clut + 0x10002 + bank);
     }
 
     if (sel) {
@@ -123,15 +111,6 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     return 1;
 }
 
-// ===========================================================================
-// CDDrawShadeBlit::BlitMode_149950  (0x149950) - the unselected, non-shaded RLE
-// sprite blitter (draw type 1, !sel). Lock the destination surface, fast-forward
-// the RLE stream past the top clip->top rows, compute the dest row-start for the
-// (optionally v-flipped) rect, then run one of three per-row inner loops depending
-// on the horizontal clip: full-width (no clip), right-only, or left(+right). Each
-// loop decodes the high-bit RLE (`b&0x80` = transparent skip of `b-0x80`, else an
-// opaque run of `b` pixels) and memcpy's opaque runs into the surface.
-// ===========================================================================
 // @early-stop
 RVA(0x00149950, 0x3a1)
 void CDDrawShadeBlit::BlitMode_149950(
@@ -144,7 +123,7 @@ void CDDrawShadeBlit::BlitMode_149950(
     u8* base = static_cast<u8*>(surf->Lock(0));
 
     i32 row = 0, pos = 0, x = 0;
-    // Prepass: skip the top clip->top rows of the RLE stream.
+
     if (clip->top > 0) {
         do {
             u32 b = m_rleData[pos];
@@ -162,7 +141,6 @@ void CDDrawShadeBlit::BlitMode_149950(
         } while (row < clip->top);
     }
 
-    // Dest row-start for the (optionally v-flipped) rect.
     if (vflip) {
         base += dst->bottom * pitch + dst->left * m_dstBpp;
         pitch = -pitch;
@@ -172,7 +150,7 @@ void CDDrawShadeBlit::BlitMode_149950(
 
     x = 0;
     if (clip->left != 0) {
-        // Left edge clipped (the run that crosses clip->left is partially copied).
+
         while (row < clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -217,7 +195,7 @@ void CDDrawShadeBlit::BlitMode_149950(
             }
         }
     } else if (clip->right != m_width - 1) {
-        // Right edge clipped.
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -245,7 +223,7 @@ void CDDrawShadeBlit::BlitMode_149950(
             }
         }
     } else {
-        // Full-width: no horizontal clipping.
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -270,13 +248,6 @@ void CDDrawShadeBlit::BlitMode_149950(
     surf->m_ddSurface->Unlock(0);
 }
 
-// ===========================================================================
-// CDDrawShadeBlit::BlitMode_149d00  (0x149d00) - the SELECTED (horizontally
-// flipped) sibling of BlitMode_149950. Same prepass / v-flip start / three clip
-// loops, but x runs from the sprite width down to 0 and each opaque run is copied
-// in reverse (dest pointer decreasing). The per-pixel size (m_srcBpp == 1 -> byte,
-// else word) selects a manual byte/word reverse-copy loop instead of memcpy.
-// ===========================================================================
 // @early-stop
 RVA(0x00149d00, 0x4f8)
 void CDDrawShadeBlit::BlitMode_149d00(
@@ -314,7 +285,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
 
     x = m_width;
     if (clip->left != 0) {
-        // Left edge clipped, h-flipped (run crossing clip->left partially copied).
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -356,7 +327,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
             }
         }
     } else if (clip->right != m_width - 1) {
-        // Right edge clipped, h-flipped: skip runs while x > clip->right.
+
         while (row < clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -422,7 +393,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
             }
         }
     } else {
-        // Full-width, h-flipped: x: m_width -> 0, runs copied reversed.
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -460,28 +431,13 @@ void CDDrawShadeBlit::BlitMode_149d00(
     surf->m_ddSurface->Unlock(0);
 }
 
-// ===========================================================================
-// CDDrawShadeBlit::BlitLoop (0x14a200) - the big !sel (unselected) shaded RLE
-// blitter. Lock the dest surface, skip clip->top rows, compute the (optionally
-// v-flipped) dest row start, then run one of three horizontal-clip loops
-// (full-width / right / left). Each decodes the high-bit RLE stream and, for an
-// opaque run, blends `count` source pixels through the shade LUTs into the locked
-// surface. m_00 (the vertical-double flag) makes each drawn row write to dst AND
-// dst+pitch, but only on rows where (dst->top + row) is odd - a 2x-vertical
-// interlace fill. FULL-WIDTH inlines the row converter (ConvertRow / the
-// vertical-double ConvertRowDoubleFwd); the CLIPPED paths call the out-of-line
-// helper. The blend math is the ConvertRow/ConvertRowDoubleFwd nine-case switch
-// on (m_drawType - 2): 8/16-bit palette LUTs (m_palDescr->m_data / g_blendDescr->
-// m_data), RGB565 channel-split blends via m_lutBank0/1/2, the m_light fill/lerp.
-// ===========================================================================
-// @early-stop
 RVA(0x0014a200, 0x1570)
 void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip) {
     i32 pitch = src->m_pitch;
     u8* base = static_cast<u8*>(src->Lock(0));
 
     i32 pos = 0, row = 0, x = 0;
-    // Prepass: skip the top clip->top rows of the RLE stream.
+
     if (clip->top > 0) {
         do {
             u32 b = m_rleData[pos];
@@ -510,9 +466,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
 
     x = 0;
     if (clip->left != 0) {
-        // LEFT edge clipped: skip runs up to clip->left, then blend the visible
-        // portion of the crossing run and subsequent full runs (calls the shaded
-        // row converter; retail inlines the vertical-double variant here).
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -537,8 +491,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                     u8* ss = &m_rleData[pos] - vis * m_srcBpp;
                     if (m_00) {
                         if ((dst->top + row) % 2) {
-                            // Retail INLINES the vertical-double blend here (BlitLoop jump tables
-                            // 0x54b738 / 0x54b754); only the plain ConvertRow stays an out-of-line call.
+
                             i32 i;
                             u8* d = dd;
                             u8* s = ss;
@@ -638,8 +591,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                     i32 count = b;
                     if (m_00) {
                         if ((dst->top + row) % 2) {
-                            // Retail INLINES the vertical-double blend here (BlitLoop jump tables
-                            // 0x54b738 / 0x54b754); only the plain ConvertRow stays an out-of-line call.
+
                             i32 i;
                             u8* d = dd;
                             u8* s = ss;
@@ -728,7 +680,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
             }
         }
     } else if (clip->right != m_width - 1) {
-        // RIGHT edge clipped: clamp each opaque run to clip->right (calls).
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -764,8 +716,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
             }
         }
     } else {
-        // FULL-WIDTH: no horizontal clip; the blend is inlined per run (the
-        // vertical-double variant writes each pixel to dst and dst+pitch).
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -781,7 +732,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                 i32 i;
                 if (m_00) {
                     if ((dst->top + row) % 2) {
-                        // inline ConvertRowDoubleFwd(dst0, src0, count, pitch)
+
                         u8* d = dst0;
                         u8* s = src0;
                         switch (m_drawType) {
@@ -861,7 +812,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                         }
                     }
                 } else {
-                    // inline ConvertRow(dst0, src0, count)
+
                     u8* d = dst0;
                     u8* s = src0;
                     switch (m_drawType) {
@@ -1007,15 +958,6 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
     src->m_ddSurface->Unlock(0);
 }
 
-// ===========================================================================
-// CDDrawShadeBlit::BlitMode_14b770 (0x14b770) - the SELECTED (h-flipped) shaded
-// RLE blitter, the sel twin of BlitLoop (0x14a200). Same prepass / v-flip start /
-// three horizontal-clip loops / vertical-2x interlace, but x walks from m_width
-// down to 0 and each opaque run is blended right-to-left (dst decreasing). The
-// FULL-WIDTH path inlines the mirror row converters (ConvertRowFlip single /
-// ConvertRowDouble doubled); the CLIPPED paths call the out-of-line helpers.
-// ===========================================================================
-// @early-stop
 RVA(0x0014b770, 0x1280)
 void CDDrawShadeBlit::BlitMode_14b770(
     ShadeRect* dst,
@@ -1027,7 +969,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
     u8* base = static_cast<u8*>(surf->Lock(0));
 
     i32 pos = 0, row = 0, x = 0;
-    // Prepass: skip the top clip->top rows of the RLE stream.
+
     if (clip->top > 0) {
         do {
             u32 b = m_rleData[pos];
@@ -1056,7 +998,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
 
     x = m_width;
     if (clip->left != 0) {
-        // LEFT edge clipped (h-flipped): clamp the run crossing clip->left (calls).
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -1078,8 +1020,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                 u8* dd = base + (x - clip->left) * m_dstBpp;
                 if (m_00) {
                     if ((dst->top + row) % 2) {
-                        // Retail INLINES the vertical-double blend in the LEFT-clip path (BlitMode's
-                        // first jump table, 0x54c990); only ConvertRowFlip stays an out-of-line call.
+
                         i32 i;
                         u8* d = dd;
                         u8* s = ss;
@@ -1174,7 +1115,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
             }
         }
     } else if (clip->right != m_width - 1) {
-        // RIGHT edge clipped (h-flipped): skip runs while x > clip->right (calls).
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -1232,7 +1173,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
             }
         }
     } else {
-        // FULL-WIDTH (h-flipped): the blend is inlined per run, dst walking down.
+
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
@@ -1248,7 +1189,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                 i32 i;
                 if (m_00) {
                     if ((dst->top + row) % 2) {
-                        // inline ConvertRowDouble(dst0, src0, count, pitch)
+
                         u8* d = dst0;
                         u8* s = src0;
                         switch (m_drawType) {
@@ -1330,7 +1271,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                         }
                     }
                 } else {
-                    // inline ConvertRowFlip(dst0, src0, count)
+
                     u8* d = dst0;
                     u8* s = src0;
                     u8* cbase = m_palDescr ? m_palDescr->m_data : s;
@@ -1470,7 +1411,6 @@ void CDDrawShadeBlit::BlitMode_14b770(
     surf->m_ddSurface->Unlock(0);
 }
 
-// @early-stop
 RVA(0x0014c9f0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     i32 i;
@@ -1600,15 +1540,6 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     }
 }
 
-// ===========================================================================
-// 0x14cfc0 - ConvertRowFlip: the horizontally-mirrored twin of ConvertRow (the
-// selected-blit row converter). Same dense (m_drawType-2) jump table over nine blend
-// cases, but the destination run is walked right-to-left and the saved-dest
-// scratch line is read back to front (rep-movs saves the run ending at dst). The
-// 8-bit cases write `*dst--`; the 16-bit RGB565 channel blends decrement by 2.
-// `base` = m_palDescr ? m_palDescr->m_data : src (computed once before the switch).
-// ===========================================================================
-// @early-stop
 RVA(0x0014cfc0, 0x620)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     u8* base = m_palDescr ? m_palDescr->m_data : src;
@@ -1732,14 +1663,6 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     }
 }
 
-// ===========================================================================
-// 0x14d5e0 - ConvertRowDoubleFwd: the forward (left-to-right) twin of
-// ConvertRowDouble. Writes each converted pixel to dst AND dst+rowDelta, walking
-// dst and the saved-dest scratch line UP. Dense (m_drawType-2) jump table over cases
-// 2/3/7/8 (4/5/6 fall through). Case 3 is symmetric (both rows get the m_light LUT of
-// the saved dest; src is unused). __thiscall, ret 0x10.
-// ===========================================================================
-// @early-stop
 RVA(0x0014d5e0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
@@ -1818,15 +1741,6 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
     }
 }
 
-// ===========================================================================
-// 0x14d950 - ConvertRowDouble: the vertical-double row converter (writes every
-// converted pixel to dst AND dst+rowDelta). Five (m_drawType-2) cases (2/3/7/8; 4/5/6
-// fall through to the empty default). The byte cases reverse-walk dst with the
-// saved-dest scratch line; the word cases round rowDelta down to even. Case 3 is
-// asymmetric: the dst row gets the m_light LUT of the saved dest, the dst+rowDelta
-// row gets the palette blend of the source. __thiscall, ret 0x10.
-// ===========================================================================
-// @early-stop
 RVA(0x0014d950, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
@@ -1905,7 +1819,6 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
     }
 }
 
-// @early-stop
 RVA(0x0014dcf0, 0xa0)
 void SetShadeDescr(CShadeTable* v, int mode) {
     switch (mode) {
@@ -1936,7 +1849,6 @@ void SetShadeDescr(CShadeTable* v, int mode) {
     }
 }
 
-// @early-stop
 RVA(0x0014dd90, 0xa0)
 void CDDrawShadeBlit::Select(i32 mode, CShadeTable* descr) {
     m_drawType = mode;

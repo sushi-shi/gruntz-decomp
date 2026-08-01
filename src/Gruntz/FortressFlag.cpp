@@ -1,33 +1,27 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ActNameRegistry.h>   // the shared activation-name registry archetype
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>
 #include <Gruntz/FortressFlag.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/Explosion.h>
-#include <Gruntz/AnimWorker.h>    // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/UserLogic.h>     // CUserLogic leaves the worker handlers build
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
-#include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_spriteFactory->GetSel)
-#include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
+#include <Gruntz/AnimWorker.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/SerialArchive.h>
+#include <Image/CImage.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/Enums.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <Bute/ButeTree.h>     // CVariantSlot::Set (the grow-path node inserter m_4->Set)
+#include <Gruntz/WwdGameReg.h>
+#include <Bute/ButeTree.h>
 #include <rva.h>
 #include <rva.h>
-
-// The handler entry record (CActHandler/CActHandler, the PMF slot,
-// proven at 0x46080/0x461e0) is defined in <Gruntz/FortressFlag.h> after the
-// complete class. (The retail grow-path allocs 0xc-byte nodes, so the real record may
-// carry 2 more fields at +4/+8 that no code in this TU touches - @identity-TODO; the
-// stride is a runtime DATA value so the 4-byte model stays byte-exact here.)
 
 VTBL(CFortressFlag, 0x001e725c);
 VTBL(CParticlez, 0x001e7614);
@@ -64,16 +58,6 @@ static inline i32 RegisterActionName() {
     return id;
 }
 
-// CFortressFlag::~CFortressFlag @0x010e90 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to
-// ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CFortressFlag() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
@@ -85,14 +69,6 @@ i32 CParticlez::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) 
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown. The
-// destructible link forces the /GX EH frame. Byte-identical in shape to
-// ~CTimeBomb @0x012a70; the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CParticlez() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012d60, 0x1e, ??_GCParticlez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
 
@@ -104,25 +80,9 @@ i32 CExplosion::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) 
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
-// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
-// (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame; the leaf vptr store is dead-eliminated.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CExplosion() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012e90, 0x1e, ??_GCExplosion@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
 
-// CFortressFlag::CFortressFlag @0x045d30 - fold the shared CUserLogic(obj) init,
-// run the eyecandy z-clamp, pick the flag's faction name (a 4-way switch on the
-// sprite-selector m_124: KING/NAPOLEAN/PATTON/VIKING - any other selector hides
-// the sub-object and bails), name + cycle-geometry the bound object, bind the "A"
-// bute node, then resolve the selected sprite handle from g_gameReg's ref-index
-// array and stamp it back (+0x58/+0x50/+0x4c). GetByIndex (0x4165) is the engine
-// routine GetSel thunks to, so the reused GetSel call reloc-masks.
-//
 // @early-stop
 RVA(0x00045d30, 0x220)
 CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -156,8 +116,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
-    i32 idx = g_gameReg->m_options[m_object->m_124]
-                  .m_008; // the per-player sprite descriptor (GetSel arg)
+    i32 idx = g_gameReg->m_options[m_object->m_124].m_008;
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
@@ -174,15 +133,6 @@ void CFortressFlag::FireActivation(i32 coord) {
     }
 }
 
-// CFortressFlag::RegisterActs @0x0461e0 - bind the per-frame handler (AdvanceAnim
-// @0x0463e0) to the activation key "A" via the shared name registry. The SAME
-// archetype as CBehindCandyAni::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000461e0, 0x18d)
 void CFortressFlag::RegisterActs() {
     i32 id = ActFindId("A");
@@ -221,8 +171,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
     }
     if (tag == 8) {
         CWwdGameObjectA* spr = m_object;
-        i32 idx =
-            g_gameReg->m_options[spr->m_124].m_008; // the per-player sprite descriptor (GetSel arg)
+        i32 idx = g_gameReg->m_options[spr->m_124].m_008;
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
@@ -232,29 +181,13 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CActReg::Resolve (0x0464e0, RVA-homed from src/Stub/BoundaryLowerMethods.cpp) -
-// the STANDALONE out-of-line copy of CActReg::ResolveEntry (<Gruntz/ActReg.h>):
-// byte-for-byte the same fast-range -> GrowTo -> breadcrumb+Set slot resolver.
-// The two big act-register fns CALL it via ILT thunk 0x3544 (their size exhausts
-// cl's inline budget) - RegisterWarlordActions on g_actionTable@0x644610,
-// RegisterActs_644af0 on CActRegPool<CGrunt>::s_table@0x644af0, both CActReg registries - where
-// the small per-class dispatchers inline ResolveEntry. Ex fake view
-// "CTypeColl464" (its m_4/m_buf/m_buf2/m_20 were CActReg's canonical
-// m_coll2/m_base/m_cur/m_scratch).
-// ONE result variable assigned in each arm and returned once - the same single-return
-// shape as _zvec::IndexToPtr (src/Wap32/ZVec.cpp). That is what pins id in esi and
-// this in edi the way retail does (and produces the `mov eax,esi` return); the
-// multiple-return spelling reversed the pair and capped the fn at ~83%.
-// _zvec::m_base is the container's UNTYPED byte pool (one pool, every element
-// type), so naming the element at this accessor is zDArray<T>'s one seam.
 template<> RVA(0x000464e0, 0x74)
 CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
     char* r;
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
         r = m_base + (id - m_lo) * m_stride;
-    } else if (GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo (inherited)
+    } else if (GrowTo(id, 0)) {
         r = m_base + (id - m_lo) * m_stride;
     } else {
         char* msg = g_errOutOfMem;
@@ -262,9 +195,7 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
         m_errSink->Set(this, msg, 0xc);
         r = m_spare;
     }
-    // the untyped byte pool and its typed element - the band is addressed by a
-    // RUNTIME stride, which is byte math no element type can express, so both
-    // readings of the slot address are named
+
     union {
         char* m_bytes;
         CActHandler* m_slot;
@@ -275,7 +206,7 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
 
 RVA(0x00046850, 0xf1)
 i32 LogicDispatchC(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -313,7 +244,7 @@ i32 LogicDispatchC(CGameObject* owner) {
 
 RVA(0x00046990, 0xf1)
 i32 CreateExplosion(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
@@ -370,16 +301,6 @@ void CParticlez::FireActivation(i32 coord) {
     }
 }
 
-// CParticlez::RegisterActs @0x046e90 - bind the per-frame handler (Update
-// @0x047090) to the activation key "A" via the shared name registry, then bind
-// id->entry in the class's own coordinate registry (CActRegPool<CParticlez>::s_table). The SAME
-// archetype as CSecretTeleporterTrigger::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x00046e90, 0x18d)
 void CParticlez::RegisterActs() {
     i32 id = ActFindId("A");
@@ -411,10 +332,6 @@ i32 CParticlez::Update() {
     return 0;
 }
 
-// CExplosion::CExplosion (0x470e0) - the eyecandy ctor: fold the shared
-// CUserLogic(obj) init, then name the bound object "GAME_EXPLOSION", bind its "A"
-// bute node, flag the sub-object, lock the draw order to 0xf4240 and clear m_38.
-//
 // @early-stop
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -439,23 +356,10 @@ void CExplosion::FireActivation(i32 id) {
     }
 }
 
-// RegisterXLogic_6447f8 @0x0474b0 - bind the CExplosion logic class to its
-// activation handler under the shared action name "A". (Moved from
-// LogicActReg.cpp - text-contained in this TU.)
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
-    // ILT 0x4041ec -> 0x0476b0 == CExplosion::Update (this store is what NAMED that
-    // body - see RockBreakEffectUpdate.cpp); the slot IS a CActHandler.
+
     *CActRegPool<CExplosion>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CExplosion::Update);
 }
-
-// (the act-slot registries live beside their
-//  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was
-//  m_options[i].m_008 - the per-player sprite descriptor (stride 0x238, base +0x150+8).

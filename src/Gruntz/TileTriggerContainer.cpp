@@ -1,60 +1,30 @@
 #include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <rva.h>
-#include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82)
+#include <new>
 
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic + the per-id leaves AddLogic news
+#include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileTriggerWiring.h>
-#include <DDrawMgr/DDSurface.h>        // CDDSurface::m_ddSurface (the COM GetDC/ReleaseDC pair)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages front/back pages + CDrawSubWorker
-#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair; needs the complete type to upcast)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr::m_drawTarget
-#include <Gruntz/FontConfig.h>        // CFontConfig::Draw3DText (g_gameReg->m_chatLog)
-#include <Gruntz/GameLevel.h> // CGameLevel/CDDrawWorkerHost/CTileImageSet (the id-21 board latch)
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/GameLevel.h>
 
 RVA(0x000c8640, 0x70)
 CTileTriggerContainer::~CTileTriggerContainer() {
     DtorBase();
-    // m_list3 / m_list2 / m_list1 / m_base are auto-destroyed here (reverse decl
-    // order) by the compiler-emitted /GX member teardown.
 }
 
-// ---------------------------------------------------------------------------
-// DrawPageDebugText (0x115b60) - the GDI "draw 3D text onto a draw-target page's
-// DirectDraw surface" debug helper. Free __cdecl (retail reads arg0 at [esp+0x4]
-// BEFORE any push and ends in a bare `ret`), 8 args, returns 0 on every null gate
-// and 1 on success. Homed from GapFunctions.cpp by RVA neighbourhood (this TU's
-// .text brackets it).
-//
-// IDENTITY RESOLVED 2026-07-29 (was an @identity-TODO parked on "arg0's CLASS is
-// unrecoverable ... it is a ZERO-REF orphan, so there is no call site to type arg0
-// from"). arg0 never needed a caller - its own field chain names it. The three
-// offsets the body walks are `[arg0+0x04] -> [+0x10] / [+0x14] -> [+0x2c]`, and
-// exactly one chain in the tree has that shape:
-//   +0x04  CDDrawSurfaceMgr::m_drawTarget   (CDDrawSubMgrPages*)
-//   +0x10  CDDrawSubMgrPages::m_frontPair   (CDDrawSurfaceChildA*)
-//   +0x14  CDDrawSubMgrPages::m_backPair    (CDDrawSurfacePair*)
-//   +0x2c  CDrawSubWorker::m_surface        (CDDSurface*, the shared base of both)
-// so arg0 is a CDDrawSurfaceMgr* and arg4 is the front/back page selector. The +0x2c
-// read is legal on EITHER arm precisely because the two page classes are siblings on
-// CDrawSubWorker (see DDrawSubMgrPages.h) - no cast is needed, the upcast is implicit.
-//
-// The COM bracket is <ddraw.h>-exact: the surface is pushed as an explicit stack arg
-// (`push &out; push pSurf; call [vtbl+0x44]`), i.e. __stdcall, and on
-// IDirectDrawSurface +0x44 is slot 17 GetDC(HDC*) while +0x68 is slot 26 ReleaseDC(HDC).
-// The Draw3DText binding is likewise proven, not inferred: the call is ILT 0x140b ->
-// `jmp 0x22810` = CFontConfig::Draw3DText, whose ten parameters are exactly what the
-// push order yields, with shadow/dx/dy the pushed literals 1/2/3, on g_gameReg->m_5c
-// (CFontConfig* m_chatLog).
 // @dead-code
-// zero-ref (gruntz sema xref --tree): a debug helper retail compiled in and never
-// called. That cost it its identity for a while; it does not any more.
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00115b60, 0x97)
 i32 DrawPageDebugText(
     CDDrawSurfaceMgr* mgr,
@@ -85,7 +55,7 @@ i32 DrawPageDebugText(
     if (surf == 0) {
         return 0;
     }
-    // MSVC reuses the now-dead arg0 slot [esp+8] for this local.
+
     HDC hdc = 0;
     surf->m_ddSurface->GetDC(&hdc);
     g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
@@ -110,26 +80,13 @@ void CTileTriggerContainer::DtorBase() {
     }
 }
 
-// ===========================================================================
-// CTileTriggerContainer::AddSwitchLogic (0x115f60) - the switch-logic factory, the
-// 0x8c-family twin of AddLogic above. Switch on the tag (the retail jump table at
-// 0x516240 covers tag-1 in [0,7], i.e. tags 1..8), `new` the matching
-// CTileTriggerSwitchLogic subclass, copy the six by-value blocks into one
-// contiguous local, hand its address to the object's slot-1 BuildSmall, and on
-// success AddTail it into m_base. /GX: one trylevel per `new` (states 0..5, in the
-// arm order below), and the failure path inlines `delete obj` as the vptr restamp +
-// m_initGate=0 + operator delete.
-// @confidence: high
-// @source: full-disasm-decode (jump table 0x516240 read out of .rdata; all six ctor
-//   ILT thunks resolved; the 9-arg vtable +0x04 call matches BuildSmall exactly)
-// @early-stop
 RVA(0x00115f60, 0x300)
 CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     i32 tag,
     i32 col,
     i32 row,
     i32 key,
-    // the same six rect blocks AddLogic takes (see its declaration for the offsets)
+
     RECT extent,
     RECT area,
     RECT switchRect,
@@ -176,7 +133,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     local[5] = switchRectB;
 
     if (obj->BuildSmall(this, tag, col, row, key, local, isMatch, m120, zero) == 0) {
-        // inline ~CTileTriggerSwitchLogic (vptr restamp + m_initGate = 0) + ??3
+
         delete obj;
         return 0;
     }
@@ -191,8 +148,7 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
         POSITION cur = pos;
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
         if (data->m_typeId == k2 && data->m_key1 == k1) {
-            // ~CTileTriggerSwitchLogic is non-virtual + inline: the dtor restamps the vptr
-            // (`mov [data],offset ??_7`) + clears m_initGate, then ??3 frees it.
+
             delete data;
             m_base.RemoveAt(cur);
             return 1;
@@ -201,12 +157,9 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
     return 0;
 }
 
-// ===========================================================================
-// CTileTriggerWiring::AddLogicDefaults  (0x1163b0)
-// ===========================================================================
 // @early-stop
 RVA(0x001163b0, 0xb2)
-void CTileTriggerContainer::AddLogicDefaults(
+CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     i32 tileType,
     i32 logicType,
     i32 tileX,
@@ -217,7 +170,7 @@ void CTileTriggerContainer::AddLogicDefaults(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    AddLogic(
+    return AddLogic(
         tileType,
         logicType,
         tileX,
@@ -261,33 +214,8 @@ void CTileTriggerContainer::AddLogicFromRecord(
     );
 }
 
-// ===========================================================================
-// CTileTriggerContainer::AddLogic  (0x116610)
-// ===========================================================================
-// The per-id logic-leaf factory the two forwarders above call.  Switch on the
-// SECOND arg (logicType, the retail switch reads [esp+0x88]; ids 0x15..0x1a = 21..26,
-// the same id space the serialize Build factory 0x117800 uses):
-//   0x15/0x18 -> CTileTriggerLogic     (ILT 0x43b3 -> ??0 0x1107f0)  trylevel 0
-//   0x19      -> CTileSecretTriggerLogic(ILT 0x310c -> ??0 0x112760)  trylevel 1
-//   0x1a      -> CCoveredPowerupLogic  (ILT 0x2a4f -> ??0 0x112240)  trylevel 2
-//   0x17      -> CTileTimeTriggerLogic (ILT 0x18de -> ??0 0x112270)  trylevel 3
-//   0x16/other-> 0
-// Then (when the leaf's m_initGate is clear) copy the six CTrigParam blocks into
-// the leaf's m_block, fill the id/owner/clock fields, append it to m_list1 (m_list2
-// for id 0x17), and latch id-0x15 board tiles 0x67/0x68 into m_70.  The failure path
-// deletes the leaf (inline ~CTileTriggerLogic: ??_7 stamp + m_initGate=0 + RezFree).
-// @early-stop  (~70%)
-// /GX jump-table + per-`new` trylevel regalloc wall.  Full body + all four ctor / new /
-// delete / AddTail / ??_7CTileTriggerLogic / g_frameTime relocs bind - this is what binds
-// both forwarders' CALLs (reloc_fidelity tiletriggercontainer -> 0 UNBOUND).  The
-// residual is the documented /O2 register-allocation coin-flip (same lever as the
-// AddLogicDefaults @early-stop just above): retail keeps exactly THREE callee-saved regs
-// (ebx/esi/edi) and reads the switch arg straight through edi (`lea eax,[edi-0x15]`);
-// cl picks up ebp as a FIFTH live register, reshapes the frame, and reads the switch
-// value from a shifted spill slot (`mov eax,[esp+0x7c]; add eax,-0x15`), so every
-// prologue/arg-load operand shifts.  Compounded by MSVC5 tail-merging the four
-// independent operator-new EH trylevel state machines differently.  Logic complete;
-// byte-match parked for the final sweep.
+// @early-stop
+
 RVA(0x00116610, 0x350)
 CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     i32 tileType,
@@ -372,12 +300,6 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     return obj;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::AddToList3
-// Allocates a 0x28-byte mark, constructs it, and (when its init flag is clear)
-// fills its fields from the args, back-links it to this container, notifies it,
-// and appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00116a40, 0xf5)
 CTileActionEvent* CTileTriggerContainer::AddToList3(
@@ -414,14 +336,6 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
     return m;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::AddToList3Switch  (0x116b80)
-// Twin of AddToList3: allocates+constructs a 0x28-byte mark, and (when its init
-// flag is clear) fills its fields from the args, computes the four m_playerFlags words
-// from a switch on `playerSlot` (0..3 = that one player, PLAYERSLOT_ALL = all four,
-// default = all clear - the same slot space SetCell/MorphByTool use), notifies it, and
-// appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00116b80, 0x120)
 CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
@@ -476,13 +390,6 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     return m;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::AddToList1
-// Allocates a 0xc8-byte command element, constructs it, copies the 9-dword block
-// into +0x9c, fills the rest from the args + two game-clock snapshots, back-links
-// this container, and appends it to m_list1.  Returns the element, or 0 on
-// alloc/double-init failure (vtable-stamped + freed).
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00116cf0, 0x111)
 CGiantRockLogic* CTileTriggerContainer::AddToList1(
@@ -499,9 +406,7 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
         return 0;
     }
     if (e->m_initGate != 0) {
-        // The failure-path delete runs the BASE dtor (retail stamps ??_7CTileTriggerLogic
-        // @0x5eaea4, not the rock's own vtable): the devs deleted through a
-        // CTileTriggerLogic* whose non-virtual dtor makes the static type load-bearing.
+
         CTileTriggerLogic* dead = e;
         delete dead;
         return 0;
@@ -529,12 +434,6 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
     return e;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::DelFromList1
-// Scans list1 (head @ +0x20) for the node whose data == arg; deletes that
-// element inline (vtable 0x5eaea4 + [elem+0x1c]=0 + RezFree) and unlinks the
-// node via list1.RemoveAt.  Returns 1 on a hit, 0 otherwise.
-// ---------------------------------------------------------------------------
 RVA(0x00116e60, 0x59)
 i32 CTileTriggerContainer::DelFromList1(CTileTriggerLogic* want) {
     POSITION pos = m_list1.GetHeadPosition();
@@ -542,8 +441,7 @@ i32 CTileTriggerContainer::DelFromList1(CTileTriggerLogic* want) {
         POSITION cur = pos;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
         if (elem == want) {
-            // ~CTileTriggerLogic (non-virtual, inline) restamps the vptr
-            // (??_7CTileTriggerLogic @0x5eaea4) + clears m_initGate, then ??3.
+
             delete elem;
             m_list1.RemoveAt(cur);
             return 1;
@@ -600,37 +498,30 @@ void CTileTriggerContainer::RemoveAll() {
     POSITION pos = m_list1.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
-        delete elem; // vptr 0x5eaea4 restamp + m_initGate = 0, then ??3
+        delete elem;
     }
     m_list1.RemoveAll();
     pos = m_base.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerSwitchLogic* elem = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
-        delete elem; // vptr 0x5eae8c restamp + m_initGate = 0, then ??3
+        delete elem;
     }
     m_base.RemoveAll();
     pos = m_list2.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
-        delete elem; // vptr 0x5eaea4 restamp + m_initGate = 0, then ??3
+        delete elem;
     }
     m_list2.RemoveAll();
     pos = m_list3.GetHeadPosition();
     while (pos != 0) {
         CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
-        delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
+        delete elem;
     }
     m_list3.RemoveAll();
     m_latchedLeaf = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::FilterList2
-// Walks list2 (head @ +0x3c); classifies each element via CTileTriggerLogic
-// 0x112970.  result 0  -> remove from list2 + delete element (0x5eaea4 + RezFree);
-//           result -1 -> move element from list2 to list1 (RemoveAt + AddTail).
-// Returns 1.
-// ---------------------------------------------------------------------------
 RVA(0x001170b0, 0x72)
 i32 CTileTriggerContainer::FilterList2(i32 arg) {
     POSITION pos = m_list2.GetHeadPosition();
@@ -640,7 +531,7 @@ i32 CTileTriggerContainer::FilterList2(i32 arg) {
         i32 r = elem->Classify(arg);
         if (r == 0) {
             m_list2.RemoveAt(cur);
-            delete elem; // vptr 0x5eaea4 restamp + m_initGate = 0, then ??3
+            delete elem;
         } else if (r == -1) {
             m_list2.RemoveAt(cur);
             m_list1.AddTail(elem);
@@ -649,11 +540,6 @@ i32 CTileTriggerContainer::FilterList2(i32 arg) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::MoveList1ToList2
-// Scans list1 (head @ +0x20) for the node whose data == arg; removes it from
-// list1 and appends the element to list2, then clears element+0x38.  Returns 1.
-// ---------------------------------------------------------------------------
 RVA(0x00117150, 0x53)
 i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
     POSITION pos = m_list1.GetHeadPosition();
@@ -663,7 +549,7 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
         if (elem == data) {
             m_list1.RemoveAt(cur);
             m_list2.AddTail(elem);
-            *(static_cast<i32*>(elem) + 14) = 0; // elem+0x38
+            *(static_cast<i32*>(elem) + 14) = 0;
             return 1;
         }
     }
@@ -682,12 +568,6 @@ CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::DelFromList3
-// Scans list3 (head @ +0x58) for the node whose data == arg; deletes that
-// element inline ([elem+0x10]=0 + RezFree) and unlinks the node via
-// list3.RemoveAt.  Returns 1 on a hit, 0 otherwise.
-// ---------------------------------------------------------------------------
 RVA(0x00117200, 0x53)
 i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
     POSITION pos = m_list3.GetHeadPosition();
@@ -695,7 +575,7 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
         POSITION cur_node = pos;
         CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
         if (elem == want) {
-            delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
+            delete elem;
             m_list3.RemoveAt(cur_node);
             return 1;
         }
@@ -703,18 +583,6 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::Serialize  (0x117280)
-// The big save/load serialize walk.  Returns 0 if the stream is null or for any
-// op other than 4/7 returns 1 (no-op).
-//   op 4 (SAVE): for each of the four lists, write its count to the stream then
-//                serialize-apply every element via SerializeApplyA (m_base, m_list3
-//                marks via TtcMark::Serialize) / SerializeApplyB (m_list1, m_list2);
-//                close with Method117e20.
-//   op 7 (LOAD): RemoveAll, then for each list read a count and LoadElement that
-//                many elements, AddTail'd into the list (m_list3 marks alloc'd
-//                inline + TtcMark::Serialize); close with Method117e70.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00117280, 0x2ec)
 i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
@@ -722,7 +590,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
         return 0;
     }
     if (op == SERIAL_SAVE) {
-        // SAVE
+
         POSITION pos;
         i32 cnt = m_base.GetCount();
         s->Write(&cnt, 4);
@@ -769,7 +637,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
     if (op != SERIAL_LOAD) {
         return 1;
     }
-    // LOAD
+
     RemoveAll();
     i32 n;
     i32 i;
@@ -813,17 +681,6 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SerializeApplyA  (0x117630)
-// Streams the switch-logic element's type id, then for ids 1..7 (and 8 as the
-// trailing case) runs the element's own serialize dispatcher (0x113860, __thiscall
-// on the ELEMENT - retail: `mov ecx,edi; call 0x277f`); returns whether the apply
-// succeeded (0 for the null object or an out-of-range tag).  __stdcall helper of
-// the container's serialize walk (117280).
-// Retail lowers the tag test as a JUMP TABLE: `lea eax,[ecx-1]; cmp eax,7; ja
-// 0x1176ab; jmp [eax*4+0x5176b4]`, and that eight-entry table at 0x1176b4 is part of
-// this COMDAT - hence the 0xa4 extent.
-// ---------------------------------------------------------------------------
 RVA(0x00117630, 0xa4)
 i32 __stdcall
 SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o) {
@@ -832,15 +689,10 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
     }
     i32 tag = o->m_typeId;
     s->Write(&tag, 4);
-    // The table at 0x1176b4 has EIGHT entries - seven on 0x117666 and one on 0x117686 -
-    // so cl5 still had eight case labels when it made the density decision. It counts
-    // labels only AFTER folding identical arms, so each tag needs its own arm; the seven
-    // then tail-merge back to the single block retail shows.
+
     switch (tag) {
         case 1:
-            // Retail's branch polarity gives the spelling: 1-7 is `test eax,eax; jne
-            // 0x1176a1` into the shared `mov eax,1`, with its zero exit falling through
-            // locally (reusing the call's eax) - i.e. `if (v) break; return 0;`.
+
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
@@ -876,10 +728,7 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
             }
             return 0;
         case 8:
-            // Arm 8 sits immediately above that shared tail and so inverts: `test
-            // eax,eax; je 0x1176ab` into the shared `xor eax,eax`, falling INTO the
-            // `mov eax,1` - i.e. `if (!v) return 0; break;`. Spelling both arms the
-            // same way lets cl5 merge them, which kills the 8-entry table at 0x1176b4.
+
             if (o->ValidateByType(s, mode, typeId, pObj) == 0) {
                 return 0;
             }
@@ -890,13 +739,6 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SerializeApplyB  (0x117710)
-// Streams the logic element's type tag, then dispatches tags 0x15..0x1a: 0x16
-// (the giant rock) runs CGiantRockLogic::ApplyByType (retail `mov ecx,edi; call
-// 0x1d39` -> 0x113d40), the rest CTileTriggerLogic::ValidateByType (0x1abe ->
-// 0x113a90); returns success.  __stdcall helper of the serialize walk (117280).
-// ---------------------------------------------------------------------------
 RVA(0x00117710, 0xc0)
 i32 __stdcall
 SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o) {
@@ -905,11 +747,7 @@ SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLog
     }
     i32 tag = o->m_typeTag;
     s->Write(&tag, 4);
-    // Six entries in the table at 0x1177b8 on three targets, so six case labels were
-    // still alive at cl5's density decision - one arm per label, tail-merging after.
-    // Retail shares one `mov eax,1; ret` at 0x1177a5; arms 0x16 and 0x15/17/18/19 `jne`
-    // to it with a local zero-return fallthrough, and arm 0x1a falls into it so its
-    // guard inverts to `je 0x1177af`. Block order in .text is 0x16, the group, 0x1a.
+
     switch (tag) {
         case 0x16:
             if ((static_cast<CGiantRockLogic*>(o))->ApplyByType(s, mode, typeId, pObj)) {
@@ -1024,7 +862,7 @@ void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 typ
             }
             obj->m_owner = this;
             obj->m_typeTag = id;
-            // resolve the board tile under the object; latch on a pyramid-band tile.
+
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 x = obj->m_tileX;
             i32 y = obj->m_tileY;
@@ -1045,9 +883,7 @@ void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 typ
             if (tile == static_cast<i32>(0xeeeeeeee) || tile == -1) {
                 tileKind = 0;
             } else {
-                // m_imageSets' CObArray payload -> the CTileImageSet collision record;
-                // retail pushes two zeros: GetCollisionAt(0, 0) (the 0-arg "TypeId"
-                // view mis-modeled this slot).
+
                 CTileImageSet* rec =
                     static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
                 tileKind = rec->GetCollisionAt(0, 0);
@@ -1111,22 +947,13 @@ i32 CTileTriggerContainer::LoadFlag74(CFileMemBase* s) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::ScanNeighborhood
-// Scans the 3x3 cell neighborhood centered on (x, y): for px in [x-1, x+2) and
-// py in [y-1, y+2), probes cell (py + (px << 8)) with tag 0x16 via
-// FindInLists12 (retail: `call 0x21df`, that method's own ILT thunk); returns
-// the first hit, else 0. CONTAINER method (TriggerMgr drives it on m_2e4).
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00117ec0, 0x7f)
 CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
     for (i32 px = x - 1; px < x + 2; px++) {
         i32 base = px << 8;
         for (i32 py = y - 1; py < y + 2; py++) {
-            // tag 0x16 (== factory id 22) IS the CGiantRockLogic discriminant, so
-            // the hit is a rock element - the ONE checked downcast lives here so
-            // every caller is cast-free.
+
             CGiantRockLogic* r =
                 static_cast<CGiantRockLogic*>(FindInLists12(py + base, TRIGID_GIANT_ROCK_22));
             if (r != 0) {
@@ -1137,14 +964,6 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::SetCell
-// Looks up the keyed element for cell (tileX,tileY) (key = (x<<8)|y).  If it
-// exists, playerSlot 5 (PLAYERSLOT_ALL) flags all four m_playerFlags words
-// [+0x18..+0x24], otherwise just word [+0x18 + playerSlot*4]; either way the
-// element is notified.  If absent, a covered-powerup command is probed, then the
-// 3x3 neighborhood.  Returns 1 on success, 0 only from a failed fallback.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
@@ -1162,9 +981,7 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
         elem->SetActionCode(elem->m_actionCode);
         return 1;
     }
-    // "AddMark @0x21df" / "RunFallback @0x377e" were FindInLists12 / ScanNeighborhood
-    // all along (the ILT thunks jmp straight to them). Tag 0x1a == the
-    // covered-powerup command (factory id 26).
+
     if (FindInLists12(key, TRIGID_COVERED_POWERUP_26) != 0) {
         return 1;
     }

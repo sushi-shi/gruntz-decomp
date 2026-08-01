@@ -3,41 +3,31 @@
 
 #include <rva.h>
 
-#include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
-#include <Gruntz/SerialArchive.h>        // shared CFileMemBase (Read +0x2c / Write +0x30)
-#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
+#include <Gruntz/GruntIndicatorSprite.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/GruntIndicatorSprite.h>
 
 class CGruntToySprite : public CUserLogic, public CWapX {
 public:
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00012260, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTTOYSPRITE;
-    } // slot 2
-    CGruntToySprite(CGameObject* obj); // 0x07f350 (ctor body in GruntToySprite.cpp)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    }
+    CGruntToySprite() {}
+    CGruntToySprite(CGameObject* obj);
 
-    virtual void FireActivation(i32 id)
-        OVERRIDE;               // 0x07f5c0 (resolve the id's registered handler + dispatch it)
-    static void RegisterActs(); // 0x07f720 (register the class's activation handlers)
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
 
-    i32 SetCell(i32 x, i32 y); // 0x07f920
-    i32 Update();              // 0x07f960
-    // 0x07fa20: the serialize override - round-trip m_cellX/m_cellY (8 B) + m_lastLayer
-    // (4 B) per mode (4=write @+0x30, 7=read @+0x2c), then chain CUserLogic::SerializeMove
-    // and the +0x34 serialized-object-reference; return whether the ref chain succeeded.
+    i32 SetCell(i32 x, i32 y);
+    i32 Update();
 
-    // (the ex m_geoId dword was an ERRONEOUS extra member: the new-site 0x7dda0
-    // pushes 0x60, and with it the leaf compiled 0x64 with m_cellX skewed +4 -
-    // the geometry cache IS the CWapX base's m_value, not a leaf field.)
-    i32 m_cellX; // +0x54  grunt cell x
-    i32 m_cellY; // +0x58  grunt cell y
-    i32 m_lastLayer; // +0x5c  last-seen layer index (Update tracks layer change)
+    i32 m_cellX;
+    i32 m_cellY;
+    i32 m_lastLayer;
 };
-SIZE(0x60); // new-site ground truth (0x7dda0 `push 0x60; call ??2`)
-
-
+SIZE(0x60);
 
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

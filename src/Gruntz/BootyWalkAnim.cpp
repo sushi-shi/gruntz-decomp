@@ -1,54 +1,41 @@
 #include <Ints.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
+#include <Rez/FrameClock.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/BattlezData.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/LeafCue.h>
-#include <Mfc.h> // CString letter temp (/GX) + operator+
+#include <Mfc.h>
 
-#include <Gruntz/GameMode.h>  // canonical CBootyState : CState (the folded booty state)
-#include <Gruntz/GruntzMgr.h> // the real g_gameReg class (the Booty view is dissolved)
-#include <Gruntz/BzState.h>   // the deferred g_gameReg sub-object views
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/BzState.h>
 
 #include <rva.h>
-#include <Gruntz/SoundState.h>    // ex Globals.h transitive
-#include <Gruntz/Random.h>        // ex Globals.h transitive
-#include <Gruntz/BootyWalkAnim.h> // ex Globals.h
-#include <Utils/MapTyped.h>       // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Random.h>
+#include <Gruntz/BootyWalkAnim.h>
+#include <Utils/MapTyped.h>
 
 DATA(0x001e9068)
 i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 
-// The multi-booty scoreboard geometry: 8 rows x 4 player columns of on-screen
-// {x, y} anchors, walked row-by-row by the slot-1 loader below (retail indexes it
-// `[edi*8 + <row>]` with edi the player index, and strength-reduces two of the rows
-// to their own cursors - one table, six + two rows).
 DATA(0x001e9078)
 Coord g_multiBootyGeom[8][4] = {
-    {{190, 437}, {306, 437}, {422, 437}, {538, 437}}, // [0] misc-pickup icon
-    {{190, 394}, {306, 394}, {422, 394}, {538, 394}}, // [1] powerup icon
-    {{190, 351}, {306, 351}, {422, 351}, {538, 351}}, // [2] toy icon
-    {{190, 308}, {306, 308}, {422, 308}, {538, 308}}, // [3] weapon icon
-    {{190, 265}, {306, 265}, {422, 265}, {538, 265}}, // [4] the grunt
-    {{190, 222}, {306, 222}, {422, 222}, {538, 222}}, // [5] the puddle
-    {{218, 180}, {334, 180}, {450, 180}, {566, 180}}, // [6] the fortress flags
-    {{218, 138}, {334, 138}, {450, 138}, {566, 138}}, // [7] the player tabz
+    {{190, 437}, {306, 437}, {422, 437}, {538, 437}},
+    {{190, 394}, {306, 394}, {422, 394}, {538, 394}},
+    {{190, 351}, {306, 351}, {422, 351}, {538, 351}},
+    {{190, 308}, {306, 308}, {422, 308}, {538, 308}},
+    {{190, 265}, {306, 265}, {422, 265}, {538, 265}},
+    {{190, 222}, {306, 222}, {422, 222}, {538, 222}},
+    {{218, 180}, {334, 180}, {450, 180}, {566, 180}},
+    {{218, 138}, {334, 138}, {450, 138}, {566, 138}},
 };
 
 DATA(0x001e93a8)
-char g_secretChars[] = "WARP"; // "WARP"
+char g_secretChars[] = "WARP";
 
-// ===========================================================================
-// BuildBootyWalkingGruntz @0x1b450 - the ONE-TIME setup that creates the four
-// per-player idle/walking grunt sprite pairs (mis-homed on CState by the trace;
-// really a CBootyState method, re-homed here beside its per-frame Update sibling). Bails
-// when the level record is suppressed or past area 0x24, resolves the active
-// selection handle, then per player builds an "anim" sprite (NORTH_WALK cycle) and a
-// "vis" sprite (the "<GAME_INGAMEICONZ_|BOOTY_DIM>SECRET<W/A/R/P>" cue) through the
-// shared sprite factory. The static CString cue buffer forces the /GX EH frame.
-// ===========================================================================
 // @early-stop
 RVA(0x0001b450, 0x1ac)
 i32 CBootyState::BuildBootyWalkingGruntz() {
@@ -91,13 +78,6 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     return 1;
 }
 
-// ===========================================================================
-// UpdateBootyWalkingGruntz @0x1b690 - the per-frame booty walking-grunt state
-// machine. Init path (m_initGate != 0): seeds each player's idle/WARP-pickup grunt
-// (a 4-way "W/A/R/P" letter jump-table CString build). Step path (m_initGate == 0):
-// scrolls the reveal, plays the wand/flag cues on a rate-limited clock, and
-// advances m_stepIndex across the players, seeding an inline-RNG cue on completion.
-// ===========================================================================
 // @early-stop
 RVA(0x0001b690, 0x7e0)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
@@ -114,7 +94,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_initGate != 0) {
-        // ---- init path ----
+
         if (n < 0x24) {
             for (i32 i = 0; i < 4; i++) {
                 if (i <= (g_gameReg->m_scoreHud->m_count - 1) % 4) {
@@ -156,7 +136,6 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         return 1;
     }
 
-    // ---- step path (m_initGate == 0) ----
     if (m_visSprites[0]->m_screenX != g_idleSpriteIds[0]) {
         for (i32 k = 0; k < 4; k++) {
             m_visSprites[k]->m_screenX -= 10;
@@ -277,7 +256,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             }
         }
     } else if (m_walkStarted != 0) {
-        // the +0x1a0 anim-sink pair: m_1c8 = active/armed, m_1c0 = idle/done
+
         CWwdGameObjectA* spr = m_animSprites[m_stepIndex];
         if (spr->m_1a0.m_finished != 0 && spr->m_1a0.m_frameTicksLeft == 0) {
             m_stepIndex++;

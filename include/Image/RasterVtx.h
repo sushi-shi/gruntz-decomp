@@ -7,53 +7,35 @@
 class CDDSurface;
 
 struct ClipVtx {
-    float x, y, u, v; // the clip passes interpolate these as floats
-    // +0x10..+0x1b: the 14-bit FIXED-POINT (x,u,v) the edge tables interpolate per
-    // scanline (the warp/fill rasters read/write ONLY these as i32; no float use of
-    // the tail exists anywhere - grep-proven 2026-07-19; ex `float c,d,e`).
+    float x, y, u, v;
+
     i32 fx, fu, fv;
 };
 SIZE(0x1c);
 
-// Extents proven by the gap to the next data symbol, each an exact multiple of
-// sizeof(ClipVtx)==0x1c: the A/B clip buffers are 0xaf0 B = 100 each, and the
-// L/R per-scanline edge tables are 0x1c000 B = 4096 each.
-extern "C" ClipVtx g_rasterVtxA[100];   // 0x6a1708
-extern "C" ClipVtx g_rasterVtxB[100];   // 0x6a21f8
-extern "C" ClipVtx g_rasterEdgeR[4096]; // 0x6856f8  ascending-edge table (fill reads +0x10)
-extern "C" ClipVtx g_rasterEdgeL[4096]; // 0x6a2cf0  descending-edge table
-extern "C" i32 g_rasterVtxCount;        // 0x6becf8 (published by ImagePolyClipRect)
-extern "C" u8* g_rasterDestRow;         // 0x6a2ce8  current scanline base (engine scratch)
-extern "C" i16* g_rasterDestPtr;        // 0x6becf4  current span start (engine scratch)
-
-// (The ex RotateSrcImage pad-view is dissolved (2026-07-27): it IS CDDSurface. The
-// comment it carried - "w/h @0x18/0x1c do NOT match CDDSurface's w/h @0x08/0x0c" -
-// was simply wrong: CDDSurface's DDSURFACEDESC overlay puts dwHeight at +0x18 and
-// dwWidth at +0x1c, exactly the two words the view named, and CDDSurface::RotateBlit
-// @0x141040 hands ImageRotateBlit `this` for one of the pair. +0x08 is m_ddSurface.)
+extern "C" ClipVtx g_rasterVtxA[100];
+extern "C" ClipVtx g_rasterVtxB[100];
+extern "C" ClipVtx g_rasterEdgeR[4096];
+extern "C" ClipVtx g_rasterEdgeL[4096];
+extern "C" i32 g_rasterVtxCount;
+extern "C" u8* g_rasterDestRow;
+extern "C" i16* g_rasterDestPtr;
 
 i32 RotateRasterize(
     ClipVtx* verts,
     i32 n,
     CDDSurface* dst,
     CDDSurface* src,
-    // forwarded verbatim to WarpTextureBlit's own (mode, colorkey) slots
+
     i32 mode,
     i32 colorkey,
     i32 clipFlag,
     i32 clipB,
     i32 clipC,
     i32 clipD
-); // 0x146550
+);
 
-i32 WarpTextureBlit(
-    ClipVtx* va,
-    i32 n,
-    CDDSurface* dst,
-    CDDSurface* src,
-    i32 mode,
-    i32 colorkey
-); // 0x146a20
+i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey);
 
 i32 ImagePolyClipRect(
     ClipVtx* poly,
@@ -62,8 +44,8 @@ i32 ImagePolyClipRect(
     i32 clipTop,
     i32 clipRight,
     i32 clipBottom
-); // 0x1461b0
+);
 
-i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color); // 0x146fe0
+i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color);
 
 #endif

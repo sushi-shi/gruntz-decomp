@@ -2,11 +2,11 @@
 #define GRUNTZ_GRUNTZ_TIMER_H
 
 #include <Ints.h>
-#include <Clock64.h> // the {lo,hi} 64-bit clock pairs at +0x28/+0x30/+0x38
+#include <Clock64.h>
 #include <Image/CImage.h>
 #include <rva.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (HandleEvent/Serialize stream)
-#include <Gruntz/Sprite.h>        // CDDrawWorker (the looked-up "GAME_TIMER" sprite set)
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Sprite.h>
 
 class CDDrawSurfacePair;
 
@@ -19,55 +19,48 @@ public:
     i32 Draw(CDDrawSurfacePair* target, i32 force);
     void SetTime(i32 a, i32 b);
     void AddTime(i32 seconds, i32 minutes);
-    i32 HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj); // 0x9c1c0
-    i32 Serialize(CFileMemBase* ar);   // 0x9c2e0 (SpriteLoaders cluster)
-    i32 Deserialize(CFileMemBase* ar); // 0x9c650 (external, declared-not-defined)
+    i32 HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* ar);
+    i32 Deserialize(CFileMemBase* ar);
 
-    i32 m_baseX;            // +0x00 base x (screen origin)
-    i32 m_baseY;            // +0x04 base y
-    CDDrawWorker* m_sprite; // +0x08 the looked-up "GAME_TIMER" sprite set
-    i32 m_active;           // +0x0c visible/active flag
-    // The five cached MM:SS frames, laid out L->R by Draw at x-0x22..x+0x22 and
-    // reassigned per Tick's digit decode: [MinTens][MinOnes][:][SecTens][SecOnes].
-    CImage* m_frameMinTens; // +0x10 tens-of-minutes digit frame
-    CImage* m_frameMinOnes; // +0x14 units-of-minutes digit frame
-    CImage* m_frameSecTens; // +0x18 tens-of-seconds digit frame
-    CImage* m_frameSecOnes; // +0x1c units-of-seconds digit frame
-    CImage* m_frameColon;   // +0x20 colon frame (static frame 11, drawn centre)
+    i32 m_baseX;
+    i32 m_baseY;
+    CDDrawWorker* m_sprite;
+    i32 m_active;
+
+    CImage* m_frameMinTens;
+    CImage* m_frameMinOnes;
+    CImage* m_frameSecTens;
+    CImage* m_frameSecOnes;
+    CImage* m_frameColon;
     char m_pad24[0x28 - 0x24];
-    // The three clock pairs below are 64-bit values that are ALSO written half by
-    // half - CTimer::Init interleaves the halves across two pairs (m_38, m_40, m_3c,
-    // m_44), which a single i64 member cannot emit. Clock64 (pack(4)) gives the whole
-    // value a name at the halves' own 4-byte alignment, so neither reading is a pun.
+
     union {
-        Clock64 m_baseTime; // +0x28 base (limit) time, 64-bit
+        Clock64 m_baseTime;
         struct {
-            i32 m_baseTimeLo; // +0x28
-            i32 m_baseTimeHi; // +0x2c
+            i32 m_baseTimeLo;
+            i32 m_baseTimeHi;
         };
     };
     union {
-        Clock64 m_accum; // +0x30 accumulated added-time, 64-bit (0x8107 cheat zeroes)
+        Clock64 m_accum;
         struct {
-            i32 m_accumLo; // +0x30
-            i32 m_accumHi; // +0x34
+            i32 m_accumLo;
+            i32 m_accumHi;
         };
     };
-    // +0x38:+0x3c is the level/lap START STAMP - CGruntzMgr::AccrueScoreTime subtracts
-    // the pair from the 64-bit clock with a sub/sbb and CTimer::HandleEvent streams it
-    // as one 8-byte field, while Init writes the halves interleaved with the +0x40 pair.
+
     union {
-        Clock64 m_startStamp; // +0x38 level/lap start stamp, 64-bit
+        Clock64 m_startStamp;
         struct {
-            i32 m_38; // +0x38  lo
-            i32 m_3c; // +0x3c  hi
+            i32 m_38;
+            i32 m_3c;
         };
     };
-    i32 m_40;        // +0x40  (serialized 64-bit pair m_40:m_44; cleared on expiry
-    i32 m_44;        // +0x44   and by the 0x8107 cheat)
-    i32 m_running;   // +0x48 running flag (0x8107 cheat zeroes)
-    i32 m_currentMs; // +0x4c decoded current/remaining value (ms within hour;
-                     //        0x8107 cheat zeroes)
+    i32 m_40;
+    i32 m_44;
+    i32 m_running;
+    i32 m_currentMs;
 };
 SIZE_UNKNOWN();
 

@@ -6,7 +6,7 @@
 
 struct BrickzCell;
 struct BrickzNode;
-class CDDrawSurfaceMgr; // the +0x78 world/asset holder (ex the BrickzAttrMgr view)
+class CDDrawSurfaceMgr;
 struct tagRECT;
 
 class CFileMemBase;
@@ -17,9 +17,9 @@ public:
     ~CMapArrayA();
     i32 Allocate(u32 count);
 
-    BrickzNode* m_block; // +0x00  the 0x24-byte search-record pool (was void*)
-    BrickzNode* m_0;     // +0x04  the owned element block (the dtor frees it; == m_block)
-    u32 m_count;         // +0x08
+    BrickzNode* m_block;
+    BrickzNode* m_0;
+    u32 m_count;
 };
 SIZE_UNKNOWN();
 
@@ -29,150 +29,86 @@ public:
     ~CMapArrayB();
     i32 Allocate(u32 count);
 
-    BrickzNode* m_0;     // +0x00  the owned element block (the dtor frees it)
-    BrickzNode* m_block; // +0x04  the 0x0c-byte bucket-node pool (was void*)
-    u32 m_count;         // +0x08
+    BrickzNode* m_0;
+    BrickzNode* m_block;
+    u32 m_count;
 };
 SIZE_UNKNOWN();
 
 struct MapCell {
     char m_pad0[0x18];
-    i32 m_18; // +0x18  runtime field (zeroed after Load) == BrickzCell::m_head
+    i32 m_18;
 };
 SIZE_UNKNOWN();
 
-class CGruntzMgr; // fwd
+class CGruntzMgr;
 class CMapMgr {
 public:
     CMapMgr();
     ~CMapMgr();
 
-    // The six virtual slots, ALL REAL - read off the retail vtable @0x1ea3b4 (RTTI
-    // .?AVCMapMgr@@). Slots 1/4/5 were modelled as `Vfunc1/Vfunc4/Vfunc5` EMPTY STUBS
-    // "to anchor the vftable"; that was a fabrication - each slot holds a real function
-    // that this tree already reconstructs under a FAKE class name:
-    //   [1] 0x09f7f0 = ?Visit@CMapVisitTarget@@       (MapMgr.cpp - same TU!)
-    //   [4] 0x09eca0 = ?Search@CMapMgr@@          (MapMgr.cpp - same TU!)
-    //   [5] 0x0853f0 = ?IsCellClear@CMapMgr@@     (Brickz.cpp - other TU)
-    // Slots 2/3 (Save/Load) are bit-identical in CGruntzMapMgr's vtable @0x1e9bb4, and
-    // slot 5 there is the SAME 0x853f0 body - so CMapMgr / CMapMgr / CMapVisitTarget
-    // are ONE class under three names. Slots 1 and 4 are folded here; IsCellClear stays
-    // declared-only until CMapMgr's whole method set folds (@identity-TODO).
-    virtual void Reset();                                                // slot 0  0x09ec30
-    virtual i32 Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj); // [1] 0x09f7f0
-    virtual i32 Save(CFileMemBase*);                                     // slot 2  0x09f840
-    virtual i32 Load(CFileMemBase*);                                     // slot 3  0x09f9a0
-    // Slots 4/5 are declared-only HERE: their bodies (0x09eca0 / 0x0853f0) are written
-    // against CMapMgr's member set (m_rows / Insert / PopFront / Expand / CellPush),
-    // so they keep that name until the whole CMapMgr method set folds onto this class.
-    // @identity-TODO: CMapMgr == CMapMgr (its Search/IsCellClear ARE these two slots).
-    virtual i32
-    Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC); // [4]
-    virtual i32 IsCellClear(i32 x, i32 y);                                               // [5]
+    virtual void Reset();
+    virtual i32 Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj);
+    virtual i32 Save(CFileMemBase*);
+    virtual i32 Load(CFileMemBase*);
 
-    // ---- the CMapMgr method set, FOLDED (one class, three names: CMapMgr /
-    // CMapMgr / the ex-CMapVisitTarget). Slots 4/5 above are these Search and
-    // IsCellClear, so the vtable binds to real bodies now. Definitions stay where they
-    // are (MapMgr.cpp / Brickz.cpp / the Brickz* leaf TUs) - MSVC5 mangles a member
-    // defined through the `CMapMgr` typedef as CMapMgr::, so no body moved.
-    void Clip(const tagRECT* r);                              // 0x02b340 board dirty-rect clip
-    void ComputeCellFlags(i32 x, i32 y, i32 id3);             // 0x077790 terrain cell-flag compute
-    i32 AllocGrid(i32 width, i32 height, void (*callback)()); // 0x09ea60 grid allocator/initializer
-    i32 SearchEdge(
-        i32 xA,
-        i32 yA,
-        i32 xB,
-        i32 yB,
-        void* list,
-        i32 clearFlag,
-        i32 maskA,
-        i32 maskC
-    );                                               // 0x081e10
-    i32 UpdateDiagonals(CGruntzMgr* unused);         // 0x082030 diagonal-passability walk
-    i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1); // 0x082250 straight-line probe
-    // (`Serialize` @0x09356c is GONE - it was never this class's, and never a function:
-    //  0x9356c is the TAIL of CGruntzMgr::BroadcastCmd @0x093460, which already claims
-    //  0x93460..0x935bc. Its stack proves it (4 pushes + `add esp,0x10` vs FIVE pops
-    //  before `ret 0x10` = five dwords short of a valid entry). The note that the +0x7c
-    //  object "comes from a3, NOT from `this`" was the tell, read backwards: under
-    //  BroadcastCmd's real 5-push frame, [esp+0x10] is the saved ecx - it IS `this`.
-    //  See docs/patterns/unbalanced-stack-means-wrong-boundary.md.)
-    i32 Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag); // 0x09f010
-    i32 Insert(BrickzNode* node);                                     // 0x09f370
-    BrickzNode* PopFront();                                           // 0x09f430
-    void CellPush(BrickzNode* node);                                  // 0x09f470
-    BrickzNode* Find(i32 key1, i32 key2);                             // 0x09f500
-    BrickzNode* FindCellNode(i32 col, i32 row);                       // 0x09f540
-    void Drain();                                                     // 0x09f590
-    void Unlink(BrickzNode* node);                                    // 0x09f690
-    void CellPop(BrickzNode* node, i32 flag);                         // 0x09f710
-    // 0x09f5d0 - empty every grid cell back into the node pools. NOT the slot-0 virtual
-    // Reset (0x09ec30): two DIFFERENT functions that both carried the name `Reset` while
-    // the class wore two names. Renamed on the fold (nothing called it by name).
-    void ResetCells(); // 0x09f5d0
+    virtual i32 Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC);
+    virtual i32 IsCellClear(i32 x, i32 y);
 
-    // 0x75a40 - bounds-checked cell-flags probe: the first dword (packed terrain
-    // flags) of the 0x1c-byte cell at m_rows[y][x]; out of bounds returns 1. The
-    // ex-`CGridLookup::Lookup` view (same m_rows/m_width/m_height trio at the same
-    // offsets + the 0x1c cell stride). Out-of-line in TriggerMgrHitTest.cpp (the
-    // hit-test unit interleaves it; its sole caller is that TU's megafn FUN_6f2f0).
+    void Clip(const tagRECT* r);
+    void ComputeCellFlags(i32 x, i32 y, i32 id3);
+    i32 AllocGrid(i32 width, i32 height, void (*callback)());
+    i32 SearchEdge(i32 xA, i32 yA, i32 xB, i32 yB, void* list, i32 clearFlag, i32 maskA, i32 maskC);
+    i32 UpdateDiagonals(CGruntzMgr* unused);
+    i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1);
+
+    i32 Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag);
+    i32 Insert(BrickzNode* node);
+    BrickzNode* PopFront();
+    void CellPush(BrickzNode* node);
+    BrickzNode* Find(i32 key1, i32 key2);
+    BrickzNode* FindCellNode(i32 col, i32 row);
+    void Drain();
+    void Unlink(BrickzNode* node);
+    void CellPop(BrickzNode* node, i32 flag);
+
+    void ResetCells();
+
     i32 CellFlagsAt(i32 x, i32 y);
 
-    // FIELDS - the union of the CMapMgr and CMapMgr models of this ONE object.
-    // The first four offsets carry BOTH spellings (a name alias at the same offset, zero
-    // layout change): the semantic names come from the CMapMgr model, the m_<hex>
-    // placeholders are what ~20 TUs already read through the CMapMgr spelling.
-    // DEFERRED FOLD: converge those consumers onto the semantic names (needs a TYPED sweep -
-    // a blind rename would hit the identically-named members of other classes), then drop
-    // the placeholder halves.
-    BrickzCell* m_cellPool; // +0x04  flat cell pool (width*height cells; Reset frees it)
-    // +0x08  the row table - THREE arms, each a PROVEN retail arithmetic shape
-    // (typed 0x1c-stride / int *7-walk / byte 0x1c-walk); retyping any arm breaks
-    // its sites' bytes (the GruntBoard faithful floor). Same one table.
+    BrickzCell* m_cellPool;
+
     union {
-        BrickzCell** m_rows; // typed rows (m_rows[y][x])
-        i32** m_rowInts;     // the *7-int-walk sites (rowInts[y][x*7 + n])
-        char** m_rowBytes;   // the byte-walk sites (rows[y] + x*0x1c)
+        BrickzCell** m_rows;
+        i32** m_rowInts;
+        char** m_rowBytes;
     };
-    u32 m_width;            // +0x0c  grid width (columns)
-    u32 m_height;           // +0x10  grid height (rows)
-    u32 m_cellCount;        // +0x14  total cell count (width*height)
-    BrickzNode* m_openList; // +0x18  sorted open/lookup list head
-    i32 m_1c;               // +0x1c
-    i32 m_startX;           // +0x20  search start x   (the "serialized 8-byte block")
-    i32 m_startY;           // +0x24  search start y
-    i32 m_goalX;            // +0x28  search goal x
-    i32 m_goalY;            // +0x2c  search goal y
-    // The two embedded pools. Their BLOCK pointers are the same two words the CMapMgr
-    // model called m_nodePool (+0x30 = m_colA.m_block, the 0x24-byte search records) and
-    // m_freeList (+0x40 = m_colB.m_block, the 0x0c-byte bucket nodes) - one object read
-    // from two ends. (No union: a union member may not have a constructor, and these two
-    // sub-objects have real ctors/dtors at their own RVAs.)
-    CMapArrayA m_colA;  // +0x30
-    CMapArrayB m_colB;  // +0x3c
-    void (*m_stepCb)(); // +0x48  per-step callback (engine hook)
-    i32 m_edgeMask;     // +0x4c  edge-punch reject mask (SearchEdge; Expand pre-filter)
-    i32 m_maskA;        // +0x50  Search maskA: cell blocked when set (= -1 in the ctor)
-    i32 m_maskC;        // +0x54  Search maskC: allow-override for m_maskA
-    i32 m_maskB;        // +0x58  Search maskB: diagonal corner-cut reject mask
-    i32 m_dirty;        // +0x5c  dirty flag (UpdateDiagonals re-walk gate; = 1 in the ctor)
-    // +0x60..+0x6c IS a RECT - the board bound-rect (Clip/AllocGrid take its address and
-    // hand it straight to Win32 IntersectRect). The "serialized 0x10 block" the CMapMgr
-    // model saw and the bound rect the CMapMgr model saw are the same 16 bytes.
-    // Spelled as the REAL RECT member it is (the ex four-edge + reinterpret spelling
-    // was include-diet friction; includers are afx/windows-first, build-measured).
-    RECT m_bounds;               // +0x60  board bound rect (grid origin at .left/.top)
-    i32 m_gridW;                 // +0x70  clipped grid width extent (cells)
-    i32 m_gridH;                 // +0x74  clipped grid height extent (cells)
-    CDDrawSurfaceMgr* m_attrMgr; // +0x78  the world/asset holder (its m_24 is the
-                                 //        CGameLevel; ex the BrickzAttrMgr view)
+    u32 m_width;
+    u32 m_height;
+    u32 m_cellCount;
+    BrickzNode* m_openList;
+    i32 m_1c;
+    i32 m_startX;
+    i32 m_startY;
+    i32 m_goalX;
+    i32 m_goalY;
+
+    CMapArrayA m_colA;
+    CMapArrayB m_colB;
+    void (*m_stepCb)();
+    i32 m_edgeMask;
+    i32 m_maskA;
+    i32 m_maskC;
+    i32 m_maskB;
+    i32 m_dirty;
+
+    RECT m_bounds;
+    i32 m_gridW;
+    i32 m_gridH;
+    CDDrawSurfaceMgr* m_attrMgr;
 };
 SIZE_UNKNOWN();
 
 SIZE_UNKNOWN();
-
-// BrickzFreeRec DISSOLVED 2026-07-27: it was CoordPoolNode (<Gruntz/FreeNodePool.h>) -
-// m_0 is the free-list link m_next, m_4/m_8 the inline Coord payload's x/y. Same view
-// CSbiFreeNode was, on the same pool.
 
 #endif // SRC_GRUNTZ_MAPMGR_H

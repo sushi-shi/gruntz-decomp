@@ -1,8 +1,7 @@
-// SaveFrontBufferShot.h - the SaveFrontBufferShot TU's external declarations.
 #ifndef GRUNTZ_SAVEFRONTBUFFERSHOT_H
 #define GRUNTZ_SAVEFRONTBUFFERSHOT_H
 
-#include <Mfc.h> // afx.h FIRST (umbrella for any Win32 types below)
+#include <Mfc.h>
 #include <Ints.h>
 #include <rva.h>
 
@@ -18,6 +17,6 @@ void SaveFrontBufferShotImpl(
     i32 h,
     char* name,
     i32 saveFlag
-); // saveFlag -> SaveScreenshot's own last slot
+);
 
 #endif // GRUNTZ_SAVEFRONTBUFFERSHOT_H

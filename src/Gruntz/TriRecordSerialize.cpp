@@ -1,5 +1,5 @@
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
+#include <Io/FileMem.h>
 #include <rva.h>
 #include <Gruntz/SerialRecords.h>
 

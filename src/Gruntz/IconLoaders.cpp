@@ -1,16 +1,16 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/String.h>
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape
-#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
-#include <Gruntz/PickupType.h>        // the shared object/pickup/grunt-kind type id space
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/PickupType.h>
 #include <Bute/ButeMgr.h>
 
-#include <stdlib.h> // rand (reloc-masked CRT PRNG)
+#include <stdlib.h>
 
-#include <Gruntz/GameMode.h> // CBootyState - the REAL owner of BuildBootyPerfectAnimation
+#include <Gruntz/GameMode.h>
 
 RVA(0x0001c070, 0x59)
 i32 CBootyState::BuildBootyPerfectAnimation() {
@@ -26,17 +26,6 @@ i32 CBootyState::BuildBootyPerfectAnimation() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// BuildPowerupIconKeys (0x1e720) - seeds the "GAME_INGAMEICONZ" icon-key group,
-// then appends one tool/toy/powerup key string selected by `key` (a sparse switch;
-// out-of-range / gap keys fall through to POWERUPZ_COIN). Sibling of the
-// LoadPowerupIconSprites loader above (same GAME_INGAMEICONZ subsystem); re-homed
-// from src/Stub/Backlog.cpp. The "registry" object (arg1=esi) IS a real MFC
-// ::CString (FID: the seed is ??4CString@@QAEABV0@PBD@Z @0x1b9e74 operator= and
-// the append is ??YCString@@QAEABV0@PBD@Z @0x1ba0c8 operator+=) - the fn builds
-// the "GAME_INGAMEICONZ<KEY>" lookup key in the caller's CString. The ex
-// "PowerupKeyRegistry" view of it is dissolved.
-// @early-stop
 RVA(0x0001e720, 0x400)
 void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ";

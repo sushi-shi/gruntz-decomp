@@ -1,20 +1,20 @@
-#include <Gruntz/GruntzMgr.h> // m_host's real type (the ex CNetDlgHost/CMultiSlot views)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
-#include <Net/NetMgr.h>           // the real CNetMgr (m_netGate selection latches)
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Net/NetMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Net/InterfaceObject.h>
-#include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
-#include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Net/LatencyList.h>     // CLatencyList (m_slotList; Dispatch/FillCombo/SelectItem)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Multi.h>
+#include <Net/LatencyList.h>
 #include <Bute/SymTab.h>
-#include <Bute/SymParser.h>       // CSymParser::ResolvePath (0x13c030), the world name registry
-#include <Utils/RegistryHelper.h> // g_gameReg->m_settings (the config registry: GetValue*/SetValue*)
-#include <string.h>               // inline strcmp (empty-text WM_SETTEXT gate / name resync)
-#include <stdio.h>                // sprintf/fopen/fclose (DoDataExchange custom-level probe)
+#include <Bute/SymParser.h>
+#include <Utils/RegistryHelper.h>
+#include <string.h>
+#include <stdio.h>
 #include <rva.h>
-#include <MsgParam.h>             // the window-message parameter's pointer/word pair
-#include <Gruntz/MultiStartDlg.h> // own exported globals (ex Globals.h)
+#include <MsgParam.h>
+#include <Gruntz/MultiStartDlg.h>
 #include <Gruntz/MpSymItem.h>
 
 enum {
@@ -23,11 +23,11 @@ enum {
 
 DATA(0x001ea578)
 const i32 g_msgmap_CMultiStartDlg = 6205544;
-VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
+VTBL(CMultiStartDlg, 0x001ea8ec);
 DATA(0x0024bdb0)
 CString g_gruntNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
 DATA(0x0024bdc0)
-i32 g_savedMultiWndProc = 0; // 0x24bdc0
+i32 g_savedMultiWndProc = 0;
 
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
@@ -70,7 +70,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
     HWND__* h = child->m_hWnd;
     g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
-    // GWL_WNDPROC's value IS a window procedure, carried in the API's LONG slot
+
     MsgParam proc;
     proc.m_intProc = WndProc_c1a10;
     SetWindowLongA(h, GWL_WNDPROC, proc.m_long);
@@ -81,14 +81,14 @@ i32 CMultiStartDlg::SetupWorldCombo() {
 RVA(0x000c1a10, 0x70)
 i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
-        // API-forced: Win32 hands the item text through LPARAM
+
         MsgParam text;
         text.m_lparam = lParam;
         if (strcmp(g_emptyString, text.m_str) == 0) {
             return 0;
         }
     }
-    // the saved procedure rides GetWindowLong's LONG slot (<MsgParam.h>)
+
     MsgParam prev;
     return CallWindowProcA(
         (prev.m_long = g_savedMultiWndProc, prev.m_wndproc),
@@ -99,13 +99,6 @@ i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     );
 }
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg::UpdateColorItems (0xc1aa0, dossier seam -> this TU): refresh
-// three dialog items (0x4ff combo, 0x42b, 0x4e9) plus the combo's child window.
-// In an active session the items are enabled per an empty-slot table probe; out
-// of session the combo's cursel is cleared and the child's text is (re)synced to
-// the lobby's current name, then all three are disabled. thiscall member, /GX
-// (destructible CString temporaries).
 // @early-stop
 RVA(0x000c1aa0, 0x2f8)
 i32 CMultiStartDlg::UpdateColorItems() {
@@ -166,10 +159,6 @@ i32 CMultiStartDlg::UpdateColorItems() {
     return 1;
 }
 
-// CMultiStartDlg::BuildSlotList (0xc1e60): allocate the player-slot list, derive
-// the player count from the registry snapshot (a forced count, else a cascade of
-// slot-occupancy probes), seed the list with the count + the dialog's selection.
-// /GX EH frame for the new-expression's ctor unwind.
 // @early-stop
 RVA(0x000c1e60, 0x115)
 i32 CMultiStartDlg::BuildSlotList() {
@@ -201,9 +190,6 @@ i32 CMultiStartDlg::BuildSlotList() {
     return 1;
 }
 
-// CMultiStartDlg::UpdateSlot (0xc1fd0): enable the team control by current-slot
-// occupancy, then push the dialog selection (with the registry color pair, unless
-// already committed) into the slot list. Returns 1 (0 when the control is absent).
 // @early-stop
 RVA(0x000c1fd0, 0x99)
 i32 CMultiStartDlg::UpdateSlot() {
@@ -230,19 +216,6 @@ i32 CMultiStartDlg::UpdateSlot() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg::DoDataExchange (0xc20a0, slot 35, /GX): the multiplayer-start
-// dialog's DDX - the retail vtable's slot-35 entry (was mislabeled the non-virtual
-// "InitPlayerSlots" backlog stub; xref-proven via ??_7CMultiStartDlg@@6B@+0x8c).
-//   LOAD  (m_bSaveAndValidate == 0): populate every control from the CMulti lobby
-//     game-state - the 0x512 game-name edit, the four kind combos (None/Computer
-//     easy|normal|difficult/Human), the four 9-char name edits, the 100-char chat
-//     input, and (host-side, when a saved custom map exists on disk) the world
-//     combo's read-only edit child + the CMulti custom-world name pair - then cache
-//     the log-edit HWND and re-drive the connect state.
-//   SAVE  (m_bSaveAndValidate != 0): read the world name (host: persist Last/Custom
-//     MultiMap) and each slot's name-edit text back into the m_host slot array.
-// SendMessageA is hoisted into pSend; /GX EH frame for the CString temps.
 // @early-stop
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
@@ -258,8 +231,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         WapSendMessageA pSend = ::SendMessageA;
         i32 i;
-        // CB_ADDSTRING carries the string ADDRESS in the integer lParam slot - the
-        // Win32 message ABI's own two readings of one word (<MsgParam.h>).
+
         MsgParam item;
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             HWND kc;
@@ -360,29 +332,13 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     FlashCtrlD();
 }
 
-// DEFERRED (blocked on 10 handler reconstructions, 2026-07-27): the retail bytes at
-// 0x1ea578 are an 8-byte AFX_MSGMAP {&CDialog::messageMap (0x5eb068), &_messageEntries
-// (0x5ea580)} - NOT the 4-byte `const i32` below, whose value 0x5eabe8 is not even the
-// base map's address. 0x1ea580 is a 30-entry AFX_MSGMAP_ENTRY table; 20 of its handlers
-// already exist as CMultiStartDlg methods, but ten do NOT yet: 0xc2c80 (ON_WM_TIMER),
-// 0xc30d0 (ON_WM_MEASUREITEM), 0xc4e40/0xc4e60/0xc4e80/0xc4ea0 (ON_CONTROL 0x300 on
-// 0x50a..0x50d) and 0xc51c0/0xc51e0/0xc5200/0xc5220 (ON_BN_CLICKED 0x51f/0x523/0x524/
-// 0x525). Declaring them without bodies would trip the declared-only gate, so the map
-// converts (exactly as CBattlezDlg's did in Dialogs.cpp) once those ten are built.
 RVA(0x000c2620, 0x6)
 const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
-    // API-forced: MFC's message-map global is emitted as a raw datum and
-    // GetMessageMap's return type is fixed by CCmdTarget (same seam as CBattlezDlg).
+    // API-forced MFC message-map representation seam.
+
     return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CMultiStartDlg);
 }
 
-// ---------------------------------------------------------------------------
-// GetCtrlE (0xc2640): the fifth per-index combo getter over control IDs
-// 0x500/0x50e/0x50f/0x510. Reclaimed from the globals unit's bogus g_typeDesc2
-// char-array DATA mislabel - 0xc2640 is this function, not a data global. Retail
-// callers load CMultiStartDlg into ecx, and its body is identical to the adjacent
-// member GetCtrlA..D accessors except for the control IDs.
-// @early-stop
 RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
     CWnd* result = 0;
@@ -403,11 +359,6 @@ CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
     return result;
 }
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg per-slot control accessors: switch(index) over a 4-entry
-// control-ID table, each case returning this->GetDlgItem(constID). SAME shape as
-// CBattlezDlg::GetCtrlA..D; the inline .rdata jump table reloc-masks.
-// @early-stop
 RVA(0x000c26c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
@@ -428,7 +379,6 @@ CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
     return result;
 }
 
-// @early-stop
 RVA(0x000c2740, 0x60)
 CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
@@ -449,7 +399,6 @@ CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
     return result;
 }
 
-// @early-stop
 RVA(0x000c27c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
@@ -470,7 +419,6 @@ CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
     return result;
 }
 
-// @early-stop
 RVA(0x000c2840, 0x60)
 CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;

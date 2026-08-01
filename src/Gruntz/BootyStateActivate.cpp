@@ -1,55 +1,53 @@
-#include <Gruntz/BootyStateActivate.h> // this TU's external declarations
-#include <Gruntz/BootyMessages.h>      // DrawStatText / g_bootyLetterCoords (ex .cpp externs)
+#include <Gruntz/BootyStateActivate.h>
+#include <Gruntz/BootyMessages.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
+#include <Rez/FrameClock.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual (Booty/MultiBooty ReleaseResources)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual (CBootyState::ReleaseResources)
-#include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <Mfc.h>   // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
-#include <ddraw.h> // CMultiBootyState::Render: real IDirectDrawSurface::IsLost dispatch (slot 24)
-#include <math.h>  // sin/cos (StepGlitterAnim sine spiral)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <Mfc.h>
+#include <ddraw.h>
+#include <math.h>
 
 #include <rva.h>
-#include <Gruntz/BankMgr.h> // CSymTab::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
-#include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CDDrawSurfaceMgr facet
-#include <Gruntz/GruntzMgr.h>         // CMultiBootyState::Render: CState::m_4 owner (ReportError)
-#include <DDrawMgr/DDrawChildGroup.h> // CMultiBootyState::Render: m_c->m_childGroup frame-worker slots 9/10
-#include <Gruntz/LeafCue.h>           // LeafCue (Booty/MultiBooty FrameSlot28 BOOTY_LOOP cue)
-#include <Gruntz/UserLogic.h>   // CGameObject (glitter/letter sprites; StepGlitterAnim/BuildWarp)
-#include <Gruntz/BattlezData.h> // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
-#include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
-#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::PauseAllVoices (the m_4->m_60 cue-sink flush)
-#include <Utils/MapTyped.h>        // typed MFC map lookups (the forced void*& pun at one boundary)
-#include <Gruntz/Play.h>           // g_levelBias100 (CBootyState::Render's world-completed gate)
-#include <Dsndmgr/SoundStream.h>   // the +0x20 stream Render ticks (PurgeVoiceList/TickSubManagers)
-#include <Gruntz/CoordNode.h>      // Coord {x,y} - the scoreboard geometry table
-#include <Gruntz/BootyWalkAnim.h>  // g_multiBootyGeom (this TU is the only reader)
-#include <Gruntz/GruntPuddle.h>    // g_puddleSpriteKey (the per-player puddle geometry key)
-#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (the per-player tint)
-#include <Gruntz/Sprite.h>         // CDDrawWorker (the tab sprite frame select)
-#include <Image/CImage.h>          // CImage (the frame-select result)
-#include <stdio.h>                 // sprintf ("AREA%i")
+#include <Gruntz/BankMgr.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GruntzMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/WwdGameReg.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Utils/MapTyped.h>
+#include <Gruntz/Play.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/BootyWalkAnim.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/Sprite.h>
+#include <Image/CImage.h>
+#include <stdio.h>
 
 DATA(0x001e8fe8)
-// .rdata; C linkage inherited from <Gruntz/BootyMessages.h>.
+
 const i32 g_bootyLetterCoords[32] = {
-    472, 101, 525, 98,  474, 146, 525, 144, // four (x,y) anchors
-    127, 170, 215, 262, 301, 345, 386, 427, // row 1 column x-positions
-    127, 170, 215, 262, 301, 345, 386, 427, // row 2 (identical)
-    127, 170, 215, 262, 301, 345, 386, 427, // row 3 (identical)
+    472, 101, 525, 98,  474, 146, 525, 144, 127, 170, 215, 262, 301, 345, 386, 427,
+    127, 170, 215, 262, 301, 345, 386, 427, 127, 170, 215, 262, 301, 345, 386, 427,
 };
 
-static const float kGlitterPhaseBias = -225.0f;  // was g_5e93b4 (fsub'd, hence negative)
-static const double kDegToRad = 0.017453292;     // was g_5e93b8 (pi/180)
-static const double kGlitterShrinkRate = 0.002;  // was g_5e93c0
-static const double kGlitterStartRadius = 350.0; // was g_5e93c8
+static const float kGlitterPhaseBias = -225.0f;
+static const double kDegToRad = 0.017453292;
+static const double kGlitterShrinkRate = 0.002;
+static const double kGlitterStartRadius = 350.0;
 
 DATA(0x001e9178)
 RECT g_col1Rects[4] =
@@ -87,9 +85,7 @@ VTBL(CBootyState, 0x001e9cec);
 
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r =
-        m_world->m_soundRegistry
-            ->m_soundStream; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
+    SoundStream* r = m_world->m_soundRegistry->m_soundStream;
     if (r) {
         r->Stop();
     }
@@ -97,29 +93,23 @@ void CBootyState::ReleaseResources() {
     m_world->m_soundRegistry->RemoveKeysEqual("GRUNTZ_WANDGRUNT", "_");
     m_world->m_imageRegistry->RemoveKeysEqual("BOOTY", "_");
     m_world->m_imageRegistry->RemoveKeysEqual("GRUNTZ_GOKARTGRUNT", "_");
-    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
+    CState::ReleaseResources();
 }
 
-// ---------------------------------------------------------------------------
-// CBootyState::Vslot09 (slot 9, 0x18d30) - the booty "bg" activation tick: hide the
-// cursor, fade in the "bg" title, kick the render worker apply (m_c->m_drawTarget->Flush)
-// + the booty page timer, and (when the BOOTY_LOOP ambient sound entry exists and is
-// enabled by g_sndEnabled) re-trigger it on a rate-limited timer keyed off the
-// g_killCueClock frame counter vs the entry's last-played stamp + interval.
 // @early-stop
 RVA(0x00018d30, 0xcd)
 i32 CBootyState::Vslot09(i32) {
     while (ShowCursor(FALSE) >= 0)
         ;
-    if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) { // 0xfa1f0 (CState base method)
+    if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
         return 0;
     }
     m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
+    RetireScene(0x50, 0x3e8, 0, 1);
 
     CGruntzMgr* reg = g_gameReg;
     CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
-    i32 token = reg->m_soundVolume; // +0x11c (the ambient sound token this facet reads)
+    i32 token = reg->m_soundVolume;
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
         MapLookup(set->m_10, "BOOTY_LOOP", res);
@@ -134,18 +124,11 @@ i32 CBootyState::Vslot09(i32) {
     return 1;
 }
 
-// CBootyState::FrameSlot28 (slot 10 / +0x28, 0x18e40): the BOOTY_LOOP ambient
-// voice-loop driver. Look up the "BOOTY_LOOP" cue in the m_c cue registry; if its
-// DirectSound buffer is playing, re-trigger it (CloneAndPlay) and spin the audio-kill
-// voice reaper until the buffer stops. Returns 1.
 // @early-stop
 RVA(0x00018e40, 0x81)
 i32 CBootyState::FrameSlot28(i32) {
     void* obj = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
-        "BOOTY_LOOP",
-        obj
-    ); // CDDrawSubMgrLeafScan::m_10 (::CMapStringToPtr @0x1b8438)
+    m_world->m_soundRegistry->m_10.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
@@ -158,22 +141,14 @@ i32 CBootyState::FrameSlot28(i32) {
     return 1;
 }
 
-// CBootyState::BuildWarpStoneGlitterAnimation (0x19540): build 4 "DoNothing" warp-
-// letter animations through the glitter factory (g_gameReg viewed as CGlitterMgr:
-// m_world->m_childGroup), stash them in the +0x1ec sprite array, set/clear their active bit, then
-// build the trailing "SimpleAnimation" glitter sprite.
-// RE-HOMED from CMultiBootyState, which is a SIBLING of CBootyState (both derive from
-// CState) - so it could never have been called, as it is, on a CBootyState's own `this`.
-// Its ONLY caller is 0x18830 = CBootyState's vtable slot 1, via `mov ecx,esi`.
 // @early-stop
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CGruntzMgr* reg = g_gameReg;
-    // The +0x1ec array is CBootyState::m_trailSprites - a real, typed member now, so the
-    // `(CGameObject**)((char*)this + 0x1ec)` offset-reach is gone.
+
     CWwdGameObjectA** slot = m_trailSprites;
     m_radius = 0xc8;
-    m_letterIdx = (reg->m_scoreHud->m_count - 1) % 4; // +0x7c->+0x04: the active letter count
+    m_letterIdx = (reg->m_scoreHud->m_count - 1) % 4;
     m_angleStep = 0;
     m_scratchX = 0;
     m_scratchY = 0;
@@ -202,25 +177,13 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     return 1;
 }
 
-// CBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
-// m_initGate set it snaps the eight letter sprites to the static spawn table; otherwise it
-// walks a sine spiral (radius m_radius, angle (m_angleStep+225)*pi/180), advances the
-// step by 5, shrinks the radius along the 350.0-step*0.002*350.0 curve, then latches the
-// trailing sprite's spawn flag when the radius reaches zero.
-//
-// RE-ATTRIBUTED from CMultiBootyState + RETYPED void -> i32 (2026-07-28): its sole
-// caller is CBootyState::Render (vtable slot 5 @0x1c210, `mov ecx,esi` on its own
-// `this`), and that caller GATES on the result (`test eax,eax; je <merge>`). Retail has
-// two exits - `xor eax,eax` when the radius has not run out, and one reached with eax
-// still holding the 1 the `m_sortKey != 1` comparisons materialised - so it returns
-// 0/1, not void.
 // @early-stop
 RVA(0x000196c0, 0x1d3)
 i32 CBootyState::StepGlitterAnim() {
     if (m_initGate) {
         if (m_letterIdx >= 0) {
-            const i32* tbl = g_bootyLetterCoords + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            CWwdGameObjectA** ap = m_trailSprites;    // walks the array by 1
+            const i32* tbl = g_bootyLetterCoords + 1;
+            CWwdGameObjectA** ap = m_trailSprites;
             for (i32 i = 0; i <= m_letterIdx; i++) {
                 CWwdGameObjectA* e = *ap;
                 e->m_screenX = tbl[-1];
@@ -242,8 +205,7 @@ i32 CBootyState::StepGlitterAnim() {
 
     i32 step = m_angleStep;
     i32 idx = m_letterIdx;
-    double r =
-        static_cast<float>(m_radius); // load (float)m_radius first; shared across sin/cos terms
+    double r = static_cast<float>(m_radius);
     double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
     m_scratchX =
         static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2])));
@@ -255,12 +217,11 @@ i32 CBootyState::StepGlitterAnim() {
          - static_cast<float>((step + 5)) * kGlitterShrinkRate * kGlitterStartRadius)
     );
 
-    // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
     CWwdGameObjectA** arr1ec = m_trailSprites;
     if (idx > 0) {
-        const i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
-        CWwdGameObjectA** ap = arr1ec;            // eax
+        const i32* tbl = g_bootyLetterCoords + 1;
+        CWwdGameObjectA** ap = arr1ec;
         do {
             CWwdGameObjectA* e = *ap;
             i++;
@@ -271,7 +232,7 @@ i32 CBootyState::StepGlitterAnim() {
             tbl += 2;
         } while (i < m_letterIdx);
     }
-    // The trailing sprite + the i'th (== m_letterIdx) sprite get the computed scratch coords.
+
     m_cursorLetter->m_screenX = m_scratchX;
     m_cursorLetter->m_screenY = m_scratchY;
     arr1ec[i]->m_screenX = m_scratchX;
@@ -290,10 +251,6 @@ i32 CBootyState::StepGlitterAnim() {
     return 1;
 }
 
-// CBootyState::MoveLettersByDir() (0x19b90): if the anim-mode latch (m_initGate) is set,
-// OR the spawn bit into all eight letters' flags; otherwise step each of the eight
-// letters one cell (+/-4 px) along its compass direction (an 8-way jump table), flagging
-// any that leave the [0,0x280]x[0,0x1e0] play field.
 // @early-stop
 RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
@@ -357,11 +314,6 @@ void CBootyState::MoveLettersByDir() {
     ((m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0) ? g_gameReg->m_scoreHud->getter()  \
                                                                 : g_gameReg->m_scoreHud->field)
 
-// CBootyState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
-// 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
-// divide-by-1000 then /60), score, and "%d of %d" progress into `buf`. Every stat is
-// read via STAT(getter, field). The default case writes "???".
-// @early-stop
 RVA(0x0001af70, 0x3e0)
 void CBootyState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
@@ -434,18 +386,18 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
 
 RVA(0x0001c0f0, 0xd5)
 i32 CBootyState::CheckPerfectBonus() {
-    if (!g_gameReg->m_scoreHud->InBounds(-1)) { // FrameReady @0xfcd70 == CBattlezData::InBounds
+    if (!g_gameReg->m_scoreHud->InBounds(-1)) {
         return 1;
     }
     CWwdGameObjectA* st = m_bootyPerfectSprite;
     i32 phase = st->m_screenX;
     if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;
-        i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
+        i32 item = g_gameReg->m_soundVolume;
         CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
         if (m28->m_emitGate == 0) {
             void* found = 0;
-            m28->m_10.Lookup("BOOTY_PERFECT", found); // ::CMapStringToPtr::Lookup @0x1b8438
+            m28->m_10.Lookup("BOOTY_PERFECT", found);
             if (found && g_sndEnabled != 0) {
                 LeafCue* p = static_cast<LeafCue*>(found);
                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
@@ -463,14 +415,6 @@ i32 CBootyState::CheckPerfectBonus() {
     return 1;
 }
 
-// CBootyState::Render (slot 5 / +0x14, 0x1c210): the per-frame bonus-state draw.
-// Lost-surface recovery, the sound-stream tick, a 64-bit 0x21 ms frame throttle over the
-// {m_1c0,m_1c4} stamp / {m_1c8,m_1cc} interval pair, then a FALL-THROUGH cascade over
-// m_activation (100 -> 101 -> 102 -> 103 -> 199 -> 200) that runs one stage per throttled
-// frame: the BOOTY_WARP cue, the glitter step + the BOOTY_BOOM cue + the "World/Level
-// Completed!" banner, the letter walk + the level-message HUD, the walking-gruntz tick,
-// and finally the secret-bonus message. Every arm merges into the shared frame tail
-// (kill-cue tick, worker walk, front-page Flip + overlay BltFast, voice reap).
 // @early-stop
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
@@ -487,8 +431,7 @@ i32 CBootyState::Render() {
         snd->PurgeVoiceList(now);
         snd->TickSubManagers(now);
     }
-    // The {+0x1c0,+0x1c4} last-frame stamp and the {+0x1c8,+0x1cc} interval are the
-    // class's two i64 union arms (the i32 halves stay for the per-dword writers).
+
     i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_frameStamp64;
     if (elapsed < m_frameInterval64) {
         return 0;
@@ -510,8 +453,8 @@ i32 CBootyState::Render() {
                 }
             }
         }
-        // FALL THROUGH - one stage per throttled frame is retail's shape: each arm
-        // gates on its own step and drops into the next.
+            // FALL THROUGH
+
         case 101: {
             if (StepGlitterAnim() == 0) {
                 break;
@@ -569,9 +512,7 @@ i32 CBootyState::Render() {
                 RECT rc;
                 CBattlezData* hud = g_gameReg->m_scoreHud;
                 if (hud->m_count > 0x24) {
-                    // if/else, NOT `?:` - the ternary selects the literal into a register
-                    // and pushes once; retail pushes the literal inside each arm and
-                    // cross-jumps the shared `call operator=`.
+
                     if (hud->m_allDone != 0) {
                         s = "You have completed training! Now, grab the pebble from my hand.";
                     } else {
@@ -628,39 +569,24 @@ i32 CBootyState::Vslot07() {
     if (IsActive() == 0) {
         return 0;
     }
-    return CState::Vslot07() != 0; // 0xfac70 (qualified base call, cast-free)
+    return CState::Vslot07() != 0;
 }
 
 RVA(0x0001d3e0, 0x8)
 i32 CBootyState::Vslot0e(i32, i32, i32) {
-    return BuildBootyGruntIdleAnimation(); // 0x1ce60 (BzState:: - UNBOUND; needs BzState.h fold)
+    return BuildBootyGruntIdleAnimation();
 }
 
 RVA(0x0001d400, 0x8)
 i32 CBootyState::Vslot11(i32, i32, i32) {
-    return BuildBootyGruntIdleAnimation(); // 0x1ce60 (BzState:: - UNBOUND; needs BzState.h fold)
+    return BuildBootyGruntIdleAnimation();
 }
 
 RVA(0x0001d420, 0x8)
 i32 CBootyState::Vslot0c(i32, i32) {
-    return BuildBootyGruntIdleAnimation(); // 0x1ce60 (BzState:: - UNBOUND; needs BzState.h fold)
+    return BuildBootyGruntIdleAnimation();
 }
 
-// CMultiBootyState::LoadGameAssetNamespaces (0x1d440): the multi-booty slot-1
-// asset/state loader. Owner re-attributed (ex "CBootyState::StateOnEnter"): retail's
-// ONLY reference to 0x1d440 is ??_7CMultiBootyState slot 1 (ILT 0x2900 -> 0x1d440;
-// RTTI slot map), it appears in no other vtable and has no direct caller.
-//
-// Chains the CState default, resolves the STATEZ_BOOTY / GAME / GRUNTZ / AREA%i
-// symbol banks, installs the BOOTY sound set, drains the cursor and pumps the
-// message queue, then builds the whole battle-results board:
-//   * per joined player: the puddle, the winner's EXITZ (or a random idle) grunt,
-//     and four "best pickup" icons chosen by scanning that player's weapon (22),
-//     toy (10), powerup (7) and misc (4) tallies in CBattlezData for their max;
-//   * per player: the MULTIPLAYERT tab + the warlord's FORTRESSFLAGZ badge;
-//   * the LEVEL_FORT backdrop and the winning warlord's JOY/BOOTY animation;
-//   * finally the captured-fortress flag row, spread by the per-count offset table.
-//
 // @early-stop
 RVA(0x0001d440, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
@@ -757,7 +683,6 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_gruntSprites[i]->m_stateFlags |= 1;
 
-        // --- the four "best pickup" icons: scan this player's tally band for its max
         {
             i32 best = -1;
             i32 bestIdx = 0;
@@ -892,7 +817,6 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_miscIcons[i]->m_stateFlags &= ~1;
     }
 
-    // --- per player: the scoreboard tab + the warlord's fortress-flag badge
     for (i32 t = 0; t < 4; t++) {
         CString tabKey;
         CString flagKey;
@@ -937,7 +861,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->m_screenX = g_multiBootyGeom[7][t].m_x;
         m_tabSprites[t]->m_screenY = g_multiBootyGeom[7][t].m_y;
         {
-            // the tab's own frame: 1 when the slot is joined, 2 when it is empty
+
             i32 frame = (pl->m_joined != 0) ? 1 : 2;
             CWwdGameObjectA* o = m_tabSprites[t];
             CDDrawWorker* set = o->m_sprite;
@@ -955,7 +879,6 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->m_stateFlags &= ~1;
     }
 
-    // --- the fortress backdrop and the winning warlord's booty animation
     {
         CShadeTable* tint =
             g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[QueryGruntSlots()].m_008, 0);
@@ -1012,7 +935,6 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_warlordBooty->m_stateFlags &= ~1;
 
-        // --- the captured-fortress flag row, spread by how many that warlord holds
         for (i32 w = 0; w < 4; w++) {
             i32 held = g_gameReg->m_scoreHud->SumFlags(w);
             i32 placed = 0;
@@ -1040,48 +962,34 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     return 1;
 }
 
-// CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
-// pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
-// on the owner's m_4->m_60 cue sink (CGruntSpawnConfig::PauseAllVoices), then chain
-// CState::ReleaseResources.
-// EXACT. The old "m_4 deref in eax vs edx coin-flip" was a CASCADE off the first
-// statement: latching ->m_2c into a local collapsed the deref chain and re-coloured
-// every later scratch. Read ->m_2c off a named registry local instead.
-// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    // Read ->m_2c off a NAMED registry local (twice), never latched into a local: the
-    // latch lets cl collapse the two-step deref into one register.
-    // docs/patterns/named-local-keeps-deref-base-in-own-register.md
+
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream) {
         reg->m_soundStream->Stop();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
-    // m_4 (CState::m_4) IS the CGruntzMgr singleton; the +0x60 slot it flushes here is
-    // m_cueSink. PROVEN 2026-07-28: retail `mov ecx,[edx+0x60]; call 0x20a4` and the ILT
-    // thunk 0x20a4 jumps to 0x11c7b0 == CGruntSpawnConfig::PauseAllVoices - the SAME callee
-    // every other m_cueSink site uses (GruntzMgr.cpp 2094/2111/2656). The old
-    // `(CMoviePlayer*)...->~CMoviePlayer()` bound the call to the wrong function.
-    m_mgr->m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush)
-    CState::ReleaseResources();         // 0xfa150 (chain the base slot-2 teardown; direct)
+
+    m_mgr->m_cueSink->PauseAllVoices();
+    CState::ReleaseResources();
 }
 
 RVA(0x0001e570, 0xb4)
 i32 CMultiBootyState::Vslot09(i32) {
-    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1); // 0xfa1f0 (CState base method)
+    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
     if (!ok) {
-        return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
+        return ok;
     }
     m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
+    RetireScene(0x50, 0x3e8, 0, 1);
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
-    i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
+    i32 item = g_gameReg->m_soundVolume;
     CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
     if (m28->m_emitGate == 0) {
         void* found = 0;
-        m28->m_10.Lookup("BOOTY_LOOP", found); // ::CMapStringToPtr::Lookup @0x1b8438
+        m28->m_10.Lookup("BOOTY_LOOP", found);
         if (found && g_sndEnabled != 0) {
             LeafCue* p = static_cast<LeafCue*>(found);
             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
@@ -1093,17 +1001,11 @@ i32 CMultiBootyState::Vslot09(i32) {
     return 1;
 }
 
-// CMultiBootyState::FrameSlot28 (slot 10 / +0x28, 0x1e660): identical BOOTY_LOOP
-// voice-loop driver to CBootyState::FrameSlot28 (0x18e40) - the two sibling states
-// share the ambient-loop spin.
 // @early-stop
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::FrameSlot28(i32) {
     void* obj = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
-        "BOOTY_LOOP",
-        obj
-    ); // CDDrawSubMgrLeafScan::m_10 (::CMapStringToPtr @0x1b8438)
+    m_world->m_soundRegistry->m_10.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
@@ -1116,13 +1018,6 @@ i32 CMultiBootyState::FrameSlot28(i32) {
     return 1;
 }
 
-// CMultiBootyState::QueryGruntSlots() (0x1ecf0): return the index of the first player
-// who has JOINED but has not yet cleared this round; none -> 0. (`this`/ecx is unused.)
-// The retail walk is `g_gameReg+0x174 + i*0x238` reading +4/+0/-0x24, which is exactly
-// g_gameReg->m_options[i] (GruntzPlayer[4] at +0x150, stride 0x238) at its named fields
-// m_joined/m_clearedRound/m_playerIndex - the cursor just points into the record's
-// middle. Kept as a pointer cursor (`p++` == retail's `add eax,0x238`); an indexed
-// m_options[i] would cost an imul on the non-power-of-two stride.
 // @early-stop
 RVA(0x0001ecf0, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
@@ -1147,7 +1042,6 @@ static __inline i32 sumRun(i32* p, i32 n) {
     return s;
 }
 
-// @source: string-xref
 // @early-stop
 RVA(0x0001ed30, 0x5ac)
 void CMultiBootyState::DrawBattleStats() {
@@ -1157,7 +1051,6 @@ void CMultiBootyState::DrawBattleStats() {
     i32 i;
     i32 c;
 
-    // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_options[i].m_joined != 0) {
             s.Format("%d", sumRun(&g_gameReg->m_scoreHud->m_miscPickupz[i * 4], 4));
@@ -1186,7 +1079,6 @@ void CMultiBootyState::DrawBattleStats() {
         }
     }
 
-    // Loop 2: category labels.
     for (c = 0; c <= 6; c++) {
         switch (c) {
             case 0:
@@ -1215,7 +1107,6 @@ void CMultiBootyState::DrawBattleStats() {
         DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
-    // Colour loop: team-colour name per active player, drawn in that colour.
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_options[i].m_joined != 0) {
             i32 color;
@@ -1288,7 +1179,6 @@ void CMultiBootyState::DrawBattleStats() {
         }
     }
 
-    // Title.
     s.Format("BATTLE STATZ");
     rc.left = 0x96;
     rc.top = 0xf;
@@ -1307,16 +1197,13 @@ i32 CMultiBootyState::Render() {
         }
     }
     if (m_1b8 == 0x64) {
-        DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
+        DrawBattleStats();
         m_1b8 = 0xc7;
     }
     m_world->m_childGroup->TickKillCues(1);
     m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
 
-    // +0x7c->+0x10: the booty countdown's elapsed-millisecond source. The SAME field the
-    // battlez scoreboard reads as its score accumulator (CBattlezData::m_score) - one
-    // field, two readers; the canonical name is kept rather than forking the class.
-    u32 secs = g_gameReg->m_scoreHud->m_score / 1000; // signed /1000, then unsigned H:M:S
+    u32 secs = g_gameReg->m_scoreHud->m_score / 1000;
     CString s;
     RECT rc;
     SetRect(&rc, 8, 0x41, 0xcb, 0xae);
@@ -1332,16 +1219,14 @@ i32 CMultiBootyState::Render() {
     dt->m_backPair->m_surface
         ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
     if (m_world->m_soundRegistry->m_soundStream != 0) {
-        m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(
-            -1
-        ); // SoundDevice base method (inherited)
+        m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
     }
     return 1;
 }
 
 RVA(0x0001f6f0, 0x10b)
 i32 CMultiBootyState::InputVirtual() {
-    if (!CState::InputVirtual()) { // 0xface0: the shared CState slot-8 base image-load gate
+    if (!CState::InputVirtual()) {
         return 0;
     }
 
@@ -1375,13 +1260,13 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) { // 0xfa1f0 (CState base method)
+    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
         return 0;
     }
 
-    DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
+    DrawBattleStats();
     m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
+    RetireScene(0x50, 0x3e8, 0, 1);
     return 1;
 }
 
@@ -1395,17 +1280,9 @@ i32 CMultiBootyState::Vslot07() {
     if (IsActive() == 0) {
         return 0;
     }
-    return CState::Vslot07() != 0; // 0xfac70 (qualified base call, cast-free)
+    return CState::Vslot07() != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CMultiBootyState::PostCommandIfKey (0x1f8a0): if the one-shot battle-stats latch
-// (m_1b8) reads 0xc7, post WM_COMMAND 0x8023 to the game window
-// (g_gameReg->m_gameWnd->m_hwnd) via ::PostMessageA; always return 1. __thiscall,
-// no args. (Was the @identity-TODO PendingCmdKeyHost view; the slot-12/14/17
-// forwarders below tail-call it with ecx = a CMultiBootyState `this`, and it reads
-// m_1b8 (+0x1b8) -- that xref recovers it as this CMultiBootyState method.)
-// ---------------------------------------------------------------------------
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
     if (m_1b8 == 0xc7) {

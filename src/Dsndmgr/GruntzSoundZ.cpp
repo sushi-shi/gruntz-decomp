@@ -1,37 +1,24 @@
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <rva.h>
 
-#include <mss.h>    // the genuine Miles Sound System (MSS32.DLL) AIL/XMIDI SDK header
-#include <stdio.h>  // sprintf - the "MIDI%i" auto-name (0x11f890, _sprintf)
-#include <string.h> // strcpy/memcpy (inline rep movs / repne scas under /O2)
+#include <mss.h>
+#include <stdio.h>
+#include <string.h>
 
-VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ (16-slot)
+VTBL(CGruntzSoundInnerZ, 0x001ef700);
 DATA(0x00253c5c)
-HMDIDRIVER g_ailMidiDriver = 0; // 0x653c5c  AIL/digital MIDI driver handle (0 = none open)
+HMDIDRIVER g_ailMidiDriver = 0;
 DATA(0x00253c60)
-i32 g_midiSeqCounter = 0; // 0x653c60  monotonic auto-name counter ("MIDI%i")
+i32 g_midiSeqCounter = 0;
 DATA(0x00253c64)
-// 0x653c64 - the app HINSTANCE, latched by Init and used ONLY as the resource
-// module for the embedded MIDI resources (FindResource/LoadResource/SizeofResource).
-// It was declared HMDIDRIVER, which is what made every use a pun.
+
 HINSTANCE g_midiResModule = 0;
 
-// ---------------------------------------------------------------------------
-// ~CGruntzSoundZ destructor: stop/flush everything via Shutdown, then the m_map
-// member ~CMapStringToOb fires from the destructor epilogue. The destructible
-// member forces the /GX EH state machine (state 0 across Shutdown, -1 after).
-// Non-polymorphic containment (see the header note): retail emits NO own-vptr
-// restamp here, which the old derived model could not reproduce (was @early-stop
-// at ~91.6% on the extra ??_7CGruntzSoundZ entry stamp).
 RVA(0x00086040, 0x49)
 CGruntzSoundZ::~CGruntzSoundZ() {
     Shutdown();
 }
 
-// The third arg is a NO-MIDI request, not a "skip the init": retail's `test eax,eax;
-// jne` on it lands on the SAME `m_enabled = 0` store the two AIL failure paths reach
-// (0x1384de), i.e. a non-zero flag disables the host outright. The old model let it
-// fall through with m_enabled still 1 (byte-visible: `jne +0x55` vs retail `jne +0x4e`).
 RVA(0x00138490, 0x5e)
 i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
     m_hInstance = hInst;
@@ -256,9 +243,6 @@ i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// GetXMidiVolume: read the AIL XMIDI master volume and rescale 0..127 -> 0..100.
-// __thiscall (reached as m_sound->GetXMidiVolume), `this` unused.
 // @early-stop
 RVA(0x001389c0, 0x47)
 i32 CGruntzSoundZ::GetXMidiVolume() {

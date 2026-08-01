@@ -1,85 +1,38 @@
-// RollingBall.cpp - Gruntz CRollingBall::Update (C:\Proj\Gruntz). The per-tick
-// movement/state update for the rolling-ball hazard (CRollingBall : CUserLogic,
-// sizeof 0xa0). Recovered from the $SG string set (LEVEL_ROLLINGBALL_FALL/
-// EXPLOSION/SINK*, LEVEL_ROLLINGBALL_NORTH/SOUTH/EAST/WEST, LEVEL_DEATHSPLASH,
-// "RollingBallTimePerTile"/"Hazardz" CButeMgr key, "Particlez"/"GAME_WATER")
-// which identify the ball's directional roll + sink/fall/explosion sound + the
-// per-frame sub-tile position interpolation.
-//
-// Structure: an outer action switch on the tile's terrain id ([map]-4, range
-// 0..0x70 -> jump table 0x4b0bbc) selects FALL / EXPLOSION / SINK / WATER /
-// default; the SINK arm runs an inner switch on the sink-type id (0x98 base,
-// 0..0x23 -> 0x4b0c68) and the move arm runs a direction switch (state +0x12c,
-// 1..4) that picks NORTH/SOUTH/EAST/WEST and steps the integer tile coords
-// (+0x78,+0x7c) by 0x20. The tail interpolates the double sub-tile position
-// (+0x60/+0x68) toward the target at a per-tile time read from the bute file,
-// then writes the snapped grid coords back into the logic object (+0x10).
-//
-// It is a /GX EH-framed routine: two CString diagnostic/scratch temps at
-// [esp+0x10]/[esp+0x14] (the per-direction sound-name strings) give it the
-// exception frame, so it lives in an `eh` unit.
-//
-// CARCASS doctrine: CRollingBall's own fields and the level/map/registry
-// sub-objects are unmatched engine classes accessed by raw this+offset; every
-// callee is an external reloc-masked __thiscall/__cdecl thunk; the LEVEL_*/GAME_*
-// strings are $SG literals reloc-masked against the matched string symbols. Only
-// the offsets / code bytes are load-bearing (campaign doctrine).
-//
-// @early-stop
 
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/GameRegMfcPtr.h>   // g_gameReg at its REAL type (CGruntzMgr)
+
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>              // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance)
-#include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
-#include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (g_gameReg typed)
+#include <Io/FileMem.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/RollingBall.h>
+#include <Gruntz/GameRegistry.h>
 
 #include <rva.h>
-#include <Gruntz/GameLevel.h> // CTileImageSet (the tile-descriptor the resolver dispatches on)
-#include <math.h>             // ceil/floor (the sub-step rounding, ex Rb aliases)
-#include <string.h>           // inline strcmp for the ctor's direction-name match
+#include <Gruntz/GameLevel.h>
+#include <math.h>
+#include <string.h>
 #include <Wap32/ZVec.h>
-#include <Rez/FrameClock.h>      // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
-#include <Gruntz/TriggerMgr.h>   // CTriggerMgr - m_cmdGrid (m_rollingballWanted)
-#include <Gruntz/KitchenSlime.h> // ex Globals.h
-#include <Bute/ButeMgr.h>        // CButeMgr::GetDwordDef on g_buteMgr
+#include <Rez/FrameClock.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/KitchenSlime.h>
+#include <Bute/ButeMgr.h>
 
-// CActRegPool<CRollingBall>::s_table (0x002461b0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x002461b0)
 CActReg CActRegPool<CRollingBall>::s_table(2000, 2010);
 
 VTBL(CRollingBall, 0x001e86fc);
 
-static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
+static const double kMsPerSecond = 1000.0;
 
 static i32 VtblResolve(void* ent) {
     return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
 }
 
-// ===========================================================================
-// CRollingBall::~CRollingBall  (0x012f80)
-// ===========================================================================
-// The leaf adds no destructible members, so its dtor folds the bare CUserLogic
-// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
-// (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. The empty body is enough.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CRollingBall() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
-// CRollingBall::CRollingBall @0xaf820 - fold the shared CUserLogic(obj) init, bind
-// the cycle geometry + "A" bute node, snap the bound object to the tile grid + seed
-// the +0x74 layer key, match the ball's direction name
-// (LEVEL_ROLLINGBALL_{NORTH,EAST,SOUTH,WEST}) into the travel vector + direction id,
-// then read the per-tile time (RollingBallTimePerTile, +1000 in the windowed mode)
-// into the per-frame speed and seed the timer block.
-//
 // @early-stop
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -130,7 +83,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 
-    i32 time = o->m_7c->m_bc;
+    i32 time = o->m_animWorker->m_bc;
     if (time == 0) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
@@ -163,15 +116,6 @@ void CRollingBall::FireActivation(i32 id) {
     }
 }
 
-// CRollingBall::RegisterActs @0x0aff40 - bind the per-frame handler (Update
-// @0x0b0140) to the activation key "A" via the shared name registry. The SAME
-// archetype as CBehindCandyAni::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000aff40, 0x18d)
 void CRollingBall::RegisterActs() {
     i32 id = ActFindId("A");
@@ -194,33 +138,6 @@ void CRollingBall::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
-// CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
-//
-// RETAIL SHAPE (0xb0140, 0xa7a B). Three gates, then an arrival-only action /
-// direction machine, then the x87 sub-tile interpolation:
-//
-//   * 0xb0195 `mov eax,[esi+0x80]; test eax,eax; jne <epilogue>` - the explosion
-//     latch RETURNS the whole tick, it does not merely skip a block; and the
-//     latch is SET at 0xb0246 (fuse blown) or 0xb0b90 (an action fired), never
-//     unconditionally.
-//   * 0xb02e7/0xb02f5 - if the object is not yet ON its target cell the tick
-//     jumps straight to 0xb089c, i.e. it skips the whole action + direction
-//     machine AND the m_subX/m_subY re-base; only the interpolation runs.
-//   * the action switch at 0xb0444 is the tile's resolved action id biased by -4
-//     over 0..0x70 with a BYTE index table at 0x4b0be0 into a NINE-slot target
-//     table at 0x4b0bbc: {4},{10},{35},{36},{108},{110},{114},{116} each own a
-//     slot (three distinct bodies) plus the default. Every arm except the
-//     `act == 4` continuation latches and returns 0.
-//   * the sink switch at 0x4b0c68/0x4b0ca4 (tile field -0x68 over 0..0x23) nudges
-//     the target cell by +-0x10 on each axis; its default slot (14) is the
-//     latch-and-return block, not a fallthrough.
-//   * ApplyName takes the FIRST-constructed CString ([esp+0x14]) and
-//     ApplyLookupGeometry the second ([esp+0x10]) - 0xb0543 reads them in that
-//     order.
-//
-// It is a /GX EH-framed routine: the two CString temps ([esp+0x10]/[esp+0x14],
-// default-constructed at 0xb03a5/0xb03ba) give it the exception frame.
-// @early-stop
 RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -234,8 +151,6 @@ i32 CRollingBall::Update() {
         return 0;
     }
 
-    // The fuse: armed by the object's +0x118 mode gate, fires when the 64-bit
-    // clock delta has REACHED the window (retail branches away on `<`).
     CWwdGameObjectA* logic = m_object;
     if (logic->m_118 > 0) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_explodeStart64
@@ -254,8 +169,6 @@ i32 CRollingBall::Update() {
         }
     }
 
-    // The fall latch (+0x84): grid-side "a ball wants servicing" flag + the
-    // squash test against whatever grunt is standing on the ball's cell.
     if (m_fallLatch == 0) {
         CWwdGameObjectA* lg = m_object;
         i32 sx = lg->m_screenX;
@@ -275,7 +188,7 @@ i32 CRollingBall::Update() {
 
     CWwdGameObjectA* cur = m_object;
     if (cur->m_screenX == m_targetX && cur->m_screenY == m_targetY) {
-        // ---- arrived on the target cell ----
+
         g_gameReg->m_cmdGrid->WireTileSwitchLogic(0, m_targetX, m_targetY);
         g_gameReg->m_cmdGrid->ApplySwitch(0, m_targetX, m_targetY);
 
@@ -294,12 +207,9 @@ i32 CRollingBall::Update() {
         }
 
         if ((terrain & 0x939) != 0 || (terrain & 2) != 0) {
-            CString fall;      // [esp+0x14] - the ApplyName string
-            CString explosion; // [esp+0x10] - the ApplyLookupGeometry string
+            CString fall;
+            CString explosion;
 
-            // Resolve the target cell's action id off the level's main plane
-            // (m_tileGrid[m_colOffsets[col] + row]); the X coordinate is clamped
-            // against m_gridW FIRST, then Y against m_gridH.
             CGameLevel* lvl = g_gameReg->m_world->m_level;
             i32 col = m_targetY >> 5;
             i32 row = m_targetX >> 5;
@@ -330,8 +240,7 @@ i32 CRollingBall::Update() {
                 case 4:
                 case 110:
                 case 116: {
-                    // The FALL/EXPLOSION/SINK trio, selected by the level's
-                    // terrain class (CState::m_levelType, biased -4 over 4..8).
+
                     switch (g_gameReg->m_curState->m_levelType) {
                         case 4:
                         case 5:
@@ -376,9 +285,6 @@ i32 CRollingBall::Update() {
                         g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
                     m_moveSpeed = kMsPerSecond / static_cast<double>(perTile);
 
-                    // The sink nudge: the ball's CURRENT cell record (+0xc) picks a
-                    // +-0x10 offset pair for the target cell. The default arm latches
-                    // and returns.
                     CMapMgr* board = g_gameReg->m_tileGrid;
                     CWwdGameObjectA* o2 = m_object;
                     i32 bx = o2->m_screenX >> 5;
@@ -500,10 +406,6 @@ i32 CRollingBall::Update() {
             }
         }
 
-        // ---- the direction machine ----
-        // 0xb0651: the OLD roll direction is captured before the resolve, and the
-        // tile's own action id (11..18 -> N/E/S/W) re-aims the ball, but only when
-        // the terrain word carries bit 7.
         CWwdGameObjectA* dirObj = m_object;
         i32 oldDir = dirObj->m_12c;
         if ((terrain & 0x80) != 0) {
@@ -552,16 +454,13 @@ i32 CRollingBall::Update() {
             }
         }
 
-        // 0xb072f - retail stores [esi+0x60], [esi+0x68], [esi+0x64], [esi+0x6c] in
-        // that order: subX.lo / subY.lo / subX.hi / subY.hi INTERLEAVED, four dword
-        // stores of a zeroed register, which no `double = 0.0` pair emits.
         CWwdGameObjectA* dirObj2 = m_object;
         m_subXLo = 0;
         m_subYLo = 0;
         m_subXHi = 0;
         m_subYHi = 0;
         switch (dirObj2->m_12c) {
-            case 1: // north
+            case 1:
                 m_subY = -m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = -1;
@@ -570,7 +469,7 @@ i32 CRollingBall::Update() {
                     m_38->ApplyName("LEVEL_ROLLINGBALL_NORTH");
                 }
                 break;
-            case 2: // east
+            case 2:
                 m_subX = m_moveDelta;
                 m_stepDirX = 1;
                 m_stepDirY = 0;
@@ -579,7 +478,7 @@ i32 CRollingBall::Update() {
                     m_38->ApplyName("LEVEL_ROLLINGBALL_EAST");
                 }
                 break;
-            case 4: // west
+            case 4:
                 m_subX = -m_moveDelta;
                 m_stepDirX = -1;
                 m_stepDirY = 0;
@@ -588,7 +487,7 @@ i32 CRollingBall::Update() {
                     m_38->ApplyName("LEVEL_ROLLINGBALL_WEST");
                 }
                 break;
-            default: // south (3 and everything else)
+            default:
                 m_subY = m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = 1;
@@ -599,8 +498,6 @@ i32 CRollingBall::Update() {
                 break;
         }
 
-        // 0xb0842 - re-base the sub-tile position on the object's current pixel
-        // position and clear the per-step delta, then mark the target cell.
         CWwdGameObjectA* out = m_object;
         m_subX = static_cast<double>(out->m_screenX) + m_subX;
         m_moveDeltaLo = 0;
@@ -614,7 +511,6 @@ i32 CRollingBall::Update() {
         }
     }
 
-    // ---- the x87 sub-tile interpolation tail (0xb089c) ----
     double dt = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_moveSpeed;
     i32 nx;
     if (m_stepDirX > 0) {
@@ -680,13 +576,7 @@ i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d
         return 0;
     }
 
-    // The explosion-timing pair (+0x88/+0x90), streamed through a walking pointer
-    // that advances by 8 (retail hoists `lea ebp,[edi+0x88]` before the branch and
-    // does `push ebp; call; add ebp,8; push ebp; call`). A two-case switch (not
-    // if/else) floats the Write arm past the Read arm, matching retail's branch
-    // polarity (docs/patterns/inline-switch-serialize-record-unroll.md +
-    // pointer-walk-increment-in-for-update.md).
-    i32* p = &m_explodeStartLo; // +0x88; the cursor walks the two i64 clock pairs (add 8)
+    i32* p = &m_explodeStartLo;
     switch (tag) {
         case 4:
             ar->Write(p, 8);
@@ -700,7 +590,6 @@ i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d
             break;
     }
 
-    // The move/state field list (+0x58..+0x98).
     switch (tag) {
         case 4:
             ar->Write(&m_moveSpeed, 8);

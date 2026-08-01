@@ -1,19 +1,19 @@
-#include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/Boomerang.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgr.h>   // CTriggerMgr complete (m_grid: the 4x15 launcher-cell board)
-#include <Gruntz/Grunt.h>        // CGrunt (launcher grunt return-record) + CFileMemBase
-#include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GameRegistry.h>
 #include <rva.h>
-#include <Io/FileMem.h>          // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Io/FileMem.h>
+#include <Gruntz/FreeNodePool.h>
 
 VTBL(CBoomerang, 0x001e792c);
 DATA(0x001eaae8)
 const double g_projPhase0 = 3.1415927;
 
 DATA(0x001eaad8)
-const double g_boomHalf = 0.5; // midpoint scale (0.5) (decl in Boomerang.h)
+const double g_boomHalf = 0.5;
 DATA(0x001eaae0)
 const double g_boomTimeScale = 0.03125;
 DATA(0x001eaaf0)
@@ -24,24 +24,13 @@ const double g_boomRetC4 = -500.0;
 RVA_COMPGEN(0x000129d0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
 
-// @confidence: high
-// @source: rtti-vptr
 // @early-stop
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
-    // vptr stamp is IMPLICIT (real polymorphic class).
+
     m_38->m_flags |= 0x2000002;
 }
 
-// CBoomerang::LoadProjectileSprites @0xe0690 - vtable slot 17. Forward to the base
-// CProjectile loader (bail on failure); then compute the boomerang RETURN trajectory:
-// the arc origin is the midpoint of the launch (owner) and target positions, the
-// direction is the half-vector to it, the velocity scale derives from the phase-0
-// constant over (timePerTile * flightDist), and the phase is reset to 0. Finally, the
-// launcher grunt (grid cell (a,b) of the command grid) is stamped with a return-timer
-// record (m_278 = clock, m_280 = return time) and its occupied-coord list is recycled
-// onto the global free-list + cleared. m_launched is reset to 0.
-//
 // @early-stop
 RVA(0x000e0690, 0x1a9)
 i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
@@ -87,11 +76,6 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
     return 1;
 }
 
-// CBoomerang::SerializeMove @0xe15d0 - vtable slot 1. Bail unless the resource
-// manager is loaded (g_gameReg->m_world); round-trip the eight boomerang return-
-// trajectory fields (launch pos, dir, origin, phase, launched flag) through the
-// archive stream (mode 4 = Write @+0x30, mode 7 = Read @+0x2c), then chain the base
-// CProjectile serialize and booleanize its result.
 RVA(0x000e15d0, 0x155)
 i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     if (g_gameReg->m_world == 0) {

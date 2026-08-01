@@ -1,20 +1,19 @@
-#include <Gruntz/MenuSparkle.h> // the ONE canonical CMenuSparkle (the Grunt.h-world
-#include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/MenuSparkleSerial.h> // own exported globals (ex Globals.h)
+#include <Gruntz/MenuSparkle.h>
+#include <Io/FileMem.h>
+#include <Gruntz/MenuSparkleSerial.h>
 #include <rva.h>
 
 DATA(0x001ea3d4)
-i32 g_menuSparkleLo = 1000; // 0x5ea3d4
+i32 g_menuSparkleLo = 1000;
 DATA(0x001ea3d8)
-i32 g_menuSparkleHi = 5000; // 0x5ea3d8
+i32 g_menuSparkleHi = 5000;
 
 RVA(0x000ae1c0, 0xae)
 i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (arc == 0) {
         return 0;
     }
-    // The slot-1 base serialize is the shared CMovingLogicBase::Serialize @0x16e7f0
-    // (the real callee - CUserLogic::SerializeMove was a fake, unbound name for it).
+
     if (!CUserLogic::SerializeMove(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
         return 0;
     }

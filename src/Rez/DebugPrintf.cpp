@@ -1,12 +1,12 @@
-#include <Rez/DebugPrintf.h> // C-linkage decls for the ex-wrapped defs
+#include <Rez/DebugPrintf.h>
 #include <rva.h>
-#include <Pix16.h> // the byte-cursor / 16bpp-cell pointer pair
+#include <Pix16.h>
 
-#include <stdarg.h>          // va_list / va_start - the real spelling of `(char*)(&fmt+1)`
-#include <stdlib.h>          // atol / getenv
-#include <string.h>          // inline strcpy (rep movs / repne scasb), strpbrk, strstr
-#include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
-#include <Rez/DebugConfig.h> // canonical CDebugConfig (the debug-output config singleton)
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <Gruntz/RangeSet.h>
+#include <Rez/DebugConfig.h>
 
 DATA(0x002bf84c)
 char* g_monoBuffer = 0;
@@ -43,22 +43,6 @@ void CRangeSet::AddRange(u32 lo, u32 hi) {
     }
 }
 
-// ===========================================================================
-// 0x184c10 - CRangeSet::AddFromString(str): parse a marker-delimited number/range
-// list ("X<n>" or "X<lo>-<hi>" tokens) and AddRange each. For every 'X' marker
-// found, skip to the first digit, extract the leading digit run into a scratch
-// buffer (truncating at the first non-digit while advancing the cursor in
-// parallel), atol it, and - if a '-' follows - parse the upper bound the same way;
-// otherwise the range is a single value. Stops at end-of-string or a missing
-// marker/digit.
-// ===========================================================================
-// (ex-wall, RETIRED 2026-08-01 - code bytes exact; only the `atol` reloc NAME differs
-// (Ghidra `atol` vs cl `_atol`). The "loop-carried-cursor regalloc wall / cl peels the
-// first iteration's cursor into eax" note was a source bug: the body was spelled
-// `if (*str == 0) return; do { ... } while (*str != 0);`, and cl rotates that do-while by
-// DUPLICATING the leading strstr into the loop bottom - which is what forced the cursor
-// out of ebx. The plain `while (*str != 0) { ... }` form gets retail's single bottom test
-// (`cmp BYTE PTR [ebx],0x0; jne`) and pins the cursor in ebx from entry. 92.15 -> 99.87.)
 RVA(0x00184c10, 0x136)
 void CRangeSet::AddFromString(char* str) {
     char buf[0x100];
@@ -108,9 +92,6 @@ void CRangeSet::AddFromString(char* str) {
     }
 }
 
-// 0x184d50 - MONO-console newline: reset the column, advance the row and, when it
-// runs past the last line (25), scroll the whole 80x25 word buffer up one line
-// (0xa2-byte word copy) then blank the bottom line (0x0720), leaving the row at 24.
 // @early-stop
 RVA(0x00184d50, 0x5f)
 void MonoNewline() {
@@ -119,10 +100,7 @@ void MonoNewline() {
         i32 i = 0xa0;
         do {
             i += 2;
-            // The MDA text page is a byte-addressed 80x25 grid of 2-byte (char,attr)
-            // cells; the scroll runs on its 0xa0-byte LINE stride. Retail indexes it
-            // *1 (`[ecx+eax*1-0xa2]`) where a u16[] model would emit *2, so the
-            // cursor stays a byte cursor and Pix16Ptr names the cell it addresses.
+
             Pix16Ptr dst;
             Pix16Ptr src;
             dst.m_chars = (g_monoBuffer + i - 0xa2);
@@ -131,9 +109,7 @@ void MonoNewline() {
         } while (i < 0xfa0);
         i = 0xf00;
         do {
-            // same byte-addressed 2-byte-cell page (retail `[ecx+eax*1-0x2]`); the
-            // post-increment spelling (as in MonoClear) is what keeps 0x720 an
-            // IMMEDIATE - the pre-increment form makes cl hoist it into ecx.
+
             Pix16Ptr cell;
             cell.m_chars = g_monoBuffer + i;
             *cell.m_words = 0x720;
@@ -143,14 +119,12 @@ void MonoNewline() {
     }
 }
 
-// 0x184db0 - MONO-console clear: blank the whole 80x25 word buffer (0x0720) and home
-// the cursor (row 0, column 0).
 // @early-stop
 RVA(0x00184db0, 0x28)
 void MonoClear() {
     i32 i = 0;
     do {
-        // byte-addressed MDA page, 2-byte cells, retail indexes *1
+
         Pix16Ptr cell;
         cell.m_chars = g_monoBuffer + i;
         *cell.m_words = 0x720;
@@ -172,7 +146,6 @@ void RezAssertFail(char* fmt, ...) {
     }
 }
 
-// 0x184e60 - channel-0 debug printf that first positions the cursor (x,y).
 RVA(0x00184e60, 0x6d)
 void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
     char buf[256];
@@ -186,7 +159,6 @@ void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
     }
 }
 
-// 0x184ed0 - debug printf gated on a caller-supplied channel.
 RVA(0x00184ed0, 0x5b)
 void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
     char buf[256];
@@ -199,7 +171,6 @@ void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
     }
 }
 
-// 0x184f30 - channel-gated debug printf that positions the cursor (x,y) first.
 RVA(0x00184f30, 0x73)
 void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
     char buf[256];

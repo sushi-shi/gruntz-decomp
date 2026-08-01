@@ -1,4 +1,3 @@
-// GameAssetNamespaces.h - the GameAssetNamespaces TU's exported globals/data.
 #ifndef GRUNTZ_GRUNTZ_GAMEASSETNAMESPACES_H
 #define GRUNTZ_GRUNTZ_GAMEASSETNAMESPACES_H
 

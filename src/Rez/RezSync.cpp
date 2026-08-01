@@ -1,39 +1,39 @@
-#include <Rez/RezSync.h> // own extern surface
-#include <EmptyString.h> // g_emptyString
+#include <Rez/RezSync.h>
+#include <EmptyString.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/GameRegMfcPtr.h>     // g_gameReg at its REAL type (ex .cpp extern)
-#include <Net/NetMgr.h>               // g_localVersion (ex .cpp extern; def in Multi.cpp)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_30; ex the local view)
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Net/NetMgr.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
-#include <Rez/FrameClock.h> // g_lastNow (the frame-clock now cell Init seeds)
+#include <Rez/FrameClock.h>
 #include <rva.h>
-#include <AddrWord.h> // the swapped length/data slots of this parse-source kind
+#include <AddrWord.h>
 #include <Ints.h>
-#include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
+#include <Mfc.h>
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
-#include <Wap32/Wap32.h>              // CGameMgr (the base ~CGameMgr tail-calls its Close)
-#include <Bute/ButeMgr.h>             // canonical CButeMgr / zPTree (one shape)
-#include <Bute/SymParser.h>           // the ONE CSymParser (m_symParser; ParseBuffer/...)
-#include <Gruntz/GruntzMgr.h>         // CGruntzMgr - the class this whole TU implements
-#include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr (m_tileGrid; the 0x94-byte board)
-#include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr; SetConfig @0x17d980)
-#include <Gruntz/GruntzPlayer.h>      // GruntzPlayer (m_options[4]; SeedForSlot @0xda870)
-#include <Gruntz/Fonts.h>             // InitializeFonts (thunk 0x2db0 -> 0x115810)
-#include <Gruntz/SoundFont.h>         // SFManager_SelectBestDevice / BuildSoundFontPath / Close
-#include <Gruntz/GameObjectFactory.h> // RegisterGameObjectTypes (thunk 0x3526 -> 0xa3b0)
-#include <strstrea.h> // real CRT istrstream/ostrstream (the GAME_ATTRIBUTEZ decode pair)
+#include <Wap32/Wap32.h>
+#include <Bute/ButeMgr.h>
+#include <Bute/SymParser.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/FaderMgr.h>
+#include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/Fonts.h>
+#include <Gruntz/SoundFont.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <strstrea.h>
 #include <string.h>
-#include <stdlib.h> // srand (0x11fed0)
+#include <stdlib.h>
 
-#include <Gruntz/CoordNode.h>     // the shared coord-pool node
-#include <Gruntz/FreeNodePool.h>  // the ONE g_coordPool object (0x645540) Init builds
-#include <Gruntz/ParseSource.h>   // canonical CParseSource (one shape)
-#include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (m_sound audio host; SetXMidiVolume)
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/ParseSource.h>
+#include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/CheatMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -44,9 +44,9 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/SoundFxEmitter.h> // ex Globals.h
-#include <Wap32/GameApp.h>         // ex Globals.h
-#include <Gruntz/SoundState.h>     // ex Globals.h transitive
+#include <Gruntz/SoundFxEmitter.h>
+#include <Wap32/GameApp.h>
+#include <Gruntz/SoundState.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
 
@@ -54,45 +54,44 @@
 #include <Gruntz/StateMgrBZ.h>
 
 DATA(0x002455b4)
-i32 g_disableAudio = 0; // "Disable Audio"        master audio kill
+i32 g_disableAudio = 0;
 DATA(0x002455bc)
-i32 g_disableSound = 0; // "Disable Sound"        sound FX
+i32 g_disableSound = 0;
 DATA(0x002455c0)
-i32 g_disableMusic = 0; // "Disable Music"        XMidi music
+i32 g_disableMusic = 0;
 DATA(0x002455c4)
-i32 g_disableFades = 0; // "Disable Fades"        (was Attract's g_fxDirectGate)
+i32 g_disableFades = 0;
 DATA(0x002455c8)
-i32 g_disableJoystick = 0; // "Disable Joystick"
+i32 g_disableJoystick = 0;
 DATA(0x002455cc)
-i32 g_disableSoundFonts = 0; // "Disable SoundFonts"
+i32 g_disableSoundFonts = 0;
 DATA(0x002455d0)
-i32 g_disableDirectVideo = 0; // "Disable Direct Video Access"
+i32 g_disableDirectVideo = 0;
 DATA(0x002455d4)
-i32 g_disableHqMovie = 0; // "Disable High Quality Movie"
+i32 g_disableHqMovie = 0;
 DATA(0x002455d8)
-i32 g_enableTriple = 0; // "Enable Triple"        triple buffering
+i32 g_enableTriple = 0;
 DATA(0x002455dc)
-i32 g_enableHiColor = 0; // "Enable HiColor"
+i32 g_enableHiColor = 0;
 DATA(0x002455e0)
-i32 g_enableTrueColor = 0; // "Enable TrueColor"
+i32 g_enableTrueColor = 0;
 DATA(0x002455e4)
-i32 g_enableEmulation = 0; // "Enable Emulation"
+i32 g_enableEmulation = 0;
 
 DATA(0x00245210)
 HINSTANCE g_appHInstance;
 
-// =====================================================================
 // @early-stop
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
-    // --- Phase 1: coord-pool free list -------------------------------
+
     CoordPoolNode* pool = static_cast<CoordPoolNode*>(RezAlloc(0x3a980));
     g_coordPool.m_block = pool;
     if (!pool) {
         ReportError(0x800a, 0x404);
         return 0;
     }
-    g_coordPool.m_count = 0x4e20; // 0x3a980 / sizeof(CoordPoolNode) 0xc
+    g_coordPool.m_count = 0x4e20;
     CoordPoolNode* p = pool;
     u32 i = 0;
     do {
@@ -104,8 +103,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_coordPool.m_freeHead = pool;
     g_coordPool.m_linkOffset = 4;
 
-    // --- Phase 2: base game init + timers + cursor -------------------
-    if (!CGameMgr::Run(pGameWnd, szCmdLine)) { // the base CGameMgr::Run (0x13dd50)
+    if (!CGameMgr::Run(pGameWnd, szCmdLine)) {
         ReportError(0x800a, 0x462);
         return 0;
     }
@@ -118,7 +116,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     while (::ShowCursor(0) >= 0) {
     }
 
-    // --- Phase 3: "Monolith Productions" registry --------------------
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(RezAlloc(0x21c));
     if (reg) {
         reg->m_open = 0;
@@ -159,7 +156,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_dlgVal_64555c = 0;
     g_dlgVal_645564 = 0;
 
-    // --- Phase 4: audio/video settings -------------------------------
     i32 vMusic = m_settings->GetValueDword("Music", m_musicEnabled);
     i32 vSound = m_settings->GetValueDword("Sound", m_soundEnabled);
     i32 vVoice = m_settings->GetValueDword("Voice", m_isVoiceEnabled);
@@ -186,8 +182,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     i32 vScroll = m_settings->GetValueDword("Scroll Speed", 0x14);
     m_soundVolume = vSndVol;
     m_voiceVolume = vVoiVol;
-    // RETAIL-PROVEN (0x838a4): +0x124 receives eax = the LAST GetValueDword result
-    // (vScroll); the old `vMusVol + 1` misread the adjacent `inc ecx` (m_numRuns+1).
+
     m_scrollSpeed = vScroll;
     m_numRuns = m_numRuns + 1;
     if (g_disableDirectVideo != 0) {
@@ -200,7 +195,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_driveLetter = 0;
     GetGruntzDriveLetter();
 
-    // --- Phase 5: command-line flags ---------------------------------
     i32 mode = 2;
     i32 noLogo = 0;
     char levelName[0x80];
@@ -257,15 +251,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_b4 = 0;
     }
 
-    // --- Phase 6: surface manager + game level -----------------------
     g_appHInstance = m_owner->m_hInstance;
     char dpBuf[0x114];
     strcpy(dpBuf, szCmdLine);
-    ::AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1); // 0x1d3eff (NAFXCW)
-    m_strWorldFile.Empty(); // 0x1b9c69 (?Empty@CString@@ - the ex "Mfc" C_1b9c69)
-    // ONE new-site, TWO header names: the world/surface manager (the settled
-    // CDDrawSurfaceMgr == CDDrawSurfaceMgr dual view; the DDraw side carries the
-    // boot Init/SetRestoreHandler virtuals, the game side is what m_world is typed as).
+    ::AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1);
+    m_strWorldFile.Empty();
+
     CDDrawSurfaceMgr* world = new CDDrawSurfaceMgr;
     m_world = static_cast<CDDrawSurfaceMgr*>(world);
     i32 flags = (g_disableAudio || g_disableSound) ? 0xe5 : 0xe1;
@@ -278,7 +269,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     {
-        LevelCoordRect rect; // == tagRECT (<DDrawMgr/DDrawWorkerHost.h>)
+        LevelCoordRect rect;
         rect.left = 0;
         rect.top = 0;
         rect.right = 0x1df;
@@ -292,12 +283,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     world->m_level->m_maxStepY = 0xe;
     world->m_drawTarget->CreateOverlay(0, 0x30000);
     RecomputeViewScale();
-    RegisterGameObjectTypes(world); // 0xa3b0 (the ctx IS this world holder)
-    if (!MakeRezPath()) {           // 0x91670 (RezMgr.cpp; ex the RezMgr facet cast)
+    RegisterGameObjectTypes(world);
+    if (!MakeRezPath()) {
         return 0;
     }
 
-    // --- Phase 7: CSymParser bute load (GRUNTZ.VRZ/.ZZZ/.XXX) --------
     if (m_symParser) {
         m_symParser->CSymParser::~CSymParser();
         RezFree(m_symParser);
@@ -306,9 +296,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_symParser = new CSymParser;
     {
         CString fn = GetRezPath();
-        // ParseBuffer's void* is really the char* source buffer (its body casts it to
-        // char* four times); the CString hands over its m_pchData through the inline
-        // operator LPCTSTR - the same spelling GruntzMgr.cpp's call site uses.
+
         i32 ok =
             m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(fn)), 1, 0) != 0;
         if (!ok) {
@@ -316,8 +304,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             return 0;
         }
     }
-    if (!m_symParser
-             ->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) { // 0x13b0c0 (canonical arg order)
+    if (!m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) {
         ReportError(0x8149, 0x460);
         return 0;
     }
@@ -325,7 +312,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.XXX"), 1);
     SetColorDepth(m_colorDepth);
 
-    // --- Phase 8: input device manager (m_faderMgr slot) ------------------
     m_faderMgr = new CFaderMgr;
     if (!m_faderMgr->SetConfig(0, 0, 0)) {
         ReportError(0x800a, 0x40a);
@@ -344,7 +330,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         }
     }
 
-    // --- Phase 9: audio host (m_sound) ---------------------------------
     m_sound = new CGruntzSoundZ;
     g_ailMidiDriver = 0;
     if (!m_sound->Init(m_owner->m_hInstance, m_gameWnd->m_hwnd, 0)) {
@@ -357,11 +342,9 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_sound->m_enabled = 0;
     }
 
-    // --- Phase 10: sound-fx list (m_inputState) -----------------------------
     if (m_inputState) {
         m_inputState->Teardown();
-        // 0x1b48c6 == ??1CPtrList (the ex "Mfc" D_1b48c6); MSVC5 needs the
-        // qualified explicit-dtor spelling.
+
         (&m_inputState->m_list)->CPtrList::~CPtrList();
         RezFree(m_inputState);
         m_inputState = 0;
@@ -384,14 +367,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         }
     }
     SetSoundVolume(vSndVol);
-    // RETAIL-PROVEN (0x83fb6/0x83fc2): the 0x4174 setter is SetVoiceVolume (0x91a10
-    // stores its arg at +0x120, the voice-volume slot), and the +0x124 re-store is
-    // the SPILLED "Scroll Speed" value - NOT a music volume (music volume is not a
-    // mgr scalar; it lives on m_soundEnabled via SetXMidiVolume).
+
     SetVoiceVolume(vVoiVol);
     m_scrollSpeed = vScroll;
 
-    // --- Phase 11: settings host (m_logicPump, m_saveSink) -----------------------
     m_logicPump = static_cast<CLightFxMgr*>(RezAlloc(0x3c));
     if (m_logicPump) {
         m_logicPump->m_reg = 0;
@@ -417,9 +396,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_scoreHud = new CBattlezData;
-    m_scoreHud->InitWithRecords(m_saveSink->m_pad24); // the opaque header tail = the records blob
+    m_scoreHud->InitWithRecords(m_saveSink->m_pad24);
 
-    // --- Phase 12: input-state aggregator singleton ----------------------
     g_spawnConfig = static_cast<StateMgrBZ*>(RezAlloc(sizeof(StateMgrBZ)));
     if (g_spawnConfig) {
         g_spawnConfig->m_device = 0;
@@ -444,15 +422,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    // --- Phase 13: fader list (m_cmdSubMgr) --------------------------------
     m_cmdSubMgr = new CGruntzCmdMgr;
-    // (the cross-cast documents the open RezSync==CGruntzMgr fold: this whole Init
-    // runs on the 0xa30 CGruntzMgr singleton; see the TU header dossier.)
+
     if (!m_cmdSubMgr->SetMgr(this)) {
         ReportError(0x800a, 0x414);
         return 0;
     }
-    m_tileGrid = new CGruntzMapMgr; // the 0x94-byte board (ex the H70 shell)
+    m_tileGrid = new CGruntzMapMgr;
     if (!m_tileGrid) {
         ReportError(0x800a, 0x415);
         return 0;
@@ -467,34 +443,28 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_spriteFactory->m_refB[k] = 0;
         }
     }
-    // RETAIL-PROVEN (0x84537): `mov edx,[this+0x30]; mov ecx,[this+0x50]; push edx;
-    // push ecx; mov ecx,eax; call 0x321f -> 0xe2250` == CSpriteRefTable::Init(m_shadeCache,
-    // m_world) - a TWO-arg call on the table itself, not the 1-arg CTriggerMgr::SetLevel
-    // the two ex-reinterpret_casts were papering over.
+
     if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
         if (m_spriteFactory) {
             m_spriteFactory->Reset();
             RezFree(m_spriteFactory);
             m_spriteFactory = 0;
         }
-        // retail (0x84573) FALLS THROUGH here: this arm has no `return 0`, unlike
-        // every other ReportError arm in Run.
+
         ReportError(0x800a, 0x416);
     }
 
-    // --- Phase 14: register mgr + probe 4 settings subobjects -------
     g_gameReg = this;
     g_lastNow = ::timeGetTime();
     g_frameDelta = 0;
     for (i32 s = 0; s < 4; ++s) {
-        // retail (0x84591): ecx = &m_options[s], push s -> GruntzPlayer::SeedForSlot
+
         if (!m_options[s].SeedForSlot(s)) {
             ReportError(0x800a, 0x417);
             return 0;
         }
     }
 
-    // --- Phase 15: GAME_ATTRIBUTEZ blowfish-decoded bute parse -------
     {
         CSymParser* mgr = m_symParser;
         CParseSource* stream = mgr->ResolveQualified("GAME_ATTRIBUTEZ", 'TXT');
@@ -503,28 +473,19 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         if (stream) {
             g_buteMgr.m_10e = 1;
             char* esz = stream->BeginParse();
-            // @identity-TODO / overlay: this entry kind SWAPS the pair - +0x0c carries
-            // the bytes and BeginParse hands back the LENGTH - so both slots are read
-            // through their word/address arms (<AddrWord.h>) rather than punned.
+            // This entry kind stores bytes and length in the opposite word/address arms.
             AddrWord lenSlot;
             AddrWord dataSlot;
             lenSlot.m_addr = esz;
             dataSlot.m_word = stream->m_length;
             i32 eszLen = lenSlot.m_word;
             void* src = dataSlot.m_addr;
-            // @identity-TODO: this entry kind carries the bytes in +0x0c and the
-            // length through BeginParse - the two look swapped vs every other
-            // caller, so the raw widths are preserved verbatim here.
-            istrstream* rdr = new istrstream(static_cast<char*>(src), eszLen); // 0x169700
+            // Preserve the swapped raw-width representation.
+            istrstream* rdr = new istrstream(static_cast<char*>(src), eszLen);
             Blowfish_InitKey("1212C");
-            ostrstream* snk = new ostrstream(
-                static_cast<char*>(src),
-                eszLen,
-                2
-            ); // ??0ostrstream (0x1698c0)
+            ostrstream* snk = new ostrstream(static_cast<char*>(src), eszLen, 2);
             BitStreamBlowfishDecode(rdr, snk);
-            // carcass gap: retail allocs a third 0x60 stream object here with no
-            // visible ctor call in the recovered bytes; kept as the bare allocation.
+
             g_buteMgr.m_stream = static_cast<istream*>(::operator new(0x60));
             stream->EndParse();
             g_buteMgr.Init();
@@ -553,7 +514,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         }
     }
 
-    // --- Phase 16: sound / movie config + attract title screens -----
     m_cheatMgr->RegisterCheats();
     m_chatLog = new CFontConfig;
     m_chatLog->LoadFontConfig(0x1388, 0xbb8);
@@ -570,7 +530,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x45f);
         return 0;
     }
-    m_cueSink->m_voiceVolume = vScroll; // retail seeds the voice-volume slot from this local
+    m_cueSink->m_voiceVolume = vScroll;
     m_musicEnabled = vMusic;
     m_soundEnabled = vSound;
     g_sndEnabled = vSound;
@@ -604,10 +564,9 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             }
         }
     }
-    // attract title screens
+
     {
-        // ResolvePath returns the resolved CSymTab node; its 0x13be40 resolver is
-        // CSymTab::ResolveQualified (the old view's "CSymParser::ResolveTab").
+
         CSymTab* attract = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT"));
         CString title;
         g_attractStateCount = 0;
@@ -630,18 +589,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
 RVA(0x000853d0, 0x10)
 void __stdcall RezFreeStdcall(void* a) {
-    ::operator delete(a); // 0x1b9b82 == ??3@YAXPAX@Z (the __cdecl rez-free helper)
+    ::operator delete(a);
 }
 
 RVA(0x00085500, 0x23)
 CString CGruntzMgr::GetRezPath() {
     return m_strRezPath;
 }
-
-// ---------------------------------------------------------------------------
-// 0x085540 - the base ~CGameMgr out-of-line copy: cl emits it AUTOMATICALLY (the
-// COMDAT copy of Wap32.h's inline `~CGameMgr() { Close(); }` that the emitted
-// ??_G/vtable machinery references) - vptr restamp (0x5e9b8c) + devirtualized Close
-// tail-call, 0xb bytes. No dtor-emitter scaffold is needed; the compiler copy is
-// emitted (and RVA_COMPGEN-pinned) in src/Gruntz/GruntzMgr.cpp, whose obj carries
-// the COMDAT.

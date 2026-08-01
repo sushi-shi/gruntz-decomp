@@ -1,15 +1,15 @@
-#define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
+#define SBI_DTOR_CHAIN
 #include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
-#include <AddrWord.h> // the register-carried zero the glyph slot stores
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
+#include <AddrWord.h>
+#include <Rez/FrameClock.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/Sprite.h> // CDDrawWorker (the glyph maps; ex CStatzGlyphMap view)
+#include <Gruntz/Sprite.h>
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 
 VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
@@ -32,17 +32,11 @@ void CSBI_StatzTabGruntBar::Reset() {
 RVA(0x000ea4b0, 0x1c)
 i32 CSBI_StatzTabGruntBar::Refresh(i32 arg) {
     if (Update()) {
-        SetSubtype(); // slot 10 (+0x28); the CStatzSelf view called it "Refresh"
+        SetSubtype();
     }
     return 1;
 }
 
-// 0xea6c0: resample the selected grunt and latch every changed value. Looks up the
-// grunt record in the registry unit table by (m_unitRow, m_unitCol); derives five values -
-// status (health bands), ability (level/cap/badge), an override, a selection-list
-// glyph, and a self-bumping anim timer - and for each, when it differs from the
-// tracked copy, resolves a glyph through the gated glyph map and flags dirty. Returns
-// the dirty flag (1 if any value changed, else 0).
 RVA(0x000ea4e0, 0x172)
 i32 CSBI_StatzTabGruntBar::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
@@ -129,19 +123,19 @@ i32 CSBI_StatzTabGruntBar::Update() {
     CGrunt* unit = table->m_grid[m_unitCol + TM_GRID_COLS * m_unitRow];
 
     i32 statusVal;
-    i32 abilityVal; // ebx
+    i32 abilityVal;
     i32 overrideVal;
     i32 selectVal;
-    i32 timerVal; // ebp
+    i32 timerVal;
 
     if (unit == 0) {
         statusVal = -1;
         abilityVal = -1;
         overrideVal = -1;
-        selectVal = 0; // the null path (unit == 0; retail reuses the already-zero reg)
+        selectVal = 0;
         timerVal = -1;
     } else {
-        // status: health bands
+
         i32 hp = unit->m_health;
         if (hp >= 0x50) {
             statusVal = 0x24;
@@ -151,15 +145,11 @@ i32 CSBI_StatzTabGruntBar::Update() {
             statusVal = (hp <= 0 ? 1 : 0) + 0x26;
         }
 
-        // ability + override
         i32 level = unit->m_entranceReason;
         abilityVal = -1;
         overrideVal = -1;
         selectVal = 0;
-        // ASSIGN-then-override, not `?:`. Retail hoists the else-value into the
-        // destination BEFORE the compare (`mov eax,edx / jle / mov eax,[m_toolId]`),
-        // so the low arm needs no jump at all; a `?:` gives cl two arms joined by
-        // a `jmp`, which is two extra instructions on each of the two sites.
+
         i32 cap = level;
         if (level > 0x16) {
             cap = unit->m_toolId;
@@ -178,14 +168,10 @@ i32 CSBI_StatzTabGruntBar::Update() {
             overrideVal = badge;
         }
 
-        // selection-list glyph
         if (m_selectKey != 0) {
             selectVal = table->SelectionListFind(m_unitCol, m_unitRow);
         }
 
-        // self-bumping anim timer. The ARRIVED test is the positive one: retail's
-        // `test eax,eax / je <or ebp,-1>` puts the elapsed check inline and sinks
-        // `timerVal = -1` out of line, which only `if (arrived) ... else -1` gives.
         timerVal = m_timerValue;
         if (unit->m_arrived != 0) {
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timerAnchor.m_v
@@ -208,7 +194,6 @@ i32 CSBI_StatzTabGruntBar::Update() {
         }
     }
 
-    // value 0: status (glyph/value, main glyph map)
     if (m_statusValue != statusVal) {
         CDDrawWorker* gm = m_glyphMap;
         m_statusGlyphLatched = (statusVal < gm->m_minIndex || statusVal > gm->m_maxIndex)
@@ -217,7 +202,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         m_statusValue = statusVal;
         dirty = 1;
     }
-    // value 1: ability (glyph/value, main glyph map)
+
     if (m_abilityValue != abilityVal) {
         CDDrawWorker* gm = m_glyphMap;
         m_abilityGlyphLatched = (abilityVal < gm->m_minIndex || abilityVal > gm->m_maxIndex)
@@ -226,7 +211,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         m_abilityValue = abilityVal;
         dirty = 1;
     }
-    // value 2: override (glyph/value, main glyph map)
+
     if (m_overrideValue != overrideVal) {
         CDDrawWorker* gm = m_glyphMap;
         m_overrideGlyphLatched = (overrideVal < gm->m_minIndex || overrideVal > gm->m_maxIndex)
@@ -235,14 +220,10 @@ i32 CSBI_StatzTabGruntBar::Update() {
         m_overrideValue = overrideVal;
         dirty = 1;
     }
-    // value 3: selection (glyph/value, main glyph map; +0x28 row offset on lookup)
+
     if (m_selectValue != selectVal) {
         if (selectVal == 0) {
-            // retail 0xea894 is `mov DWORD PTR [esi+0x58],edi` - it stores the
-            // REGISTER holding selectVal (already proven 0 by the `test edi,edi` two
-            // instructions earlier), not an immediate. `m_selectGlyph = 0` would emit
-            // `mov dword ptr [..],0`; routing the word through AddrWord keeps the
-            // value in the register.
+
             AddrWord zero;
             zero.m_word = selectVal;
             m_selectGlyph = static_cast<CImage*>(zero.m_addr);
@@ -256,7 +237,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         m_selectValue = selectVal;
         dirty = 1;
     }
-    // value 4: timer (glyph/value, timer glyph map)
+
     if (m_timerValue != timerVal) {
         CDDrawWorker* gm = m_timerGlyphMap;
         m_timerGlyph = (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex)

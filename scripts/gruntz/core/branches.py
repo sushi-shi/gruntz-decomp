@@ -97,6 +97,40 @@ def obj_paths(unit):
     return BASE_DIR / (unit + ".obj"), TGT_DIR / (unit + ".c.obj")
 
 
+def parse_objdump(out):
+    """Parse llvm-objdump output into complete per-function instruction streams.
+
+    MSVC emits `$L<n>` symbols for switch arms and other local basic blocks. llvm-objdump
+    prints each one with the same header syntax as a function, but it is still part of
+    the current function's COMDAT. Starting a new stream there made every switch body
+    disappear after its indirect jump and falsely classified complete functions as
+    missing bodies.
+    """
+    syms, cur, base = {}, None, None
+    for ln in out.split("\n"):
+        m = SYM_HDR.match(ln.strip())
+        if m:
+            name = m.group(1)
+            if name.startswith("$L") and cur is not None:
+                continue
+            cur, base = syms.setdefault(name, []), None
+            continue
+        if cur is None:
+            continue
+        m = INSN.match(ln)
+        if not m:
+            continue
+        off, mn, op = int(m.group(1), 16), m.group(2), m.group(3).strip()
+        if base is None:
+            base = off
+        if JUMPY.match(mn):
+            t = TGT_OP.match(op)
+            if t:
+                op = hex(int(t.group(1), 16) - base) + op[t.end():]
+        cur.append((off - base, mn, op))
+    return syms
+
+
 def decode(obj, symbol=None):
     """Linear disassembly of `obj`: {symbol: [(offset, mnemonic, operand)]}.
 
@@ -110,30 +144,7 @@ def decode(obj, symbol=None):
     if symbol:
         cmd.append("--disassemble-symbols=" + symbol)
     out = subprocess.run(cmd, capture_output=True, text=True).stdout
-    syms, cur, base = {}, None, None
-    for ln in out.split("\n"):
-        m = SYM_HDR.match(ln.strip())
-        if m:
-            cur, base = syms.setdefault(m.group(1), []), None
-            continue
-        if cur is None:
-            continue
-        m = INSN.match(ln)
-        if not m:
-            continue
-        off, mn, op = int(m.group(1), 16), m.group(2), m.group(3).strip()
-        if base is None:
-            base = off
-        # Rebase the branch TARGET too, not just the offset. Leaving the target absolute
-        # while the offset is relative makes `sym_target` compare two different address
-        # spaces - which silently turned every function into a TOPOLOGY hit (5 -> 298)
-        # the first time this was refactored. Offsets and targets live in ONE space.
-        if JUMPY.match(mn):
-            t = TGT_OP.match(op)
-            if t:
-                op = hex(int(t.group(1), 16) - base) + op[t.end():]
-        cur.append((off - base, mn, op))
-    return syms
+    return parse_objdump(out)
 
 
 def first_bad(insns):

@@ -3,6 +3,6 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Bute/PTreeNode.h> // zPTree - the real class (bases, fields, ClearRecursive, Reset)
+#include <Bute/PTreeNode.h>
 
 #endif // SRC_BUTE_BUTESTORE_H

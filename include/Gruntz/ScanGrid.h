@@ -3,26 +3,15 @@
 
 #include <rva.h>
 
-#include <Win32.h> // RECT
+#include <Win32.h>
 
-class CGrunt;  // scan args (the scanned grunt)
-class CMapMgr; // canonical tile board (the former CScanGrid view)
-
-// The ex-CTileScan view (3x3 tile-region scan owner, TileScan.cpp @0x35f10) is
-// DISSOLVED: its sole retail caller is CBattlezMapConfig::StepRowUnits @0x267c0
-// (m_2d8==0xb dispatch arm) calling on ITS `this`, and every field aligned
-// (m_4==m_ctx, m_c==m_board, m_c8==m_0c8). Scan is CBattlezMapConfig::Scan now
-// (<Gruntz/BattlezMapConfig.h>); the body stays in TileScan.cpp (retail placement).
-
-// CBattlezMapConfig::ScanRegion's m_0f0 elements are {x,y} goal points.
-// (CScanGoal DISSOLVED 2026-07-28: it was a second name for `Coord` ({i32 m_x, m_y},
-//  <Gruntz/CoordNode.h>) on the very same array - CBattlezMapConfig::m_0f0, which
-//  already had the typed CoordAt() accessor. Its one use site now reads that.)
+class CGrunt;
+class CMapMgr;
 
 struct CScanSub10 {
     char _00[0x5c];
-    i32 m_5c, m_60; // +0x5c screen x, +0x60 screen y
+    i32 m_5c, m_60;
 };
-SIZE_UNKNOWN(); // tree-wide tag (was hosted in GruntPathScan.cpp before the CGrunt fold)
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CSCANGRID_H

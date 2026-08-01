@@ -1,21 +1,21 @@
 #ifndef GRUNTZ_CWARLORD_H
 #define GRUNTZ_CWARLORD_H
 
-#include <Mfc.h> // CObject / CString (MFC TU - must precede <windows.h>)
+#include <Mfc.h>
 #include <Gruntz/GameRegistry.h>
 
-#include <Gruntz/UserLogic.h> // CUserBase / CUserLogic / EngStr / CGameObject
+#include <Gruntz/UserLogic.h>
 
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/ActReg.h>
 
 class CWarlordAnimSub {
 public:
     char m_pad00[0x20];
-    i32 m_20; // +0x20  state word (== 0 gates the moving-anim re-arm)
+    i32 m_20;
     char m_pad24[0x28 - 0x24];
-    i32 m_28; // +0x28  state word (!= 0 gates the moving-anim re-arm)
+    i32 m_28;
 };
 SIZE_UNKNOWN();
 
@@ -23,142 +23,80 @@ extern "C" u32 g_engineFrameDelta;
 
 extern "C" u32 g_frameTime;
 
-// ---------------------------------------------------------------------------
-// The game-registry singleton's threat/spatial helper (g_gameReg->m_cmdGrid, a
-// CTriggerMgr): the nearest-enemy squared distance is CTriggerMgr::NearestCellDist
-// (0x7d1d0), called directly on m_cmdGrid (see LoadAttributes). This view carries
-// ONLY the fort battle-cue timer sub-block AdvanceMovingAnim arms (armed on the
-// per-frame moving tick): m_288 the cue-armed gate, m_290/m_294 the 64-bit start
-// (CRegThreatHelper DISSOLVED 2026-07-21: the "cue fields" were CTriggerMgr's own
-// m_phase/m_timerBase/m_timerWindow/m_pendingFx - the panic-timer blocks now write
-// the real members through the typed m_cmdGrid.)
-
-// (CRegBattleEvent DISSOLVED 2026-07-20: PostBattleEvent is the five-argument
-// CGruntSpawnConfig::SpawnVoiceDriver overload on the +0x60 m_cueSink.)
-
-// (CWarlordMission/CWarlordObjective DISSOLVED 2026-07-21: the "mission" was CPlay
-// and the "objective tracker" its m_frameMarker CTimer - the +0x4c completion flag
-// is CTimer::m_currentMs.)
-
 class CWarlord : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x000107a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARLORD;
-    } // slot 2
+    }
+
 public:
-    // the family convention (CUserLogic/CMovingLogic both take the object)
-    CWarlord(CGameObject* obj); // 0x42d40 (base init + name/state setup)
-    // NO user-declared destructor: retail's ~CWarlord (0x107f0) is the COMPILER-
-    // GENERATED one. cl 5.0 elides the most-derived vptr re-stamp in an IMPLICIT
-    // dtor (it knows no user body can observe the vptr) but always emits it for a
-    // user-declared one - even an empty `{}`. Declaring it was the mis-model behind
-    // the old "unreachable restamp" wall. The implicit dtor still destroys the
-    // CString m_54 + chains the base teardown, and is still virtual (CUserBase's is);
-    // Warlord.cpp's ctor emits the vtable -> ??_GCWarlord -> ??1CWarlord, so the
-    // body lands in this obj and is pinned by RVA_COMPGEN there.
-    // docs/patterns/eh-dtor-vptr-restamp-presence.md
+    CWarlord() {}
+    CWarlord(CGameObject* obj);
 
-    // slot-4 override of an inherited CUserLogic virtual: the animation-state
-    // dispatcher over the file-static table.
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x44640 (homed by RVA; non-virtual to keep the
-    // dtor's vtable-stamp codegen aligned with retail)
+    virtual void FireActivation(i32 id) OVERRIDE;
 
-    // re-arm the moving animation off the global geo source (0x44bb0).
-    i32 RearmMoving(); // 0x44bb0
+    i32 RearmMoving();
 
-    // a second per-state moving-anim re-arm handler dispatched from the warlord
-    // anim-state table; byte-identical body to RearmMoving. (0x44f30)
-    i32 RearmMoving2(); // 0x44f30
+    i32 RearmMoving2();
 
-    // per-frame moving-state action handler (0x44e70): advance the +0x1a0 anim
-    // sub-mgr, and once it goes idle (m_28!=0 && m_20==0), when the fort cue is
-    // armed for the current player re-stamp the battle-cue timer (m_290 clock,
-    // m_298=0x3e8 window, m_2a0/m_29c/m_294=0), then re-resolve the moving anim.
-    i32 AdvanceMovingAnim(); // 0x44e70
+    i32 AdvanceMovingAnim();
 
-    // per-tick warlord threat/attribute updates (0x44c00 / 0x44d10).
     i32 LoadAttributes();
     i32 LoadAttributes2();
 
-    // spawn the fort splash particles + arm the panic timer (0x44f80). An act-table
-    // handler like its five siblings, so it returns the family's constant 0 (retail's
-    // `xor eax,eax; ret` on every exit) - it is NOT void.
     i32 BuildFortSplashParticles();
 
-    // raise the fort alert when an enemy is inside the panic radius (0x45270). Returns
-    // i32, not void: retail exits `mov eax,1` on the work path and `xor eax,eax` on both
-    // bails, exactly like its ResolveXxxAnimation siblings.
     i32 NotifyFortUnderAttack();
 
-    // Animation resolvers. Every caller is a CWarlord method, including the
-    // constructor, and the accessed +0x38..+0xac fields map exactly to CWarlord's
-    // CWapX base and members. They were formerly misdeclared on CGrunt.
-    i32 ResolveMovingAnimation();    // 0x45100
-    i32 ResolveDeathAnimation();     // 0x455f0
-    i32 RaiseBattleAlert();          // 0x457b0 (joy / panic-radius alert variant)
-    i32 ResolveIdleAnimation();      // 0x45960
-    i32 ResolveBattlecryAnimation(); // 0x45b60
+    i32 ResolveMovingAnimation();
+    i32 ResolveDeathAnimation();
+    i32 RaiseBattleAlert();
+    i32 ResolveIdleAnimation();
+    i32 ResolveBattlecryAnimation();
 
-    // Past the 0x40 CUserLogic base. m_38 is the inherited CUserLogic::m_38
-    // (anim player); CString m_54 is CWarlord's own destructible member; the
-    // 64-bit cooldown stamp/window live at m_88/m_8c and m_90/m_94.
-    CString m_54; // +0x54  destructible string member (the resolved "WARLORDZ_<owner>" name)
-    // The ctor resolves the eleven per-state animation handles by looking each
-    // "GRUNTZ_<owner>_<state>" key up in the bound object's embedded name->handle map
-    // and stashing the result here (0 when absent).
-    // The eleven per-state anim descriptors, each looked up as a CAniElement* out of
-    // the bound object's m_animRegistry CMapStringToPtr (macro WARLORD_ANIM_LOOKUP:
-    // `dst = (CAniElement*)h`, the sole driver; CreateAniEntry returns CAniElement*).
-    CAniElement* m_idleAnims[4];      // +0x58..+0x67
-    CAniElement* m_battlecryAnims[3]; // +0x68..+0x73
-    CAniElement* m_animJoy;           // +0x74
-    CAniElement* m_animDeath;         // +0x78
-    CAniElement* m_animMoving;        // +0x7c
-    CAniElement* m_animPanic;         // +0x80
-    char m_pad84[0x88 - 0x84];        // +0x84
-    // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
-    // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
-    // the elapsed compare runs 64-bit; retail emits separate 32-bit stores.
-    // +0x88/+0x90: the attack cooldown as the standard 64-bit anchor+window pair
-    // (same shape as CGrunt's +0x278/+0x308 pairs; the i32 halves stay for the
-    // serializers' per-dword stores).
+    CString m_54;
+
+    CAniElement* m_idleAnims[4];
+    CAniElement* m_battlecryAnims[3];
+    CAniElement* m_animJoy;
+    CAniElement* m_animDeath;
+    CAniElement* m_animMoving;
+    CAniElement* m_animPanic;
+    char m_pad84[0x88 - 0x84];
+
     union {
-        i64 m_cooldownStamp64; // +0x88
+        i64 m_cooldownStamp64;
         struct {
-            i32 m_cooldownStampLo; // +0x88
-            i32 m_cooldownStampHi; // +0x8c
+            i32 m_cooldownStampLo;
+            i32 m_cooldownStampHi;
         };
     };
     union {
-        i64 m_cooldownWindow64; // +0x90
+        i64 m_cooldownWindow64;
         struct {
-            i32 m_cooldownWindowLo; // +0x90
-            i32 m_cooldownWindowHi; // +0x94
+            i32 m_cooldownWindowLo;
+            i32 m_cooldownWindowHi;
         };
     };
-    // A second 64-bit stamp/window timer pair (zeroed in the ctor prologue and again
-    // just before the initial moving-anim resolve) - the FORT-ALERT rate limiter:
-    // NotifyFortUnderAttack @0x45270 runs a genuine 64-bit `elapsed >= window` compare
-    // on it (sub/sbb + jl/jg/jb) and re-arms the window from the "Warlordz"/"NotifyTimer"
-    // bute int, so the pair is unioned like the cooldown above.
+
     union {
-        i64 m_timer2Stamp64; // +0x98
+        i64 m_timer2Stamp64;
         struct {
-            i32 m_timer2StampLo; // +0x98
-            i32 m_timer2StampHi; // +0x9c
+            i32 m_timer2StampLo;
+            i32 m_timer2StampHi;
         };
     };
     union {
-        i64 m_timer2Window64; // +0xa0
+        i64 m_timer2Window64;
         struct {
-            i32 m_timer2WindowLo; // +0xa0
-            i32 m_timer2WindowHi; // +0xa4
+            i32 m_timer2WindowLo;
+            i32 m_timer2WindowHi;
         };
     };
-    i32 m_a8; // +0xa8
-    // +0xac  the warlord battle-event tag (0x442..0x445 per owner KING/NAPOLEAN/PATTON/VIKING)
+    i32 m_a8;
+
     i32 m_ownerTag;
 };
 SIZE(0xb0);

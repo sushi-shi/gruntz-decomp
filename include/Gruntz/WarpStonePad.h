@@ -3,12 +3,12 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (CWarpStonePad : CUserLogic)
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
 
 class CWarpStonePad : public CUserLogic, public CWapX {
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+
     RVA(0x00010f00, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARPSTONEPAD;
@@ -16,15 +16,13 @@ class CWarpStonePad : public CUserLogic, public CWapX {
 
 public:
 public:
-    CWarpStonePad(CGameObject* obj); // 0x10d650
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x10d8c0 (vtable slot 4)
-    static void RegisterActs();                   // 0x10da20
-    i32 AdvanceAnim();                            // 0x10dc20
-    //         the state pump's `new CWarpStonePad` = new(0x54))
+    CWarpStonePad() {}
+    CWarpStonePad(CGameObject* obj);
+
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
+    i32 AdvanceAnim();
 };
 SIZE(0x54);
-
 
 #endif // GRUNTZ_CWARPSTONEPAD_H

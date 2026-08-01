@@ -1,54 +1,31 @@
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PathHazard.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
-#include <Gruntz/RainCloud.h>  // CRainCloud (its dtor 0x13340 lives in this obj)
-#include <Gruntz/ActReg.h>     // CActReg coordinate registry (ResolveEntry) for RunAct
+#include <Gruntz/SoundState.h>
+#include <Gruntz/RainCloud.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Grunt.h>      // CGrunt - FindGruntAt's real return (ex CPathEntity pad view)
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/Grunt.h>
+#include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_cmdGrid): FindGruntAt @0x75c60, CellDispatch @0x6bcb0
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/TriggerMgr.h>
 
-#include <math.h>           // sqrt - inlines to fsqrt at /O2; the (int)double casts lower to __ftol
-#include <Rez/FrameClock.h> // g_timer200 (strike/leg deadline threshold)
-#include <Image/CImage.h>   // the +0x198 cached frame (ex CGameObjLayer view)
+#include <math.h>
+#include <Rez/FrameClock.h>
+#include <Image/CImage.h>
 
-#include <Gruntz/PathHazardActReg.h> // CActRegPool<CPathHazard>::s_table (ex .cpp extern)
+#include <Gruntz/PathHazardActReg.h>
 #include <rva.h>
 #include <rva.h>
-// The body is empty: the leg/strike windows are zeroed by CHazardTimer's own ctor
-// (that is what emits retail's per-window store batch, see PathHazard.h).
+
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {}
 
-// CPathHazard::~CPathHazard @0x013280 - the leaf adds no destructible members beyond
-// CUserLogic, so its dtor folds the bare CUserLogic teardown: store the CUserLogic vptr
-// (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr call 0x16d2a0), store
-// the CUserBase vptr (0x5e70b4). The destructible link forces the /GX EH frame.
-// IDENTITY (vtable-owner probe): ??_7CPathHazard @0x1e7394 slot 0 -> ILT thunk -> the
-// scalar-deleting dtor 0x13250 -> THIS body. It was misbound as ~CLightningHazard, while
-// ~CPathHazard was misbound to 0x13340 (which is really ~CRainCloud - see below): the
-// whole family was shifted by one, because N byte-identical empty leaf dtors were being
-// assigned by proximity instead of by the vtable that dispatches them.
 RVA_COMPGEN(0x00013250, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 
-// (~CRainCloud x13340 is IMPLICIT and its COMDAT is emitted by raincloud.obj - the
-// TU that constructs it - so its RVA_COMPGEN pin lives in RainCloud.cpp, not here.)
-
-// CPathHazard::CPathHazard @0xb35a0 - fold the shared CUserLogic(obj) init, then
-// build the hazard's waypoint path: snap the bound object's screen position to the
-// tile grid (the m_60/m_68 doubles + the m_74 layer key), then scale the raw
-// per-tile waypoint coordinates (the 12 ints at obj+0x134, the 4 at obj+0x64, the
-// 8 at obj->m_7c+0xf0) to pixel centres (coord*0x20 + 0x10) into the +0x90
-// waypoint array (wp[0] is the unscaled start). Find the path length (the first
-// waypoint equal to the (0x10,0x10) sentinel), seed the per-tile time
-// (PathHazardTimePerTile when unset), start the first leg, and on success bind the
-// "A" bute node + cycle geometry (else hide the object).
-//
 RVA(0x000132f0, 0x6)
 LogicTypeId CRainCloud::GetTypeTag() {
     return LOGIC_RAINCLOUD;
@@ -56,11 +33,9 @@ LogicTypeId CRainCloud::GetTypeTag() {
 
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    // (m_leg/m_strike zeroed by CHazardTimer's ctor, before this body.)
+
     m_38->m_flags |= 0x2000002;
 
-    // retail re-reads m_10 (m_object) after every store made THROUGH it: cl cannot
-    // disambiguate `[o]+0x5c` from `this+0x10`, so a cached local kills three reloads.
     i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_object->m_screenX = snapX;
@@ -90,14 +65,14 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wp[7].y = (m_object->m_clip.top << 5) + 0x10;
     m_wp[8].x = (m_object->m_clip.right << 5) + 0x10;
     m_wp[8].y = (m_object->m_clip.bottom << 5) + 0x10;
-    m_wp[9].x = (m_object->m_7c->m_switchRectA.left << 5) + 0x10;
-    m_wp[9].y = (m_object->m_7c->m_switchRectA.top << 5) + 0x10;
-    m_wp[10].x = (m_object->m_7c->m_switchRectA.right << 5) + 0x10;
-    m_wp[10].y = (m_object->m_7c->m_switchRectA.bottom << 5) + 0x10;
-    m_wp[11].x = (m_object->m_7c->m_switchRectB.left << 5) + 0x10;
-    m_wp[11].y = (m_object->m_7c->m_switchRectB.top << 5) + 0x10;
-    m_wp[12].x = (m_object->m_7c->m_switchRectB.right << 5) + 0x10;
-    m_wp[12].y = (m_object->m_7c->m_switchRectB.bottom << 5) + 0x10;
+    m_wp[9].x = (m_object->m_animWorker->m_switchRectA.left << 5) + 0x10;
+    m_wp[9].y = (m_object->m_animWorker->m_switchRectA.top << 5) + 0x10;
+    m_wp[10].x = (m_object->m_animWorker->m_switchRectA.right << 5) + 0x10;
+    m_wp[10].y = (m_object->m_animWorker->m_switchRectA.bottom << 5) + 0x10;
+    m_wp[11].x = (m_object->m_animWorker->m_switchRectB.left << 5) + 0x10;
+    m_wp[11].y = (m_object->m_animWorker->m_switchRectB.top << 5) + 0x10;
+    m_wp[12].x = (m_object->m_animWorker->m_switchRectB.right << 5) + 0x10;
+    m_wp[12].y = (m_object->m_animWorker->m_switchRectB.bottom << 5) + 0x10;
 
     i32 i = 1;
     i32 found = 0;
@@ -114,9 +89,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wpCount = i;
     m_wpIndex = 0;
 
-    // held in edi ACROSS the GetDwordDef call in retail (`mov edi,[eax+0x7c]` before
-    // the test, `mov [edi+0xbc],eax` after) - a local, not a re-read.
-    AnimWorkerObj* w = m_object->m_7c;
+    AnimWorkerObj* w = m_object->m_animWorker;
     if (w->m_bc == 0) {
         w->m_bc = g_buteMgr.GetDwordDef("Hazardz", "PathHazardTimePerTile", 1000);
     }
@@ -139,23 +112,13 @@ void CPathHazard::FireActivation(i32 id) {
     }
 }
 
-// CPathHazard::Tick @0x0b4020 (virtual slot 16) - the per-frame driver. Advance
-// the +0x1a0 sub-mgr; run the on-screen visibility/hit gate (unless the registry
-// is in the no-window mode); if the bound object has reached the current
-// waypoint tile, snap the doubles, fire the "arrived" handler, and either start
-// the next leg (when no segments remain, vslot 19) or re-bind the leg's "B" bute
-// node; otherwise integrate the sub-pixel movement vector into m_60/m_68 and
-// write the snapped, waypoint-clamped tile position back to the bound object.
 // @early-stop
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* obj = m_object;
-    // The probe rect (a 4-int local) the on-screen query tests, computed
-    // unconditionally: {left, top, right, bottom} around the bound object's
-    // screen position, inset by the layer base (m_198->m_18/m_1c, re-read each
-    // component as retail does) and a 7px margin.
+
     RECT rect;
     rect.left = obj->m_screenX - obj->m_layer->m_anchorX + 7;
     rect.right = obj->m_layer->m_anchorX + obj->m_screenX - 7;
@@ -169,12 +132,9 @@ i32 CPathHazard::Tick() {
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
-            // `outA == 0`, not `!= 0`. Retail (Tick @0xb40f4, SiblingTick @0xb4527) is
-            // `jne <body> / cmp outA,0 / jne <skip>`: the m_134 clause short-circuits INTO
-            // the body, and the second clause branches AWAY when outA is non-zero - so the
-            // HitTest runs on a ZERO outA. Both sites had it backwards.
+
             if (g_gameReg->m_134 != 1 || outA == 0) {
-                if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
+                if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }
             }
@@ -186,25 +146,23 @@ i32 CPathHazard::Tick() {
     if (m10->m_screenX == wx) {
         i32 wy = m_wpY;
         if (m10->m_screenY == wy) {
-            // Arrived at the waypoint tile.
+
             m_posX = static_cast<double>(wx);
             m_posY = static_cast<double>(wy);
-            this->Arrive(); // virtual slot 18 (+0x48)
+            this->Arrive();
             i32 segs = m_object->m_120;
             if (segs > 0) {
                 m_leg.m_window = segs;
-                m_leg.m_deadline =
-                    static_cast<u32>(g_frameTime); // the running game clock seeds the leg deadline
+                m_leg.m_deadline = static_cast<u32>(g_frameTime);
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = ActFindId("B");
                 return 0;
             }
-            this->BeginLeg(); // virtual slot 19 (+0x4c)
+            this->BeginLeg();
             return 0;
         }
     }
 
-    // Not arrived: integrate the sub-pixel movement vector toward the waypoint.
     double step = static_cast<double>(static_cast<i64>(static_cast<u64>(g_frameDelta))) * m_speed;
     m_posX = m_posX + step * m_unitX;
     m_posY = m_posY + static_cast<double>(g_frameDelta) * m_unitY * m_speed;
@@ -254,32 +212,19 @@ i32 CRainCloud::Tick() {
         spr->m_drawFillArg = frame;
         spr->m_drawFillCmd = 7;
     }
-    CPathHazard::Tick(); // the base chain (thunk 0x2914 -> 0xb4020), result unused
+    CPathHazard::Tick();
     return 0;
 }
 
-// CPathHazard::SiblingTick @0x0b43f0 (virtual slot 17) - the timed
-// striking hazard's per-frame driver. When armed (m_118), check the strike window:
-// if the i64 (clock - deadline) is past the window OR the strike-threshold gate
-// expired, disarm and pick the "spent" sprite frame; otherwise pick the active
-// frame (selector index 5 vs 0); seed the bound object's draw state (active=1,
-// state=7, sprite-ref from g_gameReg->m_78). Then advance the +0x1a0 sub-mgr, run
-// the on-screen visibility/hit gate, and on arrival fire BeginLeg + re-bind the
-// "A" bute node. Integer-only; returns 0.
 // @early-stop
 RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
         i32 sel = 5;
         i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strike.m_deadline;
-        // Written with the WINDOW-STILL-OPEN case as the `if` body, because retail's
-        // 64-bit compare branches to the disarm block rather than falling into it
-        // (`jg <disarm> / jl <here> / cmp lo / jae <disarm>`); the early-return spelling
-        // gives cl the mirror order. And `sel = 0` is gated on `>= 0x64`, not `<`:
-        // retail is `cmp ds:g_timer200,0x64 / jb <merge>`, i.e. it SKIPS the store when
-        // the timer is below 0x64.
+
         if (elapsed < m_strike.m_window) {
-            if (static_cast<u32>(g_timer200) >= 0x64) { // UNSIGNED: retail is `jb`, not `jl`
+            if (static_cast<u32>(g_timer200) >= 0x64) {
                 sel = 0;
             }
         } else {
@@ -288,7 +233,7 @@ i32 CPathHazard::SiblingTick() {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[sel]; // [m_78 + sel*4 + 0x14]
+        o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[sel];
     }
 
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -302,17 +247,14 @@ i32 CPathHazard::SiblingTick() {
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
-        // window mode, skip the query
+
     } else {
         i32 outA, outB;
         CGrunt* ent =
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
-            // `outA == 0`, not `!= 0`. Retail (Tick @0xb40f4, SiblingTick @0xb4527) is
-            // `jne <body> / cmp outA,0 / jne <skip>`: the m_134 clause short-circuits INTO
-            // the body, and the second clause branches AWAY when outA is non-zero - so the
-            // HitTest runs on a ZERO outA. Both sites had it backwards.
+
             if (g_gameReg->m_134 != 1 || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
@@ -326,7 +268,7 @@ i32 CPathHazard::SiblingTick() {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5]; // [m_78 + 0x28]
+        o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
         this->BeginLeg();
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
@@ -334,9 +276,6 @@ i32 CPathHazard::SiblingTick() {
     }
     return 0;
 }
-
-// (0xb4640 - CRainCloud::HitTest, the slot-20 strike-arm override - moved to
-// its owner RainCloud.cpp.)
 
 RVA(0x000b47a0, 0x27)
 i32 CPathHazard::Arrive() {
@@ -348,11 +287,6 @@ i32 CPathHazard::Arrive() {
     return 1;
 }
 
-// CPathHazard::BeginLeg @0x0b47e0 (virtual slot 19) - compute the unit vector
-// toward the current waypoint (m_f8) and seed the per-leg movement state: the
-// per-frame speed (m_58 = 1 / (m_7c->m_bc / 32)), the doubled current position
-// (m_60/m_68), the unit-vector components (m_70/m_78) and their half-step sign
-// biases (m_80/m_88 = sign * 0.5). Returns 1.
 RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
     CWwdGameObjectA* obj = m_object;
@@ -368,7 +302,7 @@ i32 CPathHazard::BeginLeg() {
     double ux = dx / len;
     double uy = dy / len;
 
-    m_speed = 1.0 / (static_cast<double>(obj->m_7c->m_bc) * 0.03125);
+    m_speed = 1.0 / (static_cast<double>(obj->m_animWorker->m_bc) * 0.03125);
     m_posX = static_cast<double>(obj->m_screenX);
     m_posY = static_cast<double>(obj->m_screenY);
     m_unitX = ux;
@@ -394,12 +328,12 @@ i32 CPathHazard::BeginLeg() {
 
 RVA(0x000b5070, 0x5)
 i32 CPathHazard::ForwardTick() {
-    return Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
+    return Tick();
 }
 
 RVA(0x000b5080, 0x5)
 i32 CPathHazard::ForwardSiblingTick() {
-    return SiblingTick(); // virtual slot 17 (+0x44); `mov eax,[ecx]; jmp [eax+0x44]`
+    return SiblingTick();
 }
 
-VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)
+VTBL(CPathHazard, 0x001e7394);

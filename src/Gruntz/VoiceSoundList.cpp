@@ -1,11 +1,11 @@
-#include <Mfc.h> // CPtrList/CString machinery (reloc-masked); /GX EH frame
+#include <Mfc.h>
 #include <Bute/SymParser.h>
 
-#include <Bute/ButeMgr.h>            // canonical CButeMgr (one shape)
-#include <Gruntz/Enums.h>            // REZ_TAG_WAV ('WAV')
-#include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (this)
-#include <Gruntz/GruntzMgr.h>        // CGruntzMgr - m_owner's real class (m_symParser)
-#include <Gruntz/SpawnList.h>        // canonical CSpawnList (the built voice list)
+#include <Bute/ButeMgr.h>
+#include <Gruntz/Enums.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SpawnList.h>
 #include <rva.h>
 
 // @early-stop
@@ -46,8 +46,7 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
             CParseSource* res =
                 m_owner->m_symParser->ResolveQualified(static_cast<LPCTSTR>(name), REZ_TAG_WAV);
             if (res != 0) {
-                // retail copy-ctors `name` straight into the by-value arg slot
-                // (push 0; push ecx; mov ecx,esp; copy-ctor) - no local temp.
+
                 list->AddVoiceSound(name, 0);
                 sub.Format("S%i", i);
                 sub = *g_buteMgr.GetStringDef(

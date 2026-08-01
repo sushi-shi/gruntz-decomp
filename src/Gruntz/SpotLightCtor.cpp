@@ -1,48 +1,41 @@
 #include <Mfc.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h>   // g_sndEnabled/g_sndCueTag
-#include <Gruntz/TypeKeyColl.h>  // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/UserLogic.h>    // CUserLogic / CGameObject base init + g_buteMgr
-#include <Bute/ButeMgr.h>        // CButeTree / CButeMgr
-#include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (color table via m_78)
-#include <Gruntz/LightFxMgr.h>   // CLightFxMgr - m_logicPump's real class (m_tables[10] @+0x14)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - m_world->m_childGroup (embedded GruntObjMap m_map48 @+0x48)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
-#include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
-#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/Loadable.h> // LoadableClassId - CLASSID_SERIALREF (the GetTypeId()==5 focus probe)
-#include <Gruntz/Grunt.h> // CGrunt - the Probe_32ce (CTriggerMgr::FindGruntAt) result (m_gruntKind)
-#include <math.h>         // sin / cos (the Tick rotation)
+#include <Gruntz/SoundState.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
+#include <Gruntz/UserLogic.h>
+#include <Bute/ButeMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/LightFxMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Loadable.h>
+#include <Gruntz/Grunt.h>
+#include <math.h>
 #include <rva.h>
 
-#include <Gruntz/SpotLightActReg.h> // CActRegPool<CSpotLight>::s_table (ex .cpp extern)
-#include <Gruntz/Random.h>          // ex Globals.h transitive
+#include <Gruntz/SpotLightActReg.h>
+#include <Gruntz/Random.h>
 #include <Gruntz/SpotLight.h>
-#include <Utils/MapTyped.h>         // typed MFC map lookups
-#include <Gruntz/LeafCue.h>         // LeafCue - the sound registry's cue element
-#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst::ConfigureItem (0x1360d0)
+#include <Utils/MapTyped.h>
+#include <Gruntz/LeafCue.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
-const double g_spotRateNum = 3.1415927; // 0x5ea3f0
+const double g_spotRateNum = 3.1415927;
 DATA(0x001ea3f8)
-const double g_spotRateMul = -1.0; // 0x5ea3f8
+const double g_spotRateMul = -1.0;
 
-// CSpotLight::~CSpotLight @0x13040 - empty vtable-anchor dtor; folds the CUserLogic
-// teardown (the /GX leaf-dtor archetype). Gives CSpotLight a real vftable so the
-// ctor's vptr store falls out.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CSpotLight() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
-RVA(0x000b1200, 0x2cb)
 // @early-stop
+RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
@@ -109,11 +102,6 @@ void CSpotLight::FireActivation(i32 id) {
     }
 }
 
-// CSpotLight::SerializeMove @0x0b2050 (vtable slot 1) - chain the base + the +0x34
-// object-reference, then transfer the light's own state through the archive keyed on
-// the serialize mode: 4 = Write / 7 = Read the eight rotation/offset doubles
-// (m_58..m_90) + the +0x98 focus reference (serialize/resolve its id) + the three
-// tail ints (m_9c/m_a0/m_a4); 8 = re-apply the level's draw-fill color.
 // @early-stop
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d) {
@@ -126,7 +114,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
     CGruntzMgr* reg = g_gameReg;
     CFileMemBase* s = static_cast<CFileMemBase*>(arc);
     switch (mode) {
-        case 4: // Write
+        case 4:
             s->Write(&m_58, 8);
             s->Write(&m_60, 8);
             s->Write(&m_68, 8);
@@ -147,7 +135,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
             s->Write(&m_a0, 4);
             s->Write(&m_a4, 4);
             break;
-        case 7: // Read
+        case 7:
             s->Read(&m_58, 8);
             s->Read(&m_60, 8);
             s->Read(&m_68, 8);
@@ -178,7 +166,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
             s->Read(&m_a0, 4);
             s->Read(&m_a4, 4);
             break;
-        case 8: { // re-apply the level draw-fill color
+        case 8: {
             CWwdGameObjectA* o = m_object;
             CShadeTable* fill = reg->m_logicPump->m_tables[o->m_11c];
             o->m_drawActive = 1;
@@ -190,13 +178,6 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
     return 1;
 }
 
-// CSpotLight::Tick @0x0b1af0 - the per-tick laser update. Unless the game is
-// in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
-// non-self target; if found, re-resolve the "B" bute node, copy the target's coords,
-// and either (m_object->m_114 == 1) emit the cell sound-cue + spawn a numbered
-// "LEVEL_UFOHAZARDLASER%d" laser sound (inline-seeded rand id) + play it, or else
-// activate the target and emit the alternate cue. Otherwise fall through to the 2D
-// rotation of the light offset (angle m_90 advanced by g_frameDelta * rate m_58).
 // @early-stop
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
@@ -225,11 +206,9 @@ i32 CSpotLight::Tick() {
                 i32 laser = (((g_randSeed >> 16) & 0x7fff) & 1) + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
-                CDDrawSubMgrLeafScan* obj = reg->m_world->m_soundRegistry; // the name->cue map host
+                CDDrawSubMgrLeafScan* obj = reg->m_world->m_soundRegistry;
                 if (obj->m_emitGate == 0) {
-                    // The ex `SoundPlay_1360d0(i32,...)` extern was a phantom: 0x1360d0
-                    // is DSoundCloneInst::ConfigureItem, a __thiscall reached through the
-                    // cue's m_10 (retail `mov ecx,[eax+0x10]` at 0xb1ca9, no `add esp`).
+
                     LeafCue* cue = 0;
                     MapLookup(obj->m_10, name, cue);
                     if (cue != 0 && g_sndEnabled != 0) {
@@ -247,11 +226,11 @@ i32 CSpotLight::Tick() {
             return 0;
         }
     }
-    // 2D rotation of the light offset (the fp-stack-schedule wall)
+
     double s = sin(m_90);
     double c = cos(m_90);
     double dt = static_cast<double>(static_cast<i32>(g_frameDelta));
-    CWwdGameObjectA* mv = m_focus; // the focus object (real CGameObject; ex CSpotLaser view)
+    CWwdGameObjectA* mv = m_focus;
     double rx = m_80 * c - m_88 * s;
     double ry = m_80 * s + m_88 * c;
     if (mv != 0) {

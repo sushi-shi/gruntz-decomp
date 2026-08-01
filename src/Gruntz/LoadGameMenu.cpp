@@ -1,25 +1,22 @@
-#include <Gruntz/LoadGameMenu.h> // own header (the moved thunk-name decls)
-#include <Mfc.h> // afx-first superset (EnableWindow/EndDialog/PostMessageA + CGruntzMgr)
+#include <Gruntz/LoadGameMenu.h>
+#include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Io/SaveGame.h> // CSaveGame (GetSlot/VerifySlot) + SaveSlot
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/PickPlayOrPausedState/m_saveSink/m_gameWnd/m_saveInfoRec)
-#include <Gruntz/Play.h> // CPlay (PickPlayOrPausedState's concrete return; m_stepCountdown @+0x510)
+#include <Io/SaveGame.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
 
 #include <rva.h>
 #include <Win32.h>
 
 DATA(0x00245ca4)
-CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
+CSaveGame* g_dlgLoadSink = 0;
 
 RVA(0x0009dff0, 0x8c)
 i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case WM_COMMAND: // 0x111
+        case WM_COMMAND:
             if (wParam == 2 || wParam == 1) {
-                // PickPlayOrPausedState (0x92990) is a CGruntzMgr method; g_gameReg is
-                // the CGameRegistry facet of the same 0x24556c object - reach it through
-                // the established CGruntzMgr dual-view cast (as m_saveInfoRec/m_gameWnd
-                // below) so the call binds ?PickPlayOrPausedState@CGruntzMgr@@ at 0x92990.
+
                 CPlay* obj = g_gameReg->PickPlayOrPausedState();
                 if (obj) {
                     obj->m_stepCountdown = 2;
@@ -30,10 +27,10 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
             if (LoadGameCommand(hDlg, static_cast<i32>(wParam), g_dlgLoadSink) != 0) {
                 return 1;
             }
-            // falls through to the shared "return 0" default
+
         default:
             return 0;
-        case WM_INITDIALOG: { // 0x110
+        case WM_INITDIALOG: {
             g_dlgLoadSink = static_cast<CSaveGame*>(g_gameReg->m_saveSink);
             FillGameInfoDialog(hDlg, g_dlgLoadSink);
             return 1;
@@ -74,13 +71,6 @@ void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32
     EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
 
-// -------------------------------------------------------------------------
-// LoadGameCommand (0x09e390, __cdecl(hDlg, cmdId, dlg), ret BOOL) - the GAME_LOAD
-// dialog's WM_COMMAND handler. Three contiguous control-id ranges (info / delete /
-// load buttons) each map to a 0..9 slot index; info/delete pop their modal sub-dialog
-// around a disabled window, and the load range verifies the slot then hands its handle
-// to the main window (WM_COMMAND 0x807e) and closes.
-//
 // @early-stop
 RVA(0x0009e390, 0x2bc)
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {

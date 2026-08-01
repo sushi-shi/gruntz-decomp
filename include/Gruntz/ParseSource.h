@@ -3,60 +3,43 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Bute/Hash.h> // the REAL CHashElement (the +0x1c node's base)
+#include <Bute/Hash.h>
 
 typedef enum ParseEntryTag {
-    PARSETAG_VAW = 0x574156, // "VAW" -> .WAV  sound entry (CDDrawSubMgrLeafScan::ScanTree gate)
-    PARSETAG_INA = 0x414e49, // "INA" -> .ANI  animation entry (the sibling Leaf/SurfacePair gate)
+    PARSETAG_VAW = 0x574156,
+    PARSETAG_INA = 0x414e49,
 } ParseEntryTag;
 
-class CSymTab; // <Bute/SymTab.h>
+class CSymTab;
 
 class CRezItmBase;
 
 struct CParseSlotHashNode : public CHashElement {
-    // The ctor zeroes m_record - EVIDENCE, not a guess: Init's `mov [eax+0x30],ecx`
-    // sits between the vptr stamp and Init's OWN zero run (+0x34/+0x10/+0x00), i.e.
-    // exactly where an inlined member ctor lands. That also explains the "dead"
-    // +0x30 store retail keeps (cl does not DSE it across the inlined ctor); the
-    // ex model pinned it with a `volatile` member instead.
+
     CParseSlotHashNode() {
         m_record = 0;
     }
-    // slot 0 (0x13c230): m_owner->HashStr(m_record's key). Declared-only - its
-    // owner is the leaf-symbol CHash instantiation, and typing that here would
-    // need a downcast of the CHashBase* m_owner; the slot reloc-masks.
+
     virtual u32 Hash() OVERRIDE;
 };
 SIZE(0x18);
 
 struct CParseSource {
-    // Ghidra placeholder-named these two "CParseSource::BeginParse/EndParse"
-    // (0x139960 / 0x1399d0); same 0x139xxx class + identical layout as SetPos/Read.
-    // 0x139800: return the first dword of the keyed-store entry (*(int*)m_entry).
-    // NON-inline (declared here, defined in ParseSource.cpp): retail keeps it a
-    // real out-of-line 6-byte function CALLED at all 8 sites (CImage::Resolve,
-    // LoadImage, ...), never inlined - an inline body here would inline it.
+
     i32 GetEntryTag();
-    char* BeginParse(); // the parse cursor (the mapped buffer or the lazy copy)
+    char* BeginParse();
     i32 EndParse();
-    // 0x139950: the current scope's (m_owner CSymTab) name - `mov eax,[ecx+0x10];
-    // mov eax,[eax]` proves the thiscall receiver + the +0x10 owner deref.
+
     char* CurrentScopeName();
-    // 0x139810: the `\`-joined QUALIFIED path of the current scope, built into
-    // `dst` (returned). Same +0x10 owner deref as CurrentScopeName above, so the
-    // receiver is this class, not a separate scope-chain holder.
+
     char* CurrentScopePath(char* dst, i32 size);
-    // The default ctor (0x1396f0): stamp the embedded hash-node (m_node1c), null the
-    // bookkeeping fields, self-link m_record. CSymParser::PopParseSlot builds its slot
-    // block with `new CParseSource[n]`, which is what emits it as the vector-ctor loop.
+
     CParseSource();
-    // The leaf-record fill/teardown pair (0x139710/0x1397a0, bodies in SymTab.cpp with
-    // the rest of this class's band; the ex-CSymLeafBuilder methods).
+
     void Build(
         CSymTab* owner,
         const char* name,
-        void* f4, // DEAD in the body; one caller hands a hash ptr, another an id
+        void* f4,
         void* rec,
         void* str2,
         i32 f3,
@@ -67,32 +50,26 @@ struct CParseSource {
         CRezItmBase* stream
     );
     void Teardown();
-    i32 SetPos(i32 pos); // 0x139ae0 (out-of-line: m_cursor = pos; return 1)
+    i32 SetPos(i32 pos);
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 
-    char* m_name;  // +0x00 source name
-    void* m_entry; // +0x04 keyed-store entry (first dword = tag)
-    i32 m_typeTag; // +0x08  type tag (1/2/4; the Build f2 slot)
-    // +0x0c is PROVEN heterogeneous: for most entry kinds it is the byte length, but for
-    // the XCP kind it holds the entry's key STRING. CDDrawWorkerMapSmall::Factory_165a90
-    // reads it at 0x165ad4, tests it against 0 at 0x165b3c and, when non-null, runs
-    // `repnz scas` (strlen) + a block copy straight off it at 0x165b4c - i.e. it is
-    // dereferenced as a char*. Two arms of the same 4 bytes, so a union, not a cast.
+    char* m_name;
+    void* m_entry;
+    i32 m_typeTag;
+
     union {
-        u32 m_length;            // +0x0c total byte length / limit
-        const char* m_keyHandle; // +0x0c (XCP entries) the entry's key string
+        u32 m_length;
+        const char* m_keyHandle;
     };
-    CSymTab* m_owner; // +0x10  owning scope (Build stores it; the stream side
-                      //        reads its m_baseOffset/m_mappedBuf as the mapped window)
-    i32 m_base;       // +0x14 source base ptr
-    i32 m_cursor;     // +0x18 read cursor
-    // +0x1c embedded parse-slot hash-node (0x18 B, vptr @0x5ef740, spans +0x1c..+0x33).
-    // Its m_record (+0x30) is the ex "m_selfLink": Init points it at this record, whose
-    // first dword (m_name) is the hash key.
+    CSymTab* m_owner;
+
+    i32 m_base;
+    i32 m_cursor;
+
     CParseSlotHashNode m_node1c;
-    CRezItmBase* m_reader; // +0x34  the providing rez node (slot-2 virtual Read)
-    char* m_buffer;        // +0x38 lazily-allocated inline byte buffer
+    CRezItmBase* m_reader;
+    char* m_buffer;
 };
 SIZE_UNKNOWN();
 

@@ -1,82 +1,29 @@
-// TerrainTileLoader.cpp - CTriggerMgr::LoadTileArrivalFx, the per-tile
-// terrain-action sprite loader (C:\Proj\Gruntz). The backlog's second-biggest
-// megafunction (4905 B): given a tile coordinate (edi=x, ebp=y) and an action
-// descriptor, it dispatches on the tile's terrain-action type and registers /
-// resolves the matching sprite, particle, lighting or puddle asset set in the
-// game image registry (*g_gameReg). It is a /GX EH-framed routine (a CString
-// diagnostic temp at [esp+0x74] gives it the exception frame) with three nested
-// jump-table switches over the action-type id.
-//
-// IDENTITY (the ex-`CTerrainTileLoader` placeholder class, DISSOLVED 2026-07-16):
-// 0x75e90 IS ?LoadTileArrivalFx@CTriggerMgr@@ - the declared-only 6-arg driver
-// TriggerMgr.h already carried (thunk 0x3945). Proof: (1) every retail caller
-// dispatches it on ecx = [grunt+0x260] == CGrunt::m_tileMgr == the ONE CTriggerMgr
-// (gruntz sema xref 0x3945: StepAnimDispatchA/B, CommitNeighbor, StepArrivalCommit,
-// ... + CTriggerMgr::ApplyTriggerB/ClearCell self-calls); (2) the view's only own
-// member - the level holder at +0x22c - IS CTriggerMgr::m_level (the identical
-// m_level->m_level->m_mainPlane clamp walk as the siblings WireTileSwitchLogic /
-// ApplySwitch); (3) GruntEntranceArrival's two other call sites already bound the
-// same thunk as m_tileMgr->LoadTileArrivalFx.
-//
-// The $SG string set ("GAME_DIRT"/"LEVEL_DIRT", "GAME_GAUNTLETBRICK1"/
-// "LEVEL_GAUNTLETROCK1", "LEVEL_ROCKBREAK", "GAME_HIDDENITEM"/
-// "GAME_LIGHTING_HIDDENITEM", "GAME_WATER"/"GAME_WATERSPLASH",
-// "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2", "Particlez", "LightFx", "ToyPeek", and the
-// "No giant rock logic found at: x=" diagnostic) identifies it as the terrain
-// tile-action loader. Reconstructed as an EH unit (the CString temp).
-//
-// Structure: it first resolves the tile cell from the grid (m_level->m_24 level /
-// g_gameReg->m_curState play-state chain), reads the cell's object id, then runs
-// the outer action switch ([esp+0x84]-3, range 0..0xf -> jump table 0x4771bc)
-// whose arms (DIRT, GIANTROCK, ROCKBREAK, WATER, HIDDENITEM-lighting, TOY,
-// PUDDLE) each look up a GAME_*/LEVEL_* namespace pair in the registry hashtable
-// (Lookup @0x1b8438) and register / free / resolve the resolved set. The giant
-// case 0x22/0x23 reads the cell occupancy; the lighting cases 0x96..0x99 and the
-// toy cases 0x1e/0x1f/0x21 each have their own inner switch.
-//
-// @early-stop  (1.1% -> 7.9%: return type corrected to int [retail materialises
-// eax=1 before each ret]; reconstructed the always-run prologue - the action
-// descriptor, the grid-cell type resolve [m_level->m_level->m_mainPlane clamp +
-// cells[rowBase[y]+x] + tile-class GetCollisionAt], the pixel snap - the 0x4771bc
-// byte-indexed outer switch mapped to actionTypes {3,5,7,0xd,0xf,0x12}, and the
-// DIRT arm [actionType 0xd] with its a5 {-1,2,0x63} sub-dispatch + Particlez
-// CreateSprite + tag-0x1a clear.) Residual is the documented /GX nested-jump-table
-// megafunction wall: the retail frame is sub esp,0x54 - that size is fixed by the
-// UNION of all 6 arms' locals + the descending EH-state scopes, so a partial body
-// (this reconstructs 1 of 6 arms) frames at 0xc and shifts every [esp+X] slot;
-// the descriptor + the 5 unreconstructed arms (each its own nested cellType jump
-// table + CString diagnostic path) are needed to pin the frame and stop the DCE
-// of the prologue's descriptor/cell reads. A leaf-first full-body redo is the fix
-// (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md;
-// eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
-#include <Mfc.h>                  // PtInRect (via <windows.h>), the CString diagnostic temp
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgr.h> // this TU's class (LoadTileArrivalFx is a CTriggerMgr method)
 
-#include <Gruntz/GameLevel.h>         // CGameLevel (m_level->m_24) + CTileImageSet (GetCollisionAt)
-#include <Gruntz/GameRegistry.h>      // CGameRegistry / CDDrawSurfaceMgr (the *0x24556c singleton)
-#include <Gruntz/Play.h>              // CPlay (g_gameReg->m_curState) - m_beginMarker @+0x2e4
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (FindInLists12/DelFromList1)
-#include <Gruntz/TileTriggerLogic.h>     // CTileTriggerLogic (ApplyMove tags the found set)
-#include <Gruntz/UserLogic.h>            // CGameObject (the created Particlez sprite)
-#include <Wwd/WwdFile.h>                 // CDDrawWorkerHost - the canonical plane (cell lookup)
+#include <Mfc.h>
+#include <AddrWord.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>
+
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Play.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/AnimWorkerObj.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/InGameIcon.h>
+#include <Gruntz/LightFx.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/UserLogic.h>
+#include <Wwd/WwdFile.h>
 #include <rva.h>
 
-// The `reason` dispatch is a 16-slot jump table at 0x4771bc (index bytes 0x4771d8,
-// selector biased by -3). Retail has SIX real arms and a default; only the reason-13
-// one below is reconstructed so far. Case set and EMISSION order, straight from the
-// table (`sema disasm 0x00075e90 --switch`):
-//     reason 13 -> 0x075f99      reason 5  -> 0x076121
-//     default   -> 0x0762da  (reasons 4, 6, 8..12, 14, 16, 17 all reach it)
-//     reason 7  -> 0x076497      reason 15 -> 0x07655f
-//     reason 3  -> 0x076f2a      reason 18 -> 0x07706c
-// The default block sits BETWEEN the reason-5 and reason-7 arms, so the source writes
-// `default:` there and not at the end.
-// @early-stop
 RVA(0x00075e90, 0x1329)
 i32 CTriggerMgr::LoadTileArrivalFx(
     i32 ownerHi,
@@ -86,33 +33,31 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     i32 reason,
     i32 sel
 ) {
-    static_cast<void>(ownerHi);
-    static_cast<void>(ownerLo);
-    CString diag; // the "No giant rock logic found" temp - forces the /GX EH frame
+    CString diag;
 
     CDDrawSurfaceMgr* level = m_world;
-    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState); // retail reads [g_gameReg+0x2c]
+    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = level->m_level;
-    CDDrawWorkerHost* g = grid->m_mainPlane;
+    CDDrawWorkerHost* plane = grid->m_mainPlane;
+    CGrunt* unit = m_grid[ownerHi * TM_GRID_COLS + ownerLo];
 
-    // clamp the tile coords to the grid (tile-space bounds at +0x28/+0x2c)
     i32 cx = tileX;
     if (tileX < 0) {
         cx = 0;
-    } else if (tileX >= g->m_gridW) {
-        cx = g->m_gridW - 1;
+    } else if (tileX >= plane->m_gridW) {
+        cx = plane->m_gridW - 1;
     }
     i32 cy;
     if (tileY < 0) {
         cy = 0;
-    } else if (tileY >= g->m_gridH) {
-        cy = g->m_gridH - 1;
+    } else if (tileY >= plane->m_gridH) {
+        cy = plane->m_gridH - 1;
     } else {
         cy = tileY;
     }
 
     i32 cellType;
-    i32 cell = g->m_tileGrid[g->m_colOffsets[cy] + cx];
+    i32 cell = plane->m_tileGrid[plane->m_colOffsets[cy] + cx];
     if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
         cellType = 0;
     } else {
@@ -122,9 +67,158 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     i32 px = tileX * 32 + 0x10;
     i32 py = tileY * 32 + 0x10;
+    CTileTriggerContainer* triggers = state->m_beginMarker;
+    i32 cellKey = (tileX << 8) + tileY;
 
-    switch (reason - 3) {
-        case 0xa: // reason 0xd - the DIRT / eye-candy arm
+    switch (reason) {
+        case 3:
+            if (sel != 0x63 || unit == 0) {
+                return 1;
+            }
+            if (cellType == TILEKIND_HIDDEN_POWERUP) {
+                i32 actionCode;
+                switch (unit->m_toyBlendPct) {
+                    case 0x23:
+                        actionCode = 0x132;
+                        break;
+                    case 0x24:
+                        actionCode = 0x138;
+                        break;
+                    case 0x25:
+                        actionCode = 0x13e;
+                        break;
+                    case 0x26:
+                        actionCode = 0x144;
+                        break;
+                    default:
+                        actionCode = 0x12f;
+                        break;
+                }
+                if (triggers->AddToList3Switch(actionCode, tileX, tileY, cellKey, ownerHi) != 0) {
+                    unit->m_458 = px;
+                    unit->m_toyBlendPct = TILEKIND_COVERED_POWERUP;
+                    unit->m_moveMode = -1;
+                    unit->m_45c = py;
+                    unit->m_454 = 1;
+                }
+            } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
+                       || cellType == TILEKIND_GAUNTLET_BRICK_B) {
+                CTileActionEvent* event = triggers->FindByField0C(cellKey);
+                if (event != 0 && event->MorphByTool(unit->m_toyBlendPct, ownerHi) != 0) {
+                    unit->m_toyBlendPct = TILEKIND_COVERED_POWERUP;
+                    unit->m_moveMode = -1;
+                    if (cellType == TILEKIND_GAUNTLET_BRICK_A) {
+                        unit->m_458 = px;
+                        unit->m_45c = py;
+                        unit->m_454 = 1;
+                    }
+                }
+            }
+            return 1;
+
+        case 5:
+            if (sel == -1) {
+                return 1;
+            }
+            if (sel == 2) {
+                POINT pt;
+                pt.x = px;
+                pt.y = py;
+                if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
+                    if (cellType == TILEKIND_GAUNTLET_ROCK_A || cellType == TILEKIND_GAUNTLET_ROCK_B
+                        || cellType == TILEKIND_GIANT_ROCK) {
+                        level->m_soundRegistry->RefreshAsset("LEVEL_GAUNTLETROCK1");
+                    } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
+                               || cellType == TILEKIND_GAUNTLET_BRICK_B
+                               || cellType == TILEKIND_GAUNTLET_BRICK_C) {
+                        level->m_soundRegistry->RefreshAsset("GAME_GAUNTLETBRICK1");
+                    }
+                }
+                return 1;
+            }
+            if (sel != 0x63) {
+                return 1;
+            }
+
+            if (cellType == TILEKIND_GAUNTLET_ROCK_A || cellType == TILEKIND_GAUNTLET_ROCK_B) {
+                CTileTriggerLogic* found =
+                    triggers->FindInLists12(cellKey, TRIGID_COVERED_POWERUP_26);
+                if (found == 0) {
+                    i32 replacement = cellType == TILEKIND_GAUNTLET_ROCK_A ? 0x5a : 0x5b;
+                    plane->SetCell(tileX, tileY, replacement);
+                    g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, replacement);
+                } else {
+                    found->ApplyMove(cellType);
+                    triggers->DelFromList1(found);
+                }
+            } else if (cellType == TILEKIND_GIANT_ROCK) {
+                CGiantRockLogic* rock = triggers->ScanNeighborhood(tileX, tileY);
+                if (rock == 0) {
+                    diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
+                    g_gameReg->EnterModalUI(static_cast<const char*>(diag));
+                    g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_ARRIVAL_GIANT_ROCK);
+                    return 0;
+                }
+                rock->BuildRockBreakInGameText();
+                triggers->DelFromList1(rock);
+                return 1;
+            } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
+                       || cellType == TILEKIND_GAUNTLET_BRICK_B
+                       || cellType == TILEKIND_GAUNTLET_BRICK_C) {
+                CTileActionEvent* event = triggers->FindByField0C(cellKey);
+                if (event != 0 && event->Process(unit) != 0) {
+                    triggers->DelFromList3(event);
+                }
+                return 1;
+            } else {
+                return 0;
+            }
+
+            {
+                POINT pt;
+                pt.x = px;
+                pt.y = py;
+                if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
+                    CWwdGameObjectA* particle =
+                        level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                    if (particle != 0) {
+                        particle->ApplyName("LEVEL_ROCKBREAK");
+                        particle->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
+                    }
+                    level->m_soundRegistry->RefreshAsset("LEVEL_ROCKBREAK");
+                }
+            }
+            return 1;
+
+        case 7: {
+            POSITION pos = m_baseList.GetHeadPosition();
+            while (pos != 0) {
+                POSITION current = pos;
+                CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                if (puddle->m_tileX != tileX || puddle->m_tileY != tileY) {
+                    continue;
+                }
+                if (sel == -1) {
+                    puddle->m_object->m_stateFlags &= ~1;
+                    puddle->SetBute("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2");
+                    puddle->m_pending = 1;
+                    puddle->m_placed = 0;
+                    puddle->m_value = puddle->m_object->m_1a0.m_14;
+                    puddle->m_object->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2", 0);
+                    return 1;
+                }
+                i32 gruntType = puddle->m_gruntType;
+                puddle->m_object->m_flags |= 0x10000;
+                m_baseList.RemoveAt(current);
+                if (ownerHi == g_curPlayer) {
+                    state->m_guts->AdvanceGauge(gruntType);
+                }
+                return 1;
+            }
+            return 1;
+        }
+
+        case 13:
             if (sel == -1) {
                 return 1;
             }
@@ -145,17 +239,323 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (sel != 0x63) {
                 return 1;
             }
-            // sel == 0x63: clear the tile's registered tag-0x1a set, keyed by tile coord
-            if (cellType == 0x22) {
-                CTileTriggerContainer* reg = state->m_beginMarker;
-                CTileTriggerLogic* found = reg->FindInLists12((tileX << 8) + tileY, 0x1a);
+
+            if (cellType == TILEKIND_COVERED_POWERUP) {
+                CTileTriggerLogic* found =
+                    triggers->FindInLists12(cellKey, TRIGID_COVERED_POWERUP_26);
                 if (found != 0) {
                     found->ApplyMove(0x22);
-                    reg->DelFromList1(found);
+                    triggers->DelFromList1(found);
+                } else {
+                    i32 replacement = cell + 1;
+                    plane->SetCell(tileX, tileY, replacement);
+                    g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, replacement);
+                }
+            } else if (cellType == TILEKIND_REVEALED_POWERUP) {
+                i32 replacement = cell - 1;
+                plane->SetCell(tileX, tileY, replacement);
+                g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, replacement);
+            }
+            return 1;
+
+        case 15:
+            if (sel == 0x63) {
+                CMapMgr* pathGrid = g_gameReg->m_tileGrid;
+                for (i32 radius = 1; radius <= 2; radius++) {
+                    i32 topY = tileY - radius;
+                    i32 bottomY = tileY + radius;
+                    for (i32 scanX = tileX - radius; scanX <= tileX + radius; scanX++) {
+                        if (triggers->SetCell(scanX, topY, ownerHi) != 0
+                            && ownerHi == g_curPlayer) {
+                            i32 fxX = scanX * 0x20 + 0x10;
+                            i32 fxY = topY * 0x20 + 0x10;
+                            CWwdGameObjectA* light =
+                                level->m_childGroup
+                                    ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
+                            light->m_animWorker->m_notify(light);
+                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                        }
+
+                        AddrWord objectKey;
+                        objectKey.m_word = 0;
+                        if (static_cast<u32>(scanX) < pathGrid->m_width
+                            && static_cast<u32>(topY) < pathGrid->m_height) {
+                            objectKey.m_word = pathGrid->m_rows[topY][scanX].m_objectId;
+                        }
+                        if (objectKey.m_word != 0) {
+                            void* mapped = 0;
+                            level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
+                            if (mapped == 0) {
+                                pathGrid->m_rows[tileY][tileX].m_objectId = 0;
+                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                            } else {
+                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
+                                CInGameIcon* icon =
+                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                if (icon->m_object->m_124 == 0x55) {
+                                    icon->m_object->m_114 = ownerHi;
+                                    icon->HandleInput();
+                                    if (ownerHi == g_curPlayer) {
+                                        i32 fxX = scanX * 0x20 + 0x10;
+                                        i32 fxY = topY * 0x20 + 0x10;
+                                        CWwdGameObjectA* light = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "LightFx",
+                                            0x40003
+                                        );
+                                        light->m_animWorker->m_notify(light);
+                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                            ->Activate(
+                                                "GAME_LIGHTING_HIDDENITEM",
+                                                "GAME_HIDDENITEM",
+                                                2,
+                                                1
+                                            );
+                                        CWwdGameObjectA* peek = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            900000,
+                                            "ToyPeek",
+                                            0x40003
+                                        );
+                                        if (peek != 0) {
+                                            peek->m_124 = icon->m_object->m_118;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (triggers->SetCell(scanX, bottomY, ownerHi) != 0
+                            && ownerHi == g_curPlayer) {
+                            i32 fxX = scanX * 0x20 + 0x10;
+                            i32 fxY = bottomY * 0x20 + 0x10;
+                            CWwdGameObjectA* light =
+                                level->m_childGroup
+                                    ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
+                            light->m_animWorker->m_notify(light);
+                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                        }
+
+                        objectKey.m_word = 0;
+                        if (static_cast<u32>(scanX) < pathGrid->m_width
+                            && static_cast<u32>(bottomY) < pathGrid->m_height) {
+                            objectKey.m_word = pathGrid->m_rows[bottomY][scanX].m_objectId;
+                        }
+                        if (objectKey.m_word != 0) {
+                            void* mapped = 0;
+                            level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
+                            if (mapped == 0) {
+                                pathGrid->m_rows[tileY][tileX].m_objectId = 0;
+                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                            } else {
+                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
+                                CInGameIcon* icon =
+                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                if (icon->m_object->m_124 == 0x55) {
+                                    icon->m_object->m_114 = ownerHi;
+                                    icon->HandleInput();
+                                    if (ownerHi == g_curPlayer) {
+                                        i32 fxX = scanX * 0x20 + 0x10;
+                                        i32 fxY = bottomY * 0x20 + 0x10;
+                                        CWwdGameObjectA* light = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "LightFx",
+                                            0x40003
+                                        );
+                                        light->m_animWorker->m_notify(light);
+                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                            ->Activate(
+                                                "GAME_LIGHTING_HIDDENITEM",
+                                                "GAME_HIDDENITEM",
+                                                2,
+                                                1
+                                            );
+                                        CWwdGameObjectA* peek = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "ToyPeek",
+                                            0x40003
+                                        );
+                                        if (peek != 0) {
+                                            peek->m_124 = icon->m_object->m_118;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    i32 leftX = tileX - radius;
+                    i32 rightX = tileX + radius;
+                    for (i32 scanY = tileY - radius + 1; scanY < tileY + radius; scanY++) {
+                        if (triggers->SetCell(leftX, scanY, ownerHi) != 0
+                            && ownerHi == g_curPlayer) {
+                            i32 fxX = leftX * 0x20 + 0x10;
+                            i32 fxY = scanY * 0x20 + 0x10;
+                            CWwdGameObjectA* light =
+                                level->m_childGroup
+                                    ->CreateSprite(0, fxX, fxY, 900000, "LightFx", 0x40003);
+                            light->m_animWorker->m_notify(light);
+                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                        }
+
+                        AddrWord objectKey;
+                        objectKey.m_word = 0;
+                        if (static_cast<u32>(leftX) < pathGrid->m_width
+                            && static_cast<u32>(scanY) < pathGrid->m_height) {
+                            objectKey.m_word = pathGrid->m_rows[scanY][leftX].m_objectId;
+                        }
+                        if (objectKey.m_word != 0) {
+                            void* mapped = 0;
+                            level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
+                            if (mapped == 0) {
+                                pathGrid->m_rows[tileY][tileX].m_objectId = 0;
+                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                            } else {
+                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
+                                CInGameIcon* icon =
+                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                if (icon->m_object->m_124 == 0x55) {
+                                    icon->m_object->m_114 = ownerHi;
+                                    icon->HandleInput();
+                                    if (ownerHi == g_curPlayer) {
+                                        i32 fxX = leftX * 0x20 + 0x10;
+                                        i32 fxY = scanY * 0x20 + 0x10;
+                                        CWwdGameObjectA* light = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "LightFx",
+                                            0x40003
+                                        );
+                                        light->m_animWorker->m_notify(light);
+                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                            ->Activate(
+                                                "GAME_LIGHTING_HIDDENITEM",
+                                                "GAME_HIDDENITEM",
+                                                2,
+                                                1
+                                            );
+                                        CWwdGameObjectA* peek = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "ToyPeek",
+                                            0x40003
+                                        );
+                                        if (peek != 0) {
+                                            peek->m_124 = icon->m_object->m_118;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (triggers->SetCell(rightX, scanY, ownerHi) != 0
+                            && ownerHi == g_curPlayer) {
+                            i32 fxX = rightX * 0x20 + 0x10;
+                            i32 fxY = scanY * 0x20 + 0x10;
+                            CWwdGameObjectA* light =
+                                level->m_childGroup
+                                    ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
+                            light->m_animWorker->m_notify(light);
+                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                        }
+
+                        objectKey.m_word = 0;
+                        if (static_cast<u32>(rightX) < pathGrid->m_width
+                            && static_cast<u32>(scanY) < pathGrid->m_height) {
+                            objectKey.m_word = pathGrid->m_rows[scanY][rightX].m_objectId;
+                        }
+                        if (objectKey.m_word != 0) {
+                            void* mapped = 0;
+                            level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
+                            if (mapped == 0) {
+                                pathGrid->m_rows[tileY][tileX].m_objectId = 0;
+                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                            } else {
+                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
+                                CInGameIcon* icon =
+                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                if (icon->m_object->m_124 == 0x55) {
+                                    icon->m_object->m_114 = ownerHi;
+                                    icon->HandleInput();
+                                    if (ownerHi == g_curPlayer) {
+                                        i32 fxX = rightX * 0x20 + 0x10;
+                                        i32 fxY = scanY * 0x20 + 0x10;
+                                        CWwdGameObjectA* light = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "LightFx",
+                                            0x40003
+                                        );
+                                        light->m_animWorker->m_notify(light);
+                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                            ->Activate(
+                                                "GAME_LIGHTING_HIDDENITEM",
+                                                "GAME_HIDDENITEM",
+                                                2,
+                                                1
+                                            );
+                                        CWwdGameObjectA* peek = level->m_childGroup->CreateSprite(
+                                            0,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "ToyPeek",
+                                            0x40003
+                                        );
+                                        if (peek != 0) {
+                                            peek->m_124 = icon->m_object->m_118;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             return 1;
-        default:
+
+        case 18:
+            if (sel == 0x63 && unit != 0) {
+                i32 waterX = unit->m_object->m_screenX;
+                i32 waterY = unit->m_object->m_screenY;
+                POINT pt;
+                pt.x = waterX;
+                pt.y = waterY;
+                if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
+                    CWwdGameObjectA* splash =
+                        level->m_childGroup
+                            ->CreateSprite(0, waterX, waterY, 0xcf84f, "Particlez", 0x40003);
+                    if (splash != 0) {
+                        splash->ApplyName("GAME_WATER");
+                        splash->ApplyLookupGeometry("GAME_WATER", 0);
+                        level->m_soundRegistry->RefreshAsset("GAME_WATERSPLASH");
+                    }
+                }
+            }
             return 1;
+
+        default:
+            return 0;
     }
 }

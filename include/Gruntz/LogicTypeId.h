@@ -2,94 +2,76 @@
 #define GRUNTZ_LOGICTYPEID_H
 
 enum LogicTypeId {
-    LOGIC_NONE = -1,                 // CUserLogic/CMovingLogic base default @0x08840/0x13bb0
-    LOGIC_STATUSBARSPRITE = 0x3ff,   // CStatusBarSprite::GetTypeTag    @0x11ac0
-    LOGIC_TILETRIGGERSWITCH = 0x400, // CTileTriggerSwitch::GetTypeTag  @0x11030
-    LOGIC_TILETRIGGER = 0x401,       // CTileTrigger::GetTypeTag        @0x111d0
-    LOGIC_CHECKPOINTTRIGGER = 0x402, // CCheckpointTrigger::GetTypeTag  @0x11430
-    LOGIC_TILESECRETTRIGGER = 0x403, // CTileSecretTrigger::GetTypeTag  @0x114f0
-    LOGIC_COVEREDPOWERUP = 0x404,    // CCoveredPowerup::GetTypeTag     @0x11670
-    LOGIC_GIANTROCK = 0x406,         // CGiantRock::GetTypeTag          @0x115b0
-    LOGIC_BOOMERANG = 0x413,         // CBoomerang::GetTypeTag          @0x129b0
-    LOGIC_ANICYCLE = 0x3ea,          // CAniCycle::GetTypeTag               @0x0f450
-    LOGIC_DONOTHING = 0x3ec,         // CDoNothing::GetTypeTag              @0x0f6b0
-    LOGIC_FRONTCANDY =
-        0x3ef, // CFrontCandy::GetTypeTag             @0x0fa40 (vtable 0x1e84ec, slot 2)
-    LOGIC_BEHINDCANDY = 0x3f0,           // CBehindCandy::GetTypeTag            @0x0fb70
-    LOGIC_EYECANDY = 0x3f1,              // CEyeCandy::GetTypeTag               @0x0fca0
-    LOGIC_BEHINDCANDYANI = 0x3f3,        // CBehindCandyAni::GetTypeTag         @0x10030
-    LOGIC_EYECANDYANI = 0x3f4,           // CEyeCandyAni::GetTypeTag            @0x0ff00
-    LOGIC_EXITTRIGGER = 0x3f7,           // CExitTrigger::GetTypeTag            @0x10870
-    LOGIC_TELEPORTER = 0x3fc,            // CTeleporter::GetTypeTag             @0x10d80
-    LOGIC_TILETRIGGERTRANSITION = 0x405, // CTileTriggerTransition::GetTypeTag  @0x11730
-    LOGIC_BRICKZ = 0x409,                // CBrickz::GetTypeTag                 @0x11300
-    LOGIC_OBJECTDROPPER = 0x40f,         // CObjectDropper::GetTypeTag          @0x124a0
-    LOGIC_GRUNTSTAMINASPRITE = 0x410,    // CGruntStaminaSprite::GetTypeTag     @0x12020
-    LOGIC_GRUNTTOYTIMESPRITE = 0x411,    // CGruntToyTimeSprite::GetTypeTag     @0x120e0
-    LOGIC_STATICHAZARD = 0x416,          // CStaticHazard::GetTypeTag           @0x12ae0
-    LOGIC_GRUNTWINGZTIMESPRITE = 0x417,  // CGruntWingzTimeSprite::GetTypeTag   @0x121a0
-    LOGIC_TOOBSPIKEZ = 0x418,            // CToobSpikez::GetTypeTag             @0x12ba0
-    LOGIC_PARTICLEZ = 0x41c,             // CParticlez::GetTypeTag              @0x12cd0
-    LOGIC_SPOTLIGHT =
-        0x41d, // CSpotLight::GetTypeTag              @0x12ff0 (vtable 0x1e75bc, slot 2)
-    LOGIC_WAYPOINT = 0x420,   // CWayPoint::GetTypeTag               @0x10220
-    LOGIC_ACTIONAREA = 0x423, // CActionArea::GetTypeTag             @0x07f80
-    // The 0x424..0x426 trio was UNTANGLED 2026-07-22 by dumping the four raw
-    // vtables' slot 2: the old labels came from misbound bodies.
-    LOGIC_PATHHAZARD = 0x424, // CPathHazard::GetTypeTag             @0x13210
-    LOGIC_RAINCLOUD =
-        0x425,         // CRainCloud::GetTypeTag              @0x132f0 (vtable 0x1e7324 slot 2)
-    LOGIC_UFO = 0x426, // CUFO::GetTypeTag                    @0x133b0 (vtable 0x1e72b4 slot 2)
-    LOGIC_VOICETRIGGER =
-        0x42b, // CVoiceTrigger::GetTypeTag           @0x13550 (vtable 0x1e885c slot 2)
-    LOGIC_FORTRESSFLAG = 0x427, // CFortressFlag::GetTypeTag           @0x10e40
-    LOGIC_TOYPEEK = 0x428, // CToyPeek::GetTypeTag                @0x11bf0 (vtable 0x1e7204, slot 2)
-    LOGIC_WARPSTONEPAD =
-        0x429, // CWarpStonePad::GetTypeTag           @0x10f00 (vtable 0x1e71ac, slot 2)
-    LOGIC_GUARDPOINT = 0x42a, // CGuardPoint::GetTypeTag             @0x10350
+    LOGIC_NONE = -1,
+    LOGIC_STATUSBARSPRITE = 0x3ff,
+    LOGIC_TILETRIGGERSWITCH = 0x400,
+    LOGIC_TILETRIGGER = 0x401,
+    LOGIC_CHECKPOINTTRIGGER = 0x402,
+    LOGIC_TILESECRETTRIGGER = 0x403,
+    LOGIC_COVEREDPOWERUP = 0x404,
+    LOGIC_GIANTROCK = 0x406,
+    LOGIC_BOOMERANG = 0x413,
+    LOGIC_ANICYCLE = 0x3ea,
+    LOGIC_DONOTHING = 0x3ec,
+    LOGIC_FRONTCANDY = 0x3ef,
+    LOGIC_BEHINDCANDY = 0x3f0,
+    LOGIC_EYECANDY = 0x3f1,
+    LOGIC_BEHINDCANDYANI = 0x3f3,
+    LOGIC_EYECANDYANI = 0x3f4,
+    LOGIC_EXITTRIGGER = 0x3f7,
+    LOGIC_TELEPORTER = 0x3fc,
+    LOGIC_TILETRIGGERTRANSITION = 0x405,
+    LOGIC_BRICKZ = 0x409,
+    LOGIC_OBJECTDROPPER = 0x40f,
+    LOGIC_GRUNTSTAMINASPRITE = 0x410,
+    LOGIC_GRUNTTOYTIMESPRITE = 0x411,
+    LOGIC_STATICHAZARD = 0x416,
+    LOGIC_GRUNTWINGZTIMESPRITE = 0x417,
+    LOGIC_TOOBSPIKEZ = 0x418,
+    LOGIC_PARTICLEZ = 0x41c,
+    LOGIC_SPOTLIGHT = 0x41d,
+    LOGIC_WAYPOINT = 0x420,
+    LOGIC_ACTIONAREA = 0x423,
 
-    // ILT-census recovered leaves (slot-2 per-class type-id accessors, attributed by
-    // vtable_scan.find_holding: each is a UNIQUE 1-holder override -> its RTTI class).
-    LOGIC_GRUNT = 0x3e8,       // CGrunt::GetTypeTag                  @0x0f2a0 (vtable 0x1e8754)
-    LOGIC_ROLLINGBALL = 0x3e9, // CRollingBall::GetTypeTag            @0x12f30 (vtable 0x1e86fc)
-    LOGIC_SINGLEFRAMEMESSAGE =
-        0x3eb,                     // CSingleFrameMessage::GetTypeTag     @0x0f580 (vtable 0x1e864c)
-    LOGIC_DONOTHINGNORMAL = 0x3ed, // CDoNothingNormal::GetTypeTag        @0x0f7e0 (vtable 0x1e859c)
-    LOGIC_SIMPLEANIMATION = 0x3ee, // CSimpleAnimation::GetTypeTag        @0x0f910 (vtable 0x1e8544)
-    LOGIC_FRONTCANDYANI = 0x3f2,   // CFrontCandyAni::GetTypeTag          @0x0fdd0 (vtable 0x1e83e4)
-    LOGIC_MENUSPARKLE = 0x3f5,     // CMenuSparkle::GetTypeTag            @0x10160 (vtable 0x1e82dc)
-    LOGIC_GRUNTSTARTINGPOINT =
-        0x3f6, // CGruntStartingPoint::GetTypeTag     @0x105b0 (vtable 0x1e8284)
-    LOGIC_GRUNTCREATIONPOINT =
-        0x3f8,                 // CGruntCreationPoint::GetTypeTag     @0x106e0 (vtable 0x1e81d4)
-    LOGIC_WORMHOLE = 0x3fa,    // CWormhole::GetTypeTag               @0x10930 (vtable 0x1e817c)
-    LOGIC_GRUNTPUDDLE = 0x3fb, // CGruntPuddle::GetTypeTag            @0x10cc0 (vtable 0x1e8124)
-    LOGIC_CURSORSNAPSPRITE =
-        0x3fd,                // CCursorSnapSprite::GetTypeTag       @0x11860 (vtable 0x1e8074)
-    LOGIC_LEVELTIME = 0x3fe,  // CLevelTime::GetTypeTag              @0x11990 (vtable 0x1e801c)
-    LOGIC_INGAMEICON = 0x407, // CInGameIcon::GetTypeTag             @0x11cb0 (vtable 0x1e7d04)
-    LOGIC_INGAMETEXT = 0x408, // CInGameText::GetTypeTag             @0x11d70 (vtable 0x1e7cac)
-    LOGIC_GRUNTSELECTEDSPRITE =
-        0x40a, // CGruntSelectedSprite::GetTypeTag    @0x11e30 (vtable 0x1e7bfc)
-    LOGIC_GRUNTHEALTHSPRITE =
-        0x40b,                    // CGruntHealthSprite::GetTypeTag      @0x11f60 (vtable 0x1e7ba4)
-    LOGIC_GRUNTTOYSPRITE = 0x40c, // CGruntToySprite::GetTypeTag         @0x12260 (vtable 0x1e7b4c)
-    LOGIC_LIGHTFX = 0x40d,        // CLightFx::GetTypeTag                @0x123e0 (vtable 0x1e7af4)
-    LOGIC_PROJECTILE = 0x412,     // CProjectile::GetTypeTag             @0x12960 (vtable 0x1e798c)
-    LOGIC_DROPPEDOBJECT = 0x414,  // CDroppedObject::GetTypeTag          @0x12560 (vtable 0x1e78d4)
-    LOGIC_DROPPEDOBJECTSHADOW =
-        0x415,              // CDroppedObjectShadow::GetTypeTag    @0x12620 (vtable 0x1e787c)
-    LOGIC_TIMEBOMB = 0x419, // CTimeBomb::GetTypeTag               @0x12a20 (vtable 0x1e771c)
-    LOGIC_GRUNTPOWERUPSPRITE =
-        0x41a,               // CGruntPowerupSprite::GetTypeTag     @0x12320 (vtable 0x1e76c4)
-    LOGIC_EXPLOSION = 0x41b, // CExplosion::GetTypeTag              @0x12e00 (vtable 0x1e766c)
-    LOGIC_SECRETTELEPORTERTRIGGER =
-        0x41e,                  // CSecretTeleporterTrigger::GetTypeTag @0x109f0 (vtable 0x1e7564)
-    LOGIC_KITCHENSLIME = 0x41f, // CKitchenSlime::GetTypeTag           @0x130b0 (vtable 0x1e750c)
-    LOGIC_SINGLEANIMATION = 0x421, // CSingleAnimation::GetTypeTag        @0x10480 (vtable 0x1e745c)
-    LOGIC_WARLORD = 0x422,         // CWarlord::GetTypeTag                @0x107a0 (vtable 0x1e7404)
-    LOGIC_SECRETLEVELTRIGGER =
-        0x42c, // CSecretLevelTrigger::GetTypeTag     @0x10b90 (vtable 0x1e8804)
+    LOGIC_PATHHAZARD = 0x424,
+    LOGIC_RAINCLOUD = 0x425,
+    LOGIC_UFO = 0x426,
+    LOGIC_VOICETRIGGER = 0x42b,
+    LOGIC_FORTRESSFLAG = 0x427,
+    LOGIC_TOYPEEK = 0x428,
+    LOGIC_WARPSTONEPAD = 0x429,
+    LOGIC_GUARDPOINT = 0x42a,
+
+    LOGIC_GRUNT = 0x3e8,
+    LOGIC_ROLLINGBALL = 0x3e9,
+    LOGIC_SINGLEFRAMEMESSAGE = 0x3eb,
+    LOGIC_DONOTHINGNORMAL = 0x3ed,
+    LOGIC_SIMPLEANIMATION = 0x3ee,
+    LOGIC_FRONTCANDYANI = 0x3f2,
+    LOGIC_MENUSPARKLE = 0x3f5,
+    LOGIC_GRUNTSTARTINGPOINT = 0x3f6,
+    LOGIC_GRUNTCREATIONPOINT = 0x3f8,
+    LOGIC_WORMHOLE = 0x3fa,
+    LOGIC_GRUNTPUDDLE = 0x3fb,
+    LOGIC_CURSORSNAPSPRITE = 0x3fd,
+    LOGIC_LEVELTIME = 0x3fe,
+    LOGIC_INGAMEICON = 0x407,
+    LOGIC_INGAMETEXT = 0x408,
+    LOGIC_GRUNTSELECTEDSPRITE = 0x40a,
+    LOGIC_GRUNTHEALTHSPRITE = 0x40b,
+    LOGIC_GRUNTTOYSPRITE = 0x40c,
+    LOGIC_LIGHTFX = 0x40d,
+    LOGIC_PROJECTILE = 0x412,
+    LOGIC_DROPPEDOBJECT = 0x414,
+    LOGIC_DROPPEDOBJECTSHADOW = 0x415,
+    LOGIC_TIMEBOMB = 0x419,
+    LOGIC_GRUNTPOWERUPSPRITE = 0x41a,
+    LOGIC_EXPLOSION = 0x41b,
+    LOGIC_SECRETTELEPORTERTRIGGER = 0x41e,
+    LOGIC_KITCHENSLIME = 0x41f,
+    LOGIC_SINGLEANIMATION = 0x421,
+    LOGIC_WARLORD = 0x422,
+    LOGIC_SECRETLEVELTRIGGER = 0x42c,
 };
 
 #endif // GRUNTZ_LOGICTYPEID_H

@@ -2,17 +2,17 @@
 #define GRUNTZ_GRUNTZ_GAMESTATEID_H
 
 enum GameStateId {
-    GAMESTATE_BASE = 1,         // CState        (base default)
-    GAMESTATE_ATTRACT = 2,      // CAttract
-    GAMESTATE_PLAY = 3,         // CPlay         (in-game / in-world)
-    GAMESTATE_MENU = 5,         // CMenuState
-    GAMESTATE_CREDITS = 8,      // CCreditsState
-    GAMESTATE_BOOTY = 0xa,      // CBootyState
-    GAMESTATE_DEMO = 7,         // CDemo
-    GAMESTATE_HELP = 9,         // CHelpState
-    GAMESTATE_SPLASH = 0xe,     // CSplashState
-    GAMESTATE_NONE = 0x11,      // PerFrameTick sentinel: suppresses frame timing
-    GAMESTATE_MULTIBOOTY = 0x12 // CMultiBootyState
+    GAMESTATE_BASE = 1,
+    GAMESTATE_ATTRACT = 2,
+    GAMESTATE_PLAY = 3,
+    GAMESTATE_MENU = 5,
+    GAMESTATE_CREDITS = 8,
+    GAMESTATE_BOOTY = 0xa,
+    GAMESTATE_DEMO = 7,
+    GAMESTATE_HELP = 9,
+    GAMESTATE_SPLASH = 0xe,
+    GAMESTATE_NONE = 0x11,
+    GAMESTATE_MULTIBOOTY = 0x12
 };
 
 #endif // GRUNTZ_GRUNTZ_GAMESTATEID_H

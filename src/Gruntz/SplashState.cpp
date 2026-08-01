@@ -1,36 +1,34 @@
-#include <Mfc.h>   // CString + <windows.h> (SetCursor)
-#include <ddraw.h> // IDirectDrawSurface (the frame surface's IsLost poll, m_c->...->m_2c->m_8)
+#include <Mfc.h>
+#include <ddraw.h>
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Dsndmgr/SoundStream.h>       // SoundStream::Stop (ReleaseResources' owned stream)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::PagesReady (m_c->m_04 page gate)
-#include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c->m_8 IsLost poll)
+#include <Dsndmgr/SoundStream.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDSurface.h>
 
-#include <Gruntz/BankMgr.h>           // CBankMgr::Lookup / CSymTab::LoadGroup (m_8/m_2c)
-#include <DinMgr2/DirectInputMgr2.h>  // CInputDevBase (Poll/m_currentKeys press-edge flags)
-#include <Gruntz/GameMode.h>          // g_actorList (the Render spine's poll list)
-#include <Gruntz/State.h>             // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
-#include <Gruntz/View.h>              // CState::m_c render sub-object facets
-#include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (the m_c holder)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrLeafScan (m_c->m_soundRegistry Install facet)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
-#include <Gruntz/Attract.h> // CSymParser (m_8 facet; ResolvePath). RunTitleSeq @0xfa350 is now a CState base method.
-#include <Gruntz/SplashState.h> // CSplashState (shared def; dtor emitted in HelpState.cpp)
+#include <Gruntz/BankMgr.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/State.h>
+#include <Gruntz/View.h>
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Attract.h>
+#include <Gruntz/SplashState.h>
 #include <rva.h>
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawSurfacePair.h>
 
 #include <Gruntz/AssetRoot.h>
 
-// @confidence: high
-// @source: decomp-xref
-#include <Wap32/GameApp.h> // ex Globals.h
+#include <Wap32/GameApp.h>
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
     if (CAssetRootStorage::s_value.GetLength() == 0) {
         return 0;
     }
-    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
     if (!CState::LoadGameAssetNamespaces(a, b, c)) {
         return 0;
     }
@@ -49,18 +47,6 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
     return 1;
 }
 
-// CSplashState::ReleaseResources (0xf9840, slot 2 override) - stop the owned sound
-// stream, ClearMap the whole sound sub-manager map, then chain the CState base
-// teardown (qualified -> direct call, retail's trailing rel32 to ILT 0x3f53).
-// IDENTITY (ex "CGameModeBase::Reset"): retail ??_7CSplashState @0x1e9d74 slot 2
-// holds ILT 0x2919 -> 0xf9840 (byte-verified), and its only direct caller is
-// ~CSplashState @0x8d02b (the in-dtor statically-bound own-override call). Homed
-// here from GameMode.cpp (this TU owns the 0xf97xx-0xf9bxx CSplashState band).
-// m_c->m_soundRegistry is re-read each statement (retail does not cache it).
-// EXACT. The old "m_28-intermediate regalloc wall" was the spelling: read ->m_2c off a
-// NAMED registry local (twice) instead of chaining m_world->m_soundRegistry->m_2c, and
-// cl stops collapsing the two-step deref into one register.
-// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
@@ -71,19 +57,6 @@ void CSplashState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-// CSplashState::Render (0xf9920, slot 5) - the per-frame splash draw spine (the
-// canonical CState Render shape, cf. CCreditsState::Render): input poll -> input-
-// virtual bail -> cursor anim -> title-timer countdown -> per-entity Update loop
-// -> flagged-entity/timer-expiry command post. The +0x1b8 timer counts down by the
-// frame delta (clamped at 0); when an entity latches flag&1 OR the timer has expired
-// (m_1b8==0), post WM_COMMAND 0x8023 to the game window and clear the app run gate.
-//
-// EXACT. The old "cursor-anim gate" wall was TWO bugs. (1) `GM_SimpleAnim(-1)` was a
-// FAKE per-TU `extern "C" __stdcall` decl bound to 0x136e20 - that address is
-// SoundStream::PurgeVoiceList, a __thiscall on the registry's m_2c (retail materializes
-// it into ecx precisely because it is the receiver). (2) the chain must be read off a
-// NAMED registry local so cl does not fold the m_2c load into the cmp.
-// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -138,13 +111,7 @@ i32 CSplashState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(
-        static_cast<const char*>(CAssetRootStorage::s_value),
-        0,
-        0,
-        1,
-        0
-    ); // 0xfa350 (CState base method)
+    return RunTitleSeq(static_cast<const char*>(CAssetRootStorage::s_value), 0, 0, 1, 0);
 }
 
 RVA(0x000f9af0, 0x3e)
@@ -154,13 +121,7 @@ i32 CSplashState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(
-        static_cast<const char*>(CAssetRootStorage::s_value),
-        0,
-        0,
-        1,
-        0
-    ); // 0xfa350 (CState base method)
+    return RunTitleSeq(static_cast<const char*>(CAssetRootStorage::s_value), 0, 0, 1, 0);
 }
 
 RVA(0x000f9b40, 0x37)

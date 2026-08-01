@@ -1,4 +1,4 @@
-#include <Win32.h> // IsIconic / HWND
+#include <Win32.h>
 #include <rva.h>
 
 RVA(0x00119210, 0x66)

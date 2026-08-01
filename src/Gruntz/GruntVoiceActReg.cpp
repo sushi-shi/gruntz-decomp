@@ -1,8 +1,8 @@
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>           // the shared activation-registrar archetype (CActReg)
-#include <Gruntz/GruntVoiceActReg.h> // CActRegPool<CGruntVoice>::s_table decl
+#include <Gruntz/ActReg.h>
+#include <Gruntz/GruntVoiceActReg.h>
 #include <Gruntz/GruntVoice.h>
 
 static inline void FreeNameSlotNodes() {
@@ -16,16 +16,6 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-// ===========================================================================
-// RegisterActs_6514d8 @0x0119fa0 - bind CGruntVoice::IdleHidden (ILT 0x4037bf ->
-// 0x11a8c0) as "A" and CGruntVoice::Update (ILT 0x402dd8 -> 0x11a8e0) as "B"
-// into the per-class registry @0x6514d8. (The registry's Construct
-// already lives in GruntVoice.cpp, over [2000, 2010].)
-// ===========================================================================
-// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
-// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
-// it as the out-of-line zErrHandling::Report call.
-// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x00119fa0, 0x2ac)
 void RegisterActs_6514d8() {
     i32 id = ActFindId("A");
@@ -37,7 +27,7 @@ void RegisterActs_6514d8() {
         *slot = "A";
         g_typeCounter++;
     }
-    // ILT 0x4037bf -> 0x11a8c0 == CGruntVoice::IdleHidden; the slot IS a CActHandler.
+
     *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
         static_cast<CActHandler>(&CGruntVoice::IdleHidden);
 
@@ -50,7 +40,7 @@ void RegisterActs_6514d8() {
         *slot = "B";
         g_typeCounter++;
     }
-    // ILT 0x402dd8 -> 0x11a8e0 == CGruntVoice::Update.
+
     *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2) =
         static_cast<CActHandler>(&CGruntVoice::Update);
 }

@@ -1,4 +1,3 @@
-// MgrAutoScroll.h - the MgrAutoScroll TU's exported globals/data.
 #ifndef GRUNTZ_GRUNTZ_MGRAUTOSCROLL_H
 #define GRUNTZ_GRUNTZ_MGRAUTOSCROLL_H
 

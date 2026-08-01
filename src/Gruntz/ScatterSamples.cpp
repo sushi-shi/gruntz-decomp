@@ -15,7 +15,6 @@ i32 IsPrime(i32 n) {
     return 1;
 }
 
-// 0x182940 - ScatterSamples(out, start, end, count).
 // @early-stop
 RVA(0x00182940, 0x13c)
 void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {

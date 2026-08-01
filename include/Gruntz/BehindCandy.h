@@ -3,22 +3,20 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (CBehindCandy : CUserLogic)
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
 
 class CBehindCandy : public CUserLogic, public CWapX {
 public:
 public:
-    CBehindCandy(CGameObject* obj); // 0x0ac3f0 (ctor body in UserLogic.cpp)
-    // 0x0000fb70 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
+    CBehindCandy() {}
+    CBehindCandy(CGameObject* obj);
+
     RVA(0x0000fb70, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_BEHINDCANDY;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
 };
 SIZE(0x54);
 

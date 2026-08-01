@@ -1,6 +1,6 @@
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <rva.h>
 
@@ -18,11 +18,10 @@ const AFX_MSGMAP CCheckpointDlg::messageMap = {
 
 DATA(0x001e94c0)
 const AFX_MSGMAP_ENTRY CCheckpointDlg::_messageEntries[] = {
-    ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts) // 0x23590
-    {0, 0, 0, 0, AfxSig_end, 0},
+    ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts){0, 0, 0, 0, AfxSig_end, 0},
 };
 
-VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
+VTBL(CCheckpointDlg, 0x001e9504);
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 
@@ -34,7 +33,7 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate == 0) {
         NetLobby::g_curDlg = GetSafeHwnd();
         CWnd* item = GetDlgItem(0x53a);
-        ::SendMessageA(item->m_hWnd, 0xf1, 0, 0); // BM_SETCHECK
+        ::SendMessageA(item->m_hWnd, 0xf1, 0, 0);
     }
 }
 
@@ -43,8 +42,6 @@ const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
     return &messageMap;
 }
 
-// CCheckpointDlg::OnToggleCheckpointPrompts (0x23590): mirror the "disable prompts"
-// checkbox (control 0x53a) into the game registry - checked -> prompts off.
 // @early-stop
 RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {
@@ -52,7 +49,3 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
     i32 checked = ::SendMessageA(c->m_hWnd, 0xf0, 0, 0);
     g_gameReg->m_isCheckpointPrompts = checked == 0;
 }
-
-// MSVC's compiler-private initializer families for the two explicit template
-// static specializations above. The guarded 0x1f-byte destructor helpers share
-// one compiler guard byte and use bits 1 and 2 respectively.

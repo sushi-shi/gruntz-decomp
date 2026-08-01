@@ -1,68 +1,33 @@
-// DDrawWorkerRegistry.cpp - the 0x1549d0-0x155833 original TU (wave4-L dossier
-// #15, block E; the leading 0x1549d0 CResolveNode COMDAT pocket rides this obj's
-// contribution and stays in ResolveNode.cpp): the CDDrawWorkerRegistry keyed
-// worker registry - the four DispatchKeyed*/Forward* pairs, the tree
-// install/load-namespace walkers, the map scans/teardowns, ~CDDrawWorker, and the
-// ??_GCDDrawSubMgr far-sibling scalar dtor. Held at the dossier-#9 boundary 1
-// (0x155840); the registry's tiny virtuals in the G obj + its DestroyAll/
-// FindKeyOfValue in the T obj live in those hosts.
-//
-// original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
-//
-// Field names are placeholders; only the OFFSETS + emitted code bytes are load-
-// bearing (campaign doctrine).
+
+
 #include <rva.h>
 #include <Bute/SymTab.h>
 #include <Image/ImageSet.h>
 
-#include <Gruntz/StateId.h> // StateId (GetStateId return type)
+#include <Gruntz/StateId.h>
 #include <Mfc.h>
-#include <Win32.h>  // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>  // DDBLTFX (g_bltFx - the shared BltEx fx block)
-#include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
-#include <stdio.h>  // sprintf ("%s%s%s" path builder in InstallTree / LoadNamespace)
+#include <Win32.h>
+#include <ddraw.h>
+#include <string.h>
+#include <stdio.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawWorker.h> // the ONE canonical keyed worker (vtable 0x1efbe8)
+#include <DDrawMgr/DDrawWorker.h>
 #include <Gruntz/String.h>
 #include <Gruntz/MapStringToOb.h>
-#include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
-#include <Image/CImage.h>    // ex Globals.h
+#include <Gruntz/Loadable.h>
+#include <Image/CImage.h>
 
-VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
+VTBL(CDDrawWorker, 0x001efbe8);
 inline void* operator new(u32, void* p) {
     return p;
 }
 
-// The linker-kept COMDAT pair of CLoadable's (A)-form inline dtor - ??_G
-// @0x155720 (this obj's span) calling ??1 @0xd5d70 (the CImage-band COMDAT pool)
-// via the ILT thunk 0x429b. This TU `new`s/destroys CDDrawWorker (: CLoadable),
-// so cl auto-emits BOTH as byte-identical COMDATs (verified llvm-objdump -dr:
-// ??1 = xor eax,eax; m_04=-1; m_08/m_0c=0; the ??_7CObject re-stamp; ??_G = the
-// standard call-~/test-flag/operator-delete shell). They are bound below by
-// RVA_COMPGEN - no source spelling is possible (the canonical dtor is inline in
-// <Gruntz/Loadable.h>; one-definition rule). Was the CDDrawSubMgrFar scaffold
-// class (hand-written ScalarDtor + a second fabricated view in CImage.cpp) -
-// dissolved onto the real ??1CLoadable/??_GCLoadable identities.
 RVA_COMPGEN(0x000d5d70, 0x16, ??1CLoadable@@UAE@XZ)
 
-// The lookup out-param is a plain CObject*, not a punned CDDrawWorker*: the map is a
-// CMapStringToOb, whose Lookup/GetNextAssoc are declared `CObject*&` (afxcoll.h), so the
-// stored-base pointer binds with NO cast and the derived type is recovered by a real
-// static_cast downcast - CDDrawWorker : CLoadable : CWapObj : CObject is plain single
-// inheritance, so CObject sits at offset 0 and the downcast emits nothing. That is also
-// how the other five scan sites in this TU (MapTeardown, RemoveKeysEqual, SumSizesEqual,
-// AnyValueMatches, LoadNamespace) were already spelled; all ten now agree.
-//
-// The keyed find-or-create is spelled OUT in each of the four DispatchKeyed* slots, not
-// behind a helper: retail expands the whole thing - including the `new CDDrawWorker` and
-// its inline ctor chain - into every slot body, which is why all four carry a /GX EH
-// frame (the partially-constructed worker must be operator-delete'd on a throw). It
-// CANNOT be factored into a `static inline` helper: cl5 refuses to inline a function that
-// owns an EH region, so the helper form emitted a plain `call` and no frame at all.
 RVA(0x00154aa0, 0x20)
 i32 CDDrawWorkerRegistry::IsReady() {
     memset(&g_bltFx, 0, sizeof(g_bltFx));
-    g_bltFx.dwSize = sizeof(DDBLTFX); // 100
+    g_bltFx.dwSize = sizeof(DDBLTFX);
     return 1;
 }
 
@@ -78,7 +43,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 in
     CObject* worker = 0;
     m_10map.Lookup(key, worker);
     if (worker == 0) {
-        // +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
+
         worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
         if (static_cast<CDDrawWorker*>(worker)->SetKey(key) == 0) {
             if (worker != 0) {
@@ -181,12 +146,6 @@ CDDrawWorkerRegistry::Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32
     return worker->CreateFrame24(width, height, index, keyed);
 }
 
-// ---------------------------------------------------------------------------
-// 0x154f80: walk the directory tree under `dir`; for each entry build a path string
-// ("<sub><prefix><name>" when sub is set, else just the name) into a 0x100 heap
-// buffer and accumulate this->+0x48(entry, buf, prefix). Then, when sub is set,
-// find-or-create the keyed worker, dispatch its +0x28(dir), and either run
-// this->+0x54(sub) (worker inactive) or bump the count. /GX EH frame.
 RVA(0x00154f80, 0x1d5)
 i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = static_cast<CSymTab*>(tree);
@@ -203,7 +162,7 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
         } else {
             strcpy(buf, e->m_name);
         }
-        count += InstallTree(e, buf, prefix); // recursive slot-18 self-dispatch (+0x48)
+        count += InstallTree(e, buf, prefix);
         e = static_cast<CSymTab*>(dir->NextSub(e));
     }
     if (sub != 0 && *sub != 0) {
@@ -215,13 +174,13 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
                 if (w != 0) {
                     delete w;
                 }
-                return 0; // retail leaks `buf` on this arm - it jumps past the delete
+                return 0;
             }
             m_10map.SetAt(sub, w);
         }
         static_cast<CDDrawWorker*>(w)->BuildFramesFromSymTab(dir);
         if (static_cast<CDDrawWorker*>(w)->m_items.GetSize() == 0) {
-            RemoveByKey(sub); // slot-21 self-dispatch (+0x54)
+            RemoveByKey(sub);
         } else {
             ++count;
         }
@@ -230,13 +189,6 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
     return count;
 }
 
-// ---------------------------------------------------------------------------
-// 0x155160 LoadNamespace (slot 19): the read-side twin of InstallTree - walk the directory tree, build
-// the same path string, and accumulate this->+0x4c(entry, buf, prefix) (a negative
-// result aborts to -1). Then, when sub is set, Lookup it in the map; if present,
-// dispatch its +0x3c(dir) (a -1 aborts to -1) and bump the count when the value's
-// +0x18 is positive. No EH frame (plain /O2 leaf).
-// @early-stop
 RVA(0x00155160, 0x11e)
 i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = static_cast<CSymTab*>(tree);
@@ -249,7 +201,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
         } else {
             strcpy(buf, e->m_name);
         }
-        i32 r = LoadNamespace(e, buf, prefix); // recursive slot-19 self-dispatch (+0x4c)
+        i32 r = LoadNamespace(e, buf, prefix);
         if (r < 0) {
             operator delete(buf);
             return -1;
@@ -261,10 +213,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
         CObject* out = 0;
         m_10map.Lookup(sub, out);
         if (out != 0) {
-            // Typed map-value retrieval: the stored values are CDDrawWorker. NO local
-            // mirror - retail re-reads `out` from its (address-taken) stack home after
-            // the dispatch (`mov eax,[esp+0x1c]; mov ecx,[eax+0x18]`); a named local
-            // makes cl park it in esi across the call instead.
+
             if (static_cast<CDDrawWorker*>(out)->ValidateFramesFromSymTab(dir) == -1) {
                 operator delete(buf);
                 return -1;
@@ -295,7 +244,7 @@ void CDDrawWorkerRegistry::MapTeardown() {
         do {
             m_10map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete (static_cast<CDDrawWorker*>(val)); // the map values ARE the keyed workers
+                delete (static_cast<CDDrawWorker*>(val));
             }
         } while (pos != 0);
     }
@@ -316,7 +265,7 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
         if (strncmp(key, match, len) == 0) {
             m_10map.RemoveKey(key);
             if (val != 0) {
-                delete (static_cast<CDDrawWorker*>(val)); // the map values ARE the keyed workers
+                delete (static_cast<CDDrawWorker*>(val));
             }
             ++n;
         }
@@ -324,9 +273,6 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
     return n;
 }
 
-// ---------------------------------------------------------------------------
-// Map scan: sum each non-null value's GetMemoryUsage(a2) over the entries whose
-// key strncmp-matches `str` (a null/empty `str` matches every entry). /GX frame.
 // @early-stop
 RVA(0x00155460, 0xe2)
 i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
@@ -377,9 +323,6 @@ i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* out
     return 0;
 }
 
-// CLoadable::IsLoaded (0x155700): the slot-5 base default - loaded iff the owner
-// context (m_0c) is set and m_04 != -1. Identical body to CDDrawWorker's override
-// below (MSVC5 has no /OPT:ICF, so both are emitted). Un-phantoms the slot.
 RVA(0x00155700, 0x16)
 i32 CLoadable::IsLoaded() {
     if (m_ownerCtx != 0 && m_id != -1) {
@@ -388,13 +331,8 @@ i32 CLoadable::IsLoaded() {
     return 0;
 }
 
-// (0x155720 = ??_GCLoadable - the auto-emitted COMDAT, RVA_COMPGEN-bound at the
-// file head; the hand-written CDDrawSubMgrFar::ScalarDtor stand-in is dissolved.)
-
 RVA_COMPGEN(0x00155720, 0x1e, ??_GCLoadable@@UAEPAXI@Z)
 
-// Slot-7 base default: bare `ret` (the bare c3 PROVES the slot is void - the
-// void-slot scheme; derived overrides' eax residue is their own dissolve-work).
 RVA(0x00155740, 0x1)
 void CLoadable::Unload() {}
 
@@ -411,25 +349,11 @@ i32 CDDrawWorker::GetClassId() {
     return CLASSID_WORKER;
 }
 
-// ===========================================================================
-// 0x1557a0 - ~CDDrawWorker: stamp own vtable, run the slot-7 Unload
-// (devirtualized in the dtor to a direct call - the body lives in the S1 obj,
-// reloc-masked), then the array member destructs and ~CLoadable folds in.
-// /GX frame from the destructible base+member.
-// ===========================================================================
-// 100%: re-basing onto the canonical CLoadable : CWapObj : CObject resolved the
-// grand-base vptr-stamp-position wall - the real CObject grand-base sinks the
-// 0x5e8cb4 re-stamp after the m_04/m_08/m_0c resets exactly as retail.
-// The cl-auto scalar-deleting destructor (vtable slot 1; generated from the
-// virtual dtor below - RVA_COMPGEN pairs the retail copy with the base COMDAT).
 RVA_COMPGEN(0x00155780, 0x1e, ??_GCDDrawWorker@@UAEPAXI@Z)
 RVA(0x001557a0, 0x68)
 CDDrawWorker::~CDDrawWorker() {
-    // retail: a DIRECT call - cl devirtualizes virtual calls in a dtor (proven
-    // by ~CDDrawWorkerCache's plain DestroyAll() compiling to `call 0x165210`).
-    Unload(); // slot-7 body @0x151eb0
-    // m_items.~::CObArray() (trylevel 0) + ~CLoadable() (field resets +
-    // grand-base vtable stamp) fold here.
+
+    Unload();
 }
 
 RVA(0x00155810, 0x23)

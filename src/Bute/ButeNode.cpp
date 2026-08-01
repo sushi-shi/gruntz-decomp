@@ -2,29 +2,11 @@
 
 #include <Bute/PTreeNode.h>
 #include <Bute/ButeValue.h>
-#include <Bute/ButeStore.h> // the canonical zPTree (real bases; INLINE dtor)
-#include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
+#include <Bute/ButeStore.h>
+#include <Gruntz/String.h>
 
-VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00 (this TU emits it)
+VTBL(CButeNode, 0x001f051c);
 
-// ===========================================================================
-// ButeValueTeardown (0x174df0) - the keyed store's __cdecl per-value teardown
-// callback.
-//
-// RECOVERED FROM .text: 0x174df0 is a CODE address - a real function, with a 9-entry
-// jump table at 0x174e48 - NOT a datum. The former `g_node174df0Tag` (u8) and
-// `g_nodeDescriptor` (i32) externs were phantoms for this function's ADDRESS, which is
-// the "descriptor" every CButeNode is constructed with (`new CButeNode(&ButeValueTeardown,
-// 2)`). The address lands in the node's +0x0c callback slot; zPTree::ClearRecursive
-// fires it on each node's value and then frees the value cell itself
-// (`m_cb(n->m_val); ::operator delete(n->m_val);`) - which is exactly why this frees
-// only the PAYLOAD (v->pValue) and never `v`.
-//
-// The body is CButeValue's teardown switch (the same one ~CButeValue @0x172160 carries
-// in butemgr - the logic is emitted once per TU that needs it): a dense 0..8 ButeType
-// jump table; the kButeString case destructs the boxed CString first, every other
-// type-group is a plain `operator delete(pValue)`.
-//
 // @early-stop
 RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
 RVA(0x00174df0, 0x7c)
@@ -51,34 +33,13 @@ void __cdecl ButeValueTeardown(void* pValue) {
     }
 }
 
-// ===========================================================================
-// CButeNode::CButeNode(kind) (0x174d00) - the out-of-line 1-arg config-node ctor: pass
-// the fixed per-value teardown callback as the node's descriptor, forward the kind.
-// REAL POLYMORPHIC (ALL-VTABLES): derives zPTree, so cl auto-stamps the two
-// most-derived vftables (primary 0x5f051c @+0x00, second base 0x5f0518 @+0x08) after
-// the external base ctor runs (== the old manual double stamp). FOLDED with butemgr's
-// CButeNode - the same class (identical vtable pair), so the fabricated
-// `CButeCfgNode174d` name is gone and both TUs now emit the same ??_7CButeNode symbols.
-// (The old "vptr-schedule wall" @early-stop here is RESOLVED: it was never a vptr
-//  problem - the descriptor was bound to a phantom `g_node174df0Tag` u8. Passing the
-//  real function address took this ctor to 100% WITH the real polymorphic vtables.)
-//
-// The ctor's +0x00 primary vptr-store: cl names the class's OWN primary vtable through
-// the ultimate polymorphic base (zErrHandling), not the simple ??_7...@@6B@ that VTBL()
-// emits, so the reloc needs the through-base alias (same 0x1f051c datum; the through-base
-// name sorts last and wins the per-rva dedup). BOTH TUs that build a CButeNode - this
-// one and butemgr's ParseTagLine (which inlines the ctor) - now emit these same two
-// names, so both bind. (DATA_SYMBOL is read from the .cpp only, never from a header.)
 VTBL2(CButeNode, CContainerErr, 0x001f051c)
-// The +0x08 second-base-in-derived vtable @0x5f0518 (the `mov [esi+0x8],0x5f0518` stamp).
+
 VTBL2(CButeNode, CButeNodeEntry, 0x001f0518)
-// ===========================================================================
+
 RVA(0x00174d00, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 
-// zPTree's OWN two most-derived vtables (== the store's): the pair every copy of the
-// destructor stamps, and which zPTree's ctor (0x16dff0) stamps too. cl spells them through
-// the ultimate polymorphic base.
 VTBL2(zPTree, zErrHandling, 0x001e94ac)
 VTBL2(zPTree, CButeNodeEntry, 0x001e949c)
 RVA(0x00174d70, 0x70)

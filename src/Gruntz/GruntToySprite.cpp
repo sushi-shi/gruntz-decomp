@@ -1,26 +1,18 @@
-#include <Gruntz/Sprite.h> // CDDrawWorker - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
-#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
+#include <Gruntz/Sprite.h>
+#include <Image/CImage.h>
 #include <Gruntz/GruntToySprite.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Io/FileMem.h>
+#include <Gruntz/SerialArchive.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
-#include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TriggerMgr.h>
 #include <rva.h>
 
-VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)
+VTBL(CGruntToySprite, 0x001e7b4c);
 
-// ~CGruntToySprite @0x0122b0 - the CUserLogic-folded /GX leaf dtor (see header).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CGruntToySprite() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-
-// CActRegPool<CGruntToySprite>::s_table (0x00244d58): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244d58)
 CActReg CActRegPool<CGruntToySprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x00012280, 0x1e, ??_GCGruntToySprite@@UAEPAXI@Z)
@@ -46,15 +38,6 @@ void CGruntToySprite::FireActivation(i32 id) {
     }
 }
 
-// CGruntToySprite::RegisterActs @0x07f720 - bind the class's per-frame handler
-// (Update @0x07f960) to the activation key "A" (the SAME activation-name-intern
-// archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0007f720, 0x18d)
 void CGruntToySprite::RegisterActs() {
     i32 id = ActFindId("A");

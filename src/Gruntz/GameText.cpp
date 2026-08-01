@@ -4,33 +4,14 @@
 #endif
 #include <afxwin.h>
 #include <Gruntz/GameText.h>
-#include <Gruntz/GameMode.h> // CMultiBootyState - GetWarlordName is its __thiscall member
+#include <Gruntz/GameMode.h>
 #include <rva.h>
-#include <Bute/ButeMgr.h>         // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
-#include <Gruntz/Attract.h>       // g_attractStateCount C-linkage declaration
-#include <Gruntz/FreeNodePool.h>  // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
-#include <Gruntz/MgrAutoScroll.h> // g_panMinX/g_panMaxX declarations
-#include <Gruntz/Play.h>          // g_areaHazardParam C-linkage declaration
-#include <Rez/RezSync.h>          // g_dlgVal_645538 declaration
-
-// ---------------------------------------------------------------------------
-// The two name tables are file-scope arrays of CString with brace-initializers.
-// MSVC5 /O2 emits ONE dynamic-initializer per array - a flat run of
-// `push lit; mov ecx,&g[i]; call CString::CString(const char*)` with NO placement-new
-// null-check, ending in `ret` - which is EXACTLY the shape (and 0x79-byte size)
-// of the target functions tomalla guessed as "GetWorldDisplayName" /
-// "GetEndLevelStatLabels". They are in fact the compiler-generated array static
-// initializers (MSVC local `_$E` thunks); pinned to their RVAs by @symbol.
-//
-// The 8 world display names, by world id 0..7:
-//   "Rocky Roadz" / "Gruntziclez" / "Trouble in the Tropicz" / "High on Sweetz"
-//   / "High Rollerz" / "Honey, I Shrunk the Gruntz!" / "The Miniature Masterz"
-//   / "Gruntz in Space".
-// ---------------------------------------------------------------------------
-// Each CString table emits the complete wrapper/initializer/atexit/array-destructor
-// family. The `<n>` suffix is an unstable per-object counter, so the helpers are
-// content-addressed by canonicalize_data_symbols (paired by body and relocations,
-// not number). This TU's .text is multi-region, hence the distant family RVAs.
+#include <Bute/ButeMgr.h>
+#include <Gruntz/Attract.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/Play.h>
+#include <Rez/RezSync.h>
 
 static CString g_worldName[8] = {
     "Rocky Roadz",
@@ -99,17 +80,9 @@ static CString g_statLabel[8] = {
     "Secretz:",
 };
 
-// NOTE (2026-07-26): the ~89% score is the inline-jump-table measurement artifact
-// (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
-// and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
-// shape-correct; see the delinker-jumptable memory note for the pipeline fix.
 RVA(0x0001ec20, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {
-    // The target reserves and zero-inits one dead stack dword (`push ecx; mov
-    // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
-    // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
-    // zero-init survives DCE without emitting an address-store; scheduled after
-    // the cmp, matching the target's `mov [esp+4],0`).
+
     volatile i32 slot = 0;
     switch (id) {
         case 0:

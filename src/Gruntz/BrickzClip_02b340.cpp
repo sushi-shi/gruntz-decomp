@@ -1,14 +1,7 @@
 #include <rva.h>
-#include <Win32.h> // RECT + IntersectRect (Clip) - windows-first: CMapMgr::m_bounds is a RECT
+#include <Win32.h>
 #include <Gruntz/Brickz.h>
 
-// ---------------------------------------------------------------------------
-// CMapMgr::Clip (0x02b340) - board dirty-rect clip finaliser. Clip the
-// (0,0,m_width,m_height) box against the optional src rect (right/bottom inclusive
-// -> +1), store the clipped rect into the +0x60 bound-rect (m_originX..m_boundBottom),
-// then derive the +0x70/+0x74 extents. __thiscall(const RECT*) ; ret 0x4.
-// (Homed from BattlezMapConfig.cpp; was the placeholder ClipHost_02b340 view -
-//  this->m_board is a CMapMgr, so Clip is a real CMapMgr method.)
 // @early-stop
 RVA(0x0002b340, 0xaa)
 void CMapMgr::Clip(const RECT* src) {

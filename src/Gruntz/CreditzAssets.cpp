@@ -1,9 +1,9 @@
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h>
 
-#include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ / CGruntzSoundInnerZ
-#include <Gruntz/GameMode.h>      // canonical CCreditsState : CState
-#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (m_4 / the singleton; m_sound @+0x48)
+#include <Dsndmgr/GruntzSoundZ.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GruntzMgr.h>
 
 RVA(0x00039dc0, 0x10b)
 void CCreditsState::LoadCreditzAssets() {

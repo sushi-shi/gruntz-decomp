@@ -1,4 +1,3 @@
-// NetMgrReportError.h - the NetMgrReportError TU's exported globals/data.
 #ifndef GRUNTZ_NET_NETMGRREPORTERROR_H
 #define GRUNTZ_NET_NETMGRREPORTERROR_H
 

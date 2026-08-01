@@ -1,26 +1,24 @@
 #include <Gruntz/Random.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 
-#include <Mfc.h> // superset of Win32.h; GameRegistry.h pulls afx via SoundCue.h
+#include <Mfc.h>
 #include <rva.h>
-#include <Gruntz/GameRegistry.h> // g_gameReg canonical view (0x24556c)
+#include <Gruntz/GameRegistry.h>
 
 DATA(0x0024c22c)
-char g_coinRolled; // bit0 set once this frame's coin was rolled
+char g_coinRolled;
 DATA(0x0024c26c)
-i32 g_coinValue; // the cached 0/1 result
+i32 g_coinValue;
 DATA(0x002c127d)
-u8 g_randSeeded; // 0x6c127d bit0 set once seeded
+u8 g_randSeeded;
 DATA(0x002c1288)
-i32 g_randSeed; // 0x6c1288 32-bit LCG state
+i32 g_randSeed;
 DATA(0x002c278c)
-char g_rng2Seeded; // bit0 set once seeded
+char g_rng2Seeded;
 DATA(0x002c2798)
-i32 g_rng2State; // 32-bit LCG state
+i32 g_rng2State;
 
-// Manager-owned primary LCG range helper. Retail callers pass g_gameReg in ecx;
-// the body does not otherwise access the receiver.
 // @early-stop
 RVA(0x00019f50, 0xb2)
 i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
@@ -50,8 +48,7 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
 }
 
 namespace Rng {
-    // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
-    // @interleaver Rng - own-namespace helper COMDAT scattered at 0x15cbe0; RVA-placement.
+    // @interleaver Rng emitted in a first-use COMDAT pool.
     RVA(0x0015cbe0, 0x46)
     i32 Next2() {
         i32 seed;

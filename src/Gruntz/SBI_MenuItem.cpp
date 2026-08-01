@@ -1,29 +1,26 @@
-#define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
+#define SBI_DTOR_CHAIN
 #include <rva.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
+#include <Rez/FrameClock.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SoundState.h>    // g_sndEnabled/g_sndCueTag
-#include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/SoundState.h>
+#include <Gruntz/SerialCounter.h>
+#include <Io/FileMem.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Mfc.h>
-#include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SBI_MenuItem.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world (m_world) view (CDDrawSurfaceMgr + CDDrawSubMgrPages + CDDrawWorkerRegistry + CDDrawWorker)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_soundRegistry's real class (the cue host: m_10 cue map + m_30 gate)
-#include <Gruntz/LeafCue.h>               // the cue-map value class (ex the CMiCue view)
-#include <Gruntz/SbiConfig.h>    // canonical config-host family (one shape)
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (LoadTabSprites)
-#include <Image/CImage.h>        // canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/Sprite.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Image/CImage.h>
 
-VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
+VTBL(CSBI_MenuItem, 0x001eab4c);
 
-// ---------------------------------------------------------------------------
-// CSBI_MenuItem::InitItem - configure the menu entry from its config record,
-// then resolve its initial frame (ResolveFrame). 11-arg __thiscall (ret 0x2c).
 // @early-stop
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
@@ -43,14 +40,12 @@ i32 CSBI_MenuItem::SetupImage(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = owner; // owning tab host (CMiTabHost view at the deref sites)
-    m_24 = host;  // config host (CDDrawSurfaceMgr, cast at the deref sites)
+    m_2c = owner;
+    m_24 = host;
     m_tab = tab;
     m_kind = 2;
     m_frame = 0;
-    // WHOLE-struct assignment: retail CSEs the destination into `lea edx,[ecx+0x14]`
-    // and writes [edx]/[edx+4]/[edx+8]/[edx+0xc], which only a struct copy gives -
-    // field-by-field stores keep the disp8 [ecx+N] forms.
+
     m_rect14 = rc;
     m_28 = 0;
     m_cmd = cmd;
@@ -69,16 +64,13 @@ i32 CSBI_MenuItem::Refresh(i32) {
     return 1;
 }
 
-// CSBI_MenuItem::ResolveFrame - look up the keyed config record in the host's
-// map; if found and in range, latch its frame handle into m_30. Returns whether
-// a frame was resolved. 2-arg __thiscall (ret 8).
 // @early-stop
 RVA(0x000e81e0, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     if (key == 0) {
         return 0;
     }
-    // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
+
     CObject* rec_v = 0;
     CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_24);
     host->m_imageRegistry->m_10map.Lookup(key, rec_v);
@@ -87,9 +79,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     if (rec == 0) {
         return 0;
     }
-    // ONE trailing `return m_frame != 0`, tail-DUPLICATED by cl into all three arms
-    // (that is why each arm ends in its own `pop esi; ret 8` and why the arms differ
-    // only in which register the store-forward left the value in).
+
     CDDrawWorker* r = rec;
     if (a == -1) {
         m_frame = static_cast<CImage*>(r->m_items.GetAt(r->m_minIndex));
@@ -101,23 +91,6 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     return m_frame != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_MenuItem::DecCounter - decrement the live counter; while it is still up,
-// blit the resolved frame at the menu's screen rect. 0-arg __thiscall (ret 1).
-// The RenderFrame arg-block load schedule (retail loads the rect block on `this` before
-// the frame's anchor fields) is register-schedule-sensitive to the TU's TOTAL
-// transitive file-scope fwd-decl count (SBI_MenuItem.cpp -> GruntzMgr.h chain):
-// crossing a threshold flips the two `a+b` loads pointee-first and craters this to
-// 74% (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md). The old
-// under-threshold trick (definitions instead of fwd-decls in GruntzMgr.h) was
-// re-armed 2026-07-14 by the CSoundCueMgr==DSoundCloneInst identity fold (this TU
-// now pulls the real <Dsndmgr/DirectSoundMgr.h> for ConfigureItem); a header
-// fwd-decl diet did not get back under. FOURTH FIRING 2026-07-19: the
-// CButeSection==CButeMgr fold (ButeMgr.h gained the CBSecStream class DEF) re-
-// cratered 100->74 with the closure fwd-decl census UNCHANGED (216=216, multiset-
-// identical) - the type-table CONTENT/position variant, no count lever exists.
-// @early-stop: 74% is the butterfly's
-// documented floor - the shape is byte-correct, final-sweep decl-census material.
 RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::Render() {
     if (m_28 > 0) {
@@ -135,11 +108,6 @@ i32 CSBI_MenuItem::Render() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_MenuItem::SetState - drive the menu entry's tab state through its owning
-// host (m_2c); on the activate path resolve + commit the new tab, on the
-// highlight path play the GAME_TABHIGHLIGHT2 cue, then re-resolve the frame and
-// fire the slot-0x28 refresh notifier. 2-arg __thiscall (ret 8).
 RVA(0x000e8310, 0x112)
 i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (m_state == state || m_record == 0) {
@@ -148,22 +116,19 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (state == 2 && m_state == 3) {
         return 1;
     }
-    // m_2c IS the owning CStatusBarMgr (the ex CMiTabHost view is DISSOLVED): the tab
-    // ops are its own methods, and m_10c is its m_activeTab latch @+0x10c.
+
     if (state == 3) {
         m_2c->ClearTabGroup();
         m_2c->m_activeTab = m_cmd;
         m_2c->LoadTabSprites();
         m_2c->Deactivate();
     } else if (state == 2 && a) {
-        // The sound registry IS the cue host - no view: m_10 is its keyed cue map
-        // (CMapStringToPtr, Ptr band), m_30 its busy/gate guard.
+
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_emitGate == 0) {
             LeafCue* found = 0;
             void* foundP = 0;
-            // the cue map is the Ptr band (void* values), so the element read is a
-            // plain from-void cast, not a class-to-class cross-cast.
+
             mh->m_10.Lookup("GAME_TABHIGHLIGHT2", foundP);
             found = static_cast<LeafCue*>(foundP);
             if (found) {
@@ -188,7 +153,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     }
     m_frame = frame;
     m_state = state;
-    SetSubtype(); // slot 10 (+0x28); the CMiSelf view called it "Refresh"
+    SetSubtype();
     return 1;
 }
 
@@ -248,7 +213,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
             ar->Write(tmp, 0x80);
             break;
     }
-    // QUALIFIED = the direct CSBI_Image base leg (0xe6e40); unqualified is recursion.
+
     return CSBI_Image::SerializeFields(ar, kind, a, b) != 0;
 }
 

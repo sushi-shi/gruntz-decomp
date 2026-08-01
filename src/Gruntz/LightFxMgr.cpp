@@ -1,12 +1,12 @@
-#include <Gruntz/GruntzMgr.h> // the one manager type
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
-#include <Gruntz/GameRegistry.h> // the singleton Init binds (m_world/m_shadeCache)
+#include <Gruntz/GameRegistry.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Image/ImageSet.h>
 #include <rva.h>
 
-#include <string.h> // memset -> inline rep stosd in Reset
+#include <string.h>
 
 struct CShadeTable;
 
@@ -19,9 +19,7 @@ i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
     m_owner = owner;
     m_world = reg->m_world;
     m_cache = reg->m_shadeCache;
-    // Re-read m_cache per builder call (don't cache it in a local) so the compiler
-    // reloads [this+0xc] before each call rather than pinning the cache in a
-    // callee-saved reg + an extra push. See reread-member-view-pointer.md.
+
     if (!m_cache) {
         return 0;
     }
@@ -92,8 +90,7 @@ i32 CLightFxMgr::Push(CDDrawWorker* imgSet, i32 anchor, i32 slot) {
     }
     CShadeTable* table = m_tables[anchor];
     imgSet->SetAllTypes(slot);
-    // The engine hands the resolved shade table straight to SetAllFormats as the
-    // frames' format word (a pointer-as-value the frame stores verbatim at +0x1c).
+
     imgSet->SetAllFormats(table);
     return 1;
 }

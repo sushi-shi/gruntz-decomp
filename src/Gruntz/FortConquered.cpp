@@ -1,43 +1,25 @@
-// FortConquered.cpp - CExitTrigger::AdvanceAnim @0x03f5f0 (1318 B), the
-// exit-trigger's per-frame fort-conquest check.
-//
-// original TU: filename unknown (@identity-TODO). Split out of FortressFlag.cpp
-// (wave3-I): the retail body's BIRTH POSITION is the lone 0x3f5f0-0x3fb16 text
-// interval between the WormholeActs block (0x3f210-0x3f57d) and the wormhole trio
-// (0x3fc70+), and its three private .data cells (0x20d154/0x20d168/0x20d16c) sit
-// BEFORE the wormhole trio's band (0x20d194) in the 98%-monotone .data
-// contribution order - so it CANNOT belong to the fortressflag obj at 0x45d30
-// (whose band is 0x20d384+). CExitTrigger::RegisterActs proves the class identity:
-// each registry-insertion arm stores ILT 0x1938 as its "A" handler, and that thunk
-// jumps here. The +0x54/+0x58 accesses also agree with CExitTrigger's two derived
-// fields, which do not exist in the 0x54-byte CFortressFlag.
+
+
 #include <Gruntz/ExitTrigger.h>
-#include <Gruntz/GameRegMfcPtr.h>     // g_gameReg at its REAL type (CGruntzMgr)
-#include <Gruntz/GruntzMgr.h>         // the manager's +0x150 roster / +0x13c view bounds
-#include <Gruntz/GruntzPlayer.h>      // the per-player roster record (GetName / the gates)
-#include <Gruntz/CurPlayer.h>         // g_curPlayer
-#include <Gruntz/TriggerMgr.h>        // the +0x68 command grid (HitTestApply/FindGruntAt/...)
-#include <Gruntz/BattlezData.h>       // the +0x7c HUD sink (MarkFlag)
-#include <Gruntz/FontConfig.h>        // the +0x5c chat log (AddItem)
-#include <Gruntz/SpriteRefTable.h>    // the +0x74 sprite table (GetSel)
-#include <Gruntz/Warlord.h>           // the bound warlord logic (m_warlordLogic)
-#include <Gruntz/Play.h>              // CPlay::m_startMarkers (the +0x370 CPtrArray)
-#include <Gruntz/GameObjectFactory.h> // CreateGruntCreationPoint / CreateFortressFlag
-#include <Gruntz/FreeNodePool.h>      // g_coordPool (the {x,y} node freelist)
-#include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (the +0x30 world root)
-#include <DDrawMgr/DDrawChildGroup.h> // the walked child list + the +0x48 id->object map
-#include <Wwd/WwdGameObjectFamily.h>  // CWwdGameObjectA / CGameObject / NextChild
-#include <Rez/FrameClock.h>           // g_engineFrameDelta (the anim-cursor tick)
-#include <Utils/MapTyped.h>           // typed MFC map lookups
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/Warlord.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
 #include <rva.h>
 
-// Structure decoded:
-// the +0x1a0 sub-clock tick, the g_gameReg->m_134 mode gate, HitTestCell +
-// dedup vs owner->m_124, the 5-CString "<A> was conquered by <B>!" HUD message,
-// the config re-tag, the two handler-type re-home list walks + a g_freeList pop,
-// and a per-object GAME_EXPLOSION3 eye-candy spawn.
-// @confidence: high
-// @source: pmf-xref:registeracts-ilt-0x1938+class-layout
 // @early-stop
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
@@ -90,7 +72,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     )) {
                     warlordObj = found;
                 }
-                CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_7c->m_logic);
+                CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_animWorker->m_logic);
                 if (wl != 0) {
                     wl->RaiseBattleAlert();
                 }
@@ -99,7 +81,8 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != 0) {
                 CGameObject* cur = grp->NextChild(pos);
-                if (cur->m_7c->m_notify == CreateGruntCreationPoint && cur->m_124 == owningPlayer) {
+                if (cur->m_animWorker->m_notify == CreateGruntCreationPoint
+                    && cur->m_124 == owningPlayer) {
                     cur->m_124 = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
                         g_gameReg->m_options[owningPlayer].m_008,
@@ -123,7 +106,8 @@ i32 CExitTrigger::AdvanceAnim() {
                         marks.SetAtGrow(marks.GetSize(), mark);
                     }
                 }
-                if (cur->m_7c->m_notify == CreateFortressFlag && cur->m_124 == owningPlayer) {
+                if (cur->m_animWorker->m_notify == CreateFortressFlag
+                    && cur->m_124 == owningPlayer) {
                     cur->m_124 = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
                         g_gameReg->m_options[owningPlayer].m_008,
@@ -143,10 +127,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
             }
         } else {
-            // No grunt on the trigger: the fort's own player forfeits when its roster
-            // slot is joined-but-not-cleared - re-home every creation point / fortress
-            // flag it owns and pop a GAME_EXPLOSION3 over each one that sits inside the
-            // visible world bounds.
+
             i32 lostPlayer = m_object->m_124;
             if (lostPlayer == g_curPlayer) {
                 goto done;
@@ -171,7 +152,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != 0) {
                 CGameObject* cur = grp->NextChild(pos);
-                GameObjNotifyFn who = cur->m_7c->m_notify;
+                GameObjNotifyFn who = cur->m_animWorker->m_notify;
                 if (who == CreateGruntCreationPoint || who == CreateFortressFlag) {
                     if (cur->m_124 == m_object->m_124) {
                         i32 x = cur->m_screenX;

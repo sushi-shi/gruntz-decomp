@@ -1,8 +1,7 @@
-// NetSession.h - the NetSession TU's external declarations.
 #ifndef NET_NETSESSION_H
 #define NET_NETSESSION_H
 
-#include <Mfc.h> // afx.h FIRST (umbrella for any Win32 types below)
+#include <Mfc.h>
 #include <Ints.h>
 #include <rva.h>
 

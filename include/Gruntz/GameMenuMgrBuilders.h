@@ -3,7 +3,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h>           // CPtrList (embedded Game-tab widget list in CGameMenuMgr)
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
+#include <Mfc.h>
+#include <Gruntz/SbGeom.h>
 
 #endif // GRUNTZ_CGAMEMENUMGR_BUILDERS_H

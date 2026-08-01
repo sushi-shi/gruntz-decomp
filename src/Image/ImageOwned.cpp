@@ -1,12 +1,12 @@
 #include <rva.h>
-#include <Pix16.h> // the byte-cursor unions (RecordBytes / Pix16CPtr)
+#include <Pix16.h>
 
 #include <DDrawMgr/DDrawShadeBlit.h>
-#include <DDrawMgr/DDSurface.h> // CDDSurface src arg (Lock/m_width/m_height/m_pitch/m_8)
-#include <ddraw.h>              // IDirectDrawSurface::Unlock (surf->m_8->Unlock inline COM)
-#include <Io/FileStream.h>      // CFile (Open/Read/GetLength/Close, reloc-masked) + CString
+#include <DDrawMgr/DDSurface.h>
+#include <ddraw.h>
+#include <Io/FileStream.h>
 
-#include <string.h> // memcpy (inlined to rep movs)
+#include <string.h>
 
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
@@ -32,20 +32,6 @@ void CDDrawShadeBlit::Teardown() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// BuildRle - run-length encode the source plane into the owned pixel
-// buffer (+0x0c). Each row of `width` pixels is scanned: a run of NON-key bytes
-// emits the run length then the literal bytes; a run of key (== keyVal) bytes
-// emits (length | 0x80). Runs cap at 0x7e. The encoding accumulates in a transient
-// CByteArray, which is then copied into a fresh operator-new'd m_rleData; finally, if
-// a palette source was supplied, 256 DWORDs are copied into a fresh m_palette. Returns 1
-// (0 only if the source pointer is null). __thiscall, ret 0x18 (6 stack args).
-//
-// The CByteArray local -> /GX EH frame; SetAtGrow per byte; m_rleData/m_palette copies are
-// inline byte/dword loops. width/height/stride come from args (stride defaults to
-// width when -1). The run discriminator is `if (px != key) {literal} else {key}`
-// so the literal path falls through inline and the key path floats to the tail via
-// the forward `je` (docs/patterns/nested-if-success-deepest-error-tail.md).
 // @early-stop
 RVA(0x00148d40, 0x202)
 i32 CDDrawShadeBlit::BuildRle(
@@ -78,7 +64,7 @@ i32 CDDrawShadeBlit::BuildRle(
             if (m_width > 0) {
                 do {
                     if (static_cast<i32>(src[i]) != keyVal) {
-                        // literal run (the fall-through / primary path)
+
                         while (i < m_width && (i - runStart) < 0x7e
                                && static_cast<i32>(src[i]) != keyVal) {
                             i++;
@@ -89,7 +75,7 @@ i32 CDDrawShadeBlit::BuildRle(
                         }
                         runStart = i;
                     } else {
-                        // key run (floated to the tail)
+
                         while (i < m_width && (i - runStart) < 0x7e
                                && static_cast<i32>(src[i]) == keyVal) {
                             i++;
@@ -153,18 +139,11 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
     return r;
 }
 
-// ---------------------------------------------------------------------------
-// Decode a frame from the descriptor. The desc flag word (+0x04) and the
-// format code steer two flag bytes (m_srcBpp/m_dstBpp) and the palette/pixel layout;
-// on a 16-bit palette frame the 768-byte RGB palette is unpacked into a padded 0x400
-// hardware buffer, then the pixels are copied into a fresh m_rleData. When m_srcBpp
-// came out as 2 the pixels are run through the palette-remap helper. __thiscall, ret 0xc.
 // @early-stop
 RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
     i32 flags = src->flags;
-    // 0x1490df `test al,0x40` then 0x1490e3 `test bl,ah` (bl==2, i.e. bit 9):
-    // either bit says the RLE payload is already 8bpp indices.
+
     if ((flags & PID_SRC_8BPP_SHADE) || (flags & PID_SRC_8BPP)) {
         if (static_cast<u8>(fmt) == 0x10) {
             m_srcBpp = 1;
@@ -193,8 +172,6 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
         return 0;
     }
 
-    // PID_EMBEDDED_PALETTE: a 768-byte VGA palette rides the blob's tail, so it is
-    // not pixel payload - back it out of the RLE length and read it below.
     if (src->flags & PID_EMBEDDED_PALETTE) {
         stride -= 0x300;
         m_rleLen = stride;
@@ -203,13 +180,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
                 ::operator delete(m_palette);
             }
             m_palette = static_cast<PALETTEENTRY*>(::operator new(0x400));
-            // src heads a blob - 0x20 header, then the RLE stream, then (flags & 0x80)
-            // a trailing 0x300 palette - so src + m_rleLen + 0x20 IS that palette's
-            // first byte. Walking the blob from the typed head is byte-forced by the
-            // format, and the base/index split below is byte-evidenced: retail forms
-            // src+m_rleLen as the base with i as the scaled index (see the note above),
-            // so do not "simplify" these three reads. RE-TESTED 2026-07-28: hoisting
-            // them to one `u8* tail` cursor costs 3.0% (79.7 -> 76.7).
+
             RecordBytes blob;
             blob.m_rec = src;
             i32 i = 0;
@@ -230,10 +201,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
         ::operator delete(m_rleData);
     }
     m_rleData = static_cast<u8*>(::operator new(m_rleLen));
-    // `src + 1` IS the pixel stream: PidHeader is exactly 0x20 bytes and the payload
-    // starts right after it (retail: `add esi,0x20` before the rep movs). This
-    // replaced a fabricated `u8 m_frameData[1]` trailing member on the deleted
-    // CImageBuildDesc view - which would have made the header 0x24 bytes.
+
     memcpy(m_rleData, src + 1, m_rleLen);
 
     if (m_srcBpp == 2) {
@@ -246,22 +214,9 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Rebuild - when the sprite is in format-state 1, build an 8-dword
-// frame descriptor out of the current dimensions/key + the two caller ints and the
-// by-value name, then hand it to DecodeFrame (0x149250). The `name` CString arrives
-// by value -> the callee destroys it (the early-return path also runs ~CString),
-// which forces the /GX EH frame. __thiscall, ret 0xc. Returns DecodeFrame's result,
-// or 0 when m_srcBpp != 1.
-//
-// The descriptor's flags word (desc.f1) is computed in a register but its store was
-// eliminated in retail (a partial-dead-store the optimizer left half-done): the
-// branch chain (0x3d/0xbd | 0x100 | 0x80) is emitted, the result clobbered without a
-// write. We keep the assignment (the only faithful source) so the chain stays live.
 // @early-stop
 RVA(0x001493b0, 0xfd)
-// f4/f5 are PidHeader::offsetX/offsetY (the descriptor is that struct - see the note
-// on CImageFrameRebuildDesc in <DDrawMgr/DDrawShadeBlit.h>).
+
 i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
     if (m_srcBpp != 1) {
         return 0;

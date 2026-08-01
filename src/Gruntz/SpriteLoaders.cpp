@@ -1,24 +1,24 @@
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
-#include <Gruntz/GameRegMfcPtr.h>      // g_gameReg at its REAL type (CGruntzMgr)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Utils/MapTyped.h> // MapLookupById - the id->void* key pun, at one seam
+#include <Utils/MapTyped.h>
 #include <rva.h>
-#include <AddrWord.h>       // the id-word / object-address pair
-#include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
-#include <Io/FileMem.h>     // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <AddrWord.h>
+#include <Rez/FrameClock.h>
+#include <Io/FileMem.h>
 #include <Gruntz/Grunt.h>
 #include <Image/CImage.h>
-#include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
-#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/Warlord.h>      // CWarlord (the fort-under-attack notify target)
-#include <Gruntz/Play.h>         // canonical CPlay (m_curState game-state; level-timer expiry)
-#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (g_gameReg->m_cmdGrid; ClearRowAndRefresh)
-#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr (m_8 key table, m_10 image registry) + CDDrawChildGroup
-#include <Gruntz/Sprite.h>                // CDDrawWorker (frame-data value) + CMapStringToOb
-#include <Gruntz/Timer.h>                 // CTimer + CImage (canonical; def was local here)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (AnyValueMatches)
+#include <string.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Warlord.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/Timer.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
@@ -104,7 +104,7 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
         return 0;
     }
 
-    m_baseX = a; /* the two args captured at the tail */
+    m_baseX = a;
     m_baseY = b;
     m_active = 1;
     m_running = 0;
@@ -122,26 +122,19 @@ void CTimer::Reset() {
     m_active = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::Tick (0x9bca0) - recompute the remaining time from the running clock,
-// clamp at 0, and on expiry stamp the level "time up" command + fire the death
-// notify; under 60s fire the "fort under attack" notify. Then decode the clamped
-// value into the four MM:SS digit frames (with leading-zero blanking -> frame 10)
-// via the constant-divisor magic-division chain.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x0009bca0, 0x25d)
 i32 CTimer::Tick(i32 dt) {
     if (!m_running) {
         return 1;
     }
-    // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
+
     i64 rem = m_accum.m_v - static_cast<u32>(g_frameTime) + m_baseTime.m_v;
     i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
     if (v == 0) {
-        // expired: clear, stamp the level "time up" command + clock snapshot.
+
         m_40 = 0;
         m_44 = 0;
         m_accumLo = 0;
@@ -162,17 +155,15 @@ i32 CTimer::Tick(i32 dt) {
         i32 key = g_gameReg->m_options[0].m_00c;
         if (key != 0) {
             i32 found = 0;
-            // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
-            // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
+
             CGameObject* obj = 0;
             found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
-            // faithful: on a MISS retail uses the id word itself as the object
-            // address - the same slot read both ways (<AddrWord.h>)
+
             AddrWord raw;
             raw.m_word = key;
             CGameObject* hit = found ? obj : static_cast<CGameObject*>(raw.m_addr);
-            if (hit != 0 && hit->m_7c->m_logic != 0) {
-                static_cast<CWarlord*>(hit->m_7c->m_logic)->ResolveDeathAnimation();
+            if (hit != 0 && hit->m_animWorker->m_logic != 0) {
+                static_cast<CWarlord*>(hit->m_animWorker->m_logic)->ResolveDeathAnimation();
             }
         }
         return 1;
@@ -182,23 +173,19 @@ i32 CTimer::Tick(i32 dt) {
         i32 key = g_gameReg->m_options[0].m_00c;
         if (key != 0) {
             i32 found = 0;
-            // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
-            // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
+
             CGameObject* obj = 0;
             found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
-            // faithful: on a MISS retail uses the id word itself as the object
-            // address - the same slot read both ways (<AddrWord.h>)
+
             AddrWord raw;
             raw.m_word = key;
             CGameObject* hit = found ? obj : static_cast<CGameObject*>(raw.m_addr);
-            if (hit != 0 && hit->m_7c->m_logic != 0) {
-                static_cast<CWarlord*>(hit->m_7c->m_logic)->NotifyFortUnderAttack();
+            if (hit != 0 && hit->m_animWorker->m_logic != 0) {
+                static_cast<CWarlord*>(hit->m_animWorker->m_logic)->NotifyFortUnderAttack();
             }
         }
     }
 
-    // decode v (ms) into the MM:SS digits; a 0 digit with no significant digit to
-    // its left becomes 10 (the blank frame).
     u32 t = static_cast<u32>(v);
     i32 d10min = t / 600000;
     i32 d1min = t / 60000 % 10;
@@ -271,11 +258,6 @@ void CTimer::SetTime(i32 a, i32 b) {
     m_currentMs = static_cast<i32>(((av * 60 + bv) * 1000));
 }
 
-// The seconds-already-on-the-clock quotient is a NAMED local declared AHEAD of
-// `carry`: that declaration order is what picks retail's `lea eax,[edx+esi]` SIB
-// roles and its `sub esi,edx; sub esi,ebp` chain order (as an unnamed CSE temp, or
-// declared after `carry`, cl emits both the other way round - no expression-order
-// spelling moves it). Now EXACT.
 RVA(0x0009c0e0, 0xa3)
 void CTimer::AddTime(i32 seconds, i32 minutes) {
     if (!m_running) {
@@ -291,12 +273,12 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
     }
     u32 cur = static_cast<u32>(m_currentMs);
     u32 onClock;
-    // carry = 1 when (the minute already on the clock + new minutes) overflows 0x3b.
+
     u32 carry = 0;
     if (cur % 60000 / 1000 + mins > 0x3b) {
         carry = 1;
     }
-    // clamp seconds against the second already on the clock (cur / 60000).
+
     onClock = cur / 60000;
     if (onClock + secs > 0x63) {
         secs = 0x63 - onClock - carry;
@@ -305,13 +287,6 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
     m_accum.m_v += total;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::HandleEvent (0x9c1c0) - save (kind==4) / load (kind==7) the timer
-// through the archive: dispatch the whole-object serializer (kind 4 ->
-// Serialize 0x9c2e0, kind 7 -> Deserialize 0x9c650) then stream the two 64-bit
-// clock pairs (m_baseTimeLo/m_accumLo and m_38/m_40) field by field via the archive's
-// Read(+0x2c)/Write(+0x30) virtuals.
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x0009c1c0, 0xdb)
 i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
@@ -365,13 +340,6 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::Serialize (0x9c2e0) - write the timer through the save archive: the
-// position/flags, the sprite-set name, then each digit/colon frame by its
-// registry name + a found flag, then the two clock pairs. Mirrors the shared
-// CActionOptionsMenuBar::Serialize idiom (vtable Transfer + inlined memset/strcpy
-// + per-frame name reverse-lookup).
-// ---------------------------------------------------------------------------
 RVA(0x0009c2e0, 0x2b6)
 i32 CTimer::Serialize(CFileMemBase* ar) {
     if (ar == 0) {

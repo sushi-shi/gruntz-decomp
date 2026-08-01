@@ -1,12 +1,11 @@
-// The CGruntCellRec stream pair. The ex `GruntDataRecord` these two were declared on was
-// a pad-struct view of CGruntCellRec (<Gruntz/Grunt.h>) - field for field, same 0x68
-// stride - so CGameStateRecord::Load had to reinterpret every cell to reach them.
-#include <Gruntz/Grunt.h> // CGruntCellRec - the record these methods belong to
-#include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <rva.h>
-#include <string.h> // memset / strcpy (inlined to rep stos / rep movs at /O2 /Oi)
 
-#include <Mfc.h> // CString::operator= (the owned name members are CStrings)
+
+#include <Gruntz/Grunt.h>
+#include <Io/FileMem.h>
+#include <rva.h>
+#include <string.h>
+
+#include <Mfc.h>
 
 RVA(0x00056da0, 0xc7)
 i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {

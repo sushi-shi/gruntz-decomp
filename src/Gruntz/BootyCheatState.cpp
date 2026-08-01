@@ -1,34 +1,32 @@
 #include <Bute/ButeMgr.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Bute/SymParser.h> // canonical CSymParser (pulls CSymTab)
+#include <Rez/FrameClock.h>
+#include <Bute/SymParser.h>
 
 #include <rva.h>
-#include <AddrWord.h> // the signed-word view of the cheat-table bounds
+#include <AddrWord.h>
 
-#include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
+#include <string.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree)
-#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)    // canonical CDDrawWorkerRegistry (the +0x10 image registrar)
-#include <Gruntz/GameMode.h>           // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
-#include <Gruntz/GruntzMgr.h>          // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)
-#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
-#include <Gruntz/BootyCheatState.h>       // own exported globals (ex Globals.h)
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/Sprite.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GruntzMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/BootyCheatState.h>
 
-char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
-char g_cheatTableEnd[4];  // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])
+char g_cheatTable[0xfa0];
+char g_cheatTableEnd[4];
 DATA(0x0022af10)
-i32 g_bootyCheatBuilt = 0; // 0x22af10
+i32 g_bootyCheatBuilt = 0;
 
-// @source: string-xref
 // @early-stop
 RVA(0x00018830, 0x380)
 i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    // ONE epilogue (retail 0x18b9b): every gate carries the result into eax and jumps
-    // into it, and the success tail FALLS INTO it - not a fail block + a success block
+
     i32 ok = 0;
-    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         goto done;
     }
@@ -40,9 +38,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         CString text;
         CString desc;
         i32 i = 0;
-        // retail's end test is `cmp ebp,0x62aef0; jl` - a SIGNED compare
-        // (0x188cf/0x189bf relocs), so the two table addresses are compared as
-        // signed words; a char* < char* would lower to `jb` (<AddrWord.h>).
+
         AddrWord cur;
         AddrWord last;
         last.m_addr = g_cheatTableEnd;
@@ -59,7 +55,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         g_bootyCheatBuilt = 1;
     }
 
-    m_mgr->RestoreVideoMode(0); // thunk 0x34ef -> CGruntzMgr::RestoreVideoMode (0x8ddd0)
+    m_mgr->RestoreVideoMode(0);
 
     m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
     if (!m_2c) {
@@ -102,33 +98,23 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         }
     }
 
-    // The cast is GONE - the binary settled it. This call was bound to
-    // CMoviePlayer::Pump (0x17c790), which 0x18830 does not call at all: retail does
-    //     mov eax,[esi+0x4]   ; this->m_4      (CGruntzMgr)
-    //     push 0x40 / push 0x100
-    //     mov ecx,[eax+0x4]   ; m_4->m_gameWnd (+0x04)
-    //     call 0x13d4e0       ; ?PumpMessages@CGameWnd@@QAEXIH@Z
-    // so the callee is CGameWnd::PumpMessages - the real method of the class that actually
-    // sits at that offset, already reconstructed in the `gamewnd` unit. Wrong callee AND a
-    // wrong cast; naming the true owner dissolved both.
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
 
     m_1b8 = 0;
-    // The five-stage build chain - all real, rva-bound methods of THIS class now (the
-    // Init1..Init5 declared-only aliases they used to hide behind are gone).
-    if (!BuildWarpStoneGlitterAnimation()) { // 0x19540
+
+    if (!BuildWarpStoneGlitterAnimation()) {
         goto done;
     }
-    if (!BuildGruntSprintAnimation()) { // 0x19920
+    if (!BuildGruntSprintAnimation()) {
         goto done;
     }
-    if (!LoadGruntEffectSprites()) { // 0x1a040
+    if (!LoadGruntEffectSprites()) {
         goto done;
     }
-    if (!BuildBootyWalkingGruntz()) { // 0x1b450
+    if (!BuildBootyWalkingGruntz()) {
         goto done;
     }
-    if (!BuildBootyPerfectAnimation()) { // 0x1c070
+    if (!BuildBootyPerfectAnimation()) {
         goto done;
     }
 

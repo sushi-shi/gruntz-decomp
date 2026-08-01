@@ -1,14 +1,14 @@
-#include <Gruntz/Sprite.h> // CDDrawWorker - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
-#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
+#include <Gruntz/Sprite.h>
+#include <Image/CImage.h>
 #include <Gruntz/GruntHealthSprite.h>
-#include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Io/FileMem.h>
+#include <Gruntz/SerialArchive.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TriggerMgr.h>
 #include <rva.h>
 
 VTBL(CGruntHealthSprite, 0x001e7ba4);
@@ -16,13 +16,6 @@ VTBL(CGruntHealthSprite, 0x001e7ba4);
 RVA(0x00011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
 
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CGruntHealthSprite() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-
-// CActRegPool<CGruntHealthSprite>::s_table (0x00244d80): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244d80)
 CActReg CActRegPool<CGruntHealthSprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x00011f80, 0x1e, ??_GCGruntHealthSprite@@UAEPAXI@Z)
@@ -48,19 +41,6 @@ void CGruntHealthSprite::FireActivation(i32 id) {
     }
 }
 
-// CGruntHealthSprite::RegisterActs @0x07eed0 - bind the class's per-frame handler
-// (HealthUpdate @0x07f180) to the activation key "A". The key is first resolved
-// to an id via the bute-tree name map (g_buteTree.Find); a fresh key gets the
-// next id (g_buteTree.Insert), is interned into the shared name registry slot
-// (ActNameLookup -> free the old name list, assign "A"), and bumps the counter.
-// The id is then resolved to an entry in the class registry and the handler PMF
-// stored there.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0007eed0, 0x18d)
 void CGruntHealthSprite::RegisterActs() {
     i32 id = ActFindId("A");
@@ -104,13 +84,6 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     return 1;
 }
 
-// CGruntHealthSprite::HealthUpdate @0x07f180 - the registered per-frame handler. Resolve
-// the grunt for cell (m_cellX,m_cellY) from the game registry's grunt table; if absent,
-// return 0. Otherwise poll the per-class stat getter (Vslot16, the grunt entry) for the
-// current health; when it changed, round it to a glyph slot (0x15 - (int)(v*0.2+0.5)) and
-// republish the glyph/slot through the bound renderable's [m_64..m_68]-gated +0x194 table
-// (the SAME resolve as SetHealthGlyph), then stash the health. Finally sync the bound
-// renderable's screen position from the grunt (y biased by this->m_60). Returns 0.
 RVA(0x0007f160, 0xd)
 i32 CGruntHealthSprite::Vslot16(CGrunt* g) {
     return g->m_health;
@@ -118,8 +91,7 @@ i32 CGruntHealthSprite::Vslot16(CGrunt* g) {
 
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
-    // No local for the registry: the un-named temp is what puts g_gameReg in edx
-    // (a named `reg` moves it to ecx and renames the whole index chain).
+
     CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;

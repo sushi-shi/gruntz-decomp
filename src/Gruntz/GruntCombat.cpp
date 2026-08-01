@@ -1,39 +1,16 @@
-#include <Mfc.h>            // the REAL MFC CPtrList - CScanList was a fake view of it
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
-#include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TraitorMode.h> // g_traitorMode
-// GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
-// the grunt combat / struck-voice / attack / ability-tuning / spawn family,
-// carved out of the conflated Grunt.cpp (grunt-region partition).
-//
-// original TU: filename unknown (@identity-TODO; named for the dominant combat
-// family). ONE-obj evidence:
-//   * private .data extents in TU link order: LoadGruntAbilityTuning @0x57100's
-//     8 cells (0x20dc64-0x20dd30) sit BETWEEN StepCompassMove's (0x20dbf8, the
-//     GruntSteps TU) and BuildGruntLoseItemAnimation @0x57890's (0x20dd40),
-//     followed by LoadGruntCombatAnimations @0x597a0's 15 cells (0x20dd4c-
-//     0x20df6c) - one contiguous band.
-//   * init frags i324-i342 (gruntcombatanim x9 @0x58f60, grunt x9 @0x5b820,
-//     logicactregistrars @0x5bc30) are one contiguous CRT-table run at frag RVAs
-//     inside this interval.
-//   * 4 EH sites in the interval -> /GX (flags "eh").
-// In-interval folds: LoadGruntAbilityTuning @0x57100 (ex GruntAssetLoaders.cpp),
-// PathScan @0x57db0 (ex GruntPathScan.cpp), LoadGruntCombatAnimations
-// @0x597a0 (ex GruntCombatAnim.cpp), GruntSpawnPump @0x5baf0 (ex
-// GruntSpawnPump.cpp), ConstructActRange_644af0 @0x5bc50 + RegisterActs_644af0
-// @0x5be30 (LogicActRegistrars). NOT folded (COMDAT-at-usage emissions):
-// ApplyGeometryDirect @0x58b60 (spriteresource),
-// CMotionState::SetParams/SetZ @0x58bc0/0x58ca0 (motionstate), ??0CUserLogic
-// @0x58cd0 (userlogicctoremit), CPairRecord::Serialize @0x58ee0
-// (trirecordserialize), Lookup @0x5b7e0 (ddrawsubmgrleafscan).
+#include <Gruntz/TraitorMode.h>
+
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
-#include <Gruntz/ActReg.h>    // CActReg::ResolveEntry
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
@@ -47,24 +24,24 @@
 #include <string.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Gruntz/WorkerHandler.h> // Owner/Worker + Worker_DefaultPump (GruntSpawnPump)
-#include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
-#include <new>             // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
-#include <Gruntz/Brickz.h> // canonical CMapMgr (SearchEdge)
-#include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig (the coord-list walk is CoordListOps now)
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup (rehomed here)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the worker's m_0c owner-context facet
-#include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries
-#include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan (typedef of CDDrawSubMgrLeafScan) - the cue registry
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - the CGrunt+0x260 board
+#include <Gruntz/WorkerHandler.h>
+#include <Wap32/Rect.h>
 #include <new>
-#include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
-#include <Gruntz/SoundState.h>           // ex Globals.h transitive
-#include <Gruntz/FreeNodePool.h>         // the coord-node pool object @0x645540
-#include <Gruntz/GruntCombat.h>          // CActRegPool<CGrunt>::s_table decl
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Gruntz/Brickz.h>
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/LightFx.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/TriggerMgr.h>
+#include <new>
+#include <Gruntz/GruntEntranceArrival.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GruntCombat.h>
+#include <Utils/MapTyped.h>
 #pragma intrinsic(strcmp, sqrt)
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
@@ -108,17 +85,15 @@ char s_codeH[] = "H";
 DATA(0x0020d2e8)
 char s_codeF[] = "F";
 
-// CActRegPool<CGrunt>::s_table (0x00244af0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244af0)
 CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
 
 static char s_TimePerTile[] = "TimePerTile";
-static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
-static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
-static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_0060e1a0
-static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
-static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
+static char s_Grunt[] = "Grunt";
+static char s_EntranceSafeTime[] = "EntranceSafeTime";
+static char s_IdleDelay[] = "IdleDelay";
+static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
+static char s_CombatTimeout[] = "CombatTimeout";
 
 DATA(0x0020dd30)
 static const char s_GAME_ATTACK[] = "GAME_ATTACK";
@@ -139,12 +114,12 @@ DATA(0x0020dc64)
 static char s_RollingBallzTime[] = "RollingBallzTime";
 
 enum SpellzEffect {
-    SPELLZ_FREEZE = 1,       // FreezeRadius
-    SPELLZ_HEALTH = 2,       // HealthRadius
-    SPELLZ_RESURRECTION = 3, // RessurectionRadius
-    SPELLZ_TOYZ = 4,         // ToyzRadius
-    SPELLZ_TELEPORT = 5,     // TeleportRadius
-    SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
+    SPELLZ_FREEZE = 1,
+    SPELLZ_HEALTH = 2,
+    SPELLZ_RESURRECTION = 3,
+    SPELLZ_TOYZ = 4,
+    SPELLZ_TELEPORT = 5,
+    SPELLZ_ROLLINGBALL = 6,
 };
 
 DATA(0x0020df6c)
@@ -182,23 +157,6 @@ DATA(0x0020dd4c)
 static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
 
-// ===========================================================================
-// The 5 grunt movement / anim-name dispatch state machines (formerly the
-// CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
-// resolves the grunt's current anim-set node name
-// (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// ScratchResolve form) and dispatches on its single-letter type code
-// (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
-// its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
-// a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
-// reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
-//
-// These are the CGrunt analogues of CBattlezMapConfig::StepBoard /
-// ChooseIdleBehavior (the documented large-state-machine + grid-regalloc walls). Each is
-// reconstructed complete in shape/order; all carry @early-stop on those walls.
-// Raw-offset member access (the campaign style used by the cluster above) keeps the
-// giant ~0x46c layout tractable.
-
 static inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
@@ -227,15 +185,6 @@ static inline void GruntScratchTeardown() {
         newY = (ny);                                                                               \
     } while (0)
 
-// (CGruntCombat is GONE - it was CGrunt itself: the +0x31c occupied-coord CPtrList,
-//  the +0x400/+0x408/+0x410 knockback doubles and every F()/P() offset it bagged are
-//  CGrunt members at the identical offsets (Grunt.h). LoadGruntCombatAnimations is
-//  declared there; the "enemy" grid elements below are placed CGruntz.)
-// CGrunt::EntranceTileOffset(out) @0x56f80 - the pixel position of the tile adjacent
-// to the grunt's last occupied tile (m_lastTilePxX/Y) in the entrance-cell direction
-// (m_entranceCell.direction, a 1..8 compass code: 1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW;
-// any other value leaves the position unchanged). One tile step is 0x20 px. Writes the
-// (x, y) pair through `out`. __thiscall, ret 4.
 // @early-stop
 RVA(0x00056f80, 0x8e)
 void CGrunt::EntranceTileOffset(i32* out) {
@@ -275,11 +224,6 @@ void CGrunt::EntranceTileOffset(i32* out) {
     out[1] = y;
 }
 
-// Re-clip the board dirty rect to the whole board. Retail 0x581ce/0x5813d/0x585db:
-// the clip rect is a real CRect LOCAL (direct ctor), the source rect a CRect
-// TEMPORARY sliced into a RECT (ctor into a scratch slot + a four-dword copy). No
-// placement new anywhere - the earlier `new (&r) CRect(..)` spelling emitted a null
-// test per rect that retail does not have (27 spurious basic blocks).
 #define SCAN_BOUNDS(grid)                                                                          \
     {                                                                                              \
         CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
@@ -292,8 +236,6 @@ void CGrunt::EntranceTileOffset(i32* out) {
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
-// The 0x58097 variant: same thing, but there the CLIP rect is four inline stores
-// rather than a CRect ctor call.
 #define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
     {                                                                                              \
         RECT rb;                                                                                   \
@@ -322,7 +264,7 @@ void CGrunt::ComputeFacing(double dt) {
     CWwdGameObjectA* h = m_object;
     double dx = static_cast<double>(m_lastTilePxX) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePxY) - static_cast<double>(h->m_screenY);
-    // retail zero-extends m_timePerTile to 64-bit before fild (unsigned->double)
+
     m_moveSpeed =
         (sqrt(dx * dx + dy * dy) / static_cast<double>(static_cast<u32>(m_timePerTile))) * dt;
     m_408 = static_cast<double>(h->m_screenX);
@@ -333,10 +275,6 @@ static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
 }
 
-// The shared tail of every 0x5be30 block: bind `handler` into the pool at `id`.
-// CGrunt is MI, so `&CGrunt::Handler` is the 8-byte {code, adjust} member pointer
-// while the table slot is the 4-byte single-inheritance form retail stores; the two
-// readings are named on GruntActPmf (<Gruntz/Grunt.h>), so no pun is needed here.
 #define BIND_ACT_644AF0(id, handler)                                                               \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
@@ -350,9 +288,9 @@ static inline CString* ActNameSlots() {
         if (id == 0) {                                                                             \
             ActInsertId(key, g_typeCounter);                                                       \
             id = g_typeCounter;                                                                    \
-            /* the name-slot lookup reads the GLOBAL, not `id`: retail CSEs the reload */          \
-            /* across two consumers (`push eax; mov edi,eax`) - feeding it `id` gives   */         \
-            /* the load one consumer and cl coalesces it into edi, dropping the copy.   */         \
+            /* Keep the global counter as the name-slot lookup's direct argument; */               \
+            /* using id changes MSVC's two-consumer CSE and register allocation. */                \
+            /* See docs/patterns/act-registrar-counter-cse-and-freeloop.md. */                     \
             CString* slot = g_typeColl.ScratchResolve(g_typeCounter);                              \
             i32 n = g_typeColl.m_grown;                                                            \
             CString* list = ActNameSlots();                                                        \
@@ -368,11 +306,6 @@ static inline CString* ActNameSlots() {
         BIND_ACT_644AF0(id, handler);                                                              \
     }
 
-// The variant the devs wrote for the LAST key of 0x5be30: the slot comes from the DERIVED
-// accessor _zdvec::IndexToPtr (0x310f0, via ILT 0x437c), whose body ALREADY contains the
-// per-slot CString fixup loop @0x31156 - so the loop is not open-coded here, and the arg
-// is `id` (retail loads g_typeCounter once into callee-saved esi and pushes esi: one
-// consumer, versus the `push eax; mov edi,eax` two-consumer form above).
 #define REGISTER_KEY_644AF0_DERIVED(key, handler)                                                  \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
@@ -401,26 +334,24 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
     }
 
-    // the sprite's worker -> owner context (CDDrawSurfaceMgr facet) -> cue host
     CDDrawSubMgrLeafScan* slot =
         (static_cast<CDDrawSurfaceMgr*>(m_3c->m_ownerCtx))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
-        MapLookup(slot->m_10, s_GAME_ATTACK,
-                  sout); // CMapStringToPtr @0x1b8438
+        MapLookup(slot->m_10, s_GAME_ATTACK, sout);
         if (sout != 0) {
-            // retail reloads the looked-up cue into ecx and __thiscalls 0x1f940
+
             sout->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 
     switch (idx) {
-        case SPELLZ_FREEZE: { // freeze
+        case SPELLZ_FREEZE: {
             CGameObject* spr =
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_7c->m_logic))
+            spr->m_animWorker->m_notify(spr);
+            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
@@ -430,12 +361,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_HEALTH: { // health
+        case SPELLZ_HEALTH: {
             CGameObject* spr =
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_7c->m_logic))
+            spr->m_animWorker->m_notify(spr);
+            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
@@ -445,12 +376,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_RESURRECTION: { // resurrection
+        case SPELLZ_RESURRECTION: {
             CGameObject* spr =
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_7c->m_logic))
+            spr->m_animWorker->m_notify(spr);
+            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
             return m_tileMgr->LoadGruntResurrectTuning(
                 m_lastTilePxX,
@@ -458,12 +389,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_buteMgr.GetIntDef(s_Spellz, s_RessurectionRadius, 8)
             );
         }
-        case SPELLZ_TOYZ: { // toyz
+        case SPELLZ_TOYZ: {
             CGameObject* spr =
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_7c->m_logic))
+            spr->m_animWorker->m_notify(spr);
+            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
@@ -473,12 +404,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_TELEPORT: { // teleport
+        case SPELLZ_TELEPORT: {
             CGameObject* spr =
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_7c->m_logic))
+            spr->m_animWorker->m_notify(spr);
+            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
@@ -488,7 +419,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
+        case SPELLZ_ROLLINGBALL: {
             CWwdGameObjectA* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX,
@@ -498,7 +429,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
-            AnimWorkerObj* ni = n->m_7c;
+            AnimWorkerObj* ni = n->m_animWorker;
             ni->m_bc =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             n->m_124 = 0;
@@ -513,7 +444,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             e->ApplyName("LEVEL_ROLLINGBALL_EAST");
-            AnimWorkerObj* ei = e->m_7c;
+            AnimWorkerObj* ei = e->m_animWorker;
             ei->m_bc =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             e->m_124 = 0;
@@ -528,7 +459,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
-            AnimWorkerObj* si = s->m_7c;
+            AnimWorkerObj* si = s->m_animWorker;
             si->m_bc =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             s->m_124 = 0;
@@ -543,7 +474,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             w->ApplyName("LEVEL_ROLLINGBALL_WEST");
-            AnimWorkerObj* wi = w->m_7c;
+            AnimWorkerObj* wi = w->m_animWorker;
             wi->m_bc =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             w->m_124 = 0;
@@ -603,12 +534,6 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::TryPowerupAtTile()   @0x57aa0   (__thiscall, ret 0)
-// Gated on a live entrance reason (0 < m_entranceReason < 0x17): read the level
-// board's occupancy at the grunt's HUD tile; if it is clear of the blocking bits
-// (0x939 / 0x2), probe a move-tile placement via the tile mgr and return 1; else 0.
-//
 // @early-stop
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
@@ -638,14 +563,6 @@ i32 CGrunt::TryPowerupAtTile() {
     return 1;
 }
 
-// CGrunt::EnsureStruckSlot(key) @0x57b70 - the +0x424-slot sibling of
-// EnsureStruckVoice (+0x428): lazily build + play a grunt sound sample for `key`.
-// Bails if the +0x424 slot is already filled, or if the registry's m_object gate is
-// unset. Otherwise looks `key` up in the global sound table
-// (g_gameReg->m_world->m_soundRegistry->m_10), clones a sample from the entry's factory (GetItem),
-// stores it into +0x424, and plays it on the registry sound channel (m_11c).
-// __thiscall, ret 4. Same lookup shape as EnsureStruckVoice / CProjectile::LaunchSound.
-//
 // @early-stop
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
@@ -657,7 +574,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
         return;
     }
     void* entry_ob = 0;
-    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
+    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
     GruntSoundEntry* entry = static_cast<GruntSoundEntry*>(entry_ob);
     if (entry == 0) {
         return;
@@ -681,13 +598,6 @@ void CGrunt::ClearSubA() {
     }
 }
 
-// CGrunt::EnsureStruckVoice(key) @0x57c40 - lazily build + play the grunt's
-// struck-voice sound sample. Bails if already created (the +0x428 slot ClearSubB
-// frees). Looks `key` up in the global sound table (g_gameReg->m_world->m_soundRegistry->m_10),
-// clones a sample from the entry's factory (GetItem), stores it into +0x428, and
-// plays it on the sound channel (g_gameReg->m_soundVolume). __thiscall, ret 4. Same
-// sound-lookup shape as CProjectile::LaunchSound (0xe2190).
-//
 RVA(0x00057c40, 0x71)
 void CGrunt::EnsureStruckVoice(const char* key) {
     DirectSoundMgr*& sample = m_struckVoiceSound;
@@ -695,7 +605,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
         return;
     }
     void* entry_ob = 0;
-    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
+    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
     GruntSoundEntry* entry = static_cast<GruntSoundEntry*>(entry_ob);
     if (entry == 0) {
         return;
@@ -719,12 +629,6 @@ void CGrunt::ClearSubB() {
     }
 }
 
-// CGrunt::ReapplyVoiceParams() @0x57d10 - when the registry sound gate
-// (g_gameReg->m_10) is set, re-apply the current sound-channel params
-// (g_gameReg->m_soundVolume) to both the struck-slot (+0x424) and struck-voice (+0x428)
-// samples via DirectSoundMgr::ApplyAndPlay. __thiscall, no args. Same sample-play
-// shape as EnsureStruckSlot/EnsureStruckVoice.
-//
 RVA(0x00057d10, 0x4e)
 void CGrunt::ReapplyVoiceParams() {
     if (g_gameReg->m_soundEnabled == 0) {
@@ -746,39 +650,21 @@ void CGrunt::DestroyAnims() {
     ClearSubB();
 }
 
-// CGrunt::PathScan() @0x57db0 - the per-tick route re-validation. Re-clip the board
-// dirty rect to the 5x5 box around the grunt, then walk the grunt's occupied-coord
-// route: for each coord not already marked (and not the route tail) re-route from the
-// grunt's cell to it. The first coord that still routes wins - splice the fresh route
-// in front of the remainder of the old one and report 1. After five failures (or the
-// whole route exhausted) and only if the grunt is within +-4 cells of its GOAL, probe
-// the goal's eight neighbours for a reachable substitute, route (grunt -> neighbour)
-// then (neighbour -> goal), and adopt that. If nothing routes, clear the board clip
-// and report 0.
-//
 // @early-stop
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
-    CMapMgr* grid = g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CMapMgr)
-    // retail 0x57ddb caches `&m_31c` into a frame slot BEFORE the count gate and
-    // every out-of-line list call takes its `this` from there (0x5802f/0x5805c/
-    // 0x584f1/0x58518/0x5853a/0x585bb `mov ecx,[esp+0x10]`) - a local handle.
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+
     CPtrList* coordz = &m_31c;
     if (CoordCount() == 0) {
         return 1;
     }
-    // the same MFC walk this function already uses below (0x58015's direct
-    // [pos]/[pos+8] loads) - CPtrList::GetNext inlines to node->pNext + node->data
+
     POSITION node = coordz->GetHeadPosition();
 
     i32 col5 = m_object->m_screenX >> 5;
     i32 row5 = m_object->m_screenY >> 5;
-    // retail 0x57dfc..0x57e8c: the 5x5 dirty box is the +-2 cell box `rs` widened by
-    // one on right/bottom, but it is reached through a POINTER that is null-tested
-    // (0x57e30 `lea edx,[esp+0x48]; test edx,edx; je`) - the null arm takes the whole
-    // board instead. `gb` (the clip rect) is four inline stores here, not a CRect ctor.
-    // Braced so the three rects DIE here: retail's whole frame holds only four RECT
-    // slots (0x28/0x38/0x48/0x58) reused by every later bounds recompute.
+
     {
         RECT gb;
         gb.left = 0;
@@ -793,10 +679,7 @@ i32 CGrunt::PathScan() {
         RECT box;
         const RECT* pr = &rs;
         if (pr != 0) {
-            // 0x57e3c is a whole-rect COPY then two post-increments, not four
-            // widened field reads: cl stores box.right twice (0x57e52 then
-            // 0x57e58, around the `inc eax`) and drops the dead first store to
-            // box.bottom - exactly 12 instructions, matching retail's block.
+
             box = *pr;
             box.right++;
             box.bottom++;
@@ -810,7 +693,7 @@ i32 CGrunt::PathScan() {
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
-    CoordNode* tail = CoordTail(); // the member accessor already holds this seam
+    CoordNode* tail = CoordTail();
     i32 tcol = tail->m_coord->m_x;
     i32 trow = tail->m_coord->m_y;
     i32 hits = 0;
@@ -818,17 +701,10 @@ i32 CGrunt::PathScan() {
     while (node != 0) {
         Coord* co = static_cast<Coord*>(coordz->GetNext(node));
         if (co != 0) {
-            // retail 0x57f21: a cell already carrying the 0x20 mark is skipped
-            // UNLESS it is the route's own tail - no `fire` temp, the || just
-            // short-circuits into the probe (0x57f26 je / 0x57f30 + 0x57f36 jne).
+
             if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0
                 || (co->m_x == tcol && co->m_y == trow)) {
-                // retail 0x57f38: arg5 IS the route list `s` itself (0x57f5b's
-                // `lea ecx,[esp+0x70]` names the same address the 0x57f3a ctor
-                // does), and the "did it find one" test at 0x57f84 reads
-                // [esp+0x74] == s+0xc == CPtrList::m_nCount. There is no separate
-                // out-int. Args 1/2 are the GRUNT's cell (col5,row5), args 3/4 the
-                // coord being probed.
+
                 CPtrList s(0xa);
                 i32 res = grid->SearchEdge(
                     col5,
@@ -842,10 +718,7 @@ i32 CGrunt::PathScan() {
                 );
                 if (res != 0) {
                     if (s.GetCount() != 0) {
-                        // 0x57fbe: SearchEdge only routed as far as this coord, so
-                        // the REST of the old route (from `node` on) is appended to
-                        // the fresh one - each entry a coord popped off g_coordPool's
-                        // free list and filled from the old node.
+
                         while (node != 0) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
                             Coord* fresh = 0;
@@ -858,10 +731,7 @@ i32 CGrunt::PathScan() {
                             }
                             s.AddTail(fresh);
                         }
-                        // 0x58001: recycle the grunt's own coordz back to the pool.
-                        // Same drain as the ring tail's, but here MFC's inline
-                        // CPtrList::GetNext is what walks it (0x58015's direct
-                        // [pos]/[pos+8] loads), not CGruntCoordList::NextData.
+
                         if (CoordCount() != 0) {
                             POSITION pos = m_31c.GetHeadPosition();
                             if (pos != 0) {
@@ -874,9 +744,7 @@ i32 CGrunt::PathScan() {
                             }
                             coordz->RemoveAll();
                         }
-                        // 0x58038: adopt the fresh route, dropping the entry that IS
-                        // the grunt's current cell - that one is the list head and is
-                        // handed straight back to the free list just below.
+
                         POSITION p = s.GetHeadPosition();
                         if (p != 0) {
                             do {
@@ -901,34 +769,27 @@ i32 CGrunt::PathScan() {
                 }
             }
         }
-        // retail 0x57fab: the five-miss break has its OWN bounds recompute at
-        // 0x5813d, on top of the common one after the loop (0x581ce).
+
         if (hits == 5) {
             SCAN_BOUNDS(grid);
             break;
         }
     }
 
-    // ---- no hit: 3x3 neighbour re-scan ----
     SCAN_BOUNDS(grid);
-    // retail 0x5825c: the +-4 box is centred on the ROUTE TAIL (tcol,trow) - the
-    // destination cell - and the point tested against it is the grunt's own cell
-    // (col5,row5): "only re-scan the neighbourhood when I am within 4 cells of my
-    // goal". (It was col5/row5 on BOTH sides here, i.e. tautological.)
+
     RECT nb;
     nb.left = tcol - 4;
     nb.top = trow - 4;
     nb.right = tcol + 4;
     nb.bottom = trow + 4;
     if (col5 < nb.right && col5 >= nb.left && row5 < nb.bottom && row5 >= nb.top) {
-        // retail 0x582ae: the same null-tested-pointer bounds set as the head block
-        // (0x582c3 `lea ecx,[esp+0x48]; test ecx,ecx; je`), only here the source rect
-        // is the +-4 box and the clip rect IS a real CRect local (0x582be's ctor).
+
         CRect rb(0, 0, grid->m_width, grid->m_height);
         RECT ra;
         const RECT* pn = &nb;
         if (pn != 0) {
-            ra = *pn; // 0x582cb: same copy-then-post-increment shape as the head
+            ra = *pn;
             ra.right++;
             ra.bottom++;
         } else {
@@ -939,13 +800,7 @@ i32 CGrunt::PathScan() {
         }
         grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
-        // retail 0x58371: the ring is dy,dx = -1..1 with the CENTRE skipped
-        // (0x58397 `if (dy != 0) body; if (dx == 0) next`), the bounds test is
-        // width-then-height on (tcol+dx, trow+dy), and the cell read walks the row
-        // by 0x1c bytes per dx step (== m_rowInts[rr][(tcol+dx)*7]; retail hoists
-        // the `(tcol-1)*7*4` byte base to the OUTER loop head at 0x58384).
-        // Centre = the route TAIL, not the grunt: the ring probes the goal's
-        // neighbours for a reachable substitute cell.
+
         for (i32 dy = -1; dy < 2; dy++) {
             for (i32 dx = -1; dx < 2; dx++) {
                 if (dy == 0 && dx == 0) {
@@ -953,9 +808,7 @@ i32 CGrunt::PathScan() {
                 }
                 i32 rr = trow + dy;
                 i32 cc = tcol + dx;
-                // 0x583bc/0x583cb is a real if/ELSE (the out-of-bounds arm sets 1 in
-                // its own block and the in-bounds arm jmps past it), and 0x583d0
-                // computes the masked flags ONCE into eax for all three tests.
+
                 i32 cf;
                 if (static_cast<u32>(cc) < static_cast<u32>(grid->m_width)
                     && static_cast<u32>(rr) < static_cast<u32>(grid->m_height)) {
@@ -974,11 +827,7 @@ i32 CGrunt::PathScan() {
                 i32 res =
                     grid->SearchEdge(col5, row5, cc, rr, &s, 0, m_arrivalFlags | 0x20040002, m_24c);
                 if (res != 0) {
-                    // retail 0x5849f / 0x584cd: TWO separate `s.GetCount()` reads -
-                    // the RemoveHead between them invalidates the cached count, so cl
-                    // reloads [esp+0x74] (== s.m_nCount). Both empty cases bail out
-                    // through the SAME `Clip(0); return 0` the function ends with
-                    // (0x58686, the copy that also runs ~CPtrList on `s`).
+
                     if (s.GetCount() == 0) {
                         grid->Clip(0);
                         return 0;
@@ -991,8 +840,7 @@ i32 CGrunt::PathScan() {
                         grid->Clip(0);
                         return 0;
                     }
-                    // 0x584d9: recycle the grunt's own coordz (the function's ONLY
-                    // call 0x29a30, at 0x584fa) ...
+
                     if (CoordCount() != 0) {
                         POSITION pos = m_31c.GetHeadPosition();
                         if (pos != 0) {
@@ -1005,7 +853,7 @@ i32 CGrunt::PathScan() {
                         }
                         coordz->RemoveAll();
                     }
-                    // ... then 0x58521 transfers the fresh route into it.
+
                     POSITION p = s.GetHeadPosition();
                     if (p != 0) {
                         do {
@@ -1013,11 +861,7 @@ i32 CGrunt::PathScan() {
                         } while (p != 0);
                     }
                     s.RemoveAll();
-                    // 0x58555: the SECOND leg - route on from the neighbour cell
-                    // (cc,rr) to the original goal (tcol,trow), this time with the
-                    // RAW arrival flags (no 0x20040002 punch) and clearFlag 1. Its
-                    // route is appended to the one just adopted. Whatever it returns,
-                    // the grunt now has a path: recompute the bounds and report 1.
+
                     if (grid->SearchEdge(cc, rr, tcol, trow, &s, 1, m_arrivalFlags, m_24c) != 0) {
                         if (s.GetCount() != 0) {
                             void* e2 = s.RemoveHead();
@@ -1045,12 +889,6 @@ i32 CGrunt::PathScan() {
     return 0;
 }
 
-// CGrunt::OnStruck(wasHit) @0x588f0 - the struck/damage reaction step. Re-arm the
-// struck cooldown (m_270=0xfa0 window, m_268=game clock now), bump the struck
-// counter (m_struckCount), and - if the grunt is on-screen (the registry
-// visible-bounds rect at g->m_world->m_level->m_5c+0x40) - fire an escalating struck
-// grunt-voice cue (CueA) keyed by whether it was a real hit and the running count.
-// __thiscall, ret 4, frameless.
 // @early-stop
 RVA(0x000588f0, 0x1ea)
 void CGrunt::OnStruck(i32 wasHit) {
@@ -1116,16 +954,6 @@ void CGrunt::OnStruck(i32 wasHit) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ArrivalRecycle(a, b, mode, d, e)   @0x59230   (__thiscall, ret 0x14)
-// mode==0: latch the pending arrival target (a switch on m_arrivalState seeds
-// m_arrivalCol/m_arrivalRow from {d,e} and, for the in-flight states, marks m_defenderState=2), then - when
-// committing (m_arrivalPhase 2/3, m_arrivalActive set) - commit the occupied tile slot to its
-// settled HUD position (RectContains[Gated]). mode!=0: drive the move-sound then run
-// the occupied-coord recycle: for each resolver reject code "H"/"F"/"O", resolve the
-// cell record (the resolver's coord->index map) and bail; final miss -> ResetGeometry().
-//
-// @early-stop
 RVA(0x00059230, 0x40d)
 i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     if (mode == 0) {
@@ -1197,9 +1025,6 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 
     PlayMoveSound(a, b);
 
-    // Occupied-coord recycle: three sequential resolver reject codes. Each block
-    // resolves the current anim-set node's cell record (the resolver's coord-range
-    // map; the bounds hit is the fast path, the two fallbacks are engine helpers).
     char* nm0 = *g_typeColl.GetNameRecord(m_objAux->m_1c);
     if (strcmp(nm0, s_codeH) == 0) {
         return 1;
@@ -1267,7 +1092,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    // attackerGruntKind == 0x39: conversion hit - heal the struck enemy, fire GAME_CONVERSIONHIT.
     if (attackerGruntKind == 0x39) {
         CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
         if (enemy != 0
@@ -1282,8 +1106,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 h = 0x64;
             }
             enemy->m_health = h;
-            // worker -> owner context (the world holder facet) -> cue host; retail
-            // keeps the host in ecx from the gate test into the Lookup __thiscall.
+
             CDDrawSubMgrLeafScan* host =
                 (static_cast<CDDrawSurfaceMgr*>(m_3c->m_ownerCtx))->m_soundRegistry;
             if (host->m_emitGate == 0) {
@@ -1296,15 +1119,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    // Hit-type byte-table lookup + optional handicap halving.
     i32 hit = g_hitTable[this->m_entranceReason * 23 + attackKind];
-    CGruntzMgr* reg = g_gameReg; // cached once (retail keeps the singleton in a reg)
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && this->m_tileOwnerHi == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
     }
 
-    // Reactive-armor kind (0x3c == GRUNT_REACTIVEARMOR): scale the hit by g_dtScale, then damage the enemy.
     if (attackerGruntKind == 0x3a) {
         hit = 0x64;
     } else if (this->m_gruntKind == 0x3c) {
@@ -1324,7 +1145,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    // Self health decrement + reason-1 kill dispatch.
     i32 nh = this->m_health - hit;
     if (nh < 0) {
         nh = 0;
@@ -1339,7 +1159,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_370 = srcRow;
     }
 
-    // On-screen visibility gate, then the hit/block sound-cue resolve.
     LeafCue* cue = 0;
     i32 vx = this->m_object->m_screenX;
     i32 vy = this->m_object->m_screenY;
@@ -1494,7 +1313,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
 
     L_cue:
-        // Kill-clock-gated launch cue.
+
         if (cue != 0 && g_sndEnabled != 0) {
             i32 clk = g_killCueClock;
             if (static_cast<u32>((clk - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
@@ -1504,7 +1323,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    // Block path (attackKind in {6,0xa,0x16}); otherwise reason 0x15 kills, else return.
     if (!(attackKind == 6 || attackKind == 0xa || attackKind == 0x16)) {
         if (attackKind != 0x15) {
             return 1;
@@ -1520,7 +1338,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    // Rebuild the active-anim-set type-name registry free list.
     CString* typeRec = g_typeColl.ScratchResolve(this->m_objAux->m_1c);
     if (g_typeColl.m_grown != 0) {
         CString* p = g_typeColl.Slots();
@@ -1536,8 +1353,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    // x87 angle-octant direction resolver: copy the matching g_dirVec triple into
-    // CGrunt+0x43c and set the target tile pixel (newX/newY).
     i32 dy = srcPxY - this->m_object->m_screenY;
     i32 dx = srcPxX - this->m_object->m_screenX;
     i32 newX;
@@ -1610,10 +1425,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    // Tile-to-tile occupancy + diagonal-corner move check.
     {
         i32 flags = this->m_arrivalFlags | 0x20000000;
-        CMapMgr* grid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid); // GruntBoard==CMapMgr facet
+        CMapMgr* grid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
         i32 oxt = this->m_lastTilePxX >> 5;
@@ -1637,7 +1451,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 dxt = nxt - oxt;
             i32 dyt = nyt - oyt;
             if (dxt != 0 && dyt != 0) {
-                i32 w = grid->m_width; // vertical neighbor = +-w cells (contiguous rows)
+                i32 w = grid->m_width;
                 if (dxt > 0) {
                     if (dyt > 0) {
                         if (((ocell + 1)->m_0 & 0x2000) || ((ocell + w)->m_0 & 0x2000)
@@ -1666,11 +1480,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
         }
 
-        // Arrival commit + occupancy re-stamp + knockback trajectory tail.
         if (this->m_arrivalPending == 0) {
             m_tileMgr->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
-        CMapMgr* g2 = static_cast<CMapMgr*>(g_gameReg->m_tileGrid); // GruntBoard==CMapMgr facet
+        CMapMgr* g2 = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         i32 ox = this->m_lastTilePxX >> 5;
         i32 oy = this->m_lastTilePxY >> 5;
         g2->m_rows[oy][ox].m_flagBytes[3] &= 0xdf;
@@ -1709,8 +1522,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 do {
                     Coord* data = static_cast<Coord*>(m_31c.GetNext(pos));
                     if (data != 0) {
-                        // retail stores the CACHED reg back (`mov [eax],edx; mov edx,eax;
-                        // mov ds:g_freeList,edx`) - no source-level cached local.
+
                         CoordPoolNode* slot = g_coordPool.NodeOf(data);
                         slot->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = slot;
@@ -1726,20 +1538,6 @@ L_moveDone:
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CommitNeighbor(a, b, c, d)   @0x5b050   (__thiscall, ret 0x10)
-// React to the grid-neighbour grunt at cell (a,b): gate on a not being self (or a
-// global flag), the entrance-reason not being 0x13/0x14, and the committed tile
-// (m_17c/m_180) being clear of the spawn-block bit; build the HUD health sprite,
-// re-arm the combat-timer block (CombatTimeout config), then resolve the neighbour
-// grunt from the tile-mgr's 15-wide cell grid (m_260 + (15a+b)*4 + 0x1c), gate it
-// (live, both committed, not anim "F"); dispatch on m_170/m_toolId (==1 -> a move
-// config) else on the current anim type code ("I" -> arrival re-notify; "N" -> the
-// align-down/drop-ready/snap re-latch); finally run the shared combat finalize:
-// commit the in-flight move, latch m_220, build the neighbour's HUD health sprite +
-// combat timer, recycle both arrival blocks, and (when not low-stamina/active)
-// re-arm the attack anim. __thiscall, ret 0x10; returns 1 on success, 0 on bail.
-//
 // @early-stop
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
@@ -1783,14 +1581,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     if (eq) {
         return 0;
     }
-    // ONE reason variable, overwritten in place - not two conditions. Retail's
-    //   mov eax,[m_170] / xor ecx,ecx / cmp eax,0x16 / jle L / mov eax,[m_toolId]
-    //   L: cmp eax,1 / jne J / mov ecx,eax / J: test ecx,ecx
-    // reaches `cmp eax,1` on BOTH paths, so an m_entranceReason of exactly 1 also
-    // fires the move config. The `jle` lands on the compare, not past it.
-    // Flag and reason are separate variables: the flag is zeroed before the
-    // diamond and assigned the (already-loaded) reason inside the ==1 arm, which
-    // is why cl copies a register instead of materialising an immediate 1.
+
     i32 flag = 0;
     i32 v = m_entranceReason;
     if (v > 0x16) {
@@ -1818,7 +1609,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeN) == 0);
         if (eq) {
             i32 lastX = m_lastTilePxX;
-            i32 lastY = m_lastTilePxY; // retail hoists BOTH latches into registers
+            i32 lastY = m_lastTilePxY;
             i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
             i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
             i32 redo = 1;
@@ -1832,12 +1623,11 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             if (redo) {
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = ActFindId(s_codeD);
-                SetupTubeAnim(m_coordToggle); // 0x5b32f -> ILT 0x1e47 -> 0x50a50
+                SetupTubeAnim(m_coordToggle);
             }
         }
     }
 
-    // The shared combat finalize.
     if (m_arrivalPending != 0) {
         m_tileMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
         m_arrivalPending = 0;
@@ -1864,14 +1654,6 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::BeginAttack(a, b)  @0x5b570  (__thiscall, ret 8)
-// Gated on the entrance being committed (m_1fc != 0), the current anim NOT being
-// the "F"/struck code, and m_stamina >= 0x64. Fires the directional move-sound to
-// (a, b), latches the powered-up / +0x218 combat state, builds the HUD health
-// sprite, latches the combat-timer block (CombatTimeout config + game clock), and
-// re-arms the ATTACK2 anim (RearmAttackAnim2). Returns 1 on commit, else 0.
-//
 // @early-stop
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 a, i32 b) {
@@ -1879,7 +1661,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
         goto fail;
     }
     {
-        // retail defers the ->m_name load past the (inlined) scratch teardown loop
+
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
         GruntScratchTeardown();
         bool eq = (strcmp(*rec, s_codeF) == 0);
@@ -1946,38 +1728,38 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 RVA(0x0005b7e0, 0x23)
 CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
     void* val = 0;
-    m_10.Lookup(key, val); // CMapStringToPtr::Lookup @0x1b8438 (void*& out-param)
+    m_10.Lookup(key, val);
     return static_cast<CObject*>(val);
 }
 
 RVA(0x0005baf0, 0xf4)
 i32 GruntSpawnPump(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
             CUserLogic* sub = new CGrunt(owner);
-            sub->Activate(); // slot 6 (+0x18)
+            sub->Activate();
             rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
@@ -1996,12 +1778,6 @@ void CGrunt::FireActivation(i32 id) {
     }
 }
 
-// (The "count-down free-loop induction / slot-vs-id callee-saved coloring wall" that
-// stood here was not a wall - it was the act-registrar bug of
-// docs/patterns/act-registrar-counter-cse-and-freeloop.md, twice: the name-slot lookup
-// read the local `id` instead of the global g_typeCounter in the 18 macro blocks, and
-// the 19th key was expanded through the macro at all when retail writes it through the
-// derived accessor. Both fixed; EXACT.)
 RVA(0x0005be30, 0x9e5)
 void RegisterActs_644af0() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
@@ -2024,41 +1800,13 @@ void RegisterActs_644af0() {
     REGISTER_KEY_644AF0("R", &CGrunt::LoadGruntDecayConfig2);
     REGISTER_KEY_644AF0_DERIVED(k_60df94, &CGrunt::FinishEntranceMove);
 }
-// ---------------------------------------------------------------------------
-// CGrunt::Activate()   @0x5caa0   (__thiscall, ret 0)
-// The grunt reset/spawn-init step. Fills the per-direction velocity-vector table at
-// this+0x4b0 (9 directions, each a 0x78-stride record, 4 doubles/record) from the 9
-// runtime direction-index globals (0x644aa0..0x644b48; index = 3*dir[0] + dir[1]) with
-// the unit/diagonal direction vectors (0, +-1.0, +-0.5, +-sqrt(2)/2), then resets the
-// grunt's spawn state: HUD anchor, health/stamina (100), the entrance flags, the latches.
-//
-// EXACT since 2026-07-29. The old "x87 FP instruction-scheduling wall" hid TWO real
-// value bugs and one shape bug:
-//   * `n = -1.0 / s` is -sqrt(2); retail's second divide is `fld -1.0 / fdiv <diag>`,
-//     i.e. -1.0/sqrt(2) - the old form doubled every negative diagonal component;
-//   * NorthEast's m_dirY was `s` (+0.707) where retail stores the NEGATIVE diagonal;
-//   * the per-record `CGruntCellRec* c` pointer collapsed 36 index computations into 9.
-// With the subscript spelled at every field and -1.0/diag left as an expression (so cl
-// computes it at its first use, where retail has it), the x87 schedule falls out exactly.
+
 RVA(0x0005caa0, 0x5e4)
 void CGrunt::Activate() {
     double diag = sqrt(2.0);
-    // The two diagonal magnitudes are BOTH +-1.0/sqrt(2) (retail: `fdivr 1.0` and
-    // `fld -1.0; fdiv <diag>`, the two doubles at 0x5e9a30/0x5e9a38 over the saved
-    // sqrt). The old `n = -1.0 / s` spelling was -sqrt(2), i.e. TWICE the magnitude
-    // it should be, on every negative diagonal component.
-    // `n` is NOT a hoisted local: retail computes -1.0/diag at its FIRST USE (after
-    // the NorthEast m_dirX store) and CSEs it into the [esp+0x10] scratch from there.
-    // A `double n = ...;` declaration emits the fld/fdiv up at the declaration and
-    // forces an extra `fld st(1)` to get `s` back on top for that first store.
+
     double s = 1.0 / diag;
 
-    // Each record: 4 doubles at the cell's +0/8/0x10/0x18. The 9 globals are processed
-    // in this fixed order (ab0,ae0,aa0,b28,ac0,b48,ad0,b18,b38). The cell subscript is
-    // SPELLED OUT at every field, not hoisted into a `CGruntCellRec*` local: retail
-    // reloads the direction pair and redoes the 13*(3*row+col) index math for each of
-    // the 36 stores (`mov [ecx+edx*8+0x4XX],..`), where a hoisted pointer collapses it
-    // into one `lea` per record.
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_dirX = 0.0;
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_dirY = -1.0;
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_stepX = 0.0;
@@ -2104,7 +1852,6 @@ void CGrunt::Activate() {
     m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_stepX = 0.0;
     m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_stepY = 0.0;
 
-    // --- spawn-state reset tail (integer field stores) ---
     CWwdGameObjectA* h = m_object;
     i32 px = h->m_screenX;
     m_commitPxX = px;

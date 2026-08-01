@@ -1,25 +1,25 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Mfc.h>                      // real MFC CString (the type-name record's +0x00 member)
-#include <Wap32/zBitVec.h>            // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/GameObjectFactory.h>
+#include <Mfc.h>
+#include <Wap32/zBitVec.h>
+#include <Io/FileMem.h>
 #include <Gruntz/ActionArea.h>
-#include <Gruntz/WorkerHandler.h> // the shared LOGIC_WORKER_PUMP (CreateActionArea IS one)
-#include <Image/ImageSet.h>       // CDDrawWorker::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
+#include <Gruntz/WorkerHandler.h>
+#include <Image/ImageSet.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/ObjTypeRegistrars.h> // CProjActObj registrar-shell decl (RegisterType @0x8240)
+#include <Gruntz/ObjTypeRegistrars.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
-#include <Gruntz/HaznColl.h> // CActReg - the shared _zvec-based registry-collection address-view
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/HaznColl.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
 
 VTBL(CActionArea, 0x001e7004);
-VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
-VTBL(CUserBase, 0x001e70b4);  // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
+VTBL(CUserLogic, 0x001e705c);
+VTBL(CUserBase, 0x001e70b4);
 template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(2000, 2010);
 
@@ -38,23 +38,12 @@ static inline CString* TypeLookup(i32 key) {
     char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
     (static_cast<CVariantSlot*>(g_typeColl.m_errSink))->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch(); // the slow-path element slot
+    return g_typeColl.Scratch();
 }
 
-// @early-stop
 RVA(0x00007c60, 0xf1)
 i32 CreateActionArea(CGameObject* owner){LOGIC_WORKER_PUMP(CActionArea)}
 
-// 0x87b0 - ??1CUserBase@@UAE@XZ: the out-of-line COMDAT copy of the inline
-// ~CUserBase (<Gruntz/UserLogic.h>), landed in the COMDAT pool right after this
-// TU's block. cl auto-emits it here (this obj's /GX ctors need it for the
-// partial-unwind funclets - retail shows ~150 unwind funclets calling it via
-// thunk 0x1343); the body is the single dead-store-collapsed own-vptr stamp
-// `mov [ecx],offset ??_7CUserBase; ret`. RVA_COMPGEN NAMES the retail copy.
-
-// CActionArea::CActionArea (0x7da0) - fold the shared CUserLogic(obj) init, then
-// name the bound object "GAME_ACTIONAREA_RED", bind the "A" bute node, lock the
-// draw order to 6, seed the leaf state (+0x54=1) and flag the sub-object.
 // @early-stop
 RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -68,24 +57,10 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_phase = 1;
-    m_duration = 0; // retail re-zeroes the interval here (calls intervene - not elided)
+    m_duration = 0;
     m_38->m_stateFlags |= 1;
 }
 
-// CActionArea::~CActionArea (0x7fd0) - the leaf adds no destructible members beyond
-// CUserLogic (its own +0x54.. state is plain ints), so its dtor folds the bare
-// CUserLogic teardown (store CUserLogic vptr, inline-destruct the +0x18 link via
-// ~EngStr, store CUserBase vptr; the /GX leaf-dtor archetype). Declaring the virtual
-// dtor gives CActionArea its own most-derived vftable so the ctor stamps it (3rd
-// vptr) like retail. IDENTITY (vtable-owner probe): ??_7CActionArea @0x1e7004 slot 0 ->
-// ILT thunk -> the scalar-deleting dtor 0x7fa0 -> THIS body. (It used to be RVA-pinned on
-// the fake CProjActOwner twin while this definition went un-annotated.)
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CActionArea() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// 0x7fa0 - the scalar-deleting dtor ??_7CActionArea slot 0 dispatches to
-// (via the ILT thunk): call ??1, cond operator delete.
 RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
 RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
@@ -98,16 +73,6 @@ void CActionArea::FireActivation(i32 coord) {
     }
 }
 
-// 0x8240: CActionArea::RegisterType - the level-load class registrar. Assign the
-// class a type-id via the global bute-tree (registering its name on first use),
-// record the name into the shared type-name table, then store the activation
-// handler (0x403517) into the per-class R3 table at that id. Same archetype as
-// CKitchenSlime / CProjectile RegisterType.
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
     i32 id = ActFindId("A");
@@ -126,7 +91,7 @@ void CProjActObj::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // ILT 0x403517 -> 0x008440 == CActionArea::Tick; the slot IS a CActHandler.
+
     *R3Lookup(id) = static_cast<CActHandler>(&CActionArea::Tick);
 }
 
@@ -156,14 +121,14 @@ i32 CActionArea::ApplyColor(i32 owner) {
     switch (owner) {
         case 1: {
             m_38->ApplyName("GAME_ACTIONAREA_BLUE");
-            // m_194's image-set arm: ApplyName parks the looked-up worker there.
+
             CDDrawWorker* rec = m_38->m_imageSet;
             rec->SetAllTypes(8);
             break;
         }
         case 2: {
             m_38->ApplyName("GAME_ACTIONAREA_RED");
-            // m_194's image-set arm: ApplyName parks the looked-up worker there.
+
             CDDrawWorker* rec = m_38->m_imageSet;
             rec->SetAllTypes(8);
             break;
@@ -208,24 +173,11 @@ i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d)
     return 1;
 }
 RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
-// 0x8810 - the CUserBase scalar-deleting dtor (??_7CUserBase @0x1e70b4 slot 0
-// -> ILT 0x2be9 -> here): re-stamps ??_7CUserBase inline (the trivial ~ folds),
-// cond operator delete. Same COMDAT pool as the ??1s (this obj emits it).
+
 RVA_COMPGEN(0x00008810, 0x20, ??_GCUserBase@@UAEPAXI@Z)
-// 0x8860 - ??1CUserLogic@@UAE@XZ: the out-of-line COMDAT copy of the inline
-// ~CUserLogic (<Gruntz/UserLogic.h>), same pool. cl auto-emits it here (this obj's
-// /GX leaf ctors' partial-unwind funclets call it out-of-line - e.g. ~CWarlord's
-// unwind action(0) reaches it via the 0x3cfb-band thunk); the body stamps
-// ??_7CUserLogic, inline-destructs the +0x18 link's ~EngStr, stamps ??_7CUserBase.
-// Was the L_8860 placeholder shell (BoundaryLeafLogicViews.h), dissolved 2026-07-17.
+
 RVA_COMPGEN(0x00008860, 0x44, ??1CUserLogic@@UAE@XZ)
-// 0x8a10 - the CUserLogic scalar-deleting dtor (??_7CUserLogic @0x1e705c slot 0
-// -> ILT 0x3cfb -> here): call ??1CUserLogic (thunk), cond operator delete.
+
 RVA_COMPGEN(0x00008a10, 0x1e, ??_GCUserLogic@@UAEPAXI@Z)
-// 0x8be0 - ??1CWapX@@QAE@XZ: the out-of-line COMDAT copy of the EMPTY inline
-// ~CWapX (<Gruntz/UserLogic.h> - the tile-logic second base), a 1-byte `ret`.
-// cl auto-emits it here (the /GX leaf ctor/dtor funclets reference it for the
-// +0x34 base subobject unwind - e.g. ~CWarlord FuncInfo state 1's funclet
-// @0x1d8578 null-check-adjusts this+0x34 and calls it). FID's `__fpclear` row
-// for 0x8be0 was a LOW-confidence false positive (pruned from library_labels.csv).
+
 RVA_COMPGEN(0x00008be0, 0x1, ??1CWapX@@QAE@XZ)

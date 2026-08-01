@@ -1,10 +1,10 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Mfc.h> // CString (filename arg passed by value) + CFile
+#include <Mfc.h>
 
-#include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit + CImageFrameRebuildDesc (the real class)
-#include <Io/FileStream.h>           // CFile == the MFC CFile (destructible stack local -> /GX)
+#include <DDrawMgr/DDrawShadeBlit.h>
+#include <Io/FileStream.h>
 
 RVA(0x00149250, 0x158)
 i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
@@ -20,7 +20,7 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
     file.Write(m_rleData, m_rleLen);
     if (desc.f1 & 0x80) {
         if (m_palette == 0) {
-            return 0; // palette flag set but no palette -> fail
+            return 0;
         }
         for (i32 i = 0; i < 0x100; i++) {
             file.Write(&m_palette[i].peRed, 1);

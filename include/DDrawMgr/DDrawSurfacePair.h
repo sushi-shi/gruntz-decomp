@@ -3,83 +3,47 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDrawSubWorker : CLoadable - the geometry base
+#include <DDrawMgr/DDrawSubMgrPages.h>
 
-class CDDSurface;       // +0x2c held surface (CFileImageSurface); <DDrawMgr/DDSurface.h>
-class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
-struct CParseSource;    // LoadImage arg (the 0x139xxx byte-reader)
-
-// (CSurfacePairBase DELETED: dead scaffolding. REBASED 2026-07-22 onto
-// CDrawSubWorker: the layouts are identical through +0x2f (m_width/m_height/
-// m_bpp/m_srcRect/m_surface at the same offsets), both vtables' slot 9 point at
-// the SAME SetGeometry body 0x158fd0 (only inheritance can share one body -
-// MSVC5 has no ICF), and the twin IsLoaded bodies 0x159090/0x159150 read the
-// same inherited header fields under two spellings.)
+class CDDSurface;
+class CDDrawSurfaceMgr;
+struct CParseSource;
 
 class CDDrawSurfacePair : public CDrawSubWorker {
 public:
-    virtual i32 IsLoaded() OVERRIDE; // slot 5 (@0x14) 0x159090 - the "surface ready?" predicate
-    // slot 6 IsReady INHERITED (CWapObj's `return 1` default @0xd5da0); not
-    // redeclared (that was a phantom own-decl under the old flat `: CObject` model).
-    // The debug counter-draw pair (bodies in DDrawSurfacePair.cpp, retail birth-
-    // positioned dead-center in this class's .text block; ex the fake
-    // ResLoaders::DrawHost_164380/DrawHost2_164420 views - their +0x2c "counter
-    // window" IS this class's m_surface CDDSurface, whose +0x08 is the DC-capable
-    // IDirectDrawSurface). Print n / text centred into rc via GetDC/ReleaseDC.
-    void DrawCount(RECT* rc, i32 n);      // 0x00164380
-    void DrawLabel(RECT* rc, char* text); // 0x00164420
+    virtual i32 IsLoaded() OVERRIDE;
 
-    // +0x04 m_04 (INHERITED, CLoadable): the pool-state word (-1 inactive, 1 =
-    // acquire-by-format, 2 = attached, 0x63 = active). +0x08 m_flags (INHERITED):
-    // create flags (& 0x10000 = make-and-add path). +0x0c (INHERITED): the parent
-    // CDDrawSurfaceMgr - read through OwnerMgr().
+    void DrawCount(RECT* rc, i32 n);
+    void DrawLabel(RECT* rc, char* text);
+
 public:
-    // Inline in CreateChildren: CDrawSubWorker itself inlines, leaving the nested
-    // CLoadable call @0x156cb0 followed by m_width, this vptr, m_surface, and the
-    // ownership flag in normal base/member construction order.
     CDDrawSurfacePair(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
         : CDrawSubWorker(INLINE_CTOR, mgr, kind, flags) {
         m_surface = 0;
         m_ownsSurface = 1;
     }
 
-    // --- slots 7..10 override the CLoadable/CDrawSubWorker scheme; 11..14 are new ---
-    // slot 7 Unload (@0x1c) 0x163e20 (ex "TeardownSurface"): release the held
-    // surface back to the pool / free it per m_ownsSurface.
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE; // slot 8  (@0x20) 0x1590c0
-    // slot 9 SetGeometry INHERITED from CDrawSubWorker (the shared 0x158fd0 body).
-    virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE;  // slot 10 (@0x28) 0x164250
-    virtual i32 InitFromSurface(CDDSurface* src);         // slot 11 (@0x2c) 0x163db0
-    virtual i32 Create(i32 w, i32 h, i32 bpp, i32 flags); // slot 12 (@0x30) 0x163c90 (-> m_flags)
-    virtual i32 LoadImage(CParseSource* src);             // slot 13 (@0x34) 0x163e50
-    virtual i32 ResolveImage_163ee0(CParseSource* src);   // slot 14 (@0x38) 0x163ee0
+    virtual i32 GetClassId() OVERRIDE;
 
-    virtual ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)
+    virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE;
+    virtual i32 InitFromSurface(CDDSurface* src);
+    virtual i32 Create(i32 w, i32 h, i32 bpp, i32 flags);
+    virtual i32 LoadImage(CParseSource* src);
+    virtual i32 ResolveImage_163ee0(char* name);
 
-    // --- non-virtual helpers (reconstructed in the owner TU) ------------------
-    void BltSelf(CDDrawSurfacePair* src); // 0x03a1d0
-    i32 RestoreIfLost();                  // 0x163f00  (surface-lost retry twin of Probe)
-    // 0x163f40. The four dwords the body bounds-checks and walks are left/top/right/
-    // bottom in that order and its only caller hands it CPlay::m_hudRect (a RECT), so
-    // the parameter is a RECT*, not the i32[4] it used to be declared as.
+    virtual ~CDDrawSurfacePair() OVERRIDE;
+
+    void BltSelf(CDDrawSurfacePair* src);
+    i32 RestoreIfLost();
+
     void DrawBox(RECT* rect, i32 color);
-    void DrawCross(i32 x, i32 y); // 0x164180
-    // (The 0x1644a0 DirectDraw mode-surface creator is CDDrawSurfaceChildA's
-    //  slot-9 SetGeometry override - see DDrawSubMgrPages.h; the old
-    //  "directx_wrapper_caller_1644a0" decl here was a caller-less duplicate name.)
-    // 0x164650 - empty dirty-rect blit hook (retail `ret 0xc` no-op): the
-    // CWwdGameObjectC blit dispatch (Slot34/38) calls it per (pos,size) region on
-    // the front pair. Reconstructed as an empty body so the 3-byte stub matches.
-    void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
-    // (Probe 0x164660 moved to the CDrawSubWorker base - see <DDrawMgr/DDrawSubMgrPages.h>:
-    //  its body reads only this+0x2c, a BASE field, and retail's sole caller invokes it on
-    //  CDDrawSubMgrPages::m_frontPair, which is a CDDrawSurfaceChildA - our sibling.)
+    void DrawCross(i32 x, i32 y);
 
-    // --- layout: m_width/m_height/m_bpp/m_srcRect/m_surface INHERITED from
-    // CDrawSubWorker (base ends at +0x30); this class adds one field -----------
-    i32 m_ownsSurface; // +0x30  "owns surface" flag (free on teardown)
+    void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
+
+    i32 m_ownsSurface;
 };
-SIZE(0x34); // new-size from CDDrawSubMgrPages::CreateChildren
+SIZE(0x34);
 
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H

@@ -1,70 +1,13 @@
-// Brickz.cpp - the scattered OUT-OF-LINE CMapMgr singletons (Tier B of the
-// de-fragmentation assessment below). The Tier-A out-of-line pathfinding core
-// (block F, 0x9ea60..0x9f7b7: AllocGrid/Search/Expand/Insert/PopFront/CellPush/
-// Find/FindCellNode/Drain/Reset/Unlink/CellPop) is homed in src/Gruntz/MapMgr.cpp
-// per docs/exe-map/interval-dossiers.md #10a (mapmgr + brickz-interval = ONE
-// original TU; A-B-A-B weave + one bracketing init-frag run).
-//
-// Placeholder class name (see <Gruntz/Brickz.h>): these are __thiscall pointer-
-// shuffle ops over a self-contained graph/grid container's intrusive node lists.
-// They match by shape; field names are placeholders, offsets are load-bearing.
-//
-// ---------------------------------------------------------------------------
-// DE-FRAGMENTATION ASSESSMENT (matcher-2, 2026-07-10; Tier A since re-homed):
-// One dominant class, CMapMgr (non-polymorphic grid/pathfinding container,
-// all QAE), + two tiny homed helpers (CDDrawWorkerHost::SetCell @0x77dc0,
-// CTriggerMgr::FindNearestEnemy @0x77df0). Game object CBrickz is its own TU
-// (src/Gruntz/CBrickz.cpp).
-//
-// TIER B - the scattered singletons here (Clip 0x2b340 | ComputeCellFlags 0x77790 |
-//   SetCell 0x77dc0 | FindNearest 0x77df0 | SearchEdge/UpdDiag/Line 0x81e10.. |
-//   IsCellClear 0x853f0 | Serialize 0x9356c) are OUT-OF-LINE functions that retail
-//   CALLS: each has its own rva, reached from other TUs via incremental-link
-//   thunks, and the delinked target references them as an `U <name>` extern (= a
-//   linked CALL). They STAY OUT-OF-LINE here. DO NOT move them to Brickz.h.
-//   PROVEN (2026-07-10, measured end-to-end): making ComputeCellFlags an `inline`
-//   header member makes MSVC5 /O2 INLINE it into its callers (BuildRockBreakParticles
-//   doubled 1008->2096B, the switch body folded in, 0 calls left) ->
-//   RockBreakParticles 81->0, ApplyMove 70->0. The DELINKER IS NOT THE CAUSE -
-//   re-attributing the rva alone (no recompile) craters nothing. Retail inlines
-//   these SELECTIVELY: ComputeCellFlags is inlined ONLY into CBrickz::LoadAttributes
-//   @0x810f0 (the switch consts appear at exactly 2 rvas: 0x77790 + 0x8150c) and
-//   CALLED from the other 3 sites. We mirror that by hand: out-of-line member +
-//   hand-written inlined body where retail inlined it (see BrickzLoad.cpp), NEVER
-//   the `inline` keyword. IsCellClear is data-ref'd ONLY from vtable slots
-//   ??_7CMapMgr@@6B@+0x14 & ??_7CGruntzMapMgr@@6B@+0x14 => an inline VIRTUAL of
-//   CMapMgr (slot 5), mislabeled CMapMgr::IsCellClear (@owner-TODO). Virtuals
-//   ARE safe as header-inline (vtable dispatch = `call *(%eax)`, never inlined at
-//   the call site) - that is the ONLY safe header-inline case. See docs/patterns/
-//   nonvirtual-inline-header-craters-delinker-packing.md (corrected: root cause is
-//   MSVC inlining, not the delinker).
-//
-// Remaining work: per-method @early-stop residue (final sweep); (the ex-Grid_77df0
-// via xref (@identity-TODO); IsCellClear -> CMapMgr slot 5 (real virtual,
-// header-inline-safe); the CMapMgr<->CMapMgr identity reconcile (see MapMgr.cpp).
-// ---------------------------------------------------------------------------
-// CARVE (holding-TU drain, 2026-07-11): CMapMgr::Clip (0x02b340) and the 0x077790
-// obj (ComputeCellFlags 0x077790 + CDDrawWorkerHost::SetCell 0x077dc0 + CTriggerMgr::
-// FindNearest 0x077df0) were carved into src/Gruntz/BrickzClip_02b340.cpp and
-// src/Gruntz/BrickzCellFlags_077790.cpp - each a distinct contiguous retail .text obj
-// (CMapMgr methods compiled in 3 different objs). This file keeps ONLY the main
-// pathfinding obj (SearchEdge/UpdateDiagonals/LineIsClear/IsCellClear @0x081e10..) +
-// the pooled Serialize @0x09356c.
-#include <Win32.h> // RECT - CMapMgr::m_bounds is a real RECT member now
+
+
+#include <Win32.h>
 #include <rva.h>
 #include <Gruntz/BattlezData.h>
-#include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
+#include <stdlib.h>
 
 #include <Gruntz/Brickz.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
-// ---------------------------------------------------------------------------
-// CMapMgr::SearchEdge (0x081e10) - run a Search between two adjacent cells with
-// their edge state temporarily punched open, then restore. Bounds-check both
-// cells (cols < m_c, rows < m_10); save cellA.m_0/m_4 + cellB.m_0/m_4 + cellB's
-// 0x20000000 edge bit; clear that bit, set both cells' m_4 = -1 and (when
-// clearFlag) m_0 = 0; set m_4c = maskA & 0x20000000; run Search(...,0x2000,...);
-// then m_4c = 0 and restore every saved field. Returns Search's result.
 // @early-stop
 RVA(0x00081e10, 0x1a7)
 i32 CMapMgr::SearchEdge(
@@ -91,8 +34,7 @@ i32 CMapMgr::SearchEdge(
     if (bBit29 != 0) {
         cellB->m_0 = savedB0 & 0xdfffffff;
     }
-    // Punch the edge open: re-index m_8[row][col] for each write (retail keeps the
-    // col byte-offset factored and re-reads the row base rather than caching cell).
+
     m_rows[yA][xA].m_4 = -1;
     m_rows[yB][xB].m_4 = -1;
     m_edgeMask = maskA & 0x20000000;
@@ -114,11 +56,6 @@ i32 CMapMgr::SearchEdge(
     return ret;
 }
 
-// ---------------------------------------------------------------------------
-// CMapMgr::UpdateDiagonals (0x082030) - when m_5c (dirty) is set, walk the whole
-// flat cell pool and, for each cell with flag bit 0x100 set, clear its 0x1000 bit
-// and re-set it if any opposite neighbour pair (UP/DOWN, RIGHT/LEFT, UR/DL, UL/DR)
-// is both passable (no 0x939 bit). Clears m_5c and returns 1.
 // @early-stop
 RVA(0x00082030, 0x1a1)
 i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
@@ -180,11 +117,7 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     if (x0 == x1 && y0 == y1) {
         return 1;
     }
-    // Two independent knobs here, and retail needs them set opposite ways:
-    // DECLARATION order picks which subtraction cl emits first (`sub ebx,ecx` = dy
-    // precedes `sub edi,esi` = dx, and with it which abs is the one spilled to ebp),
-    // while ASSIGNMENT order picks the registers - the last-assigned delta takes ebx
-    // (retail's dy) and the other takes edi (dx).
+
     i32 dy, dx;
     dx = x1 - x0;
     dy = y1 - y0;
@@ -238,37 +171,3 @@ i32 CMapMgr::IsCellClear(i32 x, i32 y) {
     }
     return occ == 0;
 }
-
-// ---------------------------------------------------------------------------
-// DELETED (ML1, 2026-07-17): `CMapMgr::Serialize` @0x09356c was a PHANTOM - not a
-// function at all, but the TAIL of CGruntzMgr::BroadcastCmd @0x093460, double-claimed.
-// BroadcastCmd's RVA(0x00093460, 0x15c) covers 0x93460..0x935bc; this claim's
-// 0x9356c..0x935a4 sat ENTIRELY INSIDE it - the same 56 bytes scored twice, under two
-// names, in two units (brickz + gruntzmgr).
-//
-// The stack proves it, and it is just arithmetic. The block has FOUR pushes
-// (ebx/ebp/esi/edi), cancelled by the `add esp,0x10` after its __cdecl call, then FIVE
-// pops (edi/esi/ebp/ebx/ecx) before `ret 0x10`: it reaches its epilogue 0x14 - five
-// dwords - short of what the ret needs. Impossible for a function entry. Assume instead
-// a continuation of a function whose prologue pushed five registers and it closes
-// exactly - and 0x93460 (the first byte after the `cc cc` int3 padding at
-// 0x93440..0x9345f) is precisely `push ecx; push ebx; push ebp; push esi; push edi`.
-// 0x93562 `jne 0x9356c` jumps INTO it over an early `ret 0x10` at 0x93569 (a rel8 jcc -
-// invisible to a rel32 caller scan, which is why `sema xref` reported no caller at all;
-// nothing in .rdata/.data points at it either, and no ILT thunk jmps to it).
-//
-// So the `@early-stop` "arg-forwarding-via-uninitialised-callee-saved-regs wall (~38%)"
-// was a misdiagnosis, and a since-deleted serialize-wrapper-reg-forward pattern doc invented an ABI
-// to explain it ("the forwarded values arrive already in the callee-saved registers";
-// "no natural C++ signature reproduces the register-resident-args ABI"). MSVC5 invents
-// no conventions: the args arrive in those registers because BROADCASTCMD'S OWN EARLIER
-// BODY loads them - the body this fragment did not contain. Likewise its
-// `mov eax,[esp+0x10]; mov ecx,[eax+0x7c]`, read as "arg3->m_7c, not `this`": under the
-// real 5-push frame [esp+0x10] IS the saved ecx, i.e. plain `this->m_7c` (= BroadcastCmd's
-// m_scoreHud, which GruntzMgr.cpp already models). That pattern doc is replaced by
-// docs/patterns/unbalanced-stack-means-wrong-boundary.md.
-//
-// Nothing is lost: GruntzMgr.cpp already reconstructs these bytes as part of BroadcastCmd
-// (the MapSerializeCurve gate, the m_scoreHud->Command forward, the neg/sbb/neg bool).
-// The `extern "C" i32 __cdecl MapSerializeCurve(i32,i32,i32,i32)` this TU carried existed
-// only to serve this phantom's call and dies with it - see <Gruntz/MapLogic.h>.

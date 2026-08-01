@@ -1,16 +1,16 @@
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Rez/FrameClock.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Bute/ButeMgr.h>                 // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
-#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level; its m_mainPlane)
-#include <Wwd/WwdFile.h>      // canonical CDDrawWorkerHost (== CDDrawWorkerHost) - the scroll plane
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Bute/ButeMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameLevel.h>
+#include <Wwd/WwdFile.h>
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/StatusBarMgr.h>  // the status-bar mgr (bar->m_position gates the h-center)
-#include <Gruntz/ScrollState.h>   // ex Globals.h transitive
-#include <Gruntz/MgrAutoScroll.h> // own exported globals (ex Globals.h)
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/ScrollState.h>
+#include <Gruntz/MgrAutoScroll.h>
 
 DATA(0x002452a4)
 i32 g_jitterX;
@@ -27,16 +27,15 @@ DATA(0x0024cfc0)
 u32 g_scrollClock;
 DATA(0x0024cfc4)
 u32 g_scrollTimer;
-// Serializer-only dwords (MapSerializeCurve is their ONLY reader/writer - the xref
-// chase in ScrollState.h dead-ends); the names are POSITIONAL, asserting no meaning.
+
 DATA(0x0024cfc8)
 i32 g_scrollSave18;
 DATA(0x0024cfcc)
 i32 g_scrollSave1c;
 DATA(0x0024cfd0)
-i32 g_lastScrollX; // 0x64cfd0
+i32 g_lastScrollX;
 DATA(0x0024cfd4)
-i32 g_lastScrollY; // 0x64cfd4
+i32 g_lastScrollY;
 
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;

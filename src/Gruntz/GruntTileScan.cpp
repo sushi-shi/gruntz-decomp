@@ -6,12 +6,12 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Win32.h> // RECT + IntersectRect
-#include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
-#include <new> // placement CRect ctor
+#include <Win32.h>
+#include <Wap32/Rect.h>
+#include <new>
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/FreeNodePool.h>
-#include <stdlib.h> // engine rand (0x11fee0)
+#include <stdlib.h>
 
 #define SCAN_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
@@ -30,24 +30,8 @@
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
-// @early-stop  ~72% fuzzy (was 0.53% stub)
-// large tile-scan reconstruction (final-sweep candidate): the m_3f0 gate, the
-// pending-coord tile check + g_coordPool recycle drain, the 10x10 box build /
-// IntersectRect clamp, the capped-at-five double tile loop firing DoTrigger1fb9,
-// the triple grid-dirty-rect recompute and the random-goal retarget are byte-
-// shaped. Residual walls:
-//  (1) this/g frame-register swap: retail keeps `this` in edi (re-reads
-//      [edi+0xc] fresh inside the row loop, weighting `this` high) and `g` in
-//      ebp; caching `grid` here (which scores HIGHER overall, 72 vs 65) drops
-//      `this`'s loop weight so MSVC assigns g->edi, this->ebp - every this/g
-//      member ref then mismatches the reg. Re-reading m_c inline flips the reg
-//      but adds more divergence than it fixes; no source spelling wins both.
-//  (2) retail emits GetTilePos36c0 three times into three stack points feeding
-//      the box (modeled with one call; the optimizer won't re-emit the dead
-//      redundant calls), and frame is 0x68 vs 0x60 from the extra slots.
-//  (3) the two hit-exit rect recomputes use one Set34a4 vs the normal exit's
-//      two, and the incoming-arg slot is recycled as the hit counter - slot
-//      schedule diverges. Logic/offsets correct; re-attack leaf-first in sweep.
+// @early-stop
+
 RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= 0x64) {
@@ -122,8 +106,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             }
             SCAN_RECT_BOUNDS(grid);
             if (m_0f0.GetSize() != 0) {
-                // CoordAt() is m_0f0's one typed-element seam; the ex-CScanGoal was a
-                // second name for Coord ({i32,i32}) on this very array.
+
                 Coord* e = CoordAt(rand() % m_0f0.GetSize());
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }

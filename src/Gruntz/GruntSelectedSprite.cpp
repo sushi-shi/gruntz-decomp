@@ -1,30 +1,18 @@
 #include <Gruntz/GruntSelectedSprite.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
-#include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TriggerMgr.h>
 #include <rva.h>
 
-VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class)
+VTBL(CGruntSelectedSprite, 0x001e7bfc);
 
-// ~CGruntSelectedSprite @0x011e80 - the leaf adds no destructible members beyond
-// CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame; the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CGruntSelectedSprite() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-
-// CActRegPool<CGruntSelectedSprite>::s_table (0x00244da8): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244da8)
 CActReg CActRegPool<CGruntSelectedSprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x00011e50, 0x1e, ??_GCGruntSelectedSprite@@UAEPAXI@Z)
@@ -50,15 +38,6 @@ void CGruntSelectedSprite::FireActivation(i32 id) {
     }
 }
 
-// CGruntSelectedSprite::RegisterActs @0x07e7c0 - bind the class's per-frame handler
-// (Update @0x07e9f0) to the activation key "A" (the SAME activation-name-intern
-// archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0007e7c0, 0x18d)
 void CGruntSelectedSprite::RegisterActs() {
     i32 id = ActFindId("A");
@@ -88,11 +67,6 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
     return 1;
 }
 
-// Update @0x07e9f0 - resolve the grunt for cell (m_cellX,m_cellY) from the registry's
-// grunt table; if that grunt is drawn (entry->m_drawn), sync the +0x38 object's
-// helper and copy the grunt's screen position into the bound renderable so the
-// "selected" ring tracks the grunt. Returns 0.
-//
 // @early-stop
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
@@ -114,8 +88,7 @@ i32 CGruntSelectedSprite::SerializeMove(
     CGameObject* pObj
 ) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    // Retail lays the mode==4 Write block out-of-line (cmp 4; je) with the mode==7
-    // Read inline; this (mode != 4 ? maybe-Read : Write) form reproduces that layout.
+
     if (mode != 4) {
         if (mode == 7) {
             sa->Read(&m_cellX, 8);

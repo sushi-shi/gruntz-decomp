@@ -1,4 +1,3 @@
-// MenuSparkleSerial.h - the MenuSparkleSerial TU's exported globals/data.
 #ifndef GRUNTZ_GRUNTZ_MENUSPARKLESERIAL_H
 #define GRUNTZ_GRUNTZ_MENUSPARKLESERIAL_H
 

@@ -1,23 +1,20 @@
-#define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
+#define SBI_DTOR_CHAIN
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
+#include <Io/FileMem.h>
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
-#include <Image/ImageSet.h> // canonical CDDrawWorker (the m_34 config record; ex CWhConfig view)
-#include <DDrawMgr/DDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
-#include <Gruntz/GameRegistry.h>     // canonical g_gameReg singleton + CDDrawSurfaceMgr m_world
+#include <Image/ImageSet.h>
+#include <DDrawMgr/DDrawShadeBlit.h>
+#include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Sprite.h>             // CDDrawWorker (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)           // CDDrawSubMgrPages (m_world->m_drawTarget->m_backPair)
+#include <Gruntz/Sprite.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 
-VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
-// vtable slot 11 (0xeb6b0): forward all 11 setup args to the ImageSet base setup
-// (the four rect ints fold into one by-value aggregate so MSVC stages the 0x10 temp
-// on the caller stack exactly as retail does); on success latch the initial state
-// (SetState(0)) and return 1, else return the base's result (0).
+VTBL(CSBI_WarlordHead, 0x001ead24);
+
 RVA(0x000eb6b0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
     CStatusBarMgr* owner,
@@ -36,10 +33,6 @@ i32 CSBI_WarlordHead::SetupImage(
     return 1;
 }
 
-// 0xeb740: drive the show/hide of the two anchor frames (frame-table slots 1 and
-// 2). For each slot, range-gate the index against the config record's m_64/m_68;
-// if the frame exists, fire its sprite handle's show/hide notifier and (when a
-// non-zero arg2 is supplied) latch arg2 into the handle's m_1c.
 // @early-stop
 RVA(0x000eb740, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(i32 show, CShadeTable* palDescr) {
@@ -87,11 +80,6 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
     return 1;
 }
 
-// vtable slot 5 (0xeb880): the per-frame render. Idle (return 1) while the frame
-// countdown is non-positive; otherwise tick it down, pull the surface context from
-// the active drawable, and blit two frames: the direction frame (table slot 3 or 4
-// per m_3c) and the indexed frame (table slot m_38, latched into m_30). Each draws
-// at the base origin plus the frame record's own m_rect14.top/m_1c offset.
 // @early-stop
 RVA(0x000eb880, 0xbd)
 i32 CSBI_WarlordHead::Render() {
@@ -127,12 +115,6 @@ i32 CSBI_WarlordHead::Render() {
     return 1;
 }
 
-// vtable slot 1 (0xeb970): save/load the head's single persistent direction (m_3c)
-// through the stream's Write/ReadBytes, then chain the CSBI_ImageSet base serialize
-// (0xe74f0) and normalize its result to a bool. mode 4 = save, mode 7 = load; any
-// other mode just chains. Bails early when the stream is null or the active game
-// manager (g_gameReg->m_world) is gone. Re-homed from src/Stub/BoundaryLowerMethods.cpp
-// (was the Ceb970 placeholder view); vtable slot 1 (thunk 0x3cd8) proves the owner.
 RVA(0x000eb970, 0x72)
 i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
@@ -149,8 +131,7 @@ i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32
             s->Write(&m_direction, 4);
             break;
     }
-    return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj)
-           != 0; // qualified = direct base call
+    return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj) != 0;
 }
 
 RVA_COMPGEN(0x001049d0, 0x1e, ??_GCSBI_WarlordHead@@UAEPAXI@Z)

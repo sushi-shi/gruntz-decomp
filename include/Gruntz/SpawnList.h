@@ -4,27 +4,27 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Mfc.h> // CPtrList (embedded) + CString (name member / by-value returns)
+#include <Mfc.h>
 
 class CSpawnEntry {
 public:
-    CSpawnEntry(CString name, i32 data); // 0x11c630 (__thiscall ret 8; /GX by-value temp)
+    CSpawnEntry(CString name, i32 data);
     RVA(0x0009a260, 0x1d)
     CString GetName() {
         return m_name;
     }
-    CString GetTail(); // 0x9a830  the name past its 8-char group prefix
+    CString GetTail();
 
-    CString m_name; // +0x00  the record name
-    i32 m_flag;     // +0x04  = 0 at ctor; "wanted" mark (LoadObject*Resources set 1)
-    i32 m_data;     // +0x08  = the ctor's 2nd arg (0 from the voice builder)
+    CString m_name;
+    i32 m_flag;
+    i32 m_data;
 };
 SIZE(0xc);
 
 struct CSpawnNode {
-    CSpawnNode* m_next;   // +0x00
-    CSpawnNode* m_prev;   // +0x04
-    CSpawnEntry* m_entry; // +0x08
+    CSpawnNode* m_next;
+    CSpawnNode* m_prev;
+    CSpawnEntry* m_entry;
 };
 SIZE(0xc);
 
@@ -34,21 +34,20 @@ public:
         m_cursor = 0;
         m_lastPicked = -1;
     }
-    ~CSpawnList();           // 0x99ca0  DeleteAllEntries + member ~CPtrList (def: AreaMgr.cpp)
-    void ClearFlags();       // 0x9a420  zero every entry's m_flag
-    void DeleteAllEntries(); // 0x9a450  delete every entry, then m_list.RemoveAll()
-    CSpawnEntry* FindEntry(CString name, i32 useHash); // 0x9a0d0  (hash / strcmp match)
-    CSpawnEntry* FindByName(const CString& name);      // 0x9a290  (was Extract/FindAdd)
-    void AddVoiceSound(CString s, i32 flag);           // 0x11c560 (def: GruntSpawnConfig.cpp)
+    ~CSpawnList();
+    void ClearFlags();
+    void DeleteAllEntries();
+    CSpawnEntry* FindEntry(CString name, i32 useHash);
+    CSpawnEntry* FindByName(const CString& name);
+    void AddVoiceSound(CString s, i32 flag);
 
-    CPtrList m_list;      // +0x00  the entry list (0x1c B; block size 10)
-    // Typed iteration over m_list: the ONE downcast to the stored entry kind
-    // (this replaced the CSpawnNode raw-node view of the list internals).
+    CPtrList m_list;
+
     CSpawnEntry* NextEntry(POSITION& pos) {
         return static_cast<CSpawnEntry*>(m_list.GetNext(pos));
     }
-    POSITION m_cursor;    // +0x1c  scan cursor (LoadObject*Resources' re-scan)
-    i32 m_lastPicked;     // +0x20  last-picked index (-1; the weighted picker's memory)
+    POSITION m_cursor;
+    i32 m_lastPicked;
 };
 SIZE(0x24);
 

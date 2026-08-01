@@ -1,22 +1,22 @@
-#include <Wap32/Object.h> // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
+#include <Wap32/Object.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
-#include <Gruntz/CurPlayer.h>  // g_curPlayer
+#include <Gruntz/SoundState.h>
+#include <Gruntz/CurPlayer.h>
 #include <rva.h>
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/FreeNodePool.h>
 
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the +0x2dc guts: tab/slot dispatch)
-#include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (+0x2e0 chat/cheat text sink)
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
-#include <Gruntz/GruntzCmdMgr.h> // canonical CGruntzCmdMgr (m_cmdSubMgr: BlitTileMarker @0x23d90)
-#include <Gruntz/FontConfig.h>   // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
-#include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed (the looked-up cue)
-#include <Gruntz/SoundCue.h>     // CDDrawSubMgrLeafScan (its +0x10 IS the real MFC CMapStringToOb)
-#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
-#include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
-#include <Gruntz/StateMgrBZ.h>   // g_spawnConfig and its input-bit fields
-#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectA - the TriggerMgr goal camera sprite
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/StateMgrBZ.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
@@ -29,13 +29,11 @@
         }                                                                                          \
     } while (0)
 
-// ===========================================================================
 // @early-stop
 RVA(0x000cbcc0, 0x1770)
 i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     CPlay* self = this;
 
-    // Top guard (cbcc9): any of five transition flags set -> swallow (ret 1).
     if (self->m_hudSuppressed != 0) {
         return 1;
     }
@@ -56,10 +54,9 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     CStatusBarMgr* level = self->m_guts;
     i32 key = vk;
 
-    // ---- 3-way modal split (cbd1b) ------------------------------------------
     if (level->m_toggleActive != 0 || level->m_toggleHandle != 0) {
         if (level->m_toggleHandle != 0) {
-            // dialog mode (cbd3b)
+
             if (key == 0x59 || key == 0xd) {
                 if (g_gameReg->m_134 == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
@@ -78,9 +75,9 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                 this->ReleaseLevelOverlay(0);
                 return 1;
             }
-            // else fall through to the normal map
+
         } else {
-            // paused mode (cbe51)
+
             if (key == 0x51) {
                 if (g_gameReg->m_134 == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
@@ -91,7 +88,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                 }
                 return 1;
             }
-            // paused-only cheats S/R/N/O (cbee0)
+
             if (key == 0x53 && g_gameReg->m_134 == 1) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
@@ -121,8 +118,6 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
     }
 
-    // ===== normal gameplay key map (cc0ab) ==================================
-    // Enter (cc0b6)
     if (key == 0xd) {
         CChatBoxOwner* rec = self->m_hitTest;
         if (rec->m_10 != 0) {
@@ -134,12 +129,12 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    // Esc (cc109)
+
     if (key == 0x1b) {
         CTriggerMgr* h68 = host->m_cmdGrid;
         CWwdGameObjectA* n = h68->m_goal;
         if (n != 0) {
-            n->m_flags |= 0x10000; // the "released" bit
+            n->m_flags |= 0x10000;
             h68->m_goal = 0;
         }
         h68->m_armed = 0;
@@ -161,7 +156,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         this->EnterOverlayDrag(1);
         return 1;
     }
-    // gate (cc1ed): recorder busy / mode gate closed -> swallow
+
     if (self->m_hitTest->m_10 != 0) {
         return 1;
     }
@@ -169,9 +164,8 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
 
-    // ---- letter cheats (cc21b) ---------------------------------------------
     StateMgrBZ* dev = g_spawnConfig;
-    // Tab (cc221): cycle the active area to the next non-empty
+
     if (key == 0x9) {
         i32 idx = self->m_514;
         i32 pick;
@@ -214,7 +208,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             this->ResetGoals(area->m_focusX, area->m_focusY);
         }
     }
-    // H (cc30b): jump to the current area's default cue
+
     if (key == 0x48) {
         GruntzPlayer* a = &g_gameReg->m_options[g_curPlayer];
         if (a == 0) {
@@ -223,7 +217,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         this->ResetGoals(a->m_focusX, a->m_focusY);
         return 1;
     }
-    // Q (cc350): toggle the pause flag
+
     if (key == 0x51) {
         if ((dev->m_edgeKeys & 0x20) == 0) {
             return 1;
@@ -243,29 +237,29 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    // Z (cc3dd)
+
     if (key == 0x5a) {
         g_gameReg->m_cmdGrid->EnqueueGroupCells();
         return 1;
     }
-    // C (cc3f9)
+
     if (key == 0x43) {
         g_gameReg->m_cmdGrid->CenterOnGroup(dev->m_edgeKeys & 0x20);
         return 1;
     }
-    // T (cc41c)
+
     if (key == 0x54) {
         this->FlushPendingOps();
         g_gameReg->m_cmdGrid->ToggleRegionA();
         return 1;
     }
-    // Y (cc444)
+
     if (key == 0x59) {
         this->FlushPendingOps();
         g_gameReg->m_cmdGrid->ToggleRegionB();
         return 1;
     }
-    // Space (cc46d): recorder step / recycle node churn
+
     if (key == 0x20) {
         if (dev->m_edgeKeys & 0x20) {
             CDDrawWorkerHost* obj = self->m_world->m_level->m_mainPlane;
@@ -282,11 +276,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                     slot = 0;
                 }
             } else {
-                // m_488 is a plain ::CPtrArray. The "dual-band" story that used to sit
-                // here was a guess: `mfc_class --audit` reads retail's CRuntimeClass set
-                // for this function and gets {CMapStringToPtr, CPtrArray} - retail never
-                // enters the CDWordArray band at all, so the band-selector casts were
-                // calling the wrong library COMDAT.
+
                 slot = static_cast<Coord*>(self->m_488.GetAt(0));
                 self->m_488.RemoveAt(0, 1);
                 i32 c = self->m_49c - 1;
@@ -326,7 +316,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         this->ResetGoals(e[0], e[1]);
         return 1;
     }
-    // Backspace (cc5da): delete the current recorder node
+
     if (key == 0x8) {
         if (self->arr488Count() <= 0) {
             return 1;
@@ -350,17 +340,17 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         self->m_49c = self->arr488Count() - 1;
         return 1;
     }
-    // M (cc668)
+
     if (key == 0x4d && (dev->m_edgeKeys & 0x20)) {
         g_gameReg->SetSoundLevelState(g_gameReg->m_musicEnabled == 0);
         return 1;
     }
-    // V (cc692)
+
     if (key == 0x56 && (dev->m_edgeKeys & 0x20)) {
         g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == 0);
         return 1;
     }
-    // A (cc6bf)
+
     if (key == 0x41) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
@@ -381,7 +371,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    // S (cc76e)
+
     if (key == 0x53) {
         if (dev->m_edgeKeys & 0x20) {
             g_gameReg->SetRunState(g_gameReg->m_soundEnabled == 0);
@@ -406,7 +396,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    // D (cc842)
+
     if (key == 0x44) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
@@ -427,7 +417,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    // F (cc8f1)
+
     if (key == 0x46) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
@@ -439,7 +429,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         self->m_guts->AdvanceTab(g_spawnConfig->m_edgeKeys & 1);
         return 1;
     }
-    // G (cc986)
+
     if (key == 0x47) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
@@ -460,7 +450,6 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
 
-    // ---- numpad arrows: extended vs numpad via lparam bit 0x1000000 (cca3c) -
     if (lparam & 0x1000000) {
         if (key == 0x25) {
             self->m_scrollEdgeLock |= 1;
@@ -483,14 +472,14 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             return 1;
         }
     }
-    // recorder-place / teleport key group -> ccfd3
+
     if (key == 0x61 || key == 0x62 || key == 0x63 || key == 0x64 || key == 0x65 || key == 0x66
         || key == 0x67 || key == 0x68 || key == 0x69 || key == 0x90 || key == 0x6f || key == 0x6a
         || key == 0x24 || key == 0x23 || key == 0x21 || key == 0x22 || key == 0xc || key == 0x26
         || key == 0x28 || key == 0x25 || key == 0x27 || key == 0x2d || key == 0x2e || key == 0x6e) {
         goto recorder_place;
     }
-    // I (ccbe3): teleport marker place
+
     if (key == 0x49) {
         if (g_gruntCreation == 0) {
             return 1;
@@ -522,8 +511,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         );
         return 1;
     }
-    // P (ccca9): on bounds-fail or after the action, fall through to the x
-    // handler (retail's `jge ccd39` / no return after Fn3003), not return.
+
     if (key == 0x50) {
         if (g_gooPuddlez == 0) {
             return 1;
@@ -547,7 +535,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             host->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
         }
     }
-    // x (ccd39): teleport
+
     if (key == 0x78) {
         if (g_explosionz == 0) {
             return 1;
@@ -561,7 +549,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
-    // K (ccda8)
+
     if (key == 0x4b) {
         if (g_gruntDestruction == 0) {
             return 1;
@@ -576,7 +564,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         host->m_cmdGrid->CellDispatch(outB, outA, 0, -1);
         return 1;
     }
-    // digit cheats 1-9 (cce0f)
+
     if (key == 0x31) {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(1);
@@ -649,154 +637,151 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    return 1; // non-recorder key that matched nothing -> cd38b
+    return 1;
 
 recorder_place:
-    // ccfd3: place a recorder node / cancel a pending place (reached only via the
-    // numpad-key goto above). The (recorder-level, phase, key) gating decides
-    // whether the numpad key is a valid place (return 1) or falls to the level-
-    // skip switch (goto tail_default).
-    {
-        if (self->m_4f0 != 0) {
-            return 1;
-        }
-        if (self->m_dragInhibit1 != 0) {
-            self->m_dragInhibit1 = 0;
-            self->m_guts->CommitSlot(0);
-            this->SetCursorFrame(0);
-            if (key != 0x2d) {
-                goto tail_default;
-            }
-            return 1;
-        }
-        if (self->m_dragInhibit2 == 0) {
-            goto tail_default2;
-        }
-        i32 st = self->m_cursorFrame;
-        i32 ph = self->m_guts->m_pendingHlRow;
-        i32 lvl;
-        if (st >= 0x22) {
-            lvl = 2;
-        } else {
-            lvl = (st >= 0x17);
-        }
-        self->m_dragInhibit2 = 0;
-        if (key == 0x2e || key == 0x6e) {
-            level->ReportTab(st); // 0x10bb50 (ex Fn2135)
-            this->SetCursorFrame(0);
-            return 1;
-        }
-        level->EnterHlRow(0, st); // 0x106820 (ex Fn213f)
+
+{
+    if (self->m_4f0 != 0) {
+        return 1;
+    }
+    if (self->m_dragInhibit1 != 0) {
+        self->m_dragInhibit1 = 0;
+        self->m_guts->CommitSlot(0);
         this->SetCursorFrame(0);
-        if (lvl == 0) {
-            if (ph == 0) {
-                if (key != 0x90) {
-                    goto tail_default;
-                }
-                return 1;
-            }
-            if (ph == 1) {
-                if (key == 0x67) {
-                    return 1;
-                }
-                if (key != 0x24) {
-                    goto tail_default;
-                }
-                return 1;
-            }
-            if (ph == 2) {
-                if (key == 0x64) {
-                    return 1;
-                }
-                if (key != 0x25) {
-                    goto tail_default;
-                }
-                return 1;
-            }
-            if (key == 0x61) {
-                return 1;
-            }
-            if (key != 0x23) {
-                goto tail_default;
-            }
-            return 1;
+        if (key != 0x2d) {
+            goto tail_default;
         }
-        if (lvl == 1) {
-            if (ph == 0) {
-                if (key != 0x6f) {
-                    goto tail_default;
-                }
-                return 1;
-            }
-            if (ph == 1) {
-                if (key == 0x68) {
-                    return 1;
-                }
-                if (key != 0x26) {
-                    goto tail_default;
-                }
-                return 1;
-            }
-            if (ph == 2) {
-                if (key != 0xc) {
-                    goto tail_default;
-                }
-                return 1;
-            }
-            if (key == 0x62) {
-                return 1;
-            }
-            if (key != 0x28) {
-                goto tail_default;
-            }
-            return 1;
-        }
+        return 1;
+    }
+    if (self->m_dragInhibit2 == 0) {
+        goto tail_default2;
+    }
+    i32 st = self->m_cursorFrame;
+    i32 ph = self->m_guts->m_pendingHlRow;
+    i32 lvl;
+    if (st >= 0x22) {
+        lvl = 2;
+    } else {
+        lvl = (st >= 0x17);
+    }
+    self->m_dragInhibit2 = 0;
+    if (key == 0x2e || key == 0x6e) {
+        level->ReportTab(st);
+        this->SetCursorFrame(0);
+        return 1;
+    }
+    level->EnterHlRow(0, st);
+    this->SetCursorFrame(0);
+    if (lvl == 0) {
         if (ph == 0) {
-            if (key != 0x6a) {
+            if (key != 0x90) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == 1) {
-            if (key == 0x69) {
+            if (key == 0x67) {
                 return 1;
             }
-            if (key != 0x21) {
+            if (key != 0x24) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == 2) {
-            if (key == 0x66) {
+            if (key == 0x64) {
                 return 1;
             }
-            if (key != 0x27) {
+            if (key != 0x25) {
                 goto tail_default;
             }
             return 1;
         }
-        if (key == 0x63) {
+        if (key == 0x61) {
             return 1;
         }
-        if (key != 0x22) {
+        if (key != 0x23) {
             goto tail_default;
         }
         return 1;
     }
+    if (lvl == 1) {
+        if (ph == 0) {
+            if (key != 0x6f) {
+                goto tail_default;
+            }
+            return 1;
+        }
+        if (ph == 1) {
+            if (key == 0x68) {
+                return 1;
+            }
+            if (key != 0x26) {
+                goto tail_default;
+            }
+            return 1;
+        }
+        if (ph == 2) {
+            if (key != 0xc) {
+                goto tail_default;
+            }
+            return 1;
+        }
+        if (key == 0x62) {
+            return 1;
+        }
+        if (key != 0x28) {
+            goto tail_default;
+        }
+        return 1;
+    }
+    if (ph == 0) {
+        if (key != 0x6a) {
+            goto tail_default;
+        }
+        return 1;
+    }
+    if (ph == 1) {
+        if (key == 0x69) {
+            return 1;
+        }
+        if (key != 0x21) {
+            goto tail_default;
+        }
+        return 1;
+    }
+    if (ph == 2) {
+        if (key == 0x66) {
+            return 1;
+        }
+        if (key != 0x27) {
+            goto tail_default;
+        }
+        return 1;
+    }
+    if (key == 0x63) {
+        return 1;
+    }
+    if (key != 0x22) {
+        goto tail_default;
+    }
+    return 1;
+}
 
 tail_default:
-    // cd22c
-    {
-        g_gameReg->m_cmdGrid->m_pendingFxKind = 0;
-        this->LoadCursorSprites(0, 0);
-    }
+
+{
+    g_gameReg->m_cmdGrid->m_pendingFxKind = 0;
+    this->LoadCursorSprites(0, 0);
+}
 tail_default2:
-    // cd24a
+
     if (self->m_guts->m_hitTestDisabled != 0) {
         return 1;
     }
     {
-        // F-key / numpad debug two-level switch (cd25e): key-0xC in 0..0x84
+
         CStatusBarMgr* lv = self->m_guts;
         switch (key) {
             case 0x0c:

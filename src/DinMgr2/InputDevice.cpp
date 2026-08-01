@@ -1,6 +1,6 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <rva.h>
-#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
+#include <ComOutRef.h>
 #include <Win32.h>
 
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
@@ -138,7 +138,7 @@ i32 CInputDevRoot::SetProperty(REFGUID rguid, void* prop) {
 
 RVA(0x00134f70, 0x40)
 i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwData) {
-    DIPROPDWORD prop; // {diph{dwSize,dwHeaderSize,dwObj,dwHow}, dwData}
+    DIPROPDWORD prop;
     prop.diph.dwObj = dwObj;
     prop.diph.dwHow = dwHow;
     prop.dwData = dwData;

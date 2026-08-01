@@ -1,22 +1,22 @@
-#include <Bute/ButeTree.h>        // CVariantSlot::Set (0x16d850)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Bute/ButeTree.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/ZVec.h> // _zvec::GrowTo (Find 0x16da80)
+#include <Wap32/ZVec.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h>     // CGrunt - HitTestCell returns the placed cell (ex CTrigger pad view)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
-#include <Gruntz/GruntSpawnConfig.h>  // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
-#include <Gruntz/GameRegistry.h>      // the canonical *0x24556c singleton (m_world/m_cmdGrid/
-#include <Gruntz/BattlezData.h>       // CBattlezData (g_gameReg->m_scoreHud; +0x3c armed counter)
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/BattlezData.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/ActNameRegistry.h>         // the SHARED activation-name registry (g_buteTree/
-#include <Gruntz/ActReg.h>                  // the shared CActReg coordinate-registry archetype
-#include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
-#include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/SecretTeleporterTrigger.h>
+#include <Gruntz/SecretLevelTrigger.h>
+#include <Gruntz/SerialArchive.h>
 #include <rva.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
 VTBL(CSecretTeleporterTrigger, 0x001e7564);
 VTBL(CSecretLevelTrigger, 0x001e8804);
@@ -37,16 +37,6 @@ i32 CSecretTeleporterTrigger::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGame
     return Chain(a, b, c, d) != 0;
 }
 
-// --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
-// The leaf adds no members, so its dtor folds the bare CUserLogic teardown:
-// store the CUserLogic vptr, inline-destruct the +0x18 link (the embedded
-// ~EngStr call), store the CUserBase vptr. The destructible link forces the /GX
-// EH frame. The fold requires ~CUserBase/~CUserLogic/~CUserBaseLink to be inline
-// (see UserLogic.h); the empty leaf body below is enough for cl to emit it.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CSecretTeleporterTrigger() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00010a80, 0x1e, ??_GCSecretTeleporterTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010ab0, 0x44, ??1CSecretTeleporterTrigger@@UAE@XZ)
 
@@ -61,26 +51,12 @@ i32 CSecretLevelTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameOb
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no
-// destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
-// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
-// (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. Byte-identical in shape to
-// ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CSecretLevelTrigger() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00010c20, 0x1e, ??_GCSecretLevelTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010c50, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)
 
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    // `!= 0`, not `== 0`: retail gates this with `cmp [g_gameReg+0x118],ebx / je <else>`
-    // (jcc_sieve POLARITY #1, base jne -> target je). Every other site in the tree already
-    // spells the same predicate this way - PathHazard.cpp:299 and GruntCombat.cpp:1362
-    // as `m_isEasyMode != 0 && m_134 == 1`, and SpotLightCtor/PathHazard:166/KitchenSlime
-    // as its negation `m_isEasyMode == 0 || m_134 != 1`. This ctor was the odd one out.
+
     if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
         m_38->m_flags |= 0x10000;
     } else {
@@ -107,17 +83,6 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     }
 }
 
-// --- CSecretTeleporterTrigger::RegisterActs (0x0422b0) ---
-// Bind the per-point handler (SpawnTeleporter @0x042b80) to the activation key
-// "A" via the shared name registry, then bind id->entry in the class's own
-// coordinate registry (CActRegPool<CSecretTeleporterTrigger>::s_table). The SAME archetype as
-// CSecretLevelTrigger::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000422b0, 0x18d)
 void CSecretTeleporterTrigger::RegisterActs() {
     i32 id = ActFindId("A");
@@ -167,15 +132,6 @@ void CSecretLevelTrigger::FireActivation(i32 coord) {
     }
 }
 
-// CSecretLevelTrigger::RegisterActs @0x0428c0 - bind the class's per-frame handler
-// (Tick @0x042ac0) to the activation key "A" (the SAME activation-name-intern
-// archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000428c0, 0x18d)
 void CSecretLevelTrigger::RegisterActs() {
     i32 id = ActFindId("A");
@@ -209,7 +165,7 @@ i32 CSecretLevelTrigger::Tick() {
         i32 ok = 1;
         i32 lvl = spr->m_11c;
         i32 lyr = spr->m_120;
-        // (m_11c/m_120 = required level/layer ids on the bound CGameObject)
+
         if (lvl != 0 && hit->m_entranceReason != lvl) {
             ok = 0;
         }
@@ -241,7 +197,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         );
         if (spr) {
             spr->m_124 = 2;
-            spr->m_7c->m_bc = m_object->m_7c->m_bc;
+            spr->m_animWorker->m_bc = m_object->m_animWorker->m_bc;
             spr->m_164 = m_object->m_164;
             spr->m_168 = m_object->m_168;
             spr->m_11c = m_object->m_11c;

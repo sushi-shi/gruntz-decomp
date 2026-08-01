@@ -1,25 +1,25 @@
-#include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
+#include <Gruntz/HaznColl.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
-#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Wap32/zBitVec.h>
+#include <Io/FileMem.h>
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
-#include <Gruntz/GruntzMgr.h>     // the REAL singleton class
-#include <Gruntz/TileGrid.h>      // CMapMgr == CMapMgr (the +0x70 board's real class)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
-#include <Rez/FrameClock.h>       // g_frameTime/g_engineFrameDelta (frame-clock band)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TileGrid.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
+#include <Bute/ButeMgr.h>
+#include <Rez/FrameClock.h>
 
-#include <Gruntz/AniElement.h> // CAniElement + CAniRecordView (the SetAnimEx idiom)
+#include <Gruntz/AniElement.h>
 
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (m_world->m_animRegistry->m_10 cue lookup)
-#include <Gruntz/Play.h>              // ex Globals.h
-#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
-#include <Gruntz/ActName.h> // CActName (shared)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/ActName.h>
 #include <rva.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
@@ -31,7 +31,7 @@ CActReg CActRegPool<CStaticHazard>::s_table(2000, 2010);
 RVA_COMPGEN(0x00012b00, 0x1e, ??_GCStaticHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
-struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CString;
 
 static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
@@ -42,7 +42,7 @@ static inline CString* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return g_typeColl.Elem(id);
     }
-    // slow lookup == _zvec::GrowTo @0x16da80 (a pointer result, tested for null)
+
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
@@ -56,43 +56,22 @@ static inline CActHandler* HaznLookup(i32 coord) {
     return (CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
 }
 
-// The same two lookups one inline level shallower: the grow-fail tail stays as the
-// out-of-line zErrHandling::Report call (0x34960) instead of expanding. cl5 spends its
-// inline budget from the outside in, so the TWO-key registrar keeps the tail outlined
-// at three of its four lookups while the one-key registrars expand both.
-// docs/patterns/act-registrar-report-outline-budget.md
 static inline CString* ActNameLookupCallReport(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return g_typeColl.Elem(id);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) { // _zvec::GrowTo @0x16da80
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
     g_typeColl.Report(g_errOutOfMem, 0xc);
     return g_typeColl.Scratch();
 }
 
-// ---------------------------------------------------------------------------
-// CStaticHazard::~CStaticHazard @0x012b30 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown; the
-// destructible +0x18 link forces the /GX EH frame. Byte-identical in shape to
-// ~CTimeBomb @0x012a70; the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CStaticHazard() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-
-// ---------------------------------------------------------------------------
-// CStaticHazard::CStaticHazard @0x0fb7a0 - the 1-arg ctor. Chains the standard
-// CUserLogic(CGameObject*) leaf init (folded inline), then the static-hazard
-// tail: re-arm the IDLE animation, snap the bound object to tile center, seed the
-// pulse window from the "Hazardz/AniPad" bute int, cache the anim-set node.
-//
 // @early-stop
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
+
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
@@ -101,7 +80,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
-    // snap the bound object's screen position to tile center.
+
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     if (m_object->m_sortKey != 0) {
@@ -133,11 +112,11 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_frameTime;
-    void* entry_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) void*& out-param
+    void* entry_ob = 0;
     g_gameReg->m_world->m_animRegistry->m_10.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
     CAniElement* entry = static_cast<CAniElement*>(entry_ob);
     if (entry != 0) {
-        // base AniPad window + the resolved anim's frame total (the per-effect AniPad bias)
+
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
     } else {
         g_gameReg->ReportError(0x8009, 0x461);
@@ -156,15 +135,6 @@ void CStaticHazard::FireActivation(i32 coord) {
     }
 }
 
-// CStaticHazard::RegisterActs @0x0fbd50 - intern "A" and "B" and bind each to its
-// handler PMF (LoadAttributes2 @0xfc0b0 for "A", LoadAttributes @0xfc1a0 for "B")
-// in the hazard registry. Two back-to-back single-key registrations; the SAME
-// archetype as CTimeBomb::RegisterActs done twice.
-//
-// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
-// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
-// it as the out-of-line zErrHandling::Report call.
-// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
     i32 id = ActFindId("A");
@@ -206,12 +176,6 @@ void CStaticHazard::RegisterActs() {
         static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
 }
 
-// ---------------------------------------------------------------------------
-// CStaticHazard::LoadAttributes2 @0x0fc0b0 - the time-gated pulse: bail when the
-// registry is in the gated state; compute the running phase modulo the window;
-// on a hit latch m_fired, re-arm the GO geometry/STATICHAZARD sprite (SetAnimEx
-// idiom), and re-resolve the "B" anim-set node through the global bute tree.
-//
 // @early-stop
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::LoadAttributes2() {
@@ -243,25 +207,18 @@ i32 CStaticHazard::LoadAttributes2() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CStaticHazard::LoadAttributes @0x0fc1a0 - the full periodic tick. Compute the
-// running phase modulo the on/off window; depending on the window half + the
-// fired flag (m_fired) + the bound object's gate (m_120), re-arm the GO or IDLE
-// animation, drive the per-frame anim sub-object (SetAnim==2 => place + mark the
-// hazard grid cell), and set/clear the cell's bit-0x8000000.
-//
 // @early-stop
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_118);
     u32 rem = phase % static_cast<u32>((m_idleWindow + m_activeWindow));
     if (rem > static_cast<u32>(m_activeWindow)) {
-        // idle window
+
         if (m_fired == 0) {
             goto dispatch;
         }
         if (m_object->m_120 != 0) {
-            // re-arm IDLE (cache the anim-set node first)
+
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId("A");
             m_value = m_38->m_1a0.m_14;
@@ -277,7 +234,7 @@ i32 CStaticHazard::LoadAttributes() {
                 m_object->m_sortKey = 0;
                 m_object->m_flags |= 0x20000;
             }
-            // clear the hazard cell's bit-0x8000000
+
             CMapMgr* grid = g_gameReg->m_tileGrid;
             if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
@@ -285,7 +242,7 @@ i32 CStaticHazard::LoadAttributes() {
             }
             return 0;
         }
-        // m_120 == 0: re-arm GO + clear the fired flag
+
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
@@ -302,14 +259,14 @@ i32 CStaticHazard::LoadAttributes() {
         m_fired = 0;
         return 0;
     } else {
-        // active window
+
         if (m_fired != 0) {
             goto dispatch;
         }
         if (m_object->m_120 != 0) {
             goto dispatch;
         }
-        // turn on: re-arm GO, latch the fired flag
+
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {

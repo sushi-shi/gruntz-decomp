@@ -1,26 +1,18 @@
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntPowerupSprite.h>
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/LightFxMgr.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
-#include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TriggerMgr.h>
 #include <rva.h>
 
-VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
+VTBL(CGruntPowerupSprite, 0x001e76c4);
 
-// ~CGruntPowerupSprite @0x012370 - the CUserLogic-folded /GX leaf dtor.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CGruntPowerupSprite() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-
-// CActRegPool<CGruntPowerupSprite>::s_table (0x00244d30): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244d30)
 CActReg CActRegPool<CGruntPowerupSprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x00012340, 0x1e, ??_GCGruntPowerupSprite@@UAEPAXI@Z)
@@ -45,15 +37,6 @@ void CGruntPowerupSprite::FireActivation(i32 id) {
     }
 }
 
-// CGruntPowerupSprite::RegisterActs @0x080180 - bind the class's per-frame handler
-// (Update @0x080410) to the activation key "A" (the SAME activation-name-intern
-// archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x00080180, 0x18d)
 void CGruntPowerupSprite::RegisterActs() {
     i32 id = ActFindId("A");
@@ -92,10 +75,6 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     return 1;
 }
 
-// Update @0x080410 - sync the +0x38 object's helper, then if the grunt for cell
-// (m_cellX,m_cellY) is present copy its screen position into the bound renderable so
-// the powerup icon tracks the grunt. Returns 0.
-//
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

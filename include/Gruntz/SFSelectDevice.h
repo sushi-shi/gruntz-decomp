@@ -1,4 +1,3 @@
-// SFSelectDevice.h - the SFSelectDevice TU's exported globals/data.
 #ifndef GRUNTZ_GRUNTZ_SFSELECTDEVICE_H
 #define GRUNTZ_GRUNTZ_SFSELECTDEVICE_H
 

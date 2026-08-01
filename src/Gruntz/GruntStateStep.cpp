@@ -1,19 +1,19 @@
 #include <rva.h>
-#include <new> // placement CRect ctor
+#include <new>
 #include <Wap32/ZVec.h>
 
 #include <Ints.h>
-#include <Mfc.h>        // RECT + IntersectRect (superset of Win32.h; Grunt.h needs MFC)
-#include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord); after Mfc.h (windows.h-first C1189)
-#include <math.h>       // fild/fsqrt/__ftol board distance
-#include <string.h>     // inline strcmp type-name gate
-#include <stdlib.h>     // engine rand (0x11fee0)
+#include <Mfc.h>
+#include <Wap32/Rect.h>
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/Brickz.h>     // canonical CMapMgr == CMapMgr (the board; was the CStepGrid view)
-#include <Gruntz/Grunt.h>      // real CGrunt (step grunt is a CGrunt); m_10 + CAnimLookupNode m_14
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr (the board's 4x15 CGrunt* grid; was the CStepBoard view)
-#include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig - the step mgr `this`
-#include <Gruntz/TypeColl.h>         // the shared type-name collection
+#include <Gruntz/Brickz.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
 
 #include <Gruntz/TypeKeyColl.h>
@@ -61,7 +61,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         return 1;
     }
     if (state != 2) {
-        // ---- fresh: re-query the move grid ----
+
         Coord tp;
         g->GetScreenPos(&tp);
         CGrunt* nb = FindIdleGruntInBox(tp.m_x >> 5, tp.m_y >> 5, m_08c, m_090);
@@ -69,7 +69,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
-            // board distance nb <-> g
+
             Coord np, gp, np2, gp2;
             nb->GetScreenPos(&np);
             g->GetScreenPos(&gp);
@@ -78,7 +78,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             i32 dist =
                 iabs((np2.m_y >> 5) - (gp2.m_y >> 5)) + iabs((np2.m_x >> 5) - (gp2.m_x >> 5));
             if (dist <= 0xa) {
-                // dirty-rect box around the grunt
+
                 Coord b0, b1, b2, b3;
                 g->GetScreenPos(&b0);
                 g->GetScreenPos(&b1);
@@ -113,13 +113,12 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         goto tail;
     }
 
-    // ---- state 2: in-flight advance ----
     {
         i32 col = g->m_arrivalCol;
         i32 row = g->m_arrivalRow;
         CGrunt* cur = m_triggerMgr->m_grid[15 * col + row];
         if (cur == 0) {
-            // clear path
+
             g->m_arrivalCol = -1;
             g->m_arrivalRow = -1;
             g->m_defenderState = 0;
@@ -128,7 +127,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         }
         CGameObject* s = cur->m_object;
         if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
-            // arrived on this tile
+
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
@@ -146,7 +145,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             g->m_defenderState = 0;
             goto tail;
         }
-        // not arrived: reroute by Euclidean board distance
+
         Coord here, np;
         g->GetTilePos(&here);
         cur->GetTilePos(&np);
@@ -170,7 +169,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             g->m_dwell = 0;
             goto tail;
         }
-        // dist <= m_0a4: drain + recompute dirty rect + retarget
+
         if (g->CoordCount() != 0) {
             STEP_DRAIN(g);
         }

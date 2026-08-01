@@ -1,25 +1,23 @@
-#include <Mfc.h> // afx-first (superset of Win32.h; the includes below pull MFC collections)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <DDrawMgr/PixelShift.h>
 
 #include <Gruntz/SpriteRefTable.h>
-#include <DDrawMgr/ShadeTableCache.h> // canonical CShadeTableCache (FindRemove @0x14fb80)
-#include <Gruntz/GameRegistry.h>      // g_gameReg (m_saveSink) for the re-homed 0x0e35f0 dlg proc
+#include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/GameRegistry.h>
 
 #include <rva.h>
 
-// Bake the team-color triple for `kind` and cache the shade table. Returns 1, or
-// 0 for an out-of-range kind. __thiscall, ret 0xc.
 // @early-stop
-#include <Io/GameSave.h> // g_savedMenuCmd (ex .cpp extern)
+#include <Io/GameSave.h>
 RVA(0x000e2df0, 0x3f0)
 i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
     m_cache = cache;
     m_alphaKey = static_cast<CShadeTable*>(shade);
-    u8 r1, g1, b1; // color 1 (192/255 shade) -> m_teamColor1
-    u8 r2, g2, b2; // color 2 (full intensity) -> m_teamColor2
-    u8 r3, g3, b3; // color 3 (128/255 shade)  -> m_teamColor3
+    u8 r1, g1, b1;
+    u8 r2, g2, b2;
+    u8 r3, g3, b3;
     switch (kind) {
         case 0:
             r2 = 0xff;
@@ -238,7 +236,3 @@ void CSpriteRef::Free() {
         m_alphaKey = 0;
     }
 }
-
-// (The GAME_SAVE dialog proc 0xe35f0 and its g_saveDlgSink (0x24c86c) moved to
-// src/Io/SaveGame.cpp - the proc calls that TU's DrawSaveGameMenu/FillSaveDialog and
-// g_saveDlgSink is the word after that TU's g_slotState (0x24c864) in one .bss run.)

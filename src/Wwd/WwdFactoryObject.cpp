@@ -1,104 +1,59 @@
-// WwdFactoryObject.cpp - the 0x15b2c0-0x15ccc8 original TU (wave4-L dossier #15,
-// block I): the wwd object-lifecycle obj - the base-object ctors (CResolveNode
-// 3-arg / AnimWorkerObj 3-arg / CGameObject / CAniAdvanceCursor), the five
-// ??1CWwdGameObject[A-F] /GX destructors, the CWwdFactoryObject Release/Reset
-// pass + Notify, CDDrawBlitParam (init/setup/serialize), the animation Advance
-// cursor + its Clamp pair, and the Init/SetupDeferred/SetupFlagged out-of-lines.
-// Held at the dossier-#9 boundary 4 (0x15b2c0); a correct partial - it may yet
-// merge with block H (weave across 0x15b2c0 is limited to the COMDAT-able factory
-// ctor 0x15b390).
-//
-// original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
 
-// This TU is retail's COMDAT home for the whole base-object ctor cluster
-// (0x15b2b0 / 0x15b2c0 / 0x15b300 / 0x15b390 all land inside its 0x15b2b0-0x15ccc8
-// run). Which of them may be INLINE here is the per-TU OOL_CTOR switch described in
-// <Gruntz/WwdGridIter.h> + docs/patterns/ob1-inline-budget-divergence.md:
-//   declaration-only : CGameObject -> this TU supplies the 0x15b390 body below
-//                      WwdRegion   -> this TU supplies the 0x15b2b0 body below
-//   inline + FORCED  : CResolveNode 0x15b2c0, AnimWorkerObj 0x15b300 - 0x15b390 has
-//                      to FOLD both, so their standalone copies are dragged out by
-//                      the #pragma inline_depth(0) forcers at the end of the file
-//                      and pinned with RVA_COMPGEN (the UserLogicCtorEmit.cpp device)
-//   inline, no copy  : WwdGridNode + WwdDirtyRect (their 0x15b2a0/0x15b270 copies
-//                      belong to WwdObjMgr.cpp, whose factories CALL them)
-//
-// WwdRegion is declaration-only DELIBERATELY, and it is the one place we spend a
-// byte to buy correctness: retail FOLDS it into 0x15b390, but cl 5.0's /Ob1
-// expansion budget is one short in that ctor and, left inline, it prunes the
-// DEEPEST expansion instead - `??0CWapObj` - which then emits a `??_7CWapObj@@6B@`
-// COMDAT retail does not have (a FATAL vtbl-absent violation). Guarding WwdRegion
-// frees two expansions (itself + its WwdGridNode base), CWapObj folds again, and
-// the only residue is one `call ??0WwdRegion` inside 0x15b390.
+
 #define WWDREGION_OOL_CTOR
 #define CGAMEOBJECT_OOL_CTOR
-#define ANIADVANCECURSOR_OOL_CTOR // this TU emits the 0x15b730 COMDAT
+#define ANIADVANCECURSOR_OOL_CTOR
 
 #include <Mfc.h>
-#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
 #include <rva.h>
 #include <Ints.h>
-#include <string.h>                  // strcpy/strlen (blit-param label buffer)
-#include <Wwd/WwdGameObjectFamily.h> // the CGameObject/A/F/B/C dtor-family hierarchy
-#include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject (Init/Setup* out-of-lines)
-#include <Gruntz/Sprite.h>           // CDDrawWorker (GetFrame @0x15cc30 + the Clamp pair)
-#include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
-#include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (the 0x17c worker; 3-arg ctor @0x15b300)
-#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
-#include <DDrawMgr/AniAdvance.h>     // CAniDesc + the anim cursor satellites
-#include <Gruntz/LeafCue.h>          // LeafCue::TriggerBlit (ex CAniBlitTrigger)
-#include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
-#include <Gruntz/SerialArchive.h>    // the shared CFileMemBase stream (Read/Write)
-#include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
-#include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
+#include <string.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/ResolveNode.h>
+#include <DDrawMgr/AnimWorkerObj.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <DDrawMgr/AniAdvance.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/SerialArchive.h>
+#include <Wwd/WwdFactoryObject.h>
+#include <Gruntz/LeafCue.h>
 
-#include <DDrawMgr/DDrawSubMgr.h> // g_sndPanScale (ex .cpp extern)
-#include <Gruntz/SoundState.h>    // g_sndCueTag (ex the g_aniCueItem alias)
-#include <Wwd/WwdObjMgr.h>        // ex Globals.h
+#include <DDrawMgr/DDrawSubMgr.h>
+#include <Gruntz/SoundState.h>
+#include <Wwd/WwdObjMgr.h>
 #include <Gruntz/AniElement.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 namespace Rng {}
 
-VTBL(CWwdGameObjectC, 0x001effd0);   // ??_7 (19 slots)
-VTBL(CGameObject, 0x001f0020);       // ??_7 (base, 16 slots)
-VTBL(CWwdGameObjectF, 0x001f0060);   // ??_7 (17 slots)
-VTBL(CWwdGameObjectA, 0x001f00a8);   // ??_7 (16 slots)
-VTBL(CWwdGameObject, 0x001f00e8);    // ??_7 (16 slots; B : A)
-VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoadable-derived)
-// ---------------------------------------------------------------------------
-// 0x15b2b0 - the standalone COMDAT copy of WwdRegion's default ctor (the +0x9c
-// embedded spatial-grid node). CDDrawChildGroup::CreateObject_159600 calls it;
-// CreateObject_159250/159440 (and retail's 0x15b390) fold it, which is why the body
-// stays INLINE in <Gruntz/WwdGridIter.h> for every other TU. The WwdGridNode base
-// ctor folds INTO this copy - retail is `xor ecx,ecx` + three stores, 14 B, no call
-// - so WwdGridNode must NOT be guarded here.
+VTBL(CWwdGameObjectC, 0x001effd0);
+VTBL(CGameObject, 0x001f0020);
+VTBL(CWwdGameObjectF, 0x001f0060);
+VTBL(CWwdGameObjectA, 0x001f00a8);
+VTBL(CWwdGameObject, 0x001f00e8);
+VTBL(CAniAdvanceCursor, 0x001f0128);
+
+RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
+
 RVA(0x0015b2b0, 0xe)
 WwdRegion::WwdRegion() {
     m_object = 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
-// The body is INLINE in <Gruntz/ResolveNode.h> (0x15b390 below folds it whole);
-// this standalone copy is forced out by ForceEmitCResolveNode at the bottom of the
-// file, so it carries no definition here and is pinned by mangled name.
 RVA_COMPGEN(0x0015b2c0, 0x3d, ??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
 
-// ---------------------------------------------------------------------------
-// 0x15b300 - AnimWorkerObj's out-of-line 3-arg seed constructor. The arg-store order
-// (b,c,a into m_04/m_08/m_0c) is load-bearing. The base trio is CLoadable's ctor,
-// NOT three body assignments: cl5 stamps the vptr between the base/mem-init half and
-// the ctor body, which is retail's vptr-after-m_id/m_flags/m_ownerCtx order.
-// Body inline in <DDrawMgr/AnimWorkerObj.h>; standalone copy forced out below.
 RVA_COMPGEN(0x0015b300, 0x40, ??0AnimWorkerObj@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
 
 RVA(0x0015b340, 0x2b)
 i32 AnimWorkerObj::Consume(i32 amount) {
     i32 remaining = m_20;
     if (remaining == 0) {
-        return remaining; // eax already holds 0
+        return remaining;
     }
     if (static_cast<u32>(amount) >= static_cast<u32>(remaining)) {
         m_20 = 0;
@@ -108,10 +63,9 @@ i32 AnimWorkerObj::Consume(i32 amount) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
 RVA(0x0015b370, 0x1d)
 i32 CGameObject::IsLoaded() {
-    if (m_7c == 0) {
+    if (m_animWorker == 0) {
         return 0;
     }
     if (m_ownerCtx != 0 && m_id != -1) {
@@ -120,31 +74,13 @@ i32 CGameObject::IsLoaded() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15b390 - CGameObject::CGameObject(CDDrawSurfaceMgr*, i32, i32): the shared
-// wide-object base ctor. It is INLINE in <Wwd/WwdGameObjectFamily.h> (the three
-// CDDrawChildGroup factories fold it whole); THIS TU takes the out-of-line copy -
-// the guard at the top of the file turns the header definition into a declaration
-// so the body below is the one and only standalone COMDAT.
-//
-// Everything still inline here folds in exactly as retail does: the CResolveNode
-// base (vptr 0x5efbc0 + the +0x20/+0x38/+0x5c/+0x64 sentinels, the +0x20/+0x38 pair
-// coming from the m_dirty MEMBER ctor, which is why it precedes the stamp), the
-// +0xb8 WwdDirtyRect shadow, and the `new AnimWorkerObj(...)` worker - leaving the
-// +0xdc CString ctor and operator new(0x17c), which is retail's /GX state walk
-// 0 -> 2 -> 3. The +0x9c WwdRegion is the deliberate exception (see above).
-//
-// (It used to be spelled here as ??0CWwdGameObjBaseCtor over a `char _vft0[4]`/
-// `_pXX` fake view; the vtable stamps its comments called "dropped" are the two the
-// real class emits on its own - ??_7CResolveNode from the base ctor, then
-// ??_7CGameObject.)
 // @early-stop
 RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CResolveNode(owner, id, stateFlags) {
     m_screenX = static_cast<i32>(0x80000000);
     m_posCache = 0;
-    m_7c = new AnimWorkerObj(owner, id, 0);
+    m_animWorker = new AnimWorkerObj(owner, id, 0);
     m_carrier = 0;
     m_hitWorker = 0;
     m_attackWorker = 0;
@@ -153,23 +89,6 @@ CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x154a50 - ~CResolveNode: disarm the live dirty-rect sentinels; ~CLoadable
-// (m_04/m_08/m_0c reset) + the CObject grand-base restamp fold in. Defined in
-// THIS TU so the family dtors below fold its content (retail ~E/~A/~F/~C tails);
-// the ResolveNode.cpp pocket's ??_G calls it (retail 0x154a30 -> 0x154a50).
-// @early-stop
-RVA(0x00154a50, 0x23)
-CResolveNode::~CResolveNode() {
-    m_screenX = static_cast<i32>(0x80000000);
-    m_dirty.m_rect.left = static_cast<i32>(0x80000000);
-    m_dirty.m_armed = -1;
-}
-
-// ---------------------------------------------------------------------------
-// 0x15b4f0 - ~CGameObject (vtable 0x5f0020): { Unload(); } - the inline E
-// release pass folds, then the CString member dtor, then the inline
-// ~CResolveNode + ~CLoadable + CObject-grand-base restamp fold in (retail tail).
 // @early-stop
 RVA(0x00154a80, 0x13)
 void CResolveNode::Unload() {
@@ -179,16 +98,8 @@ void CResolveNode::Unload() {
 }
 
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
-RVA(0x0015b4f0, 0xde)
-CGameObject::~CGameObject() {
-    Unload(); // devirtualized in the dtor -> the inline E pass
-}
+RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 
-// ---------------------------------------------------------------------------
-// 0x15b650: per-tick notify. When flag bit 0x8 is set, subtract `p`'s +0x120
-// budget from this+0x128 and, if non-positive, latch error 0x1c on the +0x7c
-// worker. Otherwise hand `p` to the +0x80 notifier's +0x10 cdecl callback (with
-// the owner), after recording `p` at +0x84. __thiscall, 1 arg (ret 0x4).
 // @early-stop
 RVA(0x0015b650, 0x4d)
 void CGameObject::Notify(void* p) {
@@ -196,7 +107,7 @@ void CGameObject::Notify(void* p) {
         i32 d = m_placeMode - (static_cast<CGameObject*>(p))->m_120;
         m_placeMode = d;
         if (d <= 0) {
-            m_7c->SetActKey(0x1c); // the m_1c int-role arm
+            m_animWorker->SetActKey(0x1c);
         }
     } else {
         AnimWorkerObj* h = m_hitWorker;
@@ -215,19 +126,12 @@ i32 CAniAdvanceCursor::IsLoaded() {
 RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
 RVA(0x0015b6d0, 0x5b)
 CAniAdvanceCursor::~CAniAdvanceCursor() {
-    Unload(); // devirtualized in the dtor -> direct call to 0x15c2c0
+    Unload();
     m_id = -1;
     m_flags = 0;
     m_ownerCtx = 0;
 }
 
-// cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
-// header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes m_10/m_14/m_18.
-// The trio goes through CLoadable's INLINE 3-arg overload, which is a different
-// ctor from the OUT-OF-LINE ??0CLoadable @0x156cb0 (that one schedules m_id / vptr /
-// m_flags / m_ownerCtx and is called, not inlined, by its own callers) - so
-// delegating injects no call and puts the vptr stamp where retail has it, below the
-// m_08 store.
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(field04, field08, owner) {
@@ -236,9 +140,6 @@ CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 f
     m_element = 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15b790 - the complete destructor: a thin derived class (vtable 0x5f00a8) on top
-// of Mid, adding the m_18c block + the embedded WwdSubA command object at +0x1a0.
 RVA(0x0015b760, 0x6)
 i32 CWwdGameObjectA::GetClassId() {
     return CLASSID_WWDOBJA;
@@ -247,9 +148,7 @@ i32 CWwdGameObjectA::GetClassId() {
 RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdGameObjectA@@UAEPAXI@Z)
 RVA(0x0015b790, 0x1a6)
 CWwdGameObjectA::~CWwdGameObjectA() {
-    Unload(); // devirtualized -> the inline A pass (geometry cache + E release)
-    // m_1a0 (CAniAdvanceCursor) member-destroys inline (the 0x5f0128 restamp),
-    // then ~E folds (second worker pass + ~CString + the CResolveNode tail).
+    Unload();
 }
 
 RVA(0x0015b940, 0x38)
@@ -268,7 +167,7 @@ void CWwdGameObjectA::Render(CDDrawSurfacePair* pair) {
 
 RVA(0x0015ba40, 0x1d)
 i32 CWwdGameObjectF::IsLoaded() {
-    if (m_7c == 0) {
+    if (m_animWorker == 0) {
         return 0;
     }
     if (m_ownerCtx != 0 && m_id != -1) {
@@ -277,7 +176,6 @@ i32 CWwdGameObjectF::IsLoaded() {
     return 0;
 }
 
-// The F kind draws nothing: all four draw slots (11-14) are empty defaults.
 RVA(0x0015ba60, 0x6)
 i32 CWwdGameObjectF::GetClassId() {
     return CLASSID_WWDOBJF;
@@ -295,14 +193,11 @@ void CWwdGameObjectF::BltDirtyEx(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawS
 RVA(0x0015baa0, 0x3)
 void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
-// ---------------------------------------------------------------------------
-// 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
-// of Mid. Re-runs the worker pass + groupX, then folds Mid + wap-object base.
 // @early-stop
 RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdGameObjectF@@UAEPAXI@Z)
 RVA(0x0015bad0, 0x153)
 CWwdGameObjectF::~CWwdGameObjectF() {
-    Unload(); // devirtualized -> the inline F pass (the E release copy)
+    Unload();
 }
 
 RVA(0x0015bc30, 0x16)
@@ -312,13 +207,9 @@ i32 CWwdGameObjectF::SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl) {
 
 RVA(0x0015bcd0, 0xb)
 i32 CWwdGameObject::IsLoaded() {
-    return m_7c != 0;
+    return m_animWorker != 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init
-// call 0x166810, trailing base CResolveNode dtor 0x429b): the 4-level polymorphic
-// chain CWwdGameObject : WwdBLevel2 : WwdBMid : WwdBResolve (family header).
 RVA(0x0015bce0, 0x6)
 i32 CWwdGameObject::GetClassId() {
     return CLASSID_WWDOBJB;
@@ -327,9 +218,7 @@ i32 CWwdGameObject::GetClassId() {
 RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
-    Unload(); // devirtualized -> the inline B pass (Clear + geometry + E release)
-    // m_1dc (CObList) member-destroys, then ~A folds (retail: the A-phase spills
-    // to `call 0x15b5d0` and the bottom keeps the 0x5efbc0 stamp + `call 0x429b`).
+    Unload();
 }
 
 RVA(0x0015bfb0, 0x4a)
@@ -346,13 +235,9 @@ i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
     return a->bottom >= b->top;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15c070 - the 0x159250-final variant: thin derived class (vtable 0x5effd0) on top
-// of Mid; clears the byte flag m_18c, re-runs the worker pass + groupX, then folds
-// Mid + wap-object base.
 RVA(0x0015c000, 0x1d)
 i32 CWwdGameObjectC::IsLoaded() {
-    if (m_7c == 0) {
+    if (m_animWorker == 0) {
         return 0;
     }
     if (m_ownerCtx != 0 && m_id != -1) {
@@ -379,17 +264,15 @@ void CWwdGameObjectC::SetDotColor(u8 c8) {
 RVA_COMPGEN(0x0015c050, 0x1e, ??_GCWwdGameObjectC@@UAEPAXI@Z)
 RVA(0x0015c070, 0x159)
 CWwdGameObjectC::~CWwdGameObjectC() {
-    Unload(); // devirtualized -> the inline C pass (byte clear + E release)
+    Unload();
 }
 
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObjectC::SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl, i32 flag) {
-    m_dotColor = static_cast<u8>(flag); // the C kind's own +0x18c byte - the reinterpret dies
+    m_dotColor = static_cast<u8>(flag);
     return CGameObject::Setup(x, y, sortKey, tmpl);
 }
 
-// 0x15c290: bind the cursor to the wide game object that embeds it (+0x1a0) and seed
-// the per-frame state.
 // @early-stop
 RVA(0x0015c290, 0x2f)
 void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
@@ -398,12 +281,7 @@ void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
-    // retail `mov edx,[edx+0xc] / mov edx,[edx+0x34] / and edx,0x40`: src+0x0c is the
-    // CLoadable owner handle and +0x34 off THAT is CDDrawSurfaceMgr::m_flags (caps).
-    // The old spelling read the same two loads as `&src->m_records.ElementAt(0) + 0x34`
-    // on a CAniElement - same bytes, wrong model, and the flagged "the two sites cannot
-    // both be right" note against GruntAssetLoaders' DEATH_FRAME resolves in that
-    // site's favour: this one was the mis-modelled one.
+
     m_2c = src->OwnerMgr()->m_flags & 0x40;
 }
 
@@ -441,9 +319,7 @@ void CAniAdvanceCursor::Setup(CAniElement* src) {
 }
 
 RVA(0x0015c320, 0x40)
-// `resetGate` is the only thing the argument does: nonzero clears the +0x20 re-trigger
-// gate at the end. CMenuSparkle @MenuSparkle.cpp is the caller that passes 1, and it
-// tests that same m_20 for zero before calling.
+
 void CAniAdvanceCursor::Recompute(i32 resetGate) {
     CAniElement* src = m_14;
     if (src == 0) {
@@ -467,9 +343,6 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x15c360: advance the animation cursor by `elapsed` ticks. __thiscall, 1 arg
-// (ret 4).
 // @early-stop
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
@@ -477,7 +350,6 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         return -1;
     }
 
-    // --- per-frame timer decrement --------------------------------------------
     if (m_frameTicksLeft > 0) {
         if (m_24 != 0) {
             if (elapsed >= m_frameTicksLeft) {
@@ -499,9 +371,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         CWwdGameObjectA* ctx = m_boundObject;
         CAniDesc* d = m_element;
 
-        // --- step the active frame sequence one step (7-way on d->m_stepMode) --------
         switch (d->m_stepMode - 1) {
-            case 0: { // advance + wrap-to-first on overrun
+            case 0: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
@@ -517,7 +388,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 1: { // wrap-to-last when at first, else step back
+            case 1: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
@@ -532,7 +403,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_layer = seq->GetFrame(c->m_190);
                 break;
             }
-            case 2: { // jump to an explicit frame (d->m_param)
+            case 2: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 frame = d->m_param;
                 CDDrawWorker* seq = c->m_sprite;
@@ -543,7 +414,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_190 = frame;
                 break;
             }
-            case 3: { // reset to first
+            case 3: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
@@ -554,7 +425,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_layer = seq->GetFrame(first);
                 break;
             }
-            case 4: { // reset to last
+            case 4: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
@@ -565,7 +436,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_layer = seq->GetFrame(last);
                 break;
             }
-            case 5: { // advance by d->m_param, clamp-last on overrun
+            case 5: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_sprite;
@@ -580,7 +451,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 6: { // retreat by d->m_param, clamp-first on underrun
+            case 6: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_sprite;
@@ -599,7 +470,6 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
         }
 
-        // --- apply the per-frame position delta (3-way on d->m_posMode) ------------
         ctx = m_boundObject;
         ctx->m_plotDX = 0;
         ctx->m_plotDY = 0;
@@ -633,7 +503,6 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
         }
 
-        // --- per-frame draw/sound trigger -------------------------------------
         CWwdGameObjectA* c = m_boundObject;
         i32 fire = 1;
         if (!(c->m_flags & 0x2000000) && !(m_element->m_flags & 0x8)) {
@@ -666,37 +535,30 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    entry->PlayIfElapsed(g_sndCueTag, 0, 0, 0); // 0x61ab24
+                    entry->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
         }
 
-        // --- reload the per-frame timer (optionally float-scaled) -------------
         CAniDesc* rd = m_element;
         i32 reload = rd->m_frameTime;
         m_frameTicksLeft = reload;
         m_24 = (~rd->m_flags) & 1;
-        // retail compares the float's RAW BITS against 0x3f800000 with an integer
-        // `cmp` (no FPU compare), so the 1.0f test is spelled on the bit-pattern arm
+
         if (m_scaleBits != 0x3f800000) {
             m_frameTicksLeft =
                 static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }
 
-        // --- select the NEXT descriptor (10-way loop-mode on rd->m_loopMode) --------
-        // Cases are ordered to reproduce retail's physical case-body layout
-        // (9, 8, 7, 1, 2, 3, 4, 0, 5). Cases 2/3/4 test a sequence-position
-        // predicate and, on a hit, fall into case 0's shared inline loop-restart
-        // body (a goto into the single emitted block).
         i32 modeWord = rd->m_loopMode;
         CAniElement* arr;
         i32 i;
         CAniDesc* nd;
         switch (modeWord & 0xffff) {
-            case 9: // pause
+            case 9:
                 m_finished = 1;
                 break;
-            case 8: { // reset to the first descriptor and unscaled timing
+            case 8: {
                 if (m_14 != 0) {
                     m_index = 0;
                     m_element = static_cast<CAniDesc*>(m_14->AtChecked(0));
@@ -707,7 +569,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 7: { // hold on the first two descriptors (m_index = 1 then 0)
+            case 7: {
                 m_index = 1;
                 m_element = static_cast<CAniDesc*>(m_14->AtChecked(1));
                 if (m_element == 0) {
@@ -722,7 +584,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 1: { // advance only when the cursor's frame reached the descriptor param
+            case 1: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 if (c2->m_190 == m_element->m_param) {
                     if (modeWord != 9) {
@@ -742,7 +604,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 2: { // advance only when the cursor reached the seq low frame
+            case 2: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_minIndex) {
@@ -750,7 +612,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 3: { // advance only when the cursor reached the seq high frame
+            case 3: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_maxIndex) {
@@ -758,7 +620,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 4: { // advance one past the seq low frame
+            case 4: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_minIndex + 1) {
@@ -766,7 +628,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 0: // loop the playlist forward, inline bounds-checked fetch
+            case 0:
             loop_restart:
                 if (modeWord != 9) {
                     arr = m_14;
@@ -788,7 +650,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     }
                 }
                 break;
-            case 5: { // advance only when the cursor reached one before the high frame
+            case 5: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_sprite;
                 if (c2->m_190 == seq->m_maxIndex - 1) {
@@ -827,7 +689,6 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
     }
 
-    // --- return the per-frame draw value, consuming it when buffer-owned ------
     if (m_2c != 0) {
         if (m_frameTicksLeft != 0) {
             i32 r = m_curDraw;
@@ -844,18 +705,6 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     return m_pendingDraw;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15c900: dispatch on `type` - type 4 serializes, type 7 deserializes (both
-// via the named sibling), every other type is a no-op that returns 1. A
-// serialize/deserialize that returns 0 propagates the 0.
-// Retail lowers this as a JUMP TABLE, not a compare chain: `add eax,-3; cmp eax,5;
-// ja 0x15c93a; jmp [eax*4+0x55c944]`, and the six-entry table at 0x15c944 (cases
-// 3..8) is part of this COMDAT - hence the 0x5c extent. Four of its six slots point
-// at the shared `mov eax,1; ret 0x10` tail, i.e. retail did NOT fold the empty arms
-// into the default; cl5 folds ours, so we emit sub/je/dec/je/sub/jne instead and the
-// table is missing. The inactive arms therefore each need their own `return 1;` so
-// they survive cl5's identical-arm fold into the density test (the active arms keep
-// their `break` - see docs/patterns/switch-empty-arms-dedup-before-jumptable.md).
 RVA(0x0015c900, 0x5c)
 i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) {
     if (ar == 0) {
@@ -884,12 +733,6 @@ i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) 
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15c970: serialize the blit-param. Writes the eight dwords m_index..m_scale to
-// the archive (4 bytes each via slot +0x30), zeroes a 0x80-byte label buffer,
-// and if m_srcRef is set, fetches the worker label (a returns-by-value CString
-// from the +0x2c sub-object's 0x152d30) and strcpy's it into the buffer; then
-// writes the whole 0x80-byte buffer. Returns 1.
 RVA(0x0015c970, 0xfe)
 i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     if (ar == 0) {
@@ -904,21 +747,15 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     ar->Write(&m_curDraw, 4);
     ar->Write(&m_scale, 4);
     char buf[0x80];
-    memset(buf, 0, sizeof(buf)); // 0x20 dwords = the whole 0x80-byte name buffer
+    memset(buf, 0, sizeof(buf));
     if (m_14 != 0) {
-        // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
-        // KeyOfValue returns the label for the map VALUE m_14 (CAniElement : CObject).
+
         strcpy(buf, OwnerMgr()->m_animRegistry->KeyOfValue(m_14));
     }
     ar->Write(buf, 0x80);
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15ca70: deserialize the blit-param (the Serialize twin). Reads the
-// eight dwords from the archive, reads the 0x80-byte label buffer, and - when the
-// label is non-empty - looks it up in the worker sub-object's +0x10 map to recover
-// the worker into m_srcRef. Then the Setup-style tail. __thiscall, ret 0x4.
 // @early-stop
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
@@ -938,7 +775,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (strlen(buf) == 0) {
         m_14 = 0;
     } else {
-        // the leaf's +0x10 map is CMapStringToPtr (Lookup 0x1b8438), value-typed void*
+
         void* out = 0;
         OwnerMgr()->m_animRegistry->m_10.Lookup(buf, out);
         m_14 = static_cast<CAniElement*>(out);
@@ -979,9 +816,6 @@ CImage* CDDrawWorker::GetFrame(i32 n) {
     return 0;
 }
 
-// CWwdGameObjectA::ClampFirst (0x15cc50) / ClampLast (0x15cc90): clamp the +0x190
-// frame cursor to the active sequence's low/high frame and re-resolve +0x198
-// through the same bounds-checked fetch GetFrame (0x15cc30) inlines.
 // @early-stop
 RVA(0x0015cc50, 0x38)
 void CWwdGameObjectA::ClampFirst() {
@@ -1014,15 +848,6 @@ void CWwdGameObjectA::ClampLast() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// COMDAT forcers. CResolveNode's and AnimWorkerObj's ctors have to stay INLINE in
-// this TU so 0x15b390 above folds them the way retail does - but retail ALSO
-// shipped their standalone copies (0x15b2c0 / 0x15b300, both called by the
-// CDDrawChildGroup factories), and an inline function nothing calls out-of-line is
-// never emitted. inline_depth(0) makes these two references NON-inlinable, which is
-// exactly what drags the standalone bodies out; each is pinned by mangled name with
-// the RVA_COMPGEN next to its comment near the top of the file. (Same device as
-// src/Gruntz/UserLogicCtorEmit.cpp.)
 static void* volatile g_forceEmitSink;
 #pragma inline_depth(0)
 void ForceEmitCResolveNodeCtor(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {

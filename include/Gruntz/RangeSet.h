@@ -5,19 +5,19 @@
 #include <rva.h>
 
 struct CRange {
-    u32 lo; // +0x00
-    u32 hi; // +0x04
+    u32 lo;
+    u32 hi;
 };
 SIZE_UNKNOWN();
 
 class CRangeSet {
 public:
-    bool Contains(u32 value);      // 0x184ba0
-    void AddRange(u32 lo, u32 hi); // 0x184be0
-    void AddFromString(char* str); // 0x184c10
+    bool Contains(u32 value);
+    void AddRange(u32 lo, u32 hi);
+    void AddFromString(char* str);
 
-    u32 m_count;        // +0x00
-    CRange m_pairs[16]; // +0x04
+    u32 m_count;
+    CRange m_pairs[16];
 };
 SIZE_UNKNOWN();
 

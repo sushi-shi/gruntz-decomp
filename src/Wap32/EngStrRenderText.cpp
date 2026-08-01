@@ -1,8 +1,8 @@
-#include <Wap32/EngStr.h> // own extern surface
-#include <Mfc.h> // real MFC CString (copy ctor 0x1b9ba3) + windows.h (RECT/CopyRect/OffsetRect)
+#include <Wap32/EngStr.h>
+#include <Mfc.h>
 #include <Ints.h>
 #include <rva.h>
-#include <Font/Font.h> // canonical FontRenderer + CRect (RenderText IS DrawWrapped @0x17a460)
+#include <Font/Font.h>
 
 // @early-stop
 RVA(0x00115930, 0x18f)
@@ -51,14 +51,12 @@ i32 EngStr_RenderText(
         CopyRect(&sh, rc);
         OffsetRect(&sh, 2, 3);
         g_textObj.SetColor(0);
-        // the shadow pass reinterprets the local RECT as a CRect lvalue so the trivial
-        // copy ctor inlines (4-mov copy of sh); the main pass below CALLs the 0x115b30
-        // operator= to build its rect.
+
         g_textObj.DrawWrapped(*str, drawSurface, *static_cast<CRect*>(&sh), 1, flag, 0);
     }
     g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
     CRect rect;
-    rect = *rc; // 0x115b30 CRect::operator=(const tagRECT&) (the "Copy" reloc)
+    rect = *rc;
     g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
     return 1;
 }

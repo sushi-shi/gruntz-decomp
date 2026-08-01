@@ -3,87 +3,72 @@
 
 #include <rva.h>
 
-#include <Mfc.h> // CObject base + the two CString diagnostic temps in Update (/GX)
+#include <Mfc.h>
 
-#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
+#include <Gruntz/UserLogic.h>
 
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/ActReg.h>        // CActReg (extern below)
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/ActReg.h>
 
 class CFileMemBase;
 
 class CRollingBall : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00012f30, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_ROLLINGBALL;
-    } // slot 2
+    }
+
 public:
-    CRollingBall(CGameObject* obj); // 0x0af820 (folds CUserLogic(obj) + the ball setup)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    CRollingBall() {}
+    CRollingBall(CGameObject* obj);
 
-    // Construct the class's activation-coordinate registry (g_rollingBallActReg
-    // @0x6461b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
-    // Resolve the registry entry for id; run its bound handler as a PMF on this
-    // (ResolveEntry inlined twice). 0x0afde0.
     virtual void FireActivation(i32 id) OVERRIDE;
-    // Bind the per-frame handler (Update) to the activation key "A" via the shared
-    // name registry (the same archetype as CBehindCandyAni::RegisterActs).
-    static void RegisterActs(); // 0x0aff40
 
-    i32 Update(); // 0x0b0140
+    static void RegisterActs();
 
-    // --- CRollingBall own fields (offsets load-bearing) ---
-    char m_pad54[0x58 - 0x54]; // CUserLogic ends +0x40
-    double m_moveSpeed;        // +0x58  per-frame speed (numerator / RollingBallTimePerTile)
-    // +0x60/+0x68 sub-tile position. Read as doubles by the move arms, but the
-    // direction sub-switch zeroes them as four INTERLEAVED dword stores
-    // ([esi+0x60],[esi+0x68],[esi+0x64],[esi+0x6c]) that no `= 0.0` pair emits -
-    // the same proven two-readings-of-one-field device as m_moveDelta below.
+    i32 Update();
+
+    char m_pad54[0x58 - 0x54];
+    double m_moveSpeed;
+
     union {
-        double m_subX; // +0x60  sub-tile X position
+        double m_subX;
         struct {
             i32 m_subXLo;
             i32 m_subXHi;
         };
     };
     union {
-        double m_subY; // +0x68  sub-tile Y position
+        double m_subY;
         struct {
             i32 m_subYLo;
             i32 m_subYHi;
         };
     };
-    i32 m_stepDirX;     // +0x70  X step direction (-1/0/1)
-    i32 m_stepDirY;     // +0x74  Y step direction (-1/0/1)
-    i32 m_targetX;      // +0x78  target tile X (<<5)
-    i32 m_targetY;      // +0x7c  target tile Y (<<5)
-    i32 m_explodeLatch; // +0x80  explosion one-shot latch
-    i32 m_fallLatch;    // +0x84  fall one-shot latch
-    // The fuse clock pair. Update compares them as ONE 64-bit value
-    // (`xor eax,eax; sub edx,lo; sbb eax,hi` then the jl/jg/jb triple at 0xb01d7),
-    // while the ctor zeroes each half with its own dword store - both readings of
-    // the same eight bytes are real, so both are named. Both are 8-aligned.
+    i32 m_stepDirX;
+    i32 m_stepDirY;
+    i32 m_targetX;
+    i32 m_targetY;
+    i32 m_explodeLatch;
+    i32 m_fallLatch;
+
     union {
-        i64 m_explodeStart64; // +0x88
+        i64 m_explodeStart64;
         struct {
             i32 m_explodeStartLo;
             i32 m_explodeStartHi;
         };
     };
     union {
-        i64 m_explodeWindow64; // +0x90
+        i64 m_explodeWindow64;
         struct {
             i32 m_explodeWindowLo;
             i32 m_explodeWindowHi;
         };
     };
-    // +0x98  the per-step move delta. It is READ as a double (the direction arms
-    // assign it straight into the m_subX/m_subY doubles), and the class is already
-    // 8-aligned from m_subX, so declaring it double is layout-free. The dword arms
-    // stay available for the stores whose ORDER retail pins.
+
     union {
         double m_moveDelta;
         struct {
@@ -94,8 +79,6 @@ public:
 };
 SIZE(0xa0);
 
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" i32 __ftol(double x); // 0x11f570
+extern "C" i32 __ftol(double x);
 
 #endif // GRUNTZ_GRUNTZ_ROLLINGBALL_H

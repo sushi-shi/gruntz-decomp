@@ -8,75 +8,55 @@ struct CVariantSlot;
 class istream;
 class ostream;
 
-extern CVariantSlot g_zBitSetErrorSlot;      // 0x6bf408 ("zBitSet: ")
-extern CVariantSlot g_globalErrorSlot;       // 0x6bf430 ("Global Error: ")
-extern CVariantSlot g_dynamicArrayErrorSlot; // 0x6bf468 ("Dynamic Array: ")
-extern i32 g_defaultProjActSize;             // 0x61ad28 (fallback capacity)
-extern void* g_retAddrBreadcrumb;            // 0x6bf428 (caller-IP breadcrumb)
+extern CVariantSlot g_zBitSetErrorSlot;
+extern CVariantSlot g_globalErrorSlot;
+extern CVariantSlot g_dynamicArrayErrorSlot;
+extern i32 g_defaultProjActSize;
+extern void* g_retAddrBreadcrumb;
 
-// The eight zErrHandling diagnostic MESSAGE STRINGS (0x6bf448..0x6bf467) - lazily
-// installed by the zErrHandling ctor (0x16d9c0) and handed to CVariantSlot::Set /
-// zErrHandling::Report as the `item` argument, which strncat's them onto the sink's
-// label. They exactly fill the .bss hole between g_globalErrorSlot (0x6bf430 +0x18)
-// and g_dynamicArrayErrorSlot (0x6bf468). Three of them used to be modelled as the
-// unrelated "projectile activation" globals; every site that loads one pairs its code
-// with the string the ctor installs there - 0xc is always the out-of-memory cell,
-// 0x16 always the null-argument / bad-argument cell.
-extern char* g_errDataInvalid; // 0x6bf448 "Data structure is invalid"
-extern char* g_errOverflow;    // 0x6bf44c "Overflow"
-extern char* g_errOutOfRange;  // 0x6bf450 "Out of range"
-extern char* g_errNullArg;     // 0x6bf454 "Null pointer argument"   (ex "g_projActName")
-extern char* g_errExists;      // 0x6bf458 "Target alrready exisits" (retail's typo)
-extern char* g_errBadArg;      // 0x6bf45c "Bad argument value"      (ex "g_projActName2")
-extern char* g_errNoFile;      // 0x6bf460 "No such file, handle or object"
-extern char* g_errOutOfMem;    // 0x6bf464 "Out of memory"           (ex "g_projActCache")
+extern char* g_errDataInvalid;
+extern char* g_errOverflow;
+extern char* g_errOutOfRange;
+extern char* g_errNullArg;
+extern char* g_errExists;
+extern char* g_errBadArg;
+extern char* g_errNoFile;
+extern char* g_errOutOfMem;
 
-void* GetRetAddr();       // 0x16d990
-void* GetCallerRetAddr(); // 0x16e0f0
+void* GetRetAddr();
+void* GetCallerRetAddr();
 
 class zErrHandling {
 public:
-    zErrHandling(CVariantSlot* errSink); // 0x16d9c0 (src/Bute/TypeKeyColl.cpp)
-    virtual ~zErrHandling();             // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
+    zErrHandling(CVariantSlot* errSink);
+    virtual ~zErrHandling();
 
-    // 0x034960: the OUTLINED overflow/OOM report path (defined in BattlezMapConfig.cpp,
-    // where it sits in retail RVA order). Body = `g_retAddrBreadcrumb = GetRetAddr();
-    // m_errSink->Set(this, sentinel, code);` - the exact tail of the inlined grow-on-miss
-    // fast path (CActReg::ResolveEntry spells the same two statements). It was modeled as a
-    // .cpp-local `ZErrTarget` view {vptr@0, m_err@+0x04}: that IS this class's layout
-    // (vptr@0, m_errSink@+0x04), so the view is dissolved onto zErrHandling.
-    void Report(void* sentinel, i32 code); // 0x034960
+    void Report(void* sentinel, i32 code);
 
-    CVariantSlot* m_errSink; // +0x04  the error sink this object registers with
+    CVariantSlot* m_errSink;
 };
-SIZE(0x8);      // { vptr @0, m_errSink @4 }
-SIZE_UNKNOWN(); // error-reporter subobject view
+SIZE(0x8);
+SIZE_UNKNOWN();
 
 class zBitVec : public zErrHandling {
 public:
-    zBitVec();                                // default (link-embedded; see CUserBaseLink)
-    zBitVec(i32 idx, i32 sizehint);           // 0x16d790 (??0zBitVec@@QAE@HH@Z)
-    zBitVec(const char* tokens, i32 minSize); // 0x16d3a0 (whitespace/'-' number-list parser)
-    zBitVec& operator=(const zBitVec& o);     // 0x16d2f0 (deep copy of the word band)
-    virtual ~zBitVec() OVERRIDE;              // [0] 0x16d2a0 (real ~; ??_G thunk @0x16d2d0)
-    i32 SetSize(i32 nbits);                   // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z)
-    i32 EnsureSize(i32 nbits);                // 0x1936e0 (?EnsureSize@zBitVec@@QAEHH@Z)
-    zBitVec* Or(zBitVec* o);                  // 0x193680 (word-wise union; grows to o)
-    zBitVec* SetBit(u32 idx);                 // 0x193640 (src/Utils/BitArray.cpp)
+    zBitVec();
+    zBitVec(i32 idx, i32 sizehint);
+    zBitVec(const char* tokens, i32 minSize);
+    zBitVec& operator=(const zBitVec& o);
+    virtual ~zBitVec() OVERRIDE;
+    i32 SetSize(i32 nbits);
+    i32 EnsureSize(i32 nbits);
+    zBitVec* Or(zBitVec* o);
+    zBitVec* SetBit(u32 idx);
 
-    i32 m_capacity; // +0x08  capacity in bits (signed: SetSize's round-up matches as
-                    // int; the ctor/EnsureSize cast (u32) for the unsigned `>0x20` jbe)
-    // +0x0c is a small-buffer slot with two PROVEN arms - every accessor picks
-    // between them on the same test: `(u32)m_capacity > 0x20 ? m_words : &m_inline`.
+    i32 m_capacity;
+
     union {
-        u32* m_words; // heap word band (capacity > 0x20 bits)
-        u32 m_inline; // the single inline word when the vector fits in the slot
+        u32* m_words;
+        u32 m_inline;
     };
 
-    // Inline bit read. Proven by its expansion inside operator<< (0x193080): a
-    // bounds test against m_capacity that yields 0 (`cmp esi,eax / jb / xor eax,eax`),
-    // the same small-buffer arm select every other accessor uses, and the
-    // `neg/sbb/neg` 0-or-1 normalisation of the masked word.
     i32 GetBit(u32 idx) const {
         if (idx >= static_cast<u32>(m_capacity)) {
             return 0;
@@ -85,9 +65,6 @@ public:
         return (words[idx >> 5] & (1 << (idx & 0x1f))) != 0;
     }
 
-    // The in-range fast path over SetBit. operator>> (0x193140) expands it twice
-    // (`cmp idx,m_capacity / jb <inline set>` else `call ?SetBit@zBitVec@@QAEPAV1@I@Z`),
-    // so the grow branch stays the out-of-line SetBit while the common case is inline.
     zBitVec* Set(u32 idx) {
         if (idx >= static_cast<u32>(m_capacity)) {
             return SetBit(idx);
@@ -99,7 +76,7 @@ public:
 };
 SIZE(0x10);
 
-ostream& operator<<(ostream& accum, const zBitVec& bits); // 0x193080
-istream& operator>>(istream& accum, zBitVec& bits);       // 0x193140
+ostream& operator<<(ostream& accum, const zBitVec& bits);
+istream& operator>>(istream& accum, zBitVec& bits);
 
 #endif // WAP32_ZBITVEC_H

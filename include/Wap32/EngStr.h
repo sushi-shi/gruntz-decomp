@@ -18,7 +18,6 @@ extern "C" i32 EngStr_RenderText(
     i32 flag
 );
 
-// The trailing six are EngStr_RenderText's own (fontSel, shadow, r, g, b, flag) slots.
 void EngStr_DrawText(
     CDDrawSurfaceMgr* obj,
     class CString* text,
@@ -31,9 +30,7 @@ void EngStr_DrawText(
     i32 flag
 );
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-class FontRenderer; // <Font/Font.h>
+class FontRenderer;
 extern FontRenderer g_textObj;
 
 #endif // GRUNTZ_WAP32_ENGSTR_H

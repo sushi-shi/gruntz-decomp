@@ -1,15 +1,15 @@
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/GruntVoice.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/GameRegistry.h>
 
-#include <Bute/ButeMgr.h>   // CButeMgr g_buteMgr (GetIntDef)
-#include <Bute/SymParser.h> // CGruntzMgr::m_symParser - the real 'WAV' resolver
-#include <Gruntz/Enums.h>   // REZ_TAG_WAV ('WAV')
-#include <Gruntz/Grunt.h>   // CGruntCoordList - the out-of-line node walker (0x29a30)
-#include <Gruntz/Random.h>  // g_randSeed / g_randSeeded (the lazily-seeded LCG)
+#include <Bute/ButeMgr.h>
+#include <Bute/SymParser.h>
+#include <Gruntz/Enums.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/Random.h>
 #include <rva.h>
 
 RVA(0x00085df0, 0x4a)
@@ -17,14 +17,6 @@ CGruntSpawnConfig::~CGruntSpawnConfig() {
     Clear();
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::Init  (0x11adc0)
-// ===========================================================================
-// Bind to an owner and seed the config tree pointer, then build the voice list.
-// On a null owner bail with 0. Stash owner (m_00) and owner->m_30 (m_04, the
-// config tree), zero the sprite/object pairs (m_08..m_14), seed m_2c = 0x64, and
-// run BuildVoiceList(); return its result negated/double-negated (a BOOL).
-//
 // @early-stop
 RVA(0x0011adc0, 0x44)
 BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
@@ -42,20 +34,13 @@ BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
     return BuildVoiceList() != 0;
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::Clear  (0x11ae30)
-// ===========================================================================
-// Free every entry in m_18 (dtor + RezFree), empty the array, then drop the two
-// owned objects (m_10/m_14) from m_04's sub-collection and zero the sprite/object
-// pairs. The Remove call shape matches retail byte-exact.
-//
 // @early-stop
 RVA(0x0011ae30, 0x95)
 void CGruntSpawnConfig::Clear() {
     for (i32 i = 0; i < m_voiceLists.GetSize(); i++) {
         CSpawnList* e = static_cast<CSpawnList*>(m_voiceLists[i]);
-        // RezFree IS ::operator delete (both 0x1b9b82), so this pair IS `delete e`.
-        delete e; // ~CSpawnList non-virtual (0x99ca0, defined in AreaMgr.cpp) + ??3
+
+        delete e;
     }
     m_voiceLists.SetSize(0, -1);
     if (m_configTree != 0 && m_configTree->m_soundStream != 0) {
@@ -84,8 +69,8 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     for (; i < 2; i++, slot++) {
         CGameObject* spr =
             m_configTree->m_childGroup->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
-        spr->m_7c->m_notify(spr);
-        CGruntVoice* got = static_cast<CGruntVoice*>(spr->m_7c->m_logic);
+        spr->m_animWorker->m_notify(spr);
+        CGruntVoice* got = static_cast<CGruntVoice*>(spr->m_animWorker->m_logic);
         *slot = got;
         if (got == 0) {
             return 0;
@@ -94,8 +79,6 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     return 1;
 }
 
-// ClearSprites (0x11af90): null the m_08/m_0c voice-sprite pair. Out-of-line
-// (retail emits it standalone; the inline member folded away and never emitted).
 // @early-stop
 RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
@@ -105,16 +88,6 @@ void CGruntSpawnConfig::ClearSprites() {
     }
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::LoadGruntSpawnConfig  (0x11afb0)
-// ===========================================================================
-// The percent/priority-gated voice spawn driver. Ensure the voices are loaded and
-// the owner is ready, then read the per-section percent/priority from the bute
-// config (formatted "SG%i"/"G%i" section names), roll the percent gate, skip if a
-// higher-priority voice is already active, pick a weighted entry, duck the
-// currently-playing voice's volume, open/configure the chosen stream, and play it.
-// /GX EH frame from the two CString temporaries.
-//
 // @early-stop
 
 RVA(0x0011afb0, 0x321)
@@ -171,10 +144,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
     StreamVoice** streams = m_streams;
-    // `who` IS the gate: the ex-CSpawnButeConfig view was CGrunt (its +0x10/+0x170/
-    // +0x234/+0x258 are m_object/m_entranceReason/m_coordToggle/m_gruntKind), and the
-    // ex-CSpawnActiveVoice at +0x10 was the bound CGameObject, whose +0x188 IS the
-    // object id each CGruntVoice caches as m_source.
+
     CGameObject* gate = who->m_object;
     i32 chosen;
     if (b < a) {
@@ -219,17 +189,6 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     return voice->Setup(gate->m_188, stream, priority, 0) != 0;
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::SpawnVoiceDriver overloads (0x11b3b0 / 0x11b7c0)
-// ===========================================================================
-// The two sibling weighted grunt-voice spawn drivers (percent LCG gate @0x6c1288,
-// priority reject, weighted pick, lazy sprite create, CGruntVoice::Setup tail).
-// Re-homed from the ApiCaller backlog by RVA proximity (dead-centre of the
-// 0x11axxx-0x11cxxx CGruntSpawnConfig family).
-//
-// The percent gate's LCG is INLINE in both overloads (retail expands the seed test,
-// the timeGetTime lazy seed and the 214013/2531011 recurrence in place) where the
-// sibling LoadGruntSpawnConfig @0x11afb0 calls CGruntzMgr::Rand out of line.
 static __inline i32 GameRand() {
     i32 seed;
     if (!(g_randSeeded & 1)) {
@@ -242,12 +201,6 @@ static __inline i32 GameRand() {
     return (g_randSeed >> 0x10) & 0x7fff;
 }
 
-// The six-argument overload takes the SUBJECT GRUNT (`?...@@QAEHPAXHHHHH@Z` says
-// void*, but the body dereferences it as `who->m_object->m_188` at +0x10/+0x188 and
-// every one of the 75 call sites passes a CGrunt `this` or 0). Compared with the
-// five-argument twin below it drops the "GruntPercent"/"GruntPriority" fallbacks and
-// the second CString, and derives the ducking object id from the grunt instead of
-// taking it as an argument.
 // @early-stop
 RVA(0x0011b3b0, 0x338)
 i32 CGruntSpawnConfig::SpawnVoiceDriver(
@@ -322,9 +275,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
                 (static_cast<DirectSoundMgr*>(m_streams[0]))
                     ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-            // NOT a transcription slip of the twin below: retail gates this arm on the
-            // OBJECT ID (`test ebp,ebp` @0x11b5a6, ebp = id) where 0x11b7c0 gates the
-            // same arm on m_streams[1] - so this duck can run on a null stream.
+
         } else if (b != 0 && id != 0) {
             (static_cast<DirectSoundMgr*>(m_streams[1]))
                 ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
@@ -346,9 +297,6 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     return 0;
 }
 
-// The five-argument twin: the caller supplies the ducking object id directly, so
-// there is no grunt to read it off, and CGruntVoice::Setup's trailing flag is 1 here
-// where the six-argument overload passes 0.
 // @early-stop
 RVA(0x0011b7c0, 0x304)
 i32 CGruntSpawnConfig::SpawnVoiceDriver(
@@ -439,14 +387,6 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     return 0;
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::GetButeSlot  (0x11bba0)
-// ===========================================================================
-// Return the grunt's voice-list band id, chosen by the CGrunt's m_entranceReason (a
-// switch over 0..0x20), plus two early specials on m_gruntKind (0x3a, 0x39). A null
-// grunt or out-of-range selector returns 0.
-//
-// @early-stop
 RVA(0x0011bba0, 0x280)
 i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     if (config == 0) {
@@ -509,7 +449,7 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
         case 22:
             return VOICE_CUES_PER_BAND * 34 + cue;
         case 23:
-            return cue; // band 0
+            return cue;
         case 24:
             return VOICE_CUES_PER_BAND * 1 + cue;
         case 25:
@@ -533,23 +473,6 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     }
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::PickWeighted  (0x11bee0)
-// ===========================================================================
-// Resolve voice-list `voiceId` to its .WAV parse record. `which` names an explicit
-// entry; -1 (or an index past the end) rolls a random one, then re-rolls up to five
-// times so the list does not repeat its own previous pick. The winning index is
-// memoized in the list's m_lastPicked, the list is walked that many nodes, and the
-// entry's name is resolved through the owner's CSymParser under the 'WAV' tag.
-//
-// The three lazily-seeded LCG expansions are retail's own spelling, not an artifact:
-// the FIRST roll calls the shared out-of-line CGruntzMgr::Rand() (`mov ecx,g_gameReg;
-// call 0x39ae`) while BOTH arms of the re-roll loop expand the recurrence in line -
-// exactly the split retail emits, and the same hand-inlined idiom as
-// CRandomAmbientSound::Init2 (0xcd70). The `span == 0` arms are the degenerate-range
-// guard: with lo == 0 the endpoint select collapses to MSVC's mask form
-// (`and esi,0x10000; neg; sbb; not; and esi,edi`).
-//
 // @early-stop
 RVA(0x0011bee0, 0x230)
 CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
@@ -570,8 +493,7 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     i32 pick = which;
     if (pick == -1 || pick >= list->m_list.GetCount()) {
         i32 hi = list->m_list.GetCount() - 1;
-        // Retail loads the registry pointer next to the timeGetTime import slot,
-        // above the span test, not down in the arm that calls Rand().
+
         CGruntzMgr* reg = g_gameReg;
         i32 span = hi + 1;
         if (span == 0) {
@@ -592,14 +514,7 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
             while (pick == list->m_lastPicked && tries > 0) {
                 i32 rehi = list->m_list.GetCount() - 1;
                 i32 respan = rehi + 1;
-                // Inside the loop g_randSeed is already register-cached, so retail's
-                // seed lives in THAT register and only the lazy-seed arm needs a move
-                // (`call ebp; mov ecx,eax`). Priming each arm from the cache - rather
-                // than an if/else, which homes the seed in timeGetTime's eax and costs
-                // a `jmp` plus the reversed move - is what reproduces it. The two
-                // declarations stay arm-local: one shared across both arms widens the
-                // live range and MSVC then materializes it into eax up front. Site 1
-                // above has no cache yet, so it keeps the if/else (and matches).
+
                 if (respan == 0) {
                     i32 seed;
                     if (g_randSeeded & 1) {
@@ -631,9 +546,7 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     if (pick >= list->m_list.GetCount()) {
         entry = 0;
     } else {
-        // Retail walks through the OUT-OF-LINE node helper (`mov ecx,list; call
-        // 0x29a30`), not MFC's inline CPtrList::GetNext - unlike the sibling walk in
-        // CAreaMgr::LoadObjectImageResources (0x9a510), which really is inline.
+
         CGruntCoordList* nodes = static_cast<CGruntCoordList*>(&list->m_list);
         POSITION& cursor = list->m_cursor;
         cursor = list->m_list.GetHeadPosition();
@@ -721,8 +634,7 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
 
 RVA(0x0011c7b0, 0x2d)
 void CGruntSpawnConfig::PauseAllVoices() {
-    // The two parallel pairs the old "p[2]" cursor spanned: m_voices[] @+0x08 and
-    // m_streams[] @+0x10 (p[2] was simply m_streams[k]).
+
     for (i32 k = 0; k < 2; k++) {
         if (m_streams[k] != 0) {
             m_streams[k]->m_feeder.Pause();

@@ -1,22 +1,18 @@
-#include <Net/DPlayImports.h>    // DirectPlayCreate/Enumerate (TU-private import decls)
-#include <Net/NetMgr.h>          // CNetMgr + DirectPlay/list node types (pulls <Mfc.h>, RezMgr)
-#include <Net/NetGuids.h>        // g_guid1..g_guid5 (owner-only decl header)
-#include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
-#include <Font/Font.h> // CWapNodeB decl (a NetMgr node type, still homed here - 0x1794b0-0x179680
+#include <Net/DPlayImports.h>
+#include <Net/NetMgr.h>
+#include <Net/NetGuids.h>
+#include <Net/InterfaceObject.h>
+#include <Font/Font.h>
 #include <rva.h>
-#include <MsgParam.h> // the window-message parameter's pointer/word pair
-#include <AddrWord.h> // the list-box item cookie's word/pointer pair
-#include <string.h>   // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
+#include <MsgParam.h>
+#include <AddrWord.h>
+#include <string.h>
 
-VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
-VTBL(CNetSessionNode, 0x001f0778);    // own (final) vtable
+VTBL(CNetPlayerListNode, 0x001f0760);
+VTBL(CNetSessionNode, 0x001f0778);
 DATA(0x002bf840)
-i32 g_spEnumValidated = 0; // 0x6bf840 (owner def; C linkage from NetMgr.h)
+i32 g_spEnumValidated = 0;
 
-// GUIDs for the DirectPlay service-provider interface checks (IsInterfaceX). Given
-// EXTERNAL linkage (`extern const`, decls in <Net/NetGuids.h>) - the definitions drop
-// the `extern` keyword. Only g_guid1 opens the run; the four below are RVA-contiguous
-// 16-byte siblings (0x224d68/78/88/98).
 // clang-format off
 DATA(0x00224d58)
 const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
@@ -34,16 +30,16 @@ DATA(0x00224d98)
 const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
                                    0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
 
-// ---------------------------------------------------------------------------
-// CNetMgr::InitFromProvider  (__thiscall; ret 0x14, 5 args).
-// The service-provider Init variant: DirectPlayCreate's a fresh DirectPlay object
-// for the selected group's GUID (a->+0x4) into m_releaseIface, then queries its
-// IDirectPlay4 session interface (riid 0x5f0588) into m_directPlay. On any HRESULT
-// it reports the error (NetMgr.cpp line 0x41 / 0x50) - the QueryInterface failure
-// path also tears the manager down (Destroy) - and returns 0. On success it records
-// the four caller setup dwords into the m_4 sub-object (+0x4..+0x10), latches the
-// provider descriptor into m_groupSel, and zeroes the two other selection latches,
-// then returns 1.
+
+
+
+
+
+
+
+
+
+
 RVA(0x001780b0, 0xbb)
 i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     GUID* guid = a->m_guid;
@@ -55,10 +51,10 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x41, hr, 0);
         return 0;
     }
-    // The DirectPlayCreate'd object is NOT yet the IDirectPlay4-shaped session
-    // interface - it is the pre-QI object, which is exactly what m_releaseIface is
-    // declared as. QueryInterface is slot 0 of both, so the ex-reinterpret was
-    // pointless: call it on the pointer at its own type.
+
+
+
+
     hr = m_releaseIface->QueryInterface(&g_netDirectPlayRiid, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
@@ -69,8 +65,8 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    // the +0x4 block IS the app GUID (16-byte struct assign; the CGruntzMgr* m_4
-    // claim conflicts with this write - @identity-TODO resolve the +0x4 model)
+
+
     m_appGuid.m_guid = appGuid;
     m_groupSel = a;
     m_playerSel = 0;
@@ -78,28 +74,28 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::Init  (__thiscall).
-// Brings the supplied DirectPlay interface online: opens it (slot 3, args
-// 0/&iface/0) and on success queries its session interface into m_directPlay
-// (slot 0 with the static riid 0x5f0588). On any HRESULT it reports the error
-// (NetMgr.cpp line 0x78 / 0x81) and tears the manager down (Destroy), returning
-// 0. On success it records the four caller setup dwords into the m_4 sub-object
-// (+0x4..+0x10) and zeroes the three list-box selection latch/id pairs, then 1.
-//
-// EXACT 2026-07-29. The long-standing "regalloc/spill wall (~80%)" was THREE source
-// bugs, none of them regalloc: (1) g_netDirectPlayRiid was declared `void*` and
-// passed BY VALUE, so cl emitted `mov ecx,[riid]; push ecx` where retail has
-// `push offset riid` - it is the 16-byte IID itself; (2) QueryInterface was
-// dispatched on the LOBBY, where retail reloads Open's out-slot and dispatches on
-// the OPENED interface; (3) the app GUID was copied word-by-word, which gives
-// this-relative displacements instead of retail's held `lea eax,[esi+4]` base.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 RVA(0x00178170, 0xba)
 i32 CNetMgr::Init(void* a, NetGuid appGuid) {
     IDirectPlay4Z* lobby = static_cast<IDirectPlay4Z*>(a);
-    // Open's 2nd arg is an OUT slot retail zeroes before the call (`mov [esp+0x18],edi`)
-    // and reloads afterwards to dispatch QueryInterface on - the opened interface, NOT
-    // the lobby the call was made through.
+
+
+
     IDirectPlay4Z* opened = 0;
     i32 hr = lobby->Open(0, &opened, 0);
     if (hr != 0) {
@@ -114,11 +110,11 @@ i32 CNetMgr::Init(void* a, NetGuid appGuid) {
         return 0;
     }
 
-    // A whole 16-byte GUID assignment, exactly like InitFromProvider's (which is
-    // EXACT): that is what makes cl hold the destination in `lea eax,[esi+4]` and
-    // schedule the four dword load/stores through it, interleaved with the
-    // selection-latch zeroing. Spelling the four words out gives this-relative
-    // displacements instead.
+
+
+
+
+
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
@@ -139,9 +135,9 @@ void CNetMgr::Destroy() {
         m_releaseIface->Release();
         m_releaseIface = 0;
     }
-    // The DirectPlay interface's own slots 4 and 2 ARE the teardown pair (+0x10 then
-    // the IUnknown +0x08 Release); the ex INetReleasable** alias was a second view of
-    // the same object. The local re-read matches retail's reload of [this+0x18].
+
+
+
     if (m_directPlay != 0) {
         m_directPlay->v04();
         IDirectPlay4Z* again = m_directPlay;
@@ -210,8 +206,8 @@ RVA(0x00178430, 0x3a)
 void CNetMgr::ClearGroupList() {
     POSITION pos = m_groups.GetHeadPosition();
     while (pos != 0) {
-        // `delete`'s implicit null-guard IS retail's one test+je (then the virtual
-        // scalar-deleting-dtor dispatch, push 1 / call [vtbl+4]).
+
+
         delete static_cast<InterfaceObject*>(m_groups.GetNext(pos));
     }
     m_groups.RemoveAll();
@@ -219,15 +215,15 @@ void CNetMgr::ClearGroupList() {
     m_groupSel = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::PopulateGroupList (0x178470, __thiscall, /GX) - re-homed from the ex
-// LobbyGroupList.cpp holding TU (its CLobbyGroupMgr/LobbyNode/LobbyIface views were
-// fake facets of CNetMgr/CNetListNode/InterfaceObject - src-claim + mid-cluster RVA
-// proven). Fill the service-provider list box from the +0x1c group CObList: for each
-// InterfaceObject payload, unless the caller's filter rejects it (flag bit1 -> drop
-// IsInterface2, bit2 -> drop IsInterface1), add its GetName() text and stash the
-// object pointer as the item data. The +0x7c cursor (m_groupSelId) latches the walk
-// position (same slot Find reuses); the GetName CString temp gives the /GX EH frame.
+
+
+
+
+
+
+
+
+
 // @early-stop
 RVA(0x00178470, 0x11e)
 void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
@@ -242,7 +238,7 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
 
     while (obj != 0) {
         if (((flag & 1) && obj->IsInterface2()) || ((flag & 2) && obj->IsInterface1())) {
-            // latch-then-assign: keeps GetNext's POSITION& load out of the guard's CSE
+
             if (m_groupSelId != 0) {
                 InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
                 m_groups.GetNext(m_groupSelId);
@@ -251,9 +247,9 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
                 obj = 0;
             }
         } else {
-            // an unnamed TEMPORARY of the full-expression, not a scoped local: retail
-            // reads the text out of GetName's returned pointer (`mov eax,[eax]`), not
-            // back out of the temp's frame slot
+
+
+
             MsgParam name;
             i32 idx = static_cast<i32>(SendMessageA(
                 hList,
@@ -299,23 +295,23 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     if (data == 0) {
         return 0;
     }
-    // LB_GETITEMDATA hands the item cookie back as an LRESULT (an integer by the Win32
-    // ABI); the cookie IS the group node pointer the list box was populated with
-    // (LB_SETITEMDATA in PopulateGroupList) - both readings of the word (<AddrWord.h>).
+
+
+
     AddrWord cookie;
     cookie.m_word = data;
     m_groupSel = static_cast<InterfaceObject*>(cookie.m_addr);
     return data;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::EnumPlayersInto  (__thiscall).
-// Re-enumerates the session's players: first clears the +0x38 player list, then
-// builds a 0x50-byte session descriptor on the stack (dwSize + the session GUID
-// copied from this+4) and fires the IDirectPlay4 EnumPlayers slot (+0x34) with the
-// per-player callback (NetEnumPlayerCb), the two caller args, and `this` as the
-// enum context. On a nonzero HRESULT it routes the error through the static
-// diagnostic reporter (NetMgr.cpp:0x1c9) and returns it; otherwise returns 0.
+
+
+
+
+
+
+
+
 RVA(0x00178610, 0x8c)
 i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
     ClearPlayerList();
@@ -343,13 +339,13 @@ BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags,
     return FALSE;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::AddPlayerNode  (__thiscall).
-// Adds one enumerated player to the +0x38 player list. No-op (0) on a null
-// descriptor. RezAlloc's a 0x58-byte node (vptr 0x5f0760, body zeroed),
-// inits it from the descriptor (copies the 0x50-byte player desc in and trims
-// its name); if the init fails it self-destructs the node and returns 0,
-// otherwise AddTail's it onto the +0x38 CObList and caches the position at +0x54.
+
+
+
+
+
+
+
 // @early-stop
 RVA(0x001786d0, 0x77)
 CNetPlayerListNode* CNetMgr::AddPlayerNode(void* playerDesc) {
@@ -372,7 +368,7 @@ RVA(0x00178750, 0x3d)
 void CNetMgr::ClearPlayerList() {
     POSITION pos = m_players.GetHeadPosition();
     while (pos != 0) {
-        // implicit null-guard + virtual deleting-dtor dispatch
+
         delete static_cast<CNetPlayerListNode*>(m_players.GetNext(pos));
     }
     m_players.RemoveAll();
@@ -380,13 +376,13 @@ void CNetMgr::ClearPlayerList() {
     m_playerSel = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::PopulatePlayerList  (__thiscall).
-// Refills a Win32 player list box from the +0x38 player CObList. No-op on a null
-// handle. Resets the box (LB_RESETCONTENT) and walks the list (head at +0x3c,
-// cursor cached in m_80): for each node's payload (+0x8) it adds the player name
-// (payload+0x34) as a string (LB_ADDSTRING) and, if added, stashes the payload
-// pointer as the item's data (LB_SETITEMDATA).
+
+
+
+
+
+
+
 RVA(0x00178790, 0x89)
 void CNetMgr::PopulatePlayerList(void* hList) {
     if (hList == 0) {
@@ -412,9 +408,9 @@ void CNetMgr::PopulatePlayerList(void* hList) {
             cookie.m_ptr = payload;
             SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
-        // GetAt's node is latched BEFORE the advance and assigned after: that is what
-        // stops cl from CSEing the cursor load GetNext makes through its POSITION&
-        // with the guard's own load, so the member is read twice like retail.
+
+
+
         if (m_playerSelId != 0) {
             CNetPlayerListNode* next =
                 static_cast<CNetPlayerListNode*>(m_players.GetAt(m_playerSelId));
@@ -448,24 +444,24 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
     if (data == 0) {
         return 0;
     }
-    // the LB item data IS the player node, handed back through the LRESULT word
+
     AddrWord cookie;
     cookie.m_word = data;
     m_playerSel = static_cast<CNetPlayerListNode*>(cookie.m_addr);
     return data;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::EnumGroupsInto  (__thiscall; ret 0x10, 4 args).
-// Enumerates the players of a group into a fresh player node. Builds a 0x50-byte
-// EnumGroups descriptor on the stack (dwSize 0x50, flags 0xa044, the session GUID
-// copied from this+4, the four caller args at +0x28/+0x30/+0x34/+0x40 - the name
-// arg only when it is a non-empty string) and fires the IDirectPlay4 EnumGroups slot
-// (+0x60) with flag 2; reports a nonzero HRESULT (NetMgr.cpp line 0x29e). It then
-// two-phase reads the group's player-data blob via GetPlayerData2 (+0x58): a size
-// probe (in=0), an operator-new of that size, then the real read into the buffer -
-// reporting a nonzero HRESULT (line 0x2b1) - and hands the blob to AddPlayerNode,
-// freeing the blob (RezFree) on every exit.
+
+
+
+
+
+
+
+
+
+
+
 RVA(0x001788a0, 0x13c)
 CNetPlayerListNode*
 CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password) {
@@ -505,7 +501,7 @@ CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2b1, hr, 0);
         return 0;
     }
-    CNetPlayerListNode* r = AddPlayerNode(blob); // the node IS the nonzero result
+    CNetPlayerListNode* r = AddPlayerNode(blob);
     RezFree(blob);
     return r;
 }
@@ -518,7 +514,7 @@ CNetMgr::EnumPlayersCb(CNetPlayerListNode* a, const char* b, const char* c, i32 
     }
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroups(&a->m_desc, 1); // the node's +0x04 DPSESSIONDESC2
+    i32 hr = iface->EnumGroups(&a->m_desc, 1);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, 0);
         return 0;
@@ -539,17 +535,17 @@ i32 CNetMgr::EnumGroupsAll() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::EnumGroupsRange  (__thiscall).
-// As EnumGroupsAll but seeds the enum descriptor from a caller record's +0xc
-// quad (copied onto the stack) before the EnumGroups call (slot 0xc, NetEnumCb
-// callback, `this` context); reports a nonzero HRESULT (NetMgr.cpp line 0x327).
+
+
+
+
+
 RVA(0x00178a80, 0x73)
 i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
     ClearSessionList();
 
-    // rec is the player-list node (roster m_playerSel / the create-ctx record) -
-    // the 4 dwords are its descriptor GUID
+
+
     GUID desc = (static_cast<CNetPlayerListNode*>(rec))->m_desc.m_guidInstance;
 
     IDirectPlay4Z* iface = m_directPlay;
@@ -570,20 +566,20 @@ BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlag
     return TRUE;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::AddSessionNode  (__thiscall; /GX EH frame).
-// Adds one enumerated session to the +0x54 list. RezAlloc's a 0x24-byte node
-// (base-dtor vptr 0x5e8cb4 while its two CString members are constructed, final
-// vptr 0x5f0778), inits its body (InitSession: id + two CStrings, zeroing
-// +0x14/+0x18/+0x1c), then publishes the node POINTER ITSELF as the player's
-// DirectPlay data - slot 29 (+0x74) is SetPlayerData(id, lpData, size, flags)
-// (see the slot table in <Net/NetMgr.h>; the "GetData5" label is a functional
-// placeholder), and `&node` / 4 is the 4-byte back-pointer. Taking node's address
-// is what puts it in a stack slot in retail (retail's second `sub esp,8` dword;
-// the first is the operator-new temp the /GX unwind funclet frees).
-// EVERY failure arm - InitSession == 0, a nonzero HRESULT (reported at
-// NetMgr.cpp line 0x36c), and a failed AddTail - deletes the node and returns 0;
-// only the AddTail success arm latches +0x20 and returns it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // @early-stop
 RVA(0x00178b30, 0x140)
 CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d) {
@@ -592,15 +588,15 @@ CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* 
     if (node->InitSession(id, nameA, nameB, d) != 0) {
         i32 hr = m_directPlay->GetData5(node->m_id, &node, 4, 1);
         if (hr != 0) {
-            // the reporting arm FALLS THROUGH into the shared delete tail; the
-            // success arm always returns, so cl needs no join jump and lays it
-            // out last - which is retail's block order
+
+
+
             ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, 0);
         } else {
             __POSITION* pos =
                 static_cast<__POSITION*>(m_sessions.AddTail(static_cast<CObject*>(node)));
-            // the FAILURE arm falls through (retail's `jne` skips it) and the latch
-            // is the out-of-line continuation
+
+
             if (pos == 0) {
                 delete node;
                 return 0;
@@ -617,7 +613,7 @@ RVA(0x00178c70, 0x3d)
 void CNetMgr::ClearSessionList() {
     POSITION pos = m_sessions.GetHeadPosition();
     while (pos != 0) {
-        // implicit null-guard + virtual deleting-dtor dispatch
+
         delete static_cast<CNetSessionNode*>(m_sessions.GetNext(pos));
     }
     m_sessions.RemoveAll();
@@ -625,17 +621,17 @@ void CNetMgr::ClearSessionList() {
     m_sessionSel = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::CreatePlayer  (__thiscall; ret 0xc, 3 args).
-// Mints a DirectPlay player through slot 6 == IDirectPlay4::CreatePlayer(&id,
-// &DPNAME, hEvent, 0, 0, 0): a 0x10-byte DPNAME zeroed whole, then dwSize=0x10 and
-// the two name pointers (dwFlags stays the memset zero - retail re-stores dwSize
-// and the names OVER the zeroed slots, which is why all four dwords take an
-// `eax`-sourced zero first). `hEvent` is the caller's third arg. On a nonzero
-// HRESULT it reports (NetMgr.cpp line 0x3bb) and returns 0; on success the new id
-// plus the two names go to AddSessionNode. The uninitialised `id` gets no frame
-// space of its own: cl overlays it on the dead `a` parameter home (retail's frame
-// is `sub esp,0x10`, exactly the DPNAME).
+
+
+
+
+
+
+
+
+
+
+
 RVA(0x00178cb0, 0x8b)
 CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
     i32 id;
@@ -654,20 +650,20 @@ CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
     return AddSessionNode(id, a, b, 0);
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::PopulateSessionList  (__thiscall; /GX EH frame).
-// Refills a Win32 session list box from the +0x54 session CObList. No-op on a
-// null handle. Resets the box (LB_RESETCONTENT) and walks the list (head at
-// +0x58, cursor cached in m_84): for each node's payload (+0x8) it fetches the
-// session name by value (GetName -> a scoped CString temp, whose dtor runs under
-// the /GX frame), adds it (LB_ADDSTRING) and, if added, stashes the payload as
-// the item's data (LB_SETITEMDATA).
-// The GetName() CString is an unnamed TEMPORARY of the LB_ADDSTRING full-expression,
-// not a loop-scoped local: retail destroys it (EH state -1, `lea ecx,[esp+0x24] /
-// call ~CString`) the instant SendMessageA returns, BEFORE the `!= -1` test. That
-// forces the add-string result into a callee-saved register (edi) to survive the
-// dtor, which in turn spills `this` to the frame slot retail reloads at the loop
-// bottom - the whole register assignment falls out of the temporary's lifetime.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 RVA(0x00178d40, 0xdf)
 void CNetMgr::PopulateSessionList(void* hList) {
     if (hList == 0) {
@@ -693,9 +689,9 @@ void CNetMgr::PopulateSessionList(void* hList) {
             cookie.m_ptr = payload;
             SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
-        // GetAt's node is latched BEFORE the advance and assigned after: that is what
-        // stops cl from CSEing the cursor load GetNext makes through its POSITION&
-        // with the guard's own load, so the member is read twice like retail.
+
+
+
         if (m_sessionSelId != 0) {
             CNetSessionNode* next = static_cast<CNetSessionNode*>(m_sessions.GetAt(m_sessionSelId));
             m_sessions.GetNext(m_sessionSelId);
@@ -713,7 +709,7 @@ i32 CNetMgr::RemovePlayerObj(CNetSessionNode* obj) {
     }
 
     __POSITION* pos = obj->m_listPosition;
-    delete obj; // virtual deleting-dtor dispatch (the retail push 1 / call [vtbl+4])
+    delete obj;
     if (pos != 0) {
         m_sessions.RemoveAt(pos);
     }
@@ -875,21 +871,21 @@ i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags) {
 
 RVA(0x00179240, 0x22)
 i32 CNetMgr::EnumSessions2(void* ctx) {
-    // IDENTIFIED 2026-07-27: this buffer is a DPCAPS and +0x18 is its dwLatency. Three
-    // agreeing facts - the abstract interface's slot 14 (+0x38) is IDirectPlay::GetCaps
-    // (so "Enum2" is GetCaps and "EnumSessions" is its wrapper), DPCAPS is exactly 0x28
-    // bytes with dwSize first (which is why EnumSessions memsets 0x28 then stores 0x28 at
-    // offset 0), and dwLatency lands at +0x18 in dplay.h's field order. Now declared as
-    // the real record (CNetCaps in NetMgr.h, the same treatment CNetSessionDesc gives
-    // DPSESSIONDESC2), so the `desc + 0x18` byte cursor is a named member.
+
+
+
+
+
+
+
     CNetCaps caps;
     i32 ok = EnumSessions(&caps, ctx);
     return ok ? caps.m_dwLatency : 0;
 }
 
-// The advance is latch-then-assign so GetNext's POSITION& load is not CSEd with the
-// guard's - retail's second `mov edx,[this+0x7c]`. See
-// docs/patterns/cursor-member-walk-latch-then-assign.md.
+
+
+
 RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
     m_groupSelId = m_groups.GetHeadPosition();
@@ -913,7 +909,7 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
                 }
                 break;
         }
-        // latch-then-assign: keeps GetNext's POSITION& load out of the guard's CSE
+
         if (m_groupSelId != 0) {
             InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
             m_groups.GetNext(m_groupSelId);
@@ -925,15 +921,15 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
     return 0;
 }
 
-// ===========================================================================
-// The NetMgr.cpp tail (0x1794b0-0x1796c0): the five service-provider GUID
-// predicates + the node string-free, re-homed from src/Font/Font.cpp per the
-// docs/exe-map/interval-dossiers.md calibration case (they precede ??0Font
-// @0x179700 - NetMgr.cpp-obj code, glued to the font unit only by the seam).
-// These five RVAs are the canonical <Net/InterfaceObject.h> InterfaceObject's
-// methods (its m_4 GUID pointer + these predicates). @identity-TODO remains for
-// CWapNodeB (a NetMgr node type, declared in <Font/Font.h> for now).
-// ===========================================================================
+
+
+
+
+
+
+
+
+
 
 RVA_COMPGEN(0x00179390, 0x1e, ??_GCNetPlayerListNode@@UAEPAXI@Z)
 RVA_COMPGEN(0x00179400, 0x1e, ??_GCNetSessionNode@@UAEPAXI@Z)

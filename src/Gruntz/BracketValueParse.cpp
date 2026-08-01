@@ -1,7 +1,7 @@
 #include <Ints.h>
 #include <rva.h>
-#include <stdio.h>  // sprintf (0x11f890)
-#include <string.h> // strstr (0x120090) + inline strlen
+#include <stdio.h>
+#include <string.h>
 #pragma intrinsic(strlen)
 
 RVA(0x000f9160, 0xd2)

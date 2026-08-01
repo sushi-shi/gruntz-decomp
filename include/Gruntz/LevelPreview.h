@@ -1,4 +1,3 @@
-// LevelPreview.h - the LevelPreview TU's exported globals/data.
 #ifndef GRUNTZ_GRUNTZ_LEVELPREVIEW_H
 #define GRUNTZ_GRUNTZ_LEVELPREVIEW_H
 

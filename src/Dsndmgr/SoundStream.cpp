@@ -1,22 +1,22 @@
 #include <Dsndmgr/SoundStream.h>
-#include <EmptyString.h>          // g_emptyString
-#include <Dsndmgr/StreamVoice.h>  // canonical StreamVoice + StreamVoiceFeeder
-#include <Dsndmgr/StreamFeeder.h> // the embedded feeder/pump (StreamVoice+0x6c)
-#include <Rez/RezMgr.h>           // RezAlloc - the engine heap allocator (reloc-masked)
-#include <Win32.h>                // windows.h base types (dsound.h needs them)
-#include <mmsystem.h>             // WAVEFORMATEX (dsound.h needs it predefined) + timeGetTime
-#include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
-#include <Dsndmgr/WaveFormatPtr.h> // the engine record / SDK LPWAVEFORMATEX pair
+#include <EmptyString.h>
+#include <Dsndmgr/StreamVoice.h>
+#include <Dsndmgr/StreamFeeder.h>
+#include <Rez/RezMgr.h>
+#include <Win32.h>
+#include <mmsystem.h>
+#include <dsound.h>
+#include <Dsndmgr/WaveFormatPtr.h>
 #include <rva.h>
-#include <stdio.h>  // engine sprintf (reloc-masked) in GetErrorString
-#include <string.h> // memset (rep stos) in FillBuffer; inline strcpy in GetErrorString
+#include <stdio.h>
+#include <string.h>
 
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
-VTBL(StreamVoice, 0x001ef6d8);       // 1-slot ??_7StreamVoice (slot 0 = ??_G 0x137630)
-VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)
-VTBL(SoundStream, 0x001ef6ec);       // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
-VTBL(StreamFeeder, 0x001ef6f0);      // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
+VTBL(StreamVoice, 0x001ef6d8);
+VTBL(StreamVoiceFeeder, 0x001ef6e0);
+VTBL(SoundStream, 0x001ef6ec);
+VTBL(StreamFeeder, 0x001ef6f0);
 DATA(0x00253c4c)
 i32 g_ssLogEnabled;
 DATA(0x00253c50)
@@ -26,15 +26,6 @@ i32 g_ssBeepEnabled;
 DATA(0x00253c58)
 i32 g_ssThirdEnabled;
 
-// ---------------------------------------------------------------------------
-// 0x137330 - ??1PureSoundElem, the standalone out-of-line COMDAT copy of the
-// canonical inline dtor (<Dsndmgr/SoundVoiceList.h>): 7-byte `mov [ecx],
-// ??_7PureSoundElem; ret`. The inline `delete (PureSoundElem*)e` sites
-// (0x136f60/e20/ed0, DSNDMGR.CPP side) inline the same teardown; retail's DSndMgSR
-// obj additionally emits this copy because its EH unwind funclet (0x1e0950) takes
-// the dtor's address (an EH shape this TU does not yet reproduce, so the retail fn
-// is target-side-named only). First fn of the DSndMgSR.cpp obj (the 0x137330 file
-// boundary; see interval-dossiers.md).
 RVA_COMPGEN(0x00137330, 0x7, ??1PureSoundElem@@QAE@XZ)
 
 RVA(0x00137340, 0x33)
@@ -108,9 +99,7 @@ i32 StreamVoice::SetSource(CParseSource* src) {
     WaveFormatX wf;
     u32 dataOff;
     u32 dataLen;
-    // The base m_owner (+0x10, SoundDevice*) IS the creating SoundStream (the ctor
-    // stores CreateStreamBuffer's `this`); ParseWave is SoundStream's RIFF parser,
-    // so the voice downcasts its owner back to the concrete stream device.
+
     if ((static_cast<SoundStream*>(m_owner))->ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
         return 0;
     }
@@ -123,9 +112,7 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    // The three setters are the inherited DirectSoundMgr::SetVolumeByIndex/
-    // SetPanByIndex/SetField2 (0x1355c0/0x1357a0/0x135920), reached through the
-    // real DSoundCloneInst base - no upcast needed.
+
     i32 ok = 1;
     if (SetVolumeByIndex(vol) == 0) {
         ok = 0;
@@ -151,16 +138,12 @@ u32 StreamVoice::ComputeRatio() {
 RVA(0x001375b0, 0x77)
 StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b)
     : DSoundCloneInst(buf, owner) {
-    // cl auto-stamps ??_7StreamVoice after the base + member ctors.
+
     m_stopWhenIdle = a;
     m_retireWhenIdle = b;
     m_active = 0;
 }
 
-// 0x137630 - ??_GStreamVoice: the auto-emitted scalar-deleting dtor (slot 0 of the
-// 1-slot ??_7StreamVoice @0x5ef6d8; `push esi; call ~StreamVoice; test [esp+8],1;
-// conditional operator delete; ret 4`). Was a FID ??_G__non_rtti_object false
-// positive in config/library_labels.csv.
 RVA_COMPGEN(0x00137630, 0x1e, ??_GStreamVoice@@UAEPAXI@Z)
 
 RVA(0x00137650, 0x64)
@@ -168,32 +151,16 @@ StreamVoice::~StreamVoice() {
     m_feeder.FeederReset(0);
 }
 
-// 0x1376c0 - ??1StreamVoiceFeeder: cl's auto-generated IMPLICIT dtor for the
-// derived feeder (no members to destroy -> a bare 5-byte tail-jmp to ~StreamFeeder
-// @0x137cf0, no vptr re-stamp). ~StreamVoice's EH unwind funclet (state 1: destroy
-// m_feeder) takes its address, which is why the copy is emitted + kept. Was a FID
-// __inc false positive.
 RVA_COMPGEN(0x001376c0, 0x5, ??1StreamVoiceFeeder@@QAE@XZ)
 
-// ---------------------------------------------------------------------------
-// SoundStream::SoundStream (__thiscall). Base ctor, then m_voices' own DSoundList
-// ctor empties the voice list (+0x94/+0x98), then cl stamps ??_7SoundStream
-// (0x5ef6ec). The body is empty - that stamp-AFTER-the-zeroes order is exactly what
-// makes the zeroes a member ctor rather than body stores.
 RVA(0x001376d0, 0x20)
 SoundStream::SoundStream() {}
 
-// 0x1376f0 - ??_GSoundStream: the auto-emitted scalar-deleting dtor (slot 0 of
-// ??_7SoundStream @0x5ef6ec). Was a FID ??_G__non_rtti_object false positive.
 RVA_COMPGEN(0x001376f0, 0x1e, ??_GSoundStream@@UAEPAXI@Z)
 
 RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
-// SoundStream::PlaySoundDefaulted (0x137720, __thiscall - `this`/ecx is unused): thin
-// wrapper defaulting the 3rd flag arg to 0 over the inherited SoundDevice::Create
-// (0x136550): retail passes ecx (this) straight through - the call is on the
-// SoundDevice base at offset 0.
 RVA(0x00137720, 0x14)
 i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
     return Create(hWnd, flag, 0);
@@ -208,16 +175,6 @@ void SoundStream::Free() {
     Shutdown();
 }
 
-// ---------------------------------------------------------------------------
-// SoundStream::CreateStreamBuffer (__thiscall, /GX EH frame). Validate
-// the PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the inherited IDirectSound
-// device (+0x14) for a secondary buffer, then `new StreamVoice` wrapping it,
-// thread it on the +0x94 list, and seed its duration fields. Carries the
-// DSndMgSR.cpp __FILE__ anchor (the 0x678 GetErrorString report). The former
-// RezAlloc+placement-new EH-frame wall (docs/patterns/
-// rezalloc-placement-new-no-eh-frame.md) fell with the real StreamVoice :
-// DSoundCloneInst derivation: plain `new T` over the ::operator-new(==RezAlloc)
-// allocator now emits the retail /GX frame (byte-identical prologue).
 // @early-stop
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamBuffer(
@@ -255,29 +212,13 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     wf.cbSize = fmt->cbSize;
 
     out = 0;
-    // Retail ZEROES the whole DSBUFFERDESC and then fills four fields: 0x1377f5 emits
-    // five `mov [desc+N],ecx` with ecx=0 across +0x00..+0x10 and only afterwards
-    // stores dwFlags, lpwfxFormat, dwSize and dwBufferBytes, leaving dwReserved at
-    // its zero. Assigning the five fields once each (with an explicit
-    // `desc.dwReserved = 0`) emits five stores where retail has nine.
+
     memset(&desc, 0, sizeof(DSBUFFERDESC));
     desc.dwFlags = dsFlags;
     WaveFormatPtr fmtPtr;
     fmtPtr.m_rec = &wf;
     desc.lpwfxFormat = fmtPtr.m_sdk;
-    // DirectSound requires cbSize==0 for PCM, and retail forces it HERE - 0x137832
-    // `mov WORD PTR [esp+0x28],si`, the same store its CreateBuffer twin has at
-    // 0x1367a2. The placement is load-bearing: it must follow `&wf` escaping into
-    // lpwfxFormat, or cl dead-store-eliminates it against the copy above.
-    //
-    // This spelling COSTS ~1.6 points here (65.26 vs 66.82 with the store omitted;
-    // six cells in config/axes/createstreambuffer2.json), while the identical line
-    // GAINS its twin +3.63 - two near-twins with different optima over the same
-    // sites, see docs/patterns/same-sites-different-per-function-optimum.md. The
-    // store is byte-evidenced in retail, so it stays: a shape seen in the target
-    // disasm is kept even when its own % stalls (CLAUDE.md, MAX-match convention).
-    // MAX preserves the 66.92 already observed. If a better placement is found it
-    // is a climb from here, not a re-litigation of whether the store exists.
+
     wf.cbSize = 0;
     desc.dwSize = 0x14;
     desc.dwBufferBytes = bytes;
@@ -291,9 +232,6 @@ StreamVoice* SoundStream::CreateStreamBuffer(
         goto done;
     }
 
-    // Plain `new StreamVoice` - ::operator new IS RezAlloc (0x1b9b46; reloc-masked
-    // same callee), cl emits the null-guard + the /GX delete-on-throw EH state for
-    // the now-really-throwing ctor (the real DSoundCloneInst base).
     voice = new StreamVoice(out, this, stopWhenIdle, retireWhenIdle);
     m_voices.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;
@@ -304,10 +242,6 @@ done:
     return voice;
 }
 
-// ---------------------------------------------------------------------------
-// SoundStream::OpenStream (__thiscall). Parse the RIFF/WAVE source,
-// create a streaming buffer for it, seed the voice's feeder window, then arm the
-// feeder; on a feeder failure, destroy the voice.
 // @early-stop
 RVA(0x00137900, 0xc6)
 StreamVoice* SoundStream::OpenStream(
@@ -337,8 +271,7 @@ StreamVoice* SoundStream::OpenStream(
     feeder->m_source = src;
     feeder->m_loop = 0;
     feeder->m_sourceOffset = 0;
-    // voice IS-A DirectSoundMgr buffer wrapper (StreamVoice : DSoundCloneInst);
-    // the upcast is implicit.
+
     if (feeder->FeederStart(this, &wf, bytes, format, voice, -1) == 0) {
         DestroyVoice(voice);
         return 0;
@@ -350,8 +283,7 @@ RVA(0x001379d0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoice* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
-        // Reap the inherited SoundDevice voice sub-list (m_voiceList @ +0x0c), keyed
-        // by this voice's identity.
+
         m_voiceList.RemoveMatching(voice, 0xffff);
         voice->m_buffer->Release();
         voice->m_buffer = 0;
@@ -413,11 +345,6 @@ i32 SoundStream::TickSubManagers(i32 time) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SoundStream::ParseWave (__thiscall - the implicit `this` is unused).
-// Walk the RIFF/WAVE chunks of `src`: verify the RIFF+WAVE magic, then loop the
-// fmt/data chunks, copying the 18-byte PCM header into fmtBuf and reporting the
-// data chunk's offset+length. Returns 1 only when both fmt and data were seen.
 // @early-stop
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
@@ -454,10 +381,7 @@ i32 SoundStream::ParseWave(
         src->Read(&chunkSize, 4, -1);
         if (chunkId == 0x20746d66) {
             i32 next = src->m_cursor + chunkSize;
-            // An UNSIGNED min with 0x12 held first: retail is `mov eax,0x12 / cmp ecx,eax /
-            // jae`, i.e. the cap is the initial value and the chunk size is the unsigned
-            // operand. `i32 n = chunkSize; if (n >= 0x12) n = 0x12;` lowers to a signed
-            // `cmp eax,0x12 / jl` against an immediate instead.
+
             u32 n = 0x12;
             if (chunkSize < n) {
                 n = chunkSize;
@@ -482,7 +406,7 @@ i32 SoundStream::ParseWave(
 
 RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
-    // cl auto-stamps ??_7StreamFeeder@@6B@ (0x5ef6f0) here.
+
     m_buffer = 0;
     m_armed = 0;
     m_bufferCursor = 0;
@@ -498,11 +422,6 @@ StreamFeeder::~StreamFeeder() {
     m_buffer = 0;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::FeederStart (__thiscall, 6 args, ret 0x18). Arm the
-// feeder: record owner/length/format, derive the silence byte from the PCM bit
-// depth, create (or adopt) the streaming buffer, arm, FeedData (slot 1) and
-// prime via Tick.
 // @early-stop
 RVA(0x00137d10, 0xab)
 i32 StreamFeeder::FeederStart(
@@ -531,7 +450,7 @@ i32 StreamFeeder::FeederStart(
         return 0;
     }
     m_armed = 1;
-    if (FeedData() == 0) { // slot 1 (virtual)
+    if (FeedData() == 0) {
         FeederReset(1);
         return 0;
     }
@@ -548,10 +467,9 @@ void StreamFeeder::FeederReset(i32 doStop) {
         if (m_drained != 0) {
             Pause();
         }
-        OnDrain(); // slot 2 (virtual)
+        OnDrain();
         if (doStop != 0) {
-            // m_buffer and RemoveBuffer's param are the same DirectSoundMgr base view now
-            // (matcher-6 unified the former DirectSoundMgr dual-view into DirectSoundMgr).
+
             m_owner->RemoveBuffer(m_buffer);
         }
         m_buffer = 0;
@@ -607,7 +525,7 @@ i32 StreamFeeder::Resume() {
     if (r != 0) {
         m_drained = 1;
     }
-    return r; // fall-through keeps the Play result in eax (no re-zero)
+    return r;
 }
 
 RVA(0x00137f00, 0x26)
@@ -619,19 +537,9 @@ i32 StreamFeeder::Pause() {
     if (r != 0) {
         m_drained = 0;
     }
-    return r; // fall-through keeps the StopAndRewind result in eax (no re-zero)
+    return r;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::FillBuffer (__thiscall, 2 args, ret 0x8). Lock the
-// streaming secondary buffer at the write window, copy the source window into
-// the (possibly wrapped) locked regions, silence-pad the unfilled tail, advance
-// the read cursor (m_bufferCursor) with wraparound, and Unlock.
-// The `sub esp,0x14` vs retail's `0x10` was NOT a local-coalescing wall - it was a
-// readout of the cursor bug below. Reading `bytes` in the tail kept the parameter
-// live to the end; with the correct `n1`/`n2` the two parameters die at the Lock
-// call and cl packs n1/n2 into their own argument home slots, exactly as retail does
-// (pdwAudioBytes1 -> [E+0x08], pdwAudioBytes2 -> [E+0x04]).
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     void* lock1;
@@ -644,7 +552,7 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     u32 got1 = 0;
     u32 got2 = 0;
     if (m_pendingBytes == 0) {
-        if (Feed(lock1, n1, &got1, lock2, n2, &got2) == 0) { // slot 0 (virtual)
+        if (Feed(lock1, n1, &got1, lock2, n2, &got2) == 0) {
             m_buffer->Unlock(lock1, n1, lock2, n2);
             return 0;
         }
@@ -654,8 +562,7 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     }
     if (got1 < n1) {
         m_pendingBytes += n1 - got1;
-        // language-forced: lock1 is a void* DirectSound-locked region; the +got1
-        // pointer arithmetic requires a byte-pointer view. Inlines to rep stos.
+
         memset(static_cast<char*>(lock1) + got1, m_silenceByte, n1 - got1);
     }
     if (got2 < n2) {
@@ -665,16 +572,7 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     if (m_pendingBytes >= m_bufferLength) {
         Pause();
     }
-    // The cursor follows the LOCKED REGIONS, not the fill counts: a non-empty second
-    // region means the write wrapped, so the new cursor is that region's length;
-    // otherwise it is writePos advanced by the first region. Retail 0x138084 reads
-    // n2/n1 out of the two slots Lock filled (`test eax,eax` on n2, `lea edx,
-    // [ecx+ebp*1]` = n1 + writePos), NOT got2/bytes. Reading `bytes` here also kept
-    // the parameter live to the end, which is why our frame was a dword bigger than
-    // retail's: with `bytes` dead after the Lock call cl packs n1 into its argument
-    // home slot (and n2 into writePos', which is live in ebp).
-    // Negative form: retail's `test eax,eax / jne` falls into the wrap-less arm, so
-    // `n2 == 0` is the `if` body.
+
     if (n2 == 0) {
         m_bufferCursor = writePos + n1;
     } else {
@@ -709,9 +607,9 @@ void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
 
 RVA(0x00138150, 0x33b)
 void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
-    char szCode[64];  // error-code name
-    char szMsg[256];  // description
-    char szLine[512]; // formatted output line
+    char szCode[64];
+    char szMsg[256];
+    char szLine[512];
 
     if (g_ssBeepEnabled) {
         MessageBeep(MB_ICONEXCLAMATION);

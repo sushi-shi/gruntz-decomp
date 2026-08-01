@@ -1,9 +1,8 @@
-// FileImage.h - the FileImage TU's exported globals/data.
 #ifndef GRUNTZ_IMAGE_FILEIMAGE_H
 #define GRUNTZ_IMAGE_FILEIMAGE_H
 
 #include <rva.h>
-#include <Win32.h> // PALETTEENTRY (the scratch palette ramp's element type)
+#include <Win32.h>
 
 extern PALETTEENTRY g_paletteRampBuf[];
 extern u8 g_grayRamp[];

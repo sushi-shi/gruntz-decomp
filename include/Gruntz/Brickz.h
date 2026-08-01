@@ -2,71 +2,54 @@
 #define GRUNTZ_BRICKZ_H
 #include <rva.h>
 #include <Ints.h>
-#include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (see the fold note below)
+#include <Gruntz/MapMgr.h>
 
-class CBattlezData; // folded BrickzSerObj
-struct tagRECT;     // Win32 RECT (CMapMgr::Clip arg)
-
+class CBattlezData;
+struct tagRECT;
 
 struct BrickzNode {
-    // m_0/m_4 are a (key1,key2) pair when the node is in the lookup list, and a
-    // (child-ptr, back-ptr) pair when the node is a cell-bucket node - both roles
-    // as union arms (the ex-MapElemB twin is MERGED here).
+
     union {
-        i32 m_0;       // +0x00  key1 / col
-        BrickzNode* m_child; //   bucket child ptr (the pool-init null)
+        i32 m_0;
+        BrickzNode* m_child;
     };
     union {
-        i32 m_4;            // +0x04  key2 / row
-        BrickzNode* m_prev; //        free-list back-link
+        i32 m_4;
+        BrickzNode* m_prev;
     };
     union {
-        BrickzNode* m_8;    // +0x08  fwd-link (free/active list)
-        BrickzNode* m_next; //        bucket next (same slot, pool-walk name)
-        // Third arm, both readers proven: the pool/free-list walk dereferences it
-        // (`slot->m_8->m_4 = ...`) while the A* relax reads it as the accumulated
-        // g cost (`node->m_gCost + cost`, `ng >= closed->m_gCost`).
-        i32 m_gCost; //             A* accumulated cost
+        BrickzNode* m_8;
+        BrickzNode* m_next;
+
+        i32 m_gCost;
     };
-    i32 m_c;          // +0x0c  priority key
-    i32 m_10;         // +0x10  sort key / total f
-    BrickzNode* m_14; // +0x14  list link A (prev / next)
-    BrickzNode* m_18; // +0x18  list link B (next / prev)
-    // +0x1c is the A* parent back-pointer, NOT an int payload: every write stores a
-    // BrickzNode* and the only read walks it as one (no integer reader anywhere).
-    BrickzNode* m_parent; // +0x1c
-    BrickzNode* m_20; // +0x20  owning bucket-node / parent back-pointer
+    i32 m_c;
+    i32 m_10;
+    BrickzNode* m_14;
+    BrickzNode* m_18;
+
+    BrickzNode* m_parent;
+    BrickzNode* m_20;
 };
 SIZE_UNKNOWN();
 
 struct BrickzCell {
-    // +0x00 is read BOTH ways in retail: as a dword of packed terrain flags, and as a single
-    // BYTE at +3 (CGrunt's tracked-coord scan tests `byte [cell+3] & 0x20` - the "stepped"
-    // bit - with a byte load, not a dword test of 0x20000000). An anonymous union models both
-    // without a cast; it is the same 4 bytes. (This is what the CScanCell view in
-    // GruntCombat.cpp existed to express.)
+
     union {
-        i32 m_0;           // +0x00  packed terrain flags
-        u8 m_flagBytes[4]; //        byte view; [3] & 0x20 = the stepped/visited bit
+        i32 m_0;
+        u8 m_flagBytes[4];
     };
-    // +0x04 is likewise read BOTH ways: as a dword payload, and as the single BYTE at
-    // +0x05 (StepRowSpawn @0x26502 does `xor eax,eax; mov al,[cell+5]; cmp eax,m_curCell`
-    // - a byte load, not a dword mask). Same 4 bytes, no cast.
+
     union {
-        i32 m_4;          // +0x04  per-cell edge/id payload
-        u8 m_4Bytes[4];   //        byte view; [1] = the owning cell/player index
+        i32 m_4;
+        u8 m_4Bytes[4];
     };
-    // +0x08 is the id of the object currently OCCUPYING the cell, not a link. Retail
-    // CInGameIcon::Reposition @0x98a90 stores the bound object's id (obj->m_188) into this
-    // slot, reads the slot of the tile it is leaving back out and passes it to
-    // MapLookupById as the KEY, then clears it; CInGameIcon::PeekCycle @0x984b0 clears it
-    // the same way. Nothing anywhere DEREFERENCES it (the only other writer, BrickzLoad,
-    // just zeroes it), so the old `BrickzCell*` was a guess with no site behind it.
-    i32 m_8; // +0x08  occupying-object id (0 = free)
-    i32 m_c;            // +0x0c  id3 payload (ComputeCellFlags)
-    i32 m_10;           // +0x10  bute type code (ComputeCellFlags)
-    i32 m_count;        // +0x14  per-cell open-list reference count
-    BrickzNode* m_head; // +0x18  bucket-list head
+
+    i32 m_objectId;
+    i32 m_c;
+    i32 m_10;
+    i32 m_count;
+    BrickzNode* m_head;
 };
 SIZE_UNKNOWN();
 

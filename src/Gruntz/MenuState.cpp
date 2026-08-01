@@ -1,42 +1,42 @@
-#include <Gruntz/MenuState.h>        // C-linkage decls for the ex-wrapped defs
-#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
+#include <Gruntz/MenuState.h>
+#include <DinMgr2/DirectInputMgr2.h>
 #include <Gruntz/GameMode.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/MenuVersion.h> // g_versionMajor/Mid/Minor (owner-only decl header)
+#include <Rez/FrameClock.h>
+#include <Gruntz/MenuVersion.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/LeafCue.h>         // canonical LeafCue (CMenuState::m_1bc menu-music cue)
-#include <Gruntz/BattlezData.h>     // the REAL stats object (was the CHudStats view)
-#include <Gruntz/GruntzMgr.h>       // CGruntzMgr (the game-manager singleton; one true shape)
-#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (StartMusic/StopMusicChain ConfigureItem)
-#include <Gruntz/WwdGameReg.h>      // g_gameReg (StartMusic music gate)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources leaf keys)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (FrameSlot28 flush)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was a GameMode.cpp local view)
-#include <DDrawMgr/DDSurface.h>           // CDDSurface Flip (FrameSlot28)
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/WwdGameReg.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
 
 #include <rva.h>
-#include <Bute/SymParser.h> // canonical CSymParser + CSymTab (LoadGameAssetNamespaces ResolvePath)
-#include <Image/CImage.h>   // g_resourceInstallActive
-#include <Gruntz/ChatBox.h> // canonical CChatBox (m_1b4 menu UI object; Init lives here)
+#include <Bute/SymParser.h>
+#include <Image/CImage.h>
+#include <Gruntz/ChatBox.h>
 #include <Gruntz/MainMenuBuilder.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CDDrawWorkerRegistry (m_c->m_imageRegistry)
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
-#include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
-#include <Gruntz/SoundState.h>         // ex Globals.h transitive
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerList.h>
+#include <Win32.h>
+#include <Gruntz/SoundState.h>
+#include <Utils/MapTyped.h>
 
 DATA(0x00245574)
 CFixedPtrArray32* g_actorList = 0;
 DATA(0x00245cc8)
-tagRECT g_versionRect; // .bss - zero at load
+tagRECT g_versionRect;
 
 DATA(0x00251608)
-i32 g_versionMajor = 0; // decl in <Gruntz/GameMode.h>
+i32 g_versionMajor = 0;
 DATA(0x0025160c)
-i32 g_versionMid = 0; // decl in <Gruntz/GameMode.h>
+i32 g_versionMid = 0;
 DATA(0x00251610)
-i32 g_versionMinor = 0; // decl in <Gruntz/GameMode.h>
+i32 g_versionMinor = 0;
 
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
@@ -53,7 +53,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     if (prevStateId == 0) {
         return 0;
     }
-    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
@@ -95,9 +95,6 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     m_1b4 = new CChatBox;
     m_1b4->Init();
 
-    // 0x182ab0 is __thiscall on the freshly-built CChatBox (retail: `mov [esi+0x1b4],ecx`
-    // then `call 0x182ab0` with ecx still the new object; `ret 0x18` = callee-cleaned
-    // 6 stack args).  It seeds the box from the resource holder + the game window's HWND.
     if (!m_1b4->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
@@ -146,26 +143,24 @@ void CChatBox::Init() {
 
 RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
-    // m_c re-read for each access (retail does not cache it); the null-guarded
-    // block tests m_c once and reuses it for both the Free and DisposeWorkers.
+
     m_world->m_imageRegistry->RemoveKeysEqual("MENU", "_");
     m_world->m_soundRegistry->RemoveKeysEqual("MENU", "_");
     if (m_world) {
-        // The test value of m_c is reused for the leaf-registry access; the
-        // worker-list dispose re-reads m_c fresh (retail does not cache it).
+
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream) {
             reg->m_soundStream->Stop();
         }
         m_world->m_workerList->ClearWorkers();
     }
-    // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
+
     CChatBox* ui = m_1b4;
     if (ui) {
-        delete ui; // ~CChatBox non-virtual -> direct dtor + ??3
+        delete ui;
         m_1b4 = 0;
     }
-    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
+    CState::ReleaseResources();
 }
 
 RVA(0x000a05a0, 0x74)
@@ -232,12 +227,10 @@ RVA(0x000a0750, 0x1d0)
 i32 CMenuState::Render() {
     CFixedPtrArray32* L = g_actorList;
 
-    // per-entity Update pass (re-reads count each iter, like the target)
     for (i32 i = 0; i < L->m_count; i++) {
         L->m_items[i]->Poll();
     }
 
-    // six prioritized entity-flag scans, each firing a distinct UI handler
     i32 c;
     L = g_actorList;
     i32 n = L->m_count;
@@ -280,12 +273,10 @@ i32 CMenuState::Render() {
         }
     }
 tail:
-    // PROVEN by xref: retail's Render (0xa0750) calls CChatBox::Step(u32) at
-    // 0x182c70, not the i32 overload at 0x182ed0 - g_frameDelta is declared i32,
-    // so the call has to say which overload it means (assert_relocs WRONG-ref).
+
     m_1b4->Step(g_frameDelta);
     m_1b4->Pre();
-    BuildVersionString(g_versionRect); // 0xa0d80 (the fake DrawVersion alias folded away)
+    BuildVersionString(g_versionRect);
     m_1b4->Post();
     return 1;
 }
@@ -337,8 +328,7 @@ i32 CMenuState::Vslot07() {
     if (r == 0) {
         return r;
     }
-    // The middle probe is the base CState::Vslot07 slot, invoked statically (direct
-    // rel32 to 0xfac70, via the ILT thunk) - was the fake CMenuState::CommitState.
+
     r = CState::Vslot07();
     if (r == 0) {
         return r;

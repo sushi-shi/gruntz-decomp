@@ -1,49 +1,44 @@
-#include <DDrawMgr/DDSurface.h> // own extern surface
-#include <Pix16.h>              // the byte-cursor / 16bpp-value pointer pair
+#include <DDrawMgr/DDSurface.h>
+#include <Pix16.h>
 #include <Io/FileStream.h>
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree
+#include <Rez/RezAlloc.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawPtrCollections.h> // the palette/pool context the decoders read
-#include <Image/Image.h>                  // CFileImageSurface / the image-source classes
-#include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Image/Image.h>
+#include <ddraw.h>
 #include <rva.h>
-#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
+#include <ComOutRef.h>
 #include <stdio.h>
-#include <string.h> // inline strcpy / memcpy / memset
+#include <string.h>
 
-#include <Image/ImageRotate.h> // ImageRotateBlit (ex .cpp extern)
-#include <Image/RasterVtx.h>   // ClipVtx + RotateRasterize (StretchBlit's quad)
+#include <Image/ImageRotate.h>
+#include <Image/RasterVtx.h>
 #include <DDrawMgr/WallProject.h>
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
+VTBL(CDDSurface, 0x001ef7f0);
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253c9e)
-u8 g_clut[0x30000]; // 0x653c9e
+u8 g_clut[0x30000];
 
 DATA(0x00283ca0)
-u16 g_lut16[256] = {0}; // 0x683ca0
+u16 g_lut16[256] = {0};
 DATA(0x00283ea0)
-i32 g_rUp; // 0x683ea0  (== ex g_rUp)
+i32 g_rUp;
 DATA(0x00283ea4)
-i32 g_gUp; // 0x683ea4  (== ex g_gUp)
+i32 g_gUp;
 DATA(0x00283ea8)
-i32 g_bUp; // 0x683ea8
+i32 g_bUp;
 
 DATA(0x00283eac)
-i32 g_rDown; // 0x683eac  (== ex g_rDown)
+i32 g_rDown;
 DATA(0x00283eb0)
-i32 g_gDown; // 0x683eb0  (== ex g_gDown)
+i32 g_gDown;
 DATA(0x00283eb4)
-i32 g_bDown; // 0x683eb4  (== ex g_bDown)
+i32 g_bDown;
 
-// The 3-bank CLUT is a BYTE array (the bank bases and the row deltas are byte
-// offsets) whose entries are 16-bit - that pun is inherent to the table, so it
-// lives here instead of at every lookup.
-// A locked surface hands back BYTES with a byte pitch while a 16bpp row is u16
-// pixels; the CLUT is the same shape. Pix16Ptr (<Pix16.h>) names both readings.
 static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
     Pix16Ptr p;
     p.m_bytes = locked + row * pitch;
@@ -60,7 +55,6 @@ static inline void ClutStore16(u32 byteOff, u16 v) {
     p.m_bytes = g_clut + byteOff;
     *p.m_words = v;
 }
-// g_imageCache's file-scope construction/destruction family.
 
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
@@ -86,14 +80,9 @@ i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 bitDepth, i32 ca
         this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
         this->m_srcBitDepth = bitDepth;
     }
-    return this->BlitIntoDesc(surf); // slot-8 virtual dispatch (+0x20)
+    return this->BlitIntoDesc(surf);
 }
 
-// The span is 0x1a0, not the 0x133 code length: the two inline jump tables + byte index
-// LUTs run to 0x13e2d1 and BlitIntoDesc starts at 0x13e2e0. With the code-only span this
-// function scored 5.4% and its @early-stop note concluded the jump-table lowering "scores
-// 0%", which is why the switches had been rewritten as if/else chains to game the number.
-// docs/patterns/rva-span-must-cover-inline-jump-tables.md.
 RVA(0x0013e140, 0x1a0)
 i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_ddSurface = surf;
@@ -111,12 +100,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     i32 bits = m_srcBitDepth;
     m_hasColorKey = 0;
     m_bitDepth = bits;
-    // The `case 8` arms are load-bearing: retail lowers BOTH switches as MSVC jump
-    // tables (selector = bits-8, `cmp eax,0x18` + the byte index table), byte-for-byte
-    // the same pair BlitIntoDesc emits below. The old branch-chain spelling here (no
-    // `case 8`, and the second switch through a `divisor` local) produced an if-chain
-    // and a `div edi` where retail has `div DWORD PTR [esi+0xb0]` - i.e. it assigned
-    // the member directly.
+
     switch (bits) {
         case 8:
             m_bytesPerRow = m_width;
@@ -153,11 +137,6 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
             break;
     }
 
-    // statement order is retail's (and BlitIntoDesc's): the divide comes FIRST, so the
-    // `mov ecx,[esi+0x1c]` the switch left behind still holds m_width for `m_fullRect
-    // .right` (`mov [esi+0x88],ecx`) and the imageBytes multiply reuses it as
-    // `imul ecx,eax`. With `right` written before the divide, cl re-colours the whole
-    // tail into eax (`mov [esi+0x88],eax` / `imul eax,[esi+0xac]`).
     m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
     m_fullRect.left = 0;
     m_fullRect.top = 0;
@@ -168,11 +147,6 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     return 1;
 }
 
-// (ex-wall, RETIRED 2026-07-29 - EXACT. The note was right that the body was already
-// instruction-identical and wrong about the remedy: it is not an unfixable carve
-// artifact, it is the RVA() SPAN. 0x188 is the code length; the two inline jump tables
-// + their byte index LUTs run on to 0x13e4d0 where FreeSurfaces starts, so the honest
-// span is 0x1f0. See docs/patterns/rva-span-must-cover-inline-jump-tables.md.)
 RVA(0x0013e2e0, 0x1f0)
 i32 CDDSurface::BlitIntoDesc(void* a) {
     CDDrawPtrCollections* mgr = static_cast<CDDrawPtrCollections*>(a);
@@ -254,10 +228,7 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
 
 RVA(0x0013e4d0, 0x7e)
 void CDDSurface::FreeSurfaces() {
-    // m_elements holds owned child CDDSurface wrappers of the attached-surface
-    // chain (born in EnumSurfacesCallback 0x13e9a0, installed by ReloadImageCache
-    // 0x13e8f0 - each is new(0xc0) + the ??_7CDDSurface stamp). Polymorphic
-    // delete = the same slot-0 ??_G dispatch (ex the CFileImageElement facet).
+
     for (u32 i = 0; i < static_cast<u32>(m_elements.GetSize()); i++) {
         CDDSurface* e = static_cast<CDDSurface*>(m_elements[i]);
         delete e;
@@ -357,13 +328,13 @@ void* CDDSurface::Lock(void* rect) {
 
 RVA(0x0013e760, 0x63)
 i32 CDDSurface::Fill(u32 color) {
-    i32 fx[0x19]; // DDBLTFX (0x64 bytes)
+    i32 fx[0x19];
     i32* p = fx;
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
-    fx[0] = 0x64;                       // dwSize
-    fx[0x14] = static_cast<i32>(color); // dwFillColor @ +0x50
+    fx[0] = 0x64;
+    fx[0x14] = static_cast<i32>(color);
     i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(
@@ -416,13 +387,6 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     return hr;
 }
 
-// ---------------------------------------------------------------------------
-// 0x13e8f0 - rebuild the global attached-surface cache. Scalar-delete the wrappers the
-// cache holds, empty this->m_elements and g_imageCache, re-enumerate the attached
-// surfaces through EnumSurfacesCallback (which refills g_imageCache), then copy the
-// fresh cache into m_elements and drop the cache again. Both walks compare UNSIGNED.
-// NOTE the first loop's asymmetry, which is retail's own: it bounds the walk with
-// THIS surface's element count but indexes the GLOBAL cache.
 RVA(0x0013e8f0, 0xb0)
 void CDDSurface::ReloadImageCache() {
     u32 i = 0;
@@ -430,7 +394,7 @@ void CDDSurface::ReloadImageCache() {
         do {
             CDDSurface* item = static_cast<CDDSurface*>(g_imageCache[i]);
             if (item != 0) {
-                delete item; // slot 0 @+0x00  scalar-deleting dtor
+                delete item;
             }
             i++;
         } while (i < static_cast<u32>(m_elements.GetSize()));
@@ -444,11 +408,7 @@ void CDDSurface::ReloadImageCache() {
     u32 j = 0;
     if (static_cast<u32>(g_imageCache.GetSize()) > 0) {
         do {
-            // MFC's CPtrArray::Add - NOT the hand-spelled SetAtGrow(GetSize(), x) it
-            // used to be. Add is inline `SetAtGrow(m_nSize, x)` on the ARRAY's own
-            // `this`, so retail reuses the `lea edi,[this+0x94]` from the SetSize above
-            // (`mov ecx,edi` + `mov eax,[edi+8]`); spelling it out re-derives the size
-            // this-relative (`[this+0x9c]`) and swaps the two argument loads.
+
             m_elements.Add(g_imageCache[j]);
             j++;
         } while (j < static_cast<u32>(g_imageCache.GetSize()));
@@ -456,37 +416,20 @@ void CDDSurface::ReloadImageCache() {
     g_imageCache.SetSize(0, -1);
 }
 
-// ---------------------------------------------------------------------------
-// 0x13e9a0: the IDirectDrawSurface::EnumAttachedSurfaces callback (DDENUMSURFACESCALLBACK,
-// __stdcall / WINAPI, 3 args -> ret 0xc; disasm-proven, `mov eax,1; ret 0xc`). Passed as
-// the fn-ptr to m_8->EnumAttachedSurfaces (vtable slot 9) by the image-cache reload at
-// 0x13e8f0. For each enumerated surface: QueryInterface (slot 0, `call [surf_vtable]` with
-// `this`=surf PUSHED - a __stdcall COM call, NOT thiscall) it for IID_IDirectDrawSurface3;
-// on S_OK (== 0) wrap the v3 interface in a fresh CDDSurface (`new CDDSurface` = the retail
-// operator-new(0xc0) + inlined ctor: CPtrArray @+0x94, vptr stamp 0x5ef7f0, 6 field zeros),
-// Refresh caches its geometry, and file it into the global image cache; a failed QI or
-// Refresh drops it (delete = slot-0 scalar-deleting dtor under the null-guard). `desc`/`ctx`
-// are unused. The throwing CPtrArray member ctor gives the /GX ctor-in-flight EH frame.
-//
-// The former CImageFactory (fabricated __thiscall receiver - `this` is never touched, and
-// the true fn is a FREE __stdcall callback) + CRezImageSource (the "probe source", really a
-// real <ddraw.h> IDirectDrawSurface COM interface whose slot 0 is IUnknown::QueryInterface)
-// the QI probe builds on QI == S_OK (retail).
 // @early-stop
 RVA(0x0013e9a0, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
     if (surf->QueryInterface(IID_IDirectDrawSurface3, &payload) == 0) {
         CDDSurface* item = new CDDSurface;
-        // The FAILURE arm is the `if`: retail's `test eax,eax / jne <SetAtGrow>`
-        // keeps the drop inline and sinks the cache insert out of line.
-        if (item->Refresh(static_cast<IDirectDrawSurface*>(payload)) == 0) { // slot 1 @+0x04
-            delete item; // slot 0 @+0x00  scalar-deleting dtor (implicit null guard)
+
+        if (item->Refresh(static_cast<IDirectDrawSurface*>(payload)) == 0) {
+            delete item;
         } else {
             g_imageCache.SetAtGrow(g_imageCache.GetSize(), item);
         }
     }
-    return 1; // DDENUMRET_OK (continue enumeration)
+    return 1;
 }
 
 RVA(0x0013ea70, 0x21)
@@ -543,11 +486,6 @@ i32 CDDSurface::SetDestColorKey(u32 key) {
     return SetColorKey(DDCKEY_DESTBLT, &ck);
 }
 
-// ---------------------------------------------------------------------------
-// FlipVertical - swap the locked surface's rows top-to-bottom through a
-// one-row temp buffer. No-op for a <= 1-row image. Locks the surface (Lock), and on
-// success allocates the temp row; a failed temp alloc unlocks and returns. __thiscall.
-//
 // @early-stop
 RVA(0x0013ebb0, 0x126)
 void CDDSurface::FlipVertical() {
@@ -569,7 +507,7 @@ void CDDSurface::FlipVertical() {
     i32 half = m_height / 2;
     if (half > 0) {
         do {
-            // top row -> tmp
+
             u8* top = buf + i * m_pitch;
             i32 j = 0;
             if (width > 0) {
@@ -579,7 +517,7 @@ void CDDSurface::FlipVertical() {
                     ++j;
                 } while (j < width);
             }
-            // bottom row -> top row
+
             i32 botRow = m_height - i - 1;
             u8* topDst = buf + i * m_pitch;
             u8* botSrc = buf + botRow * m_pitch;
@@ -592,7 +530,7 @@ void CDDSurface::FlipVertical() {
                     --k;
                 } while (k != 0);
             }
-            // tmp -> bottom row
+
             u8* botDst = buf + botRow * m_pitch;
             i32 m = 0;
             if (width > 0) {
@@ -644,15 +582,14 @@ i32 CDDSurface::BlitDirect(void* src, i32 mode) {
 
 RVA(0x0013edb0, 0x78)
 void CDDSurface::Clear(i32 white) {
-    // retail zero-fills the opaque Win32 struct with an explicit 25-dword loop (a
-    // memset would emit rep stos instead) - the dword arm is named on BltFxWords.
+
     BltFxWords fx;
     i32* p = fx.m_words;
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
     fx.m_fx.dwSize = 0x64;
-    // WHITENESS : BLACKNESS (DDBLT_ROP)
+
     fx.m_fx.dwROP = white ? static_cast<i32>(0xff0062) : 0x42;
     i32 hr = this->m_ddSurface->Blt(0, 0, 0, 0x1020000, &fx.m_fx);
     if (hr != 0) {
@@ -743,11 +680,6 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
     return hr;
 }
 
-// CDDSurface::ShadeBlt (__thiscall, ret 0x10 => 4 args). 16bpp shaded-blend blit:
-// copy the two RECTs, validate (m_b0==2 + equal dims + in-bounds), Lock this + src,
-// per row copy the old dst pixels into a temp then blend temp+src through the three
-// shade-level colour LUTs (bank = ((shade&0xff)>>3)<<0xb), selected by the live
-// pixel-format globals (565 vs 555). Unlock both + free the temp; 0 on any reject.
 // @early-stop
 RVA(0x0013f020, 0x43f)
 i32 CDDSurface::ShadeBlt(
@@ -809,16 +741,11 @@ i32 CDDSurface::ShadeBlt(
     u16* temp = static_cast<u16*>(RezAlloc(dstW * 4));
     i32 bank = ((shade & 0xff) >> 3) << 0xb;
 
-    // The rDown gate is OUTER and the 555 arm re-tests it: retail's first `cmp ecx,3 /
-    // jne` goes straight to the reject block (0x13f172 -> 0x13f406) while the four
-    // remaining 565 terms fall to the 555 arm, whose own five terms START with a redundant
-    // `cmp ecx,3` (0x13f29c). One flat 5-term `&&` sends the first term's failure to the
-    // 555 arm instead.
     if (g_rDown != 3) {
         goto reject;
     }
     if (g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
-        // 565
+
         i32 rows = dstH;
         if (rows > 0) {
             do {
@@ -829,11 +756,7 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        // The CLUT is byte-addressed and its entries are 16 bits;
-                        // Pix16Ptr names both readings. The byte expressions stay
-                        // VERBATIM - routing them through a converting accessor
-                        // re-associates g_clut + (off) into (g_clut + off) + bank and
-                        // cost ShadeBlt/ShadeRect ~3-7%.
+
                         Pix16Ptr c;
                         c.m_bytes =
                             ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
@@ -856,7 +779,7 @@ i32 CDDSurface::ShadeBlt(
             } while (--rows != 0);
         }
     } else if (g_rDown == 3 && g_gDown == 2 && g_bDown == 3 && g_rUp == 0xb && g_gUp == 5) {
-        // 555
+
         i32 rows = dstH;
         if (rows > 0) {
             do {
@@ -867,11 +790,7 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        // The CLUT is byte-addressed and its entries are 16 bits;
-                        // Pix16Ptr names both readings. The byte expressions stay
-                        // VERBATIM - routing them through a converting accessor
-                        // re-associates g_clut + (off) into (g_clut + off) + bank and
-                        // cost ShadeBlt/ShadeRect ~3-7%.
+
                         Pix16Ptr c;
                         c.m_bytes =
                             ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
@@ -907,12 +826,6 @@ reject:
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::ShadeRect (0x13f460). __thiscall ShadeRect(pct, clip): validate + clip the target
-// rectangle, scale the fade percentage into a LUT bank offset, then walk the
-// surface rectangle row-by-row (copy the row to a scratch line, split each
-// RGB565/555 pixel and recombine the three channels through the three shade-LUT
-// banks, write back in place), then notify the surface + free the scratch line.
 // @early-stop
 RVA(0x0013f460, 0x2da)
 i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
@@ -1001,12 +914,6 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     return 1;
 }
 
-// BuildColorChannelTables (0x13f740, __cdecl) - precompute the per-channel CLUTs that
-// map a (row, hi, lo) triple onto a packed 16-bit colour. The 32x32x32 nest folds a
-// row/col interpolation (rounded /32) into a channel sum that is shifted into the R/G/B
-// field positions. The common 555 device (rUp==0xa, gUp==5, all downs==3) takes a fast
-// path with hard-coded R<<10 / G<<5 shifts; every other format re-reads the live shifts
-// per write (green gets an extra <<1).
 // @early-stop
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
@@ -1062,7 +969,7 @@ void BuildColorChannelTables() {
 
 RVA(0x0013f910, 0x4a)
 i32 CDDSurface::SaveFile(char* buf, i32 type, void* pal, i32 flag) {
-    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
+    if (this->IsValid() == 0) {
         return 0;
     }
     if (buf == 0) {
@@ -1092,7 +999,7 @@ i32 CDDSurface::RestoreLost() {
 
 RVA(0x0013f990, 0xc4)
 void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
-    i32 dwTrans = 0x10 + (useColorKey != 0); // DDBLTFAST_WAIT (+DDBLTFAST_SRCCOLORKEY)
+    i32 dwTrans = 0x10 + (useColorKey != 0);
     for (i32 y = 0; y < m_height; y += src->m_height) {
         for (i32 x = 0; x < m_width; x += src->m_width) {
             RECT rect;
@@ -1165,11 +1072,6 @@ i32 CDDSurface::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Blit168  (8bpp src -> 16bpp dest, palette remap)
-// Build a 256-entry 16bpp LUT from the source palette (the RGB shift table packs
-// each {R,G,B} entry into a screen-native 16bpp word), then walk the surface row
-// by row writing LUT[index] per source pixel.
 // @early-stop
 RVA(0x0013fbb0, 0x126)
 i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
@@ -1177,12 +1079,7 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    // A SIGNED counted loop over the LUT ARRAY, not a pointer walk: retail's guard is
-    // `cmp edi,g_lut16+0x200` followed by **jl**, and a pointer relational always lowers
-    // to jb (our own pointer-walk spelling proved that). cl strength-reduced `i < 0x100`
-    // onto the store cursor and carried the ORIGINAL comparison's signedness. `i` must be
-    // the ONLY induction variable - keeping a separate `lut` cursor alongside it makes cl
-    // spill the count to `[esp+0x18]` and end the loop on `jne` instead.
+
     for (i32 i = 0; i < 0x100; i++) {
         u8 r = static_cast<u8>((static_cast<u8>(pal[0]) >> g_rDown));
         pal += 4;
@@ -1218,9 +1115,6 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Blit1624  (24bpp src -> 16bpp dest)
-// Pack each B,G,R source triple straight into a screen-native 16bpp word.
 // @early-stop
 RVA(0x0013fce0, 0x17f)
 i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
@@ -1266,17 +1160,6 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Blit2416  (16bpp src -> 24bpp dest, 6-byte/pixel word writes)
-// Unpack each 16bpp word into an R,G,B triple, each stored as a zero-extended
-// 16bpp word (the retail dest stride is 6 bytes per source pixel).
-// @early-stop
-
-// ---------------------------------------------------------------------------
-// CDDSurface::Blit248  (8bpp src -> 24bpp dest, palette remap)
-// Lock the surface, walk it row-by-row (mode 2 = bottom-up flipped, else top-
-// down) writing each source palette index's RGBQUAD bytes (2,1,0) as 3 dest
-// bytes, then Unlock. Returns 0 if the palette is null or the lock fails.
 // @early-stop
 RVA(0x0013fe60, 0x11e)
 i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
@@ -1356,11 +1239,6 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Blit824  (24bpp src -> 8bpp dest, nearest-palette quantize)
-// For each B,G,R source triple, find the palette index whose entry minimizes the
-// sum of squared channel differences (entry 0 seeds the best; entries 1..255 are
-// scanned, breaking early on an exact match), and write that index.
 // @early-stop
 RVA(0x00140110, 0x30b)
 i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
@@ -1438,11 +1316,6 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Blit816  (16bpp src -> 8bpp dest, nearest-palette quantize)
-// Unpack each 16bpp source word into an R,G,B triple (via the screen shift table),
-// then find the palette index minimizing the sum of squared channel differences
-// (entry 0 seeds the best; 1..255 scanned, exact-match break) and write it.
 // @early-stop
 RVA(0x00140420, 0x34f)
 i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
@@ -1524,12 +1397,6 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
     return 1;
 }
 
-// CDDSurface::DumpSurfaceInfo (__thiscall, ret 4 => 1 arg). Re-fetch the surface
-// desc into the scratch, then TRACE it: `detailed==0` prints one line; otherwise
-// dump the geometry, 16-bit bitmasks, colour key, Z-buffer depth and every set
-// DDSCAPS flag. The DDBD_* -> bit-count and DDBD_* -> name mappings are MSVC
-// binary-search branch trees (sparse cases, no jump table).
-// @early-stop
 RVA(0x00140770, 0x326)
 void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 i;
@@ -1620,10 +1487,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     }
     u32 zbuf = caps & DDSCAPS_ZBUFFER;
     if (zbuf != 0) {
-        // the strcpy is INSIDE each arm, not a shared one over a `name` pointer: retail
-        // re-materialises `&buf` (`lea edx,[esp+0x10]`) in every arm and only tail-merges
-        // the inline strcpy body itself. Hoisting it to one `strcpy(buf, name)` after the
-        // switch computes &buf once (-6 leas).
+
         char buf[32];
         switch (desc->dwZBufferBitDepth) {
             case DDBD_32:
@@ -1690,19 +1554,6 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
 
 #pragma optimize("", off)
 
-// ---------------------------------------------------------------------------
-// CDDSurface::DecodeRun8 (ret 4) - RLE-decode an 8bpp run-stream (arg0)
-// into the locked surface, row by row. Each token: the high two bits set (& 0xc0
-// == 0xc0) means a run of (token & 0x3f) copies of the following byte; otherwise
-// the token itself is one literal pixel. A run that overflows the current scanline
-// carries the remainder to the next row.
-//
-// /Od SLOT LAYOUT: cl orders the [ebp-N] slots by the local's NAME (symbol-table
-// hash), declaration order only breaking ties inside one bucket. Retail's layout is
-// sp -4, hold -8, tok -c, w -10, pbits -14, y -18, runx -1c, dstp -20, kj -24,
-// height -28, nleft -2c; this name set + declaration order reproduce it exactly.
-// The hash order depends on how MANY locals there are, so RunDecode1's names do not
-// carry over - each function is ranked separately (docs/patterns/od-local-slot-ordering.md).
 RVA(0x00140aa0, 0x1a3)
 i32 CDDSurface::DecodeRun8(void* src) {
     u8* sp;
@@ -1765,21 +1616,6 @@ i32 CDDSurface::DecodeRun8(void* src) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::DecodeRun24 (ret 4) - the 24bpp surface RLE decoder. Like
-// DecodeRun8 but planar: each row is decoded as three independent stride-3 channel
-// scanlines (R at the +2 byte, G at +1, B at +0 of each BGR triple), with the run
-// carry and source cursor continuous across channel and row boundaries. The row
-// base is the pitch-scale helper (Scale(row)); width/height come from the geometry
-// getters (re-read per use, not cached - retail's /Od shape).
-//
-// /Od SLOT LAYOUT (docs/patterns/od-local-slot-ordering.md): cl orders the [ebp-N]
-// slots by the local's NAME. Retail's layout is inp -4, rest -8, pm -c, ln -10,
-// nrow -14, cnt -18, dst -1c, k -20, cols -24, and this name set + declaration
-// order reproduce it. `pm` is the RLE token byte and `ln` the locked surface base;
-// no more descriptive name for either lands in the right hash bucket (11 x 11 pair
-// sweep), and the hash order depends on the local COUNT so DecodeRun8's set does
-// not carry over.
 RVA(0x00140c50, 0x3e2)
 i32 CDDSurface::DecodeRun24(void* src) {
     u8* inp;
@@ -1915,24 +1751,16 @@ i32 CDDSurface::RotateBlit(
     i32 mode,
     i32 colorkey
 ) {
-    // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
+
     ImageRotateBlit(destX, destY, pivot, this, src, 0.0f, scale, mode, colorkey);
     return 1;
 }
 
-// StretchBlit (0x141080): the axis-aligned stretch path onto the polygon rasterizer.
-// It builds the CW quad {dst.tl, dst.tr, dst.br, dst.bl} whose (u,v) are the matching
-// corners of the source rect, then hands it to RotateRasterize with n=4 and the four
-// trailing clip args pinned to -1 (== "no clip rect", the arm RotateRasterize answers by
-// deriving the clip from dst->m_width/m_height itself). A null srcRect means the whole
-// source surface, INCLUSIVE: {0, 0, width-1, height-1}. The rasterizer's return is
-// discarded - retail always reports success.
 RVA(0x00141080, 0x174)
 i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey) {
     RECT sr;
     ClipVtx v[4];
-    // retail loads both extents into esi/edi ABOVE the null test and only decrements
-    // them in the else arm - the two reads are unconditional, the -1 is not.
+
     i32 srcW = src->m_width;
     i32 srcH = src->m_height;
     if (srcRect != 0) {
@@ -1973,7 +1801,7 @@ i32 CDDSurface::ScaleBlit(
     i32 mode,
     i32 colorkey
 ) {
-    // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
+
     ImageRotateBlit(destX, destY, pivot, this, src, angle, 1.0f, mode, colorkey);
     return 1;
 }
@@ -1993,12 +1821,6 @@ i32 CDDSurface::RotateScaleBlit(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// DecodeThunk - a glue forwarder that rebuilds a 16-byte rect/clip record
-// from its trailing args on the stack and tail-calls the image worker (0x1471d0) with
-// the six leading scalar args + that record passed by value, then cleans 0x2c of stack
-// (ret 0x28). The worker `this` arrives in ecx (re-pushed, not reloaded).
-//
 // @early-stop
 RVA(0x00141280, 0x4a)
 void CDDSurface::DecodeThunk(i32 x0, i32 y0, i32 x1, i32 y1, i32 halfWidth, i16 color, RECT clip) {

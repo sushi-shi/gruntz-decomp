@@ -3,21 +3,18 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Clock64.h>              // the {lo,hi} 64-bit clock pairs at +0x78/+0x80
-#include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
-#include <Image/CImage.h>  // the glyph handles ARE CImage (RenderFrame @0x153790)
+#include <Clock64.h>
+#include <Gruntz/StatusBarItem.h>
+#include <Gruntz/SbGeom.h>
+#include <Image/CImage.h>
 
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
-class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
+class CDDrawWorker;
 
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
-    // tag 6 (the Statz/Multiplayer per-grunt stat bar). The four tracked values start
-    // "unset" (-1) so the first Update latches them. Store order preserved from the
-    // retail new-site ctor fold.
     CSBI_StatzTabGruntBar() {
         m_timerAnchorLo = 0;
         m_timerWindowLo = 0;
@@ -41,36 +38,13 @@ public:
         m_timerValue = -1;
         m_timerGlyph = 0;
     }
-    virtual ~CSBI_StatzTabGruntBar() OVERRIDE; // slot 0
-    // slot 1 (vtbl 0x1eace4 thunk 0x11e0 -> 0xea990): the stat-bar serialize. Mode 7
-    // resolves each glyph through the registry (name + gated index); mode 4 writes each
-    // back by reverse-lookup; both tail-chain CStatusBarItem::SerializeFields.
-    //
-    // 0xea990 used to be claimed as `CGruntStateRec::Load` - a .cpp-local placeholder
-    // class in GruntStateRec.cpp. It is THIS class's slot-1 body, proven four ways:
-    //  1. ??_7CSBI_StatzTabGruntBar (0x1eace4) slot 1 -> thunk 0x11e0 -> 0xea990 (direct).
-    //  2. the body tail-chains `call 0x1848` (CStatusBarItem::SerializeFields) with
-    //     `mov ecx,ebp` = its OWN this -> a qualified base call -> `this` IS a
-    //     CStatusBarItem. A free record-loader could not make that call.
-    //  3. RVA band: 0xea990 sits inside this class's run (0xea1f0/0xea470/0xea4b0/
-    //     0xea4e0/0xea6c0).
-    //  4. the view's own shape: `char m_pad00[0x30]` (exactly the CStatusBarItem base
-    //     subobject) then 19 fields whose ptr/int pattern matches this class's
-    //     m_statusGlyph..m_glyphMap at every single offset.
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj)
-        OVERRIDE; // 0xea990
-    virtual void Reset()
-        OVERRIDE; // slot 3 - 0xea470 (drop the five tracked values; also the dtor teardown)
-    virtual i32 Refresh(i32 a)
-        OVERRIDE; // slot 4 - 0xea4b0 (ex Poll: update + conditional vfunc-10 redraw)
-    virtual i32 Render()
-        OVERRIDE; // slot 5 - 0xea4e0 (ex Blit: draw the tab background + value glyphs)
+    virtual ~CSBI_StatzTabGruntBar() OVERRIDE;
 
-    // 0xea1f0: the stat bar's own "configure" (it derives straight from CStatusBarItem,
-    // so there is no slot-11 SetupImage to override). Same owner/config-host pair as
-    // SetupImage. Was `CSbTab::BuildMultiplayerTabStatusBar` - a view CONFLATING this
-    // class with CSBI_GruntMachine - while the caller referenced it on the fabricated
-    // CSbConfigItem base, so the call resolved to NO definition.
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual void Reset() OVERRIDE;
+    virtual i32 Refresh(i32 a) OVERRIDE;
+    virtual i32 Render() OVERRIDE;
+
     i32 BuildMultiplayerTabStatusBar(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
@@ -81,44 +55,41 @@ public:
         i32 unitRow,
         i32 unitCol,
         i32 selMode
-    ); // 0xea1f0
+    );
 
-    i32 Update(); // 0xea6c0  resample the grunt and latch any changed value
+    i32 Update();
 
-    // ----- layout (offsets are the load-bearing fact) -----
-    // base region m_0..0x2f comes from CStatusBarItem (0x30, incl. m_2c); leaf fields
-    // start at +0x30.
-    CImage* m_statusGlyph;          // +0x30  status background glyph
-    CImage* m_statusGlyphLatched;   // +0x34  status value glyph (resolved by Update)
-    i32 m_statusValue;              // +0x38  status value (tracked)
-    CImage* m_abilityGlyph;         // +0x3c  ability background glyph
-    CImage* m_abilityGlyphLatched;  // +0x40  ability value glyph (resolved by Update)
-    i32 m_abilityValue;             // +0x44  ability value (tracked)
-    CImage* m_overrideGlyph;        // +0x48  override background glyph
-    CImage* m_overrideGlyphLatched; // +0x4c  override value glyph (resolved by Update)
-    i32 m_overrideValue;            // +0x50  override value (tracked)
-    CImage* m_selectKey;            // +0x54  selection background glyph (0 => no selection)
-    CImage* m_selectGlyph;          // +0x58  selection value glyph (resolved by Update)
-    i32 m_selectValue;              // +0x5c  selection value (tracked)
-    i32 m_unitRow;                  // +0x60  unit-table row index (stride 15 records)
-    i32 m_unitCol;                  // +0x64  unit-table column index (within the 15-dword record)
-    CDDrawWorker* m_timerGlyphMap;  // +0x68  timer glyph map (a frame-data CDDrawWorker)
-    CImage* m_timerGlyph;           // +0x6c  timer glyph (resolved by Update)
-    i32 m_timerValue;               // +0x70  timer value (tracked)
-    CDDrawWorker* m_glyphMap;       // +0x74  glyph map for the first four values (a CDDrawWorker)
-    // Both pairs are compared 64-bit but seeded half by half - see <Clock64.h>.
+    CImage* m_statusGlyph;
+    CImage* m_statusGlyphLatched;
+    i32 m_statusValue;
+    CImage* m_abilityGlyph;
+    CImage* m_abilityGlyphLatched;
+    i32 m_abilityValue;
+    CImage* m_overrideGlyph;
+    CImage* m_overrideGlyphLatched;
+    i32 m_overrideValue;
+    CImage* m_selectKey;
+    CImage* m_selectGlyph;
+    i32 m_selectValue;
+    i32 m_unitRow;
+    i32 m_unitCol;
+    CDDrawWorker* m_timerGlyphMap;
+    CImage* m_timerGlyph;
+    i32 m_timerValue;
+    CDDrawWorker* m_glyphMap;
+
     union {
-        Clock64 m_timerAnchor; // +0x78  timer anchor (g_frameTime at last bump)
+        Clock64 m_timerAnchor;
         struct {
-            i32 m_timerAnchorLo; // +0x78
-            i32 m_timerAnchorHi; // +0x7c
+            i32 m_timerAnchorLo;
+            i32 m_timerAnchorHi;
         };
     };
     union {
-        Clock64 m_timerWindow; // +0x80  timer window
+        Clock64 m_timerWindow;
         struct {
-            i32 m_timerWindowLo; // +0x80
-            i32 m_timerWindowHi; // +0x84
+            i32 m_timerWindowLo;
+            i32 m_timerWindowHi;
         };
     };
 };

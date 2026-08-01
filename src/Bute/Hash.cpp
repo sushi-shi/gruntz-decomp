@@ -2,9 +2,9 @@
 #include <Dsndmgr/SoundVoiceList.h>
 
 #include <Bute/Hash.h>
-#include <Bute/SymParser.h>     // CParserObjList - the tail V0 slot below
-#include <Bute/SymTab.h>        // CSymRecNode / CSymTabNode - the "_a"-int / "_b" element types
-#include <Gruntz/ParseSource.h> // CParseSlotHashNode - the "_a"-string element type
+#include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
+#include <Gruntz/ParseSource.h>
 
 RVA(0x0013c230, 0xf)
 u32 CParseSlotHashNode::Hash() {

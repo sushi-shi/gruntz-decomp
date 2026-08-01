@@ -1,16 +1,16 @@
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Gruntz/ActNameRegistry.h>
+#include <Rez/FrameClock.h>
+#include <Image/CImage.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>
 #include <Gruntz/BehindCandyAni.h>
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>
 #include <rva.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
 VTBL(CBehindCandyAni, 0x001e838c);
 template<> DATA(0x00245f98)
@@ -24,16 +24,6 @@ i32 CBehindCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CBehindCandyAni::~CBehindCandyAni @0x0100f0 - the leaf adds no destructible
-// members beyond CUserLogic, so its dtor folds the bare CUserLogic teardown:
-// store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the
-// embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. Byte-identical in shape to the
-// established leaf dtors; the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CBehindCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x000100c0, 0x1e, ??_GCBehindCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x000100f0, 0x44, ??1CBehindCandyAni@@UAE@XZ)
 
@@ -52,9 +42,9 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     if (m_object->m_layer != 0) {
         if (m_object->m_layer->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_flags &= ~6;
-                m_object->m_7c->m_flags |= 1;
+            if (m_object->m_animWorker != 0) {
+                m_object->m_animWorker->m_flags &= ~6;
+                m_object->m_animWorker->m_flags |= 1;
                 m_38->m_flags &= ~0x1000002;
                 m_38->m_flags |= 0x800000;
             }
@@ -70,15 +60,6 @@ void CBehindCandyAni::FireActivation(i32 id) {
     }
 }
 
-// CBehindCandyAni::RegisterActs @0x0ad9b0 - bind the class's per-frame handler
-// (AdvanceAnim @0x0adbb0) to the activation key "A" via the shared name registry.
-// The SAME archetype as CSecretLevelTrigger::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000ad9b0, 0x18d)
 void CBehindCandyAni::RegisterActs() {
     i32 id = ActFindId("A");

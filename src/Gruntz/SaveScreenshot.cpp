@@ -1,14 +1,13 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 
-#include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h) // wsprintfA
-#include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections (MakeAndAddB/RemoveItemA) + CDDSurface
-#include <DDrawMgr/DDSurface.h>           // CDDSurface (BltEx 0x13eef0, SaveFile 0x13f910)
-#include <Gruntz/GameRegistry.h>  // CGameRegistry (m_world @+0x30, m_modeW/H) + CDDrawSurfaceMgr
-#include <Utils/RegistryHelper.h> // Utils::RegistryHelper (GetValueDword/SetValueDword)
+#include <Mfc.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/GameRegistry.h>
+#include <Utils/RegistryHelper.h>
 
-// @source: decomp-xref
 // @early-stop
 RVA(0x00114ff0, 0x1b3)
 i32 SaveScreenshot(

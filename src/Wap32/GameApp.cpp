@@ -1,31 +1,25 @@
 #include <Wap32/Wap32.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
-#include <Wap32/GameApp.h> // own exported globals (ex Globals.h)
+#include <Wap32/GameApp.h>
 
-VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
+VTBL(CGameMgr, 0x001e9b8c);
 DATA(0x00253c6c)
-i32 g_gameAppInstanceCount = 0; // CGameApp instance counter
+i32 g_gameAppInstanceCount = 0;
 DATA(0x00253c70)
-i32 g_wap32Now = 0; // frame clock (timeGetTime latch)
+i32 g_wap32Now = 0;
 DATA(0x00253c74)
-i32 g_wap32FrameDelta = 0; // frame delta
+i32 g_wap32FrameDelta = 0;
 DATA(0x00253c78)
-i32 g_wap32ClockReset = 0; // 0x653c78
+i32 g_wap32ClockReset = 0;
 DATA(0x00253c7c)
-i32 g_wap32Run7c = 0; // 0x653c7c  run-state countdown
+i32 g_wap32Run7c = 0;
 DATA(0x00253c80)
-i32 g_wap32Run80 = 0; // 0x653c80  run-state reload value
+i32 g_wap32Run80 = 0;
 VTBL(CGameApp, 0x001e9b0c);
 
-// CGameApp::~CGameApp @0x080cf0 - the STANDALONE out-of-line copy of the (inline,
-// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
-// cleanup when a CGameApp-derived ctor's member throws). ??_GCGameApp above and
-// CGruntzApp's cross-TU dtor keep folding their own inline copies; this forcer (the
-// UserLogicCtorEmit #pragma inline_depth(0) pattern) emits the out-of-line COMDAT in
-// this unit so the unwind reference resolves and the RVA is matched.
 RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)
 
 RVA(0x00080d20, 0x24)
@@ -51,19 +45,13 @@ i32 CGameApp::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
 
-// CGameApp::scalar-dtor @0x080dd0 - the CGameApp scalar-deleting destructor (the
-// ??_GCGameApp thunk with ~CGameApp inlined). Real polymorphic: the explicit
-// qualified this->CGameApp::~CGameApp() inlines the (inline, virtual) dtor, whose
-// auto vptr-restore stamps ??_7CGameApp@@6B@ (0x5e9b0c) and whose body runs
-// CloseResources() + the instance-counter decrement - so the manual vtable stamp
-// (and the retail-vtable / instance-counter aliases) are gone.
-RVA_COMPGEN(0x00080dd0, 0x32, ??_GCGameApp@@UAEPAXI@Z) // (cl-auto-gen scalar-deleting dtor)
+RVA_COMPGEN(0x00080dd0, 0x32, ??_GCGameApp@@UAEPAXI@Z)
 
 RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
     m_gameWnd = 0;
     m_gameMgr = 0;
-    m_hAccel = 0; // the optimiser schedules the +0x10 store before +0x0c
+    m_hAccel = 0;
     m_hInstance = 0;
     m_appActive = 0;
     m_errorReported = 0;
@@ -219,7 +207,7 @@ i32 CGameApp::RunMessageLoop() {
     for (;;) {
         if (PeekMessageA(&msg, 0, 0, 0, 1)) {
             do {
-                if (msg.message == 0x12 /*WM_QUIT*/) {
+                if (msg.message == 0x12) {
                     return 1;
                 }
                 if (m_hAccel && msg.hwnd == hwnd) {
@@ -229,14 +217,13 @@ i32 CGameApp::RunMessageLoop() {
                 DispatchMessageA(&msg);
             } while (PeekMessageA(&msg, 0, 0, 0, 1));
         }
-        OnIdle(); // idle virtual (vtbl +0x20)
+        OnIdle();
     }
 }
 
 RVA(0x0013d9b0, 0xa0)
 void CGameApp::InitializeDefaultWindowClass() {
-    // retail: `mov ecx,0xa; xor eax,eax; lea edi,[esi+0x1e8]; rep stosd` == an inline
-    // memset of exactly sizeof(WNDCLASSA) (10 dwords), not a hand-written dword loop.
+
     memset(&m_wc, 0, sizeof(m_wc));
 
     HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
@@ -244,7 +231,7 @@ void CGameApp::InitializeDefaultWindowClass() {
         hCursor = LoadCursorA(0, IDC_ARROW);
     }
 
-    m_wc.style = 8; // CS_DBLCLKS
+    m_wc.style = 8;
     m_wc.lpfnWndProc = GameWindowProc;
     m_wc.cbClsExtra = 0;
     m_wc.cbWndExtra = 0;
@@ -259,8 +246,7 @@ void CGameApp::InitializeDefaultWindowClass() {
 // @early-stop
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
-    // retail: `mov ecx,0xc; xor eax,eax; lea edi,[esi+0x210]; rep stosd` == an inline
-    // memset of exactly sizeof(CREATESTRUCTA) (12 dwords).
+
     memset(&m_createStruct, 0, sizeof(m_createStruct));
 
     HMENU hMenu = 0;
@@ -268,10 +254,6 @@ void CGameApp::InitializeDefaultCreateStruct() {
         hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
     }
 
-    // x and y both == CW_USEDEFAULT (windowed) or 0 (fullscreen). Kept as two
-    // separate variables (the target materializes x in a register, y in a stack
-    // slot, both assigned in one branch - a single var folds to a branchless
-    // neg/sbb/and on the 0x80000000 mask).
     i32 x, y;
     if (m_gameInfo.windowClassFlags & 1) {
         x = static_cast<i32>(0x80000000);
@@ -281,26 +263,25 @@ void CGameApp::InitializeDefaultCreateStruct() {
         y = 0;
     }
 
-    // Width/height: the requested size when windowed, the screen otherwise.
     i32 cx, cy;
     if (m_gameInfo.windowClassFlags & 1) {
         cx = m_gameInfo.windowWidth;
         cy = m_gameInfo.windowHeight;
     } else {
-        cx = GetSystemMetrics(0); // SM_CXSCREEN
-        cy = GetSystemMetrics(1); // SM_CYSCREEN
+        cx = GetSystemMetrics(0);
+        cy = GetSystemMetrics(1);
     }
 
     i32 style;
     DWORD exStyle;
     if (m_gameInfo.windowClassFlags & 1) {
-        style = 0xcf0000; // WS_OVERLAPPEDWINDOW (default)
+        style = 0xcf0000;
         exStyle = 0x40000;
         if (m_gameInfo.windowClassFlags & 2) {
-            style = 0xca0000; // DialogFrame: caption + sysmenu
+            style = 0xca0000;
         }
     } else {
-        style = 0x80080000; // WS_POPUP | ...
+        style = 0x80080000;
         exStyle = 0x40008;
     }
 
@@ -364,7 +345,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameWnd* wnd = m_gameWnd;
     m_errorReported = 1;
     if (wnd != 0 && wnd->m_closeGuard == 0) {
-        ::PostMessageA(wnd->m_hwnd, 0x10, 0, 0); // WM_CLOSE
+        ::PostMessageA(wnd->m_hwnd, 0x10, 0, 0);
     }
     m_running = 0;
     m_errorCode = wParam;
@@ -410,8 +391,7 @@ void CGameMgr::Close() {
 
 RVA(0x0013ddc0, 0xaa)
 i32 CGameMgr::PerFrameTick() {
-    // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
-    // reuses it across the three samples (call edi), exactly as retail does.
+
     DWORD(WINAPI * pTGT)(void) = ::timeGetTime;
     u32 now = pTGT();
     u32 delta = now - static_cast<u32>(g_wap32Now);
@@ -440,7 +420,7 @@ i32 CGameMgr::PerFrameTick() {
     m_frameCounter = count;
     if (static_cast<u32>(g_wap32Now) - static_cast<u32>(m_windowStartTick) >= 0x7d0) {
         m_fps = count >> 1;
-        InitTimeFields(0); // 0x13de70 (defined below; direct call rel32)
+        InitTimeFields(0);
     }
     return 1;
 }
@@ -461,11 +441,6 @@ void CGameMgr::InitializeTimeGlobal() {
     g_wap32ClockReset = 0;
 }
 
-// -------------------------------------------------------------------------
-// CGameMgr::SpinWaitUntil(ms) (0x13dec0; ex RezMgr::) - the ms frame-pacing
-// busy-wait PerFrameTick calls: sample timeGetTime through the game-owned fn-ptr
-// and spin until `now` passes `start + ms` (unsigned, overflow-guarded). `this`
-// is unused (ecx ignored); the fn-ptr is cached in a callee-save.
 RVA(0x0013dec0, 0x20)
 void CGameMgr::SpinWaitUntil(i32 ms) {
     DWORD(WINAPI * fn)(void) = ::timeGetTime;
@@ -496,13 +471,6 @@ i32 CGameMgr::TrySetFrameRate(i32 fps) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// WaitKeyEdge (0x13df30; moved from RezMgr.cpp in wave4-K) - busy-wait for a
-// key down-then-up edge on virtual-key `vk`, with an optional `timeoutMs` deadline
-// (through the game-owned timeGetTime fn-ptr ::timeGetTime, above). __cdecl, two
-// stack args. Reads the OS key state through the engine's cached GetAsyncKeyState
-// fn-ptr (::GetAsyncKeyState @0x6c4500).
-// ORPHAN: no .text caller (a free __cdecl busy-wait); no owning class.
 RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {

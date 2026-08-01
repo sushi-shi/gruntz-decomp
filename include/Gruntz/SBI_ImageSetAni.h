@@ -3,38 +3,25 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize) + CFileMemBase
+#include <Gruntz/SBI_ImageSet.h>
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
-    // tag 8 + the ani window seeded (m_interval = 0x64); the `new CSBI_ImageSetAni`
-    // ctor leg the Resource-tab conveyor builders fold at each new-site.
     CSBI_ImageSetAni() {
         m_frame = 0;
         m_kind = 8;
         m_34 = 0;
-        m_loop = 0; // retail `mov [ebp+0x44],edi` - the LOOP flag, not the step
+        m_loop = 0;
         m_interval = 0x64;
     }
-    // Real vtable shape (sema class: vtbl@0x1ead6c, 15 slots; overrides 0/1/4/5,
-    // news 13/14). The out-of-line ~ (0x1047f0) lives in SBI_ImageSetAni.cpp via
-    // the CHAIN-DTOR device (see StatusBarItem.h).
-    virtual ~CSBI_ImageSetAni() OVERRIDE; // slot 0
-    // slot 1 (vtbl 0x1ead6c thunk 0x2829 -> 0xe7cd0): serialize the six persistent ints
-    // (m_interval..m_frameEnd) through the stream, then chain CSBI_ImageSet::SerializeFields.
-    // CFileMemBase is a typedef of CFileMemBase == the real CFileMemBase, so this is
-    // the same parameter type as the rest of the chain (mangles PAVCFileMemBase@@).
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj)
-        OVERRIDE;                        // 0xe7cd0
-    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
-    virtual i32 Render() OVERRIDE;       // slot 5 - 0xe7b00 (ex Tick)
-    // Slots 13/14 ARE Init and SetRange - the ILT thunks prove it (0x3b48 -> jmp 0xe7980
-    // = Init; 0x3bde -> jmp 0xe7c30 = SetRange). They used to be declared here TWICE: as
-    // two body-less placeholder virtuals `AniInit`/`AniSetRange` (invented only to pad the
-    // vtable out to 15 slots, and left as unresolved externals the vtable pointed at) and
-    // again as the real non-virtual bodies below. One function, one slot: the real bodies
-    // ARE the virtuals.
-    virtual i32 Init( // slot 13 (new)  0xe7980
+
+    virtual ~CSBI_ImageSetAni() OVERRIDE;
+
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 Refresh(i32 a) OVERRIDE;
+    virtual i32 Render() OVERRIDE;
+
+    virtual i32 Init(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
         i32 cmd,
@@ -47,35 +34,15 @@ public:
         i32 b3,
         i32 b4
     );
-    // slot 14 (new) 0xe7c30: re-arm with a new frame window without re-resolving the
-    // record. The Statz-arrow direction setters below drive exactly this slot.
+
     virtual void SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval);
-    // Member teardown = the INHERITED CSBI_ImageSet::Reset (0xe7400); retail's
-    // ~CSBI_ImageSetAni calls it at its own level and again at the folded ImageSet level
-    // (two `call 0xe7400`). The old declared-only DtorImageSetAni alias was a fake view
-    // of that same function (unbound - would not link).
 
-    // (0xe7cd0 was declared here as a non-virtual `Serialize` - it IS the slot-1
-    //  SerializeFields override declared above.)
-
-    // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
-    // advance within [m_frameStart, m_frameEnd]. Ex CAniPlayer::Tick (dossier #16 identity fold).
-
-    // Binary-proven layout (2026-08-01). m_step/m_loop and m_frameStart/m_frameEnd
-    // were SWAPPED here, which mis-addressed all four bodies below:
-    //   Render 0xe7b00 : `mov eax,[esi+0x48]; test eax,eax; jle` and
-    //                    `mov ecx,[esi+0x48]; add m_38,ecx` => +0x48 IS the step;
-    //                    `mov ecx,[esi+0x44]; test; je` (a pure gate) => +0x44 is loop;
-    //                    `mov edx,[esi+0x50]; mov [esi+0x38],edx` => +0x50 is the start.
-    //   SetRange 0xe7c30: arg2 (step) -> +0x48, arg3 (loop) -> +0x44,
-    //                    arg0 (start) -> +0x50, arg1 (end) -> +0x4c.
-    //   the inline ctor : `mov [ebp+0x44],edi` (0) => the ctor seeds m_loop, not m_step.
-    i32 m_interval;   // +0x3c  persistent serialized ints (Serialize save/load block)
-    i32 m_lastTime;   // +0x40
-    i32 m_loop;       // +0x44
-    i32 m_step;       // +0x48
-    i32 m_frameEnd;   // +0x4c
-    i32 m_frameStart; // +0x50
+    i32 m_interval;
+    i32 m_lastTime;
+    i32 m_loop;
+    i32 m_step;
+    i32 m_frameEnd;
+    i32 m_frameStart;
 };
 SIZE_UNKNOWN();
 
@@ -87,28 +54,16 @@ inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
 
 class CSBI_StatzTabArrow : public CSBI_ImageSetAni {
 public:
-    // tag 5 (the Statz per-grunt arrow); same ani window seed as the base.
     CSBI_StatzTabArrow() {
         m_kind = 5;
     }
-    // Its /GX dtor's member teardown is the INHERITED CSBI_ImageSet::Reset
-    // (0xe7400), called three times: own level + the folded ImageSetAni + ImageSet
-    // levels. (DtorStatzTabArrow was a declared-only fake view of that function.)
+
     virtual ~CSBI_StatzTabArrow() OVERRIDE;
 
-    // The two direction setters (0xea0f0 / 0xea170): pick one of four frame-window
-    // tuples from the two selectors and forward to the slot-14 SetRange virtual. Owner
-    // pinned by the call site - CStatusBarMgr::LoadTabSprites calls them on a freshly
-    // `new CSBI_StatzTabArrow` (Statz per-grunt row); slot 14 exists from CSBI_ImageSetAni
-    // down, so the arrow is the deepest class both callers agree on. Bodies live in
-    // StatusBarTabBuilders.cpp. (They were methods of the fabricated CSbConfigItem.)
-    // `animate` 0 = hold a fixed frame (SetRange step 0), 1 = run the animation
-    // (SetRange step +-1); `position` picks which of the pair. Alt is the mirror.
-    void SetDirection(i32 position, i32 animate);    // 0x0ea0f0
-    void SetDirectionAlt(i32 position, i32 animate); // 0x0ea170
-    // The m_114-gated 2-arg arrow mode sink (reloc `M`).
+    void SetDirection(i32 position, i32 animate);
+    void SetDirectionAlt(i32 position, i32 animate);
 };
 SIZE(0x54);
-VTBL(CSBI_StatzTabArrow, 0x001eac94); // vtable_names -> code (RTTI game class)
+VTBL(CSBI_StatzTabArrow, 0x001eac94);
 
 #endif // GRUNTZ_SBI_IMAGESETANI_H

@@ -3,139 +3,96 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/Object.h> // CObject - the shared engine grand-base
+#include <Wap32/Object.h>
 
 #ifndef _WINDEF_
 struct HWND__;
 typedef struct HWND__* HWND;
 #endif
 
-// The 0x120-byte snapshot header the child-group writer stamps and the reader
-// consumes - the two ends agree on every offset, which is the layout.
 #pragma pack(push, 1)
 struct CSnapshotHeader {
-    i32 m_00;                     // +0x000
-    i32 m_version;                // +0x004  1
-    i32 m_month;                  // +0x008  tm_mon + 1
-    i32 m_dayThenYear;            // +0x00c  tm_mday, then overwritten with tm_year+0x76c
-    char m_name[0x110 - 0x10];    // +0x010  the snapshot name (strcpy'd)
-    u32 m_childCount;             // +0x110  child count handed to LoadObjects/Deserialize
-    u32 m_objIdCounter;           // +0x114  g_wwdObjIdCounter
-    i32 m_activeCount;            // +0x118  CountActive() probe
-    char m_pad11c[0x120 - 0x11c]; // +0x11c
+    i32 m_00;
+    i32 m_version;
+    i32 m_month;
+    i32 m_dayThenYear;
+    char m_name[0x110 - 0x10];
+    u32 m_childCount;
+    u32 m_objIdCounter;
+    i32 m_activeCount;
+    char m_pad11c[0x120 - 0x11c];
 };
 SIZE(0x120);
 #pragma pack(pop)
 
 class CLoadable;
-class CDDrawSubMgrPages;    // +0x04 the page/child factory (front/back/overlay surfaces)
-class CDDrawWorkerList;     // +0x0c the per-frame worker pump (vtbl 0x1efd88; slot-13 PruneWorkers)
-class CDDrawChildGroup;     // +0x08 the broadcast child-group (intrusive list + 2 maps)
-class CDDrawWorkerRegistry; // +0x10 the name->sprite registry (: CLoadable, vtbl 0x5efd28, m_10map)
-class CDDrawWorkerCache;    // +0x14 the string-keyed worker cache (its +0x10 map is the
-class CDDrawWorkerMapSmall; // +0x18 the polymorphic sprite/palette registry (: CObject, 13 slots)
-class CDDrawSubMgrLeafScan; // (class, not struct - the PAU/PAV fwd-mangling trap)
-class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue / m_10 map)
-class CDDrawPtrCollections; // the +0x1c surface pool (heap object)
-class SoundStream;          // +0x20 the Dsndmgr stream (<Dsndmgr/SoundStream.h>)
+class CDDrawSubMgrPages;
+class CDDrawWorkerList;
+class CDDrawChildGroup;
+class CDDrawWorkerRegistry;
+class CDDrawWorkerCache;
+class CDDrawWorkerMapSmall;
+class CDDrawSubMgrLeafScan;
+class CDDrawSubMgrLeaf;
+class CDDrawPtrCollections;
+class SoundStream;
 
-// The last word is a POINTER, not an opaque i32: SnapshotChildren/RestoreChildren
-// pass `&header` (modes 2/6/7/8) and the two InvokeCallback sites pass `&someObjPtr`
-// (modes 9/0xa, an out-param) - different pointee, always a pointer. `void*` is the
-// honest common type, and it retires the reinterpret at every registration, every
-// invoke and the header-arg local.
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, void*);
 
-// The lost-surface restore handler. SetRestoreHandler forwards straight into
-// SetSurfaceRestoreHandler (0x1437e0), which latches it in g_restoreHandler for
-// RestoreLostSurfaces to call - so the argument is a FUNCTION, never an HWND
-// (both call sites pass PumpIdleFrame @0x8b8c0; the old `SetHwnd(void*)` name and
-// type forced a fn-ptr-through-void* launder at each).
 typedef i32(__cdecl* SurfaceRestoreFn)();
 
 class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
-    // `new CDDrawSurfaceMgr` (CGruntzMgr::Init / RezSync) needs an accessible
-    // operator new; MFC CObject's PASCAL one is not usable under MSVC5, so forward
-    // to global new (byte-identical: the same `push 0x40; call ??2@YAPAXI@Z`).
+
     void* operator new(size_t n) {
         return ::operator new(n);
     }
     void operator delete(void* p) {
         ::operator delete(p);
     }
-    // The real 8-slot retail vtable @0x1efc58 (== ??_7CDDrawSurfaceMgr@@6B@): CObject's
-    // 5 slots (0-4, dtor override @1) + THREE CDDrawSurfaceMgr-own slots. The per-slot
-    // vtable audit proves IsReady/Init/Cleanup are the ONLY new virtuals; FreeContext/
-    // SetDimensions/SetRestoreHandler/InvokeCallback occupy NO retail slot -> plain methods.
-    virtual ~CDDrawSurfaceMgr() OVERRIDE; // slot 1  0x1558b0 (scalar-del ??_G 0x155890)
-    virtual i32 IsReady();                // slot 5  0x155f00
-    // slot 6  0x155900 (@stub): the display/video-mode bring-up - heap-allocate the 11
-    // owned sub-managers, validate each (m_lastError 0x3e9..0x3f1) and configure the
-    // display. Retail `ret 0x14` = FIVE args (the old no-arg decl under-declared it);
-    // CGruntzMgr::LoadWorldMode dispatches it as its "SetVideoMode" (slot 6, +0x18).
+
+    virtual ~CDDrawSurfaceMgr() OVERRIDE;
+    virtual i32 IsReady();
+
     virtual i32 Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags);
-    virtual void Cleanup(); // slot 7  0x155e20 (owned-child teardown; ~ calls it;
-                            //         LoadWorldMode's pre-Init "Notify" dispatch)
+    virtual void Cleanup();
 
-    // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
-    void FreeContext();                         // 0x155fc0
-    i32 PlayDefaultSound();                     // 0x155ff0
-    i32 SetDimensions(i32 x, i32 y, i32 flags); // 0x155f60
-    // 0x155f50 takes no HWND despite the old name - it latches g_restoreHandler for
-    // RestoreLostSurfaces.
-    void SetRestoreHandler(SurfaceRestoreFn handler); // 0x155f50
-    // (ar, mode, typeId, ppObj) - the installed HP_Callback's own slots, forwarded
-    // untouched; SerialObjectFactory @0x0d2a0 is the callback.
-    i32 InvokeCallback(void* ar, i32 mode, i32 typeId, void* payload); // 0x156a90
+    void FreeContext();
+    i32 PlayDefaultSound();
+    i32 SetDimensions(i32 x, i32 y, i32 flags);
 
-    // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
-    // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
-    // `path` is the snapshot FILE (S.SetName) and the entry null-check; `name` is the
-    // string strcpy'd into the 0x120-byte header. Both were wrong before 2026-07-29 -
-    // see the body's note in DDrawSurfaceMgr.cpp.
-    i32 SnapshotChildren(HP_Callback cb, char* path, char* name, i32 typeId); // 0x156020
-    i32 RestoreChildren(HP_Callback cb, char* name, i32 typeId);              // 0x156530
+    void SetRestoreHandler(SurfaceRestoreFn handler);
 
-    // +0x04  the page/child factory (front/back/overlay surfaces) - the game-side
-    // draw target (the ex CDDrawSubMgrPages/StateMgrBZ views; every CState::m_c consumer
-    // reaches the flip pump + the three CDDrawSurfacePair pages through it).
+    i32 InvokeCallback(void* ar, i32 mode, i32 typeId, void* payload);
+
+    i32 SnapshotChildren(HP_Callback cb, char* path, char* name, i32 typeId);
+    i32 RestoreChildren(HP_Callback cb, char* name, i32 typeId);
+
     CDDrawSubMgrPages* m_drawTarget;
-    // +0x08  broadcast child-group AND the walked game-object collection (one object:
-    // the sprite factory IS the walked list host; the ex CQueueDrainHost view is dissolved
-    // into CDDrawChildGroup - its m_head/m_cursor/m_scan are m_list/m_walkCursor/m_scanCursor).
+
     CDDrawChildGroup* m_childGroup;
-    CDDrawWorkerList* m_workerList; // +0x0c  the per-frame worker pump (real type; ex "renderer B")
-    CDDrawWorkerRegistry* m_imageRegistry; // +0x10  name->sprite/image registry (m_10map; vtbl
-                                           //        0x5efd28; ex "m_imageRegistry" - it is a
-                                           //        worker/name registry, not a DDSURFACEDESC)
-    CDDrawWorkerCache* m_workerCache;      // +0x14  the string-keyed worker cache (real type)
-    CDDrawWorkerMapSmall* m_workerMap;     // +0x18  the sprite/palette registry (real type)
-    CDDrawPtrCollections* m_ptrColl;       // +0x1c  surface pool
-    SoundStream* m_soundStream;            // +0x20  foreign Dsndmgr sound stream
-    // +0x24: "CDDrawResolveSubMgr" IS the canonical CGameLevel - PROVEN: Init news
-    // it with new(0x6d4) + ctor 0x15ccd0 == SIZE(CGameLevel, 0x6d4) + ??0CGameLevel.
-    class CGameLevel* m_level; // (ex "m_level" - the canonical CGameLevel)
-    CDDrawSubMgrLeafScan*
-        m_soundRegistry; // +0x28  sound/cue registry (CDDrawSubMgrLeafScan typedef;
-                         //        ex "m_soundRegistry")
-    CDDrawSubMgrLeaf*
-        m_animRegistry;     // +0x2c  the ANI catalog / anim registry (ex "m_animRegistry";
-                            //        KeyOfValue + the ANI factory set)
-    HWND m_hWnd;            // +0x30  bound window / device handle
-    i32 m_flags;            // +0x34  caps flags
-    i32 m_lastError;        // +0x38  last-error code
-    HP_Callback m_callback; // +0x3c  run/config callback
+    CDDrawWorkerList* m_workerList;
+    CDDrawWorkerRegistry* m_imageRegistry;
+
+    CDDrawWorkerCache* m_workerCache;
+    CDDrawWorkerMapSmall* m_workerMap;
+    CDDrawPtrCollections* m_ptrColl;
+    SoundStream* m_soundStream;
+
+    class CGameLevel* m_level;
+    CDDrawSubMgrLeafScan* m_soundRegistry;
+
+    CDDrawSubMgrLeaf* m_animRegistry;
+
+    HWND m_hWnd;
+    i32 m_flags;
+    i32 m_lastError;
+    HP_Callback m_callback;
 };
 SIZE(0x40);
 SIZE_UNKNOWN();
 
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
 extern void __cdecl SetSurfaceRestoreHandler(SurfaceRestoreFn handler);
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H

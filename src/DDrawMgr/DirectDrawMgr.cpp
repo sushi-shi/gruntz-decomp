@@ -1,50 +1,50 @@
 #include <Io/FileStream.h>
-#include <EmptyString.h>         // g_emptyString
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <EmptyString.h>
+#include <DDrawMgr/PixelShift.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // SurfaceRestoreFn + SetSurfaceRestoreHandler's decl
-#include <DDrawMgr/DDrawPtrCollections.h> // the pool half of this obj's manager (+ CPoolItem*)
-#include <Image/Image.h>                  // CFileImageSurface (the a58 pool item's dtor pair)
-#include <ddraw.h> // real DirectDraw SDK (IDirectDraw/2, DirectDrawCreate, DirectDrawEnumerateA, DDCAPS, IID_IDirectDraw2)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Image/Image.h>
+#include <ddraw.h>
 #include <rva.h>
-#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
-#include <AddrWord.h>  // the immediate-in-a-pointer-slot success code
-#include <stdio.h>     // engine sprintf (reloc-masked)
-#include <string.h>    // inline strcpy / memcpy / memset (rep stos)
+#include <ComOutRef.h>
+#include <AddrWord.h>
+#include <stdio.h>
+#include <string.h>
 
-#include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
-#include <DDrawMgr/DDSurface.h>    // CDDSurface - CreatePoolItem's arg0 AND its product
+#include <Dsndmgr/SoundBankLoad.h>
+#include <DDrawMgr/DDSurface.h>
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
-VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot a58 surface vtable)
+VTBL(CFileImageSurface, 0x001efa58);
 VTBL(CPoolItemA88, 0x001efa88);
 VTBL(CPoolItemAB8, 0x001efab8);
 VTBL(CPoolItemAE8, 0x001efae8);
 DATA(0x002bed00)
-CDDrawPtrCollections* g_DirectDrawMgr = 0; // 0x6bed00
+CDDrawPtrCollections* g_DirectDrawMgr = 0;
 
 DATA(0x00283eb8)
-i32 g_ddLogEnabled = 0; // 0x683eb8
+i32 g_ddLogEnabled = 0;
 DATA(0x00283ebc)
-i32 g_ddMsgBoxEnabled = 0; // 0x683ebc
+i32 g_ddMsgBoxEnabled = 0;
 DATA(0x00283ec0)
-i32 g_ddBeepEnabled = 0; // 0x683ec0
+i32 g_ddBeepEnabled = 0;
 DATA(0x00283ec4)
-i32 g_ddThirdEnabled = 0; // 0x683ec4
+i32 g_ddThirdEnabled = 0;
 
 DATA_SYMBOL(0x001ef848, 0x0, _IID_IDirectDraw2)
 
 DATA(0x00283edc)
-i32 (*g_restoreHandler)() = 0; // 0x683edc
+i32 (*g_restoreHandler)() = 0;
 
 DATA(0x00283ee8)
-IDirectDraw2* g_DirectDraw = 0; // 0x683ee8
+IDirectDraw2* g_DirectDraw = 0;
 DATA(0x00283ec8)
 CPtrArray g_modeArray;
 DATA(0x00283ee4)
-void* g_ddCreateCtx = 0; // 0x683ee4
+void* g_ddCreateCtx = 0;
 
 inline CDDSurface::~CDDSurface() {
     FreeSurfaces();
@@ -60,9 +60,9 @@ void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
 
 RVA(0x00141400, 0x870)
 void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
-    char szCode[64];  // local_340 - error-code name
-    char szMsg[256];  // local_300 - description
-    char szLine[512]; // local_200 - formatted output line
+    char szCode[64];
+    char szMsg[256];
+    char szLine[512];
 
     if (g_ddBeepEnabled) {
         MessageBeep(MB_ICONEXCLAMATION);
@@ -300,8 +300,6 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
     }
 }
 
-// g_modeArray's file-scope construction/destruction family.
-
 RVA(0x00141cb0, 0x1)
 void __cdecl DDrawLogLine(char*, ...) {}
 
@@ -356,13 +354,6 @@ i32 CDDrawPtrCollections::CreateDevice(
         }
     }
 
-    // BUG FIX 2026-07-29 (found by naming): this passed arg2 (the DirectDrawCreate
-    // driver GUID). Retail's SetCooperativeLevel block @0x141e14 is
-    // `mov ecx,[esp+0x90]; push ecx; mov ecx,[esp+0x80]; push ecx` - the second read is
-    // one push later, so it resolves to arg1, not arg2. arg1 is the HWND (and was named
-    // `unused`); arg2 is the GUID DirectDrawCreate @0x141f52 takes. CDDrawPtrCollections::Init
-    // @0x141ff0 corroborates: it calls CreateDevice(itsArg2, g_ddCreateCtx, ...) - the
-    // enumerated driver GUID goes in the SECOND slot.
     i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), coopFlags);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
@@ -374,11 +365,6 @@ i32 CDDrawPtrCollections::CreateDevice(
         return 0;
     }
 
-    // Retail zero-fills both SDK caps blocks with `mov ecx,0x5f; xor eax,eax; rep
-    // stosd` (0x141e46 / 0x141e57) - i.e. the inlined memset of a 0x17c-byte DDCAPS,
-    // not a hand-written dword loop. (The ex `i32* p = (i32*)&m_driverCaps; for(...)`
-    // spelling produced the same rep stosd, so the dword cursor was never forced -
-    // it was just an unrecovered memset.)
     memset(&m_driverCaps, 0, sizeof(m_driverCaps));
     memset(&m_helCaps, 0, sizeof(m_helCaps));
     m_driverCaps.dwSize = sizeof(DDCAPS);
@@ -404,7 +390,7 @@ i32 CDDrawPtrCollections::CreateDevice(
 
     if (bpp == 0) {
         DDSURFACEDESC desc;
-        memset(&desc, 0, sizeof(desc)); // 0x1b dwords == 0x6c == sizeof(DDSURFACEDESC)
+        memset(&desc, 0, sizeof(desc));
         desc.dwSize = 0x6c;
         hr = m_device->GetDisplayMode(&desc);
         if (hr == 0) {
@@ -483,11 +469,6 @@ void CDDrawPtrCollections::RemoveItemA(CDDSurface* item) {
     delete item;
 }
 
-// ---------------------------------------------------------------------------
-// Create7f0_1 (0x1421a0).  new 0xc0 item; ctor (CByteArray @+0x94, vtbl 0x5ef7f0
-// stamped FIRST, then zero fields); dispatch vtbl[0x08] with 1 arg; on success
-// AddItemA, else virtual-delete. /GX. ret 0x4. The failure (delete) path is the
-// fall-through (`if (!InitX)`), matching retail's `jne success` branch polarity.
 RVA(0x001421a0, 0xbe)
 CDDSurface* CDDrawPtrCollections::Create7f0_1(const DDSURFACEDESC* desc) {
     CDDSurface* item = new CDDSurface;
@@ -499,10 +480,6 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(const DDSURFACEDESC* desc) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// CreateA (0x142260).  new 0xc0 item, ctor (CFileImageSurface @+0x94 / vtbl 0x5efa58),
-// dispatch vtbl[0x24]; on success register via AddItemA, else virtual-delete. /GX.
-// Failure path is the fall-through (retail's `jne success` polarity).
 RVA(0x00142260, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans) {
     CFileImageSurface* item = new CFileImageSurface;
@@ -514,19 +491,11 @@ CDDSurface* CDDrawPtrCollections::CreateA(PidHeader* hdr, i32 type, u32 size, i3
     return item;
 }
 
-// 0x142340 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
 RVA_COMPGEN(0x00142340, 0x1e, ??_GCFileImageSurface@@UAEPAXI@Z)
 
 RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {}
 
-// ---------------------------------------------------------------------------
-// CreateB (0x1423c0).  Same as CreateA but dispatches vtbl[0x2c]. /GX.
-// a1/a2 ARE a pixel width/height pair (NOT the desc CreateA takes - the two neighbours
-// are different slots, which is what the old shared "polymorphic first arg" note
-// conflated): LoadKeyed @0x148840 forwards them to CDDSurface::BlitSurf @0x13e0d0,
-// which stores them into the surface's +0x1c / +0x18 - the very fields CImage::Create
-// then reads back as m_width / m_height.
 RVA(0x001423c0, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key) {
     CFileImageSurface* item = new CFileImageSurface;
@@ -538,9 +507,6 @@ CDDSurface* CDDrawPtrCollections::CreateB(i32 width, i32 height, i32 bitDepth, i
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// Createa58_1 (0x1424a0).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x08]
-// with 1 arg; AddItemA on success. /GX. ret 0x4.
 RVA(0x001424a0, 0xbe)
 CDDSurface* CDDrawPtrCollections::Createa58_1(const DDSURFACEDESC* desc) {
     CFileImageSurface* item = new CFileImageSurface;
@@ -552,19 +518,6 @@ CDDSurface* CDDrawPtrCollections::Createa58_1(const DDSURFACEDESC* desc) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// Createa58_3 (0x142560).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x28]
-// with 3 args; AddItemA on success. /GX. ret 0xc.
-// SETTLED 2026-07-27 (was @identity-TODO): a1 is a FILE PATH, and LoadByExt's `char*
-// path` was the correct side of the pair. Proof from both ends -
-//   callee: LoadByExt @0x148940 starts `mov ebx,[esp+0xc]` (= a1) then
-//     `push 0x2e; push ebx; call strrchr`, and _stricmp's the tail against ".BMP"
-//     (0x61a0e4) / ".PCX" (0x61a0dc) / ".PID" (0x61a0d4) to pick a loader;
-//   caller: CreateRange @0x1426ed pushes `lea edx,[esp+0x1c]` - the stack buffer it
-//     just built with sprintf("%s%i", base, i) + strcat(".") + strcat(suffix).
-// The mis-typed link is UPSTREAM and OUT OF SCOPE here: CImage::Create's own arg1
-// (declared PidHeader*) is forwarded verbatim into this path, so it too is a
-// path - see the note at its call site in src/Image/CImage.cpp.
 RVA(0x00142560, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa58_3(char* path, i32 caps, i32 colorKey) {
     CFileImageSurface* item = new CFileImageSurface;
@@ -576,12 +529,6 @@ CDDSurface* CDDrawPtrCollections::Createa58_3(char* path, i32 caps, i32 colorKey
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// CreateRange (0x142630). Build a numbered sequence of a58 pool items named
-// "<base><index>" over [start, start+count); an optional suffix overrides the name
-// (".." + suffix, or the numbered name + suffix when the suffix starts with '.').
-// Createa58_3 each and gather the non-null results into `out`; return the count.
-// __thiscall, ret 0x1c => 7 args.
 // @early-stop
 RVA(0x00142630, 0xfe)
 i32 CDDrawPtrCollections::CreateRange(
@@ -601,10 +548,7 @@ i32 CDDrawPtrCollections::CreateRange(
         sprintf(buf, "%s%i", baseName, i);
         if (suffix != 0) {
             if (suffix[0] != '.') {
-                strcpy(
-                    buf,
-                    g_dot
-                ); // 0x5ee8ec IS "." (the old extern's ".."/g_dotDot label was wrong)
+                strcpy(buf, g_dot);
             }
             strcat(buf, suffix);
         }
@@ -618,9 +562,6 @@ i32 CDDrawPtrCollections::CreateRange(
     return n;
 }
 
-// ---------------------------------------------------------------------------
-// Createa88_3 (0x142730).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x24]
-// with 3 args; AddItemA on success. /GX. ret 0xc.
 RVA(0x00142730, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
     CPoolItemA88* item = new CPoolItemA88;
@@ -636,9 +577,6 @@ RVA_COMPGEN(0x00142800, 0x1e, ??_GCPoolItemA88@@UAEPAXI@Z)
 RVA(0x00142820, 0x53)
 CPoolItemA88::~CPoolItemA88() {}
 
-// ---------------------------------------------------------------------------
-// Createa88_1 (0x142880).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x08]
-// with 1 arg; AddItemA on success. /GX. ret 0x4.
 RVA(0x00142880, 0xbe)
 CDDSurface* CDDrawPtrCollections::Createa88_1(const DDSURFACEDESC* desc) {
     CPoolItemA88* item = new CPoolItemA88;
@@ -650,10 +588,6 @@ CDDSurface* CDDrawPtrCollections::Createa88_1(const DDSURFACEDESC* desc) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// Createab8_3 (0x142940).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x24]
-// with 3 args; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success.
-// /GX. ret 0xc.
 RVA(0x00142940, 0xd4)
 CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
@@ -670,11 +604,6 @@ RVA_COMPGEN(0x00142a20, 0x1e, ??_GCPoolItemAB8@@UAEPAXI@Z)
 RVA(0x00142a40, 0x53)
 CPoolItemAB8::~CPoolItemAB8() {}
 
-// ---------------------------------------------------------------------------
-// Createab8_1 (0x142aa0).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x08]
-// with 1 arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success.
-// /GX. ret 0x4.
-// ---------------------------------------------------------------------------
 RVA(0x00142aa0, 0xca)
 CDDSurface* CDDrawPtrCollections::Createab8_1(const DDSURFACEDESC* desc) {
     CPoolItemAB8* item = new CPoolItemAB8;
@@ -687,12 +616,6 @@ CDDSurface* CDDrawPtrCollections::Createab8_1(const DDSURFACEDESC* desc) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// Createab8_24_3 (0x142b70).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch
-// vtbl[0x24] as a 3-arg init with the two literal tags (0x18, 0x21) + the incoming
-// arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success. /GX. ret 0x4.
-// Slot 9 (0x148af0 == CPoolItemAB8::Setup) takes exactly 4 args (info + 3 ints); this
-// site passes {0x18, 0x21, a}, Createab8_3 passes {a, b, c} - one consistent signature.
 RVA(0x00142b70, 0xce)
 CDDSurface* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
@@ -705,9 +628,6 @@ CDDSurface* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// Createae8_6 (0x142c40).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x24]
-// as a 6-arg init with all six incoming args; AddItemA on success. /GX. ret 0x18.
 RVA(0x00142c40, 0xd7)
 CDDSurface* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     CPoolItemAE8* item = new CPoolItemAE8;
@@ -723,9 +643,6 @@ RVA_COMPGEN(0x00142d20, 0x1e, ??_GCPoolItemAE8@@UAEPAXI@Z)
 RVA(0x00142d40, 0x53)
 CPoolItemAE8::~CPoolItemAE8() {}
 
-// ---------------------------------------------------------------------------
-// Createae8_1 (0x142da0).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x08]
-// with 1 arg; AddItemA on success. /GX. ret 0x4.
 RVA(0x00142da0, 0xbe)
 CDDSurface* CDDrawPtrCollections::Createae8_1(const DDSURFACEDESC* desc) {
     CPoolItemAE8* item = new CPoolItemAE8;
@@ -770,19 +687,6 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
     }
 }
 
-// SETTLED 2026-07-27 (was @identity-TODO): a1 IS the path, and CreateWorker2C's
-// separate `key` is the CACHE KEY, not a rival name - the routing was already right.
-// The chain is statically resolved end-to-end, so no caller can vary the type:
-//   CreateWorker2C @0x165a10 stamps ??_7CAniRecordBase2 into the object it just
-//     new'd (reloc @0x165a37) and THEN dispatches its +0x2c, so that slot is
-//     provably AllocBufMakeB2 @0x168ea0 - no derived class can intervene;
-//   AllocBufMakeB2 forwards a1 unchanged (`push 0x44; push eax`) to MakeB2;
-//   MakeB2 forwards it to CDDPalette::LoadFromFile @0x147410, whose first act is
-//     `strrchr(a1, '.')` + an _stricmp dispatch on ".BMP"/".PCX"/".PAL".
-// CreateWorker2C's a2 is only ever the CMapStringToOb subscript (0x165a75), and the
-// twin CreateWorker28 takes the MEMORY form instead (its +0x28 slot reaches MakeB,
-// whose loader @0x1474d0 reads 256 RGB triples out of the buffer) - i.e. the pair is
-// "load palette from file" vs "load palette from memory", both cached under `key`.
 RVA(0x00142f40, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB2(char* path, i32 flags) {
     CDDPalette* item = new CDDPalette;
@@ -814,8 +718,7 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
-    // AllocBufCreate hands this the entry block as a bare i32 (retail 0x14306b pushes
-    // the arg dword straight through to 0x147390) - the same word read both ways.
+
     AddrWord entries;
     entries.m_word = a;
     if (!item->Create(m_device, static_cast<PALETTEENTRY*>(entries.m_addr), b)) {
@@ -843,12 +746,6 @@ CDDPalette* CDDrawPtrCollections::MakeB3(void* a, u32 b, i32 c) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// LoadPaletteMakeB (0x143150).  Open `path` via CFile, seek 0x300 from the end and
-// read the trailing 0x300-byte palette into a stack buffer, then register a pool-B item
-// built from it (MakeB(buf, 0)).  Any failure unwinds the CFile + returns 0.  The
-// second arg slot is reused as the (always-0) MakeB tag.  /GX EH frame.  ret 0x8.
-// ---------------------------------------------------------------------------
 RVA(0x00143150, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     CFile file;
@@ -860,7 +757,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     if (file.Read(buf, 0x300) != 0x300) {
         return 0;
     }
-    return MakeB(buf, z); // retail passes the original z tag (not const-folded 0)
+    return MakeB(buf, z);
 }
 
 // @early-stop
@@ -877,9 +774,7 @@ void CDDrawPtrCollections::SetupCaps() {
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
-    // the append loop reaches the array through a POINTER (retail's `mov ecx,[ebx+0x8]`
-    // for the size, ebx == &m_poolItems, vs a this-relative `[esi+0x4bc]`); the free
-    // loop above wants the direct member access instead
+
     CPtrArray* items = &m_poolItems;
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
         items->SetAtGrow(items->GetSize(), g_modeArray.GetData()[j]);
@@ -888,10 +783,7 @@ void CDDrawPtrCollections::SetupCaps() {
     i32 n = m_poolItems.GetSize();
     for (i32 a = 0; a < n - 1; a++) {
         for (i32 b = a + 1; b < n; b++) {
-            // both elements are BOUND before the compare and reused for the swap
-            // (retail's ebx/edi); reloading them for the swap frees the registers
-            // that retail spends here, and it is that pressure which spills the two
-            // loop indices to the frame (`sub esp,0x10`, not 0x8)
+
             void* pa = m_poolItems.GetData()[a];
             void* pb = m_poolItems.GetData()[b];
             if (Compare(pa, pb)) {
@@ -902,8 +794,6 @@ void CDDrawPtrCollections::SetupCaps() {
     }
 }
 
-// 0x143390 - copy a 0x6c-byte enumerated display-mode record and append it to the
-// global mode array. __stdcall (arg1 unused). Returns 1.
 RVA(0x00143390, 0x35)
 i32 __stdcall AddDisplayMode(void* mode, i32 unused) {
     void* rec = operator new(0x6c);
@@ -931,16 +821,6 @@ i32 __stdcall CDDrawPtrCollections::Compare(void* pa, void* pb) {
     return a->m_54 > b->m_54;
 }
 
-// FindMatch (0x143420) - the last >= match's {m_c,m_8} dims via FindLast, or
-// {-1,-1} when none. __thiscall, ret 0x10 => 4 args (3 keys + the hidden
-// return-slot pointer: the pair returns BY VALUE; retail loads the slot ptr
-// into eax at each exit and stores through it - the ex "out-ptr loaded last"
-// regalloc wall was this mis-modeled signature).
-// The pair local is declared PER ARM with an early return, not once at function
-// scope with an if/else: a function-scope `r` makes cl fetch the hidden return-slot
-// pointer BEFORE the field values (so it lands in edx and costs a trailing
-// `mov eax,edx`), while a per-arm local lets both fields settle in ecx/edx and the
-// slot pointer load straight into eax. Byte-identical to retail; proven by cl A/B.
 RVA(0x00143420, 0x4b)
 CDdModePair CDDrawPtrCollections::FindMatch(u32 k0, u32 k1, i32 k2) {
     i32 idx = FindLast(k0, k1, k2);
@@ -980,8 +860,6 @@ i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, i32 k2) {
     return -1;
 }
 
-// (by-value return, same signature recovery as FindMatch: the hidden return
-// slot is the 4th __thiscall arg, loaded into eax at each exit.)
 RVA(0x00143510, 0x71)
 CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, i32 k2) {
     CDdModePair r;
@@ -1004,7 +882,6 @@ CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, i32 k2) {
     return r;
 }
 
-// (by-value return, mirror of FindFwd - descending scan.)
 RVA(0x00143590, 0x7e)
 CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
     CDdModePair r;
@@ -1027,20 +904,9 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
     return r;
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawPtrCollections::CreatePoolItem (0x143630) - EH-framed factory.  Pulls a
-// descriptor out of arg0's source object (slot +0x30), reports a failure through
-// GetErrorString, else operator-new's the 0xc0-byte pool item, constructs its
-// +0x94 sub-object + stamps the vtable, runs the item's Init (slot +0x04) and
-// publishes it (AddPoolItem); a failed Init scalar-deletes (slot +0x00) the item.
-// @early-stop
-
-// The pool item is a real CDDSurface (vtable 0x5ef7f0): `new CDDSurface` + slot-1
-// Refresh / `delete` (see CreatePoolItem below).
-// @early-stop
 RVA(0x00143630, 0x10d)
 void* CDDrawPtrCollections::CreatePoolItem(void* srcSurfacev, i32 caps) {
-    CDDSurface* srcSurface = static_cast<CDDSurface*>(srcSurfacev); // the sig is PAX in retail
+    CDDSurface* srcSurface = static_cast<CDDSurface*>(srcSurfacev);
     IDirectDrawSurface* attached = 0;
     DDSCAPS want;
     want.dwCaps = caps;
@@ -1049,13 +915,7 @@ void* CDDrawPtrCollections::CreatePoolItem(void* srcSurfacev, i32 caps) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;
     }
-    // The item IS a CDDSurface (base pool item): `new CDDSurface` emits exactly the
-    // retail operator-new(0xc0) + inlined ctor - the CPtrArray member ctor at +0x94,
-    // the vptr stamp (mov [esi],0x5ef7f0), then the 6 scalar-field zeros in ctor order
-    // (m_8/m_c/m_pos/m_dontOwn/m_bitDepth/m_b8). The throwing CPtrArray member ctor is
-    // what gives the factory its /GX ctor-in-flight EH frame. Slot 1 (Refresh) is the
-    // "init"; a failed init `delete`s the item (slot-0 scalar-deleting dtor under the
-    // compiler's null-guard).
+
     CDDSurface* item = new CDDSurface;
     if (item->Refresh(attached) == 0) {
         delete item;
@@ -1068,7 +928,7 @@ void* CDDrawPtrCollections::CreatePoolItem(void* srcSurfacev, i32 caps) {
 RVA(0x00143740, 0x93)
 i32 CDDrawPtrCollections::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
-    memset(&desc, 0, sizeof(desc)); // 0x1b dwords == 0x6c == sizeof(DDSURFACEDESC)
+    memset(&desc, 0, sizeof(desc));
     desc.dwSize = 0x6c;
     i32 hr = m_device->GetDisplayMode(&desc);
     if (hr != 0) {
@@ -1098,13 +958,6 @@ i32 RestoreLostSurfaces() {
     return 0;
 }
 
-// CDDrawPtrCollections::GetAvailableVidMem (0x143810) - forward to the held device's
-// IDirectDraw2::GetAvailableVidMem (slot 0x5c). The scalar `caps` is packed into a
-// LOCAL DDSCAPS whose address escapes into the COM call; MSVC5 overlays that local
-// onto the (now dead) parameter home, which is retail's `mov eax,[esp+4] /
-// mov [esp+8],eax` self-store with no `sub esp`. Binding the HRESULT to `hr` is what
-// picks the xor/test/sete bool form over neg/sbb/inc. Both proven by a controlled
-// cl /O2 A/B; the pair is byte-identical to retail. __thiscall, ret 0xc.
 RVA(0x00143810, 0x2b)
 i32 CDDrawPtrCollections::GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free) {
     DDSCAPS ddsCaps;
@@ -1125,8 +978,7 @@ i32 CDDrawPtrCollections::GetFreeVidMem() {
 
 RVA(0x00143880, 0x3b)
 i32 __stdcall
-// The DirectDrawEnumerateA callback shape: (lpGUID, lpDriverDescription, lpDriverName,
-// lpContext) - the last slot carries the factory this forwards the first three to.
+
 CreateDirectDrawVia(
     void* ctx,
     i32 driverDesc,
@@ -1155,17 +1007,9 @@ IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
     return surf;
 }
 
-// ---------------------------------------------------------------------------
-// 0x143900 - install the display palette from a CDDPalette wrapper's PALETTEENTRY
-// cache (+0x0c): straight 256-entry copy into m_palette, then flag present + tag.
-// __thiscall, 2 args (ret 0x8). Returns 1 on the success path only: retail's
-// `mov eax,0x1 / mov [edi+0x93c],eax` @0x143943 materializes the constant BECAUSE
-// it is also the return value, and neither null bail touches eax (0x143900 has no
-// caller in .text, so the fall-off is unobservable).
 RVA(0x00143900, 0x4d)
 i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
-    // Both `return 0`s are FREE: the null test leaves the (null) pointer itself in
-    // eax, so retail's bare `pop edi / pop esi / ret 8` bails already carry 0.
+
     if (pal == 0) {
         return 0;
     }
@@ -1182,12 +1026,6 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Make950 (0x143950): install a 256-entry
-// palette from a caller-supplied packed RGB-triplet buffer (buf) - expand each 3-byte
-// RGB into the 4-byte display palette entry (4th byte zeroed), then flag present +
-// latch the tag (z). Returns success (1). __thiscall, 2 args (ret 0x8). The palette-
-// install sibling of SetDisplayPaletteFrom/Direct; LoadPaletteMake950 tail-returns it.
 RVA(0x00143950, 0x56)
 CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     if (buf == 0) {
@@ -1195,34 +1033,23 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     }
     const u8* src = static_cast<const u8*>(buf);
     for (i32 i = 0; i < 256; i++) {
-        m_palette[i].peRed = *src++; // post-inc read (mov bl,[eax]; inc eax)
+        m_palette[i].peRed = *src++;
         m_palette[i].peGreen = *src++;
         m_palette[i].peBlue = *src++;
         m_palette[i].peFlags = 0;
     }
     m_hasPalette = 1;
     m_940 = z;
-    // retail sets eax=1 and returns it through the CDDPalette* slot this loader
-    // shares with its siblings - a bare imm, no reloc (<AddrWord.h>)
+
     AddrWord ok;
     ok.m_word = 1;
     return static_cast<CDDPalette*>(ok.m_addr);
 }
 
-// ---------------------------------------------------------------------------
-// 0x1439b0 - install the display palette directly from a caller entry array:
-// straight 256-entry copy into m_palette, then flag present + latch tag.
-// __thiscall, 2 args (ret 0x8). Returns 1 on the success path only (same
-// `mov eax,0x1` + store shape as the 0x143900 sibling; no caller in .text).
-// The destination is INDEXED and only the source walks (docs/patterns/
-// strength-reduced-dst-cursor-indexed-vs-pointer.md, lever 1): that is what leaves
-// the null-tested `entries` in eax - so the bail needs no `xor eax,eax` - and puts
-// the dst `lea` in edx. Walking BOTH swaps the pair; a `src` local with a walking
-// dst makes cl fuse them into one SIB cursor. Byte-identical to retail.
 RVA(0x001439b0, 0x3f)
 i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag) {
     if (entries == 0) {
-        return 0; // free: eax already holds the null `entries`
+        return 0;
     }
     PALETTEENTRY* src = entries;
     for (i32 i = 0; i < 256; i++) {
@@ -1244,10 +1071,6 @@ CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {
     return Make950(buf + size - 0x300, tag);
 }
 
-// ---------------------------------------------------------------------------
-// LoadPaletteMake950 (0x143a30).  Identical shape to LoadPaletteMakeB but the trailing
-// palette is handed to the sibling builder Make950 (0x143950) instead of MakeB.  /GX. ret 0x8.
-// ---------------------------------------------------------------------------
 RVA(0x00143a30, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
     CFile file;
@@ -1259,7 +1082,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
     if (file.Read(buf, 0x300) != 0x300) {
         return 0;
     }
-    return Make950(buf, z); // retail passes the original z tag (not const-folded 0)
+    return Make950(buf, z);
 }
 
 RVA(0x00143b20, 0xfc)
@@ -1347,8 +1170,6 @@ i32 CDDrawPtrCollections::ConfigureSurface(
     return hr;
 }
 
-// The four pool-kind tags (slot 6): one per concrete pool-item class, laid down
-// together at this TU's tail (their dtors live above at 0x1423xx-0x142dxx).
 RVA(0x00143cb0, 0x6)
 i32 CPoolItemA88::GetPoolKind() {
     return POOLKIND_BLIT7;

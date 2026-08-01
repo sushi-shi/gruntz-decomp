@@ -1,56 +1,51 @@
 #define SBI_DTOR_CHAIN
-#include <Mfc.h>                 // afx-first umbrella (CByteArray/CPtrList consumers below)
-#include <Gruntz/SBI_ImageSet.h> // complete CSBI_ImageSet (slot-12 Notify receivers)
+#include <Mfc.h>
+#include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
-#include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
-#include <Gruntz/SBI_ImageSetAni.h>     // CSBI_StatzTabArrow (m_statObj; SetDirection/Alt)
-#include <Gruntz/SBI_WarlordHead.h>     // CSBI_WarlordHead (m_warlordHead)
-#include <DDrawMgr/DDrawChildGroup.h>   // real CDDrawChildGroup::CreateSprite (0x1597b0); 0x104dd0
-#include <DDrawMgr/DDrawWorker.h>       // CDDrawWorker - the main-bar strip (ex CSbiMainBarCfg)
-#include <Image/CImage.h>               // CImage - the strip rows (anchors)
+#include <Io/FileMem.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTabWidgets.h>
+#include <Gruntz/SBI_ImageSetAni.h>
+#include <Gruntz/SBI_WarlordHead.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <Image/CImage.h>
 #include <Gruntz/WarpStoneFly.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/RezList.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>    // the real main-bar chain (m_backPair)
-#include <DDrawMgr/DDrawSurfacePair.h>    // the pair (m_surface)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_c->m_imageRegistry->m_10map (LoadMainStatusBarSprite)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/SBI_GruntMachine.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h>     // real CGrunt (the m_grid cells; ex CSbiTileEntry/CSbiTileSub views)
-#include <Gruntz/GruntzMgr.h> // the REAL *0x24556c singleton class (ReportError @0x08dc60)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_world def; +0x28 CDDrawSubMgrLeafScan)
-#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Utils/RegistryHelper.h>
-#include <Gruntz/StatusBarUpdatersViews.h> // EngineLabelBacklog host + updater referent views
-#include <Gruntz/Sprite.h>                 // CDDrawWorker (frame-data value) + CSpriteHashTable
-#include <Gruntz/SbiSideTabBuildViews.h>   // CSBI_SideTab (ctor view) + CStatzTabBuilder
+#include <Gruntz/StatusBarUpdatersViews.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/SbiSideTabBuildViews.h>
 #include <Gruntz/SerialCounter.h>
-#include <Rez/RezMgr.h>        // RezFree (the per-frame warpstone overlay free)
-#include <math.h>              // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
-#include <string.h>            // strlen / memset
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
-#include <Gruntz/Random.h>     // ex Globals.h transitive
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Gruntz/SBI_WellGoo.h>  // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
-#include <Utils/MapTyped.h>      // MapLookupById - the forced id->void* key pun
+#include <Rez/RezMgr.h>
+#include <math.h>
+#include <string.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Random.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/SBI_WellGoo.h>
+#include <Utils/MapTyped.h>
 
 DATA(0x00244c54)
-i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
+i32 g_curPlayer = 0;
 
-// CStatusBarMgr's destructor is inline in the shared header because retail inlines
-// it at the allocation-failure cleanup in CPlay::LoadGameAssetNamespaces. Retail
-// also keeps this standalone COMDAT copy for CPlay::ReleaseResources. A depth-zero
-// explicit-dtor use makes MSVC emit that copy without replacing either call site
-// with a hand-written teardown helper.
 static CStatusBarMgr* volatile g_forceStatusBarMgrDtor;
 #pragma inline_depth(0)
 void ForceEmitStatusBarMgrDtor() {
@@ -119,18 +114,12 @@ void CStatusBarMgr::SetGauge(i32 value) {
     m_gauge = value;
 }
 
-// Place the cursor on the resolved tile under highlight row `row`: probe the active
-// object's tile at (g_curPlayer, row); bail (0) if the probe fails or the grid
-// cell is empty. Forward the tile's origin pair to the sub-manager's ScrollTo, then
-// (when `commit` is set and the active object accepts the scroll) latch the placed
-// column/row and reload the camera sprite. Always returns 1 past the two probes.
 // @early-stop
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     i32 col = g_curPlayer;
     if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) != 0) {
-        // the grid cell is the real CGrunt (CGrunt typedef); its m_10 HUD carries
-        // the on-screen origin pair.
+
         CGrunt* entry = g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
         if (entry != 0) {
             (static_cast<CPlay*>(g_gameReg->m_curState))
@@ -182,7 +171,6 @@ void CStatusBarMgr::ToggleStat(i32 idx) {
     }
 }
 
-// Find the index of the first enabled hit-test rect containing (x,y); -1 none.
 // @early-stop
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
@@ -212,10 +200,6 @@ void CStatusBarMgr::ResetGroupA() {
     }
 }
 
-// Latch HUD-rect group A from three args + a global dword. The clock and the wait
-// interval are assigned as whole i64s (not as the flat lo/hi halves): that is what
-// makes cl share ONE `xor eax,eax` zero across both hi stores AND emit the lo store
-// before the hi one, exactly as retail. The flat-halves spelling reorders both pairs.
 // @early-stop
 RVA(0x001066f0, 0x3b)
 void CStatusBarMgr::SetHudRectA(i32 y0, i32 x0, i32 z) {
@@ -225,7 +209,6 @@ void CStatusBarMgr::SetHudRectA(i32 y0, i32 x0, i32 z) {
     m_machineA.m_last = g_frameTime;
 }
 
-// Latch HUD-rect group B from three args + a global dword.
 // @early-stop
 RVA(0x00106740, 0x3b)
 void CStatusBarMgr::SetHudRectB(i32 y0, i32 x0, i32 z) {
@@ -295,11 +278,11 @@ void CStatusBarMgr::NotifyAllSlots() {
         m_extraNotify0->Notify(m_extraNotifyArg0);
     }
 
-    CSBI_ImageSet** p = &m_hlNotify[4]; // group B base; ±4 elements reach groups A / C
-    i32* h = &m_hlGrid[4].m_value;      // anchor on the handle field (+0x3dc)
+    CSBI_ImageSet** p = &m_hlNotify[4];
+    i32* h = &m_hlGrid[4].m_value;
     for (i32 n = 0; n < 4; n++) {
         if (p[-4]) {
-            p[-4]->Notify(h[-24]); // -4 rows = -0x60 bytes = -24 ints
+            p[-4]->Notify(h[-24]);
         }
         if (p[0]) {
             p[0]->Notify(h[0]);
@@ -308,7 +291,7 @@ void CStatusBarMgr::NotifyAllSlots() {
             p[4]->Notify(h[24]);
         }
         p++;
-        h += 6; // one row = 0x18 bytes = 6 ints
+        h += 6;
     }
 
     if (m_notify1) {
@@ -319,11 +302,6 @@ void CStatusBarMgr::NotifyAllSlots() {
     }
 }
 
-// Stream the full rect-only item state through the archive (stream slot 0x30).
-// Returns 0 if the stream or the active game-manager is null; bumps the global
-// serialize counter; ends with a variable-length loop over the m_ptrPool.GetData()[] pointer
-// table (count m_ptrPool.GetSize()), each element streamed as 8 bytes. Field buffers are
-// addressed by offset (the codegen is naming-independent here).
 // @early-stop
 
 RVA(0x001084d0, 0x96c)
@@ -469,7 +447,6 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
         BuildStatusBarTabs();
     }
 
-// SerializeFields (CStatusBarItem slot 1) every owned widget, op-driven.
 #define SER(field)                                                                                 \
     if (field) {                                                                                   \
         if ((field)->SerializeFields(s, op, p4, p5) == 0)                                          \
@@ -540,7 +517,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     SER(m_tabSprite8)
     SER(m_tabSprite9)
     SER(m_tabSprite10)
-    SER(m_tabSprite10) // retail's shipped duplicate: #10 serialized twice
+    SER(m_tabSprite10)
     SER(m_tabSprite11)
     SER(m_tabSprite12)
     SER(m_tabSprite13)
@@ -561,14 +538,6 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     return 1;
 }
 
-// 97.76 -> 99.99 (2026-07-28), two real source-shape bugs:
-//  (1) the 3x4 highlight loop is INDEXED (`nb[m]`), not a bumped cursor. Written as
-//      `nb->m_state / nb->m_value / nb += 1` cl strength-reduces `&nb->m_value` into a
-//      SECOND running pointer and spills the counter; the indexed form leaves one
-//      cursor and re-`lea`s `nb+4` inline, which is retail's shape (counter in ebp).
-//  (2) retail's frame is `push ecx` + the dead `s` parameter home = TWO scratch dwords,
-//      not one: the streamed seq id has its own slot and the pooled-ptr count shares
-//      the OTHER slot with the 3-group counter.
 // @early-stop
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
@@ -579,15 +548,13 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         return 0;
     }
 
-    s->Write(this, 4); // offset 0 - the vptr slot itself, not a member
+    s->Write(this, 4);
     s->Write(&m_4, 4);
 
     g_serialCounter++;
-    // ONE reused scratch dword: retail's whole frame is a single `push ecx`/`pop ecx`
-    // slot, which holds the streamed seq id, then the highlight-group loop counter,
-    // then the pooled-ptr count in turn.
+
     i32 tmp = 0;
-    // The +0x08 slot IS the render sprite (CGameObject); +0x188 is its archive-cue id.
+
     if (m_barSprite) {
         tmp = m_barSprite->m_188;
     }
@@ -645,9 +612,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&m_groupSlots[k].m_value, 4);
     }
     CSbiHlRow* nb = m_hlGrid;
-    // the SECOND scratch dword: retail's frame is the `push ecx` slot + the dead `s`
-    // parameter home, and the highlight-group counter shares its slot with the
-    // pooled-ptr count below, NOT with the streamed seq id above.
+
     i32 cnt = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
@@ -665,53 +630,32 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     return 1;
 }
 
-// CStatusBarMgr::Deserialize - the load/restore counterpart of Serialize. Pulls
-// the full rect-only item state from the archive via stream slot 0x2c (Read);
-// resolves the base m_8 sequence holder from the streamed seq id through the
-// game-manager's object map (validated by the looked-up object's type tag == 5);
-// reads every field back; returns each pooled m_ptrPool.GetData() element to the engine
-// free-list, sizes the +0x530 collection, then reloads the pointer table from the
-// free-list. Field buffers are offset-addressed (naming-independent), mirroring
-// Serialize.
-// The frame holds TWO scratch dwords (the streamed seq id / 3x4 group counter, and the
-// pooled-ptr count), plus the lookup out-param - same shape as Serialize.
 // @early-stop
 RVA(0x00109520, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
-    CDDrawSurfaceMgr* gm = g_gameReg->m_world; // the REAL world mgr (ex CSbiGameMgr facet)
+    CDDrawSurfaceMgr* gm = g_gameReg->m_world;
     if (gm == 0) {
         return 0;
     }
     m_destructButton = 0;
     ResetWidgets(0);
 
-    s->Read(this, 4); // offset 0 - the vptr slot itself, not a member
+    s->Read(this, 4);
     s->Read(&m_4, 4);
 
     g_serialCounter++;
-    // `obj` is declared FIRST: retail overlays it on the dead `s` parameter home
-    // ([esp+0x1c]) and gives `seq` a fresh frame dword ([esp+0x14]); declaring seq
-    // first makes cl overlay seq instead and swaps every slot in the pair.
+
     CGameObject* obj = 0;
-    // NOT zero-initialised - Read fills it. A `= 0` emits a store retail does not have.
+
     i32 seq;
     s->Read(&seq, 4);
 
-    // Resolve the serialized object id through the child group's serialize map
-    // (m_map48: id -> CGameObject*, the same map GruntVoice/Play deserializers
-    // consult); keep it only when GetClassId proves the CreateSprite kind.
-    // The MISS joins the same tail: retail's `test eax,eax / je` off Lookup lands on
-    // the class-id JOIN with eax still 0, so a miss stores `m_barSprite = 0` and the
-    // `seq != 0` gate still fires. Nesting the tail inside the `if` (the old shape)
-    // skipped BOTH - that is the behaviour bug jcc_sieve flagged as branch #2.
     i32 kind = 0;
     if (MapLookupById(gm->m_childGroup->m_map48, seq, obj)) {
-        // if/else, NOT `&& obj != 0`: retail's null arm is the INLINE one
-        // (`xor eax,eax; jmp JOIN`) and the GetClassId call is the branch target
-        // (`jne`), which only the explicit else produces.
+
         if (obj == 0) {
             kind = 0;
         } else {
@@ -795,9 +739,6 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     }
     m_ptrPool.SetSize(0, -1);
 
-    // a SECOND scratch dword: retail does NOT share `seq` with the pooled-ptr count
-    // (its frame is the `push ecx` slot + the dead `s` parameter home). Like `seq` it
-    // is NOT zero-initialised - Read fills it.
     i32 cnt;
     s->Read(&cnt, 4);
     m_ptrPool.SetSize(cnt, -1);
@@ -844,27 +785,16 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     Deactivate();
 }
 
-// Highlight-click handler for group 0 (rows m_hlGrid[0..3]): bail if the busy
-// gate is set or the row is not armed (state==1); validate the row's handle, play
-// the GAME_TABHIGHLIGHT1 cue on the draw-clock window if the music gate is free,
-// then latch the pending row, clear the handle, and re-notify. Single-exit nesting
-// (success-deepest, one trailing `return 0`) reproduces retail's shared FAIL tail
-// (docs/patterns/nested-if-success-deepest-error-tail.md); the global pair must be
-// read TOGETHER inside the `if (found)` so MSVC lands g_sndEnabled in ecx / g_sndCueTag in
-// edx like retail.
 RVA(0x0010b5d0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup0(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
         i32 handle = m_hlGrid[row].m_value;
         i32* slot = &m_hlGrid[row].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            CDDrawSubMgrLeafScan* host =
-                g_gameReg->m_world
-                    ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 void* found = 0;
-                CMapStringToPtr* map =
-                    &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+                CMapStringToPtr* map = &host->m_10;
                 map->Lookup("GAME_TABHIGHLIGHT1", found);
                 if (found) {
                     i32 gate = g_sndEnabled;
@@ -888,8 +818,6 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
     return 0;
 }
 
-// Highlight-click handler for group 1 (rows m_hlGrid[4..7]); identical to group 0
-// with the +4-row base folded into the index.
 RVA(0x0010b6f0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup1(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0
@@ -897,13 +825,10 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
         i32 handle = m_hlGrid[row + 4].m_value;
         i32* slot = &m_hlGrid[row + 4].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            CDDrawSubMgrLeafScan* host =
-                g_gameReg->m_world
-                    ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 void* found = 0;
-                CMapStringToPtr* map =
-                    &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+                CMapStringToPtr* map = &host->m_10;
                 map->Lookup("GAME_TABHIGHLIGHT1", found);
                 if (found) {
                     i32 gate = g_sndEnabled;
@@ -927,7 +852,6 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
     return 0;
 }
 
-// Highlight-click handler for group 2 (rows m_hlGrid[8..11]); +8-row base.
 RVA(0x0010b810, 0xdd)
 i32 CStatusBarMgr::HlClickGroup2(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0
@@ -935,13 +859,10 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
         i32 handle = m_hlGrid[row + 8].m_value;
         i32* slot = &m_hlGrid[row + 8].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            CDDrawSubMgrLeafScan* host =
-                g_gameReg->m_world
-                    ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 void* found = 0;
-                CMapStringToPtr* map =
-                    &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+                CMapStringToPtr* map = &host->m_10;
                 map->Lookup("GAME_TABHIGHLIGHT1", found);
                 if (found) {
                     i32 gate = g_sndEnabled;
@@ -965,16 +886,6 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
     return 0;
 }
 
-// Step the gauge one unit toward its target; on reaching 100 fire the completion
-// hook; if the gauge moved, refresh the two gauge notifiers (the sink latches the
-// new reading into its m_44). The toward-target step is spelled as `<`/`<=goto`/`>`
-// (no outer `!=`) so the equal case folds into the jge/jle pair like retail and the
-// two inc/dec branches share one store, not an extra top `je`.
-// EXACT. The ex "eax<->edx scratch coin-flip" was steerable after all, by DECLARATION
-// ORDER inside the notify block: read m_gauge into its own local BEFORE taking
-// m_gaugeSink into one. That order gives retail's roles (value in eax, the sink's vptr
-// in edx); with the two locals the other way round - or with no `fill` local at all -
-// cl loads the value into edx/esi and puts the vptr in eax.
 RVA(0x00105480, 0x7d)
 void CStatusBarMgr::TickGauge() {
     i32 changed = 0;
@@ -998,11 +909,11 @@ noChange:;
     }
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
-            m_gaugeNotify->SetSubtype(); // slot 10
+            m_gaugeNotify->SetSubtype();
             i32 fill = m_gauge;
             CSBI_WellGoo* sink = m_gaugeSink;
-            sink->m_fillScale = fill; // +0x44
-            sink->SetSubtype();       // slot 10
+            sink->m_fillScale = fill;
+            sink->SetSubtype();
         }
     }
 }
@@ -1026,7 +937,7 @@ i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, i32 c) {
     CWarpStoneFly* o = new CWarpStoneFly();
     m_retabNotify = o;
     if (o == 0) {
-        return 0; // o is null here; retail returns the null already in eax (no re-xor)
+        return 0;
     }
     return o->Init(this, a, b, c);
 }
@@ -1087,20 +998,10 @@ i32 CStatusBarMgr::ClearTabSprites(i32 idx) {
     return 1;
 }
 
-// Deactivate the rect-only item: if it is the subtype-2 cursor item, latch the
-// game-reg cursor rect; then fire the deactivate notifier across list[0] and the
-// active-tab list, clear, and tag the state. The +0x30 list array (0x1c stride,
-// head at +0) is offset-addressed: the typed array view would overlap the
-// matched m_30/m_34 ints, so the raw access is the codegen-faithful model here.
-// @early-stop
 RVA(0x00100cb0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == kSubtypeTag) {
-        // No `x`/`y` locals: naming the two differences kills `w`/`h` at the subtract, so
-        // cl computes IN PLACE (`sub ecx,0x30 / sub eax,0x45`). Written at each use site
-        // they stay expression temps and cl CSEs each into a fresh register with
-        // `lea eax,[ecx-0x45] / lea ecx,[edx-0x30]` - retail's shape (same fix as
-        // Activate @0x104dd0).
+
         i32 w = g_gameReg->m_modeW;
         i32 h = g_gameReg->m_modeH;
         m_24 = w - 0x45;
@@ -1150,14 +1051,7 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
     m_tabSprite9 = 0;
     m_tabSprite10 = 0;
     m_itemKind = tab;
-    // WRONG-CALLEE FIX (assert_relocs): this called RefreshState() @0xfe670 (43 B). Retail
-    // calls `this->LoadTabSprites()` @0x102250 (7629 B) - `mov ecx,edi; call 0x1690` right
-    // after the m_activeTab store. Both exist, so it linked and objdiff reloc-masked it: a
-    // silently-wrong callee. LoadTabSprites is modeled on CStatusBarMgr (StatusBarMgr.cpp),
-    // reached by the cast SBI_MenuItem.cpp:208 already uses. (The cast is itself a smell -
-    // SetTab @0x1020a0 and LoadTabSprites @0x102250 are adjacent and run on the SAME `this`,
-    // so CStatusBarMgr and CStatusBarMgr are very likely one class - an identity fold for a
-    // later pass, not something to fabricate here.)
+
     if (!LoadTabSprites()) {
         g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
         return 0;
@@ -1166,9 +1060,6 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
     return 1;
 }
 
-// Tear down the rect-only item: log its position tag, fire the pre-teardown
-// notify, return every pooled m_ptrPool.GetData() element to the engine free-list, then
-// RemoveAll the +0x530 collection.
 RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
@@ -1182,18 +1073,13 @@ void CStatusBarMgr::Teardown() {
             g_coordPool.m_freeHead = node;
         }
     }
-    // The +0x530 head is an MFC CPtrArray (m_ptrPool.GetData()/m_ptrPool.GetSize() are its m_pData/m_nSize);
-    // its teardown is CPtrArray::SetSize(0,-1) inlined from RemoveAll (0x1b4f75, library).
+
     m_ptrPool.SetSize(0, -1);
 }
 
 RVA(0x00104d60, 0x48)
 i32 CStatusBarMgr::TryActivate() {
-    // Offset-0 read: in retail this object's slot 0 holds a small integer
-    // subtype tag (the manual-vtable-stamp tag device shared with CStatusBarMgr),
-    // not a real C++ vptr. We model the vtable via `virtual`,
-    // so slot 0 cannot also be a named field here without dropping the vtable;
-    // the raw `*(int*)this` read is the faithful model. See report (flagged).
+
     if (m_position == kSubtypeTag) {
         return Activate();
     }
@@ -1205,20 +1091,6 @@ i32 CStatusBarMgr::TryActivate() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x104dd0 - CStatusBarMgr::Activate: lazily create the status-bar sprite. Both
-// SetState (subtype-2 probe) and TryActivate call it with `mov ecx,this` (proven:
-// ecx==this in both call-sites' disasm), so `this` IS the CStatusBarMgr - not the
-// former StatusBarSpriteHolder @orphan view. Its m_8/m_c/m_24/m_28 are the base
-// CStatusBarItem fields reused here as sprite/factory-holder/x/y (a proven-
-// heterogeneous slot set: Setup args on other paths, sprite state on this one).
-// 2026-07-29 EXACT (was 93.58, filed a "scheduling wall"): the clamp bound has NO local
-// of its own. `i32 a = w - 0x22;` names the difference, so cl kills `w` at the subtract
-// and computes IN PLACE (`sub eax,0x22`), which also drags the `m_24` load up in front of
-// the two mode reads. Spelling `w - 0x22` at both use sites leaves it an expression temp:
-// cl CSEs it into a FRESH register with `lea eax,[ecx-0x22]`, keeping `w`/`h` in ecx/edx,
-// which is retail's whole prologue. (Deactivate @0x100cb0 has the same pair of reads and
-// wanted the same shape.)
 RVA(0x00104dd0, 0x6b)
 i32 CStatusBarMgr::Activate() {
     if (m_barSprite != 0) {
@@ -1261,8 +1133,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
                 LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                 if (spr) {
-                    // the cue globals are read TOGETHER above the gate: retail loads
-                    // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
@@ -1277,28 +1148,10 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     return 1;
 }
 
-// ===========================================================================
-// CStatusBarMgr::UpdateGruntOvenStatusBar @0x105310
-// ===========================================================================
-//
-// Walks the 5 grunt-oven cooking tabs: while a tab is COOKING (m_state==1) it derives
-// the cooking-progress frame index from the elapsed clock / GruntOvenDelay, caps
-// at 0x1a (completion - flips m_state to 2 and runs the COOKINGCOMPLETE advance), and
-// pushes the new frame into the widget when it changes (the +0x30 virtual).
-// The old note claimed "no spelling of `d >= 0` can ask for the long form". REFUTED
-// (2026-07-29, 79.9 -> 99.8): spell the clamp on `< 0` instead. `(d < 0) ? 0 : (i32)d`
-// makes cl re-compare the hi word against the pinned zero (`cmp hi,ebx / jg / jl /
-// cmp lo,ebx / jae`) and branch-select, and it drops the hi spill slot too (frame 0xc,
-// not 0x10). The other half was the cue-global pair: read g_sndEnabled/g_sndCueTag
-// TOGETHER above the gate (retail loads both into ecx/edx before the test).
 // @early-stop
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
-    // The 5 grunt-oven cooking tabs ARE this class's own +0x220 slot records
-    // (m_slots, CSbiSlot) with their +0x204 notifier array (m_slotNotify): the
-    // slot's m_value (+4) is the animation frame, m_8/m_c (+8/+c) the 64-bit
-    // start clock, and the notifier's slot-12 Notify(frame) is the set-frame hook.
-    // (Folded off the fake EngineLabelBacklog view onto the canonical class.)
+
     CSBI_ImageSet** slot = m_slotNotify;
     CSbiSlot* tab = m_slots;
     i32 n = 5;
@@ -1306,9 +1159,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
         if (tab->m_state == 1) {
             i64 d = static_cast<i64>(static_cast<u32>(g_frameTime))
                     - *reinterpret_cast<i64*>(&tab->m_8);
-            // the clamp is spelled on `< 0`, not `>= 0`: that is what makes cl
-            // re-compare the hi word (`cmp ecx,0; jg/jl; cmp lo,0; jae`) instead of
-            // reading the sbb sign, and keeps the hi in a register (frame 0xc).
+
             i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
@@ -1321,8 +1172,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
                     LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                     if (spr) {
-                        // the cue globals are read TOGETHER above the gate: retail loads
-                        // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+
                         i32 gate = g_sndEnabled;
                         i32 item = g_sndCueTag;
                         if (gate != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
@@ -1345,25 +1195,10 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     } while (--n != 0);
 }
 
-// ===========================================================================
-// CStatusBarMgr::UpdateChipGrinderStatusBar @0x1076a0
-// ===========================================================================
-//
-// Drives the rez chip-grinder conveyor while it is RUNNING (m_4e8 != 0): it pulls
-// the FallingItem delay/speed (then the ShredderDelay/Speed once the conveyor
-// reaches the shredder at m_510 >= 0x1bf, where it also runs the one-shot
-// REZGRINDING status-bar advance and flips to phase 2), advances the two conveyor
-// extents (m_508/m_510) by the speed each time the retrigger clock elapses, and
-// re-stamps the grinder rect-target widget (m_500) from the scroll origin. When
-// the conveyor runs out (m_508 >= 0x1c7) it stops (m_4e8 = 0). A final
-// ChipGrinderFinishStep runs while the widget is live and a step happened.
 // @early-stop
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
-    // Every offset is the canonical member - the grinder conveyor
-    // is the m_fall* band and the rect-target widget is m_extraNotify1's own
-    // +0x14 screen rect (CSBI_ImageSet::m_rect14 - the same slot-map rect band
-    // CSbiRect carries as m_rect14.left..m_rect14.bottom).
+
     if (m_fallActive == 0) {
         return;
     }
@@ -1385,8 +1220,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
                         LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                         if (spr) {
-                            // the cue globals are read TOGETHER above the gate: retail loads
-                            // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+
                             i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
                             if (gate != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
@@ -1428,31 +1262,6 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     }
 }
 
-// ===========================================================================
-// CWarpStoneFly::Init @0x109bd0
-// ===========================================================================
-//
-// Sets up the warp-stone "fly" animation toward the warp tab. It records arg0 at
-// m_3c, resolves the frame for (phase+1) out of the GAME_STATUSBAR_TABZ_GAMETAB_WARP
-// sprite (m_38), and on success computes the screen target (m_4/m_8) for the phase
-// (a per-phase pixel offset off the tab base m_3c->m_10/m_14), the euclidean
-// distance to the source (srcX/srcY), and the per-axis fly velocity scaled by
-// FlyTime, then runs the GAME_WARPSTONEFLY status-bar advance. __thiscall ret 0x10.
-// The retail frame settles four things the ex-reconstruction had wrong:
-//   * the ARG ORDER is (owner, srcX, srcY, phase) - the switch and the frame index
-//     read arg4 (entry+0x10); the two subtractions read arg2/arg3;
-//   * the sprite map is the world's +0x10 IMAGE registry's m_10map (`mov ecx,[world+
-//     0x10]; add ecx,0x10` + the CMapStringToOb Lookup 0x1b8008), not the +0x28 sound
-//     registry's m_10 (that one is only the GAME_WARPSTONEFLY cue below, 0x1b8438);
-//   * `fdivr st,st(1)` is dist/flyTime, not flyTime/dist - and the two direction
-//     divisions take dxv and dyv (arg-home slots entry+0x10 / entry-0x14), not dist2;
-//   * the seeded current position is the SOURCE point (`fild srcY; fild srcX` off the
-//     untouched arg homes), not the deltas.
-// ...and the no-sprite path returns 0 (retail falls into the shared epilogue with eax
-// still holding the null frame), not 1.  81.2 -> 91.3.
-// 0x109bd0 IS CWarpStoneFly::Init - CStatusBarMgr::EnsureSub news a CWarpStoneFly and
-// calls o->Init(this,a,b,c) on it (the void* owner is the CStatusBarMgr back-ptr).
-// Typed against the canonical <Gruntz/WarpStoneFly.h> layout.
 // @early-stop
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
@@ -1467,8 +1276,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
                         : 0;
     m_sprite = frame;
     if (frame == 0) {
-        // retail falls into the shared epilogue with eax still holding the null
-        // frame - the no-sprite path returns 0, not 1.
+
         return 0;
     }
 
@@ -1515,8 +1323,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
         LeafCue* fly = static_cast<LeafCue*>(fly_ob);
         if (fly) {
-            // the cue globals are read TOGETHER above the gate: retail loads
-            // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+
             i32 gate = g_sndEnabled;
             i32 item = g_sndCueTag;
             if (gate != 0 && g_killCueClock - fly->m_14 >= fly->m_18) {
@@ -1531,24 +1338,10 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
     return 1;
 }
 
-// ===========================================================================
-// CStatusBarMgr::UpdateDestructButtonStatusBar @0x10b320
-// ===========================================================================
-//
-// The destruct-button warning blinker: in state 1 it counts the warning frame UP
-// toward 6 (then latches state 2), in state 2 it counts DOWN toward 2 (then
-// latches state 1); each step is gated on the retrigger clock having elapsed past
-// DestructButtonWarningDelay, after which the 64-bit retrigger clock is restamped
-// and the new frame pushed into the widget (the +0x30 virtual). State 0 = idle.
 // @early-stop
 RVA(0x0010b320, 0x167)
 void CStatusBarMgr::UpdateDestructButtonStatusBar() {
-    // The destruct-warning block is this class's own +0x558 state machine:
-    // m_destructWarnActive (+0x558) = 3-state (0 idle / 1 warn-down / 2 warn-up),
-    // m_modeState (+0x55c) = the warning frame counter, m_destructWarnLast/Delay
-    // (+0x560/+0x568) the 64-bit retrigger clock + delay, m_modeNotify (+0x570) the
-    // widget (slot-12 Notify == the set-frame hook). (Folded off the EngineLabelBacklog
-    // CDestructBlock view onto the canonical class.)
+
     switch (m_destructWarnActive) {
         case 1: {
             i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_destructWarnLast;
@@ -1612,10 +1405,6 @@ i32 CStatusBarMgr::GetActiveValue() {
     return 0;
 }
 
-// Find the rect widget under (x,y) by walking the three hit-test lists (the +0x30
-// list, the active-tab list at +tab*0x1c+0x30, then the +0xd8 list); return the
-// first enabled rect whose span contains the point, else null. Same point-in-rect
-// predicate as HitTest, materialized to a bool per retail.
 // @early-stop
 RVA(0x000ffcb0, 0xe2)
 CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
@@ -1667,7 +1456,6 @@ void CStatusBarMgr::InitTabRects() {
     m_extraNotifyArg0 = 0;
     m_fallActive = 0;
     m_extraNotifyArg1 = 0;
-    // authentic: the 4-int rect blocks are Win32 RECTs; overlay the modeled first field.
     SetRect(reinterpret_cast<LPRECT>(&m_fallRectL), 0, 0, 1, 1);
     SetRect(reinterpret_cast<LPRECT>(&m_itemRectL), 0x49, 0xd7, 0x61, 0xef);
     m_pendingHlRow = -1;
@@ -1715,9 +1503,6 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
     return 1;
 }
 
-// Reset every per-tab widget list (8 notify lists at +0x2c, stride 0x1c) - notify
-// each payload, then RemoveAll - then (when keepHost is set) flag the +0x8 host as
-// aborted, and finally zero the whole widget/notify field block.
 // @early-stop
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(i32 keepHost) {
@@ -1733,7 +1518,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     }
     if (keepHost) {
         if (m_barSprite) {
-            // +0x40 / +0x08 are named in the sprite's own base chain
+
             m_barSprite->m_stateFlags |= 1;
             m_barSprite->m_flags |= 0x10000;
         }
@@ -1826,13 +1611,6 @@ void CStatusBarMgr::ExitMode() {
     Deactivate();
 }
 
-// Tear down the widgets owned by the active tab: notify+RemoveAll the active-tab
-// list, then (switch on the tab index) zero the per-tab field group. Bails when no
-// tab is active or the tab index is out of [1,5].
-// The per-case zeroing was NOT byte-identical: retail emits `rep stosd` for the
-// 15-element m_statObj group (case 2) and the 12-element m_hlNotify group (case 5) -
-// those are memsets, not unrolled per-element loops - and walks a base pointer for the
-// case-4 / case-5 pointer runs (`lea ecx,[this+0x204]` + [ecx+0..0x10]).
 // @early-stop
 RVA(0x00100b00, 0x150)
 void CStatusBarMgr::ClearTabGroup() {
@@ -1859,8 +1637,7 @@ void CStatusBarMgr::ClearTabGroup() {
             m_modeNotify = 0;
             break;
         case 2:
-            // retail: `mov ecx,0xf; xor eax,eax; lea edi,[this+0x18c]; rep stosd` -
-            // a memset, not an unrolled per-element loop.
+
             memset(m_statObj, 0, sizeof(m_statObj));
             break;
         case 3: {
@@ -1872,8 +1649,7 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         }
         case 4: {
-            // retail walks a base pointer (`lea ecx,[this+0x204]` + [ecx+0..0x10]),
-            // then the two trailing fields off `this` - same shape as case 3.
+
             CSBI_ImageSet** q = m_slotNotify;
             q[0] = 0;
             q[1] = 0;
@@ -1885,13 +1661,13 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         }
         case 5: {
-            // `lea eax,[this+0x308]` + [eax+0/4/8]: a base-pointer walk
+
             CSBI_ImageSet** g = m_groupNotify;
             g[0] = 0;
             g[1] = 0;
             g[2] = 0;
             m_machineDisplay = 0;
-            // retail: `mov ecx,0xc; lea edi,[this+0x498]; rep stosd`
+
             memset(m_hlNotify, 0, sizeof(m_hlNotify));
             m_notify0 = 0;
             m_notify2 = 0;
@@ -1904,10 +1680,6 @@ void CStatusBarMgr::ClearTabGroup() {
     }
 }
 
-// Drive the tab-selection sprites: require the five bank-A sprites all present,
-// then switch on the tab id to Show the selected sprite (with flag) and Hide the
-// rest, gated per case by m_hlBusy (busy => early-return 1). Banks A (1-5), B
-// (0x1f4-0x1fa), C (0x324/0x325), D (0x327/0x328). `state` is the sprite index arg.
 // @early-stop
 RVA(0x00100d70, 0x548)
 i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
@@ -2091,11 +1863,6 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
     m_pendingHlRow = -1;
 }
 
-// Group-A highlight click: hit-test the rect under (x,y); dispatch its slot-7
-// click; then, only for a tab-1 widget whose command is in the highlight range
-// and when nothing blocks it, play the GAME_TABHIGHLIGHT1 cue + activate the
-// cursor for the offset command. The fallback (any gate fails) drives the tab
-// highlight directly. Single-exit, success-deepest (shared fallback tail).
 // @early-stop
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
@@ -2107,13 +1874,10 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     i32 cmd = r->m_cmd;
     if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= 0x13b && cmd <= 0x149) {
-        CDDrawSubMgrLeafScan* host =
-            g_gameReg->m_world
-                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* found = 0;
-            CMapStringToPtr* map =
-                &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+            CMapStringToPtr* map = &host->m_10;
             map->Lookup("GAME_TABHIGHLIGHT1", found);
             if (found) {
                 i32 gate = g_sndEnabled;
@@ -2130,10 +1894,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
         PlaceCursorTarget(cmd - 0x13b, 1);
         return 1;
     }
-    // The tail RETURNS the highlight call's result: retail's shared epilogue has no
-    // `mov eax,1`, so eax comes straight out of the call. Spelling it `Update...();
-    // return 1;` adds that store AND lets cl merge the `r == 0` early return into the
-    // same epilogue, where retail duplicates it (`jne; mov eax,1; pop..; ret 0xc`).
+
     return UpdateStatusBarTabHighlight(a, x, y);
 }
 
@@ -2144,16 +1905,12 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->m_sampleMode = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
-            // retail @0x104fc2: `push 1; push m_position; call SetDirection` - the
-            // old ResetGroupA attribution was byte-wrong (0-arg vs 2-arg).
+
             m_statObj[idx]->SetDirection(m_position, 1);
-            CDDrawSubMgrLeafScan* host =
-                g_gameReg->m_world
-                    ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 void* found = 0;
-                CMapStringToPtr* map =
-                    &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+                CMapStringToPtr* map = &host->m_10;
                 map->Lookup("GAME_STATZTABTOGGLE", found);
                 if (found) {
                     i32 gate = g_sndEnabled;
@@ -2174,14 +1931,6 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
     return 1;
 }
 
-// Position a falling-item status bar: bail unless a highlight row is pending; hit
-// the rect under (x,y) and require it be a falling-item widget (cmd 0xce/0xd0);
-// clamp x into the rect's inset span, convert to item-local coords, drive the
-// falling-item bar, then arm highlight row arg2.
-// The 0x10 frame + the "dead" rc.top/rc.bottom spills are a real `RECT rc =
-// r->m_rect14;` STRUCT COPY (cl does not DSE struct-copy stores), and `cx` is
-// latched from `x` BEFORE the copy - that ordering is what buys retail's 4th
-// callee-saved register (the rect base pinned in ebx). 69.76 -> 100.
 RVA(0x00107920, 0xb7)
 i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     if (m_pendingHlRow == -1) {
@@ -2194,11 +1943,7 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     if (r->m_cmd != 0xce && r->m_cmd != 0xd0) {
         return 0;
     }
-    // The whole rect is COPIED into a local: retail reserves the 0x10 frame and
-    // still writes rc.top/rc.bottom into it (`mov [esp+0x10],edx` / `mov
-    // [esp+0x18],ebx`) even though only left/right are read - MSVC does not DSE
-    // the struct-copy stores. Reading the two fields off `r` directly loses both
-    // the frame and the stores.
+
     i32 cx = x;
     RECT rc = r->m_rect14;
     i32 lo = rc.left + 0x1b;
@@ -2215,15 +1960,10 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     return 1;
 }
 
-// Activate a ready slot: bail if the highlight sub-manager is busy. With idx == -1
-// find the first slot whose state is 2 (ready); otherwise require slot idx to be
-// ready. Validate handle 0x66, play the GAME_TABHIGHLIGHT1 cue on the draw-clock
-// window, then latch the active slot, mark its value, and notify its pointer.
 // @early-stop
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
-    // ONE shared refusal block (retail 0x10bda2) for the busy gate and both arms'
-    // cursor-frame gate; only the scan-exhausted miss keeps its own fall-through exit
+
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 != 0) {
         goto notActivated;
     }
@@ -2241,13 +1981,10 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
             goto notActivated;
         }
-        CDDrawSubMgrLeafScan* host =
-            g_gameReg->m_world
-                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* found = 0;
-            CMapStringToPtr* map =
-                &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+            CMapStringToPtr* map = &host->m_10;
             map->Lookup("GAME_TABHIGHLIGHT1", found);
             if (found) {
                 i32 gate = g_sndEnabled;
@@ -2275,13 +2012,10 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
             goto notActivated;
         }
-        CDDrawSubMgrLeafScan* host =
-            g_gameReg->m_world
-                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* found = 0;
-            CMapStringToPtr* map =
-                &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+            CMapStringToPtr* map = &host->m_10;
             map->Lookup("GAME_TABHIGHLIGHT1", found);
             if (found) {
                 i32 gate = g_sndEnabled;
@@ -2316,7 +2050,7 @@ i32 CStatusBarMgr::SetState(i32 state) {
         return 1;
     }
     if (state == 2) {
-        if (Activate() == 0) { // 0x104dd0 - the subtype-2 lazy sprite-create probe
+        if (Activate() == 0) {
             return 0;
         }
         m_4 = m_position;
@@ -2333,7 +2067,7 @@ RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::RefreshA() {
     if (m_hlBusy == 0 && m_position != 1) {
         ResetWidgets(1);
-        SetRect(reinterpret_cast<LPRECT>(&m_rect10.left), 0, 0, 0xa0, 0x1e0);
+        SetRect(&m_rect10, 0, 0, 0xa0, 0x1e0);
         SetState(1);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
@@ -2354,13 +2088,11 @@ i32 CStatusBarMgr::winapi_0fe520_SetRect() {
         return 1;
     }
     ResetWidgets(1);
-    // Retail reads the view extent (m_modeW,m_modeH) as a POINT but only uses x for the
-    // rect; the y store survives as a dead 8-byte-frame spill. `volatile` reproduces
-    // that preserved store (a plain local is dead-eliminated by MSVC5 /O2).
+
     i32 w = g_gameReg->m_modeW;
     volatile POINT pt;
     pt.y = g_gameReg->m_modeH;
-    SetRect(reinterpret_cast<LPRECT>(&m_rect10.left), w - 0xa0, 0, w, 0x1e0);
+    SetRect(&m_rect10, w - 0xa0, 0, w, 0x1e0);
     SetState(0);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
@@ -2375,7 +2107,7 @@ RVA(0x000fe600, 0x49)
 i32 CStatusBarMgr::HideRect() {
     if (m_hlBusy == 0 && m_position != 2) {
         ResetWidgets(1);
-        SetRect(reinterpret_cast<LPRECT>(&m_rect10.left), -1, -1, -1, -1);
+        SetRect(&m_rect10, -1, -1, -1, -1);
         SetState(2);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     }
@@ -2396,9 +2128,6 @@ i32 CStatusBarMgr::RefreshState() {
     return winapi_0fe520_SetRect();
 }
 
-// 0xfe860 - SetSpritePos(x, y): push the position into the render object
-// (m_8->m_5c/m_60) and mirror it into m_24/m_28. Bails (0) if there is no render
-// object. Returns 1.
 // @early-stop
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
@@ -2426,16 +2155,6 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     return 1;
 }
 
-// 0x108410 - InsertPtr(a, b): pull a node off the engine free-list, fill it with
-// (a, b), then insert it into the m_ptrPool pooled-ptr collection - at the first slot
-// whose key (m_4) exceeds b, or appended at the end. Returns 1.
-// 75.85 -> 83.21. Three shape fixes, all byte-visible: the scan is a `while`, not a
-// do-while (retail closes it `jl loop` and FALLS THROUGH into the append block); its
-// guard is spelled `if (i < n)`, the SAME comparison, so cl folds it into the loop's
-// own guard instead of emitting a second `test/jle`; and the append is `Add(node)`,
-// whose inlined `nIndex = m_nSize` RELOADS +0x538 where an explicit
-// `SetAtGrow(GetSize(), ...)` reuses the loop bound. The hit path exits via `goto
-// insert;` so its block lands at the BOTTOM, past the append, as in retail.
 // @early-stop
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
@@ -2450,7 +2169,7 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
     if (i < n) {
-        // CPtrArray hands out void** - the element type is API-forced at this one seam
+        // API-forced CPtrArray element boundary.
         Coord** t = reinterpret_cast<Coord**>(m_ptrPool.GetData());
         while (i < n) {
             Coord* e = *t;
@@ -2474,16 +2193,6 @@ void CStatusBarMgr::ReportTab(i32 tab) {
     EnterHlRow(1, tab);
 }
 
-// 0xffde0 - build the five top-level status-bar tabs (STATZ/GRUNTZ/RESOURCE/
-// MULTIPLAYER/GAMETAB) plus three rect-only sub-widgets, once (m_tabsBuilt gate). Each
-// widget is heap-allocated, its retail vtable + type tag stamped, then Setup/
-// Configure'd from the tab base coords (m_10/m_14) + a per-widget geometry rect
-// (and, for the tabs, an asset key + type code); on success it is appended to the
-// +0x2c list and stashed in its per-tab slot (m_tabSprite0..m_tabSprite4). Built under a /GX EH
-// frame (a just-created item is deleted if its setup throws / returns 0). The
-// MULTIPLAYER tab gets a mode-specific configure in a battlez game (m_134==1).
-// Finishes with three validity probes; returns 0 on any failure, else latches
-// m_tabsBuilt = 1 and returns 1.
 // @early-stop
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
@@ -2498,7 +2207,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     CDDrawSurfaceMgr* code = m_c;
     CStatusBarItem* it;
 
-    // ---- rect-only sub-widget A (id 0x259) ----
     it = new CSBI_RectOnly;
     if (!it->Setup(
             this,
@@ -2516,7 +2224,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(it);
 
-    // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSBI_RectOnly;
     if (!it->Setup(
             this,
@@ -2534,7 +2241,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(it);
 
-    // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSBI_RectOnly;
     if (!it->Setup(
             this,
@@ -2552,7 +2258,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(it);
 
-    // ---- STATZTAB (menu item, type 1) ----
     it = new CSBI_MenuItem;
     if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
@@ -2573,7 +2278,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabLists[0].AddTail(it);
     m_tabSprite0 = static_cast<CSBI_MenuItem*>(it);
 
-    // ---- GRUNTZTAB (menu item, type 2) ----
     it = new CSBI_MenuItem;
     if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
@@ -2594,7 +2298,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabLists[0].AddTail(it);
     m_tabSprite2 = static_cast<CSBI_MenuItem*>(it);
 
-    // ---- RESOURCETAB (menu item, type 3) ----
     it = new CSBI_MenuItem;
     if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
@@ -2615,7 +2318,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabLists[0].AddTail(it);
     m_tabSprite1 = static_cast<CSBI_MenuItem*>(it);
 
-    // ---- MULTIPLAYERTAB (menu item, type 4) ----
     it = new CSBI_MenuItem;
     if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
@@ -2641,18 +2343,15 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         CDDrawWorker* f = mp->m_record;
         CImage* v;
         if (f != 0 && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
-            v = static_cast<CImage*>(
-                f->m_items.GetAt(4)
-            ); // the ex-SbiTabFrame 'm_14->m_10' hop == frames[4]
+            v = static_cast<CImage*>(f->m_items.GetAt(4));
         } else {
             v = 0;
         }
         mp->m_frame = v;
         mp->m_enabled = 0;
-        mp->SetSubtype(); // slot 10 (the view called it "Refresh")
+        mp->SetSubtype();
     }
 
-    // ---- GAMETAB (menu item, type 5; inline ctor) ----
     it = new CSBI_MenuItem;
     if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
@@ -2708,13 +2407,6 @@ static __inline i32 WapRand(i32 range) {
     return ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % range + 1;
 }
 
-// 0x107d00 - the falling-item weighted-random roulette. When the game is over
-// (m_134==1), return the first pooled item's id to the free-list (or notify the
-// falling-item sink with 0). Otherwise pick an item type from the running-sum
-// battlez percent table via a three-tier weighted random (a top-level toolz/toyz/
-// brickz split, then a per-category item roll), map the roll to the item-type id,
-// place the falling-item HUD rect (SetRect + the notify-object rect block), and
-// tick the pending fall count. Returns 1.
 RVA(0x00100510, 0x6)
 i32 CStatusBarItem::Render() {
     return 1;
@@ -2838,12 +2530,6 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
     return 1;
 }
 
-// 0xfdc00 - reset the item to the multiplayer-item-percent (battlez) layout: place
-// the right-anchored full-height rect from the view width, seed the cursor coords,
-// reset the widgets, then (on a successful placement probe) fill the running-sum
-// item-percent table from the Multiplayer config section (one GetInt per item, each
-// summed with the prior entry), apply the (5,3) rect, and - if the placement query
-// succeeds - refresh. Returns 1 (0 on probe failure).
 // @early-stop
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
@@ -2852,13 +2538,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_position = 0;
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
-    SetRect(
-        reinterpret_cast<LPRECT>(&m_rect10.left),
-        vx - 0xa0,
-        0,
-        vx,
-        0x1e0
-    ); // the +0x10..+0x1f tab-strip rect
+    SetRect(&m_rect10, vx - 0xa0, 0, vx, 0x1e0);
     m_20 = 0;
     m_24 = vx - 0x45;
     m_28 = vy - 0x30;
@@ -2921,13 +2601,6 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     return 1;
 }
 
-// 0xfe6b0 - drive the main status-bar sprite. For the non-cursor subtype, when the
-// countdown (+0x20) is live, tick it; if the frame gate (m_barFrameGate) exceeds the screen
-// height push the current rect to the game-manager's setup chain; look up
-// GAME_STATUSBAR_MAINBAR and, on the resolved frame, draw it at the item's origin. Then
-// fire the +0x30 and active-tab notify lists (slot 0x14) and refresh the +0x54c object.
-// The trailing +0xd8 list (slot 0x28 then 0x14) runs for every subtype. Returns 1.
-// @early-stop
 // @early-stop
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
@@ -2937,13 +2610,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
-                // The area UNDER the bar: the bar rect's span horizontally, from its
-                // bottom down to the gate row. A real RECT, not the ex `struct {i32
-                // a,b,c,d;}` .cpp-local view - the four contiguous frame slots at
-                // [esp+0x10..0x20) in left/top/right/bottom order are exactly the
-                // local-aggregate signature (local-rect-aggregate-from-contiguous-
-                // frame-slots.md), and all 24 assignment orders were measured: natural
-                // l/t/r/b ties the best (the residue below is not an ordering artifact).
+
                 RECT below;
                 below.left = m_rect10.left;
                 below.top = m_rect10.bottom;
@@ -2956,14 +2623,11 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 
             map->Lookup("GAME_STATUSBAR_MAINBAR", found);
             if (found) {
-                // the stored element is the main-bar CDDrawWorker strip; its current
-                // CImage row anchors the frame draw (same shape as MenuItem::Place)
+
                 CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
                 CImage* entry = static_cast<CImage*>(cfg->m_items.GetAt(cfg->m_minIndex));
                 if (entry) {
-                    CDDrawSubMgrPages* l1 =
-                        g_gameReg->m_world
-                            ->m_drawTarget; // the real pages (ex the CSbiMainL1 facet)
+                    CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
                         entry->m_anchorX + m_rect10.left,
@@ -2998,17 +2662,15 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     while (k) {
         CStatusBarItem* p = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
         if (p) {
-            p->SetSubtype(); // slot 10 (the view called it "Refresh")
-            p->Render();     // slot 5
+            p->SetSubtype();
+            p->Render();
         }
     }
     return 1;
 }
 
 static __inline void HiCueFind() {
-    CDDrawSubMgrLeafScan* host =
-        g_gameReg->m_world
-            ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
     if (host->m_emitGate == 0) {
         void* obj = ((host))->Lookup("GAME_TABHIGHLIGHT1");
         if (obj) {
@@ -3018,12 +2680,10 @@ static __inline void HiCueFind() {
 }
 
 static __inline void HiCueLookup() {
-    CDDrawSubMgrLeafScan* host =
-        g_gameReg->m_world
-            ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
     if (host->m_emitGate == 0) {
         void* out = 0;
-        host->m_10.Lookup("GAME_TABHIGHLIGHT1", out); // CMapStringToPtr (mfc_class band)
+        host->m_10.Lookup("GAME_TABHIGHLIGHT1", out);
         if (out) {
             (static_cast<LeafCue*>(out))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
@@ -3031,12 +2691,10 @@ static __inline void HiCueLookup() {
 }
 
 static __inline void HiCueTimed() {
-    CDDrawSubMgrLeafScan* host =
-        g_gameReg->m_world
-            ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
     if (host->m_emitGate == 0) {
         void* found = 0;
-        host->m_10.Lookup("GAME_TABHIGHLIGHT1", found); // CMapStringToPtr (mfc_class band)
+        host->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
         if (found && g_sndEnabled != 0) {
             i32 item = g_sndCueTag;
             LeafCue* p = static_cast<LeafCue*>(found);
@@ -3052,22 +2710,15 @@ static __inline void HiPost(i32 cmdId) {
     ::PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, cmdId, 0);
 }
 
-// 0xfe910 - UpdateStatusBarTabHighlight(a1, a2, a3). Resolve the hit tab-highlight
-// widget, run its Update, then dispatch on the widget kind (m_10, 0..6) and command
-// (m_c): play the GAME_TABHIGHLIGHT1 cue and either refresh a sub-panel, arm a tab,
-// post a WM_COMMAND to the game window, or toggle the destruct-button warning. The
-// resource/gruntz/game tabs gate on m_354 + the active object's tab-highlight-enable
-// flag (m_68->m_400). Returns 1 (0 on an out-of-range command).
-// @early-stop
 RVA(0x000fe910, 0xc2c)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CStatusBarItem* w = HitTestRects(a2, a3);
     if (w == 0) {
         return 1;
     }
-    w->SbiSlot6(a1, a2, a3); // slot 6 (the view called it Update)
+    w->SbiSlot6(a1, a2, a3);
     i32 cmd = w->m_cmd;
-    switch (w->m_tab) { // widget kind == owning tab index (0..6)
+    switch (w->m_tab) {
         case 0:
             if (m_hitTestDisabled != 0) {
                 return 1;
@@ -3115,7 +2766,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 ToggleStat(cmd - 0x12c);
             } else {
                 HiCueLookup();
-                PlaceCursorTarget(cmd - 0x13b, 0); // ILT 0x20b8 -> 0x105800
+                PlaceCursorTarget(cmd - 0x13b, 0);
             }
             return 1;
 
@@ -3292,21 +2943,15 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     }
 }
 
-// 0xffb20 - build (or release) the DESTRUCT button display object. Only touches it
-// while the presence gate (g_gameReg->m_soundEnabled) is up: when the mode is armed (m_destructWarnActive!=0)
-// and not held (m_574==0), and the object is not yet built, look up GAME_DESTRUCT and
-// build+configure it; otherwise release any existing object. Then refresh the host and
-// fire the notify value `arg` down the three per-tab notify lists (+0x30, active tab,
-// +0xd8) plus the +0x54c notifier. Returns 1.
 // @early-stop
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_soundEnabled != 0) {
         if (m_destructWarnActive != 0 && m_modeArmed == 0) {
             if (m_destructButton == 0) {
-                // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+
                 CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                CMapStringToPtr* map = &host->m_10; // CMapStringToPtr (mfc_class band)
+                CMapStringToPtr* map = &host->m_10;
                 void* found = 0;
                 map->Lookup("GAME_DESTRUCT", found);
                 if (found) {
@@ -3369,7 +3014,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
     if (m_tabSprite5) {
         m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
         Deactivate();
-        m_tabSprite5->SetSubtype(); // slot 10
+        m_tabSprite5->SetSubtype();
     }
     m_hitTestDisabled = 1;
 }
@@ -3379,17 +3024,11 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_tabSprite5) {
         m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
         Deactivate();
-        m_tabSprite5->SetSubtype(); // slot 10
+        m_tabSprite5->SetSubtype();
     }
     m_hitTestDisabled = 0;
 }
 
-// 0x1055b0 - build the GOOCOOKING1 status-bar sprite for stat slot `idx`. Bails (0)
-// if the slot is already active; when the game is running (m_134==1) and the mode
-// gate is down (m_hlBusy==0), refresh the subtype-2 cursor, apply the (2,3) rect off the
-// gauge tab, and commit. Latch the gauge span for slot idx+0x17 (base g_frameTime, hi
-// 0x7fffffff); then, on the gauge tab and not the cursor subtype, play the
-// GAME_GOOCOOKING1 cue on the draw-clock window if the music gate is free. Returns 1.
 // @early-stop
 RVA(0x001055b0, 0x109)
 i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
@@ -3407,21 +3046,17 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
         Deactivate();
     }
     sp->m_state = 1;
-    // the slot record's two 64-bit pairs: interval=INT_MAX, timer-base=g_frameTime
-    // (the old spelling indexed a +8-shifted CSbiSlot view of the same bytes)
+
     CSbiSlot* s = &m_slots[idx];
     s->m_10 = 0x7fffffff;
     s->m_14 = 0;
     s->m_8 = g_frameTime;
     s->m_c = 0;
     if (m_activeTab == 2 && m_position != 2) {
-        CDDrawSubMgrLeafScan* host =
-            g_gameReg->m_world
-                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* found = 0;
-            CMapStringToPtr* map =
-                &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+            CMapStringToPtr* map = &host->m_10;
             map->Lookup("GAME_GOOCOOKING1", found);
             if (found) {
                 i32 gate = g_sndEnabled;
@@ -3439,12 +3074,6 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     return 1;
 }
 
-// 0x105990 - tick the rez-conveyor belt animation across the three group-A phase
-// slots (each a 24-byte phase record: state, counter, 64-bit last-clock, 64-bit
-// interval). Per slot, a state machine (1..7) advances the belt counter on a
-// draw-clock gate, reconfigures the belt/hold delays at phase transitions, and plays
-// the REZBELTRETURN/REZBELTBACKUP cues on the gauge tab. After the switch each slot's
-// notifier is fired with the current counter.
 // @early-stop
 RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
@@ -3513,15 +3142,10 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
-                        CDDrawSubMgrLeafScan* host =
-                            g_gameReg->m_world
-                                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
-                            host->m_10.Lookup(
-                                "GAME_REZBELTRETURN",
-                                found
-                            ); // CMapStringToPtr (mfc_class band)
+                            host->m_10.Lookup("GAME_REZBELTRETURN", found);
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 LeafCue* p = static_cast<LeafCue*>(found);
@@ -3540,15 +3164,10 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
-                        CDDrawSubMgrLeafScan* host =
-                            g_gameReg->m_world
-                                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
-                            host->m_10.Lookup(
-                                "GAME_REZBELTBACKUP",
-                                found
-                            ); // CMapStringToPtr (mfc_class band)
+                            host->m_10.Lookup("GAME_REZBELTBACKUP", found);
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 LeafCue* p = static_cast<LeafCue*>(found);
@@ -3572,13 +3191,6 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     } while (--count);
 }
 
-// 0x105e40 - drive the rez-machine (goo-machine) status bar: a two-record phase
-// machine. Record A (+0x318) handles the spew/run phases (states 5/6) throttled on a
-// 64-bit draw-clock gate; record B (+0x330) is a 1..4 switch cycling snooze / turning-
-// wheel / (on phase 0x26) the machine-slot distribution: pick a machine column from
-// the config percent (m_4cc), scan its highlight rows, and either RETRACT (empty slot
-// found) or DROP (full), arming m_groupSlots[col] + playing the cue. Then set the
-// conveyor-belt timer, feed the snooze/lever stat, and refresh the display object.
 // @early-stop
 RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
@@ -3650,15 +3262,10 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = static_cast<u32>(g_frameTime);
                     if (m_activeTab == 3 && m_position != 2) {
-                        CDDrawSubMgrLeafScan* host =
-                            g_gameReg->m_world
-                                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
-                            host->m_10.Lookup(
-                                "GAME_REZMACHINE",
-                                found
-                            ); // CMapStringToPtr (mfc_class band)
+                            host->m_10.Lookup("GAME_REZMACHINE", found);
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 LeafCue* p = static_cast<LeafCue*>(found);
@@ -3713,15 +3320,10 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_state = 4;
                         g[col].m_counter = 0x13;
                         if (m_activeTab == 3 && m_position != 2) {
-                            CDDrawSubMgrLeafScan* host =
-                                g_gameReg->m_world
-                                    ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
-                                host->m_10.Lookup(
-                                    "GAME_REZBELTRETRACT",
-                                    fnd
-                                ); // CMapStringToPtr (mfc_class band)
+                                host->m_10.Lookup("GAME_REZBELTRETRACT", fnd);
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
                                     LeafCue* p = static_cast<LeafCue*>(fnd);
@@ -3737,15 +3339,10 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_state = 2;
                         g[col].m_counter = 0xa;
                         if (m_activeTab == 3 && m_position != 2) {
-                            CDDrawSubMgrLeafScan* host =
-                                g_gameReg->m_world
-                                    ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
-                                host->m_10.Lookup(
-                                    "GAME_REZBELTDROP",
-                                    fnd
-                                ); // CMapStringToPtr (mfc_class band)
+                                host->m_10.Lookup("GAME_REZBELTDROP", fnd);
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
                                     LeafCue* p = static_cast<LeafCue*>(fnd);
@@ -3792,13 +3389,6 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     m_rezTick = 0;
 }
 
-// 0x106bb0 - drive the chip-machine status bar: a 7-phase (m_machinePhase = 2..8) switch on a
-// single 64-bit belt timer (+0x4d0). Each phase accumulates the NextItem/FallingItem
-// speed/delay config into the rect-corner running sums (m_itemRectL/m_itemRectT/m_itemRectR/m_itemRectB),
-// advances the phase on span thresholds, plays CHIPLAND/CHIPFALLOUT cues on the gauge
-// tab, and picks a machine column from m_4cc. A rect-write flag and a refresh flag are
-// latched per phase; the tail pushes the composed rect into the falling-item notifier
-// and fires the fall-rect refresh.
 // @early-stop
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
@@ -3837,15 +3427,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
                 if (m_activeTab == 3 && m_position != 2) {
-                    CDDrawSubMgrLeafScan* host =
-                        g_gameReg->m_world
-                            ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
-                        host->m_10.Lookup(
-                            "GAME_CHIPFALLOUT",
-                            found
-                        ); // CMapStringToPtr (mfc_class band)
+                        host->m_10.Lookup("GAME_CHIPFALLOUT", found);
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             LeafCue* p = static_cast<LeafCue*>(found);
@@ -3873,15 +3458,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRectT = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == 3 && m_position != 2) {
-                    CDDrawSubMgrLeafScan* host =
-                        g_gameReg->m_world
-                            ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
-                        host->m_10.Lookup(
-                            "GAME_CHIPLAND",
-                            found
-                        ); // CMapStringToPtr (mfc_class band)
+                        host->m_10.Lookup("GAME_CHIPLAND", found);
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             LeafCue* p = static_cast<LeafCue*>(found);
@@ -3948,15 +3528,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             if (m_itemRectT >= row * 0x20 + 0x13e) {
                 if (m_activeTab == 3 && m_position != 2) {
-                    CDDrawSubMgrLeafScan* host =
-                        g_gameReg->m_world
-                            ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
-                        host->m_10.Lookup(
-                            "GAME_CHIPLAND",
-                            found
-                        ); // CMapStringToPtr (mfc_class band)
+                        host->m_10.Lookup("GAME_CHIPLAND", found);
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             LeafCue* p = static_cast<LeafCue*>(found);
@@ -3968,7 +3543,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         }
                     }
                 }
-                SetHlCell(col, m_extraNotifyArg0, row); // ILT 0x3968 -> 0x106b40
+                SetHlCell(col, m_extraNotifyArg0, row);
             }
             refreshFlag = 1;
             break;
@@ -3988,16 +3563,6 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     }
 }
 
-// 0x107590 - configure the falling-item HUD gauge from a center point (a2,a3). Latch
-// the notify arg + active flag, pull the FallingItemDelay config, seed the rect base
-// from g_frameTime, build the relative +/-0xc rect (m_fallRectL block), and - if the notify
-// object exists - write the absolute rect (offset by the item base coords m_10/m_14)
-// into its +0x14 slot. Finish with the fall-rect refresh helper.
-// 78.45 -> 86.02: the absolute rect is STAGED IN A LOCAL `RECT` and assigned to
-// n->m_rect14 in one go. That is retail's `sub esp,0x10` frame (exactly one RECT) and
-// its left/top/right/bottom store order; writing the four fields straight through the
-// pointer loses both. Staging the RELATIVE rect in the same local instead regresses
-// it to 78.45 - retail's one RECT is the destination one.
 // @early-stop
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
@@ -4015,9 +3580,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_fallRectR = rr;
     m_fallRectB = b;
     if (n) {
-        // Staged in a local RECT and copied in one go: that is retail's `sub esp,0x10`
-        // frame (one RECT), the left/top/right/bottom STORE order, and the single
-        // `rc.left` spill+reload cl needs once the four values outlive its registers.
+
         RECT rc;
         i32 x = m_rect10.left;
         rc.left = l + x;
@@ -4031,14 +3594,6 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
-// 0x107a10 - wake phase of the rez-machine status bar. On the first pass (state not
-// yet set) bail unless the extra-notify arg is armed, else pull the LeftMachineWaking
-// delay, feed the stat bar (slot 9,2), latch the state and return 1. On later passes
-// just bump the wake tick counter and return 1.
-// The `return 1` is SHARED by both arms (if/else, not two inline returns): that puts
-// the `m_rezActive = 1` store and the return constant in different basic blocks, so cl
-// emits the store-immediate and materializes eax=1 separately in the duplicated tail -
-// exactly retail. Two inline `return 1;`s make cl CSE them into one register.
 RVA(0x00107a10, 0x62)
 i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     if (m_rezActive == 0) {
@@ -4053,12 +3608,6 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     return 1;
 }
 
-// 0x107ae0 - reset the item to the multiplayer/battlez starting layout: prep, refresh
-// the subtype-2 cursor, force the tab to 5, arm it, clear the per-stat flags, reset the
-// widgets; then (by game mode m_134) pre-fill the first N slots (N = StartingGruntz from
-// the Multiplayer / Battlez config section) to (state=ready, value=0x1a); return each
-// pooled ptr to the free-list, clear the +0x530 collection and the reset block, free the
-// +0x54c notifier, and finish. The trailing i32 arg is ABI-accepted but unused.
 // @early-stop
 RVA(0x00107ae0, 0x1aa)
 void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
@@ -4074,12 +3623,6 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     memset(m_statFlags, 0, sizeof(m_statFlags));
     Reset();
 
-    // SUBSCRIPTED, not a walking `CSbiSlot* s = m_slots; ... s++;` cursor. cl
-    // strength-reduces the subscript into the same cursor, but a named one is
-    // initialised ABOVE the count guard (`lea esi,[ebx+0x220]` before the GetIntDef
-    // call) and bumped mid-arg-block, where the subscript form puts the `lea` in the
-    // loop preheader and the `add esi,0x18` at the bottom - retail's shape, in both
-    // copies (90.45 -> ~99).
     i32 mode = g_gameReg->m_134;
     if (mode == 2) {
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Multiplayer", "StartingGruntz", 0); i++) {

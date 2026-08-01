@@ -1,34 +1,17 @@
-#include <Mfc.h> // real MFC CMapStringToOb/CString (the type-table + Chain registry maps)
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (CUserBase/CUserLogic GetTypeTag)
-#include <Gruntz/UserLogic.h>   // CWapX / CUserBase / CUserLogic - the classes this TU defines
-#include <Gruntz/GameObjectFactory.h> // the Logic*Factory registrants (BuildLogicTypeTable)
-#include <Gruntz/Grunt.h> // CAnimLookupNode (the m_14 aux FinalizeStep's guard reads at +0x1c)
-#include <Gruntz/SerialArchive.h> // the archive (Read/Write slots)
-#include <Gruntz/AniElement.h>    // full CAniElement (m_value upcasts to CObject at KeyOfValue)
+#include <Mfc.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/AniElement.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerCache.h> // the worker cache (m_10 Lookup / CreateWorker)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>  // the name registry (m_10 Lookup / KeyOfValue)
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Io/FileMem.h>
 #include <rva.h>
 
-#include <string.h> // strlen / strcpy (inlined to repne scasb / rep movs)
-
-// The retail UserLogic/WapX base-classes TU [0x87b0..0x8d52]: the CUserBase +
-// CUserLogic default virtuals, the free type-table builder, and CWapX::Chain -
-// ONE contiguous obj (ex FOUR fragment units: the 14 bodies sat here as
-// RVA_COMPGEN "dummy anchors" while logictypetable/serialobjref carved out the
-// middle and the stubs' 0x4d..0x5d RVAs stretched the unit across the CGrunt
-// bands). The ??1/??_G dtor pins for this band stay in ActionArea.cpp - its obj
-// is the one that EMITS those COMDATs (labels.py authority).
-//
-// The two out-of-line base-ctor COMDATs (CUserLogic() @0x138d0 / CUserLogic(obj)
-// @0x58cd0) are emitted + RVA_COMPGEN pinned in a SEPARATE unit,
-// src/Gruntz/UserLogicCtorEmit.cpp. They must NOT be forced here: the 1-arg copy
-// needs an inline (Lookup-based) BuildLogicTypeTable body to match retail's
-// inlined registration, and that body, if visible in THIS TU, folds into every
-// leaf 1-arg ctor at depth 2 and regresses them all (retail leaves CALL 0x8a40 at
-// depth 2). Isolating the forcer + inline body in its own TU keeps the leaves here
-// calling the out-of-line helper.
+#include <string.h>
 
 RVA(0x000087d0, 0x8)
 i32 CUserBase::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
@@ -81,22 +64,6 @@ void CUserLogic::UserLogicVfuncC() {}
 RVA(0x000089f0, 0x1)
 void CUserLogic::UserLogicVfuncD() {}
 
-// CUserLogic::BuildLogicTypeTable @0x8a40 - THE definition (the only one that emits a
-// symbol). It is a __thiscall METHOD that ignores `this`, not the free `__stdcall
-// BuildLogicTypeTable` it was modelled as: its retail call sites set up the receiver,
-// e.g. CWarpStonePad's ctor @0x10d6e2 does `mov edx,[esi+0xc]; mov ecx,esi; push edx;
-// call <ILT 0x39c2>`. Under the free-function name nothing bound 0x8a40 to the
-// `?BuildLogicTypeTable@CUserLogic@@...` the leaf ctors call, which is the FAKE-ref
-// link defect assert_relocs reported on ??0CWarpStonePad / ??0CSingleAnimation.
-//
-// The body is written with CDDrawWorkerCache::Find HAND-EXPANDED (the `found` local +
-// m_10.Lookup + reload) because retail's standalone copy has Find inlined - writing
-// `Find(...)` here emits `call 0x9cab0` instead and does NOT match (measured). The
-// Find-CALLING spelling is the one the leaf ctors inline, and it lives in
-// <Gruntz/LogicTypeTableInline.h>; UserLogicCtorEmit.cpp keeps a third, textually
-// identical copy of THIS spelling so retail's standalone 0x58cd0 ctor folds it. Those
-// two are inlining devices only - neither emits a COMDAT any more, so this is the
-// single definition in the link.
 // @early-stop
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
@@ -124,15 +91,13 @@ void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
 }
 
 RVA(0x00008b50, 0x3)
-void CUserLogic::XferName(char* name) {
-    // ret-4 one-arg no-op; leaves override to receive their serialized type name.
-}
+void CUserLogic::XferName(char* name) {}
 
 RVA(0x00008b70, 0x3)
 void CUserLogic::FireActivation(i32) {}
 
 RVA(0x00008b90, 0x40)
-void CUserLogic::FinalizeStep(char* /*name*/) {
+void CUserLogic::FinalizeStep(char*) {
     if (m_deferredCallback == 0) {
         return;
     }
@@ -145,8 +110,6 @@ void CUserLogic::FinalizeStep(char* /*name*/) {
     m_28 = 0x3e9;
 }
 
-// ---------------------------------------------------------------------------
-// 0x8c00: serialize one referenced object + its key name.
 // @early-stop
 RVA(0x00008c00, 0x152)
 i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
@@ -157,30 +120,26 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
     }
     switch (mode) {
         case 7: {
-            // READ: pull the key name + the 0x10 blob, then resolve the key.
+
             arc->Read(name, 0x80);
             arc->Read(m_blob, 0x10);
             m_34 = obj;
-            m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the A-kind sprite
-            m_3c = obj->m_7c;
+            m_38 = static_cast<CWwdGameObjectA*>(obj);
+            m_3c = obj->m_animWorker;
             if (strlen(name) == 0) {
                 m_value = 0;
                 return 1;
             }
-            // the map address is computed BEFORE the out-slot is zeroed: retail stores
-            // the 0 after both argument pushes (`add ecx,0x10; mov [esp+0x18],0; call`),
-            // which a plain `void* val = 0;` ahead of the whole expression schedules first.
+
             CMapStringToPtr* map = &m_3c->m_ownerCtx->m_animRegistry->m_10;
-            void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+            void* val = 0;
             map->Lookup(name, val);
-            m_value = static_cast<CAniElement*>(
-                val
-            ); // the map stores void*; KeyOfValue takes the CObject* upcast
+            m_value = static_cast<CAniElement*>(val);
             return 1;
         }
         case 4: {
-            // WRITE: re-derive the value's name into the key buffer, then write both.
-            memset(name, 0, sizeof(name)); // 0x20 dwords = the whole 0x80-byte key buffer
+
+            memset(name, 0, sizeof(name));
             if (m_value != 0) {
                 CString nm = m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
                 strcpy(name, static_cast<const char*>(nm));

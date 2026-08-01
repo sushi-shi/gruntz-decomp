@@ -1,21 +1,19 @@
 #define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <strstrea.h>   // REAL CRT ostrstream/istrstream (the serialize accumulator temps)
-#include <Gruntz/MovingLogicSerial.h> // the serialize helpers (WriteName/ReadName/ReadCurve)
-#include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // m_object->m_0c (the world root; m_level hop)
+#include <Io/FileMem.h>
+#include <strstrea.h>
+#include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/GameLevel.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <rva.h>
-#include <Gruntz/MotionState.h> // ex Globals.h
+#include <Gruntz/MotionState.h>
 
 DATA(0x001f04f8)
 const double g_motionNegHalf = -0.5;
 
 DATA(0x001f04f0)
-const double g_motionTimeScale = 0.001; // 0x5f04f0
+const double g_motionTimeScale = 0.001;
 
-// The standalone ctor. Its CMotionState member constructor is inlined, producing
-// the scheduled zeroing and default [MIN,MAX] bounds at +0x38.
 RVA(0x00013940, 0x1e1)
 CMovingLogic::CMovingLogic() {}
 
@@ -49,7 +47,7 @@ ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     accum << c.m_a0;
     accum << c.m_a8;
     accum << c.m_b0;
-    accum << c.m_b8; // int (?g_b8 is i32) -> operator<<(int) 0x191d20
+    accum << c.m_b8;
     accum << c.m_c0;
     accum << c.m_c8;
     accum << c.m_d0;
@@ -97,16 +95,6 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
     return accum;
 }
 
-// ---------------------------------------------------------------------------
-// 0x16e7f0 - CUserLogic::SerializeMove(arc, mode, a3, a4): the class's OWN vtable
-// slot-1 override (vtbl 0x1e705c[1], `override` of CUserBase's slot 1 per RTTI;
-// CGruntVoice : CUserLogic tags the same slot `inherited`, so CUserLogic defines
-// it). Was bound here under the fake `CMovingLogicBase::Serialize` - see the
-// dissolution note in <Gruntz/MovingLogicSerial.h>. The base-class round-trip
-// round-trip 0x16f4a0 chains to. mode 4 = write (append the name text, length-
-// prefix it, write the three trailing ints + g_logicTypesRegistered); mode 7 =
-// read (RezAlloc + read the text, parse the name back, read the four ints, then
-// seed the back-pointers/m_14 from the context arg and stamp m_28=0x3e9).
 // @early-stop
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
@@ -115,12 +103,12 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
     }
     switch (mode) {
         case 7: {
-            // READ: pull the length-prefixed text, parse the name back, read the ints.
+
             i32 len;
             arc->Read(&len, 4);
             void* buf = RezAlloc(len);
             arc->Read(buf, len);
-            istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
+            istrstream accum(static_cast<char*>(buf), len);
             accum >> m_link.m_str;
             RezFree(buf);
             arc->Read(&m_28, 4);
@@ -129,45 +117,40 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
             arc->Read(&m_prevAnimSetNode, 4);
             m_0c = pObj;
             m_object = static_cast<CWwdGameObjectA*>(pObj);
-            m_objAux = (pObj)->m_7c;
+            m_objAux = (pObj)->m_animWorker;
             m_deferredCallback = 0;
             m_gatedCallback = 0;
             m_28 = 0x3e9;
-            // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
+
             break;
         }
         case 4: {
-            // WRITE: render the name to bute text, length-prefix it, append ints.
+
             char buf[0x100];
-            ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
+            ostrstream accum(buf, 0x100);
             accum << m_link.m_str;
-            i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
+            i32 len = accum.pcount();
             arc->Write(&len, 4);
-            arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
+            arc->Write(accum.str(), len);
             arc->Write(&m_28, 4);
             arc->Write(&m_2c, 4);
             arc->Write(&g_logicTypesRegistered, 4);
             arc->Write(&m_prevAnimSetNode, 4);
-            // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
+
             break;
         }
     }
     return 1;
 }
 
-// ---------------------------------------------------------------------------
 // @early-stop
 RVA(0x0016ea90, 0x234)
 void CMovingLogic::MovingSlot16() {
-    // Snapshot the integer positions, then step the kinematic state by the
-    // elapsed clock delta.
+
     m_140 = static_cast<i32>(Motion()->m_40);
     m_144 = static_cast<i32>(Motion()->m_48);
     Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_00);
 
-    // Carrier ride: while riding (flags bit4 + a latched carrier), fold the
-    // carrier's per-frame deltas into the object's position and re-seed the
-    // motion targets.
     if ((m_object->m_flags & 0x10) && m_object->m_carrier != 0) {
         m_object->m_screenX += m_object->m_carrier->m_deltaX;
         Motion()->m_40 = static_cast<double>(m_object->m_screenX);
@@ -175,7 +158,6 @@ void CMovingLogic::MovingSlot16() {
         Motion()->m_48 = static_cast<double>(m_object->m_screenY);
     }
 
-    // Drive the level's move resolver toward the new position.
     if (m_object->m_moveMode == 1) {
         m_148 = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
@@ -194,8 +176,6 @@ void CMovingLogic::MovingSlot16() {
         );
     }
 
-    // X arrival: if the object moved off the motion target, re-solve the X
-    // arrival velocity and re-anchor the target.
     CMotionState* ms = Motion();
     i32 sx = m_object->m_screenX;
     if (static_cast<i32>(Motion()->m_40) != sx) {
@@ -206,7 +186,6 @@ void CMovingLogic::MovingSlot16() {
         ms->m_a0 = a0new;
     }
 
-    // Y arrival (symmetric).
     i32 sy = m_object->m_screenY;
     if (static_cast<i32>(Motion()->m_48) != sy) {
         double d = static_cast<double>(sy);
@@ -216,7 +195,6 @@ void CMovingLogic::MovingSlot16() {
         ms->m_a8 = a8new;
     }
 
-    // Per-mode velocity fix-ups keyed off the MoveToward result flags.
     if (m_object->m_moveMode != 7) {
         i32 f = m_148;
         if (f & 0x800000) {
@@ -235,13 +213,6 @@ void CMovingLogic::MovingSlot16() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x16f4a0 - CMovingLogic::Serialize(arc, mode, a3, a4): bute-text round-trip of
-// the curve block, then chain to the base. mode 4 = write (build text via
-// WriteCurve, length-prefix it, write the four trailing ints), mode 7 = read
-// (RezAlloc + read the text, ReadCurve it back, read the four ints). The
-// accumulators are CRT ostrstream/istrstream stack temps (<strstrea.h>).
-//
 // @early-stop
 RVA(0x0016f4a0, 0x1da)
 i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
@@ -250,34 +221,34 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameOb
     }
     switch (mode) {
         case 7: {
-            // READ: pull the length-prefixed text, parse it back, read the ints.
+
             i32 len;
             arc->Read(&len, 4);
             void* buf = RezAlloc(len);
             arc->Read(buf, len);
-            istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
+            istrstream accum(static_cast<char*>(buf), len);
             ReadCurve(accum, *Motion());
             RezFree(buf);
             arc->Read(&m_140, 4);
             arc->Read(&m_144, 4);
             arc->Read(&m_148, 4);
             arc->Read(&m_14c, 4);
-            // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
+
             break;
         }
         case 4: {
-            // WRITE: render the curve to bute text, length-prefix it, append ints.
+
             char buf[0x100];
-            ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
+            ostrstream accum(buf, 0x100);
             WriteCurve(accum, *Motion());
-            i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
+            i32 len = accum.pcount();
             arc->Write(&len, 4);
-            arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
+            arc->Write(accum.str(), len);
             arc->Write(&m_140, 4);
             arc->Write(&m_144, 4);
             arc->Write(&m_148, 4);
             arc->Write(&m_14c, 4);
-            // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
+
             break;
         }
     }

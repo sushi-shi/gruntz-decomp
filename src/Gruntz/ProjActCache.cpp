@@ -1,20 +1,10 @@
-#include <Bute/ButeTree.h> // the real CVariantSlot (m_errSink->Set)
+#include <Bute/ButeTree.h>
 #include <Gruntz/ProjActCache.h>
 
 #include <string.h>
 
 #pragma intrinsic(strlen, strcmp, memcpy)
 
-// ===========================================================================
-// CProjActMap::Insert  (0x1933b0) - find-or-insert a string key into the crit-bit
-// trie. Reject null key/value. Walk the trie testing the key's crit bits; if an
-// existing leaf's key matches, return its stored value. Otherwise allocate a new
-// 20-byte node + owned key copy, splice it at the crit bit (recomputed via
-// FirstDiffBit against the nearest leaf, or key-length-1 for an empty trie),
-// linking the new node's own bit slot to itself and the other to the displaced
-// subtree. On any allocation failure, record the caller return address and fire
-// the container error sink, returning 0.
-// ===========================================================================
 // @early-stop
 RVA(0x001933b0, 0x28f)
 void* CProjActMap::Insert(const char* key, void* value) {
@@ -100,7 +90,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
                 if (m_1c == 0) {
                     m_18 = nn;
                 } else {
-                    // retail 0x1935da selects the child SLOT then stores once
+
                     CTrieNode** s = &m_1c->m_child[0];
                     if (pp[-1]) {
                         s = &m_1c->m_child[1];
@@ -113,7 +103,6 @@ void* CProjActMap::Insert(const char* key, void* value) {
                 m_1c->m_child[0] = nn;
             }
 
-            // retail 0x1935eb: ONE store into the selected slot, ONE success tail
             CTrieNode** other = &nn->m_child[1];
             if (selfdir) {
                 other = &nn->m_child[0];

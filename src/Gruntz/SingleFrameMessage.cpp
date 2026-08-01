@@ -1,16 +1,16 @@
-#include <Mfc.h>                  // RECT / CopyRect (the ctor centers the object in a bounds rect)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActNameRegistry.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>
 #include <Gruntz/SingleFrameMessage.h>
-#include <Gruntz/WwdGameReg.h>    // g_gameReg->GetRect (on-screen message bounds)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/WwdGameReg.h>
+#include <Gruntz/SerialArchive.h>
 #include <rva.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
 template<> DATA(0x00245ef0)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(2000, 2010);
@@ -23,12 +23,6 @@ i32 CSingleFrameMessage::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameOb
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CSingleFrameMessage::~CSingleFrameMessage @0x0f640 - empty vtable-anchor dtor;
-// folds the CUserLogic teardown (the /GX leaf-dtor archetype).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CSingleFrameMessage() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 
@@ -50,20 +44,10 @@ RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))))();
     }
 }
 
-// CSingleFrameMessage::RegisterActs @0x0ab710 - bind the class's per-frame handler
-// (AdvanceAnim @0x0ab910) to the activation key "A" via the shared name registry.
-// The SAME archetype as CBehindCandyAni::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000ab710, 0x18d)
 void CSingleFrameMessage::RegisterActs() {
     i32 id = ActFindId("A");
@@ -82,9 +66,9 @@ void CSingleFrameMessage::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
+    (*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
-
 
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {

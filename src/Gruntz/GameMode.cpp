@@ -1,24 +1,24 @@
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
-#include <Gruntz/SoundState.h>            // g_sndEnabled/g_sndCueTag
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // the m_c->m_soundRegistry leaf-scan facet
-#include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
-#include <Gruntz/GameMode.h>              // CState / CDDrawSurfaceMgr
-#include <Bute/ButeMgr.h>                 // CButeMgr g_buteMgr (SecretColor wormhole tint)
-#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (m_world->m_childGroup CreateSprite)
-#include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Bute/SymTab.h>
+#include <Gruntz/SoundState.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/GameMode.h>
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h>
-#include <Gruntz/LightFxMgr.h> // m_78->m_tables (the glitter handle table)            // g_gameReg (GenMenuRandPos Rand/RandRange)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the real m_world class)
-#include <Gruntz/Grunt.h>        // GruntSoundCat full def (m_world->m_childGroup factory)
-#include <Gruntz/SoundCue.h> // CSndSubMgr/CDDrawSubMgrLeafScan/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
-#include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed + m_10/m_14/m_18)
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/LeafCue.h>
 #include <rva.h>
-#include <Gruntz/BootyMessages.h> // g_levelMsgRectsA (ex .cpp extern)
+#include <Gruntz/BootyMessages.h>
 
 DATA(0x0020b8b8)
 i32 g_levelMsgIconPos[16] = {
@@ -38,17 +38,10 @@ i32 g_levelMsgIconPos[16] = {
     0x17c,
     0xe9,
     0x1a8
-}; // 0x60b8b8
+};
 
-// ===========================================================================
-// CBootyState::GenMenuRandPos (0x19cd0): a MEMBER whose body never touches `this` (so the
-// callee is byte-identical to a __stdcall) - but its ONLY caller, BuildGruntSprintAnimation
-// (0x19920), sets `mov ecx,ebp` right before the call, which only a member call emits.
-// Generates a random
-// {x,y} spawn position by edge, selected by `sel` (1..8). Rand() = signed game RNG;
-// RandRange(0,N) = uniform [0,N).
 // @early-stop
-#include <Gruntz/GlyphStringDraw.h> // ShowHudMessage (ex .cpp extern)
+#include <Gruntz/GlyphStringDraw.h>
 RVA(0x00019cd0, 0x200)
 void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
@@ -113,14 +106,6 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     }
 }
 
-// ===========================================================================
-// CState::LoadGruntEffectSprites (0x1a040): preload the in-game effect/icon animation
-// set. Really a CPlay-layout method (the trace homed it on the CState base); it walks
-// the g_gameReg->m_world->m_childGroup SimpleAnimation factory and stores ~15 named effect
-// sprites into the +0x2fc.. block plus three parallel 8-element sprite arrays at
-// +0x224/+0x244/+0x264, positioned from the geometry table.
-// @confidence: med
-// @source: string-xref
 // @early-stop
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
@@ -246,9 +231,6 @@ i32 CBootyState::LoadGruntEffectSprites() {
     icon6->m_drawFillArg = handleA;
     m_icons[6]->m_stateFlags |= 1;
 
-    // The three per-direction sprite arrays sit contiguously (bomb/go-kart/explosion),
-    // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
-    // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
         CWwdGameObjectA* b =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
@@ -298,10 +280,9 @@ i32 CBootyState::LoadGruntEffectSprites() {
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
     if (m_initGate != 0) {
-        // ---- drive/finalize pass ----
+
         if (m_slot == 8) {
-            // every slot landed: latch the explosion sprites visible once their anim
-            // sub-mgr reports active-but-not-idle, then done.
+
             for (i32 i = 0; i < 8; i++) {
                 CWwdGameObjectA* e = m_expl[i];
                 if (e->m_1a0.m_finished != 0 && e->m_1a0.m_frameTicksLeft == 0) {
@@ -310,8 +291,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             }
             return 1;
         }
-        // redraw every slot's level message (rectsA) + stat line (rectsB), sliding the
-        // explosion sprite into place once the slot has scrolled far enough.
+
         i32 shown = 0;
         for (i32 i = 0; i < 8; i++) {
             RECT box;
@@ -335,8 +315,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                 e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
                 e->m_screenY = (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
-                    // the +0x30 holder cast to its REAL class (this TU's g_gameReg is
-                    // the WwdGameReg facet whose m_world is still a glitter-view type)
+
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* cue_ob = 0;
@@ -354,7 +333,6 @@ i32 CBootyState::LevelMsgHudDriver() {
         return 1;
     }
 
-    // ---- reveal pass (m_hudPhase == 0) ----
     if (m_slot < 8) {
         if (m_slot == 0 && ((m_bomb[0]->m_stateFlags & 1) || (m_gokart[0]->m_stateFlags & 1))) {
             m_bomb[0]->m_stateFlags &= ~1;
@@ -364,8 +342,7 @@ i32 CBootyState::LevelMsgHudDriver() {
         i32 gx = m_gokart[m_slot]->m_screenX + 10;
         m_gokart[m_slot]->m_screenX = gx;
         i32 s = m_slot;
-        // `gx >= mid`, not `mid <= gx`: retail's left `cmp` operand is gx and the skip is
-        // `jl` (0x1aa80). The two spellings are identical in C and differ in both.
+
         if (m_templateFlags[s] == 0
             && gx >= (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2) {
             RECT box;
@@ -383,14 +360,14 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_icons[m_slot]->m_screenY = g_levelMsgIconPos[m_slot * 2 + 1];
         }
     }
-    // latch the already-landed explosion sprites active.
+
     for (i32 j = 0; j < m_slot; j++) {
         CWwdGameObjectA* e = m_expl[j];
         if (e->m_1a0.m_finished != 0 && e->m_1a0.m_frameTicksLeft == 0) {
             e->m_stateFlags |= 1;
         }
     }
-    // finalize the slots from m_slot onward once the bomb/gokart pair has crossed.
+
     for (i32 i = m_slot; i < 8; i++) {
         if (m_gokart[i]->m_screenX >= m_bomb[i]->m_screenX) {
             RECT box;

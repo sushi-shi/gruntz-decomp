@@ -3,24 +3,23 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (CStatusBarSprite : CUserLogic)
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
 
 class CStatusBarSprite : public CUserLogic, public CWapX {
 public:
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
+
 public:
-    CStatusBarSprite(CGameObject* obj); // 0x10c230
-    virtual void FireActivation(i32 id)
-        OVERRIDE;               // 0x10c4b0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs(); // 0x10c610
-    i32 AdvanceAnim();          // 0x10c810 (the per-frame handler PMF; body in the stub TU)
+    CStatusBarSprite() {}
+    CStatusBarSprite(CGameObject* obj);
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
+    i32 AdvanceAnim();
 };
 SIZE(0x54);
 
-SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSTATUSBARSPRITE_H

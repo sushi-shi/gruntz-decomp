@@ -1,15 +1,14 @@
-#include <Mfc.h>         // real MFC CString + <windows.h> wsprintfA (afx-first)
-#include <EmptyString.h> // g_emptyString
+#include <Mfc.h>
+#include <EmptyString.h>
 #include <rva.h>
-#include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
+#include <stdlib.h>
 
-#include <Net/NetMgr.h>        // CNetSession (this; m_session)
-#include <Gruntz/Multi.h>      // CMulti (ReportVersionMsg, Mgr())
-#include <Gruntz/GruntzMgr.h>  // CGruntzMgr (m_cmdGrid)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid; CGrunt == CGrunt)
-#include <Gruntz/Grunt.h>      // CGrunt + CGruntHud (the dumped fields)
+#include <Net/NetMgr.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Grunt.h>
 
-// @source: decomp-xref
 // @early-stop
 RVA(0x000bf1d0, 0x2a4)
 void CNetSession::BuildGruntzCrcInfo() {
@@ -21,7 +20,7 @@ void CNetSession::BuildGruntzCrcInfo() {
 
     for (i32 player = 0; player < 4; player++) {
         for (i32 g = 0; g < 0xf; g++) {
-            // the 4x15 placed-grunt cell grid on the world command manager
+
             CGrunt* grunt = m_session->Mgr()->m_cmdGrid->m_grid[player * 0xf + g];
             if (grunt == 0) {
                 continue;

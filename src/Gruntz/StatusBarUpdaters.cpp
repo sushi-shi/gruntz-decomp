@@ -1,29 +1,15 @@
 #include <rva.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h>      // g_sndEnabled/g_sndCueTag
-#include <Gruntz/GameRegistry.h>    // g_gameReg singleton (0x24556c) canonical view
-#include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
-#include <Gruntz/LeafCue.h>         // the canonical cue record (was the CStatusBarTab view)
-#include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
-#include <Gruntz/GameLevel.h>              // CGameLevel (m_world->m_level) -> m_mainPlane tile grid
-#include <Gruntz/TileTriggerSwitchLogic.h> // real owner of SwitchDown/SwitchUp @0x110570/0x1106b0
+#include <Gruntz/SoundState.h>
+#include <Gruntz/GameRegistry.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/StatusBarUpdatersViews.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
 
-// ===========================================================================
-// CTileTriggerSwitchLogic::SwitchDown @0x110570  (base vtable slot 2)
-// ===========================================================================
-//
-// The switch-logic slot-2 virtual: drives the switch tile into its DOWN state. It
-// bumps the switch tile's cell-state counter in the map grid
-// (plane->m_tileGrid[plane->m_colOffsets[y] + x]) and notifies the tile system, then -
-// if the switch tile is on-screen (its pixel rect inside the view bounds) and the
-// status bar surface is live - runs the GAME_SWITCHDOWN status-bar advance. Latches
-// the switch state (+0x14) = 1 (down). __thiscall, returns 1. The leaf overrides
-// (CTileSecretTriggerSwitchLogic/CTileTimeTriggerSwitchLogic::SwitchDown) call this base and
-// normalize the result to a bool. Re-homed off the EngineLabelBacklog placeholder to
-// its real owner (the leaf callers at 0x112820/0x112840 bind here).
-// switch coords: m_08 == tile X, m_key0c == tile Y, m_linkGate (+0x14) == down/up state.
 // @early-stop
 RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
@@ -54,14 +40,6 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     return 1;
 }
 
-// ===========================================================================
-// CTileTriggerSwitchLogic::SwitchUp @0x1106b0  (base vtable slot 3)
-// ===========================================================================
-//
-// The UP mirror of SwitchDown (slot 3): decrements the cell-state counter, runs the
-// GAME_SWITCHUP advance, and latches the switch state (+0x14) = 0 (up). __thiscall,
-// returns 1. The leaf override (CTileTimeTriggerSwitchLogic::SwitchUp @0x112860) calls this
-// base and normalizes to a bool.
 // @early-stop
 RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {

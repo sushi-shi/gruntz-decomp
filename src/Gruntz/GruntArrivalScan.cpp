@@ -1,20 +1,20 @@
-#include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
-#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
-#include <Gruntz/Brickz.h>        // BrickzCell (canonical 0x1c-byte tile cell)
-#include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Mfc.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Grunt.h>       // canonical CGrunt / CGruntSpawnConfig / CGameRegistry
-#include <Gruntz/TriggerMgr.h>  // the ONE CTriggerMgr
-#include <Gruntz/GruntPuddle.h> // CGruntPuddle (the live-candidate list element)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CDDrawWorkerHost visible rect
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GameLevel.h>
 #include <Wap32/ZVec.h>
 #include <Ints.h>
-#include <string.h> // inline strcmp of the grunt type name
-#include <stdlib.h> // abs (branchless cdq/xor/sub)
+#include <string.h>
+#include <stdlib.h>
 #include <Gruntz/FreeNodePool.h>
-#include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
-#include <new> // placement CRect ctor
+#include <Wap32/Rect.h>
+#include <new>
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/CoordNode.h>
@@ -22,9 +22,9 @@
 
 #pragma intrinsic(strcmp)
 
-#define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31)) // MSVC cdq/xor/sub abs
+#define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31))
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/FreeNodePool.h>
 
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
@@ -106,16 +106,6 @@
         m_31c.RemoveAll();                                                                         \
     }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveArrivalReposition()   @0xec670   (__thiscall, ret 0 -> 1)
-// The per-tick arrival-reposition step. Latch the defender position to the last
-// tile; if the tile occupant is in radius and the +0x2ec dwell exceeds 0xfa, try to
-// tile-switch onto it and commit its slot - on a -1 commit (slot not yet free) fire
-// the on-screen entrance cue (0x366) when in view. With no in-radius occupant, once
-// the +0x2ec dwell window passes the thresholds and the (m_arrivalRerollLo..m_arrivalRerollWindowHi) idle timer has
-// elapsed, reset that timer to a fresh rand%0x7530; otherwise re-roll a random target
-// inside the HUD scroll region (m_134..m_140) and tile-switch onto it, escalating to
-// SetEntrancePos when the spread exceeds CoordCount(). Returns 1.
 // @early-stop
 RVA(0x000ec670, 0x298)
 i32 CGrunt::ResolveArrivalReposition() {
@@ -158,19 +148,10 @@ i32 CGrunt::ResolveArrivalReposition() {
     {
         u32 dwell = static_cast<u32>(m_dwell);
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
-            // The re-roll body is the THEN arm and the timer reset is the ELSE arm:
-            // retail's 64-bit compare is `jg <reset> / jl <reroll> / cmp lo / jae
-            // <reset>`, i.e. the reroll block is the FALL-THROUGH, so the condition
-            // is `elapsed < window`. Spelling it `>= window` + `goto` hoists the
-            // reset block inline and duplicates the epilogue (DUP-EXIT).
+
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
                 < m_arrivalRerollWindow64) {
-                // BOTH spans, THEN both origins - and the origin IS the rolled point
-                // (no separate baseX/baseY). That declaration order is what gives
-                // retail's frame (`sub esp,0xc`, 664 B) and the `add DWORD PTR
-                // [esp+0x14],edx` memory-add; interleaving span/origin per axis
-                // enregisters outY and drops the frame to one dword.
-                // config/axes/resolvearrivalreposition.json: 91.31 -> 95.21.
+
                 CWwdGameObjectA* h = m_object;
                 i32 spanX = abs(h->m_extent.right - h->m_extent.left);
                 i32 spanY = abs(h->m_extent.bottom - h->m_extent.top);
@@ -212,7 +193,6 @@ L8a2:
     return 1;
 }
 
-// ===========================================================================
 // @early-stop
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::ArrivalScanA() {
@@ -341,7 +321,7 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead());
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -433,7 +413,6 @@ L_ed153:
     return 1;
 }
 
-// ===========================================================================
 // @early-stop
 RVA(0x000ed9f0, 0x8dd)
 i32 CGrunt::WanderStep() {
@@ -450,8 +429,6 @@ i32 CGrunt::WanderStep() {
         }
     }
 
-    // Powered-up / arrival gate: never returns except through FindGridNeighbor;
-    // otherwise it forces the phase to 5 and falls into the switch.
     if (m_poweredUp != 0) {
         if (m_neighborValid != 0) {
             m_neighborValid = 0;
@@ -575,8 +552,7 @@ i32 CGrunt::WanderStep() {
             );
             m_358 = 0;
             if (CoordCount() != 0) {
-                // the hand walk was CPtrList::GetNext inlined by hand (pNext at +0,
-                // data at +8 of MFC's CNode) - say it with the real accessor
+
                 POSITION pos = m_31c.GetHeadPosition();
                 while (pos != 0) {
                     void* data = m_31c.GetNext(pos);
@@ -630,9 +606,7 @@ i32 CGrunt::WanderStep() {
                 while (pos != 0) {
                     void* data = m_31c.GetNext(pos);
                     if (data != 0) {
-                        // retail 0xee136: `mov [eax],edx; mov edx,eax; mov
-                        // ds:g_freeList,edx` - the store reads the CACHED register, so
-                        // there is no source-level `prev` local (that makes cl store eax).
+
                         CoordPoolNode* fslot = g_coordPool.NodeOf(data);
                         fslot->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = fslot;
@@ -756,6 +730,13 @@ i32 CGrunt::ArrivalReticleScan() {
     i32 defTX = m_defenderX >> 5;
     i32 defTY = m_defenderY >> 5;
 
+    i32 scanRadius = m_defenderRadius + m_reachRadius - 1;
+    RECT scanBounds;
+    scanBounds.left = defTX - scanRadius;
+    scanBounds.top = defTY - scanRadius;
+    scanBounds.right = defTX + scanRadius + 1;
+    scanBounds.bottom = defTY + scanRadius + 1;
+
     Coord pt;
     GetScreenPos(&pt);
     i32 dTX = abs((pt.m_x >> 5) - defTX);
@@ -810,7 +791,6 @@ i32 CGrunt::ArrivalReticleScan() {
         return 1;
     }
 
-    // --- m_poweredUp == 0 ---
     if (occ == 0) {
         m_390 = 0;
     } else {
@@ -847,13 +827,144 @@ i32 CGrunt::ArrivalReticleScan() {
         }
     }
 
-    // --- reach-box grid marking tail (DECOMPILER-GATED; see @early-stop above) ---
-    // The confident branch structure is retained; the CByteArray snapshot + radius
-    // mark loops + the shared IntersectRect/coord-rebuild are deferred.
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+    if (occ != 0 && static_cast<u32>(m_dwell) > 0x1f4) {
+        i32 occTX = occ->m_object->m_screenX >> 5;
+        i32 occTY = occ->m_object->m_screenY >> 5;
+        i32 dx = abs(occTX - defTX);
+        i32 dy = abs(occTY - defTY);
+        i32 radius = dx > dy ? dx : dy;
+
+        if (radius < m_defenderRadius + m_reachRadius) {
+            if (m_390 != 0) {
+                const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                if (CGameLevel::PointInBounds(view, m_object->m_screenX, m_object->m_screenY)
+                    != 0) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                }
+                m_390 = 0;
+            }
+
+            POINT target;
+            target.x = occTX;
+            target.y = occTY;
+            if (PtInRect(&scanBounds, target) != 0 && m_defenderRadius > 1) {
+                RECT oldBounds = grid->m_bounds;
+                CDWordArray saved;
+                i32 endY = oldBounds.bottom + 1;
+                i32 endX = oldBounds.right + 1;
+                for (i32 y = oldBounds.top; y < endY; y++) {
+                    for (i32 x = oldBounds.left; x < endX; x++) {
+                        if (static_cast<u32>(x) < grid->m_width
+                            && static_cast<u32>(y) < grid->m_height) {
+                            saved.SetAtGrow(
+                                saved.GetSize(),
+                                static_cast<DWORD>(grid->m_rowInts[y][x * 7])
+                            );
+                        }
+                    }
+                }
+
+                i32 left = defTX - m_defenderRadius;
+                i32 right = defTX + m_defenderRadius;
+                i32 top = defTY - m_defenderRadius;
+                i32 bottom = defTY + m_defenderRadius;
+                for (i32 borderX = left; borderX < right + 1; borderX++) {
+                    if (static_cast<u32>(borderX) < grid->m_width
+                        && static_cast<u32>(top) < grid->m_height
+                        && (borderX != occTX || top != occTY)) {
+                        grid->m_rowInts[top][borderX * 7] = 1;
+                    }
+                    if (static_cast<u32>(borderX) < grid->m_width
+                        && static_cast<u32>(bottom) < grid->m_height
+                        && (borderX != occTX || bottom != occTY)) {
+                        grid->m_rowInts[bottom][borderX * 7] = 1;
+                    }
+                }
+                for (i32 borderY = top; borderY < bottom + 1; borderY++) {
+                    if (static_cast<u32>(left) < grid->m_width
+                        && static_cast<u32>(borderY) < grid->m_height
+                        && (left != occTX || borderY != occTY)) {
+                        grid->m_rowInts[borderY][left * 7] = 1;
+                    }
+                    if (static_cast<u32>(right) < grid->m_width
+                        && static_cast<u32>(borderY) < grid->m_height
+                        && (right != occTX || borderY != occTY)) {
+                        grid->m_rowInts[borderY][right * 7] = 1;
+                    }
+                }
+
+                TileSwitch(occTX, occTY, 0, m_arrivalFlags, 1, 0);
+
+                i32 savedIndex = 0;
+                for (i32 restoreY = oldBounds.top; restoreY < endY; restoreY++) {
+                    for (i32 restoreX = oldBounds.left; restoreX < endX; restoreX++) {
+                        if (static_cast<u32>(restoreX) < grid->m_width
+                            && static_cast<u32>(restoreY) < grid->m_height) {
+                            grid->m_rowInts[restoreY][restoreX * 7] = saved.GetAt(savedIndex++);
+                        }
+                    }
+                }
+
+                Coord* previous = 0;
+                POSITION pos = m_31c.GetHeadPosition();
+                POSITION trimPos = 0;
+                Coord* trimCoord = 0;
+                i32 foundOutside = 0;
+                while (pos != 0) {
+                    trimPos = pos;
+                    trimCoord = static_cast<Coord*>(m_31c.GetNext(pos));
+                    i32 pathDx = abs(trimCoord->m_x - defTX);
+                    i32 pathDy = abs(trimCoord->m_y - defTY);
+                    i32 pathDist = pathDx > pathDy ? pathDx : pathDy;
+                    if (pathDist > m_defenderRadius - 1) {
+                        foundOutside = 1;
+                        break;
+                    }
+                    previous = trimCoord;
+                }
+
+                if (foundOutside != 0) {
+                    if (previous == 0) {
+                        SetEntrancePos(1, 1);
+                        DRAIN_COORDS();
+                    } else {
+                        i32 pathDx = abs(previous->m_x - occTX);
+                        i32 pathDy = abs(previous->m_y - occTY);
+                        i32 pathDist = pathDx > pathDy ? pathDx : pathDy;
+                        if (pathDist <= m_reachRadius) {
+                            g_coordPool.Push(trimCoord);
+                            m_31c.RemoveAt(trimPos);
+                            while (pos != 0) {
+                                POSITION nextPos = pos;
+                                Coord* coord = static_cast<Coord*>(m_31c.GetNext(pos));
+                                if (coord != 0) {
+                                    g_coordPool.Push(coord);
+                                }
+                                m_31c.RemoveAt(nextPos);
+                            }
+                        } else {
+                            SetEntrancePos(1, 1);
+                            DRAIN_COORDS();
+                        }
+                    }
+                }
+            }
+        } else if ((m_object->m_screenX >> 5) != defTX || (m_object->m_screenY >> 5) != defTY) {
+            TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
+        }
+        m_dwell = 0;
+    } else if (occ == 0 && static_cast<u32>(m_dwell) > 0x1f4
+               && ((m_object->m_screenX >> 5) != defTX || (m_object->m_screenY >> 5) != defTY)) {
+        TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
+        m_dwell = 0;
+    }
+
+    GRID_RECT_INLINE(grid);
+
     return 1;
 }
 
-// ===========================================================================
 // @early-stop
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
@@ -1065,13 +1176,9 @@ i32 CGrunt::UpdateArrival() {
     }
 
     if (this->CoordCount() != 0) {
-        // The active-move cell: (head node)->link is a [col,row]; gate on the grid
-        // cell's flag byte (&0x20).
+
         Coord* cell = this->CoordHead()->m_coord;
-        // The typed arm of the one row table: m_rows[y][x] IS the 0x1c-byte BrickzCell
-        // the byte-walk arm used to reach as `m_rowBytes[y] + x*0x1c`, and m_flagBytes is
-        // the cell's own byte view of its packed-flags dword - so the reinterpret was the
-        // union's job, not this site's.
+
         BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
@@ -1095,7 +1202,6 @@ i32 CGrunt::UpdateArrival() {
     return 1;
 }
 
-// ===========================================================================
 // @early-stop
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::ArrivalScanB() {
@@ -1223,7 +1329,7 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead());
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
@@ -1274,8 +1380,7 @@ L_scanb:
     i32 best = 0x7fffffff;
     i32 bestX = 0;
     i32 bestY = 0;
-    // CPtrList::GetNext IS this walk inlined (`node = pos; pos = node->pNext;
-    // return node->data`) - the ex-CGruntLiveNode raw-node view spelled out.
+
     POSITION pos = m_tileMgr->m_baseList.GetHeadPosition();
     while (pos != 0) {
         CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_tileMgr->m_baseList.GetNext(pos));
@@ -1563,14 +1668,6 @@ tail:
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveArrivalNeighbor() @0xf26f0 - the per-frame arrival follow-up,
-// active only while the grunt is mid-arrival (m_defenderState==2). When powered-up
-// (m_poweredUp) it re-resolves the stored grid neighbour once stamina is full;
-// otherwise it clears the arrival latch, looks up the grunt currently occupying
-// its tile (m_tileMgr->GetOccupant), and - if that occupant is settled on its own
-// tile and on-screen (RectContains) - commits a neighbour link to it. __thiscall,
-// ret 0, always returns 1.
 // @early-stop
 RVA(0x000f26f0, 0x106)
 i32 CGrunt::ResolveArrivalNeighbor() {
@@ -1621,19 +1718,6 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::StepArrivalDefense()   @0xf2b20   (__thiscall, ret 0 -> 1)
-// The multi-state arrival-defender step (the big sibling of ResolveArrival-
-// Reposition / ResolveArrivalNeighbor). Latch the defender position to the last
-// tile, then dispatch on m_defenderState:
-//   state 2: resolve the stored grid occupant; if it is in radius + committed +
-//            settled on its own tile + on-screen, commit the tile slot (m_198==0x1e)
-//            or neighbour-link onto it; on a gate miss mark m_defenderState=1 and cue.
-//   state 1: re-resolve the grid occupant + GetOccupant agreement; gated on dwell
-//            run a StepArrivalDrop, then commit/neighbour-link and advance to state 2.
-//   state 0: GetOccupant; if settled + on-screen commit/neighbour onto it, else
-//            (dwell elapsed) tile-switch to the occupant + advance to state 1 + cue,
-//            or (no occupant) reset the idle timer / re-roll a random in-region target.
 // @early-stop
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepArrivalDefense() {
@@ -1885,7 +1969,6 @@ i32 CGrunt::StepArrivalDefense() {
     }
 }
 
-// ===========================================================================
 // @early-stop
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::ArrivalScanC() {
@@ -2003,7 +2086,7 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead());
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -2338,7 +2421,6 @@ common: {
 }
 }
 
-// ===========================================================================
 // @early-stop
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
@@ -2381,16 +2463,15 @@ i32 CGrunt::SeekTarget() {
             this->m_arrivalCol = -1;
             return 1;
         }
-        // Adjacency probe: read this grunt's HUD center + the slot's, in tile units,
-        // and require both axis deltas < 2 (the slot is the immediate neighbor).
+
         Coord c0[2];
         GetScreenPos(c0);
         i32 cy = c0[0].m_y >> 5;
-        Coord d0[2]; // same 16 bytes as c0 above
+        Coord d0[2];
         GetScreenPos(d0);
-        Coord e0[2]; // same 16 bytes as c0 above
+        Coord e0[2];
         GetScreenPos(e0);
-        Coord f0[2]; // same 16 bytes as c0 above
+        Coord f0[2];
         GetScreenPos(f0);
         i32 dx = (f0[0].m_y >> 5) - (f0[1].m_y >> 5);
         i32 dy = cy - (e0[1].m_y >> 5);
@@ -2432,7 +2513,7 @@ i32 CGrunt::SeekTarget() {
             }
             i32 best = 0x7fffffff;
             i32 bestIdx = -1;
-            CGrunt** slots = g_gameReg->m_cmdGrid->m_grid; // row 0 (the flat 4x15 board)
+            CGrunt** slots = g_gameReg->m_cmdGrid->m_grid;
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -2496,13 +2577,8 @@ i32 CGrunt::SeekTarget() {
         bool atTarget = false;
         if (g != 0) {
             i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePxX
-                && g->m_object->m_screenY == g->m_lastTilePxY
-                // SETTLED 2026-07-29 (was @identity-TODO): retail 0xf7443 / 0xf683f read
-                // `mov ecx,[eax+0x5c]` (m_screenX) and `mov eax,[eax+0x60]` (m_screenY)
-                // for the two compares and then `push eax; push ecx` STRAIGHT into the
-                // call - so the second argument is m_screenY, not the m_object pointer,
-                // and the receiver is `mov ecx,edi/esi` == `this`, not g.
+            if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+
                 && RectContains(x, g->m_object->m_screenY) != 0) {
                 atTarget = true;
             }
@@ -2556,13 +2632,8 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_poweredUp == 0 && this->m_stamina > 99) {
             i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePxX
-                && g->m_object->m_screenY == g->m_lastTilePxY
-                // SETTLED 2026-07-29 (was @identity-TODO): retail 0xf7443 / 0xf683f read
-                // `mov ecx,[eax+0x5c]` (m_screenX) and `mov eax,[eax+0x60]` (m_screenY)
-                // for the two compares and then `push eax; push ecx` STRAIGHT into the
-                // call - so the second argument is m_screenY, not the m_object pointer,
-                // and the receiver is `mov ecx,edi/esi` == `this`, not g.
+            if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+
                 && RectContains(x, g->m_object->m_screenY) != 0) {
                 CommitNeighbor(
                     g->m_tileOwnerHi,
@@ -2604,16 +2675,6 @@ i32 CGrunt::SeekTarget() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::StepArrivalDefenseLean()   @0xf8240   (__thiscall, ret 0 -> 1)
-// The leaner twin of StepArrivalDefense. First gate: if the current anim name is
-// "I" (arrival pose), do nothing. Latch the defender position to the last tile,
-// then dispatch on m_defenderState (0/1/2) over the stored grid occupant. Unlike the big
-// sibling there are no m_neighborValid / m_198==0x1e CommitTileSlot arms - the
-// settled-on-screen occupant goes straight to CommitNeighbor; the gate-miss /
-// not-in-radius paths latch m_defenderState=1 + the +0x2ec dwell=0x1f4 and fire the
-// on-screen cue. State 0 commits the occupant's tile slot on a rand%100 roll, else
-// (dwell elapsed) re-rolls a random in-region target / resets the idle timer.
 // @early-stop
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {

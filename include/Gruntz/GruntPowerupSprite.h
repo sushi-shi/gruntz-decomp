@@ -3,38 +3,31 @@
 
 #include <rva.h>
 
-#include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
-#include <Gruntz/SerialArchive.h>        // shared CFileMemBase (Read +0x2c / Write +0x30)
-#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
+#include <Gruntz/GruntIndicatorSprite.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/GruntIndicatorSprite.h>
 
 class CGruntPowerupSprite : public CUserLogic, public CWapX {
 public:
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00012320, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPOWERUPSPRITE;
-    } // slot 2
-    CGruntPowerupSprite(CGameObject* obj); // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
+    }
+    CGruntPowerupSprite() {}
+    CGruntPowerupSprite(CGameObject* obj);
 
-    virtual void FireActivation(i32 id)
-        OVERRIDE;               // 0x080020 (resolve the id's registered handler + dispatch it)
-    static void RegisterActs(); // 0x080180 (register the class's activation handlers)
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
 
-    i32 SetCell(i32 x, i32 y, i32 powerup); // 0x080380
-    i32 Update();                           // 0x080410
-    // 0x080490: the serialize override - chain CUserLogic::SerializeMove + the +0x34
-    // sub-object, then round-trip m_cellX/m_cellY (8 B) and m_powerupId (4 B). On read (mode 7) it
-    // re-resolves the powerup's bute-set record from g_gameReg->m_78 into the bound
-    // renderable (m_10). (__thiscall: ret 0x10.)
-    i32 m_cellX;     // +0x54  grunt cell x
-    i32 m_cellY;     // +0x58  grunt cell y
-    i32 m_powerupId; // +0x5c  powerup id
+    i32 SetCell(i32 x, i32 y, i32 powerup);
+    i32 Update();
+
+    i32 m_cellX;
+    i32 m_cellY;
+    i32 m_powerupId;
 };
 SIZE_UNKNOWN();
-
-
 
 #endif // GRUNTZ_CGRUNTPOWERUPSPRITE_H

@@ -159,8 +159,8 @@ The machine-visible comment vocabulary is closed; see
 
 - `// @stub` with required confidence/source evidence: an empty unreconstructed
   body;
-- `// @early-stop` followed by an assembly-level reason: a complete
-  reconstruction parked below exact match;
+- `// @early-stop`: a complete reconstruction parked below exact match; rederive
+  the current residue from disassembly rather than trusting a source narrative;
 - `// @identity-TODO`: identity or ownership remains unproven after an evidence
   chase.
 
@@ -213,6 +213,12 @@ missing logic or unresolved relocation work.
   a recognizer-only test does not prove its consumer uses the result.
 - Preserve user and concurrent changes. Do not revert unrelated edits, and
   stage only files belonging to the current unit of work.
+- Keep C++ comments operational: machine-visible state markers, concise
+  ABI/codegen constraints, interleaver/dead-code evidence, real fallthrough
+  annotations, and explanations for unavoidable unsafe seams. Do not retain
+  reconstruction history, address notes, score history, section banners, or
+  prose that duplicates the code. Trailing include-guard labels such as
+  `#endif // HEADER_GUARD` are allowed.
 - Prefer focused commits such as `match: reconstruct CThing::Method` or
   `tools: verify relocation targets`. Do not commit generated build state.
 

@@ -1,6 +1,6 @@
-#include <Mfc.h> // CFile / CMemFile / CString (the readers slurp through MFC files)
-#include <DDrawMgr/ShadeTableCache.h> // the canonical CShadeTable (retail name; ex CDataBuffer view)
-#include <Rez/RezAlloc.h>             // RezAlloc/RezFree
+#include <Mfc.h>
+#include <DDrawMgr/ShadeTableCache.h>
+#include <Rez/RezAlloc.h>
 
 #include <rva.h>
 
@@ -45,11 +45,6 @@ i32 CShadeTable::ReadFrom(CFile* file, i32 id) {
     return 1;
 }
 
-// LoadFromFile: open `path` read-only-shared through a local CFile, slurp
-// it into the buffer via ReadFrom, and close. The CString temp (from the implicit
-// LPCTSTR open) and the local CFile both destruct on every path -> /GX EH frame.
-// ret 8.
-//
 // @early-stop
 RVA(0x00150250, 0xd1)
 i32 CShadeTable::LoadFromFile(const char* path, i32 id) {
@@ -60,10 +55,6 @@ i32 CShadeTable::LoadFromFile(const char* path, i32 id) {
     return ReadFrom(&file, id);
 }
 
-// LoadFromMem: wrap `buf`/`len` in a local CMemFile (0x400-byte grow
-// chunk), Attach the caller's buffer, slurp it via ReadFrom, then ~CMemFile detaches
-// it. /GX EH frame, ret 0xc.
-//
 // @early-stop
 RVA(0x00150330, 0x87)
 i32 CShadeTable::LoadFromMem(void* buf, u32 len, i32 id) {

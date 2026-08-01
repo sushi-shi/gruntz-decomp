@@ -3,6 +3,6 @@
 
 #include <Ints.h>
 
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>
 
 #endif // GRUNTZ_GAMESTATERECORD_H

@@ -1,18 +1,18 @@
-#include <Gruntz/GlyphStringDraw.h>       // own header (the moved thunk-name decls)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <Gruntz/GlyphStringDraw.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Ints.h>
 #include <rva.h>
-#include <AddrWord.h> // the glyph-handle-in-a-word slot
+#include <AddrWord.h>
 
-#include <string.h>             // strlen
-#include <DDrawMgr/DDSurface.h> // CDDSurface (BltFast) + RECT/SetRect (via Mfc.h) for the layer-blit helper
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18 + m_surface@+0x2c)
-#include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList - the +0x0c worker pump (Draw@slot10 = CreateWorkerB28)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr / CDDrawSubMgrPages (SurfaceA/SurfaceB pages) - the 0x115300 blit host
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the CState::m_c render/resource holder (ctx/sink)
-#include <Image/CImage.h> // CImage - the 0x115300 blit source + the CDDrawWorker frame element
-#include <Image/ImageSet.h> // CDDrawWorker - the glyph atlas (m_frames@+0x14, min/max frame index @+0x64/+0x68)
+#include <string.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerList.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
 
 RVA(0x00115220, 0xa4)
 i32 DrawGlyphString(
@@ -40,10 +40,7 @@ i32 DrawGlyphString(
         i32 c = static_cast<signed char>(str[i]);
         i32 glyph;
         if (c >= font->m_minIndex && c <= font->m_maxIndex) {
-            // CreateWorkerB28's a3 lands in the SHARED virtual Vfunc2C(i32,i32,i32),
-            // whose slot is PROVEN heterogeneous - CDDrawWorkerA @0x157110 stores it
-            // as a char flag (`m_78b = (char)a3`) while CDDrawWorkerB @0x1572f0 stores
-            // the whole dword handle. So the glyph rides that slot as a word.
+
             AddrWord g;
             g.m_addr = static_cast<CImage*>(font->m_items.GetAt(c));
             glyph = g.m_word;
@@ -66,11 +63,7 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
     if (!src) {
         return 0;
     }
-    // Front page is the SurfaceA frame page, back is the SurfaceB draw page; both expose
-    // their target surface at +0x2c (SurfaceA's Surface2c* is used as a CDDSurface here).
-    // The two pages are SIBLING leaves of CDrawSubWorker (front = CDDrawSurfaceChildA,
-    // back = CDDrawSurfacePair), so the common local type is their shared base - which
-    // is also where the only field this reads, m_surface (+0x2c), lives.
+
     CDrawSubWorker* node;
     if (useFront) {
         node = host->m_drawTarget->m_frontPair;
@@ -118,8 +111,7 @@ void ShowHudMessage(
     i32 flag
 ) {
     CDDrawSurfacePair* page = sink->m_drawTarget->m_overlayPair;
-    // same 4-byte residual as EngStr_DrawText: retail's early exit is an INLINE
-    // `jne +1; ret`, cl5's is `je` to the tail ret past the `add esp,0x28`.
+
     if (page == 0) {
         return;
     }

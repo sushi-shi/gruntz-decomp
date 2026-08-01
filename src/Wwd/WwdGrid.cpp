@@ -3,9 +3,9 @@
 
 #include <Gruntz/WwdGrid.h>
 #include <Wwd/WwdGridShell.h>
-#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor - Start/Init/GetNext bodies live
+#include <Gruntz/WwdGridIter.h>
 
-VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
+VTBL(CWwdGrid, 0x001f0328);
 
 RVA(0x001682a0, 0x46)
 CWwdGridShell::~CWwdGridShell() {}
@@ -13,16 +13,6 @@ CWwdGridShell::~CWwdGridShell() {}
 RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
 RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
-// ===========================================================================
-// Homed from src/Stub/GapFunctions.cpp (matcher-5): the gap tool had merged the
-// BucketHead `??_E` (0x191720, size 0x50) with the CWwdGrid span-ctor forwarder
-// (0x191770, size 0x8d) into one 0xdd-byte span - now split.
-// ===========================================================================
-// 0x191720 = BucketHead's `vector deleting destructor' (??_E): the COMPILER-GENERATED
-// vector deleting destructor for BucketHead, emitted from the `new BucketHead[m_cellCount]`
-// in the ctor above (the array-cookie alloc + ehvec ctor/dtor pair). Not a hand-written
-// method: cl auto-emits ??_EBucketHead@@QAEPAXI@Z; RVA_COMPGEN names it at this RVA so the
-// delinker pairs the retail orphan (a zero-ref COMDAT; FreeBuckets inlines its own ehvec).
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
 RVA(0x00191770, 0x8d)
@@ -45,9 +35,7 @@ i32 CWwdGrid::Setup(RECT rect) {
 RVA(0x00191800, 0x39)
 void CWwdGrid::FreeBuckets() {
     if (m_allocated) {
-        // cl lowers this to retail's exact sequence: null-check, read the array-cookie
-        // count at [m_buckets-4], ??_M(m_buckets, 8, count, &~BucketHead), then
-        // operator delete(m_buckets-4).
+
         delete[] m_buckets;
         m_allocated = 0;
     }
@@ -59,35 +47,21 @@ i32 CWwdGrid::Add(WwdRegion* r) {
     i32 row = (r->m_x - m_bounds.m_minX) >> m_shiftY;
     BucketHead* bucket = m_buckets + (col * m_cols + row);
     r->m_bucket = bucket;
-    bucket->InsertHead(r); // DSoundList::InsertHead @0x1390e0 (r upcasts to DSoundLink*)
+    bucket->InsertHead(r);
     ++m_count;
     return 1;
 }
 
 RVA(0x00191890, 0x24)
 void CWwdGrid::Remove(WwdRegion* r) {
-    r->m_bucket->Unlink(r); // DSoundList::Unlink @0x1391e0
+    r->m_bucket->Unlink(r);
     r->m_bucket = 0;
     --m_count;
 }
 
-// ===========================================================================
-// 0x1918c0 - Query(x0,y0,x1,y1,doRemove): walk the cells overlapping the rect;
-// for each region truly inside the rect, fire the virtual callback (and, when
-// doRemove, unlink it first). Returns how many fired.
-// ===========================================================================
-// The cell-space corners are ONE WwdRect, not four scalars: retail's frame reserves a
-// 16-byte block whose +0x04 and +0x0c stay EMPTY (only the two X/row members are ever
-// spilled - the Y/col pair lives in eax/edx), and only an aggregate makes cl reserve
-// slots it never touches. The clamped world rect maps member-for-member onto it:
-// minX/maxX -> the row corners ((x-minX)>>shiftY), minY/maxY -> the col corners.
-// (Wrapping the loop in `if(colA<=colB)` instead of an early `return fired` was the
-// earlier fix: 95%->99.7%, killing the duplicate early-return epilogue.)
 // @early-stop
 RVA(0x001918c0, 0x1a2)
-// The four bounds are one rect: CWwdSpatialMgr's three walkers all call this as
-// Query(r.m_minX, r.m_minY, r.m_maxX, r.m_maxY, 1), and the clamps below pin each to
-// its own axis (minX/maxX against m_bounds.m_minX/m_maxX, minY/maxY against the Y pair).
+
 i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     i32 fired = 0;
     if (q.m_minX > m_bounds.m_maxX) {
@@ -114,7 +88,7 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     if (q.m_maxY > m_bounds.m_maxY) {
         q.m_maxY = m_bounds.m_maxY;
     }
-    WwdRect cell; // the query rect in CELL space (one aggregate - see above)
+    WwdRect cell;
     cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_shiftX;
     cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_shiftY;
     cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_shiftX;
@@ -127,8 +101,7 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
                 i32 rowN = cell.m_maxX - cell.m_minX + 1;
                 i32 idx = base;
                 do {
-                    WwdRegion* r =
-                        static_cast<WwdRegion*>(m_buckets[idx].m_head); // list head -> typed node
+                    WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].m_head);
                     while (r) {
                         i32 x = r->m_x;
                         WwdRegion* next = static_cast<WwdRegion*>(r->m_next);
@@ -171,16 +144,11 @@ i32 CWwdGrid::Clear() {
 
 RVA(0x00191ad0, 0x34)
 WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
-    // The grid's full bounds rect (+0x28..+0x34) copied as a contiguous 16-byte block:
-    // the four bounds ints ARE one WwdRect, so this is a plain struct copy.
+
     WwdRect full = grid->m_bounds;
     return Init(grid, full, remove);
 }
 
-// 0x191b10 - Init(grid, rect, remove): cache the grid + clamped query rect, fail
-// fast if the rect is fully outside the grid, derive the cell-range corners and
-// the live cell-walk counters, prime the cursor at the first cell head, then
-// advance to the first in-rect node.
 // @early-stop
 RVA(0x00191b10, 0x111)
 WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
@@ -224,13 +192,8 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     return GetNext();
 }
 
-// 0x191c30 - GetNext(): resume the cell walk. Faithful goto transcription of the
-// retail cursor: reload the scan node, advance cells until a non-empty bucket,
-// then walk the bucket testing each node against the query rect; on a hit,
-// optionally unlink it and return it.
 // @early-stop
 RVA(0x00191c30, 0xcc)
-// @early-stop
 WwdRegion* CWwdGridIter::GetNext() {
     for (;;) {
         m_cur = m_next;
@@ -269,11 +232,6 @@ WwdRegion* CWwdGridIter::GetNext() {
 RVA(0x00191d10, 0x1)
 BucketHead::~BucketHead() {}
 
-// ===========================================================================
-// 0x1915c0 - Setup: normalize the rect, compute log2 cell shifts + power-of-two
-// cell sizes, derive the cols/rows/cell-count, allocate the bucket array
-// (count cookie + vector-constructed 8-byte heads). /GX frame from the alloc EH.
-// ===========================================================================
 // @early-stop
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {

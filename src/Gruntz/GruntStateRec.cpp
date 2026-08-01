@@ -1,29 +1,14 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // name map + AnyValueMatches
+#include <Io/FileMem.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/SerialCounter.h>
-#include <Gruntz/GameRegistry.h>         // CGameRegistry (g_gameReg->m_world)
-#include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class
-#include <Gruntz/Sprite.h> // CDDrawWorker - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
-#include <string.h>        // inline strlen / strcpy / memset over the scratch buffer
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SBI_StatzTabGruntBar.h>
+#include <Gruntz/Sprite.h>
+#include <string.h>
 
-// ===========================================================================
-// CSBI_StatzTabGruntBar::SerializeFields (0x0ea990) - the stat tab's dual-mode slot-1
-// serialize. A __thiscall taking (stream, mode, a2, a3), ret 0x10. Bails (0) when the
-// stream or the registry sub-object (g_gameReg->m_world) is absent.
-//
-// Mode 7 (read) resolves each tracked glyph from the stream as a registry ref: a name +
-// an index, Lookup'd to a glyph map, then gated to (CImage*)map->m_items.GetAt(index) (the same
-// name -> Lookup -> [m_minIndex..m_maxIndex] -> frame idiom CSBI_Image::SerializeFields
-// runs against the real CDDrawWorker). Mode 4 (write) reverse-looks-up each glyph's name +
-// index through the registry (AnyValueMatches) and writes them back. The two
-// glyph MAPS themselves (m_glyphMap/m_timerGlyphMap) round-trip by name only.
-//
-// The stream is the shared WAP32 CFileMemBase: Read at vtable +0x2c (mode 7) and
-// Write at +0x30 (mode 4) - both slots off the one type.
-// ===========================================================================
 // @early-stop
 RVA(0x000ea990, 0xa72)
 i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
@@ -42,7 +27,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId
 
     switch (mode) {
         case 4:
-            // --- mode 4 (store): reverse-look-up each glyph's name + index ---
+
 #define GS_SUBREC(field)                                                                           \
     g_serialCounter++;                                                                             \
     memset(buf, 0, sizeof(buf));                                                                   \
@@ -56,8 +41,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId
             GS_SUBREC(m_statusGlyph);
             GS_SUBREC(m_statusGlyphLatched);
             s->Write(&m_statusValue, 4);
-            // (m_abilityGlyph is written here but NOT read back in mode 7 below - the
-            // asymmetry is retail's, preserved verbatim.)
+
             GS_SUBREC(m_abilityGlyph);
             GS_SUBREC(m_abilityGlyphLatched);
             s->Write(&m_abilityValue, 4);
@@ -89,7 +73,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId
             break;
 
         case 7:
-            // --- mode 7 (load): each glyph = a name-Lookup'd map, gated by index ---
+
 #define GS_IDXREF(field)                                                                           \
     g_serialCounter++;                                                                             \
     s->Read(buf, 0x80);                                                                            \
@@ -142,7 +126,5 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId
             break;
     }
 
-    // QUALIFIED = the direct base leg (retail `call 0x1848`); this was the view's
-    // fabricated `ChainLoad`. Unqualified would now be recursion on this override.
     return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }

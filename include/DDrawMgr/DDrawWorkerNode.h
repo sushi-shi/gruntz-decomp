@@ -2,53 +2,36 @@
 #define GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
 
 #include <Ints.h>
-#include <Gruntz/ResolveNode.h> // CResolveNode : CLoadable - the worker base
+#include <Gruntz/ResolveNode.h>
 #include <rva.h>
 
-class CDDrawSurfaceMgr; // the +0x0c owner (the ex-CDDrawWorkerCtx view)
+class CDDrawSurfaceMgr;
 
-class CDDrawWorker; // the frame-source (ex CDDrawFrameSource view)
+class CDDrawWorker;
 
 class CDDrawSurfacePair;
 
-// VTBL_ABSENT: the base vtable is never emitted - every factory builds a derived
-// worker with a SINGLE derived stamp (retail 0x157150; the NO_SEED base ctor is
-// inline-empty so the intermediate stamp dies), and no standalone base ctor/dtor
-// exists. The family-shared slot bodies (0x157200/...) are ITS methods, dispatched
-// only through the A/B vtables.
 VTBL_ABSENT(CDDrawWorkerBase);
 class CDDrawWorkerBase : public CResolveNode {
 public:
-    virtual i32 IsLoaded() OVERRIDE;   // [5] 0x157200 (family-shared body)
-    virtual void Unload() OVERRIDE;    // [7] 0x157310 (family-shared body)
-    virtual i32 GetClassId() OVERRIDE; // [8] 0x157210 (family-shared body)
-    // [9] 0x157080: the worker re-arm override; the Vfunc* bodies call the BASE
-    // 0x164790 directly (qualified CResolveNode::SetPosition - retail's rel32).
-    virtual i32 SetPosition(i32 x, i32 y) OVERRIDE; // [9] 0x157080 (family-shared body)
-    // [10] the per-frame render onto the two surface pairs (A: 0x165fa0 marker
-    // plot, B: 0x1660b0 frame-node blit) - the slot PruneWorkers dispatches per
-    // element. Declared here so the list dispatches through the base.
+    virtual i32 IsLoaded() OVERRIDE;
+    virtual void Unload() OVERRIDE;
+    virtual i32 GetClassId() OVERRIDE;
+
+    virtual i32 SetPosition(i32 x, i32 y) OVERRIDE;
+
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
 
-    // (+0x68..+0x73 is the base node's m_clip tail - no pad needed: the node ends at +0x74)
-    i32 m_refCount; // +0x74  frames-remaining count (Vfunc* re-arm to 2)
-    // +0x78 the frame slot - a BASE field (the shared slot bodies read/clear it as a
-    // dword: IsLoaded @0x157200 `[ecx+0x78]!=0`, Unload @0x157310 `[ecx+0x78]=0`),
-    // overlaid per-kind: A stores its BYTE frame (factory seed `mov byte [eax+0x78],bl`
-    // @0x157012), B its int frame/node pointer (dword seed @0x157192).
+    i32 m_refCount;
+
     union {
-        i32 m_78;              // the dword reading (the base predicates test/clear it)
-        class CImage* m_frame; // B's frame image (RenderFrame dispatches its slot 14)
-        char m_78b;            // A's byte frame
+        i32 m_78;
+        class CImage* m_frame;
+        char m_78b;
     };
 
     CDDrawWorkerBase() {}
-    // The worker-seed ctor: CDDrawWorkerList's CreateWorkerA/B* factories all build a
-    // worker with this SAME 9-field base seed (m_0c = the ctx handle, the rest
-    // constants - the CResolveNode-default seed set with m_04/m_flags zeroed). The
-    // derived CDDrawWorkerA/B ctors delegate here and add m_78. cl emits the base
-    // seed, then the DERIVED vptr, then m_78 - matching retail's store order + single
-    // vptr stamp; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
+
     CDDrawWorkerBase(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
         m_id = 0;
         m_ownerCtx = ctx;
@@ -64,37 +47,31 @@ public:
 SIZE(0x7c);
 
 struct CDDrawWorkerA : public CDDrawWorkerBase {
-    virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (compiler ??_G @0x1570b0; ~ @0x1570d0)
-    // [10] 0x165fa0: plot the marker pixel (m_78) at (m_5c,m_60) onto both pairs.
+    virtual ~CDDrawWorkerA() OVERRIDE;
+
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     CDDrawWorkerA() {}
     CDDrawWorkerA(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
-        m_78b = 0; // the BYTE frame seed (retail `mov byte [eax+0x78],bl`)
+        m_78b = 0;
     }
-    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame); // [11] 0x157110
-    // +0x78 byte frame = the base union's m_78b.
+    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame);
 };
 SIZE(0x7c);
 
 struct CDDrawWorkerB : public CDDrawWorkerBase {
-    virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (compiler ??_G @0x157220; ~ @0x157240)
-    // [10] 0x1660b0: draw the current frame node (m_78) onto the two surface-pair
-    // targets (unconditional first, gated second on m_2c live + not flagged 0x20000).
+    virtual ~CDDrawWorkerB() OVERRIDE;
+
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     CDDrawWorkerB() {}
     CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78 = 0;
     }
-    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame);                            // [11] 0x1572f0
-    virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex); // [12] 0x1572b0
-    // `key` is the registry KEY STRING: it goes straight to Helper, which hands it to
-    // ::CMapStringToOb::Lookup (0x1b8008), whose first parameter is an LPCTSTR it hashes.
-    virtual i32 PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex); // [13] 0x157280
+    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame);
+    virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex);
 
-    // Non-virtual: look up a named object in the owner map, fetch element[idx] when
-    // in range, cache at m_78, return whether it is non-null.
-    i32 Helper(const char* key, i32 idx); // 0x166040
-    // +0x78 int frame/node = the base union's m_78.
+    virtual i32 PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex);
+
+    i32 Helper(const char* key, i32 idx);
 };
 SIZE(0x7c);
 

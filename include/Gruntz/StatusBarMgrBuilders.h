@@ -3,22 +3,22 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h>                 // CPtrList (embedded tab lists in CStatusBarMgr)
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr
-#include <Gruntz/SbiConfig.h>    // canonical CDDrawSurfaceMgr (the setup virtuals' arg2)
+#include <Mfc.h>
+#include <Gruntz/SbGeom.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/SbiConfig.h>
 
-#include <Gruntz/SBI_Image.h>            // CSBI_RectOnly + CSBI_Image             (tag 3)
-#include <Gruntz/SBI_ImageSet.h>         // CSBI_ImageSet                          (tag 4)
-#include <Gruntz/SBI_ImageSetAni.h>      // CSBI_ImageSetAni + CSBI_StatzTabArrow  (8 / 5)
-#include <Gruntz/SBI_WellGoo.h>          // CSBI_WellGoo                           (tag 7)
-#include <Gruntz/SBI_WarlordHead.h>      // CSBI_WarlordHead                       (tag 0xb)
-#include <Gruntz/SBI_GruntMachine.h>     // CSBI_GruntMachine                      (tag 9)
-#include <Gruntz/SBI_StatzTabGruntBar.h> // CSBI_StatzTabGruntBar                  (tag 6)
+#include <Gruntz/SBI_Image.h>
+#include <Gruntz/SBI_ImageSet.h>
+#include <Gruntz/SBI_ImageSetAni.h>
+#include <Gruntz/SBI_WellGoo.h>
+#include <Gruntz/SBI_WarlordHead.h>
+#include <Gruntz/SBI_GruntMachine.h>
+#include <Gruntz/SBI_StatzTabGruntBar.h>
 
 class CSbFactory {
 public:
-    void* GetByIndex(i32 idx, i32 z); // thunk 0x4165 -> FUN_004e23c0
+    void* GetByIndex(i32 idx, i32 z);
 };
 SIZE_UNKNOWN();
 

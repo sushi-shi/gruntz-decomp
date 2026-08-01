@@ -1,6 +1,6 @@
 #include <Mfc.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <EmptyString.h> // g_emptyString
+#include <Rez/FrameClock.h>
+#include <EmptyString.h>
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -9,16 +9,16 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
-#include <string.h> // strlen (the m4 draw helpers)
+#include <string.h>
 
 DATA(0x0020c7a8)
-i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
+i32 g_lastDrawTextFormat = 0;
 DATA(0x0022b434)
-i32 g_chatTextWidth = 0; // 0x62b434: DT_CALCRECT-measured text width, clamped
+i32 g_chatTextWidth = 0;
 DATA(0x0022b438)
-i32 g_caretBlinkMs = 0; // 0x62b438: caret blink countdown in ms - the frame
+i32 g_caretBlinkMs = 0;
 DATA(0x0022b43c)
-i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
+i32 g_caretBlinkOn = 0;
 
 RVA(0x000218e0, 0x1ff)
 i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
@@ -28,18 +28,13 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     m_inputScrollTotal = 0;
     m_inputActive = 0;
 
-    // --- ARIAL UI font (fixed 12x8 bold ANSI) -------------------------------
     m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, "ARIAL");
     if (!m_arialFont) {
         m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);
     }
 
-    // The ARIAL default-face CString temp - constructed here (just-in-time, after
-    // the first CreateFontA), passed by address as the GetStringDef default for
-    // both the Training and Message font face lookups; torn down at the tail.
     CString arial("ARIAL");
 
-    // --- TrainingFont (face/dims from config, default ARIAL / 14x28) --------
     const char* faceTF = static_cast<const char*>(
         *g_buteMgr.GetStringDef("Font", "TrainingFont", static_cast<CString*>(&arial))
     );
@@ -78,7 +73,6 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         );
     }
 
-    // --- MessageFont (face/dims from config, default ARIAL / 24x42) ---------
     const char* faceMF = static_cast<const char*>(
         *g_buteMgr.GetStringDef("Font", "MessageFont", static_cast<CString*>(&arial))
     );
@@ -222,15 +216,9 @@ void CFontConfig::Scroll(i32 delta) {
     m_scrollOffset = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::TypeChar - the typed-character accumulator into the scratch
-// string m_inputText. Enter (0xd) toggles the accumulating flag m_inputActive: first
-// press arms it (reset offset/accumulator + clear m_inputText); a second press while the
-// buffer is non-empty disarms and returns 1 (commit). While armed, backspace
-// (8) trims one char, and a printable byte (0x20..0xff) appends if under 0x50.
 // @early-stop
 RVA(0x00021e20, 0x95)
-// `flag` is the slot-11 key handler's second word; this body never reads it.
+
 i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
     m_inputScrollTotal = 0;
     if (ch == 0xd) {
@@ -274,15 +262,6 @@ void CFontConfig::EndInput() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::MeasureLabel - measure m_inputText into the caller's rect
-// (DrawTextA, DT_CALCRECT|DT_SINGLELINE flags 0x420), clamp the used width into
-// g_caretOffsetX, then stroke the 12px insertion caret at that offset with a 2px pen.
-//
-// Retail (0x21f20): `add ecx,0x1c` + the CString COPY CTOR (0x1b9ba3) makes a temp of
-// THIS->m_inputText - that is the text, whose length it reads at [eax-8] and pushes to
-// DrawTextA - while arg2 (esi) is the RECT* it reads left/top/right/bottom from at
-// [ecx]..[ecx+0xc].
 // @early-stop
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
@@ -306,11 +285,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
             g_chatTextWidth = textW;
         }
     }
-    // Stroke the 12px insertion caret with the real MFC GDI objects: a stack CPen
-    // (PS_SOLID, width 2, black) selected into the CDC, MoveTo/LineTo, restore.
-    // The pen's scope-end destruction inlines the ~CPen chain (vptr restamps to
-    // ??_7CGdiObject/??_7CObject around CGdiObject::DeleteObject @0x1c6a5c),
-    // exactly as retail's 0x21fda..0x22040 tail does.
+
     CDC* dc = CDC::FromHandle(hdc);
     if (dc != 0) {
         CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
@@ -322,13 +297,6 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::RenderInputText - the edit-control render path. Copies m_inputText and,
-// when Ctrl is held, masks every char with '*'; runs a blink countdown (g_caretBlinkTimer)
-// toggling g_caretBlinkOn; then (unless blinked-off + empty) selects m_arialFont,
-// DrawTextA-measures the masked text, right-aligns it if it overflows maxWidth, and
-// renders it into the rect. thiscall member, /GX (destructible CString).
-// (PwdStr is an MFC CString.)
 // @early-stop
 RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
@@ -351,14 +319,14 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
             g_caretBlinkOn ^= 1;
         }
         if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
-            MeasureLabel(hdc, rect); // via ILT 0x258b
+            MeasureLabel(hdc, rect);
         } else {
             HGDIOBJ prev = 0;
             if (m_arialFont) {
                 prev = ::SelectObject(hdc, m_arialFont);
             }
             if (g_caretBlinkOn) {
-                MeasureLabel(hdc, rect); // via ILT 0x258b
+                MeasureLabel(hdc, rect);
             }
             int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
             RECT rc;
@@ -380,8 +348,8 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
 }
 
 typedef enum FontItemFlag {
-    FONTITEM_COLORED = 0x10, // item->data is a TextColorId palette index
-    FONTITEM_SHADOW = 0x20,  // stroke a 1px black drop shadow first
+    FONTITEM_COLORED = 0x10,
+    FONTITEM_SHADOW = 0x20,
 } FontItemFlag;
 
 typedef enum TextColorId {
@@ -424,13 +392,6 @@ typedef enum TextColorRef {
     TCLR_WHITE = 0xffffff,
 } TextColorRef;
 
-// -------------------------------------------------------------------------
-// Draw the list's items as `count` stacked text lines into hdc. Trim the list
-// to `count` (RemoveHead + delete), then per line: optional 1px black drop
-// shadow (type&0x20), a palette color when type&0x10 (else white), a DT_CALCRECT
-// measure into `calc`, the real DrawTextA, then advance `cur.top` to the measured
-// bottom so the next line stacks below. Text color is reset to white each line.
-// -------------------------------------------------------------------------
 // @early-stop
 RVA(0x00022360, 0x338)
 i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
@@ -587,13 +548,6 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CFontConfig::Draw3DText - a centered "3D" text renderer. Selects the Message
-// or Training font, sets transparent bk, copies the source CString, DT_CALCRECT-
-// measures it centered in the dst rect, and draws it centered - first a black
-// shadow pass offset by (dx,dy) when the shadow flag is set, then the RGB(r,g,b)
-// main pass. thiscall member, 10 args, /GX (destructible CString).
-// (its m_3c/m_40 are m_trainingFont/m_messageFont.)
 // @early-stop
 RVA(0x00022810, 0x22a)
 i32 CFontConfig::Draw3DText(
@@ -657,14 +611,6 @@ i32 CFontConfig::Draw3DText(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::~CFontConfig (0x085f40, out-of-band stray) - Reset, then the
-// CString member + the CPtrList base dtor run by the compiler-emitted cleanup
-// (the EH frame comes from the base).
-// (Was @early-stop'd as an "EH/vptr wall": our model emitted an extra
-// `mov [esi],&??_7CFontConfig` restamp retail elided, judged "not steerable by source
-// spelling". It was steerable - the restamp existed only because we wrongly declared the
-// class polymorphic. De-inheriting CPtrList (see FontConfig.h) removed it -> 100%.)
 RVA(0x00085f40, 0x56)
 CFontConfig::~CFontConfig() {
     Reset();

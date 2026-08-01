@@ -3,23 +3,23 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (CTileTriggerSwitch : CUserLogic)
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
 
 class CTileTriggerSwitch : public CUserLogic, public CWapX {
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
+
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+
 public:
-    CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
-    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    virtual void FireActivation(i32 id)
-        OVERRIDE;               // 0x10dea0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs(); // 0x10e000
-    i32 AdvanceAnim();          // 0x10e200 (declared-only; recovery gap)
+    CTileTriggerSwitch() {}
+    CTileTriggerSwitch(CGameObject* obj);
+
+    virtual void FireActivation(i32 id) OVERRIDE;
+    static void RegisterActs();
+    i32 AdvanceAnim();
 };
 SIZE(0x54);
-
 
 #endif // GRUNTZ_CTILETRIGGERSWITCH_H

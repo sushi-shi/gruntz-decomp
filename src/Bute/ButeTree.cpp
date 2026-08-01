@@ -1,4 +1,4 @@
-#include <Bute/ButeTree.h> // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
+#include <Bute/ButeTree.h>
 #include <Ints.h>
 #include <rva.h>
 

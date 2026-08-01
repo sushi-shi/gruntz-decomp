@@ -1,20 +1,20 @@
-#include <Rez/FrameClock.h>       // g_engineFrameDelta/g_killCueClock (the clock band)
-#include <Gruntz/InGameText.h>    // the canonical CInGameText : CUserLogic model
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Rez/FrameClock.h>
+#include <Gruntz/InGameText.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegistry.h> // canonical *0x64556c singleton (CGameRegistry; m_68/m_world/view bounds)
-#include <Gruntz/TypeKeyColl.h> // the shared zDArray (g_typeColl @0x6bf650)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
-#include <string.h> // strcmp (inlined /O2)
+#include <string.h>
 
-#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance)
-#include <Gruntz/LeafCue.h>          // LeafCue (the looked-up sound cue: m_10/m_14/m_18)
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/LeafCue.h>
 DATA(0x0020d7f8)
-char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
+char s_codeK[] = "K";
 DATA_SYMBOL(0x002bf3bc, 0x4, _g_engineFrameDelta)
 DATA_SYMBOL(0x002bf3c0, 0x4, _g_killCueClock)
 
@@ -27,11 +27,7 @@ i32 CInGameText::Update() {
     i32 subId;
     CGrunt* found = g_gameReg->m_cmdGrid
                         ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
-    // POSITIVE GATE: retail parks the miss handler at the very END of the function
-    // (0x9998f) where it falls into the `return 0` epilogue the three inner early
-    // exits also tail-merge into. Written as an early return it lands inline right
-    // after the test with its own 12-instruction epilogue, one block too many.
-    // docs/patterns/positive-gate-enables-shrink-wrap.md
+
     if (found != 0) {
         if (areaId != g_curPlayer) {
             return 0;
@@ -40,10 +36,8 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        // ScratchResolve IS the base _zvec::IndexToPtr call (0x312a0) with the band's
-        // CString element type put back on at that one accessor seam.
         CString* node = g_typeColl.ScratchResolve(found->m_objAux->ActKey());
-        // m_alloc is the i32-typed slot base (the _zvec spelling)
+
         CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;
         while (n-- != 0) {
@@ -62,14 +56,14 @@ i32 CInGameText::Update() {
         }
 
         CWwdGameObjectA* o = m_object;
-        i32 y = o->m_screenY; // y BEFORE x - retail loads +0x60 then +0x5c
+        i32 y = o->m_screenY;
         i32 x = o->m_screenX;
-        CGruntzMgr* reg = g_gameReg; // ... and the singleton AFTER both, not hoisted
+        CGruntzMgr* reg = g_gameReg;
         if (x < reg->m_viewBounds.right && x >= reg->m_viewBounds.left
             && y < reg->m_viewBounds.bottom && y >= reg->m_viewBounds.top) {
             CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
-                void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+                void* res_ob = 0;
                 set->m_10.Lookup("GAME_HELPBOOK", res_ob);
                 LeafCue* res = static_cast<LeafCue*>(res_ob);
                 if (res != 0) {

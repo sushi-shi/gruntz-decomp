@@ -2,7 +2,7 @@
 #define GRUNTZ_IMAGESTATE_H
 
 #include <rva.h>
-#include <Gruntz/State.h> // the CState base (m_c/m_2c facets, InitVirtual/Vslot06)
+#include <Gruntz/State.h>
 
 class CImageState : public CState {
 public:

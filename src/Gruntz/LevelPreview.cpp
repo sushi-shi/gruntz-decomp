@@ -1,41 +1,38 @@
-#include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
+#include <Mfc.h>
 #include <Gruntz/LeafCue.h>
 #include <rva.h>
 
-#include <DDrawMgr/DDSurface.h> // canonical CDDSurface + IDirectDrawSurface (IsLost/Flip)
-#include <ddraw.h>              // real IDirectDrawSurface dispatch (Mfc.h above supplies windows.h)
-#include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (LoadPageImage @0x158b40)
+#include <DDrawMgr/DDSurface.h>
+#include <ddraw.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
-#include <Bute/SymParser.h>               // CSymParser::ResolvePath (0x13c030) on m_8
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::ScanTree (0x157ee0)
-#include <Wap32/Wap32.h>                  // CGameWnd::PumpMessages (0x13d4e0)
-#include <Gruntz/State.h>                 // the CState base this screen state derives (real vtable)
-#include <Gruntz/SoundCue.h>        // the ONE +0x28 cue holder (CDDrawSubMgrLeafScan / LeafCue)
-#include <Gruntz/GameRegistry.h>    // CDDrawSurfaceMgr (the typed CState::m_c holder)
-#include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
-#include <Dsndmgr/SoundStream.h>    // SoundStream::Stop (ResetPreview's owned stream)
-#include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
-#include <Gruntz/PreviewState.h>  // canonical CPreviewState (the level-preview screen state)
-#include <Rez/FrameClock.h>       // frame-clock band (g_killCueClock)
-#include <Rez/RezSync.h>          // ex Globals.h
-#include <Wap32/GameApp.h>        // ex Globals.h
-#include <Gruntz/SoundState.h>    // ex Globals.h transitive
-#include <Gruntz/LevelPreview.h>  // ex Globals.h
-#include <Image/ImageFormatTag.h> // IMGTAG_XCP - the screen-page format word
+#include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Wap32/Wap32.h>
+#include <Gruntz/State.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/GameRegistry.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PreviewState.h>
+#include <Rez/FrameClock.h>
+#include <Rez/RezSync.h>
+#include <Wap32/GameApp.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/LevelPreview.h>
+#include <Image/ImageFormatTag.h>
 
 DATA(0x0024c69c)
-i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
+i32 g_flag64c69c = 0;
 
 RVA(0x000de030, 0xc2)
-// The three slots are the slot-1 virtual's own (CState::LoadGameAssetNamespaces
-// @0xf9ea0, which this chains directly); its third is still unnamed there too.
+
 i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
-    // The base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9;
-    // CState::LoadGameAssetNamespaces is the slot-1 virtual now, and retail calls
-    // the default body direct here).
+
     if (CState::LoadGameAssetNamespaces(mgr, areaArg, a2) == 0) {
         return 0;
     }
@@ -57,19 +54,6 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
     return 1;
 }
 
-// CPreviewState::ResetPreview (0x0de140) - the preview teardown: stop the owned sound
-// stream, prune the PREVIEW-prefixed sound-registry keys, then chain the CState base
-// teardown (qualified -> direct call to CState::ReleaseResources @0xfa150).
-// ATTRIBUTION (ex "CGameModeBase::ResetPreview"; homed here from GameMode.cpp): the
-// body sits INSIDE this TU's retail obj block (between Enter @0xde030 and
-// NextScreenCmd @0xde190) and reads only CState-level fields - but retail has ZERO
-// references to it (no vtable slot, no call, no thunk ref; whole-image scan
-// 2026-07-16), i.e. it is linked-in dead code, so it is a plain non-virtual here -
-// NOT asserted as this class's slot-2 override (CPreviewState's vtable is unlocated).
-// m_c->m_soundRegistry is re-read each statement (retail does not cache it).
-// EXACT. The old "m_28-intermediate regalloc wall" was the spelling - read ->m_2c off a
-// NAMED registry local, twice.
-// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000de140, 0x33)
 void CPreviewState::ResetPreview() {
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
@@ -89,14 +73,6 @@ i32 CPreviewState::NextScreenCmd(i32 param) {
     return 1;
 }
 
-// CPreviewState::Tick (0x0de200) - the per-frame advance: if the live back surface
-// is present and NOT lost, or the screen's Advance virtual fails, report the error
-// and bail (returns 0); otherwise tick the audio cue and count the +0x1b8 timer
-// down by the frame delta (clamped at 0), returning 1 to keep the screen alive.
-//
-// EXACT. The old "pointer-chain scratch-register wall" was the spelling: latching
-// ->m_2c into a local let cl collapse the deref; read it off a NAMED registry local.
-// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -188,16 +164,9 @@ void CPreviewState::LoadLevelPreviewScreen() {
     }
 }
 
-// CPreviewState::LoadScreen (0x0fab90) - resolve the named "\SCREENZ\<name>"
-// namespace through the bute symbol table (tagged with g_screenTag), install the
-// resolved image into the DirectDraw worker, and - when asked - flip it to the
-// front. Returns 0 if any prerequisite (the preview mgr, the +0x08 gate, or the
-// symbol table) is missing or any step fails, else 1.
-//
 // @early-stop
 RVA(0x000fab90, 0xaa)
-// args 3/4 are never read: the frame is entry-0x44 and retail touches only
-// [esp+0x48] (name) and [esp+0x4c] (doFlip), never the +0x50/+0x54 homes.
+
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == 0) {
         return 0;

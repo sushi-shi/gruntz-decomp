@@ -1,4 +1,3 @@
-// BootyCheatState.h - the BootyCheatState TU's exported globals/data.
 #ifndef GRUNTZ_GRUNTZ_BOOTYCHEATSTATE_H
 #define GRUNTZ_GRUNTZ_BOOTYCHEATSTATE_H
 

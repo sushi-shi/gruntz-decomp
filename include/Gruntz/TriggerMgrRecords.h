@@ -1,9 +1,3 @@
-// TriggerMgrRecords.h - CTriggerMgr's OWN record types + TU externs (relocated from
-// the *Views.h holding pen 2026-07-20: these are not views of unknown classes - the
-// node structs model the real MFC CObList/CPtrList CNode with TYPED payload arms
-// (the "generic collections" keep class), and CGridCell/CGridLookup are the documented
-// keep-until-megafn grid pair. The ex-CTmGoal +0x23c goal view was RESOLVED: it is the
-// CWwdGameObjectA "DoNothing" camera sprite (LoadCameraSprite creates+stores it).
 #ifndef GRUNTZ_TRIGGERMGR_RECORDS_H
 #define GRUNTZ_TRIGGERMGR_RECORDS_H
 
@@ -11,8 +5,8 @@
 #include <Mfc.h>
 #include <rva.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/TriggerMgr.h>  // CTriggerMgr (the records' owner class)
-#include <Gruntz/TraitorMode.h> // g_traitorMode (DAT_006455b0, the alt-group gate)
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TraitorMode.h>
 
 enum {
     kPendingFxIdBase = 0xc8
@@ -21,9 +15,9 @@ enum {
 class CGruntPuddle;
 
 extern CButeMgr g_buteMgr;
-extern "C" u32 g_frameTime; // DAT_00645588 (the level base score / id sentinel)
+extern "C" u32 g_frameTime;
 
-void Str_Free(void* node); // CString teardown, 0x1b9b93
+void Str_Free(void* node);
 
 struct CGridCell {
     i32 m_0;
@@ -32,10 +26,10 @@ struct CGridCell {
 SIZE_UNKNOWN();
 struct CGridLookup {
     char _00[8];
-    CGridCell** m_8;          // +0x08  rows
-    i32 m_c;                  // +0x0c  width
-    i32 m_10;                 // +0x10  height
-    i32 Lookup(i32 x, i32 y); // 0x75a40
+    CGridCell** m_8;
+    i32 m_c;
+    i32 m_10;
+    i32 Lookup(i32 x, i32 y);
 };
 SIZE_UNKNOWN();
 

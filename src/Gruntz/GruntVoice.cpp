@@ -1,33 +1,31 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Mfc.h>                      // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
-#include <Gruntz/CurPlayer.h>         // g_curPlayer
-#include <Gruntz/GruntzMgr.h>         // complete CGruntzMgr (g_gameReg real type)
+#include <Gruntz/GameObjectFactory.h>
+#include <Mfc.h>
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>
-#include <Gruntz/VoiceTrigger.h>          // canonical CVoiceTrigger : CUserLogic
-#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
-#include <Gruntz/GameRegistry.h>          // g_gameReg / g_gameReg->m_world->m_childGroup
-#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - m_map48 (the id->object map)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free); typedef CGrunt CGrunt
-#include <Gruntz/Grunt.h>            // complete CGrunt - FindGruntAt result (m_object reads)
-#include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver @0x11b3b0)
-#include <Gruntz/Ufo.h>              // the REAL CUFO (the ex-L_13400 shell is dissolved)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/VoiceTrigger.h>
+#include <Gruntz/TileTriggerTransition.h>
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/Ufo.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/ActName.h> // CActName (shared)
-#include <Gruntz/ActReg.h> // CActReg - the ONE registry archetype (subsumes the old per-field globals)
+#include <Gruntz/ActName.h>
+#include <Gruntz/ActReg.h>
 #include <Bute/ButeTree.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-#include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Gruntz/SerialArchive.h>
+#include <Image/CImage.h>
 
-// CActRegPool<CVoiceTrigger>::s_table (0x00251500): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-#include <Gruntz/GruntVoiceActReg.h> // CActRegPool<CGruntVoice>::s_table (ex .cpp extern)
-#include <Wap32/zBitVec.h>           // ex Globals.h
-#include <Utils/MapTyped.h>          // typed MFC map lookups
+#include <Gruntz/GruntVoiceActReg.h>
+#include <Wap32/zBitVec.h>
+#include <Utils/MapTyped.h>
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
 template<> DATA(0x00251500)
@@ -36,7 +34,7 @@ CActReg CActRegPool<CVoiceTrigger>::s_table(2000, 2010);
 VTBL(CVoiceTrigger, 0x001e885c);
 VTBL(CGruntVoice, 0x001eaf6c);
 
-struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CString;
 
 static inline CActHandler* VActLookup(i32 coord) {
     return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
@@ -63,7 +61,7 @@ static inline CString* ActNameLookup(i32 id) {
 RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
 void RealizeUfoDtor(CUFO* p);
 void RealizeUfoDtor(CUFO* p) {
-    p->CUFO::~CUFO(); // qualified direct call - odr-uses the implicit ??1CUFO COMDAT
+    p->CUFO::~CUFO();
 }
 
 RVA(0x00013470, 0x4b)
@@ -77,24 +75,12 @@ i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CVoiceTrigger::~CVoiceTrigger @0x0135a0 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to
-// ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl. It is also
-// the out-of-line virtual key function, so cl emits ??_7CVoiceTrigger@@6B@
-// (0x5e885c) directly - no manual g_voiceTriggerVtbl extern.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CVoiceTrigger() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00013570, 0x1e, ??_GCVoiceTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 
 RVA(0x00119620, 0xf1)
 i32 CreateGruntVoice(CGameObject* obj) {
-    AnimWorkerObj* ctl = obj->m_7c;
+    AnimWorkerObj* ctl = obj->m_animWorker;
     switch (static_cast<u32>(ctl->ActKey())) {
         case 0: {
             ctl->SetActKey(0x3e8);
@@ -132,7 +118,7 @@ i32 CreateGruntVoice(CGameObject* obj) {
 
 RVA(0x00119760, 0xf1)
 i32 CreateVoiceTrigger(CGameObject* obj) {
-    AnimWorkerObj* ctl = obj->m_7c;
+    AnimWorkerObj* ctl = obj->m_animWorker;
     switch (static_cast<u32>(ctl->ActKey())) {
         case 0: {
             ctl->SetActKey(0x3e8);
@@ -168,18 +154,6 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
     return 1;
 }
 
-// ===========================================================================
-// CGruntVoice::CGruntVoice(CGameObject*)  (0x1198a0)
-// ===========================================================================
-// The 1-arg game-object ctor: fold the shared CUserLogic(obj) init (base vptr,
-// the +0x18 link, the empty-string name, the one-shot logic-type table, the three
-// built-in handler registrations, the data fields) - the /GX EH frame the link's
-// throwing ctor forces - then run the voice tail: zero the play/icon state, stamp
-// the most-derived CGruntVoice vptr (0x5eaf6c, compiler-emitted, reloc-masked),
-// register the "GAME_EXCLAMATION" name on the bound object, set the object's
-// render flags (m_74 sentinel + the +0x8/+0x40 bitsets), then bind the "A" idle-anim
-// bute node (stashing the previous in m_prevAnimSetNode). Returns this. __thiscall, ret 4.
-//
 // @early-stop
 RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -206,28 +180,9 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_owner = 0;
 }
 
-// ===========================================================================
-// CGruntVoice::~CGruntVoice  (0x119ae0)
-// ===========================================================================
-// The leaf adds no destructible members, so its dtor folds the bare CUserLogic
-// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
-// (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. The empty body is enough.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CGruntVoice() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00119ab0, 0x1e, ??_GCGruntVoice@@UAEPAXI@Z)
 RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
 
-// CVoiceTrigger::CVoiceTrigger(CGameObject*) @0x119b50 - the 1-arg leaf ctor: the
-// standard CUserLogic(obj) init (folded inline) plus the voice-trigger tail - cl
-// emits the implicit leaf vftable (??_7CVoiceTrigger @0x5e885c) stamp, then raise
-// the bound object's logic + pending bits, cache the "A" bute node, snap the bound
-// object's screen position to the 0x20 tile grid, then derive the on-screen probe
-// rect from the per-side tile spans (m_134..m_140). Constructs a throwing
-// CUserBaseLink, so MSVC emits the /GX EH frame.
-//
 // @early-stop
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -261,15 +216,6 @@ void CVoiceTrigger::FireActivation(i32 coord) {
     }
 }
 
-// CVoiceTrigger::RegisterActs @0x11a500 - bind the per-frame Tick handler to the
-// activation key "A" in the trigger's OWN registry (g_vtrigColl). The SAME
-// archetype as CParticlez::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0011a500, 0x18d)
 void CVoiceTrigger::RegisterActs() {
     i32 id = ActFindId("A");
@@ -318,20 +264,9 @@ i32 CVoiceTrigger::Tick() {
     return 0;
 }
 
-// ===========================================================================
-// CGruntVoice::Setup  (0x11a7e0)
-// ===========================================================================
-// Seed the voice from a play request. The `sample` arg (the 2nd, guard) is
-// required - on a null sample bail with 0. Otherwise stash the source/sample/
-// flag/owner params, snapshot the sample's play duration (sample->ComputeDuration
-// 0x137590, __thiscall), seed the icon to the default, clear the running state,
-// and swap the +0x14 sub-object's bute node to the "B" key (stashing the
-// previous in CUserLogic::m_prevAnimSetNode). Returns 1.
-//
 // @early-stop
 RVA(0x0011a7e0, 0x6e)
-// The three scalars are the members the body snapshots them into, already named in
-// <Gruntz/GruntVoice.h>: m_source (+0x68), m_playFlags (+0x6c), m_owner (+0x70).
+
 i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner) {
     if (sample == 0) {
         return 0;
@@ -358,23 +293,12 @@ void CGruntVoice::Reset() {
     m_source = 0;
 }
 
-// The act-"A" slot: mark the voice sprite hidden and report "not running". Retail
-// 0x11a8c0 is `mov eax,[ecx+0x10]; mov ecx,[eax+0x40]; or ecx,1; mov [eax+0x40],ecx;
-// xor eax,eax; ret` - the same stateFlags|=1 the Update stop path takes.
 RVA(0x0011a8c0, 0xf)
 i32 CGruntVoice::IdleHidden() {
     m_object->m_stateFlags |= 1;
     return 0;
 }
 
-// 73.24 -> 85.84 -> 100.00 EXACT. Two shape bugs, both found by the jcc sieve:
-// (1) the three "lost the source object" refusals each carried their own
-// `m_object->m_stateFlags |= 1; return 0;` block with a full epilogue - retail
-// 0x11aa1e has ONE such block that all three reach (bottom `stopped:` label);
-// (2) the LAST gate (the m_owner != 0 arm's resolve miss) is spelled POSITIVELY -
-// `if (resolved != 0) { ...; return 0; }` - so retail's `cmp eax,edi / je` keeps
-// that arm's body inline and puts the lost-source copy after it. The negative
-// `if (resolved == 0) goto stopped;` inverted the two blocks.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
     if (m_sample == 0 || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
@@ -400,7 +324,7 @@ i32 CGruntVoice::Update() {
         if (resolved == 0) {
             goto stopped;
         }
-        CUserLogic* logic = resolved->m_7c->m_logic;
+        CUserLogic* logic = resolved->m_animWorker->m_logic;
         if (logic == 0) {
             goto stopped;
         }
@@ -418,9 +342,7 @@ i32 CGruntVoice::Update() {
         } else {
             resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
         }
-        // POSITIVE gate here (unlike the two above): retail's `cmp eax,edi / je`
-        // keeps this arm's body inline and puts the lost-source copy AFTER it,
-        // which only the `if (resolved != 0) { ...; return 0; }` shape gives.
+
         if (resolved != 0) {
             m_object->m_stateFlags &= ~1;
             i32 dx = 0, dy = 0;
@@ -436,8 +358,7 @@ i32 CGruntVoice::Update() {
         goto stopped;
     }
     return 0;
-    // retail 0x11aa1e: ONE "lost the source object" tail; all three resolve-miss
-    // gates in both arms branch into it
+
 stopped:
     m_object->m_stateFlags |= 1;
     return 0;

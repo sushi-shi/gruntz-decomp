@@ -1,19 +1,10 @@
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
-#include <Gruntz/Brickz.h>    // BrickzCell (the canonical 0x1c-byte tile cell)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Brickz.h>
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/Grunt.h>    // CGrunt (the scanned arg) + CGameRegistry/CFocusSlot (this->m_4)
-#include <Gruntz/ScanGrid.h> // CScanSub10 (shared scan tags)
-#include <Gruntz/BattlezMapConfig.h> // the Scan owner (ex-CTileScan, folded)
-
-// The scanned arg is a real CGrunt: m_2e8 the focus-slot id, m_dwell (+0x2ec) the
-// dwell timer compared to the threshold, m_object the bound HUD/object (screen x/y @
-// CGrunt/CGruntHud - m_dwell @+0x2ec is the proven CGrunt signature.)
-//
-// Owner IDENTITY SOLVED (ex-CTileScan @identity-TODO): the sole retail caller is
-// CBattlezMapConfig::StepRowUnits @0x267c0 (its m_2d8==0xb dispatch arm), calling on
-// ITS `this` - and the ex-view fields align exactly (m_4==m_ctx +0x4 CGruntzMgr*,
-// m_c==m_board +0xc CMapMgr*, m_c8==m_0c8 the 0x7530 dwell threshold the ctor seeds).
+#include <Gruntz/Grunt.h>
+#include <Gruntz/ScanGrid.h>
+#include <Gruntz/BattlezMapConfig.h>
 
 static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
     if (static_cast<u32>(x) < static_cast<u32>(g->m_width)
@@ -29,7 +20,7 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
     if (arg->m_dwell <= m_0c8) {
         return 1;
     }
-    i32 v = arg->m_2e8; // the grunt's focus-slot id (index into the registry's m_focusSlots[])
+    i32 v = arg->m_2e8;
     i32 ok = 0;
     if (v != -1) {
         GruntzPlayer* fs = &m_ctx->m_options[v];
@@ -64,7 +55,7 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
             }
             if ((flags & 2) == 0) {
                 arg->TileSwitch(b, a, 0, 0xd87, 0, 0);
-                arg->m_dwell = 0; // reset the dwell timer on the tile switch
+                arg->m_dwell = 0;
                 return 1;
             }
         }

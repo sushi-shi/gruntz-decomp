@@ -1,29 +1,27 @@
-#define SBI_DTOR_CHAIN     // enable the inline base-dtor bodies (see StatusBarItem.h)
-#define SBI_OWN_IMAGE_DTOR // this TU supplies the out-of-line ~CSBI_Image (0x100870)
+#define SBI_DTOR_CHAIN
+#define SBI_OWN_IMAGE_DTOR
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/SerialCounter.h>
+#include <Io/FileMem.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
-#include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image (: CSBI_RectOnly : CStatusBarItem)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches (SerializeChain's reverse lookup)
-#include <Gruntz/GameRegistry.h>          // canonical g_gameReg singleton
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/SBI_Image.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Sprite.h>             // CDDrawWorker (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)        // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawWorkerRegistry)
-#include <Gruntz/SerialArchive.h>      // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Image/CImage.h>              // the resolved frame record (Render's blit)
-#include <string.h>                    // strlen / memset (inline repne-scas / rep-stos)
+#include <Gruntz/Sprite.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/SerialArchive.h>
+#include <Image/CImage.h>
+#include <string.h>
 
-VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
+VTBL(CSBI_RectOnly, 0x001eab8c);
 VTBL(CStatusBarItem, 0x001eabcc);
-VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
-// vtable slot 11 (0xe6c80): store the live config args into the base-region
-// fields, then (if a key is supplied) look up the config record through the host
-// map and latch its value into m_30. Returns whether a non-zero value was latched.
+VTBL(CSBI_Image, 0x001eac0c);
+
 // @early-stop
 RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
@@ -73,10 +71,6 @@ void CSBI_Image::Reset() {
     m_frame = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_Image::TickRenderCurrent (0xe6dd0, vtable slot 5): one play step that renders
-// the CURRENT resolved frame (no table re-lookup): while cycles remain, consume one
-// and blit m_30 at the rect base + frame anchor. Returns 1. Ex CAniPlayer view.
 RVA(0x000e6db0, 0x8)
 i32 CSBI_Image::Refresh(i32) {
     return 1;
@@ -99,12 +93,6 @@ i32 CSBI_Image::Render() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_Image::SerializeChain (0xe6e40, vtable slot 1) - the CSBI_Image leg of the
-// family serialize: transfer the resolved frame's registry name + index (read ->
-// Lookup + frame range probe; write -> reverse name lookup), then tail-chain into
-// the base leg (CStatusBarItem::SerializeFields). Re-attributed from CSBI_MenuItem
-// (dossier #16: vtbl 0x1eac0c slot [1] thunk 0x2077).
 // @early-stop
 RVA(0x000e6e40, 0x17c)
 i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
@@ -120,8 +108,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     i32 idx;
     switch (kind) {
         case 7:
-            // Read leg: pull the cue name + frame index from the archive, look up the
-            // cue by name, and latch frame[index] (else clear).
+
             g_serialCounter++;
             ar->Read(name, 0x80);
             ar->Read(&idx, 4);
@@ -139,8 +126,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
             }
             break;
         case 4:
-            // Write leg: reverse-look-up the resolved frame's registry name + index
-            // (the registry's reverse name->id helper, 0x155630, on mgr->m_10).
+
             idx = 0;
             g_serialCounter++;
             memset(name, 0, sizeof(name));
@@ -151,8 +137,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
             ar->Write(&idx, 4);
             break;
     }
-    // QUALIFIED = the direct base leg (retail `call 0x1848`). Unqualified would now be
-    // infinite recursion on this very override - and would compile clean.
+
     return CStatusBarItem::SerializeFields(ar, kind, a, b) != 0;
 }
 

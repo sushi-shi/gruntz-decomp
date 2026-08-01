@@ -1,7 +1,6 @@
 #include <Gruntz/ImageSets.h>
 #include <rva.h>
 
-// The kind-2 set owns no pixel buffer; slot 6 is the empty family default.
 RVA(0x00161420, 0x1)
 void CImageSet2::FreePixels() {}
 
@@ -26,9 +25,6 @@ i32 CImageSet2::GetStride() {
     return 0x28;
 }
 
-// CImageSet2::Parse (0x166990, ??_7CImageSet2 slot +0x14). Copies eight dwords
-// from the WWD record at +0x08.. into m_04..m_20 via an advancing source pointer
-// and returns TRUE.
 // @early-stop
 RVA(0x00166990, 0x4c)
 i32 CImageSet2::Parse(void* record) {

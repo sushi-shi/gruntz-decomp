@@ -2,27 +2,16 @@
 #define GRUNTZ_CMOVINGLOGICSERIAL_H
 
 #include <Ints.h>
-#include <Gruntz/MotionState.h> // CMotionState (the +0x38 curve ReadCurve fills)
+#include <Gruntz/MotionState.h>
 #include <rva.h>
 #include <Gruntz/SerialArchive.h>
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
-// (deliberately NOT <Gruntz/MovingLogic.h>: this header is shared with the Grunt
-// family, which carries its own lean CMovingLogic snapshot in <Gruntz/Grunt.h>.)
+#include <Rez/RezAlloc.h>
 
-// The serialize accumulators are REAL CRT strstream temps (<strstrea.h>, statically
-// linked): the ex-CButeWriteTemp/CButeReadTemp "Ctor(buf,len,..,1)" calls were
-// ??0ostrstream@@QAE@PADHH@Z (0x1698c0) / ??0istrstream@@QAE@PADH@Z (0x169700) with
-// the compiler's hidden vbase flag, the "teardown helpers" the compiler-emitted
-// ~ostrstream/~istrstream (0x1699c0/0x1697c0) + ~ios vbase (0x169d70) pair, Length()
-// the inlined pcount() vbase probe, GetBuffer() str() -> ?str@strstreambuf (0x1692b0).
-// The defining TU includes the real <strstrea.h>; these fwd decls serve the rest.
 class ostream;
 class istream;
 
+istream& ReadCurve(istream& accum, CMotionState& c);
 
-
-istream& ReadCurve(istream& accum, CMotionState& c); // 0x16d000
-
-extern i32 g_logicTypesRegistered; // 0x6bf674 (?g_logicTypesRegistered@@3HA)
+extern i32 g_logicTypesRegistered;
 
 #endif // GRUNTZ_CMOVINGLOGICSERIAL_H

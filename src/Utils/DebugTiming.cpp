@@ -1,7 +1,7 @@
 #include <Mfc.h>
 #include <rva.h>
-#include <stdarg.h> // va_list for the DebugTrace varargs formatter
-#include <stdio.h>  // vsprintf
+#include <stdarg.h>
+#include <stdio.h>
 
 RVA(0x0013dfe0, 0x21)
 void ActiveWait(u32 milliseconds) {

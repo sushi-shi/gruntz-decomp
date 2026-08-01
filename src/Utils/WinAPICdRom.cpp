@@ -1,4 +1,4 @@
-#include <Utils/WinAPICdRom.h> // this TU's external declarations
+#include <Utils/WinAPICdRom.h>
 #include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
@@ -22,7 +22,7 @@ i32 FileExistsCopy(char* szPath) {
     if (!*szPath) {
         return 0;
     }
-    return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
+    return OpenFile(szPath, &of, 0x4000) != -1;
 }
 
 RVA(0x0001fde0, 0x189)
@@ -42,7 +42,7 @@ char CheckCdRomRegistry() {
             && static_cast<i8>(value[0]) > 0x14) {
             letter = value[0];
             sprintf(drivePath, "%c:\\", letter);
-            if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {
+            if (GetDriveTypeA(drivePath) == 5) {
                 return letter;
             }
         }
@@ -50,7 +50,7 @@ char CheckCdRomRegistry() {
 
     GetCurrentDirectoryA(0xff, cwdPath);
     cwdPath[3] = 0;
-    if (GetDriveTypeA(cwdPath) == 5 /*DRIVE_CDROM*/) {
+    if (GetDriveTypeA(cwdPath) == 5) {
         letter = cwdPath[0];
         return letter;
     }
@@ -58,7 +58,7 @@ char CheckCdRomRegistry() {
     letter = 'A';
     for (i = 0; i < 26; i++) {
         sprintf(cwdPath, "%c:\\", letter);
-        if (GetDriveTypeA(cwdPath) == 5 /*DRIVE_CDROM*/) {
+        if (GetDriveTypeA(cwdPath) == 5) {
             return letter;
         }
         letter++;
@@ -67,16 +67,6 @@ char CheckCdRomRegistry() {
     return letter;
 }
 
-// -------------------------------------------------------------------------
-// GetGruntzDriveLetter (0x1ffe0)
-// Finds the drive letter of the CD holding the Gruntz disc, memoising the result in
-// s_cdDriveLetter:
-//   1. read the saved drive letter from HKLM\Software\Monolith Productions\Gruntz\1.0
-//      value "CdRom Drive"; if it is a real letter, a CD-ROM, and holds
-//      "<L>:\GAME\GRUNTZ.EXE", use it;
-//   2. otherwise scan drives A..Z for a CD-ROM holding that marker file.
-// Returns the letter (0 if none). The local RegistryHelper's destructor (Close) runs
-// at scope exit -> the C++ EH frame.
 // @early-stop
 RVA(0x0001ffe0, 0x192)
 char GetGruntzDriveLetter() {
@@ -96,7 +86,7 @@ char GetGruntzDriveLetter() {
                 && static_cast<i8>(value[0]) > 0x14) {
                 letter = value[0];
                 sprintf(drivePath, "%c:\\", letter);
-                if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {
+                if (GetDriveTypeA(drivePath) == 5) {
                     sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
                     if (FileExistsCopy(exePath)) {
                         goto found;
@@ -107,7 +97,7 @@ char GetGruntzDriveLetter() {
 
         for (letter = 'A'; letter <= 'Z'; letter++) {
             sprintf(drivePathScan, "%c:\\", letter);
-            if (GetDriveTypeA(drivePathScan) == 5 /*DRIVE_CDROM*/) {
+            if (GetDriveTypeA(drivePathScan) == 5) {
                 sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
                 if (FileExistsCopy(exePath)) {
                     goto found;

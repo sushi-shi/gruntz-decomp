@@ -2,42 +2,30 @@
 #define SRC_BUTE_PTREENODE_H
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/zBitVec.h> // the canonical zErrHandling (ctor 0x16d9c0 / dtor 0x16da60)
+#include <Wap32/zBitVec.h>
 
-struct CVariantSlot;                   // <Bute/ButeTree.h> - the +0x04 error sink (Set 0x16d850)
-struct CButeTreeNode;                  // <Bute/ButeTree.h> - the 0x14-byte crit-bit trie node
-extern CVariantSlot g_symTabErrorSlot; // 0x6bf480 ("zSymTab: ")
-
+struct CVariantSlot;
+struct CButeTreeNode;
+extern CVariantSlot g_symTabErrorSlot;
 
 class CButeNodeEntry {
 public:
     CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*));
-    virtual ~CButeNodeEntry(); // +0x00 vptr; real dtor 0x16dfc0 (defined in typekeycoll)
+    virtual ~CButeNodeEntry();
 
-    // +0x04 the per-value teardown callback. This was `void* m_desc`, a "node descriptor"
-    // whose dual role (opaque tag ptr / store callback) was never resolved. It is ONE
-    // thing: a function pointer. zPTree::ClearRecursive CALLS it on every node value
-    // (`m_teardown(n->m_val)`), and the only value ever stored here is the address of
-    // ButeValueTeardown (0x174df0) - the phantom `g_nodeDescriptor` / `g_node174df0Tag`
-    // "globals" were that function's address all along.
-    void(__cdecl* m_teardown)(void*); // +0x04 (abs +0x0c)
-    i16 m_kind;                       // +0x08 (abs +0x10)  (WORD)n; bit 1 = "has teardown"
+    void(__cdecl* m_teardown)(void*);
+    i16 m_kind;
     char m_pada[2];
-    i32 m_nodeCount; // +0x0c (abs +0x14)  zero-init; live-node count
+    i32 m_nodeCount;
 };
-SIZE(0x10); // { vptr, desc, kind, count }
+SIZE(0x10);
 
 class zPTree : public zErrHandling, public CButeNodeEntry {
 public:
     zPTree(void(__cdecl* teardown)(void*), i32 n);
 
-    // The recursive keyed-node free (0x16e070, defined in src/Bute/TypeKeyColl.cpp).
-    // node==0 starts from the root. This is the method the whole engine calls as
-    // `zPTree::ClearRecursive` - zPTree IS zPTree (see the typedef in
-    // <Bute/ButeStore.h>), so both spellings mangle to the one real symbol.
     void ClearRecursive(CButeTreeNode* node);
 
-    // Reset-to-empty (inlined into CButeMgr::Parse; a standalone copy sits at 0x212a0).
     void Reset() {
         ClearRecursive(0);
         m_root = 0;
@@ -45,52 +33,31 @@ public:
         m_nodeCount = 0;
     }
 
-    // INLINE, and that is load-bearing: retail carries THREE byte-identical copies of
-    // this destructor (0x174d70 butenode, 0x21310 / 0x21570 butemgr) while sharing ONE
-    // vtable pair - the signature of MSVC5 without /Gy, which emits an inline member as a
-    // per-object-file static but keeps the vftable a folded COMDAT. Each copy is anchored
-    // on a thin subclass; the body expands into all of them (stamp both vptrs, clear, then
-    // fold the +0x08 base ~CButeNodeEntry and the +0x00 base ~zErrHandling).
     virtual ~zPTree() OVERRIDE {
         ClearRecursive(0);
     }
 
-    // The crit-bit store itself. These three live on zPTree, not on CButeTree: all
-    // THREE data-less zPTree subclasses (CButeTree, CBSecStream, CButeNode) are used
-    // interchangeably as the keyed store, and declaring the operations on one of the
-    // siblings is what forced the sibling-to-sibling reinterprets in ButeMgr
-    // (CBSecStream*->CButeTree* in Tree()/Tree48(), CButeNode*->CButeTree* at
-    // m_pNode). On the base they are reached by inheritance and the casts are gone.
-    void* Find(const char* key);                // 0x16d190 (TypeKeyColl.cpp)
-    void* Insert(const char* key, void* value); // 0x16db90 (TypeKeyColl.cpp)
-    // Walk (0x193340, ButeTree.cpp) - invoke fn(key, value, ctx) for each node of the
-    // crit-bit trie, recursing left (child[0]) and iterating right (child[1]) while a
-    // child's crit-bit index still exceeds the node's; `node`==0 starts from m_root.
+    void* Find(const char* key);
+    void* Insert(const char* key, void* value);
+
     void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, CButeTreeNode* node);
 
-    CButeTreeNode* m_root;          // +0x18  trie/store root (ctor zeroes it)
-    CButeTreeNode* m_descentCursor; // +0x1c  crit-bit descent cursor (Find/Insert)
-    CButeTreeNode* m_candidateLeaf; // +0x20  candidate leaf (Find/Insert)
-    i32 m_keyBitLength;             // +0x24  strlen*8 + 7 (Find/Insert)
-    i32 m_lookupPending;            // +0x28  lookup-pending / store reset field
+    CButeTreeNode* m_root;
+    CButeTreeNode* m_descentCursor;
+    CButeTreeNode* m_candidateLeaf;
+    i32 m_keyBitLength;
+    i32 m_lookupPending;
 };
-SIZE(0x2c); // measured: new(0x2c) -> ctor 0x16dff0
-// zPTree's two most-derived vtables. RTTI names 0x1e94ac `zPTree`; 0x1e949c is its
-// CButeNodeEntry-base secondary. cl spells them through the ultimate polymorphic base, so
-// the pins carry the through-base names (they live in src/Bute/ButeNode.cpp - labels.py
-// reads DATA_SYMBOL from the .cpp only).
+SIZE(0x2c);
 
 class CButeNode : public zPTree {
 public:
-    virtual ~CButeNode() OVERRIDE; // slot 0 (zPTree dtor); external no-body
+    virtual ~CButeNode() OVERRIDE;
 
-    // 0x174d00 (butenode): the 1-arg form - passes the fixed teardown callback.
     CButeNode(i32 kind);
-    // ParseTagLine inlines this 2-arg form (`new CButeNode(&ButeValueTeardown, 2)`).
+
     CButeNode(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
-SIZE(0x2c); // new CButeNode(0x2c); zPTree provides the full layout
-// (The two through-base ??_7CButeNode DATA_SYMBOL pins live in src/Bute/ButeNode.cpp -
-//  labels.py reads DATA_SYMBOL out of the TU's .cpp only, never a header.)
+SIZE(0x2c);
 
 #endif // SRC_BUTE_PTREENODE_H

@@ -1,18 +1,18 @@
 #include <Mfc.h>
-#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
+#include <Image/CImage.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/WarpStoneFly.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/GruntzMgr.h>         // the *0x24556c singleton (CGruntzMgr)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (ex CMgrActiveHolder view)
+#include <Gruntz/GruntzMgr.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/Sprite.h> // CDDrawWorker - the looked-up, index-gated record (ex CMgrLookupRec view)
-#include <string.h>        // strlen / memset (inlined to repne scasb / rep stos)
+#include <Gruntz/Sprite.h>
+#include <string.h>
 
 RVA(0x00109e00, 0x245)
 i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
@@ -25,7 +25,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
     }
     switch (mode) {
         case 7: {
-            // READ the scalar block, then resolve the object reference.
+
             arc->Read(&m_arrivalMode, 4);
             arc->Read(&m_targetX, 4);
             arc->Read(&m_targetY, 4);
@@ -58,7 +58,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
             return 1;
         }
         case 4: {
-            // WRITE the scalar block, then the resolved object's name + index.
+
             arc->Write(&m_arrivalMode, 4);
             arc->Write(&m_targetX, 4);
             arc->Write(&m_targetY, 4);

@@ -4,8 +4,8 @@
 
 #include <Ints.h>
 
-#include <Image/CImage.h> // the frame element IS the RTTI CImage (was the CImageFrame view)
+#include <Image/CImage.h>
 
-#include <DDrawMgr/DDrawWorker.h> // the ONE real class (vtbl 0x1efbe8, CLoadable-derived)
+#include <DDrawMgr/DDrawWorker.h>
 
 #endif // SRC_IMAGE_IMAGESET_H

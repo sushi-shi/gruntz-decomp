@@ -1,8 +1,8 @@
-#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Bute/ButeMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Play.h>         // canonical CPlay (one shape; ArmSnapshot is reached here)
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr big host
+#include <Gruntz/Play.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <rva.h>
 
 #include <Ints.h>

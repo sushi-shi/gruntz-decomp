@@ -1,11 +1,11 @@
 #include <Ints.h>
 #include <rva.h>
-#include <string.h> // strlen (inlined as repnz scasb at /O2 /Oi), memset/memcpy
-#include <stdio.h>  // sprintf (the "Opened FEC File" diagnostics, 0x11f890)
-#include <stdlib.h> // rand (0x17bf60, obfuscation padding)
-#include <direct.h> // _getcwd / _chdir (ExtractArchive dir save/restore)
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <direct.h>
 
-#include <Crypto/FecCrypt.h> // the unified CFecFile (embedded MFC CFile stream) shape
+#include <Crypto/FecCrypt.h>
 
 RVA(0x0017b510, 0x55)
 i32 CFecFile::Init() {
@@ -15,7 +15,7 @@ i32 CFecFile::Init() {
     m_readOpen = 0;
     m_writeOpen = 0;
     m_index.SetSize(0, -1);
-    memset(&m_versionMajor, 0, 12); // m_versionMajor, m_versionMinor, m_fileCount
+    memset(&m_versionMajor, 0, 12);
     memset(&m_entry, 0, sizeof(m_entry));
     m_nextIndex = 0;
     m_openGate = 1;
@@ -119,7 +119,7 @@ i32 CFecFile::Lookup(u32 idx) {
     if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_fileCount) && idx != 0) {
         const DWORD* slot = &m_index.GetData()[idx - 1];
         if (m_stream.Seek(static_cast<i32>(*slot), 0) == static_cast<i32>(*slot)) {
-            return m_stream.m_hFile; // +0x128 - the Win32 file HANDLE
+            return m_stream.m_hFile;
         }
     }
     return 0;
@@ -141,20 +141,12 @@ i32 CFecFile::CreateArchive(const char* name) {
         m_versionMajor = 1;
         m_versionMinor = 1;
         m_stream.Write(&m_versionMajor, 0xc);
-        m_stream.Flush(); // +0x50 CFile::Flush (flush the header write)
+        m_stream.Flush();
         return 1;
     }
     return 0;
 }
 
-// ===========================================================================
-// 0x17b950 - CFecFile::AddFile(name, pCancel, pProgress): append the disk file `name`
-// to an open (m_08) write-archive. Builds the 0x10c entry record (index=++m_134,
-// FecEncode'd basename + random padding, scramble word m_11e = rand()%0x400 + 0x2b8,
-// payload length m_120), writes the record + (m_11e - 0x2b8) random bytes, then streams
-// the file in 32 KB chunks (pumping messages while pProgress, aborting on *pCancel), and
-// finally patches the header file-count at offset 0xb. __thiscall; 1 on success.
-// ===========================================================================
 // @early-stop
 RVA(0x0017b950, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
@@ -185,8 +177,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     operator delete(enc);
 
     if (base.GetLength() < 0x100) {
-        // do-while: the guard above already proves c >= 1, and retail's loop has no
-        // zero-trip skip (`mov edi,0x100; sub edi,eax` straight into the body).
+
         char* p = m_entry.m_name + base.GetLength();
         i32 c = 0x100 - base.GetLength();
         do {
@@ -222,9 +213,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
                 DispatchMessageA(&msg);
             }
         }
-        // NO `m_nextIndex--` here: retail's cancel arm branches to 0x17bb0b, which is
-        // one instruction PAST the `dec DWORD PTR [eax]` at 0x17bb09 that the
-        // file.Seek(0,0) failure arm runs. Only the seek failure rolls the counter back.
+
         if (*pCancel != 0) {
             return 0;
         }
@@ -242,18 +231,10 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     m_stream.Seek(0xb, 0);
     m_stream.Write(&m_nextIndex, 4);
-    m_stream.Flush(); // +0x50 CFile::Flush (flush the appended entry)
+    m_stream.Flush();
     return 1;
 }
 
-// ===========================================================================
-// 0x17bcd0 - CFecFile::ExtractArchive(dir, pCancel, pProgress): unpack an open (m_04)
-// read-archive into directory `dir`. Saves the cwd, chdirs into `dir`, seeks the stream
-// past the 0xf-byte header, then for each of m_14 entries reads the 0x10c record,
-// FecDecode's the name, opens the output file, seeks the stream to the entry's recorded
-// offset (m_index[i]) and streams m_120 bytes out in 32 KB chunks (message-pumping while
-// pProgress, aborting on *pCancel). Restores the cwd on success/failure. __thiscall.
-// ===========================================================================
 // @early-stop
 RVA(0x0017bcd0, 0x28b)
 i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
@@ -335,10 +316,6 @@ void CFecFile::FecEncode(const char* src, char* dst) {
     }
 }
 
-// ===========================================================================
-// Decode(src, dst, len): dst[i] = src[i] - (i odd ? 0x53 : 0x4f) for
-// `len` bytes, then NUL-terminate dst[len]. `len` is a WORD. __stdcall.
-// ===========================================================================
 RVA(0x0017bfe0, 0x5d)
 void CFecFile::FecDecode(const char* src, char* dst, u16 len) {
     for (unsigned short i = 0; i < len; i++) {

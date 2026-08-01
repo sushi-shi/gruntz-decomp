@@ -7,21 +7,16 @@
 #include <DDrawMgr/AnimWorkerObj.h>
 
 struct CDDrawRect {
-    i32 left;   // +0x00
-    i32 top;    // +0x04
-    i32 right;  // +0x08
-    i32 bottom; // +0x0c
+    i32 left;
+    i32 top;
+    i32 right;
+    i32 bottom;
 };
 SIZE_UNKNOWN();
-i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b); // 0x15bfb0 (I obj)
-
-
-// File-scope prototypes moved from the .cpp (external linkage
-// belongs in the owner header).
+i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b);
 
 namespace Rng {
     i32 Next2();
-} // namespace Rng
-
+}
 
 #endif // GRUNTZ_WWD_WWDFACTORYOBJECT_H

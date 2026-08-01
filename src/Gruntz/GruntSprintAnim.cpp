@@ -1,18 +1,15 @@
 #include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite)
-#include <Mfc.h>                      // CString (the /GX directional-name temps) + Win32
-#include <Gruntz/GameMode.h>          // the REAL owner: CBootyState (was the CGruntSprintAnim view)
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserLogic.h>
+#include <Mfc.h>
+#include <Gruntz/GameMode.h>
 
 #include <rva.h>
 
-// ===========================================================================
-// BuildGruntSprintAnimation @0x019920
-// ===========================================================================
 // @early-stop
 RVA(0x00019920, 0x1f0)
 i32 CBootyState::BuildGruntSprintAnimation() {

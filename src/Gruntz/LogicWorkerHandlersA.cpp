@@ -1,5 +1,5 @@
-#define USERLOGIC_OOL_CTOR // retail CALLS ??0CUserLogic (0x58cd0) at this TU case-0; decl-only base ctor
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
+#define USERLOGIC_OOL_CTOR
+#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SingleFrameMessage.h>
@@ -16,8 +16,8 @@
 #include <Gruntz/SingleAnimation.h>
 #include <Gruntz/GuardPoint.h>
 
-#include <Gruntz/WorkerHandler.h>       // shared Worker / Owner archetype + LOGIC_WORKER_PUMP
-#include <Gruntz/DoNothingNormalDtor.h> // the real CDoNothingNormal leaf (ex the DnnRec pen)
+#include <Gruntz/WorkerHandler.h>
+#include <Gruntz/DoNothingNormalDtor.h>
 
 RVA(0x000a9a40, 0xf1)
 i32 CreateAniCycle(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}
@@ -28,9 +28,6 @@ i32 HandlerA9B80(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
 RVA(0x000a9cc0, 0xf1)
 i32 CreateDoNothing(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothing)}
 
-// The switch key worker->m_1c is UNSIGNED (u32); MSVC5 then emits the range checks
-// as unsigned ja/jbe, matching retail byte-for-byte (switch-key-unsigned-ja-vs-jg).
-//
 // @early-stop
 RVA(0x000a9e00, 0x10c)
 i32 CreateDoNothingNormal(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothingNormal)}

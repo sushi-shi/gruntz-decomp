@@ -1,43 +1,43 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
+#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
 
-#include <Gruntz/AnimWorker.h>           // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/UserLogic.h>            // CUserLogic 16-slot vtable the pump dispatches
-#include <Gruntz/GruntSelectedSprite.h>  // 0x5c
-#include <Gruntz/GruntToySprite.h>       // 0x60
-#include <Gruntz/GruntHealthSprite.h>    // 0x64
-#include <Gruntz/GruntStaminaSprite.h>   // 0x64
-#include <Gruntz/GruntToyTimeSprite.h>   // 0x64
-#include <Gruntz/GruntWingzTimeSprite.h> // 0x64
-#include <Gruntz/GruntPowerupSprite.h>   // 0x60
+#include <Gruntz/AnimWorker.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/GruntSelectedSprite.h>
+#include <Gruntz/GruntToySprite.h>
+#include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/GruntStaminaSprite.h>
+#include <Gruntz/GruntToyTimeSprite.h>
+#include <Gruntz/GruntWingzTimeSprite.h>
+#include <Gruntz/GruntPowerupSprite.h>
 
 #define ANIM_WORKER_PUMP(LEAF)                                                                     \
-    AnimWorkerObj* rec = owner->m_7c;                                                              \
-    switch (static_cast<u32>(rec->ActKey())) {                                                    \
+    AnimWorkerObj* rec = owner->m_animWorker;                                                      \
+    switch (static_cast<u32>(rec->ActKey())) {                                                     \
         case 0: {                                                                                  \
-            rec->SetActKey(0x3e8);                                            \
+            rec->SetActKey(0x3e8);                                                                 \
             CUserLogic* sub = new LEAF(owner);                                                     \
-            sub->Activate(); /* slot 6 (+0x18): activate */                                        \
+            sub->Activate();                                                                       \
             rec->m_logic = sub;                                                                    \
             break;                                                                                 \
         }                                                                                          \
         case 0x1d:                                                                                 \
-            rec->m_logic->UserLogicVfunc9(); /* slot 11 (+0x2c) */                                 \
+            rec->m_logic->UserLogicVfunc9();                                                       \
             break;                                                                                 \
         case 0x1e:                                                                                 \
-            rec->m_logic->UserLogicVfunc8(); /* slot 10 (+0x28) */                                 \
+            rec->m_logic->UserLogicVfunc8();                                                       \
             break;                                                                                 \
         case 0x50:                                                                                 \
-            rec->m_logic->UserLogicVfuncC(); /* slot 14 (+0x38) */                                 \
+            rec->m_logic->UserLogicVfuncC();                                                       \
             break;                                                                                 \
         case 0x53:                                                                                 \
-            rec->m_logic->UserLogicVfuncD(); /* slot 15 (+0x3c) */                                 \
+            rec->m_logic->UserLogicVfuncD();                                                       \
             break;                                                                                 \
         case 0x52:                                                                                 \
-            rec->m_logic->UserLogicVfuncA(); /* slot 12 (+0x30) */                                 \
+            rec->m_logic->UserLogicVfuncA();                                                       \
             break;                                                                                 \
         case 0x51:                                                                                 \
-            rec->m_logic->UserLogicVfuncB(); /* slot 13 (+0x34) */                                 \
+            rec->m_logic->UserLogicVfuncB();                                                       \
             break;                                                                                 \
         case 0x3e8:                                                                                \
             break;                                                                                 \
@@ -49,32 +49,32 @@
 
 RVA(0x0007db20, 0xf1)
 i32 CreateGruntSelectedSprite(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
             CUserLogic* sub = new CGruntSelectedSprite(owner);
-            sub->Activate(); // slot 6 (+0x18): activate
+            sub->Activate();
             rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
@@ -87,36 +87,35 @@ i32 CreateGruntSelectedSprite(CGameObject* owner) {
 
 RVA(0x0007dc60, 0xf1)
 i32 CreateGruntHealthSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntHealthSprite)}
-// new 0x64, ctor 0x07eb00
 
 RVA(0x0007dda0, 0xf1)
 i32 CreateGruntToySprite(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_7c;
+    AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
             CUserLogic* sub = new CGruntToySprite(owner);
-            sub->Activate(); // slot 6 (+0x18): activate
+            sub->Activate();
             rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
@@ -129,17 +128,14 @@ i32 CreateGruntToySprite(CGameObject* owner) {
 
 RVA(0x0007dee0, 0xf1)
 i32 CreateGruntStaminaSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntStaminaSprite)}
-// new 0x64, ctor 0x07fae0
 
 RVA(0x0007e020, 0xf1)
 i32 CreateGruntToyTimeSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntToyTimeSprite)}
-// new 0x64, ctor 0x07fbd0
 
 RVA(0x0007e160, 0xf1)
 i32 CreateGruntWingzTimeSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntWingzTimeSprite)}
-// new 0x64, ctor 0x07fcc0
 
 RVA(0x0007e2a0, 0xf1)
 i32 CreateGruntPowerupSprite(CGameObject* owner) {
     ANIM_WORKER_PUMP(CGruntPowerupSprite)
-} // new 0x60, ctor 0x07fdb0
+}

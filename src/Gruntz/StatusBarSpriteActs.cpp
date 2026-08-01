@@ -1,37 +1,29 @@
-#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ActNameRegistry.h>   // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>            // the shared CActReg coordinate-registry archetype
-#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>
 
-#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
+#include <Rez/FrameClock.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
 
 #include <Gruntz/StatusBarSprite.h>
-#include <Gruntz/SerialArchive.h>       // the serialize stream (== the real CFileMemBase)
-#include <Gruntz/StatusBarSpriteActs.h> // CActRegPool<CStatusBarSprite>::s_table decl
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/StatusBarSpriteActs.h>
 
-// CActRegPool<CStatusBarSprite>::s_table (0x0024e670): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x0024e670)
 CActReg CActRegPool<CStatusBarSprite>::s_table(2000, 2010);
 
 VTBL(CStatusBarSprite, 0x001e7fc4);
 
-// CStatusBarSprite::~CStatusBarSprite @0x11b80 - empty vtable-anchor dtor; folds the
-// CUserLogic teardown (the /GX leaf-dtor archetype). Adjacent to SerializeMove (0x11ae0).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CStatusBarSprite() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00011b50, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
 RVA(0x0010c0f0, 0xf1)
 i32 CreateStatusBarSprite(CGameObject* obj) {
-    AnimWorkerObj* ctl = obj->m_7c;
+    AnimWorkerObj* ctl = obj->m_animWorker;
     switch (static_cast<u32>(ctl->ActKey())) {
         case 0: {
             ctl->SetActKey(0x3e8);
@@ -67,10 +59,6 @@ i32 CreateStatusBarSprite(CGameObject* obj) {
     return 1;
 }
 
-// CStatusBarSprite::CStatusBarSprite @0x10c230 - fold the shared CUserLogic(obj)
-// init, name the bound object "GAME_STATUSBARSPRITE", snapshot the geometry id,
-// apply the single-image-ani geometry, bind the "A" bute node and lock the draw
-// order to 0xf4240.
 // @early-stop
 RVA(0x0010c230, 0x178)
 CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -94,15 +82,6 @@ void CStatusBarSprite::FireActivation(i32 coord) {
     }
 }
 
-// CStatusBarSprite::RegisterActs @0x10c610 - bind the per-frame handler (AdvanceAnim
-// @0x10c810) to the activation key "A" via the shared name registry. The SAME
-// archetype as CWarpStonePad::RegisterActs, driving the status-bar-sprite registry.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0010c610, 0x18d)
 void CStatusBarSprite::RegisterActs() {
     i32 id = ActFindId("A");

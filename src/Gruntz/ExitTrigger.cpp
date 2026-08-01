@@ -1,47 +1,27 @@
 #include <Gruntz/ExitTrigger.h>
-#include <Gruntz/Warlord.h>       // the created "Warlord" sprite's bound logic
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/Warlord.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/CurPlayer.h>     // g_curPlayer
-#include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Gruntz/TypeKeyColl.h>   // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0; +0x48 GruntObjMap)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialArchive.h>
 
-// CExitTrigger::~CExitTrigger @0x0108c0 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to ~CTimeBomb @0x012a70;
-// the empty body is enough for cl.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CExitTrigger() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 #include <Bute/ButeMgr.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Utils/MapTyped.h> // typed MFC map lookups
+#include <Utils/MapTyped.h>
 RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
 VTBL(CExitTrigger, 0x001e822c);
 
-// CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the
-// standard CUserLogic(obj) init (folded inline) plus the exit tail - cl emits the
-// implicit leaf vftable (??_7CExitTrigger @0x5e822c) stamp, then raise the bound
-// object's logic bit, cache the "A" bute node, snap its screen position, set its
-// z-gate (0x124f8) + the four unit bounds, apply the GAME_CYCLE100 geometry, then
-// resolve the warlord into the per-area focus slot: when the slot is live, store the
-// trigger position, probe the "Warlord" entity, run its finalize fn-ptr, snapshot
-// its id, and bind it to the active area + cue. Constructs a throwing CUserBaseLink,
-// so MSVC emits the /GX EH frame.
-//
 // @early-stop
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -73,9 +53,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_object->m_124;
-        e->m_7c->m_notify(e);
-        // snapshot the warlord's bound logic (obj->m_7c->m_logic)
-        m_warlordLogic = static_cast<CWarlord*>(e->m_7c->m_logic);
+        e->m_animWorker->m_notify(e);
+
+        m_warlordLogic = static_cast<CWarlord*>(e->m_animWorker->m_logic);
         if (m_object->m_124 == g_curPlayer) {
             g_gameReg->m_cmdGrid->m_pendingFx = m_warlordLogic;
         }
@@ -87,13 +67,6 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_resolved = 1;
 }
 
-// CExitTrigger::SerializeMove (0x3f040), vtable slot 1 - chain the shared serialize
-// helper + the +0x34 CSerialObjRef (both gate), then stream the exit state: the
-// resolved gate (m_resolved) directly, and the warlord as a persistent id that
-// round-trips through the sprite factory's key->object map. Write persists the
-// bound warlord's object id (0 if unbound); Read resolves the id back to a live
-// object and re-binds its logic. g_serialCounter is bumped each id write.
-//
 // @early-stop
 RVA(0x0003f040, 0x147)
 i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
@@ -113,14 +86,13 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObj
             arc->Read(&key, 4);
             if (key != 0) {
                 CGameObject* found = 0;
-                // The `? :` spelling if-converts to `neg/sbb/and`; the STATEMENT form is
-                // what retail emits (test/je/mov) - see FortConquered.cpp's twin site.
+
                 CGameObject* obj = 0;
-                // MapLookupById keeps the id->void* key pun at the one MapTyped seam.
+
                 if (MapLookupById(holder->m_childGroup->m_map48, key, found)) {
                     obj = found;
                 }
-                m_warlordLogic = static_cast<CWarlord*>(obj->m_7c->m_logic);
+                m_warlordLogic = static_cast<CWarlord*>(obj->m_animWorker->m_logic);
                 if (m_warlordLogic == 0) {
                     return 0;
                 }

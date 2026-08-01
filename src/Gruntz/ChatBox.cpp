@@ -1,16 +1,16 @@
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Rez/FrameClock.h>
+#include <Gruntz/SoundState.h>
 #include <Image/CImage.h>
-#include <Image/ImageSet.h> // CDDrawWorker - the per-row animation record (m_page->m_10 map value)
+#include <Image/ImageSet.h>
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h> // m_page->m_drawTarget: front/back/overlay CDDrawSurfacePair
-#include <DDrawMgr/DDrawSurfacePair.h> // each pair's +0x2c CDDSurface + +0x1c src RECT
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_page->m_10: CDDrawWorkerRegistry (CMapStringToOb catalog)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_page) + CDDrawSubMgrLeafScan + LeafCue
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuPage.h>
 
 RVA(0x00182ab0, 0x7b)
@@ -54,7 +54,7 @@ void CChatBox::Clear() {
     POSITION pos = m_nodeList.GetHeadPosition();
     while (pos) {
         CMenuPage* payload = static_cast<CMenuPage*>(m_nodeList.GetNext(pos));
-        delete payload; // ~CMenuPage is non-virtual -> direct dtor + ??3 (retail 0x182b79/0x182b7f)
+        delete payload;
     }
     m_nodeList.RemoveAll();
     m_activeNode = 0;
@@ -72,9 +72,6 @@ i32 CChatBox::AddNode(CMenuPage* node) {
     return 1;
 }
 
-// find the message node whose key matches s (linear scan + strcmp).
-// (The old "EH-frame contradiction wall" @early-stop here is dead: the chatbox_eh
-// unit split settled it - `sema disasm 0x182be0 --diff` now reports identical asm.)
 RVA(0x00182be0, 0x8d)
 CMenuPage* CChatBox::Find(const char* s) {
     POSITION pos = m_nodeList.GetHeadPosition();
@@ -400,12 +397,5 @@ i32 CChatBox::HitTest4() {
     }
     return n->SelectBack2() != 0;
 }
-// free every node's owned payload, empty the list, clear the queue slot.
-// `delete payload` calls the header-inline ~CMenuPage OUT-OF-LINE: under /GX
-// (this TU's flags) MSVC5 declines to fold the EH-stateful teardown into a
-// frameless fn (verified: under base flags it folds and Clear craters 100->69),
-// so this obj emits + calls the standalone COMDAT copy retail keeps at
-// 0x183250 (link position = this obj's COMDAT tail, right after HitTest2
-// 0x183230) - pinned here (an inline dtor cannot carry RVA(); MenuPage.cpp no
-// longer defines it).
+
 RVA_COMPGEN(0x00183250, 0x71, ??1CMenuPage@@QAE@XZ)

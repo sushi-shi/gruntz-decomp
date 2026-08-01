@@ -1,51 +1,51 @@
-#include <Bute/SymParser.h> // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
+#include <Bute/SymParser.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Bute/SymTab.h>        // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
-#include <Bute/ButeMgr.h>       // CButeMgr GetIntDef (InitAttractTitle brightness)
-#include <Io/MoviePlayer.h>     // CMoviePlayer (~/CloseSmacker - ReleaseResources / StepVideo)
-#include <Gruntz/BankMgr.h>     // CSymTab (InitAttractTitle m_2c state store)
-#include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
-#include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
-#include <DinMgr2/DirectInputMgr2.h>      // CInputDevBase (Poll/m_currentKeys press-edge flags)
-#include <Gruntz/GameMode.h> // CCreditsState : CState (ex CGMOwner/CGMSound views dissolved to CGruntzMgr/CGruntzSoundZ)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (CState::m_4 owner; m_sound @+0x48, m_numRuns @+0x80)
-#include <Rez/RezMgr.h>       // RezFree (ReleaseResources video-handle teardown)
-#include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ::CreateBank (0x138670) - credits sound-bank loader
-#include <Win32.h>                // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC + Render input surface)
+#include <Bute/SymTab.h>
+#include <Bute/ButeMgr.h>
+#include <Io/MoviePlayer.h>
+#include <Gruntz/BankMgr.h>
+#include <Gruntz/ParseSource.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Rez/RezMgr.h>
+#include <Dsndmgr/GruntzSoundZ.h>
+#include <Win32.h>
+#include <ddraw.h>
 #include <rva.h>
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <stdio.h>                     // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <stdio.h>
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
 #include <Gruntz/Attract.h>
-#include <Gruntz/CreditsState.h> // g_clipRegionEnabled decl
+#include <Gruntz/CreditsState.h>
 
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
 }
 
 DATA(0x0022bf74)
-i32 g_clipRegionEnabled; // owner def (zero-init .bss)
+i32 g_clipRegionEnabled;
 
 VTBL(CCreditsState, 0x001e9c64);
 
 DATA(0x001e96f8)
-static const double kScreenH = 480.0; // 0x5e96f8  screen height
+static const double kScreenH = 480.0;
 DATA(0x001e96f0)
-static const double kScrollRate = 0.025; // 0x5e96f0  scroll rate
+static const double kScrollRate = 0.025;
 DATA(0x001e9708)
-static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_scrollStep reseed)
+static const double kStepScale = 1000.0;
 
 RVA(0x00038d20, 0x176)
 i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
@@ -73,20 +73,17 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         if (e) {
             char* val = e->BeginParse();
             if (val) {
-                m_mgr->m_sound->CreateBank(val, e->m_length, "CREDITZ"); // 0x138670
+                m_mgr->m_sound->CreateBank(val, e->m_length, "CREDITZ");
             }
         }
     }
-    // Sibling re-test (not nested): retail re-emits `cmp edi,ebp; je` for the
-    // MONOLITH block, pinning midiz in edi across the PLAY calls
-    // (docs/patterns/redundant-sibling-guard-retest.md).
+
     if (midiz) {
         CParseSource* e2 = midiz->Insert("MONOLITH", 0x584d49);
         if (e2) {
             char* val = e2->BeginParse();
             if (val) {
-                m_mgr->m_sound->CreateBank(val, e2->m_length,
-                                           "MONOLITH"); // 0x138670
+                m_mgr->m_sound->CreateBank(val, e2->m_length, "MONOLITH");
             }
         }
     }
@@ -113,23 +110,21 @@ void CCreditsState::ReleaseResources() {
         }
         m_world->m_soundRegistry->RemoveKeysEqual("CREDITZ", "_");
         m_world->m_imageRegistry->RemoveKeysEqual("CREDITZ", "_");
-        // retail: `mov ecx,[edx+0x2c]; call 0x1527d0` - the Leaf's own remove (the old
-        // (CDDrawWorkerRegistry*) cast MISBOUND this call to the +0x10 twin's 0x155360).
+
         m_world->m_animRegistry->RemoveKeysEqual("CREDITZ", "_");
     }
-    // Cache the video handle in a local so it stays pinned in edi across the
-    // Teardown call (retail reuses the same register for the RezFree push).
+
     CMoviePlayer* vh = m_videoHandle;
     if (vh) {
-        // RezFree IS ::operator delete (both 0x1b9b82), so this pair IS `delete vh`.
-        delete vh; // ~CMoviePlayer non-virtual (0x038fc0) + ??3
+
+        delete vh;
         m_videoHandle = 0;
     }
-    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
+    CState::ReleaseResources();
 }
 
 RVA(0x00039120, 0x2c)
-i32 CCreditsState::Vslot09(i32 /*unused*/) {
+i32 CCreditsState::Vslot09(i32) {
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -152,7 +147,6 @@ i32 CCreditsState::Render() {
         reg->m_soundStream->PurgeVoiceList(-1);
     }
 
-    // per-entity Update pass
     {
         CFixedPtrArray32* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
@@ -160,14 +154,12 @@ i32 CCreditsState::Render() {
         }
     }
 
-    // message scan: first flagged entity posts a WM_COMMAND
     {
         CFixedPtrArray32* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
             if (L->m_items[j]->m_currentKeys & 0xffffff) {
-                // wParam = (m_24==5) ? 0x8023 : 0x8027. The init+conditional-override
-                // keeps the cmp+jne branch (docs body comment in the credits Render).
+
                 u32 wp = 0x8027;
                 if (m_24 == 5) {
                     wp = 0x8023;
@@ -179,15 +171,12 @@ i32 CCreditsState::Render() {
         }
     }
 
-    StepVideo();            // 0x39c60 (ex Sub1)
-    DrawScrollingCredits(); // 0x396f0 (ex Sub2)
+    StepVideo();
+    DrawScrollingCredits();
 
-    // draw: cache m_c->m_drawTarget (the target keeps it in esi for the three derefs).
     CDDrawSubMgrPages* v4 = m_world->m_drawTarget;
     v4->m_frontPair->m_surface->Flip(0);
-    v4->m_backPair->BltSelf(
-        v4->m_overlayPair
-    ); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
+    v4->m_backPair->BltSelf(v4->m_overlayPair);
 
     if (!m_musicStarted && Owner(this)->m_musicEnabled) {
         Owner(this)->m_sound->PlayByName("CREDITZ", 1);
@@ -205,9 +194,7 @@ i32 CCreditsState::Render() {
 
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::InputVirtual() {
-    // the page pump at m_c->m_drawTarget is CDDrawSubMgrPages; the ready gate is
-    // PagesReady (0x158bc0) - NOT CParseSource::BeginParse (0x139960); same page gate
-    // the sibling states (CHelpState/CSplashState) poll.
+
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
@@ -243,12 +230,6 @@ i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
     return 1;
 }
 
-// CCreditsState::Vslot0e (slot 14 / +0x38, 0x394b0): the credits-title click hit-test.
-// XREF-recovered identity (was the fake ClickHost_0394b0 view): the retail vtable
-// ??_7CCreditsState@@6B@+0x38 (slot 14) references this RVA. If the click (x,y) lands in
-// the 0..0x64 title box, run the music-bank swap (LoadCreditzAssets, via ILT thunk
-// 0x3d41); otherwise post a WM_COMMAND (0x8023 in selection mode m_24==5, else 0x8027).
-// Always returns 1. arg2 is unused (the mouse-message middle word).
 // @early-stop
 RVA(0x000394b0, 0x86)
 i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
@@ -274,12 +255,6 @@ i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
     return 1;
 }
 
-// InitAttractTitle (0x39570): the credits/attract title (re)init - the twin of
-// CAttract::LoadTitleConfig. If the title view is already live (m_videoPlaying), just
-// run the menu-page frame sub-steps and bail; otherwise pick a rotating TITLE index off
-// the mgr launch counter (g_gameReg->m_numRuns), format the "STATEZ_ATTRACT"/"TITLE%d"
-// keys, resolve the attract state into m_2c, fade the title in, apply the configured
-// brightness, transition the page, and build the menu page.
 // @early-stop
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
@@ -310,25 +285,17 @@ i32 CCreditsState::InitAttractTitle() {
     CDDSurface* tgt = root->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
     (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->TransTitle();
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited; ex "BuildMenuPage")
+    RetireScene(0x50, 0x3e8, 0, 1);
     return 1;
 }
 
-// DrawScrollingCredits (0x396f0): the credits scroll-text renderer. Ticks the three
-// overlay timers down by the frame delta, advances the scrolling caption RECT by
-// `delta * speed * 0.001` (wrapping when it scrolls off, reseeding m_1f4), then - if the
-// IDirectDrawSurface hands back an HDC - paints the caption transparently and (when the
-// gates are live) the static credit. GDI via the IAT; GetDC/ReleaseDC are the DDraw COM
-// slots (+0x44/+0x68). CString temp -> /GX frame.
 // @early-stop
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
     if (m_world == 0) {
         return 0;
     }
-    // The credits scroll paints through the draw-surface page's real CDDSurface
-    // (m_c->m_drawTarget->m_backPair->m_surface) and its held IDirectDrawSurface (m_8): GetDC is
-    // COM slot 17 (+0x44), ReleaseDC slot 26 (+0x68).
+
     CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
 
     if (g_frameDelta >= m_scrollReseedTimer) {
@@ -349,9 +316,6 @@ i32 CCreditsState::DrawScrollingCredits() {
         }
     }
 
-    // The accumulate comes BEFORE the RECT copy: retail's g_frameDelta -> qword temp
-    // stores and `fild` are emitted ahead of the copy's `lea edi/ebp`, and /O2 then fills
-    // the FP latency with the four-dword copy.
     m_scrollAccum = m_scrollAccum + static_cast<double>(g_frameDelta) * m_scrollStep * 0.001;
     m_drawRect = m_scrollRect;
     i32 scrolled = static_cast<i32>(m_scrollAccum);
@@ -368,7 +332,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     if (hdc != 0) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
         if (g_clipRegionEnabled != 0) {
-            SelectClipRgn(hdc, m_1e8); // CRgn -> HRGN via CGdiObject::operator HRGN
+            SelectClipRgn(hdc, m_1e8);
         }
         i32 oldColor = SetTextColor(hdc, FlashColor());
         DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x50);
@@ -377,7 +341,7 @@ i32 CCreditsState::DrawScrollingCredits() {
             CString s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, 0x280, 0x1e0};
             i32 oldColor2 = SetTextColor(hdc, 0xffffff);
-            DrawTextA(hdc, s, -1, &r, 0x75); // CString -> LPCTSTR (implicit)
+            DrawTextA(hdc, s, -1, &r, 0x75);
             SetTextColor(hdc, oldColor2);
         }
         if (g_clipRegionEnabled != 0) {
@@ -389,16 +353,10 @@ i32 CCreditsState::DrawScrollingCredits() {
     return 1;
 }
 
-// CCreditsState::SetupTitle (0x39a60, __thiscall, ret BOOL) - build the credits scroll:
-// pull the "CREDITZ" TXT section from the STATEZ_CREDITZ store (m_2c, dispatched as
-// CSymTab) into the m_caption CString, build the clip region, measure the text against
-// the offscreen DDraw surface's HDC to set the scroll rect, then seed the scroll
-// accumulator. (Was hosted on the fake CCreditzOwner this-view.)
 // @early-stop
 RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
-    // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'
-    // (== 0x545854, a tag value not an address); returns the section CParseSource as H.
+
     CParseSource* sect = SymTab2c()->Insert("CREDITZ", 'TXT');
     if (sect) {
         char* src = sect->BeginParse();
@@ -438,13 +396,6 @@ i32 CCreditsState::FinishState() {
     return 1;
 }
 
-// @confidence: high
-// @source: decomp-xref
-// CCreditsState::StepVideo() (0x39c60): if the credits aren't playing return 1. Else
-// advance the Smacker movie one frame; when the last frame is reached, Close() the handle
-// and FinishState(). Either way, if both surfaces are live, blit the current frame.
-// The draw chain is the real one: m_c->m_drawTarget (CDDrawSubMgrPages) -> the +0x14 / +0x18
-// surface pages -> their CDDSurface (m_2c) and the page's own BltFast source RECT (m_1c).
 // @early-stop
 RVA(0x00039c60, 0x7a)
 i32 CCreditsState::StepVideo() {
@@ -467,11 +418,6 @@ i32 CCreditsState::StepVideo() {
     return ret;
 }
 
-// @confidence: high
-// @source: decomp-xref
-// CCreditsState::FlashColor() (0x39d00): if the flash gate (m_1c4) is set and the
-// re-roll timer (m_1bc) has expired, roll a fresh random RGB color, reset the timer to
-// 0x12c, latch it at m_1b8 and return it. Otherwise return the held color.
 // @early-stop
 RVA(0x00039d00, 0x8c)
 i32 CCreditsState::FlashColor() {
@@ -491,20 +437,6 @@ i32 CCreditsState::FlashColor() {
     return color;
 }
 
-// CCreditsState::~CCreditsState (`??1`, 0x8d5e0): stamp the CCreditsState vptr, run
-// ReleaseResources, then cl auto-destroys the m_caption CString + the m_1e8 CRgn in
-// reverse-declaration order before chaining ~CState. /GX EH frame for the member unwind.
-// This EH-framed `??1` (with the CState ctor) anchors the CCreditsState vtable +
-// inline-virtual (Update) emission in this TU.
-//
-// The inlined ~CRgn teardown (CRgn own-stamp dead-store-elided: stamp ??_7CGdiObject,
-// call CGdiObject::DeleteObject, restamp ??_7CObject) makes this TU emit the
-// out-of-line ??1CRgn COMDAT; the retail-kept copy is the 0x8c400 body the fake
-// `CHolder8c400` used to claim (RTTI at its vtable 0x1ea2a4 = .?AVCRgn@@).
-// (??0CRgn @0x8c3b0 / ??_GCRgn @0x8c3d0 stay unbound: they were kept from the retail
-// gruntzmgr obj, whose TransitionState calls ??0CRgn out-of-line - our TransitionState
-// still reaches it through the declared-only CTsSub45 ctor, reloc-masked to the same
-// rva, and no TU of ours emits those two COMDATs yet.)
 RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)
 RVA_COMPGEN(0x0008d5b0, 0x1e, ??_GCCreditsState@@UAEPAXI@Z)
 RVA(0x0008d5e0, 0x8b)

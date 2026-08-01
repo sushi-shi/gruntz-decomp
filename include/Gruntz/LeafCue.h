@@ -3,52 +3,35 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/Loadable.h> // CLoadable : CWapObj : CObject (m_04/m_08/m_0c + reset dtor)
+#include <Gruntz/Loadable.h>
 
-class DSoundCloneInst; // the pooled cue player/buffer (Dsndmgr/DirectSoundMgr.h)
-struct CParseSource;   // the parsed draw-source Configure reads (STRUCT key = the def)
+class DSoundCloneInst;
+struct CParseSource;
 
 struct LeafCue : public CLoadable {
-    // [5] 0x158650: loaded iff the buffer slot is armed (was a Ghidra size-0
-    // recovery gap; bytes `8b 51 10 33 c0 85 d2 0f 95 c0 c3`).
+
     RVA(0x00158650, 0xb)
     virtual i32 IsLoaded() OVERRIDE {
         return m_10 != 0;
     }
-    // [7] 0x1587c0 (DDrawSubMgr.cpp): release the acquired buffer through the owner's
-    // SoundDevice (reaps voices + releases + unlinks + deletes), clear the slot.
+
     virtual void Unload() OVERRIDE;
-    // [1] ??1 @0x158680 (DDrawSubMgr.cpp): Unload (devirt direct 0x1587c0) + the
-    // ~CLoadable field resets + grand-base re-stamp. cl-??_G @0x158660.
+
     virtual ~LeafCue() OVERRIDE;
 
-    // Inline factory ctor (folded into CDDrawSubMgrLeafScan::CreateEntry*): seed the
-    // CLoadable header (map count, 0, owner handle) + the zeroed tail, +0x18 first.
     LeafCue(i32 count, class CDDrawSurfaceMgr* handle);
 
-    // The three buffer loaders (all cache into m_10; bodies in DDrawSubMgr.cpp).
-    // The owner handle in CLoadable::m_0c is the CDDrawSurfaceMgr whose +0x20
-    // m_soundStream is the SoundDevice they acquire through.
-    i32 LoadSoundA(void* riff);       // 0x1586e0  SoundDevice::Acquire(riff)
-    i32 LoadSoundB(void* src);        // 0x158720  SoundDevice::AcquireFile(path)
-    i32 Configure(CParseSource* src); // 0x158760  BeginParse -> Acquire -> EndParse
+    i32 LoadSoundA(void* riff);
+    i32 LoadSoundB(void* src);
+    i32 Configure(CParseSource* src);
 
-    // The gated play entry (LeafCuePlay.cpp): when the throttle interval elapsed,
-    // restamp the clock and forward the 4 args to the player's ConfigureItem.
-    i32 PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop); // 0x1f940 (ret 0x10)
-    // The positional (panned) play entry, ex-`CAniBlitTrigger::TriggerBlit`: derive
-    // pan/volume from the cue's screen position against the view centre, then hand
-    // them to the same m_10 player. Same class - see the fold note in
-    // <DDrawMgr/AniAdvance.h>: identical CLoadable header + m_10 player slot,
-    // the same ds:0x61ab20 sound gate and the same `mov ecx,[this+0x10];
-    // call 0x1360d0` tail as PlayIfElapsed, and CDDrawSubMgrLeafScan::Fire
-    // dispatches it on a value out of the very map whose sibling accessor
-    // returns LeafCue*.
-    i32 TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2); // 0x1587f0 (ret 0x10)
+    i32 PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop);
 
-    DSoundCloneInst* m_10; // +0x10  the acquired/pooled DirectSound buffer (0 = unloaded)
-    i32 m_14;              // +0x14  last draw-clock (throttle stamp)
-    i32 m_18;              // +0x18  cooldown interval (seeded from the cache's m_34)
+    i32 TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2);
+
+    DSoundCloneInst* m_10;
+    i32 m_14;
+    i32 m_18;
 };
 SIZE(0x1c);
 inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) : CLoadable(count, handle) {

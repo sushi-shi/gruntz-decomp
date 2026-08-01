@@ -1,50 +1,20 @@
-// MainMenuBuilder.cpp - the game's main-menu tree builder (C:\Proj\Gruntz). The
-// second-biggest backlog function (6157 B): a /GX EH-framed routine that builds
-// the 14-page main-menu tree. Each page allocates a menu-page object (op-new +
-// the 3-CString/CPtrList ctor), initializes it from a "MENU_<PAGE>" key + label
-// (Configure), fills it with items / sub-items (AddItem / AddSubItem, each a key +
-// label + flags + index), conditionally disables the multiplayer-gated items
-// (when the CD prompt failed) and the area-progress-gated items (when the
-// player has not unlocked that area), and hands the finished page to the menu
-// host (RegisterPage). The 14 pages: MAINMENU, SINGLEPLAYER, MULTIPLAYER,
-// MOVIEZ, QUESTZ, then the 9 AREAS sub-pages (TRAINING + AREA1..8).
-//
-// Identity: the stub had it as EngineLabelBacklog::LoadAreaLevelTable, but the
-// $SG string set ("MENU_MAINMENU_TITLE", "SINGLEPLAYER", "MULTIPLAYER", ...)
-// identifies it as the main-menu definition builder. Reconstructed self-contained.
-//
-// The page/item classes are the canonical CMenuPage / CMenuItem (headers); the
-// builder methods (Configure/AddItem/AddSubItem) and the CRT/MFC machinery
-// (operator new/delete, CString, CPtrList) are external no-body callees
-// (reloc-masked rel32). The "MENU_*"/label strings are $SG literals
-// (reloc-masked against the matched string symbols). The page ctor/dtor are the
-// header-inline CMenuPage ones, folded at the 14 new/delete sites like retail.
-//
-// @early-stop  (body fully aligns; residual is the /GX EH-state tail)
-// The 14-page build sequence, the per-item gates, the EH frame and the per-page
-// ctors all match retail; the residual is the exception-state threading -
-// retail stamps the CPtrList's ctor state at [esp+0x1c] (a second trylevel slot)
-// where MSVC5 here stamps [esp+0x18]. That EH-state-index / trylevel-slot
-// divergence is the documented /GX wall (docs/seh-eh.md;
-// docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md;
-// rezalloc-placement-new-no-eh-frame.md, topic:eh/topic:wall). Deferred to the
-// final sweep.
 
-#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/StartUpPrompt.h> // g_cdPromptResult
-#include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
+#include <Gruntz/StartUpPrompt.h>
+#include <Mfc.h>
 #include <rva.h>
-#include <Gruntz/MenuPage.h> // canonical CMenuItem (Disable [6], the AddItem product)
-#include <Gruntz/ChatBox.h>  // the menu host CChatBox (RegisterPage == AddNode @0x182ba0)
+#include <Gruntz/MenuPage.h>
+#include <Gruntz/ChatBox.h>
 #include <Gruntz/MainMenuBuilder.h>
-#include <Io/SaveGame.h> // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
+#include <Io/SaveGame.h>
 
 typedef u32 u32;
 
 DATA(0x00245d88)
-RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
+RECT g_menuTextRect = {0};
 
 static i32 RegisterPage(CChatBox* menu, CMenuPage* page) {
     return menu->AddNode(page);
@@ -220,6 +190,7 @@ void SetMenuTextRect() {
     g_menuTextRect.bottom = 478;
 }
 
+// @early-stop
 RVA(0x000a11d0, 0x180d)
 i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (menu == 0) {
@@ -229,7 +200,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     CMenuPage* page;
     CMenuItem* it;
     i32 progress;
-    // ---- page 1 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_MAIN, s_MENU_MAINMENU_TITLE, 0, 0) == 0) {
         delete page;
@@ -250,7 +221,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 2 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_SINGLEPLAYER, s_MENU_SINGLEPLAYER_TITLE, s_MAIN, 0) == 0) {
         delete page;
@@ -265,7 +236,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 3 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_MULTIPLAYER, s_MENU_MULTIPLAYER_TITLE, s_MAIN, 0) == 0) {
         delete page;
@@ -280,7 +251,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 4 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_MOVIEZ, s_MENU_MOVIEZ_TITLE, s_MAIN, 0) == 0) {
         delete page;
@@ -298,7 +269,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 5 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_QUESTZ, s_MENU_QUESTZ_TITLE, s_SINGLEPLAYER, 0) == 0) {
         delete page;
@@ -339,7 +310,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 6 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_TRAINING, s_MENU_AREAS_TRAININGTITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -354,7 +325,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 7 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA1, s_MENU_AREAS_AREA1TITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -378,7 +349,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 8 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA2, s_MENU_AREAS_AREA2TITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -405,7 +376,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 9 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA3, s_MENU_AREAS_AREA3TITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -432,7 +403,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 10 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA4, s_MENU_AREAS_AREA4TITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -459,7 +430,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 11 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA5, s_MENU_AREAS_AREA5TITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -486,7 +457,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 12 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA6, s_MENU_AREAS_AREA6TITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -513,7 +484,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 13 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA7, s_MENU_AREAS_AREA7TITLE, s_QUESTZ, 0) == 0) {
         delete page;
@@ -540,7 +511,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (RegisterPage(menu, page) == 0) {
         return 0;
     }
-    // ---- page 14 ----
+
     page = new CMenuPage;
     if (page->Configure(menu, s_AREA8, s_MENU_AREAS_AREA8TITLE, s_QUESTZ, 0) == 0) {
         delete page;

@@ -1,42 +1,29 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/CurPlayer.h>
 #include <Image/ImageSet.h>
 #include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h>
 
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
-#include <Gruntz/SpriteRefTable.h>       // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
-#include <Gruntz/StatusBarMgrBuilders.h> // canonical CStatusBarMgr + the canonical SBI leaves
+#include <Gruntz/SbGeom.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/StatusBarMgrBuilders.h>
 
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (ByteTableHas)
+#include <Gruntz/TriggerMgr.h>
 
-VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
-// ===========================================================================
-// CStatusBarMgr::LoadTabSprites  @0x102250
-// ===========================================================================
-// Per-tab builder. Every Configure passes arg2 = `code` (the saved m_c); `type` =
-// tab index (1..5), rect = base coords (bx=m_10/by=m_rect14.left) + per-item offsets. The per-item
-// create idiom (new/base-ctor/stamp/Configure; on fail delete + bail) is identical at ~37
-// sites; the GRUNTOVEN/CHIP/HEAD/SMALLICONZ/WARPSTONE runs are loops. Built under a /GX EH
-// frame (the just-created item is EH-rolled-back if a later Configure throws).
-//
+VTBL(CSBI_GruntMachine, 0x001eadbc);
+
 // @early-stop
 RVA(0x00102250, 0x1de4)
 RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 i32 CStatusBarMgr::LoadTabSprites() {
-    CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host (spilled to [esp+0x10] in retail)
-    i32 bx = m_rect10.left;       // base x
-    i32 by = m_rect10.top;        // base y
-    // The item locals are typed by what each leaf actually IS. `it` covers every widget
-    // that has the slot-11 setup (CSBI_ImageSet / WellGoo / WarlordHead all derive from
-    // CSBI_Image); the four below do not fit that base and used to be reached by casting
-    // through the fabricated CSbConfigItem: CSBI_GruntMachine and CSBI_StatzTabGruntBar
-    // derive straight from CStatusBarItem (no slot 11 at all), and the ani/arrow pair need
-    // slots 13/14 that CSBI_Image does not have.
+    CDDrawSurfaceMgr* code = m_c;
+    i32 bx = m_rect10.left;
+    i32 by = m_rect10.top;
+
     CSBI_Image* it;
     CSBI_ImageSetAni* ani;
     CSBI_StatzTabArrow* arrow;
@@ -45,12 +32,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
     RECT r;
     i32 i;
 
-    // Cases are emitted in retail's PHYSICAL layout order (jump table @0x504020):
-    //   m_activeTab==2 Gruntz @0x102296, ==3 Resource @0x102787, ==4 Multiplayer @0x103392,
-    //   ==1 Statz @0x1038ef, ==5 Game @0x103bfb. Every Configure passes arg2 = `code`
-    //   (retail: the saved m_c @[esp+0x10]).
     switch (m_activeTab) {
-        case 2: // ---- Gruntz tab ----
+        case 2:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -72,14 +55,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[2].AddTail(it);
-            // GRUNTOVEN: a vertical column of 5 CSBI_ImageSet oven slots (x fixed at
-            // bx+0xe..bx+0x39, y steps by 0x36); each caches its item at *aptr (m_204..)
-            // and reads its format source from *bptr (m_224.., stride 0x18), then
-            // GetSel + SetAllTypes/Formats. Pointer locals (aptr/bptr/y) match retail's
-            // incremented [esp+0x18]/[esp+0x28]/[esp+0x20] induction variables.
+
             {
-                CSBI_ImageSet** aptr = m_slotNotify; // +0x204, stride 4
-                i32* bptr = &m_slots[0].m_value;     // +0x224, stride 0x18
+                CSBI_ImageSet** aptr = m_slotNotify;
+                i32* bptr = &m_slots[0].m_value;
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
@@ -139,7 +118,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[2].AddTail(it);
-            m_gaugeNotify = it; // it is CSBI_Image* (the WELL) -> CStatusBarItem* base
+            m_gaugeNotify = it;
             it = new CSBI_Image;
             r.left = bx + 0x1e;
             r.top = by + 0xc4;
@@ -203,11 +182,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[2].AddTail(it);
-            m_gaugeSink =
-                static_cast<CSBI_WellGoo*>(it); // it points at the just-new'd CSBI_WellGoo
+            m_gaugeSink = static_cast<CSBI_WellGoo*>(it);
             return 1;
 
-        case 3: // ---- Resource tab ----
+        case 3:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -295,8 +273,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_tabLists[3].AddTail(it);
             m_notify3 = it;
-            // BELT: 3 unrolled CSBI_ImageSet belt segments (config-d from m_groupSlots[0].m_value/m_groupSlots[1].m_value/m_groupSlots[2].m_value,
-            // cached to m_308/m_30c/m_310).
+
             it = new CSBI_ImageSet;
             r.left = bx + 0x19;
             r.top = by + 0x11c;
@@ -318,9 +295,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(
-                it
-            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it);
             it = new CSBI_ImageSet;
             r.left = bx + 0x40;
             r.top = by + 0x11c;
@@ -342,9 +317,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(
-                it
-            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it);
             it = new CSBI_ImageSet;
             r.left = bx + 0x68;
             r.top = by + 0x11c;
@@ -366,11 +339,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(
-                it
-            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
-            // GREYCHIPZ: one CSBI_ImageSet whose rect is built from the cached
-            // rect members m_itemRectL..m_520 + bx/by; config source m_extraNotifyArg0, id 0xdf.
+            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it);
+
             it = new CSBI_ImageSet;
             r.left = m_itemRectL + bx;
             r.top = m_itemRectT + by;
@@ -392,19 +362,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify0 = static_cast<CSBI_ImageSet*>(
-                it
-            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_extraNotify0 = static_cast<CSBI_ImageSet*>(it);
             it->m_enabled = 0;
-            // SHREDDER: a 4-row x 3-column NORMCHIPZ grid. y steps 0x20 per row;
-            // the three columns sit at x = bx+0x1d/0x45/0x6d (width 0x17, top y-0x17).
-            // The config sources are read off a column-1 pointer (&m_3dc[row]) at
-            // -0x60/0/+0x60; the created items cache off a column-1 pointer
-            // (&m_4a8[row]) at -0x10/0/+0x10; the id `c` walks 0xd7.. and each column
-            // uses c-4/c/c+4. ebp is reused as the item pointer (by is dead here).
+
             {
-                i32* cfgp = &m_hlGrid[4].m_value;        // +0x3dc, stride 0x18
-                CSBI_ImageSet** cachep = &m_hlNotify[4]; // +0x4a8, stride 4
+                i32* cfgp = &m_hlGrid[4].m_value;
+                CSBI_ImageSet** cachep = &m_hlNotify[4];
                 i32 y = by + 0x155;
                 i32 c = 0xd7;
                 for (i = 0; i < 4; i++) {
@@ -480,9 +443,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     c++;
                 }
             }
-            // MACHINE: a CSBI_GruntMachine built through BuildResourceTabStatusBar
-            // (its retail ctor inlines the base -> manual vptr stamp), cross-configured
-            // from the two idx sources m_machineA.m_counter/m_machineB.m_counter.
+
             mach = new CSBI_GruntMachine;
             r.left = bx;
             r.top = by + 0xc8;
@@ -505,10 +466,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_machineDisplay = mach;
             m_tabLists[3].AddTail(mach);
-            // Machine foreground: a CSBI_Image whose retail ctor is inlined at the site.
+
             it = new CSBI_Image;
             r.left = bx;
-            r.top = by + 0x1a6; // @refine: retail reads a precomputed slot here
+            r.top = by + 0x1a6;
             r.right = bx + 0x9f;
             r.bottom = by + 0x1df;
             if (!it->SetupImage(
@@ -528,7 +489,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_tabLists[3].AddTail(it);
             m_notify1 = it;
-            // Conveyor top (CSBI_ImageSetAni via its slot-13 Init).
+
             ani = new CSBI_ImageSetAni;
             r.left = bx;
             r.top = by + 0x1bf;
@@ -553,7 +514,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(ani);
-            // Machine chip well (CSBI_ImageSet, rect from cached m_fallRectL..m_510, cache m_500).
+
             it = new CSBI_ImageSet;
             r.left = m_fallRectL + bx;
             r.top = m_fallRectT + by;
@@ -575,11 +536,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify1 = static_cast<CSBI_ImageSet*>(
-                it
-            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_extraNotify1 = static_cast<CSBI_ImageSet*>(it);
             it->m_enabled = 0;
-            // Conveyor bottom (CSBI_ImageSetAni via its slot-13 Init).
+
             ani = new CSBI_ImageSetAni;
             r.left = bx;
             r.top = by + 0x1c7;
@@ -606,7 +565,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_tabLists[3].AddTail(ani);
             return 1;
 
-        case 4: // ---- Multiplayer tab ----
+        case 4:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -628,7 +587,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            // 4 player HEAD slots (CSBI_WarlordHead, y steps 0x43; cached m_warlordHead[0..3]).
+
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0xcf;
@@ -717,13 +676,11 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_tabLists[4].AddTail(it);
             m_warlordHead[3] = static_cast<CSBI_WarlordHead*>(it);
-            // HEAD loop: for each active player slot (g_gameReg per-player block, stride
-            // 0x238) set the head sprite (GetSel) + SetState/ShowFrames on the cached slot.
+
             {
-                CSBI_WarlordHead** slot = m_warlordHead; // +0x61c
+                CSBI_WarlordHead** slot = m_warlordHead;
                 i32 pi = 0;
-                GruntzPlayer* p =
-                    g_gameReg->m_options; // pointer-inducted (== retail's off += 0x238)
+                GruntzPlayer* p = g_gameReg->m_options;
                 do {
                     CShadeTable* sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
@@ -735,19 +692,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                         (*slot)->SetState(2);
                     }
-                    // The cached m_warlordHead slots ARE the four CSBI_WarlordHead items created
-                    // just above; SetState/ShowFrames are that class's own helpers
-                    // (0xeb830 / 0xeb740), not the fabricated base's.
+
                     (*slot)->ShowFrames(0xa, sel);
                     slot++;
                     pi++;
                     p++;
                 } while (p < g_gameReg->m_options + 4);
             }
-            // SMALLICONZ: 15 per-player CSBI_StatzTabGruntBar stat bars built via
-            // BuildMultiplayerTabStatusBar. y steps 0x12; the id p3 = 0x13b + k and
-            // the per-slot index p11 = k. bx is reused as the loop counter (its two
-            // rect offsets bx+0x17/bx+0x52 are precomputed to stack locals).
+
             {
                 i32 by17 = bx + 0x17;
                 i32 by52 = bx + 0x52;
@@ -780,7 +732,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             return 1;
 
-        case 1: // ---- Statz tab ----
+        case 1:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -802,10 +754,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[1].AddTail(it);
-            // Per-grunt STATZ rows: 15 iterations, each an arrow (CSBI_StatzTabArrow via
-            // ConfigureEx + SetDirection/mode) plus a stat bar (CSBI_StatzTabGruntBar via
-            // BuildMultiplayerTabStatusBar). The arrow's rect x-span (bx+aOff..bx+cOff) is
-            // mode-gated on *this; the id p = 0x13b + k. arrows cache to m_18c[k].
+
             {
                 i32 aOff, cOff;
                 if (m_position == 1) {
@@ -876,7 +825,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             return 1;
 
-        case 5: // ---- Game tab ----
+        case 5:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -898,7 +847,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[5].AddTail(it);
-            // WARPSTONE: item 0 unconditional, items 1..4 each gated on m_cmdGrid->Probe(i).
+
             it = new CSBI_ImageSet;
             r.left = bx;
             r.top = by;

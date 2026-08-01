@@ -1,26 +1,26 @@
 #include <rva.h>
-#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Rez/FrameClock.h>
+#include <Io/FileMem.h>
 
 #include <Mfc.h>
-#include <Wap32/Object.h>             // CObject - the shared engine grand-base
-#include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
-#include <Gruntz/Loadable.h>          // CLoadable - the shared child base (slot-1 scalar-delete)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // real +0x10 child type (m_imageRegistry; virtual-dtor delete)
-#include <DDrawMgr/DDrawWorkerCache.h> // real +0x14 child type (m_workerCache; virtual-dtor delete)
-#include <DDrawMgr/DDrawWorkerList.h>  // real +0x0c child type (m_workerList; Init's `new`)
-#include <DDrawMgr/DDrawWorkerMapSmall.h> // real +0x18 child type (m_workerMap; slot-1 scalar-delete)
-#include <DDrawMgr/DDrawSubMgrPages.h> // real +0x04 child type (m_drawTarget: IsLoaded, m_frontPair)
-#include <DDrawMgr/DDrawChildGroup.h>  // real +0x08 child type (m_childGroup)
-#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (Snapshot/RestoreChildren blit-op target)
-#include <Gruntz/GameLevel.h>          // CGameLevel (m_level child; EditDispatch/MainPlaneQueryB)
-#include <string.h>                    // strcpy/memset (inline header build)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // real +0x28 child type (m_2c held stream, ClearMap)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // real +0x2c child type (m_animRegistry; virtual-dtor delete)
-#include <DDrawMgr/DDrawSurfacePair.h>    // m_drawTarget->m_frontPair geometry (m_width/m_height)
-#include <DDrawMgr/DDrawPtrCollections.h> // real +0x1c pool type (non-virtual dtor 0x141d50)
-#include <Dsndmgr/SoundStream.h>          // real +0x20 stream type (Stop 0x137a80 / Free 0x137740)
-#include <Wwd/WwdObjMgr.h>                // ex Globals.h
+#include <Wap32/Object.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/Loadable.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDrawWorkerList.h>
+#include <DDrawMgr/DDrawWorkerMapSmall.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/GameLevel.h>
+#include <string.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Wwd/WwdObjMgr.h>
 
 RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
@@ -50,19 +50,6 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
     Cleanup();
 }
 
-// 0x155900 IS the real 5-arg virtual Init(hWnd,w,h,bpp,flags) - the SurfaceMgr
-// display bring-up: heap-allocate all eleven owned sub-managers, validate each
-// (m_lastError 0x3e9..0x3f2) and configure the display + sound stream.
-//
-// The eleven `new T(this)` blocks are what proves the child classes' constructors:
-// eight of them are expanded INLINE here (base ctor, the default-block-size CMap/
-// CObList member ctors, the derived ??_7 stamp, the trailing field zeroes), so those
-// eight ctors are header-inline - they are now declared as such on each class. Three
-// are out-of-line calls (CGameLevel 0x15ccd0, CDDrawPtrCollections 0x141cc0,
-// SoundStream 0x1376d0). Under /GX each `new` runs under its own __ehfuncinfo state
-// ([esp+0x1c]) with the in-flight pointer homed at [esp+0x10], so the whole
-// allocate-then-construct ladder is one EH state machine; that falls out of the
-// `new` expressions, it is not hand-written.
 RVA(0x00155900, 0x519)
 i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
     m_hWnd = hWnd;
@@ -246,16 +233,13 @@ void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
     CDDrawSurfaceChildA* child = m_drawTarget->m_frontPair;
-    // The level rebuild is INSIDE the resize guard: retail's `je` on the
-    // already-correct size jumps straight to `return 1` (0x155f7b -> 0x155fab),
-    // it does not fall into the m_level branch.
+
     if (child->m_width != x || child->m_height != y) {
         if (m_drawTarget->ResizePages(x, y, flags) == 0) {
             return 0;
         }
         if (m_level != 0) {
-            // Retail rel32 is 0x15d700 = CGameLevel::SetExtentsAndBuildAll(x, y) - the
-            // ex cross-cast "recursive SetDimensions" placeholder mis-read the target.
+
             if (m_level->SetExtentsAndBuildAll(x, y) == 0) {
                 return 0;
             }
@@ -267,13 +251,10 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
 RVA(0x00155fc0, 0x2e)
 void CDDrawSurfaceMgr::FreeContext() {
     if (m_soundRegistry != 0) {
-        // m_2c IS a SoundStream* on the canonical class (the cast that used to sit
-        // here is retired): CDDrawSubMgrLeafScan::BindSoundStream @0x157a80 assigns
-        // it straight from this manager's m_soundStream, and this site's
-        // non-virtual call 0x137a80 is SoundStream::Stop.
+
         SoundStream* inner = m_soundRegistry->m_soundStream;
         if (inner != 0) {
-            inner->Stop(); // 0x137a80 (leaf-scan +0x2c held stream: pause/reset)
+            inner->Stop();
         }
         m_soundRegistry->ClearMap();
     }
@@ -292,17 +273,7 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 
 // @early-stop
 RVA(0x00156020, 0x505)
-// ARGUMENT SLOTS CORRECTED 2026-07-29 (found while naming; frame is entry-0x164 after
-// the 3 EH pushes + `sub esp,0x14c` + ebx/ebp/esi, so arg1..arg4 sit at
-// [base+0x168/0x16c/0x170/0x174]):
-//   * the entry null-check is on arg2, not arg1 - retail @0x15603e loads [esp+0x16c]
-//     (base+0x168 is arg1; with esi pushed the +0x16c form IS arg2) and tests THAT;
-//     `m_callback = arg1` only happens after the check passes (@0x156053).
-//   * SetName's string is arg2 as well (@0x156098 `push esi`), not the callback pointer
-//     reinterpreted as a char* - which is what the old body did, using `cb` twice and
-//     never reading arg2 at all.
-//   * arg3 is the header name (@0x15619a the strlen/rep-movs source) and arg4 the
-//     typeId every ForEach* below forwards.
+
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i32 typeId) {
     if (path == 0) {
         return 0;
@@ -319,7 +290,6 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
         return 0;
     }
 
-    // Build the 0x120-byte header record (CTime stamp + the name strcpy).
     CTime now;
     CSnapshotHeader header;
     memset(&header, 0, sizeof(header));
@@ -333,7 +303,6 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
     header.m_activeCount = probe;
     S.Write(&header, sizeof(header));
 
-    // ---- dispatch the five blit modes over the children ----
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
@@ -372,17 +341,6 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::RestoreChildren (0x156530, __thiscall, /GX) - the load
-// counterpart of SnapshotChildren. Opens the same CFileMem-backed serializer over
-// `name`, reads back the 0x120-byte header (publishing header[0x114] -> g_wwdObjIdCounter),
-// then replays the run-callback (m_callback, REQUIRED here - a null m_callback rejects) and the
-// child load-ops over the m_08 (CDDrawChildGroup) + m_24 (CGameLevel) children for
-// modes 2/6/7/8. Success closes via End()/MainPlaneQueryB()/Close(). Field/method
-// names are placeholders; OFFSETS, vtable slots, sizes, store order and the ordered
-// call sequence are load-bearing. Engine callees are reloc-masked external.
-//
-// @early-stop
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
     if (name == 0) {
@@ -403,10 +361,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
     CSnapshotHeader header;
     S.Read(&header, sizeof(header));
 
-    // API-forced, at one seam: m_callback is a client-registered hook whose last
-    // parameter is an opaque payload word, so the out-pointer has to be widened into
-    // it - widened once here instead of at each of the four dispatches.
-    void* headerArg = &header; // HP_Callback's last word is a pointer, not an i32
+    void* headerArg = &header;
 
     if (m_callback == 0 || m_callback(this, &S, 2, typeId, headerArg) == 0) {
         return 0;
@@ -450,9 +405,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
 }
 
 RVA(0x00156a90, 0x3a)
-// The four slots are the installed callback's own (ar, mode, typeId, ppObj): the
-// callback is SerialObjectFactory @0x0d2a0, whose mode-9 arm switches on typeId-1000 to
-// pick the class it news and writes the result back through the last slot.
+
 i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, i32 mode, i32 typeId, void* payload) {
     if (!ar) {
         return 0;
@@ -463,29 +416,8 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, i32 mode, i32 typeId, void* paylo
     return m_callback(this, ar, mode, typeId, payload) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// LoadRecordFile (0x156ad0) - the READ counterpart of SnapshotChildren above: open a
-// snapshot file by name, pull its 0x120-byte CSnapshotHeader, then optionally slurp a
-// caller buffer behind it. Free __stdcall (`ret 0x14` = 5 dword args), /GX frame from
-// the local CFileMem. Homed here from GapFunctions.cpp by RVA neighbourhood (it sits
-// immediately after this TU's 0x156a90 block).
-//
-// The 0x120 length is not a magic number: it is sizeof(CSnapshotHeader), the exact
-// record SnapshotChildren writes 130 lines above (`S.Write(&header, sizeof(header))`).
-// That pins the whole shape - name -> SetName(name,1,0) -> Open -> Read(header) ->
-// Read(buf,len) -> Ready.
-//
-// RETAIL BUG, transcribed deliberately: the header destination is `&hdrOut`, the
-// ADDRESS OF THE POINTER PARAMETER, not the pointer. It is a `lea eax,[esp+0x4c]` on
-// the arg1 slot, not a `mov` - unambiguous once the frame is laid out (S+0x40 is the
-// trylevel the `mov [esp+0x40],N` stores prove, so S+0x44 is the return address and
-// S+0x48/S+0x4c are arg0/arg1). So retail reads 288 bytes over its own argument block,
-// which lands `buf`/`len` inside the region it just overwrote. That is a classic stray
-// `&`, and it is very likely WHY this function is a zero-ref orphan (gruntz sema xref
-// --tree: no direct call/jmp rel32 caller anywhere): written, found broken, abandoned.
-// Reconstructing it as `S.Read(hdrOut, ...)` would be a silent correction of retail.
 // @dead-code
-// zero-ref: no caller in .text. Kept and reconstructed rather than stubbed.
+// Zero-ref: retail has no caller or address-taking reference.
 // @early-stop
 RVA(0x00156ad0, 0x1d2)
 i32 __stdcall
@@ -500,7 +432,7 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
     if (S.Open() == 0) {
         return 0;
     }
-    // `&hdrOut` is retail's, not a typo of ours - see the RETAIL BUG note above.
+
     S.Read(&hdrOut, sizeof(CSnapshotHeader));
     if (buf != 0 && len > 0) {
         S.Read(buf, len);
@@ -508,3 +440,6 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
     S.Ready();
     return 1;
 }
+
+RVA_COMPGEN(0x00157980, 0x74, ??1CFileMem@@UAE@XZ)
+RVA_COMPGEN(0x00157a20, 0x1e, ??_GCFileMem@@UAEPAXI@Z)

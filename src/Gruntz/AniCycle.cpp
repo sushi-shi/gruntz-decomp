@@ -1,13 +1,13 @@
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActNameRegistry.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>
 #include <Gruntz/AniCycle.h>
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
+#include <Gruntz/SerialArchive.h>
+#include <Rez/FrameClock.h>
 #include <rva.h>
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>
 
 VTBL(CAniCycle, 0x001e86a4);
 template<> DATA(0x00246088)
@@ -21,12 +21,6 @@ i32 CAniCycle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     return Chain(ar, tag, c, d) != 0;
 }
 
-// CAniCycle::~CAniCycle @0x0f510 - empty vtable-anchor dtor; folds the CUserLogic
-// teardown (the destructible +0x18 link forces the /GX EH frame).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CAniCycle() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x0000f4e0, 0x1e, ??_GCAniCycle@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 
@@ -43,23 +37,12 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000aaf80, 0x102)
 void CAniCycle::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))))();
     }
 }
 
-// CAniCycle::RegisterActs @0x0ab0e0 - bind the class's per-frame handler
-// (AdvanceAnim @0x0ab2e0) to the activation key "A" via the shared name registry.
-// The SAME archetype as CBehindCandyAni::RegisterActs.
-//
-// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
-// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
-// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
-// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
-// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000ab0e0, 0x18d)
 void CAniCycle::RegisterActs() {
     i32 id = ActFindId("A");
@@ -81,7 +64,6 @@ void CAniCycle::RegisterActs() {
     (*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
-
 
 RVA(0x000ab2e0, 0x17)
 i32 CAniCycle::AdvanceAnim() {

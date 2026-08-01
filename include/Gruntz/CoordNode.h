@@ -4,18 +4,17 @@
 #include <rva.h>
 
 struct Coord {
-    i32 m_x; // +0x00
-    i32 m_y; // +0x04
-    // 0x75a10 - fill both coords, return this (body in TriggerMgrHitTest.cpp; the
-    // ex-CPairXY/Coord views' Set - three names, one {x,y} pair, folded here).
+    i32 m_x;
+    i32 m_y;
+
     Coord* Set(i32 x, i32 y);
 };
 SIZE(0x8);
 
 struct CoordNode {
-    CoordNode* m_next;  // +0x00  intrusive list/free link
-    char m_pad04[0x04]; // +0x04  unused
-    Coord* m_coord;     // +0x08  {x,y} payload
+    CoordNode* m_next;
+    char m_pad04[0x04];
+    Coord* m_coord;
 };
 SIZE(0xc);
 

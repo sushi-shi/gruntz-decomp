@@ -7,20 +7,6 @@
 
 namespace Utils {
 
-    // ---------------------------------------------------------------------------
-    // RegistryHelper - opens a chain of nested registry subkeys and reads/writes
-    // values from the deepest one.
-    //   +0x00 m_open     : open/result gate (nonzero when the chain is open).
-    //   +0x04 m_baseKey  : base HKEY saved by Open().
-    //   +0x08 m_key1     : opened key #1   } a path of nested HKEYs created/opened by
-    //   +0x0c m_key2     : opened key #2   } Open(); Close() RegCloseKey()s them all.
-    //   +0x10 m_key3     : opened key #3   }
-    //   +0x14 m_key4     : opened key #4   } (Close skips m_key4 when it == m_valueKey)
-    //   +0x18 m_valueKey : deepest key - the one GetValue*/SetValue* operate on.
-    //   +0x1c m_keyNameBuf : char[0x100] - Open() strcpy's szKeyName2 here.
-    //   +0x11c m_lastKeyBuf: char[0x100] - Open() strcpy's szLastKey here.
-    // (Layout pinned by the byte-exact getters + Close + Open.)
-    // ---------------------------------------------------------------------------
     class RegistryHelper {
     public:
         RegistryHelper() {
@@ -44,8 +30,7 @@ namespace Utils {
             DWORD* pValueBufferSize,
             char* szDefault
         );
-        // The in/out byte count IS the registry API's LPDWORD - typed so `&size`
-        // binds straight through with no pun.
+
         void* GetValueBinary(
             char* szValueName,
             void* pBuffer,
@@ -57,19 +42,19 @@ namespace Utils {
         i32 SetValueString(const char* szValueName, const char* szValue);
         i32 SetValueBinary(char* szValueName, void* pData, u32 dataSize);
         i32 SetValueDword(char* szValueName, DWORD value);
-        i32 DeleteValue(char* szValueName); // 0x139620
+        i32 DeleteValue(char* szValueName);
         void Close();
         i32 GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult);
 
-        i32 m_open;               // +0x00  open/result gate
-        HKEY m_baseKey;           // +0x04  base HKEY
-        HKEY m_key1;              // +0x08
-        HKEY m_key2;              // +0x0c
-        HKEY m_key3;              // +0x10
-        HKEY m_key4;              // +0x14
-        HKEY m_valueKey;          // +0x18  deepest/open registry key
-        char m_keyNameBuf[0x100]; // +0x1c
-        char m_lastKeyBuf[0x100]; // +0x11c
+        i32 m_open;
+        HKEY m_baseKey;
+        HKEY m_key1;
+        HKEY m_key2;
+        HKEY m_key3;
+        HKEY m_key4;
+        HKEY m_valueKey;
+        char m_keyNameBuf[0x100];
+        char m_lastKeyBuf[0x100];
     };
 
 } // namespace Utils

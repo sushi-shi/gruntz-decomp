@@ -1,17 +1,14 @@
-#include <Gruntz/StateDispatch.h> // this TU's external declarations
+#include <Gruntz/StateDispatch.h>
 #include <rva.h>
 
-#include <Gruntz/LevelTimeDtor.h> // canonical CLevelTime : CTileLogic : CUserLogic (+ CGameObject/AnimWorkerObj)
+#include <Gruntz/LevelTimeDtor.h>
 
 class CUserLogic;
 
 RVA(0x0009b770, 0xf1)
 i32 StateDispatch(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_7c;
-    // aux->m_1c doubles as the state id here (0 / 0x1d / 0x1e / 0x50..0x53 / 0x3e8)
-    // - the same proven-heterogeneous aux slot other sprite classes use as a
-    // lookup-node pointer; kept generically typed in the canonical (documented
-    // variant), read/written through the int view at this site.
+    AnimWorkerObj* aux = obj->m_animWorker;
+
     switch (static_cast<u32>(aux->ActKey())) {
         case 0: {
             aux->SetActKey(0x3e8);
