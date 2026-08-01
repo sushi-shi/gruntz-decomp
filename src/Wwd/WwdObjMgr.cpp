@@ -1523,10 +1523,13 @@ i32 CDDrawChildGroup::PruneOrphans() {
         CWwdGameObject* val = 0;
         MapGetNext(m_map48, pos, key, val);
         if (val != 0) {
-            // ONE `||` condition, not a re-zero of `found` in the miss arm: retail's
-            // `test eax,eax / je <the remove block>` is the short-circuit's first arm,
-            // then `mov eax,[found] / cmp eax,esi / jne <keep>`. Our re-zero made cl
-            // compare the slot against itself (`mov [esp+14],esi / cmp [esp+14],esi`).
+            // Retail materialises the owner as a VALUE - `test eax,eax / je L /
+            // mov eax,[found] / L: cmp eax,esi` - where this `||` chain gives a
+            // second MEMORY compare and no load. Measured 2026-08-01: every value
+            // spelling is worse, because cl if-converts the select into
+            // `neg eax / sbb eax,eax / and eax,[found]` and spends a callee-saved
+            // register on it: `owner = 0; if (hit) owner = found;` 85.9,
+            // `hit ? found : 0` 85.9, explicit if/else 88.2, this `||` 93.8.
             void* found = 0;
             if (m_map2c.Lookup(WwdKey(val), found) == 0 || found == 0) {
                 m_map48.RemoveKey(WwdKey(val));

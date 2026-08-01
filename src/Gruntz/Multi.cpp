@@ -2973,12 +2973,17 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
         text[0x80] = 0;
         len = 0x80;
     }
+    // SIBLING trims, not nested. Retail falls from the first char test straight into
+    // the SECOND `len > 0` test (`jge 0xbb1fb`), and its first `len > 0` jle is
+    // threaded onto the shared exit - both only make sense if the two guards are
+    // peers. Nesting them made cl exit on the first non-control char and spill the
+    // byte through dl instead of comparing memory against the hoisted `al = ' '`.
     if (len > 0 && text[len - 1] < 0x20) {
         text[len - 1] = 0;
         len--;
-        if (len > 0 && text[len - 1] < 0x20) {
-            text[len - 1] = 0;
-        }
+    }
+    if (len > 0 && text[len - 1] < 0x20) {
+        text[len - 1] = 0;
     }
 
     char line[0x12c];

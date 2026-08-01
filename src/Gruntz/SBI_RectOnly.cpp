@@ -739,6 +739,10 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_4, 4);
 
     g_serialCounter++;
+    // `obj` is declared FIRST: retail overlays it on the dead `s` parameter home
+    // ([esp+0x1c]) and gives `seq` a fresh frame dword ([esp+0x14]); declaring seq
+    // first makes cl overlay seq instead and swaps every slot in the pair.
+    CGameObject* obj = 0;
     // NOT zero-initialised - Read fills it. A `= 0` emits a store retail does not have.
     i32 seq;
     s->Read(&seq, 4);
@@ -746,22 +750,25 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     // Resolve the serialized object id through the child group's serialize map
     // (m_map48: id -> CGameObject*, the same map GruntVoice/Play deserializers
     // consult); keep it only when GetClassId proves the CreateSprite kind.
-    // The null arm is a VALUE (`m8 = 0`) that joins, not an early-out: retail emits
-    // `xor eax,eax; jmp` into the join register and both the store and the gate below
-    // it live inside this branch. Pre-seeding `m8 = 0` above the `if` lets cl skip the
-    // store on the null path, which is a different function.
-    CGameObject* obj = 0;
+    // The MISS joins the same tail: retail's `test eax,eax / je` off Lookup lands on
+    // the class-id JOIN with eax still 0, so a miss stores `m_barSprite = 0` and the
+    // `seq != 0` gate still fires. Nesting the tail inside the `if` (the old shape)
+    // skipped BOTH - that is the behaviour bug jcc_sieve flagged as branch #2.
+    i32 kind = 0;
     if (MapLookupById(gm->m_childGroup->m_map48, seq, obj)) {
-        CWwdGameObjectA* m8;
+        // if/else, NOT `&& obj != 0`: retail's null arm is the INLINE one
+        // (`xor eax,eax; jmp JOIN`) and the GetClassId call is the branch target
+        // (`jne`), which only the explicit else produces.
         if (obj == 0) {
-            m8 = 0;
+            kind = 0;
         } else {
-            m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
+            kind = obj->GetClassId();
         }
-        m_barSprite = m8;
-        if (m8 == 0 && seq != 0) {
-            return 0;
-        }
+    }
+    CWwdGameObjectA* m8 = (kind == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
+    m_barSprite = m8;
+    if (m8 == 0 && seq != 0) {
+        return 0;
     }
 
     s->Read(&m_rect10.left, 0x10);

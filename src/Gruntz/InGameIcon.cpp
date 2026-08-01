@@ -1175,11 +1175,11 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     i32 vis = m_object->m_placeMode;
     if (vis == 1) {
-        if (g_gameReg->m_isEasyMode == 0) {
-            m_38->m_flags |= 0x10000;
-            return;
-        }
-        if (g_gameReg->m_134 != 1) {
+        // ONE `||` guard. Retail emits only TWO hide-bodies for the whole gate:
+        // this arm's easy-mode exit CROSS-JUMPS onto the vis==2 body (0x992c4)
+        // and only the `m_134 != 1` exit keeps an inline copy. Splitting this into
+        // two `if ... return` statements gives each its own body - three copies.
+        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
             m_38->m_flags |= 0x10000;
             return;
         }

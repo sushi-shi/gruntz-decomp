@@ -388,16 +388,14 @@ i32 CGruntVoice::IdleHidden() {
     return 0;
 }
 
-// @early-stop
-// 73.24 -> 85.84 (measured 2026-07-27, exit-block layout): base 6 rets / retail 4. The
-// three "lost the source object" refusals (both arms' resolve miss + the logic-null
-// gate) each carried their own `m_object->m_stateFlags |= 1; return 0;` block with a
-// full epilogue; retail 0x11aa1e has ONE such block that all three jump into. Hoisted
-// to a single bottom `stopped:` label.
-// Residual: retail does NOT fold the `MapLookup(...) != 0` test into the following
-// `resolved == 0` test - it emits `test eax,eax; je <merge>` then a separate
-// `cmp edi,eax` against the materialized zero-register - where cl merges them into one
-// branch. A zero-register-pinning artifact; not source-steerable from this spelling.
+// 73.24 -> 85.84 -> 100.00 EXACT. Two shape bugs, both found by the jcc sieve:
+// (1) the three "lost the source object" refusals each carried their own
+// `m_object->m_stateFlags |= 1; return 0;` block with a full epilogue - retail
+// 0x11aa1e has ONE such block that all three reach (bottom `stopped:` label);
+// (2) the LAST gate (the m_owner != 0 arm's resolve miss) is spelled POSITIVELY -
+// `if (resolved != 0) { ...; return 0; }` - so retail's `cmp eax,edi / je` keeps
+// that arm's body inline and puts the lost-source copy after it. The negative
+// `if (resolved == 0) goto stopped;` inverted the two blocks.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
     if (m_sample == 0 || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
@@ -441,18 +439,22 @@ i32 CGruntVoice::Update() {
         } else {
             resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
         }
-        if (resolved == 0) {
-            goto stopped;
+        // POSITIVE gate here (unlike the two above): retail's `cmp eax,edi / je`
+        // keeps this arm's body inline and puts the lost-source copy AFTER it,
+        // which only the `if (resolved != 0) { ...; return 0; }` shape gives.
+        if (resolved != 0) {
+            m_object->m_stateFlags &= ~1;
+            i32 dx = 0, dy = 0;
+            CImage* layer = static_cast<CWwdGameObjectA*>(resolved)->m_layer;
+            if (layer != 0) {
+                dx = layer->m_originX;
+                dy = layer->m_originY;
+            }
+            m_object->m_screenX = resolved->m_screenX + dx;
+            m_object->m_screenY = resolved->m_screenY + dy - 0x32;
+            return 0;
         }
-        m_object->m_stateFlags &= ~1;
-        i32 dx = 0, dy = 0;
-        CImage* layer = static_cast<CWwdGameObjectA*>(resolved)->m_layer;
-        if (layer != 0) {
-            dx = layer->m_originX;
-            dy = layer->m_originY;
-        }
-        m_object->m_screenX = resolved->m_screenX + dx;
-        m_object->m_screenY = resolved->m_screenY + dy - 0x32;
+        goto stopped;
     }
     return 0;
     // retail 0x11aa1e: ONE "lost the source object" tail; all three resolve-miss

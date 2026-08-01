@@ -472,18 +472,21 @@ void CDDSurface::ReloadImageCache() {
 // real <ddraw.h> IDirectDrawSurface COM interface whose slot 0 is IUnknown::QueryInterface)
 // the QI probe builds on QI == S_OK (retail).
 // @early-stop
-// ~62%: complete + correct reconstruction (QI slot 0, inlined `new CDDSurface`, slot-1
-// Refresh, SetAtGrow/delete, ret 0xc all disasm-verified). Residual is the /GX
-// ctor-in-flight EH-state index (the Create7f0_1/CreateA factory-EH family wall).
+// 62 -> 87.5 -> 99.08. The old "/GX ctor-in-flight EH-state" note was wrong: the
+// Refresh gate was spelled with the SUCCESS arm first, which swapped the two blocks.
+// Residual is ONE instruction of 102: retail compares the QI HRESULT against its
+// materialised zero register (`cmp eax,edi`) where cl emits `test eax,eax`.
 RVA(0x0013e9a0, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
     if (surf->QueryInterface(IID_IDirectDrawSurface3, &payload) == 0) {
         CDDSurface* item = new CDDSurface;
-        if (item->Refresh(static_cast<IDirectDrawSurface*>(payload))) { // slot 1 @+0x04
+        // The FAILURE arm is the `if`: retail's `test eax,eax / jne <SetAtGrow>`
+        // keeps the drop inline and sinks the cache insert out of line.
+        if (item->Refresh(static_cast<IDirectDrawSurface*>(payload)) == 0) { // slot 1 @+0x04
+            delete item; // slot 0 @+0x00  scalar-deleting dtor (implicit null guard)
+        } else {
             g_imageCache.SetAtGrow(g_imageCache.GetSize(), item);
-        } else if (item) {
-            delete item; // slot 0 @+0x00  scalar-deleting dtor
         }
     }
     return 1; // DDENUMRET_OK (continue enumeration)

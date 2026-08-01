@@ -156,9 +156,19 @@ i32 CSBI_StatzTabGruntBar::Update() {
         abilityVal = -1;
         overrideVal = -1;
         selectVal = 0;
-        i32 cap = (level > 0x16) ? unit->m_19c : level;
+        // ASSIGN-then-override, not `?:`. Retail hoists the else-value into the
+        // destination BEFORE the compare (`mov eax,edx / jle / mov eax,[m_19c]`),
+        // so the low arm needs no jump at all; a `?:` gives cl two arms joined by
+        // a `jmp`, which is two extra instructions on each of the two sites.
+        i32 cap = level;
+        if (level > 0x16) {
+            cap = unit->m_19c;
+        }
         if (cap != 0) {
-            abilityVal = (level > 0x16) ? unit->m_19c : level;
+            abilityVal = level;
+            if (level > 0x16) {
+                abilityVal = unit->m_19c;
+            }
             if (abilityVal == 3) {
                 abilityVal = unit->m_194 + 0x11;
             }
@@ -173,24 +183,28 @@ i32 CSBI_StatzTabGruntBar::Update() {
             selectVal = table->SelectionListFind(m_unitCol, m_unitRow);
         }
 
-        // self-bumping anim timer
+        // self-bumping anim timer. The ARRIVED test is the positive one: retail's
+        // `test eax,eax / je <or ebp,-1>` puts the elapsed check inline and sinks
+        // `timerVal = -1` out of line, which only `if (arrived) ... else -1` gives.
         timerVal = m_timerValue;
-        if (unit->m_arrived == 0) {
-            timerVal = -1;
-        } else if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timerAnchor.m_v
-                   >= m_timerWindow.m_v) {
-            if (timerVal > 0) {
-                timerVal++;
-                if (timerVal > 0xa) {
+        if (unit->m_arrived != 0) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timerAnchor.m_v
+                >= m_timerWindow.m_v) {
+                if (timerVal > 0) {
+                    timerVal++;
+                    if (timerVal > 0xa) {
+                        timerVal = 1;
+                    }
+                } else {
                     timerVal = 1;
                 }
-            } else {
-                timerVal = 1;
+                m_timerWindowLo = 0x32;
+                m_timerWindowHi = 0;
+                m_timerAnchorLo = g_frameTime;
+                m_timerAnchorHi = 0;
             }
-            m_timerWindowLo = 0x32;
-            m_timerWindowHi = 0;
-            m_timerAnchorLo = g_frameTime;
-            m_timerAnchorHi = 0;
+        } else {
+            timerVal = -1;
         }
     }
 

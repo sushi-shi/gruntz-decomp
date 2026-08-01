@@ -1860,9 +1860,14 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     // if (v > 0x16) v = m_19c;` form ran it whenever m_entranceReason itself was 1.
     i32 v = 0;
     if (m_entranceReason > 0x16) {
-        i32 mode = m_19c; // named: retail compares the LOADED value and copies it
-        if (mode == 1) {
-            v = mode;
+        // ASSIGN-then-cancel, not test-then-assign. Retail's `mov eax,[m_19c] /
+        // cmp eax,1 / jne <join> / mov ecx,eax` keeps the LOADED value in a
+        // register and copies it; every test-first spelling lets cl const-prop the
+        // `== 1` into `cmp mem,1` + an immediate `mov eax,1`, whose different
+        // colouring cascades through the rest of the function.
+        v = m_19c;
+        if (v != 1) {
+            v = 0;
         }
     }
     if (v != 0) {
