@@ -272,16 +272,22 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     WaveFormatPtr fmtPtr;
     fmtPtr.m_rec = &wf;
     desc.lpwfxFormat = fmtPtr.m_sdk;
+    // DirectSound requires cbSize==0 for PCM, and retail forces it HERE - 0x137832
+    // `mov WORD PTR [esp+0x28],si`, the same store its CreateBuffer twin has at
+    // 0x1367a2. The placement is load-bearing: it must follow `&wf` escaping into
+    // lpwfxFormat, or cl dead-store-eliminates it against the copy above.
+    //
+    // This spelling COSTS ~1.6 points here (65.26 vs 66.82 with the store omitted;
+    // six cells in config/axes/createstreambuffer2.json), while the identical line
+    // GAINS its twin +3.63 - two near-twins with different optima over the same
+    // sites, see docs/patterns/same-sites-different-per-function-optimum.md. The
+    // store is byte-evidenced in retail, so it stays: a shape seen in the target
+    // disasm is kept even when its own % stalls (CLAUDE.md, MAX-match convention).
+    // MAX preserves the 66.92 already observed. If a better placement is found it
+    // is a climb from here, not a re-litigation of whether the store exists.
+    wf.cbSize = 0;
     desc.dwSize = 0x14;
     desc.dwBufferBytes = bytes;
-    // MISSING, KNOWINGLY: retail also forces `wf.cbSize = 0` here (0x137832
-    // `mov WORD PTR [esp+0x28],si`, the same store its CreateBuffer twin has). Every
-    // placement tried COSTS points in THIS function - after the escape 64.82, in
-    // retail's emission order 65.26, with flags/ptr last 65.26, escape-first 66.80,
-    // against 66.82 for this spelling with no zero at all
-    // (config/axes/createstreambuffer2.json). Its twin gains +3.63 from the very same
-    // line, so this is a placement we have not found, NOT evidence the store is
-    // absent. Open lead - do not read the omission as a decision.
 
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
