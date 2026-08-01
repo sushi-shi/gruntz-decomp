@@ -344,31 +344,40 @@ void CStatusBarMgr::NotifyAllSlots() {
 // table (count m_ptrPool.GetSize()), each element streamed as 8 bytes. Field buffers are
 // addressed by offset (the codegen is naming-independent here).
 // @early-stop
-// ~95.6%: the entire ~70-field transfer body is byte-exact; the residual is a
-// regalloc/frame-size difference in the trailing 3x4 nested loop (retail pins
-// the inner counter in ebp + reserves 1 stack dword via `push ecx`; the
-// recompile spills the inner counter and reserves 3 via `sub esp,0xc`). Not
-// steerable from C (docs/patterns regalloc/scheduling walls); deferred.
+// The `op` dispatch at the top is a SWITCH, not an if/else-if chain: retail is
+// `mov eax,ebx / sub eax,4 / je <case4> / sub eax,3 / je <case7> / dec eax / jne <out>`
+// with the case-8 body as the fallthrough and cases 4 and 7 sunk to 0x108e2a/0x108e18
+// near the end of the function. An if-chain emits `cmp ebx,4 / jne` and keeps its first
+// arm inline, which is what we had. 72.33 -> 76.04 on that one conversion.
+// The LATER two-way `op == 4 / op == 7` transfers are genuinely if-chains - retail
+// compares them with a plain `cmp ebx,0x4` - so they stay as written.
+// Residual: still 134 B short of retail's 0x96c and 109 vs 111 branches, so something
+// structural is still missing besides the old note's regalloc claim (that note said
+// ~95.6% and was stale; the function measured 72.33 before this change).
 
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     if (s == 0) {
         return 0;
     }
-    if (op == 4) {
-        if (Serialize(s) == 0) {
-            return 0;
-        }
-    } else if (op == 7) {
-        if (Deserialize(s) == 0) {
-            return 0;
-        }
-    } else if (op == 8) {
-        (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
-        if (m_position == 0) {
-            RefreshA();
-            winapi_0fe520_SetRect();
-        }
+    switch (op) {
+        case 4:
+            if (Serialize(s) == 0) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (Deserialize(s) == 0) {
+                return 0;
+            }
+            break;
+        case 8:
+            (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
+            if (m_position == 0) {
+                RefreshA();
+                winapi_0fe520_SetRect();
+            }
+            break;
     }
 
     if (m_retabNotify == 0) {

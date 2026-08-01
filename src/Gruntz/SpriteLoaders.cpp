@@ -321,44 +321,59 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 // them (this->ebx, kind->ebp), a register rename that cascades through every
 // per-block `cmp kind` + `lea edi,[this+N]`. Logic (call mapping, slot mapping,
 // pointer-advance, ret 0x10) exact; see docs/patterns/zero-register-pinning.md.
+// The three kind dispatches are SWITCHES, not `if (kind==4) ... else if (kind==7)`.
+// Retail's ladder is `cmp ebx,4 / je <case4> / cmp ebx,7 / jne <out>` with the case-7
+// body as the FALLTHROUGH and case 4 sunk below it - which is a switch's layout, not an
+// if-chain's (an if-chain keeps its first arm inline, which is what we emitted).
+// 87.94 -> 99.43 on this one edit.
 RVA(0x0009c1c0, 0xdb)
 i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
-    if (kind == 4) {
-        i32 r = Serialize(ar);
-        if (!r) {
-            return r;
+    switch (kind) {
+        case 4: {
+            i32 r = Serialize(ar);
+            if (!r) {
+                return r;
+            }
+            break;
         }
-    } else if (kind == 7) {
-        i32 r = Deserialize(ar);
-        if (!r) {
-            return r;
+        case 7: {
+            i32 r = Deserialize(ar);
+            if (!r) {
+                return r;
+            }
+            break;
         }
     }
 
     i32* p = &m_baseTimeLo;
-    if (kind == 4) {
-        ar->Write(p, 8);
-        p += 2;
-        ar->Write(p, 8);
-    } else if (kind == 7) {
-        ar->Read(p, 8);
-        p += 2;
-        ar->Read(p, 8);
+    switch (kind) {
+        case 4:
+            ar->Write(p, 8);
+            p += 2;
+            ar->Write(p, 8);
+            break;
+        case 7:
+            ar->Read(p, 8);
+            p += 2;
+            ar->Read(p, 8);
+            break;
     }
 
     p = &m_38;
-    if (kind == 4) {
-        ar->Write(p, 8);
-        p += 2;
-        ar->Write(p, 8);
-        return 1;
-    } else if (kind == 7) {
-        ar->Read(p, 8);
-        p += 2;
-        ar->Read(p, 8);
+    switch (kind) {
+        case 4:
+            ar->Write(p, 8);
+            p += 2;
+            ar->Write(p, 8);
+            return 1;
+        case 7:
+            ar->Read(p, 8);
+            p += 2;
+            ar->Read(p, 8);
+            break;
     }
     return 1;
 }
