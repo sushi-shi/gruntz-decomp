@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "source": "src/Font/Font.cpp",
+ "rva": "0x179e70",
+ "axes": [
+  {
+   "name": "glyph_decl",
+   "find": "    i32 startChar;\n    i32 acc = 0;\n    if (rc.left != 0) {\n        i32 prev = 0;\n        i32 i = 0;\n        while (acc < rc.left) {\n            Glyph g;\n            prev = acc;",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "g_top",
+     "replace": "    Glyph g;\n    i32 startChar;\n    i32 acc = 0;\n    if (rc.left != 0) {\n        i32 prev = 0;\n        i32 i = 0;\n        while (acc < rc.left) {\n            prev = acc;"
+    },
+    {
+     "name": "g_top_height0",
+     "replace": "    Glyph g;\n    g.height = 0;\n    i32 startChar;\n    i32 acc = 0;\n    if (rc.left != 0) {\n        i32 prev = 0;\n        i32 i = 0;\n        while (acc < rc.left) {\n            prev = acc;"
+    },
+    {
+     "name": "g_and_gm_top",
+     "replace": "    Glyph g;\n    Glyph gm;\n    i32 startChar;\n    i32 acc = 0;\n    if (rc.left != 0) {\n        i32 prev = 0;\n        i32 i = 0;\n        while (acc < rc.left) {\n            prev = acc;"
+    }
+   ]
+  },
+  {
+   "name": "rightclip_glyph",
+   "find": "            do {\n                Glyph g;\n                w += m_font->GetGlyph(g, text[j]).width;",
+   "options": [
+    {
+     "name": "keep"
+    },
+    {
+     "name": "drop",
+     "replace": "            do {\n                w += m_font->GetGlyph(g, text[j]).width;"
+    }
+   ]
+  },
+  {
+   "name": "mainloop_glyph",
+   "find": "    for (i32 ci = startChar; ci < endChar; ci++) {\n        Glyph g;\n        Glyph gm = m_font->GetGlyph(g, text[ci]);\n        i32 gw = gm.width;",
+   "options": [
+    {
+     "name": "keep_both"
+    },
+    {
+     "name": "drop_g",
+     "replace": "    for (i32 ci = startChar; ci < endChar; ci++) {\n        Glyph gm = m_font->GetGlyph(g, text[ci]);\n        i32 gw = gm.width;"
+    },
+    {
+     "name": "drop_both",
+     "replace": "    for (i32 ci = startChar; ci < endChar; ci++) {\n        gm = m_font->GetGlyph(g, text[ci]);\n        i32 gw = gm.width;"
+    },
+    {
+     "name": "drop_g_direct",
+     "replace": "    for (i32 ci = startChar; ci < endChar; ci++) {\n        i32 gw = m_font->GetGlyph(g, text[ci]).width;"
+    }
+   ]
+  }
+ ]
+}

@@ -580,10 +580,14 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @early-stop
-// shrink-wrapped callee-save push wall (~90%): logic + offsets + externs byte-exact.
-// Retail saves only edi at entry and defers `push esi`/`push ebx` past the m_78 null
-// guard (the early-out restores just edi); cl pushes all three upfront. Not source-
-// steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
+// shrink-wrapped callee-save push wall (90.31), in the OPPOSITE direction to its
+// sibling SoundDevice::FreeSamples: here RETAIL shrink-wraps (only edi at entry,
+// `push esi`/`push ebx` deferred past the m_78 null guard, the early-out restoring
+// just edi) and cl pushes all three up front. Logic + offsets + externs byte-exact.
+// A 4-cell matrix over the guard (config/axes/getitem.json: `!x`, `x == 0`, an owner
+// local, the node declared above the guard) scored ALL FOUR identical at 90.31 - the
+// site is not the lever. That the two functions need OPPOSITE shrink-wrap decisions
+// from the same guard shape is why this is the allocator, not the source.
 RVA(0x00135d70, 0x92)
 DirectSoundMgr* DSoundCloneInst::GetItem() {
     if (!m_owner->m_initialized) {
@@ -1374,8 +1378,15 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
 // FreeSamples: walk the voice list; per node run its slot-1 stop, unlink, then
 // `delete (PureSoundElem*)node` (pure-base teardown + RezFree). Returns 1.
 // @early-stop
-// regalloc/early-out scheduling wall (77%): retail reserves all 4 callee-saved regs and
-// runs the early-out in-frame; MSVC emits a leaner frameless early-out. Loop byte-exact.
+// shrink-wrap wall (77.31), and the guard form is NOT the lever. The whole loop body
+// is BYTE-IDENTICAL (including the neg/sbb/and null-mask in eax); the only difference
+// is that retail saves all four callee-saved regs in the prologue and pops them on
+// the early exit, while cl distributes the pushes past the gate. A 4-cell matrix
+// (config/axes/freesamples.json) refutes docs/patterns/positive-gate-enables-shrink-
+// wrap.md here: the early-return baseline is the BEST at 77.31, the positive form
+// `if (m_initialized) { loop; return 1; } return 0;` drops to 72.13 and a result
+// variable to 71.39. Retail's own polarity is the early return too (`jne body`,
+// return-0 as the fallthrough), so both sides already agree on the gate.
 RVA(0x00136ed0, 0x72)
 i32 SoundDevice::FreeSamples() {
     if (m_initialized == 0) {

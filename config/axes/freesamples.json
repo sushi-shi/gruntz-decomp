@@ -1,0 +1,28 @@
+{
+ "schema": 1,
+ "source": "src/Dsndmgr/DirectSoundMgr.cpp",
+ "rva": "0x136ed0",
+ "axes": [
+  {
+   "name": "guard_form",
+   "find": "i32 SoundDevice::FreeSamples() {\n    if (m_initialized == 0) {\n        return 0;\n    }\n    DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);\n    while (node) {\n        DSoundLink* n = node->m_link.m_next;\n        DSoundElem* next = elemOf<DSoundElem>(n);\n        node->Stop(); // slot 1: stop the element before freeing it\n        m_voiceList.Unlink(node ? &node->m_link : 0);\n        if (node) {\n            // pure-base teardown: reset vptr to ??_7PureSoundElem (0x5ef6c8) + RezFree.\n            PureSoundElem* pure = node;\n            delete pure;\n        }\n        node = next;\n    }\n    return 1;\n}",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "positive",
+     "replace": "i32 SoundDevice::FreeSamples() {\n    if (m_initialized) {\n        DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);\n        while (node) {\n            DSoundLink* n = node->m_link.m_next;\n            DSoundElem* next = elemOf<DSoundElem>(n);\n            node->Stop(); // slot 1: stop the element before freeing it\n            m_voiceList.Unlink(node ? &node->m_link : 0);\n            if (node) {\n                // pure-base teardown: reset vptr to ??_7PureSoundElem (0x5ef6c8) + RezFree.\n                PureSoundElem* pure = node;\n                delete pure;\n            }\n            node = next;\n        }\n        return 1;\n    }\n    return 0;\n}"
+    },
+    {
+     "name": "result_var",
+     "replace": "i32 SoundDevice::FreeSamples() {\n    i32 ok = 0;\n    if (m_initialized) {\n        DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);\n        while (node) {\n            DSoundLink* n = node->m_link.m_next;\n            DSoundElem* next = elemOf<DSoundElem>(n);\n            node->Stop(); // slot 1: stop the element before freeing it\n            m_voiceList.Unlink(node ? &node->m_link : 0);\n            if (node) {\n                // pure-base teardown: reset vptr to ??_7PureSoundElem (0x5ef6c8) + RezFree.\n                PureSoundElem* pure = node;\n                delete pure;\n            }\n            node = next;\n        }\n        ok = 1;\n    }\n    return ok;\n}"
+    },
+    {
+     "name": "not_form",
+     "replace": "i32 SoundDevice::FreeSamples() {\n    if (!m_initialized) {\n        return 0;\n    }\n    DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);\n    while (node) {\n        DSoundLink* n = node->m_link.m_next;\n        DSoundElem* next = elemOf<DSoundElem>(n);\n        node->Stop(); // slot 1: stop the element before freeing it\n        m_voiceList.Unlink(node ? &node->m_link : 0);\n        if (node) {\n            // pure-base teardown: reset vptr to ??_7PureSoundElem (0x5ef6c8) + RezFree.\n            PureSoundElem* pure = node;\n            delete pure;\n        }\n        node = next;\n    }\n    return 1;\n}"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "schema": 1,
+ "source": "src/Font/Font.cpp",
+ "rva": "0x17ac50",
+ "axes": [
+  {
+   "name": "decl_head",
+   "find": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "g_top_uninit",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    Glyph g;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {"
+    },
+    {
+     "name": "g_top_height0",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    Glyph g;\n    g.height = 0;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {"
+    },
+    {
+     "name": "g_top_width0",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    Glyph g;\n    g.width = 0;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {"
+    },
+    {
+     "name": "g_top_both0",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    Glyph g;\n    g.width = 0;\n    g.height = 0;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {"
+    },
+    {
+     "name": "g_last_height0",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    i32 i = 0;\n    i32 width = 0;\n    Glyph g;\n    g.height = 0;\n    if (m_font == 0) {"
+    },
+    {
+     "name": "g_last_uninit",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    i32 i = 0;\n    i32 width = 0;\n    Glyph g;\n    if (m_font == 0) {"
+    },
+    {
+     "name": "g_first_height0",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    Glyph g;\n    g.height = 0;\n    TextExtent ext;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {"
+    }
+   ]
+  },
+  {
+   "name": "loop_glyph",
+   "find": "    for (; i < text.GetLength(); i++) {\n        Glyph g;\n        u8 c = text[i];",
+   "options": [
+    {
+     "name": "glyph_in_loop"
+    },
+    {
+     "name": "glyph_hoisted",
+     "replace": "    for (; i < text.GetLength(); i++) {\n        u8 c = text[i];"
+    }
+   ]
+  }
+ ]
+}

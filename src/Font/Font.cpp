@@ -557,6 +557,17 @@ void FontRenderer::DrawWrapped(
 RVA(0x0017ac50, 0xbd)
 TextExtent FontRenderer::MeasureText(CString text) {
     TextExtent ext;
+    // `g` is FUNCTION-scope and only its height is initialised. Retail's
+    // `mov [esp+0x10],esi` sits BEFORE the null-font branch and is never read - a
+    // dead store cl cannot eliminate because g's address escapes into GetGlyph. That
+    // places the declaration above the `if` and pins the init to exactly one field:
+    // 16-cell matrix (config/axes/measuretext-glyph.json) 72.52 -> 74.06, and it
+    // needs BOTH halves - hoisting alone ties, initialising alone ties, and zeroing
+    // BOTH fields drops to 72.44. (The inherited measuretext.json had tested a
+    // hoist-to-just-above-the-loop and an in-loop `g.height = 0` separately; neither
+    // puts the store before the branch.)
+    Glyph g;
+    g.height = 0;
     i32 i = 0;
     i32 width = 0;
     if (m_font == 0) {
@@ -570,7 +581,6 @@ TextExtent FontRenderer::MeasureText(CString text) {
         return ext;
     }
     for (; i < text.GetLength(); i++) {
-        Glyph g;
         u8 c = text[i];
         // retail reads the advance back through GetGlyph's RETURNED reference
         // (`call GetGlyph / mov ecx,[eax] / add edi,ecx`), not off the local.

@@ -641,13 +641,11 @@ i32 StreamFeeder::Pause() {
 // streaming secondary buffer at the write window, copy the source window into
 // the (possibly wrapped) locked regions, silence-pad the unfilled tail, advance
 // the read cursor (m_bufferCursor) with wraparound, and Unlock.
-// @early-stop
-// local-coalescing / frame-size wall: retail reuses dead local slots for the
-// got1/got2 scratch (sub esp,0x10); MSVC here keeps them distinct (sub esp,0x14),
-// shifting every Lock out-pointer slot + the [esp+N] local offsets. Instruction
-// selection + control flow byte-exact; only the stack-slot assignment differs -
-// the documented local-coalescing wall (docs/patterns/stack-buffer-size-drives-frame.md).
-// Logic complete, deferred to the final sweep.
+// The `sub esp,0x14` vs retail's `0x10` was NOT a local-coalescing wall - it was a
+// readout of the cursor bug below. Reading `bytes` in the tail kept the parameter
+// live to the end; with the correct `n1`/`n2` the two parameters die at the Lock
+// call and cl packs n1/n2 into their own argument home slots, exactly as retail does
+// (pdwAudioBytes1 -> [E+0x08], pdwAudioBytes2 -> [E+0x04]).
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     void* lock1;
@@ -681,10 +679,20 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     if (m_pendingBytes >= m_bufferLength) {
         Pause();
     }
-    if (got2 != 0) {
-        m_bufferCursor = got2;
+    // The cursor follows the LOCKED REGIONS, not the fill counts: a non-empty second
+    // region means the write wrapped, so the new cursor is that region's length;
+    // otherwise it is writePos advanced by the first region. Retail 0x138084 reads
+    // n2/n1 out of the two slots Lock filled (`test eax,eax` on n2, `lea edx,
+    // [ecx+ebp*1]` = n1 + writePos), NOT got2/bytes. Reading `bytes` here also kept
+    // the parameter live to the end, which is why our frame was a dword bigger than
+    // retail's: with `bytes` dead after the Lock call cl packs n1 into its argument
+    // home slot (and n2 into writePos', which is live in ebp).
+    // Negative form: retail's `test eax,eax / jne` falls into the wrap-less arm, so
+    // `n2 == 0` is the `if` body.
+    if (n2 == 0) {
+        m_bufferCursor = writePos + n1;
     } else {
-        m_bufferCursor = writePos + bytes;
+        m_bufferCursor = n2;
     }
     if (m_bufferCursor >= m_bufferLength) {
         m_bufferCursor = 0;
