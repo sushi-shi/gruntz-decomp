@@ -3134,6 +3134,8 @@ void CGruntzMgr::OnCheckpointReached() {
 // timestamp (its +0x10->+0x28 plus 0x1f4), busy-wait via timeGetTime until that
 // deadline passes, clear the app's resume flag (m_running), then PostMessageA WM_CLOSE to
 // the game window.
+// Retail colours this=ebx / base=esi / the timeGetTime IAT slot=edi, and re-zeroes the
+// `out` slot before the SECOND lookup (`mov [esp+0x14],0` @0x8f586).
 // @early-stop
 RVA(0x0008f530, 0xbd)
 void CGruntzMgr::DelayedQuit() {
@@ -3145,14 +3147,15 @@ void CGruntzMgr::DelayedQuit() {
     MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
     i32 base;
     if (out != 0) {
+        out = 0; // retail re-zeroes the out slot before the second lookup (mov [esp+0x14],0)
         MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
         base = out->m_10->m_durationMs + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;
     }
-    DWORD(WINAPI * tgt)(void) = ::timeGetTime;
-    u32 deadline = base + tgt();
-    while (tgt() < deadline) {
+    base += ::timeGetTime();
+    u32 deadline = base;
+    while (::timeGetTime() < deadline) {
     }
     if (m_owner) {
         m_owner->m_running = 0;

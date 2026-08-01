@@ -41,6 +41,7 @@
 #include <Bute/ButeMgr.h>                  // canonical CButeMgr (one shape)
 #include <Wwd/WwdFile.h>                   // CDDrawWorkerHost - the canonical plane (dims here)
 #include <Gruntz/Grunt.h>                  // real CGrunt (the grid cells)
+#include <Gruntz/GruntPuddle.h>            // the m_baseList element (ApplyTriggerA case 7)
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
 
@@ -439,19 +440,24 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     return 1;
 }
 
-// 0x6d300: ApplySwitch(sx, sy) - the /GX switch-logic driver. Clamp (sx,sy) to the plane,
-// sample the tile attribute, decode the logic class, switch over the kind dispatching the
-// matching switch/trigger logic object's Apply; on a miss Format an error CString ("No switch
-// logic found for switch at: x=%d, y=%d" / "No trigger logic ...") into a stack temp and
-// ReportError. Reconstructed to plateau.
+// 0x6d300: ApplySwitch(g, sx, sy) - the /GX switch-logic driver. Clamp (sx,sy) to the
+// plane, sample the tile attribute, decode the collision kind, then switch over that kind
+// (retail jump table @0x46d8b4, value table @0x46d8cc indexed by kind-0x34 over 0..0xe;
+// live arms 0x34/0x36/0x38/0x40/0x42, everything else falls through to `return 0`).
+// Each arm resolves the switch object via m_beginMarker->FindChild(((sx>>5)<<8)+(sy>>5), K)
+// with its OWN K (0x40->7, 0x34->0, 0x36->0, 0x38->3, 0x42->8) and, on a miss, Formats
+// "No switch logic found for switch at: x=%d, y=%d" (or "No trigger logic ...") with the
+// RAW sx/sy into a stack CString, EnterModalUI's it and ReportErrors a per-arm site id
+// 0x3f7..0x3fd. The CString scopes are the seven /GX EH states 0..6, in that source order.
 // ARITY FIXED (2026-07-14): retail ends `ret 0xc` = THREE dwords - every caller
 // (GruntSteps/Grunt.cpp/GruntCombat) pushes (grunt, x, y); the old 2-arg spelling
-// emitted `ret 8`. The grunt arg is unread by this driver (the callers pass it for
-// the logic objects that need the actor; this body dispatches by tile only).
+// emitted `ret 8`. The grunt arg IS read - by the 0x42 arm only (it gates on
+// g->m_tileOwnerHi == g_curPlayer).
+// The arms read the RAW args from their incoming stack slots, NOT the clamped x/y: ebx/edi
+// hold subX/subY by the time the jump table fires, so every arm re-loads [esp+0x30]/[esp+0x34].
 // @early-stop
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
-    static_cast<void>(g);
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* view = m_world->m_level;
     i32 x = sx;
@@ -487,24 +493,138 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));
         kind = ts->GetCollisionAt(subX, subY); // slot 8 (+0x20)
     }
-    i32 op = kind - 0x34;
-    if (static_cast<u32>(op) > 0xe) {
-        return 0;
+    switch (kind) {
+        case 0x40: {
+            CTileTriggerSwitchLogic* obj =
+                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 7);
+            if (obj == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_40);
+                return 0;
+            }
+            obj->SwitchUp(); // vtbl slot 3 (+0xc)
+            return 1;
+        }
+        case 0x34: {
+            CTileTriggerSwitchLogic* obj =
+                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 0);
+            if (obj == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_34);
+                return 0;
+            }
+            obj->SwitchUp();
+            return 1;
+        }
+        case 0x36: {
+            CTileTriggerSwitchLogic* obj =
+                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 0);
+            if (obj == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_36);
+                return 0;
+            }
+            obj->SwitchUp();
+            // every m_list1 child that claims this switch's key gets its slot-0 Tick;
+            // a child returning 0 stops the walk.
+            POSITION pos = state->m_beginMarker->m_list1.GetHeadPosition();
+            i32 found = 0;
+            i32 stop = 0;
+            while (pos != 0) {
+                if (stop != 0) {
+                    break;
+                }
+                CTileTriggerLogic* child =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
+                if (child->FindIndexByKey(obj->m_key1) != 0) {
+                    if (child->Tick() == 0) {
+                        stop = 1;
+                    }
+                    found = 1;
+                }
+            }
+            if (found == 0) {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_APPLY_TRIGGER_36);
+                return 0;
+            }
+            return 1;
+        }
+        case 0x38: {
+            CTileTriggerSwitchLogic* obj =
+                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 3);
+            if (obj == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_38);
+                return 0;
+            }
+            i32 found = 0;
+            if (obj->VerifyBlockLinksB() != 0) {
+                POSITION pos = state->m_beginMarker->m_list1.GetHeadPosition();
+                i32 stop = 0;
+                while (pos != 0) {
+                    if (stop != 0) {
+                        break;
+                    }
+                    CTileTriggerLogic* child =
+                        static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
+                    if (child->FindIndexByKey(obj->m_key1) != 0) {
+                        if (child->Tick() == 0) {
+                            stop = 1;
+                        }
+                        found = 1;
+                    }
+                }
+                if (found == 0) {
+                    CString msg;
+                    msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
+                    g_gameReg->EnterModalUI(msg);
+                    g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_APPLY_TRIGGER_38);
+                    return 0;
+                }
+            }
+            obj->SwitchUp();
+            return 1;
+        }
+        case 0x42: {
+            // the battlez-only arm: only the local player may flip it, and it always
+            // reports "not handled" (falls into the shared xor eax,eax exit).
+            if (g_gameReg->m_134 != 1) {
+                return 0;
+            }
+            if (g == 0) {
+                return 0;
+            }
+            if (g->m_tileOwnerHi != g_curPlayer) {
+                return 0;
+            }
+            CTileTriggerSwitchLogic* obj =
+                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 8);
+            if (obj == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_42);
+                return 0;
+            }
+            if (obj->VerifyBlockLinks() != 0) {
+                return 0;
+            }
+            obj->SwitchUp();
+            return 0;
+        }
     }
-    i32 cx = x;
-    i32 cy = y;
-    // retail: per-case `m_beginMarker->FindChild(((x>>5)<<8) + (y>>5), K)` - K=7 for
-    // this (the one modeled) case; the other cases of the ladder use their own K.
-    CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(((cx >> 5) << 8) + (cy >> 5), 7);
-    if (obj == 0) {
-        CString msg;
-        msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
-        g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, 0x3f7);
-        return 0;
-    }
-    obj->SwitchUp(); // vtbl slot 3 (+0xc) - retail calls it NO-ARG here (the SwitchLogic
-                     // hierarchy's own slot 3; the old CUserLogic spelling conflated the two trees)
-    return 1;
+    return 0;
 }
 
 // retail 0x6da60/0x6daa0 end at the void EnqueueSingle call with NO eax write, so void
@@ -530,6 +650,11 @@ void CTriggerMgr::GridAction7(i32 a, i32 b) {
 // [esp+0x30] and [esp+0x34] (args 3 and 4) and immediately `sar`s each by 5 - the /32 tile
 // snap - exactly as the twin ApplyTriggerB @0x6e120 does with its already-named
 // worldX/worldY. arg1*15+arg2 is the m_grid index, so arg1/arg2 are col/row.
+// Switch tables read out of the image: value table @0x46dfc4 (0x15 bytes, indexed by
+// kind-2 over 0..0x14), jump table @0x46df98 (11 slots). Retail spills all four tile
+// scalars - cellTileX@[esp+0x10], cellTileY@[esp+0x30], argTileX@[esp+0x28],
+// argTileY@[esp+0x2c] - keeps raw worldX in ebp, and carries two more stack homes for the
+// raw m_17c/m_180 loads (frame 0x14). Search: config/axes/applytriggera-head.json.
 // @early-stop
 RVA(0x0006dae0, 0x4b7)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
@@ -537,25 +662,162 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
+    i32 cellTileX = cell->m_lastTilePxX >> 5;
+    i32 cellTileY = cell->m_lastTilePxY >> 5;
+    i32 argTileX = worldX >> 5;
+    i32 argTileY = worldY >> 5;
     CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->m_lastTilePxX) {
-        if (o->m_screenY != cell->m_lastTilePxY) {
-            return -1;
-        }
+        return -1;
+    }
+    if (o->m_screenY != cell->m_lastTilePxY) {
+        return -1;
     }
     i32 k = cell->m_entranceReason;
     if (k > 0x16) {
         k = cell->m_19c;
     }
-    if (k == 0x13) {
-        CGrunt* tc = cell;
-        if (tc->CanShowStamina() != 0) {
-            tc->RunMoveConfig(row, worldY + 1);
+    if (k == 0x13 && cell->CanShowStamina() != 0) {
+        if (cellTileX != argTileX || cellTileY != argTileY) {
+            return 0;
+        }
+        cell->RunMoveConfig(cellTileX, cellTileY + 1);
+        return 1;
+    }
+    if (cellTileX == argTileX && cellTileY == argTileY) {
+        i32 kSame = cell->m_entranceReason;
+        if (kSame > 0x16) {
+            kSame = cell->m_19c;
+        }
+        if (kSame != 0xf) {
+            return 0;
+        }
+        if (cell->CanShowStamina() == 0) {
+            return 0;
+        }
+        cell->RunMoveConfig(argTileX, argTileY);
+        return 1;
+    }
+    i32 kDiag = cell->m_entranceReason;
+    if (kDiag > 0x16) {
+        kDiag = cell->m_19c;
+    }
+    if (kDiag == 1) {
+        // reason 1 = the diagonal walk: an off-axis step is only legal on the 45 deg line
+        if (cellTileY != argTileY && cellTileX != argTileX) {
+            if (abs(argTileY - cellTileY) != abs(argTileX - cellTileX)) {
+                return -1;
+            }
+        }
+        if (cell->CanShowStamina() == 0) {
+            return 0;
+        }
+        cell->RunMoveConfig(argTileX, argTileY);
+        return 1;
+    }
+    i32 by = (worldY & ~0x1f) + 0x10;
+    i32 bx = (worldX & ~0x1f) + 0x10;
+    if (cell->RectContains(bx, by) == 0) {
+        return -1;
+    }
+    cell->m_arrivalPhase = 0;
+    i32 hitRow;
+    i32 hitCol;
+    CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, 5);
+    if (hit != 0) {
+        if (hit->m_tileOwnerHi == cell->m_tileOwnerHi && g_traitorMode == 0) {
+            return 0;
+        }
+        return cell->CommitNeighbor(hitRow, hitCol, bx, by) != 0;
+    }
+    if (cell->CanShowStamina() == 0) {
+        return 0;
+    }
+    CGruntzMapMgr* map = g_gameReg->m_tileGrid;
+    i32 bute = map->m_rows[by >> 5][bx >> 5].m_10; // target tile's bute type code
+    i32 kind = cell->m_entranceReason;
+    if (kind > 0x16) {
+        kind = cell->m_19c;
+    }
+    // Case ORDER is retail's source order, proven by the physical arm layout in the
+    // image (5 @0x6dd8e, 13 @0x6ddd9, 7 @0x6ddea, 15 @0x6de5a, 3 @0x6de7a + the shared
+    // RunMoveConfig tail @0x6de96 that 13 jumps into, the merged BeginAttack body
+    // @0x6deb6, 20 @0x6decf). The jump-table SLOT numbering is by case value, so the
+    // four separate BeginAttack groups {2} {9,10,11} {17} {21,22} must stay separate
+    // groups - one merged group would collapse them to a single slot.
+    switch (kind) {
+        case 5:
+            if (bute == 0x1e || bute == 0x1f || bute == 0x21 || bute == 0x97 || bute == 0x98
+                || bute == 0x99) {
+                cell->RunMoveConfig(argTileX, argTileY);
+                return 1;
+            }
+            return 0;
+        case 13:
+            if (bute == 0x22 || bute == 0x23) {
+                cell->RunMoveConfig(argTileX, argTileY);
+                return 1;
+            }
+            return 0;
+        case 7: {
+            POSITION pos = m_baseList.GetHeadPosition();
+            while (pos != 0) {
+                CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                if (cand->m_pending == 0 && cand->m_tileX == argTileX
+                    && cand->m_tileY == argTileY) {
+                    cell->RunMoveConfig(argTileX, argTileY);
+                    cand->m_value = cand->m_38->m_1a0.m_14;
+                    cand->m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
+                    cand->m_pending = 1;
+                    return 1;
+                }
+            }
+            return 0;
+        }
+        case 15:
+            cell->RunMoveConfig(cellTileX, cellTileY);
+            return 1;
+        case 3:
+            if (bute == 0x96 || bute == 0x97 || bute == 0x98) {
+                cell->RunMoveConfig(argTileX, argTileY);
+                return 1;
+            }
+            return 0;
+        case 2:
+            return cell->BeginAttack(bx, by) != 0;
+        case 9:
+        case 10:
+        case 11:
+            return cell->BeginAttack(bx, by) != 0;
+        case 17:
+            return cell->BeginAttack(bx, by) != 0;
+        case 21:
+        case 22:
+            return cell->BeginAttack(bx, by) != 0;
+        case 20: {
+            if (g_gameReg->m_134 == 1) {
+                return 0;
+            }
+            i32 flags = 1;
+            if (static_cast<u32>(argTileX) < map->m_width
+                && static_cast<u32>(argTileY) < map->m_height) {
+                flags = map->m_rows[argTileY][argTileX].m_0;
+            }
+            if ((flags & 0x40939) != 0 || (flags & 2) != 0) {
+                return 0;
+            }
+            LoadPowerupIconSprites(0x14, bx, by, 0, cell->m_38c, 0);
+            cell->PlayMoveSound(bx, by);
+            if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
+                cell->m_entranceActive = 0;
+                cell->m_combatActive = 0;
+                cell->m_neighborValid = 0;
+                cell->m_poweredUp = 0;
+                cell->ResetEntranceAnimation(1, 0, 0);
+            }
+            cell->LoadGruntTypeTable(0, 1, 0, 0);
             return 1;
         }
-    }
-    if (k == 0xf) {
-        cell->BeginAttack(k, row);
     }
     return 0;
 }

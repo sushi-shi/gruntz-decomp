@@ -47,13 +47,22 @@ typedef enum TrigErrClass {
 } TrigErrClass;
 
 typedef enum TrigErrSite {
-    TRIGSITE_ROCK_SCAN_MISS = 0x403,  // TriggerMgr rock-break: no giant rock around (x,y)
-    TRIGSITE_LINKSB_NO_OWNER = 0x44d, // VerifyBlockLinksB: no m_list1 child claims this switch
-    TRIGSITE_LINKSB_KEY_MISS = 0x44e, // VerifyBlockLinksB: block key unresolved (id-3 filter)
-    TRIGSITE_BCAST_KEY_MISS = 0x44f,  // Broadcast: block key unresolved (id-4 filter)
-    TRIGSITE_BCAST_NO_CLAIM = 0x450,  // Broadcast: no m_list1 child claims the sibling
-    TRIGSITE_LINKS_NO_OWNER = 0x452,  // VerifyBlockLinks: no m_list1 child claims this switch
-    TRIGSITE_LINKS_KEY_MISS = 0x453,  // VerifyBlockLinks: block key unresolved (id-8 filter)
+    // CTriggerMgr::ApplySwitch (0x6d300): one site id per switch-kind arm, in the arm's
+    // source order (they are also the /GX EH states 0..6 of the seven CString scopes).
+    TRIGSITE_APPLY_SWITCH_40 = 0x3f7,  // kind 0x40: FindChild(key, 7) miss
+    TRIGSITE_APPLY_SWITCH_34 = 0x3f8,  // kind 0x34: FindChild(key, 0) miss
+    TRIGSITE_APPLY_SWITCH_36 = 0x3f9,  // kind 0x36: FindChild(key, 0) miss
+    TRIGSITE_APPLY_TRIGGER_36 = 0x3fa, // kind 0x36: no m_list1 child claims the switch
+    TRIGSITE_APPLY_SWITCH_38 = 0x3fb,  // kind 0x38: FindChild(key, 3) miss
+    TRIGSITE_APPLY_TRIGGER_38 = 0x3fc, // kind 0x38: no m_list1 child claims the switch
+    TRIGSITE_APPLY_SWITCH_42 = 0x3fd,  // kind 0x42: FindChild(key, 8) miss
+    TRIGSITE_ROCK_SCAN_MISS = 0x403,   // TriggerMgr rock-break: no giant rock around (x,y)
+    TRIGSITE_LINKSB_NO_OWNER = 0x44d,  // VerifyBlockLinksB: no m_list1 child claims this switch
+    TRIGSITE_LINKSB_KEY_MISS = 0x44e,  // VerifyBlockLinksB: block key unresolved (id-3 filter)
+    TRIGSITE_BCAST_KEY_MISS = 0x44f,   // Broadcast: block key unresolved (id-4 filter)
+    TRIGSITE_BCAST_NO_CLAIM = 0x450,   // Broadcast: no m_list1 child claims the sibling
+    TRIGSITE_LINKS_NO_OWNER = 0x452,   // VerifyBlockLinks: no m_list1 child claims this switch
+    TRIGSITE_LINKS_KEY_MISS = 0x453,   // VerifyBlockLinks: block key unresolved (id-8 filter)
 } TrigErrSite;
 
 VTBL(CTileTriggerLogic, 0x001eaea4); // vtable_names -> code (RTTI game class)
