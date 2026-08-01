@@ -2,10 +2,13 @@
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Wap32/Object.h> // CObject - the shared engine grand-base
 #include <rva.h>
-#include <Mfc.h>                 // CArchive (Serialize's arg)
-#include <string.h>              // memset/memcpy -> rep stos/movs in the inlined SetSize
-#include <new>                   // placement new (ConstructElements' per-element ctor)
+#include <Mfc.h>    // CArchive (Serialize's arg)
+#include <string.h> // memset/memcpy -> rep stos/movs in the inlined SetSize
+// <new.h>, NOT <new>: the C++ <new> declares `operator delete(void*) throw()`, and a
+// nothrow delete makes cl drop the /GX unwind frame retail's ~CRezBufferObject has.
+#include <new.h> // placement new (ConstructRezElems' per-element ctor) + throwing delete
 #include <Rez/RezBufferObject.h> // RezElem40 (the 0x28 CArray element type)
+#include <Utils/RecordFill.h>    // ZeroRecords (0x17f500) - the realloc arm's tail eraser
 
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
@@ -17,6 +20,12 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
 RVA(0x0017f300, 0x3)
 RezElem40::RezElem40() {}
 
+// (ex-wall, RETIRED 2026-08-01 - 99.4%, code bytes exact. The dtor was missing retail's
+// /GX unwind frame because this TU included <new> for placement new: the C++ <new>
+// declares `operator delete(void*) throw()`, and a nothrow delete lets cl drop the
+// base-subobject unwind state entirely. <new.h> supplies placement new WITHOUT the
+// nothrow spec, and the frame comes back byte-for-byte. Only the __except_list reloc
+// name differs from retail's bare fs:0.)
 RVA(0x0017f330, 0x51)
 CRezBufferObject::~CRezBufferObject() {
     if (m_pData) {
@@ -32,11 +41,21 @@ CRezBufferObject::~CRezBufferObject() {
 // CFaderArray::Serialize (0x17e2a0) but with a non-trivial 0x28-byte element.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc wall (serialize family, ~same as CFaderArray/TArray): the branch senses,
-// SetSize load/grow/shrink logic, the 0x28 element stride, ConstructElements
-// (inlined in-place / called on grow) and Read/Write are byte-faithful, but retail
-// pins this->ebx / ar->esi while cl lands different colours through the realloc lea
-// chains. Not source-steerable.
+// 96.2% (was 71.6). The old "regalloc wall / this->ebx vs ar->esi" note was wrong on
+// every count - the colouring already agreed. Three real source bugs:
+//   - the three SetSize arms do THREE DIFFERENT things in retail, not one shared
+//     ConstructElements: the fresh-alloc arm only memsets (no per-element ctor loop),
+//     the grow-in-place arm inlines memset + the placement-new loop, and the realloc
+//     arm CALLS the out-of-line record eraser ZeroRecords (0x17f500, src/Utils/
+//     RecordFill.cpp) - `push count; push ptr; call 0x17f500`.
+//   - the newMax select is a real if/else (`cmp ebp,eax; jge; mov slot,eax; jmp`), not
+//     `newMax = m_nMaxSize + grow; if (n >= newMax) newMax = n;` (which cl merges into
+//     store-then-conditionally-overwrite).
+//   - the tail's m_pData/m_nSize are hoisted into locals BEFORE the IsStoring() test,
+//     so both arms share one load pair.
+// Residual is one allocator tie-break in the grow-in-place arm: retail keeps `n` in ebp
+// and spills the tail POINTER to [esp+0x10]; cl keeps the pointer in esi and spills `n`.
+// Six helper/call-site spellings tested, none flips it.
 RVA(0x0017f130, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
     if (ar.IsStoring()) {
@@ -52,7 +71,8 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             m_nSize = 0;
         } else if (m_pData == 0) {
             m_pData = static_cast<RezElem40*>(RezAlloc(n * sizeof(RezElem40)));
-            ConstructRezElems(m_pData, n);
+            // fresh block: retail zeroes it and stops - no per-element ctor loop here
+            memset(m_pData, 0, n * sizeof(RezElem40));
             m_nMaxSize = n;
             m_nSize = n;
         } else if (n <= m_nMaxSize) {
@@ -70,22 +90,27 @@ void CRezBufferObject::Serialize(CArchive& ar) {
                     grow = 0x400;
                 }
             }
-            i32 newMax = m_nMaxSize + grow;
-            if (n >= newMax) {
+            i32 newMax;
+            if (n < m_nMaxSize + grow) {
+                newMax = m_nMaxSize + grow;
+            } else {
                 newMax = n;
             }
             RezElem40* nd = static_cast<RezElem40*>(RezAlloc(newMax * sizeof(RezElem40)));
             memcpy(nd, m_pData, m_nSize * sizeof(RezElem40));
-            ConstructRezElems(&nd[m_nSize], n - m_nSize);
+            // realloc arm: retail calls the out-of-line record eraser, no ctor loop
+            ZeroRecords(&nd[m_nSize], n - m_nSize);
             ::operator delete(m_pData);
             m_pData = nd;
             m_nSize = n;
             m_nMaxSize = newMax;
         }
     }
+    RezElem40* data = m_pData;
+    i32 cnt = m_nSize;
     if (ar.IsStoring()) {
-        ar.Write(m_pData, m_nSize * sizeof(RezElem40));
+        ar.Write(data, cnt * sizeof(RezElem40));
     } else {
-        ar.Read(m_pData, m_nSize * sizeof(RezElem40));
+        ar.Read(data, cnt * sizeof(RezElem40));
     }
 }

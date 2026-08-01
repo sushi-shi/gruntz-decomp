@@ -169,8 +169,13 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 // read buffer and reset the cursor. Returns 1 on success, 0 if there was no open
 // FILE* or the gate gave up.
 // @early-stop
-// 81.3 -> 93.1 via the shared-exit spelling; residual is the callee-saved role
-// swap (retail this->esi / ok->edi, cl this->edi / ok->esi).
+// 81.3 -> 93.1 (shared-exit spelling) -> 94.6. The "callee-saved role swap" is FIXED:
+// the redundant `ok = 0;` in the retry arm (the loop only runs while ok==0) is what
+// flipped cl's colouring to this->edi / ok->esi; folding that arm to `else if` restores
+// retail's this->esi / ok->edi. Residual is ONE row - retail schedules the retry arm's
+// `xor edi,edi` between the m_parent load and the Retry dispatch, cl hoists it above the
+// loop. 8 loop shapes tested (do-while, inverted test, zero-store first/last); the ones
+// that put the zero back in the arm all re-swap the registers.
 // The FILE* gate is POSITIVE-form so the guard's `return 0` tail-merges with the
 // Retry()-gave-up `return 0` into retail's single bottom epilogue @0x13c88e, and
 // cl sinks `push edi` past `mov esi,ecx`
@@ -182,11 +187,8 @@ i32 CRezItm::Close() {
         while (ok == 0) {
             if (fclose(m_fp) == 0) {
                 ok = 1;
-            } else {
-                ok = 0;
-                if (m_parent->Retry() == 0) {
-                    return 0;
-                }
+            } else if (m_parent->Retry() == 0) {
+                return 0;
             }
         }
 
@@ -248,8 +250,8 @@ RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_openCount = 0;
     m_write = 0;
-    m_maxOpen = maxOpen;
     m_readonly = 1;
+    m_maxOpen = maxOpen;
 }
 
 RVA_COMPGEN(0x0013c990, 0x1e, ??_GCRezDir@@UAEPAXI@Z)
