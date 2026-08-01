@@ -195,11 +195,10 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
 // CDeviceConfigC, CreateDevJoystick's it with the enumerated GUID (lpddi->guidInstance,
 // at +4) + the manager's cached DInput/owner/flags, and on success appends the device
 // pointer to the manager's m_devices array (as a DWORD). Returns TRUE to keep enumerating.
-// @early-stop
-// regalloc/scheduling wall on the SetAtGrow tail (93.8%): logic + offsets byte-exact,
-// residual is the index-temp register + this-lea ordering (target `mov edx,[edi+0x20];
-// lea ecx,[edi+0x18]` before the pushes vs cl's `mov ecx,[edi+0x20]; push; push; lea
-// ecx`). Permuter FINAL: no source spelling flips it.
+// (ex-wall, RETIRED 2026-08-01 - EXACT. The "SetAtGrow tail regalloc wall" was a source
+// bug: retail calls CPtrArray::Add, whose inline body evaluates `this` (`lea ecx,[edi+0x18]`)
+// and reads m_nSize BEFORE the argument pushes; hand-spelling it as
+// `SetAtGrow(GetSize(), dev)` interleaves the lea after the pushes. 93.8% -> 100.)
 RVA(0x00132fc0, 0xb8)
 i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
     if (instance == 0) {
@@ -223,7 +222,7 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
         return 1;
     }
     if (dev != 0) {
-        mgr->m_devices.SetAtGrow(mgr->m_devices.GetSize(), dev);
+        mgr->m_devices.Add(dev);
     }
     return 1;
 }
@@ -1107,17 +1106,13 @@ i32 CDeviceConfigC::Poll() {
 // 0x134be0 - FillFrom(src, n): reset then bulk-append. Rejects a null src or
 // n >= 32; zeroes the whole table (rep stos of 32 dwords), then Add()s each
 // non-null source entry, bailing (return 0) the first time Add fails.
+// (ex-wall, RETIRED 2026-08-01 - EXACT. The "retail keeps src in volatile edx / n in a
+// callee-saved reg" note was a source bug: with `src[i]` subscripting AND `i` declared in
+// the `for` init, /O2 builds the induction pointer in the preheader (`mov edi,edx`) and
+// keeps `n` in ebx. The pre-declared `i` + hand pointer-walk spelling spilled `n` instead.)
 // ===========================================================================
-// @early-stop
-// regalloc wall (docs/patterns/zero-register-pinning.md + pin-local-for-callee-
-// saved-reg.md): logic + structure byte-exact, but retail keeps `src` in volatile
-// edx and the loop counter/limit in callee-saved esi/ebx (no spill), while cl
-// pins the src-walker in a callee-saved reg and spills `n` to a stack slot
-// (reloaded each iter). Not flipped by pointer-walk / src[i] indexing / cnt-pin /
-// do-while variants. ~85%; Clear + Add are 100%.
 RVA(0x00134be0, 0x7e)
 i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
-    i32 i = 0;
     if (!src) {
         return 0;
     }
@@ -1129,10 +1124,9 @@ i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     for (i32 j = 0; j < 32; j++) {
         m_items[j] = 0;
     }
-    CInputDevBase** p = src;
-    for (; i < n; i++, p++) {
-        if (*p) {
-            if (!Add(*p)) {
+    for (i32 i = 0; i < n; i++) {
+        if (src[i]) {
+            if (!Add(src[i])) {
                 return 0;
             }
         }

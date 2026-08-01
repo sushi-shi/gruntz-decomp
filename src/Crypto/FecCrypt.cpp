@@ -45,11 +45,21 @@ i32 CFecFile::OnFail() {
 }
 
 // @early-stop
-// ~82.8% regalloc wall: layout/logic byte-correct (CDWordArray index, single sprintf
-// buffer, the two m_11e re-reads, (u32)m_fileCount loop bound), but retail colours `name`->ebp
-// and `&m_stream`->ebx while cl swaps them, so every m_stream vtable dispatch differs by
-// the base register (mov ecx,ebx vs ebp). A pure register-coloring tie-break; not
-// source-steerable.
+// 88.6% (was 82.8). The old note ("retail colours `name`->ebp and `&m_stream`->ebx while
+// cl swaps them") was WRONG - the colouring already agreed; the whole prologue/header
+// half is now byte-exact after two source fixes:
+//   - `m_index[i-1]` (CDWordArray::operator[] -> ElementAt, returns DWORD&) instead of
+//     `m_index.GetData()[i-1]`: the reference form makes /O2 CSE the ELEMENT ADDRESS
+//     (`lea edi,[ebp+eax-4]` before the Seek, `mov ecx,[edi]` after), which is what retail
+//     does; the GetData() form CSEs the base pointer and re-indexes.
+//   - the first Seek's `tail` local removed: retail reads m_entry.m_scramble TWICE
+//     (`xor eax,eax; mov ax,[..]` / `xor ecx,ecx; mov cx,[..]`), which only happens when
+//     both `- 0x2b8` and `- 0x19d` are spelled inline.
+// Residual is ONE allocator tie-break in the loop: retail keeps `i*4` in ebp and spills
+// `stride` to [esp+0x18]; cl keeps `stride` in ebp and spills `i*4`. Every downstream
+// register/slot difference follows from that single choice. 11 source spellings tested
+// (operand order, paren grouping, u16/u32/i32 stride+w2, k=i-1 local, reversed compare,
+// stride hoisted, SetAtGrow-vs-Add, ElementAt) - all identical to the byte.
 RVA(0x0017b5f0, 0x249)
 i32 CFecFile::ReadArchive(const char* name) {
     if (name == 0) {
@@ -91,27 +101,25 @@ i32 CFecFile::ReadArchive(const char* name) {
         goto fail;
     }
     {
-        i32 tail = m_entry.m_scramble - 0x19d;
-        if (m_stream.Seek(m_entry.m_scramble - 0x2b8, 1) != tail) {
+        if (m_stream.Seek(m_entry.m_scramble - 0x2b8, 1) != m_entry.m_scramble - 0x19d) {
             goto fail;
         }
-        m_index.Add(tail);
+        m_index.Add(m_entry.m_scramble - 0x19d);
 
         for (u16 i = 1; i < static_cast<u32>(m_fileCount); i++) {
             i32 stride = m_entry.m_payloadLen;
-            if (m_stream.Seek(stride, 1) != static_cast<i32>(m_index.GetData()[i - 1]) + stride) {
+            if (m_stream.Seek(stride, 1) != static_cast<i32>(m_index[i - 1]) + stride) {
                 goto fail;
             }
             memset(&m_entry, 0, 0x10c);
             if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
                 goto fail;
             }
-            i32 w2 = m_entry.m_scramble;
-            if (m_stream.Seek(w2 - 0x2b8, 1)
-                != static_cast<i32>(m_index.GetData()[i - 1]) + stride + w2 - 0x1ac) {
+            if (m_stream.Seek(m_entry.m_scramble - 0x2b8, 1)
+                != static_cast<i32>(m_index[i - 1]) + stride + m_entry.m_scramble - 0x1ac) {
                 goto fail;
             }
-            m_index.Add(static_cast<i32>(m_index.GetData()[i - 1]) + stride + w2 - 0x1ac);
+            m_index.Add(static_cast<i32>(m_index[i - 1]) + stride + m_entry.m_scramble - 0x1ac);
         }
     }
     return 1;
@@ -261,11 +269,18 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 // pProgress, aborting on *pCancel). Restores the cwd on success/failure. __thiscall.
 // ===========================================================================
 // @early-stop
-// ~84.5% regalloc wall: full logic + /GX EH frame + per-entry decode/extract + copy loop
-// reconstructed and reloc-match retail. Residual is register colouring - retail reuses
-// ebp for both the zero-constant (the m_04/m_00/version gates) and the `copied` counter,
-// while cl splits them across esi/ebp - plus the chunk-branch polarity. Not
-// source-steerable.
+// 85.1% (was 84.5). Two real source bugs fixed since the old note:
+//   - the chunk branch polarity was inverted. Retail is
+//     `if (copied + 0x8000 > payloadLen) chunk = payloadLen - copied; else chunk = 0x8000;`
+//     (`cmp eax,esi; jbe <chunk=0x8000>; sub esi,ebp`), not the `<=` form.
+//   - `m_index[i]` (operator[] -> DWORD&) instead of `m_index.GetData()[i]`, so /O2 keeps
+//     retail's element ADDRESS (`lea edi,[edx+ecx*4]`) across the Seek call.
+// Residual is the ebp tie-break the old note names, and it IS real: retail merges the
+// entry zero-constant with `copied` in ebp and recomputes `lea esi,[ebx+0x124]` per
+// iteration; cl pins the zero in esi, hoists &m_stream into ebp and gives `copied` a
+// stack home (hence our frame is 0x23c vs retail's 0x238 - one extra dword). Tested:
+// `copied` declared at fn top / before the loop / at the loop top, i32-vs-u32 copied and
+// chunk, `!done` spelling, decoded hoisted - all byte-identical.
 RVA(0x0017bcd0, 0x28b)
 i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     if (m_readOpen == 0 || m_openGate == 0) {
@@ -287,6 +302,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     m_stream.Seek(0xf, 0);
 
     for (u16 i = 0; i < static_cast<u32>(m_fileCount); i++) {
+        u32 copied = 0;
         if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
             goto fail;
         }
@@ -295,11 +311,9 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
         if (file.Open(decoded, 0x1002, 0) == 0) {
             goto fail;
         }
-        if (m_stream.Seek(static_cast<i32>(m_index.GetData()[i]), 0)
-            != static_cast<i32>(m_index.GetData()[i])) {
+        if (m_stream.Seek(static_cast<i32>(m_index[i]), 0) != static_cast<i32>(m_index[i])) {
             goto fail;
         }
-        u32 copied = 0;
         i32 done = 0;
         while (done == 0) {
             if (pProgress != 0) {
@@ -313,10 +327,10 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
                 return 0;
             }
             u32 chunk = m_entry.m_payloadLen;
-            if (copied + 0x8000 <= chunk) {
-                chunk = 0x8000;
-            } else {
+            if (copied + 0x8000 > chunk) {
                 chunk -= copied;
+            } else {
+                chunk = 0x8000;
             }
             m_stream.Read(m_copyBuf, chunk);
             file.Write(m_copyBuf, chunk);
