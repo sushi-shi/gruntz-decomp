@@ -36,16 +36,15 @@ void CWwdSpatialMgr::FreeGrids() {
 // position and re-bucket every grid by the (origin -> new) delta, accumulating
 // the three grid-scroll results.
 // ===========================================================================
-// The deferred cross-TU retype flagged here in 2026-07-14 is DONE (2026-08-01):
-// canonical CWwdGrid::Query now takes `(WwdRect rect, i32 doRemove)`, matching retail's
-// three by-value call blocks (`push 1 / sub esp,0x10 / mov ebp,esp / mov [ebp+N],..`).
-// Byte-neutral for the callee - the by-value rect and four scalars occupy the same 0x14
-// of stack, so Query @0x1918c0 is unchanged at 99.93%.
-// What is left: retail emits the m_scrollX/m_scrollY (0x68/0x6c) stores eagerly at the
-// jne target and keeps the running total on the STACK (`mov [esp+0x2c],eax` after each
-// Query, ebp reserved for the arg-block pointer); cl sinks the two stores into the first
-// rect setup and enregisters the total in ebp. One reused rect variable scores identically.
+// Retail's arg block for each Query is `push 1; sub esp,0x10; mov [esp+0..c]` - the
+// rect goes BY VALUE, not as four pushed scalars, and the entry `sub esp,0x10`
+// reserves exactly one 16-byte WwdRect local reused by all three walks. (The old note
+// here blamed a scheduling wall and deferred the by-value unification as cross-TU work;
+// CWwdGrid::Query is called from HERE ONLY, so retyping it was a two-file change.)
 // @early-stop
+// Size 225 and relocs 3/3 are EXACT; the only residual is that cl sinks the two
+// m_scroll{X,Y} member stores 8 insns into the first Query arg block where retail emits
+// them at the jne target. config/axes/scrollto.json: 15 cells, all tie at 93.85.
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     if (m_scrollX == dx && m_scrollY == dy) {
@@ -54,28 +53,29 @@ i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     m_scrollX = dx;
     m_scrollY = dy;
 
-    WwdRect r0;
-    r0.m_minX = dx - m_org0x;
-    r0.m_minY = dy - m_org0y;
-    r0.m_maxX = m_org0x + dx;
-    r0.m_maxY = m_org0y + dy;
-    i32 n = m_grid0->Query(r0, 1);
+    WwdRect r;
+    r.m_minX = dx - m_org0x;
+    r.m_minY = dy - m_org0y;
+    r.m_maxX = m_org0x + dx;
+    r.m_maxY = m_org0y + dy;
+    i32 n0 = m_grid0->Query(r, 1);
 
-    WwdRect r1;
-    r1.m_minX = dx - m_org1x;
-    r1.m_minY = dy - m_org1y;
-    r1.m_maxX = m_org1x + dx;
-    r1.m_maxY = m_org1y + dy;
-    n += m_grid1->Query(r1, 1);
+    r.m_minX = dx - m_org1x;
+    r.m_minY = dy - m_org1y;
+    r.m_maxX = m_org1x + dx;
+    r.m_maxY = m_org1y + dy;
+    i32 n1 = m_grid1->Query(r, 1);
 
-    WwdRect r2;
-    r2.m_minX = dx - m_org2x;
-    r2.m_minY = dy - m_org2y;
-    r2.m_maxX = m_org2x + dx;
-    r2.m_maxY = m_org2y + dy;
-    n += m_grid2->Query(r2, 1);
+    r.m_minX = dx - m_org2x;
+    r.m_minY = dy - m_org2y;
+    r.m_maxX = m_org2x + dx;
+    r.m_maxY = m_org2y + dy;
+    i32 n2 = m_grid2->Query(r, 1);
 
-    return n;
+    // Three separate results summed at the end, not a running `n +=`: retail spills
+    // each result to a stack slot and only adds them in the epilogue, which is what
+    // frees ebp/edx to hold the m_org pair across each walk.
+    return n0 + n1 + n2;
 }
 
 RVA(0x00168430, 0x2e)
@@ -119,6 +119,13 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
 // retail emits it - flags bit 0x800000 picks grid1, 0x1000000 picks grid2, neither
 // picks grid0.
 // @early-stop
+// 86.9% (from 0.65%). Four cached locals carried it there: the per-object flags word
+// (retail loads it ONCE for each of the two gate groups, not per test), the +0x7c
+// worker, the &obj->m_region pointer (retail reaches m_x/m_y/m_object through it with
+// disp8) and the pair of screen coordinates loaded together. The residual is one extra
+// SPILL retail makes and cl5 does not - it parks the region pointer in [esp+0x18] as
+// well as ebp (ebp is clobbered by the third arm's saved act key), which shifts every
+// box temporary one slot down.
 RVA(0x00168500, 0x3af)
 i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
     i32 count = 0;

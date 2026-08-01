@@ -19,6 +19,10 @@
 #include <Gruntz/Sprite.h>
 
 // @early-stop
+// MSVC5 emits a two-zero-register (ecx+edx) esi-base paired-store form for the
+// adjacent (m_buttonFrame[0],m_buttonFrame[1])/(m_buttonIcon[0],m_buttonIcon[1])/(m_buttonState[0],m_buttonState[1]) zero-inits; our cl emits single
+// `mov [this+off],0` stores. Same member-init set/order, regalloc/addressing-mode
+// wall - no source spelling reproduces the base-register pairing. Logic exact.
 RVA(0x00009090, 0x32)
 CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_frame = 0;
@@ -38,6 +42,9 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 // CActionOptionsMenuBar::LoadAssets - cache the four named sprites.
 // ---------------------------------------------------------------------------
 // @early-stop
+// Lookup out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-
+// scheduling.md): per Lookup the target sinks the `mov [&spr],0` past the arg
+// pushes; our cl emits it before. Identical multiset, permuted. Logic exact.
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
     CObject* spr_ob = 0;
@@ -81,6 +88,9 @@ i32 CActionOptionsMenuBar::LoadAssets() {
 }
 
 // @early-stop
+// Store-block scheduling wall: the six member stores (precomputed clamped-x /
+// adjusted-y + four arg loads) are the same instruction multiset as retail but
+// our cl sinks the precomputed `m_screenY=eax` store one slot early. Logic exact.
 RVA(0x00009220, 0x8f)
 i32 CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (m_active) {
@@ -127,19 +137,34 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
     return 1;
 }
 
+// The 0x190 span is the retail extent 0x9330..0x94c0 (Render's start); the code
+// ends at 0x9466 and the rest is nop/int3 pad, but objdiff sizes a symbol by
+// next-symbol-start so the label must carry the full extent.
+// Retail's gate is `if (grunt == 0)` with the zeroing as the FALLTHROUGH arm and
+// the populated arm laid out after the `ret`; and each switch arm stores its own
+// frame (retail tail-merges the three GetAt stores at 0x93d7 but keeps the
+// default's `mov [eax-8],ebp` separate, which a single post-switch store cannot
+// produce). The bounds test inside each arm is CDDrawWorker::GetAt inlined (it
+// returns 0 outside [m_minIndex, m_maxIndex]).
 // @early-stop
-RVA(0x00009330, 0x190)
+// Size 310 and relocs 2/2 are EXACT; the residual is which register holds g_gameReg -
+// retail loads it into edx before `push ebp` and ends with the cell index in ecx and the
+// board in eax (`[eax+ecx*4+0x1c]`), ours has them swapped.
+// config/axes/refresh-menubar.json: 24 cells, all tie at 93.24.
+RVA(0x00009330, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
-    i32 cell = m_gridY + m_gridX * TM_GRID_COLS;
-    CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[cell];
-    if (grunt != 0) {
+    CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];
+    if (grunt == 0) {
+        m_buttonIcon[1] = 0;
+        m_buttonIcon[0] = 0;
+    } else {
         m_buttonIcon[1] = grunt->m_198;
         if (grunt->m_entranceReason >= 0x17) {
             m_buttonState[1] = 3;
         } else if (m_buttonState[1] == 3) {
             m_buttonState[1] = 1;
         }
-        i32 prim = (grunt->m_entranceReason > 0x16) ? grunt->m_toolId : grunt->m_entranceReason;
+        i32 prim = (grunt->m_entranceReason > 0x16) ? grunt->m_19c : grunt->m_entranceReason;
         m_buttonIcon[0] = prim;
         if (prim == 0) {
             m_buttonIcon[0] = 0x21;
@@ -151,38 +176,29 @@ i32 CActionOptionsMenuBar::Refresh() {
         } else if (m_buttonState[0] == 3) {
             m_buttonState[0] = 1;
         }
-    } else {
-        m_buttonIcon[1] = 0;
-        m_buttonIcon[0] = 0;
     }
     // Refresh both buttons: icon in m_buttonIcon[0]/m_buttonIcon[1], state in
     // m_buttonState[0]/m_buttonState[1], resolved frame into m_buttonFrame[0]/m_buttonFrame[1].
-    // The ex-`i32* p = &m_buttonIcon[0]` cursor (p[-4]=state, p[-2]=frame, *p=icon)
-    // was an i32 view over the three parallel pairs; with them typed as arrays the
-    // frame stays a CImage* and the three pointer-to-i32 puns go. The bounds test is
-    // CDDrawWorker::GetAt's own (it returns 0 outside [m_minIndex, m_maxIndex]).
     for (i32 i = 0; i < 2; i++) {
         if (m_buttonIcon[i] == 0) {
             m_buttonState[i] = 0;
         } else if (m_buttonState[i] == 0) {
             m_buttonState[i] = 1;
         }
-        CImage* frame;
         switch (m_buttonState[i]) {
             case 1:
-                frame = m_normChipSprite->GetAt(m_buttonIcon[i]);
+                m_buttonFrame[i] = m_normChipSprite->GetAt(m_buttonIcon[i]);
                 break;
             case 2:
-                frame = m_highChipSprite->GetAt(m_buttonIcon[i]);
+                m_buttonFrame[i] = m_highChipSprite->GetAt(m_buttonIcon[i]);
                 break;
             case 3:
-                frame = m_greyChipSprite->GetAt(m_buttonIcon[i]);
+                m_buttonFrame[i] = m_greyChipSprite->GetAt(m_buttonIcon[i]);
                 break;
             default:
-                frame = 0;
+                m_buttonFrame[i] = 0;
                 break;
         }
-        m_buttonFrame[i] = frame;
     }
     return 1;
 }
@@ -191,6 +207,10 @@ i32 CActionOptionsMenuBar::Refresh() {
 // CActionOptionsMenuBar::Render - paint the bar + chip indicators.
 // ---------------------------------------------------------------------------
 // @early-stop
+// Scheduling/regalloc wall: the draw block is near byte-identical, but our cl
+// folds the bar-RECT base into `0x10(%eax)` addressing where retail materializes
+// `add eax,0x10` then `(%eax)`, and reads m_screenX/m_screenY in the opposite order; the
+// register/addressing-mode choices cascade. Logic exact (size matches at 305).
 RVA(0x000094c0, 0x131)
 i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
@@ -219,6 +239,9 @@ i32 CActionOptionsMenuBar::Render() {
 // CActionOptionsMenuBar::HitClick - hit-test a click against the two buttons.
 // ---------------------------------------------------------------------------
 // @early-stop
+// Regalloc wall: structure (spilled &m_buttonState[0], shared y/x bounds) matches retail, but
+// our cl assigns `my`->ebx and the bounds to edi/esi where retail uses ebp and
+// ebx/edi; the naming cascade is the residual. Logic exact.
 RVA(0x00009650, 0xcf)
 i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
@@ -264,6 +287,12 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
 // CActionOptionsMenuBar::HitHover - hover hit-test (returns a button id or 0).
 // ---------------------------------------------------------------------------
 // @early-stop
+// 90.39% (was 89.16). CORRECTNESS FIX 2026-07-28 (jcc_sieve POLARITY): button 1's state
+// guard is `!= 3`, like button 0's - retail's last compare is `cmp edx,eax(3) / jne <keep
+// eax=3>` (0x9cdd). We had `== 3`, i.e. the right-hand hover only registered while that
+// button was disabled and never otherwise. Residual: regalloc - retail keeps y0 in eax to
+// derive both bounds, THEN reuses eax for `my`; our cl reads `my` early into ebp and puts
+// the bounds in ebx/edi. Same shape.
 RVA(0x00009760, 0x6c)
 i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_active) {
@@ -294,6 +323,10 @@ void CActionOptionsMenuBar::Deactivate() {
 // CActionOptionsMenuBar::Serialize - read this bar's state from an archive.
 // ---------------------------------------------------------------------------
 // @early-stop
+// Stack-packing wall (~96%): retail reuses the dead g_gameReg->m_world spill slot
+// ([esp+0x10]) for the per-block `zero` int, giving a 0x84 frame; our cl gives
+// `zero` its own slot -> 0x88 frame, which shifts every frame-size immediate and
+// arg offset by 4. Body (vtable Write dispatch @+0x30 + inlined memset/strcpy) exact.
 RVA(0x00009810, 0x2df)
 i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     if (ar == 0) {
@@ -385,6 +418,14 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
 // the retail body 0x9bb0 sits directly after Serialize 0x9810 in this obj.]
 // ---------------------------------------------------------------------------
 // @early-stop
+// outparam-zeroinit-scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md),
+// 92.2%: logic + offsets byte-exact. The indexed-block regalloc (idx pinned in a
+// callee-saved reg across the Lookup call) WAS cracked here by the `i32 i = idx;`
+// copy (88.9 -> 92.2). Sole residual: the 6 `out = 0` stores - retail SINKS
+// `mov [&out],eax` (reusing strlen's `xor eax,eax` zero) past the arg pushes, cl
+// HOISTS it after `lea &out`. Tried comma-injecting the store into the call's
+// this-expression and a map-receiver temp (regressed to 89%); the store position
+// is the MSVC5 scheduler coin-flip, source-invariant.
 RVA(0x00009bb0, 0x367)
 i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (s == 0) {

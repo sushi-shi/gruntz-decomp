@@ -420,14 +420,14 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_2a4 = 0;
     m_2a8 = 0;
     m_2ac = 0;
-    m_2b0 = 0;
-    m_2b4 = 0;
-    m_2b8 = 0;
-    m_2bc = 0;
-    m_2c0 = 0;
-    m_2c4 = 0;
-    m_2c8 = 0;
-    m_2cc = 0;
+    m_toyRectA.left = 0;
+    m_toyRectA.top = 0;
+    m_toyRectA.right = 0;
+    m_toyRectA.bottom = 0;
+    m_toyRectB.left = 0;
+    m_toyRectB.top = 0;
+    m_toyRectB.right = 0;
+    m_toyRectB.bottom = 0;
     // The +0x810..+0x8cf timer-band zero run (retail's per-block lo,lo,hi,hi
     // dword order; ex the offset-cast GRUNT_ZERO_TIMER_* macros - typed now).
     m_toyClockLo = 0;

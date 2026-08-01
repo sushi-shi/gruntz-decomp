@@ -18,7 +18,23 @@ static const char s_grunt[] = "Grunt";                               // 0x60a9ec
 static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 
 // @early-stop
-RVA(0x000d1b60, 0xc2f)
+// Reconstructed against the REAL engine classes (xref-recovered, no fake views): the
+// handler is CGruntzMgr, the world->m_68 grid is CTriggerMgr (PlaceObject/ClearCell/
+// CellHitTest/ApplyTriggerA/ApplyTriggerB/ResetAll/ResetCell), the cells are CGrunt, and
+// the movement target is CGrunt::SetArrivalTarget (called on the grunt g, NOT the handler
+// - the prior this-receiver was a bug). De-hoisted to match retail's register discipline
+// (localP + grid read lazily per-case so `world` stays in a reg across the switch;
+// case-0 Refresh reloads g_gameReg->m_68; the address-taken CellHitTest outputs reuse
+// the ret-0x1c'd &cmdKind/&targetType param slots) + a permuter operand-order pass.
+// 15.9%->~23.7%.
+// Residual is a global-regalloc wall MSVC5 will not steer from C source: retail pins
+// `this` in ebx and g in esi with NO frame, whereas the correct g-receiver makes cl
+// contend g against this and park `this` in ebp + spill it + reserve a 4-B frame for the
+// shared case-3/4 discriminator (retail emits cases 3/4 as two full separate blocks with
+// no runtime discriminator; splitting them here regresses because MSVC5 tail-merges the
+// identical suffixes). The 11-case logic + grunt-state resets + cell lookups are
+// byte-faithful. Final-sweep permuter candidate (pure /O2 regalloc residue).
+RVA(0x000d1b60, 0xc90)
 // The seven command words are i32, not the narrow char/i16 they used to be modelled
 // as (2026-07-29). PROOF: retail's case-3 probe call at 0xd1f6b pushes
 // `lea edx,[esp+0x28]` (0xd1f44) and `lea edx,[esp+0x24]` (0xd1f4b) - after the two

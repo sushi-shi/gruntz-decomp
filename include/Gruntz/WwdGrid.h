@@ -37,10 +37,7 @@ public:
     void FreeBuckets();
     i32 Add(WwdRegion* r);
     void Remove(WwdRegion* r);
-    // The rect arrives BY VALUE: CWwdSpatialMgr::ScrollTo @0x168340 builds it with
-    // `sub esp,0x10 / mov ebp,esp / mov [ebp+N],..` at all three call sites, not four
-    // pushes. Stack layout (and the callee's `ret 0x14`) is identical either way.
-    i32 Query(WwdRect rect, i32 doRemove);
+    i32 Query(WwdRect q, i32 doRemove); // by value: retail's caller builds the 16-byte arg block
     i32 Clear();
 
     i32 m_allocated; // +0x04  buckets-allocated flag

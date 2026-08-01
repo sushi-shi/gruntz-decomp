@@ -1,0 +1,35 @@
+{
+ "schema": 1,
+ "source": "src/Gruntz/ActionOptionsMenuBar.cpp",
+ "rva": "0x9330",
+ "axes": [
+  {
+   "name": "cell_lookup",
+   "find": "    CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];\n",
+   "options": [
+    {"name": "baseline"},
+    {"name": "cell_local", "replace": "    i32 cell = m_gridY + m_gridX * TM_GRID_COLS;\n    CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[cell];\n"},
+    {"name": "board_local", "replace": "    CTriggerMgr* board = g_gameReg->m_cmdGrid;\n    CGrunt* grunt = board->m_grid[m_gridY + m_gridX * TM_GRID_COLS];\n"},
+    {"name": "reg_local", "replace": "    CGruntzMgr* reg = g_gameReg;\n    CGrunt* grunt = reg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];\n"},
+    {"name": "index_swapped", "replace": "    CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridX * TM_GRID_COLS + m_gridY];\n"},
+    {"name": "board_local_cell", "replace": "    CTriggerMgr* board = g_gameReg->m_cmdGrid;\n    i32 cell = m_gridY + m_gridX * TM_GRID_COLS;\n    CGrunt* grunt = board->m_grid[cell];\n"}
+   ]
+  },
+  {
+   "name": "icon1_store",
+   "find": "        m_buttonIcon[1] = grunt->m_198;\n",
+   "options": [
+    {"name": "baseline"},
+    {"name": "via_local", "replace": "        i32 sec = grunt->m_198;\n        m_buttonIcon[1] = sec;\n"}
+   ]
+  },
+  {
+   "name": "m194",
+   "find": "            m_buttonIcon[0] = grunt->m_194;\n",
+   "options": [
+    {"name": "baseline"},
+    {"name": "reuse_prim", "replace": "            prim = grunt->m_194;\n            m_buttonIcon[0] = prim;\n"}
+   ]
+  }
+ ]
+}

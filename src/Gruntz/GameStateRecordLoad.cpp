@@ -149,8 +149,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_arrivalActive, 4);
     ar->Read(&m_reachRectLeft, 0x10);
     ar->Read(&m_2a0, 0x10);
-    ar->Read(&m_2b0, 0x10);
-    ar->Read(&m_2c0, 0x10);
+    ar->Read(&m_toyRectA, 0x10);
+    ar->Read(&m_toyRectB, 0x10);
     ar->Read(&m_health, 4);
     ar->Read(&m_stamina, 4);
     ar->Read(&m_toyTime, 4);

@@ -104,7 +104,7 @@
             break;                                                                                 \
     }
 
-RVA(0x000f42f0, 0x1193)
+RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
     m_defenderX = m_lastTilePxX;

@@ -626,28 +626,26 @@ public:
     i32 m_2a4;             // +0x2a4
     i32 m_2a8;             // +0x2a8
     i32 m_2ac;             // +0x2ac
-    i32 m_2b0;             // +0x2b0
-    i32 m_2b4;             // +0x2b4
-    i32 m_2b8;             // +0x2b8
-    i32 m_2bc;             // +0x2bc
-    i32 m_2c0;             // +0x2c0
-    i32 m_2c4;             // +0x2c4
-    i32 m_2c8;             // +0x2c8
-    i32 m_2cc;             // +0x2cc
-    i32 m_arrivalState;    // +0x2d0 (arrival: = 4)
-    i32 m_defenderState;   // +0x2d4 (arrival defender dispatch sub-state: switch 0/1/2/3)
-    i32 m_2d8;             // +0x2d8
-    i32 m_defenderRadius;  // +0x2dc (defender radius / arrival kind)
-    i32 m_2e0;             // +0x2e0 (serialized)
-    i32 m_2e4;             // +0x2e4 (serialized)
-    i32 m_2e8;             // +0x2e8 (serialized)
-    i32 m_dwell;           // +0x2ec
-    i32 m_arrivalCol;      // +0x2f0 (arrival target grid col; grid index = 15*col+row; -1 = none)
-    i32 m_arrivalRow;      // +0x2f4 (arrival target grid row)
-    i32 m_2f8;             // +0x2f8
-    i32 m_2fc;             // +0x2fc
-    i32 m_defenderX;       // +0x300 (arrival: = m_lastTilePxX)
-    i32 m_defenderY;       // +0x304 (arrival: = m_lastTilePxY)
+    // Two 16-byte RECT blocks, not eight ints: Serialize moves them as
+    // `Write(&m_toyRectA, 16)` / `Write(&m_toyRectB, 16)` (0x452f.. / GameStateRecordLoad
+    // reads them the same way) and RectContainsGated @0x51a20 builds a CRect out of each
+    // pair (left/top/right/bottom, rect A's high edges +1).
+    RECT m_toyRectA;      // +0x2b0  toy reach rect (LoadVehicleGruntSprites seeds {-1,-1,1,1})
+    RECT m_toyRectB;      // +0x2c0  toy exclusion rect (seeded {0,0,0,0})
+    i32 m_arrivalState;   // +0x2d0 (arrival: = 4)
+    i32 m_defenderState;  // +0x2d4 (arrival defender dispatch sub-state: switch 0/1/2/3)
+    i32 m_2d8;            // +0x2d8
+    i32 m_defenderRadius; // +0x2dc (defender radius / arrival kind)
+    i32 m_2e0;            // +0x2e0 (serialized)
+    i32 m_2e4;            // +0x2e4 (serialized)
+    i32 m_2e8;            // +0x2e8 (serialized)
+    i32 m_dwell;          // +0x2ec
+    i32 m_arrivalCol;     // +0x2f0 (arrival target grid col; grid index = 15*col+row; -1 = none)
+    i32 m_arrivalRow;     // +0x2f4 (arrival target grid row)
+    i32 m_2f8;            // +0x2f8
+    i32 m_2fc;            // +0x2fc
+    i32 m_defenderX;      // +0x300 (arrival: = m_lastTilePxX)
+    i32 m_defenderY;      // +0x304 (arrival: = m_lastTilePxY)
     // +0x308/+0x310: the arrival re-roll idle timer, same 64-bit anchor+window shape
     // as the +0x278 pair (window lo = GruntRand()%0x7530 + 0x7530).
     union {

@@ -51,7 +51,9 @@ public:
     // requireUnoccupied: on a 0x4000 tile, nonzero REJECTS a cell already claimed by
     // m_curCell outright; zero still admits it when its action code is one of the
     // twelve special ids (0x12f..0x149).
-    i32 ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
+    // VOID: retail never sets eax on any exit path, and MSVC5 C++ rejects a
+    // missing return (C2561), so the declared type cannot have been int.
+    void ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
     i32 PathToNearestCandidate(CGrunt*, i32, i32, i32);
     i32 PathToNearestGoal(CGrunt*, i32, i32);
     void* PickRandomIdleUnit(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
