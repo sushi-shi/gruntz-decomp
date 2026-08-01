@@ -21,3 +21,8 @@ keep them as TWO separate locals or the same branchless fold appears.)
 
 STEERABLE. Evidence: MakeRezPath `found` 87→92%; InitializeDefaultCreateStruct style 14→99% &
 x/y 14→78%; same idiom across InitializeDefaultWindowClass.
+
+related: [default-hoists-into-destination-no-jmp.md](default-hoists-into-destination-no-jmp.md)
+— the same rule when the OTHER value is a memory load rather than a constant, where the
+tell is that retail's low arm carries no `jmp` at all; it also carries the boundary
+conditions (the clamp CSE, and the if-conversion counter-case).

@@ -27,3 +27,9 @@ STEERABLE. CMulti::AutoTuneCmdDelay 0x0bcc10 97.87 -> 100 EXACT (its @early-stop
 "a pure esi<->edi swap plus cl CSEing the literal 3 into that register; permute fn
 200 iters found nothing"). The if/else form with both arms assigning works too; only
 the init-then-if form CSEs.
+
+SCOPE: this is the NARROW case where the default and the compare's RHS are the SAME
+literal. When they differ - and especially when the override is a memory load - the
+init-then-if form is the one retail wrote, because it hoists the default into the
+destination and leaves the low arm a bare fall-through with no `jmp`:
+[default-hoists-into-destination-no-jmp.md](default-hoists-into-destination-no-jmp.md).

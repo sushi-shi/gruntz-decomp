@@ -65,4 +65,11 @@ cl still materialises `obj = 0` in its own register before the call (`xor esi,es
 where retail simply falls out of the `je` with `eax == 0`. That half is a register
 colouring choice and stays.
 
-related: identical-return-epilogue-tailmerge.md, positive-gate-enables-shrink-wrap.md
+related: identical-return-epilogue-tailmerge.md, positive-gate-enables-shrink-wrap.md,
+[default-hoists-into-destination-no-jmp.md](default-hoists-into-destination-no-jmp.md)
+
+BOUNDARY (measured on `CDDrawChildGroup::PruneOrphans` @0x15b1d0, 2026-08-01): when the
+resolved pointer's ONLY consumer is a null test, the statement form still if-converts and
+the two-compare `||` chain — which is NOT retail's shape — scores higher than any value
+spelling: 85.93 (`owner=0; if(hit) owner=found;`) / 85.93 (ternary) / 88.18 (explicit
+if/else) vs **93.75** for `if (Lookup(k,found) == 0 || found == 0)`. Keep the `||` there.
