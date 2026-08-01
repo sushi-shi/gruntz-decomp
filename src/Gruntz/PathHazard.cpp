@@ -169,7 +169,11 @@ i32 CPathHazard::Tick() {
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
-            if (g_gameReg->m_134 != 1 || outA != 0) {
+            // `outA == 0`, not `!= 0`. Retail (Tick @0xb40f4, SiblingTick @0xb4527) is
+            // `jne <body> / cmp outA,0 / jne <skip>`: the m_134 clause short-circuits INTO
+            // the body, and the second clause branches AWAY when outA is non-zero - so the
+            // HitTest runs on a ZERO outA. Both sites had it backwards.
+            if (g_gameReg->m_134 != 1 || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
                     return 0;
                 }
@@ -275,10 +279,18 @@ i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
         i32 sel = 5;
         i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strike.m_deadline;
-        if (elapsed >= m_strike.m_window) {
+        // Written with the WINDOW-STILL-OPEN case as the `if` body, because retail's
+        // 64-bit compare branches to the disarm block rather than falling into it
+        // (`jg <disarm> / jl <here> / cmp lo / jae <disarm>`); the early-return spelling
+        // gives cl the mirror order. And `sel = 0` is gated on `>= 0x64`, not `<`:
+        // retail is `cmp ds:g_timer200,0x64 / jb <merge>`, i.e. it SKIPS the store when
+        // the timer is below 0x64.
+        if (elapsed < m_strike.m_window) {
+            if (static_cast<u32>(g_timer200) >= 0x64) { // UNSIGNED: retail is `jb`, not `jl`
+                sel = 0;
+            }
+        } else {
             m_strikeArmed = 0;
-        } else if (g_timer200 < 0x64) {
-            sel = 0;
         }
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
@@ -304,7 +316,11 @@ i32 CPathHazard::SiblingTick() {
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
-            if (g_gameReg->m_134 != 1 || outA != 0) {
+            // `outA == 0`, not `!= 0`. Retail (Tick @0xb40f4, SiblingTick @0xb4527) is
+            // `jne <body> / cmp outA,0 / jne <skip>`: the m_134 clause short-circuits INTO
+            // the body, and the second clause branches AWAY when outA is non-zero - so the
+            // HitTest runs on a ZERO outA. Both sites had it backwards.
+            if (g_gameReg->m_134 != 1 || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }
