@@ -52,24 +52,17 @@ void CRangeSet::AddRange(u32 lo, u32 hi) {
 // otherwise the range is a single value. Stops at end-of-string or a missing
 // marker/digit.
 // ===========================================================================
-// @early-stop
-// ~92.15% loop-carried-cursor regalloc wall (docs/patterns/shrink-wrapped-callee-
-// save-push.md / this-spilled-to-local-for-loop-seed.md family): the ENTIRE loop
-// body (inline strcpy, digit-scan, atol, the '-' range branch, AddRange) is
-// byte-identical. The only residual is the prologue - retail pins the cursor in
-// ebx from entry (`push ebx; mov ebx,[esp+0x10c]`) and keeps it there across every
-// iteration, while cl peels the first iteration's cursor into eax (the param is
-// dead after the first strstr). Both `char* s = str;` and reusing the
-// `str` param produce the identical eax split; not source-steerable. The lone
-// `atol` (0x11ff10) rel32 is also reloc-masked (Ghidra names it `atol`, cl emits
-// `_atol`). Logic complete; parked for the final sweep.
+// (ex-wall, RETIRED 2026-08-01 - code bytes exact; only the `atol` reloc NAME differs
+// (Ghidra `atol` vs cl `_atol`). The "loop-carried-cursor regalloc wall / cl peels the
+// first iteration's cursor into eax" note was a source bug: the body was spelled
+// `if (*str == 0) return; do { ... } while (*str != 0);`, and cl rotates that do-while by
+// DUPLICATING the leading strstr into the loop bottom - which is what forced the cursor
+// out of ebx. The plain `while (*str != 0) { ... }` form gets retail's single bottom test
+// (`cmp BYTE PTR [ebx],0x0; jne`) and pins the cursor in ebx from entry. 92.15 -> 99.87.)
 RVA(0x00184c10, 0x136)
 void CRangeSet::AddFromString(char* str) {
     char buf[0x100];
-    if (*str == 0) {
-        return;
-    }
-    do {
+    while (*str != 0) {
         char* x = strstr(str, "X");
         if (x == 0) {
             return;
@@ -112,17 +105,21 @@ void CRangeSet::AddFromString(char* str) {
             hi = lo;
         }
         AddRange(lo, hi);
-    } while (*str != 0);
+    }
 }
 
 // 0x184d50 - MONO-console newline: reset the column, advance the row and, when it
 // runs past the last line (25), scroll the whole 80x25 word buffer up one line
 // (0xa2-byte word copy) then blank the bottom line (0x0720), leaving the row at 24.
 // @early-stop
-// codegen-alias wall (~91%): logic + the two do-while word loops + the 25-line scroll
-// gate are byte-faithful, but retail reloads g_monoBuffer into a volatile reg each
-// iteration where cl caches it in a callee-saved reg (adds a push/pop), and colours
-// the scroll temporaries one register apart. Not source-steerable.
+// 98.6% (was 91.0). The "cl caches g_monoBuffer in a callee-saved reg / colours the
+// scroll temporaries one register apart" note was wrong: the blank loop's pre-increment
+// spelling (`i += 2;` first, then `buf + i - 2`) made cl HOIST the 0x720 constant into
+// ecx for the loop and push the buffer into edx; MonoClear's post-increment spelling
+// (`buf + i` ... `i += 2;`) keeps 0x720 an immediate and the buffer in ecx, exactly as
+// retail. Residual is 3 rows of the SIB base/index coin-flip shared with MonoClear and
+// the whole CHashBase family (`[ecx+eax*1+d]` vs `[eax+ecx*1+d]`) - measured
+// TU-cumulative state, not a local spelling (8 spellings tested here, 7 in MonoClear).
 RVA(0x00184d50, 0x5f)
 void MonoNewline() {
     g_monoCol = 0;
@@ -142,11 +139,13 @@ void MonoNewline() {
         } while (i < 0xfa0);
         i = 0xf00;
         do {
-            i += 2;
-            // same byte-addressed 2-byte-cell page (retail `[ecx+eax*1-0x2]`)
+            // same byte-addressed 2-byte-cell page (retail `[ecx+eax*1-0x2]`); the
+            // post-increment spelling (as in MonoClear) is what keeps 0x720 an
+            // IMMEDIATE - the pre-increment form makes cl hoist it into ecx.
             Pix16Ptr cell;
-            cell.m_chars = (g_monoBuffer + i - 2);
+            cell.m_chars = g_monoBuffer + i;
             *cell.m_words = 0x720;
+            i += 2;
         } while (i < 0xfa0);
         g_monoRow--;
     }
@@ -156,7 +155,10 @@ void MonoNewline() {
 // the cursor (row 0, column 0).
 // @early-stop
 // one row left (99%): SIB role swap ([eax+edx] vs [edx+eax*1]) - operand order can't
-// steer it. The old ~60% "codegen-alias wall" note was stale TU state: it cleared when
+// steer it (8 spellings tested 2026-08-01: &buf[i], i+buf, pre/post increment, u32 i,
+// local buffer pointer, for-loop, row/col hoisted - all identical to the byte). Same
+// family as CHashBase::Prev/Insert/Remove/Last, which is measured TU-cumulative state.
+// The old ~60% "codegen-alias wall" note was stale TU state: it cleared when
 // the Rez*Printf family stopped hand-rolling `(char*)(&fmt+1)` and used va_start.
 RVA(0x00184db0, 0x28)
 void MonoClear() {
