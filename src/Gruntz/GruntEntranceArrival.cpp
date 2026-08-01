@@ -134,23 +134,23 @@ static void GruntScratchTeardown() {
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
-    MovingSlot16();
+    AdvanceMotion();
     if (m_struckSlotSound != 0) {
         bool neL = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "L") != 0);
         if (neL && strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "G") != 0) {
-            ClearSubA();
+            StopStruckSlotSound();
         }
     }
     if (m_struckVoiceSound != 0) {
         if (m_gruntKind == 0) {
-            ClearSubB();
+            StopStruckVoiceSound();
         } else {
             CGruntzMgr* g = g_gameReg;
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
             if (!(x < g->m_viewBounds.right && x >= g->m_viewBounds.left
                   && y < g->m_viewBounds.bottom && y >= g->m_viewBounds.top)) {
-                ClearSubB();
+                StopStruckVoiceSound();
             }
         }
     }
@@ -566,7 +566,7 @@ i32 CGrunt::StepAttackFire() {
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
-        ClearSubA();
+        StopStruckSlotSound();
         if (m_arrivalPhase == 3 && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (occ != 0) {
@@ -738,7 +738,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
 
-    RecordBytes band;
+    RecordBytes<CDDrawWorkerHost*> band;
     band.m_rec = &g->m_world->m_level->m_mainPlane;
     i32* rectBase = band.m_dwords;
     i32 lim = rectBase[0x48 / 4];
@@ -820,7 +820,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         }
         return 0;
     }
-    ClearSubA();
+    StopStruckSlotSound();
     if (ready == 1) {
         UpdateArrival(0, 0);
     }
@@ -828,7 +828,7 @@ i32 CGrunt::StepEntranceRelatchA() {
 }
 
 RVA(0x00062b40, 0x11)
-i32 CGrunt::UserLogicVfunc6() {
+i32 CGrunt::RecordFrameTick() {
     m_438 = g_frameTicks;
     return 1;
 }
@@ -934,7 +934,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                         m_object->m_screenY
                     )) {
 
-                    AddrWord src;
+                    AddrWord<CGrunt> src;
                     src.m_addr = this;
                     g->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
                 }
@@ -946,7 +946,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenY
                         )) {
 
-                        AddrWord src;
+                        AddrWord<CGrunt> src;
                         src.m_addr = this;
                         g->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
                     }
@@ -957,7 +957,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenY
                         )) {
 
-                        AddrWord src;
+                        AddrWord<CGrunt> src;
                         src.m_addr = this;
                         g->m_cueSink->SpawnVoiceDriver(src.m_word, 6, -1, -1, -1);
                     }
@@ -1325,11 +1325,11 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
             if (x < rect.right && x >= rect.left && y < rect.bottom && y >= rect.top) {
                 g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
-                ClearSubA();
+                StopStruckSlotSound();
                 return 0;
             }
         }
-        ClearSubA();
+        StopStruckSlotSound();
         return 0;
     }
 
@@ -1361,7 +1361,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         }
         return 0;
     }
-    ClearSubA();
+    StopStruckSlotSound();
     return 0;
 }
 
@@ -1371,9 +1371,9 @@ i32 CGrunt::BuildGruntExitAnimation() {
         return 0;
     }
 
-    StepAnimDispatchB();
-    ClearSubA();
-    ClearSubB();
+    FinishActiveAction();
+    StopStruckSlotSound();
+    StopStruckVoiceSound();
 
     m_object->m_stateFlags &= ~8;
     m_entranceCommitted = 0;
@@ -1634,7 +1634,7 @@ reject:
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
-    ClearSubA();
+    StopStruckSlotSound();
 
 tail:
     CreateHealthSprite();
@@ -1995,7 +1995,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         cellObj = 0;
     } else {
 
-        AddrWord slot;
+        AddrWord<char> slot;
         slot.m_word = ((grid->m_rowInts[ty]))[tx * 7 + 2];
         cellObj = slot.m_addr;
     }

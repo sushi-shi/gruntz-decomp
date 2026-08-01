@@ -56,7 +56,7 @@ void ForceEmitStatusBarMgrDtor() {
 RVA_COMPGEN(0x000c8980, 0x64, ??1CStatusBarMgr@@QAE@XZ)
 
 RVA(0x00100530, 0x5)
-i32 CStatusBarItem::SbiSlot6(i32, i32, i32) {
+i32 CStatusBarItem::OnPointerMove(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100550, 0x5)
@@ -64,7 +64,7 @@ i32 CStatusBarItem::Click1c(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100570, 0x5)
-i32 CStatusBarItem::SbiSlot8(i32, i32, i32) {
+i32 CStatusBarItem::UnusedPointerAction(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100590, 0x5)
@@ -324,7 +324,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
             (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
             if (m_position == 0) {
                 RefreshA();
-                winapi_0fe520_SetRect();
+                DockStatusBarRight();
             }
             break;
     }
@@ -1462,7 +1462,7 @@ void CStatusBarMgr::InitTabRects() {
 }
 
 RVA(0x000ff9d0, 0x8)
-i32 CStatusBarMgr::ClickAt_ff9d0(i32, i32, i32) {
+i32 CStatusBarMgr::OnPointerRelease(i32, i32, i32) {
     return 1;
 }
 
@@ -2080,7 +2080,7 @@ i32 CStatusBarMgr::RefreshA() {
 }
 
 RVA(0x000fe520, 0xa9)
-i32 CStatusBarMgr::winapi_0fe520_SetRect() {
+i32 CStatusBarMgr::DockStatusBarRight() {
     if (m_hlBusy != 0) {
         return 1;
     }
@@ -2125,7 +2125,7 @@ i32 CStatusBarMgr::RefreshState() {
     if (m_4 == 1) {
         return RefreshA();
     }
-    return winapi_0fe520_SetRect();
+    return DockStatusBarRight();
 }
 
 // @early-stop
@@ -2413,7 +2413,7 @@ i32 CStatusBarItem::Render() {
 }
 
 RVA(0x00107d00, 0x591)
-i32 CStatusBarMgr::winapi_107d00_SetRect() {
+i32 CStatusBarMgr::StartChipMachineCycle() {
     i32 result;
     if (g_gameReg->m_134 == 1) {
         if (m_ptrPool.GetSize() > 0) {
@@ -2716,7 +2716,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     if (w == 0) {
         return 1;
     }
-    w->SbiSlot6(a1, a2, a3);
+    w->OnPointerMove(a1, a2, a3);
     i32 cmd = w->m_cmd;
     switch (w->m_tab) {
         case 0:
@@ -2729,7 +2729,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (cmd > 0x259) {
                 if (cmd == 0x25a) {
                     HiCueFind();
-                    winapi_0fe520_SetRect();
+                    DockStatusBarRight();
                     return 1;
                 }
                 if (cmd == 0x25b) {

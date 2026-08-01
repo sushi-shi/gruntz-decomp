@@ -1,5 +1,6 @@
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BoundaryLeafLogicViews.h>
 #include <Gruntz/AmbientSound.h>
@@ -57,13 +58,18 @@ void CWorldSoundSet::Teardown() {
 }
 
 RVA(0x0000b6a0, 0x83)
-CAmbientSound*
-CWorldSoundSet::CreateAmbient6(const char* key, i32 level, RECT* box, i32 scaleB, i32 unused) {
+CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
+    const char* key,
+    i32 level,
+    RECT* box,
+    i32 scaleB,
+    i32 unused
+) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, key, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
         delete obj;
         return 0;
     }
@@ -75,13 +81,18 @@ RVA_COMPGEN(0x0000b760, 0x1e, ??_GCAmbientSound@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)
-CAmbientSound*
-CWorldSoundSet::CreateAmbient5(DirectSoundMgr* mgr, i32 level, RECT* box, i32 scaleB, i32 unused) {
+CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
+    DirectSoundMgr* mgr,
+    i32 level,
+    RECT* box,
+    i32 scaleB,
+    i32 unused
+) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(mgr, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
         delete obj;
         return 0;
     }
@@ -90,13 +101,18 @@ CWorldSoundSet::CreateAmbient5(DirectSoundMgr* mgr, i32 level, RECT* box, i32 sc
 }
 
 RVA(0x0000b850, 0x83)
-CAmbientPosSound*
-CWorldSoundSet::CreatePos6(const char* key, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused) {
+CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
+    const char* key,
+    i32 level,
+    AmbientPoint* pos,
+    i32 scaleB,
+    i32 unused
+) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, key, level, m_volume, pos, scaleB) == 0) {
+    if (obj->InitFromKey(m_world, key, level, m_volume, pos, scaleB) == 0) {
         delete obj;
         return 0;
     }
@@ -108,7 +124,7 @@ RVA_COMPGEN(0x0000b910, 0x1e, ??_GCAmbientPosSound@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000b940, 0xf, ??1CAmbientPosSound@@UAE@XZ)
 
 RVA(0x0000b960, 0x80)
-CAmbientPosSound* CWorldSoundSet::CreatePos5(
+CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
     DirectSoundMgr* mgr,
     i32 level,
     AmbientPoint* pos,
@@ -119,7 +135,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5(
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(mgr, level, m_volume, pos, scaleB) == 0) {
+    if (obj->InitFromSound(mgr, level, m_volume, pos, scaleB) == 0) {
         delete obj;
         return 0;
     }
@@ -149,11 +165,11 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, key, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
         delete obj;
         return 0;
     }
-    obj->Init2(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
+    obj->InitCycleTiming(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
@@ -177,11 +193,11 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandom(
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(mgr, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
         delete obj;
         return 0;
     }
-    obj->Init2(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
+    obj->InitCycleTiming(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
@@ -252,7 +268,7 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
 }
 
 RVA(0x0000bdd0, 0x53)
-i32 CAmbientSound::Init6(
+i32 CAmbientSound::InitFromKey(
     CRandomAmbientWorld* world,
     const char* key,
     i32 level,
@@ -266,11 +282,17 @@ i32 CAmbientSound::Init6(
     if (out == 0) {
         return 0;
     }
-    return Init5(out->m_mgr, level, master, box, scaleB);
+    return InitFromSound(out->m_mgr, level, master, box, scaleB);
 }
 
 RVA(0x0000be50, 0x8f)
-i32 CAmbientSound::Init5(DirectSoundMgr* mgr, i32 level, i32 master, RECT* box, i32 scaleB) {
+i32 CAmbientSound::InitFromSound(
+    DirectSoundMgr* mgr,
+    i32 level,
+    i32 master,
+    RECT* box,
+    i32 scaleB
+) {
     if (mgr == 0) {
         return 0;
     }
@@ -521,7 +543,7 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
 }
 
 RVA(0x0000c4b0, 0x53)
-i32 CAmbientPosSound::Init6(
+i32 CAmbientPosSound::InitFromKey(
     CRandomAmbientWorld* world,
     const char* key,
     i32 level,
@@ -535,11 +557,11 @@ i32 CAmbientPosSound::Init6(
     if (out == 0) {
         return 0;
     }
-    return Init5(out->m_mgr, level, master, pos, scaleB);
+    return InitFromSound(out->m_mgr, level, master, pos, scaleB);
 }
 
 RVA(0x0000c530, 0x51)
-i32 CAmbientPosSound::Init5(
+i32 CAmbientPosSound::InitFromSound(
     DirectSoundMgr* mgr,
     i32 level,
     i32 master,
@@ -653,7 +675,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
     if (aux->m_requestState == 0) {
         obj->m_flags08 |= 1;
         obj->m_flags40 |= 1;
-        if (aux->m_handler == DefaultActionHandler_2d15) {
+        if (aux->m_handler == CreateGlobalAmbientSound) {
             obj->m_flags08 |= 2;
         } else {
             obj->m_flags08 &= ~2;
@@ -681,7 +703,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                     );
                 } else {
                     placed = g_gameReg->m_inputState
-                                 ->CreateAmbient5(layer->m_10, 0x64, &rc, obj->m_120, 0);
+                                 ->CreateAmbientFromSound(layer->m_10, 0x64, &rc, obj->m_120, 0);
                 }
                 if (placed && obj->m_placed.top > 0) {
                     placed->m_box2 = obj->m_placed;
@@ -739,7 +761,8 @@ i32 SpawnPosSound(PosSoundObj* obj) {
             pt.x = obj->m_x;
             pt.y = obj->m_y;
 
-            CAmbientPosSound* v = set->CreatePos5(layer->m_10, 0x64, &pt, obj->m_120, 0);
+            CAmbientPosSound* v =
+                set->CreatePositionedFromSound(layer->m_10, 0x64, &pt, obj->m_120, 0);
             if (v != 0) {
                 aux->m_voice = v;
             }
@@ -791,8 +814,8 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
 
     m_phase ^= 1;
     if (m_phase != 0) {
-        i32 lo = m_40;
-        i32 hi = m_44;
+        i32 lo = m_playDurationMin;
+        i32 hi = m_playDurationMax;
         i32 span = hi - lo + 1;
         i32 r;
         if (span == 0) {
@@ -807,8 +830,8 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         }
         Fade(1, 0x64, half);
     } else {
-        i32 lo = m_intervalLoB;
-        i32 hi = m_intervalHiB;
+        i32 lo = m_silenceDurationMin;
+        i32 hi = m_silenceDurationMax;
         i32 span = hi - lo + 1;
         i32 r;
         if (span == 0) {
@@ -840,12 +863,17 @@ i32 CGruntzMgr::Rand() {
 
 // @early-stop
 RVA(0x0000cd70, 0xe5)
-void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 lo2, i32 hi2) {
-    i32 span = hi - lo + 1;
-    m_40 = lo;
-    m_44 = hi;
-    m_intervalLoB = lo2;
-    m_intervalHiB = hi2;
+void CRandomAmbientSound::InitCycleTiming(
+    i32 playDurationMin,
+    i32 playDurationMax,
+    i32 silenceDurationMin,
+    i32 silenceDurationMax
+) {
+    i32 span = playDurationMax - playDurationMin + 1;
+    m_playDurationMin = playDurationMin;
+    m_playDurationMax = playDurationMax;
+    m_silenceDurationMin = silenceDurationMin;
+    m_silenceDurationMax = silenceDurationMax;
     i32 seed;
     if (span == 0) {
         if (!(g_randSeeded & 1)) {
@@ -858,10 +886,10 @@ void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 lo2, i32 hi2) {
         g_randSeed = roll;
         if (roll & 0x10000) {
             m_phase = 1;
-            m_countdownMs = lo;
+            m_countdownMs = playDurationMin;
         } else {
             m_phase = 1;
-            m_countdownMs = hi;
+            m_countdownMs = playDurationMax;
         }
         return;
     }
@@ -874,7 +902,7 @@ void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 lo2, i32 hi2) {
     i32 roll = seed * 214013 + 2531011;
     g_randSeed = roll;
     m_phase = 1;
-    m_countdownMs = lo + ((roll >> 0x10) & 0x7fff) % span;
+    m_countdownMs = playDurationMin + ((roll >> 0x10) & 0x7fff) % span;
 }
 
 RVA(0x00085ed0, 0x4a)

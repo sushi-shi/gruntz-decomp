@@ -14,7 +14,7 @@ public:
     virtual void ReleaseResources() OVERRIDE;
     virtual GameStateId Update() OVERRIDE;
     virtual i32 Render() OVERRIDE;
-    virtual i32 Vslot15() OVERRIDE;
+    virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 BuildWorldLevelPath(i32) OVERRIDE;
 
     char m_pad51c[0x520 - 0x51c];
@@ -23,7 +23,7 @@ public:
 };
 SIZE_UNKNOWN();
 
-extern "C" const i32 g_rotTableA_60d008[27];
-extern "C" const i32 g_rotTableB_60d078[27];
+extern "C" const i32 g_directionClockwiseTable[27];
+extern "C" const i32 g_directionCounterclockwiseTable[27];
 
 #endif // GRUNTZ_GRUNTZ_CDEMO_H

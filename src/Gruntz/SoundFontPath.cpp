@@ -66,7 +66,7 @@ i32 BuildSoundFontPath(char drive) {
         hiVer = 1;
     }
     g_sfBufferObject.m_Buffer = hiVer ? g_sfLocal4 : g_sfLocal;
-    if (FileExistsCopyF90F0(g_sfBufferObject.m_Buffer)) {
+    if (SoundFontFileExists(g_sfBufferObject.m_Buffer)) {
         res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfMidiLocation, &g_sfBufferObject);
     }
     if (res != 0) {
@@ -77,7 +77,7 @@ i32 BuildSoundFontPath(char drive) {
 }
 
 RVA(0x000f90f0, 0x45)
-i32 FileExistsCopyF90F0(char* szPath) {
+i32 SoundFontFileExists(char* szPath) {
     OFSTRUCT of;
 
     if (!szPath) {

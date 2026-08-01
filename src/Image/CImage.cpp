@@ -92,7 +92,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_ownerCtx->m_ptrColl->Createa58_3(path, capArg, flagsArg);
+    CDDSurface* item = m_ownerCtx->m_ptrColl->LoadFileSurface(path, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -136,7 +136,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
         return 0;
     }
 
-    RecordBytes blob;
+    RecordBytes<PidHeader> blob;
     blob.m_chars = resolved;
     i32 result = this->LoadDispatch(
 
@@ -156,7 +156,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
     }
 
     if (mode == 4 && (desc->flags & PID_GRAMMAR_SKIPRUN)) {
-        if (!BuildSlot13(desc, size)) {
+        if (!BuildShadeBlitter(desc, size)) {
             return 0;
         }
 
@@ -182,7 +182,8 @@ i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
     }
 
     CDDSurface* item =
-        m_ownerCtx->m_ptrColl->CreateA(desc, static_cast<i32>(mode), size, capArg, flagsArg);
+        m_ownerCtx->m_ptrColl
+            ->LoadSurfaceFromPid(desc, static_cast<i32>(mode), size, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -202,13 +203,14 @@ i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
 }
 
 RVA(0x001530e0, 0x92)
-i32 CImage::Create24(i32 width, i32 height, i32 keyed) {
+i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 capArg = 0;
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_ownerCtx->m_ptrColl->CreateB(width, height, 0, capArg, flagsArg);
+    CDDSurface* item =
+        m_ownerCtx->m_ptrColl->CreateKeyedSurface(width, height, 0, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -231,7 +233,7 @@ i32 CImage::Create24(i32 width, i32 height, i32 keyed) {
 
 // @early-stop
 RVA(0x00153180, 0xda)
-i32 CImage::BuildSlot13(PidHeader* desc, u32 size) {
+i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
     m_owned = owned;
     if (owned == 0) {

@@ -76,7 +76,7 @@ public:
     virtual ~CDDSurface();
     virtual i32 Refresh(IDirectDrawSurface* surf);
 
-    virtual i32 Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc);
+    virtual i32 CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc);
     virtual i32 BlitSurf(void* surf, i32 width, i32 height, i32 bitDepth, i32 caps);
     virtual void FreeSurfaces();
     virtual i32 IsValid();
@@ -209,7 +209,7 @@ public:
             i32 m_mipMapCount;
             i32 m_alphaBitDepth;
             i32 m_descReserved;
-            void* m_lockBits;
+            u8* m_lockBits;
             char m_colorKeys[0x20];
             i32 m_pixelFormatSize;
             i32 m_pixelFormatFlags;

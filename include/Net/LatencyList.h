@@ -18,11 +18,11 @@ public:
 
     i32 Dispatch(i32 mode);
 
-    i32 Populate1();
-    i32 Populate2();
-    i32 Populate3();
-    i32 Populate4();
-    i32 Populate5();
+    i32 PopulateIpxOptions();
+    i32 PopulateTcpIpOptions();
+    i32 PopulateModemOptions();
+    i32 PopulateSerialOptions();
+    i32 PopulateGenericOptions();
 
     i32 FillCombo(HWND hDlg, i32 ctrlId);
 

@@ -572,8 +572,8 @@ i32 CTeleporter::Update() {
     }
 
     if (m_object->m_124 == 2) {
-        found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
-        g_gameReg->m_scoreHud->m_28++;
+        found->TryTeleportToCell(m_object->m_164, m_object->m_168, 1, 1);
+        g_gameReg->m_scoreHud->m_secretsFound++;
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
         CWwdGameObjectA* s = m_object;
@@ -595,7 +595,7 @@ i32 CTeleporter::Update() {
         spawned->m_164 = m_object->m_screenX;
         spawned->m_168 = m_object->m_screenY;
         spawned->m_124 = m_object->m_placeMode;
-        found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 0, 0);
+        found->TryTeleportToCell(m_object->m_164, m_object->m_168, 0, 0);
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
     }

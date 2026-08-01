@@ -25,7 +25,7 @@ SIZE(0xc0);
 class CPoolItemAB8 : public CDDSurface {
 public:
     virtual ~CPoolItemAB8() OVERRIDE;
-    virtual i32 Init1(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE;
+    virtual i32 CreateFromDesc(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE;
     virtual i32 GetPoolKind() OVERRIDE;
     virtual i32 Setup(CDDrawPtrCollections*, i32, i32, i32);
     virtual i32 InstallColorFormat();
@@ -35,7 +35,7 @@ SIZE(0xc0);
 class CPoolItemAE8 : public CDDSurface {
 public:
     virtual ~CPoolItemAE8() OVERRIDE;
-    virtual i32 Init1(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE;
+    virtual i32 CreateFromDesc(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE;
     virtual i32 GetPoolKind() OVERRIDE;
 
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32);
@@ -83,13 +83,13 @@ public:
     void AddItemB(CDDPalette* item);
     void RemoveItemA(CDDSurface* item);
     void RemoveItemB(CDDPalette* item);
-    CDDSurface* Create7f0_1(const DDSURFACEDESC* desc);
+    CDDSurface* CreateSurfaceFromDesc(const DDSURFACEDESC* desc);
 
-    CDDSurface* CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans);
-    CDDSurface* CreateB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
-    CDDSurface* Createa58_1(const DDSURFACEDESC* desc);
+    CDDSurface* LoadSurfaceFromPid(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans);
+    CDDSurface* CreateKeyedSurface(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
+    CDDSurface* CreateFileSurfaceFromDesc(const DDSURFACEDESC* desc);
 
-    CDDSurface* Createa58_3(char* path, i32 caps, i32 colorKey);
+    CDDSurface* LoadFileSurface(char* path, i32 caps, i32 colorKey);
 
     i32 CreateRange(
         CDDSurface** out,
@@ -100,25 +100,25 @@ public:
         i32 caps,
         i32 colorKey
     );
-    CDDSurface* Createa88_3(i32 a, i32 b, i32 c);
-    CDDSurface* Createa88_1(const DDSURFACEDESC* desc);
-    CDDSurface* Createab8_3(i32 a, i32 b, i32 c);
-    CDDSurface* Createab8_1(const DDSURFACEDESC* desc);
-    CDDSurface* Createab8_24_3(i32 a);
-    CDDSurface* Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-    CDDSurface* Createae8_1(const DDSURFACEDESC* desc);
+    CDDSurface* CreateBlit7Surface(i32 a, i32 b, i32 c);
+    CDDSurface* CreateBlit7SurfaceFromDesc(const DDSURFACEDESC* desc);
+    CDDSurface* CreatePaletteSurface(i32 a, i32 b, i32 c);
+    CDDSurface* CreatePaletteSurfaceFromDesc(const DDSURFACEDESC* desc);
+    CDDSurface* Create24BitPaletteSurface(i32 a);
+    CDDSurface* CreateBlit47Surface(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+    CDDSurface* CreateBlit47SurfaceFromDesc(const DDSURFACEDESC* desc);
     CDDSurface* MakeAndAddB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
-    CDDPalette* MakeB(void* rgb, i32 flags);
-    CDDPalette* Create(i32 a, i32 b);
+    CDDPalette* CreateRgbPalette(void* rgb, i32 flags);
+    CDDPalette* CreatePaletteFromEntries(i32 a, i32 b);
 
-    CDDPalette* MakeB2(char* path, i32 flags);
-    CDDPalette* MakeB3(void* a, u32 b, i32 c);
+    CDDPalette* LoadPaletteFromFile(char* path, i32 flags);
+    CDDPalette* CreatePaletteFromTrailingData(void* a, u32 b, i32 c);
 
-    CDDPalette* LoadPaletteMakeB(const char* path, i32 z);
-    CDDPalette* LoadPaletteMake950(const char* path, i32 z);
-    CDDPalette* Make950(void* buf, i32 z);
+    CDDPalette* LoadTrailingRgbPalette(const char* path, i32 z);
+    CDDPalette* LoadDisplayPaletteFromFile(const char* path, i32 z);
+    CDDPalette* SetDisplayPaletteFromRgb(void* buf, i32 z);
 
-    CDDPalette* Make950Trailing(u8* buf, i32 size, i32 tag);
+    CDDPalette* SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag);
 
     i32 SetDisplayPaletteFrom(CDDPalette* pal, i32 tag);
     i32 SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag);

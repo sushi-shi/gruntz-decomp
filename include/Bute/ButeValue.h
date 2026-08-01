@@ -12,10 +12,10 @@ enum ButeType {
     kButeDouble = 2,
     kButeFloat = 3,
     kButeString = 4,
-    kButeRef5 = 5,
-    kButeRef6 = 6,
-    kButeRef7 = 7,
-    kButeRef8 = 8,
+    kButeRect = 5,
+    kButePoint = 6,
+    kButeVector = 7,
+    kButeRange = 8,
 };
 
 struct CButeValue {
@@ -32,9 +32,9 @@ struct CButeValue {
     CButeValue* SetDouble(i32 type, double val);
 
     CButeValue* SetString(i32 type, const CString& src);
-    CButeValue* SetRef5(i32 type, const struct ButeRefSmall* src);
-    CButeValue* SetRef7(i32 type, const struct ButeRefLarge* src);
-    CButeValue* SetRef8(i32 type, const struct ButeRefSmall* src);
+    CButeValue* SetRect(i32 type, const struct ButeRefSmall* src);
+    CButeValue* SetVector(i32 type, const struct ButeRefLarge* src);
+    CButeValue* SetRange(i32 type, const struct ButeRefSmall* src);
 
     CButeValue* CopyValue(CButeValue* other);
 };

@@ -70,7 +70,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         m_38->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
-        g_gameReg->m_scoreHud->m_3c++;
+        g_gameReg->m_scoreHud->m_secretsAvailable++;
     }
 }
 

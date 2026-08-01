@@ -216,7 +216,7 @@ i32 CTriggerMgr::PlaceObject(
             aiType = 0;
         }
 
-        AddrWord span;
+        AddrWord<RECT> span;
         span.m_word = spanWord;
         if (logic->Place(
                 this,
@@ -337,8 +337,8 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
                 cell++;
             } while (col < 15);
             m_rowCount[r] = 0;
-            m_rowStateB[r] = 0;
-            m_rowStateC[r] = 0;
+            m_gruntzExitedByPlayer[r] = 0;
+            m_gruntzLostByPlayer[r] = 0;
             r++;
             g2 += 15;
             n--;
@@ -704,7 +704,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 }
             }
             if (anyHit != 0) {
-                g_gameReg->m_scoreHud->m_28++;
+                g_gameReg->m_scoreHud->m_secretsFound++;
                 m_world->m_soundRegistry->RefreshAsset("GAME_SECRETSWITCH");
                 i32 cueX = g != 0 ? g->m_object->m_screenX : x;
                 i32 cueY = g != 0 ? g->m_object->m_screenY : y;
@@ -1348,7 +1348,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (diff < 0) {
         diff = 0;
     }
-    g_gameReg->m_scoreHud->m_score += static_cast<i32>(diff);
+    g_gameReg->m_scoreHud->m_elapsedTimeMs += static_cast<i32>(diff);
     sub->m_40 = 0;
     sub->m_44 = 0;
     sub->m_accumLo = 0;

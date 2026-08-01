@@ -169,7 +169,7 @@ typedef enum {
 
 // @early-stop
 RVA(0x000c8b80, 0x11b)
-i32 CPlay::FrameSlot28(i32 arg) {
+i32 CPlay::LeaveState(i32 arg) {
     m_mgr->m_cueSink->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
@@ -285,7 +285,7 @@ i32 CPlay::Render() {
         }
 
         StepInputA();
-        StepC();
+        StepViewportResize();
 
         if (m_ambientInitDone == 0) {
             u32 elapsed = g_frameTime - static_cast<u32>(m_ambientTimerLo);
@@ -340,7 +340,7 @@ i32 CPlay::Render() {
             m_world->m_drawTarget->m_overlayPair
         );
         if (m_region1Gate != 0) {
-            StepC();
+            StepViewportResize();
         } else {
             m_world->m_level->VisitVisible(
                 m_world->m_drawTarget->m_backPair,
@@ -452,25 +452,25 @@ i32 CPlay::Render() {
         if (m_region0Gate != 0) {
             u32 e = g_frameTime - static_cast<u32>(m_region0TimerLo);
             if (e >= static_cast<u32>(m_region0Interval)) {
-                OnRegion2(static_cast<i32>(g_frameTime));
+                SetTinyViewportCurse(static_cast<i32>(g_frameTime));
             }
         }
         if (m_region1Gate != 0) {
             u32 e = g_frameTime - static_cast<u32>(m_region1TimerLo);
             if (e >= static_cast<u32>(m_region1Interval)) {
-                OnRegion1(static_cast<i32>(g_frameTime));
+                SetDarknessCurse(static_cast<i32>(g_frameTime));
             }
         }
         if (m_region2Gate != 0) {
             u32 e = g_frameTime - static_cast<u32>(m_region2TimerLo);
             if (e >= static_cast<u32>(m_region2Interval)) {
-                OnRegion3(static_cast<i32>(g_frameTime));
+                SetMonitorCurse(static_cast<i32>(g_frameTime));
             }
         }
         if (m_region3Gate != 0) {
             u32 e = g_frameTime - static_cast<u32>(m_region3TimerLo);
             if (e >= static_cast<u32>(m_region3Interval)) {
-                OnRegion4(static_cast<i32>(g_frameTime));
+                SetRandomMoveIconsCurse(static_cast<i32>(g_frameTime));
             }
         }
         return 1;
@@ -829,7 +829,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     {
         i32 cached = g_lastLevelNum;
-        i32 eq = g_pAreaMgr->SameGroup(cached);
+        i32 eq = g_pAreaMgr->IsSameWorld(cached);
         reload = (eq == 0) ? 1 : 0;
         i32 diff = (level != g_lastLevelNum) ? 1 : 0;
         if (g_pAreaMgr == 0) {
@@ -1014,7 +1014,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (self->m_mgr->m_134 == 3) {
         self->m_mgr->SyncOptionsState();
     }
-    self->m_mgr->m_saveSink->FillSlot2(&self->m_saveSlot, self->m_levelIndex, 0);
+    self->m_mgr->m_saveSink->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, 0);
     {
         CString key;
         gameReg = g_gameReg;
@@ -1052,7 +1052,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
                 && ValidateLevelTiles() && AddLevelGruntz()) {
                 self->m_world->m_childGroup->TickKillCues(0);
-                self->m_guts->winapi_107d00_SetRect();
+                self->m_guts->StartChipMachineCycle();
                 (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                 while (ShowCursor(0) >= 0)
                     ;
@@ -1156,7 +1156,7 @@ void CPlay::OnExit() {
     ForwardReady();
     FreeListTeardown();
     if (m_world) {
-        m_world->m_childGroup->DestroyChildren_159ef0();
+        m_world->m_childGroup->ClearChildren();
     }
     g_gameReg->m_128 = 0;
     if (g_gameReg->m_134 == 3) {
@@ -1192,7 +1192,7 @@ void CPlay::ModeCleanup() {
         m_world->m_level->ReleaseChildren();
     }
     if (m_world) {
-        m_world->m_childGroup->DestroyChildren_159ef0();
+        m_world->m_childGroup->ClearChildren();
     }
     if (m_world) {
         m_world->m_workerList->ClearWorkers();
@@ -1200,7 +1200,7 @@ void CPlay::ModeCleanup() {
 }
 
 RVA(0x000cbaf0, 0x16f)
-i32 CPlay::Vslot0b(i32 key, i32 flag) {
+i32 CPlay::OnChar(i32 key, i32 flag) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -1230,7 +1230,7 @@ i32 CPlay::Vslot0b(i32 key, i32 flag) {
             return 1;
         }
         if (key == ']') {
-            m_guts->winapi_0fe520_SetRect();
+            m_guts->DockStatusBarRight();
             return 1;
         }
         if (key == '[') {
@@ -1301,12 +1301,12 @@ i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
     }
     switch (mode) {
         case 4:
-            if (!SyncWrite19fb(ar)) {
+            if (!SavePlayState(ar)) {
                 return 0;
             }
             break;
         case 7:
-            if (!SyncRead2f7c(ar)) {
+            if (!LoadPlayState(ar)) {
                 return 0;
             }
             break;
@@ -1365,7 +1365,7 @@ DATA(0x00212618)
 i32 g_lastLevelNum = -1;
 
 RVA(0x000d79d0, 0x537)
-i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
+i32 CPlay::SavePlayState(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1499,7 +1499,7 @@ i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
 
 // @early-stop
 RVA(0x000d8060, 0x6ce)
-i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
+i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1730,7 +1730,7 @@ i32 CPlay::ResetViewport() {
 }
 
 RVA(0x000d8d90, 0x1e)
-i32 CPlay::StepC() {
+i32 CPlay::StepViewportResize() {
     i32 mode = m_viewMode;
     if (mode == VIEW_MODE_IDLE) {
         return 0;
@@ -1847,8 +1847,8 @@ void CPlay::RegionLeave() {
 }
 
 RVA(0x000d8a00, 0x73)
-i32 CPlay::OnRegion2(i32 z) {
-    if (z != 0) {
+i32 CPlay::SetTinyViewportCurse(i32 active) {
+    if (active != 0) {
         m_region0Gate = 1;
         RegionEnter();
         m_viewMode = VIEW_MODE_A;
@@ -1864,8 +1864,8 @@ i32 CPlay::OnRegion2(i32 z) {
 }
 
 RVA(0x000d8aa0, 0x5f)
-i32 CPlay::OnRegion1(i32 z) {
-    if (z != 0) {
+i32 CPlay::SetDarknessCurse(i32 active) {
+    if (active != 0) {
         m_region1Gate = 1;
         RegionEnter();
     } else {
@@ -1879,8 +1879,8 @@ i32 CPlay::OnRegion1(i32 z) {
 }
 
 RVA(0x000d8b20, 0x74)
-i32 CPlay::OnRegion3(i32 z) {
-    if (z != 0) {
+i32 CPlay::SetMonitorCurse(i32 active) {
+    if (active != 0) {
         m_region2Gate = 1;
         RegionEnter();
         Cmd_ApplyScrollParams(REGION_INTERVAL_MS, 6, 6, 0, 0x2d);
@@ -1895,8 +1895,8 @@ i32 CPlay::OnRegion3(i32 z) {
 }
 
 RVA(0x000d8bc0, 0x71)
-i32 CPlay::OnRegion4(i32 z) {
-    if (z != 0) {
+i32 CPlay::SetRandomMoveIconsCurse(i32 active) {
+    if (active != 0) {
         m_region3Gate = 1;
         RegionEnter();
     } else {
@@ -1926,14 +1926,13 @@ i32 CPlay::NotifyVisibleEntities() {
 
     while (pos != 0) {
         CGameObject* o = static_cast<CGameObject*>(chain.GetNext(pos));
-        void* id = static_cast<void*>(o->m_animWorker->m_notify);
-        if (id == static_cast<void*>(VisFn_40fe90) || id == static_cast<void*>(VisFn_4bf150)
-            || id == static_cast<void*>(VisFn_423b40) || id == static_cast<void*>(VisFn_Roll)
-            || id == static_cast<void*>(VisFn_41e570) || id == static_cast<void*>(VisFn_41e520)
-            || id == static_cast<void*>(VisFn_47e160) || id == static_cast<void*>(VisFn_49b410)
-            || id == static_cast<void*>(VisFn_IntersectRect)
-            || id == static_cast<void*>(VisFn_49b310) || id == static_cast<void*>(VisFn_CBattlezDlg)
-            || id == static_cast<void*>(VisFn_4fce80)) {
+        GameObjNotifyFn id = o->m_animWorker->m_notify;
+        if (id == CreateGrunt || id == CreateInGameIcon || id == CreateGruntPuddle
+            || id == CreateGruntToySprite || id == CreateGruntStaminaSprite
+            || id == CreateGruntToyTimeSprite || id == CreateGruntWingzTimeSprite
+            || id == CreateGruntHealthSprite || id == CreateGruntSelectedSprite
+            || id == CreateGruntPowerupSprite || id == CreateStatusBarSprite
+            || id == CreateLightFx) {
             o->Render(held);
         }
     }
@@ -2068,7 +2067,7 @@ void CPlay::DrawWorldFrame() {
 
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != 0) {
-            lvl->m_mainPlane->CenterScrollA();
+            lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
     g_killCueClock = g_lastNow;
@@ -2114,14 +2113,14 @@ i32 CPlay::DrawWorldFrames() {
 
                 CGameLevel* lvl = m_world->m_level;
                 if (lvl->m_mainPlane != 0) {
-                    lvl->m_mainPlane->CenterScrollB();
+                    lvl->m_mainPlane->DeactivateDistantObjects();
                 }
             }
             TickStateMgrs();
             {
                 CGameLevel* lvl = m_world->m_level;
                 if (lvl->m_mainPlane != 0) {
-                    lvl->m_mainPlane->CenterScrollA();
+                    lvl->m_mainPlane->ActivateVisibleObjects();
                 }
             }
             m_world->m_childGroup->TickKillCues(0);
@@ -2173,7 +2172,7 @@ i32 CPlay::ProfileDeltaFrame() {
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != 0) {
-        lvl->m_mainPlane->CenterScrollB();
+        lvl->m_mainPlane->DeactivateDistantObjects();
     }
     return 1;
 }
@@ -2200,7 +2199,7 @@ i32 CPlay::ProfileInputFrame() {
 
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != 0) {
-            lvl->m_mainPlane->CenterScrollA();
+            lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
     deactMs = static_cast<i32>(tg() - static_cast<u32>(deactMs));
@@ -2252,7 +2251,7 @@ i32 CPlay::ProfileInputFrame() {
     {
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != 0) {
-            lvl->m_mainPlane->CenterScrollB();
+            lvl->m_mainPlane->DeactivateDistantObjects();
         }
     }
     g_profAccA = static_cast<i32>((tg() - static_cast<u32>(g_profAccA)));
@@ -2988,12 +2987,12 @@ i32 CPlay::StepGridWalk(i32 dt) {
 
 // @early-stop
 RVA(0x000ce530, 0xe3)
-i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
+i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
     if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
-        m_lightFx->ClearHandle(a, x, y);
+        m_lightFx->EndMinimapPan(a, x, y);
     }
     if (m_worldReady != 0) {
         m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
@@ -3008,13 +3007,13 @@ i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
     if (x >= vp.left && x <= vp.right && y >= vp.top && y <= vp.bottom) {
         return 1;
     }
-    m_guts->ClickAt_ff9d0(a, x, y);
+    m_guts->OnPointerRelease(a, x, y);
     return 1;
 }
 
 // @early-stop
 RVA(0x000ce660, 0x362)
-i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
+i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
     if (m_hudSuppressed != 0 || m_guts == 0) {
         return 1;
     }
@@ -3022,7 +3021,7 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         return m_guts->ClickHilite(msg, x, y);
     }
     if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
-        return this->Vslot0e(msg, x, y);
+        return this->OnLButtonDown(msg, x, y);
     }
 
     if (m_guts->m_position == 2 && m_guts->HitTestLayer(x, y)) {
@@ -3157,7 +3156,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         return 1;
     }
     if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
-        m_lightFx->ApplyB(a, x, y);
+        m_lightFx->ContinueMinimapPan(a, x, y);
     }
 
     if (m_dragSnapActive != 0) {
@@ -3416,7 +3415,7 @@ CPlay::CPlay()
 }
 
 RVA(0x0008c930, 0x3)
-i32 CPlay::Vslot1a() {
+i32 CPlay::UnusedPlayQuery() {
     return 0;
 }
 
@@ -3426,14 +3425,14 @@ i32 CPlay::GetFrame() {
 }
 
 RVA(0x0008c970, 0x1c)
-i32 CPlay::SetBeginClearParams(i32 unused, i32 cursorX, i32 cursorY) {
+i32 CPlay::OnMouseMove(i32 unused, i32 cursorX, i32 cursorY) {
     m_cursorX = cursorX;
     m_cursorY = cursorY;
     return 1;
 }
 
 RVA(0x000cda70, 0x7a)
-i32 CPlay::Vslot0d(i32 key, i32 flags) {
+i32 CPlay::OnKeyUp(i32 key, i32 flags) {
     if (flags & 0x01000000) {
         if (key == VK_LEFT) {
             m_scrollEdgeLock &= ~1;
@@ -3450,7 +3449,7 @@ i32 CPlay::Vslot0d(i32 key, i32 flags) {
 
 // @early-stop
 RVA(0x000cdb10, 0x80c)
-i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
+i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
 
     i32 xr = x;
     if (m_hudSuppressed != 0) {
@@ -3482,7 +3481,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
         }
 
         if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
-            if (m_lightFx->ApplyA(a, xr, y)) {
+            if (m_lightFx->BeginMinimapPan(a, xr, y)) {
                 return 1;
             }
         }
@@ -3736,13 +3735,13 @@ guts_dispatch:
 }
 
 RVA(0x000ceab0, 0x17)
-i32 CPlay::Vslot13(i32 a, i32 b, i32 c) {
-    return Vslot11(a, b, c);
+i32 CPlay::OnRButtonDblClk(i32 a, i32 b, i32 c) {
+    return OnRButtonDown(a, b, c);
 }
 
 // @early-stop
 RVA(0x000ceae0, 0x268)
-i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
+i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -3775,7 +3774,7 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
         return 1;
     }
     if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
-        if (m_lightFx->ApplyGlobal(a, x, y)) {
+        if (m_lightFx->IssueMinimapCommand(a, x, y)) {
             return 1;
         }
     }
@@ -3890,23 +3889,23 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
 }
 
 RVA(0x000cedf0, 0xf)
-i32 CGameLevel::MainPlaneQueryA() {
+i32 CGameLevel::ActivateVisibleObjectsOnMainPlane() {
     if (m_mainPlane != 0) {
-        return m_mainPlane->CenterScrollA();
+        return m_mainPlane->ActivateVisibleObjects();
     }
     return 0;
 }
 
 RVA(0x000cee10, 0xf)
-i32 CGameLevel::MainPlaneQueryB() {
+i32 CGameLevel::DeactivateDistantObjectsOnMainPlane() {
     if (m_mainPlane != 0) {
-        return m_mainPlane->CenterScrollB();
+        return m_mainPlane->DeactivateDistantObjects();
     }
     return 0;
 }
 
 RVA(0x000cee30, 0x8)
-i32 CPlay::Vslot12(i32, i32, i32) {
+i32 CPlay::OnRButtonUp(i32, i32, i32) {
     return 1;
 }
 
@@ -3916,26 +3915,26 @@ i32 CPlay::DrawWorldPresent() {
     {
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != 0) {
-            lvl->m_mainPlane->CenterScrollB();
+            lvl->m_mainPlane->DeactivateDistantObjects();
         }
     }
     {
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != 0) {
-            lvl->m_mainPlane->CenterScrollA();
+            lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
     m_world->m_childGroup->TickKillCues(1);
     {
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != 0) {
-            lvl->m_mainPlane->CenterScrollB();
+            lvl->m_mainPlane->DeactivateDistantObjects();
         }
     }
     {
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != 0) {
-            lvl->m_mainPlane->CenterScrollA();
+            lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
     m_world->m_childGroup->TickKillCues(1);
@@ -3950,7 +3949,7 @@ i32 CPlay::DrawWorldPresent() {
 
 // @early-stop
 RVA(0x000cba10, 0xb0)
-i32 CPlay::Vslot06() {
+i32 CPlay::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
@@ -4076,7 +4075,7 @@ void CPlay::TickStateMgrs() {
 }
 
 RVA(0x000cfbd0, 0x8f)
-i32 CPlay::Vslot15() {
+i32 CPlay::CompleteLevel() {
     if (m_levelIndex == 0x20) {
         m_1c0 = 1;
         m_notifyLatch = 1;
@@ -5119,7 +5118,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
 }
 
 RVA(0x000c8a10, 0x119)
-i32 CPlay::Vslot09(i32 mode) {
+i32 CPlay::EnterState(i32 mode) {
     POINT pt;
     GetCursorPos(&pt);
     m_cursorX = pt.x;
@@ -5515,7 +5514,7 @@ finish:
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != 0) {
-        lvl->m_mainPlane->CenterScrollB();
+        lvl->m_mainPlane->DeactivateDistantObjects();
     }
     m_mgr->RefreshGameClock();
     m_inputWarmup1 = 0;
@@ -5807,13 +5806,13 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             } else if (marker == static_cast<void*>(CreateInGameIcon)) {
                 i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
-                    m_mgr->m_scoreHud->m_34++;
+                    m_mgr->m_scoreHud->m_toolzAvailable++;
                 } else if (cv >= 0x17 && cv <= 0x20) {
-                    m_mgr->m_scoreHud->m_30++;
+                    m_mgr->m_scoreHud->m_toyzAvailable++;
                 } else if (cv >= 0x36 && cv <= 0x3c) {
-                    m_mgr->m_scoreHud->m_38++;
+                    m_mgr->m_scoreHud->m_powerupzAvailable++;
                 } else if (cv == 0x50) {
-                    m_mgr->m_scoreHud->m_40++;
+                    m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 d = obj->m_124;
                 if (d <= 0x20) {
@@ -5853,13 +5852,13 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                        || marker == static_cast<void*>(CreateGiantRock)) {
                 i32 cv = obj->m_11c == 0x32 ? obj->m_118 : obj->m_11c;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
-                    m_mgr->m_scoreHud->m_34++;
+                    m_mgr->m_scoreHud->m_toolzAvailable++;
                 } else if (cv >= 0x17 && cv <= 0x20) {
-                    m_mgr->m_scoreHud->m_30++;
+                    m_mgr->m_scoreHud->m_toyzAvailable++;
                 } else if (cv >= 0x36 && cv <= 0x3c) {
-                    m_mgr->m_scoreHud->m_38++;
+                    m_mgr->m_scoreHud->m_powerupzAvailable++;
                 } else if (cv == 0x50) {
-                    m_mgr->m_scoreHud->m_40++;
+                    m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 e = obj->m_11c;
                 if (e <= 0x20) {

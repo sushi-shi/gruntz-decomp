@@ -1,7 +1,7 @@
 #include <Net/LatencyList.h>
 
 RVA(0x00037b40, 0xb3)
-i32 CLatencyList::Populate1() {
+i32 CLatencyList::PopulateIpxOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }
@@ -27,7 +27,7 @@ i32 CLatencyList::Populate1() {
 }
 
 RVA(0x00037d20, 0xb3)
-i32 CLatencyList::Populate3() {
+i32 CLatencyList::PopulateModemOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }

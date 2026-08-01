@@ -51,7 +51,7 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
 }
 
 RVA(0x001671c0, 0x97)
-i32 CGameLevel::MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags) {
+i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 result = 0;
     i32 curX = t->m_screenX;
     if (x > curX) {

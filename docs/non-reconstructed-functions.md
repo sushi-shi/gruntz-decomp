@@ -42,7 +42,7 @@ to bodies that were still missing logic. After the current reconstruction pass, 
 stale-marker audit has 857 mapped sub-100% markers and no exact or unmapped marker. A
 future exact match must have its stale marker removed.
 
-The identity audit reduced 16 markers to 11. Existing xrefs resolved the filename
+The identity audit reduced 16 markers to 10. Existing xrefs resolved the filename
 parameter of the page-image resolver, the `CEyeCandyAni` action-table owner, the
 boomerang dispatcher registration, the `CMenuSparkle` action receiver, and the
 RTTI-backed `CSplashState` methods. The remaining markers have no present evidence path:
@@ -52,7 +52,6 @@ RTTI-backed `CSplashState` methods. The remaining markers have no present eviden
 - three are zero-reference orphan owners without RTTI, allocation, or construction;
 - one is an untyped `CGruntzMgr` field seen only in initialization and deletion;
 - one is a callback-object class absent from RTTI, allocation sites, and the factory;
-- one is a proven `CButeMgr` method whose original semantic name did not survive.
 
 Those markers should be revisited only when new evidence appears; inventing identities
 from proximity or behavior would not resolve them.

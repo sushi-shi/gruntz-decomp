@@ -103,7 +103,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B) {
-                CTileActionEvent* event = triggers->FindByField0C(cellKey);
+                CTileActionEvent* event = triggers->FindActionByCellKey(cellKey);
                 if (event != 0 && event->MorphByTool(unit->m_toyBlendPct, ownerHi) != 0) {
                     unit->m_toyBlendPct = TILEKIND_COVERED_POWERUP;
                     unit->m_moveMode = -1;
@@ -165,7 +165,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B
                        || cellType == TILEKIND_GAUNTLET_BRICK_C) {
-                CTileActionEvent* event = triggers->FindByField0C(cellKey);
+                CTileActionEvent* event = triggers->FindActionByCellKey(cellKey);
                 if (event != 0 && event->Process(unit) != 0) {
                     triggers->DelFromList3(event);
                 }
@@ -277,7 +277,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
                         }
 
-                        AddrWord objectKey;
+                        AddrWord<char> objectKey;
                         objectKey.m_word = 0;
                         if (static_cast<u32>(scanX) < pathGrid->m_width
                             && static_cast<u32>(topY) < pathGrid->m_height) {
@@ -412,7 +412,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
                         }
 
-                        AddrWord objectKey;
+                        AddrWord<char> objectKey;
                         objectKey.m_word = 0;
                         if (static_cast<u32>(leftX) < pathGrid->m_width
                             && static_cast<u32>(scanY) < pathGrid->m_height) {

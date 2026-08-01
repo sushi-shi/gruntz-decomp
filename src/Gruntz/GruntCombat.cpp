@@ -504,7 +504,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
 
 RVA(0x00057890, 0x19c)
 i32 CGrunt::BuildGruntLoseItemAnimation() {
-    StepAnimDispatchB();
+    FinishActiveAction();
     i32 reason = m_entranceReason;
     if (reason != 0x12 && reason != 0x16 && reason != 0xe) {
         return 0;
@@ -590,7 +590,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
 }
 
 RVA(0x00057c10, 0x1e)
-void CGrunt::ClearSubA() {
+void CGrunt::StopStruckSlotSound() {
     DirectSoundMgr* p = m_struckSlotSound;
     if (p) {
         p->StopAndRewind();
@@ -621,7 +621,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
 }
 
 RVA(0x00057ce0, 0x1e)
-void CGrunt::ClearSubB() {
+void CGrunt::StopStruckVoiceSound() {
     DirectSoundMgr* p = m_struckVoiceSound;
     if (p) {
         p->StopAndRewind();
@@ -646,8 +646,8 @@ void CGrunt::ReapplyVoiceParams() {
 
 RVA(0x00057d80, 0x11)
 void CGrunt::DestroyAnims() {
-    ClearSubA();
-    ClearSubB();
+    StopStruckSlotSound();
+    StopStruckVoiceSound();
 }
 
 // @early-stop
@@ -1744,22 +1744,22 @@ i32 GruntSpawnPump(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -1779,13 +1779,13 @@ void CGrunt::FireActivation(i32 id) {
 }
 
 RVA(0x0005be30, 0x9e5)
-void RegisterActs_644af0() {
+void RegisterGruntActions() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
     REGISTER_KEY_644AF0("B", &CGrunt::StepWarpExit);
     REGISTER_KEY_644AF0("C", &CGrunt::LoadGruntDecayConfig);
     REGISTER_KEY_644AF0(s_codeD, &CGrunt::StepArrivalReroll);
     REGISTER_KEY_644AF0("E", &CGrunt::UpdateGruntStatus);
-    REGISTER_KEY_644AF0(s_codeF, &CGrunt::DispatchVtbl24);
+    REGISTER_KEY_644AF0(s_codeF, &CGrunt::StepAttackAction);
     REGISTER_KEY_644AF0("G", &CGrunt::StepEntranceRelatchA);
     REGISTER_KEY_644AF0(s_codeH, &CGrunt::StepArrivalCommitA);
     REGISTER_KEY_644AF0("I", &CGrunt::LoadWandGruntItemConfig);

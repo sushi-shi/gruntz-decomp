@@ -259,7 +259,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (LoadImageBanks() == 0) {
         return 0;
     }
-    Vslot24();
+    PostLoadImageBanks();
     m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MULTI"));
     if (m_2c == 0) {
         return 0;
@@ -399,8 +399,8 @@ void CMulti::OnExit() {
 }
 
 RVA(0x000b6330, 0x89)
-i32 CMulti::Vslot09(i32 arg) {
-    if (CPlay::Vslot09(arg) == 0) {
+i32 CMulti::EnterState(i32 arg) {
+    if (CPlay::EnterState(arg) == 0) {
         return 0;
     }
     m_mgr->RefreshGameClock();
@@ -421,7 +421,7 @@ i32 CMulti::Vslot09(i32 arg) {
 
 // @early-stop
 RVA(0x000b63f0, 0x11b)
-i32 CMulti::FrameSlot28(i32 arg) {
+i32 CMulti::LeaveState(i32 arg) {
     m_mgr->m_cueSink->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
@@ -447,8 +447,8 @@ i32 CMulti::FrameSlot28(i32 arg) {
 }
 
 RVA(0x000b6560, 0x5)
-i32 CMulti::Vslot15() {
-    return CPlay::Vslot15();
+i32 CMulti::CompleteLevel() {
+    return CPlay::CompleteLevel();
 }
 
 RVA(0x000b6580, 0x1eb)
@@ -585,7 +585,7 @@ i32 CMulti::Render() {
     TickStateMgrs();
     CDDrawWorkerHost* mainPlane = m_world->m_level->m_mainPlane;
     if (mainPlane) {
-        mainPlane->CenterScrollA();
+        mainPlane->ActivateVisibleObjects();
     }
 
     if (fin != 0) {
@@ -724,7 +724,7 @@ void CMulti::PumpB() {
         return;
     }
     StepInputA();
-    StepC();
+    StepViewportResize();
     if (m_region0Gate != 0) {
         (static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_backPair))->m_surface->Fill(0);
         m_guts->Deactivate();
@@ -786,16 +786,16 @@ void CMulti::PumpB() {
     mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
     PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
     if (mgr->m_level->m_mainPlane != 0) {
-        (mgr->m_level->m_mainPlane)->CenterScrollB();
+        (mgr->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
     if (m_region0Gate != 0) {
         if (static_cast<i64>(g_frameTime) - m_region0Timer64.m_v >= m_region0Interval64.m_v) {
-            OnRegion2(0);
+            SetTinyViewportCurse(0);
         }
     }
     if (m_region1Gate != 0) {
         if (static_cast<i64>(g_frameTime) - m_region1Timer64.m_v >= m_region1Interval64.m_v) {
-            OnRegion1(0);
+            SetDarknessCurse(0);
         }
     }
 }
@@ -1110,7 +1110,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     ::MessageBeep(0);
                     i32 t = 0x7d0;
                     InterfaceObject* io = g_groupEnumMgr->m_groupSel;
-                    if (io && io->IsInterface2()) {
+                    if (io && io->IsTcpIpProvider()) {
                         t = 0x1388;
                     }
                     SetTimer(hDlg, 1, t, 0);
@@ -1145,7 +1145,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 RefreshPlayerRow(hDlg, g_netPlayerListHwnd);
                 i32 t = 0x7d0;
                 InterfaceObject* io = g_groupEnumMgr->m_groupSel;
-                if (io && io->IsInterface2()) {
+                if (io && io->IsTcpIpProvider()) {
                     t = 0x1388;
                 }
                 SetTimer(hDlg, 1, t, 0);
@@ -1169,19 +1169,19 @@ i32 CMulti::DetectConnectionConfig() {
     }
 
     m_598 = "Other";
-    if (provider->IsInterface1()) {
+    if (provider->IsIpxProvider()) {
         m_598 = "IPX";
         m_5a4 = 2;
         m_drainReload = 0xa;
-    } else if (provider->IsInterface2()) {
+    } else if (provider->IsTcpIpProvider()) {
         m_598 = "TcpIp";
         m_5a4 = 3;
         m_drainReload = 0xa;
-    } else if (provider->IsInterface3()) {
+    } else if (provider->IsModemProvider()) {
         m_598 = "Modem";
         m_5a4 = 4;
         m_drainReload = 0x1e;
-    } else if (provider->IsInterface4()) {
+    } else if (provider->IsSerialProvider()) {
         m_598 = "Serial";
         m_5a4 = 2;
         m_drainReload = 0xa;
@@ -1303,7 +1303,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         }
         if (idx != -1) {
             MsgParam cookie;
-            cookie.m_ptr = player;
+            cookie.m_player = player;
             ::SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
         }
 
@@ -3299,7 +3299,7 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
 }
 
 RVA(0x000bd210, 0x14d)
-i32 CMulti::Vslot0b(i32 key, i32 flag) {
+i32 CMulti::OnChar(i32 key, i32 flag) {
     if (m_hitTest && m_hitTest->m_10) {
         if (m_connected) {
             if (Mgr()->m_chatLog->TypeChar(key, flag)) {
@@ -3316,7 +3316,7 @@ i32 CMulti::Vslot0b(i32 key, i32 flag) {
         }
         return 1;
     }
-    return CPlay::Vslot0b(key, flag);
+    return CPlay::OnChar(key, flag);
 }
 RVA(0x000bd3c0, 0x9)
 void CMulti::TickStateMgrs() {

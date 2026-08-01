@@ -3,8 +3,9 @@
 
 #include <Ints.h>
 
-union AddrWord {
-    void* m_addr;
+template<class T> union AddrWord {
+    T* m_addr;
+    char* m_bytes;
 
     struct tagRECT* m_rect;
     i32 m_word;

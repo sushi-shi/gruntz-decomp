@@ -202,8 +202,8 @@ public:
     i32 m_rowCount[4];
     i32 m_cellFlag[0x3c];
 
-    i32 m_rowStateB[4];
-    i32 m_rowStateC[4];
+    i32 m_gruntzExitedByPlayer[4];
+    i32 m_gruntzLostByPlayer[4];
 
     CDDrawSurfaceMgr* m_world;
 

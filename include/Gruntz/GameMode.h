@@ -40,16 +40,16 @@ public:
     CMenuState() {
         m_1b4 = 0;
     }
-    virtual i32 Vslot06() OVERRIDE;
+    virtual i32 RestoreDisplay() OVERRIDE;
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
-    virtual i32 Vslot07() OVERRIDE;
+    virtual i32 OnPaint() OVERRIDE;
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot10(i32, i32, i32) OVERRIDE;
-    virtual i32 SetBeginClearParams(i32, i32, i32) OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDblClk(i32, i32, i32) OVERRIDE;
+    virtual i32 OnMouseMove(i32, i32, i32) OVERRIDE;
 
     virtual ~CMenuState() OVERRIDE;
     RVA(0x0008ce10, 0x6)
@@ -58,7 +58,7 @@ public:
     }
     virtual i32 Render() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
-    virtual i32 FrameSlot28(i32 arg) OVERRIDE;
+    virtual i32 LeaveState(i32 arg) OVERRIDE;
 
     void StartMusic();
     void StopMusicChain();
@@ -101,12 +101,12 @@ public:
         return GAMESTATE_CREDITS;
     }
     virtual i32 Render() OVERRIDE;
-    virtual i32 Vslot06() OVERRIDE;
+    virtual i32 RestoreDisplay() OVERRIDE;
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 FrameSlot28(i32) OVERRIDE;
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
     i32 DrawScrollingCredits();
 
@@ -179,14 +179,14 @@ public:
         return GAMESTATE_BOOTY;
     }
     virtual i32 Render() OVERRIDE;
-    virtual i32 Vslot06() OVERRIDE;
-    virtual i32 Vslot07() OVERRIDE;
+    virtual i32 RestoreDisplay() OVERRIDE;
+    virtual i32 OnPaint() OVERRIDE;
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 FrameSlot28(i32) OVERRIDE;
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot11(i32, i32, i32) OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
+    virtual i32 OnRButtonDown(i32, i32, i32) OVERRIDE;
 
     i32 BuildBootyGruntIdleAnimation();
     i32 ShowSecretBonusMessage();
@@ -281,14 +281,14 @@ public:
         return GAMESTATE_MULTIBOOTY;
     }
     virtual i32 Render() OVERRIDE;
-    virtual i32 Vslot06() OVERRIDE;
-    virtual i32 Vslot07() OVERRIDE;
+    virtual i32 RestoreDisplay() OVERRIDE;
+    virtual i32 OnPaint() OVERRIDE;
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 FrameSlot28(i32) OVERRIDE;
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot11(i32, i32, i32) OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
+    virtual i32 OnRButtonDown(i32, i32, i32) OVERRIDE;
 
     void DrawBattleStats();
 

@@ -42,8 +42,8 @@ public:
     CWnd* GetCtrlD(i32 index);
 
     i32 SetCurSelA(i32 id, i32 sel);
-    i32 Query015d00(i32 slot);
-    i32 Query015d30(i32 id);
+    i32 GetPlayerTypeSelection(i32 slot);
+    i32 GetMaxGruntzSelection(i32 slot);
     i32 SetCurSelC(i32 id, i32 sel);
 
     i32 SaveOptionCombo0();
@@ -55,7 +55,7 @@ public:
 
     i32 SetSlotValue(i32 index, i32 val);
 
-    void ReadCtrlBText(i32 index);
+    void ReadPlayerName(i32 index);
 
     void FlashCtrlD();
 
@@ -84,17 +84,17 @@ public:
 
     void OnOkCommand();
 
-    void OnStubBtn0();
-    void OnStubBtn1();
-    void OnStubBtn2();
-    void OnStubBtn3();
+    void OnPlayerNameChange0();
+    void OnPlayerNameChange1();
+    void OnPlayerNameChange2();
+    void OnPlayerNameChange3();
 
-    void StubBtnHandler(i32 index);
+    void HandlePlayerNameChange(i32 index);
 
-    void OnActionBtn0();
-    void OnActionBtn1();
-    void OnActionBtn2();
-    void OnActionBtn3();
+    void OnPlayerNameKillFocus0();
+    void OnPlayerNameKillFocus1();
+    void OnPlayerNameKillFocus2();
+    void OnPlayerNameKillFocus3();
 
     long OnPaint();
 
@@ -262,9 +262,9 @@ extern "C" i32 g_watchBusy;
 extern "C" i32 g_watchBlinkA;
 extern "C" i32 g_watchBlinkB;
 
-extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern "C" i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern "C" i32 CALLBACK WndProc_15a10(HWND, UINT, WPARAM, LPARAM);
+extern "C" i32 CALLBACK BattlezMapComboEditProc(HWND, UINT, WPARAM, LPARAM);
 
 extern const i32 g_msgmap_CBattlezDlgColors;
 extern const i32 g_msgmap_CMultiStartDlg;

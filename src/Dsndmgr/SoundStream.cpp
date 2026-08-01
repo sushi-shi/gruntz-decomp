@@ -120,7 +120,7 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
     if (SetPanByIndex(pan) == 0) {
         ok = 0;
     }
-    if (SetField2(freq) == 0) {
+    if (SetFrequencyOffsetPercent(freq) == 0) {
         ok = 0;
     }
     m_feeder.m_loop = loop;
@@ -520,7 +520,7 @@ i32 StreamFeeder::Resume() {
     if (m_drained != 0) {
         return 1;
     }
-    m_buffer->SetField3(1);
+    m_buffer->SetLooping(1);
     i32 r = m_buffer->Play();
     if (r != 0) {
         m_drained = 1;

@@ -943,7 +943,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 k;
     if (z != 0) {
         m_cellFlag[idx] = 1;
-        m_rowStateB[col] += 1;
+        m_gruntzExitedByPlayer[col] += 1;
         k = cell->m_entranceReason;
         if (k > 0x16) {
             k = cell->m_toolId;
@@ -968,7 +968,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     if (k == 0x14) {
         this->ResetSpawnState();
     }
-    m_rowStateC[col] += 1;
+    m_gruntzLostByPlayer[col] += 1;
 mark:
     cell->m_36c = 1;
 }
@@ -1156,8 +1156,8 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     } while (r != 0);
     ar->Write(m_rowCount, 0x10);
     ar->Write(m_cellFlag, 0xf0);
-    ar->Write(m_rowStateB, 0x10);
-    ar->Write(m_rowStateC, 0x10);
+    ar->Write(m_gruntzExitedByPlayer, 0x10);
+    ar->Write(m_gruntzLostByPlayer, 0x10);
     i32 cnt = m_byteArr.GetSize();
     ar->Write(&cnt, 4);
     for (i32 i = 0; i < cnt; i++) {
@@ -1269,8 +1269,8 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
     ar->Read(m_rowCount, 0x10);
     ar->Read(m_cellFlag, 0xf0);
-    ar->Read(m_rowStateB, 0x10);
-    ar->Read(m_rowStateC, 0x10);
+    ar->Read(m_gruntzExitedByPlayer, 0x10);
+    ar->Read(m_gruntzLostByPlayer, 0x10);
 
     i32 count;
     u32 ci;
@@ -1521,7 +1521,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 if (type != 0x97 && type != 0x98 && type != 0x99) {
                     continue;
                 }
-                CTileActionEvent* o = root->m_beginMarker->FindByField0C(ty + (tx << 8));
+                CTileActionEvent* o = root->m_beginMarker->FindActionByCellKey(ty + (tx << 8));
                 if (o->Process(0)) {
                     root->m_beginMarker->DelFromList3(o);
                 }
@@ -1632,7 +1632,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         do {
                             i32 dx = rangeA ? GruntRand() % rangeA + 1 : GruntRand() & 1;
                             i32 dy = rangeB ? GruntRand() % rangeB + 1 : GruntRand() & 1;
-                            if (g->StepAnimDispatchA(dx, dy, 0, 1)) {
+                            if (g->TryTeleportToCell(dx, dy, 0, 1)) {
                                 CGameObject* spr =
                                     g_gameReg->m_world->m_childGroup
                                         ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
@@ -1857,7 +1857,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                             g->m_1f8 = g->m_1f4_moveIcon;
                         }
                         (static_cast<CGrunt*>(g))->SelectMoveIcon(t);
-                        (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion4(1);
+                        (static_cast<CPlay*>(g_gameReg->m_curState))->SetRandomMoveIconsCurse(1);
                     } else if (g->m_1f8 != -1) {
                         (static_cast<CGrunt*>(g))->SelectMoveIcon(g->m_1f8);
                         g->m_1f8 = -1;
@@ -2423,7 +2423,7 @@ void CTriggerMgr::DestroyAllAnims() {
             NotifyWord want;
             slot.m_fn = desc->m_notify;
             want.m_method = &CGrunt::ReadConfigFromButeMgr;
-            if (slot.m_addr == want.m_addr) {
+            if (slot.m_bits == want.m_bits) {
                 (static_cast<CGrunt*>(desc->m_logic))->m_neighborCol = 0;
             }
         }

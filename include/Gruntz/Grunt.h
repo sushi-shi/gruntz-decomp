@@ -53,6 +53,9 @@ struct GruntDirectionCell {
     GruntDirectionCell(i32 row_, i32 column_, i32 direction_)
         : row(row_), column(column_), direction(direction_) {}
 
+    void RotateClockwise(i32 steps);
+    void RotateCounterclockwise(i32 steps);
+
     i32 row;
     i32 column;
     i32 direction;
@@ -232,11 +235,11 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
 
     virtual void Activate() OVERRIDE;
-    virtual i32 UserLogicVfunc6() OVERRIDE;
+    virtual i32 RecordFrameTick() OVERRIDE;
     virtual i32 StepAttackFire() OVERRIDE;
 
-    virtual void UserLogicVfunc9() OVERRIDE;
-    virtual void MovingSlot16() OVERRIDE;
+    virtual void OnObjectRemoved() OVERRIDE;
+    virtual void AdvanceMotion() OVERRIDE;
 
     i32 CreateHealthSprite();
     i32 CreateToySprite();
@@ -302,7 +305,7 @@ public:
 
     i32 PathScan();
 
-    i32 winapi_04a9f0_CopyRect_OffsetRect();
+    i32 IntersectsTileObjectAxes();
 
     i32 RectSegProbe(RECT* r, POINT* e1, POINT* e2);
 
@@ -715,8 +718,8 @@ public:
 
     i32 LoadStateRecord(CFileMemBase* ar);
     i32 CommitArrival();
-    void ClearSubA();
-    void ClearSubB();
+    void StopStruckSlotSound();
+    void StopStruckVoiceSound();
     void ReapplyVoiceParams();
     void DestroyAnims();
 
@@ -735,7 +738,7 @@ public:
     void EntranceTileOffset(i32* out);
     void ComputeFacing(double dt);
     i32 ResetGeometry();
-    i32 DispatchVtbl24();
+    i32 StepAttackAction();
 
     void PlayMoveSound(i32 x, i32 y);
     void PlaySound(i32 range, GruntDirectionCell rec);
@@ -760,9 +763,9 @@ public:
 
     i32 StepArrivalDrop(i32 pxX, i32 pxY, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn);
     i32 StepGruntMovement();
-    i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d);
+    i32 TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spawnWormhole);
 
-    i32 StepAnimDispatchB();
+    i32 FinishActiveAction();
 
     i32 StepEntranceReinit();
 
@@ -799,9 +802,9 @@ public:
     i32 UpdateArrival();
     i32 SeekTarget();
     i32 WanderStep();
-    i32 ArrivalScanA();
-    i32 ArrivalScanB();
-    i32 ArrivalScanC();
+    i32 StepBrickLayerBehavior();
+    i32 StepGooSuckerBehavior();
+    i32 StepDiggerBehavior();
 
     i32 StartBombGruntRun();
 
@@ -850,7 +853,7 @@ SIZE(0x8d8);
 union NotifyWord {
     GameObjNotifyFn m_fn;
     void (CGrunt::*m_method)();
-    void* m_addr;
+    u32 m_bits;
 };
 
 union GruntActPmf {

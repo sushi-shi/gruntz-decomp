@@ -157,22 +157,22 @@ i32 CreateLightFx(CGameObject* obj) {
             }
             break;
         case 0x1d:
-            aux->m_logic->UserLogicVfunc9();
+            aux->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            aux->m_logic->UserLogicVfunc8();
+            aux->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            aux->m_logic->UserLogicVfuncC();
+            aux->m_logic->PrepareSave();
             break;
         case 0x51:
-            aux->m_logic->UserLogicVfuncB();
+            aux->m_logic->AfterSave();
             break;
         case 0x52:
-            aux->m_logic->UserLogicVfuncA();
+            aux->m_logic->AfterLoad();
             break;
         case 0x53:
-            aux->m_logic->UserLogicVfuncD();
+            aux->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
             break;

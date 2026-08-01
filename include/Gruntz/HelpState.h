@@ -13,12 +13,12 @@ public:
     virtual void ReleaseResources() OVERRIDE;
     virtual GameStateId Update() OVERRIDE;
     virtual i32 Render() OVERRIDE;
-    virtual i32 Vslot06() OVERRIDE;
+    virtual i32 RestoreDisplay() OVERRIDE;
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 FrameSlot28(i32) OVERRIDE;
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
     char m_pad1b4[0x1b8 - 0x1b4];
 };

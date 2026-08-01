@@ -21,7 +21,7 @@ i32 CMenuState::InputVirtual() {
     if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
-    if (Vslot06() == 0) {
+    if (RestoreDisplay() == 0) {
         return 0;
     }
     int(WINAPI * sc)(BOOL) = ::ShowCursor;

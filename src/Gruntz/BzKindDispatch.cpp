@@ -6,27 +6,27 @@ i32 CLatencyList::Dispatch(i32 mode) {
     m_mode = mode;
     switch (mode) {
         case 1:
-            if (Populate1()) {
+            if (PopulateIpxOptions()) {
                 break;
             }
             return 0;
         case 2:
-            if (Populate2()) {
+            if (PopulateTcpIpOptions()) {
                 break;
             }
             return 0;
         case 3:
-            if (Populate3()) {
+            if (PopulateModemOptions()) {
                 break;
             }
             return 0;
         case 4:
-            if (Populate4()) {
+            if (PopulateSerialOptions()) {
                 break;
             }
             return 0;
         case 5:
-            if (Populate5()) {
+            if (PopulateGenericOptions()) {
                 break;
             }
             return 0;

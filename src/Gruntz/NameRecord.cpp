@@ -28,7 +28,7 @@ i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (name2 != 0) {
         strcpy(m_36, name2);
     }
-    m_8 = 1;
+    m_version = 1;
     return 1;
 fail:
     return 0;
@@ -40,7 +40,7 @@ i32 CGameInfo::CopyBody(char* body) {
         i32 len = static_cast<i32>(strlen(body + 0x10));
         if (len > 0 && len < 16) {
             memcpy(&m_04, body, 212);
-            Check1();
+            HasSupportedVersion();
             return 1;
         }
     }
@@ -62,11 +62,11 @@ i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
     if (b->m_4 > s) {
         return 0;
     }
-    if (b->m_4 == s && b->m_8 < timestamp) {
+    if (b->m_4 == s && b->m_timeMs < timestamp) {
         return 0;
     }
     b->m_4 = s;
-    b->m_8 = timestamp;
+    b->m_timeMs = timestamp;
     BuildGameDate(b);
     m_d4 = type;
     return 1;
@@ -86,7 +86,7 @@ i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
     if (dst->m_4 > src->m_4) {
         return 0;
     }
-    if (dst->m_4 == src->m_4 && dst->m_8 < src->m_8) {
+    if (dst->m_4 == src->m_4 && dst->m_timeMs < src->m_timeMs) {
         return 0;
     }
     *dst = *src;

@@ -243,7 +243,7 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 areaArg, i32 keepCurrent, i32 u
     if (cur != 0) {
         local10 = cur->Update();
         i32 savedSub = cur->m_levelIndex;
-        cur->FrameSlot28(stateId);
+        cur->LeaveState(stateId);
         if (keepCurrent != 0) {
             PushState(m_curState);
             areaArg = savedSub;
@@ -321,7 +321,7 @@ install:
             m_curState = 0;
             return 0;
         }
-        st->Vslot09(local10);
+        st->EnterState(local10);
         m_owner->m_running = 1;
         g_inputMgr->ReadAll();
         RefreshGameClock();
@@ -337,7 +337,7 @@ VTBL(CPlay, 0x001ea0bc);
 RVA_COMPGEN(0x0008c470, 0xb, ??1CState@@UAE@XZ)
 
 RVA(0x0008c530, 0x8)
-i32 CState::FrameSlot28(i32) {
+i32 CState::LeaveState(i32) {
     return 1;
 }
 
@@ -360,7 +360,7 @@ GameStateId CMulti::Update() {
 }
 
 RVA(0x0008d200, 0x3)
-i32 CMulti::Vslot1a() {
+i32 CMulti::UnusedPlayQuery() {
     return 0;
 }
 
@@ -382,9 +382,9 @@ i32 CGruntzMgr::GoToNextLevel() {
         next = 1;
     }
     if (next <= 0x20 || next >= 0x25) {
-        st->FrameSlot28(st->Update());
+        st->LeaveState(st->Update());
         if ((static_cast<CPlay*>(st))->LoadByMode(next, 1)) {
-            st->Vslot09(st->Update());
+            st->EnterState(st->Update());
             return 1;
         }
     }
@@ -404,9 +404,9 @@ i32 CGruntzMgr::GoToPrevLevel() {
         prev = 0x28;
     }
     if (prev <= 0x20 || prev >= 0x25) {
-        st->FrameSlot28(st->Update());
+        st->LeaveState(st->Update());
         if ((static_cast<CPlay*>(st))->LoadByMode(prev, 1)) {
-            st->Vslot09(st->Update());
+            st->EnterState(st->Update());
             return 1;
         }
     }
@@ -847,72 +847,72 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
 }
 
 RVA(0x0008d9d0, 0x1e)
-i32 CGruntzMgr::NotifyState0b(i32 a, i32 b) {
+i32 CGruntzMgr::ForwardCharToState(i32 a, i32 b) {
     if (m_curState) {
-        return m_curState->Vslot0b(a, b);
+        return m_curState->OnChar(a, b);
     }
     return 0;
 }
 RVA(0x0008da00, 0x1e)
-i32 CGruntzMgr::NotifyState0c(i32 a, i32 b) {
+i32 CGruntzMgr::ForwardKeyDownToState(i32 a, i32 b) {
     if (m_curState) {
-        return m_curState->Vslot0c(a, b);
+        return m_curState->OnKeyDown(a, b);
     }
     return 0;
 }
 RVA(0x0008da30, 0x1e)
-i32 CGruntzMgr::NotifyState0d(i32 a, i32 b) {
+i32 CGruntzMgr::ForwardKeyUpToState(i32 a, i32 b) {
     if (m_curState) {
-        return m_curState->Vslot0d(a, b);
+        return m_curState->OnKeyUp(a, b);
     }
     return 0;
 }
 RVA(0x0008da60, 0x23)
-i32 CGruntzMgr::NotifyState0e(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardLButtonDownToState(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->Vslot0e(a, b, c);
+        return m_curState->OnLButtonDown(a, b, c);
     }
     return 0;
 }
 RVA(0x0008daa0, 0x23)
-i32 CGruntzMgr::NotifyState0f(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardLButtonUpToState(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->Vslot0f(a, b, c);
+        return m_curState->OnLButtonUp(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dae0, 0x23)
-i32 CGruntzMgr::NotifyState10(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->Vslot10(a, b, c);
+        return m_curState->OnLButtonDblClk(a, b, c);
     }
     return 0;
 }
 RVA(0x0008db20, 0x23)
-i32 CGruntzMgr::NotifyState11(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardRButtonDownToState(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->Vslot11(a, b, c);
+        return m_curState->OnRButtonDown(a, b, c);
     }
     return 0;
 }
 RVA(0x0008db60, 0x23)
-i32 CGruntzMgr::NotifyState12(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardRButtonUpToState(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->Vslot12(a, b, c);
+        return m_curState->OnRButtonUp(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dba0, 0x23)
-i32 CGruntzMgr::NotifyState13(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->Vslot13(a, b, c);
+        return m_curState->OnRButtonDblClk(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dbe0, 0x23)
-i32 CGruntzMgr::NotifyState14(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardMouseMoveToState(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->SetBeginClearParams(a, b, c);
+        return m_curState->OnMouseMove(a, b, c);
     }
     return 0;
 }
@@ -1299,7 +1299,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                     i32 st = fmt->m_drawType;
                     if (st != 3) {
                         set->SetAllTypes(3);
-                        set->SetAllField18(rand() % 256);
+                        set->SetAllLightLevels(rand() % 256);
                         AppendChatMessage(const_cast<char*>("Me and my..."));
                     } else {
                         set->SetAllTypes(1);
@@ -1602,7 +1602,7 @@ i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
 }
 
 RVA(0x00092a30, 0x52)
-INT_PTR CALLBACK winapi_092a30_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             return 1;
@@ -1635,13 +1635,13 @@ i32 CGruntzMgr::IsLobbyHostReady() {
     if (m_modalBusy != 0) {
         return 0;
     }
-    return m_curState->Vslot07() != 0;
+    return m_curState->OnPaint() != 0;
 }
 
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        RunModalDialog("DEBUG_SETSKILL", LevelNumberDialogProc8e8c0, 1);
+        RunModalDialog("DEBUG_SETSKILL", SetSkillLevelDialogProc, 1);
     }
     return 0;
 }
@@ -1853,14 +1853,14 @@ RVA(0x000929e0, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        ran = RunModalDialog("DEBUG_GRUNTTYPE", winapi_092ab0_EndDialog, 1);
+        ran = RunModalDialog("DEBUG_GRUNTTYPE", DebugGruntTypeDialogProc, 1);
     }
     return ran != 0;
 }
 
 RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
-    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", LevelNumberDialogProc8e7c0, 1);
+    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", JumpLevelDialogProc, 1);
     if (level > 0) {
         return PassClickToPlayState(level, 0, 1);
     }
@@ -2083,8 +2083,8 @@ void CGruntzMgr::UpdateScoreHud() {
     }
     CState* sub = g_gameReg->m_curState;
 
-    m_scoreHud->m_1c += m_cmdGrid->m_rowStateB[g_curPlayer];
-    m_scoreHud->m_20 += m_cmdGrid->m_rowStateC[g_curPlayer];
+    m_scoreHud->m_gruntzExited += m_cmdGrid->m_gruntzExitedByPlayer[g_curPlayer];
+    m_scoreHud->m_gruntzLost += m_cmdGrid->m_gruntzLostByPlayer[g_curPlayer];
 
     if (m_strWorldFile.GetLength() != 0) {
         m_scoreHud->SetCount(1);
@@ -2339,7 +2339,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (m_curState && notify) {
-        m_curState->Vslot06();
+        m_curState->RestoreDisplay();
     }
 
     if (shown <= 0) {
@@ -2374,7 +2374,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     i32 oldId = 0;
     if (m_curState) {
         oldId = m_curState->Update();
-        m_curState->FrameSlot28(next->Update());
+        m_curState->LeaveState(next->Update());
         if (m_curState) {
             delete m_curState;
         }
@@ -2382,7 +2382,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     }
     m_curState = next;
     PopTopIfMatches(next);
-    if (m_curState->Vslot09(oldId) == 0 && m_curState->Vslot06() == 0) {
+    if (m_curState->EnterState(oldId) == 0 && m_curState->RestoreDisplay() == 0) {
         return 0;
     }
     m_owner->m_running = 1;
@@ -2401,11 +2401,11 @@ i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unuse
         inPlay = 1;
     }
     if (inPlay && forceTransition == 0) {
-        m_curState->FrameSlot28(m_curState->Update());
+        m_curState->LeaveState(m_curState->Update());
         if (static_cast<CPlay*>(m_curState)->LoadByMode(areaArg, unused) == 0) {
             return 0;
         }
-        m_curState->Vslot09(m_curState->Update());
+        m_curState->EnterState(m_curState->Update());
         return 1;
     }
     return TransitionState(3, areaArg, 0, 0);
@@ -2694,13 +2694,13 @@ void CGruntzMgr::AccrueScoreTime() {
 
         CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
         i64 d = static_cast<i64>(g_frameTime) - clk->m_startStamp.m_v;
-        g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : static_cast<i32>(d);
+        g_gameReg->m_scoreHud->m_elapsedTimeMs += (d < 0) ? 0 : static_cast<i32>(d);
         TransitionState(0x12, 1, 0, 0);
         return;
     }
     CBattlezData* hud = g_gameReg->m_scoreHud;
     u32 now = ::timeGetTime();
-    hud->m_score += (now - g_scoreTimeBase);
+    hud->m_elapsedTimeMs += (now - g_scoreTimeBase);
     TransitionState(0x12, 1, 0, 0);
 }
 
@@ -2804,7 +2804,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
     NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {
-        m_curState->Vslot06();
+        m_curState->RestoreDisplay();
     }
     if (shown <= 0) {
         while (show(0) >= 0) {
@@ -2828,7 +2828,7 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
-    } else if (RunModalDialog("GAME_SAVE", winapi_0e35f0_EndDialog, 0) == 1) {
+    } else if (RunModalDialog("GAME_SAVE", SaveGameDialogProc, 0) == 1) {
         RunModalDialog("GAME_SAVEMSG", OkCancelDialogProc, 0);
     }
     return 1;
@@ -3019,7 +3019,7 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 RVA(0x0008e7c0, 0x86)
-INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
@@ -3039,7 +3039,7 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND hDlg, UINT msg, WPARAM wParam, 
 }
 
 RVA(0x0008e8c0, 0x86)
-INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
@@ -3077,7 +3077,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                         st->m_guts->m_barFrameGate = m_modeH;
                         if (st->m_guts->m_position == 0) {
                             st->m_guts->RefreshA();
-                            st->m_guts->winapi_0fe520_SetRect();
+                            st->m_guts->DockStatusBarRight();
                             EnterModalUI(
                                 "This map is too small to be displayed under your "
                                 "desired video resolution. Default resolution will "
@@ -3086,7 +3086,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                             return 0;
                         }
                         if (st->m_guts->m_position == 1) {
-                            st->m_guts->winapi_0fe520_SetRect();
+                            st->m_guts->DockStatusBarRight();
                             st->m_guts->RefreshA();
                         }
                     }
@@ -3118,9 +3118,9 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             st->m_guts->m_barFrameGate = h;
             if (st->m_guts->m_position == 0) {
                 st->m_guts->RefreshA();
-                st->m_guts->winapi_0fe520_SetRect();
+                st->m_guts->DockStatusBarRight();
             } else if (st->m_guts->m_position == 1) {
-                st->m_guts->winapi_0fe520_SetRect();
+                st->m_guts->DockStatusBarRight();
                 st->m_guts->RefreshA();
             }
         }

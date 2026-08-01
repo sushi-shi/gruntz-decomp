@@ -57,7 +57,7 @@ static inline void ClutStore16(u32 byteOff, u16 v) {
 }
 
 RVA(0x0013e0a0, 0x27)
-i32 CDDSurface::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
+i32 CDDSurface::CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
     if (desc != 0) {
         memcpy(m_descWords, desc, sizeof(DDSURFACEDESC));
     }

@@ -31,7 +31,7 @@
 
 // @early-stop
 RVA(0x000cbcc0, 0x1770)
-i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
+i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     CPlay* self = this;
 
     if (self->m_hudSuppressed != 0) {

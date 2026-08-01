@@ -11,8 +11,8 @@ union Pix16Ptr {
     i32* m_dwords;
 };
 
-union RecordBytes {
-    void* m_rec;
+template<class T> union RecordBytes {
+    T* m_rec;
     u8* m_bytes;
     char* m_chars;
     i32* m_dwords;

@@ -27,7 +27,7 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
 
 // @early-stop
 RVA(0x000cfef0, 0xbc)
-i32 CPlay::Vslot23() {
+i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
     CObject* lookup_ob = 0;

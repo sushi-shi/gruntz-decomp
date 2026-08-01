@@ -41,7 +41,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     } else {
         m_38->m_flags |= 0x10000;
 
-        AddrWord sel;
+        AddrWord<CGameObject> sel;
         sel.m_addr = obj;
         idx = sel.m_word;
     }

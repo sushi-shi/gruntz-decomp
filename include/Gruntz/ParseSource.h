@@ -11,13 +11,14 @@ typedef enum ParseEntryTag {
 } ParseEntryTag;
 
 class CSymTab;
+class CSymRec;
 
 class CRezItmBase;
 
 struct CParseSlotHashNode : public CHashElement {
 
     CParseSlotHashNode() {
-        m_record = 0;
+        m_parseSource = 0;
     }
 
     virtual u32 Hash() OVERRIDE;
@@ -40,7 +41,7 @@ struct CParseSource {
         CSymTab* owner,
         const char* name,
         void* f4,
-        void* rec,
+        CSymRec* rec,
         void* str2,
         i32 f3,
         i32 f1,
@@ -55,7 +56,7 @@ struct CParseSource {
     i32 Read(void* dst, u32 len, i32 seekPos);
 
     char* m_name;
-    void* m_entry;
+    CSymRec* m_entry;
     i32 m_typeTag;
 
     union {

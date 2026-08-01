@@ -46,10 +46,10 @@ public:
 
     void Select(i32 mode, CShadeTable* descr);
 
-    void BlitMode_149950(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
-    void BlitMode_149d00(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
-    void BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);
-    void BlitMode_14b770(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    void BlitCopyForward(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    void BlitCopyMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    void BlitShadedForward(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);
+    void BlitShadedMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
 
     void ConvertRow(u8* dst, u8* src, i32 count);
 

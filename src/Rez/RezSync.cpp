@@ -439,8 +439,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_spriteFactory->m_spriteMgrHolder = 0;
         m_spriteFactory->m_built = 0;
         for (i32 k = 0; k < 0x11; ++k) {
-            m_spriteFactory->m_refA[k] = 0;
-            m_spriteFactory->m_refB[k] = 0;
+            m_spriteFactory->m_toolRefs[k] = 0;
+            m_spriteFactory->m_toyRefs[k] = 0;
         }
     }
 
@@ -474,16 +474,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.m_10e = 1;
             char* esz = stream->BeginParse();
             // This entry kind stores bytes and length in the opposite word/address arms.
-            AddrWord lenSlot;
-            AddrWord dataSlot;
+            AddrWord<char> lenSlot;
+            AddrWord<char> dataSlot;
             lenSlot.m_addr = esz;
             dataSlot.m_word = stream->m_length;
             i32 eszLen = lenSlot.m_word;
-            void* src = dataSlot.m_addr;
+            char* src = dataSlot.m_addr;
             // Preserve the swapped raw-width representation.
-            istrstream* rdr = new istrstream(static_cast<char*>(src), eszLen);
+            istrstream* rdr = new istrstream(src, eszLen);
             Blowfish_InitKey("1212C");
-            ostrstream* snk = new ostrstream(static_cast<char*>(src), eszLen, 2);
+            ostrstream* snk = new ostrstream(src, eszLen, 2);
             BitStreamBlowfishDecode(rdr, snk);
 
             g_buteMgr.m_stream = static_cast<istream*>(::operator new(0x60));

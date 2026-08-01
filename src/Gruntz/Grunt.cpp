@@ -190,7 +190,7 @@ static __inline void GruntScratchTeardown() {
 RVA_COMPGEN(0x0000f2c0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
 RVA(0x0000f2f0, 0xc8)
 CGrunt::~CGrunt() {
-    UserLogicVfunc9();
+    OnObjectRemoved();
 }
 
 RVA(0x0000f400, 0x1b)
@@ -252,7 +252,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_14c = 0;
     m_object->m_moveMode = 7;
 
-    CMovingLogic::MovingSlot16();
+    CMovingLogic::AdvanceMotion();
     CGameObject* obj = static_cast<CGameObject*>(owner);
     m_34 = obj;
     m_38 = static_cast<CWwdGameObjectA*>(obj);
@@ -459,7 +459,7 @@ DATA(0x00229ad0)
 i32 g_serialCounter;
 
 RVA(0x00048360, 0x7e)
-void CGrunt::UserLogicVfunc9() {
+void CGrunt::OnObjectRemoved() {
     if (CoordCount() != 0) {
 
         POSITION pos = m_31c.GetHeadPosition();
@@ -720,7 +720,7 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 #undef LOAD_POSE
 
 RVA(0x0004a9f0, 0x1aa)
-i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
+i32 CGrunt::IntersectsTileObjectAxes() {
     CGrunt* tgt = m_tileMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);
     if (tgt == 0) {
         return 0;
@@ -2165,7 +2165,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         return 1;
     }
     if (defer == 0) {
-        if (StepAnimDispatchB() != 0) {
+        if (FinishActiveAction() != 0) {
             if (m_gruntKind == 0x39) {
                 goto fail;
             }
@@ -3108,7 +3108,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
-            ClearSubB();
+            StopStruckVoiceSound();
             EnsureStruckVoice("GAME_CONVERSIONLOOP");
             break;
         }
@@ -3145,7 +3145,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            ClearSubB();
+            StopStruckVoiceSound();
             EnsureStruckVoice("GAME_DEATHTOUCHLOOP");
             break;
         }
@@ -3164,7 +3164,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            ClearSubB();
+            StopStruckVoiceSound();
             EnsureStruckVoice("GAME_GHOSTLOOP");
             return 1;
         }
@@ -3179,7 +3179,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            ClearSubB();
+            StopStruckVoiceSound();
             EnsureStruckVoice("GAME_INVULNERABILITYLOOP");
             return 1;
         }
@@ -3195,7 +3195,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            ClearSubB();
+            StopStruckVoiceSound();
             EnsureStruckVoice("GAME_REACTIVEARMORLOOP");
             return 1;
         }
@@ -3211,7 +3211,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            ClearSubB();
+            StopStruckVoiceSound();
             EnsureStruckVoice("GAME_ROIDZLOOP");
             return 1;
         }
@@ -3230,7 +3230,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             ReadConfigFromButeMgr();
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
-            ClearSubB();
+            StopStruckVoiceSound();
             EnsureStruckVoice("GAME_SUPERSPEEDLOOP");
             return 1;
         }
@@ -3255,28 +3255,28 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion3(1);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->SetMonitorCurse(1);
             return 1;
         }
         case 0x3e: {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion1(1);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->SetDarknessCurse(1);
             return 1;
         }
         case 0x3f: {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion2(1);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->SetTinyViewportCurse(1);
             return 1;
         }
         case 0x40: {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion2(1);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->SetTinyViewportCurse(1);
             return 1;
         }
         case 0x5a:
@@ -3291,7 +3291,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             return 1;
         }
         case 0x50: {
-            g_gameReg->m_scoreHud->m_2c++;
+            g_gameReg->m_scoreHud->m_coinsCollected++;
             return 1;
         }
         case 0x4b: {
@@ -3846,13 +3846,13 @@ afterTile:
                         ResolveArrivalReposition();
                         break;
                     case 8:
-                        ArrivalScanA();
+                        StepBrickLayerBehavior();
                         break;
                     case 10:
-                        ArrivalScanB();
+                        StepGooSuckerBehavior();
                         break;
                     case 11:
-                        ArrivalScanC();
+                        StepDiggerBehavior();
                         break;
                     case 9:
                         UpdateArrival();
@@ -4149,7 +4149,7 @@ kindDispatch:
 }
 
 RVA(0x0005f310, 0xb5e)
-void CGrunt::MovingSlot16() {
+void CGrunt::AdvanceMotion() {
     if (m_arrivalState != 0x11) {
         bool eq;
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);

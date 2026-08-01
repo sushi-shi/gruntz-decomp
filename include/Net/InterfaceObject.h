@@ -18,11 +18,11 @@ struct InterfaceObject : public CObject {
     virtual ~InterfaceObject() OVERRIDE;
     CString GetName();
 
-    i32 IsInterface1();
-    i32 IsInterface2();
-    i32 IsInterface3();
-    i32 IsInterface4();
-    i32 IsInterface5();
+    i32 IsIpxProvider();
+    i32 IsTcpIpProvider();
+    i32 IsModemProvider();
+    i32 IsSerialProvider();
+    i32 MatchesUnclassifiedProvider();
 };
 SIZE(0x10);
 

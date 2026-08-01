@@ -15,19 +15,19 @@ i32 g_spEnumValidated = 0;
 
 // clang-format off
 DATA(0x00224d58)
-const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
+const u8 g_directPlayIpxProviderGuid[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
                                    0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
 DATA(0x00224d68)
-const u8 g_guid2[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
+const u8 g_directPlayTcpIpProviderGuid[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
                                    0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
 DATA(0x00224d78)
-const u8 g_guid3[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
+const u8 g_directPlayModemProviderGuid[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
 DATA(0x00224d88)
-const u8 g_guid4[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
+const u8 g_directPlaySerialProviderGuid[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
 DATA(0x00224d98)
-const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
+const u8 g_unclassifiedProviderGuid[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
                                    0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
 
 
@@ -237,7 +237,7 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
         m_groupSelId != 0 ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : 0;
 
     while (obj != 0) {
-        if (((flag & 1) && obj->IsInterface2()) || ((flag & 2) && obj->IsInterface1())) {
+        if (((flag & 1) && obj->IsTcpIpProvider()) || ((flag & 2) && obj->IsIpxProvider())) {
 
             if (m_groupSelId != 0) {
                 InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
@@ -259,7 +259,7 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             ));
             if (idx != -1) {
                 MsgParam cookie;
-                cookie.m_ptr = obj;
+                cookie.m_interface = obj;
                 SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
             }
             if (m_groupSelId != 0) {
@@ -298,9 +298,9 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
 
 
 
-    AddrWord cookie;
+    AddrWord<InterfaceObject> cookie;
     cookie.m_word = data;
-    m_groupSel = static_cast<InterfaceObject*>(cookie.m_addr);
+    m_groupSel = cookie.m_addr;
     return data;
 }
 
@@ -405,7 +405,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
         ));
         if (r != -1) {
             MsgParam cookie;
-            cookie.m_ptr = payload;
+            cookie.m_player = payload;
             SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
 
@@ -445,9 +445,9 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
         return 0;
     }
 
-    AddrWord cookie;
+    AddrWord<CNetPlayerListNode> cookie;
     cookie.m_word = data;
-    m_playerSel = static_cast<CNetPlayerListNode*>(cookie.m_addr);
+    m_playerSel = cookie.m_addr;
     return data;
 }
 
@@ -686,7 +686,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
         ));
         if (r != -1) {
             MsgParam cookie;
-            cookie.m_ptr = payload;
+            cookie.m_session = payload;
             SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
 
@@ -894,17 +894,17 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
     while (item) {
         switch (kind) {
             case 1:
-                if (item->IsInterface2()) {
+                if (item->IsTcpIpProvider()) {
                     return item;
                 }
                 break;
             case 2:
-                if (item->IsInterface1()) {
+                if (item->IsIpxProvider()) {
                     return item;
                 }
                 break;
             case 5:
-                if (item->IsInterface5()) {
+                if (item->MatchesUnclassifiedProvider()) {
                     return item;
                 }
                 break;
@@ -934,43 +934,43 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
 RVA_COMPGEN(0x00179390, 0x1e, ??_GCNetPlayerListNode@@UAEPAXI@Z)
 RVA_COMPGEN(0x00179400, 0x1e, ??_GCNetSessionNode@@UAEPAXI@Z)
 RVA(0x001794b0, 0x21)
-i32 InterfaceObject::IsInterface1() {
+i32 InterfaceObject::IsIpxProvider() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(m_guid, g_guid1, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_directPlayIpxProviderGuid, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x001794e0, 0x21)
-i32 InterfaceObject::IsInterface2() {
+i32 InterfaceObject::IsTcpIpProvider() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(m_guid, g_guid2, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_directPlayTcpIpProviderGuid, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179510, 0x21)
-i32 InterfaceObject::IsInterface3() {
+i32 InterfaceObject::IsModemProvider() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(m_guid, g_guid3, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_directPlayModemProviderGuid, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179540, 0x21)
-i32 InterfaceObject::IsInterface4() {
+i32 InterfaceObject::IsSerialProvider() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(m_guid, g_guid4, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_directPlaySerialProviderGuid, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179570, 0x21)
-i32 InterfaceObject::IsInterface5() {
+i32 InterfaceObject::MatchesUnclassifiedProvider() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(m_guid, g_guid5, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_unclassifiedProviderGuid, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179680, 0x3a)

@@ -9,7 +9,7 @@ struct tagMODULEENTRY32;
 extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, struct tagMODULEENTRY32* out, u32 size);
 
 namespace ApiCallerStubs {
-    void winapi_118b50_OutputDebugStringA(i32 status);
+    void ReportHeapStatus(i32 status);
 }
 
 #endif // GRUNTZ_GRUNTZ_HEAPDIAG_H

@@ -23,7 +23,7 @@ RVA(0x000a9a40, 0xf1)
 i32 CreateAniCycle(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}
 
 RVA(0x000a9b80, 0xf1)
-i32 HandlerA9B80(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
+i32 CreateSingleFrameMessage(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
 
 RVA(0x000a9cc0, 0xf1)
 i32 CreateDoNothing(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothing)}

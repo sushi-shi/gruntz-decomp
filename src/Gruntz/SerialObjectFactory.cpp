@@ -323,7 +323,7 @@ i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void*
             return 0;
     }
 
-    AddrWord payloadWord;
-    payloadWord.m_addr = payload;
+    AddrWord<char> payloadWord;
+    payloadWord.m_addr = static_cast<char*>(payload);
     return mgr->BroadcastCmd(archive, mode, typeId, payloadWord.m_word) != 0;
 }

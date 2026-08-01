@@ -25,5 +25,5 @@ extern CSFMIDILocation g_sfMidiLocation;
 extern CSFBufferObject g_sfBufferObject;
 
 i32 SfDeviceInitKeys();
-i32 FileExistsCopyF90F0(char* szPath);
+i32 SoundFontFileExists(char* path);
 #endif // GRUNTZ_GRUNTZ_SOUNDFONTPATH_H

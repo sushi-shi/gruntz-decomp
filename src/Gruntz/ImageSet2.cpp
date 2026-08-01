@@ -41,7 +41,7 @@ i32 CImageSet2::Parse(void* record) {
 }
 
 RVA(0x001669e0, 0x5e)
-i32 CImageSet2::Query_1669e0(i32 a, i32 b, i32* outA, i32* outB) {
+i32 CImageSet2::ScanRunLeft(i32 a, i32 b, i32* outA, i32* outB) {
     if (b < m_18 || b > m_20 || a < m_14) {
         return 0;
     }
@@ -59,7 +59,7 @@ i32 CImageSet2::Query_1669e0(i32 a, i32 b, i32* outA, i32* outB) {
 }
 
 RVA(0x00166a40, 0x62)
-i32 CImageSet2::Query_166a40(i32 a, i32 b, i32 val, i32* out) {
+i32 CImageSet2::ScanRunLeftForValue(i32 a, i32 b, i32 val, i32* out) {
     if (b < m_18 || b > m_20 || a < m_14) {
         return 0;
     }
@@ -81,7 +81,7 @@ i32 CImageSet2::Query_166a40(i32 a, i32 b, i32 val, i32* out) {
 }
 
 RVA(0x00166ab0, 0x62)
-i32 CImageSet2::Query_166ab0(i32 a, i32 b, i32* outA, i32* outB) {
+i32 CImageSet2::ScanRight(i32 a, i32 b, i32* outA, i32* outB) {
     if (b < m_18 || b > m_20 || a > m_1c) {
         return 0;
     }
@@ -99,7 +99,7 @@ i32 CImageSet2::Query_166ab0(i32 a, i32 b, i32* outA, i32* outB) {
 }
 
 RVA(0x00166b20, 0x66)
-i32 CImageSet2::Query_166b20(i32 a, i32 b, i32 val, i32* out) {
+i32 CImageSet2::ScanRightForValue(i32 a, i32 b, i32 val, i32* out) {
     if (b < m_18 || b > m_20 || a > m_1c) {
         return 0;
     }
@@ -121,7 +121,7 @@ i32 CImageSet2::Query_166b20(i32 a, i32 b, i32 val, i32* out) {
 }
 
 RVA(0x00166b90, 0x5e)
-i32 CImageSet2::Query_166b90(i32 a, i32 b, i32* outA, i32* outB) {
+i32 CImageSet2::ScanUp(i32 a, i32 b, i32* outA, i32* outB) {
     if (a < m_14 || a > m_1c || b < m_18) {
         return 0;
     }
@@ -139,7 +139,7 @@ i32 CImageSet2::Query_166b90(i32 a, i32 b, i32* outA, i32* outB) {
 }
 
 RVA(0x00166bf0, 0x62)
-i32 CImageSet2::Query_166bf0(i32 a, i32 b, i32 val, i32* out) {
+i32 CImageSet2::ScanUpForValue(i32 a, i32 b, i32 val, i32* out) {
     if (a < m_14 || a > m_1c || b < m_18) {
         return 0;
     }
@@ -161,7 +161,7 @@ i32 CImageSet2::Query_166bf0(i32 a, i32 b, i32 val, i32* out) {
 }
 
 RVA(0x00166c60, 0x62)
-i32 CImageSet2::Query_166c60(i32 a, i32 b, i32* outA, i32* outB) {
+i32 CImageSet2::ScanDown(i32 a, i32 b, i32* outA, i32* outB) {
     if (a < m_14 || a > m_1c || b > m_20) {
         return 0;
     }
@@ -179,7 +179,7 @@ i32 CImageSet2::Query_166c60(i32 a, i32 b, i32* outA, i32* outB) {
 }
 
 RVA(0x00166cd0, 0x66)
-i32 CImageSet2::Query_166cd0(i32 a, i32 b, i32 val, i32* out) {
+i32 CImageSet2::ScanDownForValue(i32 a, i32 b, i32 val, i32* out) {
     if (a < m_14 || a > m_1c || b > m_20) {
         return 0;
     }

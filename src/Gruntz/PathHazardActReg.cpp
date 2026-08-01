@@ -20,7 +20,7 @@ static inline void FreeNameSlotNodes() {
 }
 
 RVA(0x000b3cc0, 0x2ac)
-void RegisterActs_646250() {
+void RegisterPathHazardActions() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);

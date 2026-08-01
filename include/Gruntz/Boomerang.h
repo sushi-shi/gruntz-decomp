@@ -14,7 +14,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_BOOMERANG;
     }
-    virtual void MovingSlot16() OVERRIDE;
+    virtual void AdvanceMotion() OVERRIDE;
     virtual i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1)
         OVERRIDE;
 

@@ -16,7 +16,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
     i32 Act();
-    i32 Act_10f970();
+    i32 AdvanceCheckpointAnimation();
     i32 m_state[15];
     i32 m_firstEmpty;
 };

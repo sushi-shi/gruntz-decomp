@@ -246,13 +246,13 @@ i32 CNetSession::Tick() {
                 NoopSync(obj);
                 rec->m_count++;
 
-                RecordBytes rb;
+                RecordBytes<GruntRec> rb;
                 rb.m_rec = rec;
                 payload += obj->Pack(payload, rb.m_chars - payload + 0x410);
             }
         }
         m_session->WriteTag("[end]\n");
-        RecordBytes rb2;
+        RecordBytes<GruntRec> rb2;
         rb2.m_rec = rec;
         rec->m_payloadLen = static_cast<i32>((payload - rb2.m_chars - 0x10));
         m_snapshotDone = 1;
@@ -746,7 +746,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     }
     AdvanceSeq(seq);
 
-    GruntRec* pkt = static_cast<GruntRec*>(Unmatched_bf530(0));
+    GruntRec* pkt = static_cast<GruntRec*>(AllocateGruntRecord(0));
     pkt->m_count = count;
     pkt->m_checksum = checksum;
     pkt->m_seq = seq;

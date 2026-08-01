@@ -156,7 +156,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     if (!::GetDlgItem(hDlg, 0x3fc)) {
         return 0;
     }
-    if (!func_2176(hDlg)) {
+    if (!LoadCustomWorldSelection(hDlg)) {
         return 0;
     }
     char num[0x20];

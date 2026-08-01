@@ -10,6 +10,10 @@
 #include <Dsndmgr/SoundVoiceList.h>
 
 class CHashBase;
+class CSymRec;
+class CSymTab;
+class CRezDirNode;
+struct CParseSource;
 
 struct CHashSlot {
 
@@ -34,7 +38,12 @@ public:
     DSoundLink m_link;
     CHashBase* m_owner;
     u32 m_bucket;
-    void* m_record;
+    union {
+        CParseSource* m_parseSource;
+        CSymRec* m_symRec;
+        CSymTab* m_symTab;
+        CRezDirNode* m_rezDirNode;
+    };
 };
 SIZE(0x18);
 

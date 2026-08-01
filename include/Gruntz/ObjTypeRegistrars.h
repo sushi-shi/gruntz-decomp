@@ -68,9 +68,9 @@ struct CLightFx {
 };
 
 void RegisterSimpleAnimLogic();
-void RegisterXLogic_646010();
-void RegisterActs_644af0();
-void RegisterXLogic_6447f8();
+void RegisterMenuSparkleActions();
+void RegisterGruntActions();
+void RegisterExplosionActions();
 void RegisterIconState();
 void ActReg4RegisterType();
 void RegisterIconActions();
@@ -78,10 +78,10 @@ void RegisterTextLogic();
 void RegisterWormholeLogic();
 void RegisterLogic();
 void CTeleporter_RegisterActs();
-void RegisterActs_646188();
+void RegisterSpotLightActions();
 void RegisterWarlordActions();
-void RegisterActs_646250();
-void RegisterActs_6514d8();
-void RegisterXLogic_62bfa0();
+void RegisterPathHazardActions();
+void RegisterGruntVoiceActions();
+void RegisterCursorSnapActions();
 
 #endif

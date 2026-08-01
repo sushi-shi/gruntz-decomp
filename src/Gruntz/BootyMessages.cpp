@@ -255,7 +255,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             }
             ShowLevelCompleteMessage();
             m_world->m_drawTarget->TransExit();
-            m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
+            m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
             m_world->m_drawTarget->TransTitle();
             RetireScene(0x50, 0x3e8, 0, 1);
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {

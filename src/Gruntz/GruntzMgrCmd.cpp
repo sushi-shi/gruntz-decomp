@@ -388,7 +388,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        _g->OnRegion3(1);
+                        _g->SetMonitorCurse(1);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Whoah... you should get this monitor fixed.");
                         return 1;
@@ -398,7 +398,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        _g->OnRegion1(1);
+                        _g->SetDarknessCurse(1);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Is is dark in here?");
                         return 1;
@@ -408,7 +408,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        _g->OnRegion2(1);
+                        _g->SetTinyViewportCurse(1);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Awww... isn't this little window cute?");
                         return 1;
@@ -499,7 +499,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         return 1;
                     case kCheatPsyche:
 
-                        RunModalDialog("PSYCHE", winapi_092a30_EndDialog, 0);
+                        RunModalDialog("PSYCHE", PsycheDialogProc, 0);
                         return 1;
                     case kCheatClearCheats:
                         PLAYCUE("GAME_MAJORCHEAT");
@@ -920,7 +920,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             if (!CheckPlayState()) {
                 return 1;
             }
-            if (m_curState->Vslot15()) {
+            if (m_curState->CompleteLevel()) {
                 return 1;
             }
             if (TransitionState(2, 1, 0, 0)) {

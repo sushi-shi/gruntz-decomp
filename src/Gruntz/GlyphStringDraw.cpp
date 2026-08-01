@@ -41,7 +41,7 @@ i32 DrawGlyphString(
         i32 glyph;
         if (c >= font->m_minIndex && c <= font->m_maxIndex) {
 
-            AddrWord g;
+            AddrWord<CImage> g;
             g.m_addr = static_cast<CImage*>(font->m_items.GetAt(c));
             glyph = g.m_word;
         } else {

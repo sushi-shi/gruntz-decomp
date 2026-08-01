@@ -61,7 +61,7 @@ void CMenuSparkle::FireActivation(i32 coord) {
 }
 
 RVA(0x000adfc0, 0x18d)
-void RegisterXLogic_646010() {
+void RegisterMenuSparkleActions() {
     i32 id = RegisterActionName();
     *CActRegPool<CMenuSparkle>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CMenuSparkle::AdvanceAnim);

@@ -338,7 +338,7 @@ i32 CMenuPage::Switch(i32 refocus) {
         return 0;
     }
     if (refocus) {
-        m_host->ScrollRow1();
+        m_host->PlayActivationSound();
     }
     return 1;
 }
@@ -401,7 +401,7 @@ i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
 }
 
 RVA(0x00183f70, 0x74)
-i32 CMenuPage::FocusForwardN() {
+i32 CMenuPage::MoveFocusRightColumn() {
     CMenuItem* cur = m_focus;
     if (!cur) {
         return 0;
@@ -440,7 +440,7 @@ i32 CMenuPage::FocusForwardN() {
 }
 
 RVA(0x00183ff0, 0x75)
-i32 CMenuPage::FocusBackwardN() {
+i32 CMenuPage::MoveFocusLeftColumn() {
     CMenuItem* cur = m_focus;
     if (!cur) {
         return 0;
@@ -537,11 +537,11 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
 }
 
 RVA(0x00184230, 0xd2)
-i32 CMenuPage::SelectFwd2() {
+i32 CMenuPage::MoveFocusLeft() {
     if (!m_focus) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetNavFwdName());
+    CMenuItem* item = FindByName(m_focus->GetLeftName());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -552,15 +552,15 @@ i32 CMenuPage::SelectFwd2() {
         }
         return SetFocus(item, 1);
     }
-    return FocusBackwardN();
+    return MoveFocusLeftColumn();
 }
 
 RVA(0x00184310, 0xd2)
-i32 CMenuPage::SelectBack2() {
+i32 CMenuPage::MoveFocusRight() {
     if (!m_focus) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetNavBackName());
+    CMenuItem* item = FindByName(m_focus->GetRightName());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -571,15 +571,15 @@ i32 CMenuPage::SelectBack2() {
         }
         return SetFocus(item, 1);
     }
-    return FocusForwardN();
+    return MoveFocusRightColumn();
 }
 
 RVA(0x001843f0, 0xd2)
-i32 CMenuPage::SelectForward() {
+i32 CMenuPage::MoveFocusUp() {
     if (!m_focus) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetField54());
+    CMenuItem* item = FindByName(m_focus->GetUpName());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -594,11 +594,11 @@ i32 CMenuPage::SelectForward() {
 }
 
 RVA(0x001844d0, 0xd2)
-i32 CMenuPage::SelectBackward() {
+i32 CMenuPage::MoveFocusDown() {
     if (!m_focus) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetField58());
+    CMenuItem* item = FindByName(m_focus->GetDownName());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {

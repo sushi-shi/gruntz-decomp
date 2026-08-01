@@ -92,16 +92,16 @@ public:
     i32 CheckDisplayBoundsA();
     i32 CheckDisplayBoundsB();
 
-    i32 NotifyState0b(i32 a, i32 b);
-    i32 NotifyState0c(i32 a, i32 b);
-    i32 NotifyState0d(i32 a, i32 b);
-    i32 NotifyState0e(i32 a, i32 b, i32 c);
-    i32 NotifyState0f(i32 a, i32 b, i32 c);
-    i32 NotifyState10(i32 a, i32 b, i32 c);
-    i32 NotifyState11(i32 a, i32 b, i32 c);
-    i32 NotifyState12(i32 a, i32 b, i32 c);
-    i32 NotifyState13(i32 a, i32 b, i32 c);
-    i32 NotifyState14(i32 a, i32 b, i32 c);
+    i32 ForwardCharToState(i32 a, i32 b);
+    i32 ForwardKeyDownToState(i32 a, i32 b);
+    i32 ForwardKeyUpToState(i32 a, i32 b);
+    i32 ForwardLButtonDownToState(i32 a, i32 b, i32 c);
+    i32 ForwardLButtonUpToState(i32 a, i32 b, i32 c);
+    i32 ForwardLButtonDblClkToState(i32 a, i32 b, i32 c);
+    i32 ForwardRButtonDownToState(i32 a, i32 b, i32 c);
+    i32 ForwardRButtonUpToState(i32 a, i32 b, i32 c);
+    i32 ForwardRButtonDblClkToState(i32 a, i32 b, i32 c);
+    i32 ForwardMouseMoveToState(i32 a, i32 b, i32 c);
 
     CState* TopState();
     void PushState(CState* s);
@@ -369,11 +369,11 @@ i32 FileExists(char* szPath);
 void operator delete(void*);
 void ChannelSlots_InitAll();
 
-INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK SetSkillLevelDialogProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR
 CALLBACK WarpDialogProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR
-CALLBACK winapi_092a30_EndDialog(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
+CALLBACK PsycheDialogProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK JumpLevelDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

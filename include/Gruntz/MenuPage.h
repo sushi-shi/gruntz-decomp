@@ -60,8 +60,8 @@ public:
     i32 Click(i32 x, i32 y);
     CMenuItem* HitTest(i32 x, i32 y);
     CMenuItem* FindByName(const char* s);
-    i32 SelectForward();
-    i32 SelectBackward();
+    i32 MoveFocusUp();
+    i32 MoveFocusDown();
     i32 LayoutOne(CDDrawSurfacePair* target);
 
     CMenuItem2* AddItem2(
@@ -85,10 +85,10 @@ public:
     );
     i32 Switch(i32 refocus);
     i32 CanWrap();
-    i32 FocusForwardN();
-    i32 FocusBackwardN();
-    i32 SelectFwd2();
-    i32 SelectBack2();
+    i32 MoveFocusRightColumn();
+    i32 MoveFocusLeftColumn();
+    i32 MoveFocusLeft();
+    i32 MoveFocusRight();
 
     CDDrawSurfaceMgr* m_owner;
     CChatBox* m_host;

@@ -30,7 +30,7 @@ public:
     virtual i32 InitFromSurface(CDDSurface* src);
     virtual i32 Create(i32 w, i32 h, i32 bpp, i32 flags);
     virtual i32 LoadImage(CParseSource* src);
-    virtual i32 ResolveImage_163ee0(char* name);
+    virtual i32 ResolveImageName(char* name);
 
     virtual ~CDDrawSurfacePair() OVERRIDE;
 

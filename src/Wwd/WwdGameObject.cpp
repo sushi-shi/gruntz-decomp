@@ -396,7 +396,7 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
 }
 
 RVA(0x00150eb0, 0x98)
-i32 CGameObject::EnsureWorker80(AnimWorkerObj* src) {
+i32 CGameObject::EnsureHitWorker(AnimWorkerObj* src) {
     if (src == 0) {
         return 0;
     }
@@ -417,11 +417,11 @@ RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
     CObject* handlerOb = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
-    EnsureWorker80(static_cast<AnimWorkerObj*>(handlerOb));
+    EnsureHitWorker(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
 RVA(0x00150f90, 0x98)
-i32 CGameObject::EnsureWorker88(AnimWorkerObj* src) {
+i32 CGameObject::EnsureAttackWorker(AnimWorkerObj* src) {
     if (src == 0) {
         return 0;
     }
@@ -442,11 +442,11 @@ RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
     CObject* handlerOb = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
-    EnsureWorker88(static_cast<AnimWorkerObj*>(handlerOb));
+    EnsureAttackWorker(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
 RVA(0x00151070, 0x98)
-i32 CGameObject::EnsureWorker90(AnimWorkerObj* src) {
+i32 CGameObject::EnsureBumpWorker(AnimWorkerObj* src) {
     if (src == 0) {
         return 0;
     }
@@ -467,7 +467,7 @@ RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
     CObject* handlerOb = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
-    EnsureWorker90(static_cast<AnimWorkerObj*>(handlerOb));
+    EnsureBumpWorker(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
 RVA(0x00151150, 0x190)
@@ -706,7 +706,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
-        if (this->EnsureWorker80(static_cast<AnimWorkerObj*>(found)) == 0) {
+        if (this->EnsureHitWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
         }
     }
@@ -715,7 +715,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
-        if (this->EnsureWorker88(static_cast<AnimWorkerObj*>(found)) == 0) {
+        if (this->EnsureAttackWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
         }
     }
@@ -724,7 +724,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
-        if (this->EnsureWorker90(static_cast<AnimWorkerObj*>(found)) == 0) {
+        if (this->EnsureBumpWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
         }
     }
@@ -908,7 +908,7 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
 }
 
 RVA(0x00151fb0, 0xa4)
-CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
+CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
@@ -933,7 +933,7 @@ CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
 }
 
 RVA(0x00152060, 0xab)
-CImage* CDDrawWorker::CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 size) {
+CImage* CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, i32 mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
@@ -958,14 +958,14 @@ CImage* CDDrawWorker::CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 si
 }
 
 RVA(0x00152110, 0xa9)
-CImage* CDDrawWorker::CreateFrame24(i32 width, i32 height, i32 index, i32 keyed) {
+CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner());
 
-    if (nf->Create24(width, height, keyed) == 0) {
+    if (nf->CreateBlankSurface(width, height, keyed) == 0) {
         if (nf != 0) {
             delete nf;
         }
@@ -1120,7 +1120,7 @@ i32 CDDrawWorker::SetAllTypes(i32 type) {
 }
 
 RVA(0x001524d0, 0x41)
-i32 CDDrawWorker::SetAllField18(i32 value) {
+i32 CDDrawWorker::SetAllLightLevels(i32 value) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);

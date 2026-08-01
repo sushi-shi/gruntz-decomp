@@ -240,11 +240,11 @@ i32 DirectSoundMgr::IsInHardware() {
 }
 
 RVA(0x00135510, 0x25)
-void DirectSoundMgr::SetField3(i32 on) {
+void DirectSoundMgr::SetLooping(i32 enabled) {
     if (m_owner->m_initialized == 0) {
         return;
     }
-    if (on) {
+    if (enabled) {
         m_playFlags |= 1;
     } else {
         m_playFlags &= ~1;
@@ -392,11 +392,11 @@ i32 DirectSoundMgr::SetFrequency(u32 freq) {
 }
 
 RVA(0x00135920, 0x80)
-i32 DirectSoundMgr::SetField2(i32 pct) {
+i32 DirectSoundMgr::SetFrequencyOffsetPercent(i32 percentOffset) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 v = pct * static_cast<i32>(m_freq) / 100 + static_cast<i32>(m_freq);
+    i32 v = percentOffset * static_cast<i32>(m_freq) / 100 + static_cast<i32>(m_freq);
     if (static_cast<u32>(v) >= 0x186a0) {
         v = 0x1869f;
     }
@@ -404,7 +404,7 @@ i32 DirectSoundMgr::SetField2(i32 pct) {
         v = 0x65;
     }
     i32 r = SetFrequency(v);
-    m_sampleRate = pct * m_rateBase / 100 + m_rateBase;
+    m_sampleRate = percentOffset * m_rateBase / 100 + m_rateBase;
     ComputeDuration();
     return r;
 }
@@ -691,10 +691,10 @@ i32 DSoundCloneInst::ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     if (!item->SetPanByIndex(pan)) {
         ok = 0;
     }
-    if (!item->SetField2(freqPct)) {
+    if (!item->SetFrequencyOffsetPercent(freqPct)) {
         ok = 0;
     }
-    item->SetField3(loop);
+    item->SetLooping(loop);
     if (!item->Play()) {
         ok = 0;
     }
@@ -765,7 +765,7 @@ i32 DirectSoundMgr::Play() {
 }
 
 RVA(0x00136300, 0x6f)
-i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
+i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
@@ -776,10 +776,10 @@ i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
     if (SetPanByIndex(pan) == 0) {
         ok = 0;
     }
-    if (SetField2(freq) == 0) {
+    if (SetFrequencyOffsetPercent(freqPct) == 0) {
         ok = 0;
     }
-    SetField3(d);
+    SetLooping(loop);
     if (Play() == 0) {
         ok = 0;
     }
@@ -1257,7 +1257,7 @@ i32 SoundDevice::FreeSamples() {
 }
 
 RVA(0x00136f60, 0x74)
-void DSoundList::RemoveMatching(void* key, u32 tag) {
+void DSoundList::RemoveMatching(DirectSoundMgr* key, u32 tag) {
     DSoundElem* e = elemOf<DSoundElem>(m_head);
     while (e) {
         DSoundLink* node = &e->m_link;

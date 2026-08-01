@@ -24,7 +24,7 @@ public:
     }
 
     virtual i32 PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    virtual i32 Wap32GameWndVfunc2(i32 notifyCode, i32 cmdId, i32 lParam);
+    virtual i32 HandleWindowCommand(i32 notifyCode, i32 cmdId, i32 lParam);
 
     virtual i32 OnCreate(LPARAM lParam);
     virtual i32 OnClose();

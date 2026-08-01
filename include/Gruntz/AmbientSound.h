@@ -46,7 +46,7 @@ public:
 
     void Recompute(i32 master);
 
-    i32 Init6(
+    i32 InitFromKey(
         CRandomAmbientWorld* world,
         const char* key,
         i32 level,
@@ -54,7 +54,7 @@ public:
         RECT* box,
         i32 scaleB
     );
-    i32 Init5(DirectSoundMgr* mgr, i32 level, i32 master, RECT* box, i32 scaleB);
+    i32 InitFromSound(DirectSoundMgr* mgr, i32 level, i32 master, RECT* box, i32 scaleB);
 
     DirectSoundMgr* m_voice;
     i32 m_level;
@@ -75,7 +75,7 @@ public:
     virtual ~CAmbientPosSound() OVERRIDE {}
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE;
 
-    i32 Init6(
+    i32 InitFromKey(
         CRandomAmbientWorld* world,
         const char* key,
         i32 level,
@@ -83,7 +83,7 @@ public:
         AmbientPoint* pos,
         i32 scaleB
     );
-    i32 Init5(DirectSoundMgr* mgr, i32 level, i32 master, AmbientPoint* pos, i32 scaleB);
+    i32 InitFromSound(DirectSoundMgr* mgr, i32 level, i32 master, AmbientPoint* pos, i32 scaleB);
 
     i32 m_40;
     i32 m_44;

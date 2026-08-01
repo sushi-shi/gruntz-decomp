@@ -29,28 +29,28 @@ public:
     i32 AddNode(CMenuPage* node);
     i32 AttachNode(CMenuPage* n);
     i32 ReplaceNode(const char* key);
-    i32 AdvanceRow0(void* key, i32 x, i32 y);
-    i32 AdvanceRow1(void* key, i32 x, i32 y);
+    i32 ConfigureLeftCursorAnimation(void* key, i32 x, i32 y);
+    i32 ConfigureRightCursorAnimation(void* key, i32 x, i32 y);
     i32 Step(i32 dt);
     i32 Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x, i32 y);
-    i32 ScrollRow0();
-    i32 ScrollRow1();
+    i32 PlayFocusSound();
+    i32 PlayActivationSound();
     i32 FocusSelect(i32 x, i32 y);
-    i32 HitTest0(i32 x, i32 y);
-    i32 HitTest1();
-    i32 HitTest2();
-    i32 HitTest3();
-    i32 HitTest4();
+    i32 ClickAt(i32 x, i32 y);
+    i32 MoveFocusUpFollowingLinks();
+    i32 MoveFocusDownFollowingLinks();
+    i32 MoveFocusLeftFollowingLinks();
+    i32 MoveFocusRightFollowingLinks();
 
     i32 Step(u32 dt);
     i32 Pre();
     i32 Post();
-    i32 OnFlag40000000();
-    i32 OnFlag80000000();
-    i32 OnFlag00000003();
-    i32 OnFlag00000100();
-    i32 OnFlag10000000();
-    i32 OnFlag20000000();
+    i32 MoveFocusDown();
+    i32 MoveFocusUp();
+    i32 ActivateFocusedItem();
+    i32 ReturnToPreviousPage();
+    i32 MoveFocusLeft();
+    i32 MoveFocusRight();
 
     CDDrawSurfaceMgr* m_page;
 

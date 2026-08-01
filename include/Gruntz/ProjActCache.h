@@ -11,18 +11,20 @@
 
 extern "C" i32 FirstDiffBit(const char* a, const char* b);
 
+class CButeNode;
+
 struct CTrieNode {
     CTrieNode* m_child[2];
 
     i32 m_8;
     char* m_c;
-    void* m_10;
+    CButeNode* m_10;
 };
 SIZE_UNKNOWN();
 
 class CProjActMap {
 public:
-    void* Insert(const char* key, void* value);
+    CButeNode* Insert(const char* key, CButeNode* value);
 
     char _vft0[4];
     CVariantSlot* m_4;

@@ -56,17 +56,17 @@ public:
     i32 StepRowUnits();
     i32 RepathAroundBlockedTiles(CGrunt*);
     CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
-    i32 winapi_02ae00_IntersectRect(CGrunt*, CGrunt*);
-    i32 winapi_02c140_IntersectRect_PtInRect(CGrunt*);
+    i32 HandleUnitContact(CGrunt*, CGrunt*);
+    i32 RouteToNearbyPickup(CGrunt*);
 
-    i32 winapi_02dfa0_IntersectRect(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
-    i32 winapi_02e3a0_PtInRect(CGrunt*);
-    i32 winapi_031ca0_IntersectRect(CGrunt*);
-    i32 winapi_032060_IntersectRect(CGrunt*);
+    i32 ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
+    i32 RouteToNearbyEnemy(CGrunt*);
+    i32 TrackAssignedEnemy(CGrunt*);
+    i32 AdvanceToEnemyBase(CGrunt*);
 
     i32 ResolveArrival(CGrunt* g);
     i32 Step(CGrunt* g);
-    i32 Step33520(CGrunt* g);
+    i32 StepDefenderUnit(CGrunt* grunt);
 
     i32 ScanRegion(CGrunt* g);
 

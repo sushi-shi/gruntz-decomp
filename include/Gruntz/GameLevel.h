@@ -87,9 +87,9 @@ public:
     virtual i32 GetClassId() OVERRIDE {
         return CLASSID_GAMELEVEL;
     }
-    virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords);
-    virtual i32 SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords);
-    virtual i32 SetCoordsAndLoad40(const char* path, LevelCoordRect* coords);
+    virtual i32 LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords);
+    virtual i32 LoadSourceWithCoords(CParseSource* src, LevelCoordRect* coords);
+    virtual i32 LoadFileWithCoords(const char* path, LevelCoordRect* coords);
     virtual i32 SetCoords(LevelCoordRect* coords);
     virtual i32 SetCoordExtents(i32 w, i32 h);
     virtual i32 LoadWwd(WwdHeader* hdr);
@@ -103,8 +103,8 @@ public:
 
     i32 LookupTile(i32 x, i32 y);
 
-    i32 MainPlaneQueryA();
-    i32 MainPlaneQueryB();
+    i32 ActivateVisibleObjectsOnMainPlane();
+    i32 DeactivateDistantObjectsOnMainPlane();
     void MainPlaneNotify();
 
     void BuildAllPlanes(LevelCoordRect* coords);
@@ -119,10 +119,10 @@ public:
 
     i32 DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
-    i32 MoveHandlerA(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
-    i32 MoveHandlerB(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
-    i32 MoveHandlerC(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
-    i32 MoveHandlerD(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
+    i32 MoveGrounded(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
+    i32 MoveRising(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
+    i32 MoveFalling(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
+    i32 MoveClimbing(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
     CDDrawWorkerHost* FindPlaneByName(const char* name);
 
@@ -147,7 +147,7 @@ public:
     i32 SaveName(CFileMemBase* sink);
     i32 LoadName(CFileMemBase* sink);
 
-    i32 MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags);
+    i32 MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags);
 
     i32 MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags);
     i32 MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags);
@@ -168,12 +168,12 @@ private:
 
     i32 StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);
     i32 StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);
-    i32 AdvanceA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
+    i32 ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
     i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);
     i32 HoldMove(CGameObject* t, CGameObject* carrier, i32 destX, i32 destY, i32 moveFlags);
     i32 FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
     i32 StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32 moveFlags);
-    i32 AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
+    i32 ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
     i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);
     i32 AxisProbe(i32 coord, i32 limit);
 

@@ -19,7 +19,7 @@ i32 CDDrawWorkerHost::GetClassId() {
 }
 
 RVA(0x00163ac0, 0x3)
-void CDDrawWorkerHost::VtSlot11_163ac0(i32) {}
+void CDDrawWorkerHost::UnusedPlaneHook(i32) {}
 
 // @early-stop
 RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCDDrawWorkerHost@@UAEPAXI@Z)

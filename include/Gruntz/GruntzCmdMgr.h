@@ -67,6 +67,6 @@ SIZE_UNKNOWN();
 
 i32 __stdcall IsActive2(void* enable);
 
-i32 CALLBACK winapi_092ab0_EndDialog(HWND, UINT, WPARAM, LPARAM);
+i32 CALLBACK DebugGruntTypeDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 #endif // GRUNTZ_GRUNTZCMDMGR_H

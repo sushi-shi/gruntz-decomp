@@ -35,11 +35,11 @@
 #include <Gruntz/Wormhole.h>
 
 DATA(0x0020d008)
-const i32 g_rotTableA_60d008[27] = {
+const i32 g_directionClockwiseTable[27] = {
     0, 1, 1, 0, 2, 2, 1, 2, 3, 0, 0, 8, 1, 1, 0, 2, 2, 4, 1, 0, 7, 2, 0, 6, 2, 1, 5,
 };
 DATA(0x0020d078)
-const i32 g_rotTableB_60d078[27] = {
+const i32 g_directionCounterclockwiseTable[27] = {
     1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
 };
 
@@ -64,7 +64,7 @@ void CDemo::ReleaseResources() {
 }
 
 RVA(0x0003c030, 0x22)
-i32 CDemo::Vslot15() {
+i32 CDemo::CompleteLevel() {
     PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
     return 1;
 }
@@ -187,27 +187,27 @@ bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
 
 // @early-stop
 RVA(0x0003c850, 0x38)
-void Orient3::StepA(i32 count) {
-    if (count > 0) {
+void GruntDirectionCell::RotateClockwise(i32 steps) {
+    if (steps > 0) {
         do {
-            const i32* e = &g_rotTableA_60d008[(m_0 * 3 + m_4) * 3];
-            m_0 = e[0];
-            m_4 = e[1];
-            m_8 = e[2];
-        } while (--count);
+            const i32* e = &g_directionClockwiseTable[(row * 3 + column) * 3];
+            row = e[0];
+            column = e[1];
+            direction = e[2];
+        } while (--steps);
     }
 }
 
 // @early-stop
 RVA(0x0003c8a0, 0x38)
-void Orient3::StepB(i32 count) {
-    if (count > 0) {
+void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
+    if (steps > 0) {
         do {
-            const i32* e = &g_rotTableB_60d078[(m_0 * 3 + m_4) * 3];
-            m_0 = e[0];
-            m_4 = e[1];
-            m_8 = e[2];
-        } while (--count);
+            const i32* e = &g_directionCounterclockwiseTable[(row * 3 + column) * 3];
+            row = e[0];
+            column = e[1];
+            direction = e[2];
+        } while (--steps);
     }
 }
 
@@ -353,22 +353,22 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -391,22 +391,22 @@ i32 CreateExitTrigger(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -429,22 +429,22 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -467,22 +467,22 @@ i32 CreateWormhole(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -505,22 +505,22 @@ i32 CreateGruntPuddle(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -543,22 +543,22 @@ i32 CreateTeleporter(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -581,22 +581,22 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -619,22 +619,22 @@ i32 CreateWarlord(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -657,22 +657,22 @@ i32 CreateFortressFlag(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -695,22 +695,22 @@ i32 CreateSecretLevelTrigger(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;

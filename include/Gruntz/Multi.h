@@ -62,11 +62,11 @@ public:
     virtual GameStateId Update() OVERRIDE;
 
     virtual i32 Render() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 FrameSlot28(i32) OVERRIDE;
-    virtual i32 Vslot0b(i32, i32) OVERRIDE;
-    virtual i32 Vslot15() OVERRIDE;
-    virtual i32 Vslot1a() OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 OnChar(i32, i32) OVERRIDE;
+    virtual i32 CompleteLevel() OVERRIDE;
+    virtual i32 UnusedPlayQuery() OVERRIDE;
     virtual i32 GetFrame() OVERRIDE;
 
     virtual i32 LoadByMode(i32 mode, i32 unused) OVERRIDE;

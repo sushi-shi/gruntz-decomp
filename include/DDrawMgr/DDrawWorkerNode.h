@@ -54,7 +54,7 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     CDDrawWorkerA(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78b = 0;
     }
-    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame);
+    virtual i32 PlaceFrameValue(i32 x, i32 y, i32 frame);
 };
 SIZE(0x7c);
 
@@ -66,7 +66,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78 = 0;
     }
-    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame);
+    virtual i32 PlaceFrameValue(i32 x, i32 y, i32 frame);
     virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex);
 
     virtual i32 PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex);

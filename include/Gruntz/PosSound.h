@@ -4,13 +4,14 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h>
+#include <DDrawMgr/AnimWorkerObj.h>
 
 class CAmbientPosSound;
 struct PosSoundAux;
 
 struct PosSoundAux {
     char m_pad00[0x10];
-    void (*m_handler)();
+    GameObjNotifyFn m_handler;
 
     char m_pad14[0x1c - 0x14];
     i32 m_requestState;

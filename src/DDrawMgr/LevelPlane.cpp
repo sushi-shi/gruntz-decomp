@@ -816,7 +816,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
 // @early-stop
 RVA(0x00163300, 0x70)
-i32 CDDrawWorkerHost::CenterScrollA() {
+i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
@@ -842,7 +842,7 @@ i32 CDDrawWorkerHost::CenterScrollA() {
 
 // @early-stop
 RVA(0x00163370, 0x70)
-i32 CDDrawWorkerHost::CenterScrollB() {
+i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
     if (scroll == 0) {
         return 0;

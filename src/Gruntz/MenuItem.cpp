@@ -18,12 +18,12 @@ VTBL(CMenuItem, 0x001f08c0);
 VTBL(CMenuItem2, 0x001f08f8);
 
 RVA(0x00184610, 0x20)
-CString CMenuItem::GetField54() {
-    return m_54;
+CString CMenuItem::GetUpName() {
+    return m_upName;
 }
 RVA(0x00184630, 0x20)
-CString CMenuItem::GetField58() {
-    return m_58;
+CString CMenuItem::GetDownName() {
+    return m_downName;
 }
 RVA(0x00184650, 0xa)
 void CMenuItem::Disable(i32 mode) {
@@ -38,7 +38,7 @@ i32 CMenuItem::OnInit() {
 RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
 RVA(0x00184690, 0x91)
 inline CMenuItem::~CMenuItem() {
-    Dispatch0c();
+    Cleanup();
 }
 RVA(0x00184730, 0x41)
 void CMenuItem::Reset() {
@@ -49,10 +49,10 @@ void CMenuItem::Reset() {
     m_listPos = 0;
     m_hitLeft = static_cast<i32>(0xeeeeeeee);
     m_fixedX = static_cast<i32>(0xeeeeeeee);
-    m_navFwdName.Empty();
-    m_navBackName.Empty();
-    m_54.Empty();
-    m_58.Empty();
+    m_leftName.Empty();
+    m_rightName.Empty();
+    m_upName.Empty();
+    m_downName.Empty();
 }
 RVA(0x00184780, 0x17)
 void CMenuItem2::Disable(i32 mode) {
@@ -74,7 +74,7 @@ i32 CMenuItem2::OnInit() {
 RVA_COMPGEN(0x001847c0, 0x1e, ??_GCMenuItem2@@UAEPAXI@Z)
 RVA(0x001847e0, 0xa6)
 CMenuItem2::~CMenuItem2() {
-    Dispatch0c();
+    Cleanup();
 }
 
 RVA(0x00184890, 0x1a)
@@ -124,7 +124,7 @@ i32 CMenuItem::Init(
     return 1;
 }
 RVA(0x00185510, 0x5)
-void CMenuItem::Dispatch0c() {
+void CMenuItem::Cleanup() {
     Reset();
 }
 
@@ -209,7 +209,7 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
 RVA(0x00185690, 0x25)
 i32 CMenuItem::Configure(i32 notify) {
     if (notify) {
-        m_host->ScrollRow0();
+        m_host->PlayFocusSound();
     }
     Disable(2);
     return 1;
@@ -222,7 +222,7 @@ i32 CMenuItem::Release() {
 
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
-    m_host->ScrollRow1();
+    m_host->PlayActivationSound();
     NotifyCmd();
     m_host->ReplaceNode(m_key);
     return 1;

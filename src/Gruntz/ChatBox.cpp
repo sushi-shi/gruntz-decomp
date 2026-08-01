@@ -119,7 +119,7 @@ i32 CChatBox::Post() {
 }
 
 RVA(0x00182d20, 0x16)
-i32 CChatBox::OnFlag40000000() {
+i32 CChatBox::MoveFocusDown() {
     if (!m_activeNode) {
         return 0;
     }
@@ -127,7 +127,7 @@ i32 CChatBox::OnFlag40000000() {
 }
 
 RVA(0x00182d40, 0x16)
-i32 CChatBox::OnFlag80000000() {
+i32 CChatBox::MoveFocusUp() {
     if (!m_activeNode) {
         return 0;
     }
@@ -135,7 +135,7 @@ i32 CChatBox::OnFlag80000000() {
 }
 
 RVA(0x00182d60, 0x16)
-i32 CChatBox::OnFlag00000003() {
+i32 CChatBox::ActivateFocusedItem() {
     if (!m_activeNode) {
         return 0;
     }
@@ -143,7 +143,7 @@ i32 CChatBox::OnFlag00000003() {
 }
 
 RVA(0x00182d80, 0x18)
-i32 CChatBox::OnFlag00000100() {
+i32 CChatBox::ReturnToPreviousPage() {
     if (!m_activeNode) {
         return 0;
     }
@@ -151,19 +151,19 @@ i32 CChatBox::OnFlag00000100() {
 }
 
 RVA(0x00183130, 0x16)
-i32 CChatBox::OnFlag10000000() {
+i32 CChatBox::MoveFocusLeft() {
     if (!m_activeNode) {
         return 0;
     }
-    return m_activeNode->FocusBackwardN() != 0;
+    return m_activeNode->MoveFocusLeftColumn() != 0;
 }
 
 RVA(0x00183150, 0x16)
-i32 CChatBox::OnFlag20000000() {
+i32 CChatBox::MoveFocusRight() {
     if (!m_activeNode) {
         return 0;
     }
-    return m_activeNode->FocusForwardN() != 0;
+    return m_activeNode->MoveFocusRightColumn() != 0;
 }
 
 RVA(0x00183170, 0x24)
@@ -192,7 +192,7 @@ i32 CChatBox::ReplaceNode(const char* key) {
 
 // @early-stop
 RVA(0x00182df0, 0x69)
-i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
+i32 CChatBox::ConfigureLeftCursorAnimation(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
@@ -213,7 +213,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
 
 // @early-stop
 RVA(0x00182e60, 0x69)
-i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
+i32 CChatBox::ConfigureRightCursorAnimation(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
@@ -307,7 +307,7 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0)
 
 // @early-stop
 RVA(0x00183030, 0x7b)
-i32 CChatBox::ScrollRow0() {
+i32 CChatBox::PlayFocusSound() {
     if (m_row0Key.GetLength() == 0) {
         return 0;
     }
@@ -331,7 +331,7 @@ i32 CChatBox::ScrollRow0() {
 
 // @early-stop
 RVA(0x001830b0, 0x7b)
-i32 CChatBox::ScrollRow1() {
+i32 CChatBox::PlayActivationSound() {
     if (m_row1Key.GetLength() == 0) {
         return 0;
     }
@@ -354,7 +354,7 @@ i32 CChatBox::ScrollRow1() {
 }
 
 RVA(0x001831a0, 0x24)
-i32 CChatBox::HitTest0(i32 x, i32 y) {
+i32 CChatBox::ClickAt(i32 x, i32 y) {
     CMenuPage* n = m_activeNode;
     if (!n) {
         return 0;
@@ -363,39 +363,39 @@ i32 CChatBox::HitTest0(i32 x, i32 y) {
 }
 
 RVA(0x00183210, 0x16)
-i32 CChatBox::HitTest1() {
+i32 CChatBox::MoveFocusUpFollowingLinks() {
     CMenuPage* n = m_activeNode;
     if (!n) {
         return 0;
     }
-    return n->SelectForward() != 0;
+    return n->MoveFocusUp() != 0;
 }
 
 RVA(0x00183230, 0x16)
-i32 CChatBox::HitTest2() {
+i32 CChatBox::MoveFocusDownFollowingLinks() {
     CMenuPage* n = m_activeNode;
     if (!n) {
         return 0;
     }
-    return n->SelectBackward() != 0;
+    return n->MoveFocusDown() != 0;
 }
 
 RVA(0x001831d0, 0x16)
-i32 CChatBox::HitTest3() {
+i32 CChatBox::MoveFocusLeftFollowingLinks() {
     CMenuPage* n = m_activeNode;
     if (!n) {
         return 0;
     }
-    return n->SelectFwd2() != 0;
+    return n->MoveFocusLeft() != 0;
 }
 
 RVA(0x001831f0, 0x16)
-i32 CChatBox::HitTest4() {
+i32 CChatBox::MoveFocusRightFollowingLinks() {
     CMenuPage* n = m_activeNode;
     if (!n) {
         return 0;
     }
-    return n->SelectBack2() != 0;
+    return n->MoveFocusRight() != 0;
 }
 
 RVA_COMPGEN(0x00183250, 0x71, ??1CMenuPage@@QAE@XZ)

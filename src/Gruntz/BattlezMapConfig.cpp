@@ -653,7 +653,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 if (unit != 0) {
                     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - unit->m_arrivalReroll64
                         >= unit->m_arrivalRerollWindow64) {
-                        winapi_02c140_IntersectRect_PtInRect(unit);
+                        RouteToNearbyPickup(unit);
                         if (unit->m_poweredUp != 0) {
                             eq =
                                 (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "A")
@@ -1218,7 +1218,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                                 if (other
                                                                                         ->m_poweredUp
                                                                                     == 0) {
-                                                                                    if (winapi_02ae00_IntersectRect(
+                                                                                    if (HandleUnitContact(
                                                                                             unit,
                                                                                             other
                                                                                         )
@@ -1296,7 +1296,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                      != 0);
                                                 if (ne) {
                                                     if (unit->m_2d8 != 0) {
-                                                        if (winapi_02e3a0_PtInRect(unit) != 0) {
+                                                        if (RouteToNearbyEnemy(unit) != 0) {
                                                             hit = 1;
                                                         }
                                                     }
@@ -1532,7 +1532,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         if (hit == 0) {
             switch (unit->m_2d8) {
                 case 0: {
-                    Step33520(unit);
+                    StepDefenderUnit(unit);
                     break;
                 }
                 case 2: {
@@ -1540,11 +1540,11 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     break;
                 }
                 case 3: {
-                    winapi_031ca0_IntersectRect(unit);
+                    TrackAssignedEnemy(unit);
                     break;
                 }
                 case 4: {
-                    winapi_032060_IntersectRect(unit);
+                    AdvanceToEnemyBase(unit);
                     break;
                 }
                 case 6: {
@@ -2513,7 +2513,7 @@ void CBattlezMapConfig::Clear() {
 }
 
 RVA(0x0002ae00, 0x42e)
-i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(CGrunt* unit, CGrunt* tgt) {
+i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     if (unit->m_entranceCommitted == 0) {
         return 0;
     }
@@ -2889,7 +2889,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
 
 // @early-stop
 RVA(0x0002c140, 0x420)
-i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
+i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->m_gruntKind != 0) {
         return 0;
     }
@@ -3253,11 +3253,11 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (maskFlags & 0x4000) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 0xf) {
-            CTileActionEvent* r = m_cellQuery->FindByField0C((fcx << 8) + fcy);
+            CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
             if (r != 0) {
                 if (r->m_playerFlags[m_curCell] != 0) {
                     ARR_RECYCLE(g);
-                    winapi_02dfa0_IntersectRect(g, fcx, fcy, 1);
+                    ResolveTileClaim(g, fcx, fcy, 1);
                     return 1;
                 }
                 m_triggerMgr->ApplyTriggerA(
@@ -3275,7 +3275,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 0xf) {
             ARR_RECYCLE(g);
-            winapi_02dfa0_IntersectRect(g, fcx, fcy, 1);
+            ResolveTileClaim(g, fcx, fcy, 1);
             return 1;
         }
     }
@@ -3284,12 +3284,12 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_toolId : g->m_entranceReason;
         if (t == 5) {
             if (maskFlags & 0x4000) {
-                CTileActionEvent* r = m_cellQuery->FindByField0C((fcx << 8) + fcy);
+                CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
                 if (r != 0) {
                     i32 k = r->m_actionCode;
                     if (r->m_playerFlags[m_curCell] != 0) {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
-                            winapi_02dfa0_IntersectRect(g, fcx, fcy, 0);
+                            ResolveTileClaim(g, fcx, fcy, 0);
                         }
                     } else {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
@@ -3416,7 +3416,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             }
         }
         if (word & 0x4000) {
-            CTileActionEvent* cell = m_cellQuery->FindByField0C((col << 8) + row);
+            CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
             if (requireUnoccupied != 0) {
                 if (cell != 0 && cell->m_playerFlags[m_curCell] == 0) {
                     CPtrList list2(10);
@@ -3578,12 +3578,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
 
 // @early-stop
 RVA(0x0002dfa0, 0x325)
-i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(
-    CGrunt* unit,
-    i32 col,
-    i32 row,
-    i32 requireUnoccupied
-) {
+i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     g_stepRun = 1;
 
     CGameObject* lvl = unit->m_object;
@@ -3682,7 +3677,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(
 
 // @early-stop
 RVA(0x0002e3a0, 0x7e1)
-i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
+i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
     RECT box;
     Coord cA;
@@ -5079,7 +5074,7 @@ inflight: {
             }
             g->m_arrivalCol = -1;
             g->m_arrivalRow = -1;
-            winapi_02ae00_IntersectRect(g, cur);
+            HandleUnitContact(g, cur);
             g->m_defenderState = 0;
             return 1;
         }
@@ -5144,7 +5139,7 @@ Coord* CGrunt::GetTilePos(Coord* out) {
 
 // @early-stop
 RVA(0x00031ca0, 0x2f2)
-i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
+i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     i32 tx = unit->m_arrivalCol;
     i32 ty = unit->m_arrivalRow;
     if (tx != -1 && ty != -1) {
@@ -5164,7 +5159,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
                 }
                 unit->m_arrivalCol = -1;
                 unit->m_arrivalRow = -1;
-                winapi_02ae00_IntersectRect(unit, target);
+                HandleUnitContact(unit, target);
                 return 1;
             }
 
@@ -5240,7 +5235,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
 
 // @early-stop
 RVA(0x00032060, 0x7bd)
-i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
+i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (unit->m_defenderState == 3) {
         return 1;
     }

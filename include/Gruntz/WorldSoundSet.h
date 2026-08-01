@@ -35,13 +35,19 @@ public:
     CWorldSoundSet();
     ~CWorldSoundSet();
 
-    CAmbientSound* CreateAmbient6(const char* key, i32 level, RECT* box, i32 scaleB, i32 unused);
     CAmbientSound*
-    CreateAmbient5(DirectSoundMgr* mgr, i32 level, RECT* box, i32 scaleB, i32 unused);
+    CreateAmbientFromKey(const char* key, i32 level, RECT* box, i32 scaleB, i32 unused);
+    CAmbientSound*
+    CreateAmbientFromSound(DirectSoundMgr* mgr, i32 level, RECT* box, i32 scaleB, i32 unused);
     CAmbientPosSound*
-    CreatePos6(const char* key, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused);
-    CAmbientPosSound*
-    CreatePos5(DirectSoundMgr* mgr, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused);
+    CreatePositionedFromKey(const char* key, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused);
+    CAmbientPosSound* CreatePositionedFromSound(
+        DirectSoundMgr* mgr,
+        i32 level,
+        AmbientPoint* pos,
+        i32 scaleB,
+        i32 unused
+    );
 
     CRandomAmbientSound* CreateRandom(
         DirectSoundMgr* mgr,
@@ -81,8 +87,6 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_world = 0;
     m_volume = kSoundVolumeMax;
 }
-
-extern "C" void DefaultActionHandler_2d15();
 
 extern i32 g_posSoundReq;
 

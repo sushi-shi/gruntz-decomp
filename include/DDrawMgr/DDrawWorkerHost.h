@@ -50,7 +50,7 @@ public:
     virtual i32
     Read(const WwdPlaneHeader* planeData, const char* blockBase, LevelCoordRect* bounds);
 
-    virtual void VtSlot11_163ac0(i32);
+    virtual void UnusedPlaneHook(i32);
 
     void RegisterNamed(char index, const char* key);
 
@@ -62,8 +62,8 @@ public:
     void SetTileSizeFromImageSet(CDDrawWorker* set);
     void Draw(CDDrawSurfacePair* ctx);
     i32 Prune();
-    i32 CenterScrollA();
-    i32 CenterScrollB();
+    i32 ActivateVisibleObjects();
+    i32 DeactivateDistantObjects();
     i32 GetSize();
     void InitScrollRects();
     i32 ValidateTiles(char* errOut);

@@ -79,9 +79,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     i32 drawType = m_drawType;
     if (drawType == 1) {
         if (sel) {
-            BlitMode_149d00(dst, src, clip, vflip);
+            BlitCopyMirrored(dst, src, clip, vflip);
         } else {
-            BlitMode_149950(dst, src, clip, vflip);
+            BlitCopyForward(dst, src, clip, vflip);
         }
         return 1;
     }
@@ -104,16 +104,16 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     }
 
     if (sel) {
-        BlitMode_14b770(dst, src, clip, vflip);
+        BlitShadedMirrored(dst, src, clip, vflip);
     } else {
-        BlitLoop(dst, src, clip, vflip);
+        BlitShadedForward(dst, src, clip, vflip);
     }
     return 1;
 }
 
 // @early-stop
 RVA(0x00149950, 0x3a1)
-void CDDrawShadeBlit::BlitMode_149950(
+void CDDrawShadeBlit::BlitCopyForward(
     ShadeRect* dst,
     CDDSurface* surf,
     ShadeRect* clip,
@@ -250,7 +250,7 @@ void CDDrawShadeBlit::BlitMode_149950(
 
 // @early-stop
 RVA(0x00149d00, 0x4f8)
-void CDDrawShadeBlit::BlitMode_149d00(
+void CDDrawShadeBlit::BlitCopyMirrored(
     ShadeRect* dst,
     CDDSurface* surf,
     ShadeRect* clip,
@@ -432,7 +432,12 @@ void CDDrawShadeBlit::BlitMode_149d00(
 }
 
 RVA(0x0014a200, 0x1570)
-void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip) {
+void CDDrawShadeBlit::BlitShadedForward(
+    ShadeRect* dst,
+    CDDSurface* src,
+    ShadeRect* clip,
+    i32 vflip
+) {
     i32 pitch = src->m_pitch;
     u8* base = static_cast<u8*>(src->Lock(0));
 
@@ -959,7 +964,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
 }
 
 RVA(0x0014b770, 0x1280)
-void CDDrawShadeBlit::BlitMode_14b770(
+void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* dst,
     CDDSurface* surf,
     ShadeRect* clip,

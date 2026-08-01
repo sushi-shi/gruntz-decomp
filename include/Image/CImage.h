@@ -42,7 +42,7 @@ public:
     virtual void FreeAll();
     virtual i32 GetClassId();
 
-    virtual i32 Create24(i32 width, i32 height, i32 keyed);
+    virtual i32 CreateBlankSurface(i32 width, i32 height, i32 keyed);
     virtual i32 LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed);
     virtual i32 Resolve(CParseSource* src, i32 arg);
     virtual i32 Create(char* path, i32 keyed);
@@ -52,7 +52,7 @@ public:
     virtual void FlipHorizontal(void* a);
     virtual void FlipBoth(void* a);
 
-    i32 BuildSlot13(PidHeader* desc, u32 size);
+    i32 BuildShadeBlitter(PidHeader* desc, u32 size);
     i32 CopyFrom(CImage* other);
     i32 SetOrigin(PidHeader* desc, i32 mode);
     void RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags);

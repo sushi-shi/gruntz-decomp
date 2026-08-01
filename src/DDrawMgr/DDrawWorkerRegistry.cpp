@@ -39,7 +39,7 @@ void CDDrawWorkerRegistry::Unload() {
 }
 
 RVA(0x00154ae0, 0xfc)
-CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 index, i32 mode) {
+CImage* CDDrawWorkerRegistry::InsertFrameByKey(void* rec, const char* key, i32 index, i32 mode) {
     CObject* worker = 0;
     m_10map.Lookup(key, worker);
     if (worker == 0) {
@@ -57,7 +57,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 in
 }
 
 RVA(0x00154be0, 0xfc)
-CImage* CDDrawWorkerRegistry::DispatchKeyed34(char* path, const char* key, i32 index, i32 keyed) {
+CImage* CDDrawWorkerRegistry::LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed) {
     CObject* worker = 0;
     m_10map.Lookup(key, worker);
     if (worker == 0) {
@@ -70,11 +70,11 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed34(char* path, const char* key, i32 i
         }
         m_10map.SetAt(key, worker);
     }
-    return static_cast<CDDrawWorker*>(worker)->CreateFrame30(path, index, keyed);
+    return static_cast<CDDrawWorker*>(worker)->LoadFrame(path, index, keyed);
 }
 
 RVA(0x00154ce0, 0x101)
-CImage* CDDrawWorkerRegistry::DispatchKeyed30(
+CImage* CDDrawWorkerRegistry::CreateDescriptorFrameByKey(
     PidHeader* desc,
     i32 mode,
     const char* key,
@@ -93,11 +93,11 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed30(
         }
         m_10map.SetAt(key, worker);
     }
-    return static_cast<CDDrawWorker*>(worker)->CreateFrame28(desc, mode, index, size);
+    return static_cast<CDDrawWorker*>(worker)->CreateDescriptorFrame(desc, mode, index, size);
 }
 
 RVA(0x00154df0, 0x101)
-CImage* CDDrawWorkerRegistry::DispatchKeyed2C(
+CImage* CDDrawWorkerRegistry::CreateBlankFrameByKey(
     i32 width,
     i32 height,
     const char* key,
@@ -116,34 +116,41 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed2C(
         }
         m_10map.SetAt(key, worker);
     }
-    return static_cast<CDDrawWorker*>(worker)->CreateFrame24(width, height, index, keyed);
+    return static_cast<CDDrawWorker*>(worker)->CreateBlankFrame(width, height, index, keyed);
 }
 
 RVA(0x00154f00, 0x1b)
-CImage* CDDrawWorkerRegistry::Forward34(char* path, CDDrawWorker* worker, i32 index, i32 keyed) {
-    return worker->CreateFrame30(path, index, keyed);
+CImage*
+CDDrawWorkerRegistry::LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 index, i32 keyed) {
+    return worker->LoadFrame(path, index, keyed);
 }
 
 RVA(0x00154f20, 0x1b)
-CImage* CDDrawWorkerRegistry::Forward38(void* rec, CDDrawWorker* worker, i32 index, i32 mode) {
+CImage*
+CDDrawWorkerRegistry::InsertFrameForWorker(void* rec, CDDrawWorker* worker, i32 index, i32 mode) {
     return worker->InsertFrame(rec, index, mode);
 }
 
 RVA(0x00154f40, 0x20)
-CImage* CDDrawWorkerRegistry::Forward30(
+CImage* CDDrawWorkerRegistry::CreateDescriptorFrameForWorker(
     PidHeader* desc,
     i32 mode,
     CDDrawWorker* worker,
     i32 index,
     u32 size
 ) {
-    return worker->CreateFrame28(desc, mode, index, size);
+    return worker->CreateDescriptorFrame(desc, mode, index, size);
 }
 
 RVA(0x00154f60, 0x20)
-CImage*
-CDDrawWorkerRegistry::Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed) {
-    return worker->CreateFrame24(width, height, index, keyed);
+CImage* CDDrawWorkerRegistry::CreateBlankFrameForWorker(
+    i32 width,
+    i32 height,
+    CDDrawWorker* worker,
+    i32 index,
+    i32 keyed
+) {
+    return worker->CreateBlankFrame(width, height, index, keyed);
 }
 
 RVA(0x00154f80, 0x1d5)

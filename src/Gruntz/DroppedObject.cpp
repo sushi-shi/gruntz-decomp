@@ -109,22 +109,22 @@ i32 CreateObjectDropper(CGameObject* obj) {
             break;
         }
         case 0x1d:
-            aux->m_logic->UserLogicVfunc9();
+            aux->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            aux->m_logic->UserLogicVfunc8();
+            aux->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            aux->m_logic->UserLogicVfuncC();
+            aux->m_logic->PrepareSave();
             break;
         case 0x51:
-            aux->m_logic->UserLogicVfuncB();
+            aux->m_logic->AfterSave();
             break;
         case 0x52:
-            aux->m_logic->UserLogicVfuncA();
+            aux->m_logic->AfterLoad();
             break;
         case 0x53:
-            aux->m_logic->UserLogicVfuncD();
+            aux->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
             break;
@@ -147,22 +147,22 @@ i32 CreateDroppedObject(CGameObject* obj) {
             break;
         }
         case 0x1d:
-            aux->m_logic->UserLogicVfunc9();
+            aux->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            aux->m_logic->UserLogicVfunc8();
+            aux->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            aux->m_logic->UserLogicVfuncC();
+            aux->m_logic->PrepareSave();
             break;
         case 0x51:
-            aux->m_logic->UserLogicVfuncB();
+            aux->m_logic->AfterSave();
             break;
         case 0x52:
-            aux->m_logic->UserLogicVfuncA();
+            aux->m_logic->AfterLoad();
             break;
         case 0x53:
-            aux->m_logic->UserLogicVfuncD();
+            aux->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
             break;
@@ -185,22 +185,22 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
             break;
         }
         case 0x1d:
-            aux->m_logic->UserLogicVfunc9();
+            aux->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            aux->m_logic->UserLogicVfunc8();
+            aux->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            aux->m_logic->UserLogicVfuncC();
+            aux->m_logic->PrepareSave();
             break;
         case 0x51:
-            aux->m_logic->UserLogicVfuncB();
+            aux->m_logic->AfterSave();
             break;
         case 0x52:
-            aux->m_logic->UserLogicVfuncA();
+            aux->m_logic->AfterLoad();
             break;
         case 0x53:
-            aux->m_logic->UserLogicVfuncD();
+            aux->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
             break;
@@ -503,7 +503,7 @@ void CDroppedObject::RegisterActs() {
     }
     *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id)) =
 
-        static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA);
+        static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceFall);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -522,12 +522,12 @@ void CDroppedObject::RegisterActs() {
         g_typeCounter++;
     }
     *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id2)) =
-        static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB);
+        static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceImpactAnimation);
 }
 
 // @early-stop
 RVA(0x000c7090, 0x21b)
-i32 CDroppedObject::ActA() {
+i32 CDroppedObject::AdvanceFall() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
@@ -606,7 +606,7 @@ i32 CDroppedObject::ActA() {
 }
 
 RVA(0x000c7350, 0x39)
-i32 CDroppedObject::UserLogicVfunc5() {
+i32 CDroppedObject::AdvanceAnimation() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     if (m_38->m_1a0.m_finished != 0 && m_38->m_1a0.m_frameTicksLeft == 0) {
         m_38->m_flags |= 0x10000;
@@ -717,6 +717,6 @@ i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGame
 }
 
 RVA(0x000c7be0, 0x5)
-i32 CDroppedObject::ActB() {
-    return UserLogicVfunc5();
+i32 CDroppedObject::AdvanceImpactAnimation() {
+    return AdvanceAnimation();
 }

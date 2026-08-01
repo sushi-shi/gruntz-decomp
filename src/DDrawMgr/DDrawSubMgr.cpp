@@ -201,7 +201,7 @@ i32 CDDrawWorkerList::IsReady() {
 RVA(0x00156fd0, 0x8b)
 void* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
     CDDrawWorkerA* w = new CDDrawWorkerA(OwnerMgr());
-    if (w->Vfunc2C(x, y, frame) == 0) {
+    if (w->PlaceFrameValue(x, y, frame) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -236,7 +236,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
 }
 
 RVA(0x00157110, 0x20)
-i32 CDDrawWorkerA::Vfunc2C(i32 x, i32 y, i32 frame) {
+i32 CDDrawWorkerA::PlaceFrameValue(i32 x, i32 y, i32 frame) {
     m_78b = static_cast<char>(frame);
     m_refCount = 2;
     return CResolveNode::SetPosition(x, y);
@@ -315,7 +315,7 @@ i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
 }
 
 RVA(0x001572f0, 0x20)
-i32 CDDrawWorkerB::Vfunc2C(i32 x, i32 y, i32 frame) {
+i32 CDDrawWorkerB::PlaceFrameValue(i32 x, i32 y, i32 frame) {
     m_78 = frame;
     m_refCount = 2;
     return CResolveNode::SetPosition(x, y);
@@ -357,7 +357,7 @@ void* CDDrawWorkerList::CreateWorkerB2C(
 RVA(0x001573e0, 0xa0)
 void* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->Vfunc2C(x, y, frame) == 0) {
+    if (w->PlaceFrameValue(x, y, frame) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1016,7 +1016,7 @@ i32 CDDrawSubMgrPages::ResolvePageImage(char* name, i32 pageIndex) {
             return 0;
         }
     }
-    return p->ResolveImage_163ee0(name);
+    return p->ResolveImageName(name);
 }
 
 RVA(0x00158b40, 0x2c)
@@ -1042,7 +1042,7 @@ void CDDrawSubMgrPages::FlipAndNotify() {
     CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->m_childGroup;
     CDDrawSubMgrPages* s = n->m_drawTarget;
-    c->WalkDispatch30(s->m_backPair, s->m_overlayPair);
+    c->BltDirtyChildren(s->m_backPair, s->m_overlayPair);
 }
 
 RVA(0x00158bc0, 0x2e)

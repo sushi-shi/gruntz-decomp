@@ -69,8 +69,8 @@ public:
     Font* m_font;
     i32 m_color;
 
-    void* m_surface;
-    void* m_clip;
+    i32 m_surface;
+    i32 m_clip;
 };
 SIZE(0x10);
 

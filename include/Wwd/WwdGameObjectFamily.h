@@ -66,9 +66,9 @@ public:
     i32 SerializeObjectState(CFileMemBase* ar);
     i32 ResolveLinkedObject(i32 gate);
 
-    i32 EnsureWorker80(AnimWorkerObj* src);
-    i32 EnsureWorker88(AnimWorkerObj* src);
-    i32 EnsureWorker90(AnimWorkerObj* src);
+    i32 EnsureHitWorker(AnimWorkerObj* src);
+    i32 EnsureAttackWorker(AnimWorkerObj* src);
+    i32 EnsureBumpWorker(AnimWorkerObj* src);
     void AddLogicHit(char* key);
     void AddLogicAttack(char* key);
     void AddLogicBump(char* key);

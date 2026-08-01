@@ -7,6 +7,7 @@
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/XferArchive.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/GameObjectFactory.h>
 
 enum LogicRecordState {
     kLogicStateInit = 0,
@@ -19,12 +20,12 @@ enum LogicRecordState {
     kLogicStateBuilt = 0x3e8,
 };
 
-inline void LogicSubDefault_16e4f0(CUserLogic* sub) {
+inline void DispatchLogicAction(CUserLogic* sub) {
     ProjTypeXfer(sub);
 }
 
 RVA(0x000de8a0, 0xf4)
-i32 LogicDispatchE(CGameObject* owner) {
+i32 CreateProjectile(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case kLogicStateInit:
@@ -36,34 +37,34 @@ i32 LogicDispatchE(CGameObject* owner) {
             }
             break;
         case kLogicStateOp1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case kLogicStateOp1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case kLogicStateOp50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case kLogicStateOp51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case kLogicStateOp52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case kLogicStateOp53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case kLogicStateBuilt:
             break;
         default:
-            LogicSubDefault_16e4f0(rec->m_logic);
+            DispatchLogicAction(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x000de9e0, 0xf4)
-i32 LogicDispatchBoomerang(CGameObject* owner) {
+i32 CreateBoomerang(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case kLogicStateInit:
@@ -75,34 +76,34 @@ i32 LogicDispatchBoomerang(CGameObject* owner) {
             }
             break;
         case kLogicStateOp1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case kLogicStateOp1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case kLogicStateOp50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case kLogicStateOp51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case kLogicStateOp52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case kLogicStateOp53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case kLogicStateBuilt:
             break;
         default:
-            LogicSubDefault_16e4f0(rec->m_logic);
+            DispatchLogicAction(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x000deb20, 0xf1)
-i32 LogicDispatchD(CGameObject* owner) {
+i32 CreateTimeBomb(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case kLogicStateInit:
@@ -114,34 +115,34 @@ i32 LogicDispatchD(CGameObject* owner) {
             }
             break;
         case kLogicStateOp1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case kLogicStateOp1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case kLogicStateOp50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case kLogicStateOp51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case kLogicStateOp52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case kLogicStateOp53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case kLogicStateBuilt:
             break;
         default:
-            LogicSubDefault_16e4f0(rec->m_logic);
+            DispatchLogicAction(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x000fb660, 0xf1)
-i32 LogicDispatchA(CGameObject* owner) {
+i32 CreateStaticHazard(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case kLogicStateInit:
@@ -153,27 +154,27 @@ i32 LogicDispatchA(CGameObject* owner) {
             }
             break;
         case kLogicStateOp1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case kLogicStateOp1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case kLogicStateOp50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case kLogicStateOp51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case kLogicStateOp52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case kLogicStateOp53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case kLogicStateBuilt:
             break;
         default:
-            LogicSubDefault_16e4f0(rec->m_logic);
+            DispatchLogicAction(rec->m_logic);
             break;
     }
     return 1;

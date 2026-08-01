@@ -9,7 +9,7 @@
 #include <Gruntz/SplashState.h>
 
 RVA(0x000f9880, 0x43)
-i32 CSplashState::Vslot09(i32) {
+i32 CSplashState::EnterState(i32) {
     int(WINAPI * sc)(BOOL) = ::ShowCursor;
     while (sc(0) >= 0) {
     }
@@ -18,7 +18,7 @@ i32 CSplashState::Vslot09(i32) {
     return 1;
 }
 RVA(0x000f98f0, 0x16)
-i32 CSplashState::FrameSlot28(i32) {
+i32 CSplashState::LeaveState(i32) {
     m_world->m_drawTarget->ClearAllPages(0);
     return 1;
 }

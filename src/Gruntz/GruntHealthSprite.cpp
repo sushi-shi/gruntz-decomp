@@ -85,7 +85,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 }
 
 RVA(0x0007f160, 0xd)
-i32 CGruntHealthSprite::Vslot16(CGrunt* g) {
+i32 CGruntHealthSprite::GetDisplayedValue(CGrunt* g) {
     return g->m_health;
 }
 
@@ -96,7 +96,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
     if (e == 0) {
         return 0;
     }
-    i32 result = Vslot16(e);
+    i32 result = GetDisplayedValue(e);
     if (m_health != result) {
         i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
         CWwdGameObjectA* obj = m_object;

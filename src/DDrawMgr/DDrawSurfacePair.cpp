@@ -129,7 +129,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 flags) {
         if (m_flags & 0x10000) {
             m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, 0, 0, -1);
         } else {
-            m_surface = OwnerMgr()->m_ptrColl->CreateB(w, h, 0, 0, -1);
+            m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, 0, 0, -1);
         }
         if (m_surface == 0) {
             if (OwnerMgr()->m_lastError == 0) {
@@ -207,7 +207,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
 }
 
 RVA(0x00163ee0, 0x19)
-i32 CDDrawSurfacePair::ResolveImage_163ee0(char* name) {
+i32 CDDrawSurfacePair::ResolveImageName(char* name) {
     return m_surface->MakeImageKey(OwnerMgr()->m_ptrColl, name, 0);
 }
 
@@ -375,7 +375,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
             if (sysmem != 0) {
                 m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
             } else {
-                m_surface = OwnerMgr()->m_ptrColl->CreateB(w, h, bpp, 0, -1);
+                m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, bpp, 0, -1);
             }
             if (m_surface == 0) {
                 return 0;
@@ -447,7 +447,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     i32 hr;
     if (mgr->m_flags & 0x10) {
 
-        AddrWord windowSlot;
+        AddrWord<char> windowSlot;
         windowSlot.m_word = 2;
         hr =
             pool->CreateDevice(static_cast<void*>(mgr->m_hWnd), windowSlot.m_addr, w, h, bpp, mode);
@@ -518,7 +518,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (m2->m_flags & 2) {
         amode = 2;
     }
-    CDDSurface* surf = pool->Createab8_24_3(amode);
+    CDDSurface* surf = pool->Create24BitPaletteSurface(amode);
     m_surface = surf;
     if (surf != 0 && surf->IsValid()) {
         return 1;
@@ -569,7 +569,7 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     if (OwnerMgr()->m_flags & 2) {
         amode = 2;
     }
-    m_surface = pool->Createab8_24_3(amode);
+    m_surface = pool->Create24BitPaletteSurface(amode);
     if (m_surface == 0) {
         return 0;
     }
@@ -795,13 +795,13 @@ void CDDrawWorkerMapSmall::Unload() {
 }
 
 RVA(0x001658c0, 0xcc)
-void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* src, const char* key, i32 flags) {
+void* CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags) {
     char* data = src->BeginParse();
     if (data == 0) {
         return 0;
     }
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->AllocBufMakeB(data, flags) == 0) {
+    if (w->CreatePaletteFromRgb(data, flags) == 0) {
         src->EndParse();
         if (w != 0) {
             delete w;
@@ -820,9 +820,9 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* src, const char* key, i
 }
 
 RVA(0x00165990, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorker28(void* data, const char* key, i32 flags) {
+void* CDDrawWorkerMapSmall::CreateWorkerFromData(void* data, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->AllocBufMakeB(data, flags) == 0) {
+    if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -833,9 +833,9 @@ void* CDDrawWorkerMapSmall::CreateWorker28(void* data, const char* key, i32 flag
 }
 
 RVA(0x00165a10, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorker2C(char* path, const char* key, i32 flags) {
+void* CDDrawWorkerMapSmall::CreateWorkerFromFile(char* path, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->AllocBufMakeB2(path, flags) == 0) {
+    if (w->LoadPaletteFromFile(path, flags) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -846,7 +846,7 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(char* path, const char* key, i32 flag
 }
 
 RVA(0x00165a90, 0xf4)
-void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* src, i32 key, i32 flags) {
+void* CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags) {
     if (src->GetEntryTag() != IMGTAG_XCP) {
         return 0;
     }
@@ -855,21 +855,21 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* src, i32 key, i32 flags
         return 0;
     }
 
-    AddrWord handle;
+    AddrWord<char> handle;
     handle.m_addr = const_cast<char*>(src->m_keyHandle);
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->AllocBufMakeB3(data, handle.m_word, flags) == 0) {
+    if (w->CreatePaletteFromTrailingData(data, handle.m_word, flags) == 0) {
         if (w != 0) {
             delete w;
         }
         return 0;
     }
 
-    AddrWord keyArg;
+    AddrWord<char> keyArg;
     keyArg.m_word = key;
     char buf[0x50];
     if (keyArg.m_addr != 0) {
-        strcpy(buf, static_cast<const char*>(keyArg.m_addr));
+        strcpy(buf, keyArg.m_addr);
     } else {
         strcpy(buf, src->m_name);
     }

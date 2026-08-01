@@ -46,12 +46,12 @@ template<class K> inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& ke
 }
 
 inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, void*& out) {
-    AddrWord k;
+    AddrWord<char> k;
     k.m_word = id;
     return map.Lookup(k.m_addr, out);
 }
 inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, CObject*& out) {
-    AddrWord k;
+    AddrWord<char> k;
     k.m_word = id;
     MapOutRef<CObject> dst;
     dst.m_asTyped = &out;
@@ -59,7 +59,7 @@ inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, CObject*& out) {
 }
 
 template<class T> inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {
-    AddrWord k;
+    AddrWord<char> k;
     k.m_word = id;
     MapOutRef<T> dst;
     dst.m_asTyped = &out;

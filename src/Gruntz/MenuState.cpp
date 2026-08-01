@@ -99,8 +99,8 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    if (m_1b4->AdvanceRow0(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
-        m_1b4->AdvanceRow1(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
+    if (m_1b4->ConfigureLeftCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
+        m_1b4->ConfigureRightCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
     }
     m_1b4->m_row0Key = "MENU_SELECT";
     m_1b4->m_row1Key = "MENU_ACTIVATE";
@@ -213,7 +213,7 @@ void CMenuState::StopMusicChain() {
 }
 
 RVA(0x000a06d0, 0x5f)
-i32 CMenuState::FrameSlot28(i32) {
+i32 CMenuState::LeaveState(i32) {
     m_world->m_drawTarget->TransExit();
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     u32 start = timeGetTime();
@@ -236,37 +236,37 @@ i32 CMenuState::Render() {
     i32 n = L->m_count;
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x80000000) {
-            m_1b4->OnFlag80000000();
+            m_1b4->MoveFocusUp();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x40000000) {
-            m_1b4->OnFlag40000000();
+            m_1b4->MoveFocusDown();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x20000000) {
-            m_1b4->OnFlag20000000();
+            m_1b4->MoveFocusRight();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x10000000) {
-            m_1b4->OnFlag10000000();
+            m_1b4->MoveFocusLeft();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (L->m_items[c]->m_currentKeys & 0x3) {
-            m_1b4->OnFlag00000003();
+            m_1b4->ActivateFocusedItem();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (L->m_items[c]->m_currentKeys & 0x100) {
-            if (!m_1b4->OnFlag00000100()) {
+            if (!m_1b4->ReturnToPreviousPage()) {
                 PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
             }
             goto tail;
@@ -282,19 +282,19 @@ tail:
 }
 
 RVA(0x000a0b90, 0xc7)
-i32 CMenuState::Vslot0c(i32 key, i32 unused) {
+i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     if (key == 0x28) {
-        m_1b4->HitTest2();
+        m_1b4->MoveFocusDownFollowingLinks();
     } else if (key == 0x26) {
-        m_1b4->HitTest1();
+        m_1b4->MoveFocusUpFollowingLinks();
     } else if (key == 0x27) {
-        m_1b4->HitTest4();
+        m_1b4->MoveFocusRightFollowingLinks();
     } else if (key == 0x25) {
-        m_1b4->HitTest3();
+        m_1b4->MoveFocusLeftFollowingLinks();
     } else if (key == 0xd || key == 0x20) {
-        m_1b4->OnFlag00000003();
+        m_1b4->ActivateFocusedItem();
     } else if (key == 0x1b) {
-        if (m_1b4->OnFlag00000100() == 0) {
+        if (m_1b4->ReturnToPreviousPage() == 0) {
             m_1b8 = 0;
             PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
         }
@@ -303,37 +303,37 @@ i32 CMenuState::Vslot0c(i32 key, i32 unused) {
 }
 
 RVA(0x000a0ca0, 0x21)
-i32 CMenuState::Vslot0e(i32 unused, i32 x, i32 y) {
+i32 CMenuState::OnLButtonDown(i32 unused, i32 x, i32 y) {
     if (m_1b4) {
-        m_1b4->HitTest0(x, y);
+        m_1b4->ClickAt(x, y);
     }
     return 1;
 }
 RVA(0x000a0ce0, 0x21)
-i32 CMenuState::Vslot10(i32 unused, i32 x, i32 y) {
+i32 CMenuState::OnLButtonDblClk(i32 unused, i32 x, i32 y) {
     if (m_1b4) {
-        m_1b4->HitTest0(x, y);
+        m_1b4->ClickAt(x, y);
     }
     return 1;
 }
 
 RVA(0x000a0d20, 0x8)
-i32 CMenuState::SetBeginClearParams(i32, i32, i32) {
+i32 CMenuState::OnMouseMove(i32, i32, i32) {
     return 1;
 }
 
 RVA(0x000a0d40, 0x24)
-i32 CMenuState::Vslot07() {
+i32 CMenuState::OnPaint() {
     i32 r = IsActive();
     if (r == 0) {
         return r;
     }
 
-    r = CState::Vslot07();
+    r = CState::OnPaint();
     if (r == 0) {
         return r;
     }
-    return Vslot06();
+    return RestoreDisplay();
 }
 
 RVA(0x000a0d80, 0xd7)

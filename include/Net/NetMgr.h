@@ -211,7 +211,7 @@ union CNetWireMsg {
     CNetCmdHdr* m_cmdHdr;
 };
 
-void* Unmatched_bf530(i32 zero);
+void* AllocateGruntRecord(i32 clear);
 void RecycleCmd(void* cmd);
 
 struct CNetSession {

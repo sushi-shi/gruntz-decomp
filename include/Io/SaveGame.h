@@ -53,15 +53,15 @@ public:
     i32 Save(char* path, i32 b);
     i32 ComputeAll();
     i32 Verify();
-    i32 FillSlot(SaveSlot* dst, const char* name, void* src);
+    i32 InitializeNamedSlot(SaveSlot* dst, const char* name, void* mgr);
     i32 CopySlot(SaveSlot* dst, const SaveSlot* src);
-    i32 FillSlot2(SaveSlot* dst, i32 name, void* src);
+    i32 InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr);
     i32 VerifySlot(SaveSlot* slot);
     i32 Register(SaveSlot* slot);
     i32 Encode(u8* buf);
     i32 Decode(u8* buf);
     SaveSlot* GetSlot(i32 i);
-    i32 FillSlotByIndex(i32 idx, const char* name, void* src);
+    i32 InitializeNamedSlotAt(i32 index, const char* name, void* mgr);
     i32 StoreSlot(i32 idx, const SaveSlot* src);
 
     i32 CloseTempFile(SaveSlot* r);
@@ -86,9 +86,9 @@ public:
 };
 SIZE_UNKNOWN();
 
-i32 CALLBACK winapi_0e35f0_EndDialog(HWND, UINT, WPARAM, LPARAM);
+i32 CALLBACK SaveGameDialogProc(HWND, UINT, WPARAM, LPARAM);
 i32 CALLBACK LevelPreviewDlgProc(HWND, UINT, WPARAM, LPARAM);
-i32 CALLBACK winapi_0e3a40_EndDialog(HWND, UINT, WPARAM, LPARAM);
+i32 CALLBACK DeleteSaveDialogProc(HWND, UINT, WPARAM, LPARAM);
 i32 CALLBACK InfoLineDialogProc(HWND, UINT, WPARAM, LPARAM);
 i32 CALLBACK OkCancelDialogProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -104,7 +104,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame);
 
 int TempFileExists(SaveSlot* p);
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
-void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, SaveSlot* item);
+void SetSaveSlotDialogName(HWND hWnd, void* gate, SaveSlot* item);
 
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev);
 

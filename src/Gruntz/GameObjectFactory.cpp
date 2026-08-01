@@ -30,7 +30,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateSimpleAnimation, "SimpleAnimation", 2);
     RegisterSimpleAnimLogic();
     ctx->m_workerCache->CreateWorker(CreateMenuSparkle, "MenuSparkle", 2);
-    RegisterXLogic_646010();
+    RegisterMenuSparkleActions();
     ctx->m_workerCache->CreateWorker(CreateFrontCandy, "FrontCandy", 2);
     ctx->m_workerCache->CreateWorker(CreateBehindCandy, "BehindCandy", 2);
     ctx->m_workerCache->CreateWorker(CreateFrontCandyAni, "FrontCandyAni", 2);
@@ -41,7 +41,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateEyeCandyAni, "EyeCandyAni", 2);
     CEyeCandyAni::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateGrunt, "Grunt", 4);
-    RegisterActs_644af0();
+    RegisterGruntActions();
     ctx->m_workerCache->CreateWorker(CreateGlobalAmbientSound, "GlobalAmbientSound", 4);
     ctx->m_workerCache->CreateWorker(CreateAmbientSound, "AmbientSound", 1);
     ctx->m_workerCache->CreateWorker(CreateAmbientPosSound, "AmbientPosSound", 0);
@@ -53,7 +53,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateParticlez, "Particlez", 4);
     CParticlez::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateExplosion, "Explosion", 4);
-    RegisterXLogic_6447f8();
+    RegisterExplosionActions();
     ctx->m_workerCache->CreateWorker(CreateGruntSelectedSprite, "GruntSelectedSprite", 2);
     CGruntSelectedSprite::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateGruntHealthSprite, "GruntHealthSprite", 2);
@@ -127,7 +127,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateTimeBomb, "TimeBomb", 4);
     CTimeBomb::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateSpotLight, "SpotLight", 4);
-    RegisterActs_646188();
+    RegisterSpotLightActions();
     ctx->m_workerCache->CreateWorker(CreateKitchenSlime, "KitchenSlime", 4);
     CKitchenSlime::RegisterType();
     ctx->m_workerCache->CreateWorker(CreateSingleAnimation, "SingleAnimation", 4);
@@ -136,13 +136,13 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateWarlord, "Warlord", 4);
     RegisterWarlordActions();
     ctx->m_workerCache->CreateWorker(CreatePathHazard, "PathHazard", 4);
-    RegisterActs_646250();
+    RegisterPathHazardActions();
     ctx->m_workerCache->CreateWorker(CreateRainCloud, "RainCloud", 4);
-    RegisterActs_646250();
+    RegisterPathHazardActions();
     ctx->m_workerCache->CreateWorker(CreateUFO, "UFO", 4);
-    RegisterActs_646250();
+    RegisterPathHazardActions();
     ctx->m_workerCache->CreateWorker(CreateGruntVoice, "GruntVoice", 4);
-    RegisterActs_6514d8();
+    RegisterGruntVoiceActions();
     ctx->m_workerCache->CreateWorker(CreateWarpStonePad, "WarpStonePad", 4);
     CWarpStonePad::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateGuardPoint, "GuardPoint", 4);
@@ -150,7 +150,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     CVoiceTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateLevelTime, "LevelTime", 4);
     ctx->m_workerCache->CreateWorker(CreateCursorSnapSprite, "CursorSnapSprite", 1);
-    RegisterXLogic_62bfa0();
+    RegisterCursorSnapActions();
     ctx->m_workerCache->CreateWorker(CreateLightFx, "LightFx", 4);
     CLightFx::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateDemoMover, "DemoMover", 0);

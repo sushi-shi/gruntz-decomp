@@ -29,7 +29,7 @@ static inline i32 RegisterActionName() {
 }
 
 RVA(0x0003a710, 0x18d)
-void RegisterXLogic_62bfa0() {
+void RegisterCursorSnapActions() {
     i32 id = RegisterActionName();
 
     *CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id) =

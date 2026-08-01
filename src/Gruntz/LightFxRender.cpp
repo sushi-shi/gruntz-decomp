@@ -164,7 +164,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - desc->m_combatClock64
                         >= desc->m_combatTimeout64
                     || desc->m_tileOwnerHi != g_curPlayer) {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
+                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_1f4_moveIcon);
                     if (node == 0) {
                         *dst = 0;
                         continue;
@@ -198,7 +198,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                         *dst = m_buf[idx];
                     }
                 } else {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
+                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_1f4_moveIcon);
                     if (node == 0) {
                         *dst = 0;
                         continue;
@@ -361,42 +361,42 @@ i32 CLightFxRender::BuildShape(i32 shape) {
     memset(m_buf, 0, sizeof(m_buf));
     switch (shape - 1) {
         case 0:
-            if (!Shape1()) {
+            if (!BuildRockyRoadzPalette()) {
                 return 0;
             }
             break;
         case 1:
-            if (!Shape2()) {
+            if (!BuildGruntziclezPalette()) {
                 return 0;
             }
             break;
         case 2:
-            if (!Shape3()) {
+            if (!BuildTropiczPalette()) {
                 return 0;
             }
             break;
         case 3:
-            if (!Shape4()) {
+            if (!BuildHighOnSweetzPalette()) {
                 return 0;
             }
             break;
         case 4:
-            if (!Shape5()) {
+            if (!BuildHighRollerzPalette()) {
                 return 0;
             }
             break;
         case 5:
-            if (!Shape6()) {
+            if (!BuildHoneyPalette()) {
                 return 0;
             }
             break;
         case 6:
-            if (!Shape7()) {
+            if (!BuildMiniatureMasterzPalette()) {
                 return 0;
             }
             break;
         case 7:
-            if (!Shape8()) {
+            if (!BuildSpacePalette()) {
                 return 0;
             }
             break;
@@ -407,7 +407,7 @@ i32 CLightFxRender::BuildShape(i32 shape) {
 
 // @early-stop
 RVA(0x000a3dc0, 0x85f)
-i32 CLightFxRender::Shape1() {
+i32 CLightFxRender::BuildRockyRoadzPalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0x4f, 0x14, 0x01);
@@ -529,7 +529,7 @@ void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
 
 // @early-stop
 RVA(0x000a4890, 0x852)
-i32 CLightFxRender::Shape2() {
+i32 CLightFxRender::BuildGruntziclezPalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0xe0, 0xed, 0xfe);
@@ -639,7 +639,7 @@ i32 CLightFxRender::Shape2() {
 }
 // @early-stop
 RVA(0x000a5310, 0x855)
-i32 CLightFxRender::Shape3() {
+i32 CLightFxRender::BuildTropiczPalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0x4e, 0x78, 0x1c);
@@ -750,7 +750,7 @@ i32 CLightFxRender::Shape3() {
 }
 // @early-stop
 RVA(0x000a5d90, 0x825)
-i32 CLightFxRender::Shape4() {
+i32 CLightFxRender::BuildHighOnSweetzPalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0x8b, 0x9f, 0xfd);
@@ -860,7 +860,7 @@ i32 CLightFxRender::Shape4() {
 }
 // @early-stop
 RVA(0x000a67d0, 0x864)
-i32 CLightFxRender::Shape5() {
+i32 CLightFxRender::BuildHighRollerzPalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0x3c, 0x0e, 0x15);
@@ -970,7 +970,7 @@ i32 CLightFxRender::Shape5() {
 }
 // @early-stop
 RVA(0x000a7260, 0x8c0)
-i32 CLightFxRender::Shape6() {
+i32 CLightFxRender::BuildHoneyPalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0x85, 0x73, 0x6f);
@@ -1085,7 +1085,7 @@ i32 CLightFxRender::Shape6() {
 }
 // @early-stop
 RVA(0x000a7d50, 0x94f)
-i32 CLightFxRender::Shape7() {
+i32 CLightFxRender::BuildMiniatureMasterzPalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0x40, 0xb5, 0x13);
@@ -1206,7 +1206,7 @@ i32 CLightFxRender::Shape7() {
 }
 // @early-stop
 RVA(0x000a8900, 0x926)
-i32 CLightFxRender::Shape8() {
+i32 CLightFxRender::BuildSpacePalette() {
     u16* buf = m_buf;
     i32 i;
     u16 c00 = Pack(0x5e, 0x5e, 0x5e);
@@ -1326,7 +1326,7 @@ i32 CLightFxRender::Shape8() {
 }
 
 RVA(0x000a9480, 0x5c)
-i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
+i32 CLightFxRender::BeginMinimapPan(i32, i32 x, i32 y) {
     i32 cell[2];
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
@@ -1341,7 +1341,7 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
 }
 
 RVA(0x000a9500, 0x16)
-i32 CLightFxRender::ClearHandle(i32, i32, i32) {
+i32 CLightFxRender::EndMinimapPan(i32, i32, i32) {
     if (m_handle != 0) {
         m_handle = 0;
     }
@@ -1349,7 +1349,7 @@ i32 CLightFxRender::ClearHandle(i32, i32, i32) {
 }
 
 RVA(0x000a9550, 0x5b)
-i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
+i32 CLightFxRender::IssueMinimapCommand(i32, i32 x, i32 y) {
     i32 cell[2];
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
@@ -1359,7 +1359,7 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
 }
 
 RVA(0x000a95d0, 0x69)
-i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
+i32 CLightFxRender::ContinueMinimapPan(i32, i32 x, i32 y) {
     if (m_handle == 0) {
         return 0;
     }

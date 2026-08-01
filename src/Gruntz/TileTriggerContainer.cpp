@@ -557,11 +557,11 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
 }
 
 RVA(0x001171d0, 0x20)
-CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
+CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
     POSITION pos = m_list3.GetHeadPosition();
     while (pos != 0) {
         CTileActionEvent* data = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
-        if (data->m_cellKey == key) {
+        if (data->m_cellKey == cellKey) {
             return data;
         }
     }
@@ -968,7 +968,7 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
 RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     i32 key = (tileX << 8) + tileY;
-    CTileActionEvent* elem = FindByField0C(key);
+    CTileActionEvent* elem = FindActionByCellKey(key);
     if (elem != 0) {
         if (playerSlot == PLAYERSLOT_ALL) {
             elem->m_playerFlags[0] = 1;

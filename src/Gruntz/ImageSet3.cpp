@@ -70,7 +70,7 @@ i32 CImageSet3::ScanUp(i32 x, i32 y, i32* outY, i32* outVal) {
 
 // @early-stop
 RVA(0x00166f20, 0x52)
-i32 CImageSet3::ScanUpGate(i32 x, i32 y, i32 val, i32* outY) {
+i32 CImageSet3::ScanUpForValue(i32 x, i32 y, i32 val, i32* outY) {
     u8* p = m_pixels + ((y << m_heightLog2) + x);
     while (y > 0) {
         p -= m_width;
@@ -103,7 +103,7 @@ i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
 
 // @early-stop
 RVA(0x00166ff0, 0x52)
-i32 CImageSet3::ScanRightGate(i32 x, i32 y, i32 val, i32* outX) {
+i32 CImageSet3::ScanRightForValue(i32 x, i32 y, i32 val, i32* outX) {
     i32 lim = m_width - 1;
     u8* p = m_pixels + ((y << m_heightLog2) + x);
     while (x < lim) {
@@ -137,7 +137,7 @@ i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
 
 // @early-stop
 RVA(0x001670d0, 0x5d)
-i32 CImageSet3::ScanDownGate(i32 x, i32 y, i32 val, i32* outY) {
+i32 CImageSet3::ScanDownForValue(i32 x, i32 y, i32 val, i32* outY) {
     i32 off = (y << m_heightLog2) + x;
     i32 lim = m_height - 1;
     while (y < lim) {

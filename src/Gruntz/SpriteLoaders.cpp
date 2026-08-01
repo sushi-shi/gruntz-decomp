@@ -159,9 +159,9 @@ i32 CTimer::Tick(i32 dt) {
             CGameObject* obj = 0;
             found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
 
-            AddrWord raw;
+            AddrWord<CGameObject> raw;
             raw.m_word = key;
-            CGameObject* hit = found ? obj : static_cast<CGameObject*>(raw.m_addr);
+            CGameObject* hit = found ? obj : raw.m_addr;
             if (hit != 0 && hit->m_animWorker->m_logic != 0) {
                 static_cast<CWarlord*>(hit->m_animWorker->m_logic)->ResolveDeathAnimation();
             }
@@ -177,9 +177,9 @@ i32 CTimer::Tick(i32 dt) {
             CGameObject* obj = 0;
             found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
 
-            AddrWord raw;
+            AddrWord<CGameObject> raw;
             raw.m_word = key;
-            CGameObject* hit = found ? obj : static_cast<CGameObject*>(raw.m_addr);
+            CGameObject* hit = found ? obj : raw.m_addr;
             if (hit != 0 && hit->m_animWorker->m_logic != 0) {
                 static_cast<CWarlord*>(hit->m_animWorker->m_logic)->NotifyFortUnderAttack();
             }

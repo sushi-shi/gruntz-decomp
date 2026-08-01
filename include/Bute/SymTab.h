@@ -14,7 +14,7 @@ struct CSymTabNode : public CHashElement {
     virtual u32 Hash() OVERRIDE;
 
     CSymTabNode() {
-        m_record = 0;
+        m_symTab = 0;
     }
 };
 SIZE(0x18);
@@ -29,7 +29,7 @@ struct CSymRecNode : public CHashElement {
 
     virtual u32 Hash() OVERRIDE;
     CSymRecNode() {
-        m_record = 0;
+        m_symRec = 0;
     }
 };
 SIZE(0x18);

@@ -32,8 +32,8 @@ void SaveVideoCheckboxes(HWND hDlg);
 
 BOOL CALLBACK GameOptionsDlgProc(HWND, UINT, WPARAM, LPARAM);
 namespace ApiCallerStubs {
-    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max);
-    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id);
+    void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max);
+    i32 GetDialogScrollPosition(HWND hDlg, i32 id);
 } // namespace ApiCallerStubs
 
 #endif // GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H

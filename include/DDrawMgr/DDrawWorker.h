@@ -30,9 +30,9 @@ public:
     virtual i32 SetKey(const char* key);
     virtual i32 BuildFramesFromSymTab(CSymTab* tab);
 
-    virtual CImage* CreateFrame24(i32 width, i32 height, i32 index, i32 keyed);
-    virtual CImage* CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 size);
-    virtual CImage* CreateFrame30(char* path, i32 index, i32 keyed);
+    virtual CImage* CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed);
+    virtual CImage* CreateDescriptorFrame(PidHeader* desc, i32 mode, i32 index, u32 size);
+    virtual CImage* LoadFrame(char* path, i32 index, i32 keyed);
 
     virtual CImage* InsertFrame(void* rec, i32 n, i32 flag);
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);
@@ -41,7 +41,7 @@ public:
 
     i32 SetAllTypes(i32 type);
     i32 SetAllFormats(CShadeTable* shade);
-    i32 SetAllField18(i32 value);
+    i32 SetAllLightLevels(i32 value);
     i32 GetFirstFrameState();
     i32 GetMemoryUsage(i32 raw);
     i32 FindFrame(CImage* frame, char* outName, i32* outIndex);

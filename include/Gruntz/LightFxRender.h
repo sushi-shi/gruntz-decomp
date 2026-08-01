@@ -32,24 +32,24 @@ public:
 
     i32 BuildShape(i32 shape);
 
-    i32 Shape1();
-    i32 Shape2();
-    i32 Shape3();
-    i32 Shape4();
-    i32 Shape5();
-    i32 Shape6();
-    i32 Shape7();
-    i32 Shape8();
+    i32 BuildRockyRoadzPalette();
+    i32 BuildGruntziclezPalette();
+    i32 BuildTropiczPalette();
+    i32 BuildHighOnSweetzPalette();
+    i32 BuildHighRollerzPalette();
+    i32 BuildHoneyPalette();
+    i32 BuildMiniatureMasterzPalette();
+    i32 BuildSpacePalette();
 
     void FillSpan(u32 x1, u32 x2, u16 color);
 
-    i32 ApplyA(i32 dummy, i32 x, i32 y);
+    i32 BeginMinimapPan(i32 unusedFlags, i32 x, i32 y);
 
-    i32 ClearHandle(i32 a, i32 b, i32 c);
+    i32 EndMinimapPan(i32 unusedFlags, i32 unusedX, i32 unusedY);
 
-    i32 ApplyGlobal(i32 dummy, i32 x, i32 y);
+    i32 IssueMinimapCommand(i32 unusedFlags, i32 x, i32 y);
 
-    i32 ApplyB(i32 dummy, i32 x, i32 y);
+    i32 ContinueMinimapPan(i32 unusedFlags, i32 x, i32 y);
 
     i32 ClampRect(i32 x, i32 y, i32* out, i32 margin);
 

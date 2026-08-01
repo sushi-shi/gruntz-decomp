@@ -6,7 +6,7 @@
 
 VTBL(CObjListBase, 0x001ef760);
 struct CObjListBase {
-    virtual void V0() = 0;
+    virtual void UnusedListHook() = 0;
 
     ~CObjListBase() {}
 };

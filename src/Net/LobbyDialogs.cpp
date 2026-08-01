@@ -48,7 +48,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
-                NetDlgInit_bda00(hWnd, g_curMulti);
+                InitializeHostWaitDialog(hWnd, g_curMulti);
                 GetAsyncKeyState(0x13);
                 return 1;
             case 0x111:
@@ -69,23 +69,23 @@ namespace NetLobby {
                     return 1;
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_bda50(hWnd, g_curMulti);
+                UpdateHostWaitDialog(hWnd, g_curMulti);
                 return 1;
         }
         return 0;
     }
 
     RVA(0x000bda00, 0x3e)
-    void NetDlgInit_bda00(HWND hWnd, void* ctx) {
+    void InitializeHostWaitDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            Init_bda50(hWnd, ctx);
+            UpdateHostWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
     RVA(0x000bda50, 0x1)
-    void Init_bda50(HWND, void*) {}
+    void UpdateHostWaitDialog(HWND, void*) {}
 
     RVA(0x000bda70, 0xda)
     i32 CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -97,7 +97,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
-                NetDlgInit_bdb90(hWnd, g_curMulti);
+                InitializeJoinWaitDialog(hWnd, g_curMulti);
                 return 1;
             case 0x111:
                 if (wParam == 0x4c6) {
@@ -107,7 +107,7 @@ namespace NetLobby {
                 break;
             case 0x113:
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_bdbe0(hWnd, g_curMulti);
+                UpdateJoinWaitDialog(hWnd, g_curMulti);
                 if (g_activePlayerCount) {
                     return 1;
                 }
@@ -119,16 +119,16 @@ namespace NetLobby {
     }
 
     RVA(0x000bdb90, 0x3e)
-    void NetDlgInit_bdb90(HWND hWnd, void* ctx) {
+    void InitializeJoinWaitDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            Init_bdbe0(hWnd, ctx);
+            UpdateJoinWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
     RVA(0x000bdbe0, 0x1)
-    void Init_bdbe0(HWND, void*) {}
+    void UpdateJoinWaitDialog(HWND, void*) {}
 
     RVA(0x000bdc00, 0x10c)
     i32 CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -140,7 +140,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
-                NetDlgInit_bdd60(hWnd, g_curMulti);
+                InitializeLobbyDialog(hWnd, g_curMulti);
                 return 1;
             case 0x111:
                 if (wParam == 0x4f7) {
@@ -160,23 +160,23 @@ namespace NetLobby {
                 break;
             case 0x113:
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_bddb0(hWnd, g_curMulti);
+                UpdateLobbyDialog(hWnd, g_curMulti);
                 return 1;
         }
         return 0;
     }
 
     RVA(0x000bdd60, 0x3e)
-    void NetDlgInit_bdd60(HWND hWnd, void* ctx) {
+    void InitializeLobbyDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            Init_bddb0(hWnd, ctx);
+            UpdateLobbyDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
     RVA(0x000bddb0, 0x1)
-    void Init_bddb0(HWND, void*) {}
+    void UpdateLobbyDialog(HWND, void*) {}
 
     RVA(0x000bddd0, 0x193)
     i32 CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -188,7 +188,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
-                NetDlgInit_bdfe0(hWnd, g_curMulti);
+                InitializeSessionWaitDialog(hWnd, g_curMulti);
                 return 1;
             case 0x111:
                 if (wParam == 0x4cc) {
@@ -222,23 +222,23 @@ namespace NetLobby {
                 break;
             case 0x113:
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_2522(hWnd, g_curMulti);
+                UpdateSessionWaitDialog(hWnd, g_curMulti);
                 return 1;
         }
         return 0;
     }
 
     RVA(0x000bdfe0, 0x3e)
-    void NetDlgInit_bdfe0(HWND hWnd, void* ctx) {
+    void InitializeSessionWaitDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            Init_2522(hWnd, ctx);
+            UpdateSessionWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
     RVA(0x000be030, 0x49)
-    void Init_2522(HWND hWnd, void* ctx) {
+    void UpdateSessionWaitDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             EnableWindow(GetDlgItem(hWnd, 0x4cc), (static_cast<CMulti*>(ctx))->m_isHost);
             EnableWindow(GetDlgItem(hWnd, 0x4cd), (static_cast<CMulti*>(ctx))->m_isHost);
@@ -255,7 +255,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
-                NetDlgInitDropWait(hWnd, g_curMulti);
+                InitializeDropWaitDialog(hWnd, g_curMulti);
                 return 1;
             case 0x111:
                 if (wParam == 0x4ea) {
@@ -288,7 +288,7 @@ namespace NetLobby {
                     return 1;
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_be3e0(hWnd, g_curMulti);
+                UpdateDropWaitDialog(hWnd, g_curMulti);
                 if (g_curMulti->Session()->CheckLatency(0x2710)) {
                     PostMessageA(hWnd, 0x111, 0x4cd, 0);
                 }
@@ -298,7 +298,7 @@ namespace NetLobby {
     }
 
     RVA(0x000be2f0, 0xb9)
-    void NetDlgInitDropWait(HWND hWnd, void* ctx) {
+    void InitializeDropWaitDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             CString banner;
             if (g_sessionName.GetLength() != 0) {
@@ -308,14 +308,14 @@ namespace NetLobby {
                 );
                 SetDlgItemTextA(hWnd, 0x44b, static_cast<LPCTSTR>(banner));
             }
-            Init_be3e0(hWnd, ctx);
+            UpdateDropWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
     RVA(0x000be3e0, 0x1)
-    void Init_be3e0(HWND, void*) {}
+    void UpdateDropWaitDialog(HWND, void*) {}
 
     RVA(0x000be400, 0x6c)
     void NetChatSubmit(HWND hWnd, void* gate) {
@@ -359,7 +359,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
-                NetDlgInitDropIn(hWnd, g_curMulti);
+                InitializeDropInDialog(hWnd, g_curMulti);
                 return 1;
             case 0x111:
                 if (wParam == 0x4d0) {
@@ -393,14 +393,14 @@ namespace NetLobby {
                 break;
             case 0x113:
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_2ed7(hWnd, g_curMulti);
+                UpdateDropInDialog(hWnd, g_curMulti);
                 return 1;
         }
         return 0;
     }
 
     RVA(0x000be760, 0x82)
-    void NetDlgInitDropIn(HWND hWnd, void* ctx) {
+    void InitializeDropInDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             char buf[0x80];
 
@@ -409,14 +409,14 @@ namespace NetLobby {
                 sprintf(buf, "New Player Drop-In Request: %s", pn);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }
-            Init_2ed7(hWnd, ctx);
+            UpdateDropInDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
     RVA(0x000be820, 0x49)
-    void Init_2ed7(HWND hWnd, void* ctx) {
+    void UpdateDropInDialog(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             EnableWindow(GetDlgItem(hWnd, 0x4d0), (static_cast<CMulti*>(ctx))->m_isHost);
             EnableWindow(GetDlgItem(hWnd, 0x4d1), (static_cast<CMulti*>(ctx))->m_isHost);

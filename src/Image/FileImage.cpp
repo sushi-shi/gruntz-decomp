@@ -79,7 +79,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
         return 0;
     }
 
-    RecordBytes base;
+    RecordBytes<BmpFileImage> base;
     base.m_rec = img;
     void* run = base.m_bytes + img->fh.bfOffBits;
     if (convert) {
@@ -223,11 +223,11 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     m_width = bih->biWidth;
     m_descFlags = 7;
     m_height = height;
-    if (!CDDSurface::Init1(a, 0)) {
+    if (!CDDSurface::CreateFromDesc(a, 0)) {
         return 0;
     }
 
-    RecordBytes ib;
+    RecordBytes<BITMAPINFOHEADER> ib;
     ib.m_rec = bih;
     BlitDirect(ib.m_bytes + bih->biSize + 256 * sizeof(RGBQUAD), 2);
     return 1;
@@ -530,7 +530,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
     if (convert) {
         if (srcFmt == 8) {
 
-            RecordBytes sb;
+            RecordBytes<PcxHeader> sb;
             sb.m_rec = src;
             u8* p = sb.m_bytes + len - 0x300;
             i32 i = 0;
@@ -963,7 +963,7 @@ i32 CDDSurface::DecodePcxData(
             return 0;
         }
 
-        RecordBytes hb;
+        RecordBytes<PidHeader> hb;
         hb.m_rec = hdr;
         u8* src = hb.m_bytes + size - 0x300;
         i32 i = 0;
@@ -1069,7 +1069,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
                 return 0;
             }
 
-            RecordBytes hb;
+            RecordBytes<PidHeader> hb;
             hb.m_rec = hdr;
             u8* src = hb.m_bytes + size - 0x300;
             i32 i = 0;

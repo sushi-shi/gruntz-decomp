@@ -80,7 +80,7 @@ void CMovingLogic::FinalizeStep(char*) {
         m_deferredCallback = 0;
         m_28 = 0x3e9;
     }
-    MovingSlot16();
+    AdvanceMotion();
 }
 
 // @early-stop
@@ -134,7 +134,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_14c = 0;
     m_object->m_moveMode = 7;
 
-    CMovingLogic::MovingSlot16();
+    CMovingLogic::AdvanceMotion();
 
     m_34 = owner;
     m_38 = static_cast<CWwdGameObjectA*>(owner);
@@ -380,7 +380,7 @@ void CProjectile::RegisterType() {
 
 // @early-stop
 RVA(0x000dfd00, 0x70c)
-void CProjectile::MovingSlot16() {
+void CProjectile::AdvanceMotion() {
     if (m_arrived != 0) {
         return;
     }
@@ -596,7 +596,7 @@ i32 CProjectile::DetachRenderObj() {
 
 // @early-stop
 RVA(0x000e08b0, 0x1de)
-void CBoomerang::MovingSlot16() {
+void CBoomerang::AdvanceMotion() {
     i32 impact = 0;
     if (m_launched == 0) {
         if (m_phase > g_projPhase0) {

@@ -98,7 +98,7 @@ void CBootyState::ReleaseResources() {
 
 // @early-stop
 RVA(0x00018d30, 0xcd)
-i32 CBootyState::Vslot09(i32) {
+i32 CBootyState::EnterState(i32) {
     while (ShowCursor(FALSE) >= 0)
         ;
     if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
@@ -126,7 +126,7 @@ i32 CBootyState::Vslot09(i32) {
 
 // @early-stop
 RVA(0x00018e40, 0x81)
-i32 CBootyState::FrameSlot28(i32) {
+i32 CBootyState::LeaveState(i32) {
     void* obj = 0;
     m_world->m_soundRegistry->m_10.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
@@ -318,20 +318,20 @@ RVA(0x0001af70, 0x3e0)
 void CBootyState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
         case 0: {
-            u32 secs = static_cast<u32>((STAT(SumGroupField08, m_score) / 1000));
+            u32 secs = static_cast<u32>((STAT(SumElapsedTimeForGroup, m_elapsedTimeMs) / 1000));
             buf->Format("%d:%2.2d", secs / 60, secs % 60);
             return;
         }
         case 1:
-            buf->Format("%d", STAT(SumGroupField14, m_1c));
+            buf->Format("%d", STAT(SumGruntzExitedForGroup, m_gruntzExited));
             return;
         case 2:
-            buf->Format("%d", STAT(SumGroupField18, m_20));
+            buf->Format("%d", STAT(SumGruntzLostForGroup, m_gruntzLost));
             return;
         case 3: {
-            i32 total = STAT(SumGroupField30, m_34);
-            i32 cap = STAT(SumGroupField30, m_34);
-            i32 cur = STAT(SumGroupField10, m_weaponCount);
+            i32 total = STAT(SumToolzAvailableForGroup, m_toolzAvailable);
+            i32 cap = STAT(SumToolzAvailableForGroup, m_toolzAvailable);
+            i32 cur = STAT(SumToolzCollectedForGroup, m_toolzCount);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -339,9 +339,9 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 4: {
-            i32 total = STAT(SumGroupField2c, m_30);
-            i32 cap = STAT(SumGroupField2c, m_30);
-            i32 cur = STAT(SumGroupField0c, m_toyzCount);
+            i32 total = STAT(SumToyzAvailableForGroup, m_toyzAvailable);
+            i32 cap = STAT(SumToyzAvailableForGroup, m_toyzAvailable);
+            i32 cur = STAT(SumToyzCollectedForGroup, m_toyzCount);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -349,9 +349,9 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 5: {
-            i32 total = STAT(SumGroupField34, m_38);
-            i32 cap = STAT(SumGroupField34, m_38);
-            i32 cur = STAT(SumGroupField1c, m_powerupCount);
+            i32 total = STAT(SumPowerupzAvailableForGroup, m_powerupzAvailable);
+            i32 cap = STAT(SumPowerupzAvailableForGroup, m_powerupzAvailable);
+            i32 cur = STAT(SumPowerupzCollectedForGroup, m_powerupCount);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -359,9 +359,9 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 6: {
-            i32 total = STAT(SumGroupField3c, m_40);
-            i32 cap = STAT(SumGroupField3c, m_40);
-            i32 cur = STAT(SumGroupField24, m_2c);
+            i32 total = STAT(SumCoinsAvailableForGroup, m_coinsAvailable);
+            i32 cap = STAT(SumCoinsAvailableForGroup, m_coinsAvailable);
+            i32 cur = STAT(SumCoinsCollectedForGroup, m_coinsCollected);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -369,9 +369,9 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 7: {
-            i32 total = STAT(SumGroupField38, m_3c);
-            i32 cap = STAT(SumGroupField38, m_3c);
-            i32 cur = STAT(SumGroupField20, m_28);
+            i32 total = STAT(SumSecretsAvailableForGroup, m_secretsAvailable);
+            i32 cap = STAT(SumSecretsAvailableForGroup, m_secretsAvailable);
+            i32 cur = STAT(SumSecretsFoundForGroup, m_secretsFound);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -548,7 +548,7 @@ i32 CBootyState::Render() {
     }
 
     m_world->m_childGroup->TickKillCues(1);
-    m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
+    m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     dt->m_frontPair->m_surface->Flip(0);
     dt->m_backPair->m_surface
@@ -560,30 +560,30 @@ i32 CBootyState::Render() {
 }
 
 RVA(0x0001ce10, 0xc)
-i32 CBootyState::Vslot06() {
+i32 CBootyState::RestoreDisplay() {
     return IsActive() != 0;
 }
 
 RVA(0x0001ce30, 0x1d)
-i32 CBootyState::Vslot07() {
+i32 CBootyState::OnPaint() {
     if (IsActive() == 0) {
         return 0;
     }
-    return CState::Vslot07() != 0;
+    return CState::OnPaint() != 0;
 }
 
 RVA(0x0001d3e0, 0x8)
-i32 CBootyState::Vslot0e(i32, i32, i32) {
+i32 CBootyState::OnLButtonDown(i32, i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
 RVA(0x0001d400, 0x8)
-i32 CBootyState::Vslot11(i32, i32, i32) {
+i32 CBootyState::OnRButtonDown(i32, i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
 RVA(0x0001d420, 0x8)
-i32 CBootyState::Vslot0c(i32, i32) {
+i32 CBootyState::OnKeyDown(i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
@@ -614,7 +614,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (!m_levelBank) {
         return 0;
     }
-    m_world->m_childGroup->DestroyChildren_159ef0();
+    m_world->m_childGroup->ClearChildren();
     {
         void* soundz = m_2c->FindSub("SOUNDZ");
         if (!soundz) {
@@ -976,7 +976,7 @@ void CMultiBootyState::ReleaseResources() {
 }
 
 RVA(0x0001e570, 0xb4)
-i32 CMultiBootyState::Vslot09(i32) {
+i32 CMultiBootyState::EnterState(i32) {
     i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok;
@@ -1003,7 +1003,7 @@ i32 CMultiBootyState::Vslot09(i32) {
 
 // @early-stop
 RVA(0x0001e660, 0x81)
-i32 CMultiBootyState::FrameSlot28(i32) {
+i32 CMultiBootyState::LeaveState(i32) {
     void* obj = 0;
     m_world->m_soundRegistry->m_10.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
@@ -1201,9 +1201,9 @@ i32 CMultiBootyState::Render() {
         m_1b8 = 0xc7;
     }
     m_world->m_childGroup->TickKillCues(1);
-    m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
+    m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
 
-    u32 secs = g_gameReg->m_scoreHud->m_score / 1000;
+    u32 secs = g_gameReg->m_scoreHud->m_elapsedTimeMs / 1000;
     CString s;
     RECT rc;
     SetRect(&rc, 8, 0x41, 0xcb, 0xae);
@@ -1271,16 +1271,16 @@ i32 CMultiBootyState::InputVirtual() {
 }
 
 RVA(0x0001f850, 0xc)
-i32 CMultiBootyState::Vslot06() {
+i32 CMultiBootyState::RestoreDisplay() {
     return IsActive() != 0;
 }
 
 RVA(0x0001f870, 0x1d)
-i32 CMultiBootyState::Vslot07() {
+i32 CMultiBootyState::OnPaint() {
     if (IsActive() == 0) {
         return 0;
     }
-    return CState::Vslot07() != 0;
+    return CState::OnPaint() != 0;
 }
 
 RVA(0x0001f8a0, 0x30)
@@ -1292,17 +1292,17 @@ i32 CMultiBootyState::PostCommandIfKey() {
 }
 
 RVA(0x0001f8e0, 0x8)
-i32 CMultiBootyState::Vslot0e(i32, i32, i32) {
+i32 CMultiBootyState::OnLButtonDown(i32, i32, i32) {
     return PostCommandIfKey();
 }
 
 RVA(0x0001f900, 0x8)
-i32 CMultiBootyState::Vslot11(i32, i32, i32) {
+i32 CMultiBootyState::OnRButtonDown(i32, i32, i32) {
     return PostCommandIfKey();
 }
 
 RVA(0x0001f920, 0x8)
-i32 CMultiBootyState::Vslot0c(i32, i32) {
+i32 CMultiBootyState::OnKeyDown(i32, i32) {
     return PostCommandIfKey();
 }
 

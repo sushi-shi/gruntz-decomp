@@ -61,8 +61,8 @@ extern "C" HINSTANCE g_hResModule;
 extern char g_bmpHeaderTemplate[];
 
 namespace ApiCallerStubs {
-    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps();
-    void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
+    i32 DisplayUsesPalette();
+    void ResetSystemPalette();
 } // namespace ApiCallerStubs
 
 #endif // SRC_IMAGE_IMAGEPOOL_H

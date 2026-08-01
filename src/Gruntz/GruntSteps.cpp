@@ -862,11 +862,11 @@ void CGrunt::ConsiderArrival(i32 a) {
 
 // @early-stop
 RVA(0x00052fb0, 0x96e)
-i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
+i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spawnWormhole) {
     if (m_entranceCommitted == 0) {
         return 1;
     }
-    i32 flags = GruntTileFlags(x, y);
+    i32 flags = GruntTileFlags(tileX, tileY);
     if ((flags & 0xd39) || (flags & 0x82)) {
         return 0;
     }
@@ -966,7 +966,7 @@ idleReseed:
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
-    ClearSubA();
+    StopStruckSlotSound();
 
 applyTail:
 

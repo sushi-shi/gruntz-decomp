@@ -145,7 +145,7 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
 
 // @early-stop
 RVA(0x0016ea90, 0x234)
-void CMovingLogic::MovingSlot16() {
+void CMovingLogic::AdvanceMotion() {
 
     m_140 = static_cast<i32>(Motion()->m_40);
     m_144 = static_cast<i32>(Motion()->m_48);

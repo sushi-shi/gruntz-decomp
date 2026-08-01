@@ -20,7 +20,7 @@ CAreaMgr g_areaMgr;
 
 RVA(0x00099ba0, 0x29)
 CAreaMgr::CAreaMgr() {
-    m_currentAreaIndex = 0;
+    m_currentLevelIndex = 0;
 }
 
 inline CSpawnList::~CSpawnList() {
@@ -41,100 +41,100 @@ CAreaMgr::~CAreaMgr() {
 RVA_COMPGEN(0x00099ca0, 0x49, ??1CSpawnList@@QAE@XZ)
 
 RVA(0x00099d10, 0x20)
-i32 QueryToken(i32 arg) {
+i32 InitializeLevelArea(i32 arg) {
     g_areaMgr.Reset();
-    return g_areaMgr.Dispatch(arg) != 0;
+    return g_areaMgr.InitializeLevel(arg) != 0;
 }
 
 // @early-stop
 RVA(0x00099d40, 0x2c0)
-i32 CAreaMgr::Dispatch(i32 index) {
+i32 CAreaMgr::InitializeLevel(i32 index) {
     if (index <= 0 || index > 0x28) {
         return 0;
     }
     Reset();
-    m_currentAreaIndex = index;
+    m_currentLevelIndex = index;
     switch (index) {
         case 1:
-            return H01();
+            return InitializeLevel01();
         case 2:
-            return H02();
+            return InitializeLevel02();
         case 3:
-            return H03();
+            return InitializeLevel03();
         case 4:
-            return H04();
+            return InitializeLevel04();
         case 5:
-            return H05();
+            return InitializeLevel05();
         case 6:
-            return H06();
+            return InitializeLevel06();
         case 7:
-            return H07();
+            return InitializeLevel07();
         case 8:
-            return H08();
+            return InitializeLevel08();
         case 9:
-            return H09();
+            return InitializeLevel09();
         case 10:
-            return H10();
+            return InitializeLevel10();
         case 11:
-            return H11();
+            return InitializeLevel11();
         case 12:
-            return H12();
+            return InitializeLevel12();
         case 13:
-            return H13();
+            return InitializeLevel13();
         case 14:
-            return H14();
+            return InitializeLevel14();
         case 15:
-            return H15();
+            return InitializeLevel15();
         case 16:
-            return H16();
+            return InitializeLevel16();
         case 17:
-            return H17();
+            return InitializeLevel17();
         case 18:
-            return H18();
+            return InitializeLevel18();
         case 19:
-            return H19();
+            return InitializeLevel19();
         case 20:
-            return H20();
+            return InitializeLevel20();
         case 21:
-            return H21();
+            return InitializeLevel21();
         case 22:
-            return H22();
+            return InitializeLevel22();
         case 23:
-            return H23();
+            return InitializeLevel23();
         case 24:
-            return H24();
+            return InitializeLevel24();
         case 25:
-            return H25();
+            return InitializeLevel25();
         case 26:
-            return H26();
+            return InitializeLevel26();
         case 27:
-            return H27();
+            return InitializeLevel27();
         case 28:
-            return H28();
+            return InitializeLevel28();
         case 29:
-            return H29();
+            return InitializeLevel29();
         case 30:
-            return H30();
+            return InitializeLevel30();
         case 31:
-            return H31();
+            return InitializeLevel31();
         case 32:
-            return H32();
+            return InitializeLevel32();
         case 33:
-            return H33();
+            return InitializeLevel33();
         case 34:
-            return H34();
+            return InitializeLevel34();
         case 35:
-            return H35();
+            return InitializeLevel35();
         case 36:
-            return H36();
+            return InitializeLevel36();
         case 37:
-            return H37();
+            return InitializeLevel37();
         case 38:
-            return H38();
+            return InitializeLevel38();
         case 39:
-            return H39();
+            return InitializeLevel39();
         case 40:
-            return H40();
+            return InitializeLevel40();
         default:
             return 0;
     }
@@ -142,7 +142,7 @@ i32 CAreaMgr::Dispatch(i32 index) {
 
 RVA(0x0009a0b0, 0x7)
 void CAreaMgr::Reset() {
-    m_currentAreaIndex = 0;
+    m_currentLevelIndex = 0;
 }
 
 RVA(0x0009a0d0, 0x133)
@@ -442,212 +442,212 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 }
 
 RVA(0x0009af30, 0x6)
-i32 CAreaMgr::H01() {
+i32 CAreaMgr::InitializeLevel01() {
     return 1;
 }
 
 RVA(0x0009af50, 0x6)
-i32 CAreaMgr::H02() {
+i32 CAreaMgr::InitializeLevel02() {
     return 1;
 }
 
 RVA(0x0009af70, 0x6)
-i32 CAreaMgr::H03() {
+i32 CAreaMgr::InitializeLevel03() {
     return 1;
 }
 
 RVA(0x0009af90, 0x6)
-i32 CAreaMgr::H04() {
+i32 CAreaMgr::InitializeLevel04() {
     return 1;
 }
 
 RVA(0x0009afb0, 0x6)
-i32 CAreaMgr::H05() {
+i32 CAreaMgr::InitializeLevel05() {
     return 1;
 }
 
 RVA(0x0009afd0, 0x6)
-i32 CAreaMgr::H06() {
+i32 CAreaMgr::InitializeLevel06() {
     return 1;
 }
 
 RVA(0x0009aff0, 0x6)
-i32 CAreaMgr::H07() {
+i32 CAreaMgr::InitializeLevel07() {
     return 1;
 }
 
 RVA(0x0009b010, 0x6)
-i32 CAreaMgr::H08() {
+i32 CAreaMgr::InitializeLevel08() {
     return 1;
 }
 
 RVA(0x0009b030, 0x6)
-i32 CAreaMgr::H09() {
+i32 CAreaMgr::InitializeLevel09() {
     return 1;
 }
 
 RVA(0x0009b050, 0x6)
-i32 CAreaMgr::H10() {
+i32 CAreaMgr::InitializeLevel10() {
     return 1;
 }
 
 RVA(0x0009b070, 0x6)
-i32 CAreaMgr::H11() {
+i32 CAreaMgr::InitializeLevel11() {
     return 1;
 }
 
 RVA(0x0009b090, 0x6)
-i32 CAreaMgr::H12() {
+i32 CAreaMgr::InitializeLevel12() {
     return 1;
 }
 
 RVA(0x0009b0b0, 0x6)
-i32 CAreaMgr::H13() {
+i32 CAreaMgr::InitializeLevel13() {
     return 1;
 }
 
 RVA(0x0009b0d0, 0x6)
-i32 CAreaMgr::H14() {
+i32 CAreaMgr::InitializeLevel14() {
     return 1;
 }
 
 RVA(0x0009b0f0, 0x6)
-i32 CAreaMgr::H15() {
+i32 CAreaMgr::InitializeLevel15() {
     return 1;
 }
 
 RVA(0x0009b110, 0x6)
-i32 CAreaMgr::H16() {
+i32 CAreaMgr::InitializeLevel16() {
     return 1;
 }
 
 RVA(0x0009b130, 0x6)
-i32 CAreaMgr::H17() {
+i32 CAreaMgr::InitializeLevel17() {
     return 1;
 }
 
 RVA(0x0009b150, 0x6)
-i32 CAreaMgr::H18() {
+i32 CAreaMgr::InitializeLevel18() {
     return 1;
 }
 
 RVA(0x0009b170, 0x6)
-i32 CAreaMgr::H19() {
+i32 CAreaMgr::InitializeLevel19() {
     return 1;
 }
 
 RVA(0x0009b190, 0x6)
-i32 CAreaMgr::H20() {
+i32 CAreaMgr::InitializeLevel20() {
     return 1;
 }
 
 RVA(0x0009b1b0, 0x6)
-i32 CAreaMgr::H21() {
+i32 CAreaMgr::InitializeLevel21() {
     return 1;
 }
 
 RVA(0x0009b1d0, 0x6)
-i32 CAreaMgr::H22() {
+i32 CAreaMgr::InitializeLevel22() {
     return 1;
 }
 
 RVA(0x0009b1f0, 0x6)
-i32 CAreaMgr::H23() {
+i32 CAreaMgr::InitializeLevel23() {
     return 1;
 }
 
 RVA(0x0009b210, 0x6)
-i32 CAreaMgr::H24() {
+i32 CAreaMgr::InitializeLevel24() {
     return 1;
 }
 
 RVA(0x0009b230, 0x6)
-i32 CAreaMgr::H25() {
+i32 CAreaMgr::InitializeLevel25() {
     return 1;
 }
 
 RVA(0x0009b250, 0x6)
-i32 CAreaMgr::H26() {
+i32 CAreaMgr::InitializeLevel26() {
     return 1;
 }
 
 RVA(0x0009b270, 0x6)
-i32 CAreaMgr::H27() {
+i32 CAreaMgr::InitializeLevel27() {
     return 1;
 }
 
 RVA(0x0009b290, 0x6)
-i32 CAreaMgr::H28() {
+i32 CAreaMgr::InitializeLevel28() {
     return 1;
 }
 
 RVA(0x0009b2b0, 0x6)
-i32 CAreaMgr::H29() {
+i32 CAreaMgr::InitializeLevel29() {
     return 1;
 }
 
 RVA(0x0009b2d0, 0x6)
-i32 CAreaMgr::H30() {
+i32 CAreaMgr::InitializeLevel30() {
     return 1;
 }
 
 RVA(0x0009b2f0, 0x6)
-i32 CAreaMgr::H31() {
+i32 CAreaMgr::InitializeLevel31() {
     return 1;
 }
 
 RVA(0x0009b310, 0x6)
-i32 CAreaMgr::H32() {
+i32 CAreaMgr::InitializeLevel32() {
     return 1;
 }
 
 RVA(0x0009b330, 0x6)
-i32 CAreaMgr::H33() {
+i32 CAreaMgr::InitializeLevel33() {
     return 1;
 }
 
 RVA(0x0009b350, 0x6)
-i32 CAreaMgr::H34() {
+i32 CAreaMgr::InitializeLevel34() {
     return 1;
 }
 
 RVA(0x0009b370, 0x6)
-i32 CAreaMgr::H35() {
+i32 CAreaMgr::InitializeLevel35() {
     return 1;
 }
 
 RVA(0x0009b390, 0x6)
-i32 CAreaMgr::H36() {
+i32 CAreaMgr::InitializeLevel36() {
     return 1;
 }
 
 RVA(0x0009b3b0, 0x6)
-i32 CAreaMgr::H37() {
+i32 CAreaMgr::InitializeLevel37() {
     return 1;
 }
 
 RVA(0x0009b3d0, 0x6)
-i32 CAreaMgr::H38() {
+i32 CAreaMgr::InitializeLevel38() {
     return 1;
 }
 
 RVA(0x0009b3f0, 0x6)
-i32 CAreaMgr::H39() {
+i32 CAreaMgr::InitializeLevel39() {
     return 1;
 }
 
 RVA(0x0009b410, 0x6)
-i32 CAreaMgr::H40() {
+i32 CAreaMgr::InitializeLevel40() {
     return 1;
 }
 
 // @early-stop
 RVA(0x0009b430, 0x49)
-i32 CAreaMgr::SameGroup(i32 a) {
+i32 CAreaMgr::IsSameWorld(i32 a) {
     if (a <= 0) {
         return 0;
     }
     i32 ga = (a - 1) % 36 / 4 + 1;
-    i32 gc = (m_currentAreaIndex - 1) % 36 / 4 + 1;
+    i32 gc = (m_currentLevelIndex - 1) % 36 / 4 + 1;
     return gc == ga;
 }

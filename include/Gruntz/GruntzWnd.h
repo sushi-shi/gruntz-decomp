@@ -12,7 +12,7 @@ public:
     CGruntzWnd();
     virtual ~CGruntzWnd() OVERRIDE;
     virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) OVERRIDE;
-    virtual i32 Wap32GameWndVfunc2(i32, i32, i32) OVERRIDE;
+    virtual i32 HandleWindowCommand(i32, i32, i32) OVERRIDE;
     virtual i32 OnClose() OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
     virtual i32 OnChar(WPARAM, LPARAM) OVERRIDE;
@@ -27,7 +27,7 @@ public:
     virtual i32 OnLButtonDblClk(WPARAM, i32, i32) OVERRIDE;
     virtual i32 OnRButtonDblClk(WPARAM, i32, i32) OVERRIDE;
 
-    i32 Wap32GameWndVfunc0();
+    i32 UnusedWindowQuery();
 
     CGruntzMgr* GameMgr() {
         return static_cast<CGruntzMgr*>(m_owner->m_gameMgr);

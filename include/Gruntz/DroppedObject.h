@@ -11,19 +11,19 @@ class CDroppedObject : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
 
-    i32 ActB();
+    i32 AdvanceImpactAnimation();
     RVA(0x00012560, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECT;
     }
-    virtual i32 UserLogicVfunc5() OVERRIDE;
+    virtual i32 AdvanceAnimation() OVERRIDE;
 
 public:
     CDroppedObject() {}
     CDroppedObject(CGameObject* obj);
     static void RegisterActs();
     virtual void FireActivation(i32 id) OVERRIDE;
-    i32 ActA();
+    i32 AdvanceFall();
 
     char m_pad54[0x58 - 0x54];
     double m_timePerTile;

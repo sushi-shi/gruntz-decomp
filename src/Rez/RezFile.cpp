@@ -16,7 +16,7 @@ DATA(0x0021a0a0)
 const char g_wildcard[] = "*.*";
 
 RVA(0x0013c4d0, 0x1)
-void CRezList::V0() {}
+void CRezList::UnusedListHook() {}
 
 RVA(0x0013c4e0, 0x12)
 CRezItmBase::CRezItmBase(void* parent) {

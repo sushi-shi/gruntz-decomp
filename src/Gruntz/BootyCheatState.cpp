@@ -39,8 +39,8 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         CString desc;
         i32 i = 0;
 
-        AddrWord cur;
-        AddrWord last;
+        AddrWord<char> cur;
+        AddrWord<char> last;
         last.m_addr = g_cheatTableEnd;
         for (char* p = g_cheatTable; (cur.m_addr = p, cur.m_word) < last.m_word; p += 0xa0) {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
@@ -70,7 +70,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         goto done;
     }
 
-    m_world->m_childGroup->DestroyChildren_159ef0();
+    m_world->m_childGroup->ClearChildren();
 
     {
         void* soundz = SymTab2c()->FindSub("SOUNDZ");

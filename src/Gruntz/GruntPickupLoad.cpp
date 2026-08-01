@@ -41,7 +41,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
             return 0;
         }
     }
-    StepAnimDispatchB();
+    FinishActiveAction();
     if (m_entranceActive != 0) {
         return 0;
     }
@@ -77,7 +77,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
     }
     if (countStats != 0) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ && type != PICKUP_WARPSTONE) {
-            g_gameReg->m_scoreHud->m_weaponCount++;
+            g_gameReg->m_scoreHud->m_toolzCount++;
             g_gameReg->m_scoreHud->m_weaponPickupz[type - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_BABYWALKER && type <= PICKUP_YOYO) {
             g_gameReg->m_scoreHud->m_toyzCount++;
@@ -214,7 +214,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
             i32 n = play->m_guts->GetActiveValue();
             if (countStats != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
-                    g_gameReg->m_scoreHud->m_weaponCount++;
+                    g_gameReg->m_scoreHud->m_toolzCount++;
                     g_gameReg->m_scoreHud->m_weaponPickupz[n - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
                 } else if (n >= PICKUP_BABYWALKER && n <= PICKUP_YOYO) {
                     g_gameReg->m_scoreHud->m_toyzCount++;

@@ -7,7 +7,7 @@
 struct CGameInfoTime {
     i32 m_0;
     u32 m_4;
-    u32 m_8;
+    u32 m_timeMs;
 
     i32 m_c;
     i32 m_10;
@@ -22,12 +22,12 @@ public:
     i32 CopyBody(char* body);
     i32 Update(i32 s, i32 timestamp, i32 type);
     i32 CopyIfLarger(CGameInfoTime* src, i32 type);
-    i32 Check1();
+    i32 HasSupportedVersion();
     i32 FormatGameInfoString();
 
     char m_00[4];
     i32 m_04;
-    u32 m_8;
+    u32 m_version;
     char m_pad0c[0x14 - 0xc];
     char m_14[0x36 - 0x14];
     char m_36[0xb8 - 0x36];

@@ -102,9 +102,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
         return 0;
     }
 
-    StepAnimDispatchB();
-    ClearSubA();
-    ClearSubB();
+    FinishActiveAction();
+    StopStruckSlotSound();
+    StopStruckVoiceSound();
 
     m_object->m_stateFlags &= ~8;
     m_deathAnimStarted = 1;

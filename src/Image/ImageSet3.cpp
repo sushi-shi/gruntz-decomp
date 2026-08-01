@@ -29,7 +29,7 @@ i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
 }
 
 RVA(0x00166e60, 0x48)
-i32 CImageSet3::ScanRunLeftGate_166e60(i32 x, i32 y, i32 val, i32* outX) {
+i32 CImageSet3::ScanRunLeftForValue(i32 x, i32 y, i32 val, i32* outX) {
     u8* p = m_pixels + ((y << m_heightLog2) + x);
     while (x > 0) {
         --x;

@@ -53,17 +53,17 @@ public:
     virtual void FinalizeStep(char* name);
 
     virtual void Activate();
-    virtual i32 UserLogicVfunc5();
-    virtual i32 UserLogicVfunc6();
+    virtual i32 AdvanceAnimation();
+    virtual i32 RecordFrameTick();
 
     virtual i32 StepAttackFire();
 
-    virtual void UserLogicVfunc8();
-    virtual void UserLogicVfunc9();
-    virtual void UserLogicVfuncA();
-    virtual void UserLogicVfuncB();
-    virtual void UserLogicVfuncC();
-    virtual void UserLogicVfuncD();
+    virtual void OnLeaveActiveRegion();
+    virtual void OnObjectRemoved();
+    virtual void AfterLoad();
+    virtual void AfterSave();
+    virtual void PrepareSave();
+    virtual void AfterLoadReferences();
 
     void GetScreenPos(Coord* out);
 

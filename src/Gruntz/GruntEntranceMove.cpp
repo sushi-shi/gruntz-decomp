@@ -481,7 +481,7 @@ i32 CGrunt::RearmEntranceDrop() {
 // @early-stop
 RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
-    StepAnimDispatchB();
+    FinishActiveAction();
     if (m_healthSprite != 0) {
         m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;
@@ -889,7 +889,7 @@ idleReseed:
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
-    ClearSubA();
+    StopStruckSlotSound();
     goto finalize;
 
 modeDispatch: {
@@ -1224,7 +1224,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 }
 
 RVA(0x0006a6d0, 0x936)
-i32 CGrunt::StepAnimDispatchB() {
+i32 CGrunt::FinishActiveAction() {
     bool eq;
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
     if (eq) {
@@ -1418,7 +1418,7 @@ idleReseed:
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
-    ClearSubA();
+    StopStruckSlotSound();
     return 1;
 
 modeDispatch: {
@@ -1445,7 +1445,7 @@ modeDispatch: {
 }
 
 RVA(0x0006b260, 0x5)
-i32 CGrunt::DispatchVtbl24() {
+i32 CGrunt::StepAttackAction() {
 
     return StepAttackFire();
 }

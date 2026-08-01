@@ -140,7 +140,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (!LoadImageBanks()) {
             return 0;
         }
-        Vslot24();
+        PostLoadImageBanks();
         if (!LoadByMode(areaArg, 1)) {
             return 0;
         }

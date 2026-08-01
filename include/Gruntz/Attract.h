@@ -24,13 +24,13 @@ public:
 
     virtual GameStateId Update() OVERRIDE;
     virtual i32 Render() OVERRIDE;
-    virtual i32 Vslot06() OVERRIDE;
-    virtual i32 Vslot07() OVERRIDE;
+    virtual i32 RestoreDisplay() OVERRIDE;
+    virtual i32 OnPaint() OVERRIDE;
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 FrameSlot28(i32 arg) OVERRIDE;
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 LeaveState(i32 arg) OVERRIDE;
+    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
     u32 m_idleTimer;
     struct LeafCue* m_host;

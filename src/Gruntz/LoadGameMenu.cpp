@@ -153,7 +153,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", winapi_0e3a40_EndDialog, 0);
+            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, 0);
             EnableWindow(hwnd, TRUE);
             if (r) {
                 FillGameInfoDialog(hwnd, dlg);

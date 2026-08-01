@@ -98,8 +98,8 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
 
 
     i32 mask = m_map.Lookup(code, existing) ? -1 : 0;
-    AddrWord hit;
-    hit.m_addr = existing;
+    AddrWord<char> hit;
+    hit.m_addr = static_cast<char*>(existing);
     i32 found = mask & hit.m_word;
     if (found != 0) {
         return FALSE;

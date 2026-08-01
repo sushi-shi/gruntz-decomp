@@ -74,7 +74,7 @@ i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)) {
         return 1;
     }
-    if (Wap32GameWndVfunc2(notifyCode, cmdId, lParam)) {
+    if (HandleWindowCommand(notifyCode, cmdId, lParam)) {
         return 1;
     }
     return m_owner->m_gameMgr->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)
@@ -283,7 +283,7 @@ void ForceEmitCGameWndDtor() {
     g_forceEmitCGameWnd->CGameWnd::~CGameWnd();
 }
 #pragma inline_depth()
-i32 CGameWnd::Wap32GameWndVfunc2(i32, i32, i32) {
+i32 CGameWnd::HandleWindowCommand(i32, i32, i32) {
     return 0;
 }
 i32 CGameWnd::OnCreate(LPARAM) {

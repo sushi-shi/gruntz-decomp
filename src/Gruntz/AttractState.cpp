@@ -80,7 +80,7 @@ void CAttract::ReleaseResources() {
 
 // @early-stop
 RVA(0x00014120, 0x1a9)
-i32 CAttract::Vslot09(i32 arg) {
+i32 CAttract::EnterState(i32 arg) {
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -127,7 +127,7 @@ i32 CAttract::Vslot09(i32 arg) {
 }
 
 RVA(0x00014340, 0x71)
-i32 CAttract::FrameSlot28(i32 arg) {
+i32 CAttract::LeaveState(i32 arg) {
     if (m_host == 0) {
         return 1;
     }
@@ -202,7 +202,7 @@ i32 CAttract::InputVirtual() {
 }
 
 RVA(0x00014630, 0xbd)
-i32 CAttract::Vslot06() {
+i32 CAttract::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
@@ -218,7 +218,7 @@ i32 CAttract::Vslot06() {
 }
 
 RVA(0x00014720, 0x37)
-i32 CAttract::Vslot0c(i32 code, i32 unused) {
+i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     if (code == 0x20 || code == 0xd || code == 0x1b) {
         ::PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
@@ -226,20 +226,20 @@ i32 CAttract::Vslot0c(i32 code, i32 unused) {
 }
 
 RVA(0x00014770, 0x24)
-i32 CAttract::Vslot0e(i32, i32, i32) {
+i32 CAttract::OnLButtonDown(i32, i32, i32) {
     ::PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }
 
 RVA(0x000147b0, 0x6a)
-i32 CAttract::Vslot07() {
+i32 CAttract::OnPaint() {
     if (!IsActive()) {
         return 0;
     }
     if (!m_world) {
         return 0;
     }
-    if (!CState::Vslot07()) {
+    if (!CState::OnPaint()) {
         return 0;
     }
 

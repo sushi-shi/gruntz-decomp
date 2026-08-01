@@ -30,12 +30,17 @@ public:
 
     virtual ~CRandomAmbientSound() OVERRIDE {}
 
-    void Init2(i32 lo, i32 hi, i32 lo2, i32 hi2);
+    void InitCycleTiming(
+        i32 playDurationMin,
+        i32 playDurationMax,
+        i32 silenceDurationMin,
+        i32 silenceDurationMax
+    );
 
-    i32 m_40;
-    i32 m_44;
-    i32 m_intervalLoB;
-    i32 m_intervalHiB;
+    i32 m_playDurationMin;
+    i32 m_playDurationMax;
+    i32 m_silenceDurationMin;
+    i32 m_silenceDurationMax;
     i32 m_countdownMs;
     i32 m_phase;
 };

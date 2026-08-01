@@ -82,7 +82,7 @@ i32 CPlay::PlaceStartGruntz() {
 
             GameObjNotifyFn who = aux->m_notify;
             if (who == CreateGruntStartingPoint) {
-                AddrWord extentArg;
+                AddrWord<long> extentArg;
                 extentArg.m_addr = &obj->m_extent.left;
                 i32 idx = reg->m_cmdGrid->PlaceObject(
                     obj->m_124,

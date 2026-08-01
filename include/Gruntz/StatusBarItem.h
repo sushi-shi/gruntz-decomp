@@ -38,9 +38,9 @@ public:
     virtual i32 Refresh(i32 a);
     virtual i32 Render();
 
-    virtual i32 SbiSlot6(i32, i32, i32);
+    virtual i32 OnPointerMove(i32, i32, i32);
     virtual i32 Click1c(i32 a, i32 b, i32 c);
-    virtual i32 SbiSlot8(i32, i32, i32);
+    virtual i32 UnusedPointerAction(i32, i32, i32);
     virtual i32 Click24(i32 a, i32 b, i32 c);
     virtual void SetSubtype();
 

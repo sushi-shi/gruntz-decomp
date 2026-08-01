@@ -23,6 +23,6 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
 
 VTBL(CGruntStaminaSprite, 0x001e7a44);
 RVA(0x0007fbb0, 0xd)
-i32 CGruntStaminaSprite::Vslot16(CGrunt* grunt) {
+i32 CGruntStaminaSprite::GetDisplayedValue(CGrunt* grunt) {
     return grunt->m_stamina;
 }

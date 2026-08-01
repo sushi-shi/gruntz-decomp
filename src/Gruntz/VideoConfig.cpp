@@ -223,32 +223,17 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     CheckDlgButton(hDlg, 0x455, g_gameReg->m_isEasyMode);
     LoadVideoResolutionConfig(hDlg, 0x52c, g_videoResolutionMode);
     CheckDlgButton(hDlg, 0x46d, g_gameReg->m_soundEnabled);
-    ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
-        hDlg,
-        0x470,
-        g_gameReg->m_soundVolume,
-        0x50
-    );
+    ApiCallerStubs::ConfigureDialogScrollBar(hDlg, 0x470, g_gameReg->m_soundVolume, 0x50);
     CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
-    ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
-        hDlg,
-        0x476,
-        g_gameReg->m_voiceVolume,
-        0x50
-    );
+    ApiCallerStubs::ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->m_voiceVolume, 0x50);
     CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
-    ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
+    ApiCallerStubs::ConfigureDialogScrollBar(
         hDlg,
         0x472,
         g_gameReg->m_sound->GetXMidiVolume(),
         0x64
     );
-    ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
-        hDlg,
-        0x478,
-        g_gameReg->m_scrollSpeed,
-        0x64
-    );
+    ApiCallerStubs::ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->m_scrollSpeed, 0x64);
 }
 
 // @early-stop
@@ -258,32 +243,32 @@ void ReadMenuOptionsDialog(HWND hDlg) {
         return;
     }
     g_gameReg->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
-    i32 res = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x52c);
+    i32 res = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x52c);
     if (res >= 0 && res <= 100) {
         g_videoResolutionMode = res;
     }
     if (g_disableAudio == 0) {
         if (g_disableSound == 0) {
             g_gameReg->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
-            i32 mv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x470);
+            i32 mv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
                 g_gameReg->SetSoundVolume(mv);
             }
             g_gameReg->m_isVoiceEnabled = IsDlgButtonChecked(hDlg, 0x475);
-            i32 sv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x476);
+            i32 sv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x476);
             if (sv >= 0 && sv <= 100) {
                 g_gameReg->SetVoiceVolume(sv);
             }
         }
         if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
             g_gameReg->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
-            i32 pv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x472);
+            i32 pv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {
                 g_gameReg->m_sound->SetXMidiVolume(pv);
             }
         }
     }
-    i32 qv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x478);
+    i32 qv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x478);
     if (qv >= 0 && qv <= 100) {
         g_gameReg->m_scrollSpeed = qv;
     }
@@ -352,7 +337,7 @@ void OnToggleEasyModeOption(HWND hWnd) {
 namespace ApiCallerStubs {
 
     RVA(0x00036e50, 0x43)
-    void winapi_036e50_GetDlgItem_SetScrollPos(HWND hDlg, i32 id, i32 pos) {
+    void SetDialogScrollPosition(HWND hDlg, i32 id, i32 pos) {
         HWND h = GetDlgItem(hDlg, id);
         if (h) {
             SCROLLINFO si;
@@ -364,7 +349,7 @@ namespace ApiCallerStubs {
     }
 
     RVA(0x00036ec0, 0x41)
-    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id) {
+    i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
         HWND h = GetDlgItem(hDlg, id);
         if (!h) {
             return 0;
@@ -452,7 +437,7 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
 namespace ApiCallerStubs {
 
     RVA(0x000371e0, 0x5b)
-    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max) {
+    void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
         HWND h = GetDlgItem(hDlg, id);
         if (h) {
             SCROLLINFO si;

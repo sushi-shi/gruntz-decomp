@@ -29,7 +29,7 @@ public:
     i32 DetachRenderObj();
     void ScanTargets(i32 impact);
     i32 LaunchSound(const char* key);
-    virtual void MovingSlot16() OVERRIDE;
+    virtual void AdvanceMotion() OVERRIDE;
 
     i32 m_kind;
     i32 m_srcRow, m_srcCol;

@@ -14,7 +14,7 @@
 class CRezItmBase;
 
 struct CParserObjList : public CObjList {
-    virtual void V0() OVERRIDE;
+    virtual void UnusedListHook() OVERRIDE;
     ~CParserObjList() {}
     i32 m_count;
 };
@@ -60,8 +60,8 @@ SIZE(0xa8);
 
 class CSymParser {
 public:
-    virtual i32 V0(i32 a);
-    virtual void V1(i32 a);
+    virtual i32 UnusedParserQuery(i32 a);
+    virtual void UnusedParserAction(i32 a);
 
     virtual i32 Retry();
 

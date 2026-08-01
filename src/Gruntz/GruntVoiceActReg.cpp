@@ -17,7 +17,7 @@ static inline void FreeNameSlotNodes() {
 }
 
 RVA(0x00119fa0, 0x2ac)
-void RegisterActs_6514d8() {
+void RegisterGruntVoiceActions() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);

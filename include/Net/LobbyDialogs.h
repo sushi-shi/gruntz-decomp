@@ -14,20 +14,20 @@ namespace NetLobby {
     i32 CALLBACK JoinWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
     i32 CALLBACK SessionWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
     i32 CALLBACK NetGameDlgProc(HWND, UINT, WPARAM, LPARAM);
-    void Init_bda50(HWND hWnd, void* ctx);
-    void Init_bdbe0(HWND hWnd, void* ctx);
-    void Init_bddb0(HWND hWnd, void* ctx);
-    void Init_be3e0(HWND hWnd, void* ctx);
-    void Init_2522(HWND hWnd, void* ctx);
-    void Init_2ed7(HWND hWnd, void* ctx);
-    void NetDlgInit_bdd60(HWND, void*);
-    void NetDlgInitDropWait(HWND, void*);
+    void UpdateHostWaitDialog(HWND hWnd, void* ctx);
+    void UpdateJoinWaitDialog(HWND hWnd, void* ctx);
+    void UpdateLobbyDialog(HWND hWnd, void* ctx);
+    void UpdateDropWaitDialog(HWND hWnd, void* ctx);
+    void UpdateSessionWaitDialog(HWND hWnd, void* ctx);
+    void UpdateDropInDialog(HWND hWnd, void* ctx);
+    void InitializeLobbyDialog(HWND, void*);
+    void InitializeDropWaitDialog(HWND, void*);
     void NetDlgSessionStop(HWND, CMulti*);
     void NetChatSubmit(HWND, void*);
-    void NetDlgInit_bda00(HWND hWnd, void* ctx);
-    void NetDlgInit_bdb90(HWND hWnd, void* ctx);
-    void NetDlgInit_bdfe0(HWND hWnd, void* ctx);
-    void NetDlgInitDropIn(HWND hWnd, void* ctx);
+    void InitializeHostWaitDialog(HWND hWnd, void* ctx);
+    void InitializeJoinWaitDialog(HWND hWnd, void* ctx);
+    void InitializeSessionWaitDialog(HWND hWnd, void* ctx);
+    void InitializeDropInDialog(HWND hWnd, void* ctx);
 } // namespace NetLobby
 
 #endif // NET_LOBBYDIALOGS_H

@@ -23,6 +23,6 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
 
 VTBL(CGruntWingzTimeSprite, 0x001e77cc);
 RVA(0x0007fd90, 0xd)
-i32 CGruntWingzTimeSprite::Vslot16(CGrunt* grunt) {
+i32 CGruntWingzTimeSprite::GetDisplayedValue(CGrunt* grunt) {
     return grunt->m_wingzTime;
 }

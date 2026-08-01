@@ -29,7 +29,7 @@ public:
     CMovingLogic(CGameObject* owner);
     virtual ~CMovingLogic() OVERRIDE;
 
-    virtual void MovingSlot16();
+    virtual void AdvanceMotion();
 
     CMotionState* Motion() {
         return &m_motion;

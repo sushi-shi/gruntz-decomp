@@ -60,26 +60,26 @@ public:
 
     virtual void ReleaseResources() OVERRIDE;
 
-    virtual i32 Vslot06() OVERRIDE;
+    virtual i32 RestoreDisplay() OVERRIDE;
 
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;
-    virtual i32 FrameSlot28(i32) OVERRIDE;
-    virtual i32 Vslot0b(i32, i32) OVERRIDE;
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;
-    virtual i32 Vslot0d(i32, i32) OVERRIDE;
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot0f(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot10(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot11(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot12(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot13(i32, i32, i32) OVERRIDE;
-    virtual i32 SetBeginClearParams(i32, i32, i32) OVERRIDE;
-    virtual i32 Vslot15() OVERRIDE;
+    virtual i32 EnterState(i32) OVERRIDE;
+    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 OnChar(i32, i32) OVERRIDE;
+    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
+    virtual i32 OnKeyUp(i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
+    virtual i32 OnLButtonUp(i32, i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDblClk(i32, i32, i32) OVERRIDE;
+    virtual i32 OnRButtonDown(i32, i32, i32) OVERRIDE;
+    virtual i32 OnRButtonUp(i32, i32, i32) OVERRIDE;
+    virtual i32 OnRButtonDblClk(i32, i32, i32) OVERRIDE;
+    virtual i32 OnMouseMove(i32, i32, i32) OVERRIDE;
+    virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 PauseGame() OVERRIDE;
     virtual i32 ResumeGame() OVERRIDE;
 
-    virtual i32 Vslot1a();
+    virtual i32 UnusedPlayQuery();
     virtual i32 GetFrame();
 
     virtual i32 CountObjectsByCategory(i32 category);
@@ -93,10 +93,10 @@ public:
     virtual void FreeListTeardown();
     virtual void ModeCleanup();
 
-    virtual i32 Vslot23();
+    virtual i32 DrawStateMessage();
 
     RVA(0x000d0030, 0x1)
-    virtual void Vslot24() {}
+    virtual void PostLoadImageBanks() {}
 
     virtual void PostSetup(void* dc);
 
@@ -144,13 +144,13 @@ public:
     void LoadSBITextEdges(i32 msgId);
     i32 BuildGruntNamespaceList(CMulti* arg);
 
-    i32 StepC();
+    i32 StepViewportResize();
     i32 GetAmbientId();
     void StepScroll();
-    i32 OnRegion1(i32 z);
-    i32 OnRegion2(i32 z);
-    i32 OnRegion3(i32 z);
-    i32 OnRegion4(i32 z);
+    i32 SetDarknessCurse(i32 active);
+    i32 SetTinyViewportCurse(i32 active);
+    i32 SetMonitorCurse(i32 active);
+    i32 SetRandomMoveIconsCurse(i32 active);
 
     i32 ClampViewport(i32 inset);
     i32 ClampViewport2(i32 stride);
@@ -239,8 +239,8 @@ public:
     i32 SyncState(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj);
 
     i32 HeaderSerialize(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj);
-    i32 SyncWrite19fb(CFileMemBase* ar);
-    i32 SyncRead2f7c(CFileMemBase* ar);
+    i32 SavePlayState(CFileMemBase* ar);
+    i32 LoadPlayState(CFileMemBase* ar);
 
     CString m_1b4;
     char m_pad1b8[0x1bc - 0x1b8];
@@ -423,19 +423,6 @@ extern i32 g_areaPageSize;
 extern "C" void Eng_HudDraw(void* hud, RECT* r, i32 c);
 extern "C" void Eng_FrameTimerStep(void* t, i32 now);
 extern "C" i32 g_playActive;
-extern "C" void VisFn_40fe90();
-extern "C" void VisFn_4bf150();
-extern "C" void VisFn_423b40();
-extern "C" void VisFn_Roll();
-extern "C" void VisFn_41e570();
-extern "C" void VisFn_41e520();
-extern "C" void VisFn_47e160();
-extern "C" void VisFn_49b410();
-extern "C" void VisFn_IntersectRect();
-extern "C" void VisFn_49b310();
-extern "C" void VisFn_CBattlezDlg();
-extern "C" void VisFn_4fce80();
-
 extern "C" void ProfLog(void* sink, const char* fmt, ...);
 extern "C" i32 g_profAccA;
 extern "C" i32 g_profAccB;
@@ -485,7 +472,7 @@ void ShowHudMessageAlt(
     i32 f
 );
 void Cmd_ResetScroll();
-i32 QueryToken(i32 a);
+i32 InitializeLevelArea(i32 a);
 void ActiveWait(u32 ms);
 
 #endif // SRC_GRUNTZ_CPLAY_H

@@ -51,7 +51,7 @@ int HeapCheckDump(int walkOnBad) {
     char buf[80];
     int status = _heapchk();
     OutputDebugStringA("Checking heap...\n");
-    ApiCallerStubs::winapi_118b50_OutputDebugStringA(status);
+    ApiCallerStubs::ReportHeapStatus(status);
     if (walkOnBad != 0 && status != _HEAPOK) {
         memset(&hinfo, 0, sizeof(hinfo));
         _heapwalk(&hinfo);
@@ -69,7 +69,7 @@ int HeapCheckDump(int walkOnBad) {
             hinfo._size
         );
         OutputDebugStringA(buf);
-        ApiCallerStubs::winapi_118b50_OutputDebugStringA(r);
+        ApiCallerStubs::ReportHeapStatus(r);
         OutputDebugStringA("Finished walking heap.");
     }
     return status;
@@ -77,7 +77,7 @@ int HeapCheckDump(int walkOnBad) {
 
 namespace ApiCallerStubs {
     RVA(0x00118b50, 0x80)
-    void winapi_118b50_OutputDebugStringA(i32 status) {
+    void ReportHeapStatus(i32 status) {
         switch (status) {
             case -3:
                 OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
@@ -107,7 +107,7 @@ int HeapStats() {
     char buf[128];
     int status = _heapchk();
     OutputDebugStringA("Getting heap statistics...");
-    ApiCallerStubs::winapi_118b50_OutputDebugStringA(status);
+    ApiCallerStubs::ReportHeapStatus(status);
     unsigned long total = 0, used = 0, free = 0;
     if (status == _HEAPOK) {
         hinfo._pentry = 0;

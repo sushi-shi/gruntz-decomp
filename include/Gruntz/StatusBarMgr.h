@@ -113,7 +113,7 @@ public:
     i32 BuildStatusBarTabs();
 
     i32 BuildTabzDialog();
-    i32 winapi_107d00_SetRect();
+    i32 StartChipMachineCycle();
     i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world);
     i32 LoadMainStatusBarSprite();
     i32 UpdateStatusBarTabHighlight(i32, i32, i32);
@@ -171,7 +171,7 @@ public:
     );
     i32 ClickHilite(i32 x, i32 y, i32 z);
 
-    i32 ClickAt_ff9d0(i32 a, i32 x, i32 y);
+    i32 OnPointerRelease(i32 button, i32 x, i32 y);
     i32 ClickToggle(i32 btn, i32 x, i32 y);
     CStatusBarItem* HitTestRects(i32 x, i32 y);
     void ResetWidgets(i32 keepLists);
@@ -196,7 +196,7 @@ public:
 
     void AdvanceTab(i32 reverse);
 
-    i32 winapi_0fe520_SetRect();
+    i32 DockStatusBarRight();
 
     i32 m_position;
     i32 m_4;

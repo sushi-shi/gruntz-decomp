@@ -10,6 +10,4 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 extern "C" i32 CustomGate(const char* name);
 
-extern "C" i32 func_2176(HWND hDlg);
-
 #endif // GRUNTZ_CUSTOMWORLDINFODLG_H

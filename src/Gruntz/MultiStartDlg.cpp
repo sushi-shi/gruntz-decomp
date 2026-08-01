@@ -72,14 +72,14 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
 
     MsgParam proc;
-    proc.m_intProc = WndProc_c1a10;
+    proc.m_intProc = MultiMapComboEditProc;
     SetWindowLongA(h, GWL_WNDPROC, proc.m_long);
     CommitWorldHost();
     return 1;
 }
 
 RVA(0x000c1a10, 0x70)
-i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
 
         MsgParam text;
@@ -169,16 +169,16 @@ i32 CMultiStartDlg::BuildSlotList() {
     if (reg->m_588) {
         count = 2;
     } else if (pi) {
-        if (pi->IsInterface1()) {
+        if (pi->IsIpxProvider()) {
             count = 1;
         }
-        if (pi->IsInterface2()) {
+        if (pi->IsTcpIpProvider()) {
             count = 2;
         }
-        if (pi->IsInterface3()) {
+        if (pi->IsModemProvider()) {
             count = 3;
         }
-        if (pi->IsInterface4()) {
+        if (pi->IsSerialProvider()) {
             count = 4;
         }
     }

@@ -22,22 +22,22 @@
             break;                                                                                 \
         }                                                                                          \
         case 0x1d:                                                                                 \
-            rec->m_logic->UserLogicVfunc9();                                                       \
+            rec->m_logic->OnObjectRemoved();                                                       \
             break;                                                                                 \
         case 0x1e:                                                                                 \
-            rec->m_logic->UserLogicVfunc8();                                                       \
+            rec->m_logic->OnLeaveActiveRegion();                                                   \
             break;                                                                                 \
         case 0x50:                                                                                 \
-            rec->m_logic->UserLogicVfuncC();                                                       \
+            rec->m_logic->PrepareSave();                                                           \
             break;                                                                                 \
         case 0x53:                                                                                 \
-            rec->m_logic->UserLogicVfuncD();                                                       \
+            rec->m_logic->AfterLoadReferences();                                                   \
             break;                                                                                 \
         case 0x52:                                                                                 \
-            rec->m_logic->UserLogicVfuncA();                                                       \
+            rec->m_logic->AfterLoad();                                                             \
             break;                                                                                 \
         case 0x51:                                                                                 \
-            rec->m_logic->UserLogicVfuncB();                                                       \
+            rec->m_logic->AfterSave();                                                             \
             break;                                                                                 \
         case 0x3e8:                                                                                \
             break;                                                                                 \
@@ -59,22 +59,22 @@ i32 CreateGruntSelectedSprite(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;
@@ -100,22 +100,22 @@ i32 CreateGruntToySprite(CGameObject* owner) {
             break;
         }
         case 0x1d:
-            rec->m_logic->UserLogicVfunc9();
+            rec->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            rec->m_logic->UserLogicVfunc8();
+            rec->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            rec->m_logic->UserLogicVfuncC();
+            rec->m_logic->PrepareSave();
             break;
         case 0x53:
-            rec->m_logic->UserLogicVfuncD();
+            rec->m_logic->AfterLoadReferences();
             break;
         case 0x52:
-            rec->m_logic->UserLogicVfuncA();
+            rec->m_logic->AfterLoad();
             break;
         case 0x51:
-            rec->m_logic->UserLogicVfuncB();
+            rec->m_logic->AfterSave();
             break;
         case 0x3e8:
             break;

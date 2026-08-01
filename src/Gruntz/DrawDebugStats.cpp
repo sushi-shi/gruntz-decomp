@@ -76,7 +76,7 @@ void CPlay::DrawDebugStats() {
     if (buf[0] != 0) {
         RECT lr;
 
-        RecordBytes reuse;
+        RecordBytes<RECT> reuse;
         reuse.m_chars = scratch;
         CopyRect(&lr, g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec)));
         RECT dr;

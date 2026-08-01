@@ -181,7 +181,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
             }
             m_palette = static_cast<PALETTEENTRY*>(::operator new(0x400));
 
-            RecordBytes blob;
+            RecordBytes<PidHeader> blob;
             blob.m_rec = src;
             i32 i = 0;
             i32 d = 0;

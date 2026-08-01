@@ -844,20 +844,20 @@ CButeValue* CButeValue::CopyValue(CButeValue* other) {
         case kButeString:
             *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);
             break;
-        case kButeRef5:
+        case kButeRect:
             (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
             (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
             (static_cast<i32*>(pValue))[2] = (static_cast<i32*>(other->pValue))[2];
             (static_cast<i32*>(pValue))[3] = (static_cast<i32*>(other->pValue))[3];
             break;
-        case kButeRef6:
+        case kButePoint:
             (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
             (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
             break;
-        case kButeRef7:
+        case kButeVector:
             *static_cast<ButeRefLarge*>(pValue) = *static_cast<ButeRefLarge*>(other->pValue);
             break;
-        case kButeRef8:
+        case kButeRange:
             (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
             (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
             (static_cast<i32*>(pValue))[2] = (static_cast<i32*>(other->pValue))[2];
@@ -875,17 +875,17 @@ CButeValue::~CButeValue() {
             delete static_cast<CString*>(pValue);
             break;
         case kButeDouble:
-        case kButeRef6:
+        case kButePoint:
             delete static_cast<double*>(pValue);
             break;
         case kButeInt:
         case kButeFloat:
-        case kButeRef7:
+        case kButeVector:
             delete static_cast<i32*>(pValue);
             break;
         case kButeDword:
-        case kButeRef5:
-        case kButeRef8:
+        case kButeRect:
+        case kButeRange:
             delete static_cast<u32*>(pValue);
             break;
     }
@@ -1042,19 +1042,19 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
         ReportError(s_fmtInvalidTag, tag);
     }
 
-    AddrWord empty;
+    AddrWord<CString> empty;
     empty.m_addr = &s_empty;
-    return static_cast<char*>(empty.m_addr);
+    return empty.m_bytes;
 }
 
 RVA(0x00173720, 0x4e)
-CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
+ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef5) {
-                return static_cast<CButeRef5*>(rec->pValue);
+            if (rec->type == kButeRect) {
+                return static_cast<ButeIntRect*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1063,13 +1063,13 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
 }
 
 RVA(0x00173cb0, 0x4e)
-CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
+ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef6) {
-                return static_cast<CButeRef6*>(rec->pValue);
+            if (rec->type == kButePoint) {
+                return static_cast<ButeIntPoint*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1084,13 +1084,13 @@ CButeValue::CButeValue(i32 type, CButeValue* src) {
 }
 
 RVA(0x001741f0, 0x4e)
-CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key, CButeRef7* def) {
+ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef7) {
-                return static_cast<CButeRef7*>(rec->pValue);
+            if (rec->type == kButeVector) {
+                return static_cast<ButeDoubleVector*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1099,13 +1099,13 @@ CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key, CButeRef7* def) {
 }
 
 RVA(0x00174770, 0x4e)
-CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key, CButeRef8* def) {
+ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef8) {
-                return static_cast<CButeRef8*>(rec->pValue);
+            if (rec->type == kButeRange) {
+                return static_cast<ButeDoubleRange*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1349,7 +1349,7 @@ bool ButeMgr::ParseAttributeFile() {
             i32 a, b, c, d;
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (m_writeMode) {
-                CButeRef5* r = GetRef5(m_tagName, m_str104);
+                ButeIntRect* r = GetRect(m_tagName, m_str104);
                 ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->b);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->c);
@@ -1378,7 +1378,7 @@ bool ButeMgr::ParseAttributeFile() {
             i32 a, b;
             sscanf(m_token, s_fmtPoint2, &a, &b);
             if (m_writeMode) {
-                CButeRef6* r = GetRef6(m_tagName, m_str104);
+                ButeIntPoint* r = GetPoint(m_tagName, m_str104);
                 ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->b);
                 (*m_pText) << s_strClose;
@@ -1403,7 +1403,7 @@ bool ButeMgr::ParseAttributeFile() {
             double x, y, z;
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
-                CButeRef7* r = GetRef7(m_tagName, m_str104);
+                ButeDoubleVector* r = GetVector(m_tagName, m_str104);
                 double dx = r->x;
                 double dy = r->y;
                 double dz = r->z;
@@ -1433,7 +1433,7 @@ bool ButeMgr::ParseAttributeFile() {
             double x, y;
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (m_writeMode) {
-                CButeRef8* r = GetRef8(m_tagName, m_str104);
+                ButeDoubleRange* r = GetRange(m_tagName, m_str104);
                 double dx = r->x;
                 double dy = r->y;
                 ((*m_pText) << s_strLBrack) << static_cast<double>(dx);
@@ -1485,15 +1485,15 @@ bool ButeMgr::ParseAttributeFile() {
 }
 
 RVA(0x00173770, 0xc6)
-CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
-    static CButeRef5 s_default;
+ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
+    static ButeIntRect s_default;
 
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef5) {
-                return static_cast<CButeRef5*>(rec->pValue);
+            if (rec->type == kButeRect) {
+                return static_cast<ButeIntRect*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1506,15 +1506,15 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
 }
 
 RVA(0x00173d00, 0xbb)
-CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key) {
-    static CButeRef6 s_default;
+ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
+    static ButeIntPoint s_default;
 
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef6) {
-                return static_cast<CButeRef6*>(rec->pValue);
+            if (rec->type == kButePoint) {
+                return static_cast<ButeIntPoint*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1528,15 +1528,15 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key) {
 
 // @early-stop
 RVA(0x00174240, 0xe3)
-CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key) {
-    static CButeRef7 s_default;
+ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
+    static ButeDoubleVector s_default;
 
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef7) {
-                return static_cast<CButeRef7*>(rec->pValue);
+            if (rec->type == kButeVector) {
+                return static_cast<ButeDoubleVector*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1550,15 +1550,15 @@ CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key) {
 
 // @early-stop
 RVA(0x001747c0, 0xcf)
-CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key) {
-    static CButeRef8 s_default;
+ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
+    static ButeDoubleRange s_default;
 
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
-            if (rec->type == kButeRef8) {
-                return static_cast<CButeRef8*>(rec->pValue);
+            if (rec->type == kButeRange) {
+                return static_cast<ButeDoubleRange*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1617,21 +1617,21 @@ CButeValue* CButeValue::SetString(i32 type, const CString& src) {
 }
 
 RVA(0x00173c60, 0x49)
-CButeValue* CButeValue::SetRef5(i32 type, const ButeRefSmall* src) {
+CButeValue* CButeValue::SetRect(i32 type, const ButeRefSmall* src) {
     this->type = type;
     this->pValue = new ButeRefSmall(*src);
     return this;
 }
 
 RVA(0x00174730, 0x3c)
-CButeValue* CButeValue::SetRef7(i32 type, const ButeRefLarge* src) {
+CButeValue* CButeValue::SetVector(i32 type, const ButeRefLarge* src) {
     this->type = type;
     this->pValue = new ButeRefLarge(*src);
     return this;
 }
 
 RVA(0x00174cb0, 0x49)
-CButeValue* CButeValue::SetRef8(i32 type, const ButeRefSmall* src) {
+CButeValue* CButeValue::SetRange(i32 type, const ButeRefSmall* src) {
     this->type = type;
     this->pValue = new ButeRefSmall(*src);
     return this;
@@ -1795,29 +1795,29 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
                    << static_cast<unsigned char>('"');
             break;
 
-        case kButeRef5: {
-            CButeRef5* ref = static_cast<CButeRef5*>(value->pValue);
+        case kButeRect: {
+            ButeIntRect* ref = static_cast<ButeIntRect*>(value->pValue);
             output << s_strOpen << static_cast<long>(ref->a) << s_strComma
                    << static_cast<long>(ref->b) << s_strComma << static_cast<long>(ref->c)
                    << s_strComma << static_cast<long>(ref->d) << s_strClose;
             break;
         }
 
-        case kButeRef6: {
-            CButeRef6* ref = static_cast<CButeRef6*>(value->pValue);
+        case kButePoint: {
+            ButeIntPoint* ref = static_cast<ButeIntPoint*>(value->pValue);
             output << s_strOpen << static_cast<long>(ref->a) << s_strComma
                    << static_cast<long>(ref->b) << s_strClose;
             break;
         }
 
-        case kButeRef7: {
-            CButeRef7* ref = static_cast<CButeRef7*>(value->pValue);
+        case kButeVector: {
+            ButeDoubleVector* ref = static_cast<ButeDoubleVector*>(value->pValue);
             output << s_strLt << ref->x << s_strComma << ref->y << s_strComma << ref->z << s_strGt;
             break;
         }
 
-        case kButeRef8: {
-            CButeRef8* ref = static_cast<CButeRef8*>(value->pValue);
+        case kButeRange: {
+            ButeDoubleRange* ref = static_cast<ButeDoubleRange*>(value->pValue);
             output << s_strLBrack << ref->x << s_strComma << ref->y << s_strRBrack;
             break;
         }
@@ -1833,10 +1833,8 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
     static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, 0);
 }
 
-// @identity-TODO Original semantic name is not present in the retail evidence; the CButeMgr
-// receiver and no-argument signature are proven by field accesses and the thiscall prologue.
 RVA(0x00171640, 0x3f2)
-bool CButeMgr::Gap_171640() {
+bool CButeMgr::Save() {
     Init();
     if (m_str108.IsEmpty()) {
         return false;

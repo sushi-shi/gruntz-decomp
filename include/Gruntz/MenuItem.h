@@ -26,7 +26,7 @@ public:
         i32 flags
     );
 
-    virtual void Dispatch0c();
+    virtual void Cleanup();
     virtual void Reset();
     virtual i32 GetWidth();
     virtual i32 GetFrameWidth();
@@ -47,15 +47,15 @@ public:
         return m_name;
     }
     RVA(0x001845d0, 0x20)
-    CString GetNavFwdName() {
-        return m_navFwdName;
+    CString GetLeftName() {
+        return m_leftName;
     }
     RVA(0x001845f0, 0x20)
-    CString GetNavBackName() {
-        return m_navBackName;
+    CString GetRightName() {
+        return m_rightName;
     }
-    CString GetField54();
-    CString GetField58();
+    CString GetUpName();
+    CString GetDownName();
     i32 NotifyCmd();
     i32 Hit(i32 x, i32 y);
 
@@ -80,10 +80,10 @@ public:
     i32 m_hitBottom;
     i32 m_fixedX;
     i32 m_fixedY;
-    CString m_navFwdName;
-    CString m_navBackName;
-    CString m_54;
-    CString m_58;
+    CString m_leftName;
+    CString m_rightName;
+    CString m_upName;
+    CString m_downName;
 };
 SIZE(0x5c);
 
@@ -95,10 +95,10 @@ inline CMenuItem::CMenuItem() {
     m_listPos = 0;
     m_hitLeft = static_cast<i32>(0xeeeeeeee);
     m_fixedX = static_cast<i32>(0xeeeeeeee);
-    m_navFwdName.Empty();
-    m_navBackName.Empty();
-    m_54.Empty();
-    m_58.Empty();
+    m_leftName.Empty();
+    m_rightName.Empty();
+    m_upName.Empty();
+    m_downName.Empty();
 }
 
 #endif // GRUNTZ_MENUITEM_H

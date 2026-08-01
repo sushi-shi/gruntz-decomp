@@ -90,22 +90,22 @@ i32 CreateGruntVoice(CGameObject* obj) {
             break;
         }
         case 0x1d:
-            ctl->m_logic->UserLogicVfunc9();
+            ctl->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            ctl->m_logic->UserLogicVfunc8();
+            ctl->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            ctl->m_logic->UserLogicVfuncC();
+            ctl->m_logic->PrepareSave();
             break;
         case 0x51:
-            ctl->m_logic->UserLogicVfuncB();
+            ctl->m_logic->AfterSave();
             break;
         case 0x52:
-            ctl->m_logic->UserLogicVfuncA();
+            ctl->m_logic->AfterLoad();
             break;
         case 0x53:
-            ctl->m_logic->UserLogicVfuncD();
+            ctl->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
             break;
@@ -128,22 +128,22 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
             break;
         }
         case 0x1d:
-            ctl->m_logic->UserLogicVfunc9();
+            ctl->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            ctl->m_logic->UserLogicVfunc8();
+            ctl->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            ctl->m_logic->UserLogicVfuncC();
+            ctl->m_logic->PrepareSave();
             break;
         case 0x51:
-            ctl->m_logic->UserLogicVfuncB();
+            ctl->m_logic->AfterSave();
             break;
         case 0x52:
-            ctl->m_logic->UserLogicVfuncA();
+            ctl->m_logic->AfterLoad();
             break;
         case 0x53:
-            ctl->m_logic->UserLogicVfuncD();
+            ctl->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
             break;

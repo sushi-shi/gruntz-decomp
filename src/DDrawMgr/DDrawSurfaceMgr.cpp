@@ -367,7 +367,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
-    m_childGroup->DestroyChildren_159ef0();
+    m_childGroup->ClearChildren();
     if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
@@ -400,7 +400,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
     }
 
     S.Ready();
-    m_level->MainPlaneQueryB();
+    m_level->DeactivateDistantObjectsOnMainPlane();
     return 1;
 }
 

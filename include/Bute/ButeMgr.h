@@ -30,22 +30,22 @@ SIZE(0x1);
 
 extern "C" void AfxString_AppendChar(void* pStr, char c);
 
-struct CButeRef5 {
-    CButeRef5() : a(0), b(0), c(0), d(0) {}
-    ~CButeRef5() {}
+struct ButeIntRect {
+    ButeIntRect() : a(0), b(0), c(0), d(0) {}
+    ~ButeIntRect() {}
     DWORD a, b, c, d;
 };
 SIZE(0x10);
-struct CButeRef6 {
-    CButeRef6() : a(0), b(0) {}
-    ~CButeRef6() {}
+struct ButeIntPoint {
+    ButeIntPoint() : a(0), b(0) {}
+    ~ButeIntPoint() {}
     DWORD a, b;
 };
 SIZE(0x8);
 
-struct CButeRef7 {
-    CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
-    ~CButeRef7() {}
+struct ButeDoubleVector {
+    ButeDoubleVector() : a(0), b(0), c(0), d(0), e(0), f(0) {}
+    ~ButeDoubleVector() {}
     union {
         struct {
             DWORD a, b;
@@ -67,9 +67,9 @@ struct CButeRef7 {
 };
 SIZE(0x18);
 
-struct CButeRef8 {
-    CButeRef8() : a(0), b(0), c(0), d(0) {}
-    ~CButeRef8() {}
+struct ButeDoubleRange {
+    ButeDoubleRange() : a(0), b(0), c(0), d(0) {}
+    ~ButeDoubleRange() {}
     union {
         struct {
             DWORD a, b;
@@ -105,10 +105,11 @@ public:
     CString* GetStringDef(const char* tag, const char* key, CString* def);
     char* GetString(const char* tag, const char* key);
 
-    struct CButeRef5* GetRef5(const char* tag, const char* key, struct CButeRef5* def);
-    struct CButeRef6* GetRef6(const char* tag, const char* key, struct CButeRef6* def);
-    struct CButeRef7* GetRef7(const char* tag, const char* key, struct CButeRef7* def);
-    struct CButeRef8* GetRef8(const char* tag, const char* key, struct CButeRef8* def);
+    struct ButeIntRect* GetRect(const char* tag, const char* key, struct ButeIntRect* def);
+    struct ButeIntPoint* GetPoint(const char* tag, const char* key, struct ButeIntPoint* def);
+    struct ButeDoubleVector*
+    GetVector(const char* tag, const char* key, struct ButeDoubleVector* def);
+    struct ButeDoubleRange* GetRange(const char* tag, const char* key, struct ButeDoubleRange* def);
 
     bool ScanToken(i32 expectType);
     bool ParseTagLine();
@@ -116,7 +117,7 @@ public:
 
     bool Parse(CString filename, int streamBase);
 
-    bool Gap_171640();
+    bool Save();
 
     void ReportError(const char* fmt, ...);
 
@@ -185,10 +186,10 @@ public:
     char m_10e;
     CButeTail m_10f;
 
-    CButeRef5* GetRef5(const char* tag, const char* key);
-    CButeRef6* GetRef6(const char* tag, const char* key);
-    CButeRef7* GetRef7(const char* tag, const char* key);
-    CButeRef8* GetRef8(const char* tag, const char* key);
+    ButeIntRect* GetRect(const char* tag, const char* key);
+    ButeIntPoint* GetPoint(const char* tag, const char* key);
+    ButeDoubleVector* GetVector(const char* tag, const char* key);
+    ButeDoubleRange* GetRange(const char* tag, const char* key);
 };
 SIZE(0x110);
 

@@ -184,9 +184,8 @@ i32 CSpotLight::Tick() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        CGrunt* tgt = static_cast<CGrunt*>(
-            Probe_32ce(o->m_screenX, o->m_screenY, &o->m_area, &m_9c, &m_a0, 0)
-        );
+        CGrunt* tgt =
+            reg->m_cmdGrid->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &m_9c, &m_a0, 0);
         if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId("B");
@@ -220,7 +219,7 @@ i32 CSpotLight::Tick() {
                     }
                 }
             } else {
-                Activate_4322(tgt, 1);
+                tgt->SnapToLastTile(1);
                 reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 0xa, -1);
             }
             return 0;

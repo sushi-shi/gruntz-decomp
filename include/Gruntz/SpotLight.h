@@ -42,8 +42,6 @@ public:
 };
 SIZE(0xa8);
 
-extern "C" void* Probe_32ce(i32 x, i32 y, void* rect, i32* outA, i32* outB, i32 flag);
-extern "C" void Activate_4322(void* target, i32 f);
 extern u8 g_randSeeded;
 extern i32 g_randSeed;
 #endif // GRUNTZ_CSPOTLIGHT_H

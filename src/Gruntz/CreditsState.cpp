@@ -124,7 +124,7 @@ void CCreditsState::ReleaseResources() {
 }
 
 RVA(0x00039120, 0x2c)
-i32 CCreditsState::Vslot09(i32) {
+i32 CCreditsState::EnterState(i32) {
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -207,7 +207,7 @@ i32 CCreditsState::InputVirtual() {
 }
 
 RVA(0x00039400, 0x2f)
-i32 CCreditsState::Vslot06() {
+i32 CCreditsState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
@@ -219,7 +219,7 @@ i32 CCreditsState::Vslot06() {
 }
 
 RVA(0x00039440, 0x46)
-i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
+i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
         if (m_24 == 5) {
             PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
@@ -232,7 +232,7 @@ i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
 
 // @early-stop
 RVA(0x000394b0, 0x86)
-i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
+i32 CCreditsState::OnLButtonDown(i32 x, i32 unused, i32 y) {
     RECT rc;
     rc.left = 0;
     rc.top = 0;

@@ -224,9 +224,9 @@ i32 CSBI_StatzTabGruntBar::Update() {
     if (m_selectValue != selectVal) {
         if (selectVal == 0) {
 
-            AddrWord zero;
+            AddrWord<CImage> zero;
             zero.m_word = selectVal;
-            m_selectGlyph = static_cast<CImage*>(zero.m_addr);
+            m_selectGlyph = zero.m_addr;
         } else {
             CDDrawWorker* gm = m_glyphMap;
             i32 key = selectVal + 0x28;

@@ -142,7 +142,7 @@ void RezAssertFail(char* fmt, ...) {
         va_list ap;
         va_start(ap, fmt);
         vsprintf(buf, fmt, ap);
-        DebugSink_184df0(buf);
+        DiscardDebugOutput(buf);
     }
 }
 
@@ -155,7 +155,7 @@ void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
         va_list ap;
         va_start(ap, fmt);
         vsprintf(buf, fmt, ap);
-        DebugSink_184df0(buf);
+        DiscardDebugOutput(buf);
     }
 }
 
@@ -167,7 +167,7 @@ void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
         va_list ap;
         va_start(ap, fmt);
         vsprintf(buf, fmt, ap);
-        DebugSink_184df0(buf);
+        DiscardDebugOutput(buf);
     }
 }
 
@@ -180,7 +180,7 @@ void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
         va_list ap;
         va_start(ap, fmt);
         vsprintf(buf, fmt, ap);
-        DebugSink_184df0(buf);
+        DiscardDebugOutput(buf);
     }
 }
 

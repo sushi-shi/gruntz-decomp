@@ -30,19 +30,25 @@ public:
     virtual i32 GetClassId() OVERRIDE;
 
     virtual void TickKillCues(i32 advance);
-    virtual void WalkDispatch2C(class CDDrawSurfacePair* target);
+    virtual void RenderChildren(class CDDrawSurfacePair* target);
 
-    virtual void WalkDispatch30(CDDrawSurfacePair* dst, CDDrawSurfacePair* src);
+    virtual void BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src);
 
-    virtual void
-    WalkDispatch34(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc);
-    virtual void
-    WalkDispatch38(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc);
-    virtual void ResetChildD8();
+    virtual void BltDirtyChildrenEx(
+        CDDrawSurfacePair* dst,
+        CDDrawSurfacePair* src,
+        CDDrawSurfacePair* restoreSrc
+    );
+    virtual void BltDirtyChildRegions(
+        CDDrawSurfacePair* dst,
+        CDDrawSurfacePair* src,
+        CDDrawSurfacePair* restoreSrc
+    );
+    virtual void InvalidateChildShadows();
     virtual void DestroyChildren();
     virtual void CollideBroadcast();
 
-    CWwdGameObjectC* CreateObject_159250(
+    CWwdGameObjectC* CreateDotObject(
         int id,
         int x,
         int y,
@@ -51,13 +57,13 @@ public:
         int dotColor,
         int stateFlags
     );
-    CWwdGameObjectF* CreateObject_159440(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
+    CWwdGameObjectF* CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
     CWwdGameObjectA*
-    CreateObject_159600(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
+    CreateSpriteObject(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
     CWwdGameObject*
-    CreateObject_1598d0(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
+    CreateContainerObject(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
 
-    CWwdGameObjectC* CreateNamed_1593e0(
+    CWwdGameObjectC* CreateNamedDotObject(
         int id,
         int x,
         int y,
@@ -66,9 +72,10 @@ public:
         int dotColor,
         int stateFlags
     );
-    CWwdGameObjectF* CreateNamed_1595b0(int id, int sortKey, const char* name, int stateFlags);
+    CWwdGameObjectF*
+    CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags);
     CWwdGameObject*
-    CreateNamed_159a10(int id, int x, int y, int sortKey, const char* name, int stateFlags);
+    CreateNamedContainerObject(int id, int x, int y, int sortKey, const char* name, int stateFlags);
 
     CWwdGameObjectA*
     CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
@@ -96,7 +103,7 @@ public:
     CWwdGameObject* FindByType04(i32 type);
     CWwdGameObject* FindByTypeProbe(i32 type);
     CWwdGameObject* FindByWorker(i32 type, void* key);
-    CWwdGameObject* FindByField(i32 type, i32 key);
+    CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
     void* Find(i32 id, const char* key);
     CWwdGameObject* FindByKey(void* key);
@@ -119,7 +126,7 @@ public:
     void DrawObjectDebugGeometry();
     void DrawObjectCounts();
 
-    void DestroyChildren_159ef0();
+    void ClearChildren();
 
     CGameObject* Drain();
 };

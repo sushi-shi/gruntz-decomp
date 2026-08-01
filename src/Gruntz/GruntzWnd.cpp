@@ -16,7 +16,7 @@ CGruntzWnd::~CGruntzWnd() {
 }
 
 RVA(0x00094770, 0x5)
-i32 CGruntzWnd::Wap32GameWndVfunc2(i32, i32, i32) {
+i32 CGruntzWnd::HandleWindowCommand(i32, i32, i32) {
     return 0;
 }
 
@@ -71,7 +71,7 @@ i32 CGruntzWnd::OnChar(WPARAM wParam, LPARAM lParam) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState0b(wParam, lParam);
+    return mgr->ForwardCharToState(wParam, lParam);
 }
 
 RVA(0x000948e0, 0x21)
@@ -80,7 +80,7 @@ i32 CGruntzWnd::OnKeyDown(WPARAM wParam, LPARAM lParam) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState0c(wParam, lParam);
+    return mgr->ForwardKeyDownToState(wParam, lParam);
 }
 
 RVA(0x00094920, 0x21)
@@ -89,7 +89,7 @@ i32 CGruntzWnd::OnKeyUp(WPARAM wParam, LPARAM lParam) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState0d(wParam, lParam);
+    return mgr->ForwardKeyUpToState(wParam, lParam);
 }
 
 RVA(0x00094960, 0x26)
@@ -98,7 +98,7 @@ i32 CGruntzWnd::OnLButtonDown(WPARAM keys, i32 x, i32 y) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState0e(keys, x, y);
+    return mgr->ForwardLButtonDownToState(keys, x, y);
 }
 
 RVA(0x000949a0, 0x26)
@@ -107,7 +107,7 @@ i32 CGruntzWnd::OnLButtonUp(WPARAM keys, i32 x, i32 y) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState0f(keys, x, y);
+    return mgr->ForwardLButtonUpToState(keys, x, y);
 }
 
 RVA(0x000949e0, 0x26)
@@ -116,7 +116,7 @@ i32 CGruntzWnd::OnMouseMove(WPARAM keys, i32 x, i32 y) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState14(keys, x, y);
+    return mgr->ForwardMouseMoveToState(keys, x, y);
 }
 
 RVA(0x00094a20, 0x26)
@@ -125,7 +125,7 @@ i32 CGruntzWnd::OnRButtonDown(WPARAM keys, i32 x, i32 y) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState11(keys, x, y);
+    return mgr->ForwardRButtonDownToState(keys, x, y);
 }
 
 RVA(0x00094a60, 0x26)
@@ -134,7 +134,7 @@ i32 CGruntzWnd::OnRButtonUp(WPARAM keys, i32 x, i32 y) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState12(keys, x, y);
+    return mgr->ForwardRButtonUpToState(keys, x, y);
 }
 
 RVA(0x00094aa0, 0x26)
@@ -143,7 +143,7 @@ i32 CGruntzWnd::OnLButtonDblClk(WPARAM keys, i32 x, i32 y) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState10(keys, x, y);
+    return mgr->ForwardLButtonDblClkToState(keys, x, y);
 }
 
 RVA(0x00094ae0, 0x26)
@@ -152,7 +152,7 @@ i32 CGruntzWnd::OnRButtonDblClk(WPARAM keys, i32 x, i32 y) {
     if (!mgr) {
         return 0;
     }
-    return mgr->NotifyState13(keys, x, y);
+    return mgr->ForwardRButtonDblClkToState(keys, x, y);
 }
 
 RVA(0x00094b20, 0x49)
@@ -189,7 +189,7 @@ i32 CGruntzWnd::OnPaint() {
     return 0;
 }
 
-i32 CGruntzWnd::Wap32GameWndVfunc0() {
+i32 CGruntzWnd::UnusedWindowQuery() {
     return 0;
 }
 

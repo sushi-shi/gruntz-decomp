@@ -81,10 +81,7 @@ public:
     char m_pad228[0x428 - 0x228];
     HBITMAP m_dibSection;
 
-    union {
-        u8* m_pixels;
-        void* m_pixelsBits;
-    };
+    u8* m_pixels;
     i32* m_rowOffsets;
     i32 m_434;
     i32 m_width;

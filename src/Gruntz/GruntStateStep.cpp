@@ -55,7 +55,7 @@ static i32 iabs(i32 v) {
 
 // @early-stop
 RVA(0x00033520, 0xbc3)
-i32 CBattlezMapConfig::Step33520(CGrunt* g) {
+i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     i32 state = g->m_defenderState;
     if (state == 3) {
         return 1;
@@ -139,7 +139,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
                     && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0 && strcmp(nm, "C") != 0
                     && strcmp(nm, "R") != 0) {
-                    winapi_02ae00_IntersectRect(g, cur);
+                    HandleUnitContact(g, cur);
                 }
             }
             g->m_defenderState = 0;

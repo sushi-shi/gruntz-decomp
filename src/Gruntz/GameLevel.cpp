@@ -304,7 +304,7 @@ void CGameLevel::ReleaseChildren() {
 }
 
 RVA(0x0015cdf0, 0xb8)
-i32 CGameLevel::SetCoordsAndLoad40(const char* path, LevelCoordRect* coords) {
+i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (LoadFromFile(path) == 0) {
@@ -315,7 +315,7 @@ i32 CGameLevel::SetCoordsAndLoad40(const char* path, LevelCoordRect* coords) {
 }
 
 RVA(0x0015ceb0, 0xb8)
-i32 CGameLevel::SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords) {
+i32 CGameLevel::LoadSourceWithCoords(CParseSource* src, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (LoadFromSource(src) == 0) {
@@ -326,7 +326,7 @@ i32 CGameLevel::SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords) {
 }
 
 RVA(0x0015cf70, 0xb8)
-i32 CGameLevel::SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords) {
+i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (LoadWwd(hdr) == 0) {
@@ -707,7 +707,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
             ++idx;
         } while (idx <= m_mainIndex);
     }
-    ctx->WalkDispatch2C(visitor);
+    ctx->RenderChildren(visitor);
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
@@ -803,36 +803,36 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
         case 1:
         case 2:
         case 5:
-            eax = MoveHandlerA(s, destX, destY, moveFlags);
+            eax = MoveGrounded(s, destX, destY, moveFlags);
             break;
         case 3:
-            eax = MoveHandlerB(s, destX, destY, moveFlags);
+            eax = MoveRising(s, destX, destY, moveFlags);
             if (s->m_moveMode == 4) {
                 eax |= 0x800000;
             }
             break;
         case 4:
-            eax = MoveHandlerC(s, destX, destY, moveFlags);
+            eax = MoveFalling(s, destX, destY, moveFlags);
             if (s->m_moveMode == 1) {
                 eax |= 0x1000000;
             }
             break;
         case 8:
             if (destY < prevY) {
-                eax = MoveHandlerB(s, destX, destY, moveFlags);
+                eax = MoveRising(s, destX, destY, moveFlags);
                 if (s->m_moveMode == 4) {
                     eax |= 0x800000;
                     s->m_moveMode = 8;
                 }
             } else {
-                eax = MoveHandlerC(s, destX, destY, moveFlags);
+                eax = MoveFalling(s, destX, destY, moveFlags);
                 if (s->m_moveMode == 1) {
                     eax |= 0x1000000;
                 }
             }
             break;
         case 6:
-            eax = MoveHandlerD(s, destX, destY, moveFlags);
+            eax = MoveClimbing(s, destX, destY, moveFlags);
             break;
         case 7:
             s->m_screenX = destX;
@@ -858,7 +858,7 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
 
 // @early-stop
 RVA(0x0015e130, 0x1bb)
-i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
 
     if (destX > t->m_screenX) {
@@ -868,7 +868,7 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
     }
 
     if (destY < t->m_screenY) {
-        destY = AdvanceA(t, destX, destY, moveFlags);
+        destY = ResolveCeilingCollision(t, destX, destY, moveFlags);
     }
 
     i32 bracket;
@@ -933,7 +933,7 @@ commit:
 
 // @early-stop
 RVA(0x0015e2f0, 0x1b7)
-i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 savedDestX = destX;
     i32 result = 0;
 
@@ -951,7 +951,7 @@ i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
     }
 
     if (t->m_moveMode != 1) {
-        destY = AdvanceB(t, destX, destY, moveFlags);
+        destY = ResolveFloorCollision(t, destX, destY, moveFlags);
     }
 
     if (moveFlags & 1) {
@@ -991,7 +991,7 @@ i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
 
 // @early-stop
 RVA(0x0015e4b0, 0xf7)
-i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
 
     if (destX > t->m_screenX) {
@@ -1000,7 +1000,7 @@ i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         result = StepAxisHi(t, destX, destY, &destX, moveFlags);
     }
 
-    destY = AdvanceA(t, destX, destY, moveFlags);
+    destY = ResolveCeilingCollision(t, destX, destY, moveFlags);
 
     if (moveFlags & 1) {
         i32 limit = t->m_extent.top + destY - 1;
@@ -1027,13 +1027,13 @@ i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
 
 // @early-stop
 RVA(0x0015e5b0, 0x162)
-i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
     i32 cursor;
     i32 coord = destX;
 
     if (t->m_screenY < destY) {
-        cursor = AdvanceB(t, destX, destY, moveFlags);
+        cursor = ResolveFloorCollision(t, destX, destY, moveFlags);
         if (t->m_moveMode != 1) {
             i32 hi = t->m_extent.bottom + cursor + 1;
             i32 lo = t->m_extent.top + cursor - 1;
@@ -1042,7 +1042,7 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
             }
         }
     } else {
-        cursor = AdvanceA(t, destX, destY, moveFlags);
+        cursor = ResolveCeilingCollision(t, destX, destY, moveFlags);
         i32 hi = t->m_extent.bottom + cursor + 1;
         i32 lo = t->m_extent.top + cursor - 1;
         if (AxisProbe(destX, lo) != kTileHard && AxisProbe(destX, hi) != kTileHard) {
@@ -1166,7 +1166,7 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
 
 // @early-stop
 RVA(0x0015ede0, 0x2a7)
-i32 CGameLevel::AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 lo = t->m_extent.left + destX;
     i32 mid = t->m_extent.right + destX;
     i32 hiY = destY + t->m_extent.bottom + 1;
@@ -1224,7 +1224,7 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
 
 // @early-stop
 RVA(0x0015f1c0, 0x171)
-i32 CGameLevel::AdvanceA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+i32 CGameLevel::ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 startCol = t->m_extent.left + destX;
     i32 mid = t->m_extent.right + destX;
     i32 ceil = destY + t->m_extent.top - 1;
@@ -1742,7 +1742,7 @@ i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
 
 RVA(0x0015f610, 0x191)
 i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
-    y = AdvanceA(t, x, y, flags);
+    y = ResolveCeilingCollision(t, x, y, flags);
     i32 headRow = t->m_extent.bottom + y + 1;
     i32 footRow = t->m_extent.top + y - 1;
     if (AxisProbe(x, footRow) == kTileHard) {
@@ -1779,7 +1779,7 @@ done:
 
 RVA(0x0015f7b0, 0x11f)
 i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
-    y = AdvanceB(t, x, y, flags);
+    y = ResolveFloorCollision(t, x, y, flags);
     if (t->m_moveMode == 1) {
         return y;
     }

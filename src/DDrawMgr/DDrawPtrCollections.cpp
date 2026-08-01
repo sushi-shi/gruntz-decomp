@@ -113,7 +113,7 @@ i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 width, i32 height, i32 c
     desc.ddckCKSrcBlt.dwColorSpaceHighValue = 1;
     desc.dwSize = sizeof(desc);
     desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
-    return CDDSurface::Init1(info, &desc) != 0;
+    return CDDSurface::CreateFromDesc(info, &desc) != 0;
 }
 
 RVA(0x00148ac0, 0x2b)
@@ -140,7 +140,7 @@ i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 caps, i32 flags, i32 bac
     m_surfaceCaps = caps | 0x200;
     m_descFlags = flags;
     m_backBufferCount = backBufferCount;
-    if (!CDDSurface::Init1(info, 0)) {
+    if (!CDDSurface::CreateFromDesc(info, 0)) {
         return 0;
     }
     InstallColorFormat();
@@ -148,8 +148,8 @@ i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 caps, i32 flags, i32 bac
 }
 
 RVA(0x00148b50, 0x2c)
-i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
-    if (CDDSurface::Init1(h, desc) == 0) {
+i32 CPoolItemAB8::CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
+    if (CDDSurface::CreateFromDesc(h, desc) == 0) {
         return 0;
     }
     InstallColorFormat();
@@ -228,10 +228,10 @@ i32 CPoolItemAE8::Blit47(
     desc.dwHeight = height;
     desc.dwSize = sizeof(desc);
     desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_ZBUFFERBITDEPTH;
-    return CDDSurface::Init1(info, &desc) != 0;
+    return CDDSurface::CreateFromDesc(info, &desc) != 0;
 }
 
 RVA(0x00148cc0, 0x18)
-i32 CPoolItemAE8::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
-    return CDDSurface::Init1(h, desc) != 0;
+i32 CPoolItemAE8::CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
+    return CDDSurface::CreateFromDesc(h, desc) != 0;
 }

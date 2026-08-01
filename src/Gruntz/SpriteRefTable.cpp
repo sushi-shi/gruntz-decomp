@@ -32,8 +32,8 @@ void CSpriteRefTable::Reset() {
     m_spriteMgrHolder = 0;
     m_built = 0;
     for (i32 i = 0; i < 0x11; i++) {
-        m_refA[i] = 0;
-        m_refB[i] = 0;
+        m_toolRefs[i] = 0;
+        m_toyRefs[i] = 0;
     }
 }
 
@@ -41,39 +41,39 @@ RVA(0x000e22d0, 0x6e)
 void CSpriteRefTable::Clear() {
     if (m_factory) {
         for (i32 i = 0; i < 0x11; i++) {
-            CSpriteRef* a = GetA(i);
+            CSpriteRef* a = GetTool(i);
             if (a) {
                 a->Free();
                 ::operator delete(a);
             }
-            CSpriteRef* b = GetB(i);
+            CSpriteRef* b = GetToy(i);
             if (b) {
                 b->Free();
                 ::operator delete(b);
             }
         }
         for (i32 j = 0; j < 0x11; j++) {
-            m_refA[j] = 0;
-            m_refB[j] = 0;
+            m_toolRefs[j] = 0;
+            m_toyRefs[j] = 0;
         }
         m_built = 0;
     }
 }
 
 RVA(0x000e2360, 0x15)
-CSpriteRef* CSpriteRefTable::GetA(i32 i) {
-    if (static_cast<u32>(i) >= 0x11) {
+CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
+    if (static_cast<u32>(colorId) >= 0x11) {
         return 0;
     }
-    return m_refA[i];
+    return m_toolRefs[colorId];
 }
 
 RVA(0x000e2390, 0x15)
-CSpriteRef* CSpriteRefTable::GetB(i32 i) {
-    if (static_cast<u32>(i) >= 0x11) {
+CSpriteRef* CSpriteRefTable::GetToy(i32 colorId) {
+    if (static_cast<u32>(colorId) >= 0x11) {
         return 0;
     }
-    return m_refB[i];
+    return m_toyRefs[colorId];
 }
 
 RVA(0x000e23c0, 0x2d)
@@ -81,7 +81,7 @@ CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     if (static_cast<u32>(i) >= 0x11) {
         return 0;
     }
-    CSpriteRef* node = bAlt ? m_refB[i] : m_refA[i];
+    CSpriteRef* node = bAlt ? m_toyRefs[i] : m_toolRefs[i];
     if (!node) {
         return 0;
     }
@@ -143,7 +143,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
     if (!pal) {
         return 0;
     }
-    return m_spriteMgrHolder->m_workerMap->Factory_1658c0(pal, 0, 0) != 0;
+    return m_spriteMgrHolder->m_workerMap->LoadPaletteFromSource(pal, 0, 0) != 0;
 }
 
 RVA(0x000e2980, 0x2cd)
@@ -187,172 +187,172 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CSymParser* src) {
     if (!r) {
         return 0;
     }
-    m_refA[7] = r;
+    m_toolRefs[7] = r;
     r = Add("BLACKTOY", 7);
     if (!r) {
         return 0;
     }
-    m_refB[7] = r;
+    m_toyRefs[7] = r;
     r = Add("DKBLUETOOL", 8);
     if (!r) {
         return 0;
     }
-    m_refA[8] = r;
+    m_toolRefs[8] = r;
     r = Add("DKBLUETOY", 8);
     if (!r) {
         return 0;
     }
-    m_refB[8] = r;
+    m_toyRefs[8] = r;
     r = Add("DKGREENTOOL", 9);
     if (!r) {
         return 0;
     }
-    m_refA[9] = r;
+    m_toolRefs[9] = r;
     r = Add("DKGREENTOY", 9);
     if (!r) {
         return 0;
     }
-    m_refB[9] = r;
+    m_toyRefs[9] = r;
     r = Add("TURQTOOL", 0xa);
     if (!r) {
         return 0;
     }
-    m_refA[0xa] = r;
+    m_toolRefs[0xa] = r;
     r = Add("TURQTOY", 0xa);
     if (!r) {
         return 0;
     }
-    m_refB[0xa] = r;
+    m_toyRefs[0xa] = r;
     r = Add("DKREDTOOL", 0xb);
     if (!r) {
         return 0;
     }
-    m_refA[0xb] = r;
+    m_toolRefs[0xb] = r;
     r = Add("DKREDTOY", 0xb);
     if (!r) {
         return 0;
     }
-    m_refB[0xb] = r;
+    m_toyRefs[0xb] = r;
     r = Add("PURPLETOOL", 4);
     if (!r) {
         return 0;
     }
-    m_refA[4] = r;
+    m_toolRefs[4] = r;
     r = Add("PURPLETOY", 4);
     if (!r) {
         return 0;
     }
-    m_refB[4] = r;
+    m_toyRefs[4] = r;
     r = Add("DKYELLOWTOOL", 0xd);
     if (!r) {
         return 0;
     }
-    m_refA[0xd] = r;
+    m_toolRefs[0xd] = r;
     r = Add("DKYELLOWTOY", 0xd);
     if (!r) {
         return 0;
     }
-    m_refB[0xd] = r;
+    m_toyRefs[0xd] = r;
     r = Add("GREYTOOL", 0xe);
     if (!r) {
         return 0;
     }
-    m_refA[0xe] = r;
+    m_toolRefs[0xe] = r;
     r = Add("GREYTOY", 0xe);
     if (!r) {
         return 0;
     }
-    m_refB[0xe] = r;
+    m_toyRefs[0xe] = r;
     r = Add("BLUETOOL", 2);
     if (!r) {
         return 0;
     }
-    m_refA[2] = r;
+    m_toolRefs[2] = r;
     r = Add("BLUETOY", 2);
     if (!r) {
         return 0;
     }
-    m_refB[2] = r;
+    m_toyRefs[2] = r;
     r = Add("GREENTOOL", 1);
     if (!r) {
         return 0;
     }
-    m_refA[1] = r;
+    m_toolRefs[1] = r;
     r = Add("GREENTOY", 1);
     if (!r) {
         return 0;
     }
-    m_refB[1] = r;
+    m_toyRefs[1] = r;
     r = Add("CYANTOOL", 0xf);
     if (!r) {
         return 0;
     }
-    m_refA[0xf] = r;
+    m_toolRefs[0xf] = r;
     r = Add("CYANTOY", 0xf);
     if (!r) {
         return 0;
     }
-    m_refB[0xf] = r;
+    m_toyRefs[0xf] = r;
     r = Add("REDTOOL", 3);
     if (!r) {
         return 0;
     }
-    m_refA[3] = r;
+    m_toolRefs[3] = r;
     r = Add("REDTOY", 3);
     if (!r) {
         return 0;
     }
-    m_refB[3] = r;
+    m_toyRefs[3] = r;
     r = Add("PINKTOOL", 0xc);
     if (!r) {
         return 0;
     }
-    m_refA[0xc] = r;
+    m_toolRefs[0xc] = r;
     r = Add("PINKTOY", 0xc);
     if (!r) {
         return 0;
     }
-    m_refB[0xc] = r;
+    m_toyRefs[0xc] = r;
     r = Add("YELLOWTOOL", 5);
     if (!r) {
         return 0;
     }
-    m_refA[5] = r;
+    m_toolRefs[5] = r;
     r = Add("YELLOWTOY", 5);
     if (!r) {
         return 0;
     }
-    m_refB[5] = r;
+    m_toyRefs[5] = r;
     r = Add("WHITETOOL", 0x10);
     if (!r) {
         return 0;
     }
-    m_refA[0x10] = r;
+    m_toolRefs[0x10] = r;
     r = Add("WHITETOY", 0x10);
     if (!r) {
         return 0;
     }
-    m_refB[0x10] = r;
+    m_toyRefs[0x10] = r;
     r = Add("ORANGETOOL", 0);
     if (!r) {
         return 0;
     }
-    m_refA[0] = r;
+    m_toolRefs[0] = r;
     r = Add("ORANGETOY", 0);
     if (!r) {
         return 0;
     }
-    m_refB[0] = r;
+    m_toyRefs[0] = r;
     r = Add("HOTPINKTOOL", 6);
     if (!r) {
         return 0;
     }
-    m_refA[6] = r;
+    m_toolRefs[6] = r;
     r = Add("HOTPINKTOY", 6);
     if (!r) {
         return 0;
     }
-    m_refB[6] = r;
+    m_toyRefs[6] = r;
     m_built = 1;
     return 1;
 }

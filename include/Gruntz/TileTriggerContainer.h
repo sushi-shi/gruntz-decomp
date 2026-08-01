@@ -99,7 +99,7 @@ public:
 
     CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2);
 
-    CTileActionEvent* FindByField0C(i32 key);
+    CTileActionEvent* FindActionByCellKey(i32 cellKey);
 
     CGiantRockLogic* ScanNeighborhood(i32 x, i32 y);
 

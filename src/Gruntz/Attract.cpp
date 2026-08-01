@@ -37,7 +37,7 @@ DATA(0x0024e35c)
 i32 g_playActive;
 
 RVA(0x00039160, 0x46)
-i32 CCreditsState::FrameSlot28(i32 unused) {
+i32 CCreditsState::LeaveState(i32 unused) {
     owner()->m_sound->IsPlaying();
     owner()->m_sound->StopAndFlush();
     m_2c = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
@@ -46,7 +46,7 @@ i32 CCreditsState::FrameSlot28(i32 unused) {
 }
 
 RVA(0x000a03f0, 0x14b)
-i32 CMenuState::Vslot09(i32 mode) {
+i32 CMenuState::EnterState(i32 mode) {
     char stateName[0x20];
     char titleName[0x20];
 
@@ -98,7 +98,7 @@ i32 CMenuState::Vslot09(i32 mode) {
 }
 
 RVA(0x000a0a30, 0x110)
-i32 CMenuState::Vslot06() {
+i32 CMenuState::RestoreDisplay() {
     char stateName[0x20];
     char titleName[0x20];
 
@@ -295,7 +295,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
 }
 
 RVA(0x000fa6b0, 0xa7)
-i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
+i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == 0) {
         return 0;
     }
@@ -438,7 +438,7 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
 }
 
 RVA(0x000fac70, 0x4c)
-i32 CState::Vslot07() {
+i32 CState::OnPaint() {
     if (!m_mgr) {
         return 0;
     }

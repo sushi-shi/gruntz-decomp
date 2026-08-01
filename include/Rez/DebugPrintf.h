@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 extern "C" int vsprintf(char* buf, const char* fmt, char* va);
-extern "C" void DebugSink_184df0(char* line);
+extern "C" void DiscardDebugOutput(char* line);
 
 extern "C" void RezAssertFail(char* fmt, ...);
 extern "C" void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...);
@@ -18,6 +18,6 @@ void DebugSetCursorXY(i32 x, i32 y);
 
 void DebugSetCursor(i32, i32, i32);
 int vsprintf(char* buf, const char* fmt, char* va);
-void DebugSink_184df0(char* line);
+void DiscardDebugOutput(char* line);
 
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

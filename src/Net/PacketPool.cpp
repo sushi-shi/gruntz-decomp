@@ -4,7 +4,7 @@
 #include <Net/CmdPool.h>
 
 RVA(0x000bf530, 0x3b)
-void* Unmatched_bf530(int bClear) {
+void* AllocateGruntRecord(int bClear) {
     CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
     if (freeList.GetCount()) {
         void* p = freeList.RemoveTail();

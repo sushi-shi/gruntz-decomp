@@ -31,9 +31,9 @@ public:
 
     void Clear();
 
-    CSpriteRef* GetA(i32 i);
+    CSpriteRef* GetTool(i32 colorId);
 
-    CSpriteRef* GetB(i32 i);
+    CSpriteRef* GetToy(i32 colorId);
 
     CShadeTable* GetSel(i32 i, i32 bAlt);
 
@@ -47,8 +47,8 @@ public:
 
     CShadeTableCache* m_factory;
     CDDrawSurfaceMgr* m_spriteMgrHolder;
-    CSpriteRef* m_refA[0x11];
-    CSpriteRef* m_refB[0x11];
+    CSpriteRef* m_toolRefs[0x11];
+    CSpriteRef* m_toyRefs[0x11];
     i32 m_built;
 };
 SIZE_UNKNOWN();

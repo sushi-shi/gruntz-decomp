@@ -12,8 +12,8 @@ DATA(0x0024ecf8)
 char g_infoMaster[0x800] = {0};
 
 RVA(0x001182f0, 0xc)
-i32 CGameInfo::Check1() {
-    return m_8 == 1;
+i32 CGameInfo::HasSupportedVersion() {
+    return m_version == 1;
 }
 
 RVA(0x00118310, 0xc)
@@ -43,12 +43,12 @@ i32 CGameInfo::FormatGameInfoString() {
     if (strlen(name) == 0) {
         return 0;
     }
-    if (!Check1()) {
+    if (!HasSupportedVersion()) {
         return 0;
     }
 
     g_infoMaster[0] = 0;
-    sprintf(g_infoScratch, "Name=%s&Type=%i&Location=%s&Version=%lu", name, m_d4, m_36, m_8);
+    sprintf(g_infoScratch, "Name=%s&Type=%i&Location=%s&Version=%lu", name, m_d4, m_36, m_version);
     strcat(g_infoMaster, g_infoScratch);
 
     CGameInfoTime* t = &m_b8;
@@ -60,7 +60,7 @@ i32 CGameInfo::FormatGameInfoString() {
     }
 
     u32 a = 0, b = 0, c = 0;
-    SplitMillisToHMS(t->m_8, &a, &b, &c);
+    SplitMillisToHMS(t->m_timeMs, &a, &b, &c);
     sprintf(g_infoScratch, "&S=%lu&H=%i&M=%02i&SE=%02i", t->m_4, a, b, c);
     strcat(g_infoMaster, g_infoScratch);
 

@@ -26,7 +26,7 @@ struct CRezList : public CObjList {
         m_head = 0;
         m_tail = 0;
     }
-    virtual void V0() OVERRIDE;
+    virtual void UnusedListHook() OVERRIDE;
 
     ~CRezList() {}
     void AddTail(CRezItmBase* node);

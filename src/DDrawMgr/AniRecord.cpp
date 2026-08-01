@@ -113,8 +113,8 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
             void* v = 0;
             owner->m_10.Lookup(t, v);
 
-            AddrWord idx;
-            idx.m_addr = v;
+            AddrWord<char> idx;
+            idx.m_addr = static_cast<char*>(v);
             m_indices[i] = idx.m_word;
         }
     }
@@ -137,8 +137,8 @@ i32 CAniRecordView::GetSize() {
 RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
 RVA(0x00168ea0, 0x40)
-i32 CAniRecordBase2::AllocBufMakeB2(char* path, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(path, 0x44);
+i32 CAniRecordBase2::LoadPaletteFromFile(char* path, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->LoadPaletteFromFile(path, 0x44);
     m_buf = buf;
     if (buf == 0) {
         return 0;
@@ -151,8 +151,8 @@ i32 CAniRecordBase2::AllocBufMakeB2(char* path, i32 flag) {
 }
 
 RVA(0x00168ee0, 0x40)
-i32 CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB(data, 0x44);
+i32 CAniRecordBase2::CreatePaletteFromRgb(void* data, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreateRgbPalette(data, 0x44);
     m_buf = buf;
     if (buf == 0) {
         return 0;
@@ -165,8 +165,8 @@ i32 CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
 }
 
 RVA(0x00168f20, 0x40)
-i32 CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->Create(handle, 0x44);
+i32 CAniRecordBase2::CreatePaletteFromEntries(i32 handle, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromEntries(handle, 0x44);
     m_buf = buf;
     if (buf == 0) {
         return 0;
@@ -179,8 +179,8 @@ i32 CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
 }
 
 RVA(0x00168f60, 0x45)
-i32 CAniRecordBase2::AllocBufMakeB3(void* data, i32 size, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB3(data, size, 0x44);
+i32 CAniRecordBase2::CreatePaletteFromTrailingData(void* data, i32 size, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromTrailingData(data, size, 0x44);
     m_buf = buf;
     if (buf == 0) {
         return 0;

@@ -17,11 +17,4 @@ public:
 };
 SIZE_UNKNOWN();
 
-struct Orient3 {
-    i32 m_0, m_4, m_8;
-    void StepA(i32 count);
-    void StepB(i32 count);
-};
-SIZE_UNKNOWN();
-
 #endif // GRUNTZ_GRUNTZ_DEMOHELPERS_H

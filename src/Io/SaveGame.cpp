@@ -33,7 +33,7 @@ DATA(0x0024c86c)
 CSaveGame* g_saveDlgSink = 0;
 
 RVA(0x000e35f0, 0x77)
-i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case 0x111:
             if (wParam == 2) {
@@ -159,7 +159,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 }
 
 RVA(0x000e3a40, 0xb0)
-i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case 0x110:
             if (g_slotState == 0) {
@@ -168,7 +168,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_slotState);
+            SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -196,7 +196,7 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_slotState);
+            SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -379,7 +379,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
-        i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", winapi_0e3a40_EndDialog, 0);
+        i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, 0);
         EnableWindow(hDlg, TRUE);
         if (ok == 0) {
             return 0;
@@ -450,7 +450,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
                 }
             }
         }
-        obj->FillSlotByIndex(slot, name, g_gameReg);
+        obj->InitializeNamedSlotAt(slot, name, g_gameReg);
         g_gameReg->FillSaveInfo(obj->GetSlot(slot), static_cast<void*>(name));
         EndDialog(hDlg, 1);
         if (!obj->Save(obj->GetSlot(slot)->m_savePath, 0x81a6)) {
@@ -531,7 +531,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
 }
 
 RVA(0x000e4850, 0x29)
-void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, SaveSlot* item) {
+void SetSaveSlotDialogName(HWND hWnd, void* gate, SaveSlot* item) {
     if (hWnd && gate && item) {
         SetDlgItemTextA(hWnd, 0x40d, item->m_name);
     }
@@ -651,15 +651,15 @@ i32 CSaveGame::Verify() {
 }
 
 RVA(0x000e5130, 0x78)
-i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
+i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, void* mgr) {
     if (dst == 0) {
         return 0;
     }
-    if (src == 0) {
+    if (mgr == 0) {
         return 0;
     }
     dst->m_type = 1;
-    CGruntzMgr* reg = static_cast<CGruntzMgr*>(src);
+    CGruntzMgr* reg = static_cast<CGruntzMgr*>(mgr);
     dst->m_levelId = (static_cast<CPlay*>(reg->m_curState))->m_levelIndex;
     dst->m_count = 0;
     dst->m_active = 1;
@@ -689,17 +689,17 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
 }
 
 RVA(0x000e5240, 0x54)
-i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
+i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr) {
     if (dst == 0) {
         return 0;
     }
-    if (src == 0) {
+    if (mgr == 0) {
         return 0;
     }
     dst->m_type = 1;
-    dst->m_levelId = name;
+    dst->m_levelId = levelId;
     dst->m_count = 0;
-    if ((static_cast<CGruntzMgr*>(src))->m_cheatMgr->m_124 != 0) {
+    if ((static_cast<CGruntzMgr*>(mgr))->m_cheatMgr->m_124 != 0) {
         dst->m_type = 3;
     }
     dst->m_checksum = Register(dst);
@@ -781,9 +781,9 @@ SaveSlot* CSaveGame::GetSlot(i32 i) {
 }
 
 RVA(0x000e54e0, 0x25)
-i32 CSaveGame::FillSlotByIndex(i32 idx, const char* name, void* src) {
+i32 CSaveGame::InitializeNamedSlotAt(i32 index, const char* name, void* mgr) {
 
-    return FillSlot(GetSlot(idx), name, src);
+    return InitializeNamedSlot(GetSlot(index), name, mgr);
 }
 
 RVA(0x000e5520, 0x20)

@@ -37,14 +37,14 @@ struct CImageSet1 : public CTileImageSet {
     virtual i32 GetCollisionAt(i32 x, i32 y) OVERRIDE;
     virtual i32 GetStride() OVERRIDE;
 
-    virtual i32 Query_161390(i32 a, i32 b, i32* outA, i32* outB);
-    virtual i32 Query_1613a0(i32 a, i32 b, i32 val, i32* out);
-    virtual i32 Query_1613b0(i32 a, i32 b, i32* outA, i32* outB);
-    virtual i32 Query_1613c0(i32 a, i32 b, i32 val, i32* out);
-    virtual i32 Query_1613d0(i32 a, i32 b, i32* outA, i32* outB);
-    virtual i32 Query_1613e0(i32 a, i32 b, i32 val, i32* out);
-    virtual i32 Query_1613f0(i32 a, i32 b, i32* outA, i32* outB);
-    virtual i32 Query_161400(i32 a, i32 b, i32 val, i32* out);
+    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX);
+    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanUpForValue(i32 x, i32 y, i32 value, i32* outY);
+    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRightForValue(i32 x, i32 y, i32 value, i32* outX);
+    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
     CImageSet1() {
         m_width = 0;
     }
@@ -68,15 +68,14 @@ struct CImageSet2 : public CTileImageSet {
     virtual i32 GetCollisionAt(i32 x, i32 y) OVERRIDE;
     virtual i32 GetStride() OVERRIDE;
 
-    virtual i32 Query_1669e0(i32 a, i32 b, i32* outA, i32* outB);
-
-    virtual i32 Query_166a40(i32 a, i32 b, i32 val, i32* out);
-    virtual i32 Query_166b90(i32 a, i32 b, i32* outA, i32* outB);
-    virtual i32 Query_166bf0(i32 a, i32 b, i32 val, i32* out);
-    virtual i32 Query_166ab0(i32 a, i32 b, i32* outA, i32* outB);
-    virtual i32 Query_166b20(i32 a, i32 b, i32 val, i32* out);
-    virtual i32 Query_166c60(i32 a, i32 b, i32* outA, i32* outB);
-    virtual i32 Query_166cd0(i32 a, i32 b, i32 val, i32* out);
+    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX);
+    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanUpForValue(i32 x, i32 y, i32 value, i32* outY);
+    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRightForValue(i32 x, i32 y, i32 value, i32* outX);
+    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
     CImageSet2() {
         m_width = 0;
     }
@@ -107,15 +106,15 @@ struct CImageSet3 : public CTileImageSet {
 
     virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);
 
-    virtual i32 ScanRunLeftGate_166e60(i32 x, i32 y, i32 val, i32* outX);
+    virtual i32 ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX);
 
     virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outVal);
 
-    virtual i32 ScanUpGate(i32 x, i32 y, i32 val, i32* outY);
+    virtual i32 ScanUpForValue(i32 x, i32 y, i32 value, i32* outY);
     virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outVal);
-    virtual i32 ScanRightGate(i32 x, i32 y, i32 val, i32* outX);
+    virtual i32 ScanRightForValue(i32 x, i32 y, i32 value, i32* outX);
     virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outVal);
-    virtual i32 ScanDownGate(i32 x, i32 y, i32 val, i32* outY);
+    virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
 
     CImageSet3() {
         m_width = 0;

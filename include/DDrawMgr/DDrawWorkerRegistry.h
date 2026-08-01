@@ -24,20 +24,28 @@ public:
     virtual void Unload() OVERRIDE;
     virtual i32 GetClassId() OVERRIDE;
 
-    virtual CImage* DispatchKeyed2C(i32 width, i32 height, const char* key, i32 index, i32 keyed);
-    virtual CImage* Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed);
+    virtual CImage*
+    CreateBlankFrameByKey(i32 width, i32 height, const char* key, i32 index, i32 keyed);
+    virtual CImage*
+    CreateBlankFrameForWorker(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed);
 
-    virtual CImage* Forward30(PidHeader* desc, i32 mode, CDDrawWorker* worker, i32 index, u32 size);
+    virtual CImage* CreateDescriptorFrameForWorker(
+        PidHeader* desc,
+        i32 mode,
+        CDDrawWorker* worker,
+        i32 index,
+        u32 size
+    );
 
     virtual CImage*
-    DispatchKeyed30(PidHeader* desc, i32 mode, const char* key, i32 index, u32 size);
+    CreateDescriptorFrameByKey(PidHeader* desc, i32 mode, const char* key, i32 index, u32 size);
 
-    virtual CImage* Forward38(void* rec, CDDrawWorker* worker, i32 index, i32 mode);
+    virtual CImage* InsertFrameForWorker(void* rec, CDDrawWorker* worker, i32 index, i32 mode);
 
-    virtual CImage* DispatchKeyed38(void* rec, const char* key, i32 index, i32 mode);
+    virtual CImage* InsertFrameByKey(void* rec, const char* key, i32 index, i32 mode);
 
-    virtual CImage* Forward34(char* path, CDDrawWorker* worker, i32 index, i32 keyed);
-    virtual CImage* DispatchKeyed34(char* path, const char* key, i32 index, i32 keyed);
+    virtual CImage* LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 index, i32 keyed);
+    virtual CImage* LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed);
 
     virtual i32 ProbeWorkerKey(class CSymParser* parser, const char* key);
 

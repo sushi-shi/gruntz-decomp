@@ -42,7 +42,7 @@ public:
     virtual i32 Load(CFileMemBase* s);
 
     virtual i32 SetParams(char targetIndex, char cmdKind, char targetType, i16 posX, i16 posY);
-    virtual i32 Vslot05();
+    virtual i32 UnusedCommandQuery();
 
     virtual char GetTag();
 
@@ -82,7 +82,7 @@ public:
     virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
-    virtual i32 Vslot05() OVERRIDE;
+    virtual i32 UnusedCommandQuery() OVERRIDE;
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
 
@@ -100,7 +100,7 @@ public:
     virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
-    virtual i32 Vslot05() OVERRIDE;
+    virtual i32 UnusedCommandQuery() OVERRIDE;
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
 

@@ -27,7 +27,7 @@ public:
     i32 IsPlaying();
     i32 IsLooping();
     i32 IsInHardware();
-    void SetField3(i32 on);
+    void SetLooping(i32 enabled);
     i32 SetVolume(i32 vol);
     i32 SetVolumeByIndex(i32 idx);
     i32 GetVolume();
@@ -38,7 +38,7 @@ public:
     i32 SetPanByIndex(i32 idx);
     i32 GetPan();
     i32 SetFrequency(u32 freq);
-    i32 SetField2(i32 pct);
+    i32 SetFrequencyOffsetPercent(i32 percentOffset);
     void ComputeDuration();
     i32 Unlock(void* audioPtr1, u32 audioBytes1, void* audioPtr2, u32 audioBytes2);
 
@@ -48,7 +48,7 @@ public:
     i32 LoadFromFile(FILE* fp, u32 bytes, i32 offset);
     i32 LockConvert(void* src, u32 lockBytes, u32 convert);
     i32 Play();
-    i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d);
+    i32 ApplyAndPlay(i32 vol, i32 pan, i32 freqPct, i32 loop);
     i32 Lock(
         u32 off,
         u32 bytes,

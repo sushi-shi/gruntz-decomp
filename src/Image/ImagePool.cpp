@@ -333,14 +333,16 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
     m_bih.biClrImportant = 0;
 
     u16* pal = m_pal;
+    void* pixels;
     if (m_bitCount == 8) {
         for (i32 i = 0; i < 256; i++) {
             *pal++ = static_cast<u16>(i);
         }
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, &m_pixelsBits, 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, &pixels, 0, 0);
     } else {
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, &m_pixelsBits, 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, &pixels, 0, 0);
     }
+    m_pixels = static_cast<u8*>(pixels);
     if (!m_dibSection) {
         return 0;
     }
@@ -887,7 +889,7 @@ i32 ApiCallerStubs::CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
         d->peFlags = 0;
         d++;
     } while (--i);
-    if (winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() && !(flags & 1)) {
+    if (DisplayUsesPalette() && !(flags & 1)) {
         Tune();
         m_systemTuned = 1;
     }
@@ -965,7 +967,7 @@ void ApiCallerStubs::CImagePaletteNode::Run() {
 }
 
 RVA(0x001770a0, 0x3a)
-i32 ApiCallerStubs::winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
+i32 ApiCallerStubs::DisplayUsesPalette() {
     HDC ic = CreateICA("DISPLAY", 0, 0, 0);
     if (ic) {
         i32 caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
@@ -977,7 +979,7 @@ i32 ApiCallerStubs::winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
 
 RVA(0x001770e0, 0x7c)
 void ApiCallerStubs::CImagePaletteNode::Tune() {
-    winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
+    ResetSystemPalette();
     HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
     i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
     i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
@@ -996,7 +998,7 @@ void ApiCallerStubs::CImagePaletteNode::Tune() {
 }
 
 RVA(0x00177160, 0x81)
-void ApiCallerStubs::winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD() {
+void ApiCallerStubs::ResetSystemPalette() {
 
     LogPal256 lp;
     HDC hdc = GetDC(0);

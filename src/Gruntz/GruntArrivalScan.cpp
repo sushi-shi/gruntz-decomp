@@ -195,7 +195,7 @@ L8a2:
 
 // @early-stop
 RVA(0x000ecc90, 0x86a)
-i32 CGrunt::ArrivalScanA() {
+i32 CGrunt::StepBrickLayerBehavior() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }
@@ -1204,7 +1204,7 @@ i32 CGrunt::UpdateArrival() {
 
 // @early-stop
 RVA(0x000f0e20, 0x928)
-i32 CGrunt::ArrivalScanB() {
+i32 CGrunt::StepGooSuckerBehavior() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }
@@ -1971,7 +1971,7 @@ i32 CGrunt::StepArrivalDefense() {
 
 // @early-stop
 RVA(0x000f36a0, 0x78e)
-i32 CGrunt::ArrivalScanC() {
+i32 CGrunt::StepDiggerBehavior() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }

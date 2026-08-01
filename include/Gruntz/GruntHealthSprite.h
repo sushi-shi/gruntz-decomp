@@ -22,7 +22,7 @@ public:
     i32 HealthUpdate();
     i32 SetHealthGlyph(i32 x, i32 y, i32 health);
 
-    virtual i32 Vslot16(CGrunt* grunt);
+    virtual i32 GetDisplayedValue(CGrunt* grunt);
     CGruntHealthSprite();
     CGruntHealthSprite(CGameObject* obj);
 

@@ -45,7 +45,7 @@ inline void* operator new(u32, void* p) {
 }
 
 inline void* WwdKey(CGameObject* o) {
-    AddrWord k;
+    AddrWord<char> k;
     k.m_word = o->m_188;
     return k.m_addr;
 }
@@ -79,7 +79,7 @@ void CDDrawChildGroup::DestroyChildren() {
 }
 
 RVA(0x00159250, 0x185)
-CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
+CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     int id,
     int x,
     int y,
@@ -105,7 +105,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
 
 // @early-stop
 RVA(0x001593e0, 0x53)
-CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
+CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     int id,
     int x,
     int y,
@@ -117,7 +117,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
 
-    return CreateObject_159250(
+    return CreateDotObject(
         id,
         x,
         y,
@@ -130,7 +130,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
 
 RVA(0x00159440, 0x170)
 CWwdGameObjectF*
-CDDrawChildGroup::CreateObject_159440(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
+CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
     CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, stateFlags);
     if (result->SetupDeferred(sortKey, tmpl) == 0) {
         if (result != 0) {
@@ -148,15 +148,15 @@ CDDrawChildGroup::CreateObject_159440(int id, int sortKey, AnimWorkerObj* tmpl, 
 // @early-stop
 RVA(0x001595b0, 0x44)
 CWwdGameObjectF*
-CDDrawChildGroup::CreateNamed_1595b0(int id, int sortKey, const char* name, int stateFlags) {
+CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
-    return CreateObject_159440(id, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
+    return CreateDeferredObject(id, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
 // @early-stop
 RVA(0x00159600, 0x1ab)
-CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
+CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
     i32 id,
     i32 x,
     i32 y,
@@ -195,7 +195,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
         return 0;
     }
 
-    return CreateObject_159600(id, x, y, sortKey, tmpl, stateFlags);
+    return CreateSpriteObject(id, x, y, sortKey, tmpl, stateFlags);
 }
 
 RVA(0x00159830, 0x92)
@@ -232,7 +232,7 @@ i32 CDDrawChildGroup::AttachSprite(
 
 // @early-stop
 RVA(0x001598d0, 0x13d)
-CWwdGameObject* CDDrawChildGroup::CreateObject_1598d0(
+CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int id,
     int x,
     int y,
@@ -256,7 +256,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_1598d0(
 
 // @early-stop
 RVA(0x00159a10, 0x57)
-CWwdGameObject* CDDrawChildGroup::CreateNamed_159a10(
+CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int id,
     int x,
     int y,
@@ -269,7 +269,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_159a10(
     if (val == 0) {
         return 0;
     }
-    return CreateObject_1598d0(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
+    return CreateContainerObject(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
 RVA(0x00159a70, 0x200)
@@ -337,7 +337,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 }
 
 RVA(0x00159c90, 0x23)
-void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
+void CDDrawChildGroup::RenderChildren(CDDrawSurfacePair* target) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
@@ -348,7 +348,7 @@ void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
 }
 
 RVA(0x00159cc0, 0x2a)
-void CDDrawChildGroup::WalkDispatch30(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
@@ -359,7 +359,7 @@ void CDDrawChildGroup::WalkDispatch30(CDDrawSurfacePair* dst, CDDrawSurfacePair*
 }
 
 RVA(0x00159cf0, 0x42)
-void CDDrawChildGroup::WalkDispatch34(
+void CDDrawChildGroup::BltDirtyChildrenEx(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
@@ -371,11 +371,11 @@ void CDDrawChildGroup::WalkDispatch34(
             cur_obj->BltDirtyEx(dst, src, restoreSrc);
         } while (n != 0);
     }
-    WalkDispatch30(src, restoreSrc);
+    BltDirtyChildren(src, restoreSrc);
 }
 
 RVA(0x00159d40, 0x42)
-void CDDrawChildGroup::WalkDispatch38(
+void CDDrawChildGroup::BltDirtyChildRegions(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
@@ -387,11 +387,11 @@ void CDDrawChildGroup::WalkDispatch38(
             cur_obj->BltDirtyRegions(dst, src, restoreSrc);
         } while (n != 0);
     }
-    WalkDispatch30(src, restoreSrc);
+    BltDirtyChildren(src, restoreSrc);
 }
 
 RVA(0x00159d90, 0x1c)
-void CDDrawChildGroup::ResetChildD8() {
+void CDDrawChildGroup::InvalidateChildShadows() {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
@@ -444,7 +444,7 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
 }
 
 RVA(0x00159ef0, 0x5)
-void CDDrawChildGroup::DestroyChildren_159ef0() {
+void CDDrawChildGroup::ClearChildren() {
     DestroyChildren();
 }
 
@@ -909,13 +909,13 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
 }
 
 RVA(0x0015a940, 0x52)
-CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, i32 key) {
+CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 collisionCategory) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
 
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type
-            && obj->m_collCategory == key) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id
+            && obj->m_collCategory == collisionCategory) {
             return obj;
         }
     }
@@ -1108,7 +1108,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 if (val != 0) {
-                    createdObj = CreateObject_159600(
+                    createdObj = CreateSpriteObject(
                         desc.m_00,
                         desc.m_94,
                         desc.m_98,
@@ -1123,14 +1123,14 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 createdObj =
-                    CreateObject_159440(desc.m_00, desc.m_9c, static_cast<AnimWorkerObj*>(val), 0);
+                    CreateDeferredObject(desc.m_00, desc.m_9c, static_cast<AnimWorkerObj*>(val), 0);
                 break;
             }
             case 0x1b: {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 if (val != 0) {
-                    createdObj = CreateObject_1598d0(
+                    createdObj = CreateContainerObject(
                         desc.m_00,
                         desc.m_94,
                         desc.m_98,

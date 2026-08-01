@@ -69,7 +69,7 @@ void CHelpState::ReleaseResources() {
 }
 
 RVA(0x00095140, 0x6e)
-i32 CHelpState::Vslot09(i32 arg) {
+i32 CHelpState::EnterState(i32 arg) {
     m_mgr->RestoreVideoMode(0);
 
     if (m_world->m_drawTarget->HasOverlay() == 0
@@ -84,7 +84,7 @@ i32 CHelpState::Vslot09(i32 arg) {
 }
 
 RVA(0x000951d0, 0x8)
-i32 CHelpState::FrameSlot28(i32) {
+i32 CHelpState::LeaveState(i32) {
     return 1;
 }
 
@@ -134,7 +134,7 @@ i32 CHelpState::InputVirtual() {
 }
 
 RVA(0x000953a0, 0x3c)
-i32 CHelpState::Vslot06() {
+i32 CHelpState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
@@ -144,7 +144,7 @@ i32 CHelpState::Vslot06() {
 }
 
 RVA(0x000953f0, 0x37)
-i32 CHelpState::Vslot0c(i32 code, i32 unused) {
+i32 CHelpState::OnKeyDown(i32 code, i32 unused) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     }
@@ -152,7 +152,7 @@ i32 CHelpState::Vslot0c(i32 code, i32 unused) {
 }
 
 RVA(0x00095440, 0x24)
-i32 CHelpState::Vslot0e(i32, i32, i32) {
+i32 CHelpState::OnLButtonDown(i32, i32, i32) {
     PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     return 1;
 }

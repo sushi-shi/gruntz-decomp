@@ -412,7 +412,7 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 }
 
 RVA(0x00024260, 0x6)
-i32 CGruntzSingleCommand::Vslot05() {
+i32 CGruntzSingleCommand::UnusedCommandQuery() {
     return 1;
 }
 
@@ -430,7 +430,7 @@ RVA_COMPGEN(0x000242c0, 0x1e, ??_GCGruntzSingleCommand@@UAEPAXI@Z)
 RVA_COMPGEN(0x000242f0, 0x7, ??1CGruntzSingleCommand@@UAE@XZ)
 
 RVA(0x00024310, 0x6)
-i32 CGruntzCommand::Vslot05() {
+i32 CGruntzCommand::UnusedCommandQuery() {
     return 1;
 }
 
@@ -446,7 +446,7 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
 }
 
 RVA(0x000243a0, 0x6)
-i32 CGruntzMultiCommand::Vslot05() {
+i32 CGruntzMultiCommand::UnusedCommandQuery() {
     return 1;
 }
 
@@ -677,7 +677,7 @@ CGruntzCmdMgr::~CGruntzCmdMgr() {
 }
 
 RVA(0x00092ab0, 0x20d)
-i32 CALLBACK winapi_092ab0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case 0x110:
             SetDlgItemInt(hDlg, 0x4db, g_dlgVal_64526c, 0);

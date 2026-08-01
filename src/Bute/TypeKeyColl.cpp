@@ -351,8 +351,8 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
     i32 idx;
     if (g_recCount23 != 0) {
 
-        AddrWord k;
-        k.m_addr = key;
+        AddrWord<char> k;
+        k.m_addr = static_cast<char*>(key);
         idx = this->Find(k.m_word);
     } else {
         idx = -1;
@@ -371,9 +371,9 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
     } else {
         if (m_typeTag == 2) {
 
-            AddrWord rec;
-            rec.m_addr = name;
-            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(rec.m_word, value);
+            AddrWord<char> rec;
+            rec.m_addr = static_cast<char*>(name);
+            g_recs23[idx].m_callback(rec.m_word, value);
         } else if (m_typeTag == 1) {
             g_recs23[idx].m_8 = static_cast<short>(value);
         }
@@ -478,7 +478,7 @@ void* zPTree::Insert(const char* key, void* value) {
 
     CButeTreeNode* node = static_cast<CButeTreeNode*>(::operator new(0x14));
     if (node != 0) {
-        node->m_value = value;
+        node->m_value = static_cast<char*>(value);
         node->m_bit = critbit;
         char* keybuf = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
         node->m_key = keybuf;
@@ -733,8 +733,8 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         *q++ = *s++;
     }
 
-    AddrWord bc;
-    bc.m_addr = g_retAddrBreadcrumb;
+    AddrWord<char> bc;
+    bc.m_addr = static_cast<char*>(g_retAddrBreadcrumb);
     u32 v = 0xffff & bc.m_uword;
     char* hp = &tmp[9];
     *hp = 0;
@@ -750,7 +750,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
             break;
         }
     } while (i-- != 0);
-    AddrWord back;
+    AddrWord<char> back;
     back.m_uword = v;
     g_retAddrBreadcrumb = back.m_addr;
     while (*hp != 0) {
@@ -768,6 +768,10 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 // @early-stop
 RVA(0x0016e360, 0x11a)
 void* CVariantSlot::Add(void* key, void* val) {
+    union CallbackWord {
+        void* generic;
+        VariantCallback callback;
+    } callbackWord;
     int count = g_recCount23;
     if (val != 0 && count >= 0x20) {
         return 0;
@@ -775,8 +779,8 @@ void* CVariantSlot::Add(void* key, void* val) {
     int idx;
     if (count != 0) {
 
-        AddrWord k;
-        k.m_addr = key;
+        AddrWord<char> k;
+        k.m_addr = static_cast<char*>(key);
         idx = Find(k.m_word);
     } else {
         idx = -1;
@@ -792,17 +796,20 @@ void* CVariantSlot::Add(void* key, void* val) {
                 (g_recCount23 - m_04) * sizeof(TypeKeyRec)
             );
         }
-        g_recs23[m_04].m_4 = val;
-        AddrWord nk;
-        nk.m_addr = key;
+        callbackWord.generic = val;
+        g_recs23[m_04].m_callback = callbackWord.callback;
+        AddrWord<char> nk;
+        nk.m_addr = static_cast<char*>(key);
         g_recs23[m_04].m_key = nk.m_word;
         g_recCount23 = g_recCount23 + 1;
         g_recs23[m_04].m_8 = 0;
         return 0;
     }
-    void* old = g_recs23[idx].m_4;
+    callbackWord.callback = g_recs23[idx].m_callback;
+    void* old = callbackWord.generic;
     if (val != 0) {
-        g_recs23[idx].m_4 = val;
+        callbackWord.generic = val;
+        g_recs23[idx].m_callback = callbackWord.callback;
         return old;
     }
     memcpy(&g_recs23[m_04], &g_recs23[m_04 + 1], (g_recCount23 - m_04 - 1) * sizeof(TypeKeyRec));

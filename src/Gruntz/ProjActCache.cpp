@@ -7,7 +7,7 @@
 
 // @early-stop
 RVA(0x001933b0, 0x28f)
-void* CProjActMap::Insert(const char* key, void* value) {
+CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
     i32 path[28];
     m_28 = 0;
     if (key == 0 || value == 0) {

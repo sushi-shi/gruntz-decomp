@@ -46,18 +46,19 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
         0x503,
         CBattlezDlg::ApplyColorSlot1
     ) ON_BN_CLICKED(0x505, CBattlezDlg::ApplyColorSlot2)
-        ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3)
-            ON_BN_CLICKED(0x42b, CBattlezDlg::ShowCustomDlg)
-                ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild)
+        ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3) ON_BN_CLICKED(
+            0x42b,
+            CBattlezDlg::ShowCustomDlg
+        ) ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild)
 
-                    ON_CONTROL(0x200, 0x50a, CBattlezDlg::OnActionBtn0)
-                        ON_CONTROL(0x200, 0x50b, CBattlezDlg::OnActionBtn1)
-                            ON_CONTROL(0x200, 0x50c, CBattlezDlg::OnActionBtn2)
-                                ON_CONTROL(0x200, 0x50d, CBattlezDlg::OnActionBtn3)
-                                    ON_CONTROL(0x300, 0x50b, CBattlezDlg::OnStubBtn1)
-                                        ON_CONTROL(0x300, 0x50a, CBattlezDlg::OnStubBtn0)
-                                            ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnStubBtn2)
-                                                ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnStubBtn3)
+            ON_CONTROL(0x200, 0x50a, CBattlezDlg::OnPlayerNameKillFocus0)
+                ON_CONTROL(0x200, 0x50b, CBattlezDlg::OnPlayerNameKillFocus1)
+                    ON_CONTROL(0x200, 0x50c, CBattlezDlg::OnPlayerNameKillFocus2)
+                        ON_CONTROL(0x200, 0x50d, CBattlezDlg::OnPlayerNameKillFocus3)
+                            ON_CONTROL(0x300, 0x50b, CBattlezDlg::OnPlayerNameChange1)
+                                ON_CONTROL(0x300, 0x50a, CBattlezDlg::OnPlayerNameChange0)
+                                    ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnPlayerNameChange2)
+                                        ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnPlayerNameChange3)
     // API-forced MFC message-map representation seam.
     {WM_PAINT, 0, 0, 0, AfxSig_vv, reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnPaint)},
     ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0)
@@ -157,7 +158,11 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
         g_savedDlgWndProc =
             reinterpret_cast<WNDPROC>(::GetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC));
-        ::SetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC, reinterpret_cast<LONG>(&WndProc_15a10));
+        ::SetWindowLongA(
+            comboChild->m_hWnd,
+            GWL_WNDPROC,
+            reinterpret_cast<LONG>(&BattlezMapComboEditProc) // API-forced Win32 callback seam.
+        );
 
         GetDlgItem(0x512)->SetWindowTextA("Battlez Setup");
         g_sharedFlag = m_hWnd;
@@ -244,7 +249,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             ctrlC->EnableWindow(1);
             ctrlA->EnableWindow(1);
             ctrlD->EnableWindow(1);
-            if (Query015d00(i) == 0) {
+            if (GetPlayerTypeSelection(i) == 0) {
                 ctrlB->EnableWindow(0);
                 if (i != 0) {
                     ctrlC->EnableWindow(0);
@@ -252,7 +257,9 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 }
             }
         }
-        GetDlgItem(IDOK)->EnableWindow(Query015d00(1) || Query015d00(2) || Query015d00(3));
+        GetDlgItem(IDOK)->EnableWindow(
+            GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)
+        );
 
         i32 customMap = reg->GetValueDword("CustomMap", 2);
         if (customMap == 2) {
@@ -311,7 +318,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             }
         }
         for (i = 0; i < 4; i++) {
-            i32 selection = Query015d00(i);
+            i32 selection = GetPlayerTypeSelection(i);
             if (selection == 0) {
                 m_slots->m_options[i].m_liveGate = 0;
                 m_slots->m_options[i].m_configId = 1;
@@ -324,7 +331,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
-            reg->SetValueDword(key, Query015d30(i));
+            reg->SetValueDword(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
             i32 difficulty =
                 m_slots->m_options[i].m_liveGate == 0 ? -1 : m_slots->m_options[i].m_configId;
@@ -353,7 +360,7 @@ RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
 RVA(0x00015a10, 0x70)
-i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
 
         MsgParam text;
@@ -533,13 +540,13 @@ i32 CBattlezDlg::SetCurSelA(i32 id, i32 sel) {
 }
 
 RVA(0x00015d00, 0x20)
-i32 CBattlezDlg::Query015d00(i32 slot) {
+i32 CBattlezDlg::GetPlayerTypeSelection(i32 slot) {
     CWnd* c = GetCtrlA(slot);
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0);
 }
 
 RVA(0x00015d30, 0x21)
-i32 CBattlezDlg::Query015d30(i32 id) {
+i32 CBattlezDlg::GetMaxGruntzSelection(i32 id) {
     CWnd* c = GetCtrlC(id);
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
 }
@@ -597,7 +604,7 @@ RVA(0x00015de0, 0x5f)
 void CBattlezDlg::ApplyOption0() {
     ToggleRow(0);
     RefreshOptionState();
-    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+    if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
         GetDlgItem(1)->EnableWindow(0);
@@ -608,7 +615,7 @@ RVA(0x00015e60, 0x5f)
 void CBattlezDlg::ApplyOption1() {
     ToggleRow(1);
     RefreshOptionState();
-    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+    if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
         GetDlgItem(1)->EnableWindow(0);
@@ -619,7 +626,7 @@ RVA(0x00015ee0, 0x5f)
 void CBattlezDlg::ApplyOption2() {
     ToggleRow(2);
     RefreshOptionState();
-    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+    if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
         GetDlgItem(1)->EnableWindow(0);
@@ -630,7 +637,7 @@ RVA(0x00015f60, 0x5f)
 void CBattlezDlg::ApplyOption3() {
     ToggleRow(3);
     RefreshOptionState();
-    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+    if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
         GetDlgItem(1)->EnableWindow(0);
@@ -705,7 +712,7 @@ void CBattlezDlg::CopyComboSelToChild() {
 
 // @early-stop
 RVA(0x00017340, 0x73)
-void CBattlezDlg::ReadCtrlBText(i32 index) {
+void CBattlezDlg::ReadPlayerName(i32 index) {
     CString s;
     GetCtrlB(index)->GetWindowText(s);
 }
@@ -1036,20 +1043,20 @@ i32 CBattlezDlg::UnusedMsgHandler() {
 }
 
 RVA(0x000172c0, 0x8)
-void CBattlezDlg::OnActionBtn0() {
-    ReadCtrlBText(0);
+void CBattlezDlg::OnPlayerNameKillFocus0() {
+    ReadPlayerName(0);
 }
 RVA(0x000172e0, 0x8)
-void CBattlezDlg::OnActionBtn1() {
-    ReadCtrlBText(1);
+void CBattlezDlg::OnPlayerNameKillFocus1() {
+    ReadPlayerName(1);
 }
 RVA(0x00017300, 0x8)
-void CBattlezDlg::OnActionBtn2() {
-    ReadCtrlBText(2);
+void CBattlezDlg::OnPlayerNameKillFocus2() {
+    ReadPlayerName(2);
 }
 RVA(0x00017320, 0x8)
-void CBattlezDlg::OnActionBtn3() {
-    ReadCtrlBText(3);
+void CBattlezDlg::OnPlayerNameKillFocus3() {
+    ReadPlayerName(3);
 }
 
 RVA(0x000174a0, 0x5)
@@ -1058,23 +1065,23 @@ void CBattlezDlg::OnOK() {
 }
 
 RVA(0x000174c0, 0x8)
-void CBattlezDlg::OnStubBtn0() {
-    StubBtnHandler(0);
+void CBattlezDlg::OnPlayerNameChange0() {
+    HandlePlayerNameChange(0);
 }
 RVA(0x000174e0, 0x8)
-void CBattlezDlg::OnStubBtn1() {
-    StubBtnHandler(1);
+void CBattlezDlg::OnPlayerNameChange1() {
+    HandlePlayerNameChange(1);
 }
 RVA(0x00017500, 0x8)
-void CBattlezDlg::OnStubBtn2() {
-    StubBtnHandler(2);
+void CBattlezDlg::OnPlayerNameChange2() {
+    HandlePlayerNameChange(2);
 }
 RVA(0x00017520, 0x8)
-void CBattlezDlg::OnStubBtn3() {
-    StubBtnHandler(3);
+void CBattlezDlg::OnPlayerNameChange3() {
+    HandlePlayerNameChange(3);
 }
 RVA(0x00017540, 0x3)
-void CBattlezDlg::StubBtnHandler(i32) {}
+void CBattlezDlg::HandlePlayerNameChange(i32) {}
 
 RVA(0x00017d40, 0x8)
 RVA_COMPGEN(0x000180b0, 0x1e, ??_GCBattlezDlgCustom@@UAEPAXI@Z)

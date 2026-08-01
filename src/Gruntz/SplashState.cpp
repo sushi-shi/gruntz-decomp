@@ -115,7 +115,7 @@ i32 CSplashState::InputVirtual() {
 }
 
 RVA(0x000f9af0, 0x3e)
-i32 CSplashState::Vslot06() {
+i32 CSplashState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
@@ -125,7 +125,7 @@ i32 CSplashState::Vslot06() {
 }
 
 RVA(0x000f9b40, 0x37)
-i32 CSplashState::Vslot0c(i32 code, i32) {
+i32 CSplashState::OnKeyDown(i32 code, i32) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
@@ -133,7 +133,7 @@ i32 CSplashState::Vslot0c(i32 code, i32) {
 }
 
 RVA(0x000f9b90, 0x24)
-i32 CSplashState::Vslot0e(i32, i32, i32) {
+i32 CSplashState::OnLButtonDown(i32, i32, i32) {
     PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }

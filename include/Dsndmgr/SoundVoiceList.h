@@ -5,6 +5,8 @@
 
 #include <Rez/RezAlloc.h>
 
+class DirectSoundMgr;
+
 struct DSoundLink {
     DSoundLink* m_next;
     DSoundLink* m_prev;
@@ -32,7 +34,7 @@ struct DSoundElem : public PureSoundElem {
 
     DSoundLink m_link;
     u32 m_tag;
-    void* m_key;
+    DirectSoundMgr* m_key;
 };
 SIZE(0x14);
 
@@ -49,7 +51,7 @@ struct DSoundList {
     void InsertAfter(DSoundLink* after, DSoundLink* node);
     void InsertBefore(DSoundLink* before, DSoundLink* node);
     void Unlink(DSoundLink* node);
-    void RemoveMatching(void* key, u32 tag);
+    void RemoveMatching(DirectSoundMgr* key, u32 tag);
 };
 SIZE(0x8);
 

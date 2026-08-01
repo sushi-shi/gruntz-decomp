@@ -76,22 +76,22 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
             break;                                                                                 \
         }                                                                                          \
         case 0x1d:                                                                                 \
-            ctl->m_logic->UserLogicVfunc9();                                                       \
+            ctl->m_logic->OnObjectRemoved();                                                       \
             break;                                                                                 \
         case 0x1e:                                                                                 \
-            ctl->m_logic->UserLogicVfunc8();                                                       \
+            ctl->m_logic->OnLeaveActiveRegion();                                                   \
             break;                                                                                 \
         case 0x50:                                                                                 \
-            ctl->m_logic->UserLogicVfuncC();                                                       \
+            ctl->m_logic->PrepareSave();                                                           \
             break;                                                                                 \
         case 0x51:                                                                                 \
-            ctl->m_logic->UserLogicVfuncB();                                                       \
+            ctl->m_logic->AfterSave();                                                             \
             break;                                                                                 \
         case 0x52:                                                                                 \
-            ctl->m_logic->UserLogicVfuncA();                                                       \
+            ctl->m_logic->AfterLoad();                                                             \
             break;                                                                                 \
         case 0x53:                                                                                 \
-            ctl->m_logic->UserLogicVfuncD();                                                       \
+            ctl->m_logic->AfterLoadReferences();                                                   \
             break;                                                                                 \
         case 0x3e8:                                                                                \
             break;                                                                                 \
@@ -241,22 +241,22 @@ i32 CreateCheckpointTrigger(CGameObject* obj) {
             break;
         }
         case 0x1d:
-            ctl->m_logic->UserLogicVfunc9();
+            ctl->m_logic->OnObjectRemoved();
             break;
         case 0x1e:
-            ctl->m_logic->UserLogicVfunc8();
+            ctl->m_logic->OnLeaveActiveRegion();
             break;
         case 0x50:
-            ctl->m_logic->UserLogicVfuncC();
+            ctl->m_logic->PrepareSave();
             break;
         case 0x51:
-            ctl->m_logic->UserLogicVfuncB();
+            ctl->m_logic->AfterSave();
             break;
         case 0x52:
-            ctl->m_logic->UserLogicVfuncA();
+            ctl->m_logic->AfterLoad();
             break;
         case 0x53:
-            ctl->m_logic->UserLogicVfuncD();
+            ctl->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
             break;
@@ -268,7 +268,7 @@ i32 CreateCheckpointTrigger(CGameObject* obj) {
 }
 
 RVA(0x0010d3d0, 0xf1)
-i32 LogicDispatchB(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CBrickz)}
+i32 CreateBrickz(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CBrickz)}
 
 RVA(0x0010d510, 0xf1)
 i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
@@ -575,7 +575,7 @@ void CCheckpointTrigger::RegisterActs() {
         g_typeCounter++;
     }
     (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id2)))) =
-        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
+        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::AdvanceCheckpointAnimation);
 }
 
 RVA(0x0010f6a0, 0x235)
@@ -692,7 +692,7 @@ i32 CCheckpointTrigger::Act() {
 }
 
 RVA(0x0010f970, 0x17)
-i32 CCheckpointTrigger::Act_10f970() {
+i32 CCheckpointTrigger::AdvanceCheckpointAnimation() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }

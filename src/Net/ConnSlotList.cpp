@@ -2,7 +2,7 @@
 #include <rva.h>
 
 RVA(0x00037c30, 0xb3)
-i32 CLatencyList::Populate2() {
+i32 CLatencyList::PopulateTcpIpOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }
@@ -28,7 +28,7 @@ i32 CLatencyList::Populate2() {
 }
 
 RVA(0x00037e10, 0xb3)
-i32 CLatencyList::Populate4() {
+i32 CLatencyList::PopulateSerialOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }
@@ -54,7 +54,7 @@ i32 CLatencyList::Populate4() {
 }
 
 RVA(0x00037f00, 0xb3)
-i32 CLatencyList::Populate5() {
+i32 CLatencyList::PopulateGenericOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }

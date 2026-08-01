@@ -3,12 +3,19 @@
 
 #include <Win32.h>
 
+struct InterfaceObject;
+class CNetPlayerListNode;
+class CNetSessionNode;
+
 union MsgParam {
     LPARAM m_lparam;
     WPARAM m_wparam;
     LONG m_long;
     const char* m_str;
-    void* m_ptr;
+    InterfaceObject* m_interface;
+    CNetPlayerListNode* m_player;
+    CNetSessionNode* m_session;
+    HICON m_icon;
     HWND m_hwnd;
     WNDPROC m_wndproc;
 

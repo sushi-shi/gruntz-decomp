@@ -16,7 +16,7 @@ public:
         return LOGIC_GRUNTTOYTIMESPRITE;
     }
 
-    virtual i32 Vslot16(CGrunt* grunt) OVERRIDE;
+    virtual i32 GetDisplayedValue(CGrunt* grunt) OVERRIDE;
 };
 SIZE(0x64);
 
