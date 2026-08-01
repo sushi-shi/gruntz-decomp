@@ -33,6 +33,34 @@ and restore the cleanest source** (see PRIME SOURCE RULE below).
 Why the cross matters: islands ALONE are structurally immune to intra-function
 regalloc, and forests alone miss cross-function composition. Crossed, they reach both.
 
+## The default shape of a run: ONE hand-authored Cartesian matrix
+
+**Never test hypotheses as a ladder of one-off edit-compile cycles.** That is the single
+biggest waste of a session. Localize the divergence first
+(`gruntz sema disasm <rva> --blocks --diff`, then `--branches --diff` when the block view
+is clean), then enumerate **every site you suspect** and **every legal spelling per
+site**, put the whole family in ONE manifest, and let the engine compile and score the
+**Cartesian product** in a single run. N sites × M spellings tests N^M ideas at once
+instead of N×M sequential guesses — this is why the matrix beats hand iteration.
+
+    python -m gruntz.permute.match_variants <src.cpp> <rva> --axes-from <axes.json> --run
+
+The manifest is byte-exact substitution only — no regex rewrites — so every option is
+authored and semantically reviewed before the run. Put the **full candidate family per
+site in one file; never ladder it across runs**, or you lose the interaction effects
+that are the whole point.
+
+**`--max-depth` defaults to 0: generate NO AST trees.** Two reasons, both measured:
+at `/O2` a generated tree is rarely the answer (the wins come from spellings derived
+from the *disassembly*), and the axes product is already exponential — a generated tree
+is another multiplier on top of it. Opt in explicitly (`--max-depth 2`) when you have a
+reason. Same for `--state-trials` (the declaration-forest islands): measured on this
+project across three runs of 400 / 280 / 300 cells, the pure-island axis moved
+**nothing**, while hand-authored forests off the disassembly produced every win. Islands
+are for a structurally aligned residual with unchanged source, not a first resort.
+
+Judge survivors by **block topology and ordered relocations**, not fuzzy score alone.
+
 ## When to use it (and when NOT)
 
 USE it when a function is **already the right shape** — correct types (no casts/views

@@ -1300,7 +1300,13 @@ def main(argv=None, *, prog=None, description=None) -> int:
     parser = argparse.ArgumentParser(prog=prog, description=description or __doc__)
     parser.add_argument("source", type=Path)
     parser.add_argument("rva", type=lambda value: int(value, 0))
-    parser.add_argument("--max-depth", type=int, default=3)
+    parser.add_argument(
+        "--max-depth", type=int, default=0,
+        help="depth of GENERATED AST mutation trees. DEFAULT 0 = generate none: run only "
+             "the hand-authored --axes-from Cartesian. At /O2 a generated tree is rarely "
+             "the answer, and it multiplies an already-exponential product - opt in "
+             "explicitly (e.g. --max-depth 2) when you actually want one.",
+    )
     parser.add_argument(
         "--min-depth", type=int, default=1,
         help="minimum number of compatible AST mutations in each emitted candidate",
@@ -1368,13 +1374,23 @@ def main(argv=None, *, prog=None, description=None) -> int:
         help="with --run, print the best disposable object before it is deleted",
     )
     args = parser.parse_args(argv)
+    # --max-depth 0 is the AXES-ONLY mode (generate no AST candidates); otherwise the
+    # usual 1 <= min <= max applies.
     if (
-        args.min_depth < 1 or args.max_depth < args.min_depth
+        args.min_depth < 1
+        or (args.max_depth != 0 and args.max_depth < args.min_depth)
         or args.limit < 1 or args.helper_name_count < 1
         or not 1 <= args.rename_name_count <= len(RENAME_SUFFIXES) or args.state_trials < 0
         or args.top < 1 or args.compile_timeout <= 0
     ):
-        parser.error("require 1 <= --min-depth <= --max-depth and positive limit/name count")
+        parser.error("require --max-depth 0 (axes only) or 1 <= --min-depth <= --max-depth, "
+                     "and positive limit/name count")
+    if args.max_depth == 0 and args.axes_from is None:
+        parser.error(
+            "--max-depth 0 generates no AST candidates, so there is nothing to search: "
+            "pass --axes-from <manifest> with your hand-authored per-site spellings "
+            "(the whole candidate family per site, in ONE file - never laddered across "
+            "runs), or set --max-depth N to opt into generated trees.")
 
     root = project_root()
     source = (root / args.source).resolve()
@@ -1443,7 +1459,7 @@ def main(argv=None, *, prog=None, description=None) -> int:
         blob, mutations, args.max_depth, args.limit, min_depth=args.min_depth,
         required_names=required_names,
     )
-    if not candidates:
+    if not candidates and args.max_depth != 0:
         parser.error("no AST variants generated")
     payload = {
         "schema": 1,

@@ -429,6 +429,17 @@ wrapper, still runnable as `python -m gruntz.<...>`):
     were invisible to the first look. See
     `docs/patterns/masked-diff-hides-branch-target.md`. The tool self-hints on that
     path; believe the hint.
+- **Testing a hypothesis: build ONE Cartesian matrix, never a ladder of edits.** For a
+  function already close to 100%, enumerate every suspect SITE and every legal SPELLING
+  per site, put the whole family in one manifest, and score the product in a single run
+  (`python -m gruntz.permute.match_variants <src> <rva> --axes-from <axes.json> --run`).
+  N sites x M spellings tests the combinations at once, and the interaction between
+  sites is usually where the answer is - which is exactly what a sequential edit-compile
+  ladder cannot see. Full candidate family per site, in ONE file, never laddered across
+  runs. `--max-depth` defaults to 0 (no GENERATED AST trees): at /O2 they are rarely the
+  answer and they multiply an already-exponential product; opt in deliberately. Same for
+  `--state-trials` islands - measured flat across 980 cells on this project. See the
+  `permute` skill.
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.
