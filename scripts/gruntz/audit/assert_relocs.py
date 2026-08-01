@@ -319,32 +319,58 @@ def _addend(raw, insn_off, site_off):
 IMAGE_END = IMAGE_BASE + 0x400000  # generous upper bound on the mapped image
 
 
-def defined_syms(obj):
-    """Every symbol the object FILE ITSELF defines (COFF symbol table, section > 0).
+IMAGE_SYM_CLASS_WEAK_EXTERNAL = 105
 
-    A reloc onto one of these resolves at link time no matter what it is called: cl emits a
-    class's ??_7 vftable straight into the obj that needs it, so a vftable reference is
-    never an unresolved external even when its name is not one we bound to a retail RVA.
-    Without this, the FAKE check reports every compiler-emitted vftable as a guaranteed link
-    break - the opposite of true. (Read from the COFF directly; llvm-objdump -t does not
-    render these symbol tables.)"""
+
+def defined_syms(obj):
+    """Every symbol the object FILE ITSELF resolves (COFF symbol table).
+
+    Two kinds:
+
+    1. section > 0 - the obj DEFINES it. A reloc onto one of these resolves at link time no
+       matter what it is called: cl emits a class's ??_7 vftable straight into the obj that
+       needs it, so a vftable reference is never an unresolved external even when its name is
+       not one we bound to a retail RVA. Without this, the FAKE check reports every
+       compiler-emitted vftable as a guaranteed link break - the opposite of true.
+
+    2. storage class 105 (IMAGE_SYM_CLASS_WEAK_EXTERNAL) whose aux record's DEFAULT symbol is
+       itself resolved here. MSVC5 emits the vector-deleting destructor `??_E<C>@@UAEPAXI@Z`
+       as a WEAK EXTERNAL aliased to the scalar-deleting `??_G<C>@@UAEPAXI@Z` whenever the TU
+       never does `delete[]` on the class - and the MI adjustor thunk `??_E<C>@@W7AEPAXI@Z`
+       relocates against that weak `??_E`, not against `??_G`. `zPTree` in `butemgr` is exactly
+       that shape (sym 41 weak -> sym 40 `??_GzPTree@@UAEPAXI@Z`, defined in section 10 of the
+       same obj), and retail agrees: 0x21600 is `sub ecx,8 / jmp ILT:0x4372 -> 0x212e0`, the
+       `??_G` body. The link resolves it; only this audit did not, so it reported the alias as
+       FABRICATED. Follow the alias instead. (Read from the COFF directly; llvm-objdump -t does
+       not render these symbol tables.)"""
     b = open(obj, "rb").read()
     symptr = struct.unpack_from("<I", b, 8)[0]
     nsym = struct.unpack_from("<I", b, 12)[0]
     strtab = symptr + nsym * 18
-    out, i = set(), 0
-    while i < nsym:
-        base = symptr + i * 18
+
+    def name_at(base):
         if struct.unpack_from("<I", b, base)[0] == 0:
             off = struct.unpack_from("<I", b, base + 4)[0]
             e = b.index(b"\0", strtab + off)
-            nm = b[strtab + off:e].decode("latin1")
-        else:
-            nm = b[base:base + 8].split(b"\0")[0].decode("latin1")
+            return b[strtab + off:e].decode("latin1")
+        return b[base:base + 8].split(b"\0")[0].decode("latin1")
+
+    out, weak, byidx, i = set(), [], {}, 0
+    while i < nsym:
+        base = symptr + i * 18
+        nm = name_at(base)
         sec = struct.unpack_from("<h", b, base + 12)[0]
+        scl = b[base + 16]
+        naux = b[base + 17]
+        byidx[i] = nm
         if sec > 0:
             out.add(nm)
-        i += 1 + b[base + 17]
+        elif scl == IMAGE_SYM_CLASS_WEAK_EXTERNAL and naux:
+            weak.append((nm, struct.unpack_from("<I", b, base + 18)[0]))
+        i += 1 + naux
+    for nm, tag in weak:  # the alias links iff its default does
+        if byidx.get(tag) in out:
+            out.add(nm)
     return out
 
 
