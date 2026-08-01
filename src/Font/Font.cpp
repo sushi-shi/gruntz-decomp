@@ -453,8 +453,13 @@ void FontRenderer::DrawWrapped(
             } else {
                 head = text.Left(i + 1);
             }
-            i32 headW = MeasureText(head).width;
-            text = text.Right(len - i - 1);
+            // `he` is a real named copy of the extent - retail stores the height it
+            // never reads (0x17aea0 `mov ecx,[eax+4]` / `mov [esp+0x28],ecx`), which
+            // only a whole-struct copy produces; and the Right() count re-reads
+            // text.GetLength() (0x17aea3 `mov eax,[edx-8]`), not the outer `len`.
+            TextExtent he = MeasureText(head);
+            i32 headW = he.width;
+            text = text.Right(text.GetLength() - i - 1);
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
@@ -622,8 +627,13 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                 breakNL = 1;
             }
             CString head = text.Left(i + 1);
-            i32 headW = MeasureText(head).width;
-            text = text.Right(len - i - 1);
+            // `he` is a real named copy of the extent - retail stores the height it
+            // never reads (0x17aea0 `mov ecx,[eax+4]` / `mov [esp+0x28],ecx`), which
+            // only a whole-struct copy produces; and the Right() count re-reads
+            // text.GetLength() (0x17aea3 `mov eax,[edx-8]`), not the outer `len`.
+            TextExtent he = MeasureText(head);
+            i32 headW = he.width;
+            text = text.Right(text.GetLength() - i - 1);
             if (headW + x < right) {
                 line += head;
                 x = headW + x;
@@ -735,8 +745,13 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
                 breakNL = 1;
             }
             CString head = text.Left(i + 1);
-            i32 headW = MeasureText(head).width;
-            text = text.Right(len - i - 1);
+            // `he` is a real named copy of the extent - retail stores the height it
+            // never reads (0x17aea0 `mov ecx,[eax+4]` / `mov [esp+0x28],ecx`), which
+            // only a whole-struct copy produces; and the Right() count re-reads
+            // text.GetLength() (0x17aea3 `mov eax,[edx-8]`), not the outer `len`.
+            TextExtent he = MeasureText(head);
+            i32 headW = he.width;
+            text = text.Right(text.GetLength() - i - 1);
             if (headW + x < right) {
                 line += head;
                 x = headW + x;
