@@ -1032,7 +1032,11 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     if ((e1y < py) != (e2y < py)) {
         float t = static_cast<float>((py - e1y)) / static_cast<float>((e2y - e1y));
         float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
-        if (static_cast<float>(p->left) <= ix && ix <= static_cast<float>(p->right)) {
+        // ix on the LEFT of BOTH comparisons: retail compares ix against left
+        // (`fld st(1) / fcompp / test ah,0x1 / jne`, the duplicate-and-compare-
+        // both form cl emits when the LEFT operand is the x87 value already in
+        // flight), not left against ix (`fcomp st(1) / test ah,0x41 / je`).
+        if (ix >= static_cast<float>(p->left) && ix <= static_cast<float>(p->right)) {
             return 1;
         }
     }
@@ -1042,7 +1046,11 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     if ((e1y < pyc) != (e2y < pyc)) {
         float t = static_cast<float>((pyc - e1y)) / static_cast<float>((e2y - e1y));
         float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
-        if (static_cast<float>(p->left) <= ix && ix <= static_cast<float>(p->right)) {
+        // ix on the LEFT of BOTH comparisons: retail compares ix against left
+        // (`fld st(1) / fcompp / test ah,0x1 / jne`, the duplicate-and-compare-
+        // both form cl emits when the LEFT operand is the x87 value already in
+        // flight), not left against ix (`fcomp st(1) / test ah,0x41 / je`).
+        if (ix >= static_cast<float>(p->left) && ix <= static_cast<float>(p->right)) {
             return 1;
         }
     }
@@ -1066,7 +1074,12 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
         // equality. The asymmetry is retail's, and it is load-bearing: a
         // segment ending exactly on a vertical edge does NOT count as a
         // crossing while one ending on a horizontal edge does.
-        if (static_cast<float>(p->top) < iy && iy < static_cast<float>(p->bottom)) {
+        // BOTTOM first, then TOP, with iy on the left of both - the order this
+        // block's own comment already described and the code contradicted.
+        // 0x62cd0 `test ah,0x1 / je` continues only when iy < bottom; 0x62cdf
+        // `test ah,0x41 / jne` only when iy > top. Writing `top < iy` first
+        // emits both compares in the opposite operand order.
+        if (iy < static_cast<float>(p->bottom) && iy > static_cast<float>(p->top)) {
             return 1;
         }
     }
@@ -1084,7 +1097,12 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
         // equality. The asymmetry is retail's, and it is load-bearing: a
         // segment ending exactly on a vertical edge does NOT count as a
         // crossing while one ending on a horizontal edge does.
-        if (static_cast<float>(p->top) < iy && iy < static_cast<float>(p->bottom)) {
+        // BOTTOM first, then TOP, with iy on the left of both - the order this
+        // block's own comment already described and the code contradicted.
+        // 0x62cd0 `test ah,0x1 / je` continues only when iy < bottom; 0x62cdf
+        // `test ah,0x41 / jne` only when iy > top. Writing `top < iy` first
+        // emits both compares in the opposite operand order.
+        if (iy < static_cast<float>(p->bottom) && iy > static_cast<float>(p->top)) {
             return 1;
         }
     }

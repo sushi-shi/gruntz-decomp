@@ -529,7 +529,13 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     }
     // both rects live: the point must sit inside rect1 and (left/top of) rect2.
     if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
-        if (px >= r2.right || px < r2.left || py >= r2.bottom || py >= r2.top) {
+        // `py < r2.top`, not `py >= r2.top`: this is the OUTSIDE-rect2 test and the
+        // fourth term must mirror the second (`px < r2.left`). Retail's last arm of
+        // the || chain is inverted to a `jge` jump-to-fail, i.e. the term itself is
+        // `py < top`. With `py >= top` the third term (`py >= bottom`) is subsumed -
+        // top <= bottom - so the whole vertical span collapsed to `py >= top` and a
+        // point genuinely INSIDE rect2 was reported outside.
+        if (px >= r2.right || px < r2.left || py >= r2.bottom || py < r2.top) {
             return 1;
         }
     }
@@ -581,7 +587,13 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
         return 0;
     }
     if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
-        if (px >= r2.right || px < r2.left || py >= r2.bottom || py >= r2.top) {
+        // `py < r2.top`, not `py >= r2.top`: this is the OUTSIDE-rect2 test and the
+        // fourth term must mirror the second (`px < r2.left`). Retail's last arm of
+        // the || chain is inverted to a `jge` jump-to-fail, i.e. the term itself is
+        // `py < top`. With `py >= top` the third term (`py >= bottom`) is subsumed -
+        // top <= bottom - so the whole vertical span collapsed to `py >= top` and a
+        // point genuinely INSIDE rect2 was reported outside.
+        if (px >= r2.right || px < r2.left || py >= r2.bottom || py < r2.top) {
             return 1;
         }
     }
