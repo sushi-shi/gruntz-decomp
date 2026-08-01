@@ -539,8 +539,9 @@ TextExtent FontRenderer::MeasureText(CString text) {
     for (i = 0; i < text.GetLength(); i++) {
         Glyph g;
         u8 c = text[i];
-        m_font->GetGlyph(g, c);
-        width += g.width;
+        // retail reads the advance back through GetGlyph's RETURNED reference
+        // (`call GetGlyph / mov ecx,[eax] / add edi,ecx`), not off the local.
+        width += m_font->GetGlyph(g, c).width;
     }
     ext.width = width;
     ext.height = m_font->GetMaxHeight();
