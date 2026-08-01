@@ -863,10 +863,8 @@ i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
 
 // ---------------------------------------------------------------------------
 // Lock: pass-through IDirectSoundBuffer::Lock; on DSERR_BUFFERLOST reacquire + retry once.
-// @early-stop
-// tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md, ~67.7%): the
-// two GetErrorString(0x37c/0x386) report+ret-0 blocks tail-merge into one where retail
-// duplicates them inline. Optimizer layout choice, not source-steerable.
+// The `return 1` is the function's LAST statement and both success exits fall into
+// it (retail's 0x136430 block is the final one); every failure returns inline.
 RVA(0x00136370, 0xcc)
 i32 DirectSoundMgr::Lock(
     u32 off,
@@ -881,22 +879,26 @@ i32 DirectSoundMgr::Lock(
         return 0;
     }
     i32 hr = m_buffer->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags) != 0;
-    if (!hr) {
-        return 1;
-    }
-    if (hr == DSERR_BUFFERLOST) {
-        if (m_reacquireOwner->ReacquireBuffer() == 0) {
+    if (hr != 0) {
+        // `hr` was normalized to 0/1 above, so this compare can never be true - the
+        // retail bytes carry the same dead test (0x1363bd `cmp eax,0x88780096` sits
+        // AFTER the neg/sbb/neg), so it is the original code's bug, not ours.
+        if (hr == DSERR_BUFFERLOST) {
+            if (m_reacquireOwner->ReacquireBuffer() == 0) {
+                return 0;
+            }
+            hr = m_buffer->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags)
+                 != 0;
+            if (hr != 0) {
+                GetErrorString(DSNDMGR_FILE, 0x37c, hr);
+                return 0;
+            }
+        } else {
+            GetErrorString(DSNDMGR_FILE, 0x386, hr);
             return 0;
         }
-        hr = m_buffer->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags) != 0;
-        if (!hr) {
-            return 1;
-        }
-        GetErrorString(DSNDMGR_FILE, 0x37c, hr);
-        return 0;
     }
-    GetErrorString(DSNDMGR_FILE, 0x386, hr);
-    return 0;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
