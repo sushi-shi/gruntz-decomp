@@ -300,7 +300,13 @@ BucketHead::~BucketHead() {}
 // Remaining differences: (1) the log2/pow x87 path
 // (fldln2/fld 2.0/fyl2x/fdiv/__ftol/__CIpow) has a non-steerable FP-stack
 // schedule (docs/patterns/x87-fp-stack-schedule.md), and (2) the four rect-field
-// stores fuse to a pointer block in retail depending on source scheduling.
+// stores fuse to a pointer block in retail (`lea eax,[esi+0x28]; mov edx,eax;
+// mov [edx],..`) plus a 3-register temp SWAP for the two min/max pairs. Measured
+// 2026-08-01: writing the bounds through an explicit `WwdRect* b = &m_bounds`
+// and the pairs as real `t = a; a = b; b = t;` swaps costs 1.1pt (79.55 -> 78.40)
+// - cl folds `b` back to the disp8 form and re-canonicalises the swap to a select.
+// The block form needs `m_bounds` and the `RECT` parameter to be ONE type (the
+// two-readings union), which is a header change, not a statement change.
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
