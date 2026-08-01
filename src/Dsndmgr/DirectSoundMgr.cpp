@@ -508,14 +508,12 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, DWORD* written) {
 // ---------------------------------------------------------------------------
 // DSoundCloneInst ctor 0x135b10: chain DSoundBaseSub base ctor, init empty clone list,
 // seed head with m_cloneNode, stamp m_playKey; cl stamps 0x5ef6bc.
-// @early-stop
-// EH-state-count wall: code bytes byte-identical (base-vs-target llvm-objdump -dr) except
-// the /GX unwind state machine. Base ctor DEFINED AFTER -> out-of-line `call 0x136230`.
+// The empty clone list is DSoundList's own default ctor (m_cloneList runs between the
+// base ctor and the vptr stamp, /GX state 0 -> 1); spelling it in the body would put
+// both stores AFTER the stamp.
 RVA(0x00135b10, 0x6b)
 DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
     : DSoundBaseSub(buf, owner) {
-    m_cloneList.m_head = 0;
-    m_cloneList.m_tail = 0;
     // cl auto-stamps ??_7DSoundCloneInst@@6B@ (0x5ef6bc) here.
     ((&m_cloneList))->InsertHead(&m_cloneNode);
     m_playKey = 1;
@@ -908,19 +906,13 @@ i32 DirectSoundMgr::Lock(
 }
 
 // ---------------------------------------------------------------------------
-// ctor (/GX EH frame): zero the two list members, stamp vptr, clear init flag,
-// BuildVolumeTable, zero device/primary state. SoundStream derives -> base call here.
-// @early-stop
-// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
-// retail's /GX frame comes from the fully-constructed object registering ~SoundDevice
-// for unwind; MSVC5 emits a frameless body. Body faithful; same family as ~SoundDevice.
+// ctor (/GX EH frame): the two DSoundList members construct themselves empty (their
+// own default ctor, /GX state -1 -> 0 -> 1), THEN cl stamps the vptr, then the body
+// clears the init flag, builds the volume table and zeroes the device/primary state.
+// SoundStream derives -> base call here.
 RVA(0x00136440, 0x74)
 SoundDevice::SoundDevice() {
-    // cl auto-stamps ??_7SoundDevice@@6B@ (0x5ef6c4).
-    m_bufferList.m_head = 0;
-    m_bufferList.m_tail = 0;
-    m_voiceList.m_head = 0;
-    m_voiceList.m_tail = 0;
+    // cl auto-stamps ??_7SoundDevice@@6B@ (0x5ef6c4) after the two member ctors.
     m_initialized = 0;
     BuildVolumeTable();
     m_reacquireProc = 0;

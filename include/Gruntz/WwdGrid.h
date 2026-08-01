@@ -10,10 +10,9 @@
 struct BucketHead;
 
 struct BucketHead : DSoundList { // {m_head,m_tail} + InsertHead/Unlink inherited
-    BucketHead() {
-        m_head = 0;
-        m_tail = 0;
-    }
+    // The empty chain comes from the DSoundList base ctor; a body store would sit on
+    // the wrong side of a stamp if the class ever gains one.
+    BucketHead() {}
     // DECLARED here, DEFINED out-of-line in WwdGrid.cpp (0x191d10, a bare `ret`). That is
     // load-bearing: with an inline `~BucketHead() {}` cl sees the teardown is a no-op and
     // elides the vector-dtor loop from `delete[]` entirely - no ??_M call. Retail's
@@ -41,15 +40,15 @@ public:
     i32 Query(i32 x0, i32 y0, i32 x1, i32 y1, i32 doRemove);
     i32 Clear();
 
-    i32 m_allocated;       // +0x04  buckets-allocated flag
-    i32 m_count;           // +0x08  live object count
-    i32 m_cols;            // +0x0c  width/cellH + 1
-    i32 m_rows;            // +0x10  height/cellW + 1
-    i32 m_shiftY;          // +0x14  log2(cellW)
-    i32 m_shiftX;          // +0x18  log2(cellH)
-    i32 m_cellCount;       // +0x1c  numCells = cols*rows
-    i32 m_width;           // +0x20
-    i32 m_height;          // +0x24
+    i32 m_allocated; // +0x04  buckets-allocated flag
+    i32 m_count;     // +0x08  live object count
+    i32 m_cols;      // +0x0c  width/cellH + 1
+    i32 m_rows;      // +0x10  height/cellW + 1
+    i32 m_shiftY;    // +0x14  log2(cellW)
+    i32 m_shiftX;    // +0x18  log2(cellH)
+    i32 m_cellCount; // +0x1c  numCells = cols*rows
+    i32 m_width;     // +0x20
+    i32 m_height;    // +0x24
     // +0x28..+0x37: the grid's full bounds. These four adjacent ints ARE one
     // WwdRect - CWwdGridIter::Start @0x191ad0 block-copies them straight into
     // its `WwdRect rect` by-value argument - so they are declared as one.

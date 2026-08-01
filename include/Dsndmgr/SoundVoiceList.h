@@ -55,6 +55,18 @@ struct DSoundList {
     DSoundLink* m_head; // +0x00
     DSoundLink* m_tail; // +0x04
 
+    // Retail declares a default CONSTRUCTOR that empties the chain. Proof is the
+    // ctor SHAPE of every owner: cl5 emits [base ctors][member ctors][vptr stamp]
+    // [body] (docs/patterns/vptr-stamp-splits-meminit-from-body.md), and all three
+    // owners put the two zero stores BEFORE their vptr stamp - unreachable from a
+    // ctor body. ??0DSoundCloneInst (0x135b10) is the clearest: after the base ctor
+    // it does `lea ecx,[esi+0x58]` (the member's own `this`), `mov [ecx],eax` /
+    // `mov [ecx+4],eax`, and only THEN `mov [esi],??_7DSoundCloneInst`. The /GX
+    // state machine agrees - it steps to 0 before the pair and to 1 after it, i.e.
+    // the list is a separately-constructed destructible sub-object, where a body
+    // store would leave one state assignment for the whole object.
+    DSoundList() : m_head(0), m_tail(0) {}
+
     // Retail declares a do-nothing destructor. Proof is the /GX unwind state every
     // owner reserves for the member yet never spends: ~DSoundCloneInst (0x135bb0)
     // enters at state 1 and drops straight to -1 for the base dtor - with no dtor

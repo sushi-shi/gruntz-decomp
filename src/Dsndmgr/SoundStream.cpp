@@ -176,19 +176,12 @@ StreamVoice::~StreamVoice() {
 RVA_COMPGEN(0x001376c0, 0x5, ??1StreamVoiceFeeder@@QAE@XZ)
 
 // ---------------------------------------------------------------------------
-// SoundStream::SoundStream (__thiscall). Run the base ctor, then zero the
-// voice-list head/tail (+0x94/+0x98).
-// @early-stop
-// vptr-position wall: retail stamps the 0x5ef6ec vptr AFTER the two zero stores
-// (vptr-last), but the ALL-VTABLES real-polymorphic model forces cl's implicit
-// vptr-first store at ctor entry (after the SoundDevice base ctor). Body (base ctor
-// + two zeros) otherwise matches; the vptr-position divergence is accepted.
+// SoundStream::SoundStream (__thiscall). Base ctor, then m_voices' own DSoundList
+// ctor empties the voice list (+0x94/+0x98), then cl stamps ??_7SoundStream
+// (0x5ef6ec). The body is empty - that stamp-AFTER-the-zeroes order is exactly what
+// makes the zeroes a member ctor rather than body stores.
 RVA(0x001376d0, 0x20)
-SoundStream::SoundStream() {
-    // cl auto-stamps ??_7SoundStream@@6B@ (0x5ef6ec) here.
-    m_voices.m_head = 0;
-    m_voices.m_tail = 0;
-}
+SoundStream::SoundStream() {}
 
 // 0x1376f0 - ??_GSoundStream: the auto-emitted scalar-deleting dtor (slot 0 of
 // ??_7SoundStream @0x5ef6ec). Was a FID ??_G__non_rtti_object false positive.

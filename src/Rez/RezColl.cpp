@@ -150,10 +150,7 @@ CHashBase* CHashBase::Construct(i32 count) {
 RVA_COMPGEN(0x001849d0, 0x50, ??_ECHashSlot@@QAEPAXI@Z)
 
 RVA(0x00184a20, 0xb)
-CHashSlot::CHashSlot() {
-    m_chain.m_head = 0;
-    m_chain.m_tail = 0;
-}
+CHashSlot::CHashSlot() {} // m_chain empties itself (DSoundList's own default ctor)
 
 RVA(0x00184a30, 0x1)
 CHashSlot::~CHashSlot() {}

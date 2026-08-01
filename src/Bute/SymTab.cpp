@@ -948,8 +948,6 @@ CSymParser::CSymParser() {
     m_list.m_head = 0;
     m_list.m_tail = 0;
     m_hash.Construct(1);
-    m_nodes.m_head = 0;
-    m_nodes.m_tail = 0;
     m_parseArmed = 0;
     m_activeNode = 0;
     m_list.m_count = 0;
@@ -1009,8 +1007,6 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
     m_list.m_head = 0;
     m_list.m_tail = 0;
     m_hash.Construct(1);
-    m_nodes.m_head = 0;
-    m_nodes.m_tail = 0;
     {
         CSymParser tmp;
     }
