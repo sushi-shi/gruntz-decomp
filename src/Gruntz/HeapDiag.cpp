@@ -79,7 +79,7 @@ int HeapCheckDump(int walkOnBad) {
 }
 
 namespace ApiCallerStubs {
-    RVA(0x00118b50, 0x5b)
+    RVA(0x00118b50, 0x80)
     void winapi_118b50_OutputDebugStringA(i32 status) {
         switch (status) {
             case -3:
