@@ -640,9 +640,8 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                     x = headW + x0;
                 }
             } else {
-                i32 headLen = head.GetLength();
-                if (headLen > 0) {
-                    i32 j = 0;
+                i32 j = 0;
+                if (head.GetLength() > 0) {
                     while (y < bottom) {
                         i32 chW = MeasureText(CString(head.GetAt(j), 1)).width;
                         if (chW + x > right) {
