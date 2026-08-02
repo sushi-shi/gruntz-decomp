@@ -222,14 +222,13 @@ void CDDrawShadeBlit::BlitCopyForward(
             if (pos >= m_rleLen) {
                 break;
             }
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
+            if (m_rleData[pos] & 0x80) {
+                x += m_rleData[pos] - 0x80;
                 pos++;
             } else {
                 i32 bytes;
-                if (x + static_cast<i32>(b) < clip->right) {
-                    bytes = static_cast<i32>(b) * m_srcBpp;
+                if (x + static_cast<i32>(m_rleData[pos]) < clip->right) {
+                    bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
                 } else {
                     i32 vis = (clip->right - x) * m_srcBpp;
                     bytes = vis < 0 ? 0 : vis;
