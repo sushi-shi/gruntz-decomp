@@ -67,7 +67,7 @@ i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 refreshInterval) {
 }
 
 RVA(0x000a3360, 0x29)
-void CLightFxRender::Ctor() {
+void CLightFxRender::Reset() {
     FreeSurface();
     m_mgr = 0;
     m_cmdGrid = 0;

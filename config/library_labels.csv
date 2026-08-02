@@ -1630,7 +1630,6 @@ rva,name,lib,confidence,source
 0x173700,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x174330,__fpclear,LIBCMT,LOW,anchored
 0x174890,__fpclear,LIBCMT,LOW,anchored
-0x184df0,__fpclear,LIBCMT,LOW,anchored
 0x186180,_deflateInit_,zlib,HIGH,anchored
 0x1863d0,_deflateSetDictionary,zlib,HIGH,manual-gap-reclass
 0x186550,_deflateParams,zlib,HIGH,manual-gap-reclass

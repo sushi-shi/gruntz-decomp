@@ -668,6 +668,12 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     m_isPlaying = 1;
 }
 
+RVA(0x0000c810, 0x18)
+i32 CreateGlobalAmbientSound(CGameObject* obj) {
+    g_posSoundReq = 1;
+    return CreateAmbientSound(obj);
+}
+
 RVA(0x0000c840, 0x13d)
 i32 CreateAmbientSound(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;

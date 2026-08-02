@@ -839,6 +839,21 @@ i32 FirstDiffBit(const char* a, const char* b) {
     return c + n;
 }
 
+RVA(0x0016e4c0, 0xf)
+i32 LogicHitFactory(CGameObject* obj) {
+    return obj->m_animWorker->m_logic->AdvanceAnimation();
+}
+
+RVA(0x0016e4d0, 0xf)
+i32 LogicAttackFactory(CGameObject* obj) {
+    return obj->m_animWorker->m_logic->StepAttackFire();
+}
+
+RVA(0x0016e4e0, 0xf)
+i32 LogicBumpFactory(CGameObject* obj) {
+    return obj->m_animWorker->m_logic->RecordFrameTick();
+}
+
 static inline CString* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {

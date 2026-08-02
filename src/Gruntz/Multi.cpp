@@ -392,7 +392,7 @@ void CMulti::ReleaseResources() {
 
     CLightFxRender* lightFx = m_lightFx;
     if (lightFx) {
-        lightFx->Ctor();
+        lightFx->Reset();
         ::operator delete(lightFx);
         m_lightFx = 0;
     }

@@ -180,6 +180,11 @@ i32 CreateDemoMover(CGameObject* owner) {
     return 1;
 }
 
+RVA(0x0003c500, 0x6)
+i32 CreateDemoSign(CGameObject* obj) {
+    return 1;
+}
+
 RVA(0x0003c7f0, 0x18)
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->direction == b->direction;

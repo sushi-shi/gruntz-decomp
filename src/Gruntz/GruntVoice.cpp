@@ -1,4 +1,6 @@
 #include <Gruntz/GameObjectFactory.h>
+#include <Rez/RezSync.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Mfc.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GruntzMgr.h>
@@ -77,6 +79,14 @@ i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
 
 RVA_COMPGEN(0x00013570, 0x1e, ??_GCVoiceTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
+
+// @identity-TODO owner TU unproven (utils holding band before 0x119620)
+RVA(0x00119320, 0x15)
+void ButeParseErrorSink(const char* msg) {
+    if (g_gameReg) {
+        g_gameReg->EnterModalUI(msg);
+    }
+}
 
 RVA(0x00119620, 0xf1)
 i32 CreateGruntVoice(CGameObject* obj) {

@@ -134,6 +134,10 @@ void MonoClear() {
     g_monoCol = 0;
 }
 
+// retail: a 1-byte ret - debug output literally discarded
+RVA(0x00184df0, 0x1)
+void DiscardDebugOutput(char* line) {}
+
 RVA(0x00184e00, 0x55)
 void RezAssertFail(char* fmt, ...) {
     char buf[256];

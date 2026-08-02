@@ -5283,7 +5283,7 @@ void CPlay::ReleaseResources() {
 
     CLightFxRender* fx = m_lightFx;
     if (fx) {
-        fx->Ctor();
+        fx->Reset();
         ::operator delete(fx);
         m_lightFx = 0;
     }

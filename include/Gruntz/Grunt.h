@@ -45,11 +45,6 @@ extern "C" i32 GruntRand();
 
 class CGrunt;
 
-class CGruntCell {
-public:
-};
-SIZE_UNKNOWN();
-
 struct CTriRecord {
     CTriRecord() {}
     CTriRecord(i32 row_, i32 column_, i32 direction_)
@@ -95,11 +90,6 @@ class CGruntPuddle;
 
 class CArchive;
 
-class CGruntSub {
-public:
-};
-SIZE_UNKNOWN();
-
 struct CGruntCellRec {
     enum NameSlot {
         NAME_ATTACK,
@@ -142,18 +132,6 @@ struct CGruntCellRec {
     i32 DeserializeStrings(class CFileMemBase* ar);
 };
 SIZE(0x68);
-struct GruntStrSub {
-    void CtorImpl();
-    void Dtor();
-    GruntStrSub() {
-        CtorImpl();
-    }
-    ~GruntStrSub() {
-        Dtor();
-    }
-};
-SIZE_UNKNOWN();
-
 extern GruntDirectionCell g_gruntMoveDirNorth;
 extern GruntDirectionCell g_gruntMoveDirNorthEast;
 extern GruntDirectionCell g_gruntMoveDirEast;

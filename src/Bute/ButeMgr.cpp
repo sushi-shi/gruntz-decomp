@@ -1576,6 +1576,10 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     return this;
 }
 
+// Force-emit device, wall-blocked (docs/patterns/msvc5-variable-ctor-inline-depth.md):
+// ??_Diostream@0x171a40 is only emitted for a STACK-constructed iostream (unwind
+// path); the natural `new iostream` at ParseText doesn't reference it. Dissolves
+// when a reconstructed ButeMgr function constructs an iostream by value.
 void EmitIostreamVbaseDtor(streambuf* b) {
     iostream s(b);
     s.flush();

@@ -16,7 +16,7 @@ class CLightFxRender {
 public:
     i32 Init(CGruntzMgr* mgr, i32 refreshInterval);
 
-    void Ctor();
+    void Reset();
 
     void FreeSurface();
 

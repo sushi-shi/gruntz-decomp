@@ -39,12 +39,6 @@ platform = "win32"
 base   = ["/nologo", "/c", "/O2", "/MT"]
 eh     = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
-# framed: /O2 with frame-pointer omission DISABLED. Retail compiled the
-# registry/COM helper module (0x1bf*-0x1d5*) with ebp frames retained yet fully
-# register-allocated. docs/patterns/o2-optimizer-bailout-framed.md.
-framed = ["/nologo", "/c", "/O2", "/MT", "/Oy-"]
-# (framedeh / o1 / od / odi were pruned 2026-07-14: no unit selected them. Re-add the
-#  exact profile a TU needs when one first turns out to be /Od, /O1, or framed+EH.)
 
 [[unit]]
 unit = "adler32"
@@ -125,19 +119,6 @@ flags = "base"
 unit = "brickzcellflags"
 source = "src/Gruntz/BrickzCellFlags_077790.cpp"
 flags = "base"
-
-# cbrickz UNIT REMOVED (waveM-strays): CBrickz's ctor@0x10e800 + leaf pool folded into
-# src/Gruntz/TileLogicPump.cpp (its body sits inside the tile-trigger logic obj's contiguous
-# first-link .text block; its state pump is LogicDispatchB). The CBrickz class stays in
-# include/Gruntz/CBrickz.h.
-
-# configstore / configstorewrite / configstoreread / reghelpers UNITS REMOVED
-# (P0 library reconcile): their bodies were hand-copies of the statically-linked
-# NAFXCW MFC CWinApp profile/registry API (WriteProfileInt/String/Binary,
-# GetAppRegistryKey/GetSectionKey/GetProfileInt/String/Binary at 0x1cca..-0x1d5..)
-# + AfxGetInProcServer/_AfxGetMouseScrollLines (0x1bf702/0x1c7cb3), all HIGH-conf
-# NAFXCW in config/library_labels.csv. Carved to the CSV (library, excluded from
-# the denominator); the game calls them through real MFC via <Mfc.h>.
 
 [[unit]]
 unit = "soundfontpath"
@@ -1057,13 +1038,6 @@ unit = "startupprompt"
 source = "src/Gruntz/StartUpPrompt.cpp"
 flags = "eh"
 
-# filepathinfo UNIT REMOVED (P0 library reconcile): CanonicalizePath /
-# GetFileTimeInfo / RestoreFileTimeInfo (0x1bf8f8/0x1c1609/0x1c176a) were
-# hand-copies of the NAFXCW MFC AfxFullPath + CFile::GetStatus/SetStatus (HIGH-conf
-# in config/library_labels.csv; called by CFile::Open, CDocument::SetPathName,
-# CWinApp::AddToRecentFileList). Carved to the CSV (library, excluded).
-
-
 [[unit]]
 unit = "statusbarupdaters"
 source = "src/Gruntz/StatusBarUpdaters.cpp"
@@ -1247,10 +1221,6 @@ flags = "eh"
 unit = "tiletriggercontainer"
 source = "src/Gruntz/TileTriggerContainer.cpp"
 flags = "eh"
-
-# tiletriggertransition UNIT REMOVED (waveM-strays): folded into src/Gruntz/TileLogicPump.cpp
-# ($E init-frag-proven this obj - runs i143 AND i150 interleave it with the tile-trigger family,
-# impossible across objs at first link; its bodies sit inside the obj's contiguous .text block).
 
 [[unit]]
 unit = "areamgr"
@@ -2028,11 +1998,6 @@ flags = "eh"
 unit = "imageprobe"
 source = "src/Image/ImageProbe.cpp"
 flags = "base"
-
-# filegetstatus unit REMOVED: CFile::GetStatus (0x1c152f) is statically-linked
-# NAFXCW/MFC library code (FID-anchored in config/library_labels.csv), not game
-# scope - it is carved out there rather than hand-reconstructed.
-
 
 [[unit]]
 unit = "gameassetnamespaces"
