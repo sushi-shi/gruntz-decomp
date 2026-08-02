@@ -123,7 +123,9 @@ void CDDrawShadeBlit::BlitCopyForward(
     i32 pitch = surf->m_pitch;
     u8* base = static_cast<u8*>(surf->Lock(0));
 
-    i32 row = 0, pos = 0, x = 0;
+    i32 pos = 0;
+    i32 row = 0;
+    i32 x = 0;
 
     if (clip->top != 0) {
         while (row < clip->top) {
@@ -141,11 +143,13 @@ void CDDrawShadeBlit::BlitCopyForward(
         }
     }
 
+    i32 rowInc;
     if (vflip) {
         base += dst->bottom * pitch + dst->left * m_dstBpp;
-        pitch = -pitch;
+        rowInc = -pitch;
     } else {
         base += dst->top * pitch + dst->left * m_dstBpp;
+        rowInc = pitch;
     }
 
     x = 0;
@@ -169,7 +173,7 @@ void CDDrawShadeBlit::BlitCopyForward(
             }
             if (x >= m_width) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = 0;
             }
         }
@@ -199,7 +203,7 @@ void CDDrawShadeBlit::BlitCopyForward(
             }
             if (x >= m_width) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = 0;
             } else {
                 if (m_rleData[pos] & 0x80) {
@@ -239,7 +243,7 @@ void CDDrawShadeBlit::BlitCopyForward(
             }
             if (x >= m_width) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = 0;
             }
         }
