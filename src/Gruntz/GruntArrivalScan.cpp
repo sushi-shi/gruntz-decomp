@@ -2528,18 +2528,25 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
 
-        Coord c0[2];
-        GetScreenPos(c0);
-        i32 cy = c0[0].m_y >> 5;
-        Coord d0[2];
-        GetScreenPos(d0);
-        Coord e0[2];
-        GetScreenPos(e0);
-        Coord f0[2];
-        GetScreenPos(f0);
-        i32 dx = (f0[0].m_y >> 5) - (f0[1].m_y >> 5);
-        i32 dy = cy - (e0[1].m_y >> 5);
-        if (((dy ^ (dy >> 31)) - (dy >> 31)) < 2 && ((dx ^ (dx >> 31)) - (dx >> 31)) < 2) {
+        Coord selfTile;
+        GetScreenPos(&selfTile);
+        selfTile.m_x >>= 5;
+        selfTile.m_y >>= 5;
+        Coord slotTile;
+        slot->GetScreenPos(&slotTile);
+        slotTile.m_x >>= 5;
+        slotTile.m_y >>= 5;
+        Coord selfTileB;
+        GetScreenPos(&selfTileB);
+        selfTileB.m_x >>= 5;
+        selfTileB.m_y >>= 5;
+        Coord slotTileB;
+        slot->GetScreenPos(&slotTileB);
+        slotTileB.m_x >>= 5;
+        slotTileB.m_y >>= 5;
+        i32 dx = selfTile.m_x - slotTile.m_x;
+        i32 dy = selfTileB.m_y - slotTileB.m_y;
+        if (((dx ^ (dx >> 31)) - (dx >> 31)) < 2 && ((dy ^ (dy >> 31)) - (dy >> 31)) < 2) {
             i32 r2 = slot->m_entranceReason;
             if (r2 > 0x16) {
                 r2 = slot->m_toolId;
