@@ -9,11 +9,6 @@
 #include <Rez/RezList.h>
 #include <Gruntz/String.h>
 
-struct RezFindRec {
-    char raw[0x24];
-};
-SIZE(0x24);
-
 class CRezDir;
 
 class CSymParser;

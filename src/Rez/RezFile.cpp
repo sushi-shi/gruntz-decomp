@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <Bute/SymParser.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezFile.h>
@@ -194,7 +195,7 @@ i32 CRezItm::Check() {
     if (!m_fp) {
         return 0;
     }
-    if (RezDirLookup(m_fp) != -1) {
+    if (ftell(m_fp) != -1) {
         return 1;
     }
     return Open(m_readBuf, m_readonly, 0) != 0;

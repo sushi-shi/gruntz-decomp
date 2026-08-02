@@ -507,7 +507,7 @@ i32 CRollingBall::Update() {
     if (m_stepDirX > 0) {
         double v = dt + m_subX;
         m_subX = v;
-        nx = __ftol(ceil(v));
+        nx = static_cast<i32>(ceil(v));
         m_moveDelta = fabs(static_cast<double>(nx) - static_cast<double>(m_target.m_x));
         if (nx > m_target.m_x) {
             nx = m_target.m_x;
@@ -515,20 +515,20 @@ i32 CRollingBall::Update() {
     } else if (m_stepDirX < 0) {
         double v = m_subX - dt;
         m_subX = v;
-        nx = __ftol(floor(v));
+        nx = static_cast<i32>(floor(v));
         m_moveDelta = fabs(static_cast<double>(nx) - static_cast<double>(m_target.m_x));
         if (nx < m_target.m_x) {
             nx = m_target.m_x;
         }
     } else {
-        nx = __ftol(ceil(m_subX));
+        nx = static_cast<i32>(ceil(m_subX));
     }
 
     i32 ny;
     if (m_stepDirY > 0) {
         double v = dt + m_subY;
         m_subY = v;
-        ny = __ftol(ceil(v));
+        ny = static_cast<i32>(ceil(v));
         m_moveDelta = fabs(static_cast<double>(ny) - static_cast<double>(m_target.m_y));
         if (ny > m_target.m_y) {
             ny = m_target.m_y;
@@ -536,13 +536,13 @@ i32 CRollingBall::Update() {
     } else if (m_stepDirY < 0) {
         double v = m_subY - dt;
         m_subY = v;
-        ny = __ftol(floor(v));
+        ny = static_cast<i32>(floor(v));
         m_moveDelta = fabs(static_cast<double>(ny) - static_cast<double>(m_target.m_y));
         if (ny < m_target.m_y) {
             ny = m_target.m_y;
         }
     } else {
-        ny = __ftol(ceil(m_subY));
+        ny = static_cast<i32>(ceil(m_subY));
     }
 
     CWwdGameObjectA* fin = m_object;

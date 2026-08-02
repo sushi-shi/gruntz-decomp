@@ -407,7 +407,7 @@ i32 CCreditsState::StepVideo() {
         CDDrawSubMgrPages* v = m_world->m_drawTarget;
         CDDrawSurfacePair* dst = v->m_overlayPair;
         CDDrawSurfacePair* src = v->m_backPair;
-        if (!Eng_SmackStep(dst->m_surface->m_ddSurface, -1)) {
+        if (!m_videoHandle->Advance(dst->m_surface->m_ddSurface, -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();
         }

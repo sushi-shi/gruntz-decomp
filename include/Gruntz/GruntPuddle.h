@@ -50,4 +50,6 @@ SIZE_UNKNOWN();
 
 SIZE_UNKNOWN();
 
+extern "C" i32 CellTargetable(i32 col, i32 row);
+
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

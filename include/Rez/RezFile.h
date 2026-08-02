@@ -42,6 +42,4 @@ SIZE(0x1c);
 
 extern "C" const char g_wildcard[];
 
-extern "C" i32 RezDirLookup(void* fp);
-
 #endif // SRC_REZ_REZFILE_H

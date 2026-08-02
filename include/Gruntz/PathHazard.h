@@ -24,8 +24,6 @@ SIZE_UNKNOWN();
 
 #include <Rez/FrameClock.h>
 
-extern "C" i32 __ftol(double v);
-
 class CPathHazard : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;

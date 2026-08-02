@@ -15,18 +15,6 @@ extern CString g_levelMsgStrings[8];
 
 class CString;
 
-extern "C" void DrawStatText(
-    void* ctx,
-    CString* text,
-    RECT* rc,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
-
 extern "C" const i32 g_bootyLetterCoords[32];
 
 extern float g_secretRatioScale;

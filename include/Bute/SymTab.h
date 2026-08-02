@@ -136,6 +136,4 @@ SIZE(0x4c);
 
 extern "C" const char g_sepSlash[];
 
-extern "C" i32 _stat(const char* path, void* statbuf);
-
 #endif // SRC_BUTE_SYMTAB_H

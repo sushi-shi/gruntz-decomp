@@ -49,7 +49,7 @@ extern const float g_faderOne;
 extern const float g_faderHalfPi;
 extern const float g_sineHalfPi;
 extern const float g_sineOne;
-extern "C" int _access(const char* path, int mode);
+#include <io.h>
 
 extern float g_fxBias;
 extern float g_fxEps;

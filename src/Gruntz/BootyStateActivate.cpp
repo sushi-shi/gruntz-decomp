@@ -1061,27 +1061,27 @@ void CMultiBootyState::DrawBattleStats() {
         if (g_gameReg->m_options[i].m_joined != 0) {
             s.Format("%d", sumRun(&g_gameReg->m_scoreHud->m_miscPickupz[i * 4], 4));
             copyRect(&rc, &g_col1Rects[i]);
-            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_scoreHud->m_powerupPickupz[i * 7], 7));
             copyRect(&rc, &g_col2Rects[i]);
-            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_scoreHud->m_toyPickupz[i * 10], 10));
             copyRect(&rc, &g_col3Rects[i]);
-            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_scoreHud->m_weaponPickupz[i * 22], 22));
             copyRect(&rc, &g_col4Rects[i]);
-            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", g_gameReg->m_scoreHud->m_counts[i]);
             copyRect(&rc, &g_col5Rects[i]);
-            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", (g_gameReg->m_scoreHud)->SumWinRow(i));
             copyRect(&rc, &g_col6Rects[i]);
-            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -1110,7 +1110,7 @@ void CMultiBootyState::DrawBattleStats() {
                 break;
         }
         copyRect(&rc, &g_labelRects[c]);
-        DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
     for (i = 0; i < 4; i++) {
@@ -1171,7 +1171,7 @@ void CMultiBootyState::DrawBattleStats() {
             }
             s.Format("%s", static_cast<const char*>(g_gameReg->m_options[i].GetName()));
             copyRect(&rc, &g_colorRects[i]);
-            DrawStatText(
+            ShowHudMessage(
                 m_world,
                 &s,
                 &rc,
@@ -1190,7 +1190,7 @@ void CMultiBootyState::DrawBattleStats() {
     rc.top = 0xf;
     rc.right = 0x280;
     rc.bottom = 0x73;
-    DrawStatText(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessage(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
 
 RVA(0x0001f480, 0x1e9)

@@ -201,8 +201,6 @@ union DinDeviceEnumFn {
     i32(__stdcall* m_body)(const void*, void*);
 };
 
-extern "C" const GUID IID_IDirectInputDevice2A;
-
 inline CInputDevRoot::CInputDevRoot() {
     m_device = 0;
     m_device2 = 0;

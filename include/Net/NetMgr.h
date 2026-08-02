@@ -288,13 +288,6 @@ struct NetDPName {
 };
 SIZE(0x10);
 
-typedef i32(__stdcall* NetEnumProvidersCallback)(
-    void* lpGuid,
-    char* lpName,
-    u32 dwMajor,
-    u32 dwMinor,
-    void* lpContext
-);
 typedef BOOL(__stdcall* NetEnumSessionsCallback)(
     void* lpThisSD,
     void* lpdwTimeout,
@@ -465,23 +458,13 @@ public:
 };
 SIZE(0x24);
 
-extern "C" const GUID IID_IDirectPlay4A;
-
 extern "C" BOOL __stdcall
 NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
 
 extern "C" BOOL __stdcall
 NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
 
-struct INetReleasable {
-
-    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE;
-    STDMETHOD(v01)() PURE;
-    STDMETHOD(Release)() PURE;
-    STDMETHOD(v03)() PURE;
-    STDMETHOD(Slot10)() PURE;
-};
-SIZE_UNKNOWN();
+struct IDirectPlay;
 
 struct CNetCtrlMsg {
 
@@ -678,7 +661,7 @@ public:
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);
 
     NetGuid m_appGuid;
-    INetReleasable* m_releaseIface;
+    IDirectPlay* m_releaseIface;
     IDirectPlay4Z* m_directPlay;
 
     CObList m_groups;
@@ -721,6 +704,6 @@ NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx
 extern "C" i32 g_activePlayerCount;
 
 static i32 __stdcall
-EnumProviderCb(void* lpGuid, char* lpName, u32 dwMajor, u32 dwMinor, void* lpContext);
+EnumProviderCb(GUID* lpGuid, char* lpName, DWORD dwMajor, DWORD dwMinor, void* lpContext);
 
 #endif // NET_NETMGR_H

@@ -1336,6 +1336,10 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
 }
 
 // @early-stop
+// retail: a shipped 1-byte ret (empty stub)
+RVA(0x000b8af0, 0x1)
+void RefreshPlayerRow(HWND hDlg, HWND hList) {}
+
 RVA(0x000b8b10, 0x175)
 CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];

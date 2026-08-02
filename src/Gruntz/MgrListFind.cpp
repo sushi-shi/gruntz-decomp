@@ -7,7 +7,7 @@
 // @early-stop
 RVA(0x000f0db0, 0x48)
 
-i32 MgrListFind(i32 tileX, i32 tileY) {
+i32 CellTargetable(i32 tileX, i32 tileY) {
     CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
     POSITION pos = list.GetHeadPosition();
 

@@ -98,8 +98,8 @@ extern i32 RestoreLostSurfaces();
 
 extern "C" i32 __stdcall DdEnumModesCallback(void* mode, i32 unused);
 
-extern "C" const GUID IID_IDirectDraw2;
-extern "C" int sprintf(char* buf, const char* fmt, ...);
+#include <ddraw.h>
+#include <stdio.h>
 
 extern i32 (*g_restoreHandler)();
 class CDDrawPtrCollections;

@@ -82,7 +82,7 @@ struct ButeDoubleRange {
 };
 SIZE(0x10);
 
-extern "C" i32 atexit(void (*func)(void));
+#include <stdlib.h>
 
 typedef void(__cdecl* ErrCallback)(const char*);
 
@@ -203,7 +203,7 @@ extern "C" double ButeRead_Float(char* tok);
 extern "C" void ButeGroup_Apply(char* key, void* value, void* ctx);
 extern "C" void ButeTag_Apply(char* key, void* value, void* ctx);
 extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base);
-extern "C" i32 sscanf(const char* buf, const char* fmt, ...);
+#include <stdio.h>
 
 extern "C" i16 g_charClass[];
 extern "C" i16 g_transTable[97][49][3];

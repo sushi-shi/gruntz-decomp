@@ -1,5 +1,7 @@
 
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <Rez/DebugPrintf.h>
 #include <Bute/SymTab.h>
 #include <AddrWord.h>
@@ -1367,13 +1369,11 @@ i32 CSymParser::ReParse() {
 
 RVA(0x0013c080, 0x3c)
 i32 CSymParser::Classify(char* name) {
-    RezFindRec rec;
+    struct _stat rec;
     if (_stat(name, &rec) != 0) {
         return 0;
     }
-    // Language-forced view of packed record storage.
-
-    return (*reinterpret_cast<i32*>((rec.raw + 6)) & 0x4000) == 0x4000;
+    return (rec.st_mode & _S_IFDIR) == _S_IFDIR;
 }
 
 // @early-stop

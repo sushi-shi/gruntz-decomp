@@ -1,5 +1,5 @@
-#include <Net/DPlayImports.h>
 #include <Net/NetMgr.h>
+#include <dplay.h>
 #include <Net/NetGuids.h>
 #include <Net/InterfaceObject.h>
 #include <Font/Font.h>
@@ -55,7 +55,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 
 
 
-    hr = m_releaseIface->QueryInterface(&IID_IDirectPlay4A, &m_directPlay);
+    hr = m_releaseIface->QueryInterface(IID_IDirectPlay4A, reinterpret_cast<void**>(&m_directPlay));
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
         Destroy();
@@ -161,14 +161,14 @@ i32 CNetMgr::EnumServiceProviders(i32 validated) {
 
 RVA(0x001782d0, 0x86)
 static i32 __stdcall
-EnumProviderCb(void* lpGuid, char* lpName, u32 dwMajor, u32 dwMinor, void* lpContext) {
+EnumProviderCb(GUID* lpGuid, char* lpName, DWORD dwMajor, DWORD dwMinor, void* lpContext) {
     CNetMgr* self = static_cast<CNetMgr*>(lpContext);
     if (self == 0) {
         return 0;
     }
 
     if (g_spEnumValidated == 0) {
-        void* dp = 0;
+        IDirectPlay* dp = 0;
         i32 hr = DirectPlayCreate(lpGuid, &dp, 0);
         if (hr != 0) {
             CNetMgr::ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xfe, hr, 0);
@@ -177,7 +177,7 @@ EnumProviderCb(void* lpGuid, char* lpName, u32 dwMajor, u32 dwMinor, void* lpCon
         if (dp == 0) {
             return 1;
         }
-        (static_cast<INetReleasable*>(dp))->Release();
+        dp->Release();
     }
 
     return self->AddGroupNode(lpGuid, lpName) != 0;

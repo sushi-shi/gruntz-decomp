@@ -4,7 +4,6 @@
 #include <Ints.h>
 #include <stdio.h>
 
-extern "C" int vsprintf(char* buf, const char* fmt, char* va);
 extern "C" void DiscardDebugOutput(char* line);
 
 extern "C" void RezAssertFail(char* fmt, ...);
