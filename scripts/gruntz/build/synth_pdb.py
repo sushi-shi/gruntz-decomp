@@ -33,6 +33,11 @@ Section -> (1-based PE/object-crate section index, section base RVA):
 
 import argparse
 import csv
+from pathlib import Path as _Path
+
+from gruntz.core.library_labels import active_rows as library_active_rows
+
+REPO = _Path(__file__).resolve().parents[3]
 import os
 import re
 import struct
@@ -881,6 +886,31 @@ def main():
     # func rows drive function records (old 3-tuple shape); data rows name the
     # global-variable DATA symbols a matched global is referenced through.
     names_map = {rva: t[:3] for rva, t in overlay.items() if t[3] != "data"}
+    # LIBRARY NAMES: Ghidra exports CRT/MFC functions under short demangled
+    # labels ("ifstream", "seekg", "operator_new"), but our compiled base objs
+    # reference the real DECORATED symbols (??0ifstream@@QAE@PBDHH@Z, ...).
+    # objdiff pairs relocations BY NAME, so every library call in a matched
+    # function scored as a mismatch. Carry the tracked (non-LOW) library labels
+    # into the PDB so the delinked target speaks the same names as the base.
+    # Curated src rows always win; the unit stays empty, so this only RENAMES -
+    # library code is still partitioned into the linker bucket, never into a TU.
+    nlib = 0
+    for row in library_active_rows(REPO / "config/library_labels.csv"):
+        raw = (row.get("rva") or "").strip()
+        name = (row.get("name") or "").strip()
+        if not raw or not name:
+            continue
+        try:
+            rva = int(raw, 16) if raw.lower().startswith("0x") else int(raw)
+        except ValueError:
+            continue
+        if rva in names_map or rva in overlay:
+            continue
+        names_map[rva] = (name, "", 0)
+        nlib += 1
+    if nlib:
+        print("[synth_pdb] applied %d tracked library symbol name(s)" % nlib,
+              file=sys.stderr)
     data_names = {rva: t[0] for rva, t in overlay.items() if t[3] == "data"}
     thunk_names = read_ilt_thunk_names(args.exe, args.functions, names_map)
     if thunk_names:
