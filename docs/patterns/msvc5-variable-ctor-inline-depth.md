@@ -63,3 +63,16 @@ never materializes the ??_D COMDAT. Same family of budget-dependent choices.
 The EmitIostreamVbaseDtor device carries the label until this converges.
 Byte-win from the reshape: ??_Dstrstream/??1strstream correctly vanish from
 the TU (retail has neither anywhere).
+
+## Save residue: the cast-ref temp's SLOT lifetime (open)
+
+With the corrected strstrea.h the symbols and teardown match, but the frames
+differ by 0x58: retail keeps the strstream temp's slot alive to scope end
+(ifstream@0x28 / temp@0x8c / ofstream@0xe4 / block@0x13c, all distinct),
+while our cl treats the static_cast-bound temp as expression-lived for slot
+allocation and overlays it with the ofstream (temp@0x84 vs ofstream@0x78).
+Hoisting `block` to function scope changed nothing. The winning spelling must
+additionally make cl5 hold the temp's slot; the uncast binding does that but
+resurrects the synthesized ??1strstream/??_Dstrstream. Next levers: permute
+(slot assignment follows declaration/temp order), or a spelling that binds an
+lvalue path before the upcast without retyping the dtor.

@@ -270,7 +270,7 @@ i32 CPlay::Render() {
     {
         CGruntzMgr* w = m_mgr;
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));
-        Eng_FrameTimerStep(w->m_cmdSubMgr, 0);
+        w->m_cmdSubMgr->ScanTargets(0);
 
         if (m_levelId == CURSOR_FLAILINGGRUNT) {
             u32 elapsed = g_frameTime - static_cast<u32>(m_bootyTimerLo);
@@ -443,9 +443,6 @@ i32 CPlay::Render() {
 
         m_beginMarker->FilterList2(g_frameDelta);
         DrawCursorSaveUnder(0);
-        if (m_worldReady != 0) {
-            Eng_HudDraw(m_world->m_drawTarget->m_frontPair->m_surface, &m_hudRect, 0xff);
-        }
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
 
         if (m_region0Gate != 0) {
@@ -518,7 +515,7 @@ alt2:
                     m_world->m_drawTarget->m_overlayPair
                 );
                 m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
-                Eng_FrameTimerStep(m_guts, 0x32);
+                m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(0x32, 0);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0);
                 m_frameMarker->Draw(
                     static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
