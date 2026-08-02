@@ -7,13 +7,6 @@
 
 #include <Rez/RezList.h>
 
-extern "C" void* Eng_fopen(const char* path, const char* mode);
-extern "C" i32 RezFClose(void* fp);
-extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp);
-extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);
-extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp);
-extern "C" i32 Eng_fflush(void* fp);
-
 extern const char s_rb[];
 extern const char s_rPlusB[];
 extern const char s_wPlusB[];

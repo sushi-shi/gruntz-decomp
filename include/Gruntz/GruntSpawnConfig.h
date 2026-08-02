@@ -61,6 +61,4 @@ public:
 };
 SIZE_UNKNOWN();
 
-extern "C" i32 SpawnResolveName(void* resolver, void* nameStr, i32 mode);
-
 #endif // GRUNTZ_GRUNTZ_CGRUNTSPAWNCONFIG_H

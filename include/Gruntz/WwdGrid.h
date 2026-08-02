@@ -53,8 +53,4 @@ public:
 };
 SIZE(0x44);
 
-extern "C" double log(double);
-
-extern "C" double pow(double, double);
-
 #endif // GRUNTZ_WWDGRID_H

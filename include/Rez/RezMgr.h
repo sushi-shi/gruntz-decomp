@@ -13,12 +13,8 @@ struct RezFindRec {
     char raw[0x24];
 };
 SIZE(0x24);
-extern "C" i32 RezStatEntry(const char* name, RezFindRec* rec);
 
 class CRezDir;
-
-extern "C" char* RezStrrchr(const char* s, i32 ch);
-extern "C" i32 RezStricmp(const char* a, const char* b);
 
 class CSymParser;
 
@@ -65,11 +61,6 @@ public:
     i32 m_pos;
 };
 SIZE(0x24);
-
-extern "C" i32 RezFClose(void* fp);
-extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp);
-extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);
-extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp);
 
 class CRezDir : public CRezItmBase {
 public:

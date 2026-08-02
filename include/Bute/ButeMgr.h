@@ -27,8 +27,6 @@ struct CButeTail {
 };
 SIZE(0x1);
 
-extern "C" void AfxString_AppendChar(void* pStr, char c);
-
 struct ButeIntRect {
     ButeIntRect() : a(0), b(0), c(0), d(0) {}
     ~ButeIntRect() {}

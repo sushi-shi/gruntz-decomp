@@ -1,3 +1,4 @@
+#include <math.h>
 #include <rva.h>
 #include <Mfc.h>
 
