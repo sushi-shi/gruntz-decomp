@@ -310,7 +310,7 @@ splashstate	7	7
 spotlight	1	0
 spotlightactreg	1	0
 spotlightctor	7	4
-spriteloaders	10	4
+spriteloaders	10	5
 spriteref	2	1
 spritereftable	10	8
 startupprompt	1	0
@@ -599,7 +599,7 @@ battlezmapconfig	?RouteUnitTo@CBattlezMapConfig@@QAEHPAVCGrunt@@HHHHH@Z	63.8443	
 battlezmapconfig	?RouteUnitToGoal@CBattlezMapConfig@@QAEHPAVCGrunt@@HHHH@Z	67.7935	67.7935	3	2330e1a25607	0x302c0
 battlezmapconfig	?Serialize@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	5	6cc1fce6ac87	0x2b420
 battlezmapconfig	?SerializeState@CBattlezMapConfig@@QAEHPAVCFileMemBase@@HHH@Z	95.1250	95.1250	2	7d8633ae4e16	0x2bfc0
-battlezmapconfig	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	75.0128	75.0128	10	98612d8264bc	0x31610
+battlezmapconfig	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	75.0128	75.0076	10	98612d8264bc	0x31610
 battlezmapconfig	?StepAllRowSpawns@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	2	cecca5bc5558	0x25c20
 battlezmapconfig	?StepBoard@CBattlezMapConfig@@QAEHXZ	77.1988	77.1988	5	01d595886c12	0x25d90
 battlezmapconfig	?StepRowSpawn@CBattlezMapConfig@@QAEHH@Z	81.7946	81.7946	4	3b481e56fa93	0x26470
@@ -1967,7 +1967,7 @@ grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	13	426a8f3b75a6	0x4d060
 grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	0.0000	0.0000	4	5aa9f5ee8e5e	0x4b370
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	64.7015	64.7015	28	44befaf35e04	0x4c170
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	3	9ee95398bbfb	0x4b320
-grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9994	79.9965	3	d5d651ee8e03	0x5d210
+grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9994	79.9982	3	d5d651ee8e03	0x5d210
 gruntarrivalscan	?ArrivalReticleScan@CGrunt@@QAEHXZ	0.0000	0.0000	7	68f7804ecc0b	0xee800
 gruntarrivalscan	?PhaseStep@CGrunt@@QAEHXZ	39.2037	39.2037	20	ce727dfac409	0xf60f0
 gruntarrivalscan	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	4	c1b29b2a7ef3	0xf26f0
@@ -2753,7 +2753,7 @@ lightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	3	3d95d93657
 lightfxrender	?Init@CLightFxRender@@QAEHPAVCGruntzMgr@@H@Z	100.0000	100.0000	3	0b2d5e2b40ca	0xa32c0
 lightfxrender	?IssueMinimapCommand@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	78d1d3bf9157	0xa9550
 lightfxrender	?Reset@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	23060dbd869b	0xa3360
-lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	59.6050	59.6050	11	bee540a0c0d9	0xa3460
+lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	56.8235	56.8235	11	bee540a0c0d9	0xa3460
 loadgamemenu	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	1c5aceaaa979	0x9e0b0
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	8	51b6bf9e687a	0x9dff0
 loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	4	31aae3635583	0x9e2d0
@@ -3338,7 +3338,7 @@ play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	6	1407ee167f0f	0xd8960
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	6	993b54aa05a0	0xd9160
 play	?ReleaseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	6	a0a5b47b459e	0xd6560
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	7	e5eb5c35c985	0xc8700
-play	?Render@CPlay@@UAEHXZ	0.0000	0.0000	28	4c569f3e8006	0xc8cf0
+play	?Render@CPlay@@UAEHXZ	0.0000	0.0000	29	5efd235c6b2d	0xc8cf0
 play	?Reset@GruntzPlayer@@QAEHXZ	100.0000	100.0000	6	66b9b6d972b5	0xda9e0
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	11	64f4c78cc0e5	0xd5f00
 play	?ResetPlayState@CPlay@@QAEHXZ	92.0850	92.0850	15	5118801345b0	0xd60b0
@@ -3844,7 +3844,7 @@ spotlightctor	?FireActivation@CSpotLight@@UAEXH@Z	100.0000	100.0000	4	902c1890d3
 spotlightctor	?GetTypeTag@CSpotLight@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:7efe6a45669c	0x12ff0
 spotlightctor	?SerializeMove@CSpotLight@@UAEHPAVCFileMemBase@@HHPAUCGameObject@@@Z	98.0579	98.0579	2	35549cacff34	0xb2050
 spotlightctor	?Tick@CSpotLight@@QAEHXZ	54.0806	54.0806	16	d201c2ed8be6	0xb1af0
-spriteloaders	?AddTime@CTimer@@QAEXHH@Z	99.8214	99.8214	9	9f840e570099	0x9c0e0
+spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	100.0000	9	9f840e570099	0x9c0e0
 spriteloaders	?Draw@CTimer@@QAEHPAVCDDrawSurfacePair@@H@Z	100.0000	100.0000	2	8cb52b0cbb93	0x9bfa0
 spriteloaders	?HandleEvent@CTimer@@QAEHPAVCFileMemBase@@HHH@Z	84.5849	84.5849	5	f2e646047c79	0x9c1c0
 spriteloaders	?Init@CTimer@@QAEPAV1@XZ	99.7895	99.7895	4	f7dab673bd63	0x9bab0
