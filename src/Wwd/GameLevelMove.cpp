@@ -16,7 +16,7 @@ static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 // @early-stop
 RVA(0x00167130, 0x83)
-i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
+i32 CGameLevel::ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
     CGameObject* s = obj;
     i32 eax = 0;
     i32 prevX = s->m_screenX;
@@ -30,7 +30,7 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
                 s->m_screenY = b;
             }
         } else {
-            eax = MoveSubDispatch12(s, a, b, c);
+            eax = MoveAxisAligned(s, a, b, c);
         }
     }
 

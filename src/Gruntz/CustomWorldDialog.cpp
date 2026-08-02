@@ -120,7 +120,7 @@ namespace m4 {
             return 0;
         }
         ::SendMessageA(lb, 0x184, 0, 0);
-        if (CustomGate("Custom")) {
+        if (_chdir("Custom")) {
             return 0;
         }
         char pattern[260];
@@ -144,7 +144,7 @@ namespace m4 {
                 }
             } while (_findnext(h, &fd) != -1);
         }
-        CustomGate(g_dotDot);
+        _chdir(g_dotDot);
         AfxGetApp()->EndWaitCursor();
         return 1;
     }

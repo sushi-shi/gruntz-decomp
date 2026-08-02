@@ -198,11 +198,8 @@ SIZE(0x110);
 
 extern CButeMgr g_buteMgr;
 
-extern "C" double ButeRead_Float(char* tok);
-
 extern "C" void ButeGroup_Apply(char* key, void* value, void* ctx);
 extern "C" void ButeTag_Apply(char* key, void* value, void* ctx);
-extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base);
 #include <stdio.h>
 
 extern "C" i16 g_charClass[];

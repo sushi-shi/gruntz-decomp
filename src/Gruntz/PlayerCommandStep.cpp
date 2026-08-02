@@ -1,3 +1,4 @@
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -85,13 +86,13 @@ i32 CPlay::ExecCommand(
                     || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                GruntCue(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (player != static_cast<u32>(g_curPlayer) || g == 0 || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            GruntCue(g, 0x323, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
             return 1;
         }
 
@@ -198,14 +199,14 @@ i32 CPlay::ExecCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                GruntCue(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res != -1) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x323, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, px, py, 2);
@@ -213,13 +214,13 @@ i32 CPlay::ExecCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x323, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                 return 0;
             }
-            GruntCue(g, 0x324, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
             return 0;
         }
 
@@ -255,7 +256,7 @@ i32 CPlay::ExecCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                GruntCue(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res != -1) {
@@ -264,7 +265,7 @@ i32 CPlay::ExecCommand(
                     || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x325, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, sx, sy, 2);
@@ -274,13 +275,13 @@ i32 CPlay::ExecCommand(
                     || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x325, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                 return 0;
             }
-            GruntCue(g, 0x324, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
             return 0;
         }
 
@@ -319,14 +320,14 @@ i32 CPlay::ExecCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                GruntCue(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res != -1) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x323, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, px, py, 3);
@@ -334,13 +335,13 @@ i32 CPlay::ExecCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x323, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                 return 0;
             }
-            GruntCue(g, 0x324, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
             return 0;
         }
 
@@ -376,7 +377,7 @@ i32 CPlay::ExecCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                GruntCue(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res != -1) {
@@ -385,7 +386,7 @@ i32 CPlay::ExecCommand(
                     || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x325, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, sx, sy, 3);
@@ -395,13 +396,13 @@ i32 CPlay::ExecCommand(
                     || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                GruntCue(g, 0x325, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                 return 0;
             }
-            GruntCue(g, 0x324, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
             return 0;
         }
 
@@ -430,7 +431,7 @@ i32 CPlay::ExecCommand(
             if (g2 == 0 || g2->m_entranceCommitted == 0) {
                 r = 0;
             } else {
-                r = PickupCheck(static_cast<u8>(extraByte), 0, 0, 0, live);
+                r = g2->LoadPickupSprites(static_cast<u8>(extraByte), 0, 0, 0, live);
             }
             if (r != 0) {
                 if (player == static_cast<u32>(g_curPlayer)) {

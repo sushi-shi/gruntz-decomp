@@ -82,7 +82,22 @@ public:
 };
 SIZE(0x18);
 
-extern "C" u8 NearestPaletteIndex(i32 r, PALETTEENTRY* pal, i32 g, i32 b);
+// retail inlines this per call site (no out-of-line body exists)
+static __inline u8 NearestPaletteIndex(i32 r, PALETTEENTRY* pal, i32 g, i32 b) {
+    i32 best = 0;
+    i32 bestDist = 0x7fffffff;
+    for (i32 i = 0; i < 256; i++) {
+        i32 dr = r - pal[i].peRed;
+        i32 dg = g - pal[i].peGreen;
+        i32 db = b - pal[i].peBlue;
+        i32 d = dr * dr + dg * dg + db * db;
+        if (d < bestDist) {
+            bestDist = d;
+            best = i;
+        }
+    }
+    return static_cast<u8>(best);
+}
 
 extern float g_one;
 extern float g_255;

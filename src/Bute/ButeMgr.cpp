@@ -1250,7 +1250,7 @@ bool ButeMgr::ParseAttributeFile() {
             if (!ScanToken(6)) {
                 return false;
             }
-            vd = ButeRead_Dword(m_token, 0, 10);
+            vd = strtoul(m_token, 0, 10);
             if (m_writeMode) {
                 (*m_pText) << s_strDword;
                 (*m_pText) << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
@@ -1263,7 +1263,7 @@ bool ButeMgr::ParseAttributeFile() {
             if (!ScanToken(8)) {
                 return false;
             }
-            vf = static_cast<float>(ButeRead_Float(m_token));
+            vf = static_cast<float>(atof(m_token));
             if (m_writeMode) {
                 ((*m_pText) << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
             } else if (!bDup) {
@@ -1272,7 +1272,7 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case 16: {
-            vf = static_cast<float>(ButeRead_Float(m_token));
+            vf = static_cast<float>(atof(m_token));
             if (m_writeMode) {
                 (*m_pText) << static_cast<double>(GetFloat(m_tagName, m_str104));
                 (*m_pText) << s_strFloatSuffix;
@@ -1282,7 +1282,7 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case 8: {
-            double dv = ButeRead_Float(m_token);
+            double dv = atof(m_token);
             if (m_writeMode) {
                 (*m_pText) << static_cast<double>(GetDouble(m_tagName, m_str104));
             } else if (!bDup) {
@@ -1464,12 +1464,11 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     return this;
 }
 
-// Emit device for ??_Diostream@0x171a40. Save's iostream&-bound strstream temp is
-// now byte-true (state typed iostream, ??1iostream+??1ios teardown), but our cl
-// emits that funclet as inline dtor calls where retail's tail-jmps the ??_D helper,
-// so nothing else materializes the COMDAT. Dissolves when a ButeMgr function gains
-// a by-value stack iostream, or the funclet-helper divergence is solved
-// (docs/patterns/msvc5-variable-ctor-inline-depth.md).
+// Emit device for ??_Diostream@0x171a40 - the last remaining reason: with the
+// corrected strstrea.h, Save's teardown and symbols are retail-true, but our cl
+// still emits the state-1 funclet as an inline ??1iostream+??1ios pair where
+// retail tail-jmps the ??_D helper, so nothing materializes the COMDAT.
+// Re-test on any Save/cl-behavior movement.
 void EmitIostreamVbaseDtor(streambuf* b) {
     iostream s(b);
     s.flush();

@@ -148,6 +148,7 @@ public:
     i32 LoadName(CFileMemBase* sink);
 
     i32 MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags);
+    i32 ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 
     i32 MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags);
     i32 MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags);
@@ -231,10 +232,6 @@ public:
     WwdHeader m_header;
 };
 SIZE(0x6d4);
-
-i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
-
-extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c);
 
 int WapUncompress(
     unsigned char* dest,

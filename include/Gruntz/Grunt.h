@@ -857,9 +857,6 @@ extern char s_codeN[];
 extern char s_codeO[];
 extern char s_codeQ[];
 
-extern "C" void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d);
-extern "C" i32 PickupCheck(i32 a, i32 b, i32 c, i32 d, i32 e);
-
 static void GruntScratchTeardown();
 
 #endif // SRC_GRUNTZ_GRUNT_H
