@@ -1,46 +1,44 @@
+#include <rva.h>
 
+#include <Gruntz/GruntEntranceArrival.h>
 
+#include <AddrWord.h>
+#include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/Random.h>
+#include <Bute/SymTab.h>
+#include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/BoundaryLowerMethodsViews.h>
+#include <Gruntz/Enums.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Projectile.h>
-#include <Gruntz/Grunt.h>
-#include <DDrawMgr/AniAdvance.h>
-#include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Gruntz/Enums.h>
-#include <Gruntz/State.h>
-#include <Wap32/Wap32.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/AniElement.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/SerialRecords.h>
+#include <Gruntz/InGameIcon.h>
 #include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <rva.h>
+#include <Gruntz/Projectile.h>
+#include <Gruntz/Random.h>
+#include <Gruntz/SerialRecords.h>
+#include <Gruntz/State.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
 #include <Pix16.h>
-#include <AddrWord.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+#include <Wap32/Wap32.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Bute/ButeMgr.h>
-
-#include <Gruntz/InGameIcon.h>
-#include <Gruntz/GruntEntranceArrival.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
-#include <Utils/MapTyped.h>
 
 DATA(0x001e9a68)
 double s_fpZero = 0.0;
@@ -440,6 +438,32 @@ i32 CGrunt::StepAttackFire() {
                 }
                 break;
             }
+            case GRUNT_WELDER:
+            case GRUNT_WINGZ: {
+                CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                    0,
+                    m_object->m_screenX,
+                    m_object->m_screenY,
+                    0,
+                    "Projectile",
+                    0x40003
+                );
+                spr->m_animWorker->m_notify(spr);
+                CProjectile* s = static_cast<CProjectile*>(spr->m_animWorker->m_logic);
+                if (s->LoadProjectileSprites(
+                        m_entranceReason,
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        m_attackTargetPx.m_x,
+                        m_attackTargetPx.m_y,
+                        m_object->m_screenX,
+                        m_object->m_screenY
+                    )
+                    == 0) {
+                    s->m_wwdObject->m_flags |= 0x10000;
+                }
+                break;
+            }
             case GRUNT_BOOMERANG: {
                 CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
@@ -473,32 +497,6 @@ i32 CGrunt::StepAttackFire() {
                 spr->m_damage = 0;
                 spr->m_animWorker->m_notify(spr);
                 spr->m_smarts = m_tileOwnerHi;
-                break;
-            }
-            case GRUNT_WELDER:
-            case GRUNT_WINGZ: {
-                CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                    0,
-                    m_object->m_screenX,
-                    m_object->m_screenY,
-                    0,
-                    "Projectile",
-                    0x40003
-                );
-                spr->m_animWorker->m_notify(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->m_animWorker->m_logic);
-                if (s->LoadProjectileSprites(
-                        m_entranceReason,
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        m_attackTargetPx.m_x,
-                        m_attackTargetPx.m_y,
-                        m_object->m_screenX,
-                        m_object->m_screenY
-                    )
-                    == 0) {
-                    s->m_wwdObject->m_flags |= 0x10000;
-                }
                 break;
             }
             default: {
