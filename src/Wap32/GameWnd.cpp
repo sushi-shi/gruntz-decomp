@@ -277,6 +277,9 @@ i32 CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
     return 0;
 }
 
+// Force-emit device, wall-blocked (docs/patterns/msvc5-variable-ctor-inline-depth.md):
+// no natural out-of-line reference to the emitted symbol(s) exists in this TU, so
+// removing this drops their labels. Dissolves when the inline-depth wall breaks.
 static CGameWnd* volatile g_forceEmitCGameWnd;
 #pragma inline_depth(0)
 void ForceEmitCGameWndDtor() {

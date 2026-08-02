@@ -52,7 +52,6 @@
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FaderMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
-#include <Rez/RezAlloc.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/LightFxMgr.h>
@@ -772,14 +771,14 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
     char szDir[256];
 
     if (GetCurrentDirectoryA(0xff, szDir)) {
-        Format(&path, "%s\\%s", szDir, static_cast<const char*>(name));
+        path.Format("%s\\%s", szDir, static_cast<const char*>(name));
         if (!FileExists(const_cast<char*>(static_cast<const char*>(path)))) {
             path.Empty();
         }
     }
 
     if (path.GetLength() == 0) {
-        Format(&path, "%c:\\Movies\\%s", GetGruntzDriveLetter(), static_cast<const char*>(name));
+        path.Format("%c:\\Movies\\%s", GetGruntzDriveLetter(), static_cast<const char*>(name));
         if (path.GetLength() == 0) {
             return path;
         }
@@ -1380,7 +1379,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     if (in) {
         in->Deactivate();
         in->m_list.CPtrList::~CPtrList();
-        RezFree(in);
+        ::operator delete(in);
     }
     m_inputState = 0;
 
@@ -1433,7 +1432,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     if (in2) {
         in2->Deactivate();
         in2->m_list.CPtrList::~CPtrList();
-        RezFree(in2);
+        ::operator delete(in2);
     }
     m_inputState = 0;
 

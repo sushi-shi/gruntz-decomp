@@ -848,6 +848,9 @@ void CWwdGameObjectA::ClampLast() {
     }
 }
 
+// Force-emit device, wall-blocked (docs/patterns/msvc5-variable-ctor-inline-depth.md):
+// no natural out-of-line reference to the emitted symbol(s) exists in this TU, so
+// removing this drops their labels. Dissolves when the inline-depth wall breaks.
 static void* volatile g_forceEmitSink;
 #pragma inline_depth(0)
 void ForceEmitCResolveNodeCtor(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {

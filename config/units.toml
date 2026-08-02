@@ -805,13 +805,14 @@ source = "src/Gruntz/SplashState.cpp"
 flags = "eh"
 
 [[unit]]
-# Fresh-object ctor at 0x8fea0 (CFileIO+CByteArray owner) mis-attributed to
-# CGruntzMgr; true owner not identified, so its own TU.
+# ??0CFecFile emit TU: the retail copy at 0x8fea0 is gruntzmgr's COMDAT emission
+# (ChangeState constructs CMoviePlayer whose m_decodeStore member is a CFecFile),
+# but converting to a header inline makes our cl flatten the ctor into ChangeState
+# and lose the label (inline-depth wall). Kept until that caller converges.
 unit = "unknownfileioctor"
 source = "src/Gruntz/UnknownFileIOCtor.cpp"
 flags = "eh"
 
-# --- semantic stub-elim: re-homed from src/Stub/Backlog.cpp + Discovered.cpp ---
 [[unit]]
 # CBootyState::vfunc_9 (slot 9) + CMultiBootyState::OnActivate2 (slot 8) - vtable-proven.
 unit = "bootystateactivate"
