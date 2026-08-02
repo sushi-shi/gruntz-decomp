@@ -12,7 +12,7 @@
 // @early-stop
 RVA(0x000b1ee0, 0x11d)
 int CSpotLight::Update() {
-    if (m_object->m_114 == 1) {
+    if (m_object->m_score == 1) {
         double c = cos(m_90);
         double s = sin(m_90);
 

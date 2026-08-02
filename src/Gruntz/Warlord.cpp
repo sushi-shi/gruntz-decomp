@@ -147,7 +147,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_wwdObject->m_flags |= 0x2000002;
 
-    i32 owner = m_object->m_124;
+    i32 owner = m_object->m_smarts;
     i32 cfg = g_gameReg->m_options[owner].m_008;
     if (cfg < 0 || cfg >= 0x11) {
         cfg = 0;
@@ -479,8 +479,10 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
         }
         case 8: {
 
-            CShadeTable* sel =
-                g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[m_object->m_124].m_008, 0);
+            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
+                g_gameReg->m_options[m_object->m_smarts].m_008,
+                0
+            );
             if (sel == 0) {
                 sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
@@ -553,8 +555,8 @@ void RegisterWarlordActions() {
 
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         ResolveMovingAnimation();
     }
@@ -563,14 +565,14 @@ i32 CWarlord::RearmMoving() {
 
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        i32 dist = reg->m_cmdGrid->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist = reg->m_cmdGrid->NearestCellDist(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
@@ -589,13 +591,13 @@ i32 CWarlord::LoadAttributes() {
 
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
     if (g_gameReg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        i32 dist = g_gameReg->m_cmdGrid->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist = g_gameReg->m_cmdGrid->NearestCellDist(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
             return 0;
@@ -618,11 +620,11 @@ i32 CWarlord::LoadAttributes2() {
 
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
-        if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
+        if (h->m_phase != 0 && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = 0;
             CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
             tm->m_window = 0x3e8;
@@ -635,8 +637,8 @@ i32 CWarlord::AdvanceMovingAnim() {
 
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         ResolveMovingAnimation();
     }
@@ -645,8 +647,8 @@ i32 CWarlord::RearmMoving2() {
 
 RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         CWwdGameObjectA* o = m_object;
         i32 y = o->m_screenY;
@@ -663,14 +665,14 @@ i32 CWarlord::BuildFortSplashParticles() {
         }
 
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
-        if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
+        if (h->m_phase != 0 && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = 0;
             CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
             tm->m_window = 0x3e8;
             tm->m_base = static_cast<u32>(g_frameTime);
         }
 
-        GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_124];
+        GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_smarts];
         if (slot != 0) {
             slot->m_00c = 0;
         }
@@ -688,8 +690,8 @@ i32 CWarlord::ResolveMovingAnimation() {
 
     m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__MOVING);
 
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(m_animMoving);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(m_animMoving);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyB);
@@ -731,8 +733,8 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownStamp64 = static_cast<u32>(g_frameTime);
             }
 
-            m_value = m_wwdObject->m_1a0.m_14;
-            m_wwdObject->m_1a0.Setup(m_animPanic);
+            m_value = m_wwdObject->m_animCursor.m_animation;
+            m_wwdObject->m_animCursor.Setup(m_animPanic);
 
             m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);
 
@@ -766,8 +768,8 @@ i32 CWarlord::ResolveDeathAnimation() {
     }
 
     CAniElement* anim = m_animDeath;
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(anim);
 
     m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__DEATH);
 
@@ -796,8 +798,8 @@ i32 CWarlord::RaiseBattleAlert() {
     }
 
     CAniElement* anim = m_animJoy;
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(anim);
 
     m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__JOY);
 
@@ -830,10 +832,10 @@ i32 CWarlord::ResolveIdleAnimation() {
     }
 
     CAniElement* anim = m_idleAnims[idx];
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(anim);
 
-    CAniElement* desc = m_wwdObject->m_1a0.m_14;
+    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
     CAniDesc* elem =
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
@@ -868,8 +870,8 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     }
 
     CAniElement* anim = m_battlecryAnims[idx];
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(anim);
 
     m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__BATTLECRY);
 

@@ -46,10 +46,10 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_70 = static_cast<double>(ax);
     m_78 = static_cast<double>(cx);
     i32 nx;
-    if (m_object->m_124 == 0) {
+    if (m_object->m_smarts == 0) {
         nx = ax - 0x20;
     } else {
-        nx = ax - m_object->m_124 * 32;
+        nx = ax - m_object->m_smarts * 32;
     }
     m_object->m_screenX = nx;
     m_object->m_screenY = cx;
@@ -63,21 +63,21 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_88 = m_78 - m_68;
 
     u32 v;
-    if (m_object->m_120 == 0) {
+    if (m_object->m_damage == 0) {
         v = g_buteMgr.GetDwordDef("Hazardz", "SpotLightTime", 0xbb8);
     } else {
-        v = m_object->m_120;
+        v = m_object->m_damage;
     }
     m_58 = g_spotRateNum / static_cast<double>(static_cast<u32>(v));
-    if (m_object->m_12c == 1) {
+    if (m_object->m_direction == 1) {
         m_58 = m_58 * g_spotRateMul;
     }
-    if (m_object->m_118 == 1) {
+    if (m_object->m_points == 1) {
         m_90 = 3.1415927;
     } else {
         m_90 = 0;
     }
-    CShadeTable* looked = g_gameReg->m_logicPump->m_tables[m_object->m_11c];
+    CShadeTable* looked = g_gameReg->m_logicPump->m_tables[m_object->m_powerup];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
@@ -168,7 +168,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
             break;
         case 8: {
             CWwdGameObjectA* o = m_object;
-            CShadeTable* fill = reg->m_logicPump->m_tables[o->m_11c];
+            CShadeTable* fill = reg->m_logicPump->m_tables[o->m_powerup];
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
             o->m_drawFillCmd = 7;
@@ -192,7 +192,7 @@ i32 CSpotLight::Tick() {
             CWwdGameObjectA* t = tgt->m_object;
             o->m_screenX = t->m_screenX;
             o->m_screenY = t->m_screenY;
-            if (o->m_114 == 1) {
+            if (o->m_score == 1) {
                 reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 5, -1);
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {

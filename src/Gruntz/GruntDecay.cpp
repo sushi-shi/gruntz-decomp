@@ -13,7 +13,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
     if (m_deathType == 0) {
         return 0;
     }
-    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) == 1) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 1) {
         if (m_entranceReason == 1 && m_deathType != 5) {
             m_tileMgr->BuildRockBreakParticles(
                 m_object->m_screenX,
@@ -32,7 +32,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
             );
         }
     }
-    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
     if (sub->m_finished == 0) {
         return 0;
     }

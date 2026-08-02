@@ -79,8 +79,9 @@ enum GruntDeathType {
 };
 
 #define DEATH_FRAME()                                                                              \
-    (m_wwdObject->m_1a0.m_14->m_records.GetSize() > 0                                              \
-         ? static_cast<CAniRecordView*>(m_wwdObject->m_1a0.m_14->m_records.GetAt(0))->m_seedFrame  \
+    (m_wwdObject->m_animCursor.m_animation->m_records.GetSize() > 0                                \
+         ? static_cast<CAniRecordView*>(m_wwdObject->m_animCursor.m_animation->m_records.GetAt(0)) \
+               ->m_seedFrame                                                                       \
          : static_cast<CAniRecordView*>(0)->m_seedFrame)
 
 #define DEATH_CUE(tag)                                                                             \
@@ -166,14 +167,14 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     switch (deathType) {
         case DEATH_SQUASH:
             if (m_entranceReason == 1) {
-                m_value = m_wwdObject->m_1a0.m_14;
+                m_value = m_wwdObject->m_animCursor.m_animation;
                 m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
                 goto pathA;
             }
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SQUASH)
             );
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_SQUASH, DEATH_FRAME());
             DEATH_CUE(0x35b);
@@ -188,7 +189,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SINK)
             );
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
@@ -199,7 +200,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_HOLE)
             );
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_HOLE, DEATH_FRAME());
             DEATH_CUE(0x357);
@@ -209,7 +210,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SHATTER)
             );
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FREEZE, DEATH_FRAME());
             DEATH_CUE(0x354);
@@ -219,7 +220,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_BURN)
             );
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_BURN, DEATH_FRAME());
             DEATH_CUE(0x352);
@@ -231,7 +232,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
             );
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             if (m_object->m_sortKey != -1) {
@@ -262,7 +263,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_FALL)
                 );
             }
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
@@ -294,7 +295,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
                 );
                 m_poseDeath = static_cast<CAniElement*>(out_ob);
             }
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
@@ -309,7 +310,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
                 out_ob
             );
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
             DEATH_CUE(0x353);
@@ -321,7 +322,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             void* out_ob = 0;
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_MELT, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_MELT, DEATH_FRAME());
             DEATH_CUE(0x359);
@@ -332,7 +333,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             void* out_ob = 0;
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_KAROKE, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
             DEATH_CUE(0x358);
@@ -341,15 +342,15 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
 
         case DEATH_EXPLODE: {
             if (m_entranceReason == 1) {
-                m_value = m_wwdObject->m_1a0.m_14;
-                m_wwdObject->m_1a0.Setup(m_poseDeath);
+                m_value = m_wwdObject->m_animCursor.m_animation;
+                m_wwdObject->m_animCursor.Setup(m_poseDeath);
                 goto pathA;
             }
             void* out_ob = 0;
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_EXPLODE, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_wwdObject->m_1a0.m_14;
-            m_wwdObject->m_1a0.Setup(m_poseDeath);
+            m_value = m_wwdObject->m_animCursor.m_animation;
+            m_wwdObject->m_animCursor.Setup(m_poseDeath);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
@@ -359,8 +360,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             void* out_ob = 0;
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_EXITZ_DRAIN, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_wwdObject->m_1a0.m_14;
-            m_wwdObject->m_1a0.Setup(m_poseDeath);
+            m_value = m_wwdObject->m_animCursor.m_animation;
+            m_wwdObject->m_animCursor.Setup(m_poseDeath);
             m_wwdObject->ApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId(s_dExitKeyB);
@@ -368,8 +369,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
         }
 
         default:
-            m_value = m_wwdObject->m_1a0.m_14;
-            m_wwdObject->m_1a0.Setup(m_poseDeath);
+            m_value = m_wwdObject->m_animCursor.m_animation;
+            m_wwdObject->m_animCursor.Setup(m_poseDeath);
             m_wwdObject->ApplyName(static_cast<const char*>(m_44c));
             {
                 CGruntzMgr* g = g_gameReg;

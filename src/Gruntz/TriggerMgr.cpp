@@ -983,9 +983,9 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
         return 0;
     }
     sprite->m_animWorker->m_notify(sprite);
-    sprite->m_124 = f124;
-    sprite->m_114 = f114;
-    sprite->m_118 = f118;
+    sprite->m_smarts = f124;
+    sprite->m_score = f114;
+    sprite->m_points = f118;
     return PlacePuddle(sprite, color);
 }
 
@@ -993,11 +993,11 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     CGruntPuddle* tgt = static_cast<CGruntPuddle*>(sprite->m_animWorker->m_logic);
-    i32 d = sprite->m_118;
+    i32 d = sprite->m_points;
     if (d == 0) {
         d = 0x19;
     }
-    if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
+    if (tgt->Place(sprite->m_smarts, sprite->m_score, color, d) == 0) {
         tgt->m_wwdObject->m_flags |= 0x10000;
         g_gameReg->ReportError(0x8009, 0x401);
         return 0;
@@ -1058,9 +1058,9 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, i32 kind, i32 moveKind) {
         return 0;
     }
     spr->ApplyName("GAME_TOYBOX");
-    spr->m_118 = kind;
-    spr->m_114 = col;
-    spr->m_130 = moveKind;
+    spr->m_points = kind;
+    spr->m_score = col;
+    spr->m_faceDirection = moveKind;
     spr->m_stateFlags |= 1;
     return 1;
 }
@@ -1458,8 +1458,8 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
         CString key;
         key.Format("GAME_EXPLOSION%d", v);
         spr->ApplyLookupGeometry(key, 0);
-        spr->m_124 = id;
-        spr->m_114 = 1;
+        spr->m_smarts = id;
+        spr->m_score = 1;
     }
     return spr != 0;
 }
@@ -2110,7 +2110,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             CGameObject* tb = g_gameReg->m_world->m_childGroup
                                   ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {
-                tb->m_120 = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
+                tb->m_damage = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
             return tb != 0;
         }
@@ -2124,14 +2124,14 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
         return 0;
     }
     spr->ApplyName(name);
-    spr->m_120 = m120;
-    spr->m_114 = 0;
-    spr->m_118 = 0;
-    spr->m_124 = 0;
-    spr->m_11c = 0;
-    spr->m_placeMode = 0;
-    spr->m_12c = 0;
-    spr->m_130 = m130;
+    spr->m_damage = m120;
+    spr->m_score = 0;
+    spr->m_points = 0;
+    spr->m_smarts = 0;
+    spr->m_powerup = 0;
+    spr->m_health = 0;
+    spr->m_direction = 0;
+    spr->m_faceDirection = m130;
     return 1;
 }
 

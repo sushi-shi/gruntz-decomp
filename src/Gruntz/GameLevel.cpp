@@ -1288,7 +1288,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32
     POSITION pos = chain.GetHeadPosition();
     while (pos != 0) {
         CGameObject* pl = static_cast<CGameObject*>(chain.GetNext(pos));
-        if (pl->m_collCategory == 0x80) {
+        if (pl->m_objectType == 0x80) {
             if (AltStepValidate(t, pl, destX, destY, outY, moveFlags) != 0) {
                 t->m_moveMode = 1;
                 t->m_carrier = pl;
@@ -1374,7 +1374,7 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, 
     if ((moveFlags & 8) == 0) {
         return 0;
     }
-    if (p->m_collCategory != 0x80) {
+    if (p->m_objectType != 0x80) {
         return 0;
     }
     if (p->m_area.left == -1) {

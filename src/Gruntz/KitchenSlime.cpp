@@ -61,26 +61,26 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_tileY = snapY;
     m_tileX = snapX;
 
-    m_object->m_164 = (m_object->m_164 << 5) + 0x10;
-    m_object->m_168 = (m_object->m_168 << 5) + 0x10;
-    if (m_object->m_screenX == m_object->m_164 && m_object->m_screenY == m_object->m_168) {
+    m_object->m_speedX = (m_object->m_speedX << 5) + 0x10;
+    m_object->m_speedY = (m_object->m_speedY << 5) + 0x10;
+    if (m_object->m_screenX == m_object->m_speedX && m_object->m_screenY == m_object->m_speedY) {
         m_wwdObject->m_flags |= 0x10000;
         return;
     }
     m_object->m_extent.left =
-        (m_object->m_screenX < m_object->m_164) ? m_object->m_screenX : m_object->m_164;
+        (m_object->m_screenX < m_object->m_speedX) ? m_object->m_screenX : m_object->m_speedX;
 
-    i32 exRight = m_object->m_164;
+    i32 exRight = m_object->m_speedX;
     if (m_object->m_screenX > exRight) {
         exRight = m_object->m_screenX;
     }
     m_object->m_extent.right = exRight;
-    i32 exTop = m_object->m_168;
+    i32 exTop = m_object->m_speedY;
     if (m_object->m_screenY < exTop) {
         exTop = m_object->m_screenY;
     }
     m_object->m_extent.top = exTop;
-    i32 exBottom = m_object->m_168;
+    i32 exBottom = m_object->m_speedY;
     if (m_object->m_screenY > exBottom) {
         exBottom = m_object->m_screenY;
     }
@@ -92,13 +92,13 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         name = rec + 0x24;
         const char* s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
-            m_object->m_124 = 1;
+            m_object->m_smarts = 1;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
-            m_object->m_124 = 2;
+            m_object->m_smarts = 2;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_SOUTH") == 0) {
-            m_object->m_124 = 3;
+            m_object->m_smarts = 3;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_WEST") == 0) {
-            m_object->m_124 = 4;
+            m_object->m_smarts = 4;
         }
     }
 
@@ -108,7 +108,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_object->m_area.left = 0;
     m_object->m_area.right = 0;
@@ -164,7 +164,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // @early-stop
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    m_wwdObject->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
@@ -276,13 +276,13 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
 // @early-stop
 RVA(0x000b3160, 0x35c)
 i32 CKitchenSlime::LoadSprites() {
-    i32 savedDir = Level()->m_124;
+    i32 savedDir = Level()->m_smarts;
 
     i32 tileX, tileY;
     i32 found = 0;
     for (i32 i = 0; i <= 4;) {
         CGameObject* lvl = Level();
-        i32 sw = lvl->m_124 - 1;
+        i32 sw = lvl->m_smarts - 1;
         switch (sw) {
             case 0:
                 tileX = m_tileX;
@@ -324,15 +324,15 @@ i32 CKitchenSlime::LoadSprites() {
             return 0;
         }
 
-        if (lvl->m_12c == 1) {
-            lvl->m_124 = sw;
-            if (Level()->m_124 <= 0) {
-                Level()->m_124 = 4;
+        if (lvl->m_direction == 1) {
+            lvl->m_smarts = sw;
+            if (Level()->m_smarts <= 0) {
+                Level()->m_smarts = 4;
             }
         } else {
-            lvl->m_124++;
-            if (Level()->m_124 > 4) {
-                Level()->m_124 = 1;
+            lvl->m_smarts++;
+            if (Level()->m_smarts > 4) {
+                Level()->m_smarts = 1;
             }
         }
     }
@@ -342,8 +342,8 @@ i32 CKitchenSlime::LoadSprites() {
 
     m_posX = 0;
     m_posY = 0;
-    i32 changed = (Level()->m_124 != savedDir);
-    switch (Level()->m_124 - 1) {
+    i32 changed = (Level()->m_smarts != savedDir);
+    switch (Level()->m_smarts - 1) {
         case 0:
             m_posY = -m_stepMag;
             m_dirX = 0.0;
@@ -382,8 +382,8 @@ i32 CKitchenSlime::LoadSprites() {
     m_posY = static_cast<double>(Level()->m_screenY) + m_posY;
 
     u32 time;
-    if (Level()->m_animWorker->m_bc != 0) {
-        time = Level()->m_animWorker->m_bc;
+    if (Level()->m_animWorker->m_speed != 0) {
+        time = Level()->m_animWorker->m_speed;
     } else {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }

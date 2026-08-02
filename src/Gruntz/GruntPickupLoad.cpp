@@ -446,8 +446,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
         m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(m_pickupGeoSrc);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(m_pickupGeoSrc);
     m_wwdObject->ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }

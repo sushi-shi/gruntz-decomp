@@ -29,10 +29,10 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
         m_object->m_sortKey = 5;
         m_object->m_flags |= 0x20000;
     }
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
-    i32 key = m_object->m_124;
+    i32 key = m_object->m_smarts;
     i32 idx;
     if (g_gameReg->m_134 == 1) {
         idx = key;
@@ -70,13 +70,13 @@ i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameOb
     if (tag != 4 && tag == 8) {
         i32 idx;
         if (g_gameReg->m_134 != 1) {
-            if (g_gameReg->m_options[m_object->m_124].m_liveGate != 0) {
-                idx = g_gameReg->m_options[m_object->m_124].m_008;
+            if (g_gameReg->m_options[m_object->m_smarts].m_liveGate != 0) {
+                idx = g_gameReg->m_options[m_object->m_smarts].m_008;
             } else {
                 idx = ChannelSlots_FindFree();
             }
         } else {
-            idx = m_object->m_124;
+            idx = m_object->m_smarts;
         }
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         if (sel == 0) {
@@ -123,6 +123,6 @@ void CGruntCreationPoint::RegisterActs() {
 
 RVA(0x0003ecc0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }

@@ -96,6 +96,6 @@ void RegisterSimpleAnimLogic() {
 
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }

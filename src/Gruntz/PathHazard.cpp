@@ -90,8 +90,8 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wpIndex = 0;
 
     AnimWorkerObj* w = m_object->m_animWorker;
-    if (w->m_bc == 0) {
-        w->m_bc = g_buteMgr.GetDwordDef("Hazardz", "PathHazardTimePerTile", 1000);
+    if (w->m_speed == 0) {
+        w->m_speed = g_buteMgr.GetDwordDef("Hazardz", "PathHazardTimePerTile", 1000);
     }
 
     if (BeginLeg() == 0) {
@@ -99,7 +99,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     } else {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
-        m_value = m_wwdObject->m_1a0.m_14;
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
 }
@@ -115,7 +115,7 @@ void CPathHazard::FireActivation(i32 id) {
 // @early-stop
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* obj = m_object;
 
@@ -150,7 +150,7 @@ i32 CPathHazard::Tick() {
             m_posX = static_cast<double>(wx);
             m_posY = static_cast<double>(wy);
             this->Arrive();
-            i32 segs = m_object->m_120;
+            i32 segs = m_object->m_damage;
             if (segs > 0) {
                 m_leg.m_window = segs;
                 m_leg.m_deadline = static_cast<u32>(g_frameTime);
@@ -236,7 +236,7 @@ i32 CPathHazard::SiblingTick() {
         o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[sel];
     }
 
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* obj = m_object;
     RECT rect;
@@ -302,7 +302,7 @@ i32 CPathHazard::BeginLeg() {
     double ux = dx / len;
     double uy = dy / len;
 
-    m_speed = 1.0 / (static_cast<double>(obj->m_animWorker->m_bc) * 0.03125);
+    m_speed = 1.0 / (static_cast<double>(obj->m_animWorker->m_speed) * 0.03125);
     m_posX = static_cast<double>(obj->m_screenX);
     m_posY = static_cast<double>(obj->m_screenY);
     m_unitX = ux;

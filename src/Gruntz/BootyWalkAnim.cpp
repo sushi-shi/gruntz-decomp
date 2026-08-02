@@ -258,7 +258,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     } else if (m_walkStarted != 0) {
 
         CWwdGameObjectA* spr = m_animSprites[m_stepIndex];
-        if (spr->m_1a0.m_finished != 0 && spr->m_1a0.m_frameTicksLeft == 0) {
+        if (spr->m_animCursor.m_finished != 0 && spr->m_animCursor.m_frameTicksLeft == 0) {
             m_stepIndex++;
             if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
                 m_stepIndex = 4;

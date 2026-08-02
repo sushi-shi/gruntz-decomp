@@ -23,7 +23,7 @@
 // @early-stop
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     if (g_gameReg->m_134 == 1) {
         CWwdGameObjectA* trig = m_object;
         CTriggerMgr::HitSpanArg span;
@@ -37,7 +37,7 @@ i32 CExitTrigger::AdvanceAnim() {
             g_gameReg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &hitPlayer, &hitRow, 0);
         if (hit != 0) {
-            i32 owningPlayer = m_object->m_124;
+            i32 owningPlayer = m_object->m_smarts;
             if (hitPlayer == owningPlayer) {
                 goto done;
             }
@@ -82,8 +82,8 @@ i32 CExitTrigger::AdvanceAnim() {
             while (pos != 0) {
                 CGameObject* cur = grp->NextChild(pos);
                 if (cur->m_animWorker->m_notify == CreateGruntCreationPoint
-                    && cur->m_124 == owningPlayer) {
-                    cur->m_124 = hitPlayer;
+                    && cur->m_smarts == owningPlayer) {
+                    cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
                         g_gameReg->m_options[owningPlayer].m_008,
                         0
@@ -107,8 +107,8 @@ i32 CExitTrigger::AdvanceAnim() {
                     }
                 }
                 if (cur->m_animWorker->m_notify == CreateFortressFlag
-                    && cur->m_124 == owningPlayer) {
-                    cur->m_124 = hitPlayer;
+                    && cur->m_smarts == owningPlayer) {
+                    cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
                         g_gameReg->m_options[owningPlayer].m_008,
                         0
@@ -128,7 +128,7 @@ i32 CExitTrigger::AdvanceAnim() {
             }
         } else {
 
-            i32 lostPlayer = m_object->m_124;
+            i32 lostPlayer = m_object->m_smarts;
             if (lostPlayer == g_curPlayer) {
                 goto done;
             }
@@ -154,7 +154,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 CGameObject* cur = grp->NextChild(pos);
                 GameObjNotifyFn who = cur->m_animWorker->m_notify;
                 if (who == CreateGruntCreationPoint || who == CreateFortressFlag) {
-                    if (cur->m_124 == m_object->m_124) {
+                    if (cur->m_smarts == m_object->m_smarts) {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;
                         if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
@@ -165,15 +165,15 @@ i32 CExitTrigger::AdvanceAnim() {
                                     ->CreateSprite(0, x, y, 0xf4240, "Explosion", 0x40003);
                             if (fx != 0) {
                                 fx->ApplyLookupGeometry("GAME_EXPLOSION3", 0);
-                                fx->m_124 = 0;
-                                fx->m_114 = 0;
+                                fx->m_smarts = 0;
+                                fx->m_score = 0;
                             }
                         }
                         cur->m_flags |= 0x10000;
                     }
                 }
             }
-            g_gameReg->m_cmdGrid->ClearRow(m_object->m_124);
+            g_gameReg->m_cmdGrid->ClearRow(m_object->m_smarts);
         }
     }
 

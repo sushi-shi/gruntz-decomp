@@ -244,7 +244,7 @@ i32 CTriggerMgr::PlaceObject(
                 logic->m_wwdObject->m_flags |= 0x10000;
                 return -1;
             }
-            hole->m_124 = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
+            hole->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
         } else if (mode == 3 || mode == 2) {
 
             if (mode == 3) {
@@ -1103,7 +1103,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
                 if (cand->m_pending == 0 && cand->m_tileX == argTileX
                     && cand->m_tileY == argTileY) {
                     cell->RunMoveConfig(argTileX, argTileY);
-                    cand->m_value = cand->m_wwdObject->m_1a0.m_14;
+                    cand->m_value = cand->m_wwdObject->m_animCursor.m_animation;
                     cand->m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                     cand->m_pending = 1;
                     return 1;

@@ -87,25 +87,25 @@ void CMovingLogic::FinalizeStep(char*) {
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
 
-    i32 lo0 = m_objAux->m_2c;
+    i32 lo0 = m_objAux->m_minX;
     if (lo0 == 0) {
         Motion()->m_70 = g_movingLogicMin;
     } else {
         Motion()->m_70 = static_cast<double>(lo0);
     }
-    i32 lo1 = m_objAux->m_34;
+    i32 lo1 = m_objAux->m_minY;
     if (lo1 == 0) {
         Motion()->m_78 = g_movingLogicMin;
     } else {
         Motion()->m_78 = static_cast<double>(lo1);
     }
-    i32 hi0 = m_objAux->m_30;
+    i32 hi0 = m_objAux->m_maxX;
     if (hi0 == 0) {
         Motion()->m_88 = g_movingLogicMax;
     } else {
         Motion()->m_88 = static_cast<double>(hi0);
     }
-    i32 hi1 = m_objAux->m_38;
+    i32 hi1 = m_objAux->m_maxY;
     if (hi1 == 0) {
         Motion()->m_90 = g_movingLogicMax;
     } else {
@@ -115,8 +115,8 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
         static_cast<double>(m_object->m_screenX),
         static_cast<double>(m_object->m_screenY),
         0.0,
-        static_cast<double>(m_object->m_164),
-        static_cast<double>(m_object->m_168),
+        static_cast<double>(m_object->m_speedX),
+        static_cast<double>(m_object->m_speedY),
         0.0,
         0.0,
         0.0,
@@ -276,8 +276,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     map.Lookup(key + "FALL", out);
     m_frames[PF_FALL] = static_cast<CAniElement*>(out);
 
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(m_frames[0]);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(m_frames[0]);
     m_wwdObject->ApplyName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
@@ -440,51 +440,51 @@ void CProjectile::AdvanceMotion() {
             if (dist >= mag * 0.9 || dist < mag * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_wwdObject->m_1a0.m_14 != m_frames[0]) {
-                    m_value = m_wwdObject->m_1a0.m_14;
-                    m_wwdObject->m_1a0.Setup(m_frames[0]);
+                if (m_wwdObject->m_animCursor.m_animation != m_frames[0]) {
+                    m_value = m_wwdObject->m_animCursor.m_animation;
+                    m_wwdObject->m_animCursor.Setup(m_frames[0]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frames[0]);
+                        m_shadow->m_animCursor.Setup(m_frames[0]);
                     }
                 }
             } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_wwdObject->m_1a0.m_14 != m_frames[1]) {
-                    m_value = m_wwdObject->m_1a0.m_14;
-                    m_wwdObject->m_1a0.Setup(m_frames[1]);
+                if (m_wwdObject->m_animCursor.m_animation != m_frames[1]) {
+                    m_value = m_wwdObject->m_animCursor.m_animation;
+                    m_wwdObject->m_animCursor.Setup(m_frames[1]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frames[1]);
+                        m_shadow->m_animCursor.Setup(m_frames[1]);
                     }
                 }
             } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_wwdObject->m_1a0.m_14 != m_frames[2]) {
-                    m_value = m_wwdObject->m_1a0.m_14;
-                    m_wwdObject->m_1a0.Setup(m_frames[2]);
+                if (m_wwdObject->m_animCursor.m_animation != m_frames[2]) {
+                    m_value = m_wwdObject->m_animCursor.m_animation;
+                    m_wwdObject->m_animCursor.Setup(m_frames[2]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frames[2]);
+                        m_shadow->m_animCursor.Setup(m_frames[2]);
                     }
                 }
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_wwdObject->m_1a0.m_14 != m_frames[3]) {
-                    m_value = m_wwdObject->m_1a0.m_14;
-                    m_wwdObject->m_1a0.Setup(m_frames[3]);
+                if (m_wwdObject->m_animCursor.m_animation != m_frames[3]) {
+                    m_value = m_wwdObject->m_animCursor.m_animation;
+                    m_wwdObject->m_animCursor.Setup(m_frames[3]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frames[3]);
+                        m_shadow->m_animCursor.Setup(m_frames[3]);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_wwdObject->m_1a0.m_14 != m_frames[4]) {
-                    m_value = m_wwdObject->m_1a0.m_14;
-                    m_wwdObject->m_1a0.Setup(m_frames[4]);
+                if (m_wwdObject->m_animCursor.m_animation != m_frames[4]) {
+                    m_value = m_wwdObject->m_animCursor.m_animation;
+                    m_wwdObject->m_animCursor.Setup(m_frames[4]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frames[4]);
+                        m_shadow->m_animCursor.Setup(m_frames[4]);
                     }
                 }
             }
@@ -578,17 +578,17 @@ void CProjectile::AdvanceMotion() {
         m_wwdObject->m_flags |= 0x10000;
         return;
     }
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(sprite);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(sprite);
 }
 
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_wwdObject->m_stateFlags &= ~1u;
 
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* r = m_wwdObject;
-    if (r->m_1a0.m_finished != 0 && r->m_1a0.m_frameTicksLeft == 0) {
+    if (r->m_animCursor.m_finished != 0 && r->m_animCursor.m_frameTicksLeft == 0) {
         r->m_flags |= 0x10000;
     }
     return 0;
@@ -950,10 +950,10 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     m_wwdObject->ApplyName("GAME_TIMEBOMB");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_value = m_wwdObject->m_1a0.m_14;
-    if (m_object->m_120 > 0) {
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    if (m_object->m_damage > 0) {
         m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_duration = static_cast<u32>(m_object->m_120);
+        m_duration = static_cast<u32>(m_object->m_damage);
         m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = 1;
     } else {
@@ -971,7 +971,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
         BrickzCell* row = g->m_rows[cy];
         row[cx].m_0 |= 0x1000000;
     }
-    m_object->m_124 = -1;
+    m_object->m_smarts = -1;
 }
 
 static inline i32 TBombGridCell(CGameObject* obj) {
@@ -1005,11 +1005,11 @@ i32 CTimeBomb::LoadAttributes() {
         TBombGridClear(m_object);
         return 0;
     }
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
     if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
         if (m_fastPhase == 0) {
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
             m_duration = static_cast<u32>(
                 static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8))
@@ -1022,7 +1022,7 @@ i32 CTimeBomb::LoadAttributes() {
             g_gameReg->m_cmdGrid->LoadExplosionSprites(
                 m_object->m_screenX,
                 m_object->m_screenY,
-                m_object->m_124,
+                m_object->m_smarts,
                 1
             );
         }

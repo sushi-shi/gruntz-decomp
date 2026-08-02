@@ -934,8 +934,8 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         m_35c = 0;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId(s_codeD);
-        m_value = m_wwdObject->m_1a0.m_14;
-        m_wwdObject->m_1a0.Setup(m_poseWalk);
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->m_animCursor.Setup(m_poseWalk);
 
         GruntDirectionCell cell = m_entranceCell;
         i32 col = cell.column + cell.row * 2;

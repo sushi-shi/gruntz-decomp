@@ -27,8 +27,8 @@ RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 1;
-    if (m_wwdObject->m_1a0.m_14 == 0) {
-        m_value = m_wwdObject->m_1a0.m_14;
+    if (m_wwdObject->m_animCursor.m_animation == 0) {
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -67,6 +67,6 @@ void CAniCycle::RegisterActs() {
 
 RVA(0x000ab2e0, 0x17)
 i32 CAniCycle::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }

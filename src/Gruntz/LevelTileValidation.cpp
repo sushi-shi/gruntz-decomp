@@ -85,18 +85,18 @@ i32 CPlay::PlaceStartGruntz() {
                 AddrWord<long> extentArg;
                 extentArg.m_addr = &obj->m_extent.left;
                 i32 idx = reg->m_cmdGrid->PlaceObject(
-                    obj->m_124,
+                    obj->m_smarts,
                     (obj->m_screenX & ~0x1f) + 0x10,
                     (obj->m_screenY & ~0x1f) + 0x10,
                     100000,
                     flag14,
-                    obj->m_114,
-                    obj->m_11c,
-                    obj->m_120,
-                    obj->m_118,
-                    obj->m_12c,
-                    aux->m_2c,
-                    aux->m_30,
+                    obj->m_score,
+                    obj->m_powerup,
+                    obj->m_damage,
+                    obj->m_points,
+                    obj->m_direction,
+                    aux->m_minX,
+                    aux->m_maxX,
 
                     extentArg.m_word
                 );
@@ -104,7 +104,7 @@ i32 CPlay::PlaceStartGruntz() {
                     CString s;
                     s.Format(
                         s_CouldNotAdd,
-                        obj->m_124,
+                        obj->m_smarts,
                         (obj->m_screenX & ~0x1f) + 0x10,
                         (obj->m_screenY & ~0x1f) + 0x10
                     );
@@ -113,13 +113,13 @@ i32 CPlay::PlaceStartGruntz() {
                 }
                 obj->m_flags |= 0x10000;
             } else if (g_gameReg->m_134 != 1 && who == CreateGruntCreationPoint
-                       && obj->m_124 == g_curPlayer) {
+                       && obj->m_smarts == g_curPlayer) {
 
                 GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
                 if (e != 0 && counter < e->m_comboSel) {
                     reg->m_cmdSubMgr->EnqueueSingle(
                         result,
-                        static_cast<char>(obj->m_124),
+                        static_cast<char>(obj->m_smarts),
                         0,
                         0,
                         (obj->m_screenX & ~0x1f) + 0x10,
@@ -168,15 +168,15 @@ i32 CPlay::ValidateLevelTiles() {
             if (type == 0x21) {
 
                 void* hit = 0;
-                i32 col = obj->m_164 - 1;
+                i32 col = obj->m_speedX - 1;
                 i32 colOff = col << 8;
-                i32 row = obj->m_168 - 1;
-                while (col < obj->m_164 + 2) {
-                    row = obj->m_168 - 1;
+                i32 row = obj->m_speedY - 1;
+                while (col < obj->m_speedX + 2) {
+                    row = obj->m_speedY - 1;
                     if (hit != 0) {
                         break;
                     }
-                    while (row < obj->m_168 + 2) {
+                    while (row < obj->m_speedY + 2) {
                         void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (r != 0) {
                             hit = r;
@@ -195,7 +195,7 @@ i32 CPlay::ValidateLevelTiles() {
                 if (hit == 0) {
                     return 0;
                 }
-                i32 rel = (obj->m_168 - row) * 3 - col + obj->m_164;
+                i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
@@ -223,8 +223,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 5:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_MULTI_SWITCH_3,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -233,7 +233,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x38,
-                            obj->m_120,
+                            obj->m_damage,
                             0
                         )) {
                         CString s;
@@ -248,8 +248,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 9:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_EXCLUSIVE_SWITCH_4,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -258,7 +258,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x3c,
-                            obj->m_120,
+                            obj->m_damage,
                             0
                         )) {
                         CString s;
@@ -273,8 +273,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xb:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SECRET_SWITCH_6,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -283,7 +283,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x3e,
-                            obj->m_120,
+                            obj->m_damage,
                             0
                         )) {
                         CString s;
@@ -298,8 +298,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xd:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_TIME_SWITCH_7,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -308,7 +308,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x40,
-                            obj->m_120,
+                            obj->m_damage,
                             0
                         )) {
                         CString s;
@@ -323,8 +323,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xf:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_CHECKPOINT_SWITCH_8,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -333,8 +333,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x42,
-                            obj->m_120,
-                            obj->m_124
+                            obj->m_damage,
+                            obj->m_smarts
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
@@ -348,8 +348,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 1:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SWITCH_1,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -358,7 +358,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
-                            obj->m_120,
+                            obj->m_damage,
                             0
                         )) {
                         CString s;
@@ -373,8 +373,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 3:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SWITCH_2,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -383,7 +383,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
-                            obj->m_120,
+                            obj->m_damage,
                             0
                         )) {
                         CString s;
@@ -398,8 +398,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case 7:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SWITCH_5,
-                            obj->m_164,
-                            obj->m_168,
+                            obj->m_speedX,
+                            obj->m_speedY,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -408,7 +408,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_animWorker->m_switchRectA,
                             obj->m_animWorker->m_switchRectB,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
-                            obj->m_120,
+                            obj->m_damage,
                             0
                         )) {
                         CString s;
@@ -434,8 +434,8 @@ i32 CPlay::ValidateLevelTiles() {
 
             if (m_frameMarker != 0 && m_mgr->m_134 != 2 && g_gameReg->m_isEasyMode != 0
                 && g_gameReg->m_134 == ok) {
-                i32 a = obj->m_118;
-                i32 b = obj->m_114;
+                i32 a = obj->m_points;
+                i32 b = obj->m_score;
                 a += a;
                 b += b;
                 if (a > 0x3b) {
@@ -446,12 +446,12 @@ i32 CPlay::ValidateLevelTiles() {
             }
             obj->m_flags |= 0x10000;
         } else if (who == CreateInGameIcon) {
-            if (obj->m_124 == 0x32) {
+            if (obj->m_smarts == 0x32) {
 
-                m_guts->InsertPtr(obj->m_118, obj->m_114);
+                m_guts->InsertPtr(obj->m_points, obj->m_score);
             }
         } else if (who == CreateGruntCreationPoint) {
-            if (obj->m_124 == g_curPlayer) {
+            if (obj->m_smarts == g_curPlayer) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 void* slot = 0;
                 if (cell->m_next != 0) {
@@ -466,12 +466,12 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateBrickz) {
 
             CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
-            i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_168] + obj->m_164];
+            i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_speedY] + obj->m_speedX];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_beginMarker->AddToList3(
                         tile,
-                        obj->m_164,
-                        obj->m_168,
+                        obj->m_speedX,
+                        obj->m_speedY,
                         obj->m_id,
                         obj->m_extent.left,
                         obj->m_extent.top,
@@ -504,7 +504,7 @@ i32 CPlay::ValidateLevelTiles() {
                         || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
-                    i32 kind = obj->m_124;
+                    i32 kind = obj->m_smarts;
                     i32 bit;
                     if (static_cast<u32>(kind) > 3) {
                         bit = 0;

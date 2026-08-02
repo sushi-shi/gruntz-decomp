@@ -54,16 +54,23 @@ i32 CPlay::ScanBuildTiles() {
             buf[6] = p->m_switchRect.left;
             buf[7] = p->m_switchRect.top;
             buf[8] = p->m_switchRect.right;
-            if (m_beginMarker
-                    ->AddToList1(p->m_164, p->m_168, p->m_id, buf, p->m_11c, p->m_118, p->m_130)
+            if (m_beginMarker->AddToList1(
+                    p->m_speedX,
+                    p->m_speedY,
+                    p->m_id,
+                    buf,
+                    p->m_powerup,
+                    p->m_points,
+                    p->m_faceDirection
+                )
                 == 0) {
                 CString s;
                 s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
-            if (p->m_11c == 0x32) {
-                m_guts->InsertPtr(p->m_118, p->m_114);
+            if (p->m_powerup == 0x32) {
+                m_guts->InsertPtr(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
         } else if (vf == CreateCoveredPowerup) {
@@ -105,8 +112,8 @@ i32 CPlay::ScanBuildTiles() {
             if (m_beginMarker->AddLogic(
                     tile,
                     0x1a,
-                    p->m_164,
-                    p->m_168,
+                    p->m_speedX,
+                    p->m_speedY,
                     p->m_id,
                     p->m_extent,
                     p->m_area,
@@ -114,10 +121,10 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_clip,
                     p->m_animWorker->m_switchRectA,
                     p->m_animWorker->m_switchRectB,
-                    p->m_124,
-                    p->m_11c,
-                    p->m_118,
-                    p->m_130
+                    p->m_smarts,
+                    p->m_powerup,
+                    p->m_points,
+                    p->m_faceDirection
                 )
                 == 0) {
                 CString s;
@@ -125,8 +132,8 @@ i32 CPlay::ScanBuildTiles() {
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
-            if (p->m_11c == 0x32) {
-                m_guts->InsertPtr(p->m_118, p->m_114);
+            if (p->m_powerup == 0x32) {
+                m_guts->InsertPtr(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
         }
@@ -172,7 +179,7 @@ i32 CPlay::ScanShuffleQuads() {
         GameObjNotifyFn vf = p->m_animWorker->m_notify;
         if (vf == CreateGruntCreationPoint || vf == CreateExitTrigger || vf == CreateFortressFlag
             || vf == CreateWayPoint || vf == CreateGuardPoint) {
-            p->m_124 = perm[p->m_124];
+            p->m_smarts = perm[p->m_smarts];
         } else if (vf == CreateBrickz) {
             if (p->m_extent.left == static_cast<i32>(0x80000000)) {
                 p->m_extent.left = 0;

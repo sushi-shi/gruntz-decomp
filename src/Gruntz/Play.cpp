@@ -1265,7 +1265,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     i32 count = 0;
     while (pos != 0) {
         CGameObject* sprite = static_cast<CGameObject*>(container->GetNext(pos));
-        if (sprite != 0 && sprite->m_collCategory == static_cast<u32>(category)) {
+        if (sprite != 0 && sprite->m_objectType == static_cast<u32>(category)) {
             count++;
         }
     }
@@ -2594,7 +2594,7 @@ i32 CPlay::ClearPlacedObjects() {
                     g_coordPool.m_freeHead = node;
                     return -1;
                 }
-                stillPlaced = (result->m_124 == 0x14);
+                stillPlaced = (result->m_smarts == 0x14);
             }
 
             if (!stillPlaced) {
@@ -5546,32 +5546,32 @@ i32 CPlay::AddLevelGruntz() {
             != static_cast<void*>(CreateGruntStartingPoint)) {
             continue;
         }
-        if (g->m_124 == g_curPlayer) {
+        if (g->m_smarts == g_curPlayer) {
             continue;
         }
         i32 x = ((g->m_screenX & ~0x1f) + 0x10);
         i32 y = ((g->m_screenY & ~0x1f) + 0x10);
 
         i32 r = m_mgr->m_cmdGrid->PlaceObject(
-            g->m_124,
+            g->m_smarts,
             y,
             x,
             0x186a0,
             0,
-            g->m_114,
-            g->m_11c,
-            g->m_120,
-            g->m_118,
-            g->m_12c,
-            g->m_animWorker->m_2c,
-            g->m_animWorker->m_30,
+            g->m_score,
+            g->m_powerup,
+            g->m_damage,
+            g->m_points,
+            g->m_direction,
+            g->m_animWorker->m_minX,
+            g->m_animWorker->m_maxX,
             // Byte-evidenced kind-dependent ABI slot.
 
             reinterpret_cast<i32>(&g->m_extent.left)
         );
         if (r == -1) {
             CString msg;
-            msg.Format("Could not add Grunt: Player=%d", g->m_124, y, x);
+            msg.Format("Could not add Grunt: Player=%d", g->m_smarts, y, x);
 
             (g_gameReg)->EnterModalUI(msg);
             return 0;
@@ -5709,7 +5709,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
         if (obj) {
             void* marker = static_cast<void*>(obj->m_animWorker->m_notify);
             if (marker == static_cast<void*>(CreateGruntStartingPoint)) {
-                i32 v = obj->m_11c;
+                i32 v = obj->m_powerup;
                 if (v) {
                     if (!BuildGruntTypeNameTable(v, 1, 0, ctx)) {
                         return 0;
@@ -5719,7 +5719,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[v] = 1;
                     }
                 }
-                v = obj->m_120;
+                v = obj->m_damage;
                 if (v) {
                     if (!BuildGruntTypeNameTable(v, 1, 0, ctx)) {
                         return 0;
@@ -5729,7 +5729,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[v] = 1;
                     }
                 }
-                switch (obj->m_118) {
+                switch (obj->m_points) {
                     case 0x7:
                         if (!BuildGruntTypeNameTable(1, 1, 0, ctx)) {
                             return 0;
@@ -5804,7 +5804,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         break;
                 }
             } else if (marker == static_cast<void*>(CreateInGameIcon)) {
-                i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
+                i32 cv = obj->m_smarts == 0x32 ? obj->m_points : obj->m_smarts;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
                 } else if (cv >= 0x17 && cv <= 0x20) {
@@ -5814,14 +5814,14 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 } else if (cv == 0x50) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
-                i32 d = obj->m_124;
+                i32 d = obj->m_smarts;
                 if (d <= 0x20) {
                     if (!BuildGruntTypeNameTable(d, 1, 0, ctx)) {
                         return 0;
                     }
-                    if (loaded[obj->m_124] == 0) {
+                    if (loaded[obj->m_smarts] == 0) {
                         BuildHelpReveal(0);
-                        loaded[obj->m_124] = 1;
+                        loaded[obj->m_smarts] = 1;
                     }
                 } else if (d == GRUNT_TYPE_HAREKRISHNA) {
                     if (!BuildGruntTypeNameTable(GRUNT_TYPE_HAREKRISHNA, 1, 0, ctx)) {
@@ -5840,17 +5840,17 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (d == 0x55 || d == 0x32) {
-                    if (!BuildGruntTypeNameTable(obj->m_118, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(obj->m_points, 1, 0, ctx)) {
                         return 0;
                     }
-                    if (loaded[obj->m_118] == 0) {
+                    if (loaded[obj->m_points] == 0) {
                         BuildHelpReveal(0);
-                        loaded[obj->m_118] = 1;
+                        loaded[obj->m_points] = 1;
                     }
                 }
             } else if (marker == static_cast<void*>(CreateCoveredPowerup)
                        || marker == static_cast<void*>(CreateGiantRock)) {
-                i32 cv = obj->m_11c == 0x32 ? obj->m_118 : obj->m_11c;
+                i32 cv = obj->m_powerup == 0x32 ? obj->m_points : obj->m_powerup;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
                 } else if (cv >= 0x17 && cv <= 0x20) {
@@ -5860,16 +5860,16 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 } else if (cv == 0x50) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
-                i32 e = obj->m_11c;
+                i32 e = obj->m_powerup;
                 if (e <= 0x20) {
                     if (!BuildGruntTypeNameTable(e, 1, 0, ctx)) {
                         return 0;
                     }
-                    if (loaded[obj->m_11c] == 0) {
+                    if (loaded[obj->m_powerup] == 0) {
                         BuildHelpReveal(0);
-                        loaded[obj->m_11c] = 1;
+                        loaded[obj->m_powerup] = 1;
                     }
-                } else if (obj->m_124 == GRUNT_TYPE_HAREKRISHNA) {
+                } else if (obj->m_smarts == GRUNT_TYPE_HAREKRISHNA) {
                     if (!BuildGruntTypeNameTable(GRUNT_TYPE_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
@@ -5877,7 +5877,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[0x21] = 1;
                     }
-                } else if (obj->m_124 == GRUNT_TYPE_REAPER) {
+                } else if (obj->m_smarts == GRUNT_TYPE_REAPER) {
                     if (!BuildGruntTypeNameTable(GRUNT_TYPE_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
@@ -5886,12 +5886,12 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (e == 0x55 || e == 0x32) {
-                    if (!BuildGruntTypeNameTable(obj->m_118, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(obj->m_points, 1, 0, ctx)) {
                         return 0;
                     }
-                    if (loaded[obj->m_118] == 0) {
+                    if (loaded[obj->m_points] == 0) {
                         BuildHelpReveal(0);
-                        loaded[obj->m_118] = 1;
+                        loaded[obj->m_points] = 1;
                     }
                 }
             }

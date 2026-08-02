@@ -31,8 +31,8 @@ RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    if (m_wwdObject->m_1a0.m_14 == 0) {
-        m_value = m_wwdObject->m_1a0.m_14;
+    if (m_wwdObject->m_animCursor.m_animation == 0) {
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     if (m_object->m_sortKey != 0) {
@@ -84,6 +84,6 @@ void CBehindCandyAni::RegisterActs() {
 
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }

@@ -57,8 +57,8 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         i32 idx = cell.row * 3 + cell.column;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
         m_wwdObject->ApplyName(buf);
-        m_value = m_wwdObject->m_1a0.m_14;
-        m_wwdObject->m_1a0.Setup(m_poseWalk);
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->m_animCursor.Setup(m_poseWalk);
         return 1;
     }
     ResetEntranceAnimation(0, 0, 1);

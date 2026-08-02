@@ -40,7 +40,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_explodeWindowLo = 0;
     m_explodeStartHi = 0;
     m_explodeWindowHi = 0;
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
@@ -65,33 +65,33 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         const char* s;
         s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
-            o->m_12c = 1;
+            o->m_direction = 1;
             m_stepDirX = 0;
             m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
-            o->m_12c = 2;
+            o->m_direction = 2;
             m_stepDirY = 0;
             m_stepDirX = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
-            o->m_12c = 3;
+            o->m_direction = 3;
             m_stepDirY = 1;
             m_stepDirX = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
-            o->m_12c = 4;
+            o->m_direction = 4;
             m_stepDirY = 0;
             m_stepDirX = -1;
         }
     }
 
-    i32 time = o->m_animWorker->m_bc;
+    i32 time = o->m_animWorker->m_speed;
     if (time == 0) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CGruntzMgr* reg = g_gameReg;
-    if (0 != reg->m_isEasyMode && reg->m_134 == 1 && o->m_124 != 1) {
+    if (0 != reg->m_isEasyMode && reg->m_134 == 1 && o->m_smarts != 1) {
         time += 1000;
     }
-    m_explodeWindowLo = o->m_118;
+    m_explodeWindowLo = o->m_points;
     m_explodeWindowHi = 0;
     m_explodeStartLo = g_frameTime;
     m_explodeStartHi = 0;
@@ -140,10 +140,10 @@ void CRollingBall::RegisterActs() {
 
 RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* anim = m_wwdObject;
-    if (anim->m_1a0.m_finished != 0 && anim->m_1a0.m_frameTicksLeft == 0) {
+    if (anim->m_animCursor.m_finished != 0 && anim->m_animCursor.m_frameTicksLeft == 0) {
         anim->m_flags |= 0x10000;
         return 0;
     }
@@ -152,11 +152,11 @@ i32 CRollingBall::Update() {
     }
 
     CWwdGameObjectA* logic = m_object;
-    if (logic->m_118 > 0) {
+    if (logic->m_points > 0) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_explodeStart64
             >= m_explodeWindow64) {
             m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
             CWwdGameObjectA* lg = m_object;
@@ -275,7 +275,7 @@ i32 CRollingBall::Update() {
                         }
                     }
                     m_wwdObject->ApplyName(fall);
-                    m_value = m_wwdObject->m_1a0.m_14;
+                    m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->ApplyLookupGeometry(explosion, 0);
                     if (act != 4) {
                         m_explodeLatch = 1;
@@ -361,7 +361,7 @@ i32 CRollingBall::Update() {
                 case 108:
                 case 114: {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
-                    m_value = m_wwdObject->m_1a0.m_14;
+                    m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLSINKWATER", 0);
                     CWwdGameObjectA* o = m_object;
                     i32 px = o->m_screenX;
@@ -385,11 +385,11 @@ i32 CRollingBall::Update() {
                     i32 kind = g_gameReg->m_curState->m_levelType;
                     if (kind >= 4 && (kind <= 5 || kind == 8)) {
                         m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_FALL");
-                        m_value = m_wwdObject->m_1a0.m_14;
+                        m_value = m_wwdObject->m_animCursor.m_animation;
                         m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLFALL", 0);
                     } else {
                         m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
-                        m_value = m_wwdObject->m_1a0.m_14;
+                        m_value = m_wwdObject->m_animCursor.m_animation;
                         m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLSINKHOLE", 0);
                     }
                     m_explodeLatch = 1;
@@ -398,7 +398,7 @@ i32 CRollingBall::Update() {
 
                 default: {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
-                    m_value = m_wwdObject->m_1a0.m_14;
+                    m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
                     m_explodeLatch = 1;
                     return 0;
@@ -407,7 +407,7 @@ i32 CRollingBall::Update() {
         }
 
         CWwdGameObjectA* dirObj = m_object;
-        i32 oldDir = dirObj->m_12c;
+        i32 oldDir = dirObj->m_direction;
         if ((terrain & 0x80) != 0) {
             CGameLevel* lvl2 = g_gameReg->m_world->m_level;
             i32 col2 = m_targetY >> 5;
@@ -437,19 +437,19 @@ i32 CRollingBall::Update() {
             switch (act2) {
                 case 11:
                 case 15:
-                    m_object->m_12c = 1;
+                    m_object->m_direction = 1;
                     break;
                 case 14:
                 case 18:
-                    m_object->m_12c = 2;
+                    m_object->m_direction = 2;
                     break;
                 case 12:
                 case 16:
-                    m_object->m_12c = 3;
+                    m_object->m_direction = 3;
                     break;
                 case 13:
                 case 17:
-                    m_object->m_12c = 4;
+                    m_object->m_direction = 4;
                     break;
             }
         }
@@ -459,13 +459,13 @@ i32 CRollingBall::Update() {
         m_subYLo = 0;
         m_subXHi = 0;
         m_subYHi = 0;
-        switch (dirObj2->m_12c) {
+        switch (dirObj2->m_direction) {
             case 1:
                 m_subY = -m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = -1;
                 m_targetY -= 0x20;
-                if (oldDir != dirObj2->m_12c) {
+                if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_NORTH");
                 }
                 break;
@@ -474,7 +474,7 @@ i32 CRollingBall::Update() {
                 m_stepDirX = 1;
                 m_stepDirY = 0;
                 m_targetX += 0x20;
-                if (oldDir != dirObj2->m_12c) {
+                if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EAST");
                 }
                 break;
@@ -483,7 +483,7 @@ i32 CRollingBall::Update() {
                 m_stepDirX = -1;
                 m_stepDirY = 0;
                 m_targetX -= 0x20;
-                if (oldDir != dirObj2->m_12c) {
+                if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_WEST");
                 }
                 break;
@@ -492,7 +492,7 @@ i32 CRollingBall::Update() {
                 m_stepDirX = 0;
                 m_stepDirY = 1;
                 m_targetY += 0x20;
-                if (oldDir != dirObj2->m_12c) {
+                if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
                 }
                 break;

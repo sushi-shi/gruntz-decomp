@@ -9,7 +9,7 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     i32 state = w->ActKey();
     if (state != 0) {
         if (state == 5) {
-            CAniAdvanceCursor* a = &static_cast<CWwdGameObjectA*>(obj)->m_1a0;
+            CAniAdvanceCursor* a = &static_cast<CWwdGameObjectA*>(obj)->m_animCursor;
             a->Advance(g_engineFrameDelta);
             if (a->m_finished != 0 && a->m_frameTicksLeft == 0) {
                 obj->m_flags |= 0x10000;

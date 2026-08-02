@@ -93,7 +93,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         o->m_flags |= 0x20000;
     }
     const char* name;
-    switch (m_object->m_124) {
+    switch (m_object->m_smarts) {
         case WARLORD_KING:
             name = "GAME_FORTRESSFLAGZ_KING";
             break;
@@ -113,10 +113,10 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName(name);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_wwdObject->m_flags |= 3;
-    i32 idx = g_gameReg->m_options[m_object->m_124].m_008;
+    i32 idx = g_gameReg->m_options[m_object->m_smarts].m_008;
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
@@ -157,7 +157,7 @@ void CFortressFlag::RegisterActs() {
 
 RVA(0x000463e0, 0x17)
 i32 CFortressFlag::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -171,7 +171,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
     }
     if (tag == 8) {
         CWwdGameObjectA* spr = m_object;
-        i32 idx = g_gameReg->m_options[spr->m_124].m_008;
+        i32 idx = g_gameReg->m_options[spr->m_smarts].m_008;
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
@@ -324,9 +324,9 @@ void CParticlez::RegisterActs() {
 
 RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_wwdObject;
-    if (o->m_1a0.m_finished != 0 && o->m_1a0.m_frameTicksLeft == 0) {
+    if (o->m_animCursor.m_finished != 0 && o->m_animCursor.m_frameTicksLeft == 0) {
         o->m_flags |= 0x10000;
     }
     return 0;

@@ -1340,7 +1340,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     POSITION pos = chain.GetHeadPosition();
     while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
-        if (obj->m_collCategory & mask) {
+        if (obj->m_objectType & mask) {
             i32 adx = abs(obj->m_screenX - x);
             i32 ady = abs(obj->m_screenY - y);
             if (adx * adx + ady + ady < r2) {
@@ -1373,7 +1373,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     POSITION pos = chain.GetHeadPosition();
     while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
-        if (obj->m_collCategory & mask) {
+        if (obj->m_objectType & mask) {
             i32 ox = obj->m_screenX;
             if (ox >= loX && ox <= hiX) {
                 i32 oy = obj->m_screenY;

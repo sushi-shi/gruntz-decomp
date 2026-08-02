@@ -21,7 +21,7 @@ DATA_SYMBOL(0x002bf3c0, 0x4, _g_killCueClock)
 // @early-stop
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    m_wwdObject->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     i32 areaId;
     i32 subId;
@@ -51,7 +51,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        if (!found->LoadPickupSprites(0x5e, 0, m_object->m_124, 0, 1)) {
+        if (!found->LoadPickupSprites(0x5e, 0, m_object->m_smarts, 0, 1)) {
             return 0;
         }
 

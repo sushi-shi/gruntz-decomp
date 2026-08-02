@@ -291,7 +291,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         AnimWorkerObj* rec = obj->m_animWorker;
         if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
-            i32* refc = &rec->m_24;
+            i32* refc = &rec->m_frameDelay;
             if (*refc != 0) {
                 --*refc;
             } else {
@@ -469,8 +469,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                 }
 
                 if (!(fi & 4) && !(fj & 0x80)) {
-                    i32 mask1 = static_cast<i32>(oj->m_collCategory) & oi->m_ec;
-                    i32 mask2 = static_cast<i32>(oi->m_collCategory) & oj->m_f0;
+                    i32 mask1 = static_cast<i32>(oj->m_objectType) & oi->m_hitTypeFlags;
+                    i32 mask2 = static_cast<i32>(oi->m_objectType) & oj->m_f0;
                     if (mask1 || mask2) {
                         i32 overlap;
                         if (oj->m_switchRect.left == static_cast<i32>(0x80000000)) {
@@ -504,8 +504,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                             }
                             if (mask1) {
                                 if (oi->m_flags & 8) {
-                                    i32 v = oi->m_placeMode - oj->m_120;
-                                    oi->m_placeMode = v;
+                                    i32 v = oi->m_health - oj->m_damage;
+                                    oi->m_health = v;
                                     if (v <= 0) {
 
                                         oi->m_animWorker->SetActKey(0x1c);
@@ -528,8 +528,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                 if (oi->m_flags & 0x80) {
                     continue;
                 }
-                i32 mask1b = oj->m_ec & static_cast<i32>(oi->m_collCategory);
-                i32 mask2b = static_cast<i32>(oj->m_collCategory) & oi->m_f0;
+                i32 mask1b = oj->m_hitTypeFlags & static_cast<i32>(oi->m_objectType);
+                i32 mask2b = static_cast<i32>(oj->m_objectType) & oi->m_f0;
                 if ((mask1b || mask2b) && BoxesOverlap(oj, oi)) {
                     if (mask2b) {
                         AnimWorkerObj* nf = oi->m_attackWorker;
@@ -915,7 +915,7 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
 
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id
-            && obj->m_collCategory == collisionCategory) {
+            && obj->m_objectType == collisionCategory) {
             return obj;
         }
     }

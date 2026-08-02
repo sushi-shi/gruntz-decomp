@@ -379,8 +379,8 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     i32 tileX = o->m_screenX >> 5;
     i32 tileY = o->m_screenY >> 5;
-    o->m_164 = tileX;
-    o->m_168 = tileY;
+    o->m_speedX = tileX;
+    o->m_speedY = tileY;
     o->m_id = (tileX << 8) + tileY;
 }
 
@@ -427,8 +427,8 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     i32 tileX = o->m_screenX >> 5;
     i32 tileY = o->m_screenY >> 5;
-    o->m_164 = tileX;
-    o->m_168 = tileY;
+    o->m_speedX = tileX;
+    o->m_speedY = tileY;
     o->m_id = (tileX << 8) + tileY;
 }
 
@@ -600,12 +600,12 @@ i32 CCheckpointTrigger::Act() {
     m_prevAnimSetNode = m_objAux->m_1c;
 
     m_objAux->m_1c = ActFindId("B");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CHECKPOINTFLAGSET", 0);
 
     if (play->m_frameMarker != 0) {
-        i32 a = m_object->m_114;
-        i32 b = m_object->m_118;
+        i32 a = m_object->m_score;
+        i32 b = m_object->m_points;
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
             b += b;
             a += a;
@@ -693,7 +693,7 @@ i32 CCheckpointTrigger::Act() {
 
 RVA(0x0010f970, 0x17)
 i32 CCheckpointTrigger::AdvanceCheckpointAnimation() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -767,11 +767,11 @@ void CTileTriggerTransition::RegisterActs() {
 
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     if (m_wwdObject->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAniElement* desc = m_wwdObject->m_1a0.m_14;
+    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
     CAniDesc* elem =
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     m_wwdObject->ApplyLookupSprite(sprite, elem->m_param);
@@ -782,8 +782,9 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
-    if (m_wwdObject->m_1a0.m_finished != 0 && m_wwdObject->m_1a0.m_frameTicksLeft == 0) {
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    if (m_wwdObject->m_animCursor.m_finished != 0
+        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

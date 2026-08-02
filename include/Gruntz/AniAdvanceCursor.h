@@ -31,14 +31,14 @@ public:
     i32 Advance(u32 elapsed);
 
     CWwdGameObjectA* m_boundObject;
-    CAniElement* m_14;
+    CAniElement* m_animation;
 
     CAniDesc* m_element;
     i32 m_index;
     u32 m_frameTicksLeft;
-    i32 m_24;
+    i32 m_useElapsedTime;
     i32 m_finished;
-    i32 m_2c;
+    i32 m_consumeDraw;
     i32 m_pendingDraw;
     i32 m_curDraw;
 
@@ -53,7 +53,7 @@ SIZE_UNKNOWN();
 inline CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(owner, field04, field08) {
     m_boundObject = 0;
-    m_14 = 0;
+    m_animation = 0;
     m_element = 0;
 }
 #endif

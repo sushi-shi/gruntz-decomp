@@ -38,10 +38,10 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.right = 1;
     m_object->m_area.top = 1;
     m_object->m_area.bottom = 1;
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = 0;
-    GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_124];
+    GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_smarts];
     if (slot->m_liveGate == 0) {
         m_resolved = 0;
         return;
@@ -52,14 +52,14 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
     if (e != 0) {
-        e->m_124 = m_object->m_124;
+        e->m_smarts = m_object->m_smarts;
         e->m_animWorker->m_notify(e);
 
         m_warlordLogic = static_cast<CWarlord*>(e->m_animWorker->m_logic);
-        if (m_object->m_124 == g_curPlayer) {
+        if (m_object->m_smarts == g_curPlayer) {
             g_gameReg->m_cmdGrid->m_pendingFx = m_warlordLogic;
         }
-        GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_124];
+        GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_smarts];
         if (slot2 != 0) {
             slot2->m_00c = e->m_188;
         }

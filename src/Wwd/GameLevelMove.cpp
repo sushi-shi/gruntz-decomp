@@ -461,7 +461,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     POSITION pos = chain.GetHeadPosition();
     while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
-        if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory)
+        if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_objectType)
             && t->m_extent.left != AXIS_UNSET && obj->m_extent.left != AXIS_UNSET) {
             i32 tLeft = t->m_extent.left + t->m_screenX;
             i32 tBot = t->m_extent.top + t->m_screenY;
@@ -485,7 +485,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                         fire = 1;
                     }
                     if (fire != 0) {
-                        if (t->m_collMask & obj->m_collCategory) {
+                        if (t->m_collMask & obj->m_objectType) {
                             if (obj->m_collideWorker != 0) {
                                 obj->m_hitOther = t;
                                 obj->m_collideWorker->m_notify(obj);

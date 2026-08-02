@@ -94,8 +94,8 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     if (node != 0) {
         node = 0;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
-        m_value = m_wwdObject->m_1a0.m_14;
-        m_wwdObject->m_1a0.Setup(static_cast<CAniElement*>(node));
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->m_animCursor.Setup(static_cast<CAniElement*>(node));
         RebindNode();
     }
     return 0;
@@ -137,8 +137,9 @@ i32 CLightFx::RebindNode() {
 
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
-    if (m_wwdObject->m_1a0.m_finished && !m_wwdObject->m_1a0.m_frameTicksLeft && m_anchorB) {
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    if (m_wwdObject->m_animCursor.m_finished && !m_wwdObject->m_animCursor.m_frameTicksLeft
+        && m_anchorB) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

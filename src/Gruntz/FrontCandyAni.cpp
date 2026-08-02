@@ -78,8 +78,8 @@ RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    if (m_wwdObject->m_1a0.m_14 == 0) {
-        m_value = m_wwdObject->m_1a0.m_14;
+    if (m_wwdObject->m_animCursor.m_animation == 0) {
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
@@ -136,7 +136,7 @@ void CEyeCandyAni::RegisterActs() {
 
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -144,8 +144,8 @@ RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    if (m_wwdObject->m_1a0.m_14 == 0) {
-        m_value = m_wwdObject->m_1a0.m_14;
+    if (m_wwdObject->m_animCursor.m_animation == 0) {
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     if (m_object->m_sortKey != 0xf4240) {
@@ -191,6 +191,6 @@ void CFrontCandyAni::RegisterActs() {
 
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
 }

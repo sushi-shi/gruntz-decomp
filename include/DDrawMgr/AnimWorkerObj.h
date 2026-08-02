@@ -59,31 +59,31 @@ struct AnimWorkerObj : public CLoadable {
     }
     i32 m_1c;
 
-    i32 m_20;
-    i32 m_24;
-    i32 m_28;
-    i32 m_2c;
-    i32 m_30;
-    i32 m_34;
-    i32 m_38;
+    i32 m_timeDelay;
+    i32 m_frameDelay;
+    i32 m_userFlags;
+    i32 m_minX;
+    i32 m_maxX;
+    i32 m_minY;
+    i32 m_maxY;
     char m_pad3c[0x40 - 0x3c];
     i32 m_40;
-    i32 m_44;
-    i32 m_48;
+    i32 m_tweakX;
+    i32 m_tweakY;
     i32 m_scrollTargetX;
     i32 m_scrollTargetY;
     char m_pad54[0x58 - 0x54];
     i32 m_58;
     i32 m_5c;
     i32 m_60;
-    i32 m_64;
-    i32 m_68;
-    i32 m_6c;
-    i32 m_70;
-    i32 m_74;
-    i32 m_78;
-    i32 m_7c;
-    i32 m_80;
+    i32 m_user1;
+    i32 m_user2;
+    i32 m_user3;
+    i32 m_user4;
+    i32 m_user5;
+    i32 m_user6;
+    i32 m_user7;
+    i32 m_user8;
     i32 m_84;
     i32 m_88;
     i32 m_8c;
@@ -97,13 +97,13 @@ struct AnimWorkerObj : public CLoadable {
     i32 m_ac;
     i32 m_b0;
     i32 m_b4;
-    i32 m_b8;
-    i32 m_bc;
+    i32 m_counter;
+    i32 m_speed;
 
     char m_padc0[0xc4 - 0xc0];
     i32 m_c4;
-    i32 m_c8;
-    i32 m_cc;
+    i32 m_width;
+    i32 m_height;
     RECT m_d0;
     RECT m_e0;
 

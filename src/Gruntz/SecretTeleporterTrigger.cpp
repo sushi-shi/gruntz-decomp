@@ -163,8 +163,8 @@ i32 CSecretLevelTrigger::Tick() {
     if (hit) {
         spr = m_object;
         i32 ok = 1;
-        i32 lvl = spr->m_11c;
-        i32 lyr = spr->m_120;
+        i32 lvl = spr->m_powerup;
+        i32 lyr = spr->m_damage;
 
         if (lvl != 0 && hit->m_entranceReason != lvl) {
             ok = 0;
@@ -189,22 +189,22 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         o = m_object;
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            (o->m_114 << 5) + 0x10,
-            (o->m_118 << 5) + 0x10,
+            (o->m_score << 5) + 0x10,
+            (o->m_points << 5) + 0x10,
             0,
             "Teleporter",
             0x40003
         );
         if (spr) {
-            spr->m_124 = 2;
-            spr->m_animWorker->m_bc = m_object->m_animWorker->m_bc;
-            spr->m_164 = m_object->m_164;
-            spr->m_168 = m_object->m_168;
-            spr->m_11c = m_object->m_11c;
-            spr->m_120 = m_object->m_120;
-            spr->m_114 = m_object->m_114;
-            spr->m_118 = m_object->m_118;
-            spr->m_placeMode = 0;
+            spr->m_smarts = 2;
+            spr->m_animWorker->m_speed = m_object->m_animWorker->m_speed;
+            spr->m_speedX = m_object->m_speedX;
+            spr->m_speedY = m_object->m_speedY;
+            spr->m_powerup = m_object->m_powerup;
+            spr->m_damage = m_object->m_damage;
+            spr->m_score = m_object->m_score;
+            spr->m_points = m_object->m_points;
+            spr->m_health = 0;
             CWwdGameObjectA* eo = hit->m_object;
             CGruntzMgr* g = g_gameReg;
             i32 ey = eo->m_screenY;

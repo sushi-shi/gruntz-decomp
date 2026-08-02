@@ -154,7 +154,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != 0;
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur->m_animWorker->m_notify == &CreateGruntCreationPoint && cur->m_124 == id) {
+        if (cur->m_animWorker->m_notify == &CreateGruntCreationPoint && cur->m_smarts == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -169,7 +169,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != 0;
          cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur2->m_animWorker->m_notify == &CreateExitTrigger && cur2->m_124 == id) {
+        if (cur2->m_animWorker->m_notify == &CreateExitTrigger && cur2->m_smarts == id) {
             m_markerX = cur2->m_screenX / 32;
             m_markerY = cur2->m_screenY / 32;
             break;
@@ -178,7 +178,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != 0;
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur3->m_animWorker->m_notify == &CreateWayPoint && cur3->m_124 == id) {
+        if (cur3->m_animWorker->m_notify == &CreateWayPoint && cur3->m_smarts == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -2935,7 +2935,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         if (g->m_animWorker->m_notify == &CreateInGameIcon && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
 
-            switch (g->m_124) {
+            switch (g->m_smarts) {
                 case 0x33:
                     special = 1;
                     break;

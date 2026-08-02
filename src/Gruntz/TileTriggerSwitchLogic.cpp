@@ -661,7 +661,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         if (txt == 0) {
             return;
         }
-        txt->m_124 = m_textId;
+        txt->m_smarts = m_textId;
     }
 
     if ((m_tileX << 5) + 0x10 >= g_gameReg->m_viewBounds.right
@@ -738,7 +738,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
         CGameObject* rec =
             reg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
-            rec->m_124 = m_leadInSpan;
+            rec->m_smarts = m_leadInSpan;
         }
     }
     return 1;

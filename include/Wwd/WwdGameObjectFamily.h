@@ -97,9 +97,9 @@ public:
     i32 m_e0;
 
     i32 m_moveMode;
-    u32 m_collCategory;
+    u32 m_objectType;
 
-    i32 m_ec;
+    i32 m_hitTypeFlags;
     i32 m_f0;
 
     u32 m_collMask;
@@ -110,16 +110,16 @@ public:
     i32 m_108;
     i32 m_10c;
     i32 m_110;
-    i32 m_114;
-    i32 m_118;
-    i32 m_11c;
-    i32 m_120;
+    i32 m_score;
+    i32 m_points;
+    i32 m_powerup;
+    i32 m_damage;
 
-    i32 m_124;
-    i32 m_placeMode;
+    i32 m_smarts;
+    i32 m_health;
 
-    i32 m_12c;
-    i32 m_130;
+    i32 m_direction;
+    i32 m_faceDirection;
 
     RECT m_extent;
 
@@ -127,8 +127,8 @@ public:
 
     RECT m_switchRect;
 
-    i32 m_164;
-    i32 m_168;
+    i32 m_speedX;
+    i32 m_speedY;
     i32 m_16c;
     i32 m_170;
     i32 m_deltaX;
@@ -158,7 +158,7 @@ inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
 class CWwdGameObjectA : public CGameObject {
 public:
     CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CGameObject(owner, id, stateFlags), m_1a0(owner, id, stateFlags) {
+        : CGameObject(owner, id, stateFlags), m_animCursor(owner, id, stateFlags) {
         m_18c = -1;
         m_190 = -1;
         m_layer = 0;
@@ -211,7 +211,7 @@ public:
         LeafCue* m_19c;
         CDDrawWorker* m_19cSprite;
     };
-    CAniAdvanceCursor m_1a0;
+    CAniAdvanceCursor m_animCursor;
 };
 SIZE(0x1dc);
 

@@ -216,7 +216,7 @@ RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_OBJECTDROPPER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
@@ -240,19 +240,19 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         name = obj38->m_194 + 0x24;
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
-            o->m_12c = DROPDIR_NORTH;
+            o->m_direction = DROPDIR_NORTH;
             m_travelDx = 0;
             m_travelDy = -1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
-            o->m_12c = DROPDIR_EAST;
+            o->m_direction = DROPDIR_EAST;
             m_travelDx = 1;
             m_travelDy = 0;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
-            o->m_12c = DROPDIR_SOUTH;
+            o->m_direction = DROPDIR_SOUTH;
             m_travelDx = 0;
             m_travelDy = 1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
-            o->m_12c = DROPDIR_WEST;
+            o->m_direction = DROPDIR_WEST;
             m_travelDx = -1;
             m_travelDy = 0;
         }
@@ -354,7 +354,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    m_wwdObject->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     double drift = static_cast<double>(g_frameDelta) * m_speed;
     if (m_travelDx > 0) {
@@ -455,7 +455,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_wwdObject->m_flags |= 0x2000002;
     i32 adjY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -528,7 +528,7 @@ void CDroppedObject::RegisterActs() {
 // @early-stop
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::AdvanceFall() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
@@ -594,7 +594,7 @@ i32 CDroppedObject::AdvanceFall() {
                 }
             }
         }
-        m_value = m_wwdObject->m_1a0.m_14;
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("B");
@@ -607,8 +607,9 @@ i32 CDroppedObject::AdvanceFall() {
 
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
-    if (m_wwdObject->m_1a0.m_finished != 0 && m_wwdObject->m_1a0.m_frameTicksLeft == 0) {
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    if (m_wwdObject->m_animCursor.m_finished != 0
+        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
@@ -643,7 +644,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_wwdObject->m_flags |= 0x2000002;
     m_object->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
@@ -687,12 +688,13 @@ void CDroppedObjectShadow::RegisterActs() {
 // @early-stop
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) == 2) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 2) {
         CWwdGameObjectA* o = m_object;
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
     }
-    if (m_wwdObject->m_1a0.m_finished != 0 && m_wwdObject->m_1a0.m_frameTicksLeft == 0) {
+    if (m_wwdObject->m_animCursor.m_finished != 0
+        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

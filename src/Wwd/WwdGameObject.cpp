@@ -40,9 +40,9 @@ i32 g_logicTypesRegistered;
 
 RVA(0x00058b60, 0x2d)
 void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
-    m_1a0.Setup(srcSprite);
+    m_animCursor.Setup(srcSprite);
     if (applyDefault) {
-        m_1a0.Advance(g_engineFrameDelta);
+        m_animCursor.Advance(g_engineFrameDelta);
     }
 }
 
@@ -94,9 +94,9 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     if (!spr) {
         return 0;
     }
-    m_1a0.Setup(spr);
+    m_animCursor.Setup(spr);
     if (applyDefault) {
-        m_1a0.Advance(g_engineFrameDelta);
+        m_animCursor.Advance(g_engineFrameDelta);
     }
     return 1;
 }
@@ -246,7 +246,7 @@ i32 CWwdGameObjectA::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
     if (ar == 0) {
         return 0;
     }
-    if (m_1a0.Find(ar, mode, typeId, self) == 0) {
+    if (m_animCursor.Find(ar, mode, typeId, self) == 0) {
         return 0;
     }
     switch (mode) {
@@ -352,16 +352,16 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_10c = sortKey;
     m_strideX = 10;
     m_strideY = 10;
-    m_118 = 0;
-    m_114 = 0;
-    m_placeMode = 0;
-    m_124 = 0;
-    m_11c = 0;
-    m_120 = 0;
-    m_12c = 0;
-    m_130 = 0;
-    m_164 = 0;
-    m_168 = 0;
+    m_points = 0;
+    m_score = 0;
+    m_health = 0;
+    m_smarts = 0;
+    m_powerup = 0;
+    m_damage = 0;
+    m_direction = 0;
+    m_faceDirection = 0;
+    m_speedX = 0;
+    m_speedY = 0;
     m_e0 = 0;
     m_180 = 0;
 
@@ -374,8 +374,8 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_84 = 0;
     m_8c = 0;
     m_hitOther = 0;
-    m_collCategory = 0;
-    m_ec = 0;
+    m_objectType = 0;
+    m_hitTypeFlags = 0;
     m_f0 = 0;
     m_collMask = 0;
     m_extent.left = static_cast<i32>(0x80000000);
@@ -580,8 +580,8 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(tmp, 0x80);
 
     ar->Write(&m_moveMode, 4);
-    ar->Write(&m_collCategory, 4);
-    ar->Write(&m_ec, 4);
+    ar->Write(&m_objectType, 4);
+    ar->Write(&m_hitTypeFlags, 4);
     ar->Write(&m_f0, 4);
     ar->Write(&m_collMask, 4);
     ar->Write(&m_strideX, 4);
@@ -591,19 +591,19 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_108, 4);
     ar->Write(&m_10c, 4);
     ar->Write(&m_110, 4);
-    ar->Write(&m_114, 4);
-    ar->Write(&m_118, 4);
-    ar->Write(&m_11c, 4);
-    ar->Write(&m_120, 4);
-    ar->Write(&m_124, 4);
-    ar->Write(&m_placeMode, 4);
-    ar->Write(&m_12c, 4);
-    ar->Write(&m_130, 4);
+    ar->Write(&m_score, 4);
+    ar->Write(&m_points, 4);
+    ar->Write(&m_powerup, 4);
+    ar->Write(&m_damage, 4);
+    ar->Write(&m_smarts, 4);
+    ar->Write(&m_health, 4);
+    ar->Write(&m_direction, 4);
+    ar->Write(&m_faceDirection, 4);
     ar->Write(&m_extent.left, 0x10);
     ar->Write(&m_area.left, 0x10);
     ar->Write(&m_switchRect.left, 0x10);
-    ar->Write(&m_164, 4);
-    ar->Write(&m_168, 4);
+    ar->Write(&m_speedX, 4);
+    ar->Write(&m_speedY, 4);
     ar->Write(&m_16c, 4);
     ar->Write(&m_170, 4);
     ar->Write(&m_deltaX, 4);
@@ -658,8 +658,8 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     m_dc = name;
 
     ar->Read(&m_moveMode, 4);
-    ar->Read(&m_collCategory, 4);
-    ar->Read(&m_ec, 4);
+    ar->Read(&m_objectType, 4);
+    ar->Read(&m_hitTypeFlags, 4);
     ar->Read(&m_f0, 4);
     ar->Read(&m_collMask, 4);
     ar->Read(&m_strideX, 4);
@@ -669,19 +669,19 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_108, 4);
     ar->Read(&m_10c, 4);
     ar->Read(&m_110, 4);
-    ar->Read(&m_114, 4);
-    ar->Read(&m_118, 4);
-    ar->Read(&m_11c, 4);
-    ar->Read(&m_120, 4);
-    ar->Read(&m_124, 4);
-    ar->Read(&m_placeMode, 4);
-    ar->Read(&m_12c, 4);
-    ar->Read(&m_130, 4);
+    ar->Read(&m_score, 4);
+    ar->Read(&m_points, 4);
+    ar->Read(&m_powerup, 4);
+    ar->Read(&m_damage, 4);
+    ar->Read(&m_smarts, 4);
+    ar->Read(&m_health, 4);
+    ar->Read(&m_direction, 4);
+    ar->Read(&m_faceDirection, 4);
     ar->Read(&m_extent.left, 0x10);
     ar->Read(&m_area.left, 0x10);
     ar->Read(&m_switchRect.left, 0x10);
-    ar->Read(&m_164, 4);
-    ar->Read(&m_168, 4);
+    ar->Read(&m_speedX, 4);
+    ar->Read(&m_speedY, 4);
     ar->Read(&m_16c, 4);
     ar->Read(&m_170, 4);
     ar->Read(&m_deltaX, 4);
@@ -843,15 +843,15 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
     m_flags = frame;
     m_payload = 0;
     m_logic = 0;
-    m_20 = 0;
-    m_24 = 0;
-    m_2c = 0;
-    m_34 = 0;
-    m_30 = 0;
-    m_38 = 0;
+    m_timeDelay = 0;
+    m_frameDelay = 0;
+    m_minX = 0;
+    m_minY = 0;
+    m_maxX = 0;
+    m_maxY = 0;
     m_168 = 0;
     m_16c = 0;
-    m_28 = 0;
+    m_userFlags = 0;
     return 1;
 }
 

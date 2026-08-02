@@ -203,7 +203,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     puddle->SetBute("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2");
                     puddle->m_pending = 1;
                     puddle->m_placed = 0;
-                    puddle->m_value = puddle->m_object->m_1a0.m_14;
+                    puddle->m_value = puddle->m_object->m_animCursor.m_animation;
                     puddle->m_object->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2", 0);
                     return 1;
                 }
@@ -293,8 +293,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_124 == 0x55) {
-                                    icon->m_object->m_114 = ownerHi;
+                                if (icon->m_object->m_smarts == 0x55) {
+                                    icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
@@ -324,7 +324,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             0x40003
                                         );
                                         if (peek != 0) {
-                                            peek->m_124 = icon->m_object->m_118;
+                                            peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
                                 }
@@ -358,8 +358,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_124 == 0x55) {
-                                    icon->m_object->m_114 = ownerHi;
+                                if (icon->m_object->m_smarts == 0x55) {
+                                    icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
@@ -389,7 +389,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             0x40003
                                         );
                                         if (peek != 0) {
-                                            peek->m_124 = icon->m_object->m_118;
+                                            peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
                                 }
@@ -428,8 +428,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_124 == 0x55) {
-                                    icon->m_object->m_114 = ownerHi;
+                                if (icon->m_object->m_smarts == 0x55) {
+                                    icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
                                         i32 fxX = leftX * 0x20 + 0x10;
@@ -459,7 +459,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             0x40003
                                         );
                                         if (peek != 0) {
-                                            peek->m_124 = icon->m_object->m_118;
+                                            peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
                                 }
@@ -493,8 +493,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_124 == 0x55) {
-                                    icon->m_object->m_114 = ownerHi;
+                                if (icon->m_object->m_smarts == 0x55) {
+                                    icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
                                         i32 fxX = rightX * 0x20 + 0x10;
@@ -524,7 +524,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             0x40003
                                         );
                                         if (peek != 0) {
-                                            peek->m_124 = icon->m_object->m_118;
+                                            peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
                                 }

@@ -91,7 +91,7 @@ RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 0x2000002;
     m_wwdObject->ApplyName("GAME_WORMHOLE");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_WORMHOLE", 0);
     if (m_object->m_sortKey != 0x1869f) {
         m_object->m_sortKey = 0x1869f;
@@ -99,7 +99,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    i32 kind = m_object->m_124;
+    i32 kind = m_object->m_smarts;
     CShadeTable* color;
     if (kind == -1) {
         color =
@@ -123,7 +123,7 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     }
     if (tag == 8) {
 
-        i32 kind = m_object->m_124;
+        i32 kind = m_object->m_smarts;
         CShadeTable* color;
         if (kind == -1) {
 
@@ -166,16 +166,16 @@ void RegisterWormholeLogic() {
 RVA(0x000403b0, 0xa5)
 i32 CWormhole::SpawnPartners() {
 
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* g = m_wwdObject;
-    if (g->m_1a0.m_finished == 0 || g->m_1a0.m_frameTicksLeft != 0) {
+    if (g->m_animCursor.m_finished == 0 || g->m_animCursor.m_frameTicksLeft != 0) {
         return 0;
     }
     g->m_flags |= 0x10000;
 
-    i32 tx = m_object->m_164;
-    i32 ty = m_object->m_168;
+    i32 tx = m_object->m_speedX;
+    i32 ty = m_object->m_speedY;
     if (tx == 0 || ty == 0) {
         return 0;
     }
@@ -210,7 +210,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
@@ -284,7 +284,7 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     if (placeIndex == 0) {
         m_placed = 1;
         m_pending = 0;
-        m_value = m_wwdObject->m_1a0.m_14;
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry(g_puddleSpriteKey, 0);
     }
     return 1;
@@ -318,13 +318,13 @@ i32 CGruntPuddle::Remove() {
             }
         }
     }
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_wwdObject;
-    if (o->m_1a0.m_finished != 0 && o->m_1a0.m_frameTicksLeft == 0) {
+    if (o->m_animCursor.m_finished != 0 && o->m_animCursor.m_frameTicksLeft == 0) {
         if (m_placed != 0) {
             o->m_stateFlags |= 1;
         } else {
-            m_value = o->m_1a0.m_14;
+            m_value = o->m_animCursor.m_animation;
             o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
             m_placed = 1;
             m_pending = 0;
@@ -393,25 +393,25 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA(0x000411f0, 0xa0)
 void CTeleporter::LoadColors() {
 
-    if (m_object->m_124 == 2) {
+    if (m_object->m_smarts == 2) {
 
-        if (m_object->m_placeMode == 0) {
-            m_object->m_placeMode = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);
+        if (m_object->m_health == 0) {
+            m_object->m_health = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);
         }
-    } else if (m_object->m_124 == 1) {
+    } else if (m_object->m_smarts == 1) {
 
-        if (m_object->m_placeMode == 0) {
-            m_object->m_placeMode = g_buteMgr.GetIntDef("Wormhole", "SingleUseColor", 2);
+        if (m_object->m_health == 0) {
+            m_object->m_health = g_buteMgr.GetIntDef("Wormhole", "SingleUseColor", 2);
         }
     } else {
 
-        if (m_object->m_placeMode == 0) {
-            m_object->m_placeMode = g_buteMgr.GetIntDef("Wormhole", "NormalColor", 4);
+        if (m_object->m_health == 0) {
+            m_object->m_health = g_buteMgr.GetIntDef("Wormhole", "NormalColor", 4);
         }
     }
 
     CWwdGameObjectA* s = m_object;
-    CShadeTable* colorEntry = g_gameReg->m_logicPump->m_tables[s->m_placeMode];
+    CShadeTable* colorEntry = g_gameReg->m_logicPump->m_tables[s->m_health];
     s->m_drawActive = 1;
     s->m_drawFillCmd = 7;
     s->m_drawFillArg = colorEntry;
@@ -420,7 +420,7 @@ void CTeleporter::LoadColors() {
 RVA(0x000412c0, 0x63)
 i32 CTeleporter::ReapplyConfig() {
     m_wwdObject->ApplyName("GAME_WORMHOLE");
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
@@ -504,18 +504,18 @@ void CTeleporter_RegisterActs() {
 // @early-stop
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
-    if (m_wwdObject->m_1a0.m_finished == 0) {
+    if (m_wwdObject->m_animCursor.m_finished == 0) {
         return 0;
     }
-    if (m_wwdObject->m_1a0.m_frameTicksLeft != 0) {
+    if (m_wwdObject->m_animCursor.m_frameTicksLeft != 0) {
         return 0;
     }
 
-    m_interval = static_cast<u32>(m_object->m_animWorker->m_bc);
+    m_interval = static_cast<u32>(m_object->m_animWorker->m_speed);
     m_armClock = static_cast<u32>(g_frameTime);
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("B");
@@ -525,10 +525,10 @@ i32 CTeleporter::Begin() {
 // @early-stop
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
-    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* a = m_wwdObject;
-    if (a->m_1a0.m_finished != 0 && a->m_1a0.m_frameTicksLeft == 0) {
-        if (m_object->m_124 == 1) {
+    if (a->m_animCursor.m_finished != 0 && a->m_animCursor.m_frameTicksLeft == 0) {
+        if (m_object->m_smarts == 1) {
             a->m_flags |= 0x10000;
         } else {
             a->m_stateFlags |= 1;
@@ -553,12 +553,12 @@ i32 CTeleporter::Update() {
     }
 
     CWwdGameObjectA* o = m_object;
-    if (o->m_animWorker->m_bc != 0) {
+    if (o->m_animWorker->m_speed != 0) {
         i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_armClock;
         if (delta >= m_interval) {
-            m_value = m_wwdObject->m_1a0.m_14;
+            m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
-            m_object->m_animWorker->m_bc = 0;
+            m_object->m_animWorker->m_speed = 0;
             m_tickHandled = 1;
             return 0;
         }
@@ -571,32 +571,42 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    if (m_object->m_124 == 2) {
-        found->TryTeleportToCell(m_object->m_164, m_object->m_168, 1, 1);
+    if (m_object->m_smarts == 2) {
+        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 1, 1);
         g_gameReg->m_scoreHud->m_secretsFound++;
-        m_value = m_wwdObject->m_1a0.m_14;
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
         CWwdGameObjectA* s = m_object;
-        CWwdGameObjectA* spawned =
-            g_gameReg->m_world->m_childGroup
-                ->CreateSprite(0, s->m_11c * 32 + 16, s->m_120 * 32 + 16, 0, "Teleporter", 0x40003);
+        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+            0,
+            s->m_powerup * 32 + 16,
+            s->m_damage * 32 + 16,
+            0,
+            "Teleporter",
+            0x40003
+        );
         if (spawned != 0) {
-            spawned->m_124 = 1;
-            spawned->m_placeMode = m_object->m_placeMode;
-            spawned->m_164 = m_object->m_114;
-            spawned->m_168 = m_object->m_118;
-            spawned->m_animWorker->m_bc = 0;
+            spawned->m_smarts = 1;
+            spawned->m_health = m_object->m_health;
+            spawned->m_speedX = m_object->m_score;
+            spawned->m_speedY = m_object->m_points;
+            spawned->m_animWorker->m_speed = 0;
         }
     } else {
         CWwdGameObjectA* s = m_object;
-        CWwdGameObjectA* spawned =
-            g_gameReg->m_world->m_childGroup
-                ->CreateSprite(0, s->m_164 * 32 + 16, s->m_168 * 32 + 16, 0, "Wormhole", 0x40003);
-        spawned->m_164 = m_object->m_screenX;
-        spawned->m_168 = m_object->m_screenY;
-        spawned->m_124 = m_object->m_placeMode;
-        found->TryTeleportToCell(m_object->m_164, m_object->m_168, 0, 0);
-        m_value = m_wwdObject->m_1a0.m_14;
+        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+            0,
+            s->m_speedX * 32 + 16,
+            s->m_speedY * 32 + 16,
+            0,
+            "Wormhole",
+            0x40003
+        );
+        spawned->m_speedX = m_object->m_screenX;
+        spawned->m_speedY = m_object->m_screenY;
+        spawned->m_smarts = m_object->m_health;
+        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 0, 0);
+        m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
     }
 

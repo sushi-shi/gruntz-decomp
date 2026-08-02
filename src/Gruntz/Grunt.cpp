@@ -209,25 +209,25 @@ RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
 
     CMotionState* m = Motion();
-    i32 lo0 = m_objAux->m_2c;
+    i32 lo0 = m_objAux->m_minX;
     if (lo0 == 0) {
         m->m_70 = g_movingLogicMin;
     } else {
         m->m_70 = static_cast<double>(lo0);
     }
-    i32 lo1 = m_objAux->m_34;
+    i32 lo1 = m_objAux->m_minY;
     if (lo1 == 0) {
         m->m_78 = g_movingLogicMin;
     } else {
         m->m_78 = static_cast<double>(lo1);
     }
-    i32 hi0 = m_objAux->m_30;
+    i32 hi0 = m_objAux->m_maxX;
     if (hi0 == 0) {
         m->m_88 = g_movingLogicMax;
     } else {
         m->m_88 = static_cast<double>(hi0);
     }
-    i32 hi1 = m_objAux->m_38;
+    i32 hi1 = m_objAux->m_maxY;
     if (hi1 == 0) {
         m->m_90 = g_movingLogicMax;
     } else {
@@ -237,8 +237,8 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
         static_cast<double>(m_object->m_screenX),
         static_cast<double>(m_object->m_screenY),
         0.0,
-        static_cast<double>(m_object->m_164),
-        static_cast<double>(m_object->m_168),
+        static_cast<double>(m_object->m_speedX),
+        static_cast<double>(m_object->m_speedY),
         0.0,
         0.0,
         0.0,
@@ -322,7 +322,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_entranceCell.row = g_gruntMoveDirSouth.row;
     m_entranceCell.column = g_gruntMoveDirSouth.column;
     m_entranceCell.direction = g_gruntMoveDirSouth.direction;
-    m_434 = m_object->m_11c;
+    m_434 = m_object->m_powerup;
     m_438 = g_frameTicks;
     m_object->m_moveMode = 1;
     m_430 = 0;
@@ -338,8 +338,8 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     memset(m_poseToy, 0, sizeof(m_poseToy));
     m_pickupGeoSrc = 0;
     m_arrived = 0;
-    m_wwdObject->m_collCategory = 0x100000;
-    m_wwdObject->m_ec = 0x3d1;
+    m_wwdObject->m_objectType = 0x100000;
+    m_wwdObject->m_hitTypeFlags = 0x3d1;
     m_wwdObject->m_flags |= 0x2000100;
     m_wwdObject->m_collMask |= 0x103f;
     m_wwdObject->m_f0 = 1;
@@ -791,10 +791,10 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "E") == 0);
     if (eq) {
 
-        m_value = m_wwdObject->m_1a0.m_14;
-        m_wwdObject->m_1a0.Setup(m_poseAttackIdle);
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->m_animCursor.Setup(m_poseAttackIdle);
         {
-            CAniElement* desc = m_wwdObject->m_1a0.m_14;
+            CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
             CAniDesc* elem = desc->m_records.GetSize() > 0
                                  ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
                                  : 0;
@@ -822,17 +822,17 @@ codeI:
     m_entranceCell.row = rec.row;
     m_entranceCell.column = rec.column;
     m_entranceCell.direction = rec.direction;
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(m_poseIdle[GRUNT_IDLE2]);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(m_poseIdle[GRUNT_IDLE2]);
     ResetEntranceAnimation(1, 0, 0);
     return;
 
 idle:
 
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyGeometryDirect(m_poseIdle[GRUNT_IDLE1], 0);
     {
-        CAniElement* desc = m_wwdObject->m_1a0.m_14;
+        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
         CAniDesc* elem =
             desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem->m_param;
@@ -847,8 +847,8 @@ idle:
 
 walk:
 
-    m_value = m_wwdObject->m_1a0.m_14;
-    m_wwdObject->m_1a0.Setup(m_poseWalk);
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->m_animCursor.Setup(m_poseWalk);
     {
         i32 row = rec.row;
         i32 column = rec.column;
@@ -1737,8 +1737,8 @@ label_4cb4b:
         return 1;
     }
     if (reason0e) {
-        m_value = m_wwdObject->m_1a0.m_14;
-        m_wwdObject->m_1a0.Setup(m_poseWalk);
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->m_animCursor.Setup(m_poseWalk);
         return 1;
     }
     goto label_ret1;
@@ -3359,7 +3359,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
 
         eq = (strcmp(*rec, "H") == 0);
         if (eq) {
-            CAniElement* el = m_wwdObject->m_1a0.m_14;
+            CAniElement* el = m_wwdObject->m_animCursor.m_animation;
             CAniDesc* first;
             if (el->m_records.GetSize() > 0) {
                 first = static_cast<CAniDesc*>(el->m_records[0]);
@@ -3403,8 +3403,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_wwdObject->ApplyName(
                     m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0)
                 );
-                m_value = m_wwdObject->m_1a0.m_14;
-                m_wwdObject->m_1a0.Setup(m_poseWalk);
+                m_value = m_wwdObject->m_animCursor.m_animation;
+                m_wwdObject->m_animCursor.Setup(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);
                 if (m_arrivalPending == 0) {

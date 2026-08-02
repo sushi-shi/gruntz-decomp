@@ -430,10 +430,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
             AnimWorkerObj* ni = n->m_animWorker;
-            ni->m_bc =
+            ni->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
-            n->m_124 = 0;
-            n->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+            n->m_smarts = 0;
+            n->m_points =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
             CWwdGameObjectA* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -445,10 +446,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             e->ApplyName("LEVEL_ROLLINGBALL_EAST");
             AnimWorkerObj* ei = e->m_animWorker;
-            ei->m_bc =
+            ei->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
-            e->m_124 = 0;
-            e->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+            e->m_smarts = 0;
+            e->m_points =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
             CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -460,10 +462,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
             AnimWorkerObj* si = s->m_animWorker;
-            si->m_bc =
+            si->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
-            s->m_124 = 0;
-            s->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+            s->m_smarts = 0;
+            s->m_points =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
             CWwdGameObjectA* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -475,10 +478,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             w->ApplyName("LEVEL_ROLLINGBALL_WEST");
             AnimWorkerObj* wi = w->m_animWorker;
-            wi->m_bc =
+            wi->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
-            w->m_124 = 0;
-            w->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+            w->m_smarts = 0;
+            w->m_points =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
             return 1;
         }
         default:

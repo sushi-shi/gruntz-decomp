@@ -22,7 +22,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
     i32 sx = o->m_screenX;
     i32 sy = o->m_screenY;
-    m_value = m_wwdObject->m_1a0.m_14;
+    m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CWwdGameObjectA* sl =
@@ -30,12 +30,12 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
             AnimWorkerObj* sub = sl->m_animWorker;
-            sl->m_114 = 1;
-            sl->m_12c = 0;
-            sl->m_124 = 2;
-            sl->m_11c = 0;
-            sl->m_118 = i;
-            sl->m_120 = m_object->m_130;
+            sl->m_score = 1;
+            sl->m_direction = 0;
+            sl->m_smarts = 2;
+            sl->m_powerup = 0;
+            sl->m_points = i;
+            sl->m_damage = m_object->m_faceDirection;
             sub->m_notify(sl);
 
             (static_cast<CSpotLight*>(sl->m_animWorker->m_logic))->m_focus = m_object;
