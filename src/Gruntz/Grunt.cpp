@@ -1,4 +1,3 @@
-#define CMOTIONSTATE_STANDALONE_CTOR
 #include <Bute/ButeTree.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -204,7 +203,6 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT";
 
 // @early-stop
 
-RVA_COMPGEN(0x00013c40, 0x1e, ??_GCMovingLogic@@UAEPAXI@Z)
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
 
@@ -454,9 +452,6 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     }
     m_blockedVoicePending = 1;
 }
-
-DATA(0x00229ad0)
-i32 g_serialCounter;
 
 RVA(0x00048360, 0x7e)
 void CGrunt::OnObjectRemoved() {

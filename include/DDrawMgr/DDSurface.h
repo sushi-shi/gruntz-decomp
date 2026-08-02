@@ -249,6 +249,10 @@ inline CDDSurface::CDDSurface() {
     m_restoreCallback = 0;
 }
 
+inline CDDSurface::~CDDSurface() {
+    FreeSurfaces();
+}
+
 extern "C" const GUID IID_IDirectDrawSurface3;
 
 extern u8 g_clut[];

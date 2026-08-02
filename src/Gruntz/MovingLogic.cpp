@@ -1,4 +1,3 @@
-#define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
 #include <Io/FileMem.h>
 #include <strstrea.h>
@@ -13,17 +12,6 @@ const double g_motionNegHalf = -0.5;
 
 DATA(0x001f04f0)
 const double g_motionTimeScale = 0.001;
-
-RVA(0x00013940, 0x1e1)
-CMovingLogic::CMovingLogic() {}
-
-RVA(0x00013bb0, 0x4)
-LogicTypeId CMovingLogic::GetTypeTag() {
-    return LOGIC_NONE;
-}
-
-RVA(0x00013bd0, 0x44)
-CMovingLogic::~CMovingLogic() {}
 
 RVA(0x0016cdd0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {

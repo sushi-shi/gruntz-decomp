@@ -1,4 +1,3 @@
-#define SBI_DTOR_CHAIN
 #include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
 #include <AddrWord.h>

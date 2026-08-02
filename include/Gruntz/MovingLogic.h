@@ -18,7 +18,9 @@ extern u32 g_defaultZ;
 class CMovingLogic : public CUserLogic {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_NONE;
+    }
 
     virtual void FinalizeStep(char* unused) OVERRIDE;
 
@@ -43,15 +45,11 @@ public:
 };
 SIZE_UNKNOWN();
 
-#ifndef CMOVINGLOGIC_STANDALONE_CTOR
 inline CMovingLogic::CMovingLogic() {}
-#endif
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {}
 
-#ifdef CMOVINGLOGIC_INLINE_DTOR
 inline CMovingLogic::~CMovingLogic() {}
-#endif
 
 extern const double g_motionTimeScale;
 #endif // GRUNTZ_CMOVINGLOGIC_H

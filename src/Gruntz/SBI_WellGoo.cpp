@@ -1,4 +1,3 @@
-#define SBI_DTOR_CHAIN
 #include <rva.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/CurPlayer.h>

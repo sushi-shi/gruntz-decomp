@@ -46,11 +46,9 @@ public:
 };
 SIZE_UNKNOWN();
 
-#if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESETANI_DTOR)
 inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
     Reset();
 }
-#endif
 
 class CSBI_StatzTabArrow : public CSBI_ImageSetAni {
 public:

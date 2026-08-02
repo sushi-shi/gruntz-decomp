@@ -83,8 +83,9 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/LoadGameMenu.h>
 
-DATA(0x00248ce8)
-i32 g_scoreTimeBase;
+// owner-TU unproven: bss sits in the pre-gruntzmgr window (before g_buteMgr)
+DATA(0x002452d8)
+char g_msgScratch[256];
 
 DATA(0x002455e8)
 i32 g_monologoShown;
@@ -181,52 +182,6 @@ void ForceEmitCStateDtor() {
 }
 #pragma inline_depth()
 
-inline CPlay::CPlay() {
-
-    m_bootyTimerLo = 0;
-    m_bootyInterval = 0;
-    m_bootyTimerHi = 0;
-    m_bootyIntervalHi = 0;
-    m_ambientTimerLo = 0;
-    m_ambientInterval = 0;
-    m_ambientTimerHi = 0;
-    m_ambientIntervalHi = 0;
-    m_syncTimerLo = 0;
-    m_syncInterval = 0;
-    m_syncTimerHi = 0;
-    m_syncIntervalHi = 0;
-    m_cueTimerLo = 0;
-    m_cueInterval = 0;
-    m_cueTimerHi = 0;
-    m_cueIntervalHi = 0;
-    m_returnToMenuOnComplete = 0;
-    m_completedFinalLevel = 0;
-    m_reserved1c8 = 0;
-    m_hitTest = 0;
-    m_frameMarker = 0;
-    m_guts = 0;
-    m_beginMarker = 0;
-    m_grid = 0;
-    m_scrollSink = 0;
-    m_reserved2f0 = 0;
-    m_packetsRcvd = 0;
-    m_packetsSent = 0;
-    m_cursorFrame = 0;
-    m_levelId = -1;
-    m_lightFx = 0;
-    m_gridHasSprite = 0;
-    m_snapshotActive = 0;
-    m_ambientInitDone = 1;
-    m_stepCountdown = 0;
-    m_savedZonedSound = 0;
-    m_worldReady = 0;
-    m_dragSnapActive = 0;
-    m_playerCommandPending = 0;
-    m_dragInhibit1 = 0;
-    m_dragInhibit2 = 0;
-    m_dragInProgress = 0;
-    m_dragEndNotify = 0;
-}
 CMulti::CMulti() {
     m_session = 0;
     m_netGate = 0;
@@ -341,9 +296,11 @@ i32 CState::LeaveState(i32) {
     return 1;
 }
 
+RVA_COMPGEN(0x0008c710, 0x24, ??_GCState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008c750, 0xa9, ??0CState@@QAE@XZ)
 RVA_COMPGEN(0x0008c830, 0xaf, ??1CPlay@@UAE@XZ)
-
 RVA_COMPGEN(0x0008c9a0, 0x1e, ??_GCPlay@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008c9d0, 0x2bd, ??0CPlay@@QAE@XZ)
 RVA_COMPGEN(0x0008ce30, 0x1e, ??_GCMenuState@@UAEPAXI@Z)
 RVA_COMPGEN(0x0008cf00, 0x1e, ??_GCHelpState@@UAEPAXI@Z)
 RVA_COMPGEN(0x0008cfd0, 0x1e, ??_GCSplashState@@UAEPAXI@Z)

@@ -47,4 +47,8 @@ public:
 };
 SIZE_UNKNOWN();
 
+inline CSBI_MenuItem::~CSBI_MenuItem() {
+    Reset();
+}
+
 #endif // SBI_MENUITEM_H

@@ -46,10 +46,6 @@ CPtrArray g_modeArray;
 DATA(0x00283ee4)
 void* g_ddCreateCtx = 0;
 
-inline CDDSurface::~CDDSurface() {
-    FreeSurfaces();
-}
-
 RVA(0x001413d0, 0x27)
 void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ddLogEnabled = log;

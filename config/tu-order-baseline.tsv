@@ -19,12 +19,11 @@ LevelPreview	1
 LightFx	1
 MenuPage	2
 ModeObjInit	1
-Play	21
+Play	20
 PlayMessageImage	1
 RegistryHelper	2
 RezBufferObjectDtor	1
 SBI_RectOnly	13
-SBI_RectOnlyBase	1
 SaveGame	2
 ScatterSamples	1
 SpotLightCtor	1
@@ -36,4 +35,4 @@ SymTab	1
 ToobSpikez	1
 WwdFactoryObject	1
 WwdGrid	1
-(interleave-pairs)	8226
+(interleave-pairs)	7694

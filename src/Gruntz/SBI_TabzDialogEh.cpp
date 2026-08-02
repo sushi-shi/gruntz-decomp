@@ -1,4 +1,3 @@
-#define SBI_ITEM_OWN_CTOR
 
 #include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -10,6 +9,8 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/GameLevel.h>
+
+RVA_COMPGEN(0x001005d0, 0x17, ??0CStatusBarItem@@QAE@XZ)
 
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {

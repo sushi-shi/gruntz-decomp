@@ -12,13 +12,9 @@ class CImage;
 
 class CSBI_RectOnly : public CStatusBarItem {
 public:
-#ifdef SBI_RECTONLY_OWN_CTOR
-    CSBI_RectOnly();
-#else
     CSBI_RectOnly() {
         m_kind = 1;
     }
-#endif
     virtual ~CSBI_RectOnly() OVERRIDE;
 
     virtual i32 Setup(
@@ -35,11 +31,9 @@ public:
 };
 SIZE_UNKNOWN();
 
-#if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_RECTONLY_DTOR)
 inline CSBI_RectOnly::~CSBI_RectOnly() {
     Reset();
 }
-#endif
 
 class CSBI_Image : public CSBI_RectOnly {
 public:
@@ -69,10 +63,8 @@ public:
 };
 SIZE(0x34);
 
-#if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGE_DTOR)
 inline CSBI_Image::~CSBI_Image() {
     Reset();
 }
-#endif
 
 #endif // GRUNTZ_SBI_IMAGE_H

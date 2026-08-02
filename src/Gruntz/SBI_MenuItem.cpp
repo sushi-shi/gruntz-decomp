@@ -1,4 +1,3 @@
-#define SBI_DTOR_CHAIN
 #include <rva.h>
 #include <Rez/FrameClock.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -216,12 +215,6 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     }
 
     return CSBI_Image::SerializeFields(ar, kind, a, b) != 0;
-}
-
-RVA_COMPGEN(0x001007a0, 0x1e, ??_GCSBI_MenuItem@@UAEPAXI@Z)
-RVA(0x001007d0, 0x7f)
-CSBI_MenuItem::~CSBI_MenuItem() {
-    Reset();
 }
 
 RVA(0x0010bfa0, 0x1)

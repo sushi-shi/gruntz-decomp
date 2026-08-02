@@ -1,4 +1,3 @@
-#define SBI_DTOR_CHAIN
 #include <Mfc.h>
 #include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -72,6 +71,14 @@ i32 CStatusBarItem::Click24(i32, i32, i32) {
     return 0;
 }
 
+RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x001006d0, 0x1e, ??_GCSBI_RectOnly@@UAEPAXI@Z)
+RVA_COMPGEN(0x00100700, 0x55, ??1CSBI_RectOnly@@UAE@XZ)
+RVA_COMPGEN(0x00100780, 0xb, ??1CStatusBarItem@@UAE@XZ)
+RVA_COMPGEN(0x001007a0, 0x1e, ??_GCSBI_MenuItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x001007d0, 0x7f, ??1CSBI_MenuItem@@UAE@XZ)
+RVA_COMPGEN(0x00100870, 0x6a, ??1CSBI_Image@@UAE@XZ)
+RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
 RVA(0x00105520, 0x21)
 void CStatusBarMgr::ResetSlots() {
     for (i32 i = 0; i < 5; i++) {

@@ -214,3 +214,9 @@ void CStatusBarMgr::BuildGameMenu() {
     }
     m_tabLists[5].AddTail(it);
 }
+
+// ??0CSBI_RectOnly: retail caller is BuildGameMenu (new CSBI_RectOnly missing
+// from its reconstruction, 59% fuzzy); pin dangles until that lands.
+RVA_COMPGEN(0x00101fa0, 0x1b, ??0CSBI_RectOnly@@QAE@XZ)
+RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
+RVA_COMPGEN(0x00102000, 0x7f, ??1CSBI_ImageSet@@UAE@XZ)

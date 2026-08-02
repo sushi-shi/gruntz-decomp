@@ -1,4 +1,3 @@
-#define CMOTIONSTATE_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
 #include <Gruntz/MotionState.h>
 #include <math.h>
@@ -9,37 +8,6 @@ DATA(0x001f0500)
 const double g_motionZero = 0.0;
 DATA(0x001f0508)
 const double g_motionNegTwo = -2.0;
-
-RVA(0x000136d0, 0x184)
-CMotionState::CMotionState() {
-    m_position.x = 0.0;
-    m_position.y = 0.0;
-    m_position.z = 0.0;
-    m_velocity.x = 0.0;
-    m_velocity.y = 0.0;
-    m_velocity.z = 0.0;
-    m_acceleration.x = 0.0;
-    m_acceleration.y = 0.0;
-    m_acceleration.z = 0.0;
-    m_time = 0.0;
-    m_deltaTime = 0.0;
-    m_reservedc0.x = 0.0;
-    m_reservedc0.y = 0.0;
-    m_reservedc0.z = 0.0;
-    m_stepDisabled = 0;
-    m_minBounds.x = g_movingLogicMin;
-    m_maxBounds.x = g_movingLogicMax;
-    m_minBounds.y = g_movingLogicMin;
-    m_maxBounds.y = g_movingLogicMax;
-    m_minBounds.z = g_movingLogicMin;
-    m_maxBounds.z = g_movingLogicMax;
-    m_maxStep.x = g_movingLogicMax;
-    m_maxStep.y = g_movingLogicMax;
-    m_maxStep.z = g_movingLogicMax;
-    m_maxVelocity.x = g_movingLogicMax;
-    m_maxVelocity.y = g_movingLogicMax;
-    m_maxVelocity.z = g_movingLogicMax;
-}
 
 RVA(0x00058bc0, 0xa1)
 i32 CMotionState::SetParams(

@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Timer.h>
+#include <Rez/FrameClock.h>
 
 class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
@@ -398,8 +399,6 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
-#include <Rez/FrameClock.h>
-
 extern "C" i32 g_curPlayer;
 
 i32 ChannelSlots_FindFree();
@@ -419,7 +418,6 @@ extern "C" i32 g_soundChannelInUse[17];
 extern "C" u8 g_scrollLoadFlags;
 extern "C" i32 g_scrollMinSpeed;
 extern "C" i32 g_scrollSpeedRange;
-extern "C" double g_scrollSpeedScale;
 
 extern "C" u32 g_killCueClock;
 
@@ -463,5 +461,74 @@ void ShowHudMessageAlt(
 void Cmd_ResetScroll();
 i32 InitializeLevelArea(i32 a);
 void ActiveWait(u32 ms);
+
+// @early-stop
+// retail copy 0x0008c9d0 (emitted by gruntzmgr; pin there). Init list is
+// byte-proven: scalar zero-stores interleave the member-object ctors.
+inline CPlay::CPlay()
+    : m_bootyTimerLo(0),
+      m_bootyInterval(0),
+      m_bootyTimerHi(0),
+      m_bootyIntervalHi(0),
+      m_ambientTimerLo(0),
+      m_ambientInterval(0),
+      m_ambientTimerHi(0),
+      m_ambientIntervalHi(0),
+      m_syncTimerLo(0),
+      m_syncInterval(0),
+      m_syncTimerHi(0),
+      m_syncIntervalHi(0),
+      m_cueTimerLo(0),
+      m_cueInterval(0),
+      m_cueTimerHi(0),
+      m_cueIntervalHi(0),
+      m_region0TimerLo(0),
+      m_region0Interval(0),
+      m_region0TimerHi(0),
+      m_region0IntervalHi(0),
+      m_region1TimerLo(0),
+      m_region1Interval(0),
+      m_region1TimerHi(0),
+      m_region1IntervalHi(0),
+      m_region2TimerLo(0),
+      m_region2Interval(0),
+      m_region2TimerHi(0),
+      m_region2IntervalHi(0),
+      m_region3TimerLo(0),
+      m_region3Interval(0),
+      m_region3TimerHi(0),
+      m_region3IntervalHi(0),
+      m_snapBaseLo(0),
+      m_snapDur(0),
+      m_snapBaseHi(0),
+      m_snapDurHi(0) {
+    m_returnToMenuOnComplete = 0;
+    m_completedFinalLevel = 0;
+    m_reserved1c8 = 0;
+    m_hitTest = 0;
+    m_frameMarker = 0;
+    m_guts = 0;
+    m_beginMarker = 0;
+    m_grid = 0;
+    m_scrollSink = 0;
+    m_reserved2f0 = 0;
+    m_packetsRcvd = 0;
+    m_packetsSent = 0;
+    m_cursorFrame = 0;
+    m_levelId = -1;
+    m_lightFx = 0;
+    m_gridHasSprite = 0;
+    m_snapshotActive = 0;
+    m_ambientInitDone = 1;
+    m_stepCountdown = 0;
+    m_savedZonedSound = 0;
+    m_worldReady = 0;
+    m_dragSnapActive = 0;
+    m_playerCommandPending = 0;
+    m_dragInhibit1 = 0;
+    m_dragInhibit2 = 0;
+    m_dragInProgress = 0;
+    m_dragEndNotify = 0;
+}
 
 #endif // SRC_GRUNTZ_CPLAY_H

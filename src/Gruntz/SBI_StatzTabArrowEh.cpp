@@ -1,4 +1,3 @@
-#define SBI_DTOR_CHAIN
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/SBI_ImageSetAni.h>

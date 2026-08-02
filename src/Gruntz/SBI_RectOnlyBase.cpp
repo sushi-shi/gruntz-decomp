@@ -1,14 +1,8 @@
 #include <Mfc.h>
 
-#define SBI_RECTONLY_OWN_CTOR
 #include <Gruntz/SBI_Image.h>
 #include <Ints.h>
 #include <rva.h>
-
-RVA(0x00101fa0, 0x1b)
-CSBI_RectOnly::CSBI_RectOnly() {
-    m_kind = 1;
-}
 
 // @early-stop
 RVA(0x000e86e0, 0x53)

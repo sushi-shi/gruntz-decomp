@@ -1,4 +1,3 @@
-#define SBI_DTOR_CHAIN
 #include <Mfc.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Grunt.h>

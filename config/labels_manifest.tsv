@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 356  functions: 4492
+# units: 354  functions: 4450
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -122,7 +122,7 @@ gametext	1
 gamewnd	17
 glyphstr	4
 goowellmgr	1
-grunt	30
+grunt	29
 gruntarrivalscan	13
 gruntassetloaders	1
 gruntbehaviorleaf	2
@@ -157,7 +157,7 @@ gruntwingztimesprite	5
 gruntzapp	11
 gruntzcmdmgr	46
 gruntzmapmgr	3
-gruntzmgr	166
+gruntzmgr	169
 gruntzmgr2	1
 gruntzmgrcmd	1
 gruntzrandom	2
@@ -219,9 +219,9 @@ mgrautoscroll	1
 mgrlistfind	1
 mgrsettings	1
 modeobjinit	2
-motionstate	6
+motionstate	5
 movieplayer	2
-movinglogic	8
+movinglogic	5
 multi	107
 multistartdlg	19
 multistartdlgroster	35
@@ -241,7 +241,7 @@ palettecopy	1
 palettesnapshot	1
 pathhazard	15
 pathhazardactreg	1
-play	138
+play	116
 playercommandstep	1
 playmessageimage	2
 playplanescan	2
@@ -264,23 +264,22 @@ rollingball	8
 savefrontbuffershot	2
 savegame	34
 savescreenshot	1
-sbi_image	8
-sbi_imageset	8
-sbi_imagesetani	7
-sbi_menuitem	13
-sbi_rectonly	85
-sbi_rectonlybase	4
-sbi_rectonlydtor_eh	2
+sbi_image	5
+sbi_imageset	6
+sbi_imagesetani	5
+sbi_menuitem	11
+sbi_rectonly	93
+sbi_rectonlybase	3
 sbi_sidetab_build	1
 sbi_statztabarrow_eh	1
 sbi_statztabgruntbar	6
-sbi_tabzdialog_eh	1
+sbi_tabzdialog_eh	2
 sbi_warlordhead	7
 sbi_wellgoo	7
 scattersamples	2
 secretteleportertrigger	17
 serializesyncmarker	1
-serialobjectfactory	56
+serialobjectfactory	60
 sfselectdevice	1
 shadetablecache	25
 simpleanimation	8
@@ -299,15 +298,14 @@ spriteloaders	10
 spriteref	2
 spritereftable	10
 startupprompt	1
-state	21
 statedispatch	1
 stateimages	2
 statemgrbz	7
 statereleaseresources	1
 statichazard	9
-statusbargamemenu	1
-statusbaritem	5
-statusbarmgr	2
+statusbargamemenu	3
+statusbaritem	3
+statusbarmgr	4
 statusbarspriteacts	9
 statusbartabbuilders	17
 statusbarupdaters	2

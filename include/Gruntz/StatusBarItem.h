@@ -11,16 +11,12 @@ class CDDrawSurfaceMgr;
 
 class CStatusBarItem {
 public:
-#ifdef SBI_ITEM_OWN_CTOR
-    CStatusBarItem();
-#else
     CStatusBarItem() {
         m_enabled = 0;
         m_kind = 0;
         m_host = 0;
         m_redrawFrames = 0;
     }
-#endif
     virtual ~CStatusBarItem();
 
     virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b);
@@ -56,11 +52,9 @@ public:
 };
 SIZE_UNKNOWN();
 
-#if defined(SBI_DTOR_CHAIN) && !defined(SBI_ITEM_OWN_DTOR)
 inline CStatusBarItem::~CStatusBarItem() {
     Reset();
 }
-#endif
 
 extern "C" i32 g_curPlayer;
 

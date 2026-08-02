@@ -41,6 +41,21 @@ attempt was measured and found blocked. Companion: `docs/data-attribution.md`.
 > Owner attribution is by **xref / vtable-data-ref / class identity**, never by RVA
 > proximity - and that still works fine for pooled bodies, because the *class* is
 > recoverable even when the *obj* is not.
+>
+> **REFINEMENT (2026-08-02, OOL ctor/dtor campaign): the contributing obj IS
+> recoverable for realization groups.** Header-inline ctors/dtors/??_G/inline
+> virtuals emit as one COMDAT group from the TU that constructs the class
+> (vtable-realization); the linker keeps the first-linking copy and lays the group
+> at that compiland's seam, alignment-padded, ??_G adjacent to ??1. The emitting
+> TU is identified by (a) base-obj emission census (`llvm-nm` over
+> `build/objdiff/base`), (b) seam adjacency (`gruntz sema map range`), (c) retail
+> xref (`gruntz sema xref <ctor rva>`). When all three agree, the `RVA_COMPGEN`
+> pin goes in that TU - class-homing is only the fallback when the contributor is
+> genuinely unrecoverable. Proven cases: CPlay/CState group -> gruntzmgr
+> (0x8c4xx-0x8c9xx), SBI dtor clusters -> sbi_rectonly / statusbargamemenu /
+> statusbarmgr, CMovingLogic/CMotionState group -> serialobjectfactory
+> (0x136d0-0x13c40). A pin in a NON-emitting TU silently loses its label (the
+> labels manifest ratchet catches the count drop) - never place one unverified.
 
 ## What a contribution range is, and why we need it
 

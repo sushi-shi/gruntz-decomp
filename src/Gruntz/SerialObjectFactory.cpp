@@ -327,3 +327,12 @@ i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void*
     payloadWord.m_addr = static_cast<char*>(payload);
     return mgr->BroadcastCmd(archive, mode, typeId, payloadWord.m_word) != 0;
 }
+
+// CMovingLogic realization group (retail: the factory constructs bare CMovingLogic;
+// SerialObjectFactory is at 85.9% and its LOGIC_NONE arm is missing, so the
+// ??0CMovingLogic pin dangles until that arm lands.)
+RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
+RVA_COMPGEN(0x00013940, 0x1e1, ??0CMovingLogic@@QAE@XZ)
+RVA_COMPGEN(0x00013bb0, 0x4, ?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x00013bd0, 0x44, ??1CMovingLogic@@UAE@XZ)
+RVA_COMPGEN(0x00013c40, 0x1e, ??_GCMovingLogic@@UAEPAXI@Z)

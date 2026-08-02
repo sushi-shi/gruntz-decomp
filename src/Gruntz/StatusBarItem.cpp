@@ -1,7 +1,5 @@
 #include <rva.h>
 
-#define SBI_ITEM_OWN_CTOR
-#define SBI_DTOR_CHAIN
 #include <Gruntz/StatusBarItem.h>
 
 RVA(0x001005b0, 0x8)
@@ -9,20 +7,10 @@ void CStatusBarItem::SetSubtype() {
     m_redrawFrames = 2;
 }
 
-RVA(0x001005d0, 0x17)
-CStatusBarItem::CStatusBarItem() {
-    m_enabled = 0;
-    m_kind = 0;
-    m_host = 0;
-    m_redrawFrames = 0;
-}
-
 RVA(0x00100600, 0x8)
 i32 CStatusBarItem::Refresh(i32) {
     return 1;
 }
-
-RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 
 // @early-stop
 RVA(0x00100660, 0x50)

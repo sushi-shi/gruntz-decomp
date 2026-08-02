@@ -31,10 +31,8 @@ public:
 };
 SIZE(0x3c);
 
-#if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESET_DTOR)
 inline CSBI_ImageSet::~CSBI_ImageSet() {
     Reset();
 }
-#endif
 
 #endif // GRUNTZ_SBI_IMAGESET_H

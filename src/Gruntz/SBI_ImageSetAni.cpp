@@ -1,5 +1,3 @@
-#define SBI_DTOR_CHAIN
-#define SBI_OWN_IMAGESETANI_DTOR
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -198,10 +196,4 @@ i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32
             break;
     }
     return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj) != 0;
-}
-
-RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
-RVA(0x001047f0, 0x94)
-CSBI_ImageSetAni::~CSBI_ImageSetAni() {
-    Reset();
 }

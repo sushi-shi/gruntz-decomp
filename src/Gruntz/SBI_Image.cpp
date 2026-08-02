@@ -1,5 +1,3 @@
-#define SBI_DTOR_CHAIN
-#define SBI_OWN_IMAGE_DTOR
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -139,11 +137,4 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     }
 
     return CStatusBarItem::SerializeFields(ar, kind, a, b) != 0;
-}
-
-RVA_COMPGEN(0x001006d0, 0x1e, ??_GCSBI_RectOnly@@UAEPAXI@Z)
-RVA(0x00100870, 0x6a)
-RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
-CSBI_Image::~CSBI_Image() {
-    Reset();
 }

@@ -3311,109 +3311,6 @@ i32 CPlay::BuildHelpReveal(i32 final) {
     return 1;
 }
 
-inline CState::CState() {
-    m_mgr = 0;
-    m_symParser = 0;
-    m_world = 0;
-    m_levelBank = 0;
-    m_stateBank = 0;
-    m_blitSurface0 = 0;
-    m_blitSurface1 = 0;
-    m_reserved38 = 0;
-    m_ready = 0;
-    m_versionString[0] = 0;
-    m_previousStateId = 0;
-    m_scratchSurface0 = 0;
-    m_scratchSurface1 = 0;
-    m_cursorSaveSrc0.left = 0;
-    m_cursorSaveSrc0.right = 0x40;
-    m_cursorSaveSrc0.top = 0;
-    m_cursorSaveSrc0.bottom = 0x40;
-    m_cursorSaveSrc1.left = 0;
-    m_cursorSaveSrc1.right = 0x40;
-    m_cursorSaveSrc1.top = 0;
-    m_cursorSaveSrc1.bottom = 0x40;
-    m_cursorSaveDst0.left = 0;
-    m_cursorSaveDst0.right = 0;
-    m_cursorSaveDst0.top = 0;
-    m_cursorSaveDst0.bottom = 0;
-    m_cursorSaveDst1.left = 0;
-    m_cursorSaveDst1.right = 0;
-    m_cursorSaveDst1.top = 0;
-    m_cursorSaveDst1.bottom = 0;
-    m_cursorX = 0;
-    m_cursorY = 0;
-}
-
-// @early-stop
-RVA(0x0008c9d0, 0x2bd)
-
-CPlay::CPlay()
-    : m_bootyTimerLo(0),
-      m_bootyInterval(0),
-      m_bootyTimerHi(0),
-      m_bootyIntervalHi(0),
-      m_ambientTimerLo(0),
-      m_ambientInterval(0),
-      m_ambientTimerHi(0),
-      m_ambientIntervalHi(0),
-      m_syncTimerLo(0),
-      m_syncInterval(0),
-      m_syncTimerHi(0),
-      m_syncIntervalHi(0),
-      m_cueTimerLo(0),
-      m_cueInterval(0),
-      m_cueTimerHi(0),
-      m_cueIntervalHi(0),
-      m_region0TimerLo(0),
-      m_region0Interval(0),
-      m_region0TimerHi(0),
-      m_region0IntervalHi(0),
-      m_region1TimerLo(0),
-      m_region1Interval(0),
-      m_region1TimerHi(0),
-      m_region1IntervalHi(0),
-      m_region2TimerLo(0),
-      m_region2Interval(0),
-      m_region2TimerHi(0),
-      m_region2IntervalHi(0),
-      m_region3TimerLo(0),
-      m_region3Interval(0),
-      m_region3TimerHi(0),
-      m_region3IntervalHi(0),
-      m_snapBaseLo(0),
-      m_snapDur(0),
-      m_snapBaseHi(0),
-      m_snapDurHi(0) {
-    m_returnToMenuOnComplete = 0;
-    m_completedFinalLevel = 0;
-    m_reserved1c8 = 0;
-    m_hitTest = 0;
-    m_frameMarker = 0;
-    m_guts = 0;
-    m_beginMarker = 0;
-    m_grid = 0;
-    m_scrollSink = 0;
-    m_reserved2f0 = 0;
-    m_packetsRcvd = 0;
-    m_packetsSent = 0;
-    m_cursorFrame = 0;
-    m_levelId = -1;
-    m_lightFx = 0;
-    m_gridHasSprite = 0;
-    m_snapshotActive = 0;
-    m_ambientInitDone = 1;
-    m_stepCountdown = 0;
-    m_savedZonedSound = 0;
-    m_worldReady = 0;
-    m_dragSnapActive = 0;
-    m_playerCommandPending = 0;
-    m_dragInhibit1 = 0;
-    m_dragInhibit2 = 0;
-    m_dragInProgress = 0;
-    m_dragEndNotify = 0;
-}
-
 RVA(0x0008c930, 0x3)
 i32 CPlay::UnusedPlayQuery() {
     return 0;
@@ -4369,8 +4266,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     i32 sx = g->m_snappedX;
     i32 sy = g->m_snappedY;
     i32 speed = static_cast<i32>(
-        (static_cast<double>(w->m_scrollSpeed) * g_scrollSpeedScale * g_scrollSpeedRange
-         + g_scrollMinSpeed)
+        (static_cast<double>(w->m_scrollSpeed) * 0.01 * g_scrollSpeedRange + g_scrollMinSpeed)
     );
 
     SIZE
