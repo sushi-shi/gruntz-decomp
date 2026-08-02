@@ -182,14 +182,13 @@ void CDDrawShadeBlit::BlitCopyForward(
             if (x < clip->left) {
                 i32 trans = 0;
                 do {
-                    u8 b = m_rleData[pos];
-                    if (b & 0x80) {
-                        x += b - 0x80;
+                    if (m_rleData[pos] & 0x80) {
+                        x += m_rleData[pos] - 0x80;
                         pos++;
                         trans = 1;
                     } else {
-                        x += b;
-                        pos += static_cast<i32>(b) * m_srcBpp + 1;
+                        x += m_rleData[pos];
+                        pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                         trans = 0;
                     }
                 } while (x < clip->left);
@@ -203,19 +202,17 @@ void CDDrawShadeBlit::BlitCopyForward(
                 base += pitch;
                 x = 0;
             } else {
-                u8 b = m_rleData[pos];
-                if (b & 0x80) {
-                    x += b - 0x80;
+                if (m_rleData[pos] & 0x80) {
+                    x += m_rleData[pos] - 0x80;
                     pos++;
                 } else {
                     memcpy(
                         base + (x - clip->left) * m_dstBpp,
                         &m_rleData[pos + 1],
-                        static_cast<i32>(b) * m_srcBpp
+                        static_cast<i32>(m_rleData[pos]) * m_srcBpp
                     );
-                    u8 n = m_rleData[pos];
-                    x += n;
-                    pos += static_cast<i32>(n) * m_srcBpp + 1;
+                    x += m_rleData[pos];
+                    pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                 }
             }
         }
@@ -238,9 +235,8 @@ void CDDrawShadeBlit::BlitCopyForward(
                     bytes = vis < 0 ? 0 : vis;
                 }
                 memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], bytes);
-                u8 n = m_rleData[pos];
-                x += n;
-                pos += static_cast<i32>(n) * m_srcBpp + 1;
+                x += m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
