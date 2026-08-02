@@ -126,20 +126,19 @@ void CDDrawShadeBlit::BlitCopyForward(
     i32 row = 0, pos = 0, x = 0;
 
     if (clip->top != 0) {
-        do {
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
+        while (row < clip->top) {
+            if (m_rleData[pos] & 0x80) {
+                x += m_rleData[pos] - 0x80;
                 pos++;
             } else {
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
+                x += m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
                 x = 0;
             }
-        } while (row < clip->top);
+        }
     }
 
     if (vflip) {
@@ -156,14 +155,17 @@ void CDDrawShadeBlit::BlitCopyForward(
             if (pos >= m_rleLen) {
                 break;
             }
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
+            if (m_rleData[pos] & 0x80) {
+                x += m_rleData[pos] - 0x80;
                 pos++;
             } else {
-                memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], static_cast<i32>(b) * m_srcBpp);
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
+                memcpy(
+                    base + x * m_dstBpp,
+                    &m_rleData[pos + 1],
+                    static_cast<i32>(m_rleData[pos]) * m_srcBpp
+                );
+                x += m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -211,12 +213,13 @@ void CDDrawShadeBlit::BlitCopyForward(
                         &m_rleData[pos + 1],
                         static_cast<i32>(b) * m_srcBpp
                     );
-                    x += b;
-                    pos += static_cast<i32>(b) * m_srcBpp + 1;
+                    u8 n = m_rleData[pos];
+                    x += n;
+                    pos += static_cast<i32>(n) * m_srcBpp + 1;
                 }
             }
         }
-    } else {
+    } else if (clip->right != m_width - 1) {
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
@@ -235,8 +238,9 @@ void CDDrawShadeBlit::BlitCopyForward(
                     bytes = vis < 0 ? 0 : vis;
                 }
                 memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], bytes);
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
+                u8 n = m_rleData[pos];
+                x += n;
+                pos += static_cast<i32>(n) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
