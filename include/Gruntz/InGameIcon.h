@@ -2,19 +2,17 @@
 #define GRUNTZ_GRUNTZ_CINGAMEICON_H
 
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h>
 
 #include <Clock64.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/GameRegMfcPtr.h>
-
 #include <Gruntz/CurPlayer.h>
-
-#include <Gruntz/SoundState.h>
-#include <Gruntz/SerialCounter.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicFnTable.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/UserLogic.h>
 
 extern "C" u32 g_frameTime;
 
@@ -48,6 +46,7 @@ public:
     Clock64 m_peekTimer;
     Clock64 m_peekWindow;
     CWwdGameObjectA* m_glitterSprite;
+    i32 m_reserved7c; // retail news 0x80 (push in CreateInGameIcon); position unproven
 };
 SIZE(0x80);
 

@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H
 
 #include <Mfc.h>
+
 #include <Ints.h>
 
 extern "C" i32 g_opt_22bd64;
@@ -31,9 +32,7 @@ void DialogInit(HWND hDlg);
 void SaveVideoCheckboxes(HWND hDlg);
 
 BOOL CALLBACK GameOptionsDlgProc(HWND, UINT, WPARAM, LPARAM);
-namespace ApiCallerStubs {
-    void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max);
-    i32 GetDialogScrollPosition(HWND hDlg, i32 id);
-} // namespace ApiCallerStubs
+void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max);
+i32 GetDialogScrollPosition(HWND hDlg, i32 id);
 
 #endif // GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H

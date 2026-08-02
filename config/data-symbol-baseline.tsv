@@ -2,25 +2,3 @@
 # storage-less DATA_SYMBOL (should be real DATA defs). Frozen, down-only;
 # drive to 0. Regenerate: python -m gruntz.audit.data_symbol --write-baseline
 # rva	mangled	file
-0x00001217	_CreateAmbientPosSound	GameObjectFactory.cpp
-0x0000158c	_CreateBoomerang	GameObjectFactory.cpp
-0x000016c7	_CreateTimeBomb	GameObjectFactory.cpp
-0x000019bf	_CreateBrickz	GameObjectFactory.cpp
-0x00001b09	_CreateLevelTime	GameObjectFactory.cpp
-0x00001bd1	?Reset@CSBI_RectOnly@@UAEXXZ	SBI_RectOnlyDtorEh.cpp
-0x00001d43	_CreateTileTriggerTransition	GameObjectFactory.cpp
-0x00002158	_CreateAmbientSound	GameObjectFactory.cpp
-0x00002851	_CreateSpotAmbientSound	GameObjectFactory.cpp
-0x00002bbc	_CreateCursorSnapSprite	GameObjectFactory.cpp
-0x00002d15	_CreateGlobalAmbientSound	GameObjectFactory.cpp
-0x00002d2e	_CreateGrunt	GameObjectFactory.cpp
-0x00002e1e	_CreateParticlez	GameObjectFactory.cpp
-0x00002eb9	_CreateDemoMover	GameObjectFactory.cpp
-0x000030f8	_CreateProjectile	GameObjectFactory.cpp
-0x00003ca6	_CreateStaticHazard	GameObjectFactory.cpp
-0x0000448a	_CreateDemoSign	GameObjectFactory.cpp
-0x001ef458	_IID_IDirectInputDevice2A	InputDevice.cpp
-0x001ef848	_IID_IDirectDraw2	DirectDrawMgr.cpp
-0x0024556c	_g_gameReg	GruntzMgr.cpp
-0x002bf3bc	_g_engineFrameDelta	InGameTextUpdate.cpp
-0x002bf3c0	_g_killCueClock	InGameTextUpdate.cpp

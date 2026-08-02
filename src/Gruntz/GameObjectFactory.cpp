@@ -1,25 +1,10 @@
-#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
-#include <Gruntz/ObjTypeRegistrars.h>
+
+#include <Gruntz/GameObjectFactory.h>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
-
-DATA_SYMBOL(0x00002d2e, 0x0, _CreateGrunt)
-DATA_SYMBOL(0x00002d15, 0x0, _CreateGlobalAmbientSound)
-DATA_SYMBOL(0x00002158, 0x0, _CreateAmbientSound)
-DATA_SYMBOL(0x00001217, 0x0, _CreateAmbientPosSound)
-DATA_SYMBOL(0x00002851, 0x0, _CreateSpotAmbientSound)
-DATA_SYMBOL(0x00002e1e, 0x0, _CreateParticlez)
-DATA_SYMBOL(0x000019bf, 0x0, _CreateBrickz)
-DATA_SYMBOL(0x00001d43, 0x0, _CreateTileTriggerTransition)
-DATA_SYMBOL(0x000030f8, 0x0, _CreateProjectile)
-DATA_SYMBOL(0x0000158c, 0x0, _CreateBoomerang)
-DATA_SYMBOL(0x00003ca6, 0x0, _CreateStaticHazard)
-DATA_SYMBOL(0x000016c7, 0x0, _CreateTimeBomb)
-DATA_SYMBOL(0x00001b09, 0x0, _CreateLevelTime)
-DATA_SYMBOL(0x00002bbc, 0x0, _CreateCursorSnapSprite)
-DATA_SYMBOL(0x00002eb9, 0x0, _CreateDemoMover)
-DATA_SYMBOL(0x0000448a, 0x0, _CreateDemoSign)
+#include <Gruntz/ObjTypeRegistrars.h>
 
 RVA(0x0000a3b0, 0x6e2)
 void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {

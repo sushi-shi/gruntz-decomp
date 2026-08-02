@@ -1,19 +1,21 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
-#include <Ints.h>
-#include <string.h>
 #include <rva.h>
-#include <Wap32/Object.h>
 
 #include <Mfc.h>
-#include <wtypes.h>
-#include <basetyps.h>
-#include <Utils/RegistryHelper.h>
-#include <Gruntz/ObList.h>
-#include <Rez/RezMgr.h>
-#include <Gruntz/String.h>
+
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/ObList.h>
+#include <Gruntz/String.h>
+#include <Ints.h>
+#include <Rez/RezMgr.h>
+#include <Utils/RegistryHelper.h>
+#include <Wap32/Object.h>
+
+#include <basetyps.h>
+#include <string.h>
+#include <wtypes.h>
 
 void ActiveWait(u32 milliseconds);
 
@@ -508,6 +510,7 @@ struct CChatPacket {
     i32 m_val;
     char m_buf[0x100]; // capacity unproven
 };
+SIZE_UNKNOWN();
 
 extern CChatPacket g_chatPacket;
 

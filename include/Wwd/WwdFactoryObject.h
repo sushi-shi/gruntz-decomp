@@ -1,10 +1,10 @@
 #ifndef GRUNTZ_WWD_WWDFACTORYOBJECT_H
 #define GRUNTZ_WWD_WWDFACTORYOBJECT_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <Ints.h>
 
 struct CDDrawRect {
     i32 left;
@@ -15,8 +15,6 @@ struct CDDrawRect {
 SIZE_UNKNOWN();
 i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b);
 
-namespace Rng {
-    i32 Next2();
-}
+i32 Rng2Next();
 
 #endif // GRUNTZ_WWD_WWDFACTORYOBJECT_H

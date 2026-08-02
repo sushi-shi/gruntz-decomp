@@ -1,20 +1,22 @@
-#include <Io/FileStream.h>
-#include <EmptyString.h>
-#include <DDrawMgr/PixelShift.h>
+#include <rva.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <Image/Image.h>
-#include <ddraw.h>
-#include <rva.h>
-#include <ComOutRef.h>
+
 #include <AddrWord.h>
+#include <ComOutRef.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PixelShift.h>
+#include <Dsndmgr/SoundBankLoad.h>
+#include <EmptyString.h>
+#include <Image/Image.h>
+#include <Io/FileStream.h>
+
+#include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <Dsndmgr/SoundBankLoad.h>
-#include <DDrawMgr/DDSurface.h>
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
@@ -34,7 +36,9 @@ i32 g_ddBeepEnabled = 0;
 DATA(0x00283ec4)
 i32 g_ddThirdEnabled = 0;
 
-DATA_SYMBOL(0x001ef848, 0x0, _IID_IDirectDraw2)
+DATA(0x001ef848)
+const GUID IID_IDirectDraw2 =
+    {0xB3A6F3E0, 0x2B43, 0x11CF, {0xA2, 0xDE, 0x00, 0xAA, 0x00, 0xB9, 0x33, 0x56}};
 
 DATA(0x00283edc)
 i32 (*g_restoreHandler)() = 0;

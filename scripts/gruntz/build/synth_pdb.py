@@ -449,6 +449,20 @@ def read_functions(path, names_map=None, thunk_names=None):
             out.append((rva, size, name))
             seen.add(rva)
 
+    # A band thunk Ghidra never carved still needs a record so its callers'
+    # relocations resolve to the curated name; every ILT entry is exactly the
+    # 5-byte `E9 rel32`.
+    synth_thunks = 0
+    for rva, name in sorted(thunk_names.items()):
+        if rva in seen:
+            continue
+        out.append((rva, 5, name))
+        seen.add(rva)
+        synth_thunks += 1
+    if synth_thunks:
+        print("[synth_pdb] synthesized %d ILT thunk record(s) not carved by Ghidra"
+              % synth_thunks, file=sys.stderr)
+
     synth = 0
     for rva, (name, _unit, size) in sorted(names_map.items()):
         if rva in seen:
@@ -514,6 +528,22 @@ def read_ilt_thunk_names(exe_path, functions_path, names_map):
             target = rva + 5 + struct.unpack_from("<i", data, off + 1)[0]
             if target in names_map:
                 aliases[rva] = names_map[target][0]
+    # Ghidra does not carve every band entry as a function (address-taken-only
+    # thunks have no direct `call`), so ALSO walk the raw band: any E9 whose
+    # exact target is curated is a forwarding thunk to a known body - e.g. the
+    # GameObjectFactory creator table references `_CreateGrunt` through its ILT
+    # slot. Same target-in-names_map guard; a stray E9 byte inside another
+    # instruction cannot hit a curated entry RVA.
+    lo, hi = max(TEXT_BASE, text_rva), min(0x7C20, text_rva + text_raw_size - 5)
+    for rva in range(lo, hi):
+        if rva in aliases or rva in names_map:
+            continue
+        off = text_raw + rva - text_rva
+        if data[off] != 0xE9:
+            continue
+        target = rva + 5 + struct.unpack_from("<i", data, off + 1)[0]
+        if target in names_map:
+            aliases[rva] = names_map[target][0]
     return aliases
 
 

@@ -1,17 +1,17 @@
-
+#include <rva.h>
 
 #include <Bute/ButeMgr.h>
-#include <EmptyString.h>
+
+#include <AddrWord.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/BlowfishCopy.h>
-#include <rva.h>
-#include <AddrWord.h>
+#include <EmptyString.h>
+#include <strstrea.h>
 
-#include <fstream.h>
 #include <float.h>
+#include <fstream.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strstrea.h>
 
 DATA(0x0021cf40)
 i16 g_charClass[256] = {
@@ -790,7 +790,8 @@ bool CButeMgr::ScanToken(i32 expectType) {
     return true;
 }
 
-DATA_SYMBOL(0x001f03e0, 0x4, ?openprot@filebuf@@2HB)
+DATA(0x001f03e0)
+const int filebuf::openprot = 0644;
 RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
 
 RVA(0x00171aa0, 0x50)

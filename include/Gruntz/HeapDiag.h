@@ -17,8 +17,6 @@ namespace Utils {
     } // namespace WinAPI
 } // namespace Utils
 
-namespace ApiCallerStubs {
-    void ReportHeapStatus(i32 status);
-}
+void ReportHeapStatus(i32 status);
 
 #endif // GRUNTZ_GRUNTZ_HEAPDIAG_H

@@ -1,16 +1,15 @@
 #ifndef SRC_IMAGE_IMAGEPOOL_H
 #define SRC_IMAGE_IMAGEPOOL_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 #include <Io/SaveGame.h>
 
 class CRezImage;
-namespace ApiCallerStubs {
-    struct CImagePaletteNode;
-}
-using ApiCallerStubs::CImagePaletteNode;
+struct CImagePaletteNode;
 
 class CImagePool {
 public:
@@ -60,9 +59,7 @@ extern "C" HINSTANCE g_hResModule;
 
 extern char g_bmpHeaderTemplate[];
 
-namespace ApiCallerStubs {
-    i32 DisplayUsesPalette();
-    void ResetSystemPalette();
-} // namespace ApiCallerStubs
+i32 DisplayUsesPalette();
+void ResetSystemPalette();
 
 #endif // SRC_IMAGE_IMAGEPOOL_H

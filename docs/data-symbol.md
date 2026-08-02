@@ -42,10 +42,26 @@ it is **wrong** only for POD/scalar/const globals, which must be real `DATA` def
 
 ## The ratchet (`gruntz.audit.data_symbol`, normal tier)
 
-Frozen backlog of the retireable (POD/scalar/const) `DATA_SYMBOL`s in
-`config/data-symbol-baseline.tsv`; **FATAL on any NEW** one — a new scalar/const
-global must be defined, never bound storage-less. Drive the backlog to 0 by
-converting each to `DATA(rva) type name;` (recover const content from the retail
-image via `gruntz.core.pe.cstr` / `pe.data[pe.off(rva)]`; `.bss` scratch is zero-init
-sized by the gap to the next symbol). The ctor'd-object and compiler-gen ones are NOT
-flagged — they retire only through the reconstruction campaigns above.
+**The retireable backlog is at 0** (2026-08-02): `config/data-symbol-baseline.tsv`
+is empty and the gate is **FATAL on any NEW** POD/scalar/const `DATA_SYMBOL` — a
+scalar/const global must be defined, never bound storage-less. The conversion
+recipe that drained it: `DATA(rva) type name;` in the owner TU, C linkage
+inherited from the one header `extern "C"` declaration (never repeat
+`extern "C"` on the def); recover const content from the retail image
+(`pe.data[pe.off(rva)]` — e.g. `filebuf::openprot = 0644`, the two DX GUID
+values); a `.bss` global is a plain zero-init def. The ctor'd-object and
+compiler-gen ones are NOT flagged — they retire only through the reconstruction
+campaigns above.
+
+## Code bound as data: ILT forwarding thunks (retired mechanically)
+
+16 of the old backlog rows (`_CreateGrunt` & co, GameObjectFactory.cpp) were not
+data at all: **.text addresses in the incremental-link thunk band**
+(`0x1000..0x7c20`, 5-byte `E9 rel32` forwarders). Retail's creator-table call
+sites reference the THUNK; the reconstructed body lives elsewhere under the same
+C name. `synth_pdb.read_ilt_thunk_names` now walks the raw band and names every
+thunk whose exact jump target is a curated body (and synthesizes the 5-byte
+function record when Ghidra never carved the thunk), so callers' relocations
+resolve with **no annotation in src at all**. A `DATA_SYMBOL` pointing into
+`.text` is always this mis-model — name the body and let the band scan do the
+rest (user ruling: no DATA_SYMBOL is ever a keep; they hide proper code).

@@ -1,20 +1,19 @@
-#include <Mfc.h>
-#include <new>
-
-#include <Ints.h>
 #include <rva.h>
-#include <string.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/ChatBoxOwner.h>
-#include <Gruntz/UserLogic.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
-
 #include <Gruntz/Timer.h>
+#include <Gruntz/UserLogic.h>
+#include <Ints.h>
 
-namespace modeinit {}
+#include <new>
+#include <string.h>
 
 RVA(0x000c86d0, 0x11)
 CSbiHlRow::CSbiHlRow() {
@@ -28,7 +27,6 @@ CSbiHlRow::CSbiHlRow() {
 // @early-stop
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    using namespace modeinit;
     {
         if (mgr == 0) {
             return 0;

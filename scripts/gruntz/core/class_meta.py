@@ -76,12 +76,15 @@ def _blank_comments(text: str) -> str:
 
 def source_files():
     """Every scanned source/header under src/ + include/, EXCLUDING rva.h (whose
-    own `#define SIZE(type,...)` lines would otherwise register bogus names)."""
+    own `#define SIZE(type,...)` lines would otherwise register bogus names) and
+    strstrea.h (a shadow of MSVC's CRT header - the era version declares no
+    ~strstream - whose classes are the toolchain's, not the game's)."""
+    skip = {RVA_H.resolve(), (INC / "strstrea.h").resolve()}
     for root in (INC, SRC):
         if not root.exists():
             continue
         for path in sorted(list(root.rglob("*.h")) + list(root.rglob("*.cpp"))):
-            if path.resolve() == RVA_H.resolve():
+            if path.resolve() in skip:
                 continue
             yield path
 

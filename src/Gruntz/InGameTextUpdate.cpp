@@ -1,22 +1,26 @@
-#include <Rez/FrameClock.h>
-#include <Gruntz/InGameText.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
-#include <string.h>
 
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InGameText.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/ZVec.h>
+
+#include <string.h>
+
 DATA(0x0020d7f8)
 char s_codeK[] = "K";
-DATA_SYMBOL(0x002bf3bc, 0x4, _g_engineFrameDelta)
-DATA_SYMBOL(0x002bf3c0, 0x4, _g_killCueClock)
+DATA(0x002bf3bc)
+u32 g_engineFrameDelta;
+DATA(0x002bf3c0)
+u32 g_killCueClock;
 
 // @early-stop
 RVA(0x000997c0, 0x1e7)

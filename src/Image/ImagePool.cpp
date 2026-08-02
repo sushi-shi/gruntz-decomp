@@ -1,22 +1,24 @@
+#include <rva.h>
+
+#include <Image/ImagePool.h>
+
 #include <Mfc.h>
+
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DirPal.h>
+#include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePaletteNode.h>
-#include <Image/ImagePool.h>
-#include <Rez/RezMgr.h>
-#include <rva.h>
 #include <Pix16.h>
+#include <Rez/RezMgr.h>
+
 #include <string.h>
-#include <DDrawMgr/DDSurface.h>
-#include <Image/FileImageRecords.h>
-#include <DDrawMgr/DirPal.h>
 
 DATA(0x002bf6e0)
 HINSTANCE g_hResModule = 0;
 
 DATA(0x0021aabc)
 char g_bmpHeaderTemplate[4] = "BM";
-
-namespace ApiCallerStubs {}
 
 RVA(0x00174e90, 0x1c)
 i32 CImagePool::SetHandles(HINSTANCE resModule, HWND src, i32 c) {
@@ -877,7 +879,7 @@ void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
 }
 
 RVA(0x00176df0, 0x71)
-i32 ApiCallerStubs::CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
+i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
     m_flags = flags;
     m_pal.palNumEntries = 0x100;
     m_pal.palVersion = 0x300;
@@ -898,7 +900,7 @@ i32 ApiCallerStubs::CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
 }
 
 RVA(0x00176e70, 0x4e)
-i32 ApiCallerStubs::CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
+i32 CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
     PALETTEENTRY pal[256];
     u8* s = static_cast<u8*>(rgb);
 
@@ -911,7 +913,7 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
 }
 
 RVA(0x00176ec0, 0x64)
-i32 ApiCallerStubs::CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
+i32 CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
     PALETTEENTRY pal[256];
     for (i32 i = 0; i < 256; i++) {
         u8* s = static_cast<u8*>(bgr) + i * 4;
@@ -923,7 +925,7 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
 }
 
 RVA(0x00176f30, 0x51)
-i32 ApiCallerStubs::CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
+i32 CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
     PALETTEENTRY pal[256];
     for (i32 i = 0; i < 256; i++) {
         u8* s = static_cast<u8*>(bgr) + i * 3;
@@ -935,7 +937,7 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
 }
 
 RVA(0x00176f90, 0xa4)
-i32 ApiCallerStubs::CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
     char* ext = strrchr(path, '.');
 
     if (ext && _strcmpi(ext, ".BMP") == 0) {
@@ -950,7 +952,7 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
 }
 
 RVA(0x00177040, 0x23)
-i32 ApiCallerStubs::CImagePaletteNode::ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
+i32 CImagePaletteNode::ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
     if (type == 3) {
         return ParsePaletteTail(buf, size, ctrl);
     }
@@ -958,7 +960,7 @@ i32 ApiCallerStubs::CImagePaletteNode::ParseDispatch(void* buf, u32 size, i32 ty
 }
 
 RVA(0x00177070, 0x22)
-void ApiCallerStubs::CImagePaletteNode::Run() {
+void CImagePaletteNode::Run() {
     if (m_palette) {
         DeleteObject(m_palette);
         m_palette = 0;
@@ -967,7 +969,7 @@ void ApiCallerStubs::CImagePaletteNode::Run() {
 }
 
 RVA(0x001770a0, 0x3a)
-i32 ApiCallerStubs::DisplayUsesPalette() {
+i32 DisplayUsesPalette() {
     HDC ic = CreateICA("DISPLAY", 0, 0, 0);
     if (ic) {
         i32 caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
@@ -978,7 +980,7 @@ i32 ApiCallerStubs::DisplayUsesPalette() {
 }
 
 RVA(0x001770e0, 0x7c)
-void ApiCallerStubs::CImagePaletteNode::Tune() {
+void CImagePaletteNode::Tune() {
     ResetSystemPalette();
     HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
     i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
@@ -998,7 +1000,7 @@ void ApiCallerStubs::CImagePaletteNode::Tune() {
 }
 
 RVA(0x00177160, 0x81)
-void ApiCallerStubs::ResetSystemPalette() {
+void ResetSystemPalette() {
 
     LogPal256 lp;
     HDC hdc = GetDC(0);
@@ -1020,7 +1022,7 @@ void ApiCallerStubs::ResetSystemPalette() {
 }
 
 RVA(0x001771f0, 0xe2)
-i32 ApiCallerStubs::CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
     CFile file;
     char rgb[0x300];
 
@@ -1036,7 +1038,7 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
 
 // @early-stop
 RVA(0x001772e0, 0x117)
-i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     CFile file;
     u8 rgb[0x300];
 
@@ -1064,7 +1066,7 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
 
 // @early-stop
 RVA(0x00177400, 0x76)
-i32 ApiCallerStubs::CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
+i32 CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
     PALETTEENTRY pal[256];
     if (size < 0x300) {
         return 0;

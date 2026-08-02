@@ -4,32 +4,32 @@
 #define CGAMEOBJECT_OOL_CTOR
 #define ANIADVANCECURSOR_OOL_CTOR
 
-#include <Mfc.h>
-#include <Image/CImage.h>
-#include <Io/FileMem.h>
 #include <rva.h>
-#include <Ints.h>
-#include <string.h>
-#include <Wwd/WwdGameObjectFamily.h>
-#include <Gruntz/WwdGameObject.h>
-#include <Gruntz/Sprite.h>
-#include <Gruntz/ResolveNode.h>
-#include <DDrawMgr/AnimWorkerObj.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <DDrawMgr/AniAdvance.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/AniElement.h>
-#include <Gruntz/SerialArchive.h>
-#include <Wwd/WwdFactoryObject.h>
-#include <Gruntz/LeafCue.h>
 
+#include <Wwd/WwdFactoryObject.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawSubMgr.h>
-#include <Gruntz/SoundState.h>
-#include <Wwd/WwdObjMgr.h>
-#include <Gruntz/AniElement.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-namespace Rng {}
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/ResolveNode.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Image/CImage.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgr.h>
+
+#include <string.h>
 
 VTBL(CWwdGameObjectC, 0x001effd0);
 VTBL(CGameObject, 0x001f0020);
@@ -520,7 +520,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = 0;
                 } else {
                     tbl = dd->m_cues;
-                    entry = tbl[Rng::Next2() % dd->m_cueCount];
+                    entry = tbl[Rng2Next() % dd->m_cueCount];
                 }
                 if (entry != 0) {
                     entry->TriggerBlit(cue, 0, 0, 0);
@@ -532,7 +532,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = 0;
                 } else {
                     tbl = dd->m_cues;
-                    entry = tbl[Rng::Next2() % dd->m_cueCount];
+                    entry = tbl[Rng2Next() % dd->m_cueCount];
                 }
                 if (entry != 0) {
                     entry->PlayIfElapsed(g_sndCueTag, 0, 0, 0);

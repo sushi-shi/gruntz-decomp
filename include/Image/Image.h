@@ -4,14 +4,13 @@
 #include <rva.h>
 
 #include <Mfc.h>
+
 #include <DDrawMgr/DDSurface.h>
 #include <Io/FileStream.h>
 
 class CDDrawPtrCollections;
 
-namespace ApiCallerStubs {
-    struct CImagePaletteNode;
-}
+struct CImagePaletteNode;
 
 struct CRezFillRect {
     i32 left;
@@ -92,7 +91,7 @@ public:
     POSITION m_listPosition;
     i32 m_transparent;
     i32 m_paletteScalar;
-    ApiCallerStubs::CImagePaletteNode* m_paletteNode;
+    CImagePaletteNode* m_paletteNode;
 };
 SIZE_UNKNOWN();
 

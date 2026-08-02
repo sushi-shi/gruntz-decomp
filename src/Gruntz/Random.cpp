@@ -1,10 +1,12 @@
+#include <rva.h>
+
 #include <Gruntz/Random.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h>
-#include <rva.h>
+
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 
 DATA(0x0024c22c)
 char g_coinRolled;
@@ -47,18 +49,16 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
     return lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
 }
 
-namespace Rng {
-    // @interleaver Rng emitted in a first-use COMDAT pool.
-    RVA(0x0015cbe0, 0x46)
-    i32 Next2() {
-        i32 seed;
-        if (!(g_rng2Seeded & 1)) {
-            g_rng2Seeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_rng2State;
-        }
-        g_rng2State = seed * 214013 + 2531011;
-        return (g_rng2State >> 0x10) & 0x7fff;
+// @interleaver Rng emitted in a first-use COMDAT pool.
+RVA(0x0015cbe0, 0x46)
+i32 Rng2Next() {
+    i32 seed;
+    if (!(g_rng2Seeded & 1)) {
+        g_rng2Seeded |= 1;
+        seed = timeGetTime();
+    } else {
+        seed = g_rng2State;
     }
-} // namespace Rng
+    g_rng2State = seed * 214013 + 2531011;
+    return (g_rng2State >> 0x10) & 0x7fff;
+}

@@ -1,25 +1,27 @@
+#include <rva.h>
+
+#include <Gruntz/CustomWorldDialog.h>
+
 #include <Mfc.h>
-#include <Gruntz/PortalPath.h>
-#undef _AFX_ENABLE_INLINES
-#include <afxwin.h>
-#include <Gruntz/GameRegMfcPtr.h>
+#include <MfcNoInline.h>
+#include <MfcWin.h>
 
 #include <Gruntz/CustomWorldInfoDlg.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameLevel.h>
-#include <Wwd/WwdFile.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PortalPath.h>
 #include <Ints.h>
-#include <rva.h>
 #include <MsgParam.h>
+#include <Net/NetLobby.h>
+#include <Wwd/WwdFile.h>
 
 #include <direct.h>
 #include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Gruntz/CustomWorldDialog.h>
-#include <Net/NetLobby.h>
 
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0};
@@ -42,8 +44,6 @@ DATA(0x0020cf90)
 char g_dotDot[] = "..";
 DATA(0x0020cf94)
 char g_customGlob[] = "*.WWD";
-
-namespace m4 {}
 
 // @early-stop
 RVA(0x0003ad90, 0x97)
@@ -76,7 +76,7 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
         case 0x110:
             g_customLevelList = GetDlgItem(hDlg, 0x3fc);
             if (g_customLevelList) {
-                m4::FillCustomLevelList(hDlg);
+                FillCustomLevelList(hDlg);
             }
             return 1;
         case 0x111:
@@ -110,46 +110,42 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
     return 0;
 }
 
-namespace m4 {
-
-    // @early-stop
-    RVA(0x0003af90, 0x194)
-    i32 FillCustomLevelList(HWND hWnd) {
-        HWND lb = ::GetDlgItem(hWnd, 0x3fc);
-        if (!lb) {
-            return 0;
-        }
-        ::SendMessageA(lb, 0x184, 0, 0);
-        if (_chdir("Custom")) {
-            return 0;
-        }
-        char pattern[260];
-        strcpy(pattern, g_customGlob);
-        _finddata_t fd;
-        i32 h = _findfirst(pattern, &fd);
-        i32 found = (h != -1);
-        AfxGetApp()->BeginWaitCursor();
-        if (found) {
-            do {
-                char disp[260];
-                sprintf(disp, "%s", fd.name);
-                if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
-                    i32 len = strlen(disp);
-                    if (len > 4) {
-                        disp[len - 4] = 0;
-                    }
-                    MsgParam name;
-                    name.m_str = disp;
-                    ::SendMessageA(lb, 0x180, 0, name.m_lparam);
-                }
-            } while (_findnext(h, &fd) != -1);
-        }
-        _chdir(g_dotDot);
-        AfxGetApp()->EndWaitCursor();
-        return 1;
+// @early-stop
+RVA(0x0003af90, 0x194)
+i32 FillCustomLevelList(HWND hWnd) {
+    HWND lb = ::GetDlgItem(hWnd, 0x3fc);
+    if (!lb) {
+        return 0;
     }
-
-} // namespace m4
+    ::SendMessageA(lb, 0x184, 0, 0);
+    if (_chdir("Custom")) {
+        return 0;
+    }
+    char pattern[260];
+    strcpy(pattern, g_customGlob);
+    _finddata_t fd;
+    i32 h = _findfirst(pattern, &fd);
+    i32 found = (h != -1);
+    AfxGetApp()->BeginWaitCursor();
+    if (found) {
+        do {
+            char disp[260];
+            sprintf(disp, "%s", fd.name);
+            if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
+                i32 len = strlen(disp);
+                if (len > 4) {
+                    disp[len - 4] = 0;
+                }
+                MsgParam name;
+                name.m_str = disp;
+                ::SendMessageA(lb, 0x180, 0, name.m_lparam);
+            }
+        } while (_findnext(h, &fd) != -1);
+    }
+    _chdir(g_dotDot);
+    AfxGetApp()->EndWaitCursor();
+    return 1;
+}
 
 RVA(0x0003b1a0, 0x118)
 i32 FillLevelInfoDialog(HWND hDlg) {
@@ -205,7 +201,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     g_pathStr += "\\Custom\\";
     g_pathStr += itemText;
     g_pathStr += ".WWD";
-    if (!FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))) {
+    if (!FileExists(g_pathStr)) {
         g_pathStr.Empty();
         return 0;
     }
@@ -245,8 +241,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_dat62c268 != 0
-                && FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))
+            if (g_dat62c268 != 0 && FileExists(g_pathStr)
                 && g_dat62c268->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
                 SetDlgItemTextA(hDlg, 0x428, info.levelName + 0x40);
@@ -303,7 +298,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     g_pathStr += "\\Custom\\";
     g_pathStr += szLevel;
     g_pathStr += ".WWD";
-    if (!FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))) {
+    if (!FileExists(g_pathStr)) {
         g_pathStr.Empty();
         return 0;
     }

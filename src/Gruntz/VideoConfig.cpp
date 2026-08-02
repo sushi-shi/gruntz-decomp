@@ -1,23 +1,25 @@
-
+#include <rva.h>
 
 #include <Gruntz/VideoConfig.h>
+
 #include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <rva.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/State.h>
-#include <Gruntz/LeafCue.h>
-#include <Net/NetMgr.h>
-#include <Gruntz/Multi.h>
-#include <Gruntz/Wnd.h>
+
 #include <Gruntz/Enums.h>
-#include <string.h>
-#include <Rez/RezSync.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/Play.h>
 #include <Gruntz/SoundState.h>
-#include <afxcmn.h>
-#include <Net/NetLobby.h>
+#include <Gruntz/State.h>
+#include <Gruntz/Wnd.h>
 #include <MsgParam.h>
+#include <Net/NetLobby.h>
+#include <Net/NetMgr.h>
+#include <Rez/RezSync.h>
+
+#include <afxcmn.h>
+#include <string.h>
 
 typedef enum VideoConfigDlgId {
     IDC_RESCAPTION = 0x52d,
@@ -223,17 +225,12 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     CheckDlgButton(hDlg, 0x455, g_gameReg->m_isEasyMode);
     LoadVideoResolutionConfig(hDlg, 0x52c, g_videoResolutionMode);
     CheckDlgButton(hDlg, 0x46d, g_gameReg->m_soundEnabled);
-    ApiCallerStubs::ConfigureDialogScrollBar(hDlg, 0x470, g_gameReg->m_soundVolume, 0x50);
+    ConfigureDialogScrollBar(hDlg, 0x470, g_gameReg->m_soundVolume, 0x50);
     CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
-    ApiCallerStubs::ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->m_voiceVolume, 0x50);
+    ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->m_voiceVolume, 0x50);
     CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
-    ApiCallerStubs::ConfigureDialogScrollBar(
-        hDlg,
-        0x472,
-        g_gameReg->m_sound->GetXMidiVolume(),
-        0x64
-    );
-    ApiCallerStubs::ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->m_scrollSpeed, 0x64);
+    ConfigureDialogScrollBar(hDlg, 0x472, g_gameReg->m_sound->GetXMidiVolume(), 0x64);
+    ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->m_scrollSpeed, 0x64);
 }
 
 // @early-stop
@@ -243,32 +240,32 @@ void ReadMenuOptionsDialog(HWND hDlg) {
         return;
     }
     g_gameReg->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
-    i32 res = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x52c);
+    i32 res = GetDialogScrollPosition(hDlg, 0x52c);
     if (res >= 0 && res <= 100) {
         g_videoResolutionMode = res;
     }
     if (g_disableAudio == 0) {
         if (g_disableSound == 0) {
             g_gameReg->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
-            i32 mv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x470);
+            i32 mv = GetDialogScrollPosition(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
                 g_gameReg->SetSoundVolume(mv);
             }
             g_gameReg->m_isVoiceEnabled = IsDlgButtonChecked(hDlg, 0x475);
-            i32 sv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x476);
+            i32 sv = GetDialogScrollPosition(hDlg, 0x476);
             if (sv >= 0 && sv <= 100) {
                 g_gameReg->SetVoiceVolume(sv);
             }
         }
         if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
             g_gameReg->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
-            i32 pv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x472);
+            i32 pv = GetDialogScrollPosition(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {
                 g_gameReg->m_sound->SetXMidiVolume(pv);
             }
         }
     }
-    i32 qv = ApiCallerStubs::GetDialogScrollPosition(hDlg, 0x478);
+    i32 qv = GetDialogScrollPosition(hDlg, 0x478);
     if (qv >= 0 && qv <= 100) {
         g_gameReg->m_scrollSpeed = qv;
     }
@@ -334,33 +331,30 @@ void OnToggleEasyModeOption(HWND hWnd) {
     }
 }
 
-namespace ApiCallerStubs {
-
-    RVA(0x00036e50, 0x43)
-    void SetDialogScrollPosition(HWND hDlg, i32 id, i32 pos) {
-        HWND h = GetDlgItem(hDlg, id);
-        if (h) {
-            SCROLLINFO si;
-            si.cbSize = 0x1c;
-            si.fMask = SIF_POS;
-            si.nPos = pos;
-            SetScrollInfo(h, SB_CTL, &si, TRUE);
-        }
-    }
-
-    RVA(0x00036ec0, 0x41)
-    i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
-        HWND h = GetDlgItem(hDlg, id);
-        if (!h) {
-            return 0;
-        }
+RVA(0x00036e50, 0x43)
+void SetDialogScrollPosition(HWND hDlg, i32 id, i32 pos) {
+    HWND h = GetDlgItem(hDlg, id);
+    if (h) {
         SCROLLINFO si;
         si.cbSize = 0x1c;
         si.fMask = SIF_POS;
-        GetScrollInfo(h, SB_CTL, &si);
-        return si.nPos;
+        si.nPos = pos;
+        SetScrollInfo(h, SB_CTL, &si, TRUE);
     }
-} // namespace ApiCallerStubs
+}
+
+RVA(0x00036ec0, 0x41)
+i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
+    HWND h = GetDlgItem(hDlg, id);
+    if (!h) {
+        return 0;
+    }
+    SCROLLINFO si;
+    si.cbSize = 0x1c;
+    si.fMask = SIF_POS;
+    GetScrollInfo(h, SB_CTL, &si);
+    return si.nPos;
+}
 
 RVA(0x00036f30, 0x114)
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
@@ -434,23 +428,20 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
     SetWindowTextA(hCaption, szCaption);
 }
 
-namespace ApiCallerStubs {
-
-    RVA(0x000371e0, 0x5b)
-    void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
-        HWND h = GetDlgItem(hDlg, id);
-        if (h) {
-            SCROLLINFO si;
-            si.nMax = max;
-            si.cbSize = 0x1c;
-            si.fMask = 0x17;
-            si.nMin = 1;
-            si.nPage = 0xa;
-            si.nPos = pos;
-            SetScrollInfo(h, SB_CTL, &si, FALSE);
-        }
+RVA(0x000371e0, 0x5b)
+void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
+    HWND h = GetDlgItem(hDlg, id);
+    if (h) {
+        SCROLLINFO si;
+        si.nMax = max;
+        si.cbSize = 0x1c;
+        si.fMask = 0x17;
+        si.nMin = 1;
+        si.nPage = 0xa;
+        si.nPos = pos;
+        SetScrollInfo(h, SB_CTL, &si, FALSE);
     }
-} // namespace ApiCallerStubs
+}
 
 // @early-stop
 RVA(0x00037260, 0x220)

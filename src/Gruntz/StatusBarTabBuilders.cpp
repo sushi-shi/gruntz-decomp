@@ -1,35 +1,31 @@
-#include <Mfc.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h>
 #include <rva.h>
-#include <Ints.h>
 
-#include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/GameRegistry.h>
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/Sprite.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/StatusBarItem.h>
-#include <Image/CImage.h>
-#include <Gruntz/SBI_GruntMachine.h>
-#include <Gruntz/SBI_SideTab.h>
-#include <Gruntz/SbiSideTabBuildViews.h>
-#include <Gruntz/SbiConfig.h>
-#include <Gruntz/SBI_ImageSetAni.h>
-#include <Gruntz/SBI_StatzTabGruntBar.h>
-
-#include <Gruntz/StatusBarTabBuildersViews.h>
-#include <Image/ImageSet.h>
-#include <Io/FileMem.h>
-#include <Gruntz/SerialCounter.h>
-#include <string.h>
-
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SBI_GruntMachine.h>
+#include <Gruntz/SBI_ImageSetAni.h>
+#include <Gruntz/SBI_SideTab.h>
+#include <Gruntz/SBI_StatzTabGruntBar.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/SbiSideTabBuildViews.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarItem.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
 
-namespace StatusBarTabBuilders {}
+#include <string.h>
 
 // @early-stop
 RVA(0x000e8a70, 0x18c)
@@ -303,8 +299,6 @@ i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i3
 
     return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }
-
-namespace StatusBarTabBuilders {}
 
 // @early-stop
 RVA(0x000e9600, 0x18c)

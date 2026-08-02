@@ -1,12 +1,15 @@
+#include <rva.h>
+
 #include <Gruntz/HeapDiag.h>
+
 #include <Win32.h>
+
+#include <ProcAddr.h>
+
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <rva.h>
 #include <tlhelp32.h>
-#include <ProcAddr.h>
 
 RVA(0x00118930, 0x15)
 void SetActiveAndFocus(HWND hWnd) {
@@ -43,15 +46,13 @@ i32 FileExists(const char* szPath) {
     return OpenFile(szPath, &of, 0x4000) != -1;
 }
 
-namespace ApiCallerStubs {}
-
 RVA(0x00118a30, 0xda)
 int HeapCheckDump(int walkOnBad) {
     _HEAPINFO hinfo;
     char buf[80];
     int status = _heapchk();
     OutputDebugStringA("Checking heap...\n");
-    ApiCallerStubs::ReportHeapStatus(status);
+    ReportHeapStatus(status);
     if (walkOnBad != 0 && status != _HEAPOK) {
         memset(&hinfo, 0, sizeof(hinfo));
         _heapwalk(&hinfo);
@@ -69,37 +70,35 @@ int HeapCheckDump(int walkOnBad) {
             hinfo._size
         );
         OutputDebugStringA(buf);
-        ApiCallerStubs::ReportHeapStatus(r);
+        ReportHeapStatus(r);
         OutputDebugStringA("Finished walking heap.");
     }
     return status;
 }
 
-namespace ApiCallerStubs {
-    RVA(0x00118b50, 0x80)
-    void ReportHeapStatus(i32 status) {
-        switch (status) {
-            case -3:
-                OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
-                return;
-            case -4:
-                OutputDebugStringA("Heap return value: _HEAPBADNODE\n");
-                return;
-            case -6:
-                OutputDebugStringA("Heap return value: _HEAPBADPTR\n");
-                return;
-            case -1:
-                OutputDebugStringA("Heap return value: _HEAPEMPTY\n");
-                return;
-            case -2:
-                OutputDebugStringA("Heap return value: _HEAPOK\n");
-                return;
-            default:
-                OutputDebugStringA("Heap return value: Unknown return value!\n");
-                return;
-        }
+RVA(0x00118b50, 0x80)
+void ReportHeapStatus(i32 status) {
+    switch (status) {
+        case -3:
+            OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
+            return;
+        case -4:
+            OutputDebugStringA("Heap return value: _HEAPBADNODE\n");
+            return;
+        case -6:
+            OutputDebugStringA("Heap return value: _HEAPBADPTR\n");
+            return;
+        case -1:
+            OutputDebugStringA("Heap return value: _HEAPEMPTY\n");
+            return;
+        case -2:
+            OutputDebugStringA("Heap return value: _HEAPOK\n");
+            return;
+        default:
+            OutputDebugStringA("Heap return value: Unknown return value!\n");
+            return;
     }
-} // namespace ApiCallerStubs
+}
 
 RVA(0x00118bf0, 0xb4)
 int HeapStats() {
@@ -107,7 +106,7 @@ int HeapStats() {
     char buf[128];
     int status = _heapchk();
     OutputDebugStringA("Getting heap statistics...");
-    ApiCallerStubs::ReportHeapStatus(status);
+    ReportHeapStatus(status);
     unsigned long total = 0, used = 0, free = 0;
     if (status == _HEAPOK) {
         hinfo._pentry = 0;
