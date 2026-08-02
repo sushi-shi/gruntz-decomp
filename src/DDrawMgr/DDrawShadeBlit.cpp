@@ -1,11 +1,12 @@
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/PixelShift.h>
-#include <Win32.h>
-#include <ddraw.h>
+#include <rva.h>
+
 #include <DDrawMgr/DDrawShadeBlit.h>
 
-#include <rva.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Pix16.h>
+
+#include <ddraw.h>
 #include <string.h>
 
 DATA(0x002bed08)
@@ -124,9 +125,9 @@ void CDDrawShadeBlit::BlitCopyForward(
 
     i32 row = 0, pos = 0, x = 0;
 
-    if (clip->top > 0) {
+    if (clip->top != 0) {
         do {
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -149,7 +150,28 @@ void CDDrawShadeBlit::BlitCopyForward(
     }
 
     x = 0;
-    if (clip->left != 0) {
+    if (clip->left == 0 && clip->right == m_width - 1) {
+
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
+                break;
+            }
+            u8 b = m_rleData[pos];
+            if (b & 0x80) {
+                x += b - 0x80;
+                pos++;
+            } else {
+                memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], static_cast<i32>(b) * m_srcBpp);
+                x += b;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
+            }
+            if (x >= m_width) {
+                row++;
+                base += pitch;
+                x = 0;
+            }
+        }
+    } else if (clip->left != 0) {
 
         while (row < clip->bottom) {
             if (pos >= m_rleLen) {
@@ -158,7 +180,7 @@ void CDDrawShadeBlit::BlitCopyForward(
             if (x < clip->left) {
                 i32 trans = 0;
                 do {
-                    u32 b = m_rleData[pos];
+                    u8 b = m_rleData[pos];
                     if (b & 0x80) {
                         x += b - 0x80;
                         pos++;
@@ -179,7 +201,7 @@ void CDDrawShadeBlit::BlitCopyForward(
                 base += pitch;
                 x = 0;
             } else {
-                u32 b = m_rleData[pos];
+                u8 b = m_rleData[pos];
                 if (b & 0x80) {
                     x += b - 0x80;
                     pos++;
@@ -194,13 +216,13 @@ void CDDrawShadeBlit::BlitCopyForward(
                 }
             }
         }
-    } else if (clip->right != m_width - 1) {
+    } else {
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -213,27 +235,6 @@ void CDDrawShadeBlit::BlitCopyForward(
                     bytes = vis < 0 ? 0 : vis;
                 }
                 memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], bytes);
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
-            }
-            if (x >= m_width) {
-                row++;
-                base += pitch;
-                x = 0;
-            }
-        }
-    } else {
-
-        while (row <= clip->bottom) {
-            if (pos >= m_rleLen) {
-                break;
-            }
-            u32 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
-                pos++;
-            } else {
-                memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], static_cast<i32>(b) * m_srcBpp);
                 x += b;
                 pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
@@ -260,9 +261,9 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     u8* base = static_cast<u8*>(surf->Lock(0));
 
     i32 row = 0, pos = 0, x = 0;
-    if (clip->top > 0) {
+    if (clip->top != 0) {
         do {
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -284,13 +285,47 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     }
 
     x = m_width;
-    if (clip->left != 0) {
+    if (clip->left == 0 && clip->right == m_width - 1) {
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
+            if (b & 0x80) {
+                x += 0x80 - static_cast<i32>(b);
+                pos++;
+            } else {
+                i32 cnt = b;
+                u8* s = &m_rleData[pos + 1];
+                if (m_srcBpp == 1) {
+                    u8* d = base + x * m_dstBpp;
+                    for (i32 k = cnt; k > 0; k--) {
+                        *d-- = *s++;
+                    }
+                } else {
+                    u16* d = Pix16(base + x * m_dstBpp);
+                    u16* sw = Pix16(s);
+                    for (i32 k = cnt; k > 0; k--) {
+                        *d-- = *sw++;
+                    }
+                }
+                x -= cnt;
+                pos += cnt * m_srcBpp + 1;
+            }
+            if (x <= 0) {
+                row++;
+                base += pitch;
+                x = m_width;
+            }
+        }
+    } else if (clip->left != 0) {
+
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
+                break;
+            }
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += 0x80 - static_cast<i32>(b);
                 pos++;
@@ -326,7 +361,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 x = m_width;
             }
         }
-    } else if (clip->right != m_width - 1) {
+    } else {
 
         while (row < clip->bottom) {
             if (pos >= m_rleLen) {
@@ -335,7 +370,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             if (x > clip->right) {
                 i32 trans = 0;
                 do {
-                    u32 b = m_rleData[pos];
+                    u8 b = m_rleData[pos];
                     if (b & 0x80) {
                         x += 0x80 - static_cast<i32>(b);
                         pos++;
@@ -368,7 +403,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 base += pitch;
                 x = m_width;
             } else {
-                u32 b = m_rleData[pos];
+                u8 b = m_rleData[pos];
                 if (b & 0x80) {
                     x += 0x80 - static_cast<i32>(b);
                     pos++;
@@ -392,40 +427,6 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 }
             }
         }
-    } else {
-
-        while (row <= clip->bottom) {
-            if (pos >= m_rleLen) {
-                break;
-            }
-            u32 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += 0x80 - static_cast<i32>(b);
-                pos++;
-            } else {
-                i32 cnt = b;
-                u8* s = &m_rleData[pos + 1];
-                if (m_srcBpp == 1) {
-                    u8* d = base + x * m_dstBpp;
-                    for (i32 k = cnt; k > 0; k--) {
-                        *d-- = *s++;
-                    }
-                } else {
-                    u16* d = Pix16(base + x * m_dstBpp);
-                    u16* sw = Pix16(s);
-                    for (i32 k = cnt; k > 0; k--) {
-                        *d-- = *sw++;
-                    }
-                }
-                x -= cnt;
-                pos += cnt * m_srcBpp + 1;
-            }
-            if (x <= 0) {
-                row++;
-                base += pitch;
-                x = m_width;
-            }
-        }
     }
 
     surf->m_ddSurface->Unlock(0);
@@ -443,9 +444,9 @@ void CDDrawShadeBlit::BlitShadedForward(
 
     i32 pos = 0, row = 0, x = 0;
 
-    if (clip->top > 0) {
+    if (clip->top != 0) {
         do {
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -470,263 +471,13 @@ void CDDrawShadeBlit::BlitShadedForward(
     }
 
     x = 0;
-    if (clip->left != 0) {
+    if (clip->left == 0 && clip->right == m_width - 1) {
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
             }
-            if (x < clip->left) {
-                i32 trans = 0;
-                do {
-                    u32 b = m_rleData[pos];
-                    if (b & 0x80) {
-                        x += b - 0x80;
-                        pos++;
-                        trans = 1;
-                    } else {
-                        x += b;
-                        pos += static_cast<i32>(b) * m_srcBpp + 1;
-                        trans = 0;
-                    }
-                } while (x < clip->left);
-                if (x > clip->left && trans == 0) {
-                    i32 vis = x - clip->left;
-                    u8* dd = base;
-                    u8* ss = &m_rleData[pos] - vis * m_srcBpp;
-                    if (m_doubleScanlines) {
-                        if ((dst->top + row) % 2) {
-
-                            i32 i;
-                            u8* d = dd;
-                            u8* s = ss;
-                            switch (m_drawType) {
-                                case 2: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, vis);
-                                    u8* sc = g_scratch;
-                                    for (i = vis; i > 0; i--) {
-                                        d[0] = pal[(*sc << 8) + *s];
-                                        d[pitch] = pal[(*sc << 8) + *s];
-                                        d++;
-                                        sc++;
-                                        s++;
-                                    }
-                                    break;
-                                }
-                                case 3: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, vis);
-                                    u8* sc = g_scratch;
-                                    for (i = vis; i > 0; i--) {
-                                        d[0] = pal[(*sc << 8) + m_light];
-                                        d[pitch] = pal[(*sc << 8) + m_light];
-                                        d++;
-                                        sc++;
-                                    }
-                                    break;
-                                }
-                                case 7: {
-                                    u16* pal1 = m_palDescr->Lut16();
-                                    u16* pal2 = g_blendDescr->Lut16();
-                                    memcpy(g_scratch, d, vis * 2);
-                                    u16* sc = Scratch16();
-                                    i32 rd = pitch & ~1;
-                                    for (i = vis; i > 0; i--) {
-                                        u32 idx = pal2[*sc++];
-                                        idx += (*s++ >> 4) << 12;
-                                        u16 v = pal1[idx];
-                                        Store16(d, static_cast<u16>(v));
-                                        Store16(d + rd, static_cast<u16>(v));
-                                        d += 2;
-                                    }
-                                    break;
-                                }
-                                case 8: {
-                                    memcpy(g_scratch, d, vis * 2);
-                                    u16* sc = Scratch16();
-                                    u16* ss2 = Pix16(s);
-                                    i32 rd = pitch & ~1;
-                                    if (m_blendVariant) {
-                                        for (i = vis; i > 0; i--) {
-                                            u32 dv = *sc++;
-                                            u32 a = *ss2++;
-                                            u32 r = (m_lutBank0)[(a >> 0xa) + ((dv >> 5) & 0xffe0)];
-                                            r |= (m_lutBank1)
-                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
-                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
-                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
-                                            d += 2;
-                                        }
-                                    } else {
-                                        for (i = vis; i > 0; i--) {
-                                            u32 dv = *sc++;
-                                            u32 a = *ss2++;
-                                            u32 r = (m_lutBank0)[(a >> 0xb) + ((dv >> 6) & 0xffe0)];
-                                            r |= (m_lutBank1)
-                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
-                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
-                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
-                                            d += 2;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        ConvertRow(dd, ss, vis);
-                    }
-                }
-            }
-            if (x >= m_width) {
-                row++;
-                base += rowInc;
-                x = 0;
-            } else {
-                u32 b = m_rleData[pos];
-                if (b & 0x80) {
-                    x += b - 0x80;
-                    pos++;
-                } else {
-                    u8* dd = base + (x - clip->left) * m_dstBpp;
-                    u8* ss = &m_rleData[pos + 1];
-                    i32 count = b;
-                    if (m_doubleScanlines) {
-                        if ((dst->top + row) % 2) {
-
-                            i32 i;
-                            u8* d = dd;
-                            u8* s = ss;
-                            switch (m_drawType) {
-                                case 2: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, count);
-                                    u8* sc = g_scratch;
-                                    for (i = count; i > 0; i--) {
-                                        d[0] = pal[(*sc << 8) + *s];
-                                        d[pitch] = pal[(*sc << 8) + *s];
-                                        d++;
-                                        sc++;
-                                        s++;
-                                    }
-                                    break;
-                                }
-                                case 3: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, count);
-                                    u8* sc = g_scratch;
-                                    for (i = count; i > 0; i--) {
-                                        d[0] = pal[(*sc << 8) + m_light];
-                                        d[pitch] = pal[(*sc << 8) + m_light];
-                                        d++;
-                                        sc++;
-                                    }
-                                    break;
-                                }
-                                case 7: {
-                                    u16* pal1 = m_palDescr->Lut16();
-                                    u16* pal2 = g_blendDescr->Lut16();
-                                    memcpy(g_scratch, d, count * 2);
-                                    u16* sc = Scratch16();
-                                    i32 rd = pitch & ~1;
-                                    for (i = count; i > 0; i--) {
-                                        u32 idx = pal2[*sc++];
-                                        idx += (*s++ >> 4) << 12;
-                                        u16 v = pal1[idx];
-                                        Store16(d, static_cast<u16>(v));
-                                        Store16(d + rd, static_cast<u16>(v));
-                                        d += 2;
-                                    }
-                                    break;
-                                }
-                                case 8: {
-                                    memcpy(g_scratch, d, count * 2);
-                                    u16* sc = Scratch16();
-                                    u16* ss2 = Pix16(s);
-                                    i32 rd = pitch & ~1;
-                                    if (m_blendVariant) {
-                                        for (i = count; i > 0; i--) {
-                                            u32 dv = *sc++;
-                                            u32 a = *ss2++;
-                                            u32 r = (m_lutBank0)[(a >> 0xa) + ((dv >> 5) & 0xffe0)];
-                                            r |= (m_lutBank1)
-                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
-                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
-                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
-                                            d += 2;
-                                        }
-                                    } else {
-                                        for (i = count; i > 0; i--) {
-                                            u32 dv = *sc++;
-                                            u32 a = *ss2++;
-                                            u32 r = (m_lutBank0)[(a >> 0xb) + ((dv >> 6) & 0xffe0)];
-                                            r |= (m_lutBank1)
-                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
-                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
-                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
-                                            d += 2;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        ConvertRow(dd, ss, count);
-                    }
-                    x += b;
-                    pos += static_cast<i32>(b) * m_srcBpp + 1;
-                }
-            }
-        }
-    } else if (clip->right != m_width - 1) {
-
-        while (row <= clip->bottom) {
-            if (pos >= m_rleLen) {
-                break;
-            }
-            u32 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
-                pos++;
-            } else {
-                i32 vis;
-                if (x + static_cast<i32>(b) < clip->right) {
-                    vis = b;
-                } else {
-                    i32 v = clip->right - x;
-                    vis = v < 0 ? 0 : v;
-                }
-                u8* dd = base + x * m_dstBpp;
-                u8* ss = &m_rleData[pos + 1];
-                if (m_doubleScanlines) {
-                    if ((dst->top + row) % 2) {
-                        ConvertRowDoubleFwd(dd, ss, vis, pitch);
-                    }
-                } else {
-                    ConvertRow(dd, ss, vis);
-                }
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
-            }
-            if (x >= m_width) {
-                row++;
-                base += rowInc;
-                x = 0;
-            }
-        }
-    } else {
-
-        while (row <= clip->bottom) {
-            if (pos >= m_rleLen) {
-                break;
-            }
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -958,6 +709,256 @@ void CDDrawShadeBlit::BlitShadedForward(
                 x = 0;
             }
         }
+    } else if (clip->left != 0) {
+
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
+                break;
+            }
+            if (x < clip->left) {
+                i32 trans = 0;
+                do {
+                    u8 b = m_rleData[pos];
+                    if (b & 0x80) {
+                        x += b - 0x80;
+                        pos++;
+                        trans = 1;
+                    } else {
+                        x += b;
+                        pos += static_cast<i32>(b) * m_srcBpp + 1;
+                        trans = 0;
+                    }
+                } while (x < clip->left);
+                if (x > clip->left && trans == 0) {
+                    i32 vis = x - clip->left;
+                    u8* dd = base;
+                    u8* ss = &m_rleData[pos] - vis * m_srcBpp;
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+
+                            i32 i;
+                            u8* d = dd;
+                            u8* s = ss;
+                            switch (m_drawType) {
+                                case 2: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, vis);
+                                    u8* sc = g_scratch;
+                                    for (i = vis; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + *s];
+                                        d[pitch] = pal[(*sc << 8) + *s];
+                                        d++;
+                                        sc++;
+                                        s++;
+                                    }
+                                    break;
+                                }
+                                case 3: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, vis);
+                                    u8* sc = g_scratch;
+                                    for (i = vis; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + m_light];
+                                        d[pitch] = pal[(*sc << 8) + m_light];
+                                        d++;
+                                        sc++;
+                                    }
+                                    break;
+                                }
+                                case 7: {
+                                    u16* pal1 = m_palDescr->Lut16();
+                                    u16* pal2 = g_blendDescr->Lut16();
+                                    memcpy(g_scratch, d, vis * 2);
+                                    u16* sc = Scratch16();
+                                    i32 rd = pitch & ~1;
+                                    for (i = vis; i > 0; i--) {
+                                        u32 idx = pal2[*sc++];
+                                        idx += (*s++ >> 4) << 12;
+                                        u16 v = pal1[idx];
+                                        Store16(d, static_cast<u16>(v));
+                                        Store16(d + rd, static_cast<u16>(v));
+                                        d += 2;
+                                    }
+                                    break;
+                                }
+                                case 8: {
+                                    memcpy(g_scratch, d, vis * 2);
+                                    u16* sc = Scratch16();
+                                    u16* ss2 = Pix16(s);
+                                    i32 rd = pitch & ~1;
+                                    if (m_blendVariant) {
+                                        for (i = vis; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xa) + ((dv >> 5) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    } else {
+                                        for (i = vis; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xb) + ((dv >> 6) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        ConvertRow(dd, ss, vis);
+                    }
+                }
+            }
+            if (x >= m_width) {
+                row++;
+                base += rowInc;
+                x = 0;
+            } else {
+                u8 b = m_rleData[pos];
+                if (b & 0x80) {
+                    x += b - 0x80;
+                    pos++;
+                } else {
+                    u8* dd = base + (x - clip->left) * m_dstBpp;
+                    u8* ss = &m_rleData[pos + 1];
+                    i32 count = b;
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+
+                            i32 i;
+                            u8* d = dd;
+                            u8* s = ss;
+                            switch (m_drawType) {
+                                case 2: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, count);
+                                    u8* sc = g_scratch;
+                                    for (i = count; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + *s];
+                                        d[pitch] = pal[(*sc << 8) + *s];
+                                        d++;
+                                        sc++;
+                                        s++;
+                                    }
+                                    break;
+                                }
+                                case 3: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, count);
+                                    u8* sc = g_scratch;
+                                    for (i = count; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + m_light];
+                                        d[pitch] = pal[(*sc << 8) + m_light];
+                                        d++;
+                                        sc++;
+                                    }
+                                    break;
+                                }
+                                case 7: {
+                                    u16* pal1 = m_palDescr->Lut16();
+                                    u16* pal2 = g_blendDescr->Lut16();
+                                    memcpy(g_scratch, d, count * 2);
+                                    u16* sc = Scratch16();
+                                    i32 rd = pitch & ~1;
+                                    for (i = count; i > 0; i--) {
+                                        u32 idx = pal2[*sc++];
+                                        idx += (*s++ >> 4) << 12;
+                                        u16 v = pal1[idx];
+                                        Store16(d, static_cast<u16>(v));
+                                        Store16(d + rd, static_cast<u16>(v));
+                                        d += 2;
+                                    }
+                                    break;
+                                }
+                                case 8: {
+                                    memcpy(g_scratch, d, count * 2);
+                                    u16* sc = Scratch16();
+                                    u16* ss2 = Pix16(s);
+                                    i32 rd = pitch & ~1;
+                                    if (m_blendVariant) {
+                                        for (i = count; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xa) + ((dv >> 5) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    } else {
+                                        for (i = count; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xb) + ((dv >> 6) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        ConvertRow(dd, ss, count);
+                    }
+                    x += b;
+                    pos += static_cast<i32>(b) * m_srcBpp + 1;
+                }
+            }
+        }
+    } else {
+
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
+                break;
+            }
+            u8 b = m_rleData[pos];
+            if (b & 0x80) {
+                x += b - 0x80;
+                pos++;
+            } else {
+                i32 vis;
+                if (x + static_cast<i32>(b) < clip->right) {
+                    vis = b;
+                } else {
+                    i32 v = clip->right - x;
+                    vis = v < 0 ? 0 : v;
+                }
+                u8* dd = base + x * m_dstBpp;
+                u8* ss = &m_rleData[pos + 1];
+                if (m_doubleScanlines) {
+                    if ((dst->top + row) % 2) {
+                        ConvertRowDoubleFwd(dd, ss, vis, pitch);
+                    }
+                } else {
+                    ConvertRow(dd, ss, vis);
+                }
+                x += b;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
+            }
+            if (x >= m_width) {
+                row++;
+                base += rowInc;
+                x = 0;
+            }
+        }
     }
 
     src->m_ddSurface->Unlock(0);
@@ -975,9 +976,9 @@ void CDDrawShadeBlit::BlitShadedMirrored(
 
     i32 pos = 0, row = 0, x = 0;
 
-    if (clip->top > 0) {
+    if (clip->top != 0) {
         do {
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -1002,188 +1003,13 @@ void CDDrawShadeBlit::BlitShadedMirrored(
     }
 
     x = m_width;
-    if (clip->left != 0) {
+    if (clip->left == 0 && clip->right == m_width - 1) {
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += 0x80 - static_cast<i32>(b);
-                pos++;
-            } else {
-                i32 cnt = b;
-                u8* ss = &m_rleData[pos + 1];
-                i32 vis;
-                if (x - cnt > clip->left) {
-                    vis = cnt;
-                } else {
-                    i32 v = x - clip->left;
-                    vis = v < 0 ? 0 : v;
-                }
-                u8* dd = base + (x - clip->left) * m_dstBpp;
-                if (m_doubleScanlines) {
-                    if ((dst->top + row) % 2) {
-
-                        i32 i;
-                        u8* d = dd;
-                        u8* s = ss;
-                        switch (m_drawType) {
-                            case 2: {
-                                u8* pbase = m_palDescr->m_data;
-                                memcpy(g_scratch, d - vis + 1, vis);
-                                u8* sc = &g_scratch[vis - 1];
-                                for (i = vis; i > 0; i--) {
-                                    d[0] = pbase[(*sc << 8) + *s];
-                                    d[pitch] = pbase[(*sc << 8) + *s];
-                                    d--;
-                                    sc--;
-                                    s++;
-                                }
-                                break;
-                            }
-                            case 3: {
-                                u8* pbase = m_palDescr->m_data;
-                                memcpy(g_scratch, d - vis + 1, vis);
-                                u8* sc = &g_scratch[vis - 1];
-                                for (i = vis; i > 0; i--) {
-                                    d[0] = pbase[(*sc << 8) + m_light];
-                                    d[pitch] = pbase[(*sc << 8) + *s];
-                                    d--;
-                                    sc--;
-                                }
-                                break;
-                            }
-                            case 7: {
-                                u16* pal1 = m_palDescr->Lut16();
-                                u16* pal2 = g_blendDescr->Lut16();
-                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
-                                u16* sc = (Scratch16() + vis - 1);
-                                i32 rd = pitch & ~1;
-                                for (i = vis; i > 0; i--) {
-                                    u32 idx = pal2[*sc--];
-                                    idx += (*s++ >> 4) << 12;
-                                    u16 v = pal1[idx];
-                                    Store16(d, static_cast<u16>(v));
-                                    Store16(d + rd, static_cast<u16>(v));
-                                    d -= 2;
-                                }
-                                break;
-                            }
-                            case 8: {
-                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
-                                u16* sc = (Scratch16() + vis - 1);
-                                u16* ss2 = Pix16(s);
-                                i32 rd = pitch & ~1;
-                                if (m_blendVariant) {
-                                    for (i = vis; i > 0; i--) {
-                                        u32 a = *ss2++;
-                                        u32 dv = *sc--;
-                                        u32 r =
-                                            (m_lutBank0)[(a >> 0xa) + (((dv >> 0xa) & 0x1f) << 5)];
-                                        r |= (m_lutBank1)
-                                            [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
-                                        r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
-                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
-                                        d -= 2;
-                                    }
-                                } else {
-                                    for (i = vis; i > 0; i--) {
-                                        u32 a = *ss2++;
-                                        u32 dv = *sc--;
-                                        u32 r =
-                                            (m_lutBank0)[(a >> 0xb) + (((dv >> 0xb) & 0x1f) << 5)];
-                                        r |= (m_lutBank1)
-                                            [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
-                                        r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
-                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
-                                        d -= 2;
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    ConvertRowFlip(dd, ss, vis);
-                }
-                x -= cnt;
-                pos += cnt * m_srcBpp + 1;
-            }
-            if (x <= 0) {
-                row++;
-                base += rowInc;
-                x = m_width;
-            }
-        }
-    } else if (clip->right != m_width - 1) {
-
-        while (row <= clip->bottom) {
-            if (pos >= m_rleLen) {
-                break;
-            }
-            if (x > clip->right) {
-                i32 trans = 0;
-                do {
-                    u32 b = m_rleData[pos];
-                    if (b & 0x80) {
-                        x += 0x80 - static_cast<i32>(b);
-                        pos++;
-                        trans = 1;
-                    } else {
-                        x -= b;
-                        pos += static_cast<i32>(b) * m_srcBpp + 1;
-                        trans = 0;
-                    }
-                } while (x > clip->right);
-                if (x >= 0 && trans == 0) {
-                    i32 vis = clip->right - x;
-                    u8* ss = &m_rleData[pos] - vis * m_srcBpp;
-                    u8* dd = base + clip->right * m_dstBpp;
-                    if (m_doubleScanlines) {
-                        if ((dst->top + row) % 2) {
-                            ConvertRowDouble(dd, ss, vis, pitch);
-                        }
-                    } else {
-                        ConvertRowFlip(dd, ss, vis);
-                    }
-                }
-            }
-            if (x <= 0) {
-                row++;
-                base += rowInc;
-                x = m_width;
-            } else {
-                u32 b = m_rleData[pos];
-                if (b & 0x80) {
-                    x += 0x80 - static_cast<i32>(b);
-                    pos++;
-                } else {
-                    u8* dd = base + x * m_dstBpp;
-                    u8* ss = &m_rleData[pos + 1];
-                    i32 cnt = b;
-                    if (m_doubleScanlines) {
-                        if ((dst->top + row) % 2) {
-                            ConvertRowDouble(dd, ss, cnt, pitch);
-                        }
-                    } else {
-                        ConvertRowFlip(dd, ss, cnt);
-                    }
-                    x -= cnt;
-                    pos += cnt * m_srcBpp + 1;
-                }
-            }
-        }
-    } else {
-
-        while (row <= clip->bottom) {
-            if (pos >= m_rleLen) {
-                break;
-            }
-            u32 b = m_rleData[pos];
+            u8 b = m_rleData[pos];
             if (b & 0x80) {
                 x += 0x80 - static_cast<i32>(b);
                 pos++;
@@ -1409,6 +1235,181 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                 row++;
                 base += rowInc;
                 x = m_width;
+            }
+        }
+    } else if (clip->left != 0) {
+
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
+                break;
+            }
+            u8 b = m_rleData[pos];
+            if (b & 0x80) {
+                x += 0x80 - static_cast<i32>(b);
+                pos++;
+            } else {
+                i32 cnt = b;
+                u8* ss = &m_rleData[pos + 1];
+                i32 vis;
+                if (x - cnt > clip->left) {
+                    vis = cnt;
+                } else {
+                    i32 v = x - clip->left;
+                    vis = v < 0 ? 0 : v;
+                }
+                u8* dd = base + (x - clip->left) * m_dstBpp;
+                if (m_doubleScanlines) {
+                    if ((dst->top + row) % 2) {
+
+                        i32 i;
+                        u8* d = dd;
+                        u8* s = ss;
+                        switch (m_drawType) {
+                            case 2: {
+                                u8* pbase = m_palDescr->m_data;
+                                memcpy(g_scratch, d - vis + 1, vis);
+                                u8* sc = &g_scratch[vis - 1];
+                                for (i = vis; i > 0; i--) {
+                                    d[0] = pbase[(*sc << 8) + *s];
+                                    d[pitch] = pbase[(*sc << 8) + *s];
+                                    d--;
+                                    sc--;
+                                    s++;
+                                }
+                                break;
+                            }
+                            case 3: {
+                                u8* pbase = m_palDescr->m_data;
+                                memcpy(g_scratch, d - vis + 1, vis);
+                                u8* sc = &g_scratch[vis - 1];
+                                for (i = vis; i > 0; i--) {
+                                    d[0] = pbase[(*sc << 8) + m_light];
+                                    d[pitch] = pbase[(*sc << 8) + *s];
+                                    d--;
+                                    sc--;
+                                }
+                                break;
+                            }
+                            case 7: {
+                                u16* pal1 = m_palDescr->Lut16();
+                                u16* pal2 = g_blendDescr->Lut16();
+                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
+                                u16* sc = (Scratch16() + vis - 1);
+                                i32 rd = pitch & ~1;
+                                for (i = vis; i > 0; i--) {
+                                    u32 idx = pal2[*sc--];
+                                    idx += (*s++ >> 4) << 12;
+                                    u16 v = pal1[idx];
+                                    Store16(d, static_cast<u16>(v));
+                                    Store16(d + rd, static_cast<u16>(v));
+                                    d -= 2;
+                                }
+                                break;
+                            }
+                            case 8: {
+                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
+                                u16* sc = (Scratch16() + vis - 1);
+                                u16* ss2 = Pix16(s);
+                                i32 rd = pitch & ~1;
+                                if (m_blendVariant) {
+                                    for (i = vis; i > 0; i--) {
+                                        u32 a = *ss2++;
+                                        u32 dv = *sc--;
+                                        u32 r =
+                                            (m_lutBank0)[(a >> 0xa) + (((dv >> 0xa) & 0x1f) << 5)];
+                                        r |= (m_lutBank1)
+                                            [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
+                                        r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                        d -= 2;
+                                    }
+                                } else {
+                                    for (i = vis; i > 0; i--) {
+                                        u32 a = *ss2++;
+                                        u32 dv = *sc--;
+                                        u32 r =
+                                            (m_lutBank0)[(a >> 0xb) + (((dv >> 0xb) & 0x1f) << 5)];
+                                        r |= (m_lutBank1)
+                                            [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
+                                        r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                        d -= 2;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    ConvertRowFlip(dd, ss, vis);
+                }
+                x -= cnt;
+                pos += cnt * m_srcBpp + 1;
+            }
+            if (x <= 0) {
+                row++;
+                base += rowInc;
+                x = m_width;
+            }
+        }
+    } else {
+
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
+                break;
+            }
+            if (x > clip->right) {
+                i32 trans = 0;
+                do {
+                    u8 b = m_rleData[pos];
+                    if (b & 0x80) {
+                        x += 0x80 - static_cast<i32>(b);
+                        pos++;
+                        trans = 1;
+                    } else {
+                        x -= b;
+                        pos += static_cast<i32>(b) * m_srcBpp + 1;
+                        trans = 0;
+                    }
+                } while (x > clip->right);
+                if (x >= 0 && trans == 0) {
+                    i32 vis = clip->right - x;
+                    u8* ss = &m_rleData[pos] - vis * m_srcBpp;
+                    u8* dd = base + clip->right * m_dstBpp;
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+                            ConvertRowDouble(dd, ss, vis, pitch);
+                        }
+                    } else {
+                        ConvertRowFlip(dd, ss, vis);
+                    }
+                }
+            }
+            if (x <= 0) {
+                row++;
+                base += rowInc;
+                x = m_width;
+            } else {
+                u8 b = m_rleData[pos];
+                if (b & 0x80) {
+                    x += 0x80 - static_cast<i32>(b);
+                    pos++;
+                } else {
+                    u8* dd = base + x * m_dstBpp;
+                    u8* ss = &m_rleData[pos + 1];
+                    i32 cnt = b;
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+                            ConvertRowDouble(dd, ss, cnt, pitch);
+                        }
+                    } else {
+                        ConvertRowFlip(dd, ss, cnt);
+                    }
+                    x -= cnt;
+                    pos += cnt * m_srcBpp + 1;
+                }
             }
         }
     }

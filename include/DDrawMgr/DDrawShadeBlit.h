@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_CDDRAWSHADEBLIT_H
 #define GRUNTZ_CDDRAWSHADEBLIT_H
 
-#include <Ints.h>
-#include <DDrawMgr/ShadeTableCache.h>
 #include <rva.h>
+
+#include <DDrawMgr/ShadeTableCache.h>
+#include <Ints.h>
 
 class CString;
 class CDDSurface;
@@ -63,7 +64,7 @@ public:
     i32 m_width;
     i32 m_height;
     u8* m_rleData;
-    i32 m_rleLen;
+    u32 m_rleLen;
     i32 m_drawType;
     i32 m_light;
     CShadeTable* m_palDescr;
