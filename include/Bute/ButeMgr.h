@@ -187,7 +187,7 @@ public:
     char m_writeMode;
 
     char m_encrypted;
-    CButeTail m_reserved10f;
+    CButeTail m_crypt; // Blowfish stream codec (Decode/Encode are its members)
 
     ButeIntRect* GetRect(const char* tag, const char* key);
     ButeIntPoint* GetPoint(const char* tag, const char* key);

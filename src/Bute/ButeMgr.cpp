@@ -1750,40 +1750,35 @@ bool CButeMgr::Save() {
     // the parse buffer is allocated inline in the ctor args (arg-order-proven).
     // clang rejects the non-const ref binding, so the label pass gets an
     // equivalent two-line spelling.
-#ifdef __clang__
-    strstream sourceStorage(new char[length], length, ios::in | ios::out);
-    iostream& source = sourceStorage;
-#else
-    iostream& source =
-        static_cast<iostream&>(strstream(new char[length], length, ios::in | ios::out));
-#endif
+    strstream sourceStore(new char[length], length, ios::in | ios::out);
+    iostream* source = &sourceStore;
     if (m_encrypted) {
-        m_reserved10f.Decode(&input, &source);
+        m_crypt.Decode(&input, source);
         outputBuffer = new strstreambuf(length);
         m_pText = new iostream(outputBuffer);
     } else {
         char block[0x1000];
         while (!input.eof()) {
             input.read(block, sizeof(block));
-            source.write(block, input.gcount());
+            source->write(block, input.gcount());
         }
         input.close();
         m_pText = new fstream(m_str108, ios::in | ios::out | ios::binary);
     }
     m_pText->precision(100);
 
-    source.clear();
-    m_stream = &source;
+    source->clear();
+    m_stream = source;
     ParseGroup();
     m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
     m_pText->clear();
 
     if (m_encrypted) {
         ofstream output(m_str108, ios::binary);
-        m_reserved10f.Encode(m_pText, &output);
+        m_crypt.Encode(m_pText, &output);
     }
 
-    delete[] static_cast<strstreambuf*>(source.rdbuf())->str();
+    delete[] static_cast<strstreambuf*>(source->rdbuf())->str();
     if (m_encrypted) {
         delete outputBuffer;
     }
