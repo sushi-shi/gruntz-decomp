@@ -50,6 +50,28 @@ authored and semantically reviewed before the run. Put the **full candidate fami
 site in one file; never ladder it across runs**, or you lose the interaction effects
 that are the whole point.
 
+**Exact axes-file schema** (get this wrong and the run dies on validation):
+
+```json
+{ "schema": 1, "source": "src/Bute/ButeMgr.cpp", "rva": "0x171640",
+  "axes": [ { "name": "outbuf_pos",
+              "find": "<byte-exact span, must occur EXACTLY ONCE in the file>",
+              "options": [ {"name": "keep"},                       // no "replace" = identity
+                           {"name": "after_init", "replace": "..."} ] } ] }
+```
+
+Traps, all hit in one session: options are **objects** (`{"name","replace"}`), not bare
+strings; `source`/`rva` must match the generated manifest or `--axes-from` refuses it;
+`--max-depth 0` writes `"candidates": []` and the batch runner then rejects the file —
+**delete the empty `candidates` key** before running; and `--axes-from` needs a separate
+`batch_source_variants` invocation (passing `--run` with `--limit/--top` errors out):
+
+    python -m gruntz.permute.match_variants <src> <rva> --max-depth 0 --axes-from a.json -o m.json
+    python - <<'EOF'  # strip empty candidates
+    import json; p='m.json'; d=json.load(open(p)); d.pop('candidates',None); json.dump(d,open(p,'w'))
+    EOF
+    python -m gruntz.permute.batch_source_variants m.json --limit <product> --top 8
+
 **`--max-depth` defaults to 0: generate NO AST trees.** Two reasons, both measured:
 at `/O2` a generated tree is rarely the answer (the wins come from spellings derived
 from the *disassembly*), and the axes product is already exponential — a generated tree
@@ -108,6 +130,25 @@ search (homm2/RECOVERY.md "THE METHOD"); its mechanics apply here verbatim.
 4. If the best ceiling stalls across all transformations, **the ceiling's diff EXPOSES
    the structural error** — a wrong type/layout/control shape in OUR reconstruction.
    Fix THAT and re-run. (This is the mislabeled-correctness-bug rule in search form.)
+   **This is the normal outcome, not the exception** — measured on `CButeMgr::Save`
+   (2026-08-02): a 192-cell hand matrix, a 180-cell rename forest and the generated
+   AST tree moved the score by **1 point total**, while the divergences those flat
+   runs pointed at carried it 46 → 87. The matrix's real product is a *ranked list of
+   places the source is wrong*; read the survivors' diff, do not admire the score.
+   Specific reads that paid there, all reusable:
+   - **an inlined CRT idiom you mistook for a call you already have** — an
+     `ios::clear()` shows up as a lock-enter / `state=0` / lock-leave triple, NOT as a
+     call; `seekg(0)` was our wrong guess for it (+8.4).
+   - **`neg`/`sbb`/`and` on an address = cl5's null-checked base-offset upcast**
+     (`p ? p+delta : 0`). It only appears when the argument is a POINTER expression, so
+     it tells you a local is `T*`, not `T&` — a 4-byte frame slot you were missing.
+   - **`mov ecx, <lvalue>` before a "free function" call = it is a `__thiscall`
+     member.** Check EVERY retail call site (`sema xref` the callee): three independent
+     sites agreeing turns a guess into proof, and the delinker's own offset-derived
+     member name in the target obj (`g_x.m_10f`) corroborates for free.
+   - **a uniform N-byte shift across every frame offset** is one missing local, not
+     entropy — but probing for it with unused decls fails (cl elides them); find the
+     *use* that forces the slot.
 5. **Hash-scoped completion**: never re-search byte-identical source — only a new
    transformation (new hash) buys new information. Log per-function results; dedupe
    the worklist against functions whose current hash was already searched.
