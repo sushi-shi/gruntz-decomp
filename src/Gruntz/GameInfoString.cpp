@@ -28,15 +28,15 @@ i32 BuildGameDate(CGameInfoTime* out) {
         return 0;
     }
     CTime now = CTime::GetCurrentTime();
-    out->m_c = now.GetLocalTm(0)->tm_mon + 1;
-    out->m_10 = now.GetLocalTm(0)->tm_mday;
-    out->m_14 = now.GetLocalTm(0)->tm_year + 1900;
+    out->m_month = now.GetLocalTm(0)->tm_mon + 1;
+    out->m_day = now.GetLocalTm(0)->tm_mday;
+    out->m_year = now.GetLocalTm(0)->tm_year + 1900;
     return 1;
 }
 
 RVA(0x001183b0, 0x211)
 i32 CGameInfo::FormatGameInfoString() {
-    char* name = m_14;
+    char* name = m_name;
     if (name == 0) {
         return 0;
     }
@@ -48,10 +48,17 @@ i32 CGameInfo::FormatGameInfoString() {
     }
 
     g_infoMaster[0] = 0;
-    sprintf(g_infoScratch, "Name=%s&Type=%i&Location=%s&Version=%lu", name, m_d4, m_36, m_version);
+    sprintf(
+        g_infoScratch,
+        "Name=%s&Type=%i&Location=%s&Version=%lu",
+        name,
+        m_type,
+        m_location,
+        m_version
+    );
     strcat(g_infoMaster, g_infoScratch);
 
-    CGameInfoTime* t = &m_b8;
+    CGameInfoTime* t = &m_time;
     if (t == 0) {
         return 0;
     }
@@ -64,10 +71,10 @@ i32 CGameInfo::FormatGameInfoString() {
     sprintf(g_infoScratch, "&S=%lu&H=%i&M=%02i&SE=%02i", t->m_4, a, b, c);
     strcat(g_infoMaster, g_infoScratch);
 
-    sprintf(g_infoScratch, "&Month=%i&Day=%i&Year=%i", t->m_c, t->m_10, t->m_14);
+    sprintf(g_infoScratch, "&Month=%i&Day=%i&Year=%i", t->m_month, t->m_day, t->m_year);
     strcat(g_infoMaster, g_infoScratch);
 
-    i32 chk = (69 * (b * a) + 1) * c + b + a + t->m_c + t->m_14 + t->m_10 + t->m_4;
+    i32 chk = (69 * (b * a) + 1) * c + b + a + t->m_month + t->m_year + t->m_day + t->m_4;
     sprintf(g_infoScratch, "&Checksum=%lu", chk);
     strcat(g_infoMaster, g_infoScratch);
 

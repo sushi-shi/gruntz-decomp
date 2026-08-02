@@ -99,9 +99,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     img->m_width,
                     img->m_height,
                     img->m_pixels,
-                    // API-forced BITMAPINFO header/palette view.
-
-                    reinterpret_cast<BITMAPINFO*>(&img->m_bih),
+                    &img->m_bmi,
                     DIB_PAL_COLORS,
                     SRCCOPY
                 );
@@ -117,9 +115,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     img->m_width,
                     img->m_height,
                     img->m_pixels,
-                    // API-forced BITMAPINFO header/palette view.
-
-                    reinterpret_cast<BITMAPINFO*>(&img->m_bih),
+                    &img->m_bmi,
                     DIB_RGB_COLORS,
                     SRCCOPY
                 );

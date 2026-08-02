@@ -665,10 +665,9 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
 
-        // Byte-evidenced raw-field comparison at this representation seam.
         if (val != 0
-            && *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(val))->m_items)
-                   == *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(target))->m_items)) {
+            && static_cast<AnimWorkerObj*>(val)->m_notify
+                   == static_cast<AnimWorkerObj*>(target)->m_notify) {
             return key;
         }
     }

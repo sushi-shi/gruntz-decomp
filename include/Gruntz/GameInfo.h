@@ -9,9 +9,9 @@ struct CGameInfoTime {
     u32 m_4;
     u32 m_timeMs;
 
-    i32 m_c;
-    i32 m_10;
-    i32 m_14;
+    i32 m_month;
+    i32 m_day;
+    i32 m_year;
     i32 m_18;
 };
 SIZE_UNKNOWN();
@@ -29,10 +29,10 @@ public:
     i32 m_04;
     u32 m_version;
     char m_pad0c[0x14 - 0xc];
-    char m_14[0x36 - 0x14];
-    char m_36[0xb8 - 0x36];
-    CGameInfoTime m_b8;
-    u32 m_d4;
+    char m_name[0x36 - 0x14];
+    char m_location[0xb8 - 0x36];
+    CGameInfoTime m_time;
+    u32 m_type;
 };
 SIZE_UNKNOWN();
 

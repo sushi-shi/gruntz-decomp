@@ -342,10 +342,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it);
 
             it = new CSBI_ImageSet;
-            r.left = m_itemRectL + bx;
-            r.top = m_itemRectT + by;
-            r.right = m_itemRectR + bx;
-            r.bottom = m_itemRectB + by;
+            r.left = m_itemRect.left + bx;
+            r.top = m_itemRect.top + by;
+            r.right = m_itemRect.right + bx;
+            r.bottom = m_itemRect.bottom + by;
             if (!it->SetupImage(
                     this,
                     code,
@@ -516,10 +516,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_tabLists[3].AddTail(ani);
 
             it = new CSBI_ImageSet;
-            r.left = m_fallRectL + bx;
-            r.top = m_fallRectT + by;
-            r.right = m_fallRectR + bx;
-            r.bottom = m_fallRectB + by;
+            r.left = m_fallRect.left + bx;
+            r.top = m_fallRect.top + by;
+            r.right = m_fallRect.right + bx;
+            r.bottom = m_fallRect.bottom + by;
             if (!it->SetupImage(
                     this,
                     code,

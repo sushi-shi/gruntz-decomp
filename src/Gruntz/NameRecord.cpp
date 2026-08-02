@@ -24,9 +24,9 @@ i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
         }
     }
     memset(&m_04, 0, 212);
-    strcpy(m_14, name);
+    strcpy(m_name, name);
     if (name2 != 0) {
-        strcpy(m_36, name2);
+        strcpy(m_location, name2);
     }
     m_version = 1;
     return 1;
@@ -55,7 +55,7 @@ i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
     if (timestamp == 0) {
         return 0;
     }
-    CGameInfoTime* b = &m_b8;
+    CGameInfoTime* b = &m_time;
     if (b == 0) {
         return 0;
     }
@@ -68,7 +68,7 @@ i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
     b->m_4 = s;
     b->m_timeMs = timestamp;
     BuildGameDate(b);
-    m_d4 = type;
+    m_type = type;
     return 1;
 }
 
@@ -79,7 +79,7 @@ i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
     if (src == 0) {
         return 0;
     }
-    CGameInfoTime* dst = &m_b8;
+    CGameInfoTime* dst = &m_time;
     if (dst == 0) {
         return 0;
     }
@@ -90,6 +90,6 @@ i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
         return 0;
     }
     *dst = *src;
-    m_d4 = type;
+    m_type = type;
     return 1;
 }

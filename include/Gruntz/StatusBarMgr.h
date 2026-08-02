@@ -20,15 +20,20 @@ class DirectSoundMgr;
 struct CSbiSlot {
 
     CSbiSlot() {
-        m_8 = 0;
+        m_startTimeLo = 0;
         m_10 = 0;
-        m_c = 0;
+        m_startTimeHi = 0;
         m_14 = 0;
     }
     i32 m_state;
     i32 m_value;
-    i32 m_8;
-    i32 m_c;
+    union {
+        i64 m_startTime;
+        struct {
+            i32 m_startTimeLo;
+            i32 m_startTimeHi;
+        };
+    };
     i32 m_10;
     i32 m_14;
 };
@@ -282,14 +287,8 @@ public:
     i64 m_fallLast;
     i64 m_fallDelay;
     CSBI_ImageSet* m_extraNotify1;
-    i32 m_fallRectL;
-    i32 m_fallRectT;
-    i32 m_fallRectR;
-    i32 m_fallRectB;
-    i32 m_itemRectL;
-    i32 m_itemRectT;
-    i32 m_itemRectR;
-    i32 m_itemRectB;
+    RECT m_fallRect;
+    RECT m_itemRect;
     i32 m_itemBaseX;
     i32 m_rezActive;
     i32 m_rezTick;

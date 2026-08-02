@@ -394,10 +394,10 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     i32 n = 5;
     do {
         if (op == 4) {
-            s->Write(&p->m_8, 8);
+            s->Write(&p->m_startTime, 8);
             s->Write(&p->m_10, 8);
         } else if (op == 7) {
-            s->Read(&p->m_8, 8);
+            s->Read(&p->m_startTime, 8);
             s->Read(&p->m_10, 8);
         }
         p++;
@@ -585,8 +585,8 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_rezTick, 4);
     s->Write(&m_rezActive, 4);
     s->Write(&m_544, 4);
-    s->Write(&m_fallRectL, 0x10);
-    s->Write(&m_itemRectL, 0x10);
+    s->Write(&m_fallRect, 0x10);
+    s->Write(&m_itemRect, 0x10);
     s->Write(&m_hlBusy, 4);
     s->Write(&m_toggleActive, 4);
     s->Write(&m_toggleHandle, 4);
@@ -693,8 +693,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_rezTick, 4);
     s->Read(&m_rezActive, 4);
     s->Read(&m_544, 4);
-    s->Read(&m_fallRectL, 0x10);
-    s->Read(&m_itemRectL, 0x10);
+    s->Read(&m_fallRect, 0x10);
+    s->Read(&m_itemRect, 0x10);
     s->Read(&m_hlBusy, 4);
     s->Read(&m_toggleActive, 4);
     s->Read(&m_toggleHandle, 4);
@@ -1157,8 +1157,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     i32 n = 5;
     do {
         if (tab->m_state == 1) {
-            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - *reinterpret_cast<i64*>(&tab->m_8);
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - tab->m_startTime;
 
             i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
@@ -1208,10 +1207,10 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         u32 delay = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
         i32 speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 4);
 
-        if (m_fallRectT >= 0x1c7) {
+        if (m_fallRect.top >= 0x1c7) {
             m_fallActive = 0;
             m_extraNotifyArg1 = 0;
-        } else if (m_fallRectB >= 0x1bf) {
+        } else if (m_fallRect.bottom >= 0x1bf) {
             if (m_fallActive != 2) {
                 if (m_activeTab == 3 && m_position != 2) {
                     CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
@@ -1238,17 +1237,17 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
         i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_fallLast;
         if (d >= m_fallDelay) {
-            i32 newLo = m_fallRectT + speed;
-            m_fallRectT = newLo;
-            i32 newHi = m_fallRectB + speed;
-            m_fallRectB = newHi;
+            i32 newLo = m_fallRect.top + speed;
+            m_fallRect.top = newLo;
+            i32 newHi = m_fallRect.bottom + speed;
+            m_fallRect.bottom = newHi;
             CSBI_ImageSet* w = m_extraNotify1;
             if (w) {
                 i32 sx = m_rect10.left;
                 i32 sy = m_rect10.top;
-                w->m_rect14.left = m_fallRectL + sx;
+                w->m_rect14.left = m_fallRect.left + sx;
                 w->m_rect14.top = sy + newLo;
-                w->m_rect14.right = m_fallRectR + sx;
+                w->m_rect14.right = m_fallRect.right + sx;
                 w->m_rect14.bottom = sy + newHi;
             }
             m_fallDelay = static_cast<u32>(static_cast<i32>(delay));
@@ -1456,8 +1455,8 @@ void CStatusBarMgr::InitTabRects() {
     m_extraNotifyArg0 = 0;
     m_fallActive = 0;
     m_extraNotifyArg1 = 0;
-    SetRect(reinterpret_cast<LPRECT>(&m_fallRectL), 0, 0, 1, 1);
-    SetRect(reinterpret_cast<LPRECT>(&m_itemRectL), 0x49, 0xd7, 0x61, 0xef);
+    SetRect(&m_fallRect, 0, 0, 1, 1);
+    SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
     m_pendingHlRow = -1;
 }
 
@@ -2169,10 +2168,9 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
     if (i < n) {
-        // API-forced CPtrArray element boundary.
-        Coord** t = reinterpret_cast<Coord**>(m_ptrPool.GetData());
+        void** t = m_ptrPool.GetData();
         while (i < n) {
-            Coord* e = *t;
+            Coord* e = static_cast<Coord*>(*t);
             if (e != 0 && b < e->m_y) {
                 goto insert;
             }
@@ -2511,14 +2509,14 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     }
     m_extraNotifyArg1 = result;
     m_machinePhase = 1;
-    SetRect(reinterpret_cast<LPRECT>(&m_itemRectL), 0x49, 0xd7, 0x61, 0xef);
+    SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
         i32 x = m_rect10.left;
         i32 y = m_rect10.top;
-        m_extraNotify0->m_rect14.left = m_itemRectL + x;
-        m_extraNotify0->m_rect14.top = m_itemRectT + y;
-        m_extraNotify0->m_rect14.right = m_itemRectR + x;
-        m_extraNotify0->m_rect14.bottom = m_itemRectB + y;
+        m_extraNotify0->m_rect14.left = m_itemRect.left + x;
+        m_extraNotify0->m_rect14.top = m_itemRect.top + y;
+        m_extraNotify0->m_rect14.right = m_itemRect.right + x;
+        m_extraNotify0->m_rect14.bottom = m_itemRect.bottom + y;
     }
     NotifyAllSlots();
     i32 c = m_rezTick;
@@ -3050,8 +3048,8 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* s = &m_slots[idx];
     s->m_10 = 0x7fffffff;
     s->m_14 = 0;
-    s->m_8 = g_frameTime;
-    s->m_c = 0;
+    s->m_startTimeLo = g_frameTime;
+    s->m_startTimeHi = 0;
     if (m_activeTab == 2 && m_position != 2) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
@@ -3098,8 +3096,8 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                         ph->m_last = static_cast<u32>(g_frameTime);
                         UpdateFallingItemStatusBar(
                             m_extraNotifyArg0,
-                            m_itemRectL + 0xc,
-                            m_itemRectT + 0xc
+                            m_itemRect.left + 0xc,
+                            m_itemRect.top + 0xc
                         );
                     }
                 }
@@ -3397,14 +3395,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     switch (m_machinePhase) {
         case 2:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
-                m_itemRectL += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_itemRectR += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRect.left += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRect.right += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
-            if (m_itemRectL >= 0x6d) {
-                m_itemRectL = 0x6d;
-                m_itemRectR = 0x84;
+            if (m_itemRect.left >= 0x6d) {
+                m_itemRect.left = 0x6d;
+                m_itemRect.right = 0x84;
                 m_machinePhase = 3;
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemInMachineTime", 0x7d0);
                 m_beltLast = static_cast<u32>(g_frameTime);
@@ -3448,14 +3446,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case 5:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
-                m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
-                m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
-            if (m_itemRectB >= 0x11c) {
-                m_itemRectB = 0x11c;
-                m_itemRectT = 0x104;
+            if (m_itemRect.bottom >= 0x11c) {
+                m_itemRect.bottom = 0x11c;
+                m_itemRect.top = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == 3 && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
@@ -3488,14 +3486,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case 7:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
-                m_itemRectL -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_itemRectR -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRect.left -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRect.right -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
-            if (m_itemRectL <= m_itemBaseX) {
-                m_itemRectL = m_itemBaseX;
-                m_itemRectR = m_itemBaseX + 0x17;
+            if (m_itemRect.left <= m_itemBaseX) {
+                m_itemRect.left = m_itemBaseX;
+                m_itemRect.right = m_itemBaseX + 0x17;
                 rectFlag = 1;
                 SetHudRectA(
                     0x1e,
@@ -3508,8 +3506,8 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case 8: {
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
-                m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
-                m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
+                m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
@@ -3526,7 +3524,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     break;
                 }
             }
-            if (m_itemRectT >= row * 0x20 + 0x13e) {
+            if (m_itemRect.top >= row * 0x20 + 0x13e) {
                 if (m_activeTab == 3 && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
@@ -3552,10 +3550,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 
     if (m_extraNotify0) {
         if (rectFlag) {
-            m_extraNotify0->m_rect14.left = m_itemRectL + m_rect10.left;
-            m_extraNotify0->m_rect14.top = m_itemRectT + m_rect10.top;
-            m_extraNotify0->m_rect14.right = m_itemRectR + m_rect10.left;
-            m_extraNotify0->m_rect14.bottom = m_itemRectB + m_rect10.top;
+            m_extraNotify0->m_rect14.left = m_itemRect.left + m_rect10.left;
+            m_extraNotify0->m_rect14.top = m_itemRect.top + m_rect10.top;
+            m_extraNotify0->m_rect14.right = m_itemRect.right + m_rect10.left;
+            m_extraNotify0->m_rect14.bottom = m_itemRect.bottom + m_rect10.top;
         }
         if (refreshFlag) {
             NotifyAllSlots();
@@ -3575,10 +3573,10 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     i32 t = a3 - 0xc;
     i32 rr = a2 + 0xc;
     i32 b = a3 + 0xc;
-    m_fallRectL = l;
-    m_fallRectT = t;
-    m_fallRectR = rr;
-    m_fallRectB = b;
+    m_fallRect.left = l;
+    m_fallRect.top = t;
+    m_fallRect.right = rr;
+    m_fallRect.bottom = b;
     if (n) {
 
         RECT rc;
