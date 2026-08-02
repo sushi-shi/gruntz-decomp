@@ -88,10 +88,12 @@ def init_prefix(prefix, force=False):
 
 def configure_registry(msvc, dx):
     """Set PATH/INCLUDE/LIB in the Wine registry so `wine cl` finds tools/headers/libs.
-    INCLUDE/LIB list the VC5 dirs first (CRT + Win32 + MFC, all bundled), then DX6."""
+    DX6 comes FIRST: VC5 ships DirectX 3-era DDRAW.H/DPLAY.H/D3D*.H, and the retail
+    devs installed the DX6 SDK over VC5, whose setup prepends its Include/Lib. With
+    VC5 first, msvc/include/DPLAY.H (no IDirectPlay4) shadows the real dx/Include one."""
     vc_bin = winepath_w(msvc / "bin")
-    include = ";".join([winepath_w(msvc / "include"), winepath_w(dx / "Include")])
-    lib = ";".join([winepath_w(msvc / "lib"), winepath_w(dx / "Lib")])
+    include = ";".join([winepath_w(dx / "Include"), winepath_w(msvc / "include")])
+    lib = ";".join([winepath_w(dx / "Lib"), winepath_w(msvc / "lib")])
 
     reg = (r"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control"
            r"\Session Manager\Environment")

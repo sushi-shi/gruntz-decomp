@@ -123,9 +123,9 @@ def main() -> None:
     # path so `#include <Module/Foo.h>` resolves (winepath so cl sees it). Vendored
     # third-party SDK headers live under vendor/<sdk>/ (e.g. vendor/miles-6.0c/mss.h,
     # vendor/smacker-3.2f/smack.h) so `#include <Mss32.h>` resolves like the original
-    # toolchain's SDK dirs; the DirectX 6 SDK headers sit one level deeper under
-    # vendor/directx6/Include (the version the retail game was built against, pinned
-    # ahead of the toolchain's own dx/Include).
+    # toolchain's SDK dirs. DirectX is NOT vendored: the toolchain tarball ships the
+    # real DX6 SDK at $DXSDK_DIR, and gruntz.init.toolchain puts its Include ahead of
+    # msvc/include in the Wine INCLUDE (VC5's own DX headers are DirectX 3-era).
     repo = next((p for p in src.parents if (p / "flake.nix").exists()), None)
     inc_dirs = []
     if repo:
@@ -133,9 +133,6 @@ def main() -> None:
             inc_dirs.append(repo / "include")
         if (repo / "vendor").is_dir():
             inc_dirs += sorted(d for d in (repo / "vendor").iterdir() if d.is_dir())
-        dx = repo / "vendor" / "directx6" / "Include"
-        if dx.is_dir():
-            inc_dirs.append(dx)
     inc_flags = [f"/I{winepath_w(d)}" for d in inc_dirs]
     cmd = ["wine", str(cl), *inc_flags, *flags, f"/Fo{out_w}", src_w]
 

@@ -18,9 +18,12 @@ INC = str(REPO / "include")   # repo-local headers (mirror src/) live here; on t
 # like the original toolchain's SDK include dirs.
 VENDOR_INCS = sorted(str(d) for d in (REPO / "vendor").iterdir() if d.is_dir()) \
     if (REPO / "vendor").is_dir() else []
-# DirectX 6 headers sit one level deeper (vendor/directx6/Include), like cc_wrap.
-if (REPO / "vendor" / "directx6" / "Include").is_dir():
-    VENDOR_INCS.append(str(REPO / "vendor" / "directx6" / "Include"))
+# DirectX is NOT vendored: the toolchain tarball ships the real DX6 SDK. Put its
+# Include on the USER path so it wins over the toolchain's own DirectX 3-era
+# DDRAW.H/DPLAY.H/D3D*.H (which arrive as /imsvc system dirs from the compdb).
+_dxsdk = os.environ.get("DXSDK_DIR")
+if _dxsdk and (Path(_dxsdk) / "Include").is_dir():
+    VENDOR_INCS.append(str(Path(_dxsdk) / "Include"))
 INC_CL = [f"/I{p}" for p in (INC, *VENDOR_INCS)]   # clang-cl driver (/I)
 INC_GCC = [f"-I{p}" for p in (INC, *VENDOR_INCS)]  # plain clang driver (-I)
 

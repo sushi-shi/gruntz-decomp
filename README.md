@@ -18,7 +18,7 @@ _Started units alone: 3,261/4,275 fns exact, 83.96% fuzzy over 1,099,303 of 1,08
 | `Gruntz`      |   243 | 1,857 / 2,543 (73.0%) | 82.8% |     82.8% |
 | `DDrawMgr`    |    23 |     454 / 571 (79.5%) | 79.5% |     79.5% |
 | `Wwd`         |     8 |     153 / 213 (71.8%) | 91.0% |     91.0% |
-| `Bute`        |     9 |     134 / 175 (76.6%) | 83.7% |     83.7% |
+| `Bute`        |     9 |     134 / 175 (76.6%) | 84.1% |     84.1% |
 | `Dsndmgr`     |     5 |     142 / 152 (93.4%) | 97.9% |     97.9% |
 | `Net`         |    13 |     121 / 135 (89.6%) | 97.4% |     97.4% |
 | `Image`       |    13 |      81 / 129 (62.8%) | 84.1% |     84.1% |
@@ -64,7 +64,7 @@ include/                      shared headers (mirror retail `incs\`): rva.h (RVA
                               annotations), Ints.h (i32/u32 aliases), Mfc.h + Win32.h umbrellas,
                               and per-TU headers under module subdirs (each TU exports its own
                               globals — the catch-all Globals.h/.cpp are retired)
-vendor/                       third-party source (directx6, miles-6.0c, sfman-1.01, smacker-3.2f,
+vendor/                       third-party source (miles-6.0c, sfman-1.01, smacker-3.2f,
                               zlib-1.0.4) — kept verbatim, never formatted
 config/                       units.toml (per-TU build manifest), library_labels.csv (FID carve-out),
                               the cleanliness/match baselines

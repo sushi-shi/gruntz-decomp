@@ -1739,19 +1739,21 @@ bool CButeMgr::Save() {
     ifstream input(m_str108, ios::nocreate | ios::binary);
     input.seekg(0, ios::end);
     i32 length = input.tellg();
+    input.clear();
     input.seekg(0);
 
-    char* sourceData = new char[length];
     // Retail shape (byte-proven): the strstream temp is bound through an iostream&
     // cast, so cl5 registers/destroys it as a plain iostream (??_Diostream funclet,
-    // ??1iostream+??1ios teardown; ??_Dstrstream exists nowhere in GRUNTZ.EXE).
+    // ??1iostream+??1ios teardown; ??_Dstrstream exists nowhere in GRUNTZ.EXE), and
+    // the parse buffer is allocated inline in the ctor args (arg-order-proven).
     // clang rejects the non-const ref binding, so the label pass gets an
     // equivalent two-line spelling.
 #ifdef __clang__
-    strstream sourceStorage(sourceData, length, ios::in | ios::out);
+    strstream sourceStorage(new char[length], length, ios::in | ios::out);
     iostream& source = sourceStorage;
 #else
-    iostream& source = static_cast<iostream&>(strstream(sourceData, length, ios::in | ios::out));
+    iostream& source =
+        static_cast<iostream&>(strstream(new char[length], length, ios::in | ios::out));
 #endif
     if (m_encrypted) {
         BitStreamBlowfishDecode(&input, &source);
@@ -1782,10 +1784,9 @@ bool CButeMgr::Save() {
     if (m_encrypted) {
         ofstream output(m_str108, ios::binary);
         BitStreamBlowfishEncode(m_pText, &output);
-        output.close();
     }
 
-    delete[] sourceData;
+    delete[] static_cast<strstreambuf*>(source.rdbuf())->str();
     if (m_encrypted) {
         delete outputBuffer;
     }

@@ -17,7 +17,7 @@ Output:
                      msdis100.dll (the last two from SHAREDIDE/BIN, not VC/bin)
     msvc/include/  - C/C++ + MFC 4.2 headers
     msvc/lib/      - LIBCMT.LIB, NAFXCW.LIB, MFC42 static libs, import libs
-    dx/{Include,Lib} - DirectX 6 SDK (OPTIONAL - placeholder until DX6 located)
+    dx/{Include,Lib} - DirectX 6.0 SDK (archive.org `directx6sdk`, RAR SFX)
     ninja/ninja.exe
 
 VC++ 5.0 is PRE-MSI. The VS97 CDs are InstallShield with compressed CAB
@@ -442,7 +442,7 @@ def verify_sp3(stage_msvc: Path, *, fatal: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Step 3: DirectX 6 SDK (OPTIONAL - placeholder until a DX6 SDK item is located)
+# Step 3: DirectX 6 SDK (fetched by create-toolchain-release.nix; placeholder if unset)
 # ---------------------------------------------------------------------------
 
 def step3_dxsdk(work: Path, stage: Path) -> None:
