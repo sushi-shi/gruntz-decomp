@@ -790,6 +790,7 @@ bool CButeMgr::ScanToken(i32 expectType) {
     return true;
 }
 
+DATA_SYMBOL(0x001f03e0, 0x4, ?openprot@filebuf@@2HB)
 RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
 
 RVA(0x00171aa0, 0x50)
@@ -1729,6 +1730,7 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
 RVA(0x00171640, 0x3f2)
 bool CButeMgr::Save() {
     Init();
+    streambuf* outputBuffer = 0;
     if (m_str108.IsEmpty()) {
         return false;
     }
@@ -1756,7 +1758,9 @@ bool CButeMgr::Save() {
         static_cast<iostream&>(strstream(new char[length], length, ios::in | ios::out));
 #endif
     if (m_encrypted) {
-        BitStreamBlowfishDecode(&input, &source);
+        m_reserved10f.Decode(&input, &source);
+        outputBuffer = new strstreambuf(length);
+        m_pText = new iostream(outputBuffer);
     } else {
         char block[0x1000];
         while (!input.eof()) {
@@ -1764,26 +1768,19 @@ bool CButeMgr::Save() {
             source.write(block, input.gcount());
         }
         input.close();
-    }
-
-    streambuf* outputBuffer = 0;
-    if (m_encrypted) {
-        outputBuffer = new strstreambuf(length);
-        m_pText = new iostream(outputBuffer);
-    } else {
         m_pText = new fstream(m_str108, ios::in | ios::out | ios::binary);
     }
     m_pText->precision(100);
 
-    source.seekg(0);
+    source.clear();
     m_stream = &source;
     ParseGroup();
     m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
-    m_pText->seekg(0);
+    m_pText->clear();
 
     if (m_encrypted) {
         ofstream output(m_str108, ios::binary);
-        BitStreamBlowfishEncode(m_pText, &output);
+        m_reserved10f.Encode(m_pText, &output);
     }
 
     delete[] static_cast<strstreambuf*>(source.rdbuf())->str();

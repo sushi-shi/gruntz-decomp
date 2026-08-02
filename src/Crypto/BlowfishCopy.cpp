@@ -1,4 +1,5 @@
 #include <Crypto/BlowfishCopy.h>
+#include <Bute/ButeMgr.h>
 #include <Crypto/Blowfish.h>
 #include <Ints.h>
 #include <rva.h>
@@ -6,7 +7,7 @@
 #include <string.h>
 
 RVA(0x0016f6e0, 0x76)
-void __stdcall BitStreamBlowfishEncode(istream* src, ostream* dst) {
+void CButeTail::Encode(istream* src, ostream* dst) {
     i32 last = 0;
     while (!src->eof()) {
         BlowfishBlock rec;

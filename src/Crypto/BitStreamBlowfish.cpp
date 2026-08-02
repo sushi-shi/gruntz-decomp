@@ -2,10 +2,11 @@
 #include <iostream.h>
 
 #include <Crypto/BitStreamBlowfish.h>
+#include <Bute/ButeMgr.h>
 #include <Crypto/Blowfish.h>
 
 RVA(0x0016f760, 0x82)
-void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {
+void CButeTail::Decode(istream* in, ostream* out) {
 
     BlowfishBlock blk[2];
     bool first = true;

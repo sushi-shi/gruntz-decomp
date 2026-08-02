@@ -126,7 +126,8 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     Blowfish_InitKey(static_cast<const char*>(key));
                     char* decoded = new char[length];
                     ostrstream* outputStream = new ostrstream(decoded, length, 2);
-                    BitStreamBlowfishDecode(inputStream, outputStream);
+                    CButeTail cryptTail;
+                    cryptTail.Decode(inputStream, outputStream);
                     istrstream* parseStream =
                         new istrstream(decoded, outputStream->rdbuf()->out_waiting());
                     delete inputStream;
