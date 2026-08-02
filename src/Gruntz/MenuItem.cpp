@@ -36,10 +36,7 @@ i32 CMenuItem::OnInit() {
 }
 
 RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
-RVA(0x00184690, 0x91)
-inline CMenuItem::~CMenuItem() {
-    Cleanup();
-}
+RVA_COMPGEN(0x00184690, 0x91, ??1CMenuItem@@UAE@XZ)
 RVA(0x00184730, 0x41)
 void CMenuItem::Reset() {
     m_host = 0;

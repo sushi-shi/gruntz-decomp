@@ -328,9 +328,12 @@ i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void*
     return mgr->BroadcastCmd(archive, mode, typeId, payloadWord.m_word) != 0;
 }
 
-// CMovingLogic realization group (retail: the factory constructs bare CMovingLogic;
-// SerialObjectFactory is at 85.9% and its LOGIC_NONE arm is missing, so the
-// ??0CMovingLogic pin dangles until that arm lands.)
+// CMovingLogic/CProjectile realization group. Retail inlines CProjectile::CProjectile()
+// into the LOGIC_PROJECTILE arm at depth 1: its base ??0CMovingLogic call stays
+// out-of-line (the LOGIC_BOOMERANG arm likewise calls ??0CProjectile as its base).
+// Our cl inlines that base ctor fully, so ??0CMovingLogic is emitted nowhere and its
+// pin dangles - an inliner-heuristic residue for the permute campaign, not a shape bug.
+RVA_COMPGEN(0x000126e0, 0x1fc, ??0CProjectile@@QAE@XZ)
 RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
 RVA_COMPGEN(0x00013940, 0x1e1, ??0CMovingLogic@@QAE@XZ)
 RVA_COMPGEN(0x00013bb0, 0x4, ?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ)

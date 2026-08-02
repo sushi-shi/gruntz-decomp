@@ -50,4 +50,8 @@ public:
 };
 SIZE(0x814c);
 
+inline CFecFile::~CFecFile() {
+    Close();
+}
+
 #endif // CRYPTO_FECCRYPT_H

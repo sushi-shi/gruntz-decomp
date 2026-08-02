@@ -38,6 +38,11 @@ inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     }
 }
 
+// Force-emit device, kept ONLY because of the inline-depth wall: retail's one
+// out-of-line ??0CUserLogic caller is SerialObjectFactory's CGrunt arm (depth-3
+// call inside the inlined CGrunt ctor chain), and our cl flattens that chain, so
+// nothing else emits these ctors and their labels above would be lost.
+// Dissolves when docs/patterns/msvc5-variable-ctor-inline-depth.md breaks.
 static CUserLogic* volatile g_forceEmitSink;
 #pragma inline_depth(0)
 void ForceEmitCUserLogicNoArg() {

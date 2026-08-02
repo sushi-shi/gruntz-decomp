@@ -462,6 +462,10 @@ void Cmd_ResetScroll();
 i32 InitializeLevelArea(i32 a);
 void ActiveWait(u32 ms);
 
+inline CPlay::~CPlay() {
+    CPlay::ReleaseResources();
+}
+
 // @early-stop
 // retail copy 0x0008c9d0 (emitted by gruntzmgr; pin there). Init list is
 // byte-proven: scalar zero-stores interleave the member-object ctors.

@@ -87,6 +87,10 @@ public:
 };
 SIZE(0x5c);
 
+inline CMenuItem::~CMenuItem() {
+    Cleanup();
+}
+
 inline CMenuItem::CMenuItem() {
     m_host = 0;
     m_template = 0;

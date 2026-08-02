@@ -17,7 +17,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PROJECTILE;
     }
-    CProjectile();
+    CProjectile() {}
     CProjectile(CGameObject* owner);
     virtual ~CProjectile() OVERRIDE;
 

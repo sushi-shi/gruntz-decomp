@@ -215,8 +215,10 @@ void CStatusBarMgr::BuildGameMenu() {
     m_tabLists[5].AddTail(it);
 }
 
-// ??0CSBI_RectOnly: retail caller is BuildGameMenu (new CSBI_RectOnly missing
-// from its reconstruction, 59% fuzzy); pin dangles until that lands.
+// ??0CSBI_RectOnly: BuildGameMenu's construction set is complete; retail keeps
+// 5 base-ctor calls where our cl flattens the chains (variable per-site inline
+// depth, see docs/patterns/msvc5-variable-ctor-inline-depth.md), so nothing
+// emits this COMDAT and the pin dangles.
 RVA_COMPGEN(0x00101fa0, 0x1b, ??0CSBI_RectOnly@@QAE@XZ)
 RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
 RVA_COMPGEN(0x00102000, 0x7f, ??1CSBI_ImageSet@@UAE@XZ)

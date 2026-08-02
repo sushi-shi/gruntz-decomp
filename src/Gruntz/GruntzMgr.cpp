@@ -171,17 +171,6 @@ i32 PumpIdleFrame() {
     return 1;
 }
 
-inline CPlay::~CPlay() {
-    CPlay::ReleaseResources();
-}
-
-static CState* volatile g_forceEmitCState;
-#pragma inline_depth(0)
-void ForceEmitCStateDtor() {
-    g_forceEmitCState->CState::~CState();
-}
-#pragma inline_depth()
-
 CMulti::CMulti() {
     m_session = 0;
     m_netGate = 0;

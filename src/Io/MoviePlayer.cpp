@@ -8,7 +8,4 @@ CMoviePlayer::~CMoviePlayer() {
     Teardown();
 }
 
-RVA(0x000390a0, 0x5d)
-inline CFecFile::~CFecFile() {
-    Close();
-}
+RVA_COMPGEN(0x000390a0, 0x5d, ??1CFecFile@@QAE@XZ)

@@ -203,4 +203,31 @@ union DinDeviceEnumFn {
 
 extern "C" const GUID IID_IDirectInputDevice2A;
 
+inline CInputDevRoot::CInputDevRoot() {
+    m_device = 0;
+    m_device2 = 0;
+    m_hwnd = 0;
+    m_stateBuffer = 0;
+    m_latchedKeys = -1;
+    m_currentKeys = 0;
+    m_edgeKeys = 0;
+}
+inline CInputDevBase::CInputDevBase() {}
+
+inline CInputDevice::CInputDevice() {
+
+    for (i32 i = 0; i < 0x20; i++) {
+        m_keyTable[i] = 0;
+    }
+    m_modeFlags = 0;
+}
+
+inline CDeviceConfigB::CDeviceConfigB() {
+    m_flags = 0;
+}
+
+inline CDeviceConfigC::CDeviceConfigC() {
+    m_flags = 0;
+}
+
 #endif // DINMGR2_DIRECTINPUTMGR2_H

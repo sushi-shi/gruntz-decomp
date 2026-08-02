@@ -61,9 +61,6 @@ CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
 template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
 
-RVA(0x000126e0, 0x1fc)
-CProjectile::CProjectile() {}
-
 // @interleaver CTimeBomb::~CTimeBomb emitted in the 0x12xxx destructor COMDAT pool.
 RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)

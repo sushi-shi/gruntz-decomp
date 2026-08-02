@@ -39,33 +39,6 @@ VTBL(CDeviceConfigC, 0x001ef658);
 VTBL(CInputDevRoot, 0x001ef670);
 VTBL(CInputDevBase, 0x001ef680);
 
-inline CInputDevRoot::CInputDevRoot() {
-    m_device = 0;
-    m_device2 = 0;
-    m_hwnd = 0;
-    m_stateBuffer = 0;
-    m_latchedKeys = -1;
-    m_currentKeys = 0;
-    m_edgeKeys = 0;
-}
-inline CInputDevBase::CInputDevBase() {}
-
-inline CInputDevice::CInputDevice() {
-
-    for (i32 i = 0; i < 0x20; i++) {
-        m_keyTable[i] = 0;
-    }
-    m_modeFlags = 0;
-}
-
-inline CDeviceConfigB::CDeviceConfigB() {
-    m_flags = 0;
-}
-
-inline CDeviceConfigC::CDeviceConfigC() {
-    m_flags = 0;
-}
-
 RVA(0x00085fc0, 0x57)
 DirectInputMgr2::~DirectInputMgr2() {
     Shutdown();
