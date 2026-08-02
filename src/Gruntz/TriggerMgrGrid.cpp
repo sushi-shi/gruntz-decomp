@@ -233,7 +233,7 @@ i32 CTriggerMgr::PlaceObject(
                 mode
             )
             == 0) {
-            logic->m_38->m_flags |= 0x10000;
+            logic->m_wwdObject->m_flags |= 0x10000;
             return -1;
         }
 
@@ -241,7 +241,7 @@ i32 CTriggerMgr::PlaceObject(
             CWwdGameObjectA* hole =
                 m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
             if (hole == 0) {
-                logic->m_38->m_flags |= 0x10000;
+                logic->m_wwdObject->m_flags |= 0x10000;
                 return -1;
             }
             hole->m_124 = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
@@ -329,7 +329,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
             do {
                 CGrunt* c = *cell;
                 if (c != 0) {
-                    c->m_38->m_flags |= 0x10000;
+                    c->m_wwdObject->m_flags |= 0x10000;
                     *cell = 0;
                     m_cellFlag[g2 + col] = 0;
                 }
@@ -1103,8 +1103,8 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
                 if (cand->m_pending == 0 && cand->m_tileX == argTileX
                     && cand->m_tileY == argTileY) {
                     cell->RunMoveConfig(argTileX, argTileY);
-                    cand->m_value = cand->m_38->m_1a0.m_14;
-                    cand->m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
+                    cand->m_value = cand->m_wwdObject->m_1a0.m_14;
+                    cand->m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                     cand->m_pending = 1;
                     return 1;
                 }

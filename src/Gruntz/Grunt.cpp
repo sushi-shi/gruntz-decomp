@@ -154,7 +154,7 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
         MapLookup(                                                                                 \
-            m_38->OwnerMgr()->m_animRegistry->m_10,                                                \
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                 \
             "GRUNTZ_" + m_animSetName + (sfx),                                                     \
             _out                                                                                   \
         );                                                                                         \
@@ -254,9 +254,9 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
 
     CMovingLogic::AdvanceMotion();
     CGameObject* obj = static_cast<CGameObject*>(owner);
-    m_34 = obj;
-    m_38 = static_cast<CWwdGameObjectA*>(obj);
-    m_3c = obj->m_animWorker;
+    m_gameObject = obj;
+    m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+    m_animWorker = obj->m_animWorker;
     m_struckClockLo = 0;
     m_struckTimerLo = 0;
     m_struckClockHi = 0;
@@ -338,11 +338,11 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     memset(m_poseToy, 0, sizeof(m_poseToy));
     m_pickupGeoSrc = 0;
     m_arrived = 0;
-    m_38->m_collCategory = 0x100000;
-    m_38->m_ec = 0x3d1;
-    m_38->m_flags |= 0x2000100;
-    m_38->m_collMask |= 0x103f;
-    m_38->m_f0 = 1;
+    m_wwdObject->m_collCategory = 0x100000;
+    m_wwdObject->m_ec = 0x3d1;
+    m_wwdObject->m_flags |= 0x2000100;
+    m_wwdObject->m_collMask |= 0x103f;
+    m_wwdObject->m_f0 = 1;
     m_tileOwnerHi = -1;
     m_tileOwnerLo = -1;
     m_neighborCol = -1;
@@ -726,7 +726,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
         return 0;
     }
     RECT r;
-    CopyRect(&r, &tgt->m_38->m_area);
+    CopyRect(&r, &tgt->m_wwdObject->m_area);
     CGameObject* th = tgt->m_object;
     OffsetRect(&r, th->m_screenX, th->m_screenY);
 
@@ -791,10 +791,10 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "E") == 0);
     if (eq) {
 
-        m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseAttackIdle);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->m_1a0.Setup(m_poseAttackIdle);
         {
-            CAniElement* desc = m_38->m_1a0.m_14;
+            CAniElement* desc = m_wwdObject->m_1a0.m_14;
             CAniDesc* elem = desc->m_records.GetSize() > 0
                                  ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
                                  : 0;
@@ -804,7 +804,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
             i32 index = 3 * row + column;
 
             const char* nm = m_cells[index].AttackName().GetBuffer(0);
-            m_38->ApplyLookupSprite(nm, frame);
+            m_wwdObject->ApplyLookupSprite(nm, frame);
         }
         goto store;
     }
@@ -822,17 +822,17 @@ codeI:
     m_entranceCell.row = rec.row;
     m_entranceCell.column = rec.column;
     m_entranceCell.direction = rec.direction;
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_poseIdle[GRUNT_IDLE2]);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(m_poseIdle[GRUNT_IDLE2]);
     ResetEntranceAnimation(1, 0, 0);
     return;
 
 idle:
 
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyGeometryDirect(m_poseIdle[GRUNT_IDLE1], 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyGeometryDirect(m_poseIdle[GRUNT_IDLE1], 0);
     {
-        CAniElement* desc = m_38->m_1a0.m_14;
+        CAniElement* desc = m_wwdObject->m_1a0.m_14;
         CAniDesc* elem =
             desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem->m_param;
@@ -841,21 +841,21 @@ idle:
         i32 index = 3 * row + column;
 
         const char* nm = m_cells[index].IdleName().GetBuffer(0);
-        m_38->ApplyLookupSprite(nm, frame);
+        m_wwdObject->ApplyLookupSprite(nm, frame);
     }
     goto store;
 
 walk:
 
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_poseWalk);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(m_poseWalk);
     {
         i32 row = rec.row;
         i32 column = rec.column;
         i32 index = 3 * row + column;
 
         const char* nm = m_cells[index].WalkName().GetBuffer(0);
-        m_38->ApplyName(nm);
+        m_wwdObject->ApplyName(nm);
     }
 
 store:
@@ -1737,8 +1737,8 @@ label_4cb4b:
         return 1;
     }
     if (reason0e) {
-        m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseWalk);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->m_1a0.Setup(m_poseWalk);
         return 1;
     }
     goto label_ret1;
@@ -1795,7 +1795,7 @@ i32 CGrunt::CreateHealthSprite() {
     AnimWorkerObj* inner = m_healthSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_health)) {
-        reg->m_38->m_flags |= 0x10000;
+        reg->m_wwdObject->m_flags |= 0x10000;
         m_healthSprite = 0;
         return 0;
     }
@@ -1821,7 +1821,7 @@ i32 CGrunt::CreateToySprite() {
     AnimWorkerObj* inner = m_toySprite->m_animWorker;
     CGruntToySprite* reg = static_cast<CGruntToySprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
-        reg->m_38->m_flags |= 0x10000;
+        reg->m_wwdObject->m_flags |= 0x10000;
         m_toySprite = 0;
         return 0;
     }
@@ -1848,7 +1848,7 @@ i32 CGrunt::CreateStaminaSprite() {
     AnimWorkerObj* inner = m_staminaSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_stamina)) {
-        reg->m_38->m_flags |= 0x10000;
+        reg->m_wwdObject->m_flags |= 0x10000;
         m_staminaSprite = 0;
         return 0;
     }
@@ -1884,7 +1884,7 @@ i32 CGrunt::CreateToyTimeSprite() {
     AnimWorkerObj* inner = m_toyTimeSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_toyTime)) {
-        reg->m_38->m_flags |= 0x10000;
+        reg->m_wwdObject->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
         return 0;
     }
@@ -1916,7 +1916,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
     AnimWorkerObj* inner = m_wingzTimeSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_wingzTime)) {
-        reg->m_38->m_flags |= 0x10000;
+        reg->m_wwdObject->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
         return 0;
     }
@@ -1942,7 +1942,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     AnimWorkerObj* inner = m_powerupSprite->m_animWorker;
     CGruntPowerupSprite* reg = static_cast<CGruntPowerupSprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo, a)) {
-        reg->m_38->m_flags |= 0x10000;
+        reg->m_wwdObject->m_flags |= 0x10000;
         m_powerupSprite = 0;
         return 0;
     }
@@ -1968,7 +1968,7 @@ i32 CGrunt::CreateSelectedSprite() {
     AnimWorkerObj* inner = m_selectedSprite->m_animWorker;
     CGruntSelectedSprite* reg = static_cast<CGruntSelectedSprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
-        reg->m_38->m_flags |= 0x10000;
+        reg->m_wwdObject->m_flags |= 0x10000;
         m_selectedSprite = 0;
         return 0;
     }
@@ -3359,7 +3359,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
 
         eq = (strcmp(*rec, "H") == 0);
         if (eq) {
-            CAniElement* el = m_38->m_1a0.m_14;
+            CAniElement* el = m_wwdObject->m_1a0.m_14;
             CAniDesc* first;
             if (el->m_records.GetSize() > 0) {
                 first = static_cast<CAniDesc*>(el->m_records[0]);
@@ -3368,7 +3368,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             i32 handle = first->m_param;
             GruntDirectionCell cell = m_entranceCell;
-            m_38->ApplyLookupSprite(
+            m_wwdObject->ApplyLookupSprite(
                 m_cells[cell.row * 3 + cell.column].m_names[1].GetBuffer(0),
                 handle
             );
@@ -3400,9 +3400,11 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             eq = (strcmp(*rec2, "D") == 0);
             if (eq) {
                 GruntDirectionCell cell2 = m_entranceCell;
-                m_38->ApplyName(m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0));
-                m_value = m_38->m_1a0.m_14;
-                m_38->m_1a0.Setup(m_poseWalk);
+                m_wwdObject->ApplyName(
+                    m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0)
+                );
+                m_value = m_wwdObject->m_1a0.m_14;
+                m_wwdObject->m_1a0.Setup(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);
                 if (m_arrivalPending == 0) {

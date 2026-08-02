@@ -934,14 +934,14 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         m_35c = 0;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId(s_codeD);
-        m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseWalk);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->m_1a0.Setup(m_poseWalk);
 
         GruntDirectionCell cell = m_entranceCell;
         i32 col = cell.column + cell.row * 2;
         i32 base = cell.row + col;
         char* nm = m_cells[base].WalkName().GetBuffer(0);
-        m_38->ApplyName(nm);
+        m_wwdObject->ApplyName(nm);
         goto modeDispatch;
     } else {
         SnapToLastTile(1);
@@ -1057,7 +1057,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         return 0;
     }
 
-    CDDrawSurfaceMgr* mgr = m_3c->m_ownerCtx;
+    CDDrawSurfaceMgr* mgr = m_animWorker->m_ownerCtx;
     if (!mgr) {
         return 0;
     }

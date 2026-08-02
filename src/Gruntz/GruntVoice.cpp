@@ -161,7 +161,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_5c = 0;
     m_durationMs = 0;
     m_64 = 0;
-    m_38->ApplyName("GAME_EXCLAMATION");
+    m_wwdObject->ApplyName("GAME_EXCLAMATION");
     if (m_object->m_sortKey != 0xdbba1) {
         m_object->m_sortKey = 0xdbba1;
         m_object->m_flags |= 0x20000;
@@ -171,8 +171,8 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_durationMs = 0;
     m_5c = 0;
     m_64 = 0;
-    m_38->m_flags |= 0x4000002;
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_flags |= 0x4000002;
+    m_wwdObject->m_stateFlags |= 1;
     m_playFlags = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
@@ -186,8 +186,8 @@ RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
 // @early-stop
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 2;
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_flags |= 2;
+    m_wwdObject->m_stateFlags |= 1;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -257,7 +257,7 @@ i32 CVoiceTrigger::Tick() {
             && hy < g_gameReg->m_viewBounds.bottom && hy >= g_gameReg->m_viewBounds.top) {
             if (g_gameReg->m_cueSink
                     ->SpawnVoiceDriver(hit, m_object->m_124, m_object->m_placeMode, 0, -1, -1)) {
-                m_38->m_flags |= 0x10000;
+                m_wwdObject->m_flags |= 0x10000;
             }
         }
     }

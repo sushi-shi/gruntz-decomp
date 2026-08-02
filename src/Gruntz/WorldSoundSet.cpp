@@ -691,7 +691,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                 CAmbientSound* placed;
                 if (obj->m_extent.top > 0) {
                     placed = g_gameReg->m_inputState->CreateRandom(
-                        layer->m_10,
+                        layer->m_sound,
                         0x64,
                         &rc,
                         obj->m_120,
@@ -703,7 +703,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                     );
                 } else {
                     placed = g_gameReg->m_inputState
-                                 ->CreateAmbientFromSound(layer->m_10, 0x64, &rc, obj->m_120, 0);
+                                 ->CreateAmbientFromSound(layer->m_sound, 0x64, &rc, obj->m_120, 0);
                 }
                 if (placed && obj->m_placed.top > 0) {
                     placed->m_box2 = obj->m_placed;
@@ -762,7 +762,7 @@ i32 SpawnPosSound(PosSoundObj* obj) {
             pt.y = obj->m_y;
 
             CAmbientPosSound* v =
-                set->CreatePositionedFromSound(layer->m_10, 0x64, &pt, obj->m_120, 0);
+                set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_120, 0);
             if (v != 0) {
                 aux->m_voice = v;
             }

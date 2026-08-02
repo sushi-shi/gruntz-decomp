@@ -114,7 +114,10 @@ typedef enum WarlordBattleTag {
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);             \
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(                              \
+            s_GRUNTZ_ + m_54 + (suffix),                                                           \
+            h                                                                                      \
+        );                                                                                         \
         /* Lookup exposes void*& at this API boundary; */                                          \
         /* reapply the element type after the call. */                                             \
         dst = static_cast<CAniElement*>(h);                                                        \
@@ -142,7 +145,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         o->m_sortKey = 0xc3500;
         o->m_flags |= 0x20000;
     }
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
 
     i32 owner = m_object->m_124;
     i32 cfg = g_gameReg->m_options[owner].m_008;
@@ -223,13 +226,13 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
         case 7: {
             ar->Read(hdr, 0x80);
             ar->Read(m_blob, 0x10);
-            m_34 = obj;
-            m_38 = static_cast<CWwdGameObjectA*>(obj);
-            m_3c = obj->m_animWorker;
+            m_gameObject = obj;
+            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_animWorker = obj->m_animWorker;
             if (strlen(hdr) == 0) {
                 m_value = 0;
             } else {
-                CMapStringToPtr* map = &m_3c->m_ownerCtx->m_animRegistry->m_10;
+                CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
                 void* v = 0;
                 map->Lookup(hdr, v);
                 m_value = static_cast<CAniElement*>(v);
@@ -241,7 +244,9 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             if (m_value != 0) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value))
+                    static_cast<const char*>(
+                        m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value)
+                    )
                 );
             }
             ar->Write(buf, 0x80);
@@ -252,7 +257,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
 
     switch (mode) {
         case 4: {
-            CDDrawSurfaceMgr* world = m_3c->m_ownerCtx;
+            CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
             if (world == 0) {
                 goto fail;
             }
@@ -361,7 +366,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             break;
         }
         case 7: {
-            CDDrawSurfaceMgr* world = m_3c->m_ownerCtx;
+            CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
             if (world == 0) {
                 return 0;
             }
@@ -373,7 +378,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_idleAnims[0] = static_cast<CAniElement*>(v);
             } else {
                 m_idleAnims[0] = 0;
@@ -382,7 +387,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_idleAnims[1] = static_cast<CAniElement*>(v);
             } else {
                 m_idleAnims[1] = 0;
@@ -391,7 +396,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_idleAnims[2] = static_cast<CAniElement*>(v);
             } else {
                 m_idleAnims[2] = 0;
@@ -400,7 +405,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_idleAnims[3] = static_cast<CAniElement*>(v);
             } else {
                 m_idleAnims[3] = 0;
@@ -409,7 +414,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_battlecryAnims[0] = static_cast<CAniElement*>(v);
             } else {
                 m_battlecryAnims[0] = 0;
@@ -418,7 +423,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_battlecryAnims[1] = static_cast<CAniElement*>(v);
             } else {
                 m_battlecryAnims[1] = 0;
@@ -427,7 +432,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_battlecryAnims[2] = static_cast<CAniElement*>(v);
             } else {
                 m_battlecryAnims[2] = 0;
@@ -436,7 +441,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_animJoy = static_cast<CAniElement*>(v);
             } else {
                 m_animJoy = 0;
@@ -445,7 +450,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_animDeath = static_cast<CAniElement*>(v);
             } else {
                 m_animDeath = 0;
@@ -454,7 +459,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_animMoving = static_cast<CAniElement*>(v);
             } else {
                 m_animMoving = 0;
@@ -463,7 +468,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(buf, 0x80);
             if (strlen(buf) != 0) {
                 void* v = 0;
-                world->m_animRegistry->m_10.Lookup(buf, v);
+                world->m_animRegistry->m_animations.Lookup(buf, v);
                 m_animPanic = static_cast<CAniElement*>(v);
             } else {
                 m_animPanic = 0;
@@ -548,8 +553,8 @@ void RegisterWarlordActions() {
 
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_38->m_1a0;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         ResolveMovingAnimation();
     }
@@ -558,7 +563,7 @@ i32 CWarlord::RearmMoving() {
 
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (m_38->m_1a0.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
@@ -584,7 +589,7 @@ i32 CWarlord::LoadAttributes() {
 
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (m_38->m_1a0.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
@@ -613,8 +618,8 @@ i32 CWarlord::LoadAttributes2() {
 
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_38->m_1a0;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
         if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
@@ -630,8 +635,8 @@ i32 CWarlord::AdvanceMovingAnim() {
 
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_38->m_1a0;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         ResolveMovingAnimation();
     }
@@ -640,8 +645,8 @@ i32 CWarlord::RearmMoving2() {
 
 RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_38->m_1a0;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         CWwdGameObjectA* o = m_object;
         i32 y = o->m_screenY;
@@ -669,7 +674,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         if (slot != 0) {
             slot->m_00c = 0;
         }
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
 }
@@ -681,10 +686,10 @@ i32 CWarlord::ResolveMovingAnimation() {
         return 0;
     }
 
-    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__MOVING);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__MOVING);
 
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_animMoving);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(m_animMoving);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyB);
@@ -726,10 +731,10 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownStamp64 = static_cast<u32>(g_frameTime);
             }
 
-            m_value = m_38->m_1a0.m_14;
-            m_38->m_1a0.Setup(m_animPanic);
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->m_1a0.Setup(m_animPanic);
 
-            m_38->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);
+            m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);
 
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId(s_codeD);
@@ -761,10 +766,10 @@ i32 CWarlord::ResolveDeathAnimation() {
     }
 
     CAniElement* anim = m_animDeath;
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(anim);
 
-    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__DEATH);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__DEATH);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyC);
@@ -791,10 +796,10 @@ i32 CWarlord::RaiseBattleAlert() {
     }
 
     CAniElement* anim = m_animJoy;
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(anim);
 
-    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__JOY);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__JOY);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyE);
@@ -825,15 +830,15 @@ i32 CWarlord::ResolveIdleAnimation() {
     }
 
     CAniElement* anim = m_idleAnims[idx];
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(anim);
 
-    CAniElement* desc = m_38->m_1a0.m_14;
+    CAniElement* desc = m_wwdObject->m_1a0.m_14;
     CAniDesc* elem =
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
 
-    m_38->ApplyLookupSprite(s_GRUNTZ_ + m_54 + s__IDLE, frame);
+    m_wwdObject->ApplyLookupSprite(s_GRUNTZ_ + m_54 + s__IDLE, frame);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyA);
@@ -863,10 +868,10 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     }
 
     CAniElement* anim = m_battlecryAnims[idx];
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(anim);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(anim);
 
-    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__BATTLECRY);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__BATTLECRY);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyF);

@@ -1253,16 +1253,17 @@ i32 CMulti::ShowMultiStartDlg() {
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_emitGate == 0) {
             void* rec_ob = 0;
-            reg->m_10.Lookup(s_GameKey, rec_ob);
+            reg->m_cues.Lookup(s_GameKey, rec_ob);
             LeafCue* rec = static_cast<LeafCue*>(rec_ob);
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
                 if (snd != 0) {
                     i32 clk = g_killCueClock;
-                    if (static_cast<u32>((clk - rec->m_14)) >= static_cast<u32>(rec->m_18)) {
-                        rec->m_14 = clk;
-                        rec->m_10->ConfigureItem(cue, 0, 0, 0);
+                    if (static_cast<u32>((clk - rec->m_lastPlayTime))
+                        >= static_cast<u32>(rec->m_replayDelay)) {
+                        rec->m_lastPlayTime = clk;
+                        rec->m_sound->ConfigureItem(cue, 0, 0, 0);
                     }
                 }
             }
@@ -1711,7 +1712,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 break;
             }
             void* e_ob = 0;
-            host->m_10.Lookup("GAME_CHAT", e_ob);
+            host->m_cues.Lookup("GAME_CHAT", e_ob);
             LeafCue* e = static_cast<LeafCue*>(e_ob);
             if (e == 0) {
                 break;
@@ -2080,16 +2081,16 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
         CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out = 0;
-            host->m_10.Lookup("GAME_MENUS_SELECT", out);
+            host->m_cues.Lookup("GAME_MENUS_SELECT", out);
             LeafCue* e = static_cast<LeafCue*>(out);
             if (e != 0) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;
                 if (enabled != 0) {
                     u32 now = g_killCueClock;
-                    if (static_cast<u32>((now - e->m_14)) >= e->m_18) {
-                        e->m_14 = now;
-                        e->m_10->ConfigureItem(tag, 0, 0, 0);
+                    if (static_cast<u32>((now - e->m_lastPlayTime)) >= e->m_replayDelay) {
+                        e->m_lastPlayTime = now;
+                        e->m_sound->ConfigureItem(tag, 0, 0, 0);
                     }
                 }
             }

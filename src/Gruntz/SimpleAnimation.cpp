@@ -65,8 +65,8 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
             if (m_object->m_animWorker != 0) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
+                m_wwdObject->m_flags &= ~0x1000002;
+                m_wwdObject->m_flags |= 0x800000;
             }
         }
     }
@@ -96,6 +96,6 @@ void RegisterSimpleAnimLogic() {
 
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }

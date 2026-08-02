@@ -117,10 +117,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     AnimWorkerObj* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
     aux->m_1c = ActFindId("A");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
     SetupSprite(0);
 
     m_glitterSprite = 0;
@@ -298,28 +298,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_flags |= 0x10000;
+                m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5a;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_flags |= 0x10000;
+                m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5b;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_flags |= 0x10000;
+                m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5c;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_flags |= 0x10000;
+                m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5d;
@@ -383,7 +383,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 
     if (HandleInput() == 0) {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
         return;
     }
 
@@ -536,7 +536,7 @@ i32 CInGameIcon::RefreshCell() {
             return 0;
         }
     }
-    CWwdGameObjectA* r = m_38;
+    CWwdGameObjectA* r = m_wwdObject;
     r->m_flags |= 0x10000;
     return 0;
 }
@@ -544,7 +544,7 @@ i32 CInGameIcon::RefreshCell() {
 // @early-stop
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     CWwdGameObjectA* obj = m_object;
     i32 cmd = obj->m_124;
     if (cmd == 0x55) {
@@ -567,7 +567,7 @@ i32 CInGameIcon::PeekCycle() {
                 BrickzCell* row1 = grid->m_rows[tileY];
                 row1[tileX].m_0 &= ~0x40000;
             }
-            m_38->m_flags |= 0x10000;
+            m_wwdObject->m_flags |= 0x10000;
         }
         return 0;
     }
@@ -661,7 +661,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
             }
         }
         ClearTileBit(reg, m_object);
-        CWwdGameObjectA* r = m_38;
+        CWwdGameObjectA* r = m_wwdObject;
         r->m_flags |= 0x10000;
         return 1;
     }
@@ -697,13 +697,13 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         }
     }
     ClearTileBit(reg, m_object);
-    CWwdGameObjectA* owner = m_38;
+    CWwdGameObjectA* owner = m_wwdObject;
     if (owner->m_120 > 0) {
         owner->m_stateFlags |= 1;
         AnimWorkerObj* aux = m_objAux;
         m_prevAnimSetNode = aux->m_1c;
         aux->m_1c = ActFindId("B");
-        owner = m_38;
+        owner = m_wwdObject;
         m_driftPos.m_lo = owner->m_120;
         m_driftPos.m_hi = 0;
         m_driftThresh.m_lo = g_frameTime;
@@ -715,7 +715,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         rend->m_flags |= 0x10000;
         m_glitterSprite = 0;
     }
-    CWwdGameObjectA* r = m_38;
+    CWwdGameObjectA* r = m_wwdObject;
     r->m_flags |= 0x10000;
     return 1;
 }
@@ -723,10 +723,10 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
 // @early-stop
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos.m_v;
     if (delta >= m_driftThresh.m_v) {
-        CWwdGameObjectA* r = m_38;
+        CWwdGameObjectA* r = m_wwdObject;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
@@ -792,14 +792,14 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
         case 7: {
             ar->Read(chainName, 0x80);
             ar->Read(m_blob, 0x10);
-            m_34 = obj;
-            m_38 = static_cast<CWwdGameObjectA*>(obj);
-            m_3c = obj->m_animWorker;
+            m_gameObject = obj;
+            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_animWorker = obj->m_animWorker;
             if (strlen(chainName) == 0) {
                 m_value = 0;
             } else {
                 void* val = 0;
-                m_3c->m_ownerCtx->m_animRegistry->m_10.Lookup(chainName, val);
+                m_animWorker->m_ownerCtx->m_animRegistry->m_animations.Lookup(chainName, val);
                 m_value = static_cast<CAniElement*>(val);
             }
             break;
@@ -807,7 +807,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
         case 4: {
             memset(chainName, 0, sizeof(chainName));
             if (m_value != 0) {
-                CString nm = m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
+                CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
                 strcpy(chainName, static_cast<const char*>(nm));
             }
             ar->Write(chainName, 0x80);
@@ -848,7 +848,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
         case 4: {
             memset(tailName, 0, sizeof(tailName));
             if (m_cue != 0) {
-                CString nm = m_3c->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
+                CString nm = m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
                 strcpy(tailName, static_cast<const char*>(nm));
             }
             ar->Write(tailName, 0x80);
@@ -867,7 +867,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
                 m_cue = 0;
             } else {
                 void* val = 0;
-                m_3c->m_ownerCtx->m_soundRegistry->m_10.Lookup(tailName, val);
+                m_animWorker->m_ownerCtx->m_soundRegistry->m_cues.Lookup(tailName, val);
                 m_cue = static_cast<LeafCue*>(val);
             }
             g_serialCounter++;
@@ -875,7 +875,8 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
             ar->Read(&id, 4);
             void* found = 0;
             CWwdGameObjectA* sprite = 0;
-            if (MapLookupById(m_3c->m_ownerCtx->m_childGroup->m_map48, id, found) != 0 && found != 0
+            if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0
+                && found != 0
                 && static_cast<CGameObject*>(found)->GetClassId() == CLASSID_SERIALREF) {
                 sprite = static_cast<CWwdGameObjectA*>(found);
             }
@@ -902,26 +903,26 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_134 == 2) {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
         return;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_38->ApplyName("GAME_HELPBOX");
-    m_38->m_flags |= 2;
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_wwdObject->ApplyName("GAME_HELPBOX");
+    m_wwdObject->m_flags |= 2;
 
     i32 vis = m_object->m_placeMode;
     if (vis == 1) {
 
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
-            m_38->m_flags |= 0x10000;
+            m_wwdObject->m_flags |= 0x10000;
             return;
         }
     } else if (vis == 2) {
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-            m_38->m_flags |= 0x10000;
+            m_wwdObject->m_flags |= 0x10000;
             return;
         }
     }
@@ -990,7 +991,7 @@ void CInGameIcon::SetupSprite(const char* category) {
 
         CGruntzMgr* reg = g_gameReg;
         void* found = 0;
-        reg->m_world->m_soundRegistry->m_10.Lookup(category, found);
+        reg->m_world->m_soundRegistry->m_cues.Lookup(category, found);
         cue = static_cast<LeafCue*>(found);
     }
     m_cue = cue;

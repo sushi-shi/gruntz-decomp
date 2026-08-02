@@ -62,9 +62,9 @@ i32 CreateStatusBarSprite(CGameObject* obj) {
 // @early-stop
 RVA(0x0010c230, 0x178)
 CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->ApplyName("GAME_STATUSBARSPRITE");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
+    m_wwdObject->ApplyName("GAME_STATUSBARSPRITE");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     if (m_object->m_sortKey != 0xf4240) {
@@ -106,7 +106,7 @@ void CStatusBarSprite::RegisterActs() {
 
 RVA(0x0010c810, 0x17)
 i32 CStatusBarSprite::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 

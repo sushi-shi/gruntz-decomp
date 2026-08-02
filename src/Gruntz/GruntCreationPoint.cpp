@@ -24,13 +24,13 @@ RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 // @early-stop
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
     if (m_object->m_sortKey != 5) {
         m_object->m_sortKey = 5;
         m_object->m_flags |= 0x20000;
     }
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     i32 key = m_object->m_124;
     i32 idx;
@@ -39,7 +39,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     } else if (g_gameReg->m_options[key].m_liveGate != 0) {
         idx = g_gameReg->m_options[key].m_008;
     } else {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
 
         AddrWord<CGameObject> sel;
         sel.m_addr = obj;
@@ -123,6 +123,6 @@ void CGruntCreationPoint::RegisterActs() {
 
 RVA(0x0003ecc0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }

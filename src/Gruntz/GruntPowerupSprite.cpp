@@ -20,14 +20,14 @@ RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 
 RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->ApplyName("GAME_LIGHTING_POWERUP");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_wwdObject->ApplyName("GAME_LIGHTING_POWERUP");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     if (m_object->m_sortKey != 0x15) {
         m_object->m_sortKey = 0x15;
         m_object->m_flags |= 0x20000;
     }
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= 1;
 }
 
 RVA(0x00080020, 0x102)
@@ -69,7 +69,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     r->m_drawActive = 1;
     r->m_drawFillCmd = 7;
     r->m_drawFillArg = rec;
-    m_38->m_stateFlags &= ~1;
+    m_wwdObject->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     return 1;
@@ -77,7 +77,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_object->m_screenX = e->m_object->m_screenX;

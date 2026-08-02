@@ -39,7 +39,7 @@ RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
 
     i32 ax = (m_object->m_screenX & ~0x1f) + 0x10;
     i32 cx = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -209,12 +209,12 @@ i32 CSpotLight::Tick() {
                 if (obj->m_emitGate == 0) {
 
                     LeafCue* cue = 0;
-                    MapLookup(obj->m_10, name, cue);
+                    MapLookup(obj->m_cues, name, cue);
                     if (cue != 0 && g_sndEnabled != 0) {
                         u32 clk = g_killCueClock;
-                        if (clk - cue->m_14 >= static_cast<u32>(cue->m_18)) {
-                            cue->m_14 = clk;
-                            cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                        if (clk - cue->m_lastPlayTime >= static_cast<u32>(cue->m_replayDelay)) {
+                            cue->m_lastPlayTime = clk;
+                            cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                         }
                     }
                 }

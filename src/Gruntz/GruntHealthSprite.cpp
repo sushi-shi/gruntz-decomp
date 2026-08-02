@@ -23,7 +23,7 @@ RVA_COMPGEN(0x00011fb0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
 
 RVA(0x0007eb00, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
+    m_wwdObject->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     m_health = 0x64;

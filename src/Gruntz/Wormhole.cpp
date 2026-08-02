@@ -89,10 +89,10 @@ RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 // @early-stop
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 0x2000002;
-    m_38->ApplyName("GAME_WORMHOLE");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
+    m_wwdObject->m_flags |= 0x2000002;
+    m_wwdObject->ApplyName("GAME_WORMHOLE");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_WORMHOLE", 0);
     if (m_object->m_sortKey != 0x1869f) {
         m_object->m_sortKey = 0x1869f;
         m_object->m_flags |= 0x20000;
@@ -166,9 +166,9 @@ void RegisterWormholeLogic() {
 RVA(0x000403b0, 0xa5)
 i32 CWormhole::SpawnPartners() {
 
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
 
-    CWwdGameObjectA* g = m_38;
+    CWwdGameObjectA* g = m_wwdObject;
     if (g->m_1a0.m_finished == 0 || g->m_1a0.m_frameTicksLeft != 0) {
         return 0;
     }
@@ -204,17 +204,17 @@ i32 CWormhole::SpawnPartners() {
 // @early-stop
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
     if (m_object->m_sortKey != 0xa) {
         m_object->m_sortKey = 0xa;
         m_object->m_flags |= 0x20000;
     }
-    m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
+    m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= 1;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_pending = 1;
@@ -278,14 +278,14 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     obj->m_drawActive = 1;
     obj->m_drawFillCmd = 0xa;
     obj->m_drawFillArg = rec;
-    m_38->m_stateFlags &= ~1;
+    m_wwdObject->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("B");
     if (placeIndex == 0) {
         m_placed = 1;
         m_pending = 0;
-        m_value = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry(g_puddleSpriteKey, 0);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->ApplyLookupGeometry(g_puddleSpriteKey, 0);
     }
     return 1;
 }
@@ -306,7 +306,7 @@ i32 CGruntPuddle::Remove() {
             flags = 1;
         }
         if ((flags & 0x939) != 0 || (flags & 0x2) != 0) {
-            m_38->m_flags |= 0x10000;
+            m_wwdObject->m_flags |= 0x10000;
             CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
             POSITION pos = list.GetHeadPosition();
             while (pos != 0) {
@@ -318,8 +318,8 @@ i32 CGruntPuddle::Remove() {
             }
         }
     }
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* o = m_38;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    CWwdGameObjectA* o = m_wwdObject;
     if (o->m_1a0.m_finished != 0 && o->m_1a0.m_frameTicksLeft == 0) {
         if (m_placed != 0) {
             o->m_stateFlags |= 1;
@@ -379,7 +379,7 @@ RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_armClock = 0;
     m_interval = 0;
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
     if (m_object->m_sortKey != 0x1869f) {
         m_object->m_sortKey = 0x1869f;
         m_object->m_flags |= 0x20000;
@@ -419,14 +419,14 @@ void CTeleporter::LoadColors() {
 
 RVA(0x000412c0, 0x63)
 i32 CTeleporter::ReapplyConfig() {
-    m_38->ApplyName("GAME_WORMHOLE");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
+    m_wwdObject->ApplyName("GAME_WORMHOLE");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     m_armed = 1;
     m_tickHandled = 0;
-    m_38->m_stateFlags &= ~1;
+    m_wwdObject->m_stateFlags &= ~1;
     return 1;
 }
 
@@ -504,18 +504,18 @@ void CTeleporter_RegisterActs() {
 // @early-stop
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
 
-    if (m_38->m_1a0.m_finished == 0) {
+    if (m_wwdObject->m_1a0.m_finished == 0) {
         return 0;
     }
-    if (m_38->m_1a0.m_frameTicksLeft != 0) {
+    if (m_wwdObject->m_1a0.m_frameTicksLeft != 0) {
         return 0;
     }
 
     m_interval = static_cast<u32>(m_object->m_animWorker->m_bc);
     m_armClock = static_cast<u32>(g_frameTime);
-    m_value = m_38->m_1a0.m_14;
+    m_value = m_wwdObject->m_1a0.m_14;
     m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("B");
@@ -525,8 +525,8 @@ i32 CTeleporter::Begin() {
 // @early-stop
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* a = m_38;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    CWwdGameObjectA* a = m_wwdObject;
     if (a->m_1a0.m_finished != 0 && a->m_1a0.m_frameTicksLeft == 0) {
         if (m_object->m_124 == 1) {
             a->m_flags |= 0x10000;
@@ -556,8 +556,8 @@ i32 CTeleporter::Update() {
     if (o->m_animWorker->m_bc != 0) {
         i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_armClock;
         if (delta >= m_interval) {
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
             m_object->m_animWorker->m_bc = 0;
             m_tickHandled = 1;
             return 0;
@@ -574,8 +574,8 @@ i32 CTeleporter::Update() {
     if (m_object->m_124 == 2) {
         found->TryTeleportToCell(m_object->m_164, m_object->m_168, 1, 1);
         g_gameReg->m_scoreHud->m_secretsFound++;
-        m_value = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
         CWwdGameObjectA* s = m_object;
         CWwdGameObjectA* spawned =
             g_gameReg->m_world->m_childGroup
@@ -596,8 +596,8 @@ i32 CTeleporter::Update() {
         spawned->m_168 = m_object->m_screenY;
         spawned->m_124 = m_object->m_placeMode;
         found->TryTeleportToCell(m_object->m_164, m_object->m_168, 0, 0);
-        m_value = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
     }
 
     m_armed = 0;

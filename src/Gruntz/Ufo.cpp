@@ -22,8 +22,8 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
     i32 sx = o->m_screenX;
     i32 sy = o->m_screenY;
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CWwdGameObjectA* sl =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);

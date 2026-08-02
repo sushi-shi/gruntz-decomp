@@ -49,7 +49,7 @@ RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_timestamp = 0;
     m_duration = 0;
-    m_38->ApplyName("GAME_ACTIONAREA_RED");
+    m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     if (m_object->m_sortKey != 6) {
@@ -58,7 +58,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_phase = 1;
     m_duration = 0;
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= 1;
 }
 
 RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
@@ -107,13 +107,13 @@ i32 CActionArea::Tick() {
     if (*phase != 0) {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        m_38->m_imageSet->SetAllLightLevels(
+        m_wwdObject->m_imageSet->SetAllLightLevels(
             static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
         );
     } else {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        m_38->m_imageSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
+        m_wwdObject->m_imageSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;
 }
@@ -122,23 +122,23 @@ RVA(0x00008580, 0x5e)
 i32 CActionArea::ApplyColor(i32 owner) {
     switch (owner) {
         case 1: {
-            m_38->ApplyName("GAME_ACTIONAREA_BLUE");
+            m_wwdObject->ApplyName("GAME_ACTIONAREA_BLUE");
 
-            CDDrawWorker* rec = m_38->m_imageSet;
+            CDDrawWorker* rec = m_wwdObject->m_imageSet;
             rec->SetAllTypes(8);
             break;
         }
         case 2: {
-            m_38->ApplyName("GAME_ACTIONAREA_RED");
+            m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
 
-            CDDrawWorker* rec = m_38->m_imageSet;
+            CDDrawWorker* rec = m_wwdObject->m_imageSet;
             rec->SetAllTypes(8);
             break;
         }
         default:
             return 0;
     }
-    m_38->m_stateFlags &= ~1;
+    m_wwdObject->m_stateFlags &= ~1;
     return 1;
 }
 

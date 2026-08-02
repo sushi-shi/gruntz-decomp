@@ -15,7 +15,7 @@ class CDDrawSubMgrLeafScan : public CLoadable {
 public:
     CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CLoadable(owner) {
         m_soundStream = 0;
-        m_34 = 0;
+        m_replayDelay = 0;
     }
 
     RVA(0x00157530, 0x17)
@@ -58,11 +58,11 @@ public:
 
     i32 BindSoundStream(i32 force);
 
-    CMapStringToPtr m_10;
+    CMapStringToPtr m_cues;
     SoundStream* m_soundStream;
 
     i32 m_emitGate;
-    i32 m_34;
+    i32 m_replayDelay;
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();

@@ -146,6 +146,6 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 RVA(0x0009cab0, 0x23)
 CObject* CDDrawWorkerCache::Find(const char* key) {
     CObject* found = 0;
-    m_10.Lookup(key, found);
+    m_workers.Lookup(key, found);
     return found;
 }

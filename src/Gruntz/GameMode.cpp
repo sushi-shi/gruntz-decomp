@@ -319,7 +319,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* cue_ob = 0;
-                        host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
+                        host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
                         LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                         if (cue != 0) {
                             cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -387,13 +387,13 @@ i32 CBootyState::LevelMsgHudDriver() {
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 void* cue_ob = 0;
-                host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
+                host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
                 LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                 if (cue != 0 && g_sndEnabled != 0
-                    && static_cast<u32>((g_killCueClock - cue->m_14))
-                           >= static_cast<u32>(cue->m_18)) {
-                    cue->m_14 = g_killCueClock;
-                    cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                    && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+                           >= static_cast<u32>(cue->m_replayDelay)) {
+                    cue->m_lastPlayTime = g_killCueClock;
+                    cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }
             }
             if (m_slot >= 8) {

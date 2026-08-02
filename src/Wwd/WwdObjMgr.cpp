@@ -115,7 +115,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     int stateFlags
 ) {
     CObject* val = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
 
     return CreateDotObject(
         id,
@@ -150,7 +150,7 @@ RVA(0x001595b0, 0x44)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags) {
     CObject* val = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
     return CreateDeferredObject(id, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
@@ -188,7 +188,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     i32 stateFlags
 ) {
     CObject* tmpl_ob = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(name, tmpl_ob);
 
     AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
     if (!tmpl) {
@@ -211,7 +211,7 @@ i32 CDDrawChildGroup::AttachSprite(
         return 0;
     }
     CObject* tmpl_ob = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(name, tmpl_ob);
 
     AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
     if (!tmpl) {
@@ -265,7 +265,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int stateFlags
 ) {
     CObject* val = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
     if (val == 0) {
         return 0;
     }
@@ -895,7 +895,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
 RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(key, found);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(key, found);
     AnimWorkerObj* fp = static_cast<AnimWorkerObj*>(found);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
@@ -1106,7 +1106,10 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         switch (desc.m_08) {
             case 5: {
                 CObject* val;
-                OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
+                OwnerMgr()->m_workerCache->m_workers.Lookup(
+                    static_cast<const char*>(desc.m_14),
+                    val
+                );
                 if (val != 0) {
                     createdObj = CreateSpriteObject(
                         desc.m_00,
@@ -1121,14 +1124,20 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             }
             case 0x16: {
                 CObject* val;
-                OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
+                OwnerMgr()->m_workerCache->m_workers.Lookup(
+                    static_cast<const char*>(desc.m_14),
+                    val
+                );
                 createdObj =
                     CreateDeferredObject(desc.m_00, desc.m_9c, static_cast<AnimWorkerObj*>(val), 0);
                 break;
             }
             case 0x1b: {
                 CObject* val;
-                OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
+                OwnerMgr()->m_workerCache->m_workers.Lookup(
+                    static_cast<const char*>(desc.m_14),
+                    val
+                );
                 if (val != 0) {
                     createdObj = CreateContainerObject(
                         desc.m_00,

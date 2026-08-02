@@ -66,7 +66,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     void* node = 0;
     CObject* nodeOb = 0;
 
-    m_3c->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
+    m_animWorker->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
     node = nodeOb;
     void* found = node;
     g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, 7);
@@ -75,27 +75,27 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
         CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
         i32 key = en->m_minIndex;
 
-        m_38->m_sprite = en;
+        m_wwdObject->m_sprite = en;
         CImage* val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
         } else {
             val = static_cast<CImage*>(en->m_items.GetAt(key));
         }
-        m_38->m_layer = val;
-        m_38->m_190 = key;
+        m_wwdObject->m_layer = val;
+        m_wwdObject->m_190 = key;
     }
     node = 0;
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
     m_anchorA = anchorA;
     m_anchorB = anchorB;
 
-    MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, effect, node);
+    MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
     if (node != 0) {
         node = 0;
-        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, effect, node);
-        m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(static_cast<CAniElement*>(node));
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->m_1a0.Setup(static_cast<CAniElement*>(node));
         RebindNode();
     }
     return 0;
@@ -122,7 +122,7 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject*
             g_gameReg
                 ->m_logicPump
 
-                ->Push(m_38->m_sprite, m_anchorA, 7);
+                ->Push(m_wwdObject->m_sprite, m_anchorA, 7);
             break;
     }
     return 1;
@@ -137,9 +137,9 @@ i32 CLightFx::RebindNode() {
 
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    if (m_38->m_1a0.m_finished && !m_38->m_1a0.m_frameTicksLeft && m_anchorB) {
-        m_38->m_flags |= 0x10000;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    if (m_wwdObject->m_1a0.m_finished && !m_wwdObject->m_1a0.m_frameTicksLeft && m_anchorB) {
+        m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
 }

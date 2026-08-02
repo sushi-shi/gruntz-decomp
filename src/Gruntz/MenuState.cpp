@@ -106,10 +106,10 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     m_1b4->m_row1Key = "MENU_ACTIVATE";
 
     LeafCue* e;
-    MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", e);
+    MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
     if (e != 0) {
-        MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", e);
-        m_1b8 = e->m_10->m_durationMs;
+        MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
+        m_1b8 = e->m_sound->m_durationMs;
     } else {
         m_1b8 = 0;
     }
@@ -120,7 +120,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
 
     LeafCue* fm;
     MapLookup(
-        (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))->m_10,
+        (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
         "MENU_MENU",
         fm
     );
@@ -181,9 +181,9 @@ void CMenuState::StartMusic() {
     LeafCue* mus = m_1bc;
     if (flag) {
         u32 clk = g_killCueClock;
-        if (clk - mus->m_14 >= static_cast<u32>(mus->m_18)) {
-            mus->m_14 = clk;
-            mus->m_10->ConfigureItem(item, 0, 0, 1);
+        if (clk - mus->m_lastPlayTime >= static_cast<u32>(mus->m_replayDelay)) {
+            mus->m_lastPlayTime = clk;
+            mus->m_sound->ConfigureItem(item, 0, 0, 1);
         }
     }
     if (!saved) {
@@ -197,11 +197,11 @@ void CMenuState::StopMusicChain() {
         return;
     }
     LeafCue* mus = m_1bc;
-    if (!mus->m_10->IsPlaying()) {
+    if (!mus->m_sound->IsPlaying()) {
         return;
     }
-    m_1bc->m_10->CloneAndPlay(0, 0x1f4, 1);
-    if (!m_1bc->m_10->IsPlaying()) {
+    m_1bc->m_sound->CloneAndPlay(0, 0x1f4, 1);
+    if (!m_1bc->m_sound->IsPlaying()) {
         return;
     }
     do {
@@ -209,7 +209,7 @@ void CMenuState::StopMusicChain() {
         if (reg->m_soundStream) {
             reg->m_soundStream->PurgeVoiceList(-1);
         }
-    } while (m_1bc->m_10->IsPlaying());
+    } while (m_1bc->m_sound->IsPlaying());
 }
 
 RVA(0x000a06d0, 0x5f)

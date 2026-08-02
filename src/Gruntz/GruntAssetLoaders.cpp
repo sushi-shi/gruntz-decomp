@@ -79,8 +79,8 @@ enum GruntDeathType {
 };
 
 #define DEATH_FRAME()                                                                              \
-    (m_38->m_1a0.m_14->m_records.GetSize() > 0                                                     \
-         ? static_cast<CAniRecordView*>(m_38->m_1a0.m_14->m_records.GetAt(0))->m_seedFrame         \
+    (m_wwdObject->m_1a0.m_14->m_records.GetSize() > 0                                              \
+         ? static_cast<CAniRecordView*>(m_wwdObject->m_1a0.m_14->m_records.GetAt(0))->m_seedFrame  \
          : static_cast<CAniRecordView*>(0)->m_seedFrame)
 
 #define DEATH_CUE(tag)                                                                             \
@@ -152,7 +152,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_dAnimKeyC);
 
-    m_38->m_flags |= 1;
+    m_wwdObject->m_flags |= 1;
     if (m_object->m_sortKey != 0x15f90) {
         m_object->m_sortKey = 0x15f90;
         m_object->m_flags |= 0x20000;
@@ -166,62 +166,62 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     switch (deathType) {
         case DEATH_SQUASH:
             if (m_entranceReason == 1) {
-                m_value = m_38->m_1a0.m_14;
-                m_38->ApplyGeometryDirect(m_poseDeath, 0);
+                m_value = m_wwdObject->m_1a0.m_14;
+                m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
                 goto pathA;
             }
             m_poseDeath = static_cast<CAniElement*>(
-                m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SQUASH)
+                m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SQUASH)
             );
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_SQUASH, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_SQUASH, DEATH_FRAME());
             DEATH_CUE(0x35b);
             goto finalize;
 
         case DEATH_DROP:
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
-            m_38->m_flags |= 0x10000;
+            m_wwdObject->m_flags |= 0x10000;
             goto tail;
 
         case DEATH_SINK:
             m_poseDeath = static_cast<CAniElement*>(
-                m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SINK)
+                m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SINK)
             );
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             goto tail;
 
         case DEATH_HOLE:
             m_poseDeath = static_cast<CAniElement*>(
-                m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_HOLE)
+                m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_HOLE)
             );
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_HOLE, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_HOLE, DEATH_FRAME());
             DEATH_CUE(0x357);
             goto finalize;
 
         case DEATH_SHATTER:
             m_poseDeath = static_cast<CAniElement*>(
-                m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SHATTER)
+                m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SHATTER)
             );
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_FREEZE, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FREEZE, DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
 
         case DEATH_BURN:
             m_poseDeath = static_cast<CAniElement*>(
-                m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_BURN)
+                m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_BURN)
             );
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_BURN, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_BURN, DEATH_FRAME());
             DEATH_CUE(0x352);
             goto finalize;
 
@@ -229,11 +229,11 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
             m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
             m_poseDeath = static_cast<CAniElement*>(
-                m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
+                m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
             );
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             if (m_object->m_sortKey != -1) {
                 m_object->m_sortKey = -1;
                 m_object->m_flags |= 0x20000;
@@ -248,7 +248,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = static_cast<CAniElement*>(
-                    m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
+                    m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
                 );
                 tag = 0x357;
                 if (m_object->m_sortKey != -1) {
@@ -259,12 +259,12 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
                 m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
             } else {
                 m_poseDeath = static_cast<CAniElement*>(
-                    m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_FALL)
+                    m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_FALL)
                 );
             }
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             goto tail;
@@ -277,7 +277,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = static_cast<CAniElement*>(
-                    m_38->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL2)
+                    m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL2)
                 );
                 tag = 0x357;
                 if (m_object->m_sortKey != -1) {
@@ -288,12 +288,15 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
                 m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
             } else {
                 void* out_ob = 0;
-                m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_DEATHZ_FALL2, out_ob);
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+                    s_DEATHZ_FALL2,
+                    out_ob
+                );
                 m_poseDeath = static_cast<CAniElement*>(out_ob);
             }
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             goto tail;
@@ -301,11 +304,14 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
 
         case DEATH_ELECTROCUTE: {
             void* out_ob = 0;
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_DEATHZ_ELECTROCUTE, out_ob);
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+                s_DEATHZ_ELECTROCUTE,
+                out_ob
+            );
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
             DEATH_CUE(0x353);
             goto finalize;
         }
@@ -313,58 +319,58 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
         case DEATH_MELT: {
             SnapToLastTile(1);
             void* out_ob = 0;
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_DEATHZ_MELT, out_ob);
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_MELT, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_MELT, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_MELT, DEATH_FRAME());
             DEATH_CUE(0x359);
             goto finalize;
         }
 
         case DEATH_KAROKE: {
             void* out_ob = 0;
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_DEATHZ_KAROKE, out_ob);
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_KAROKE, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseDeath, 0);
-            m_38->ApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
             DEATH_CUE(0x358);
             goto tail;
         }
 
         case DEATH_EXPLODE: {
             if (m_entranceReason == 1) {
-                m_value = m_38->m_1a0.m_14;
-                m_38->m_1a0.Setup(m_poseDeath);
+                m_value = m_wwdObject->m_1a0.m_14;
+                m_wwdObject->m_1a0.Setup(m_poseDeath);
                 goto pathA;
             }
             void* out_ob = 0;
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_DEATHZ_EXPLODE, out_ob);
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_EXPLODE, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_38->m_1a0.m_14;
-            m_38->m_1a0.Setup(m_poseDeath);
-            m_38->ApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->m_1a0.Setup(m_poseDeath);
+            m_wwdObject->ApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
         }
 
         case DEATH_DRAIN: {
             void* out_ob = 0;
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_EXITZ_DRAIN, out_ob);
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_EXITZ_DRAIN, out_ob);
             m_poseDeath = static_cast<CAniElement*>(out_ob);
-            m_value = m_38->m_1a0.m_14;
-            m_38->m_1a0.Setup(m_poseDeath);
-            m_38->ApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->m_1a0.Setup(m_poseDeath);
+            m_wwdObject->ApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId(s_dExitKeyB);
             goto tail;
         }
 
         default:
-            m_value = m_38->m_1a0.m_14;
-            m_38->m_1a0.Setup(m_poseDeath);
-            m_38->ApplyName(static_cast<const char*>(m_44c));
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->m_1a0.Setup(m_poseDeath);
+            m_wwdObject->ApplyName(static_cast<const char*>(m_44c));
             {
                 CGruntzMgr* g = g_gameReg;
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
@@ -376,14 +382,14 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             }
 
             if (m_entranceReason == 0x14 && g_gameReg->m_134 != 1) {
-                m_38->ApplyLookupGeometry(s_NORMALGRUNT_DEATH, 0);
-                m_38->ApplyName(s_NORMALGRUNT_DEATH);
+                m_wwdObject->ApplyLookupGeometry(s_NORMALGRUNT_DEATH, 0);
+                m_wwdObject->ApplyName(s_NORMALGRUNT_DEATH);
             }
             goto tail;
     }
 
 pathA:
-    m_38->ApplyName(static_cast<const char*>(m_44c));
+    m_wwdObject->ApplyName(static_cast<const char*>(m_44c));
     {
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(

@@ -34,7 +34,7 @@ LogicTypeId CRainCloud::GetTypeTag() {
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
 
     i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -95,12 +95,12 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 
     if (BeginLeg() == 0) {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
     } else {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
-        m_value = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
 }
 
@@ -115,7 +115,7 @@ void CPathHazard::FireActivation(i32 id) {
 // @early-stop
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* obj = m_object;
 
@@ -236,7 +236,7 @@ i32 CPathHazard::SiblingTick() {
         o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[sel];
     }
 
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* obj = m_object;
     RECT rect;

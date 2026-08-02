@@ -28,7 +28,7 @@ public:
     class CAniElement* CreateAniEntry2(const char* key, void* entry);
     i32 ScanTree(class CSymTab* tree, const char* prefix, const char* suffix);
 
-    CMapStringToPtr m_10;
+    CMapStringToPtr m_animations;
 };
 SIZE_UNKNOWN();
 

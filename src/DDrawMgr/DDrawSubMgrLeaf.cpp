@@ -21,7 +21,7 @@ const char g_fmtPathJoin[] = "%s%s%s";
 RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
     void* val = 0;
-    m_10.Lookup(key, val);
+    m_animations.Lookup(key, val);
     return static_cast<CObject*>(val);
 }
 
@@ -40,13 +40,13 @@ void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
     if (target == 0) {
         return;
     }
-    POSITION pos = m_10.GetStartPosition();
+    POSITION pos = m_animations.GetStartPosition();
     CString key;
     CAniElement* val = 0;
     while (pos != 0) {
-        MapGetNext(m_10, pos, key, val);
+        MapGetNext(m_animations, pos, key, val);
         if (target == val) {
-            m_10.RemoveKey(key);
+            m_animations.RemoveKey(key);
             delete target;
             break;
         }
@@ -55,18 +55,18 @@ void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
 
 RVA(0x00152720, 0xa2)
 void CDDrawSubMgrLeaf::FreeAll() {
-    POSITION pos = m_10.GetStartPosition();
+    POSITION pos = m_animations.GetStartPosition();
     CString key;
     void* val = 0;
     if (pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_animations.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 delete (static_cast<CAniElement*>(val));
             }
         } while (pos != 0);
     }
-    m_10.RemoveAll();
+    m_animations.RemoveAll();
 }
 
 RVA(0x001527d0, 0xf8)
@@ -76,12 +76,12 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
     i32 len = match.GetLength();
     CString key;
     void* val = 0;
-    POSITION pos = m_10.GetStartPosition();
+    POSITION pos = m_animations.GetStartPosition();
     i32 n = 0;
     while (pos != 0) {
-        m_10.GetNextAssoc(pos, key, val);
+        m_animations.GetNextAssoc(pos, key, val);
         if (strncmp(key, match, len) == 0) {
-            m_10.RemoveKey(key);
+            m_animations.RemoveKey(key);
             if (val != 0) {
                 delete (static_cast<CAniElement*>(val));
             }
@@ -102,7 +102,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
         delete el;
         return 0;
     }
-    m_10[key] = el;
+    m_animations[key] = el;
     return el;
 }
 
@@ -117,7 +117,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, void* entry) {
         delete el;
         return 0;
     }
-    m_10[key] = el;
+    m_animations[key] = el;
     return el;
 }
 
@@ -169,9 +169,9 @@ i32 CDDrawSubMgrLeaf::HasKeyPrefix(const char* str) {
     i32 len = strlen(str);
     CString key;
     void* val = 0;
-    POSITION pos = m_10.GetStartPosition();
+    POSITION pos = m_animations.GetStartPosition();
     while (pos != 0) {
-        m_10.GetNextAssoc(pos, key, val);
+        m_animations.GetNextAssoc(pos, key, val);
         if (strncmp(key, str, len) == 0) {
             return 1;
         }
@@ -186,9 +186,9 @@ CString CDDrawSubMgrLeaf::KeyOfValue(CObject* target) {
         return key;
     }
     void* val = 0;
-    POSITION pos = m_10.GetStartPosition();
+    POSITION pos = m_animations.GetStartPosition();
     while (pos != 0) {
-        m_10.GetNextAssoc(pos, key, val);
+        m_animations.GetNextAssoc(pos, key, val);
         if (val == target) {
             return key;
         }

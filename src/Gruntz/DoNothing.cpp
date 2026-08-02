@@ -40,7 +40,7 @@ CDoNothingNormal* RealizeCDoNothingNormal() {
 // @early-stop
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 1;
+    m_wwdObject->m_flags |= 1;
     CImage* aux = m_object->m_layer;
     if (aux != 0) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
@@ -48,8 +48,8 @@ CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             if (m_object->m_animWorker != 0) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
+                m_wwdObject->m_flags &= ~0x1000002;
+                m_wwdObject->m_flags |= 0x800000;
             }
         }
     }

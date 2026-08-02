@@ -72,13 +72,13 @@ static inline CString* ActNameLookupCallReport(i32 id) {
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
-        CAniElement* d = m_38->m_1a0.m_14;
+        CAniElement* d = m_wwdObject->m_1a0.m_14;
         CAniRecordView* e =
             d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
-        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
+        m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
 
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -106,14 +106,14 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.bottom = m_object->m_area.top + 14;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
     m_object->m_1a0.m_2c = 0;
     m_object->m_124 = g_areaHazardParam;
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_frameTime;
     void* entry_ob = 0;
-    g_gameReg->m_world->m_animRegistry->m_10.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
+    g_gameReg->m_world->m_animRegistry->m_animations.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
     CAniElement* entry = static_cast<CAniElement*>(entry_ob);
     if (entry != 0) {
 
@@ -194,13 +194,13 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     m_fired = 1;
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
-        CAniElement* d = m_38->m_1a0.m_14;
+        CAniElement* d = m_wwdObject->m_1a0.m_14;
         CAniRecordView* e =
             d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
-        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
+        m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("B");
@@ -221,14 +221,14 @@ i32 CStaticHazard::LoadAttributes() {
 
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId("A");
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                CAniElement* d = m_38->m_1a0.m_14;
+                CAniElement* d = m_wwdObject->m_1a0.m_14;
                 CAniRecordView* e = d->m_records.GetSize() > 0
                                         ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
                                         : 0;
-                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
+                m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             if (m_object->m_sortKey != 0) {
                 m_object->m_sortKey = 0;
@@ -243,14 +243,14 @@ i32 CStaticHazard::LoadAttributes() {
             return 0;
         }
 
-        m_value = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            CAniElement* d = m_38->m_1a0.m_14;
+            CAniElement* d = m_wwdObject->m_1a0.m_14;
             CAniRecordView* e = d->m_records.GetSize() > 0
                                     ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
                                     : 0;
-            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
+            m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_sortKey != 0) {
             m_object->m_sortKey = 0;
@@ -267,14 +267,14 @@ i32 CStaticHazard::LoadAttributes() {
             goto dispatch;
         }
 
-        m_value = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
+        m_value = m_wwdObject->m_1a0.m_14;
+        m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            CAniElement* d = m_38->m_1a0.m_14;
+            CAniElement* d = m_wwdObject->m_1a0.m_14;
             CAniRecordView* e = d->m_records.GetSize() > 0
                                     ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
                                     : 0;
-            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
+            m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_sortKey != 0) {
             m_object->m_sortKey = 0;
@@ -285,7 +285,7 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
 dispatch:
-    if (m_38->m_1a0.Advance(g_engineFrameDelta) == 2) {
+    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) == 2) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {
@@ -312,16 +312,16 @@ dispatch:
         }
     }
     {
-        CAniAdvanceCursor* sub = &m_38->m_1a0;
+        CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
         if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
+            m_value = m_wwdObject->m_1a0.m_14;
+            m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                CAniElement* d = m_38->m_1a0.m_14;
+                CAniElement* d = m_wwdObject->m_1a0.m_14;
                 CAniRecordView* e = d->m_records.GetSize() > 0
                                         ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
                                         : 0;
-                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
+                m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CMapMgr* grid = g_gameReg->m_tileGrid;
             if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)

@@ -47,7 +47,7 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
         ar->Read(buf, 0x80);                                                                       \
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
-            dir->m_animRegistry->m_10.Lookup(buf, obj);                                            \
+            dir->m_animRegistry->m_animations.Lookup(buf, obj);                                    \
             (field) = static_cast<CAniElement*>(obj);                                              \
         } else {                                                                                   \
             (field) = 0;                                                                           \

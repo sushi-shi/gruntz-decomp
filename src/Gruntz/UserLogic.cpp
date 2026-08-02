@@ -69,21 +69,21 @@ RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;
-        obj->OwnerMgr()->m_workerCache->m_10.Lookup("LogicHit", found);
+        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicHit", found);
         if (!found) {
             obj->OwnerMgr()->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
         }
     }
     {
         CObject* found = 0;
-        obj->OwnerMgr()->m_workerCache->m_10.Lookup("LogicAttack", found);
+        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicAttack", found);
         if (!found) {
             obj->OwnerMgr()->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
         CObject* found = 0;
-        obj->OwnerMgr()->m_workerCache->m_10.Lookup("LogicBump", found);
+        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicBump", found);
         if (!found) {
             obj->OwnerMgr()->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
         }
@@ -123,15 +123,15 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
 
             arc->Read(name, 0x80);
             arc->Read(m_blob, 0x10);
-            m_34 = obj;
-            m_38 = static_cast<CWwdGameObjectA*>(obj);
-            m_3c = obj->m_animWorker;
+            m_gameObject = obj;
+            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_animWorker = obj->m_animWorker;
             if (strlen(name) == 0) {
                 m_value = 0;
                 return 1;
             }
 
-            CMapStringToPtr* map = &m_3c->m_ownerCtx->m_animRegistry->m_10;
+            CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
             void* val = 0;
             map->Lookup(name, val);
             m_value = static_cast<CAniElement*>(val);
@@ -141,7 +141,7 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
 
             memset(name, 0, sizeof(name));
             if (m_value != 0) {
-                CString nm = m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
+                CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
                 strcpy(name, static_cast<const char*>(nm));
             }
             arc->Write(name, 0x80);

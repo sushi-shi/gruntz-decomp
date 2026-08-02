@@ -58,7 +58,7 @@ RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
     } else {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
         m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -66,8 +66,8 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
             m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
         }
-        m_38->m_flags |= 2;
-        m_38->m_stateFlags |= 1;
+        m_wwdObject->m_flags |= 2;
+        m_wwdObject->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
         g_gameReg->m_scoreHud->m_secretsAvailable++;
@@ -114,12 +114,12 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
             m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
         }
-        m_38->m_flags |= 2;
-        m_38->m_stateFlags |= 1;
+        m_wwdObject->m_flags |= 2;
+        m_wwdObject->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = ActFindId("A");
     } else {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
     }
 }
 
@@ -175,7 +175,7 @@ i32 CSecretLevelTrigger::Tick() {
         if (ok) {
             g_gameReg->m_cmdGrid->CellDispatch(outB, outA, 0xc, -1);
         }
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
 }
@@ -215,7 +215,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
                 g->m_cueSink->SpawnVoiceDriver(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
 }

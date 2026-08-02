@@ -12,7 +12,7 @@ struct LeafCue : public CLoadable {
 
     RVA(0x00158650, 0xb)
     virtual i32 IsLoaded() OVERRIDE {
-        return m_10 != 0;
+        return m_sound != 0;
     }
 
     virtual void Unload() OVERRIDE;
@@ -29,15 +29,15 @@ struct LeafCue : public CLoadable {
 
     i32 TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2);
 
-    DSoundCloneInst* m_10;
-    i32 m_14;
-    i32 m_18;
+    DSoundCloneInst* m_sound;
+    i32 m_lastPlayTime;
+    i32 m_replayDelay;
 };
 SIZE(0x1c);
 inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) : CLoadable(count, handle) {
-    m_10 = 0;
-    m_18 = 0;
-    m_14 = 0;
+    m_sound = 0;
+    m_replayDelay = 0;
+    m_lastPlayTime = 0;
 }
 
 #endif // GRUNTZ_GRUNTZ_LEAFCUE_H

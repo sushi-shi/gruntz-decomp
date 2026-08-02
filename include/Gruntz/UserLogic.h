@@ -121,9 +121,9 @@ class CWapX {
 public:
     CWapX() {}
     CWapX(CGameObject* obj) {
-        m_34 = obj;
-        m_38 = static_cast<CWwdGameObjectA*>(obj);
-        m_3c = obj->m_animWorker;
+        m_gameObject = obj;
+        m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+        m_animWorker = obj->m_animWorker;
     }
     ~CWapX() {}
 
@@ -131,10 +131,10 @@ public:
 
     void Apply(class CAniElement* a, i32 b);
 
-    CGameObject* m_34;
-    CWwdGameObjectA* m_38;
+    CGameObject* m_gameObject;
+    CWwdGameObjectA* m_wwdObject;
 
-    AnimWorkerObj* m_3c;
+    AnimWorkerObj* m_animWorker;
 
     class CAniElement* m_value;
     char m_blob[0x10];

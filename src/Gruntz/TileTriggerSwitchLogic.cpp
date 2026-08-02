@@ -177,7 +177,7 @@ i32 CTileTriggerLogic::Tick() {
     switch (srcId) {
         case 15: {
             if (trans != 0) {
-                trans->m_38->m_flags |= 0x10000;
+                trans->m_wwdObject->m_flags |= 0x10000;
                 trans = 0;
             }
             i32 ty = m_tileY;
@@ -190,7 +190,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case 16: {
             if (trans != 0) {
-                trans->m_38->m_flags |= 0x10000;
+                trans->m_wwdObject->m_flags |= 0x10000;
                 trans = 0;
             }
             i32 ty = m_tileY;
@@ -203,7 +203,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case 17: {
             if (trans != 0) {
-                trans->m_38->m_flags |= 0x10000;
+                trans->m_wwdObject->m_flags |= 0x10000;
                 trans = 0;
             }
             i32 ty = m_tileY;
@@ -216,7 +216,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case 18: {
             if (trans != 0) {
-                trans->m_38->m_flags |= 0x10000;
+                trans->m_wwdObject->m_flags |= 0x10000;
                 trans = 0;
             }
             i32 ty = m_tileY;
@@ -270,7 +270,7 @@ i32 CTileTriggerLogic::Tick() {
                             CTileTriggerTransition* lg =
                                 static_cast<CTileTriggerTransition*>(o->m_animWorker->m_logic);
                             if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
-                                lg->m_38->m_flags |= 0x10000;
+                                lg->m_wwdObject->m_flags |= 0x10000;
                             }
                         }
                     }
@@ -502,7 +502,7 @@ i32 CTileTriggerLogic::Tick() {
 
     if (trans != 0) {
         if (trans->ApplyAnimation(PbStr(key), PbStr(anim)) == 0) {
-            trans->m_38->m_flags |= 0x10000;
+            trans->m_wwdObject->m_flags |= 0x10000;
         }
     }
     LoadBridgeMove(srcId);
@@ -675,7 +675,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         return;
     }
     void* out_ob = 0;
-    sreg->m_10.Lookup("LEVEL_ROCKBREAK", out_ob);
+    sreg->m_cues.Lookup("LEVEL_ROCKBREAK", out_ob);
     LeafCue* out = static_cast<LeafCue*>(out_ob);
     if (out == 0) {
         return;
@@ -684,11 +684,11 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         return;
     }
     i32 kc = g_killCueClock;
-    if (static_cast<u32>((kc - out->m_14)) < static_cast<u32>(out->m_18)) {
+    if (static_cast<u32>((kc - out->m_lastPlayTime)) < static_cast<u32>(out->m_replayDelay)) {
         return;
     }
-    out->m_14 = kc;
-    out->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+    out->m_lastPlayTime = kc;
+    out->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
 }
 
 // @early-stop

@@ -59,11 +59,11 @@ CActReg CActRegPool<CToobSpikez>::s_table(2000, 2010);
 
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 2);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
     m_object->m_164 = m_object->m_screenX >> 5;
     m_object->m_168 = m_object->m_screenY >> 5;
     if (m_object->m_sortKey != 0xc) {
@@ -114,6 +114,6 @@ void CToobSpikez::RegisterActs() {
 
 RVA(0x00114bc0, 0x17)
 i32 CToobSpikez::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }

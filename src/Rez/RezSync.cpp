@@ -548,7 +548,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     {
         void* mv = 0;
-        m_world->m_soundRegistry->m_10.Lookup("GAME_MOVIE", mv);
+        m_world->m_soundRegistry->m_cues.Lookup("GAME_MOVIE", mv);
         m_world->m_soundRegistry->MatchSub(static_cast<LeafCue*>(mv), 0);
     }
     CheckMovieFileExists();

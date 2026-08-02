@@ -108,13 +108,13 @@ i32 CAttract::EnterState(i32 arg) {
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
     void* found = 0;
-    menuRoot()->m_soundRegistry->m_10.Lookup(buf, found);
+    menuRoot()->m_soundRegistry->m_cues.Lookup(buf, found);
     m_host = static_cast<LeafCue*>(found);
     if (found != 0 && m_activeFlag != 0) {
         if (g_sndEnabled) {
-            m_host->m_10->ApplyAndPlay(0x64, 0, 0, 0);
+            m_host->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
         }
-        m_idleTimer = m_host->m_10->m_durationMs + 0x2710;
+        m_idleTimer = m_host->m_sound->m_durationMs + 0x2710;
     } else {
         m_idleTimer = 0x1f40;
     }
@@ -131,11 +131,11 @@ i32 CAttract::LeaveState(i32 arg) {
     if (m_host == 0) {
         return 1;
     }
-    if (!m_host->m_10->IsPlaying()) {
+    if (!m_host->m_sound->IsPlaying()) {
         return 1;
     }
-    m_host->m_10->CloneAndPlay(0, 0x1f4, 1);
-    if (!m_host->m_10->IsPlaying()) {
+    m_host->m_sound->CloneAndPlay(0, 0x1f4, 1);
+    if (!m_host->m_sound->IsPlaying()) {
         return 1;
     }
     do {
@@ -143,7 +143,7 @@ i32 CAttract::LeaveState(i32 arg) {
         if (reg->m_soundStream) {
             reg->m_soundStream->PurgeVoiceList(-1);
         }
-    } while (m_host->m_10->IsPlaying());
+    } while (m_host->m_sound->IsPlaying());
     return 1;
 }
 

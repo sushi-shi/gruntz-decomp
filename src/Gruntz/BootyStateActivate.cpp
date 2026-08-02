@@ -112,12 +112,13 @@ i32 CBootyState::EnterState(i32) {
     i32 token = reg->m_soundVolume;
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
-        MapLookup(set->m_10, "BOOTY_LOOP", res);
+        MapLookup(set->m_cues, "BOOTY_LOOP", res);
         if (res != 0 && g_sndEnabled != 0) {
             u32 now = g_killCueClock;
-            if (now - static_cast<u32>(res->m_14) >= static_cast<u32>(res->m_18)) {
-                res->m_14 = now;
-                res->m_10->ConfigureItem(token, 0, 0, 1);
+            if (now - static_cast<u32>(res->m_lastPlayTime)
+                >= static_cast<u32>(res->m_replayDelay)) {
+                res->m_lastPlayTime = now;
+                res->m_sound->ConfigureItem(token, 0, 0, 1);
             }
         }
     }
@@ -128,11 +129,11 @@ i32 CBootyState::EnterState(i32) {
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(i32) {
     void* obj = 0;
-    m_world->m_soundRegistry->m_10.Lookup("BOOTY_LOOP", obj);
+    m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
-    if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
-        (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
-        while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
+    if (found && (static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
+        (static_cast<DirectSoundMgr*>(found->m_sound))->CloneAndPlay(0, 0x1f4, 1);
+        while ((static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
             if (m_world->m_soundRegistry->m_soundStream != 0) {
                 m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }
@@ -397,12 +398,13 @@ i32 CBootyState::CheckPerfectBonus() {
         CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
         if (m28->m_emitGate == 0) {
             void* found = 0;
-            m28->m_10.Lookup("BOOTY_PERFECT", found);
+            m28->m_cues.Lookup("BOOTY_PERFECT", found);
             if (found && g_sndEnabled != 0) {
                 LeafCue* p = static_cast<LeafCue*>(found);
-                if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
-                    p->m_14 = g_killCueClock;
-                    p->m_10->ConfigureItem(item, 0, 0, 0);
+                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                    >= static_cast<u32>(p->m_replayDelay)) {
+                    p->m_lastPlayTime = g_killCueClock;
+                    p->m_sound->ConfigureItem(item, 0, 0, 0);
                 }
             }
         }
@@ -447,7 +449,7 @@ i32 CBootyState::Render() {
             CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 LeafCue* cue = 0;
-                MapLookup(set->m_10, "BOOTY_WARP", cue);
+                MapLookup(set->m_cues, "BOOTY_WARP", cue);
                 if (cue != 0) {
                     cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
@@ -463,7 +465,7 @@ i32 CBootyState::Render() {
             CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 LeafCue* cue = 0;
-                MapLookup(set->m_10, "BOOTY_BOOM", cue);
+                MapLookup(set->m_cues, "BOOTY_BOOM", cue);
                 if (cue != 0) {
                     cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
@@ -989,12 +991,13 @@ i32 CMultiBootyState::EnterState(i32) {
     CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
     if (m28->m_emitGate == 0) {
         void* found = 0;
-        m28->m_10.Lookup("BOOTY_LOOP", found);
+        m28->m_cues.Lookup("BOOTY_LOOP", found);
         if (found && g_sndEnabled != 0) {
             LeafCue* p = static_cast<LeafCue*>(found);
-            if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
-                p->m_14 = g_killCueClock;
-                p->m_10->ConfigureItem(item, 0, 0, 1);
+            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                >= static_cast<u32>(p->m_replayDelay)) {
+                p->m_lastPlayTime = g_killCueClock;
+                p->m_sound->ConfigureItem(item, 0, 0, 1);
             }
         }
     }
@@ -1005,11 +1008,11 @@ i32 CMultiBootyState::EnterState(i32) {
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(i32) {
     void* obj = 0;
-    m_world->m_soundRegistry->m_10.Lookup("BOOTY_LOOP", obj);
+    m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
-    if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
-        (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
-        while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
+    if (found && (static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
+        (static_cast<DirectSoundMgr*>(found->m_sound))->CloneAndPlay(0, 0x1f4, 1);
+        while ((static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
             if (m_world->m_soundRegistry->m_soundStream != 0) {
                 m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }

@@ -111,7 +111,7 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
 
             CString t = tokens.GetAt(i);
             void* v = 0;
-            owner->m_10.Lookup(t, v);
+            owner->m_cues.Lookup(t, v);
 
             AddrWord<char> idx;
             idx.m_addr = static_cast<char*>(v);

@@ -20,9 +20,9 @@ RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 
 RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
+    m_wwdObject->ApplyName("GAME_GRUNTSELECTEDSPRITE");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     if (m_object->m_sortKey != 0x14) {
@@ -73,7 +73,7 @@ i32 CGruntSelectedSprite::Update() {
     CGruntzMgr* reg = g_gameReg;
     CGrunt* e = reg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_arrived != 0) {
-        m_38->m_1a0.Advance(g_engineFrameDelta);
+        m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;
     }

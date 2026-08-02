@@ -23,7 +23,7 @@
 // @early-stop
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     if (g_gameReg->m_134 == 1) {
         CWwdGameObjectA* trig = m_object;
         CTriggerMgr::HitSpanArg span;

@@ -629,23 +629,23 @@ i32 CResolveNode::Init(
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerCache::Unload() {
     CObject* val = 0;
-    POSITION pos = m_10.GetStartPosition();
+    POSITION pos = m_workers.GetStartPosition();
     CString key;
     if (pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_workers.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 delete (static_cast<CDDrawWorker*>(val));
             }
         } while (pos != 0);
     }
-    m_10.RemoveAll();
+    m_workers.RemoveAll();
 }
 
 RVA(0x001652c0, 0x92)
 void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags) {
 
-    AnimWorkerObj* w = new AnimWorkerObj(OwnerMgr(), m_10.GetCount());
+    AnimWorkerObj* w = new AnimWorkerObj(OwnerMgr(), m_workers.GetCount());
 
     if (w->Init(factory, flags) == 0) {
         if (w != 0) {
@@ -653,17 +653,17 @@ void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, 
         }
         return 0;
     }
-    m_10[key] = static_cast<CObject*>(w);
+    m_workers[key] = static_cast<CObject*>(w);
     return w;
 }
 
 RVA(0x00165360, 0xf1)
 CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
     CObject* val = 0;
-    POSITION pos = m_10.GetStartPosition();
+    POSITION pos = m_workers.GetStartPosition();
     CString key;
     while (pos != 0) {
-        m_10.GetNextAssoc(pos, key, val);
+        m_workers.GetNextAssoc(pos, key, val);
 
         if (val != 0
             && static_cast<AnimWorkerObj*>(val)->m_notify

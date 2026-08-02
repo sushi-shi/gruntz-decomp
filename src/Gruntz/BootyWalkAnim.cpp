@@ -153,7 +153,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
             if (ss->m_emitGate == 0) {
                 LeafCue* res = 0;
-                MapLookup(ss->m_10, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
+                MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
                 if (res != 0) {
                     res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
@@ -164,11 +164,11 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (m_soundStarted != 0) {
         CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
         LeafCue* res = 0;
-        MapLookup(ss->m_10, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
+        MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
         if (res == 0) {
             return 1;
         }
-        if (res->m_10->IsPlaying() != 0) {
+        if (res->m_sound->IsPlaying() != 0) {
             m_visSprites[m_stepIndex]->m_stateFlags ^= 1;
         } else {
             m_visSprites[m_stepIndex]->m_stateFlags |= 1;
@@ -198,12 +198,12 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
                     if (ss->m_emitGate == 0) {
                         LeafCue* res = 0;
-                        MapLookup(ss->m_10, "GAME_FLAGRISE", res);
+                        MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
                         if (res != 0 && g_sndEnabled != 0) {
                             u32 clock = g_killCueClock;
-                            if (clock - res->m_14 >= res->m_18) {
-                                res->m_14 = clock;
-                                res->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                            if (clock - res->m_lastPlayTime >= res->m_replayDelay) {
+                                res->m_lastPlayTime = clock;
+                                res->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                             }
                         }
                     }

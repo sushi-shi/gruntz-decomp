@@ -30,16 +30,16 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
         CDDrawSubMgrLeafScan* host = reg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out_ob = 0;
-            host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);
+            host->m_cues.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);
             LeafCue* out = static_cast<LeafCue*>(out_ob);
             if (out != 0) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;
                 if (enabled != 0) {
                     u32 now = g_killCueClock;
-                    if (static_cast<u32>((now - out->m_14)) >= out->m_18) {
-                        out->m_14 = now;
-                        out->m_10->ConfigureItem(tag, 0, 0, 0);
+                    if (static_cast<u32>((now - out->m_lastPlayTime)) >= out->m_replayDelay) {
+                        out->m_lastPlayTime = now;
+                        out->m_sound->ConfigureItem(tag, 0, 0, 0);
                     }
                 }
             }
@@ -55,8 +55,8 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0x7;
     o->m_drawFillArg = n;
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
     m_object->m_area.left = 1;
     m_object->m_area.right = 1;
     m_object->m_area.top = 1;

@@ -129,16 +129,17 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             LeafCue* found = 0;
             void* foundP = 0;
 
-            mh->m_10.Lookup("GAME_TABHIGHLIGHT2", foundP);
+            mh->m_cues.Lookup("GAME_TABHIGHLIGHT2", foundP);
             found = static_cast<LeafCue*>(foundP);
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     LeafCue* p = found;
-                    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
-                        p->m_14 = g_killCueClock;
-                        p->m_10->ConfigureItem(item, 0, 0, 0);
+                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                        >= static_cast<u32>(p->m_replayDelay)) {
+                        p->m_lastPlayTime = g_killCueClock;
+                        p->m_sound->ConfigureItem(item, 0, 0, 0);
                     }
                 }
             }

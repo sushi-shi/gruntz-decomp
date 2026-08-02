@@ -44,7 +44,7 @@ public:
 
     CString FindKeyOfValue(CObject* target);
 
-    CMapStringToOb m_10;
+    CMapStringToOb m_workers;
 };
 SIZE_UNKNOWN();
 

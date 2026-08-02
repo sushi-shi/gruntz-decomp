@@ -23,7 +23,7 @@
         CDDrawSubMgrLeafScan* _s = (sndHost);                                                      \
         if (_s->m_emitGate == 0) {                                                                 \
             void* found = 0;                                                                       \
-            _s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);                                          \
+            _s->m_cues.Lookup("GAME_TABHIGHLIGHT1", found);                                        \
             if (found != 0)                                                                        \
                 static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                 \
         }                                                                                          \
@@ -230,7 +230,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         CDDrawSubMgrLeafScan* s = self->m_mgr->m_world->m_soundRegistry;
         if (s->m_emitGate == 0) {
             void* found = 0;
-            s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
+            s->m_cues.Lookup("GAME_TABHIGHLIGHT1", found);
             if (found != 0) {
                 static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }

@@ -314,15 +314,15 @@ i32 CChatBox::PlayFocusSound() {
     CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
     if (!roster->m_emitGate) {
         void* t_ob = 0;
-        roster->m_10.Lookup(static_cast<const char*>(m_row0Key), t_ob);
+        roster->m_cues.Lookup(static_cast<const char*>(m_row0Key), t_ob);
         LeafCue* t = static_cast<LeafCue*>(t_ob);
         if (t != 0 && g_sndEnabled != 0) {
             i32 delta = g_sndCueTag;
             i32 clock = g_killCueClock;
-            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
-            if (elapsed >= static_cast<u32>(t->m_18)) {
-                t->m_14 = clock;
-                return t->m_10->ConfigureItem(delta, 0, 0, 0);
+            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
+            if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
+                t->m_lastPlayTime = clock;
+                return t->m_sound->ConfigureItem(delta, 0, 0, 0);
             }
         }
     }
@@ -338,15 +338,15 @@ i32 CChatBox::PlayActivationSound() {
     CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
     if (!roster->m_emitGate) {
         void* t_ob = 0;
-        roster->m_10.Lookup(static_cast<const char*>(m_row1Key), t_ob);
+        roster->m_cues.Lookup(static_cast<const char*>(m_row1Key), t_ob);
         LeafCue* t = static_cast<LeafCue*>(t_ob);
         if (t != 0 && g_sndEnabled != 0) {
             i32 delta = g_sndCueTag;
             i32 clock = g_killCueClock;
-            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
-            if (elapsed >= static_cast<u32>(t->m_18)) {
-                t->m_14 = clock;
-                return t->m_10->ConfigureItem(delta, 0, 0, 0);
+            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
+            if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
+                t->m_lastPlayTime = clock;
+                return t->m_sound->ConfigureItem(delta, 0, 0, 0);
             }
         }
     }

@@ -46,7 +46,7 @@ RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 // @early-stop
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
 
     i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -64,7 +64,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_164 = (m_object->m_164 << 5) + 0x10;
     m_object->m_168 = (m_object->m_168 << 5) + 0x10;
     if (m_object->m_screenX == m_object->m_164 && m_object->m_screenY == m_object->m_168) {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
         return;
     }
     m_object->m_extent.left =
@@ -104,12 +104,12 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_stepMag = 0.0;
     if (LoadSprites() == 0) {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_object->m_area.left = 0;
     m_object->m_area.right = 0;
     m_object->m_area.top = 0;
@@ -164,7 +164,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // @early-stop
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
@@ -185,7 +185,7 @@ i32 CKitchenSlime::Tick() {
 
     CGameObject* lvl = Level();
     if (lvl->m_screenX == m_tileX && lvl->m_screenY == m_tileY && LoadSprites() == 0) {
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
         return 0;
     }
 

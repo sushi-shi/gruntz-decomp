@@ -30,7 +30,7 @@ RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_id);
+    m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_wwdObject->m_id);
     RECT bounds;
     RECT r;
     CopyRect(&r, g_gameReg->GetRect(&bounds));
@@ -72,6 +72,6 @@ void CSingleFrameMessage::RegisterActs() {
 
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {
-    m_38->m_flags |= 0x10000;
+    m_wwdObject->m_flags |= 0x10000;
     return 0;
 }

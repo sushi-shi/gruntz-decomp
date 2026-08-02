@@ -13,7 +13,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
     if (m_deathType == 0) {
         return 0;
     }
-    if (m_38->m_1a0.Advance(g_engineFrameDelta) == 1) {
+    if (m_wwdObject->m_1a0.Advance(g_engineFrameDelta) == 1) {
         if (m_entranceReason == 1 && m_deathType != 5) {
             m_tileMgr->BuildRockBreakParticles(
                 m_object->m_screenX,
@@ -32,7 +32,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
             );
         }
     }
-    CAniAdvanceCursor* sub = &m_38->m_1a0;
+    CAniAdvanceCursor* sub = &m_wwdObject->m_1a0;
     if (sub->m_finished == 0) {
         return 0;
     }
@@ -71,7 +71,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
     if (m_36c == 0) {
         m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
-    m_38->m_flags |= 0x10000;
+    m_wwdObject->m_flags |= 0x10000;
     return 0;
 }
 
@@ -79,12 +79,12 @@ i32 CGrunt::LoadGruntDecayConfig() {
 RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
-        m_38->m_stateFlags |= 1;
-        m_38->m_imageSet->SetAllTypes(1);
+        m_wwdObject->m_stateFlags |= 1;
+        m_wwdObject->m_imageSet->SetAllTypes(1);
         if (m_36c == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
-        m_38->m_flags |= 0x10000;
+        m_wwdObject->m_flags |= 0x10000;
         return 0;
     }
     i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer;

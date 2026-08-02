@@ -20,5 +20,5 @@ RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 // @early-stop
 RVA(0x0009b8b0, 0x18f)
 CLevelTime::CLevelTime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
 }

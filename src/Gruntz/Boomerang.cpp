@@ -28,7 +28,7 @@ RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
 }
 
 // @early-stop

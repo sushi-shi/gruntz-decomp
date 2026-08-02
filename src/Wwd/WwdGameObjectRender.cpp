@@ -208,7 +208,7 @@ CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags) {
     CObject* val = 0;
 
-    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
     if (val == 0) {
         return 0;
     }

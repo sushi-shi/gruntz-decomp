@@ -21,7 +21,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0xdbba0;
         m_object->m_flags |= 0x20000;
     }
-    m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_124);
+    m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_124);
     m_countdownLo = 0x1388;
     m_countdownHi = 0;
     m_startClockLo = g_frameTime;

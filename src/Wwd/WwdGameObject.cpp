@@ -90,7 +90,7 @@ RVA(0x001505b0, 0x5e)
 i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 
     CAniElement* spr = 0;
-    MapLookup(OwnerMgr()->m_animRegistry->m_10, name, spr);
+    MapLookup(OwnerMgr()->m_animRegistry->m_animations, name, spr);
     if (!spr) {
         return 0;
     }
@@ -105,7 +105,7 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
     CDDrawWorker* spr = 0;
-    MapLookup(OwnerMgr()->m_soundRegistry->m_10, name, spr);
+    MapLookup(OwnerMgr()->m_soundRegistry->m_cues, name, spr);
     if (spr == 0) {
         return 0;
     }
@@ -333,7 +333,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
 
         void* found = 0;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        mgr->m_soundRegistry->m_10.Lookup(name, found);
+        mgr->m_soundRegistry->m_cues.Lookup(name, found);
         m_19c = static_cast<LeafCue*>(found);
     }
     return 1;
@@ -416,7 +416,7 @@ i32 CGameObject::EnsureHitWorker(AnimWorkerObj* src) {
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
     CObject* handlerOb = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(key, handlerOb);
     EnsureHitWorker(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
@@ -441,7 +441,7 @@ i32 CGameObject::EnsureAttackWorker(AnimWorkerObj* src) {
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
     CObject* handlerOb = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(key, handlerOb);
     EnsureAttackWorker(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
@@ -466,7 +466,7 @@ i32 CGameObject::EnsureBumpWorker(AnimWorkerObj* src) {
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
     CObject* handlerOb = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
+    OwnerMgr()->m_workerCache->m_workers.Lookup(key, handlerOb);
     EnsureBumpWorker(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
@@ -705,7 +705,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
+        OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
         if (this->EnsureHitWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
         }
@@ -714,7 +714,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
+        OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
         if (this->EnsureAttackWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
         }
@@ -723,7 +723,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
+        OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
         if (this->EnsureBumpWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
         }

@@ -107,15 +107,15 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             name = "GAME_FORTRESSFLAGZ_VIKING";
             break;
         default:
-            m_38->m_flags |= 0x10000;
+            m_wwdObject->m_flags |= 0x10000;
             return;
     }
-    m_38->ApplyName(name);
+    m_wwdObject->ApplyName(name);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_38->m_flags |= 3;
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_wwdObject->m_flags |= 3;
     i32 idx = g_gameReg->m_options[m_object->m_124].m_008;
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
@@ -157,7 +157,7 @@ void CFortressFlag::RegisterActs() {
 
 RVA(0x000463e0, 0x17)
 i32 CFortressFlag::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -284,7 +284,7 @@ RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
     if (m_object->m_sortKey != 0xcf84f) {
         m_object->m_sortKey = 0xcf84f;
         m_object->m_flags |= 0x20000;
@@ -324,8 +324,8 @@ void CParticlez::RegisterActs() {
 
 RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* o = m_38;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    CWwdGameObjectA* o = m_wwdObject;
     if (o->m_1a0.m_finished != 0 && o->m_1a0.m_frameTicksLeft == 0) {
         o->m_flags |= 0x10000;
     }
@@ -335,10 +335,10 @@ i32 CParticlez::Update() {
 // @early-stop
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->ApplyName("GAME_EXPLOSION");
+    m_wwdObject->ApplyName("GAME_EXPLOSION");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_flags |= 0x2000002;
+    m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0xf4240) {
         o->m_sortKey = 0xf4240;

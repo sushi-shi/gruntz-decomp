@@ -19,5 +19,5 @@ VTBL(CGuardPoint, 0x001e7154);
 // @early-stop
 RVA(0x000ae5f0, 0x18f)
 CGuardPoint::CGuardPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= 1;
 }

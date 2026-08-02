@@ -33,8 +33,8 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             if (m_object->m_animWorker != 0) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
+                m_wwdObject->m_flags &= ~0x1000002;
+                m_wwdObject->m_flags |= 0x800000;
             }
         }
     }

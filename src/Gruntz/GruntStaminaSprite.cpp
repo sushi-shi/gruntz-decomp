@@ -9,7 +9,7 @@ RVA_COMPGEN(0x00012070, 0x44, ??1CGruntStaminaSprite@@UAE@XZ)
 // @early-stop
 RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
-    m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
+    m_wwdObject->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     CWwdGameObjectA* o = m_object;

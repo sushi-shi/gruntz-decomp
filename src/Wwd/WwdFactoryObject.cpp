@@ -777,7 +777,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     } else {
 
         void* out = 0;
-        OwnerMgr()->m_animRegistry->m_10.Lookup(buf, out);
+        OwnerMgr()->m_animRegistry->m_animations.Lookup(buf, out);
         m_14 = static_cast<CAniElement*>(out);
     }
     CAniElement* w = m_14;

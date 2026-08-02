@@ -19,5 +19,5 @@ VTBL(CWayPoint, 0x001e74b4);
 // @early-stop
 RVA(0x000ae3f0, 0x18f)
 CWayPoint::CWayPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= 1;
 }

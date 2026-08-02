@@ -313,7 +313,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* srcMap = &entry->m_soundRegistry->m_10;
+    CMapStringToPtr* srcMap = &entry->m_soundRegistry->m_cues;
     if (srcMap == 0) {
         return 0;
     }
@@ -381,7 +381,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* srcMap = &entry->m_animRegistry->m_10;
+    CMapStringToPtr* srcMap = &entry->m_animRegistry->m_animations;
     if (srcMap == 0) {
         return 0;
     }

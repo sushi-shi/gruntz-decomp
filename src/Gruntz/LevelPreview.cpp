@@ -145,14 +145,15 @@ void CPreviewState::LoadLevelPreviewScreen() {
         CDDrawSubMgrLeafScan* h = m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* p_ob = 0;
-            h->m_10.Lookup("GAME_TELEPORTEROPEN", p_ob);
+            h->m_cues.Lookup("GAME_TELEPORTEROPEN", p_ob);
             LeafCue* p = static_cast<LeafCue*>(p_ob);
             if (p != 0) {
                 i32 tag = g_sndCueTag;
                 if (g_sndEnabled != 0
-                    && static_cast<u32>((g_killCueClock - p->m_14)) >= static_cast<u32>(p->m_18)) {
-                    p->m_14 = g_killCueClock;
-                    p->m_10->ConfigureItem(tag, 0, 0, 0);
+                    && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
+                           >= static_cast<u32>(p->m_replayDelay)) {
+                    p->m_lastPlayTime = g_killCueClock;
+                    p->m_sound->ConfigureItem(tag, 0, 0, 0);
                 }
             }
         }

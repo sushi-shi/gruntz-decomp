@@ -28,7 +28,7 @@ RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 // @early-stop
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
 }
@@ -65,9 +65,9 @@ void CSingleAnimation::RegisterActs() {
 
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
-    m_38->m_1a0.Advance(g_engineFrameDelta);
-    if (m_38->m_1a0.m_finished != 0 && m_38->m_1a0.m_frameTicksLeft == 0) {
-        m_38->m_flags |= 0x10000;
+    m_wwdObject->m_1a0.Advance(g_engineFrameDelta);
+    if (m_wwdObject->m_1a0.m_finished != 0 && m_wwdObject->m_1a0.m_frameTicksLeft == 0) {
+        m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
 }

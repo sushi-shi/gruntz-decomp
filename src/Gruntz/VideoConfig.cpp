@@ -512,7 +512,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         void* cue_ob = 0;
-        host->m_10.Lookup("GAME_VOICE", cue_ob);
+        host->m_cues.Lookup("GAME_VOICE", cue_ob);
         LeafCue* cue = static_cast<LeafCue*>(cue_ob);
         if (!cue) {
             return;
@@ -520,11 +520,12 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (!g_sndEnabled) {
             return;
         }
-        if (static_cast<u32>((g_killCueClock - cue->m_14)) < static_cast<u32>(cue->m_18)) {
+        if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+            < static_cast<u32>(cue->m_replayDelay)) {
             return;
         }
-        cue->m_14 = g_killCueClock;
-        cue->m_10->ConfigureItem(newpos, 0, 0, 0);
+        cue->m_lastPlayTime = g_killCueClock;
+        cue->m_sound->ConfigureItem(newpos, 0, 0, 0);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
@@ -537,7 +538,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         void* cue_ob = 0;
-        host->m_10.Lookup("GAME_CHIPFALLOUT", cue_ob);
+        host->m_cues.Lookup("GAME_CHIPFALLOUT", cue_ob);
         LeafCue* cue = static_cast<LeafCue*>(cue_ob);
         if (!cue) {
             return;
@@ -545,11 +546,12 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (!g_sndEnabled) {
             return;
         }
-        if (static_cast<u32>((g_killCueClock - cue->m_14)) < static_cast<u32>(cue->m_18)) {
+        if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+            < static_cast<u32>(cue->m_replayDelay)) {
             return;
         }
-        cue->m_14 = g_killCueClock;
-        cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+        cue->m_lastPlayTime = g_killCueClock;
+        cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
         return;
     }
 }

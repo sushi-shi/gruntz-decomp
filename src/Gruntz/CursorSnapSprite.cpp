@@ -59,13 +59,13 @@ i32 CursorSnapWorkerPump(CGameObject* owner) {
 // @early-stop
 RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->ApplyName("GAME_CURSORSNAPSPRITE");
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
+    m_wwdObject->ApplyName("GAME_CURSORSNAPSPRITE");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_flags |= 2;
-    m_38->m_stateFlags |= 1;
+    m_wwdObject->m_flags |= 2;
+    m_wwdObject->m_stateFlags |= 1;
 }
 
 RVA(0x0003a5b0, 0x102)

@@ -210,7 +210,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
             if (ss->m_emitGate == 0) {
                 LeafCue* res = 0;
-                MapLookup(ss->m_10, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
+                MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
                 if (res != 0) {
                     res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }

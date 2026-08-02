@@ -12,9 +12,9 @@ i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     if (g_sndEnabled == 0) {
         return 0;
     }
-    if (g_killCueClock - static_cast<u32>(m_14) < static_cast<u32>(m_18)) {
+    if (g_killCueClock - static_cast<u32>(m_lastPlayTime) < static_cast<u32>(m_replayDelay)) {
         return 0;
     }
-    m_14 = g_killCueClock;
-    return m_10->ConfigureItem(vol, pan, freqPct, loop);
+    m_lastPlayTime = g_killCueClock;
+    return m_sound->ConfigureItem(vol, pan, freqPct, loop);
 }

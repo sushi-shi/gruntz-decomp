@@ -19,7 +19,7 @@
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         geo = 0;                                                                                   \
-        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, (key), geo);                             \
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key), geo);              \
         id = (idv);                                                                                \
         m_pickupGeoSrc = geo;                                                                      \
     } while (0)
@@ -209,7 +209,11 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             geo = 0;
-            MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, "GRUNTZ_PICKUPS_MEGAPHONE", geo);
+            MapLookup(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                "GRUNTZ_PICKUPS_MEGAPHONE",
+                geo
+            );
             m_pickupGeoSrc = geo;
             i32 n = play->m_guts->GetActiveValue();
             if (countStats != 0) {
@@ -442,8 +446,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
         m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
-    m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_pickupGeoSrc);
-    m_38->ApplyName("GRUNTZ_PICKUPS");
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->m_1a0.Setup(m_pickupGeoSrc);
+    m_wwdObject->ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }

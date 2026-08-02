@@ -1261,15 +1261,15 @@ void CGruntzMgr::CheatSkeletonToggle() {
                     if (host->m_emitGate == 0) {
 
                         void* cue_ob = 0;
-                        host->m_10.Lookup("GAME_MINORCHEAT", cue_ob);
+                        host->m_cues.Lookup("GAME_MINORCHEAT", cue_ob);
                         LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
-                                if (static_cast<u32>((g_killCueClock - cue->m_14))
-                                    >= static_cast<u32>(cue->m_18)) {
-                                    cue->m_14 = g_killCueClock;
-                                    cue->m_10->ConfigureItem(tag, 0, 0, 0);
+                                if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+                                    >= static_cast<u32>(cue->m_replayDelay)) {
+                                    cue->m_lastPlayTime = g_killCueClock;
+                                    cue->m_sound->ConfigureItem(tag, 0, 0, 0);
                                 }
                             }
                         }
@@ -1309,15 +1309,15 @@ void CGruntzMgr::CheatEclipseToggle() {
                     if (host->m_emitGate == 0) {
 
                         void* cue_ob = 0;
-                        host->m_10.Lookup("GAME_MINORCHEAT", cue_ob);
+                        host->m_cues.Lookup("GAME_MINORCHEAT", cue_ob);
                         LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
-                                if (static_cast<u32>((g_killCueClock - cue->m_14))
-                                    >= static_cast<u32>(cue->m_18)) {
-                                    cue->m_14 = g_killCueClock;
-                                    cue->m_10->ConfigureItem(tag, 0, 0, 0);
+                                if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+                                    >= static_cast<u32>(cue->m_replayDelay)) {
+                                    cue->m_lastPlayTime = g_killCueClock;
+                                    cue->m_sound->ConfigureItem(tag, 0, 0, 0);
                                 }
                             }
                         }
@@ -2723,12 +2723,12 @@ void CGruntzMgr::DelayedQuit() {
     }
     m_a4 = 1;
     LeafCue* out = 0;
-    MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
+    MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", out);
     i32 base;
     if (out != 0) {
         out = 0;
-        MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
-        base = out->m_10->m_durationMs + 0x1f4;
+        MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", out);
+        base = out->m_sound->m_durationMs + 0x1f4;
     } else {
         base = 0;
     }

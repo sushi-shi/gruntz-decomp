@@ -684,7 +684,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     AnimWorkerObj* tmpl = 0;
     if (logic.GetLength() != 0) {
         CObject* foundOb = 0;
-        OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(logic), foundOb);
+        OwnerMgr()->m_workerCache->m_workers.Lookup(static_cast<const char*>(logic), foundOb);
         tmpl = static_cast<AnimWorkerObj*>(foundOb);
     }
     if (tmpl == 0) {

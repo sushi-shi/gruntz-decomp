@@ -172,7 +172,7 @@ static inline void GruntScratchTeardown() {
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
-        MapLookup(g_gameReg->m_world->m_soundRegistry->m_10, (key), out);                          \
+        MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, (key), out);                        \
         cue = out;                                                                                 \
     } while (0)
 
@@ -335,10 +335,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     CDDrawSubMgrLeafScan* slot =
-        (static_cast<CDDrawSurfaceMgr*>(m_3c->m_ownerCtx))->m_soundRegistry;
+        (static_cast<CDDrawSurfaceMgr*>(m_animWorker->m_ownerCtx))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
-        MapLookup(slot->m_10, s_GAME_ATTACK, sout);
+        MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
         if (sout != 0) {
 
             sout->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -574,7 +574,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
         return;
     }
     void* entry_ob = 0;
-    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
+    g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
     GruntSoundEntry* entry = static_cast<GruntSoundEntry*>(entry_ob);
     if (entry == 0) {
         return;
@@ -605,7 +605,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
         return;
     }
     void* entry_ob = 0;
-    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
+    g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
     GruntSoundEntry* entry = static_cast<GruntSoundEntry*>(entry_ob);
     if (entry == 0) {
         return;
@@ -1108,7 +1108,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             enemy->m_health = h;
 
             CDDrawSubMgrLeafScan* host =
-                (static_cast<CDDrawSurfaceMgr*>(m_3c->m_ownerCtx))->m_soundRegistry;
+                (static_cast<CDDrawSurfaceMgr*>(m_animWorker->m_ownerCtx))->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 LeafCue* cc = static_cast<LeafCue*>(host->Lookup(s_CONVERSIONHIT));
                 if (cc != 0) {
@@ -1316,9 +1316,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         if (cue != 0 && g_sndEnabled != 0) {
             i32 clk = g_killCueClock;
-            if (static_cast<u32>((clk - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
-                cue->m_14 = clk;
-                cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+            if (static_cast<u32>((clk - cue->m_lastPlayTime))
+                >= static_cast<u32>(cue->m_replayDelay)) {
+                cue->m_lastPlayTime = clk;
+                cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
             }
         }
     }
@@ -1728,7 +1729,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 RVA(0x0005b7e0, 0x23)
 CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
     void* val = 0;
-    m_10.Lookup(key, val);
+    m_cues.Lookup(key, val);
     return static_cast<CObject*>(val);
 }
 

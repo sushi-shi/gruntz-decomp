@@ -8,7 +8,7 @@ RVA_COMPGEN(0x00012130, 0x44, ??1CGruntToyTimeSprite@@UAE@XZ)
 // @early-stop
 RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
-    m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
+    m_wwdObject->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     CWwdGameObjectA* o = m_object;

@@ -998,7 +998,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         d = 0x19;
     }
     if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
-        tgt->m_38->m_flags |= 0x10000;
+        tgt->m_wwdObject->m_flags |= 0x10000;
         g_gameReg->ReportError(0x8009, 0x401);
         return 0;
     }
@@ -1010,10 +1010,10 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (o->m_tileX == tgt->m_tileX && o->m_tileY == tgt->m_tileY) {
             if (o->m_pending != 0) {
-                tgt->m_38->m_flags |= 0x10000;
+                tgt->m_wwdObject->m_flags |= 0x10000;
                 return 0;
             }
-            o->m_38->m_flags |= 0x10000;
+            o->m_wwdObject->m_flags |= 0x10000;
             m_baseList.RemoveAt(cur);
             unlinked = 1;
         }
@@ -1024,7 +1024,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
             POSITION cur = pos;
             CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
             if (o->m_pending == 0) {
-                o->m_38->m_flags |= 0x10000;
+                o->m_wwdObject->m_flags |= 0x10000;
                 m_baseList.RemoveAt(cur);
             }
         }
@@ -1562,13 +1562,13 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             if (set->m_emitGate == 0) {
 
                 void* e_ob = 0;
-                set->m_10.Lookup("LEVEL_ROCKBREAK", e_ob);
+                set->m_cues.Lookup("LEVEL_ROCKBREAK", e_ob);
                 LeafCue* e = static_cast<LeafCue*>(e_ob);
                 if (e != 0 && g_sndEnabled != 0) {
                     u32 now = g_killCueClock;
-                    if (now - e->m_14 >= e->m_18) {
-                        e->m_14 = now;
-                        e->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                    if (now - e->m_lastPlayTime >= e->m_replayDelay) {
+                        e->m_lastPlayTime = now;
+                        e->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }
@@ -1783,7 +1783,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         }
 
         if (ok) {
-            g->m_38->m_flags |= 0x10000;
+            g->m_wwdObject->m_flags |= 0x10000;
 
             m_baseList.RemoveAt(cur);
             CGameObject* spr = g_gameReg->m_world->m_childGroup
@@ -1831,7 +1831,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     CGrunt* logic = static_cast<CGrunt*>(sprite->m_animWorker->m_logic);
 
     if (logic->Place(this, row, free, vis, k, 0, 0, 0, 0, 0, 0, 0) == 0) {
-        logic->m_38->m_flags |= 0x10000;
+        logic->m_wwdObject->m_flags |= 0x10000;
         return 0;
     }
     m_grid[row * TM_GRID_COLS + free] = logic;
@@ -1878,18 +1878,18 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
         case 1:
             if (m_phase != 2) {
                 LeafCue* p = 0;
-                MapLookup(m_world->m_soundRegistry->m_10, "GAME\\FINISHLEVEL", p);
-                m_timerWindow = static_cast<u32>((p->m_10->m_durationMs + 500));
+                MapLookup(m_world->m_soundRegistry->m_cues, "GAME\\FINISHLEVEL", p);
+                m_timerWindow = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_timerBase = g_frameTime;
                 CDDrawSubMgrLeafScan* h28 = m_world->m_soundRegistry;
                 if (h28->m_emitGate == 0) {
                     p = 0;
-                    MapLookup(h28->m_10, "GAME\\FINISHLEVEL", p);
+                    MapLookup(h28->m_cues, "GAME\\FINISHLEVEL", p);
                     if (p != 0 && g_sndEnabled != 0
-                        && static_cast<u32>((g_killCueClock - p->m_14))
-                               >= static_cast<u32>(p->m_18)) {
-                        p->m_14 = g_killCueClock;
-                        p->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                        && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
+                               >= static_cast<u32>(p->m_replayDelay)) {
+                        p->m_lastPlayTime = g_killCueClock;
+                        p->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
                 }
                 m_phase = 1;

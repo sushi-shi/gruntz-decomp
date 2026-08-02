@@ -26,12 +26,13 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
-            h->m_10.Lookup("GAME_SWITCHDOWN", spr_ob);
+            h->m_cues.Lookup("GAME_SWITCHDOWN", spr_ob);
             LeafCue* spr = static_cast<LeafCue*>(spr_ob);
             if (spr) {
-                if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
-                    spr->m_14 = g_killCueClock;
-                    spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                if (g_sndEnabled != 0
+                    && g_killCueClock - spr->m_lastPlayTime >= spr->m_replayDelay) {
+                    spr->m_lastPlayTime = g_killCueClock;
+                    spr->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }
             }
         }
@@ -56,12 +57,13 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
-            h->m_10.Lookup("GAME_SWITCHUP", spr_ob);
+            h->m_cues.Lookup("GAME_SWITCHUP", spr_ob);
             LeafCue* spr = static_cast<LeafCue*>(spr_ob);
             if (spr) {
-                if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
-                    spr->m_14 = g_killCueClock;
-                    spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                if (g_sndEnabled != 0
+                    && g_killCueClock - spr->m_lastPlayTime >= spr->m_replayDelay) {
+                    spr->m_lastPlayTime = g_killCueClock;
+                    spr->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }
             }
         }

@@ -37,7 +37,7 @@
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c = 0;                                                                           \
-        MapLookup(m_world->m_soundRegistry->m_10, TAG, _c);                                        \
+        MapLookup(m_world->m_soundRegistry->m_cues, TAG, _c);                                      \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
@@ -540,14 +540,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         g_explosionz ^= 1;
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             void* _c_ob = 0;
-                            m_world->m_soundRegistry->m_10.Lookup("GAME_MAJORCHEAT", _c_ob);
+                            m_world->m_soundRegistry->m_cues.Lookup("GAME_MAJORCHEAT", _c_ob);
                             LeafCue* _c = static_cast<LeafCue*>(_c_ob);
                             if (_c && g_sndEnabled) {
                                 i32 now = g_killCueClock;
-                                if (static_cast<u32>((now - _c->m_14))
-                                    >= static_cast<u32>(_c->m_18)) {
-                                    _c->m_14 = now;
-                                    _c->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                                if (static_cast<u32>((now - _c->m_lastPlayTime))
+                                    >= static_cast<u32>(_c->m_replayDelay)) {
+                                    _c->m_lastPlayTime = now;
+                                    _c->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
                                 }
                             }
                         }

@@ -25,7 +25,7 @@ VTBL(CExitTrigger, 0x001e822c);
 // @early-stop
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_38->m_flags |= 2;
+    m_wwdObject->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -38,8 +38,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.right = 1;
     m_object->m_area.top = 1;
     m_object->m_area.bottom = 1;
-    m_value = m_38->m_1a0.m_14;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_value = m_wwdObject->m_1a0.m_14;
+    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = 0;
     GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_124];
     if (slot->m_liveGate == 0) {
