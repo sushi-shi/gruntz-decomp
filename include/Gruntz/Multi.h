@@ -2,9 +2,11 @@
 #define GRUNTZ_GRUNTZ_CMULTI_H
 
 #include <rva.h>
-#include <Gruntz/Play.h>
+
 #include <Mfc.h>
+
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/Play.h>
 
 class CGameApp;
 class CTileTriggerContainer;

@@ -1,21 +1,23 @@
-#include <Gruntz/GameObjectFactory.h>
-#include <Mfc.h>
-#include <Wap32/zBitVec.h>
-#include <Io/FileMem.h>
+#include <rva.h>
+
 #include <Gruntz/ActionArea.h>
-#include <Gruntz/WorkerHandler.h>
-#include <Image/ImageSet.h>
+
+#include <Mfc.h>
+
 #include <Bute/ButeTree.h>
-#include <Gruntz/UserLogic.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/HaznColl.h>
 #include <Gruntz/ObjTypeRegistrars.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WorkerHandler.h>
+#include <Image/ImageSet.h>
+#include <Io/FileMem.h>
+#include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/HaznColl.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <rva.h>
 
 VTBL(CActionArea, 0x001e7004);
 VTBL(CUserLogic, 0x001e705c);

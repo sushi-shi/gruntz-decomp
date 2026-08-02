@@ -2,6 +2,7 @@
 #define GRUNTZ_CLEVELTIMEDTOR_H
 
 #include <rva.h>
+
 #include <Gruntz/UserLogic.h>
 
 class CLevelTime : public CUserLogic, public CWapX {

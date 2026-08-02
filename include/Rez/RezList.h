@@ -1,9 +1,10 @@
 #ifndef REZ_REZLIST_H
 #define REZ_REZLIST_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Bute/ObjListBase.h>
+#include <Ints.h>
 
 class CRezItmBase;
 

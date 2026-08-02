@@ -1,20 +1,21 @@
-#include <Bute/ButeMgr.h>
-#include <Rez/FrameClock.h>
-#include <Bute/SymParser.h>
-
 #include <rva.h>
-#include <AddrWord.h>
 
-#include <string.h>
+#include <Gruntz/BootyCheatState.h>
+
+#include <AddrWord.h>
+#include <Bute/ButeMgr.h>
+#include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/Sprite.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/BootyCheatState.h>
+#include <Gruntz/Sprite.h>
+#include <Rez/FrameClock.h>
+
+#include <string.h>
 
 char g_cheatTable[0xfa0];
 char g_cheatTableEnd[4];

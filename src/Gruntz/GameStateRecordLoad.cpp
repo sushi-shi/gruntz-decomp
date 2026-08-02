@@ -1,19 +1,22 @@
+#include <rva.h>
+
 #include <Gruntz/GameStateRecordLoad.h>
+
+#include <Mfc.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Wwd/WwdGameObjectFamily.h>
-#include <Io/FileMem.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Bute/ButeMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialArchive.h>
-#include <Mfc.h>
-#include <rva.h>
-#include <string.h>
-
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
+#include <Wwd/WwdGameObjectFamily.h>
+
+#include <string.h>
 
 static const char s_Powerupz[] = "Powerupz";
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";

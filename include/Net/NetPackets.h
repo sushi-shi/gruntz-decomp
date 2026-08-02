@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_NET_NETPACKETS_H
 #define GRUNTZ_NET_NETPACKETS_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 struct CNetConfigBlob {
     u8 m_flags;

@@ -1,12 +1,14 @@
-#include <Rez/DebugPrintf.h>
 #include <rva.h>
+
+#include <Rez/DebugPrintf.h>
+
+#include <Gruntz/RangeSet.h>
 #include <Pix16.h>
+#include <Rez/DebugConfig.h>
 
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Gruntz/RangeSet.h>
-#include <Rez/DebugConfig.h>
 
 DATA(0x002bf84c)
 char* g_monoBuffer = 0;

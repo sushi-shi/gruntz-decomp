@@ -1,8 +1,11 @@
-#include <Mfc.h>
-#include <Gruntz/MovingLogic.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/ActReg.h>
 #include <Gruntz/HaznColl.h>
+#include <Gruntz/MovingLogic.h>
+
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 

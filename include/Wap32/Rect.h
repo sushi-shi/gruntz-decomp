@@ -1,9 +1,11 @@
 #ifndef WAP32_RECT_H
 #define WAP32_RECT_H
 
-#include <Ints.h>
-#include <Win32.h>
 #include <rva.h>
+
+#include <Win32.h>
+
+#include <Ints.h>
 
 // Kept local because label-generation clang cannot consume MFC's CRect inlines.
 struct CRect : public tagRECT {

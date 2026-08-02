@@ -1,9 +1,10 @@
+#include <rva.h>
+
 #include <Gruntz/EyeCandy.h>
+
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
-#include <rva.h>
-#include <rva.h>
 
 RVA(0x0000fcc0, 0x47)
 i32 CEyeCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {

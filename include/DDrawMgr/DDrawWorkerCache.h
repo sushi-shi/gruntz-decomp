@@ -1,11 +1,12 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERCACHE_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERCACHE_H
 
-#include <Ints.h>
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <rva.h>
+
+#include <DDrawMgr/AnimWorkerObj.h>
 #include <Gruntz/Loadable.h>
 #include <Gruntz/MapStringToOb.h>
+#include <Ints.h>
 
 class CDDrawWorker;
 

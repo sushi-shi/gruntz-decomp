@@ -2,16 +2,13 @@
 #define SRC_BUTE_BUTEMGR_H
 
 #include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Bute/PTreeNode.h>
-
-#include <Gruntz/String.h>
-
-#include <Bute/ButeValue.h>
-
-#include <Bute/ButeTree.h>
 
 #include <Bute/ButeStore.h>
+#include <Bute/ButeTree.h>
+#include <Bute/ButeValue.h>
+#include <Bute/PTreeNode.h>
+#include <Gruntz/String.h>
+#include <Wap32/ZVec.h>
 
 void ButeStoreFreeAdapter(void* p);
 struct CBSecStream : zPTree {

@@ -1,7 +1,9 @@
-#include <Mfc.h>
-#include <Utils/RegistryHelper.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <MsgParam.h>
+#include <Utils/RegistryHelper.h>
 
 typedef enum AdvancedOptionsDlgId {
     IDC_DISABLE_VIDEO = 0x46c,

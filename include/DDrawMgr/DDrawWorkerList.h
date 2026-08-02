@@ -1,12 +1,13 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerNode.h>
 #include <Gruntz/Loadable.h>
 #include <Gruntz/ObList.h>
-#include <DDrawMgr/DDrawWorkerNode.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
+#include <Ints.h>
 
 class CDDrawWorker;
 

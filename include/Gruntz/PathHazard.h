@@ -3,11 +3,11 @@
 
 #include <rva.h>
 
+#include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/GameRegMfcPtr.h>
 
 struct CPathWaypoint {
     i32 x;

@@ -76,6 +76,15 @@ FLIRT + leaked names) → exports. Not part of the build loop.
 - **Formatting is automated; don't hand-format.** Rust-like clang-format (root
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
+- **The `#include` block is canonical** (gated, `gruntz.audit.include_order`): no
+  duplicates, every header self-sufficient (standalone-compile-proven), and one
+  order everywhere — config `#define`s, `<rva.h>`, the TU's own header, platform
+  preludes (`<Mfc.h>`/`<MfcNoInline.h>`/`<MfcWin.h>`/`<Win32.h>`, dependency-ranked),
+  project headers sorted, libraries sorted. Never hand-order:
+  `python -m gruntz.audit.include_order --fix-dupes --fix`. No TU includes an
+  `<afxwin.h>` directly — the `_AFX_ENABLE_INLINES` devices live in the two Mfc*
+  wrappers. `<Mfc.h>` is a superset of `<Win32.h>`; including both trips MFC's
+  C1189. Rules + traps: `docs/patterns/include-order.md`.
 - **MAX match is the metric — never revert on a current-% dip.** Per-fn MAX fuzzy
   preserves best-ever; a byte-evidenced change (shape seen in the target disasm) is
   KEPT even if its fn's current-% stalls, a sibling craters, or Overall drops. Revert

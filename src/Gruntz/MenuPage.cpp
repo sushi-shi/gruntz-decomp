@@ -1,14 +1,15 @@
 #include <rva.h>
-#include <Gruntz/ChatBox.h>
-#include <Image/CImage.h>
-#include <DDrawMgr/DDrawWorker.h>
 
 #include <Gruntz/MenuPage.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/Sprite.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/ChatBox.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Sprite.h>
+#include <Image/CImage.h>
 
 inline void* operator new(size_t, void* p) {
     return p;

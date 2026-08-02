@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_NET_KEYEDLIST_H
 #define GRUNTZ_NET_KEYEDLIST_H
 
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
 
 struct CKeyedNode {
     CString m_key;

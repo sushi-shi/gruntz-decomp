@@ -1,12 +1,13 @@
 #ifndef SBI_GRUNTMACHINE_H
 #define SBI_GRUNTMACHINE_H
 
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/StatusBarItem.h>
+
 #include <Gruntz/SbGeom.h>
+#include <Gruntz/StatusBarItem.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
+#include <Ints.h>
 
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;

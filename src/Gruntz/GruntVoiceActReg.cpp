@@ -1,9 +1,10 @@
+#include <Gruntz/GruntVoiceActReg.h>
+
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/GruntVoice.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/GruntVoiceActReg.h>
-#include <Gruntz/GruntVoice.h>
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;

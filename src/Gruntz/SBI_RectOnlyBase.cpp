@@ -1,8 +1,9 @@
+#include <rva.h>
+
 #include <Mfc.h>
 
 #include <Gruntz/SBI_Image.h>
 #include <Ints.h>
-#include <rva.h>
 
 // @early-stop
 RVA(0x000e86e0, 0x53)

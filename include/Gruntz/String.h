@@ -1,4 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_CSTRING_H
 #define GRUNTZ_GRUNTZ_CSTRING_H
+
 #include <Mfc.h>
+
 #endif // GRUNTZ_GRUNTZ_CSTRING_H

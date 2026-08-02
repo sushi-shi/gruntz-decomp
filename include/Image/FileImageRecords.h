@@ -1,9 +1,11 @@
 #ifndef SRC_IMAGE_CFILEIMAGERECORDS_H
 #define SRC_IMAGE_CFILEIMAGERECORDS_H
 
-#include <Ints.h>
-#include <Win32.h>
 #include <rva.h>
+
+#include <Win32.h>
+
+#include <Ints.h>
 
 struct Bmp256Info {
     BITMAPINFOHEADER bmiHeader;

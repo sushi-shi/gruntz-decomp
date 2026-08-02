@@ -3,10 +3,9 @@
 
 #include <rva.h>
 
+#include <Gruntz/ActReg.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/ActReg.h>
 
 class CFortressFlag : public CUserLogic, public CWapX {
 public:

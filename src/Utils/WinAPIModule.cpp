@@ -1,9 +1,11 @@
 #include <rva.h>
-#include <string.h>
 
 #include <Win32.h>
-#include <tlhelp32.h>
+
 #include <ProcAddr.h>
+
+#include <string.h>
+#include <tlhelp32.h>
 
 typedef HANDLE(WINAPI* PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
 typedef BOOL(WINAPI* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);

@@ -1,12 +1,12 @@
 #ifndef DSNDMGR_STREAMVOICE_H
 #define DSNDMGR_STREAMVOICE_H
 
-#include <Gruntz/ParseSource.h>
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/WaveFormatX.h>
+#include <Gruntz/ParseSource.h>
 
 struct IDirectSoundBuffer;
 

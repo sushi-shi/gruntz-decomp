@@ -2,9 +2,11 @@
 #define GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H
 
 #include <rva.h>
-#include <Ints.h>
+
 #include <Mfc.h>
+
 #include <Gruntz/Loadable.h>
+#include <Ints.h>
 
 struct AnimWorkerObj;
 

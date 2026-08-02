@@ -1,16 +1,16 @@
-#include <Mfc.h>
-#include <DDrawMgr/PixelShift.h>
+#include <Image/FileImage.h>
 
-#include <Image/Image.h>
-#include <Image/FileImageRecords.h>
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/PixelShift.h>
+#include <Image/FileImageRecords.h>
+#include <Image/Image.h>
+#include <Image/ImagePool.h>
+#include <Pix16.h>
 
 #include <ddraw.h>
-
 #include <string.h>
-#include <Image/ImagePool.h>
-#include <Image/FileImage.h>
-#include <Pix16.h>
 
 enum {
     PCX_HEADER_SIZE = 0x80

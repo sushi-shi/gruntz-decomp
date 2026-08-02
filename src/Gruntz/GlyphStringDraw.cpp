@@ -1,19 +1,21 @@
-#include <Wap32/EngStr.h>
-#include <Gruntz/GlyphStringDraw.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Ints.h>
 #include <rva.h>
-#include <AddrWord.h>
 
-#include <string.h>
-#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/GlyphStringDraw.h>
+
+#include <AddrWord.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/GameRegistry.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
+#include <Ints.h>
+#include <Wap32/EngStr.h>
+
+#include <string.h>
 
 RVA(0x00115220, 0xa4)
 i32 DrawGlyphString(

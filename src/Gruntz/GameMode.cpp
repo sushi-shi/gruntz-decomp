@@ -1,24 +1,26 @@
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Bute/SymTab.h>
-#include <Gruntz/SoundState.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Gruntz/SpriteRefTable.h>
+#include <rva.h>
+
 #include <Gruntz/GameMode.h>
+
 #include <Bute/ButeMgr.h>
+#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/BootyMessages.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h>
-#include <Gruntz/LightFxMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/SoundCue.h>
-#include <Gruntz/LeafCue.h>
-#include <rva.h>
-#include <Gruntz/BootyMessages.h>
+#include <Rez/FrameClock.h>
 
 DATA(0x0020b8b8)
 i32 g_levelMsgIconPos[16] = {

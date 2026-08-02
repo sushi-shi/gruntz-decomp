@@ -1,11 +1,11 @@
 #ifndef GRUNTZ_TILETRIGGERTRANSITION_H
 #define GRUNTZ_TILETRIGGERTRANSITION_H
 
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/XferArchive.h>
 
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/XferArchive.h>
+#include <Ints.h>
 
 class CTileTriggerTransition : public CUserLogic, public CWapX {
 public:

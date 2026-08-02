@@ -1,8 +1,10 @@
-#include <Mfc.h>
-#include <Gruntz/Grunt.h>
 #include <rva.h>
 
+#include <Mfc.h>
+
+#include <Gruntz/Grunt.h>
 #include <Ints.h>
+
 #include <stdlib.h>
 
 RVA(0x00029af0, 0x3b)

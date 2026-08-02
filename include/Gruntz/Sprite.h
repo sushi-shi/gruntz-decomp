@@ -1,10 +1,12 @@
 #ifndef GRUNTZ_SPRITE_H
 #define GRUNTZ_SPRITE_H
 
-#include <Ints.h>
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawWorker.h>
+#include <Ints.h>
 
 class CImage;
 

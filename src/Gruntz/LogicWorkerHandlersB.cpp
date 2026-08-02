@@ -1,12 +1,12 @@
-#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
-#include <Gruntz/RollingBall.h>
-#include <Gruntz/SpotLight.h>
+
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/PathHazard.h>
 #include <Gruntz/RainCloud.h>
+#include <Gruntz/RollingBall.h>
+#include <Gruntz/SpotLight.h>
 #include <Gruntz/Ufo.h>
-
 #include <Gruntz/WorkerHandler.h>
 
 RVA(0x000af0a0, 0xf4)

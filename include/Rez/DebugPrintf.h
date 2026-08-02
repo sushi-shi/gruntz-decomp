@@ -2,6 +2,7 @@
 #define GRUNTZ_REZ_DEBUGPRINTF_H_H
 
 #include <Ints.h>
+
 #include <stdio.h>
 
 extern "C" void DiscardDebugOutput(char* line);

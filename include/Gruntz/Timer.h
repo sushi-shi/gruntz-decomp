@@ -1,12 +1,13 @@
 #ifndef GRUNTZ_GRUNTZ_TIMER_H
 #define GRUNTZ_GRUNTZ_TIMER_H
 
-#include <Ints.h>
-#include <Clock64.h>
-#include <Image/CImage.h>
 #include <rva.h>
+
+#include <Clock64.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
+#include <Image/CImage.h>
+#include <Ints.h>
 
 class CDDrawSurfacePair;
 

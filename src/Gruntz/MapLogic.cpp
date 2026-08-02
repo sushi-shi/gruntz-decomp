@@ -1,11 +1,11 @@
-#include <Mfc.h>
-#include <Io/FileMem.h>
+#include <rva.h>
 
 #include <Gruntz/MapLogic.h>
 
-#include <rva.h>
+#include <Mfc.h>
 
 #include <Gruntz/ScrollState.h>
+#include <Io/FileMem.h>
 
 RVA(0x000ec230, 0x11c)
 i32 MapSerializeCurve(CFileMemBase* ar, i32 mode, i32, i32) {

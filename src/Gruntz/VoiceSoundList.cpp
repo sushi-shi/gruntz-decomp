@@ -1,12 +1,13 @@
+#include <rva.h>
+
 #include <Mfc.h>
-#include <Bute/SymParser.h>
 
 #include <Bute/ButeMgr.h>
+#include <Bute/SymParser.h>
 #include <Gruntz/Enums.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SpawnList.h>
-#include <rva.h>
 
 // @early-stop
 RVA(0x0011c210, 0x29d)

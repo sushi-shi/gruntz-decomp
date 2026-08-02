@@ -1,5 +1,6 @@
-#include <Net/LatencyList.h>
 #include <rva.h>
+
+#include <Net/LatencyList.h>
 
 RVA(0x00037910, 0x70)
 i32 CLatencyList::Dispatch(i32 mode) {

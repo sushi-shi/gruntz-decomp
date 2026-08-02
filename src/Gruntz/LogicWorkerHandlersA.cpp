@@ -1,23 +1,24 @@
 #define USERLOGIC_OOL_CTOR
-#include <Gruntz/GameObjectFactory.h>
+
 #include <rva.h>
+
 #include <Gruntz/AniCycle.h>
-#include <Gruntz/SingleFrameMessage.h>
-#include <Gruntz/DoNothing.h>
-#include <Gruntz/SimpleAnimation.h>
-#include <Gruntz/MenuSparkle.h>
-#include <Gruntz/FrontCandy.h>
 #include <Gruntz/BehindCandy.h>
-#include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/BehindCandyAni.h>
+#include <Gruntz/DoNothing.h>
+#include <Gruntz/DoNothingNormalDtor.h>
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/EyeCandyAni.h>
-#include <Gruntz/WayPoint.h>
-#include <Gruntz/SingleAnimation.h>
+#include <Gruntz/FrontCandy.h>
+#include <Gruntz/FrontCandyAni.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GuardPoint.h>
-
+#include <Gruntz/MenuSparkle.h>
+#include <Gruntz/SimpleAnimation.h>
+#include <Gruntz/SingleAnimation.h>
+#include <Gruntz/SingleFrameMessage.h>
+#include <Gruntz/WayPoint.h>
 #include <Gruntz/WorkerHandler.h>
-#include <Gruntz/DoNothingNormalDtor.h>
 
 RVA(0x000a9a40, 0xf1)
 i32 CreateAniCycle(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}

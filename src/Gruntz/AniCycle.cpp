@@ -1,13 +1,12 @@
-#include <Gruntz/ActNameRegistry.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>
+#include <rva.h>
+
 #include <Gruntz/AniCycle.h>
+
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/SerialArchive.h>
 #include <Rez/FrameClock.h>
-#include <rva.h>
-#include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
 
 VTBL(CAniCycle, 0x001e86a4);
 template<> DATA(0x00246088)

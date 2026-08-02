@@ -1,12 +1,11 @@
-
-
-#include <Win32.h>
 #include <rva.h>
-#include <Gruntz/BattlezData.h>
-#include <stdlib.h>
 
 #include <Gruntz/Brickz.h>
+
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/SerialArchive.h>
+
+#include <stdlib.h>
 
 // @early-stop
 RVA(0x00081e10, 0x1a7)

@@ -1,8 +1,11 @@
 #ifndef GRUNTZ_DDRAWMGR_DIRPAL_H
 #define GRUNTZ_DDRAWMGR_DIRPAL_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 union LogPal256 {
     LOGPALETTE m_lp;

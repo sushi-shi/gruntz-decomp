@@ -1,14 +1,15 @@
+#include <rva.h>
 
 #include <Mfc.h>
+
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Ints.h>
-#include <rva.h>
-#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/SbiTabzDialogViews.h>
 #include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/SBI_MenuItem.h>
-#include <Gruntz/GameLevel.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Ints.h>
 
 RVA_COMPGEN(0x001005d0, 0x17, ??0CStatusBarItem@@QAE@XZ)
 

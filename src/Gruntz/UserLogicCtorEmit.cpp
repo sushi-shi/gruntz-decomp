@@ -1,11 +1,12 @@
-
+#include <rva.h>
 
 #include <Gruntz/UserLogicCtorEmit.h>
+
 #include <Mfc.h>
-#include <Gruntz/UserLogic.h>
-#include <rva.h>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
+#include <Gruntz/UserLogic.h>
 
 RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)
 

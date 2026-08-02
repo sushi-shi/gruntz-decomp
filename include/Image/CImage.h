@@ -1,6 +1,8 @@
 #include <rva.h>
+
 #include <Ints.h>
 #include <Wap32/WapObj.h>
+
 #ifndef SRC_IMAGE_CIMAGE_H
 #define SRC_IMAGE_CIMAGE_H
 

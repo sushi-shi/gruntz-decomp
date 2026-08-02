@@ -1,10 +1,12 @@
 #include <rva.h>
 
 #include <Mfc.h>
-#include <ddraw.h>
-#include <DDrawMgr/DirectDrawMgr.h>
+
 #include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DirectDrawMgr.h>
 #include <Ints.h>
+
+#include <ddraw.h>
 
 RVA(0x0008dd80, 0x31)
 i32 CDDrawPtrCollections::GetCapsChecked() {

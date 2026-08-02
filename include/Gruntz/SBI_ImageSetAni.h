@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_SBI_IMAGESETANI_H
 #define GRUNTZ_SBI_IMAGESETANI_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Gruntz/SBI_ImageSet.h>
+#include <Ints.h>
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:

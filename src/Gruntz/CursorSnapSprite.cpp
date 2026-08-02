@@ -1,12 +1,12 @@
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/CursorSnapSprite.h>
-#include <Bute/ButeTree.h>
+#include <rva.h>
 
+#include <Gruntz/CursorSnapSprite.h>
+
+#include <Bute/ButeTree.h>
 #include <Gruntz/AnimWorker.h>
-#include <Gruntz/UserLogic.h>
-#include <rva.h>
-#include <rva.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
 
 RVA(0x00011880, 0x47)
 i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {

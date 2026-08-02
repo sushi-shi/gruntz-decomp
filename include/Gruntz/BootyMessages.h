@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_BOOTYMESSAGES_H
 #define GRUNTZ_GRUNTZ_BOOTYMESSAGES_H
+
 #include <rva.h>
+
 #include <Gruntz/GlyphStringDraw.h>
 
 struct SecretMsgRow {

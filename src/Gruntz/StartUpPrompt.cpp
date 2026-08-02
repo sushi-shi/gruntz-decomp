@@ -1,15 +1,15 @@
-#include <Mfc.h>
-#include <Utils/WinAPICdRom.h>
-#include <Gruntz/HeapDiag.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
-#include <string.h>
-
 #include <rva.h>
+
 #include <Gruntz/StartUpPrompt.h>
+
+#include <Mfc.h>
+#include <MfcWin.h>
+
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HeapDiag.h>
+#include <Utils/WinAPICdRom.h>
+
+#include <string.h>
 
 DATA(0x00251618)
 HINSTANCE g_appResHandle;

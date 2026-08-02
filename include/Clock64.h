@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_CLOCK64_H
 #define GRUNTZ_CLOCK64_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 #pragma pack(push, 4)
 union Clock64 {

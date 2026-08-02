@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_HELPSTATE_H
 #define GRUNTZ_HELPSTATE_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Gruntz/State.h>
+#include <Ints.h>
 
 class CHelpState : public CState {
 public:

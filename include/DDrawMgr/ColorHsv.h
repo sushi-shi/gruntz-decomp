@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_DDRAWMGR_COLORHSV_H
 #define GRUNTZ_DDRAWMGR_COLORHSV_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 struct ColorHSV {
     float h;

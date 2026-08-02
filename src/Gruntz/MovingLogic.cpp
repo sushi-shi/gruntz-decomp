@@ -1,11 +1,13 @@
+#include <rva.h>
+
 #include <Gruntz/MovingLogic.h>
+
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/MotionState.h>
+#include <Gruntz/MovingLogicSerial.h>
 #include <Io/FileMem.h>
 #include <strstrea.h>
-#include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/GameLevel.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <rva.h>
-#include <Gruntz/MotionState.h>
 
 DATA(0x001f04f8)
 const double g_motionNegHalf = -0.5;

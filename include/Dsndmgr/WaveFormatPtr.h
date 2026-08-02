@@ -1,7 +1,10 @@
 #ifndef DSNDMGR_WAVEFORMATPTR_H
 #define DSNDMGR_WAVEFORMATPTR_H
 
+#include <Mfc.h>
+
 #include <Dsndmgr/WaveFormatX.h>
+
 #include <mmsystem.h>
 
 union WaveFormatPtr {

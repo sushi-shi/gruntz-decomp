@@ -1,9 +1,11 @@
-#include <Wap32/Wap32.h>
+#include <rva.h>
+
+#include <Gruntz/GruntzWnd.h>
+
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GruntzWnd.h>
-#include <rva.h>
 #include <Net/NetLobby.h>
+#include <Wap32/Wap32.h>
 
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}

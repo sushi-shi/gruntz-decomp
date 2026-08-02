@@ -1,36 +1,36 @@
-#include <Mfc.h>
-#include <Wap32/zBitVec.h>
-#include <Io/FileMem.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/InGameIcon.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/ToyPeek.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/InGameText.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/Play.h>
-
 #include <rva.h>
 
-#include <string.h>
+#include <Gruntz/InGameIcon.h>
+
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/LogicFnTable.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/AniElement.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/SoundState.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InGameText.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/LogicFnTable.h>
+#include <Gruntz/Play.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/ToyPeek.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
+
+#include <string.h>
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);

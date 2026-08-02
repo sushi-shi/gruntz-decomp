@@ -1,6 +1,8 @@
-#include <Font/Font.h>
-#include <Gruntz/Fonts.h>
 #include <rva.h>
+
+#include <Gruntz/Fonts.h>
+
+#include <Font/Font.h>
 
 DATA(0x0024eac0)
 Font g_largeFont;

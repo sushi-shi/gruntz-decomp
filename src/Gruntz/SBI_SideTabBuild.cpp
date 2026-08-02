@@ -1,11 +1,13 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/CurPlayer.h>
+
 #include <Mfc.h>
-#include <Ints.h>
+
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SbiSideTabBuildViews.h>
 #include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/GruntzMgr.h>
+#include <Ints.h>
 
 // @early-stop
 RVA(0x00105070, 0x10e)

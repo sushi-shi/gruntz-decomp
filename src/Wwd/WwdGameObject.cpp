@@ -1,40 +1,41 @@
-#include <Mfc.h>
-#include <Rez/FrameClock.h>
-#include <Io/FileMem.h>
-#include <Gruntz/BoundaryUpperViews.h>
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <Win32.h>
-#include <ddraw.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <DDrawMgr/DDrawChildGroup.h>
 #include <rva.h>
-#include <string.h>
-#include <stdlib.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/WwdGameObject.h>
-#include <Ints.h>
-#include <Wap32/Object.h>
-#include <Gruntz/ParseSource.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Wwd/WwdGameObjectFamily.h>
-#include <Gruntz/UserLogic.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/Sprite.h>
-#include <DDrawMgr/AnimWorkerObj.h>
-#include <DDrawMgr/DDrawWorker.h>
+
+#include <Mfc.h>
+
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
-#include <Gruntz/GameLevel.h>
-#include <Image/CImage.h>
+#include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
-#include <Image/ImageSet.h>
-#include <Gruntz/AniAdvanceCursor.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/BoundaryUpperViews.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/ParseSource.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/Object.h>
+#include <Wwd/WwdGameObjectFamily.h>
+
+#include <ddraw.h>
+#include <stdlib.h>
+#include <string.h>
+
 DATA(0x002bf674)
 i32 g_logicTypesRegistered;
 

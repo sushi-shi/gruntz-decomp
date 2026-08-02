@@ -2,21 +2,23 @@
 
 #define CGAMEOBJECT_OOL_CTOR
 
-#include <Mfc.h>
 #include <rva.h>
-#include <Ints.h>
-#include <Win32.h>
-#include <ddraw.h>
-#include <string.h>
-#include <stdlib.h>
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <Wwd/WwdGameObjectFamily.h>
-#include <Gruntz/WwdGameObject.h>
+
+#include <Mfc.h>
+
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Ints.h>
+#include <Wwd/WwdGameObjectFamily.h>
+
+#include <ddraw.h>
+#include <stdlib.h>
+#include <string.h>
 
 inline void* operator new(u32, void* p) {
     return p;

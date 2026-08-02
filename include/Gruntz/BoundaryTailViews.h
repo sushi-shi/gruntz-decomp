@@ -2,6 +2,7 @@
 #define GRUNTZ_BOUNDARYTAILVIEWS_H
 
 #include <rva.h>
+
 #include <Mfc.h>
 
 #endif // GRUNTZ_BOUNDARYTAILVIEWS_H

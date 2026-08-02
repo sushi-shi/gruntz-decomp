@@ -1,8 +1,9 @@
 #include <rva.h>
 
 #include <Mfc.h>
-#include <Ints.h>
+
 #include <Gruntz/ImageSets.h>
+#include <Ints.h>
 
 RVA(0x00161500, 0x58)
 CImageSet3::~CImageSet3() {

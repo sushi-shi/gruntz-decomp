@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_RANGESET_H
 #define GRUNTZ_RANGESET_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 struct CRange {
     u32 lo;

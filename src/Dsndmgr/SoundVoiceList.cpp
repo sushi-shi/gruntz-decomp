@@ -1,5 +1,6 @@
-#include <Dsndmgr/SoundVoiceList.h>
 #include <rva.h>
+
+#include <Dsndmgr/SoundVoiceList.h>
 
 RVA(0x001390e0, 0x25)
 void DSoundList::InsertHead(DSoundLink* node) {

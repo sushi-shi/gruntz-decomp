@@ -1,5 +1,6 @@
-#include <Win32.h>
 #include <rva.h>
+
+#include <Win32.h>
 
 RVA(0x00119210, 0x66)
 void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {

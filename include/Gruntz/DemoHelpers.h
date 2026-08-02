@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_DEMOHELPERS_H
 #define GRUNTZ_GRUNTZ_DEMOHELPERS_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 class CDDrawSurfaceMgr;
 

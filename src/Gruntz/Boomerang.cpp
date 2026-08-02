@@ -1,12 +1,14 @@
+#include <rva.h>
+
 #include <Gruntz/Boomerang.h>
+
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/GameRegistry.h>
-#include <rva.h>
 #include <Io/FileMem.h>
-#include <Gruntz/FreeNodePool.h>
 
 VTBL(CBoomerang, 0x001e792c);
 DATA(0x001eaae8)

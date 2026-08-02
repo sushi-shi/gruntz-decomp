@@ -1,16 +1,15 @@
-#include <Gruntz/ActNameRegistry.h>
-#include <Rez/FrameClock.h>
-#include <Image/CImage.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>
+#include <rva.h>
+
 #include <Gruntz/BehindCandyAni.h>
+
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
-#include <rva.h>
+#include <Image/CImage.h>
+#include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
 
 VTBL(CBehindCandyAni, 0x001e838c);
 template<> DATA(0x00245f98)

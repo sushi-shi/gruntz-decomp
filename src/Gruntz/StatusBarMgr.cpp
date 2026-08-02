@@ -1,18 +1,17 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/CurPlayer.h>
-#include <Image/ImageSet.h>
-#include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h>
 
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/StatusBarMgrBuilders.h>
-
 #include <Gruntz/TriggerMgr.h>
+#include <Image/ImageSet.h>
 
 VTBL(CSBI_GruntMachine, 0x001eadbc);
 

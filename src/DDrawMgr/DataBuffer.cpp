@@ -1,7 +1,8 @@
-#include <Mfc.h>
-#include <DDrawMgr/ShadeTableCache.h>
-
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/ShadeTableCache.h>
 
 RVA(0x00150180, 0xd)
 CShadeTable::CShadeTable() {

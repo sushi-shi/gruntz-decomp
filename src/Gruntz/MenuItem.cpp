@@ -1,15 +1,17 @@
 #define GRUNTZ_MENUITEM_TU
+
 #include <rva.h>
-#include <Gruntz/ChatBox.h>
-#include <Gruntz/ChatBoxOwner.h>
-#include <Image/CImage.h>
-#include <DDrawMgr/DDrawWorker.h>
+
+#include <Gruntz/MenuItem.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/MenuItem.h>
-#include <Gruntz/MenuPage.h>
+#include <Gruntz/ChatBox.h>
+#include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/MenuItem2.h>
+#include <Gruntz/MenuPage.h>
+#include <Image/CImage.h>
 
 #include <stdio.h>
 

@@ -1,8 +1,8 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h>
 
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 
 RVA(0x00039dc0, 0x10b)

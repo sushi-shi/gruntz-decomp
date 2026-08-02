@@ -1,16 +1,16 @@
+#include <rva.h>
+
+#include <Gruntz/SingleFrameMessage.h>
+
 #include <Mfc.h>
+
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/ActNameRegistry.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/SingleFrameMessage.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/WwdGameReg.h>
-#include <Gruntz/SerialArchive.h>
-#include <rva.h>
-#include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
 
 template<> DATA(0x00245ef0)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(2000, 2010);

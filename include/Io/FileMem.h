@@ -1,10 +1,11 @@
 #ifndef SRC_IO_FILEMEM_H
 #define SRC_IO_FILEMEM_H
+
 #include <rva.h>
 
-#include <Ints.h>
 #include <Mfc.h>
 
+#include <Ints.h>
 #include <Io/FileStream.h>
 
 class CFileMemBase {

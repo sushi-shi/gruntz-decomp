@@ -2,6 +2,7 @@
 #define WAP32_CWAPOBJ_H
 
 #include <rva.h>
+
 #include <Ints.h>
 #include <Wap32/Object.h>
 

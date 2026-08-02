@@ -1,11 +1,12 @@
 #include <rva.h>
-#include <Mfc.h>
-#include <Gruntz/State.h>
 
-#include <Gruntz/AssetRoot.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/AssetRoot.h>
 #include <Gruntz/SplashState.h>
+#include <Gruntz/State.h>
 
 RVA(0x000f9880, 0x43)
 i32 CSplashState::EnterState(i32) {

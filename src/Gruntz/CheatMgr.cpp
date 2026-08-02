@@ -1,10 +1,10 @@
-#include <Gruntz/CheatMgr.h>
-#include <EmptyString.h>
-
 #include <rva.h>
-#include <AddrWord.h>
 
+#include <Gruntz/CheatMgr.h>
+
+#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
+#include <EmptyString.h>
 
 // clang-format off
 wchar_t* s_cheat_1 = L"MPWAWAWAWAWAWA";

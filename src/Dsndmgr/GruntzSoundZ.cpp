@@ -1,5 +1,6 @@
-#include <Dsndmgr/GruntzSoundZ.h>
 #include <rva.h>
+
+#include <Dsndmgr/GruntzSoundZ.h>
 
 #include <mss.h>
 #include <stdio.h>

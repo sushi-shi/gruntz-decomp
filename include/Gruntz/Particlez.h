@@ -2,6 +2,7 @@
 #define GRUNTZ_CPARTICLEZ_H
 
 #include <rva.h>
+
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 

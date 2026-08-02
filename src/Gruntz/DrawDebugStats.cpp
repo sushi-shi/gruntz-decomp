@@ -1,21 +1,24 @@
+#include <rva.h>
+
 #include <Gruntz/DrawDebugStats.h>
+
 #include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <ddraw.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/View.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/GameLevel.h>
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/GruntzMgr.h>
+#include <Pix16.h>
+
+#include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <rva.h>
-#include <Pix16.h>
 
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {

@@ -1,10 +1,12 @@
 #ifndef GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H
 #define GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/Loadable.h>
+#include <Ints.h>
 
 struct SoundStream;
 struct LeafCue;

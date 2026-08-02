@@ -1,13 +1,17 @@
-#include <Dsndmgr/SoundStream.h>
-#include <EmptyString.h>
-#include <Dsndmgr/StreamVoice.h>
-#include <Dsndmgr/StreamFeeder.h>
-#include <Rez/RezMgr.h>
-#include <Win32.h>
-#include <mmsystem.h>
-#include <dsound.h>
-#include <Dsndmgr/WaveFormatPtr.h>
 #include <rva.h>
+
+#include <Dsndmgr/SoundStream.h>
+
+#include <Mfc.h>
+
+#include <Dsndmgr/StreamFeeder.h>
+#include <Dsndmgr/StreamVoice.h>
+#include <Dsndmgr/WaveFormatPtr.h>
+#include <EmptyString.h>
+#include <Rez/RezMgr.h>
+
+#include <dsound.h>
+#include <mmsystem.h>
 #include <stdio.h>
 #include <string.h>
 

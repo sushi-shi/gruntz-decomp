@@ -1,14 +1,13 @@
-#include <Bute/SymParser.h>
-#include <DDrawMgr/ShadeTableCache.h>
-#include <Win32.h>
+#include <rva.h>
 
 #include <Gruntz/SpriteRefTable.h>
+
+#include <Bute/SymParser.h>
+#include <DDrawMgr/AniRecordBase2.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
-#include <DDrawMgr/AniRecordBase2.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-
-#include <rva.h>
+#include <DDrawMgr/ShadeTableCache.h>
 
 #include <stdio.h>
 

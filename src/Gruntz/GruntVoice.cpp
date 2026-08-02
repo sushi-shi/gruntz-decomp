@@ -1,33 +1,34 @@
-#include <Gruntz/GameObjectFactory.h>
-#include <Rez/RezSync.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Mfc.h>
-#include <Gruntz/CurPlayer.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>
-#include <Gruntz/VoiceTrigger.h>
-#include <Gruntz/TileTriggerTransition.h>
-#include <Gruntz/GameRegistry.h>
+
+#include <Mfc.h>
+
+#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/Ufo.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/TypeKeyColl.h>
+#include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActReg.h>
-#include <Bute/ButeTree.h>
-#include <Dsndmgr/StreamVoice.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
-#include <Image/CImage.h>
-
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntVoiceActReg.h>
-#include <Wap32/zBitVec.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileTriggerTransition.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/Ufo.h>
+#include <Gruntz/VoiceTrigger.h>
+#include <Image/CImage.h>
+#include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
+
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
 template<> DATA(0x00251500)

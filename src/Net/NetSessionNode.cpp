@@ -1,7 +1,9 @@
+#include <rva.h>
+
 #include <Ints.h>
 #include <Net/NetMgr.h>
-#include <rva.h>
 #include <Rez/RezMgr.h>
+
 #include <string.h>
 
 RVA(0x001793b0, 0x46)

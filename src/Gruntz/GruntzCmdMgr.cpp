@@ -1,17 +1,19 @@
-#include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
+#include <rva.h>
+
 #include <Gruntz/GruntzCmdMgr.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzCommand.h>
-#include <Gruntz/State.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/State.h>
 #include <Gruntz/WwdGameReg.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameLevel.h>
+#include <Io/FileMem.h>
 #include <Rez/RezSync.h>
-#include <rva.h>
 
 DATA(0x001e9608)
 const u16 g_cmdBitTable[16] = {

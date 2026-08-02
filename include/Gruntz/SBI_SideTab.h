@@ -1,13 +1,14 @@
 #ifndef GRUNTZ_SBI_SIDETAB_H
 #define GRUNTZ_SBI_SIDETAB_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/StatusBarItem.h>
-#include <Gruntz/SbiConfig.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/StatusBarItem.h>
 #include <Image/CImage.h>
+#include <Ints.h>
 
 class CStatusBarMgr;
 

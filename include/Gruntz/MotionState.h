@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_MOTIONSTATE_H
 #define GRUNTZ_MOTIONSTATE_H
 
-#include <Ints.h>
-#include <Gruntz/DoubleVector.h>
 #include <rva.h>
+
+#include <Gruntz/DoubleVector.h>
+#include <Ints.h>
 
 extern const double g_movingLogicMin;
 extern const double g_movingLogicMax;

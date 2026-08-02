@@ -1,17 +1,18 @@
-#include <Gruntz/GameRand.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Random.h>
+#include <rva.h>
+
 #include <EmptyString.h>
-#include <Gruntz/Multi.h>
-#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/Random.h>
+#include <MsgParam.h>
 #include <Net/LatencyList.h>
 #include <Net/NetMgr.h>
-#include <rva.h>
-#include <MsgParam.h>
+
 #include <string.h>
 
 DATA(0x0024bdc4)

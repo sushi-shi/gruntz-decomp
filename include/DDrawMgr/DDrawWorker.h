@@ -1,11 +1,12 @@
 #ifndef GRUNTZ_CDDRAWWORKER_H
 #define GRUNTZ_CDDRAWWORKER_H
+
 #include <rva.h>
 
-#include <Ints.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Loadable.h>
 #include <Image/CImage.h>
+#include <Ints.h>
 
 struct PidHeader;
 class CImage;

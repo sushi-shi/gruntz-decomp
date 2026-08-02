@@ -1,8 +1,8 @@
 #include <rva.h>
 
-#include <Bute/PTreeNode.h>
-#include <Bute/ButeValue.h>
 #include <Bute/ButeStore.h>
+#include <Bute/ButeValue.h>
+#include <Bute/PTreeNode.h>
 #include <Gruntz/String.h>
 
 VTBL(CButeNode, 0x001f051c);

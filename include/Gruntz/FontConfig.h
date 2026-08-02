@@ -1,9 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_FONTCONFIG_H
 #define GRUNTZ_GRUNTZ_FONTCONFIG_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 class CFontConfig {
 public:

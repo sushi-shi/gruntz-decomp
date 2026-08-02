@@ -1,10 +1,11 @@
 #ifndef GRUNTZ_WAP32_ZVEC_H
 #define GRUNTZ_WAP32_ZVEC_H
 
+#include <rva.h>
+
+#include <AddrWord.h>
 #include <Ints.h>
 #include <Wap32/zBitVec.h>
-#include <rva.h>
-#include <AddrWord.h>
 
 struct CVariantSlot;
 

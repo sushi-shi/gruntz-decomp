@@ -1,13 +1,13 @@
-#include <Gruntz/SaveFrontBufferShot.h>
-#include <Ints.h>
+#include <rva.h>
 
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SaveFrontBufferShot.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SaveScreenshot.h>
-
-#include <rva.h>
+#include <Ints.h>
 
 RVA(0x00114ec0, 0x27)
 void SaveFrontBufferShot(

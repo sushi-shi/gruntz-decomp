@@ -1,9 +1,9 @@
+#include <rva.h>
+
 #include <Gruntz/LevelTimeDtor.h>
+
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-
-#include <rva.h>
 
 VTBL(CLevelTime, 0x001e801c);
 RVA(0x000119b0, 0x47)

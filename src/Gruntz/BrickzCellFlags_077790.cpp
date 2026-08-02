@@ -1,10 +1,12 @@
 #include <rva.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TriggerMgr.h>
+
 #include <Mfc.h>
+
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h>
 
 // @early-stop
 RVA(0x00077790, 0x630)

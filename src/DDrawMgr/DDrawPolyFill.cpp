@@ -1,12 +1,13 @@
-#include <DDrawMgr/DirectDrawMgr.h>
-#include <Image/RasterVtx.h>
-#include <Win32.h>
-#include <ddraw.h>
 #include <rva.h>
-#include <Pix16.h>
+
 #include <DDrawMgr/DDrawPolyFill.h>
 
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <Image/RasterVtx.h>
 #include <Image/WarpTextureBlit.h>
+#include <Pix16.h>
+
+#include <ddraw.h>
 
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {

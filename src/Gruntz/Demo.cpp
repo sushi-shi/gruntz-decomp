@@ -1,38 +1,38 @@
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/Demo.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/DemoHelpers.h>
-#include <Io/FileMem.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/FixedPtrArray32.h>
-#include <DinMgr2/DirectInputMgr2.h>
-#include <fstream.h>
-#include <string.h>
 #include <rva.h>
+
+#include <Gruntz/Demo.h>
 
 #include <Bute/ButeMgr.h>
 #include <Bute/SymTab.h>
-#include <Gruntz/AnimWorker.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialRecords.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/GameLevel.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Ints.h>
-#include <stdlib.h>
-
+#include <DinMgr2/DirectInputMgr2.h>
+#include <Gruntz/AnimWorker.h>
+#include <Gruntz/DemoHelpers.h>
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FortressFlag.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntStartingPoint.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/Teleporter.h>
+#include <Gruntz/UserLogic.h>
 #include <Gruntz/Warlord.h>
 #include <Gruntz/Wormhole.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+
+#include <fstream.h>
+#include <stdlib.h>
+#include <string.h>
 
 DATA(0x0020d008)
 const i32 g_directionClockwiseTable[27] = {

@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_BOOTYWALKANIM_H
 
 #include <rva.h>
+
 #include <Gruntz/CoordNode.h>
 
 extern i32 g_idleSpriteIds[4];

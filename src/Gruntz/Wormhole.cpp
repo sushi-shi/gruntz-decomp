@@ -1,34 +1,34 @@
-
+#include <rva.h>
 
 #include <Gruntz/Wormhole.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Io/FileMem.h>
-#include <Gruntz/GruntPuddle.h>
-#include <Gruntz/InGameIcon.h>
-#include <Gruntz/Teleporter.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/UserLogic.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/LogicFnTable.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/BattlezData.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/ActNameRegistry.h>
-#include <Bute/ButeMgr.h>
+
 #include <Mfc.h>
-#include <rva.h>
-#include <Wap32/zBitVec.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicFnTable.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/Teleporter.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Io/FileMem.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
 
 template<> DATA(0x00244660)
 CActReg CActRegPool<CWormhole>::s_table(2000, 2010);

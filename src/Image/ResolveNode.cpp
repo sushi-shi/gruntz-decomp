@@ -1,5 +1,6 @@
-#include <Gruntz/ResolveNode.h>
 #include <rva.h>
+
+#include <Gruntz/ResolveNode.h>
 
 RVA(0x001549d0, 0x29)
 CResolveNode::CResolveNode() {

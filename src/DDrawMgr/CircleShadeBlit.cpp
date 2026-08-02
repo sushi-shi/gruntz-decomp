@@ -1,8 +1,10 @@
+#include <rva.h>
+
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/FaderSubtypes.h>
 #include <Ints.h>
+
 #include <math.h>
-#include <rva.h>
 
 // @early-stop
 RVA(0x00180fb0, 0x534)

@@ -1,15 +1,8 @@
-#include <Gruntz/SerialObjectFactory.h>
-#include <AddrWord.h>
-#include <Gruntz/SerialCounter.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Ints.h>
-#include <string.h>
-
-#include <Gruntz/GameRegistry.h>
-
 #include <rva.h>
-#include <Io/GameSave.h>
-#include <Io/FileMem.h>
+
+#include <Gruntz/SerialObjectFactory.h>
+
+#include <AddrWord.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/ActionArea.h>
 #include <Gruntz/AniCycle.h>
@@ -30,6 +23,7 @@
 #include <Gruntz/FortressFlag.h>
 #include <Gruntz/FrontCandy.h>
 #include <Gruntz/FrontCandyAni.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/GruntHealthSprite.h>
@@ -41,6 +35,7 @@
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntToyTimeSprite.h>
 #include <Gruntz/GruntWingzTimeSprite.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GuardPoint.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>
@@ -56,6 +51,7 @@
 #include <Gruntz/RollingBall.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
+#include <Gruntz/SerialCounter.h>
 #include <Gruntz/SimpleAnimation.h>
 #include <Gruntz/SingleAnimation.h>
 #include <Gruntz/SingleFrameMessage.h>
@@ -75,6 +71,11 @@
 #include <Gruntz/WarpStonePad.h>
 #include <Gruntz/WayPoint.h>
 #include <Gruntz/Wormhole.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+#include <Io/GameSave.h>
+
+#include <string.h>
 
 RVA(0x0000d210, 0x65)
 i32 ParseSerial(CGruntzMgr* mgr, char* s) {

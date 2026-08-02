@@ -3,9 +3,8 @@
 
 #include <rva.h>
 
-#include <Rez/RezMgr.h>
-
 #include <Rez/RezList.h>
+#include <Rez/RezMgr.h>
 
 extern const char s_rb[];
 extern const char s_rPlusB[];

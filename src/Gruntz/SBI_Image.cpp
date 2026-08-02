@@ -1,19 +1,23 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SerialCounter.h>
-#include <Io/FileMem.h>
-#include <Mfc.h>
-#include <Ints.h>
-#include <Gruntz/SbiConfig.h>
+
 #include <Gruntz/SBI_Image.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Sprite.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+
 #include <string.h>
 
 VTBL(CSBI_RectOnly, 0x001eab8c);

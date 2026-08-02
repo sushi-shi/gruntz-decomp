@@ -1,25 +1,26 @@
-#include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/PixelShift.h>
-#include <DDrawMgr/DDSurface.h>
-#include <Mfc.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <ddraw.h>
+#include <rva.h>
+
 #include <Gruntz/LightFxRender.h>
 
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Grunt.h>
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <rva.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+
+#include <ddraw.h>
 
 static inline SIZE
 GridSize(const CGruntzMapMgr* grid) {

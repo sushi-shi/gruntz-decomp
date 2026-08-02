@@ -1,8 +1,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 
-#include <Io/FileMem.h>
-
 #include <Gruntz/FreeNodePool.h>
+#include <Io/FileMem.h>
 
 VTBL(CGruntzMapMgr, 0x001e9bb4);
 

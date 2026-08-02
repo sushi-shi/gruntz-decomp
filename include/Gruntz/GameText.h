@@ -2,8 +2,8 @@
 #define SRC_GRUNTZ_GAMETEXT_H
 
 #include <rva.h>
-#include <Gruntz/String.h>
 
+#include <Gruntz/String.h>
 #include <Wap32/zBitVec.h>
 
 extern CString g_brickText1;

@@ -1,9 +1,10 @@
+#include <Gruntz/SpotLightActReg.h>
+
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/SpotLight.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/SpotLightActReg.h>
-#include <Gruntz/SpotLight.h>
 
 template<> DATA(0x00246188)
 CActReg CActRegPool<CSpotLight>::s_table(2000, 2010);

@@ -1,5 +1,6 @@
-#include <Gruntz/ImageSets.h>
 #include <rva.h>
+
+#include <Gruntz/ImageSets.h>
 
 RVA(0x00161330, 0x1)
 void CImageSet1::FreePixels() {}

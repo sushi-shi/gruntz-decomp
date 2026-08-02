@@ -2,8 +2,9 @@
 #define GRUNTZ_CGRUNTTOYTIMESPRITE_H
 
 #include <rva.h>
-#include <Gruntz/GruntHealthSprite.h>
+
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/LogicTypeId.h>
 
 class CGruntToyTimeSprite : public CGruntHealthSprite {

@@ -1,34 +1,32 @@
-
-
-#include <Gruntz/ActReg.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/Timer.h>
-
-#include <Gruntz/ActionOptionsMenuBar.h>
-#include <Gruntz/GruntzCmdMgr.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/BattlezData.h>
+#include <AddrWord.h>
+#include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/TileGrid.h>
-#include <Bute/ButeMgr.h>
-#include <Wwd/WwdFile.h>
+#include <Gruntz/ActionOptionsMenuBar.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntPuddle.h>
-#include <AddrWord.h>
-
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TileGrid.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/Timer.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrViews.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Wwd/WwdFile.h>
 
 RVA(0x0006b640, 0x2f)
 i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
@@ -553,7 +551,16 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             {
                 g_gameReg->m_scoreHud->m_secretsFound++;
-                m_world->m_soundRegistry->RefreshAsset("GAME_SECRETSWITCH");
+                {
+                    CDDrawSubMgrLeafScan* set = m_world->m_soundRegistry;
+                    if (set->m_emitGate == 0) {
+                        void* found = 0;
+                        set->m_cues.Lookup("GAME_SECRETSWITCH", found);
+                        if (found != 0) {
+                            static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                        }
+                    }
+                }
                 if (g != 0) {
                     i32 cueX = g->m_object->m_screenX;
                     i32 cueY = g->m_object->m_screenY;
@@ -797,7 +804,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 if (gruntKind > 0x16) {
                     gruntKind = g->m_toolId;
                 }
-                if (sw->m_checkpointType == gruntKind
+                if (gruntKind == sw->m_checkpointType
                     || sw->m_checkpointType == g->m_vehiclePickupType) {
                     sw->SwitchDown();
                 } else {

@@ -2,16 +2,15 @@
 #define GRUNTZ_USERLOGIC_H
 
 #include <rva.h>
-#include <Gruntz/LogicTypeId.h>
 
-#include <Gruntz/UserBaseLink.h>
-
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/WwdGridIter.h>
-#include <DDrawMgr/AnimWorkerObj.h>
-#include <Wwd/WwdGameObjectFamily.h>
 #include <Bute/ButeMgr.h>
+#include <DDrawMgr/AnimWorkerObj.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserBaseLink.h>
+#include <Gruntz/WwdGridIter.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 struct CGameObject;
 struct LeafCue;

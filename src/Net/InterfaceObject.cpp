@@ -1,5 +1,6 @@
-#include <Net/InterfaceObject.h>
 #include <rva.h>
+
+#include <Net/InterfaceObject.h>
 
 VTBL(InterfaceObject, 0x001f0748);
 

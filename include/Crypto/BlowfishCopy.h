@@ -1,9 +1,11 @@
 #ifndef CRYPTO_BLOWFISHCOPY_H
 #define CRYPTO_BLOWFISHCOPY_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 void Blowfish_encipher(u32* xl, u32* xr);
 

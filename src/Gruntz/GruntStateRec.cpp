@@ -1,12 +1,14 @@
 #include <rva.h>
+
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/SerialCounter.h>
-#include <Gruntz/GameRegistry.h>
 #include <Gruntz/SBI_StatzTabGruntBar.h>
+#include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
+#include <Io/FileMem.h>
+
 #include <string.h>
 
 // @early-stop

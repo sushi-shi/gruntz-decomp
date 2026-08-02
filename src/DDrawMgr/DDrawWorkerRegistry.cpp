@@ -1,21 +1,21 @@
-
-
 #include <rva.h>
+
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+
+#include <Mfc.h>
+
 #include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <Gruntz/Loadable.h>
+#include <Gruntz/MapStringToOb.h>
+#include <Gruntz/StateId.h>
+#include <Gruntz/String.h>
+#include <Image/CImage.h>
 #include <Image/ImageSet.h>
 
-#include <Gruntz/StateId.h>
-#include <Mfc.h>
-#include <Win32.h>
 #include <ddraw.h>
-#include <string.h>
 #include <stdio.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawWorker.h>
-#include <Gruntz/String.h>
-#include <Gruntz/MapStringToOb.h>
-#include <Gruntz/Loadable.h>
-#include <Image/CImage.h>
+#include <string.h>
 
 VTBL(CDDrawWorker, 0x001efbe8);
 inline void* operator new(u32, void* p) {

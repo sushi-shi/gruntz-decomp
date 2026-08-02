@@ -1,12 +1,14 @@
 #ifndef GRUNTZ_TRIGGERMGR_RECORDS_H
 #define GRUNTZ_TRIGGERMGR_RECORDS_H
 
-#include <Ints.h>
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
-#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TraitorMode.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Ints.h>
 
 enum {
     kPendingFxIdBase = 0xc8

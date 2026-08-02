@@ -1,11 +1,12 @@
-#include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Ints.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameLevel.h>
-#include <Wwd/WwdFile.h>
-#include <Gruntz/SlotHolder.h>
 #include <rva.h>
+
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SlotHolder.h>
+#include <Ints.h>
+#include <Wwd/WwdFile.h>
 
 RVA(0x001128b0, 0x88)
 i32 CSlotHolder::DoSwap() {

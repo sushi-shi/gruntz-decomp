@@ -1,16 +1,15 @@
+#include <rva.h>
+
+#include <Gruntz/ToobSpikez.h>
+
+#include <Bute/ButeTree.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/SerialArchive.h>
-#include <Wap32/ZVec.h>
-#include <Bute/ButeTree.h>
-#include <Gruntz/ToobSpikez.h>
 #include <Gruntz/XferArchive.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/ActNameRegistry.h>
 #include <Rez/FrameClock.h>
-#include <rva.h>
-#include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
 
 RVA_COMPGEN(0x00012c30, 0x1e, ??_GCToobSpikez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)

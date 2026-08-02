@@ -1,11 +1,12 @@
 #ifndef GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H
 #define GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <DDrawMgr/DDSurface.h>
+#include <Ints.h>
 
 struct PidHeader;
 struct CDDPalette;

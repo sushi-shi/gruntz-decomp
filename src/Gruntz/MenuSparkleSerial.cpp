@@ -1,7 +1,9 @@
+#include <rva.h>
+
+#include <Gruntz/MenuSparkleSerial.h>
+
 #include <Gruntz/MenuSparkle.h>
 #include <Io/FileMem.h>
-#include <Gruntz/MenuSparkleSerial.h>
-#include <rva.h>
 
 DATA(0x001ea3d4)
 i32 g_menuSparkleLo = 1000;

@@ -1,11 +1,12 @@
 #ifndef GRUNTZ_ANIMWORKER_H
 #define GRUNTZ_ANIMWORKER_H
 
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/XferArchive.h>
-#include <Wwd/WwdGameObjectFamily.h>
+
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <Gruntz/XferArchive.h>
+#include <Ints.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 class CUserLogic;
 

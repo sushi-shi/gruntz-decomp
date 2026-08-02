@@ -1,31 +1,31 @@
-#include <Bute/SymParser.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Bute/SymTab.h>
+#include <rva.h>
+
+#include <Gruntz/CreditsState.h>
+
+#include <MfcWin.h>
+
 #include <Bute/ButeMgr.h>
-#include <Io/MoviePlayer.h>
-#include <Gruntz/BankMgr.h>
-#include <Gruntz/ParseSource.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Gruntz/GameMode.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Rez/RezMgr.h>
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <Win32.h>
-#include <ddraw.h>
-#include <rva.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <stdio.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
 #include <Gruntz/Attract.h>
-#include <Gruntz/CreditsState.h>
+#include <Gruntz/BankMgr.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ParseSource.h>
+#include <Io/MoviePlayer.h>
+#include <Rez/RezMgr.h>
+
+#include <ddraw.h>
+#include <stdio.h>
 
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;

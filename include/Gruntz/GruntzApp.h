@@ -1,7 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_GRUNTZAPP_H
 #define GRUNTZ_GRUNTZ_GRUNTZAPP_H
+
 #include <rva.h>
+
 #include <Mfc.h>
+
 #include <Wap32/Wap32.h>
 
 class CGruntzApp : public CGameApp {

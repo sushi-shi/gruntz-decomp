@@ -2,6 +2,7 @@
 #define GRUNTZ_MFC_H
 
 #define VC_EXTRALEAN
+
 #include <afx.h>
 #include <afxcoll.h>
 

@@ -440,6 +440,13 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.view_typedef", ["--ratchet"],
           "view-typedef ratchet violated - delete the alias typedef and use the real "
           "class name (python -m gruntz.audit.view_typedef)", "normal")
+    # The #include block is canonical: no duplicates, and one order tree-wide
+    # (rva -> platform preludes -> own header -> project -> library). See
+    # docs/patterns/include-order.md; the fixer is mechanical and line-conserving.
+    _gate("gruntz.audit.include_order", ["--gate"],
+          "include-order ratchet violated - the include block is duplicated or out of "
+          "canonical order (python -m gruntz.audit.include_order --fix-dupes --fix)",
+          "normal")
     # DATA_SYMBOL is a storage-less name->rva binding; legit only for ctor'd-object
     # globals + compiler-gen ($S/??_) symbols. A POD/scalar/const one leaves the datum
     # undefined (unresolved at link) - it must be a real DATA def. Down-only backlog in

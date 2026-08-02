@@ -1,19 +1,20 @@
 
 
 // @early-stop
+
 #include <rva.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h>
-#include <Gruntz/GameRegistry.h>
 
-#include <Gruntz/SbGeom.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/SBI_MenuItem.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SbGeom.h>
 #include <Gruntz/SBI_ImageSet.h>
+#include <Gruntz/SBI_MenuItem.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
 
 RVA(0x00101580, 0x806)
 void CStatusBarMgr::BuildGameMenu() {

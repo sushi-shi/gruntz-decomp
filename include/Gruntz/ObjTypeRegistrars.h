@@ -1,10 +1,15 @@
 #ifndef GRUNTZ_OBJTYPEREGISTRARS_H
 #define GRUNTZ_OBJTYPEREGISTRARS_H
 
-#include <Gruntz/MovingLogic.h>
 #include <rva.h>
+
 #include <Gruntz/CBrickz.h>
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/GruntPowerupSprite.h>
+#include <Gruntz/GruntSelectedSprite.h>
+#include <Gruntz/GruntToySprite.h>
+#include <Gruntz/MovingLogic.h>
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/RollingBall.h>
@@ -19,10 +24,6 @@
 #include <Gruntz/ToobSpikez.h>
 #include <Gruntz/VoiceTrigger.h>
 #include <Gruntz/WarpStonePad.h>
-#include <Gruntz/GruntHealthSprite.h>
-#include <Gruntz/GruntPowerupSprite.h>
-#include <Gruntz/GruntSelectedSprite.h>
-#include <Gruntz/GruntToySprite.h>
 
 struct CProjectile : public CMovingLogic {
     static void RegisterType();

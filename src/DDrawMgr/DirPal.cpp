@@ -1,10 +1,14 @@
-#include <Io/FileStream.h>
+#include <rva.h>
+
+#include <DDrawMgr/DirPal.h>
+
+#include <Mfc.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <ddraw.h>
-#include <rva.h>
-#include <DDrawMgr/DirPal.h>
 #include <Image/FileImageRecords.h>
+#include <Io/FileStream.h>
+
+#include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
 

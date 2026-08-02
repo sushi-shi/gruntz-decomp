@@ -1,10 +1,12 @@
-#include <string.h>
+#include <rva.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
-#include <rva.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/UserLogic.h>
+
+#include <string.h>
 
 // @early-stop
 RVA(0x00112a50, 0xdd)

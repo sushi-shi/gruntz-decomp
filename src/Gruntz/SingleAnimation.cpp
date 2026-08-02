@@ -1,14 +1,13 @@
+#include <rva.h>
+
+#include <Gruntz/SingleAnimation.h>
+
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/SerialArchive.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/SingleAnimation.h>
-#include <Gruntz/SerialArchive.h>
-#include <rva.h>
-#include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
 
 VTBL(CSingleAnimation, 0x001e745c);
 template<> DATA(0x00245f70)

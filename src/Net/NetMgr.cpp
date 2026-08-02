@@ -1,11 +1,14 @@
-#include <Net/NetMgr.h>
-#include <dplay.h>
-#include <Net/NetGuids.h>
-#include <Net/InterfaceObject.h>
-#include <Font/Font.h>
 #include <rva.h>
-#include <MsgParam.h>
+
+#include <Net/NetMgr.h>
+
 #include <AddrWord.h>
+#include <Font/Font.h>
+#include <MsgParam.h>
+#include <Net/InterfaceObject.h>
+#include <Net/NetGuids.h>
+
+#include <dplay.h>
 #include <string.h>
 
 VTBL(CNetPlayerListNode, 0x001f0760);

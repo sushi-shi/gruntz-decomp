@@ -1,24 +1,23 @@
+#include <rva.h>
 
-
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/CurPlayer.h>
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/CurPlayer.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/BattlezData.h>
-#include <Gruntz/FontConfig.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/Warlord.h>
 #include <Gruntz/Play.h>
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Wwd/WwdGameObjectFamily.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Warlord.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
-#include <rva.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 // @early-stop
 RVA(0x0003f5f0, 0x526)

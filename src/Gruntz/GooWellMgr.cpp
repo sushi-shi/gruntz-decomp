@@ -1,24 +1,24 @@
+#include <rva.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Wwd/WwdGameObjectFamily.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/Warlord.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <rva.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundCue.h>
-#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Warlord.h>
 #include <Utils/MapTyped.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 // @early-stop
 RVA(0x0006eb80, 0x5ef)

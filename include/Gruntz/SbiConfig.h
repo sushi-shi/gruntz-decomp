@@ -2,8 +2,9 @@
 #define GRUNTZ_SBICONFIG_H
 
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GameRegistry.h>
 #include <Image/ImageSet.h>
 
 struct CSbiSurfacePool {};

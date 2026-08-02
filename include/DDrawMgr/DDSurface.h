@@ -1,10 +1,13 @@
 #ifndef DDRAWMGR_CDDSURFACE_H
 #define DDRAWMGR_CDDSURFACE_H
 
-#include <Mfc.h>
-#include <Ints.h>
-#include <ddraw.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
+
+#include <ddraw.h>
 
 struct CDDPalette;
 class CDDrawPtrCollections;

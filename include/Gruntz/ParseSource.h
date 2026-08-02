@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_CPARSESOURCE_H
 #define GRUNTZ_CPARSESOURCE_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Bute/Hash.h>
+#include <Ints.h>
 
 typedef enum ParseEntryTag {
     PARSETAG_VAW = 0x574156,

@@ -1,11 +1,11 @@
+#include <rva.h>
+
 #include <DinMgr2/DirectInputMgr2.h>
 #include <EmptyString.h>
 #include <Gruntz/FixedPtrArray32.h>
-#include <rva.h>
+
 #include <stdio.h>
 #include <string.h>
-
-#include <Win32.h>
 
 typedef enum DinCreateFlags {
     DIDF_NO_DEVICE_B = 2,

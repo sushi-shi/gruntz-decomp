@@ -1,13 +1,13 @@
 #ifndef SRC_REZ_REZMGR_H
 #define SRC_REZ_REZMGR_H
+
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <Bute/Hash.h>
-
-#include <Rez/RezList.h>
 #include <Gruntz/String.h>
+#include <Rez/RezList.h>
 
 class CRezDir;
 

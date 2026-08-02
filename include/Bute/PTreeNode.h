@@ -1,6 +1,8 @@
 #ifndef SRC_BUTE_PTREENODE_H
 #define SRC_BUTE_PTREENODE_H
+
 #include <rva.h>
+
 #include <Ints.h>
 #include <Wap32/zBitVec.h>
 

@@ -1,8 +1,9 @@
+#include <rva.h>
+
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzCommand.h>
-#include <rva.h>
+#include <Gruntz/GruntzMgr.h>
 
 template<> DATA(0x0022b5d0)
 CPtrList CPtrListPool<CGruntzSingleCommand>::s_freeList(0xa);

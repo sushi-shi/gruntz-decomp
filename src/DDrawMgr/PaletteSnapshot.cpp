@@ -1,9 +1,12 @@
-#include <Ints.h>
 #include <rva.h>
-#include <DDrawMgr/DirectDrawMgr.h>
+
 #include <Mfc.h>
-#include <ddraw.h>
+
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <Ints.h>
 #include <Io/MoviePlayer.h>
+
+#include <ddraw.h>
 
 RVA(0x0017cd90, 0x58)
 void CMoviePlayer::Snapshot(HWND hWnd) {

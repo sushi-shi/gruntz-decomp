@@ -2,6 +2,7 @@
 #define GRUNTZ_CEXPLOSION_H
 
 #include <rva.h>
+
 #include <Gruntz/ActReg.h>
 #include <Gruntz/UserLogic.h>
 

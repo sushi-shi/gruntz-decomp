@@ -1,13 +1,17 @@
 #include <rva.h>
-#include <Rez/FrameClock.h>
+
+#include <Gruntz/SpotLight.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Mfc.h>
-#include <math.h>
-#include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/SpotLight.h>
-#include <Gruntz/GameRegistry.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Rez/FrameClock.h>
+
+#include <math.h>
 
 // @early-stop
 RVA(0x000b1ee0, 0x11d)

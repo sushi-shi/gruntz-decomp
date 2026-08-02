@@ -1,8 +1,9 @@
 #ifndef SRC_GRUNTZ_XFERARCHIVE_H
 #define SRC_GRUNTZ_XFERARCHIVE_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 i32 ProjTypeXfer(class CUserLogic* logic);
 

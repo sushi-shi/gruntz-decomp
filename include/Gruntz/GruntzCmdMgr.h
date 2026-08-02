@@ -1,11 +1,14 @@
 #ifndef GRUNTZ_GRUNTZCMDMGR_H
 #define GRUNTZ_GRUNTZCMDMGR_H
 
-#include <Mfc.h>
 #include <rva.h>
-#include <Ints.h>
-#include <Gruntz/SerialArchive.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/GruntzCommand.h>
+#include <Gruntz/SerialArchive.h>
+#include <Ints.h>
+
 class CState;
 
 SIZE_UNKNOWN();

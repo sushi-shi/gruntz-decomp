@@ -1,23 +1,23 @@
+#include <rva.h>
 
+#include <Gruntz/RollingBall.h>
 
+#include <Bute/ButeMgr.h>
 #include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/RollingBall.h>
-#include <Gruntz/GameRegistry.h>
-
-#include <rva.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/KitchenSlime.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/ZVec.h>
+
 #include <math.h>
 #include <string.h>
-#include <Wap32/ZVec.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/KitchenSlime.h>
-#include <Bute/ButeMgr.h>
 
 template<> DATA(0x002461b0)
 CActReg CActRegPool<CRollingBall>::s_table(2000, 2010);

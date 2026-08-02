@@ -1,6 +1,8 @@
 #include <rva.h>
-#include <DinMgr2/DirectInputMgr2.h>
+
 #include <Gruntz/StateMgrBZ.h>
+
+#include <DinMgr2/DirectInputMgr2.h>
 
 RVA(0x000382c0, 0x52)
 i32 StateMgrBZ::Init(DirectInputMgr2* src, i32 mode) {

@@ -1,13 +1,14 @@
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
 #define SRC_GRUNTZ_GAMELEVEL_H
-#include <rva.h>
-#include <Wap32/WapObj.h>
-#include <Wap32/Object.h>
 
-#include <Wwd/WwdFile.h>
+#include <rva.h>
 
 #include <Mfc.h>
+
 #include <Gruntz/Loadable.h>
+#include <Wap32/Object.h>
+#include <Wap32/WapObj.h>
+#include <Wwd/WwdFile.h>
 
 class CFileMemBase;
 class CDDrawSurfacePair;

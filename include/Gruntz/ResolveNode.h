@@ -1,10 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_RESOLVENODE_H
 #define GRUNTZ_GRUNTZ_RESOLVENODE_H
 
+#include <rva.h>
+
+#include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
-#include <DDrawMgr/ShadeTableCache.h>
-#include <rva.h>
 
 class CDDrawSurfaceMgr;
 

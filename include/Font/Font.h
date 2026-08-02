@@ -1,8 +1,10 @@
 #ifndef SRC_FONT_FONT_H
 #define SRC_FONT_FONT_H
+
 #include <rva.h>
 
 #include <Mfc.h>
+
 #include <Wap32/Rect.h>
 
 struct Glyph {

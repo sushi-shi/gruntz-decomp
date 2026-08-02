@@ -1,21 +1,23 @@
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Net/NetMgr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Net/InterfaceObject.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/Multi.h>
-#include <Net/LatencyList.h>
-#include <Bute/SymTab.h>
-#include <Bute/SymParser.h>
-#include <Utils/RegistryHelper.h>
-#include <string.h>
-#include <stdio.h>
 #include <rva.h>
-#include <MsgParam.h>
+
 #include <Gruntz/MultiStartDlg.h>
+
+#include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
+#include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MpSymItem.h>
+#include <Gruntz/Multi.h>
+#include <MsgParam.h>
+#include <Net/InterfaceObject.h>
+#include <Net/LatencyList.h>
+#include <Net/NetMgr.h>
+#include <Utils/RegistryHelper.h>
+
+#include <stdio.h>
+#include <string.h>
 
 enum {
     NUM_PLAYER_SLOTS = 4

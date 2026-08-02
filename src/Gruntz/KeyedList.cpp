@@ -1,5 +1,6 @@
-#include <Net/KeyedList.h>
 #include <rva.h>
+
+#include <Net/KeyedList.h>
 
 RVA(0x000379f0, 0x57)
 CKeyedNode::~CKeyedNode() {

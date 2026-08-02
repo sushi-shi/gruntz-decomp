@@ -1,10 +1,13 @@
-#include <Mfc.h>
-#include <DDrawMgr/PixelShift.h>
-#include <Ints.h>
 #include <rva.h>
 
 #include <DDrawMgr/DDrawPtrCollections.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/PixelShift.h>
 #include <Image/Image.h>
+#include <Ints.h>
+
 #include <ddraw.h>
 #include <string.h>
 

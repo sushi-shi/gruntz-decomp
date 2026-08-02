@@ -1,8 +1,11 @@
 #ifndef GRUNTZ_NET_NETCMDSLOT_H
 #define GRUNTZ_NET_NETCMDSLOT_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
+
+class CGruntzCommand;
 
 #pragma pack(push, 1)
 struct NetCmdSendMsg {

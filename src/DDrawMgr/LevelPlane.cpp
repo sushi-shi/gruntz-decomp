@@ -2,31 +2,33 @@
 
 #define CGAMEOBJECT_OOL_CTOR
 
-#include <Gruntz/GruntzMgr.h>
+#include <rva.h>
+
 #include <Mfc.h>
-#include <Gruntz/WwdGameObject.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
+#include <DDrawMgr/DDrawWorkerMapSmall.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Loadable.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameObject.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDrawWorkerHost.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
-#include <DDrawMgr/DDrawWorkerMapSmall.h>
-#include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawChildGroup.h>
 #include <Io/FileMem.h>
 #include <Wwd/WwdSpatialMgr.h>
-#include <rva.h>
 
 #include <stdio.h>
 #include <string.h>
-#include <Gruntz/Loadable.h>
 
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)

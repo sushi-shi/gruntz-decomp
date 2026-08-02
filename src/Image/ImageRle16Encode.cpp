@@ -1,9 +1,9 @@
 #include <rva.h>
-#include <DDrawMgr/PixelShift.h>
 
+#include <DDrawMgr/DDrawShadeBlit.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Ints.h>
 #include <Rez/RezMgr.h>
-#include <DDrawMgr/DDrawShadeBlit.h>
 
 // @early-stop
 RVA(0x001495d0, 0x1a6)

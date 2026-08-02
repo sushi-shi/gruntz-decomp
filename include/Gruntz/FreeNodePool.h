@@ -1,10 +1,10 @@
 #ifndef GRUNTZ_FREENODEPOOL_H
 #define GRUNTZ_FREENODEPOOL_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Gruntz/CoordNode.h>
+#include <Ints.h>
 
 struct CoordPoolNode {
     CoordPoolNode* m_next;

@@ -1,10 +1,14 @@
-#include <Gruntz/GameInfoString.h>
-#include <Mfc.h>
-#include <time.h>
 #include <rva.h>
+
+#include <Gruntz/GameInfoString.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/GameInfo.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <Gruntz/GameInfo.h>
+#include <time.h>
 
 DATA(0x0024ebf8)
 char g_infoScratch[0x100] = {0};

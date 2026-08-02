@@ -1,9 +1,12 @@
-#include <Wap32/Wap32.h>
-#include <EmptyString.h>
 #include <rva.h>
-#include <string.h>
-#include <stdio.h>
+
 #include <Wap32/GameApp.h>
+
+#include <EmptyString.h>
+#include <Wap32/Wap32.h>
+
+#include <stdio.h>
+#include <string.h>
 
 VTBL(CGameMgr, 0x001e9b8c);
 DATA(0x00253c6c)

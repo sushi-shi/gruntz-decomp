@@ -1,27 +1,30 @@
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
-#include <Mfc.h>
-#include <ddraw.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Sprite.h>
-#include <Image/CImage.h>
 #include <Gruntz/ChatBoxOwner.h>
-#include <Gruntz/FontConfig.h>
-#include <Gruntz/CheatMgr.h>
-#include <Gruntz/Multi.h>
-#include <Gruntz/ParseSource.h>
+
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <EmptyString.h>
+#include <Gruntz/CheatMgr.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/ParseSource.h>
+#include <Gruntz/Sprite.h>
+#include <Image/CImage.h>
 #include <strstrea.h>
+
+#include <ddraw.h>
 #include <string.h>
 
 RVA(0x000204e0, 0x19)

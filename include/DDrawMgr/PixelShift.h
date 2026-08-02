@@ -1,5 +1,6 @@
 #ifndef INCLUDE_DDRAWMGR_PIXELSHIFT_H
 #define INCLUDE_DDRAWMGR_PIXELSHIFT_H
+
 #include <Ints.h>
 
 extern i32 g_rUp;

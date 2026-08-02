@@ -1,23 +1,25 @@
-#include <Gruntz/PlayStateActivate.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Mfc.h>
-#include <EmptyString.h>
-#include <Bute/SymTab.h>
-
-#include <Gruntz/Play.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/WwdGameReg.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <rva.h>
-#include <Gruntz/GameLevel.h>
-#include <DinMgr2/DirectInputMgr2.h>
-#include <DinMgr2/InputMgrPtr.h>
+
+#include <Gruntz/PlayStateActivate.h>
+
+#include <Mfc.h>
+
+#include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <DinMgr2/InputMgrPtr.h>
+#include <EmptyString.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/WwdGameReg.h>
 
 class CGruntzMgr;
 

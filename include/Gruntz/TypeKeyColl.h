@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
-#include <Gruntz/TypeCollRuntime.h>
 #include <Bute/ButeTree.h>
+#include <Gruntz/TypeCollRuntime.h>
 
 extern CTypeCollRuntime g_typeColl;
 

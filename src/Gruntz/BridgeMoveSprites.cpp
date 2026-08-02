@@ -1,10 +1,11 @@
 #include <rva.h>
+
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SoundState.h>
 #include <Gruntz/TileTriggerLogic.h>
 
 // @early-stop

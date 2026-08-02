@@ -1,29 +1,29 @@
+#include <rva.h>
+
 #include <Gruntz/MenuState.h>
-#include <DinMgr2/DirectInputMgr2.h>
-#include <Gruntz/GameMode.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/MenuVersion.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/BattlezData.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/WwdGameReg.h>
+
+#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDSurface.h>
-
-#include <rva.h>
-#include <Bute/SymParser.h>
-#include <Image/CImage.h>
-#include <Gruntz/ChatBox.h>
-#include <Gruntz/MainMenuBuilder.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h>
-#include <Win32.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/ChatBox.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/MainMenuBuilder.h>
+#include <Gruntz/MenuVersion.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/WwdGameReg.h>
+#include <Image/CImage.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 
 DATA(0x00245574)

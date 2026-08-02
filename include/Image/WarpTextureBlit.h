@@ -1,8 +1,8 @@
 #ifndef GRUNTZ_IMAGE_WARPTEXTUREBLIT_H
 #define GRUNTZ_IMAGE_WARPTEXTUREBLIT_H
 
-#include <Ints.h>
 #include <Image/RasterVtx.h>
+#include <Ints.h>
 
 extern "C" i16* g_rasterDestPtr;
 

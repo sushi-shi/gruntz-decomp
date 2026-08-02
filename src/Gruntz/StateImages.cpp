@@ -1,10 +1,11 @@
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Mfc.h>
-#include <Bute/SymTab.h>
-#include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/ImageState.h>

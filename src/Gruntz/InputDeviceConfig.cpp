@@ -1,9 +1,9 @@
 #include <rva.h>
 
-#include <Gruntz/String.h>
-#include <Gruntz/InputConfig.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
+#include <Gruntz/InputConfig.h>
+#include <Gruntz/String.h>
 #include <MsgParam.h>
 
 RVA(0x000387c0, 0xd4)

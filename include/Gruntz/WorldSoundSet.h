@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_CWORLDSOUNDSET_H
 #define GRUNTZ_CWORLDSOUNDSET_H
 
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
 
 #include <Dsndmgr/SoundDevice.h>
 

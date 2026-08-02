@@ -1,8 +1,10 @@
 #ifndef GRUNTZ_FXMODET1_H
 #define GRUNTZ_FXMODET1_H
 
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/FxModeDesc.h>
 
 class CFxModeT1 : public CFxModeDesc {

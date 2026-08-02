@@ -2,8 +2,9 @@
 #define GRUNTZ_GAMERAND_H
 
 #include <Mfc.h>
-#include <Ints.h>
+
 #include <Gruntz/Random.h>
+#include <Ints.h>
 
 static __inline i32 GameRand() {
     i32 seed;

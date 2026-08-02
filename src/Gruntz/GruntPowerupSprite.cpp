@@ -1,15 +1,17 @@
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/GruntPowerupSprite.h>
-#include <Gruntz/LightFxMgr.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TriggerMgr.h>
 #include <rva.h>
+
+#include <Gruntz/GruntPowerupSprite.h>
+
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
+#include <Wap32/ZVec.h>
 
 VTBL(CGruntPowerupSprite, 0x001e76c4);
 

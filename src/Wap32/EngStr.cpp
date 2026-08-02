@@ -1,9 +1,11 @@
-#include <Ints.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
 #include <rva.h>
+
 #include <Wap32/EngStr.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <Ints.h>
 
 // @early-stop
 RVA(0x00115440, 0x45)

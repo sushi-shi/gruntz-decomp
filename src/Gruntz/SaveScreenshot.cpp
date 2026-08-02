@@ -1,11 +1,12 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h>
+
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Utils/RegistryHelper.h>
 
 // @early-stop

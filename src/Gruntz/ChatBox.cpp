@@ -1,17 +1,18 @@
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/SoundState.h>
-#include <Image/CImage.h>
-#include <Image/ImageSet.h>
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
-#include <DDrawMgr/DirectDrawMgr.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuPage.h>
+#include <Gruntz/SoundState.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
+#include <Rez/FrameClock.h>
 
 RVA(0x00182ab0, 0x7b)
 i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e, i32 f) {

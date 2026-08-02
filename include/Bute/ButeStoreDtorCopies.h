@@ -1,8 +1,9 @@
 #ifndef SRC_BUTE_BUTESTOREDTORCOPIES_H
 #define SRC_BUTE_BUTESTOREDTORCOPIES_H
 
-#include <Bute/ButeStore.h>
 #include <rva.h>
+
+#include <Bute/ButeStore.h>
 
 struct CButeStoreResetCopyClear : public zPTree {
     void ResetCopy();

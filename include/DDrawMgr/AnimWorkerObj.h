@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H
 #define GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H
 
-#include <Ints.h>
-#include <Gruntz/Loadable.h>
 #include <rva.h>
+
+#include <Gruntz/Loadable.h>
+#include <Ints.h>
 
 class CUserLogic;
 class CFileMemBase;

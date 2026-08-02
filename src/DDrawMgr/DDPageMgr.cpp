@@ -1,9 +1,6 @@
 #include <DDrawMgr/DDPageMgr.h>
 #include <Mfc.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
+#include <MfcWin.h>
 #include <Ints.h>
 #include <rva.h>
 #include <ComOutRef.h>

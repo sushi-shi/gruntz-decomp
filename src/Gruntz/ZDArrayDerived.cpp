@@ -1,5 +1,6 @@
-#include <Gruntz/ActReg.h>
 #include <rva.h>
+
+#include <Gruntz/ActReg.h>
 
 template<> RVA(0x00008710, 0x2b)
 zDArray<CActHandler>::zDArray(i32 lo, i32 hi)

@@ -1,10 +1,10 @@
 #ifndef GRUNTZ_BATTLEZDATA_H
 #define GRUNTZ_BATTLEZDATA_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Gruntz/SerialArchive.h>
+#include <Ints.h>
 
 struct BattlezRecord {
     i32 m_populated;

@@ -2,8 +2,8 @@
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
 #include <rva.h>
+
 #include <Wap32/Object.h>
-#include <Win32.h>
 
 class CFile;
 class CString;

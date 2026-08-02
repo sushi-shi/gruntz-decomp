@@ -1,26 +1,24 @@
-
+#include <rva.h>
 
 #include <Mfc.h>
+
+#include <AddrWord.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzCmdMgr.h>
-#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ImageSets.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/StatusBarMgr.h>
-
-#include <Gruntz/ChatBoxOwner.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/ImageSets.h>
 #include <Wwd/WwdFile.h>
-#include <rva.h>
-#include <AddrWord.h>
-
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/GameObjectFactory.h>
 
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";
 static char s_BadMulti[] = "Bad multi switch at: x=%d, y=%d\n";

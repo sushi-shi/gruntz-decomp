@@ -7,34 +7,34 @@
 #define ANIMWORKEROBJ_OOL_CTOR
 
 #include <rva.h>
-#include <AddrWord.h>
-#include <Rez/FrameClock.h>
-#include <Io/FileMem.h>
 
+#include <Wwd/WwdObjMgr.h>
+
+#include <Mfc.h>
+
+#include <AddrWord.h>
+#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDSurface.h>
-#include <Gruntz/SerialArchive.h>
-#include <Mfc.h>
-#include <Gruntz/Sprite.h>
-#include <DDrawMgr/AnimWorkerObj.h>
-#include <Gruntz/ResolveNode.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Wwd/WwdFactoryObject.h>
-#include <Gruntz/WwdGameObject.h>
-#include <Wwd/WwdGameObjectFamily.h>
-#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
-#include <Gruntz/ObList.h>
-#include <Gruntz/UserLogic.h>
-#include <Wwd/WwdFile.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <Gruntz/GameLevel.h>
-#include <Win32.h>
-#include <Wwd/WwdObjMgr.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/ObList.h>
+#include <Gruntz/ResolveNode.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wwd/WwdFactoryObject.h>
+#include <Wwd/WwdFile.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;

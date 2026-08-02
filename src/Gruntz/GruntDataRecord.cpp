@@ -1,11 +1,11 @@
+#include <rva.h>
 
+#include <Mfc.h>
 
 #include <Gruntz/Grunt.h>
 #include <Io/FileMem.h>
-#include <rva.h>
-#include <string.h>
 
-#include <Mfc.h>
+#include <string.h>
 
 RVA(0x00056da0, 0xc7)
 i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {

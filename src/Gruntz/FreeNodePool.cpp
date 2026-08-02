@@ -1,5 +1,6 @@
-#include <Gruntz/FreeNodePool.h>
 #include <rva.h>
+
+#include <Gruntz/FreeNodePool.h>
 
 RVA(0x000311b0, 0x14)
 void FreeNodePool::Push(void* p) {

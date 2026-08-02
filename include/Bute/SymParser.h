@@ -1,14 +1,13 @@
 #ifndef SRC_BUTE_SYMPARSER_H
 #define SRC_BUTE_SYMPARSER_H
+
 #include <rva.h>
 
-#include <Ints.h>
-
 #include <Bute/Hash.h>
-#include <Bute/SymTab.h>
-
-#include <EmptyString.h>
 #include <Bute/ObjListBase.h>
+#include <Bute/SymTab.h>
+#include <EmptyString.h>
+#include <Ints.h>
 #include <Rez/RezList.h>
 
 class CRezItmBase;

@@ -3,8 +3,9 @@
 
 #include <rva.h>
 
-#include <Ints.h>
 #include <Mfc.h>
+
+#include <Ints.h>
 
 struct CheatEntry {
     i32 commandId;

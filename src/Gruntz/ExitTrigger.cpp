@@ -1,22 +1,23 @@
+#include <rva.h>
+
 #include <Gruntz/ExitTrigger.h>
-#include <Gruntz/Warlord.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/CurPlayer.h>
-#include <Gruntz/SerialCounter.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Io/FileMem.h>
-#include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
-#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-
-#include <rva.h>
-#include <Bute/ButeMgr.h>
+#include <Gruntz/SerialCounter.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/Warlord.h>
+#include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
+
 RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 

@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Win32.h>
+#include <Mfc.h>
 
 class CGruntzMgr;
 class CTriggerMgr;

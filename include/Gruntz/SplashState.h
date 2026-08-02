@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_SPLASHSTATE_H
 #define GRUNTZ_SPLASHSTATE_H
 
-#include <Gruntz/State.h>
 #include <rva.h>
+
+#include <Gruntz/State.h>
 
 class CSplashState : public CState {
 public:

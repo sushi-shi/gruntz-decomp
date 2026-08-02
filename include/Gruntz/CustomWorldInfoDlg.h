@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 extern char g_dotDot[];
 
 extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND, UINT, WPARAM, LPARAM);

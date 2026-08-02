@@ -1,9 +1,11 @@
 #ifndef GRUNTZ_GAMEINFOSTRING_H
 #define GRUNTZ_GAMEINFOSTRING_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 struct CGameInfoTime;
 

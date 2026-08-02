@@ -1,8 +1,9 @@
+#include <Gruntz/CursorSnapActReg.h>
+
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/CursorSnapActReg.h>
-#include <Gruntz/CursorSnapSprite.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CursorSnapSprite.h>
 #include <Rez/FrameClock.h>
 
 template<> DATA(0x0022bfa0)

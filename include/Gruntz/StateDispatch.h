@@ -1,9 +1,11 @@
 #ifndef GRUNTZ_STATEDISPATCH_H
 #define GRUNTZ_STATEDISPATCH_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 class CUserLogic;
 

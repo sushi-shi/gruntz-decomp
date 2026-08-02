@@ -1,18 +1,21 @@
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SerialCounter.h>
-#include <Io/FileMem.h>
+
+#include <Gruntz/SBI_ImageSet.h>
+
 #include <Mfc.h>
-#include <Ints.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/Sprite.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
 
 VTBL(CSBI_ImageSet, 0x001eac4c);
 

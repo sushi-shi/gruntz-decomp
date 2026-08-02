@@ -1,11 +1,11 @@
 #ifndef SBI_WARLORDHEAD_H
 #define SBI_WARLORDHEAD_H
 
-#include <Ints.h>
 #include <rva.h>
 
-#include <Image/CImage.h>
 #include <Gruntz/SBI_ImageSet.h>
+#include <Image/CImage.h>
+#include <Ints.h>
 
 struct CShadeTable;
 

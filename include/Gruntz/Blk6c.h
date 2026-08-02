@@ -1,9 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_BLK6C_H
 #define GRUNTZ_GRUNTZ_BLK6C_H
 
-#include <Ints.h>
-
 #include <rva.h>
+
+#include <Ints.h>
 
 struct Blk6c {
     i32 d[0x1b];

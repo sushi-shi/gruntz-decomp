@@ -1,21 +1,24 @@
-#include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
 #include <rva.h>
-#include <new>
 
-#include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/TileTriggerSwitchLogic.h>
-#include <DDrawMgr/DDSurface.h>
+
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Io/FileMem.h>
 #include <Wwd/WwdGameObjectFamily.h>
+
+#include <new>
 
 RVA(0x000c8640, 0x70)
 CTileTriggerContainer::~CTileTriggerContainer() {

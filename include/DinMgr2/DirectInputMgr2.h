@@ -1,11 +1,13 @@
 #ifndef DINMGR2_DIRECTINPUTMGR2_H
 #define DINMGR2_DIRECTINPUTMGR2_H
 
+// Selects the DirectInput 5 surface; must precede <dinput.h>.
+#define DIRECTINPUT_VERSION 0x0500
+
 #include <rva.h>
 
 #include <Ints.h>
 
-#define DIRECTINPUT_VERSION 0x0500
 #include <Gruntz/FixedPtrArray32.h>
 #include <Mfc.h>
 #include <dinput.h>

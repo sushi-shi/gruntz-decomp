@@ -2,7 +2,7 @@
 gruntz.audit.<name>`. MOST are on-demand only, but NINE are wired as build gates in
 cli.py (compgen_order, data_symbol, data_tu_order, label_style, rva_size,
 self_recursion, single_view, tu_order_check, view_typedef); the rest of the always-on
-gates live in gruntz/cleanliness/ + gruntz/match/:
+gates live in gruntz/cleanliness/ + gruntz/match/ (TEN with include_order):
 
   reloc      assert_relocs (+ link_defects, its lib) - reloc-target fidelity
   data       data_home / data_tu_order / globals_attribute / shredded -
@@ -18,6 +18,8 @@ gates live in gruntz/cleanliness/ + gruntz/match/:
              mfc_class (MFC container-band arbiter) / unmatched_attribute
   rename     rename_member (the m_<hex> endgame bulk renamer) / retype_ints /
              reorder_tu (tu_order_check's mechanical fixer)
+  hygiene    include_order - the canonical #include block (no duplicates, one
+             order tree-wide); gated + mechanical fixer, docs/patterns/include-order.md
 
 Retired audits live in scripts/archive/ (read its README before resurrecting
 anything). Shared engines these import live in gruntz/core/.

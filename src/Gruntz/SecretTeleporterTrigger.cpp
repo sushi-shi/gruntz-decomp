@@ -1,22 +1,22 @@
+#include <rva.h>
+
+#include <Gruntz/SecretTeleporterTrigger.h>
+
 #include <Bute/ButeTree.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/BattlezData.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/ActReg.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/SecretTeleporterTrigger.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
-#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Wap32/ZVec.h>
 
 VTBL(CSecretTeleporterTrigger, 0x001e7564);
 VTBL(CSecretLevelTrigger, 0x001e8804);

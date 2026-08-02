@@ -1,9 +1,9 @@
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/GruntzMgr.h>
 
 RVA(0x00015fe0, 0xbe)
 void CBattlezDlg::ToggleRow(i32 row) {

@@ -1,22 +1,18 @@
 #ifndef SRC_GRUNTZ_GAMEMODE_H
 #define SRC_GRUNTZ_GAMEMODE_H
+
 #include <rva.h>
 
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-
 #include <Mfc.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
+#include <MfcWin.h>
 
-#include <Gruntz/FixedPtrArray32.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/ChatBox.h>
+#include <Gruntz/FixedPtrArray32.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GlyphStringDraw.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
 
 extern "C" tagRECT g_versionRect;
 

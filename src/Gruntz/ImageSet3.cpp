@@ -1,5 +1,6 @@
-#include <Gruntz/ImageSets.h>
 #include <rva.h>
+
+#include <Gruntz/ImageSets.h>
 
 #include <string.h>
 

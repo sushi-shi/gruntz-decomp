@@ -1,29 +1,30 @@
-#include <Gruntz/GruntSpawnConfig.h>
+#include <rva.h>
+
 #include <Gruntz/Warlord.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
+
+#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
-#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialCounter.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
-#include <Gruntz/Play.h>
 #include <Gruntz/Timer.h>
-
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Io/FileMem.h>
-#include <Gruntz/SerialCounter.h>
-#include <Bute/ButeTree.h>
-#include <Gruntz/FontConfig.h>
+#include <Wap32/ZVec.h>
 
-#include <rva.h>
 #include <new>
 #include <stdlib.h>
-#include <Wap32/ZVec.h>
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
 DATA(0x0020d220)

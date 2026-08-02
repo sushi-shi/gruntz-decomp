@@ -1,11 +1,13 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 
-#include <Mfc.h>
-#include <Gruntz/StateId.h>
-#include <Gruntz/Loadable.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/Loadable.h>
+#include <Gruntz/StateId.h>
+#include <Ints.h>
 
 class CDDrawWorker;
 class CDDrawWorker;

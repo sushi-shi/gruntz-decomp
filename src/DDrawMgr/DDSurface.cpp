@@ -1,19 +1,21 @@
-#include <DDrawMgr/DDSurface.h>
-#include <Pix16.h>
-#include <Io/FileStream.h>
-
-#include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <Image/Image.h>
-#include <ddraw.h>
 #include <rva.h>
+
+#include <DDrawMgr/DDSurface.h>
+
 #include <ComOutRef.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/WallProject.h>
+#include <Image/Image.h>
+#include <Image/ImageRotate.h>
+#include <Image/RasterVtx.h>
+#include <Io/FileStream.h>
+#include <Pix16.h>
+
+#include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <Image/ImageRotate.h>
-#include <Image/RasterVtx.h>
-#include <DDrawMgr/WallProject.h>
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
 VTBL(CDDSurface, 0x001ef7f0);

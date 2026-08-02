@@ -2,9 +2,10 @@
 #define GRUNTZ_LOGICTYPETABLEINLINE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
+#include <Gruntz/UserLogic.h>
 
 extern "C" {
     i32 LogicHitFactory(CGameObject* obj);

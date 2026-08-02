@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_CTOYPEEK_H
 #define GRUNTZ_CTOYPEEK_H
 
-#include <Clock64.h>
 #include <rva.h>
+
+#include <Clock64.h>
 #include <Gruntz/UserLogic.h>
 
 class CToyPeek : public CUserLogic, public CWapX {

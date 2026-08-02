@@ -3,10 +3,9 @@
 
 #include <rva.h>
 
-#include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/CoordNode.h>
-#include <Gruntz/SerialArchive.h>
 #include <Gruntz/GruntIndicatorSprite.h>
+#include <Gruntz/SerialArchive.h>
 
 class CGruntToySprite : public CUserLogic, public CWapX {
 public:

@@ -2,9 +2,10 @@
 #define GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H
 
 #include <rva.h>
+
+#include <Gruntz/Loadable.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
-#include <Gruntz/Loadable.h>
 
 class CDDrawSurfaceMgr;
 class CDDSurface;

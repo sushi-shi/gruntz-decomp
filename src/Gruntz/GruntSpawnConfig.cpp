@@ -1,17 +1,18 @@
-#include <Gruntz/GameRand.h>
-#include <Gruntz/GruntzMgr.h>
+#include <rva.h>
+
 #include <Gruntz/GruntSpawnConfig.h>
-#include <Dsndmgr/StreamVoice.h>
-#include <Gruntz/GruntVoice.h>
-#include <Dsndmgr/StreamFeeder.h>
-#include <Gruntz/GameRegistry.h>
 
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
+#include <Dsndmgr/StreamFeeder.h>
+#include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/Enums.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntVoice.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h>
-#include <rva.h>
 
 RVA(0x00085df0, 0x4a)
 CGruntSpawnConfig::~CGruntSpawnConfig() {

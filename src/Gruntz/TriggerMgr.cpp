@@ -1,49 +1,44 @@
-
-
 #include <Gruntz/TriggerMgr.h>
+
 #include <AddrWord.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Io/FileMem.h>
-
-#include <Gruntz/ActionOptionsMenuBar.h>
-#include <Gruntz/GruntzCmdMgr.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/TileGrid.h>
 #include <Bute/ButeMgr.h>
-#include <Wwd/WwdFile.h>
-#include <stdlib.h>
-
-#include <Gruntz/Play.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/PixelShift.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/ActionOptionsMenuBar.h>
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/Warlord.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/String.h>
-#include <Gruntz/PickupType.h>
-#include <Gruntz/Brickz.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/SoundCue.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFx.h>
-#include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileActionEvent.h>
-#include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TileTriggerLogic.h>
-
-#include <Gruntz/GameObjectFactory.h>
-
-#include <Gruntz/TriggerMgrViews.h>
-#include <Gruntz/SoundState.h>
-#include <Utils/MapTyped.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/Play.h>
 #include <Gruntz/SerialRecords.h>
-#include <DDrawMgr/PixelShift.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/String.h>
+#include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileGrid.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TriggerMgrViews.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/Warlord.h>
+#include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
+#include <Wwd/WwdFile.h>
+
+#include <stdlib.h>
 
 DATA(0x00244ca4)
 i32 g_groupSentinel;

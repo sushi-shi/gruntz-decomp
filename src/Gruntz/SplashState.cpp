@@ -1,28 +1,30 @@
-#include <Mfc.h>
-#include <ddraw.h>
-#include <Bute/SymTab.h>
-#include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Dsndmgr/SoundStream.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDSurface.h>
+#include <rva.h>
 
-#include <Gruntz/BankMgr.h>
+#include <Gruntz/SplashState.h>
+
+#include <Mfc.h>
+
+#include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Gruntz/AssetRoot.h>
+#include <Gruntz/Attract.h>
+#include <Gruntz/BankMgr.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Attract.h>
-#include <Gruntz/SplashState.h>
-#include <rva.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-
-#include <Gruntz/AssetRoot.h>
-
 #include <Wap32/GameApp.h>
+
+#include <ddraw.h>
+
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
     if (CAssetRootStorage::s_value.GetLength() == 0) {

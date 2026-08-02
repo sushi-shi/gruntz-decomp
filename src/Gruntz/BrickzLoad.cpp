@@ -1,18 +1,20 @@
-#include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
-#include <Ints.h>
-#include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/GameLevel.h>
-#include <Wwd/WwdFile.h>
+
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/UserLogic.h>
+#include <Ints.h>
+#include <Wwd/WwdFile.h>
 
 #include <stdlib.h>
 

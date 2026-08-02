@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H
 #define GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H
 
+#include <rva.h>
+
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
-#include <rva.h>
 
 class CWwdGameObjectA;
 class CAniRecordView;

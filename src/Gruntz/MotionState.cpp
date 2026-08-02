@@ -1,8 +1,11 @@
-#include <Gruntz/MovingLogic.h>
-#include <Gruntz/MotionState.h>
-#include <math.h>
 #include <rva.h>
+
+#include <Gruntz/MotionState.h>
+
+#include <Gruntz/MovingLogic.h>
 #include <Gruntz/Projectile.h>
+
+#include <math.h>
 
 DATA(0x001f0500)
 const double g_motionZero = 0.0;

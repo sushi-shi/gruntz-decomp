@@ -1,29 +1,29 @@
 #define CIMAGE_INLINE_DTOR
-#include <Mfc.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/ParseSource.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <rva.h>
-#include <Pix16.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
 
-#include <Gruntz/ResolveNode.h>
+#include <rva.h>
+
 #include <Image/CImage.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
+
+#include <Mfc.h>
+
+#include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/ParseSource.h>
+#include <Gruntz/ResolveNode.h>
+#include <Gruntz/State.h>
+#include <Image/ImageFormatTag.h>
+#include <Pix16.h>
+#include <Rez/FrameClock.h>
 #include <Wwd/WwdFile.h>
 
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDrawShadeBlit.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <Win32.h>
 #include <ddraw.h>
-
-#include <Gruntz/State.h>
-#include <Bute/SymTab.h>
 #include <stdio.h>
-#include <Image/ImageFormatTag.h>
 
 DATA(0x002bf28c)
 i32 g_imageClipRect[4] = {0};

@@ -1,18 +1,21 @@
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Gruntz/GameAssetNamespaces.h>
+
+#include <Mfc.h>
+
+#include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/FaderMgr.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/State.h>
 #include <Image/CImage.h>
 
 #include <stdio.h>
-#include <Bute/SymParser.h>
-#include <Gruntz/State.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <Gruntz/FaderMgr.h>
-#include <Gruntz/GameAssetNamespaces.h>
 
 DATA(0x00251614)
 i32 g_buildNumber;

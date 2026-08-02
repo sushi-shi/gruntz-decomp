@@ -3,7 +3,6 @@
 
 #include <rva.h>
 
-#include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GruntIndicatorSprite.h>
 

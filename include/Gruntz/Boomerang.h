@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_BOOMERANG_H
 #define GRUNTZ_BOOMERANG_H
 
-#include <Gruntz/Projectile.h>
 #include <rva.h>
+
+#include <Gruntz/Projectile.h>
 
 class CBoomerang : public CProjectile {
 public:

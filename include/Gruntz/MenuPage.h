@@ -1,13 +1,13 @@
 #ifndef GRUNTZ_MENUPAGE_H
 #define GRUNTZ_MENUPAGE_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
+#include <Ints.h>
 
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;

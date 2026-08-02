@@ -2,8 +2,9 @@
 #define GRUNTZ_CDDRAWSURFACEPAIR_H
 
 #include <rva.h>
-#include <Ints.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Ints.h>
 
 class CDDSurface;
 class CDDrawSurfaceMgr;

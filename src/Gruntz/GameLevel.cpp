@@ -1,17 +1,20 @@
-#include <Wwd/WwdFile.h>
-#include <Mfc.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/SerialArchive.h>
-#include <Io/FileMem.h>
-#include <Wap32/Object.h>
-#include <Gruntz/ParseSource.h>
-#include <Gruntz/UserLogic.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Io/FileStream.h>
-#include <Gruntz/ImageSets.h>
-#include <DDrawMgr/DDrawWorkerHost.h>
 #include <rva.h>
+
+#include <Gruntz/GameLevel.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
+#include <Gruntz/ImageSets.h>
+#include <Gruntz/ParseSource.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
+#include <Io/FileMem.h>
+#include <Io/FileStream.h>
+#include <Wap32/Object.h>
+#include <Wwd/WwdFile.h>
 
 #include <stdlib.h>
 #include <string.h>

@@ -2,8 +2,11 @@
 #define SRC_GRUNTZ_MAPMGR_H
 
 #include <rva.h>
-#include <Ints.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/CoordNode.h>
+#include <Ints.h>
 
 struct BrickzCell;
 struct BrickzNode;

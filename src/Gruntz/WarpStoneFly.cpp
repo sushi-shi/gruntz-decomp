@@ -1,14 +1,17 @@
-#include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
-#include <Ints.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Image/CImage.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GruntzMgr.h>
+
 #include <Gruntz/WarpStoneFly.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Image/CImage.h>
+#include <Ints.h>
 
 RVA(0x00109bb0, 0xb)
 CWarpStoneFly::CWarpStoneFly() {

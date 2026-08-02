@@ -2,8 +2,10 @@
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
 #include <rva.h>
-#include <stdio.h>
+
 #include <Dsndmgr/SoundVoiceList.h>
+
+#include <stdio.h>
 
 struct IDirectSound;
 struct IDirectSoundBuffer;

@@ -1,16 +1,16 @@
-#include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/PixelShift.h>
-
-#include <Gruntz/SpriteRefTable.h>
-#include <DDrawMgr/ShadeTableCache.h>
-#include <Gruntz/GameRegistry.h>
-
 #include <rva.h>
 
+#include <Mfc.h>
+
+#include <DDrawMgr/PixelShift.h>
+#include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SpriteRefTable.h>
 // @early-stop
 #include <Io/GameSave.h>
+
 RVA(0x000e2df0, 0x3f0)
 i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
     m_cache = cache;

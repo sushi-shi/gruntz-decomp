@@ -1,9 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_TYPECOLLRUNTIME_H
 #define GRUNTZ_GRUNTZ_TYPECOLLRUNTIME_H
 
-#include <Ints.h>
 #include <rva.h>
 
+#include <Ints.h>
 #include <Wap32/ZVec.h>
 
 class CString;

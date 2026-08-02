@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_IO_GAMESAVE_H
 #define GRUNTZ_IO_GAMESAVE_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 class CGruntzMgr;
 

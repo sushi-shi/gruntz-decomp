@@ -1,17 +1,21 @@
 #ifndef GRUNTZ_GRUNTZ_GRUNTZMGR_H
 #define GRUNTZ_GRUNTZ_GRUNTZMGR_H
+
 #include <rva.h>
-#include <Wap32/Wap32.h>
-#include <Gruntz/String.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/State.h>
+
+class CDialog;
+
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Io/SaveGame.h>
-#include <Io/SaveGame.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMapMgr.h>
-#include <Image/CImage.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/State.h>
+#include <Gruntz/String.h>
+#include <Image/CImage.h>
+#include <Io/SaveGame.h>
+#include <Wap32/Wap32.h>
+
 class CGruntzCmdMgr;
 
 class CFileMemBase;

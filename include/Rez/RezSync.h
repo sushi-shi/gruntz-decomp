@@ -2,6 +2,7 @@
 #define GRUNTZ_REZ_REZSYNC_H_H
 
 #include <Ints.h>
+
 class CGruntSpawnConfig;
 
 extern i32 g_dlgVal_6451a4, g_dlgVal_645268, g_dlgVal_64526c, g_dlgVal_6452a8;

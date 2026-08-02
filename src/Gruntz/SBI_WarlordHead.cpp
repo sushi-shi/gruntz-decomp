@@ -1,16 +1,19 @@
 #include <rva.h>
+
+#include <Gruntz/SBI_WarlordHead.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawShadeBlit.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <Mfc.h>
-#include <Ints.h>
-#include <Gruntz/SBI_WarlordHead.h>
-#include <Image/ImageSet.h>
-#include <DDrawMgr/DDrawShadeBlit.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Image/ImageSet.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
 
 VTBL(CSBI_WarlordHead, 0x001ead24);
 

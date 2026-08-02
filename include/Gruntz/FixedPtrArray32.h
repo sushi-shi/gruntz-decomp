@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_CFIXEDPTRARRAY32_H
 #define GRUNTZ_CFIXEDPTRARRAY32_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 class CInputDevBase;
 

@@ -1,11 +1,12 @@
 #ifndef GRUNTZ_SERIALRECORDS_H
 #define GRUNTZ_SERIALRECORDS_H
 
-#include <Ints.h>
-#include <Clock64.h>
 #include <rva.h>
 
+#include <Clock64.h>
+#include <Ints.h>
 #include <Io/FileMem.h>
+
 struct CGameObject;
 
 struct CPairRecord {

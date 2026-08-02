@@ -1,10 +1,12 @@
 #ifndef SRC_GRUNTZ_GRUNTZPLAYER_H
 #define SRC_GRUNTZ_GRUNTZPLAYER_H
+
 #include <rva.h>
+
+#include <Mfc.h>
 
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/SerialArchive.h>
-#include <Mfc.h>
 
 struct PlayerLatency {
     PlayerLatency() {

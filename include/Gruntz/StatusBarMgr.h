@@ -1,12 +1,15 @@
-#include <Ints.h>
 #include <rva.h>
+
 #include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarItem.h>
+#include <Ints.h>
+
 #ifndef GRUNTZ_CSTATUSBARMGR_H
 #define GRUNTZ_CSTATUSBARMGR_H
 

@@ -1,15 +1,18 @@
-#include <Mfc.h>
-#include <Gruntz/LogicTypeId.h>
+#include <rva.h>
+
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/AniElement.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
-#include <rva.h>
 
 #include <string.h>
 

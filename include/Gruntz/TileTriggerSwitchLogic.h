@@ -1,10 +1,11 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 #define SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 
-#include <Ints.h>
+#include <rva.h>
+
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
+#include <Ints.h>
 
 class CTileTriggerLogic;
 class CTileTriggerContainer;

@@ -1,9 +1,11 @@
 #ifndef NET_LOBBYDIALOGS_H
 #define NET_LOBBYDIALOGS_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 class CMulti;
 

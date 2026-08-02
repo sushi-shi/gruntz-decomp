@@ -1,10 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_CHATBOXOWNER_H
 #define GRUNTZ_GRUNTZ_CHATBOXOWNER_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Mfc.h>
+
+#include <Ints.h>
 
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;

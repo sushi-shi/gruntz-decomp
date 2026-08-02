@@ -1,7 +1,6 @@
-
+#include <rva.h>
 
 #include <Crypto/FecCrypt.h>
-#include <rva.h>
 
 #include <stdlib.h>
 #include <time.h>

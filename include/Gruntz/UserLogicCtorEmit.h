@@ -1,9 +1,11 @@
 #ifndef GRUNTZ_USERLOGICCTOREMIT_H
 #define GRUNTZ_USERLOGICCTOREMIT_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 struct CGameObject;
 

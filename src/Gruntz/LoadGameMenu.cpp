@@ -1,12 +1,13 @@
+#include <rva.h>
+
 #include <Gruntz/LoadGameMenu.h>
+
 #include <Mfc.h>
+
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Io/SaveGame.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
-
-#include <rva.h>
-#include <Win32.h>
+#include <Io/SaveGame.h>
 
 DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0;

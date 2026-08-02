@@ -1,5 +1,6 @@
 #ifndef INCLUDE_GRUNTZ_SOUNDSTATE_H
 #define INCLUDE_GRUNTZ_SOUNDSTATE_H
+
 #include <Ints.h>
 
 typedef enum SoundCueTag {

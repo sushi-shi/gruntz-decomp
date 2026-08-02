@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_WARPSTONEFLY_H
 #define GRUNTZ_GRUNTZ_WARPSTONEFLY_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 class CStatusBarMgr;
 class CFileMemBase;

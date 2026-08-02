@@ -1,8 +1,10 @@
 #ifndef GRUNTZ_BRICKZ_H
 #define GRUNTZ_BRICKZ_H
+
 #include <rva.h>
-#include <Ints.h>
+
 #include <Gruntz/MapMgr.h>
+#include <Ints.h>
 
 class CBattlezData;
 struct tagRECT;

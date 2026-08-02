@@ -1,8 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_MENUSTATE_H_H
 #define GRUNTZ_GRUNTZ_MENUSTATE_H_H
 
-#include <Ints.h>
 #include <Gruntz/GameMode.h>
+#include <Ints.h>
 
 extern "C" tagRECT g_versionRect;
 

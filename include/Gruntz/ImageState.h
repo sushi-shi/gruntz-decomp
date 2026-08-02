@@ -2,6 +2,7 @@
 #define GRUNTZ_IMAGESTATE_H
 
 #include <rva.h>
+
 #include <Gruntz/State.h>
 
 class CImageState : public CState {

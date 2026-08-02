@@ -1,8 +1,10 @@
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <Ints.h>
 #include <Utils/PtrListPool.h>
 

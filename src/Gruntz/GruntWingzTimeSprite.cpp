@@ -1,7 +1,9 @@
-#include <Gruntz/GruntWingzTimeSprite.h>
-#include <Gruntz/LogicTypeId.h>
-#include <Bute/ButeTree.h>
 #include <rva.h>
+
+#include <Gruntz/GruntWingzTimeSprite.h>
+
+#include <Bute/ButeTree.h>
+#include <Gruntz/LogicTypeId.h>
 
 RVA_COMPGEN(0x000121c0, 0x1e, ??_GCGruntWingzTimeSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x000121f0, 0x44, ??1CGruntWingzTimeSprite@@UAE@XZ)

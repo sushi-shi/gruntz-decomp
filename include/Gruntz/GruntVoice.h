@@ -2,15 +2,15 @@
 #define GRUNTZ_GRUNTZ_CGRUNTVOICE_H
 
 #include <rva.h>
-#include <Clock64.h>
-#include <Wap32/ZVec.h>
-#include <Wap32/zBitVec.h>
 
 #include <Mfc.h>
 
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/InGameIcon.h>
+#include <Clock64.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/InGameIcon.h>
+#include <Gruntz/UserLogic.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
 
 struct CVoiceSample {};
 SIZE_UNKNOWN();

@@ -1,20 +1,21 @@
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
-#include <string.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/PickupType.h>
 
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/ZVec.h>
+
+#include <string.h>
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \

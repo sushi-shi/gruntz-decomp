@@ -1,10 +1,13 @@
 #include <rva.h>
+
+#include <Wwd/WwdSpatialMgr.h>
+
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/WwdGameObject.h>
-#include <Wwd/WwdSpatialMgr.h>
 #include <Gruntz/WwdGrid.h>
 #include <Gruntz/WwdGridIter.h>
-#include <Mfc.h>
 #include <Wap32/Object.h>
 
 VTBL(CWwdGridIter, 0x001f02a8);

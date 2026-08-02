@@ -5,10 +5,10 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/UserLogic.h>
 #include <Gruntz/ActReg.h>
-#include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
+#include <Wap32/ZVec.h>
 
 class CFileMemBase;
 

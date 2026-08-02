@@ -1,13 +1,9 @@
-
-
-#include <Gruntz/Grunt.h>
-#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgr.h>
-
 #include <Gruntz/TileGrid.h>
-
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrViews.h>
 
 RVA(0x000759e0, 0x18)

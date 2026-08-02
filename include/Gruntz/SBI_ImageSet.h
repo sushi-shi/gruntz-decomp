@@ -1,10 +1,11 @@
 #ifndef GRUNTZ_SBI_IMAGESET_H
 #define GRUNTZ_SBI_IMAGESET_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SerialArchive.h>
+#include <Ints.h>
 
 class CDDrawWorker;
 

@@ -3,12 +3,11 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/SerialRecords.h>
-
-#include <Gruntz/SerialArchive.h>
 #include <Gruntz/HaznColl.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
+#include <Gruntz/UserLogic.h>
 
 class CActionArea : public CUserLogic, public CWapX {
 public:

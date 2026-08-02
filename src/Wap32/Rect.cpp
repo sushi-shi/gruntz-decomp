@@ -1,7 +1,6 @@
-
+#include <rva.h>
 
 #include <Wap32/Rect.h>
-#include <rva.h>
 
 RVA(0x00029ac0, 0x20)
 CRect::CRect(i32 l, i32 t, i32 r, i32 b) {

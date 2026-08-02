@@ -1,18 +1,17 @@
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Ints.h>
-
 #include <rva.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/SoundState.h>
+
+#include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Ints.h>
 
 static const char s_gameBadSelect[] = "GAME_BADSELECT";
 static const char s_grunt[] = "Grunt";

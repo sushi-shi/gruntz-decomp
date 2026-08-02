@@ -1,7 +1,11 @@
-#include <Utils/WinAPICdRom.h>
-#include <Mfc.h>
-#include <Utils/RegistryHelper.h>
 #include <rva.h>
+
+#include <Utils/WinAPICdRom.h>
+
+#include <Mfc.h>
+
+#include <Utils/RegistryHelper.h>
+
 #include <stdio.h>
 
 static char s_cdDriveLetter;

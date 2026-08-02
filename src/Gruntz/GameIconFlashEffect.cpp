@@ -1,7 +1,8 @@
+#include <rva.h>
+
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/FrameClock.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <rva.h>
 
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {

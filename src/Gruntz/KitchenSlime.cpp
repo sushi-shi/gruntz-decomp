@@ -1,29 +1,30 @@
-#include <Mfc.h>
-#include <Image/CImage.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Wap32/zBitVec.h>
-#include <Io/FileMem.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>
-#include <Bute/ButeTree.h>
 #include <rva.h>
+
+#include <Gruntz/KitchenSlime.h>
+
+#include <Mfc.h>
+
+#include <Bute/ButeMgr.h>
+#include <Bute/ButeTree.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
+
 #include <math.h>
 #include <string.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/Sprite.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-
-#include <Gruntz/TriggerMgr.h>
-
-#include <Gruntz/Grunt.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/KitchenSlime.h>
 
 VTBL(CKitchenSlime, 0x001e750c);
 

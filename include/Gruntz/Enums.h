@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_ENUMS_H
 #define GRUNTZ_GRUNTZ_ENUMS_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 enum GruntType {
     GRUNT_NORMAL = 0,

@@ -71,6 +71,7 @@ class PE:
         self._reloc_sites = None
         self._call_index = None
         self._strings_at = None
+        self._imports = None
 
     # --- sections ----------------------------------------------------------
     @property
@@ -187,6 +188,38 @@ class PE:
             return None
         rel = struct.unpack_from("<i", self.data, o + 1)[0]
         return rva + 5 + rel
+
+    # --- imports ------------------------------------------------------------
+    @property
+    def imports(self):
+        """{dll_name: [imported name | '#<ordinal>']} from the import directory.
+
+        The authoritative dynamic-dependency set (docs/runtime-dlls.md) and the
+        ground truth for which import LIBs a relink needs: the stored names are
+        already DECORATED exactly as the retail import lib produced them
+        (`_AIL_startup@0`), which is what gruntz.build.import_lib reproduces."""
+        if self._imports is None:
+            d = self.data
+            rva = struct.unpack_from("<I", d, self._opt + 96 + 1 * 8)[0]
+            out = {}
+            o = self.off(rva) if rva else None
+            while o is not None:
+                olt, _ts, _fc, nm, fta = struct.unpack_from("<IIIII", d, o)
+                if not (olt or nm or fta):
+                    break
+                out[self.cstr(nm)] = names = []
+                t = self.off(olt or fta)
+                while True:
+                    v = struct.unpack_from("<I", d, t)[0]
+                    if v == 0:
+                        break
+                    # high bit set = import by ORDINAL, else RVA of a hint/name pair.
+                    names.append(f"#{v & 0xffff}" if v & 0x80000000
+                                 else self.cstr((v & 0x7fffffff) + 2))
+                    t += 4
+                o += 20
+            self._imports = out
+        return self._imports
 
     # --- strings ------------------------------------------------------------
     @property

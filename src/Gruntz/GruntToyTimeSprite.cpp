@@ -1,6 +1,8 @@
-#include <Gruntz/GruntToyTimeSprite.h>
-#include <Bute/ButeTree.h>
 #include <rva.h>
+
+#include <Gruntz/GruntToyTimeSprite.h>
+
+#include <Bute/ButeTree.h>
 
 RVA_COMPGEN(0x00012100, 0x1e, ??_GCGruntToyTimeSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012130, 0x44, ??1CGruntToyTimeSprite@@UAE@XZ)

@@ -1,8 +1,10 @@
 #ifndef GRUNTZ_IMAGESETS_H
 #define GRUNTZ_IMAGESETS_H
-#include <Wap32/Object.h>
-#include <Ints.h>
+
 #include <rva.h>
+
+#include <Ints.h>
+#include <Wap32/Object.h>
 
 struct WwdTileImageRecord {
     char m_header[8];

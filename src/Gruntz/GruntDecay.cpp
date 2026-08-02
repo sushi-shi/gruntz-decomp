@@ -1,11 +1,9 @@
-
-
+#include <Bute/ButeMgr.h>
+#include <Bute/ButeTree.h>
 #include <Gruntz/Grunt.h>
-#include <Rez/FrameClock.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/ImageSet.h>
-#include <Bute/ButeTree.h>
-#include <Bute/ButeMgr.h>
+#include <Rez/FrameClock.h>
 
 // @early-stop
 RVA(0x000612a0, 0x23c)

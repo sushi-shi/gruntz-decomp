@@ -1,10 +1,11 @@
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
+#include <rva.h>
+
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
-#include <rva.h>
 
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;

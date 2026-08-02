@@ -1,10 +1,11 @@
 #ifndef GRUNTZ_MENUITEM_H
 #define GRUNTZ_MENUITEM_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Mfc.h>
+
+#include <Ints.h>
 
 class CMenuPage;
 class CMenuItem;

@@ -1,47 +1,46 @@
 #define CMOVINGLOGIC_INLINE_DTOR
 
-#include <Mfc.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/Projectile.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/Boomerang.h>
-#include <Gruntz/LightFx.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/State.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/ActReg.h>
-#include <Bute/ButeMgr.h>
-#include <math.h>
-#include <string.h>
-#include <Gruntz/Brickz.h>
 #include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/StatusBarUpdatersViews.h>
+
+#include <Gruntz/Projectile.h>
+
+#include <Mfc.h>
+
+#include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/HaznColl.h>
-#include <Gruntz/TimeBomb.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
-
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/SerialCounter.h>
 #include <Gruntz/AniElement.h>
-#include <Wap32/zBitVec.h>
+#include <Gruntz/Boomerang.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HaznColl.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/LightFx.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/State.h>
+#include <Gruntz/StatusBarUpdatersViews.h>
+#include <Gruntz/TimeBomb.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TypeKeyColl.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
+
+#include <math.h>
+#include <string.h>
 
 VTBL(CTimeBomb, 0x001e771c);
 VTBL(CProjectile, 0x001e798c);

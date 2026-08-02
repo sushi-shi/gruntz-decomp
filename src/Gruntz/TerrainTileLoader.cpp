@@ -1,28 +1,27 @@
-
+#include <rva.h>
 
 #include <Mfc.h>
-#include <AddrWord.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgr.h>
 
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/Play.h>
+#include <AddrWord.h>
+#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
 #include <Wwd/WwdFile.h>
-#include <rva.h>
 
 RVA(0x00075e90, 0x1329)
 i32 CTriggerMgr::LoadTileArrivalFx(

@@ -1,8 +1,9 @@
+#include <rva.h>
+
+#include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/ScrollState.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
-#include <rva.h>
-#include <Gruntz/ScrollState.h>
-#include <Gruntz/MgrAutoScroll.h>
 
 RVA(0x000ec1c0, 0x43)
 void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX) {

@@ -2,6 +2,7 @@
 #define GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H
 
 #include <rva.h>
+
 #include <Ints.h>
 #include <Wap32/Object.h>
 

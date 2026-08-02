@@ -1,17 +1,20 @@
-#include <Mfc.h>
-#include <Image/CImage.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Io/FileMem.h>
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/WarpStoneFly.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialCounter.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GruntzMgr.h>
+
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/WarpStoneFly.h>
+#include <Image/CImage.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+
 #include <string.h>
 
 RVA(0x00109e00, 0x245)

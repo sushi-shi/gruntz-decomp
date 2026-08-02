@@ -1,36 +1,36 @@
+#include <rva.h>
 
+#include <Gruntz/GruntEntranceMove.h>
 
+#include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Rez/FrameClock.h>
+#include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/BoundaryLowerMethodsViews.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/AniElement.h>
-#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/SerialRecords.h>
-#include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <DDrawMgr/AniAdvance.h>
-#include <rva.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/GruntEntranceMove.h>
-#include <Utils/MapTyped.h>
 
 DATA(0x0020d7f4)
 char s_codeM[] = "M";

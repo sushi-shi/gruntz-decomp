@@ -2,7 +2,9 @@
 #define GRUNTZ_PREVIEWSTATE_H
 
 #include <rva.h>
+
 #include <Mfc.h>
+
 #include <Gruntz/State.h>
 
 class CPreviewState : public CState {

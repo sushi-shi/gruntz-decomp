@@ -1,9 +1,11 @@
+#include <rva.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/FxModeT1.h>
 
-#include <rva.h>
-#include <Mfc.h>
 #include <string.h>
 
 VTBL(CFaderArray, 0x001f0790);

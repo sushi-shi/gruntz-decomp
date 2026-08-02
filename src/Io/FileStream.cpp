@@ -1,5 +1,6 @@
-#include <Io/FileStream.h>
 #include <rva.h>
+
+#include <Io/FileStream.h>
 
 // @early-stop
 RVA(0x000bd3e0, 0x34)

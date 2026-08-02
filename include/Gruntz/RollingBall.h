@@ -5,11 +5,10 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/UserLogic.h>
-
-#include <Gruntz/SerialArchive.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
 
 class CFileMemBase;
 

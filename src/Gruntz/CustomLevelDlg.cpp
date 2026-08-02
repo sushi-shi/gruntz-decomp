@@ -1,12 +1,13 @@
+#include <rva.h>
+
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
-#include <rva.h>
-
-#include <io.h>
-#include <direct.h>
 #include <MsgParam.h>
+
+#include <direct.h>
+#include <io.h>
 
 DATA(0x001e8e98)
 const AFX_MSGMAP CBattlezDlgCustom::messageMap = {

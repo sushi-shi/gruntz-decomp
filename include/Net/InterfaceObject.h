@@ -1,10 +1,12 @@
 #ifndef SRC_NET_INTERFACEOBJECT_H
 #define SRC_NET_INTERFACEOBJECT_H
 
-#include <Ints.h>
-#include <Mfc.h>
-#include <Wap32/Object.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
+#include <Wap32/Object.h>
 
 struct InterfaceObject : public CObject {
     GUID* m_guid;

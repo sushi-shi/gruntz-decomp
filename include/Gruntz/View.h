@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_CVIEW_H
 #define GRUNTZ_GRUNTZ_CVIEW_H
 
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
 
 class CDDSurface;
 

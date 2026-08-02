@@ -1,21 +1,22 @@
-#include <Ints.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/BattlezData.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/LeafCue.h>
+#include <rva.h>
+
+#include <Gruntz/BootyWalkAnim.h>
+
 #include <Mfc.h>
 
-#include <Gruntz/GameMode.h>
-#include <Gruntz/GruntzMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/BzState.h>
-
-#include <rva.h>
-#include <Gruntz/SoundState.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/Random.h>
-#include <Gruntz/BootyWalkAnim.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Ints.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 
 DATA(0x001e9068)

@@ -2,8 +2,9 @@
 #define GRUNTZ_CTIMEBOMB_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h>
+
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/UserLogic.h>
 
 class CTimeBomb : public CUserLogic, public CWapX {
 public:

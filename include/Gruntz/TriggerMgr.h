@@ -1,11 +1,14 @@
 #ifndef SRC_GRUNTZ_TRIGGERMGR_H
 #define SRC_GRUNTZ_TRIGGERMGR_H
+
 #include <rva.h>
+
 #include <Mfc.h>
+
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialArchive.h>
 
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/CoordNode.h>
 extern FreeNodePool g_coordPool;
 
 void operator delete(void*);

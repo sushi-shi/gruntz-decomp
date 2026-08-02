@@ -1,7 +1,9 @@
-#include <Gruntz/GruntzMgr.h>
-#include <Rez/RezMgr.h>
-#include <Rez/FrameClock.h>
 #include <rva.h>
+
+#include <Rez/RezMgr.h>
+
+#include <Gruntz/GruntzMgr.h>
+#include <Rez/FrameClock.h>
 #include <Rez/RezSync.h>
 #include <Wap32/GameApp.h>
 

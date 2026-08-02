@@ -1,10 +1,13 @@
-#include <Wap32/ZVec.h>
-#include <Wap32/zBitVec.h>
 #include <rva.h>
-#include <Mfc.h>
-#include <new>
-#include <Bute/ButeTree.h>
 
+#include <Wap32/ZVec.h>
+
+#include <Mfc.h>
+
+#include <Bute/ButeTree.h>
+#include <Wap32/zBitVec.h>
+
+#include <new>
 #include <stdlib.h>
 #include <string.h>
 

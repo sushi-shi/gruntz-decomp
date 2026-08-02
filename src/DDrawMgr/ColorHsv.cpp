@@ -1,7 +1,10 @@
-#include <Ints.h>
-#include <Win32.h>
-#include <DDrawMgr/ColorHsv.h>
 #include <rva.h>
+
+#include <DDrawMgr/ColorHsv.h>
+
+#include <Win32.h>
+
+#include <Ints.h>
 
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))

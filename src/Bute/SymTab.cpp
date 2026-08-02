@@ -1,24 +1,25 @@
-
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <Rez/DebugPrintf.h>
-#include <Bute/SymTab.h>
-#include <AddrWord.h>
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Bute/SymTab.h>
+
+#include <Mfc.h>
+
+#include <AddrWord.h>
+#include <Bute/SymParser.h>
+#include <Dsndmgr/SoundBankLoad.h>
+#include <Gruntz/CustomWorldInfoDlg.h>
+#include <Gruntz/ParseSource.h>
+#include <Rez/DebugPrintf.h>
+#include <Rez/RezFile.h>
+#include <Rez/RezMgr.h>
+
 #include <io.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 
-#include <Bute/SymParser.h>
-#include <Gruntz/ParseSource.h>
-#include <Rez/RezMgr.h>
-#include <Rez/RezFile.h>
-
-#include <Dsndmgr/SoundBankLoad.h>
-#include <Gruntz/CustomWorldInfoDlg.h>
 VTBL(CParseSlotHashNode, 0x001ef740);
 VTBL(CSymRecNode, 0x001ef744);
 VTBL(CSymTabNode, 0x001ef748);

@@ -1,5 +1,6 @@
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 RVA(0x00182a80, 0x2e)
 i32 IsPrime(i32 n) {

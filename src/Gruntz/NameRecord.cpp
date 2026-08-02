@@ -1,6 +1,8 @@
 #include <rva.h>
-#include <string.h>
+
 #include <Gruntz/GameInfo.h>
+
+#include <string.h>
 
 RVA(0x00118040, 0xb6)
 i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {

@@ -1,14 +1,16 @@
 #ifndef GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H
 #define GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H
 
-#include <Ints.h>
-#include <Mfc.h>
-#include <DDrawMgr/DDrawChildGroup.h>
 #include <rva.h>
-#include <Gruntz/ResolveNode.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/WwdGridIter.h>
+
+#include <Mfc.h>
+
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/ResolveNode.h>
+#include <Gruntz/WwdGridIter.h>
+#include <Ints.h>
 #include <Wwd/WwdObjMgr.h>
 
 class CDDrawSurfacePair;

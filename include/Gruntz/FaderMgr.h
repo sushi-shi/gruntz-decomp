@@ -1,12 +1,15 @@
 #ifndef GRUNTZ_GRUNTZ_CFADERMGR_H
 #define GRUNTZ_GRUNTZ_CFADERMGR_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Mfc.h>
-#include <afxtempl.h>
-#include <Wap32/Object.h>
+
 #include <Gruntz/Fader.h>
+#include <Ints.h>
+#include <Wap32/Object.h>
+
+#include <afxtempl.h>
 
 struct CFaderArray : public CObject {
     virtual ~CFaderArray() OVERRIDE;

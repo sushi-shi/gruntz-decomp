@@ -1,8 +1,10 @@
 #ifndef GRUNTZ_UTILS_MAPTYPED_H
 #define GRUNTZ_UTILS_MAPTYPED_H
+
 #include <Mfc.h>
-#include <Ints.h>
+
 #include <AddrWord.h>
+#include <Ints.h>
 
 template<class T> union MapOutRef {
     void** m_asVoid;

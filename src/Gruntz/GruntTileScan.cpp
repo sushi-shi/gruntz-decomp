@@ -1,15 +1,16 @@
-#include <Mfc.h>
-#include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/MapMgr.h>
 #include <rva.h>
 
-#include <Ints.h>
-#include <Win32.h>
-#include <Wap32/Rect.h>
-#include <new>
+#include <Mfc.h>
+
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/MapMgr.h>
+#include <Ints.h>
+#include <Wap32/Rect.h>
+
+#include <new>
 #include <stdlib.h>
 
 #define SCAN_RECT_BOUNDS(grid)                                                                     \

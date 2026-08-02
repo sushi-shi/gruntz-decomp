@@ -2,9 +2,10 @@
 #define GRUNTZ_CDIRECTDRAWMGR_H
 
 #include <rva.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
 
 #include <Mfc.h>
+
+#include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDSurface.h>
 
 struct IDirectDraw;

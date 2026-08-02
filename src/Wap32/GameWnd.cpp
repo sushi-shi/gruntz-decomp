@@ -1,6 +1,8 @@
-#include <Mfc.h>
-#include <Wap32/Wap32.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Wap32/Wap32.h>
 
 DATA(0x00253c68)
 CGameWnd* g_activeGameWnd;

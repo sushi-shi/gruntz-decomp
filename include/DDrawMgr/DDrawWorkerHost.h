@@ -1,11 +1,13 @@
 #ifndef GRUNTZ_CDDRAWWORKERHOST_H
 #define GRUNTZ_CDDRAWWORKERHOST_H
 
-#include <Ints.h>
-#include <Gruntz/Loadable.h>
-#include <DDrawMgr/DDrawWorker.h>
-#include <ddraw.h>
 #include <rva.h>
+
+#include <DDrawMgr/DDrawWorker.h>
+#include <Gruntz/Loadable.h>
+#include <Ints.h>
+
+#include <ddraw.h>
 
 typedef struct tagRECT LevelCoordRect;
 SIZE_UNKNOWN();

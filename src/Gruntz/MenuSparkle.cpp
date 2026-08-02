@@ -1,14 +1,14 @@
-
+#include <rva.h>
 
 #include <Gruntz/MenuSparkle.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/AniAdvanceCursor.h>
+
 #include <Bute/ButeTree.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Rez/FrameClock.h>
+
 #include <stdlib.h>
-#include <rva.h>
-#include <rva.h>
 
 template<> DATA(0x00246010)
 CActReg CActRegPool<CMenuSparkle>::s_table(2000, 2010);

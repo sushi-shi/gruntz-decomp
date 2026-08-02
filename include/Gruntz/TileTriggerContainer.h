@@ -1,11 +1,13 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
+#include <rva.h>
+
 #include <Mfc.h>
-#include <Ints.h>
+
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
-#include <rva.h>
+#include <Ints.h>
 
 class CTileTriggerContainer;
 class CTileTriggerLogic;

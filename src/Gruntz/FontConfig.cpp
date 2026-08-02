@@ -1,14 +1,14 @@
-#include <Mfc.h>
-#include <Rez/FrameClock.h>
-#include <EmptyString.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
-#include <Gruntz/FontConfig.h>
 #include <rva.h>
 
+#include <Gruntz/FontConfig.h>
+
+#include <Mfc.h>
+#include <MfcWin.h>
+
 #include <Bute/ButeMgr.h>
+#include <EmptyString.h>
+#include <Rez/FrameClock.h>
+
 #include <string.h>
 
 DATA(0x0020c7a8)

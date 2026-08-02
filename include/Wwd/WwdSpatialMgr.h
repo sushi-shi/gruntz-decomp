@@ -1,10 +1,10 @@
 #ifndef GRUNTZ_WWD_WWDSPATIALMGR_H
 #define GRUNTZ_WWD_WWDSPATIALMGR_H
 
-#include <Ints.h>
-#include <Win32.h>
 #include <rva.h>
+
 #include <Gruntz/WwdGridIter.h>
+#include <Ints.h>
 
 class CDDrawChildGroup;
 class CWwdGrid;

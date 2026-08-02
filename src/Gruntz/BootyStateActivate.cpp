@@ -1,40 +1,43 @@
+#include <rva.h>
+
 #include <Gruntz/BootyStateActivate.h>
-#include <Gruntz/BootyMessages.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SoundState.h>
-#include <Bute/SymTab.h>
+
+#include <Mfc.h>
+
 #include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <Mfc.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Gruntz/BankMgr.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/BootyMessages.h>
+#include <Gruntz/BootyWalkAnim.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameReg.h>
+#include <Image/CImage.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+
 #include <ddraw.h>
 #include <math.h>
-
-#include <rva.h>
-#include <Gruntz/BankMgr.h>
-#include <Gruntz/GameMode.h>
-#include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/BattlezData.h>
-#include <Gruntz/WwdGameReg.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Utils/MapTyped.h>
-#include <Gruntz/Play.h>
-#include <Dsndmgr/SoundStream.h>
-#include <Gruntz/CoordNode.h>
-#include <Gruntz/BootyWalkAnim.h>
-#include <Gruntz/GruntPuddle.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/Sprite.h>
-#include <Image/CImage.h>
 #include <stdio.h>
 
 DATA(0x001e8fe8)

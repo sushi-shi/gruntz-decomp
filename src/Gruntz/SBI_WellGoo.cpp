@@ -1,22 +1,25 @@
 #include <rva.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/CurPlayer.h>
-#include <Gruntz/SerialCounter.h>
-#include <Io/FileMem.h>
-#include <Mfc.h>
-#include <Ints.h>
-#include <Gruntz/SBI_WellGoo.h>
-#include <Image/CImage.h>
-#include <DDrawMgr/DDrawShadeBlit.h>
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/SerialArchive.h>
-#include <string.h>
 
+#include <Gruntz/SBI_WellGoo.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawShadeBlit.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Image/CImage.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+
+#include <string.h>
 
 VTBL(CSBI_WellGoo, 0x001eadfc);
 

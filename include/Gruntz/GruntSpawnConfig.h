@@ -3,13 +3,13 @@
 
 #include <rva.h>
 
-#include <Ints.h>
 #include <Mfc.h>
 
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpawnList.h>
-#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/UserLogic.h>
+#include <Ints.h>
 
 class CGruntVoice;
 struct StreamVoice;

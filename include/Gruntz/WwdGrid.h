@@ -1,11 +1,12 @@
 #ifndef GRUNTZ_WWDGRID_H
 #define GRUNTZ_WWDGRID_H
 
-#include <Ints.h>
-#include <Wap32/Object.h>
+#include <rva.h>
+
 #include <Dsndmgr/SoundVoiceList.h>
 #include <Gruntz/WwdGridIter.h>
-#include <rva.h>
+#include <Ints.h>
+#include <Wap32/Object.h>
 
 struct BucketHead;
 

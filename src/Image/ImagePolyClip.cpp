@@ -1,19 +1,19 @@
-
+#include <rva.h>
 
 #include <Mfc.h>
-#include <Ints.h>
-#include <math.h>
-#include <string.h>
-#include <ddraw.h>
 
+#include <DDrawMgr/DDrawPolyFill.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawPolyFill.h>
 #include <DDrawMgr/WallProject.h>
 #include <Image/RasterVtx.h>
 #include <Image/WarpTextureBlit.h>
-#include <rva.h>
+#include <Ints.h>
 #include <Pix16.h>
+
+#include <ddraw.h>
+#include <math.h>
+#include <string.h>
 
 DATA(0x001efb10)
 const float g_c10 = 0.0f;

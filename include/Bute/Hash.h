@@ -1,11 +1,12 @@
 #ifndef SRC_BUTE_HASH_H
 #define SRC_BUTE_HASH_H
 
-#include <Ints.h>
 #include <rva.h>
-#include <string.h>
 
 #include <Dsndmgr/SoundVoiceList.h>
+#include <Ints.h>
+
+#include <string.h>
 
 class CHashBase;
 class CSymRec;

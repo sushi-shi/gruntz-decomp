@@ -1,7 +1,9 @@
 #include <rva.h>
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
+
+#include <Mfc.h>
+
 #include <Wwd/WwdSpatialMgr.h>
 
 RVA(0x00163a90, 0x17)

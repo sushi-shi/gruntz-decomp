@@ -1,9 +1,10 @@
+#include <rva.h>
+
 #include <Gruntz/BehindCandy.h>
+
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
-#include <rva.h>
-#include <rva.h>
 
 RVA(0x0000fb90, 0x47)
 i32 CBehindCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {

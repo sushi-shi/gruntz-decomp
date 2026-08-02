@@ -1,12 +1,16 @@
-#include <Mfc.h>
-#include <Wap32/Wap32.h>
-#include <Gruntz/GruntzWnd.h>
 #include <rva.h>
+
+#include <Gruntz/GruntzApp.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzWnd.h>
+#include <Net/NetLobby.h>
+#include <Wap32/Wap32.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Net/NetLobby.h>
-#include <Gruntz/GruntzApp.h>
 
 typedef enum GruntzAppResId {
     IDC_ERROR_TEXT = 0x40d,

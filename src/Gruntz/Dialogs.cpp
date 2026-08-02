@@ -1,19 +1,22 @@
-#include <Gruntz/GameRand.h>
-#include <Gruntz/Grunt.h>
+#include <rva.h>
+
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <EmptyString.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Random.h>
-#include <Gruntz/ParseSource.h>
+
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
+#include <EmptyString.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ParseSource.h>
+#include <Gruntz/Random.h>
+#include <MsgParam.h>
 #include <Utils/RegistryHelper.h>
-#include <rva.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <MsgParam.h>
 
 DATA(0x001e88b0)
 const AFX_MSGMAP CBattlezDlg::messageMap = {

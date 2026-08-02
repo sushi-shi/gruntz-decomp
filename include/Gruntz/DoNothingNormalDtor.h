@@ -2,6 +2,7 @@
 #define GRUNTZ_CDONOTHINGNORMALDTOR_H
 
 #include <rva.h>
+
 #include <Gruntz/UserLogic.h>
 
 class CDoNothingNormal : public CUserLogic, public CWapX {

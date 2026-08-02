@@ -1,26 +1,26 @@
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/ActNameRegistry.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/LightFx.h>
-#include <Gruntz/XferArchive.h>
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h>
-#include <Image/ImageSet.h>
+
+#include <Gruntz/LightFx.h>
+
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Wap32/ZVec.h>
+#include <Gruntz/XferArchive.h>
+#include <Image/ImageSet.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/ZVec.h>
 
 template<> DATA(0x00245ad0)
 CActReg CActRegPool<CLightFx>::s_table(2000, 2010);

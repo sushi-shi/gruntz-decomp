@@ -2,8 +2,9 @@
 #define GRUNTZ_CSIMPLEANIMATION_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h>
+
 #include <Gruntz/LogicFnTable.h>
+#include <Gruntz/UserLogic.h>
 
 class CSimpleAnimation : public CUserLogic, public CWapX {
 public:

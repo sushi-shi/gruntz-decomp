@@ -1,20 +1,21 @@
-#include <Gruntz/SpriteRefTable.h>
-#include <Rez/FrameClock.h>
+#include <rva.h>
+
+#include <Gruntz/GruntCreationPoint.h>
+
+#include <AddrWord.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AnimSink.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/GruntCreationPoint.h>
-#include <Gruntz/AnimSink.h>
-#include <Wap32/ZVec.h>
-#include <rva.h>
-#include <AddrWord.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/ZVec.h>
 
 VTBL(CGruntCreationPoint, 0x001e81d4);
 

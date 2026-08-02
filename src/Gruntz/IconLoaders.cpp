@@ -1,16 +1,16 @@
 #include <rva.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/String.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
 #include <Gruntz/PickupType.h>
-#include <Bute/ButeMgr.h>
+#include <Gruntz/String.h>
+#include <Gruntz/UserLogic.h>
 
 #include <stdlib.h>
-
-#include <Gruntz/GameMode.h>
 
 RVA(0x0001c070, 0x59)
 i32 CBootyState::BuildBootyPerfectAnimation() {

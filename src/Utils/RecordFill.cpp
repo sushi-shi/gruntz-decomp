@@ -1,7 +1,8 @@
 #include <rva.h>
-#include <string.h>
 
 #include <Utils/RecordFill.h>
+
+#include <string.h>
 
 RVA(0x0017f500, 0x23)
 void __stdcall ZeroRecords(void* dst, int count) {

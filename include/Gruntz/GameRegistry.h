@@ -1,10 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 #define GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 
-#include <Ints.h>
-#include <Gruntz/SoundCue.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/SoundCue.h>
 #include <Gruntz/TileGrid.h>
+#include <Ints.h>
 
 class CDDrawChildGroup;
 namespace Utils {

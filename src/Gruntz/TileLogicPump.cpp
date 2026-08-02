@@ -1,45 +1,45 @@
-
-
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/ActNameRegistry.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Io/FileMem.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/TileTrigger.h>
-#include <Gruntz/TileTriggerSwitch.h>
-#include <Gruntz/WarpStonePad.h>
-#include <Gruntz/CheckpointTrigger.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/MapMgr.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/Timer.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/GameLevel.h>
-#include <DDrawMgr/DDrawWorkerHost.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Gruntz/Random.h>
-#include <Gruntz/SoundState.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/TileTriggerTransition.h>
-#include <Gruntz/CBrickz.h>
-#include <Gruntz/AniElement.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/GameRegistry.h>
-#include <string.h>
 #include <rva.h>
-#include <DDrawMgr/AniAdvance.h>
-#include <Image/CImage.h>
+
 #include <Gruntz/TileLogicPump.h>
+
+#include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/CBrickz.h>
+#include <Gruntz/CheckpointTrigger.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/MapMgr.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/Random.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/TileTrigger.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerSwitch.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TileTriggerTransition.h>
+#include <Gruntz/Timer.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/WarpStonePad.h>
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/ZVec.h>
+
+#include <string.h>
 
 template<> DATA(0x0024e6a0)
 CActReg CActRegPool<CWarpStonePad>::s_table(2000, 2010);

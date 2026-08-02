@@ -1,11 +1,13 @@
 #ifndef GRUNTZ_CANIELEMENT_H
 #define GRUNTZ_CANIELEMENT_H
 
-#include <Ints.h>
-#include <Mfc.h>
-#include <Wap32/Object.h>
-#include <Gruntz/AniRecordView.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/AniRecordView.h>
+#include <Ints.h>
+#include <Wap32/Object.h>
 
 SIZE_UNKNOWN();
 

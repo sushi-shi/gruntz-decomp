@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_LOADGAMEMENU_H
 
 #include <Mfc.h>
+
 #include <Ints.h>
 
 i32 CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM);

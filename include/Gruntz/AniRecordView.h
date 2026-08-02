@@ -1,9 +1,11 @@
 #ifndef GRUNTZ_CANIRECORDVIEW_H
 #define GRUNTZ_CANIRECORDVIEW_H
+
 #include <rva.h>
 
-#include <Ints.h>
 #include <Mfc.h>
+
+#include <Ints.h>
 
 class CDDrawSubMgrLeafScan;
 class CDDrawSurfaceMgr;

@@ -1,12 +1,15 @@
 #ifndef GRUNTZ_SOUNDCUE_H
 #define GRUNTZ_SOUNDCUE_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Mfc.h>
-#include <Gruntz/LeafCue.h>
-#include <Dsndmgr/SoundStream.h>
+
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Gruntz/LeafCue.h>
+#include <Ints.h>
+
 class DSoundCloneInst;
 
 class CDDrawWorker;

@@ -1,16 +1,14 @@
-#include <Mfc.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
-#include <Ints.h>
+#include <Mfc.h>
 
 #include <Bute/SymTab.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/GameLevel.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/Play.h>
+#include <Ints.h>
 
 class CParseSource;
 

@@ -1,14 +1,17 @@
-#include <Mfc.h>
-#include <Io/FileMem.h>
-#include <Gruntz/MapMgr.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/GameMode.h>
 #include <rva.h>
+
+#include <Gruntz/MapMgr.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/Brickz.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/SerialArchive.h>
+#include <Io/FileMem.h>
+
 #include <stdlib.h>
 #include <string.h>
-
-#include <Gruntz/FreeNodePool.h>
 
 VTBL(CMapMgr, 0x001ea3b4);
 RVA(0x0009e700, 0xd)

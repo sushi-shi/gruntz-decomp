@@ -1,9 +1,12 @@
-#include <Net/NetMgr.h>
-#include <Net/EmptyString.h>
 #include <rva.h>
+
+#include <Net/NetMgrReportError.h>
+
+#include <Net/EmptyString.h>
+#include <Net/NetMgr.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <Net/NetMgrReportError.h>
 
 DATA(0x002bf6e8)
 i32 g_logEnabled = 0;

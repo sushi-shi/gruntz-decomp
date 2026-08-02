@@ -1,9 +1,9 @@
-
-
-#include <Ints.h>
 #include <rva.h>
+
 #include <Gruntz/DirectionClassify.h>
+
 #include <Gruntz/Grunt.h>
+#include <Ints.h>
 
 DATA(0x001e9750)
 const double g_slopeNegHalf = -0.5;

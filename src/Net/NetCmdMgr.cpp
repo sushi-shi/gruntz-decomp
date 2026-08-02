@@ -1,10 +1,11 @@
-#include <Ints.h>
-#include <Net/NetMgr.h>
-#include <Gruntz/Multi.h>
+#include <rva.h>
+
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <rva.h>
+#include <Gruntz/Multi.h>
+#include <Ints.h>
+#include <Net/NetMgr.h>
 
 DATA(0x0024bd5c)
 CMulti* g_multiState;

@@ -1,15 +1,16 @@
 #ifndef SBI_WELLGOO_H
 #define SBI_WELLGOO_H
 
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/SBI_Image.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Image/ImageSet.h>
+#include <Gruntz/SBI_Image.h>
 #include <Gruntz/SpriteRefTable.h>
+#include <Image/ImageSet.h>
+#include <Ints.h>
 
 class CFileMemBase;
 

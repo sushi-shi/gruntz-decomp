@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+
 #include <Wap32/Object.h>
 
 typedef struct _SEQUENCE* HSEQUENCE;

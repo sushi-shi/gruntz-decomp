@@ -1,17 +1,18 @@
 #ifndef SRC_GRUNTZ_CPLAY_H
 #define SRC_GRUNTZ_CPLAY_H
+
 #include <rva.h>
-#include <Clock64.h>
 
 #include <Mfc.h>
 
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/CoordNode.h>
-#include <Io/SaveGame.h>
-#include <Gruntz/View.h>
+#include <Clock64.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Timer.h>
+#include <Gruntz/View.h>
+#include <Io/SaveGame.h>
 #include <Rez/FrameClock.h>
 
 class CGruntzSoundZ;

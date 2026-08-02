@@ -1,19 +1,20 @@
-#include <Gruntz/PlayPlaneScan.h>
-#include <Gruntz/SBI_Image.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <Ints.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/String.h>
 
+#include <Gruntz/PlayPlaneScan.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageSets.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SBI_Image.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/String.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/GameLevel.h>
+#include <Ints.h>
 
 // @early-stop
 RVA(0x000d53d0, 0x466)

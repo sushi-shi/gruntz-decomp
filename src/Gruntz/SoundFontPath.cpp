@@ -1,13 +1,13 @@
-#include <Gruntz/SoundFontPath.h>
 #include <rva.h>
-#include <Gruntz/SoundFont.h>
 
-#include <Win32.h>
+#include <Gruntz/SoundFontPath.h>
 
 #include <Dsndmgr/SfManager.h>
+#include <Gruntz/SFSelectDevice.h>
+#include <Gruntz/SoundFont.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <Gruntz/SFSelectDevice.h>
 
 RVA(0x000f8e20, 0x56)
 void CloseSoundFontDevice() {

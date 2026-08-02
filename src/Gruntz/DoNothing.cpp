@@ -1,12 +1,12 @@
+#include <rva.h>
+
 #include <Gruntz/DoNothing.h>
+
 #include <Gruntz/DoNothingNormalDtor.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
-
-#include <Ints.h>
-#include <rva.h>
-#include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
+#include <Ints.h>
 
 VTBL(CDoNothingNormal, 0x001e859c);
 VTBL(CDoNothing, 0x001e85f4);

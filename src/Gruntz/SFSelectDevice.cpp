@@ -1,15 +1,15 @@
 #include <rva.h>
-#include <Gruntz/SoundFont.h>
 
-#include <Win32.h>
+#include <Gruntz/SFSelectDevice.h>
+
+#include <Dsndmgr/SfManager.h>
+#include <Gruntz/SoundFont.h>
+#include <Gruntz/SoundFontPath.h>
+#include <ProcAddr.h>
+
 #include <stdio.h>
 #include <string.h>
 
-#include <Dsndmgr/SfManager.h>
-
-#include <Gruntz/SoundFontPath.h>
-#include <Gruntz/SFSelectDevice.h>
-#include <ProcAddr.h>
 DATA(0x00213dff)
 char g_id0_613dff = 0;
 DATA(0x00213e00)
@@ -56,7 +56,7 @@ DWORD g_sfVer = 0;
 DATA(0x0024e0a4)
 u16 g_sfDeviceCount = 0;
 DATA(0x0024e0a8)
-void* g_sfDll = 0;
+HMODULE g_sfDll = 0;
 DATA(0x0024e0ac)
 SfManagerFactory* g_factory_64e0ac = 0;
 DATA(0x0024e0b0)

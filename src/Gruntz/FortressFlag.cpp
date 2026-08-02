@@ -1,27 +1,28 @@
-#include <Gruntz/GameObjectFactory.h>
+#include <rva.h>
+
+#include <Gruntz/FortressFlag.h>
+
+#include <Bute/ButeTree.h>
 #include <Gruntz/ActNameRegistry.h>
-#include <Rez/FrameClock.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AnimSink.h>
+#include <Gruntz/AnimWorker.h>
+#include <Gruntz/Enums.h>
+#include <Gruntz/Explosion.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Particlez.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameReg.h>
+#include <Image/CImage.h>
+#include <Rez/FrameClock.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/FortressFlag.h>
-#include <Gruntz/Particlez.h>
-#include <Gruntz/Explosion.h>
-#include <Gruntz/AnimWorker.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/SerialArchive.h>
-#include <Image/CImage.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/Enums.h>
-#include <Gruntz/AnimSink.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/WwdGameReg.h>
-#include <Bute/ButeTree.h>
-#include <rva.h>
-#include <rva.h>
 
 VTBL(CFortressFlag, 0x001e725c);
 VTBL(CParticlez, 0x001e7614);

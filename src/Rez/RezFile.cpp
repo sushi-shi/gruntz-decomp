@@ -1,9 +1,12 @@
-#include <stdio.h>
-#include <Bute/SymParser.h>
-#include <Rez/RezMgr.h>
-#include <Rez/RezFile.h>
-#include <Rez/RezList.h>
 #include <rva.h>
+
+#include <Rez/RezFile.h>
+
+#include <Bute/SymParser.h>
+#include <Rez/RezList.h>
+#include <Rez/RezMgr.h>
+
+#include <stdio.h>
 
 DATA(0x0021a0a4)
 const char s_rPlusB[] = "r+b";

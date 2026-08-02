@@ -1,30 +1,32 @@
-#include <Mfc.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Io/FileMem.h>
-#include <Gruntz/UserLogic.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/Loadable.h>
-#include <Gruntz/Grunt.h>
-#include <math.h>
 #include <rva.h>
 
-#include <Gruntz/SpotLightActReg.h>
-#include <Gruntz/Random.h>
-#include <Gruntz/SpotLight.h>
-#include <Utils/MapTyped.h>
-#include <Gruntz/LeafCue.h>
+#include <Mfc.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/Loadable.h>
+#include <Gruntz/Random.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/SpotLight.h>
+#include <Gruntz/SpotLightActReg.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+
+#include <math.h>
+
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927;

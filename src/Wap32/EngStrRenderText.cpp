@@ -1,8 +1,10 @@
-#include <Wap32/EngStr.h>
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <Font/Font.h>
+#include <Ints.h>
+#include <Wap32/EngStr.h>
 
 // @early-stop
 RVA(0x00115930, 0x18f)

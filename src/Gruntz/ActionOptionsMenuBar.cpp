@@ -1,22 +1,21 @@
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
-
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TriggerMgr.h>
 #include <Wwd/WwdFile.h>
-#include <Gruntz/GameLevel.h>
+
 #include <string.h>
-
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/SerialArchive.h>
-#include <Wwd/WwdFile.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Sprite.h>
 
 // @early-stop
 RVA(0x00009090, 0x32)

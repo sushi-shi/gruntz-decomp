@@ -2,8 +2,9 @@
 #define GRUNTZ_CSECRETTELEPORTERTRIGGER_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h>
+
 #include <Gruntz/ActReg.h>
+#include <Gruntz/UserLogic.h>
 
 class CSecretTeleporterTrigger : public CUserLogic, public CWapX {
 public:

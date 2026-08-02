@@ -1,23 +1,25 @@
-#include <Mfc.h>
-#include <Ints.h>
-#include <Clock64.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/LogicTypeId.h>
-
-#include <Gruntz/CoordNode.h>
-#include <Gruntz/DoubleVector.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Clock64.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserBaseLink.h>
-#include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/WwdGameReg.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/MovingLogic.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/String.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/CurPlayer.h>
+#include <Gruntz/DoubleVector.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MovingLogic.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/String.h>
+#include <Gruntz/UserBaseLink.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameReg.h>
+#include <Ints.h>
+
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 

@@ -1,12 +1,14 @@
 #ifndef GRUNTZ_CMOVINGLOGIC_H
 #define GRUNTZ_CMOVINGLOGIC_H
 
+#include <rva.h>
+
 #include <Mfc.h>
+
 #include <Gruntz/CoordNode.h>
-#include <Gruntz/UserLogic.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
+#include <Gruntz/UserLogic.h>
 
 extern const double g_movingLogicMin;
 extern const double g_movingLogicMax;

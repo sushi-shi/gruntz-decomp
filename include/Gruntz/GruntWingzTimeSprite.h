@@ -1,10 +1,10 @@
 #ifndef GRUNTZ_CGRUNTWINGZTIMESPRITE_H
 #define GRUNTZ_CGRUNTWINGZTIMESPRITE_H
 
-#include <Gruntz/GruntHealthSprite.h>
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/LogicTypeId.h>
 
 class CGruntWingzTimeSprite : public CGruntHealthSprite {

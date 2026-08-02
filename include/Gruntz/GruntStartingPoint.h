@@ -2,8 +2,9 @@
 #define GRUNTZ_CGRUNTSTARTINGPOINT_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h>
+
 #include <Gruntz/ActReg.h>
+#include <Gruntz/UserLogic.h>
 
 class CGruntStartingPoint : public CUserLogic, public CWapX {
 public:

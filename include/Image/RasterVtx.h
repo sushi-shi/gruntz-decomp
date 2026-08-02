@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_IMAGE_RASTERVTX_H
 #define GRUNTZ_IMAGE_RASTERVTX_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 class CDDSurface;
 

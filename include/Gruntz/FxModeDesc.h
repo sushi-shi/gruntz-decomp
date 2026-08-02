@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_CFXMODEDESC_H
 #define GRUNTZ_CFXMODEDESC_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 class CFxModeDesc {
 public:

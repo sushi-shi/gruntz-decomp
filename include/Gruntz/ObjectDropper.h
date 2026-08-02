@@ -4,8 +4,8 @@
 #include <rva.h>
 
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/UserLogic.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/UserLogic.h>
 
 class CFileMemBase;
 

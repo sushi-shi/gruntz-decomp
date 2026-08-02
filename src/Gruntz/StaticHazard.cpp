@@ -1,27 +1,24 @@
-#include <Gruntz/HaznColl.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Wap32/zBitVec.h>
-#include <Io/FileMem.h>
-#include <Wap32/ZVec.h>
-#include <Bute/ButeTree.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/TriggerMgr.h>
+#include <rva.h>
+
 #include <Gruntz/StaticHazard.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TileGrid.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
+
 #include <Bute/ButeMgr.h>
-#include <Rez/FrameClock.h>
-
-#include <Gruntz/AniElement.h>
-
+#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/ActName.h>
-#include <rva.h>
-#include <rva.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HaznColl.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileGrid.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
 VTBL(CStaticHazard, 0x001e7824);

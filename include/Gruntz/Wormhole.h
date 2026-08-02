@@ -2,9 +2,10 @@
 #define GRUNTZ_CWORMHOLE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h>
+
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LogicFnTable.h>
+#include <Gruntz/UserLogic.h>
 
 class CWormhole : public CUserLogic, public CWapX {
 public:

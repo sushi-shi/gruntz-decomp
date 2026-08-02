@@ -1,14 +1,15 @@
 #ifndef GRUNTZ_CAMBIENTSOUND_H
 #define GRUNTZ_CAMBIENTSOUND_H
 
-#include <Mfc.h>
-#include <Ints.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/UserLogic.h>
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/UserLogic.h>
+#include <Ints.h>
 
 typedef enum AmbientBoxSentinel {
     AMBIENT_BOX_UNBOUNDED = 0x80000000,

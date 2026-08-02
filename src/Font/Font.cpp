@@ -1,11 +1,14 @@
-#include <Mfc.h>
+#include <rva.h>
 
-#undef _AFX_ENABLE_INLINES
+#include <Font/Font.h>
+
+#include <Mfc.h>
+#include <MfcNoInline.h>
+
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
-#include <Font/Font.h>
+
 #include <ddraw.h>
-#include <rva.h>
 
 RVA(0x00179700, 0x10)
 Font::Font() {

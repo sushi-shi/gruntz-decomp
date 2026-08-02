@@ -1,8 +1,9 @@
+#include <rva.h>
+
 #include <Gruntz/WayPoint.h>
-#include <Gruntz/SerialArchive.h>
+
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
 
 RVA(0x00010240, 0x47)
 i32 CWayPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {

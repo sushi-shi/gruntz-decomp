@@ -1,9 +1,10 @@
 #include <rva.h>
-#include <Dsndmgr/SoundVoiceList.h>
 
 #include <Bute/Hash.h>
+
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
+#include <Dsndmgr/SoundVoiceList.h>
 #include <Gruntz/ParseSource.h>
 
 RVA(0x0013c230, 0xf)

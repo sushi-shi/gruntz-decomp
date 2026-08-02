@@ -1,24 +1,24 @@
-#include <EmptyString.h>
-#include <Gruntz/String.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Attract.h>
-#include <Bute/SymParser.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/FixedPtrArray32.h>
-#include <DinMgr2/DirectInputMgr2.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDSurface.h>
-#include <ddraw.h>
 #include <rva.h>
 
+#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Gruntz/SoundState.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <EmptyString.h>
+#include <Gruntz/Attract.h>
+#include <Gruntz/FixedPtrArray32.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/String.h>
+#include <Rez/FrameClock.h>
+
+#include <ddraw.h>
 
 VTBL(CAttract, 0x001ea194);
 VTBL(CState, 0x001ea21c);

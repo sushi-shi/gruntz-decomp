@@ -1,10 +1,12 @@
+#include <rva.h>
+
 #include <Mfc.h>
+
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SerialCounter.h>
-#include <Io/FileMem.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
+#include <Gruntz/SerialCounter.h>
+#include <Io/FileMem.h>
 
 DATA(0x00229a50)
 char g_syncErrMsgBuf[0x80];

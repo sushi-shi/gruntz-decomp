@@ -1,18 +1,22 @@
+#include <rva.h>
+
 #include <Net/LobbyDialogs.h>
+
 #include <Mfc.h>
+
+#include <EmptyString.h>
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Net/NetLobby.h>
-#include <EmptyString.h>
-#include <Ints.h>
-#include <rva.h>
-#include <Gruntz/GameRegistry.h>
 #include <Gruntz/Multi.h>
+#include <Ints.h>
+#include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Wap32/Wap32.h>
-#include <string.h>
+
 #include <stdio.h>
+#include <string.h>
 
 DATA(0x001ea448)
 const AFX_MSGMAP CMultiHelpDlg::messageMap = {

@@ -1,9 +1,11 @@
+#include <rva.h>
+
 #include <DDrawMgr/ShadeTableCache.h>
-#include <DDrawMgr/PixelShift.h>
+
 #include <DDrawMgr/ColorHsv.h>
+#include <DDrawMgr/PixelShift.h>
 
 #include <math.h>
-#include <rva.h>
 #include <stdlib.h>
 #include <string.h>
 

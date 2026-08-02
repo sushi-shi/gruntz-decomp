@@ -1,11 +1,13 @@
+#include <rva.h>
+
 #include <Gruntz/RainCloud.h>
-#include <Gruntz/LightFxMgr.h>
+
+#include <Bute/ButeMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LightFxMgr.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Rez/FrameClock.h>
-#include <Bute/ButeMgr.h>
-#include <rva.h>
 
 VTBL(CRainCloud, 0x001e7324);
 

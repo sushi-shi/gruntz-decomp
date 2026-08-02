@@ -1,12 +1,15 @@
-#include <DDrawMgr/LogicRecord.h>
-#include <DDrawMgr/AnimWorkerObj.h>
-#include <Utils/MapTyped.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
 #include <rva.h>
+
+#include <DDrawMgr/LogicRecord.h>
+
 #include <Mfc.h>
+
+#include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 
 // @early-stop
 RVA(0x00164830, 0xec)

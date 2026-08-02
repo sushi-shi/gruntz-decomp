@@ -1,48 +1,49 @@
-#include <Gruntz/GameObjectFactory.h>
-#include <Mfc.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TraitorMode.h>
-
-#include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/AniElement.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/SerialRecords.h>
-#include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+
+#include <Gruntz/GruntCombat.h>
+
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Gruntz/WorkerHandler.h>
-#include <Wap32/Rect.h>
-#include <new>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/LightFx.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/SoundCue.h>
-#include <Gruntz/TriggerMgr.h>
-#include <new>
-#include <Gruntz/GruntEntranceArrival.h>
-#include <Gruntz/SoundState.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/BoundaryLowerMethodsViews.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/GruntCombat.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntEntranceArrival.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/LightFx.h>
+#include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/SerialRecords.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/TraitorMode.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/WorkerHandler.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/Rect.h>
+
+#include <math.h>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
+
 #pragma intrinsic(strcmp, sqrt)
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";

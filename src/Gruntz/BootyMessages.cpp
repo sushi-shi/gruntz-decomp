@@ -1,17 +1,18 @@
-#include <Ints.h>
-#include <Gruntz/BattlezData.h>
-#include <Gruntz/GruntzMgr.h>
+#include <rva.h>
+
 #include <Gruntz/BootyMessages.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/LeafCue.h>
+
 #include <Mfc.h>
 
-#include <Gruntz/GameMode.h>
-#include <Gruntz/BzState.h>
-
-#include <rva.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyWalkAnim.h>
+#include <Gruntz/BzState.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/SoundState.h>
+#include <Ints.h>
 #include <Utils/MapTyped.h>
 
 DATA(0x001e8fe4)

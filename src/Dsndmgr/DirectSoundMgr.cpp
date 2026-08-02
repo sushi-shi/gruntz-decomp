@@ -1,20 +1,23 @@
+#include <rva.h>
+
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Dsndmgr/SoundVoiceList.h>
+
+#include <Mfc.h>
+
 #include <Dsndmgr/DSoundVoice.h>
 #include <Dsndmgr/SoundDevice.h>
-#include <Rez/RezMgr.h>
-#include <Win32.h>
-#include <mmsystem.h>
-#include <dsound.h>
+#include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/WaveFormatPtr.h>
-#include <rva.h>
 #include <Pix16.h>
-#include <math.h>
-#include <stdio.h>
-#include <io.h>
-#include <string.h>
-
+#include <Rez/RezMgr.h>
 #include <Wap32/Wap32.h>
+
+#include <dsound.h>
+#include <io.h>
+#include <math.h>
+#include <mmsystem.h>
+#include <stdio.h>
+#include <string.h>
 
 DATA(0x001ef6b0)
 const double c_acosNorm = 2.0;

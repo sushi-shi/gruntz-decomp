@@ -1,13 +1,13 @@
-#include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/Boomerang.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/Projectile.h>
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/TimeBomb.h>
-#include <Gruntz/Projectile.h>
-#include <Gruntz/Boomerang.h>
-#include <Gruntz/XferArchive.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/XferArchive.h>
+#include <Ints.h>
 
 enum LogicRecordState {
     kLogicStateInit = 0,

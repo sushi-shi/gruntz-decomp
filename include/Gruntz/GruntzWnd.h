@@ -1,11 +1,11 @@
 #ifndef GRUNTZ_GRUNTZWND_H
 #define GRUNTZ_GRUNTZWND_H
 
-#include <Ints.h>
-#include <Wap32/Wap32.h>
 #include <rva.h>
 
 #include <Gruntz/GruntzMgr.h>
+#include <Ints.h>
+#include <Wap32/Wap32.h>
 
 class CGruntzWnd : public CGameWnd {
 public:

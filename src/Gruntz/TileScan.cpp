@@ -1,9 +1,10 @@
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Brickz.h>
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/Grunt.h>
+
 #include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Ints.h>
 
 static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
     if (static_cast<u32>(x) < static_cast<u32>(g->m_width)

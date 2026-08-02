@@ -3,9 +3,9 @@
 
 #include <rva.h>
 
+#include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/HaznColl.h>
 
 class CStaticHazard : public CUserLogic, public CWapX {
 public:

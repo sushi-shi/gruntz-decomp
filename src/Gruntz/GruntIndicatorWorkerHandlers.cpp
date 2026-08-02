@@ -1,15 +1,15 @@
-#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
 
 #include <Gruntz/AnimWorker.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/GruntSelectedSprite.h>
-#include <Gruntz/GruntToySprite.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/GruntPowerupSprite.h>
+#include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GruntStaminaSprite.h>
+#include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntToyTimeSprite.h>
 #include <Gruntz/GruntWingzTimeSprite.h>
-#include <Gruntz/GruntPowerupSprite.h>
+#include <Gruntz/UserLogic.h>
 
 #define ANIM_WORKER_PUMP(LEAF)                                                                     \
     AnimWorkerObj* rec = owner->m_animWorker;                                                      \

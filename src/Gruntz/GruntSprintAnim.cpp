@@ -1,14 +1,15 @@
-#include <Gruntz/SpriteRefTable.h>
+#include <rva.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Ints.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/UserLogic.h>
-#include <Mfc.h>
-#include <Gruntz/GameMode.h>
-
-#include <rva.h>
+#include <Ints.h>
 
 // @early-stop
 RVA(0x00019920, 0x1f0)

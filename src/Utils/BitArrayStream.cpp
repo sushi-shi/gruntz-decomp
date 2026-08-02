@@ -1,8 +1,9 @@
+#include <rva.h>
+
 #include <Wap32/zBitVec.h>
 
 #include <ctype.h>
 #include <iostream.h>
-#include <rva.h>
 
 RVA(0x00193080, 0xb5)
 ostream& operator<<(ostream& accum, const zBitVec& bits) {

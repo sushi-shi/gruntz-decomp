@@ -1,22 +1,24 @@
+#include <rva.h>
+
+#include <Gruntz/HelpState.h>
+
 #include <Mfc.h>
-#include <Bute/SymTab.h>
+
 #include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
-
+#include <DinMgr2/DirectInputMgr2.h>
+#include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/Demo.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/HelpState.h>
-#include <Gruntz/SplashState.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/Attract.h>
-#include <DDrawMgr/DDSurface.h>
-#include <ddraw.h>
 #include <Gruntz/FixedPtrArray32.h>
-#include <DinMgr2/DirectInputMgr2.h>
-#include <rva.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SplashState.h>
+
+#include <ddraw.h>
 
 DATA(0x002111b0)
 

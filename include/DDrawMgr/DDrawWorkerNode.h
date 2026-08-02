@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
 #define GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
 
-#include <Ints.h>
-#include <Gruntz/ResolveNode.h>
 #include <rva.h>
+
+#include <Gruntz/ResolveNode.h>
+#include <Ints.h>
 
 class CDDrawSurfaceMgr;
 

@@ -1,10 +1,11 @@
-#include <Gruntz/GruntSpawnConfig.h>
 #include <rva.h>
+
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/GameLevel.h>
 
 // @early-stop
 RVA(0x000f7d90, 0x171)

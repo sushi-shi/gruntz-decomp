@@ -1,12 +1,14 @@
-#include <Ints.h>
-#include <Wap32/Object.h>
 #include <rva.h>
-#include <Mfc.h>
-#include <string.h>
 
-#include <new.h>
+#include <Mfc.h>
+
+#include <Ints.h>
 #include <Rez/RezBufferObject.h>
 #include <Utils/RecordFill.h>
+#include <Wap32/Object.h>
+
+#include <new.h>
+#include <string.h>
 
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));

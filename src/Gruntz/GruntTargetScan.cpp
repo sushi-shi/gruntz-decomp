@@ -1,19 +1,19 @@
-
+#include <rva.h>
 
 #include <Mfc.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Ints.h>
-#include <string.h>
 
-#include <rva.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Ints.h>
+
 #include <stdlib.h>
+#include <string.h>
 
 #define PRIO(dst, r)                                                                               \
     switch (r) {                                                                                   \

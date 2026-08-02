@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_WWDGAMEREG_H
 #define GRUNTZ_GRUNTZ_WWDGAMEREG_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 class CState;
 class CDDrawSurfaceMgr;

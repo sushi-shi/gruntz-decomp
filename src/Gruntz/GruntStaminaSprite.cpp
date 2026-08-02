@@ -1,7 +1,9 @@
-#include <Gruntz/GruntStaminaSprite.h>
-#include <Gruntz/LogicTypeId.h>
-#include <Bute/ButeTree.h>
 #include <rva.h>
+
+#include <Gruntz/GruntStaminaSprite.h>
+
+#include <Bute/ButeTree.h>
+#include <Gruntz/LogicTypeId.h>
 
 RVA_COMPGEN(0x00012040, 0x1e, ??_GCGruntStaminaSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012070, 0x44, ??1CGruntStaminaSprite@@UAE@XZ)

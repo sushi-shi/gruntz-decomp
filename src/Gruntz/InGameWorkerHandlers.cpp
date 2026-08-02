@@ -1,9 +1,9 @@
-#include <Gruntz/GameObjectFactory.h>
 #include <rva.h>
+
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>
 #include <Gruntz/ToyPeek.h>
-
 #include <Gruntz/WorkerHandler.h>
 
 RVA(0x00095750, 0xf4)

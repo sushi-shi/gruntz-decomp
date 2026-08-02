@@ -1,10 +1,10 @@
 #ifndef GRUNTZ_USERBASELINK_H
 #define GRUNTZ_USERBASELINK_H
 
-#include <Wap32/zBitVec.h>
 #include <rva.h>
 
 #include <EmptyString.h>
+#include <Wap32/zBitVec.h>
 
 struct CUserBaseLink {
     CUserBaseLink();

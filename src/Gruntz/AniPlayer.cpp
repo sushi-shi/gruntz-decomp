@@ -1,19 +1,19 @@
-
-
-#include <Gruntz/AniPlayer.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Image/CImage.h>
-#include <Mfc.h>
 #include <rva.h>
 
+#include <Gruntz/AniPlayer.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SbiConfig.h>
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 
 RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(

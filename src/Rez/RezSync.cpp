@@ -1,57 +1,56 @@
-#include <Rez/RezSync.h>
-#include <EmptyString.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Net/NetMgr.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Utils/RegistryHelper.h>
-#include <Gruntz/FontConfig.h>
-#include <Gruntz/GameLevel.h>
-#include <Rez/FrameClock.h>
 #include <rva.h>
-#include <AddrWord.h>
-#include <Ints.h>
+
+#include <Rez/RezSync.h>
+
 #include <Mfc.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
-#include <Wap32/Wap32.h>
+#include <MfcWin.h>
+
+#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/FaderMgr.h>
-#include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/Fonts.h>
-#include <Gruntz/SoundFont.h>
-#include <Gruntz/GameObjectFactory.h>
-#include <strstrea.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include <Gruntz/CoordNode.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/ParseSource.h>
-#include <Dsndmgr/GruntzSoundZ.h>
-#include <Gruntz/CheatMgr.h>
-#include <DDrawMgr/ShadeTableCache.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Gruntz/WorldSoundSet.h>
-#include <Io/SaveGame.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GruntzCmdMgr.h>
-#include <Gruntz/LightFxMgr.h>
-#include <Gruntz/BattlezData.h>
-#include <Gruntz/SoundFxEmitter.h>
-#include <Wap32/GameApp.h>
-#include <Gruntz/SoundState.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
-
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/ShadeTableCache.h>
 #include <DinMgr2/InputMgrPtr.h>
+#include <Dsndmgr/GruntzSoundZ.h>
+#include <EmptyString.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/CheatMgr.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/FaderMgr.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/Fonts.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/ParseSource.h>
+#include <Gruntz/SoundFont.h>
+#include <Gruntz/SoundFxEmitter.h>
+#include <Gruntz/SoundState.h>
 #include <Gruntz/StateMgrBZ.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/WorldSoundSet.h>
+#include <Ints.h>
+#include <Io/SaveGame.h>
+#include <Net/NetMgr.h>
+#include <Rez/FrameClock.h>
+#include <strstrea.h>
+#include <Utils/RegistryHelper.h>
+#include <Wap32/GameApp.h>
+#include <Wap32/Wap32.h>
+
+#include <stdlib.h>
+#include <string.h>
 
 DATA(0x002455b4)
 i32 g_disableAudio = 0;

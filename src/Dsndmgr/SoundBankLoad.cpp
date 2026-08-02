@@ -1,5 +1,7 @@
-#include <Dsndmgr/GruntzSoundZ.h>
 #include <rva.h>
+
+#include <Dsndmgr/GruntzSoundZ.h>
+
 #include <string.h>
 
 DATA(0x001ee8ec)

@@ -1,27 +1,29 @@
-#include <string.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SoundState.h>
-#include <Io/FileMem.h>
-#include <Mfc.h>
 #include <rva.h>
 
-#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/TileActionEvent.h>
-#include <Wwd/WwdFile.h>
+
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserLogic.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SoundCue.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/Grunt.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerTransition.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/UserLogic.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Wwd/WwdFile.h>
 
-#include <Gruntz/CurPlayer.h>
+#include <string.h>
 
 RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {

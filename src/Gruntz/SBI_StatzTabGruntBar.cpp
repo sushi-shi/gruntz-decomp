@@ -1,15 +1,18 @@
-#include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
+
+#include <Gruntz/SBI_StatzTabGruntBar.h>
+
+#include <Mfc.h>
+
 #include <AddrWord.h>
-#include <Rez/FrameClock.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Mfc.h>
-#include <Ints.h>
 #include <Gruntz/Sprite.h>
-#include <Gruntz/SBI_StatzTabGruntBar.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Ints.h>
+#include <Rez/FrameClock.h>
 
 VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
 

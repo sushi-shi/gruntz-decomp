@@ -1,21 +1,20 @@
-#include <Wap32/Object.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SoundState.h>
-#include <Gruntz/CurPlayer.h>
 #include <rva.h>
 
-#include <Gruntz/FreeNodePool.h>
-
-#include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/ChatBoxOwner.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/CurPlayer.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/SoundCue.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundState.h>
 #include <Gruntz/StateMgrBZ.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Wap32/Object.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #define CLEAR_TAB_HINT(sndHost)                                                                    \

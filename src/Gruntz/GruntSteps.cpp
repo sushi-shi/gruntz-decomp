@@ -1,35 +1,33 @@
+#include <rva.h>
 
-
+#include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Gruntz/TypeKeyColl.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/SerialRecords.h>
-#include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/GameStateRecord.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStateRecord.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
-#include <rva.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/SerialRecords.h>
+#include <Gruntz/TileGrid.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
 #include <Pix16.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/TileGrid.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/PickupType.h>
-#include <Gruntz/TriggerMgr.h>
 
 DATA(0x002448d8)
 GruntDirectionCell g_gruntMoveDirNorth = GruntDirectionCell(0, 1, 1);

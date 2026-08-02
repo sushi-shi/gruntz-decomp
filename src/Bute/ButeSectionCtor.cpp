@@ -1,5 +1,6 @@
-#include <Bute/ButeMgr.h>
 #include <rva.h>
+
+#include <Bute/ButeMgr.h>
 
 VTBL(CBSecStream, 0x001f0510);
 

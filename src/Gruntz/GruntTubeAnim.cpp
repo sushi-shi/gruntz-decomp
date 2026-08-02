@@ -1,17 +1,18 @@
-#include <Mfc.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
-#include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/GameRegistry.h>
-
 #include <Wap32/ZVec.h>
+
 #include <string.h>
 
 // @early-stop

@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_LOGICFNTABLE_H
 #define GRUNTZ_GRUNTZ_LOGICFNTABLE_H
 
-#include <Gruntz/ActReg.h>
 #include <rva.h>
+
+#include <Gruntz/ActReg.h>
 
 SIZE_UNKNOWN();
 

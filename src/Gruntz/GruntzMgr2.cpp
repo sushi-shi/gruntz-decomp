@@ -1,8 +1,9 @@
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GameLevel.h>
-#include <Wwd/WwdFile.h>
 #include <rva.h>
+
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Wwd/WwdFile.h>
 
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {

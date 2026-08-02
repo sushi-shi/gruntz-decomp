@@ -1,15 +1,15 @@
 #ifndef GRUNTZ_CSOUNDFXEMITTER_H
 #define GRUNTZ_CSOUNDFXEMITTER_H
 
-#include <Ints.h>
 #include <rva.h>
 
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FxModeDesc.h>
-#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Ints.h>
 
 extern "C" i32 g_disableFades;
 

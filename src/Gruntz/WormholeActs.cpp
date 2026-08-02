@@ -1,12 +1,13 @@
+#include <rva.h>
+
+#include <Gruntz/WormholeActs.h>
+
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/Wormhole.h>
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/UserLogic.h>
-
-#include <rva.h>
+#include <Gruntz/Wormhole.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/WormholeActs.h>
 
 template<> DATA(0x002445c0)
 CActReg CActRegPool<CExitTrigger>::s_table(2000, 2010);

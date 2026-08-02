@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_LEAFCUE_H
 #define GRUNTZ_GRUNTZ_LEAFCUE_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Gruntz/Loadable.h>
+#include <Ints.h>
 
 class DSoundCloneInst;
 struct CParseSource;

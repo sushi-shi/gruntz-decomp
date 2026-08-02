@@ -1,15 +1,15 @@
+#include <rva.h>
 
+#include <Mfc.h>
 
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGrid.h>
+#include <Wap32/Object.h>
 #include <Wwd/WwdGridShell.h>
 #include <Wwd/WwdSpatialMgr.h>
-#include <Gruntz/WwdGrid.h>
-#include <Mfc.h>
-#include <Gruntz/GameLevel.h>
-#include <Wap32/Object.h>
-#include <Gruntz/UserLogic.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <rva.h>
 
 VTBL(CWwdGridShell, 0x001f0310);
 static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);

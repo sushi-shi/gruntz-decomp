@@ -1,22 +1,22 @@
 #include <rva.h>
-#include <new>
-#include <Wap32/ZVec.h>
 
-#include <Ints.h>
 #include <Mfc.h>
-#include <Wap32/Rect.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include <Gruntz/FreeNodePool.h>
+
+#include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Ints.h>
+#include <Wap32/Rect.h>
+#include <Wap32/ZVec.h>
 
-#include <Gruntz/TypeKeyColl.h>
+#include <math.h>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
 
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \

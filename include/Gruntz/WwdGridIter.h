@@ -1,11 +1,11 @@
 #ifndef GRUNTZ_WWDGRIDITER_H
 #define GRUNTZ_WWDGRIDITER_H
 
-#include <Ints.h>
-#include <Wap32/Object.h>
 #include <rva.h>
 
 #include <Dsndmgr/SoundVoiceList.h>
+#include <Ints.h>
+#include <Wap32/Object.h>
 
 class CWwdGrid;
 struct BucketHead;

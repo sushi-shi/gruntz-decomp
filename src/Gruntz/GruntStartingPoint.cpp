@@ -1,18 +1,18 @@
+#include <rva.h>
+
 #include <Gruntz/GruntStartingPoint.h>
-#include <Wap32/zBitVec.h>
-#include <Gruntz/SerialArchive.h>
+
+#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Mfc.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
-#include <rva.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/SerialArchive.h>
 
 VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)

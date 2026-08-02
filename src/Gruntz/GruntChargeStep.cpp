@@ -1,15 +1,15 @@
-#include <Gruntz/GruntzMapMgr.h>
-#include <Ints.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
-#include <stdlib.h>
-
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Ints.h>
+
+#include <stdlib.h>
 
 // @early-stop
 RVA(0x000ef6b0, 0x61d)

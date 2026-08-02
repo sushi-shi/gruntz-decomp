@@ -1,10 +1,12 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H
 #define GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H
 
-#include <Ints.h>
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/Loadable.h>
+#include <Ints.h>
 
 class CAniElement;
 

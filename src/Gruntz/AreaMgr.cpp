@@ -1,16 +1,18 @@
 #include <rva.h>
-#include <Image/CImage.h>
-#include <Mfc.h>
+
 #include <Gruntz/AreaMgr.h>
+
+#include <Mfc.h>
+
 #include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Image/CImage.h>
 
 #include <stdio.h>
 #include <string.h>
-
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
 
 DATA(0x0021139c)
 CAreaMgr* g_pAreaMgr = &g_areaMgr;

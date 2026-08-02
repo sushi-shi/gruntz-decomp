@@ -1,22 +1,25 @@
 #include <rva.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/SoundState.h>
-#include <Gruntz/SerialCounter.h>
-#include <Io/FileMem.h>
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Mfc.h>
-#include <Gruntz/GruntzMgr.h>
+
 #include <Gruntz/SBI_MenuItem.h>
+
+#include <Mfc.h>
+
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/Sprite.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 
 VTBL(CSBI_MenuItem, 0x001eab4c);
 

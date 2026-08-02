@@ -1,16 +1,18 @@
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/GameLevel.h>
-#include <Wwd/WwdFile.h>
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/ScrollState.h>
+
 #include <Gruntz/MgrAutoScroll.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ScrollState.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Ints.h>
+#include <Rez/FrameClock.h>
+#include <Wwd/WwdFile.h>
 
 DATA(0x002452a4)
 i32 g_jitterX;

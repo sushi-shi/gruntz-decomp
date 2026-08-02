@@ -1,34 +1,33 @@
-#include <Gruntz/String.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/Attract.h>
-#include <Gruntz/GameMode.h>
-#include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDSurface.h>
-#include <ddraw.h>
-#include <Gruntz/SoundFxEmitter.h>
-#include <Gruntz/Fader.h>
-#include <Bute/SymParser.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SplashParams.h>
-#include <Gruntz/Play.h>
-#include <Wap32/EngStr.h>
 #include <rva.h>
 
+#include <Gruntz/Attract.h>
+
+#include <Bute/ButeMgr.h>
+#include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/Fader.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelPreview.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundFxEmitter.h>
+#include <Gruntz/SplashParams.h>
+#include <Gruntz/String.h>
+#include <Image/ImageFormatTag.h>
+#include <Io/FileMem.h>
+#include <Wap32/EngStr.h>
+
+#include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Gruntz/LevelPreview.h>
-#include <Image/ImageFormatTag.h>
 
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0;

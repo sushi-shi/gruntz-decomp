@@ -1,8 +1,9 @@
 #include <rva.h>
-#include <Ints.h>
-#include <Gruntz/State.h>
+
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/State.h>
+#include <Ints.h>
 
 // @early-stop
 RVA(0x000fa150, 0x74)

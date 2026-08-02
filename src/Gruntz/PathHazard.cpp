@@ -1,24 +1,24 @@
-#include <Gruntz/GruntzMgr.h>
+#include <rva.h>
+
 #include <Gruntz/PathHazard.h>
-#include <Gruntz/SoundState.h>
-#include <Gruntz/RainCloud.h>
+
 #include <Gruntz/ActReg.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PathHazardActReg.h>
+#include <Gruntz/RainCloud.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Image/CImage.h>
+#include <Rez/FrameClock.h>
 
 #include <math.h>
-#include <Rez/FrameClock.h>
-#include <Image/CImage.h>
-
-#include <Gruntz/PathHazardActReg.h>
-#include <rva.h>
-#include <rva.h>
 
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {}

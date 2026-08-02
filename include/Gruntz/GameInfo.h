@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GAMEINFO_H
 #define GRUNTZ_GAMEINFO_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 struct CGameInfoTime {
     i32 m_0;

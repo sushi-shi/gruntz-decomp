@@ -1,16 +1,19 @@
-#include <Net/CmdPool.h>
-#include <Net/NetMgr.h>
-#include <Gruntz/Multi.h>
-#include <Gruntz/GruntzMgr.h>
+#include <rva.h>
+
+#include <Net/NetCmdSlot.h>
+
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Multi.h>
 #include <Ints.h>
-#include <Rez/RezMgr.h>
-#include <dplay.h>
-#include <rva.h>
+#include <Net/CmdPool.h>
+#include <Net/NetMgr.h>
 #include <Pix16.h>
+#include <Rez/RezMgr.h>
+
+#include <dplay.h>
 #include <string.h>
-#include <Net/NetCmdSlot.h>
 
 #pragma intrinsic(memcpy)
 #pragma intrinsic(strcat)

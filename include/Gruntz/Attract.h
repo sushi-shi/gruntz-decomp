@@ -1,11 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_CATTRACT_H
 #define GRUNTZ_GRUNTZ_CATTRACT_H
 
-#include <Ints.h>
 #include <rva.h>
-#include <Gruntz/State.h>
 
 #include <DDrawMgr/DDSurface.h>
+#include <Gruntz/State.h>
+#include <Ints.h>
 
 extern "C" i32 g_attractStateCount;
 

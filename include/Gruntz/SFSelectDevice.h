@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_SFSELECTDEVICE_H
 #define GRUNTZ_GRUNTZ_SFSELECTDEVICE_H
 
-#include <Win32.h>
 #include <rva.h>
+
+#include <Win32.h>
 
 extern u16 g_idx_64da80;
 extern DWORD g_ratingRaw_64da84;
@@ -12,7 +13,7 @@ extern u16 g_remaining_64df98;
 extern DWORD g_sfRouterId;
 extern DWORD g_sfVer;
 extern u16 g_sfDeviceCount;
-extern void* g_sfDll;
+extern HMODULE g_sfDll;
 struct SFMANL101TAG;
 typedef struct SFMANL101TAG SFMANL101API;
 extern SFMANL101API* g_sfDevice;

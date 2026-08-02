@@ -1,9 +1,9 @@
-#include <Ints.h>
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawShadeBlit.h>
+#include <Ints.h>
 #include <Io/FileStream.h>
 
 RVA(0x00149250, 0x158)

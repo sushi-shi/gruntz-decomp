@@ -1,10 +1,11 @@
 #ifndef CRYPTO_FECCRYPT_H
 #define CRYPTO_FECCRYPT_H
 
-#include <Ints.h>
-
 #include <rva.h>
+
 #include <Mfc.h>
+
+#include <Ints.h>
 
 struct FecEntry {
     i32 m_index;

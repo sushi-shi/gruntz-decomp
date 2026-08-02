@@ -1,5 +1,6 @@
-#include <Net/LatencyList.h>
 #include <rva.h>
+
+#include <Net/LatencyList.h>
 
 RVA(0x00037c30, 0xb3)
 i32 CLatencyList::PopulateTcpIpOptions() {

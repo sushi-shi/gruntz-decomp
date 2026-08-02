@@ -1,12 +1,13 @@
-#include <Gruntz/Ufo.h>
-#include <Io/FileMem.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/SpotLight.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/LightFxMgr.h>
-#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
+
+#include <Gruntz/Ufo.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpotLight.h>
+#include <Io/FileMem.h>
 
 VTBL(CUFO, 0x001e72b4);
 RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)

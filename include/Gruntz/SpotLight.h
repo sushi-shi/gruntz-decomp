@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
-#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/DoubleVector.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 
 class CSpotLight : public CUserLogic, public CWapX {

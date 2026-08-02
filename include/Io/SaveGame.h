@@ -1,14 +1,15 @@
 #ifndef SRC_IO_SAVEGAME_H
 #define SRC_IO_SAVEGAME_H
+
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h>
-#include <string.h>
-
-#include <Io/FileStream.h>
 
 #include <EmptyString.h>
+#include <Gruntz/GameRegistry.h>
+#include <Io/FileStream.h>
+
+#include <string.h>
 
 struct SaveSlot {
     union {

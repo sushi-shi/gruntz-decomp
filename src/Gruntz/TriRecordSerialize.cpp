@@ -1,7 +1,8 @@
-#include <Gruntz/SerialArchive.h>
-#include <Io/FileMem.h>
 #include <rva.h>
+
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Io/FileMem.h>
 
 RVA(0x00058ee0, 0x5c)
 i32 CPairRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {

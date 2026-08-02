@@ -1,16 +1,15 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
-#include <Wap32/Object.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
 #include <rva.h>
+
+#include <MfcWin.h>
+
+#include <Gruntz/ObList.h>
+#include <Gruntz/String.h>
 #include <Ints.h>
 #include <Net/NetLobby.h>
-#include <Gruntz/String.h>
-#include <Gruntz/ObList.h>
+#include <Wap32/Object.h>
 
 class CString;
 struct HWND__;

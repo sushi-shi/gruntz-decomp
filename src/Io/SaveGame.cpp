@@ -1,22 +1,22 @@
-#include <Io/SaveGame.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/FontConfig.h>
-#include <Image/ImagePool.h>
-#include <Image/Image.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/CheatMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/ChainForward.h>
-#include <Io/GameSave.h>
-#include <Utils/RegistryHelper.h>
-#include <stdio.h>
 #include <rva.h>
 
+#include <Io/SaveGame.h>
+
+#include <MfcWin.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/ChainForward.h>
+#include <Gruntz/CheatMgr.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Play.h>
+#include <Image/Image.h>
+#include <Image/ImagePool.h>
+#include <Io/GameSave.h>
+#include <Utils/RegistryHelper.h>
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

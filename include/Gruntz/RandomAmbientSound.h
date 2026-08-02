@@ -1,14 +1,13 @@
 #ifndef GRUNTZ_CRANDOMAMBIENTSOUND_H
 #define GRUNTZ_CRANDOMAMBIENTSOUND_H
 
-#include <Gruntz/AmbientSound.h>
-#include <Ints.h>
-#include <Gruntz/GameRegistry.h>
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/AmbientSound.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
-
+#include <Ints.h>
 #include <Rez/FrameClock.h>
 
 extern "C" i32 __ftol(double v);

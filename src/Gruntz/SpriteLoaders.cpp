@@ -1,24 +1,26 @@
+#include <rva.h>
+
+#include <AddrWord.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Utils/MapTyped.h>
-#include <rva.h>
-#include <AddrWord.h>
-#include <Rez/FrameClock.h>
-#include <Io/FileMem.h>
-#include <Gruntz/Grunt.h>
-#include <Image/CImage.h>
-#include <string.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/Warlord.h>
 #include <Gruntz/Play.h>
-#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/SerialArchive.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/Timer.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Warlord.h>
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+
+#include <string.h>
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {

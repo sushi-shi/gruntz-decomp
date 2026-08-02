@@ -3,9 +3,9 @@
 
 #include <rva.h>
 
+#include <Bute/ButeMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
-#include <Bute/ButeMgr.h>
 
 class CFileMemBase;
 

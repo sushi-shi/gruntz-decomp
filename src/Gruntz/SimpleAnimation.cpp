@@ -1,19 +1,19 @@
+#include <rva.h>
+
 #include <Gruntz/SimpleAnimation.h>
-#include <Rez/FrameClock.h>
-#include <Image/CImage.h>
-#include <Wap32/zBitVec.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/AniAdvanceCursor.h>
+
+#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Mfc.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/LogicFnTable.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
+#include <Gruntz/LogicFnTable.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
-#include <rva.h>
-#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Image/CImage.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
 
 RVA(0x0000f930, 0x47)
 i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {

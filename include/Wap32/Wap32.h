@@ -1,10 +1,11 @@
 #ifndef WAP32_H
 #define WAP32_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Mfc.h>
+
+#include <Ints.h>
 #include <Wap32/GameApp.h>
 
 enum GruntzCommand;

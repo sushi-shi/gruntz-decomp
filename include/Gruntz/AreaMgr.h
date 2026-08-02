@@ -1,9 +1,10 @@
 #ifndef SRC_GRUNTZ_AREAMGR_H
 #define SRC_GRUNTZ_AREAMGR_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Gruntz/SpawnList.h>
+#include <Ints.h>
 
 class CDDrawSurfaceMgr;
 class CSymTab;

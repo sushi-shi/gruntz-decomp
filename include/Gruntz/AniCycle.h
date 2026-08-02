@@ -3,9 +3,9 @@
 
 #include <rva.h>
 
+#include <Gruntz/ActReg.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/ActReg.h>
 
 class CAniCycle : public CUserLogic, public CWapX {
 public:

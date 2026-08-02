@@ -1,10 +1,12 @@
 #ifndef GRUNTZ_CGRUNTZMAPMGR_H
 #define GRUNTZ_CGRUNTZMAPMGR_H
 
-#include <Ints.h>
-#include <Mfc.h>
-#include <Gruntz/MapMgr.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Gruntz/MapMgr.h>
+#include <Ints.h>
 
 class CFileMemBase;
 

@@ -1,14 +1,14 @@
 #ifndef GRUNTZ_CWARLORD_H
 #define GRUNTZ_CWARLORD_H
 
-#include <Mfc.h>
-#include <Gruntz/GameRegistry.h>
-
-#include <Gruntz/UserLogic.h>
-
 #include <rva.h>
-#include <Gruntz/GameRegMfcPtr.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/ActReg.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/UserLogic.h>
 
 extern "C" u32 g_engineFrameDelta;
 

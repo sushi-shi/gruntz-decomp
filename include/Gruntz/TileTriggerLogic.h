@@ -1,10 +1,10 @@
 #ifndef TILETRIGGERLOGIC_H
 #define TILETRIGGERLOGIC_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Gruntz/SerialArchive.h>
+#include <Ints.h>
 
 class CTileTriggerContainer;
 

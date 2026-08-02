@@ -1,17 +1,16 @@
-#include <Gruntz/GameObjectFactory.h>
+#include <rva.h>
+
+#include <Gruntz/StatusBarSpriteActs.h>
+
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/SerialArchive.h>
-
 #include <Rez/FrameClock.h>
-#include <rva.h>
 #include <Wap32/ZVec.h>
-
-#include <Gruntz/StatusBarSprite.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/StatusBarSpriteActs.h>
 
 template<> DATA(0x0024e670)
 CActReg CActRegPool<CStatusBarSprite>::s_table(2000, 2010);

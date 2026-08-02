@@ -1,14 +1,16 @@
 #ifndef GRUNTZ_ACTNAMEREGISTRY_H
 #define GRUNTZ_ACTNAMEREGISTRY_H
 
-#include <Bute/ButeTree.h>
-#include <Wap32/ZVec.h>
-#include <Wap32/zBitVec.h>
-#include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
-#include <Bute/ButeMgr.h>
-#include <Gruntz/ActReg.h>
+
 #include <Mfc.h>
+
+#include <Bute/ButeMgr.h>
+#include <Bute/ButeTree.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
 
 class CVariantSlot;
 struct CString;

@@ -1,12 +1,13 @@
 #include <Gruntz/PlayMessageImage.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/GameLevel.h>
-#include <Image/ImageSet.h>
-#include <Image/CImage.h>
-#include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/Play.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
 
 // @early-stop
 RVA(0x000d1650, 0x90)

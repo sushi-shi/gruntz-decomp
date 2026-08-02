@@ -1,13 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_WORKERHANDLER_H
 #define GRUNTZ_GRUNTZ_WORKERHANDLER_H
 
-#include <Ints.h>
-
+#include <DDrawMgr/AnimWorkerObj.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/XferArchive.h>
-
+#include <Ints.h>
 #include <Wwd/WwdGameObjectFamily.h>
-#include <DDrawMgr/AnimWorkerObj.h>
 
 inline void Worker_DefaultPump(CUserLogic* sub) {
     ProjTypeXfer(sub);

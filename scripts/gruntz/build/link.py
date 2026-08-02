@@ -17,11 +17,29 @@ What it does:
   2. assemble the obj list (a dir of <unit>.obj, explicit --obj, or an --order
      file giving the exact link order to test), winepath-translate every path,
      and write a `@response` file (VC5 link has a short argv limit under wine).
-  3. run `wine link.exe @rsp`; success signal is "the .EXE exists" (wine spews
+  3. resolve the LIBRARY set (see below) and append it to the response file.
+  4. run `wine link.exe @rsp`; success signal is "the .EXE exists" (wine spews
      unrelated noise and can return odd exit codes, exactly like cc_wrap.py).
 
-Defaults are tuned for layout study, not a shippable binary:
-  /FORCE /NODEFAULTLIB /SUBSYSTEM:WINDOWS /BASE:0x400000 /INCREMENTAL:NO /MAP
+Libraries. The objs cl.exe emits already carry the retail lib set in their
+`.drectve` directives - `/MT` writes `-defaultlib:LIBCMT` + `-defaultlib:OLDNAMES`,
+and MFC's headers add `nafxcw kernel32 user32 gdi32 comdlg32 winspool advapi32
+shell32 comctl32` - so we simply do NOT pass `/NODEFAULTLIB` and let them fire,
+which is exactly what the devs' link did. Three groups declare themselves nowhere
+and must be named explicitly, all corroborated by retail's own import table
+(`gruntz.core.pe.PE.imports`):
+
+  * `version.lib` + `winmm.lib` - imported by the game, requested by no header;
+  * DirectX 6 (`ddraw dsound dinput dplayx` + the static `dxguid` GUIDs) - the DX
+    SDK ships no `#pragma comment(lib)`;
+  * `mss32` + `smackw32` - the RAD SDKs we do not have, so their import libs are
+    SYNTHESISED from retail's import table by gruntz.build.import_lib.
+
+`--no-libs` restores the historical `/NODEFAULTLIB`, objects-only link (a bare
+layout probe with every library symbol left unresolved).
+
+Other defaults are tuned for layout study, not a shippable binary:
+  /FORCE /SUBSYSTEM:WINDOWS /BASE:0x400000 /INCREMENTAL:NO /MAP
   /OPT:NOREF /OPT:NOICF   (keep EVERY function so the map is complete)
 
 Run inside `nix develop`.
@@ -29,6 +47,7 @@ Run inside `nix develop`.
 
 import re
 import argparse
+import collections
 import os
 import shutil
 import signal
@@ -41,6 +60,14 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
 sys.path.insert(0, str(SCRIPT_DIR))
 from msdis_stub import ensure_msdis  # noqa: E402
+
+# Libraries no `.drectve` asks for. DX6 lives in the toolchain's dx/Lib; the two
+# RAD libs are synthesised into build/lib by gruntz.build.import_lib.
+EXTRA_LIBS = ["version.lib", "winmm.lib",
+              "ddraw.lib", "dsound.lib", "dinput.lib", "dplayx.lib", "dxguid.lib"]
+# The retail entry point, once LIBCMT + NAFXCW are actually on the link line
+# (LIBCMT defines _WinMainCRTStartup, NAFXCW defines the _WinMain@16 it calls).
+ENTRY_LINKED, ENTRY_BARE = "WinMainCRTStartup", "_x"
 
 
 def die(msg: str) -> None:
@@ -92,6 +119,45 @@ def run_wine(cmd, cwd, produced: Path):
         return logf.read().decode("utf-8", "replace"), rc
 
 
+def ensure_import_libs() -> list:
+    """The synthesised import libs (mss32/smackw32) - built on demand, cached."""
+    if str(REPO / "scripts") not in sys.path:
+        sys.path.insert(0, str(REPO / "scripts"))
+    from gruntz.build.import_lib import ensure_all
+    return ensure_all()
+
+
+def unresolved(output: str) -> set:
+    """The DECORATED unresolved-external names in a link log.
+
+    LNK2001 prints a C symbol bare (`_malloc`) but a C++ one as its demangled
+    prose FOLLOWED by the real name in parentheses:
+        unresolved external symbol "public: void __thiscall X::f(void)" (?f@X@@QAEXXZ)
+    A `(\\S+)` grab therefore collapses EVERY C++ blocker into the handful of
+    distinct first words of that prose (`"public:`, `"class`, ...), which silently
+    hid the entire C++ backlog from the punch list. Take the trailing parenthesised
+    name when there is one."""
+    out = set()
+    for ln in output.splitlines():
+        m = re.search(r"unresolved external symbol (.*)$", ln)
+        if not m:
+            continue
+        rest = m.group(1).strip()
+        paren = re.search(r"\(([^()]+)\)\s*$", rest)
+        out.add(paren.group(1) if paren else rest.split()[0])
+    return out
+
+
+def classify(sym: str) -> str:
+    """Which kind of link blocker `sym` is - the three buckets that need three
+    different fixes: a missing import lib, a missing C body, a missing C++ body."""
+    if sym.startswith("__imp_"):
+        return "import (no import lib on the line)"
+    if sym.startswith("?"):
+        return "C++ (undefined method/variable - reconstruction backlog)"
+    return "C (undefined free function/variable)"
+
+
 def collect_objs(args) -> list:
     """Resolve the obj list + their link ORDER. Priority:
        --order FILE  (one obj stem or path per line; blank/`#` ignored) - the
@@ -131,8 +197,13 @@ def main() -> None:
     ap.add_argument("--order", help="file listing obj stems/paths in link order.")
     ap.add_argument("--lib", action="append", default=[],
                     help="extra import/static lib to pass to link (repeatable).")
+    ap.add_argument("--no-libs", dest="libs", action="store_false", default=True,
+                    help="/NODEFAULTLIB, no libraries at all - the bare objects-only "
+                         "layout probe (every CRT/MFC/Win32 symbol stays unresolved).")
     ap.add_argument("--base", default="0x400000", help="image base (/BASE).")
-    ap.add_argument("--entry", default="_x", help="forced /ENTRY symbol.")
+    ap.add_argument("--entry", default=None,
+                    help=f"forced /ENTRY symbol (default: {ENTRY_LINKED} with "
+                         f"libraries, {ENTRY_BARE} with --no-libs).")
     ap.add_argument("--keep-all", dest="keep_all", action="store_true", default=True,
                     help="/OPT:NOREF /OPT:NOICF - keep every COMDAT (default).")
     ap.add_argument("--opt-ref", dest="keep_all", action="store_false",
@@ -167,40 +238,52 @@ def main() -> None:
     os.environ.setdefault("WINEDEBUG", "fixme-all,err-all")
     ensure_wineserver()
 
+    entry = args.entry or (ENTRY_LINKED if args.libs else ENTRY_BARE)
     rsp_lines = [
         f"/OUT:{winepath_w(out)}",
         f"/MAP:{winepath_w(mapf)}",
-        "/NOLOGO", "/FORCE", "/NODEFAULTLIB", "/SUBSYSTEM:WINDOWS",
-        f"/BASE:{args.base}", "/INCREMENTAL:NO", f"/ENTRY:{args.entry}",
+        "/NOLOGO", "/FORCE", "/SUBSYSTEM:WINDOWS",
+        f"/BASE:{args.base}", "/INCREMENTAL:NO", f"/ENTRY:{entry}",
     ]
+    if not args.libs:
+        # No libraries at all - the objs' own -defaultlib: directives are ignored too.
+        rsp_lines.append("/NODEFAULTLIB")
     if args.keep_all:
         rsp_lines += ["/OPT:NOREF", "/OPT:NOICF"]
     extra = args.flags[1:] if args.flags and args.flags[0] == "--" else args.flags
     rsp_lines += list(extra)
-    rsp_lines += [winepath_w(lib) if os.path.exists(lib) else lib for lib in args.lib]
+    libs = list(args.lib)
+    if args.libs:
+        libs += EXTRA_LIBS + [str(p) for p in ensure_import_libs()]
+    rsp_lines += [winepath_w(lib) if os.path.exists(lib) else lib for lib in libs]
     rsp_lines += [f'"{winepath_w(o)}"' for o in objs]
 
     rsp = out.parent / (out.stem + ".objs.rsp")
     rsp.write_text("\n".join(rsp_lines) + "\n")
 
     output, rc = run_wine(["wine", str(link), f"@{winepath_w(rsp)}"], out.parent, out)
+    logf = out.parent / (out.stem + ".link.log")
+    logf.write_text(output)
 
     if not out.exists():
-        sys.stderr.write(f"[link] FAILED to produce {out}\n")
+        sys.stderr.write(f"[link] FAILED to produce {out} (log: {logf})\n")
         sys.stderr.write("\n".join(output.strip().splitlines()[-20:]) + "\n")
         sys.exit(rc or 1)
 
     # /FORCE means unresolved externals are EXPECTED (partial reconstruction);
     # surface the counts but treat the produced EXE as success.
     warns = sum(1 for ln in output.splitlines() if "LNK4006" in ln)
-    unres_syms = sorted({m.group(1) for ln in output.splitlines()
-                         if (m := re.search(r'unresolved external symbol (\S+)', ln))})
+    unres_syms = sorted(unresolved(output))
     # save the unresolved-externals punch-list (the drive-to-linkable worklist).
     unf = out.parent / (out.stem + ".unresolved.txt")
     unf.write_text("\n".join(unres_syms) + "\n")
-    print(f"[link] {len(objs)} objs -> {out} ({out.stat().st_size} B) + {mapf.name}")
+    print(f"[link] {len(objs)} objs + {len(libs)} explicit lib(s) -> {out} "
+          f"({out.stat().st_size} B) + {mapf.name}")
     print(f"[link] {len(unres_syms)} unresolved externals -> {unf.name}, "
           f"{warns} dup-symbol warnings (expected: partial reconstruction, /FORCE)")
+    for bucket, n in sorted(collections.Counter(
+            classify(s) for s in unres_syms).items(), key=lambda kv: -kv[1]):
+        print(f"[link]   {n:5d}  {bucket}")
 
 
 if __name__ == "__main__":

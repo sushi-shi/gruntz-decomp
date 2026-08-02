@@ -1,21 +1,19 @@
-#include <Gruntz/ActNameRegistry.h>
-#include <Rez/FrameClock.h>
-#include <Image/CImage.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>
-#include <Gruntz/LogicFnTable.h>
-#include <Gruntz/FrontCandy.h>
+#include <rva.h>
+
 #include <Gruntz/FrontCandyAni.h>
+
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AnimSink.h>
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/EyeCandyAni.h>
-
-#include <Gruntz/AnimSink.h>
+#include <Gruntz/FrontCandy.h>
+#include <Gruntz/LogicFnTable.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
-#include <rva.h>
+#include <Image/CImage.h>
+#include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h>
 
 template<> DATA(0x002460b0)
 CActReg CActRegPool<CFrontCandyAni>::s_table(2000, 2010);

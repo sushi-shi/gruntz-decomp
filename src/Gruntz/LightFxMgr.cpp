@@ -1,10 +1,11 @@
-#include <Gruntz/GruntzMgr.h>
+#include <rva.h>
+
 #include <Gruntz/LightFxMgr.h>
-#include <Gruntz/GameRegistry.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Image/ImageSet.h>
-#include <rva.h>
 
 #include <string.h>
 

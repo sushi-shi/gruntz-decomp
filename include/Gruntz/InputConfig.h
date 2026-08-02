@@ -2,8 +2,9 @@
 #define GRUNTZ_INPUTCONFIG_H
 
 #include <rva.h>
-#include <Ints.h>
+
 #include <Gruntz/String.h>
+#include <Ints.h>
 
 class CInputConfig {
 public:

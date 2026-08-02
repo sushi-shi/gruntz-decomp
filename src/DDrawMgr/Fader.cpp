@@ -1,18 +1,21 @@
-#include <Gruntz/Fader.h>
-#include <EmptyString.h>
-#include <DDrawMgr/ShadeTableCache.h>
-#include <Gruntz/FaderSubtypes.h>
-#include <Ints.h>
+#include <rva.h>
+
 #include <Mfc.h>
-#include <ddraw.h>
+
+#include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <Gruntz/FxModeT1.h>
+#include <DDrawMgr/ShadeTableCache.h>
+#include <EmptyString.h>
+#include <Gruntz/Fader.h>
+#include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/FxModeDesc.h>
+#include <Gruntz/FxModeT1.h>
+#include <Ints.h>
+
+#include <ddraw.h>
 #include <math.h>
 #include <string.h>
-#include <rva.h>
 
 VTBL(CFader, 0x001f07a8);
 VTBL(CFaderMesh, 0x001f07c0);

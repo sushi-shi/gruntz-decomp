@@ -1,9 +1,11 @@
 #ifndef GRUNTZ_WINMAIN_H
 #define GRUNTZ_WINMAIN_H
 
-#include <Mfc.h>
-#include <Ints.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 i32 FindProcessByName(const char* name, i32 wantCount, void** pHandleOut);
 i32 StartUpPrompt(HWND__* parent);

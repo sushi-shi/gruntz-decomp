@@ -2,6 +2,7 @@
 #define GRUNTZ_CCHECKPOINTTRIGGER_H
 
 #include <rva.h>
+
 #include <Gruntz/UserLogic.h>
 
 class CCheckpointTrigger : public CUserLogic, public CWapX {

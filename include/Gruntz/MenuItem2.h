@@ -1,15 +1,14 @@
 #ifndef GRUNTZ_MENUITEM2_H
 #define GRUNTZ_MENUITEM2_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <Gruntz/MenuItem.h>
 #include <Image/CImage.h>
-
 #include <Image/ImageSet.h>
+#include <Ints.h>
 
 class CMenuPage;
 class CMenuItem2 : public CMenuItem {

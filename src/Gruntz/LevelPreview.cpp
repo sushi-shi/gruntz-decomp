@@ -1,30 +1,32 @@
-#include <Mfc.h>
-#include <Gruntz/LeafCue.h>
 #include <rva.h>
 
-#include <DDrawMgr/DDSurface.h>
-#include <ddraw.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <stdio.h>
+#include <Gruntz/LevelPreview.h>
 
-#include <Bute/SymTab.h>
+#include <Mfc.h>
+
 #include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Wap32/Wap32.h>
-#include <Gruntz/State.h>
-#include <Gruntz/SoundCue.h>
-#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/PreviewState.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/State.h>
+#include <Image/ImageFormatTag.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezSync.h>
 #include <Wap32/GameApp.h>
-#include <Gruntz/SoundState.h>
-#include <Gruntz/LevelPreview.h>
-#include <Image/ImageFormatTag.h>
+#include <Wap32/Wap32.h>
+
+#include <ddraw.h>
+#include <stdio.h>
 
 DATA(0x0024c69c)
 i32 g_flag64c69c = 0;

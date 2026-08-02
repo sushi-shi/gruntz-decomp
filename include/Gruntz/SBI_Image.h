@@ -1,10 +1,11 @@
 #ifndef GRUNTZ_SBI_IMAGE_H
 #define GRUNTZ_SBI_IMAGE_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/StatusBarItem.h>
+#include <Ints.h>
 
 class CDDrawSurfaceMgr;
 class CStatusBarMgr;

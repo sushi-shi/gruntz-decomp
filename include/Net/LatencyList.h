@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_NET_LATENCYLIST_H
 #define GRUNTZ_NET_LATENCYLIST_H
 
-#include <Net/KeyedList.h>
 #include <rva.h>
+
+#include <Net/KeyedList.h>
 
 class CLatencyList : public CKeyedList {
 public:

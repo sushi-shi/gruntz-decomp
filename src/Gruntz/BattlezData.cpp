@@ -1,9 +1,11 @@
+#include <rva.h>
+
 #include <Gruntz/BattlezData.h>
+
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h>
-#include <rva.h>
-#include <Gruntz/GameRegistry.h>
 
 DATA(0x001eab40)
 float g_zeroF = 0.0f;

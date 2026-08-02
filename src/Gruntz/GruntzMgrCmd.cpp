@@ -1,32 +1,33 @@
+#include <rva.h>
+
 #include <Gruntz/GruntzMgrCmd.h>
-#include <Ints.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SoundState.h>
-#include <Gruntz/TraitorMode.h>
-#include <Gruntz/LeafCue.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+
 #include <Mfc.h>
 
-#include <rva.h>
-#include <string.h>
-
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GruntzCommandId.h>
-#include <Gruntz/VideoConfig.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/CheatMgr.h>
-#include <Gruntz/Play.h>
-#include <Gruntz/GameMode.h>
-#include <Gruntz/Multi.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Wwd/WwdGameObjectFamily.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/Warlord.h>
-#include <Gruntz/StatusBarMgr.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <Utils/MapTyped.h>
+#include <Gruntz/CheatMgr.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LeafCue.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TraitorMode.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/VideoConfig.h>
+#include <Gruntz/Warlord.h>
 #include <Gruntz/WorldSoundSet.h>
+#include <Ints.h>
+#include <Utils/MapTyped.h>
+#include <Wwd/WwdGameObjectFamily.h>
+
+#include <string.h>
 
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \

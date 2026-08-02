@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_SPRITEREFTABLE_H
 #define GRUNTZ_SPRITEREFTABLE_H
 
-#include <Ints.h>
-#include <DDrawMgr/ShadeTableCache.h>
 #include <rva.h>
+
+#include <DDrawMgr/ShadeTableCache.h>
+#include <Ints.h>
 
 class CSpriteRef {
 public:

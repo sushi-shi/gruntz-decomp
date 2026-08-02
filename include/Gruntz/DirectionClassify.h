@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_DIRECTIONCLASSIFY_H
 
 #include <rva.h>
+
 #include <Ints.h>
 
 struct GruntDirectionCell;

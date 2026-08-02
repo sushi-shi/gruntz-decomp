@@ -1,8 +1,9 @@
 #ifndef GRUNTZ_BUTE_OBJLISTBASE_H
 #define GRUNTZ_BUTE_OBJLISTBASE_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 VTBL(CObjListBase, 0x001ef760);
 struct CObjListBase {

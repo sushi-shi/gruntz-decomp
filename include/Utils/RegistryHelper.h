@@ -1,9 +1,9 @@
 #ifndef UTILS_REGISTRYHELPER_H
 #define UTILS_REGISTRYHELPER_H
 
-#include <Ints.h>
-
 #include <Mfc.h>
+
+#include <Ints.h>
 
 namespace Utils {
 

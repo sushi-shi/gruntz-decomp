@@ -1,13 +1,15 @@
 #ifndef GRUNTZ_WWDGAMEOBJECT_H
 #define GRUNTZ_WWDGAMEOBJECT_H
 
-#include <Ints.h>
 #include <rva.h>
+
 #include <Mfc.h>
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/WwdGridIter.h>
+
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGridIter.h>
+#include <Ints.h>
 
 class CDDrawSurfaceMgr;
 

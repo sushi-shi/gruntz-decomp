@@ -1,8 +1,11 @@
-#include <Utils/RegistryHelper.h>
-#include <EmptyString.h>
 #include <rva.h>
-#include <string.h>
+
+#include <Utils/RegistryHelper.h>
+
+#include <EmptyString.h>
 #include <MsgParam.h>
+
+#include <string.h>
 
 namespace Utils {
 

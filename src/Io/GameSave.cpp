@@ -1,9 +1,12 @@
 #include <rva.h>
-#include <Gruntz/SerialCounter.h>
-#include <string.h>
+
+#include <Io/GameSave.h>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Io/GameSave.h>
+#include <Gruntz/SerialCounter.h>
+
+#include <string.h>
 
 DATA(0x00229930)
 i32 g_saveBuf[0x24];

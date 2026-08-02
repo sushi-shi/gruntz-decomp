@@ -1,11 +1,15 @@
+#include <rva.h>
+
 #include <Gruntz/WinMain.h>
+
 #include <Mfc.h>
+
+#include <Gruntz/Enums.h>
+#include <Gruntz/GruntzApp.h>
+#include <Wap32/Wap32.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <Wap32/Wap32.h>
-#include <Gruntz/Enums.h>
-#include <rva.h>
-#include <Gruntz/GruntzApp.h>
 
 typedef enum GruntzHotKey {
     VK_DOLLAR = 0x24,

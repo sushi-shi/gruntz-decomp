@@ -1,9 +1,10 @@
 #ifndef GRUNTZ_PROJACTCACHE_H
 #define GRUNTZ_PROJACTCACHE_H
 
+#include <rva.h>
+
 #include <Ints.h>
 #include <Wap32/zBitVec.h>
-#include <rva.h>
 
 #include <string.h>
 

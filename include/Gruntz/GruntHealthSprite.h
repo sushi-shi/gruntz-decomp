@@ -2,10 +2,11 @@
 #define GRUNTZ_CGRUNTHEALTHSPRITE_H
 
 #include <rva.h>
-#include <Gruntz/GruntIndicatorSprite.h>
+
 #include <Gruntz/CoordNode.h>
-#include <Gruntz/UserLogic.h>
+#include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
 
 class CGrunt;
 

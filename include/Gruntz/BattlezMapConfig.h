@@ -1,10 +1,12 @@
 #ifndef SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 #define SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 
-#include <Gruntz/MapMgr.h>
 #include <rva.h>
-#include <Clock64.h>
+
 #include <Mfc.h>
+
+#include <Clock64.h>
+#include <Gruntz/MapMgr.h>
 
 class CTriggerMgr;
 class CTileTriggerSwitchLogic;

@@ -1,11 +1,13 @@
 #ifndef SBI_MENUITEM_H
 #define SBI_MENUITEM_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SerialArchive.h>
+#include <Ints.h>
+
+class CDDrawWorker;
 
 class CDDrawSurfaceMgr;
 

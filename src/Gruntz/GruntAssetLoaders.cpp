@@ -1,18 +1,20 @@
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Bute/ButeTree.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/BattlezData.h>
-#include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/AniElement.h>
 #include <rva.h>
-#include <string.h>
+
 #include <Bute/ButeMgr.h>
+#include <Bute/ButeTree.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+
+#include <string.h>
 
 static void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());

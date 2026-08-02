@@ -1,8 +1,11 @@
 // @identity-TODO
 // Xrefs place this helper in the NetMgr/NetSession domain, but no original-object
 // boundary proves its exact owner TU.
-#include <Ints.h>
+
 #include <rva.h>
+
+#include <Ints.h>
+
 #include <string.h>
 
 RVA(0x000f9280, 0xe4)

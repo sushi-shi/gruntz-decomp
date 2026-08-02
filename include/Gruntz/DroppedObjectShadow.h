@@ -2,6 +2,7 @@
 #define GRUNTZ_CDROPPEDOBJECTSHADOW_H
 
 #include <rva.h>
+
 #include <Gruntz/UserLogic.h>
 
 class CFileMemBase;

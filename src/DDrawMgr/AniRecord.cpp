@@ -1,19 +1,23 @@
 #include <rva.h>
-#include <Pix16.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Wap32/Object.h>
+
+#include <DDrawMgr/AniRecord.h>
+
 #include <Mfc.h>
-#include <Gruntz/AniRecordView.h>
-#include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+
 #include <DDrawMgr/AniRecordBase2.h>
 #include <DDrawMgr/AniRecordViews.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <Gruntz/AniRecordView.h>
+#include <Pix16.h>
+#include <Wap32/Object.h>
+
 #include <string.h>
-#include <DDrawMgr/AniRecord.h>
 
 VTBL(CAniRecordView, 0x001f02c0);
 VTBL(CAniRecordBase2, 0x001f02d8);

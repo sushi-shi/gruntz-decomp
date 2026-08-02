@@ -1,9 +1,11 @@
 #include <rva.h>
-#include <iostream.h>
 
 #include <Crypto/BitStreamBlowfish.h>
+
 #include <Bute/ButeMgr.h>
 #include <Crypto/Blowfish.h>
+
+#include <iostream.h>
 
 RVA(0x0016f760, 0x82)
 void CButeTail::Decode(istream* in, ostream* out) {

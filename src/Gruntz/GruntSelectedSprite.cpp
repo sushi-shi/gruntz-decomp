@@ -1,15 +1,16 @@
-#include <Gruntz/GruntSelectedSprite.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialArchive.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TriggerMgr.h>
 #include <rva.h>
+
+#include <Gruntz/GruntSelectedSprite.h>
+
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Io/FileMem.h>
+#include <Wap32/ZVec.h>
 
 VTBL(CGruntSelectedSprite, 0x001e7bfc);
 

@@ -1,9 +1,11 @@
 #ifndef SRC_BUTE_BUTEVALUE_H
 #define SRC_BUTE_BUTEVALUE_H
 
-#include <Ints.h>
-#include <Mfc.h>
 #include <rva.h>
+
+#include <Mfc.h>
+
+#include <Ints.h>
 
 enum ButeType {
     kButeInt = 0,

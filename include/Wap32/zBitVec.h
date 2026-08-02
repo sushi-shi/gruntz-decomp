@@ -1,8 +1,9 @@
 #ifndef WAP32_ZBITVEC_H
 #define WAP32_ZBITVEC_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <Ints.h>
 
 struct CVariantSlot;
 class istream;

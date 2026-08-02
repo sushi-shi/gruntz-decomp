@@ -1,14 +1,14 @@
-#include <Mfc.h>
-#ifdef __clang__
-#undef _AFX_ENABLE_INLINES
-#endif
-#include <afxwin.h>
-#include <Gruntz/GameText.h>
-#include <Gruntz/GameMode.h>
 #include <rva.h>
+
+#include <Gruntz/GameText.h>
+
+#include <Mfc.h>
+#include <MfcWin.h>
+
 #include <Bute/ButeMgr.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameMode.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Play.h>
 #include <Rez/RezSync.h>

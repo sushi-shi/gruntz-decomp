@@ -1,10 +1,10 @@
+#include <rva.h>
+
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
-#include <rva.h>
-
 #include <Ints.h>
 
 RVA(0x0010bc30, 0x78)

@@ -1,14 +1,15 @@
+#include <rva.h>
 
+#include <Gruntz/MainMenuBuilder.h>
 
+#include <Mfc.h>
+
+#include <Gruntz/ChatBox.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/StartUpPrompt.h>
-#include <Mfc.h>
-#include <rva.h>
 #include <Gruntz/MenuPage.h>
-#include <Gruntz/ChatBox.h>
-#include <Gruntz/MainMenuBuilder.h>
+#include <Gruntz/StartUpPrompt.h>
 #include <Io/SaveGame.h>
 
 typedef u32 u32;

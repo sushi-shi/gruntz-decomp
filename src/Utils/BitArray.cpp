@@ -1,9 +1,10 @@
+#include <rva.h>
+
 #include <Bute/ButeTree.h>
 #include <Wap32/zBitVec.h>
 
 #include <stdlib.h>
 #include <string.h>
-#include <rva.h>
 
 RVA(0x00193640, 0x40)
 zBitVec* zBitVec::SetBit(u32 idx) {

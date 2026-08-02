@@ -1,17 +1,19 @@
-
-
 #include <rva.h>
-#include <Gruntz/ParseSource.h>
-#include <Mfc.h>
+
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
+
+#include <Mfc.h>
+
+#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniElement.h>
-#include <Bute/SymTab.h>
 #include <Gruntz/Enums.h>
+#include <Gruntz/ParseSource.h>
+#include <Utils/MapTyped.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <Utils/MapTyped.h>
 
 VTBL(CAniElement, 0x001efba8);
 

@@ -1,7 +1,8 @@
-#include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/StateDispatch.h>
 #include <rva.h>
 
+#include <Gruntz/StateDispatch.h>
+
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/LevelTimeDtor.h>
 
 class CUserLogic;

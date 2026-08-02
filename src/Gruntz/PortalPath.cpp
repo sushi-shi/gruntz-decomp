@@ -1,11 +1,15 @@
-#include <Mfc.h>
-#include <Utils/RegistryHelper.h>
 #include <rva.h>
-#include <string.h>
 
 #include <Gruntz/PortalPath.h>
-#include <Gruntz/HeapDiag.h>
+
+#include <Mfc.h>
+
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HeapDiag.h>
+#include <Utils/RegistryHelper.h>
+
+#include <string.h>
+
 DATA(0x0020c5b8)
 char g_nameFmt[] = "%s";
 

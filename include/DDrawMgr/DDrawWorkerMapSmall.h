@@ -1,13 +1,13 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERMAPSMALL_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERMAPSMALL_H
 
-#include <Ints.h>
 #include <rva.h>
+
+#include <DDrawMgr/AniRecordBase2.h>
 #include <Gruntz/Loadable.h>
 #include <Gruntz/MapStringToOb.h>
-#include <DDrawMgr/AniRecordBase2.h>
-
 #include <Gruntz/ParseSource.h>
+#include <Ints.h>
 
 class CDDrawWorkerMapSmall : public CLoadable {
 public:

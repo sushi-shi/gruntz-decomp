@@ -1,13 +1,13 @@
 #ifndef GRUNTZ_CMOVIEPLAYER_H
 #define GRUNTZ_CMOVIEPLAYER_H
 
-#include <Mfc.h>
-#include <afxtempl.h>
-#include <Ints.h>
 #include <rva.h>
-#include <Wap32/Object.h>
-#include <Crypto/FecCrypt.h>
 
+#include <Crypto/FecCrypt.h>
+#include <Ints.h>
+#include <Wap32/Object.h>
+
+#include <afxtempl.h>
 #include <ddraw.h>
 
 union SmackSource {

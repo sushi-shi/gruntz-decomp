@@ -1,8 +1,9 @@
+#include <rva.h>
+
 #include <Gruntz/GuardPoint.h>
-#include <Gruntz/SerialArchive.h>
+
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
-#include <rva.h>
 
 RVA(0x00010370, 0x47)
 i32 CGuardPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {

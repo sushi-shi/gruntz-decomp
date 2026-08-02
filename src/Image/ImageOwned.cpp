@@ -1,11 +1,11 @@
 #include <rva.h>
-#include <Pix16.h>
 
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h>
-#include <ddraw.h>
 #include <Io/FileStream.h>
+#include <Pix16.h>
 
+#include <ddraw.h>
 #include <string.h>
 
 RVA(0x00148ce0, 0x2f)

@@ -1,10 +1,10 @@
 #ifndef SRC_BUTE_SYMTAB_H
 #define SRC_BUTE_SYMTAB_H
 
-#include <Ints.h>
 #include <rva.h>
 
 #include <Bute/Hash.h>
+#include <Ints.h>
 
 void* operator new(u32 size);
 

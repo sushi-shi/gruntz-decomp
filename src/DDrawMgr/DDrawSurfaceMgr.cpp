@@ -1,26 +1,28 @@
 #include <rva.h>
-#include <Rez/FrameClock.h>
-#include <Io/FileMem.h>
+
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 
 #include <Mfc.h>
-#include <Wap32/Object.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Loadable.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/GameLevel.h>
-#include <string.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/Loadable.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/Object.h>
 #include <Wwd/WwdObjMgr.h>
+
+#include <string.h>
 
 RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {

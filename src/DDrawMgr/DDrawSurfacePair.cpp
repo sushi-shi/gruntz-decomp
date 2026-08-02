@@ -1,34 +1,37 @@
 #include <rva.h>
-#include <Pix16.h>
-#include <AddrWord.h>
+
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDSurface.h>
-#include <Gruntz/ParseSource.h>
-#include <Win32.h>
-#include <ddraw.h>
-#include <string.h>
-#include <stdio.h>
-#include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawWorkerMapSmall.h>
-#include <DDrawMgr/DDrawWorkerList.h>
-#include <DDrawMgr/DDrawWorkerNode.h>
-#include <DDrawMgr/DDrawWorkerCtx.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
-#include <DDrawMgr/DDrawWorker.h>
+
+#include <Mfc.h>
+
+#include <AddrWord.h>
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/AniRecord.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Io/FileMem.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDrawWorkerCtx.h>
+#include <DDrawMgr/DDrawWorkerList.h>
+#include <DDrawMgr/DDrawWorkerMapSmall.h>
+#include <DDrawMgr/DDrawWorkerNode.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DirectDrawMgr.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/MapStringToOb.h>
-#include <Gruntz/String.h>
-#include <Mfc.h>
+#include <Gruntz/ParseSource.h>
 #include <Gruntz/ResolveNode.h>
-#include <Image/ImageSet.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
-#include <DDrawMgr/AniRecord.h>
+#include <Gruntz/String.h>
 #include <Image/ImageFormatTag.h>
+#include <Image/ImageSet.h>
+#include <Io/FileMem.h>
+#include <Pix16.h>
+
+#include <ddraw.h>
+#include <stdio.h>
+#include <string.h>
 
 RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {

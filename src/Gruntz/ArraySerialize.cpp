@@ -1,9 +1,8 @@
-
-
 #include <rva.h>
+
 #include <Ints.h>
-#include <rva.h>
 #include <Io/MoviePlayer.h>
+
 RVA_COMPGEN(0x00039f20, 0x51, ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ)
 RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z)
 RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
