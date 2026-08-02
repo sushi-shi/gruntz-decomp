@@ -680,7 +680,7 @@ i32 CGrunt::StepCompassMove() {
         bag.SetAtGrow(bag.GetSize(), 7);
         bag.SetAtGrow(bag.GetSize(), 8);
         while (bag.GetSize() > 0) {
-            i32 idx = GruntRand() % bag.GetSize();
+            i32 idx = rand() % bag.GetSize();
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;

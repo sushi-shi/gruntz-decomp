@@ -2156,8 +2156,7 @@ i32 CPlay::ProfileDeltaFrame() {
         m_world->m_drawTarget->m_overlayPair
     );
     i32 presentMs = static_cast<i32>((tg() - t2));
-    ProfLog(
-        &g_brickText1,
+    g_brickText1.Format(
         "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
         static_cast<i32>(g_frameDelta),
         renderMs,
@@ -2225,8 +2224,7 @@ i32 CPlay::ProfileInputFrame() {
     m_guts->LoadMainStatusBarSprite();
     statusBarMs = static_cast<i32>(tg() - static_cast<u32>(statusBarMs));
 
-    ProfLog(
-        &g_brickText1,
+    g_brickText1.Format(
         "Input=%i, Activate=%i, Deact=%i, Update=%i, HitTest=%i, Draw=%i, Fixed=%i, "
         "StatusBar=%i, Flip=%i  ",
         activateMs,

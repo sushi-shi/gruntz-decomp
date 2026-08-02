@@ -41,8 +41,6 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 extern i32 g_movingSeed;
 
-extern "C" i32 GruntRand();
-
 class CGrunt;
 
 struct CTriRecord {

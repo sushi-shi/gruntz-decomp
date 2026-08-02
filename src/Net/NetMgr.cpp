@@ -55,6 +55,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 
 
 
+    // API-forced: COM QueryInterface out-param.
     hr = m_releaseIface->QueryInterface(IID_IDirectPlay4A, reinterpret_cast<void**>(&m_directPlay));
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);

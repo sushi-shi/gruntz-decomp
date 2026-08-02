@@ -491,7 +491,6 @@ rva,name,lib,confidence,source
 0x0b5270,__inc,LIBCMT,LOW,anchored
 0x0b52c0,__inc,LIBCMT,LOW,anchored
 0x0b5310,__inc,LIBCMT,LOW,anchored
-0x0b8af0,__fpclear,LIBCMT,LOW,anchored
 0x0bd500,__inc,LIBCMT,LOW,anchored
 0x0bd550,__inc,LIBCMT,LOW,anchored
 0x0bd5a0,__inc,LIBCMT,LOW,anchored

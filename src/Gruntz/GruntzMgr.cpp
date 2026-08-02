@@ -3093,7 +3093,7 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
         }
         file.Read(hdr, 0x5f4);
         file.Close();
-        if (SubstringMatch(hdr + 0x10, "Battlez")) {
+        if (strstr(hdr + 0x10, "Battlez")) {
             return 1;
         }
     }

@@ -40,9 +40,9 @@ i32 g_lastScrollY;
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;
     if (range == 0) {
-        return (GameGetTime() & 1) ? lo : hi;
+        return (g_gameReg->Rand() & 1) ? lo : hi;
     }
-    return static_cast<i32>(GameGetTime()) % range + lo;
+    return g_gameReg->Rand() % range + lo;
 }
 
 // @early-stop

@@ -411,7 +411,6 @@ extern i32 g_areaPageSize;
 extern "C" void Eng_HudDraw(void* hud, RECT* r, i32 c);
 extern "C" void Eng_FrameTimerStep(void* t, i32 now);
 extern "C" i32 g_playActive;
-extern "C" void ProfLog(void* sink, const char* fmt, ...);
 extern "C" i32 g_profAccA;
 extern "C" i32 g_profAccB;
 extern "C" i32 g_soundChannelInUse[17];

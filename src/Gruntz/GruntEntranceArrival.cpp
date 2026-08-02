@@ -332,7 +332,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
             idx = 1;
             break;
         default:
-            idx = GruntRand() % 2;
+            idx = rand() % 2;
             break;
     }
 
@@ -910,7 +910,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = static_cast<u32>(static_cast<i32>(g_frameTime));
         i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
-        m_idleDelay = static_cast<u32>(GruntRand() % n + 0x7530);
+        m_idleDelay = static_cast<u32>(rand() % n + 0x7530);
         m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         applied = 1;
     } else if (m_poseIdle[GRUNT_IDLE2] == 0) {
@@ -927,13 +927,13 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
-            m_idleDelay = static_cast<u32>(GruntRand() % (d - 0x4e1f) + 0x4e20);
+            m_idleDelay = static_cast<u32>(rand() % (d - 0x4e1f) + 0x4e20);
             m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         }
     } else {
 
         i32 count = (m_poseIdle[GRUNT_IDLE3] == 0) ? 1 : 2;
-        i32 idx = GruntRand() % count + 1;
+        i32 idx = rand() % count + 1;
         if (cue != 0) {
             CGruntzMgr* g = g_gameReg;
             g->Rand();
@@ -1436,7 +1436,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_objAux->m_actKey = ActFindId(s_exitKeyB);
 
     CAniElement* found;
-    i32 r = GruntRand() % 0x1e1;
+    i32 r = rand() % 0x1e1;
     if (r > 0x140) {
         found = static_cast<CAniElement*>(
             m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_ONE)
@@ -1873,7 +1873,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         m_coordToggle = (m_coordToggle == 0);
     } else if (m_entranceReason == 0x13) {
         i32 base;
-        if (GruntRand() % 0x64 < 0x50) {
+        if (rand() % 0x64 < 0x50) {
             poseIdx = 1;
             base = 0x41a;
         } else {
@@ -1885,7 +1885,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         m_moveVariant = variant;
         if (variant == 0) {
             i32 n = (g_gameReg->m_gameMode == 1) ? 3 : 6;
-            m_moveVariant = GruntRand() % n + 1;
+            m_moveVariant = rand() % n + 1;
         }
 
         i32 cueId = base + m_moveVariant - 1;

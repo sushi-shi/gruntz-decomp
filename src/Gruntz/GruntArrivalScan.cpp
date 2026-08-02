@@ -158,10 +158,10 @@ i32 CGrunt::ResolveArrivalReposition() {
                 i32 outX = h->m_extent.left;
                 i32 outY = h->m_extent.top;
                 if (spanX != 0) {
-                    outX += GruntRand() % spanX;
+                    outX += rand() % spanX;
                 }
                 if (spanY != 0) {
-                    outY += GruntRand() % spanY;
+                    outY += rand() % spanY;
                 }
                 TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 i32 m328 = CoordCount();
@@ -177,7 +177,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                 m_arrivalRerollWindowLo = 0;
                 m_arrivalRerollHi = 0;
                 m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
+                m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
                 m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                 m_arrivalRerollHi = 0;
@@ -1108,7 +1108,7 @@ i32 CGrunt::UpdateArrival() {
                     this->m_arrivalRerollWindowLo = 0;
                     this->m_arrivalRerollHi = 0;
                     this->m_arrivalRerollWindowHi = 0;
-                    this->m_arrivalRerollWindowLo = GruntRand() % 30000 + 30000;
+                    this->m_arrivalRerollWindowLo = rand() % 30000 + 30000;
                     this->m_arrivalRerollWindowHi = 0;
                     this->m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                     this->m_arrivalRerollHi = 0;
@@ -1121,10 +1121,10 @@ i32 CGrunt::UpdateArrival() {
                     i32 dy = base->m_extent.bottom - static_cast<i32>(lo2);
                     i32 ay = (dy ^ (dy >> 31)) - (dy >> 31);
                     if (ax != 0) {
-                        lo = lo + GruntRand() % ax;
+                        lo = lo + rand() % ax;
                     }
                     if (ay != 0) {
-                        lo2 = lo2 + GruntRand() % ay;
+                        lo2 = lo2 + rand() % ay;
                     }
                     if (lo < g_gameReg->m_tileGrid->m_width
                         && lo2 < g_gameReg->m_tileGrid->m_height) {
@@ -1982,7 +1982,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalRerollWindowLo = 0;
                 m_arrivalRerollHi = 0;
                 m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
+                m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
                 m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                 m_arrivalRerollHi = 0;
@@ -1997,11 +1997,11 @@ i32 CGrunt::StepArrivalDefense() {
                 i32 spanY = abs(h->m_extent.bottom - baseY);
                 i32 outX = baseX;
                 if (spanX != 0) {
-                    outX += GruntRand() % spanX;
+                    outX += rand() % spanX;
                 }
                 i32 outY = baseY;
                 if (spanY != 0) {
-                    outY += GruntRand() % spanY;
+                    outY += rand() % spanY;
                 }
                 if (outX < g_gameReg->m_tileGrid->m_width
                     && outY < g_gameReg->m_tileGrid->m_height) {
@@ -2331,7 +2331,7 @@ state2: {
     acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | (y & 0xffff));
     acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y + 1) & 0xffff));
     while (acc.GetSize() != 0) {
-        i32 sel = GruntRand() % acc.GetSize();
+        i32 sel = rand() % acc.GetSize();
         i32 pt = acc.GetAt(sel);
         i32 px = static_cast<u32>(pt) >> 0x10;
         i32 py = pt & 0xffff;
@@ -2876,7 +2876,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
 
         case 0:
             occ = m_tileMgr->FindNearestEnemy(this);
-            if (GruntRand() % 0x64 == 0 && m_health > 0x1a && occ != 0 && m_stamina >= 0x64
+            if (rand() % 0x64 == 0 && m_health > 0x1a && occ != 0 && m_stamina >= 0x64
                 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
                 m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,
@@ -2898,7 +2898,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
                 >= m_arrivalRerollWindow64) {
                 ResetEntranceAnimation(1, 1, 0);
-                m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
+                m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
                 m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                 m_arrivalRerollHi = 0;
@@ -2913,11 +2913,11 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 i32 spanY = abs(h->m_extent.bottom - baseY);
                 i32 outX = baseX;
                 if (spanX != 0) {
-                    outX += GruntRand() % spanX;
+                    outX += rand() % spanX;
                 }
                 i32 outY = baseY;
                 if (spanY != 0) {
-                    outY += GruntRand() % spanY;
+                    outY += rand() % spanY;
                 }
                 CMapMgr* bd = g_gameReg->m_tileGrid;
                 if (static_cast<u32>(outX) < static_cast<u32>(bd->m_width)

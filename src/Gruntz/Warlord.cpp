@@ -683,7 +683,7 @@ i32 CWarlord::ResolveMovingAnimation() {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId(s_keyB);
 
-    m_cooldownWindow = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
+    m_cooldownWindow = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
     m_cooldownStamp = static_cast<u32>(g_frameTime);
     return 1;
 }
@@ -717,7 +717,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                         static_cast<u32>(g_buteMgr.GetIntDef("Warlordz", "NotifyTimer", 0x1770));
                     m_timer2Stamp = static_cast<u32>(g_frameTime);
                 }
-                m_cooldownWindow = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
+                m_cooldownWindow = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
                 m_cooldownStamp = static_cast<u32>(g_frameTime);
             }
 
@@ -802,7 +802,7 @@ i32 CWarlord::ResolveIdleAnimation() {
         return 0;
     }
 
-    i32 idx = GruntRand() % 3 + 1;
+    i32 idx = rand() % 3 + 1;
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == 1) {
@@ -841,7 +841,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
         return 0;
     }
 
-    i32 idx = GruntRand() % 3;
+    i32 idx = rand() % 3;
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == 1) {

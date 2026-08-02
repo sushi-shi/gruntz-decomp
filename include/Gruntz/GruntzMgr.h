@@ -341,7 +341,6 @@ extern "C" u32 g_gooPuddlez;
 extern "C" u32 g_explosionz;
 extern "C" u32 g_resolutionChanged;
 extern "C" CGruntzMgr* g_gameReg;
-extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
 
 extern "C" u32 g_gruntDestruction;
 extern "C" u32 g_gruntCreation;
@@ -354,8 +353,6 @@ extern CString g_brickText1;
 extern CString g_brickText2;
 
 extern "C" CGruntzMgr* g_gameReg;
-
-extern "C" u32 GameGetTime(void);
 
 extern i32 g_warpX;
 extern i32 g_warpY;

@@ -362,9 +362,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             m = 6;
         }
         if (m == 0) {
-            idx = GruntRand() & 1;
+            idx = rand() & 1;
         } else {
-            idx = GruntRand() % m + 1;
+            idx = rand() % m + 1;
         }
     }
 

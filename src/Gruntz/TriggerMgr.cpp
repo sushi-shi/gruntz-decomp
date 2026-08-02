@@ -1622,8 +1622,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         }
                         i32 done = 0;
                         do {
-                            i32 dx = rangeA ? GruntRand() % rangeA + 1 : GruntRand() & 1;
-                            i32 dy = rangeB ? GruntRand() % rangeB + 1 : GruntRand() & 1;
+                            i32 dx = rangeA ? rand() % rangeA + 1 : rand() & 1;
+                            i32 dy = rangeB ? rand() % rangeB + 1 : rand() & 1;
                             if (g->TryTeleportToCell(dx, dy, 0, 1)) {
                                 CGameObject* spr =
                                     g_gameReg->m_world->m_childGroup
@@ -1659,7 +1659,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         if (gx == x && gy == y) {
                             break;
                         }
-                        i32 toy = GruntRand() % 9 + 0x17;
+                        i32 toy = rand() % 9 + 0x17;
                         if (toy == 0x1e) {
                             toy = 0x20;
                         }
