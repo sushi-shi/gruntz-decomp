@@ -253,14 +253,14 @@ public:
     i32 m_lastSenderId;
     char _p5c4[0x5cc - 0x5c8];
     i32 m_curSlotId;
-    i32 m_5d0;
+    i32 m_reserved5d0;
     i32 m_drainTimer;
     i32 m_frameDelta;
     i32 m_lastTime;
     i32 m_accumTime;
     i32 m_lastFrameSyncTime;
-    i32 m_5e8;
-    i32 m_5ec;
+    i32 m_reserved5e8;
+    i32 m_reserved5ec;
     i32 m_channelLatency[4];
     i32 m_autoCommandDelay;
 

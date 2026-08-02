@@ -57,7 +57,7 @@ public:
     i32 m_cellKey;
     i32 m_linkGate;
     i32 m_damageParam;
-    i32 m_1c;
+    i32 m_reserved1c;
     i32 m_initGate;
 
     CTileTriggerContainer* m_owner;

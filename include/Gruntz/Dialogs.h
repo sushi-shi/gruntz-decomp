@@ -220,7 +220,7 @@ public:
     char m_pad64[8];
     i32 m_customWorldFlag;
     CString m_worldName;
-    CStringList m_74;
+    CStringList m_reserved74;
 };
 SIZE_UNKNOWN();
 

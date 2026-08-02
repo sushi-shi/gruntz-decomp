@@ -218,7 +218,7 @@ public:
     }
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;
-    char m_274[0x10];
+    char m_reserved274[0x10];
     i32 m_groupInitialized;
 
     i32 m_phase;

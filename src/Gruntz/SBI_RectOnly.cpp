@@ -437,11 +437,11 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     } while (outer != 0);
 
     if (op == 4) {
-        s->Write(&m_2a0, 8);
-        s->Write(&m_2a8, 8);
+        s->Write(&m_reserved2a0, 8);
+        s->Write(&m_reserved2a8, 8);
     } else if (op == 7) {
-        s->Read(&m_2a0, 8);
-        s->Read(&m_2a8, 8);
+        s->Read(&m_reserved2a0, 8);
+        s->Read(&m_reserved2a8, 8);
     }
     if (op == 7 && m_position != 2) {
         BuildStatusBarTabs();
@@ -573,8 +573,8 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         p += 1;
     }
 
-    s->Write(&m_34c, 4);
-    s->Write(&m_350, 4);
+    s->Write(&m_reserved34c, 4);
+    s->Write(&m_reserved350, 4);
     s->Write(&m_hitTestDisabled, 4);
     s->Write(&m_activeSlot, 4);
     s->Write(&m_pendingHlRow, 4);
@@ -584,7 +584,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_itemBaseX, 4);
     s->Write(&m_rezTick, 4);
     s->Write(&m_rezActive, 4);
-    s->Write(&m_544, 4);
+    s->Write(&m_reserved544, 4);
     s->Write(&m_fallRect, 0x10);
     s->Write(&m_itemRect, 0x10);
     s->Write(&m_hlBusy, 4);
@@ -681,8 +681,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         p += 1;
     }
 
-    s->Read(&m_34c, 4);
-    s->Read(&m_350, 4);
+    s->Read(&m_reserved34c, 4);
+    s->Read(&m_reserved350, 4);
     s->Read(&m_hitTestDisabled, 4);
     s->Read(&m_activeSlot, 4);
     s->Read(&m_pendingHlRow, 4);
@@ -692,7 +692,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_itemBaseX, 4);
     s->Read(&m_rezTick, 4);
     s->Read(&m_rezActive, 4);
-    s->Read(&m_544, 4);
+    s->Read(&m_reserved544, 4);
     s->Read(&m_fallRect, 0x10);
     s->Read(&m_itemRect, 0x10);
     s->Read(&m_hlBusy, 4);
@@ -3651,10 +3651,10 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         }
     }
     m_ptrPool.SetSize(0, -1);
-    m_2b0 = 0;
-    m_2b8 = 0;
-    m_2b4 = 0;
-    m_2bc = 0;
+    m_reserved2b0 = 0;
+    m_reserved2b8 = 0;
+    m_reserved2b4 = 0;
+    m_reserved2bc = 0;
     m_hlBusy = 0;
     if (m_retabNotify) {
         free(m_retabNotify);

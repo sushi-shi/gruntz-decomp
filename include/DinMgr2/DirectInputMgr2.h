@@ -16,7 +16,7 @@ class CInputDevice;
 
 struct CDeviceListNode : public CFixedPtrArray32 {
     CDeviceListNode() {
-        m_00 = 0;
+        m_reserved00 = 0;
         m_count = 0;
     }
 };

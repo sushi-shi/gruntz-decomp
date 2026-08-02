@@ -16,7 +16,7 @@ struct CVariantSlot {
     i32 m_searchIndex;
     u16 m_valueWord;
     i32 m_typeTag;
-    i32 m_10;
+    i32 m_reserved10;
     char* m_label;
 };
 SIZE(0x18);

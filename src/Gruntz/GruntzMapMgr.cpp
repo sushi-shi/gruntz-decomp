@@ -15,7 +15,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
     switch (mode) {
         case 7: {
 
-            ar->Read(&m_90, 4);
+            ar->Read(&m_reserved90, 4);
             i32 count;
             ar->Read(&count, 4);
             for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
@@ -42,7 +42,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
         }
         case 4: {
 
-            ar->Write(&m_90, 4);
+            ar->Write(&m_reserved90, 4);
             i32 wn = m_arr.GetSize();
             ar->Write(&wn, 4);
             for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {

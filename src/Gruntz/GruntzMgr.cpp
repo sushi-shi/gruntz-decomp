@@ -201,14 +201,14 @@ inline CPlay::CPlay() {
     m_cueIntervalHi = 0;
     m_returnToMenuOnComplete = 0;
     m_completedFinalLevel = 0;
-    m_1c8 = 0;
+    m_reserved1c8 = 0;
     m_hitTest = 0;
     m_frameMarker = 0;
     m_guts = 0;
     m_beginMarker = 0;
     m_grid = 0;
     m_scrollSink = 0;
-    m_2f0 = 0;
+    m_reserved2f0 = 0;
     m_packetsRcvd = 0;
     m_packetsSent = 0;
     m_cursorFrame = 0;
@@ -2648,9 +2648,9 @@ void CGruntzMgr::Close() {
         delete m_settings;
         m_settings = 0;
     }
-    if (m_3c) {
-        delete m_3c;
-        m_3c = 0;
+    if (m_reserved3c) {
+        delete m_reserved3c;
+        m_reserved3c = 0;
     }
     if (m_shadeCache) {
         delete m_shadeCache;
@@ -2866,13 +2866,13 @@ CGruntzMgr::CGruntzMgr() {
     m_symParser = 0;
     m_settings = 0;
     m_scoreHud = 0;
-    m_3c = 0;
+    m_reserved3c = 0;
     m_faderMgr = 0;
     m_cheatMgr = 0;
     m_sound = 0;
-    m_4c = 0;
+    m_reserved4c = 0;
     m_shadeCache = 0;
-    m_64 = 0;
+    m_reserved64 = 0;
     m_lobby = 0;
     m_inputState = 0;
     m_saveSink = 0;
@@ -2886,17 +2886,17 @@ CGruntzMgr::CGruntzMgr() {
     m_lobbyResult = 0;
     m_lobbyProbed = 0;
     m_delayedQuitPending = 0;
-    m_a8 = 0;
+    m_reserveda8 = 0;
     m_modalBusy = 0;
     m_renderGate = 0;
-    m_b4 = 0;
+    m_reservedb4 = 0;
     m_loadingSaveGame = 0;
     m_isCheckpointPrompts = 1;
     m_connSettings = 0;
     m_saveInfoRec = 0;
     m_numRuns = 0;
     m_numMovies = 0;
-    m_cc = 0x1e;
+    m_reservedcc = 0x1e;
     m_modeW = 0;
     m_modeH = 0;
     m_colorDepth = 0x10;

@@ -48,9 +48,9 @@ ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     accum << c.m_step.y;
     accum << c.m_step.z;
     accum << c.m_stepDisabled;
-    accum << c.m_c0.x;
-    accum << c.m_c0.y;
-    accum << c.m_c0.z;
+    accum << c.m_reservedc0.x;
+    accum << c.m_reservedc0.y;
+    accum << c.m_reservedc0.z;
     accum << c.m_maxStep.x;
     accum << c.m_maxStep.y;
     accum << c.m_maxStep.z;
@@ -83,9 +83,9 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
     accum >> c.m_step.y;
     accum >> c.m_step.z;
     accum >> c.m_stepDisabled;
-    accum >> c.m_c0.x;
-    accum >> c.m_c0.y;
-    accum >> c.m_c0.z;
+    accum >> c.m_reservedc0.x;
+    accum >> c.m_reservedc0.y;
+    accum >> c.m_reservedc0.z;
     accum >> c.m_maxStep.x;
     accum >> c.m_maxStep.y;
     accum >> c.m_maxStep.z;
@@ -112,7 +112,7 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
             accum >> m_link.m_str;
             RezFree(buf);
             arc->Read(&m_gatedActKey, 4);
-            arc->Read(&m_2c, 4);
+            arc->Read(&m_reserved2c, 4);
             arc->Read(&g_logicTypesRegistered, 4);
             arc->Read(&m_prevAnimSetNode, 4);
             m_logicObject = pObj;
@@ -133,7 +133,7 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
             arc->Write(&len, 4);
             arc->Write(accum.str(), len);
             arc->Write(&m_gatedActKey, 4);
-            arc->Write(&m_2c, 4);
+            arc->Write(&m_reserved2c, 4);
             arc->Write(&g_logicTypesRegistered, 4);
             arc->Write(&m_prevAnimSetNode, 4);
 

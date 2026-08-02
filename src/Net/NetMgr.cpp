@@ -993,7 +993,7 @@ i32 CNetSessionNode::InitSession(i32 id, const char* nameA, const char* nameB, i
     m_longName = nameB;
     m_enumFlags = flags;
     m_ownedBufferA = 0;
-    m_1c = 0;
+    m_reserved1c = 0;
     m_ownedBufferB = 0;
     return 1;
 }

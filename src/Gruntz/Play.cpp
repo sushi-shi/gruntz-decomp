@@ -585,7 +585,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CTimer* worker = self->m_frameMarker;
     if (worker != 0) {
-        worker->m_40.m_v = 0;
+        worker->m_unusedStamp.m_v = 0;
         worker->m_accum.m_v = 0;
         worker->m_running = 0;
         worker->m_currentMs = 0;
@@ -1379,7 +1379,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_savedClock, 4);
     s->Write(&m_rngSeed, 4);
     s->Write(&m_dragInProgress, 4);
-    s->Write(&m_2f0, 4);
+    s->Write(&m_reserved2f0, 4);
     s->Write(&m_cursorFrame, 4);
     s->Write(&m_levelId, 4);
     s->Write(&m_cursorOffset, sizeof(m_cursorOffset));
@@ -1511,7 +1511,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_savedClock, 4);
     ar->Read(&m_rngSeed, 4);
     ar->Read(&m_dragInProgress, 4);
-    ar->Read(&m_2f0, 4);
+    ar->Read(&m_reserved2f0, 4);
     ar->Read(&m_cursorFrame, 4);
     ar->Read(&m_levelId, 4);
     ar->Read(&m_cursorOffset, sizeof(m_cursorOffset));
@@ -3319,7 +3319,7 @@ inline CState::CState() {
     m_stateBank = 0;
     m_blitSurface0 = 0;
     m_blitSurface1 = 0;
-    m_38 = 0;
+    m_reserved38 = 0;
     m_ready = 0;
     m_versionString[0] = 0;
     m_previousStateId = 0;
@@ -3387,14 +3387,14 @@ CPlay::CPlay()
       m_snapDurHi(0) {
     m_returnToMenuOnComplete = 0;
     m_completedFinalLevel = 0;
-    m_1c8 = 0;
+    m_reserved1c8 = 0;
     m_hitTest = 0;
     m_frameMarker = 0;
     m_guts = 0;
     m_beginMarker = 0;
     m_grid = 0;
     m_scrollSink = 0;
-    m_2f0 = 0;
+    m_reserved2f0 = 0;
     m_packetsRcvd = 0;
     m_packetsSent = 0;
     m_cursorFrame = 0;
@@ -5266,7 +5266,7 @@ i32 CPlay::ResetPlayState() {
     m_winLoseBanner = 0;
     CTimer* fm = m_frameMarker;
     if (fm != 0) {
-        fm->m_40.m_v = 0xffffffff;
+        fm->m_unusedStamp.m_v = 0xffffffff;
         if (fm->m_currentMs != 0) {
             fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
             fm->m_accum.m_v = static_cast<u32>(fm->m_currentMs);

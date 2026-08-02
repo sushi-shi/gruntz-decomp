@@ -34,7 +34,7 @@ struct CAniRecordView : public CObject {
     i32 m_drawValue;
     i32 m_positionDeltaX;
     i32 m_positionDeltaY;
-    u16 m_28;
+    u16 m_reserved28; // parsed from ANI frame record; never read
     u16 m_pad2a;
     i32 m_cueCount;
     LeafCue** m_cues;

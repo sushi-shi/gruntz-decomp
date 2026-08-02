@@ -670,7 +670,7 @@ i32 zBitVec::SetSize(i32 nbits) {
 RVA(0x0016e1a0, 0x23)
 CVariantSlot::CVariantSlot(char* label) {
     m_typeTag = 2;
-    m_10 = 2;
+    m_reserved10 = 2;
 
     m_callback = TmErrorHandler;
     m_valueWord = 0;

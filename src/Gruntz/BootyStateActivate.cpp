@@ -631,7 +631,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
 
-    m_1b4 = 0;
+    m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
         if (g_gameReg->m_options[i].m_joined == 0) {
             continue;

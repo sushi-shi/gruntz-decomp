@@ -38,7 +38,7 @@ public:
     CDDSurface* m_dstSurface;
     CDDSurface* m_primeSrc;
     CDDSurface* m_flipTarget;
-    i32 m_48;
+    i32 m_desc18; // from CFxModeT6::m_param18; never read
     i32 m_recOrderFlag;
     i32 m_cols;
     i32 m_rows;
@@ -146,9 +146,9 @@ public:
 
     CDDSurface* m_srcSurface;
     CDDSurface* m_dstSurface;
-    i32 m_40;
+    i32 m_reserved40;
     i32 m_maxRadius;
-    i32 m_48;
+    i32 m_reserved48;
     float m_fadeDivisor;
 
     CFaderRadialCell* m_cells;
@@ -193,7 +193,7 @@ public:
     u8* m_lineBuf;
     u8* m_shadeRamp;
 
-    i32 m_490;
+    i32 m_reserved490;
 };
 SIZE(0x494);
 

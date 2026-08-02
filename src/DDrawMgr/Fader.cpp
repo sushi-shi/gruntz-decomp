@@ -135,7 +135,7 @@ CFxModeT4::CFxModeT4() {
     m_sourceSurface = 0;
     m_palette = 0;
     m_shadeTable = 0;
-    m_0c = 1;
+    m_param0c = 1;
 }
 
 RVA(0x0017e8e0, 0x27)
@@ -143,7 +143,7 @@ CFxModeT5::CFxModeT5() {
     m_type = 5;
     m_targetSurface = 0;
     m_sourceSurface = 0;
-    m_0c = 0;
+    m_param0c = 0;
     m_splitPercent = 0;
     m_durationPercent = 0x19;
 }
@@ -155,7 +155,7 @@ CFxModeT6::CFxModeT6() {
     m_sourceSurface = 0;
     m_flipTarget = 0;
     m_reverseOrder = 0;
-    m_18 = 0;
+    m_param18 = 0;
     m_cols = 0;
     m_rows = 0;
 }
@@ -735,9 +735,9 @@ void CFaderLight::EndFade() {
 RVA(0x0017f9a0, 0x24)
 CFaderRadial::CFaderRadial() {
     m_maxRadius = 0;
-    m_40 = 0;
+    m_reserved40 = 0;
     m_cells = 0;
-    m_48 = 1;
+    m_reserved48 = 1;
 }
 
 RVA(0x0017f9f0, 0x4f)
@@ -851,7 +851,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     }
     m_primeSrc = cfg->m_primeSource;
     m_flipTarget = cfg->m_flipTarget;
-    m_48 = cfg->m_18;
+    m_desc18 = cfg->m_param18;
     m_recOrderFlag = cfg->m_reverseOrder;
     m_cols = cfg->m_cols;
     m_rows = cfg->m_rows;
@@ -917,7 +917,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 elem.m_endRect.right = pt64.left;
                 elem.m_endRect.bottom = pt64.top;
             }
-            elem.m_20 = 0;
+            elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
 
             i32 idx = mesh->m_nSize;
@@ -1029,7 +1029,7 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     } else {
         m_src = m_timerB;
     }
-    m_desc0c = s->m_0c;
+    m_desc0c = s->m_param0c;
     m_percent = s->m_durationPercent;
     m_previousFrame = 0;
     m_desc14 = s->m_splitPercent;

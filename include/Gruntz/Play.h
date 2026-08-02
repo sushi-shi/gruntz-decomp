@@ -231,12 +231,12 @@ public:
     i32 SavePlayState(CFileMemBase* ar);
     i32 LoadPlayState(CFileMemBase* ar);
 
-    CString m_1b4;
+    CString m_reserved1b4;
     char m_pad1b8[0x1bc - 0x1b8];
     i32 m_returnToMenuOnComplete;
     i32 m_completedFinalLevel;
     i32 m_initialFramePending;
-    i32 m_1c8;
+    i32 m_reserved1c8;
     i32 m_savedClock;
 
     SaveSlot m_saveSlot;
@@ -251,7 +251,7 @@ public:
     CTileTriggerContainer* m_beginMarker;
     i32 m_dragSnapActive;
     i32 m_dragInProgress;
-    i32 m_2f0;
+    i32 m_reserved2f0;
     i32 m_cursorFrame;
     i32 m_levelId;
     Coord m_cursorOffset;

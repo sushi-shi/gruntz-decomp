@@ -780,7 +780,7 @@ CSymParser::CSymParser() {
     m_useKeyIndex = 0;
     m_valueBucketCount = 0x13;
     m_keyBucketCount = 0x13;
-    m_24 = 1;
+    m_reserved24 = 1;
     m_readOnly = 1;
     m_nextGeneratedFileKey = 0x77359400;
     m_sorted = 1;

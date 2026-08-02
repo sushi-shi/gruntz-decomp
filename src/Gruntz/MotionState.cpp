@@ -23,9 +23,9 @@ CMotionState::CMotionState() {
     m_acceleration.z = 0.0;
     m_time = 0.0;
     m_deltaTime = 0.0;
-    m_c0.x = 0.0;
-    m_c0.y = 0.0;
-    m_c0.z = 0.0;
+    m_reservedc0.x = 0.0;
+    m_reservedc0.y = 0.0;
+    m_reservedc0.z = 0.0;
     m_stepDisabled = 0;
     m_minBounds.x = g_movingLogicMin;
     m_maxBounds.x = g_movingLogicMax;

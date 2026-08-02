@@ -17,8 +17,8 @@ public:
     CImagePool() : m_surfaces(0xa), m_palettes(0xa) {
         m_resourceModuleHandle = 0;
         m_sourceHwnd = 0;
-        m_08 = 0;
-        m_48 = 0;
+        m_reserved08 = 0;
+        m_reserved48 = 0;
         m_selectedPalette = 0;
     }
     ~CImagePool() {
@@ -46,11 +46,11 @@ public:
 
     HINSTANCE m_resourceModuleHandle;
     HWND m_sourceHwnd;
-    i32 m_08;
+    i32 m_reserved08;
     HPALETTE m_selectedPalette;
     CPtrList m_surfaces;
     CPtrList m_palettes;
-    i32 m_48;
+    i32 m_reserved48;
 };
 SIZE_UNKNOWN();
 

@@ -325,8 +325,8 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_startingItemId = m_object->m_powerup;
     m_recordedFrameTick = g_frameTicks;
     m_object->m_moveMode = 1;
-    m_430 = 0;
-    m_42c = 0;
+    m_reserved430 = 0;
+    m_reserved42c = 0;
 
     m_poseWalk = 0;
     memset(m_poseAttack, 0, sizeof(m_poseAttack));
@@ -363,7 +363,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_selectedSprite = 0;
     m_toySprite = 0;
     m_powerupSprite = 0;
-    m_210 = 0;
+    m_reserved210 = 0;
     m_combatActive = 0;
     m_neighborValid = 0;
     m_arrivalActive = 0;
@@ -439,8 +439,8 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
     m_arrivalRerollWindowHi = 0;
-    m_2f8.m_x = -1;
-    m_2f8.m_y = -1;
+    m_unusedBattleCell.m_x = -1;
+    m_unusedBattleCell.m_y = -1;
     m_arrivalNotified = 0;
     m_defenderState = 0;
     m_battleState = 0;
@@ -490,8 +490,8 @@ void CGrunt::OnObjectRemoved() {
 
 RVA(0x00048400, 0x47)
 void CGrunt::ReadConfigFromButeMgr() {
-    m_18c = 0;
-    m_418 = 0;
+    m_reserved18c = 0;
+    m_reserved418 = 0;
 
     m_timePerTile = g_buteMgr.GetDwordDef(
         const_cast<char*>(static_cast<const char*>(m_animSetName)),
@@ -1689,7 +1689,7 @@ label_4cb2a:
     return 0;
 
 label_4cb4b:
-    m_210 = 0;
+    m_reserved210 = 0;
     m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     m_coordRetryCount = 0;
     PlaySound(0x3e8, rec);
@@ -1754,7 +1754,7 @@ label_ret1:
 
 RVA(0x0004d060, 0x98)
 void CGrunt::SetEntrancePos(i32 a, i32 b) {
-    m_210 = 0;
+    m_reserved210 = 0;
     m_entrancePx.m_x = m_lastTilePx.m_x;
     m_entrancePx.m_y = m_lastTilePx.m_y;
     if (a) {
@@ -2038,9 +2038,9 @@ i32 CGrunt::Place(
     m_holdWindowHi = 0;
     m_moveIcon = moveIcon;
     m_tileMgr = board;
-    m_224 = 1;
+    m_daFlag = 1;
     m_arrivalPhase = 0;
-    m_354 = 1;
+    m_toolConfigured = 1;
     m_tileClaimed = 0;
     m_neighborScanEnabled = 1;
     m_tileMoveCommitted = 0;
@@ -2223,7 +2223,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 1: {
@@ -2248,7 +2248,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 2: {
@@ -2276,7 +2276,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 3: {
@@ -2301,7 +2301,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 4: {
@@ -2326,7 +2326,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 5: {
@@ -2351,7 +2351,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 6: {
@@ -2376,7 +2376,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 7: {
@@ -2401,7 +2401,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             if (m_arrivalState == 0x11) {
                 if (m_battleState != 4) {
                     if (CoordCount() != 0) {
@@ -2461,7 +2461,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x400;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 9: {
@@ -2489,7 +2489,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0xa: {
@@ -2517,7 +2517,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0xb: {
@@ -2545,7 +2545,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0xc: {
@@ -2570,7 +2570,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0xd: {
@@ -2595,7 +2595,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0xe: {
@@ -2620,7 +2620,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x1000;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0xf: {
@@ -2645,7 +2645,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0x10: {
@@ -2670,7 +2670,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0x11: {
@@ -2695,7 +2695,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0x12: {
@@ -2721,7 +2721,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x100;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0x13: {
@@ -2746,7 +2746,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0x14: {
@@ -2771,7 +2771,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_354 = 0;
+            m_toolConfigured = 0;
             break;
         }
         case 0x15: {
@@ -2799,7 +2799,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0x16: {
@@ -2829,7 +2829,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_passableMask = 0xd02;
             m_wingzEnabled = 0;
             m_wingzTime = 0x64;
-            m_354 = 1;
+            m_toolConfigured = 1;
             break;
         }
         case 0x17: {

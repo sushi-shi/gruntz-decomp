@@ -7,7 +7,7 @@ struct RezElem40 {
     RezElem40();
     RECT m_startRect;
     RECT m_endRect;
-    i32 m_20;
+    i32 m_reserved20;
     float m_scale;
 };
 SIZE(0x28);

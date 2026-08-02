@@ -86,7 +86,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
         return 0;
     }
     AllocGrid(width, height, 0);
-    m_90 = 0;
+    m_reserved90 = 0;
 
     i32 t1 = g_buteMgr.GetInt("Brickz", "Brown");
     i32 t2 = t1 + g_buteMgr.GetInt("Brickz", "Red");

@@ -19,7 +19,7 @@ public:
 
     char m_pad51c[0x520 - 0x51c];
     i32 m_demoCountdown;
-    i32 m_524;
+    i32 m_reserved524;
 };
 SIZE(0x528);
 

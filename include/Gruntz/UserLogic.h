@@ -84,7 +84,7 @@ public:
     AnimWorkerObj* m_objAux;
     CUserBaseLink m_link;
     i32 m_gatedActKey;
-    i32 m_2c;
+    i32 m_reserved2c;
 
     i32 m_prevAnimSetNode;
 };
@@ -106,7 +106,7 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_deferredCallback = 0;
     m_gatedCallback = 0;
     m_gatedActKey = 0x3e9;
-    m_2c = 2;
+    m_reserved2c = 2;
 }
 #endif
 

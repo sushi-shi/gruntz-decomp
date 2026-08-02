@@ -80,17 +80,17 @@ public:
     CTileTriggerContainer* m_cellQuery;
 
     i32 m_ownerId;
-    i32 m_01c;
-    i32 m_020;
-    i32 m_024;
-    i32 m_028;
-    i32 m_02c;
+    i32 m_reserved01c;
+    i32 m_reserved020;
+    i32 m_reserved024;
+    i32 m_reserved028;
+    i32 m_reserved02c;
     i32 m_defenderChance;
-    i32 m_034;
-    i32 m_038;
-    i32 m_03c;
-    i32 m_040;
-    i32 m_044;
+    i32 m_reserved034;
+    i32 m_reserved038;
+    i32 m_reserved03c;
+    i32 m_reserved040;
+    i32 m_reserved044;
     i32 m_gruntCreationTime;
     i32 m_spawnTimer;
     i32 m_spawnLastFire;
@@ -118,15 +118,15 @@ public:
             i32 m_scratch84;
         };
     };
-    i32 m_088;
+    i32 m_reserved088;
     i32 m_defenderSearchRadiusX;
     i32 m_defenderSearchRadiusY;
     i32 m_idleRouteLimitX;
     i32 m_idleRouteLimitY;
-    i32 m_09c;
+    i32 m_reserved09c;
     i32 m_idleAttackWaypointDelay;
     i32 m_defenderTargetMaxDistance;
-    i32 m_0a8;
+    i32 m_reserved0a8;
     i32 m_idleBurnRandX;
     i32 m_idleBurnRandY;
     i32 m_reserveBudget;
@@ -137,7 +137,7 @@ public:
     i32 m_inactiveTargetRerouteDelay;
     i32 m_nearbyRouteSearchDelay;
     Coord m_marker;
-    i32 m_0d8;
+    i32 m_reserved0d8;
 
     CPtrArray m_candArray;
     CPtrArray m_attackWaypoints;
@@ -145,15 +145,15 @@ public:
     Coord* CoordAt(i32 index) {
         return static_cast<Coord*>(m_attackWaypoints.GetAt(index));
     }
-    CDWordArray m_104;
-    CDWordArray m_118;
+    CDWordArray m_reserved104;
+    CDWordArray m_reserved118;
 
-    i32 m_12c[4];
-    i32 m_13c;
+    i32 m_reserved12c[4];
+    i32 m_reserved13c;
     i32 m_roundRobinTick;
-    i32 m_144;
+    i32 m_reserved144;
     i32 m_claimTimer;
-    i32 m_14c;
+    i32 m_reserved14c;
     i32 m_toolzPct;
     i32 m_toyzPct;
     i32 m_brickzPct;

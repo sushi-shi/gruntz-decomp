@@ -22,7 +22,7 @@ RVA(0x00174e90, 0x1c)
 i32 CImagePool::SetHandles(HINSTANCE resModule, HWND src, i32 c) {
     m_resourceModuleHandle = resModule;
     m_sourceHwnd = src;
-    m_08 = c;
+    m_reserved08 = c;
     return 1;
 }
 
@@ -32,7 +32,7 @@ void CImagePool::Clear() {
     ClearPalettes();
     m_resourceModuleHandle = 0;
     m_sourceHwnd = 0;
-    m_08 = 0;
+    m_reserved08 = 0;
 }
 
 RVA(0x00174ed0, 0x5d)
@@ -87,7 +87,7 @@ void CImagePool::ClearPalettes() {
         }
     }
     m_palettes.RemoveAll();
-    m_48 = 0;
+    m_reserved48 = 0;
 }
 
 RVA(0x00174fe0, 0xfe)
@@ -308,7 +308,7 @@ void CImagePool::B(CRezImage* node, void* paletteNode, i32 b) {
 
 RVA(0x001757c0, 0x16f)
 i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
-    m_434 = 0;
+    m_reserved434 = 0;
     m_width = width;
     m_height = (height < 0) ? -height : height;
     m_bitCount = bitcount;

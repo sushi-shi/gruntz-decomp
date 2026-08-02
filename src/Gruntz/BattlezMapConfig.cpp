@@ -84,13 +84,13 @@ RVA(0x00024dc0, 0x158)
 CBattlezMapConfig::CBattlezMapConfig()
     : m_scratch78(0), m_scratch7c(0), m_scratch80(0), m_scratch84(0) {
     m_ownerId = 0;
-    m_01c = 1;
-    m_020 = 0x40;
-    m_024 = 0x40;
-    m_028 = 0x40;
+    m_reserved01c = 1;
+    m_reserved020 = 0x40;
+    m_reserved024 = 0x40;
+    m_reserved028 = 0x40;
     m_defenderSearchRadiusX = 5;
     m_defenderSearchRadiusY = 5;
-    m_02c = 0x32;
+    m_reserved02c = 0x32;
     m_idleRouteLimitX = 8;
     m_idleRouteLimitY = 8;
     m_idleBurnRandX = 8;
@@ -98,8 +98,8 @@ CBattlezMapConfig::CBattlezMapConfig()
     m_defenderChance = 0x32;
     m_reserveBudget = 0x3e8;
     m_moveBudget = 0x3e8;
-    m_088 = 0x32;
-    m_0a8 = 0x32;
+    m_reserved088 = 0x32;
+    m_reserved0a8 = 0x32;
     m_gruntCreationTime = 0;
     m_resourceCreationTime = 0;
     m_spawnLastFire = 0;
@@ -108,9 +108,9 @@ CBattlezMapConfig::CBattlezMapConfig()
     m_spawnTimer = 0;
     m_repathBudget = 0xbb8;
     m_nearbyRouteSearchDelay = 0xbb8;
-    m_13c = 0;
+    m_reserved13c = 0;
     m_roundRobinTick = 0;
-    m_09c = 0x7d0;
+    m_reserved09c = 0x7d0;
     m_idleAttackWaypointDelay = 0x7d0;
     m_defenderTargetMaxDistance = 6;
     m_idleRerouteDelay = 0x7d0;
@@ -228,10 +228,10 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     }
 
     m_spawnLastFire = 0;
-    m_14c = 0;
+    m_reserved14c = 0;
     {
         i32 rv = rand();
-        m_144 = ((rv % 4) + 5) * 125 * 8;
+        m_reserved144 = ((rv % 4) + 5) * 125 * 8;
     }
     m_claimTimer = 0;
     m_defenderSearchRadiusX = 6;
@@ -322,9 +322,9 @@ void CBattlezMapConfig::FreeArrays() {
     }
     m_attackWaypoints.SetSize(0, -1);
 
-    m_104.SetSize(0, -1);
-    m_118.SetSize(0, -1);
-    m_13c = 0;
+    m_reserved104.SetSize(0, -1);
+    m_reserved118.SetSize(0, -1);
+    m_reserved13c = 0;
 }
 
 // @early-stop
@@ -610,10 +610,10 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     unit->m_arrivalState = 0x11;
     unit->m_defenderState = 0;
     unit->m_arrivalCell.m_x = -1;
-    unit->m_2f8.m_x = -1;
+    unit->m_unusedBattleCell.m_x = -1;
     unit->m_defenderPx.m_x = -1;
     unit->m_arrivalCell.m_y = -1;
-    unit->m_2f8.m_y = -1;
+    unit->m_unusedBattleCell.m_y = -1;
     unit->m_defenderPx.m_y = -1;
     unit->m_targetTeam = -1;
     unit->m_defenderPickupType = 0;
@@ -1426,9 +1426,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 }
                                                 if (unit->CoordCount() == 0
                                                     && unit->m_defenderState == 4) {
-                                                    unit->m_2f8.m_x = -1;
+                                                    unit->m_unusedBattleCell.m_x = -1;
                                                     unit->m_defenderState = 0;
-                                                    unit->m_2f8.m_y = -1;
+                                                    unit->m_unusedBattleCell.m_y = -1;
                                                 }
                                                 {
                                                     char nd;
@@ -2649,17 +2649,17 @@ i32 CBattlezMapConfig::Serialize(void* arArg) {
     }
     ar->Write(&m_active, 4);
     ar->Write(&m_ownerId, 4);
-    ar->Write(&m_01c, 4);
-    ar->Write(&m_020, 4);
-    ar->Write(&m_024, 4);
-    ar->Write(&m_028, 4);
-    ar->Write(&m_02c, 4);
+    ar->Write(&m_reserved01c, 4);
+    ar->Write(&m_reserved020, 4);
+    ar->Write(&m_reserved024, 4);
+    ar->Write(&m_reserved028, 4);
+    ar->Write(&m_reserved02c, 4);
     ar->Write(&m_defenderChance, 4);
-    ar->Write(&m_034, 4);
-    ar->Write(&m_038, 4);
-    ar->Write(&m_03c, 4);
-    ar->Write(&m_040, 4);
-    ar->Write(&m_044, 4);
+    ar->Write(&m_reserved034, 4);
+    ar->Write(&m_reserved038, 4);
+    ar->Write(&m_reserved03c, 4);
+    ar->Write(&m_reserved040, 4);
+    ar->Write(&m_reserved044, 4);
     ar->Write(&m_gruntCreationTime, 4);
     ar->Write(&m_resourceCreationTime, 4);
     ar->Write(&m_spawnLastFire, 4);
@@ -2672,15 +2672,15 @@ i32 CBattlezMapConfig::Serialize(void* arArg) {
     ar->Write(&m_brickzChance, 4);
     ar->Write(&m_gooberzChance, 4);
     ar->Write(&m_gruntRatio, 4);
-    ar->Write(&m_088, 4);
+    ar->Write(&m_reserved088, 4);
     ar->Write(&m_defenderSearchRadiusX, 4);
     ar->Write(&m_defenderSearchRadiusY, 4);
     ar->Write(&m_idleRouteLimitX, 4);
     ar->Write(&m_idleRouteLimitY, 4);
-    ar->Write(&m_09c, 4);
+    ar->Write(&m_reserved09c, 4);
     ar->Write(&m_idleAttackWaypointDelay, 4);
     ar->Write(&m_defenderTargetMaxDistance, 4);
-    ar->Write(&m_0a8, 4);
+    ar->Write(&m_reserved0a8, 4);
     ar->Write(&m_idleBurnRandX, 4);
     ar->Write(&m_idleBurnRandY, 4);
     ar->Write(&m_reserveBudget, 4);
@@ -2691,30 +2691,30 @@ i32 CBattlezMapConfig::Serialize(void* arArg) {
     ar->Write(&m_inactiveTargetRerouteDelay, 4);
     ar->Write(&m_nearbyRouteSearchDelay, 4);
     ar->Write(&m_marker, 8);
-    ar->Write(&m_0d8, 4);
-    ar->Write(&m_13c, 4);
+    ar->Write(&m_reserved0d8, 4);
+    ar->Write(&m_reserved13c, 4);
     ar->Write(&m_roundRobinTick, 4);
-    ar->Write(&m_144, 4);
+    ar->Write(&m_reserved144, 4);
     ar->Write(&m_claimTimer, 4);
-    ar->Write(&m_14c, 4);
+    ar->Write(&m_reserved14c, 4);
 
     u32 i;
-    u32 n = m_104.GetSize();
+    u32 n = m_reserved104.GetSize();
     ar->Write(&n, 4);
     for (i = 0; i < n; i++) {
-        DWORD v = m_104[i];
+        DWORD v = m_reserved104[i];
         ar->Write(&v, 4);
     }
 
-    n = m_118.GetSize();
+    n = m_reserved118.GetSize();
     ar->Write(&n, 4);
     for (i = 0; i < n; i++) {
-        DWORD v = m_118[i];
+        DWORD v = m_reserved118[i];
         ar->Write(&v, 4);
     }
 
     for (i32 k = 0; k < 4; k++) {
-        ar->Write(&m_12c[k], sizeof(m_12c[k]));
+        ar->Write(&m_reserved12c[k], sizeof(m_reserved12c[k]));
     }
 
     n = m_attackWaypoints.GetSize();
@@ -2740,17 +2740,17 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
     }
     ar->Read(&m_active, 4);
     ar->Read(&m_ownerId, 4);
-    ar->Read(&m_01c, 4);
-    ar->Read(&m_020, 4);
-    ar->Read(&m_024, 4);
-    ar->Read(&m_028, 4);
-    ar->Read(&m_02c, 4);
+    ar->Read(&m_reserved01c, 4);
+    ar->Read(&m_reserved020, 4);
+    ar->Read(&m_reserved024, 4);
+    ar->Read(&m_reserved028, 4);
+    ar->Read(&m_reserved02c, 4);
     ar->Read(&m_defenderChance, 4);
-    ar->Read(&m_034, 4);
-    ar->Read(&m_038, 4);
-    ar->Read(&m_03c, 4);
-    ar->Read(&m_040, 4);
-    ar->Read(&m_044, 4);
+    ar->Read(&m_reserved034, 4);
+    ar->Read(&m_reserved038, 4);
+    ar->Read(&m_reserved03c, 4);
+    ar->Read(&m_reserved040, 4);
+    ar->Read(&m_reserved044, 4);
     ar->Read(&m_gruntCreationTime, 4);
     ar->Read(&m_resourceCreationTime, 4);
     ar->Read(&m_spawnLastFire, 4);
@@ -2763,15 +2763,15 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
     ar->Read(&m_brickzChance, 4);
     ar->Read(&m_gooberzChance, 4);
     ar->Read(&m_gruntRatio, 4);
-    ar->Read(&m_088, 4);
+    ar->Read(&m_reserved088, 4);
     ar->Read(&m_defenderSearchRadiusX, 4);
     ar->Read(&m_defenderSearchRadiusY, 4);
     ar->Read(&m_idleRouteLimitX, 4);
     ar->Read(&m_idleRouteLimitY, 4);
-    ar->Read(&m_09c, 4);
+    ar->Read(&m_reserved09c, 4);
     ar->Read(&m_idleAttackWaypointDelay, 4);
     ar->Read(&m_defenderTargetMaxDistance, 4);
-    ar->Read(&m_0a8, 4);
+    ar->Read(&m_reserved0a8, 4);
     ar->Read(&m_idleBurnRandX, 4);
     ar->Read(&m_idleBurnRandY, 4);
     ar->Read(&m_reserveBudget, 4);
@@ -2782,12 +2782,12 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
     ar->Read(&m_inactiveTargetRerouteDelay, 4);
     ar->Read(&m_nearbyRouteSearchDelay, 4);
     ar->Read(&m_marker, 8);
-    ar->Read(&m_0d8, 4);
-    ar->Read(&m_13c, 4);
+    ar->Read(&m_reserved0d8, 4);
+    ar->Read(&m_reserved13c, 4);
     ar->Read(&m_roundRobinTick, 4);
-    ar->Read(&m_144, 4);
+    ar->Read(&m_reserved144, 4);
     ar->Read(&m_claimTimer, 4);
-    ar->Read(&m_14c, 4);
+    ar->Read(&m_reserved14c, 4);
 
     u32 i;
     i32 j;
@@ -2795,23 +2795,23 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
     DWORD tmp;
 
     ar->Read(&count, 4);
-    m_104.SetSize(0, -1);
-    m_104.SetSize(count, -1);
+    m_reserved104.SetSize(0, -1);
+    m_reserved104.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, 4);
-        m_104[i] = tmp;
+        m_reserved104[i] = tmp;
     }
 
     ar->Read(&count, 4);
-    m_118.SetSize(0, -1);
-    m_118.SetSize(count, -1);
+    m_reserved118.SetSize(0, -1);
+    m_reserved118.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, 4);
-        m_118[i] = tmp;
+        m_reserved118[i] = tmp;
     }
 
     for (i32 k = 0; k < 4; k++) {
-        ar->Read(&m_12c[k], sizeof(m_12c[k]));
+        ar->Read(&m_reserved12c[k], sizeof(m_reserved12c[k]));
     }
 
     for (j = 0; j < m_attackWaypoints.GetSize(); j++) {
@@ -4769,12 +4769,12 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         return 0;
     }
     unit->m_arrivalCell.m_x = -1;
-    unit->m_2f8.m_x = -1;
+    unit->m_unusedBattleCell.m_x = -1;
     unit->m_defenderPx.m_x = -1;
     unit->m_arrivalState = 0x11;
     unit->m_arrivalCell.m_y = -1;
     unit->m_targetTeam = -1;
-    unit->m_2f8.m_y = -1;
+    unit->m_unusedBattleCell.m_y = -1;
     unit->m_defenderState = 0;
     unit->m_defenderPx.m_y = -1;
     unit->m_defenderPickupType = 0;

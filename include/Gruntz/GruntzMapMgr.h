@@ -19,7 +19,7 @@ public:
     i32 LoadAttributes(i32 width, i32 height);
 
     CPtrArray m_arr;
-    i32 m_90;
+    i32 m_reserved90;
 };
 SIZE_UNKNOWN();
 

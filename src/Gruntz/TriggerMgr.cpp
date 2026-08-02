@@ -1186,7 +1186,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         ovId = ov->m_object->m_objectId;
     }
     ar->Write(&ovId, 4);
-    ar->Write(m_274, 0x10);
+    ar->Write(m_reserved274, 0x10);
     i32 cntC = m_baseList.GetCount();
     ar->Write(&cntC, 4);
     pos = m_baseList.GetHeadPosition();
@@ -1343,7 +1343,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
     }
 
-    ar->Read(m_274, 0x10);
+    ar->Read(m_reserved274, 0x10);
     m_baseList.RemoveAll();
     ar->Read(&count, 4);
     for (ci = 0; ci < static_cast<u32>(count); ci++) {

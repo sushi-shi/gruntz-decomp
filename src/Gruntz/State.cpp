@@ -12,7 +12,7 @@ CState::CState() {
     m_stateBank = 0;
     m_blitSurface0 = 0;
     m_blitSurface1 = 0;
-    m_38 = 0;
+    m_reserved38 = 0;
     m_ready = 0;
     m_versionString[0] = 0;
     m_previousStateId = 0;

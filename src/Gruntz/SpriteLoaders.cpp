@@ -47,7 +47,7 @@ CTimer* CTimer::Init() {
     m_baseTime.m_v = 0;
     m_accum.m_v = 0;
     m_startStamp.m_v = 0;
-    m_40.m_v = 0;
+    m_unusedStamp.m_v = 0;
     m_sprite = 0;
     m_frameMinTens = 0;
     m_frameMinOnes = 0;
@@ -131,7 +131,7 @@ i32 CTimer::Tick(i32 dt) {
 
     if (v == 0) {
 
-        m_40.m_v = 0;
+        m_unusedStamp.m_v = 0;
         m_accum.m_v = 0;
         m_running = 0;
         m_currentMs = 0;
@@ -318,11 +318,11 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     switch (kind) {
         case 4:
             ar->Write(&m_startStamp, sizeof(m_startStamp));
-            ar->Write(&m_40, sizeof(m_40));
+            ar->Write(&m_unusedStamp, sizeof(m_unusedStamp));
             return 1;
         case 7:
             ar->Read(&m_startStamp, sizeof(m_startStamp));
-            ar->Read(&m_40, sizeof(m_40));
+            ar->Read(&m_unusedStamp, sizeof(m_unusedStamp));
             break;
     }
     return 1;

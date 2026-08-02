@@ -248,7 +248,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     if (InitializeLobbyConnectionSettings()) {
         mode = 0x11;
-        m_b4 = 0;
+        m_reservedb4 = 0;
     }
 
     g_appHInstance = m_owner->m_hInstance;

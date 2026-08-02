@@ -1291,5 +1291,5 @@ WwdDirtyRect::WwdDirtyRect() {
 RVA(0x0015b2a0, 0xb)
 WwdGridNode::WwdGridNode() {
     m_bucket = 0;
-    m_08 = 0;
+    m_reserved08 = 0;
 }

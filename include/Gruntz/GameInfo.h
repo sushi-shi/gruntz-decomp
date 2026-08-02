@@ -36,7 +36,7 @@ public:
     i32 HasSupportedVersion();
     i32 FormatGameInfoString();
 
-    char m_00[4];
+    char m_reserved00[4];
     CGameInfoBody m_body;
 };
 SIZE(0xd8);

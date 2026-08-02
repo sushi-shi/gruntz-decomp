@@ -298,17 +298,17 @@ public:
     Coord m_entrancePx;
     Coord m_lastTilePx;
     Coord m_commitPx;
-    i32 m_18c;
+    i32 m_reserved18c;
     i32 m_toyBlendPct;
     i32 m_brickPickupType;
     i32 m_vehiclePickupType;
     i32 m_toolId;
     i32 m_moveMode;
     i32 m_helpCueId;
-    i32 m_1a8;
-    i32 m_1ac;
-    i32 m_1b0;
-    i32 m_1b4;
+    i32 m_reserved1a8;
+    i32 m_reserved1ac;
+    i32 m_reserved1b0;
+    i32 m_reserved1b4;
     CWwdGameObjectA* m_selectedSprite;
     CWwdGameObjectA* m_toySprite;
     CString m_animSetName;
@@ -318,7 +318,7 @@ public:
     CWwdGameObjectA* m_wingzTimeSprite;
     CWwdGameObjectA* m_powerupSprite;
     i32 m_arrived;
-    Coord m_1dc;
+    Coord m_reserved1dc;
     i32 m_entranceActive;
     i32 m_arrivalPending;
     i32 m_tileOwnerHi;
@@ -328,12 +328,12 @@ public:
     i32 m_entranceCommitted;
     Coord m_neighborCell;
     Coord m_attackTargetPx;
-    i32 m_210;
+    i32 m_reserved210;
     i32 m_struckPose;
     i32 m_combatActive;
     i32 m_neighborValid;
     i32 m_poweredUp;
-    i32 m_224;
+    i32 m_daFlag; // "da=" in retail CRC line; role unrecovered
     i32 m_entranceStamped;
     i32 m_bombRunActive;
     i32 m_arrivalActive;
@@ -402,7 +402,7 @@ public:
     i32 m_targetTeam;
     i32 m_dwell;
     Coord m_arrivalCell;
-    Coord m_2f8;
+    Coord m_unusedBattleCell; // invalidated with arrival/defender cells; never read
     Coord m_defenderPx;
 
     union {
@@ -449,7 +449,7 @@ public:
         return m_payloads.GetCount();
     }
 
-    i32 m_354;
+    i32 m_toolConfigured; // set on every tool (re)config; never read
     i32 m_neighborScanEnabled;
     i32 m_tileMoveCommitted;
     i32 m_deathType;
@@ -476,7 +476,7 @@ public:
     CAniElement* m_poseItem[2];
 
     CAniElement* m_pickupGeoSrc;
-    Coord m_3dc;
+    Coord m_reserved3dc;
     Coord m_moveTile;
     i32 m_health;
     i32 m_stamina;
@@ -487,13 +487,13 @@ public:
     double m_moveSpeed;
     double m_movePosX;
     double m_movePosY;
-    i32 m_418;
+    i32 m_reserved418;
     u32 m_timePerTile;
     i32 m_tileClaimed;
     DirectSoundMgr* m_struckSlotSound;
     DirectSoundMgr* m_struckVoiceSound;
-    i32 m_42c;
-    i32 m_430;
+    i32 m_reserved42c;
+    i32 m_reserved430;
     i32 m_startingItemId;
     i32 m_recordedFrameTick;
     GruntDirectionCell m_entranceCell;
@@ -697,7 +697,7 @@ public:
         };
         CPairRecord m_arrivalVoiceTiming;
     };
-    i32 m_8d0;
+    i32 m_reserved8d0;
 
     CGrunt() {}
     CGrunt(void* owner);

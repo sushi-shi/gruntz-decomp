@@ -103,7 +103,7 @@ public:
     i32 m_parseArmed;
     CParserObjList m_list;
     CRezItmBase* m_activeNode;
-    i32 m_24;
+    i32 m_reserved24;
     i32 m_nextGeneratedFileKey;
     i32 m_maxOpenFiles;
     i32 m_rootDataOffset;

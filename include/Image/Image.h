@@ -33,7 +33,7 @@ public:
         m_dibSection = 0;
         m_pixels = 0;
         m_rowOffsets = 0;
-        m_434 = 0;
+        m_reserved434 = 0;
         m_width = 0;
         m_height = 0;
         m_stride = 0;
@@ -83,7 +83,7 @@ public:
 
     u8* m_pixels;
     i32* m_rowOffsets;
-    i32 m_434;
+    i32 m_reserved434;
     i32 m_width;
     i32 m_height;
     i32 m_bitCount;

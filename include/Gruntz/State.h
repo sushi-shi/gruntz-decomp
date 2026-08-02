@@ -176,15 +176,15 @@ public:
     }
     CSymTab* m_gruntzBank;
     CSymTab* m_gameBank;
-    i32 m_38;
+    i32 m_reserved38;
     i32 m_ready;
     i32 m_notifyLatch;
 
-    i32 m_44;
-    i32 m_48;
+    i32 m_reserved44;
+    i32 m_reserved48;
 
     char m_versionString[0x100];
-    i32 m_14c;
+    i32 m_reserved14c;
     i32 m_cursorX;
     i32 m_cursorY;
     i32 m_snapOriginX;

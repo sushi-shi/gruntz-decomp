@@ -82,7 +82,7 @@ public:
     u32 m_height;
     u32 m_cellCount;
     BrickzNode* m_openList;
-    i32 m_1c;
+    i32 m_reserved1c;
     Coord m_start;
     Coord m_goal;
 

@@ -1298,7 +1298,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         }
     }
     ar->Write(buf, 0x80);
-    ar->Write(&m_18c, 4);
+    ar->Write(&m_reserved18c, 4);
     ar->Write(&m_toyBlendPct, 4);
     ar->Write(&m_brickPickupType, 4);
     ar->Write(&m_entranceReason, 4);
@@ -1306,15 +1306,15 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_toolId, 4);
     ar->Write(&m_moveMode, 4);
     ar->Write(&m_helpCueId, 4);
-    ar->Write(&m_1a8, 4);
-    ar->Write(&m_1ac, 4);
-    ar->Write(&m_1b0, 4);
-    ar->Write(&m_1b4, 4);
+    ar->Write(&m_reserved1a8, 4);
+    ar->Write(&m_reserved1ac, 4);
+    ar->Write(&m_reserved1b0, 4);
+    ar->Write(&m_reserved1b4, 4);
     ar->Write(&m_arrived, 4);
     ar->Write(&m_entrancePx, 8);
     ar->Write(&m_lastTilePx, 8);
     ar->Write(&m_commitPx, 8);
-    ar->Write(&m_1dc, 8);
+    ar->Write(&m_reserved1dc, 8);
     ar->Write(&m_entranceActive, 4);
     ar->Write(&m_arrivalPending, 4);
     ar->Write(&m_tileOwnerHi, 4);
@@ -1324,12 +1324,12 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_entranceCommitted, 4);
     ar->Write(&m_neighborCell, 8);
     ar->Write(&m_attackTargetPx, 8);
-    ar->Write(&m_210, 4);
+    ar->Write(&m_reserved210, 4);
     ar->Write(&m_struckPose, 4);
     ar->Write(&m_combatActive, 4);
     ar->Write(&m_neighborValid, 4);
     ar->Write(&m_poweredUp, 4);
-    ar->Write(&m_224, 4);
+    ar->Write(&m_daFlag, 4);
     ar->Write(&m_entranceStamped, 4);
     ar->Write(&m_bombRunActive, 4);
     ar->Write(&m_arrivalActive, 4);
@@ -1342,9 +1342,9 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_toyTime, 4);
     ar->Write(&m_wingzTime, 4);
     ar->Write(&m_moveSpeed, 8);
-    ar->Write(&m_418, 4);
-    ar->Write(&m_42c, 4);
-    ar->Write(&m_430, 4);
+    ar->Write(&m_reserved418, 4);
+    ar->Write(&m_reserved42c, 4);
+    ar->Write(&m_reserved430, 4);
     ar->Write(&m_startingItemId, 4);
     ar->Write(&m_recordedFrameTick, 4);
     ar->Write(&m_arrivalState, 4);
@@ -1356,16 +1356,16 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_dwell, 4);
     ar->Write(&m_arrivalCell, 8);
     ar->Write(&m_defenderPx, 8);
-    ar->Write(&m_354, 4);
+    ar->Write(&m_toolConfigured, 4);
     ar->Write(&m_neighborScanEnabled, 4);
     ar->Write(&m_tileMoveCommitted, 4);
-    ar->Write(&m_3dc, 8);
+    ar->Write(&m_reserved3dc, 8);
     ar->Write(&m_moveTile, 8);
     ar->Write(&m_arrivalPhase, 4);
     ar->Write(&m_timePerTile, 4);
     ar->Write(&m_movePosX, 8);
     ar->Write(&m_movePosY, 8);
-    ar->Write(&m_8d0, 4);
+    ar->Write(&m_reserved8d0, 4);
     ar->Write(&m_coordToggle, 4);
     ar->Write(&m_wingzEnabled, 4);
     ar->Write(&m_freezeDelayDone, 4);
@@ -1378,7 +1378,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_deathType, 4);
     ar->Write(&m_entranceDropActive, 4);
     ar->Write(&m_hasExtent, 4);
-    ar->Write(&m_2f8, 8);
+    ar->Write(&m_unusedBattleCell, 8);
     ar->Write(&m_cellRemovalNotified, 4);
     ar->Write(&m_pendingTrigger, 4);
     ar->Write(&m_killerSlot, 4);

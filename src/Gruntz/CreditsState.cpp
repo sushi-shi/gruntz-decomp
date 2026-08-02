@@ -95,7 +95,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     }
 
     SetupTitle();
-    m_20c = 2;
+    m_reserved20c = 2;
     i32 r = FinishState();
     m_musicStarted = 0;
     return r;

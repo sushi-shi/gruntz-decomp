@@ -244,12 +244,12 @@ public:
     // @identity-TODO
     // Current source only zeroes and deletes this slot; a retail write or allocation
     // site is needed to prove its concrete type.
-    CObject* m_3c;
+    CObject* m_reserved3c; // owned slot; deleted in teardown, never allocated
     CFaderMgr* m_faderMgr;
     CCheatMgr* m_cheatMgr;
 
     CGruntzSoundZ* m_sound;
-    i32 m_4c;
+    i32 m_reserved4c;
     CShadeTableCache* m_shadeCache;
 
     CWorldSoundSet* m_inputState;
@@ -259,7 +259,7 @@ public:
     CFontConfig* m_chatLog;
     CGruntSpawnConfig* m_cueSink;
 
-    i32 m_64;
+    i32 m_reserved64;
     CTriggerMgr* m_cmdGrid;
     CGruntzCmdMgr* m_cmdSubMgr;
     CGruntzMapMgr* m_tileGrid;
@@ -277,18 +277,18 @@ public:
     i32 m_lobbyResult;
     i32 m_lobbyProbed;
     i32 m_delayedQuitPending;
-    i32 m_a8;
+    i32 m_reserveda8;
     i32 m_modalBusy;
     i32 m_renderGate;
 
-    i32 m_b4;
+    i32 m_reservedb4;
     i32 m_isCheckpointPrompts;
     SaveSlot* m_saveInfoRec;
     struct IDirectPlayLobby* m_lobby;
 
     CNetLobbyConnection* m_connSettings;
     CString m_strWorldFile;
-    i32 m_cc;
+    i32 m_reservedcc;
     char m_driveLetter;
     char m_padD1[3];
     i32 m_driveLetterProbed;

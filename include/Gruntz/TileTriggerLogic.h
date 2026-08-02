@@ -149,8 +149,8 @@ public:
     i32 m_tileX;
     i32 m_tileY;
     i32 m_cellKey;
-    i32 m_14;
-    i32 m_18;
+    i32 m_reserved14;
+    i32 m_reserved18;
     i32 m_initGate;
 
     CTileTriggerContainer* m_owner;

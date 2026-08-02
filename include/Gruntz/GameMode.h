@@ -86,7 +86,7 @@ public:
         m_scrollStep = 0;
         m_scrollRect.SetRect(0, 0, 0x280, 0x1e0);
         m_drawRect.SetRect(0, 0, 0x280, 0x1e0);
-        m_20c = 1;
+        m_reserved20c = 1;
         m_videoHandle = 0;
         m_videoPlaying = 0;
         m_musicStarted = 0;
@@ -131,7 +131,7 @@ public:
     double m_scrollAccum;
     double m_scrollStep;
     i32 m_videoPlaying;
-    i32 m_20c;
+    i32 m_reserved20c; // 1 in init, 2 in credits; never read
     CMoviePlayer* m_videoHandle;
 
     char m_pad214[0x218 - 0x214];
@@ -268,7 +268,7 @@ SIZE_UNKNOWN();
 class CMultiBootyState : public CState {
 public:
     CMultiBootyState() {
-        m_1b4 = 0;
+        m_reserved1b4 = 0;
         m_sequenceState = 0x64;
     }
 
@@ -306,7 +306,7 @@ public:
 
     i32 PostCommandIfKey();
 
-    i32 m_1b4;
+    i32 m_reserved1b4;
     i32 m_sequenceState;
     CWwdGameObjectA* m_puddleSprites[4];
     CWwdGameObjectA* m_gruntSprites[4];

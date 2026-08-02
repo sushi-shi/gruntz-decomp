@@ -7,7 +7,7 @@
 class CSplashState : public CState {
 public:
     CSplashState() {
-        m_1b4 = 0;
+        m_reserved1b4 = 0;
     }
 
     virtual ~CSplashState() OVERRIDE;
@@ -24,7 +24,7 @@ public:
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
-    i32 m_1b4;
+    i32 m_reserved1b4;
     i32 m_splashCountdownMs;
 };
 SIZE_UNKNOWN();

@@ -61,7 +61,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     m_drawValue = *p++;
     m_positionDeltaX = *p++;
     m_positionDeltaY = *p++;
-    m_28 = static_cast<u16>(*p++);
+    m_reserved28 = static_cast<u16>(*p++);
     m_cues = 0;
     m_cueCount = 0;
     g_aniParsedNameLen = 0;

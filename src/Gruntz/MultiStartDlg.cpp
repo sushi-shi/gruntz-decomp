@@ -30,7 +30,8 @@ DATA(0x0024bdc0)
 i32 g_savedMultiWndProc = 0;
 
 RVA(0x000c1750, 0x88)
-CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
+CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent)
+    : CDialog(0xc5, pParent), m_reserved74(0xa) {
     m_host = mgr;
     m_customWorldFlag = 0;
     m_slotList = 0;

@@ -340,7 +340,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 0;
                         }
                         CTimer* _t = _g->m_frameMarker;
-                        _t->m_40.m_v = 0;
+                        _t->m_unusedStamp.m_v = 0;
                         _t->m_accum.m_v = 0;
                         _t->m_running = 0;
                         _t->m_currentMs = 0;

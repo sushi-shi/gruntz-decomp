@@ -75,7 +75,7 @@ i32 CTileTriggerSwitchLogic::Setup(
     m_owner = owner;
     m_damageParam = damageParam;
     m_checkpointType = checkpointType;
-    m_1c = 0;
+    m_reserved1c = 0;
     m_linkGate = linkGate;
     m_initGate = 1;
     return 1;
@@ -1353,7 +1353,7 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     ar->Write(&m_cellKey, 4);
     ar->Write(&m_linkGate, 4);
     ar->Write(&m_damageParam, 4);
-    ar->Write(&m_1c, 4);
+    ar->Write(&m_reserved1c, 4);
     ar->Write(&m_initGate, 4);
     ar->Write(&m_checkpointType, 4);
     i32* p = m_block;
@@ -1378,7 +1378,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     s->Read(&m_cellKey, 4);
     s->Read(&m_linkGate, 4);
     s->Read(&m_damageParam, 4);
-    s->Read(&m_1c, 4);
+    s->Read(&m_reserved1c, 4);
     s->Read(&m_initGate, 4);
     s->Read(&m_checkpointType, 4);
     i32* p = m_block;
@@ -1420,8 +1420,8 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     s->Write(&m_tileX, 4);
     s->Write(&m_tileY, 4);
     s->Write(&m_cellKey, 4);
-    s->Write(&m_14, 4);
-    s->Write(&m_18, 4);
+    s->Write(&m_reserved14, 4);
+    s->Write(&m_reserved18, 4);
     s->Write(&m_initGate, 4);
     s->Write(&m_dutyOnSpan, 4);
     s->Write(&m_leadInSpan, 4);
@@ -1448,8 +1448,8 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     s->Read(&m_tileX, 4);
     s->Read(&m_tileY, 4);
     s->Read(&m_cellKey, 4);
-    s->Read(&m_14, 4);
-    s->Read(&m_18, 4);
+    s->Read(&m_reserved14, 4);
+    s->Read(&m_reserved18, 4);
     s->Read(&m_initGate, 4);
     s->Read(&m_dutyOnSpan, 4);
     s->Read(&m_leadInSpan, 4);

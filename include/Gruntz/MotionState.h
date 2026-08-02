@@ -46,7 +46,7 @@ public:
     DoubleVector3 m_step;
     i32 m_stepDisabled;
     char m_padbc[0xc0 - 0xbc];
-    DoubleVector3 m_c0;
+    DoubleVector3 m_reservedc0; // zeroed + save-streamed; Step never reads it
     DoubleVector3 m_maxStep;
     DoubleVector3 m_maxVelocity;
 };
@@ -65,9 +65,9 @@ inline CMotionState::CMotionState() {
     m_acceleration.z = 0.0;
     m_time = 0.0;
     m_deltaTime = 0.0;
-    m_c0.x = 0.0;
-    m_c0.y = 0.0;
-    m_c0.z = 0.0;
+    m_reservedc0.x = 0.0;
+    m_reservedc0.y = 0.0;
+    m_reservedc0.z = 0.0;
     m_stepDisabled = 0;
     m_minBounds.x = g_movingLogicMin;
     m_maxBounds.x = g_movingLogicMax;

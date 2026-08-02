@@ -62,7 +62,7 @@ public:
     FILE* m_fp;
     char* m_readBuf;
     i32 m_readonly;
-    i32 m_1c;
+    i32 m_reserved1c;
     i32 m_pos;
 };
 SIZE(0x24);

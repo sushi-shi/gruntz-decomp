@@ -94,7 +94,7 @@ public:
 
     CString m_name;
 
-    i32 m_e0;
+    i32 m_reservede0;
 
     i32 m_moveMode;
     u32 m_objectType;
@@ -105,11 +105,11 @@ public:
     u32 m_collMask;
     i32 m_strideX;
     i32 m_strideY;
-    i32 m_100;
+    i32 m_reserved100;
     i32 m_spawnX;
     i32 m_spawnY;
     i32 m_spawnSortKey;
-    i32 m_110;
+    i32 m_reserved110;
     i32 m_score;
     i32 m_points;
     i32 m_powerup;
@@ -129,12 +129,12 @@ public:
 
     i32 m_speedX;
     i32 m_speedY;
-    i32 m_16c;
-    i32 m_170;
+    i32 m_reserved16c;
+    i32 m_reserved170;
     i32 m_deltaX;
     i32 m_deltaY;
-    i32 m_17c;
-    i32 m_180;
+    i32 m_reserved17c;
+    i32 m_reserved180;
     i32 m_carrierId;
     i32 m_objectId;
 };
@@ -159,7 +159,7 @@ class CWwdGameObjectA : public CGameObject {
 public:
     CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
         : CGameObject(owner, id, stateFlags), m_animCursor(owner, id, stateFlags) {
-        m_18c = -1;
+        m_reserved18c = -1;
         m_frameIndex = -1;
         m_layer = 0;
         m_frameSet = 0;
@@ -169,7 +169,7 @@ public:
 
     RVA(0x0015b980, 0x96)
     virtual void Unload() OVERRIDE {
-        m_18c = -1;
+        m_reserved18c = -1;
         m_frameIndex = -1;
         m_layer = 0;
         m_frameSet = 0;
@@ -197,7 +197,7 @@ public:
     i32 SerializeSpriteName(CFileMemBase* ar);
     i32 ReadState(CFileMemBase* src);
 
-    i32 m_18c;
+    i32 m_reserved18c; // reset to -1 with m_frameIndex; never read
     i32 m_frameIndex;
     CDDrawWorker* m_frameSet;
     CImage* m_layer;
@@ -210,7 +210,7 @@ class CWwdGameObject : public CWwdGameObjectA {
 public:
     CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
         : CWwdGameObjectA(owner, id, stateFlags), m_children(0xa) {
-        m_1f8 = 0;
+        m_reserved1f8 = 0;
     }
     virtual ~CWwdGameObject() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
@@ -218,8 +218,8 @@ public:
     RVA(0x0015bf00, 0xa1)
     virtual void Unload() OVERRIDE {
         Clear();
-        m_1f8 = 0;
-        m_18c = -1;
+        m_reserved1f8 = 0;
+        m_reserved18c = -1;
         m_frameIndex = -1;
         m_layer = 0;
         m_frameSet = 0;
@@ -247,7 +247,7 @@ public:
 
     CObList m_children;
 
-    i32 m_1f8;
+    i32 m_reserved1f8; // zeroed in ctor/Unload only
 };
 SIZE(0x1fc);
 

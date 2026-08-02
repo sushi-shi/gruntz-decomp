@@ -45,7 +45,7 @@ public:
     u32 m_highScrollThreshold;
     i32 m_inputScrollTotal;
     i32 m_inputActive;
-    i32 m_34;
+    i32 m_reserved34; // set 1 with chat origin; never read
     HFONT m_arialFont;
     HFONT m_trainingFont;
     HFONT m_messageFont;

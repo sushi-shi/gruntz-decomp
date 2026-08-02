@@ -270,7 +270,7 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
     if (ar == 0) {
         return 0;
     }
-    ar->Write(&m_18c, 4);
+    ar->Write(&m_reserved18c, 4);
     ar->Write(&m_frameIndex, 4);
     i32 flag = 0;
     if (m_layer != 0) {
@@ -299,7 +299,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     if (ar == 0) {
         return 0;
     }
-    ar->Read(&m_18c, 4);
+    ar->Read(&m_reserved18c, 4);
     ar->Read(&m_frameIndex, 4);
     i32 flag;
     ar->Read(&flag, 4);
@@ -362,8 +362,8 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_faceDirection = 0;
     m_speedX = 0;
     m_speedY = 0;
-    m_e0 = 0;
-    m_180 = 0;
+    m_reservede0 = 0;
+    m_reserved180 = 0;
 
     if (w->Init(tmpl->m_notify, tmpl->m_flags) == 0) {
         return 0;
@@ -586,11 +586,11 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_collMask, 4);
     ar->Write(&m_strideX, 4);
     ar->Write(&m_strideY, 4);
-    ar->Write(&m_100, 4);
+    ar->Write(&m_reserved100, 4);
     ar->Write(&m_spawnX, 4);
     ar->Write(&m_spawnY, 4);
     ar->Write(&m_spawnSortKey, 4);
-    ar->Write(&m_110, 4);
+    ar->Write(&m_reserved110, 4);
     ar->Write(&m_score, 4);
     ar->Write(&m_points, 4);
     ar->Write(&m_powerup, 4);
@@ -604,12 +604,12 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_switchRect.left, 0x10);
     ar->Write(&m_speedX, 4);
     ar->Write(&m_speedY, 4);
-    ar->Write(&m_16c, 4);
-    ar->Write(&m_170, 4);
+    ar->Write(&m_reserved16c, 4);
+    ar->Write(&m_reserved170, 4);
     ar->Write(&m_deltaX, 4);
     ar->Write(&m_deltaY, 4);
-    ar->Write(&m_17c, 4);
-    ar->Write(&m_180, 4);
+    ar->Write(&m_reserved17c, 4);
+    ar->Write(&m_reserved180, 4);
     ar->Write(&m_plotDX, 4);
     ar->Write(&m_plotDY, 4);
     ar->Write(&m_dirty, sizeof(m_dirty));
@@ -664,11 +664,11 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_collMask, 4);
     ar->Read(&m_strideX, 4);
     ar->Read(&m_strideY, 4);
-    ar->Read(&m_100, 4);
+    ar->Read(&m_reserved100, 4);
     ar->Read(&m_spawnX, 4);
     ar->Read(&m_spawnY, 4);
     ar->Read(&m_spawnSortKey, 4);
-    ar->Read(&m_110, 4);
+    ar->Read(&m_reserved110, 4);
     ar->Read(&m_score, 4);
     ar->Read(&m_points, 4);
     ar->Read(&m_powerup, 4);
@@ -682,12 +682,12 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_switchRect.left, 0x10);
     ar->Read(&m_speedX, 4);
     ar->Read(&m_speedY, 4);
-    ar->Read(&m_16c, 4);
-    ar->Read(&m_170, 4);
+    ar->Read(&m_reserved16c, 4);
+    ar->Read(&m_reserved170, 4);
     ar->Read(&m_deltaX, 4);
     ar->Read(&m_deltaY, 4);
-    ar->Read(&m_17c, 4);
-    ar->Read(&m_180, 4);
+    ar->Read(&m_reserved17c, 4);
+    ar->Read(&m_reserved180, 4);
     ar->Read(&m_plotDX, 4);
     ar->Read(&m_plotDY, 4);
     ar->Read(&m_dirty, sizeof(m_dirty));
@@ -850,7 +850,7 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
     m_maxX = 0;
     m_maxY = 0;
     m_positionedSound = 0;
-    m_16c = 0;
+    m_reserved16c = 0;
     m_userFlags = 0;
     return 1;
 }

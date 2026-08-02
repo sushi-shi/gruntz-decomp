@@ -1904,8 +1904,8 @@ void CGrunt::Activate() {
     m_commitPx.m_y = py;
     m_lastTilePx.m_y = py;
     m_entrancePx.m_y = py;
-    m_1dc.m_x = 0;
-    m_1dc.m_y = 0;
+    m_reserved1dc.m_x = 0;
+    m_reserved1dc.m_y = 0;
     m_health = 0x64;
     m_stamina = 0x64;
     m_toyTime = 0;

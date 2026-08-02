@@ -245,12 +245,12 @@ public:
     i32 m_gauge;
     i32 m_gaugeTarget;
 
-    i64 m_2a0;
-    i64 m_2a8;
-    i32 m_2b0;
-    i32 m_2b4;
-    i32 m_2b8;
-    i32 m_2bc;
+    i64 m_reserved2a0;
+    i64 m_reserved2a8;
+    i32 m_reserved2b0;
+    i32 m_reserved2b4;
+    i32 m_reserved2b8;
+    i32 m_reserved2bc;
 
     CSbiHlRow m_groupSlots[3];
     CSBI_ImageSet* m_groupNotify[3];
@@ -259,8 +259,8 @@ public:
     CSbiHlRow m_machineB;
     CSbiHlRow m_machineA;
     CSBI_GruntMachine* m_machineDisplay;
-    i32 m_34c;
-    i32 m_350;
+    i32 m_reserved34c;
+    i32 m_reserved350;
     i32 m_hitTestDisabled;
     i32 m_tabsBuilt;
     i32 m_activeSlot;
@@ -290,7 +290,7 @@ public:
     i32 m_rezTick;
 
     ::CPtrArray m_ptrPool;
-    i32 m_544;
+    i32 m_reserved544;
 
     i32 m_hlBusy;
     CWarpStoneFly* m_retabNotify;
@@ -316,12 +316,12 @@ SIZE_UNKNOWN();
 
 inline CStatusBarMgr::CStatusBarMgr() {
 
-    m_2a0 = 0;
-    m_2a8 = 0;
-    m_2b0 = 0;
-    m_2b4 = 0;
-    m_2b8 = 0;
-    m_2bc = 0;
+    m_reserved2a0 = 0;
+    m_reserved2a8 = 0;
+    m_reserved2b0 = 0;
+    m_reserved2b4 = 0;
+    m_reserved2b8 = 0;
+    m_reserved2bc = 0;
     m_machineB.m_lastLo = 0;
     m_machineB.m_lastHi = 0;
     m_machineB.m_intervalLo = 0;
@@ -387,7 +387,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_gaugeSink = 0;
     m_gaugeTarget = 0;
     m_gauge = 0;
-    m_544 = 1;
+    m_reserved544 = 1;
     m_hlBusy = 0;
     m_retabNotify = 0;
     m_modeArmed = 0;

@@ -1350,7 +1350,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
         diff = 0;
     }
     g_gameReg->m_scoreHud->m_elapsedTimeMs += static_cast<i32>(diff);
-    sub->m_40.m_v = 0;
+    sub->m_unusedStamp.m_v = 0;
     sub->m_accum.m_v = 0;
     sub->m_running = 0;
     sub->m_currentMs = 0;

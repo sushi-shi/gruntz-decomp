@@ -1038,7 +1038,7 @@ i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     if (n >= 32) {
         return 0;
     }
-    m_00 = 0;
+    m_reserved00 = 0;
     m_count = 0;
     for (i32 j = 0; j < 32; j++) {
         m_items[j] = 0;

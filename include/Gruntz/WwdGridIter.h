@@ -20,7 +20,7 @@ SIZE_UNKNOWN();
 
 struct WwdGridNode : DSoundLink {
     WwdGridNode();
-    i32 m_08;
+    i32 m_reserved08;
     BucketHead* m_bucket;
     i32 m_x;
     i32 m_y;
@@ -40,7 +40,7 @@ SIZE(0x1c);
 #ifndef WWDGRIDNODE_OOL_CTOR
 inline WwdGridNode::WwdGridNode() {
     m_bucket = 0;
-    m_08 = 0;
+    m_reserved08 = 0;
 }
 #endif
 

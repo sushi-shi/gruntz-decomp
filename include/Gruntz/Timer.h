@@ -38,7 +38,7 @@ public:
     Clock64 m_baseTime;
     Clock64 m_accum;
     Clock64 m_startStamp;
-    Clock64 m_40;
+    Clock64 m_unusedStamp; // only 0/-1 sentinel writes; never read
     i32 m_running;
     i32 m_currentMs;
 };

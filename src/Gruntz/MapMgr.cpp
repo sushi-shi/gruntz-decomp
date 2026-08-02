@@ -108,7 +108,7 @@ CMapMgr::CMapMgr() {
     m_width = 0;
     m_height = 0;
     m_openList = 0;
-    m_1c = 0;
+    m_reserved1c = 0;
     m_edgeMask = 0;
     m_maskB = 0;
     m_maskA = -1;
@@ -187,7 +187,7 @@ void CMapMgr::Reset() {
     m_width = 0;
     m_height = 0;
     m_openList = 0;
-    m_1c = 0;
+    m_reserved1c = 0;
 }
 
 // @early-stop

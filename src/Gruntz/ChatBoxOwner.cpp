@@ -48,7 +48,7 @@ void CChatBoxOwner::Configure(i32 mode) {
         m_originX = 0xa0;
         m_originY = g_gameReg->m_modeH - 66;
     }
-    m_fontConfig->m_34 = 1;
+    m_fontConfig->m_reserved34 = 1;
 }
 
 // @early-stop

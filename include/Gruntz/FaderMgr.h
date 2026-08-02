@@ -104,7 +104,7 @@ public:
     class CDDSurface* m_timerArgA;
     class CDDSurface* m_timerArgB;
     i32 m_active;
-    i32 m_0c;
+    i32 m_reserved0c;
     CFaderArray m_arr;
 
     class CDDrawPtrCollections* m_sharedPtrColl;

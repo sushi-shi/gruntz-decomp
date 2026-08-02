@@ -449,7 +449,7 @@ public:
     i32 m_enumFlags;
     char* m_ownedBufferB;
     char* m_ownedBufferA;
-    i32 m_1c;
+    i32 m_reserved1c;
     __POSITION* m_listPosition;
 
     CNetSessionNode() {
@@ -688,7 +688,7 @@ public:
     POSITION m_groupSelId;
     POSITION m_playerSelId;
     POSITION m_sessionSelId;
-    i32 m_88;
+    i32 m_reserved88;
 
     CNetMgr() {
         m_releaseIface = 0;

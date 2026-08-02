@@ -11,7 +11,7 @@ VTBL(CFaderArray, 0x001f0790);
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
     m_active = 0;
-    m_0c = 0;
+    m_reserved0c = 0;
 }
 
 RVA(0x0017d910, 0x65)

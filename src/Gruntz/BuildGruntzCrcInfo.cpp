@@ -114,7 +114,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_toyTime,
                 tool,
                 grunt->m_vehiclePickupType,
-                grunt->m_224,
+                grunt->m_daFlag,
                 wp,
                 grunt->m_poweredUp,
                 grunt->m_neighborValid,

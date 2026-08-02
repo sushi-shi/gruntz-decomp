@@ -12,7 +12,7 @@ public:
     i32 FillFrom(CInputDevBase** src, i32 n, i32 unused);
     i32 Add(CInputDevBase* item);
 
-    i32 m_00;
+    i32 m_reserved00;
     i32 m_count;
     CInputDevBase* m_items[32];
 };
