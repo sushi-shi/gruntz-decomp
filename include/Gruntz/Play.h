@@ -263,7 +263,18 @@ public:
 
     CLightFxRender* m_lightFx;
     char m_pad324[0x328 - 0x324];
-    i32 m_bootyTimerLo, m_bootyTimerHi, m_bootyInterval, m_bootyIntervalHi;
+    union {
+        Clock64 m_bootyTimer64;
+        struct {
+            i32 m_bootyTimerLo, m_bootyTimerHi;
+        };
+    };
+    union {
+        Clock64 m_bootyInterval64;
+        struct {
+            i32 m_bootyInterval, m_bootyIntervalHi;
+        };
+    };
 
     union {
         Clock64 m_ambientTimer64;
@@ -294,7 +305,18 @@ public:
 
     CPtrArray m_placedObjectCells[4];
     CTimer* m_frameMarker;
-    i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval, m_cueIntervalHi;
+    union {
+        Clock64 m_cueTimer64;
+        struct {
+            i32 m_cueTimerLo, m_cueTimerHi;
+        };
+    };
+    union {
+        Clock64 m_cueInterval64;
+        struct {
+            i32 m_cueInterval, m_cueIntervalHi;
+        };
+    };
     i32 m_cueToggle;
     i32 m_lastCueId;
     CString m_cueText;

@@ -208,7 +208,7 @@ i32 CPlay::Render() {
 
         StepInputA();
         LoadScrollSpeedOptions();
-        StepGridWalk(static_cast<i32>(g_frameDelta));
+        m_world->m_level->ActivateVisibleObjectsOnMainPlane();
 
         g_killCueClock = g_lastNow;
         g_engineFrameDelta = g_frameDelta;
@@ -220,20 +220,21 @@ i32 CPlay::Render() {
             m_world->m_drawTarget->m_overlayPair
         );
         m_mgr->m_inputState->Retune(
-            m_world->m_level->m_mainPlane->m_viewRect.left,
-            m_world->m_level->m_mainPlane->m_viewRect.top
+            m_world->m_level->m_mainPlane->m_snappedX,
+            m_world->m_level->m_mainPlane->m_snappedY
         );
-        if (m_world->m_soundStream != 0) {
+        SoundStream* stream = m_world->m_soundStream;
+        if (stream != 0) {
             u32 t = timeGetTime();
-            m_world->m_soundStream->PurgeVoiceList(t);
-            m_world->m_soundStream->TickSubManagers(t);
+            stream->PurgeVoiceList(t);
+            stream->TickSubManagers(t);
         }
         m_beginMarker->FilterList2(g_frameDelta);
-        m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
+        m_guts->LoadMainStatusBarSprite();
 
         {
-            u32 elapsed = g_frameTime - static_cast<u32>(m_cueTimerLo);
-            if (elapsed >= static_cast<u32>(m_cueInterval)) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cueTimer64.m_v
+                >= m_cueInterval64.m_v) {
                 m_cueToggle = (m_cueToggle == 0);
                 m_cueInterval = CUE_INTERVAL_MS;
                 m_cueIntervalHi = 0;
@@ -245,36 +246,29 @@ i32 CPlay::Render() {
             }
         }
 
-        if (m_world->m_drawTarget->m_backPair == 0) {
-            return 1;
+        CDDrawSurfacePair* back =
+            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
+        if (back == 0) {
+            return 0;
         }
 
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));
-        m_frameMarker->Draw(static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair), 1);
+        m_frameMarker->Draw(back, 1);
+        StepGridWalk(static_cast<i32>(g_frameDelta));
+        DrawCursorSaveUnder(back);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
         UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
-        DrawCursorSaveUnder(m_world->m_drawTarget->m_backPair);
+        m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
     }
 
-    if (m_mgr->m_frameGate != 0) {
-        goto alt2;
-    }
-    {
-        CGruntzMgr* reg = g_gameReg;
-        if (reg->m_gameMode != 2 && m_overlayDrag != 0) {
-            goto alt2;
-        }
-    }
-
-    {
-        CGruntzMgr* w = m_mgr;
+    if (m_mgr->m_frameGate == 0 && (g_gameReg->m_gameMode == 2 || m_overlayDrag == 0)) {
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));
-        w->m_cmdSubMgr->ScanTargets(0);
+        m_mgr->m_cmdSubMgr->ScanTargets(0);
 
         if (m_levelId == CURSOR_FLAILINGGRUNT) {
-            u32 elapsed = g_frameTime - static_cast<u32>(m_bootyTimerLo);
-            if (elapsed >= static_cast<u32>(m_bootyInterval)) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_bootyTimer64.m_v
+                >= m_bootyInterval64.m_v) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
                 m_bootyInterval = BOOTY_INTERVAL_MS;
                 m_bootyIntervalHi = 0;
@@ -287,23 +281,21 @@ i32 CPlay::Render() {
         StepViewportResize();
 
         if (m_ambientInitDone == 0) {
-            u32 elapsed = g_frameTime - static_cast<u32>(m_ambientTimerLo);
-            if (elapsed >= static_cast<u32>(m_ambientInterval)) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_ambientTimer64.m_v
+                >= m_ambientInterval64.m_v) {
                 i32 id = GetAmbientId();
-                CString name;
-                static_cast<void>(name);
-                char buf[0x80];
+                char buf[0x40];
                 wsprintfA(buf, "AMBIENT%d", id);
                 if (g_gameReg->m_musicEnabled != 0) {
-                    w->m_sound->PlayByName(buf, 1);
+                    m_mgr->m_sound->PlayByName(buf, 1);
                 } else {
-                    CGruntzSoundInnerZ* out = 0;
-                    CGruntzSoundInnerZ* snd = w->m_sound->FindBank(buf);
-                    if (snd != 0) {
-                        out = snd;
+                    CGruntzSoundZ* snd = m_mgr->m_sound;
+                    CGruntzSoundInnerZ* found = snd->FindBank(buf);
+                    if (found != 0) {
+                        snd->m_pCurrent = found;
                     }
-                    if (out != 0) {
-                        out->SetLoop(1);
+                    if (m_mgr->m_sound->m_pCurrent != 0) {
+                        m_mgr->m_sound->m_pCurrent->SetLoop(1);
                     }
                 }
                 m_ambientInitDone = 1;
@@ -316,7 +308,7 @@ i32 CPlay::Render() {
         }
 
         if (m_worldReady == 0) {
-            if (w->m_cmdGrid->m_armed != 0) {
+            if (m_mgr->m_cmdGrid->m_armed != 0) {
                 m_mgr->m_cmdGrid->ScrollToActiveRecord();
             }
             LoadScrollSpeedOptions();
@@ -352,7 +344,7 @@ i32 CPlay::Render() {
         }
         m_beginMarker->FilterList2(g_frameDelta);
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
-        w->m_tileGrid->UpdateDiagonals(w);
+        m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
 
         if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
             RECT rc;
@@ -369,8 +361,8 @@ i32 CPlay::Render() {
         }
 
         m_mgr->m_inputState->Retune(
-            m_world->m_level->m_mainPlane->m_viewRect.left,
-            m_world->m_level->m_mainPlane->m_viewRect.top
+            m_world->m_level->m_mainPlane->m_snappedX,
+            m_world->m_level->m_mainPlane->m_snappedY
         );
         if (m_world->m_drawTarget->m_backPair == 0) {
             return 1;
@@ -472,17 +464,16 @@ i32 CPlay::Render() {
         return 1;
     }
 
-alt2:
-
     StepInputA();
     if (m_world->m_drawTarget->m_backPair == 0) {
         return 1;
     }
     {
-        if (m_world->m_soundStream != 0) {
+        SoundStream* stream = m_world->m_soundStream;
+        if (stream != 0) {
             u32 t = timeGetTime();
-            m_world->m_soundStream->PurgeVoiceList(t);
-            m_world->m_soundStream->TickSubManagers(t);
+            stream->PurgeVoiceList(t);
+            stream->TickSubManagers(t);
         }
         if (m_paused != 0) {
 
@@ -523,24 +514,21 @@ alt2:
                 );
             }
             if (m_ambientInitDone == 0) {
-
-                u32 elapsed = g_frameTime - static_cast<u32>(m_ambientTimerLo);
-                if (elapsed >= static_cast<u32>(m_ambientInterval)) {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_ambientTimer64.m_v
+                    >= m_ambientInterval64.m_v) {
                     i32 id = GetAmbientId();
-                    CString name;
-                    static_cast<void>(name);
-                    char buf[0x80];
+                    char buf[0x40];
                     wsprintfA(buf, "AMBIENT%d", id);
                     if (g_gameReg->m_musicEnabled != 0) {
                         m_mgr->m_sound->PlayByName(buf, 1);
                     } else {
-                        CGruntzSoundInnerZ* out = 0;
-                        CGruntzSoundInnerZ* snd = m_mgr->m_sound->FindBank(buf);
-                        if (snd != 0) {
-                            out = snd;
+                        CGruntzSoundZ* snd = m_mgr->m_sound;
+                        CGruntzSoundInnerZ* found = snd->FindBank(buf);
+                        if (found != 0) {
+                            snd->m_pCurrent = found;
                         }
-                        if (out != 0) {
-                            out->SetLoop(1);
+                        if (m_mgr->m_sound->m_pCurrent != 0) {
+                            m_mgr->m_sound->m_pCurrent->SetLoop(1);
                         }
                     }
                     m_ambientInitDone = 1;

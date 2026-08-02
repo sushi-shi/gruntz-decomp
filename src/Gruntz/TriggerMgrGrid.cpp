@@ -446,26 +446,27 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     }
 
     CGameLevel* level = m_world->m_level;
-    CDDrawWorkerHost* plane = level->m_mainPlane;
     i32 cx = x;
     i32 cy = y;
     if (cx < 0) {
         cx = 0;
-    } else if (cx >= plane->m_wrapW) {
-        cx = plane->m_wrapW - 1;
+    } else if (cx >= level->m_mainPlane->m_wrapW) {
+        cx = level->m_mainPlane->m_wrapW - 1;
     }
     if (cy < 0) {
         cy = 0;
-    } else if (cy >= plane->m_wrapH) {
-        cy = plane->m_wrapH - 1;
+    } else if (cy >= level->m_mainPlane->m_wrapH) {
+        cy = level->m_mainPlane->m_wrapH - 1;
     }
-    i32 tx = cx >> plane->m_shiftX;
-    i32 ty = cy >> plane->m_shiftY;
-    i32 subX = cx - (tx << plane->m_shiftX);
-    i32 subY = cy - (ty << plane->m_shiftY);
-    i32 raw = plane->m_tileGrid[plane->m_colOffsets[ty] + tx];
-    i32 tag = 0;
-    if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
+    i32 tx = cx >> level->m_mainPlane->m_shiftX;
+    i32 ty = cy >> level->m_mainPlane->m_shiftY;
+    i32 subX = cx - (tx << level->m_mainPlane->m_shiftX);
+    i32 subY = cy - (ty << level->m_mainPlane->m_shiftY);
+    i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[ty] + tx];
+    i32 tag;
+    if (raw == static_cast<i32>(0xeeeeeeee) || raw == -1) {
+        tag = 0;
+    } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
         tag = ts->GetCollisionAt(subX, subY);
     }
@@ -474,65 +475,261 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         return 0;
     }
 
-    CTileTriggerContainer* trig = state->m_beginMarker;
-    i32 cellKey = (tx << 8) + ty;
     CTileTriggerSwitchLogic* sw;
     POSITION pos;
     i32 anyHit;
     i32 stop;
 
     switch (tag) {
+        case TILEKIND_TIME_SWITCH:
+            sw = state->m_beginMarker->FindChild(
+                ((x >> 5) * 0x100) + (y >> 5),
+                TRIGID_TIME_SWITCH_7
+            );
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_TIME_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            pos = state->m_beginMarker->m_list2.GetHeadPosition();
+            while (pos != 0) {
+                CTileTriggerLogic* el =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list2.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                    return 1;
+                }
+            }
+            anyHit = 0;
+            pos = state->m_beginMarker->m_list1.GetHeadPosition();
+            while (pos != 0) {
+                CTileTriggerLogic* el =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                    el->RecordMove();
+                    anyHit = 1;
+                }
+            }
+            if (anyHit == 0) {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TIME_TRIGGER);
+                return 0;
+            }
+            return 1;
+
+        case TILEKIND_SECRET_SWITCH:
+            sw = state->m_beginMarker->FindChild(
+                ((x >> 5) * 0x100) + (y >> 5),
+                TRIGID_SECRET_SWITCH_6
+            );
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SECRET_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            anyHit = 0;
+            pos = state->m_beginMarker->m_list1.GetHeadPosition();
+            while (pos != 0) {
+                CTileTriggerLogic* el =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                    el->RecordMove();
+                    anyHit = 1;
+                }
+            }
+            if (anyHit == 0) {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_SECRET_TRIGGER);
+                return 0;
+            }
+            {
+                g_gameReg->m_scoreHud->m_secretsFound++;
+                m_world->m_soundRegistry->RefreshAsset("GAME_SECRETSWITCH");
+                if (g != 0) {
+                    i32 cueX = g->m_object->m_screenX;
+                    i32 cueY = g->m_object->m_screenY;
+                    if (cueX < g_gameReg->m_viewBounds.right && cueX >= g_gameReg->m_viewBounds.left
+                        && cueY < g_gameReg->m_viewBounds.bottom
+                        && cueY >= g_gameReg->m_viewBounds.top) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x3f2, -1, 0, -1, -1);
+                    }
+                } else if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
+                           && y < g_gameReg->m_viewBounds.bottom
+                           && y >= g_gameReg->m_viewBounds.top) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x3f2, -1, 1, -1, -1);
+                }
+            }
+            return 1;
+
+        case TILEKIND_SWITCH_A:
+        case TILEKIND_SWITCH_B:
+        case TILEKIND_SWITCH_C:
+            sw = state->m_beginMarker->FindChild(((x >> 5) * 0x100) + (y >> 5), 0);
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            anyHit = 0;
+            stop = 0;
+            pos = state->m_beginMarker->m_list1.GetHeadPosition();
+            while (pos != 0 && stop == 0) {
+                CTileTriggerLogic* el =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                    if (el->Tick() == 0) {
+                        stop = 1;
+                    }
+                    anyHit = 1;
+                }
+            }
+            if (anyHit == 0) {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TRIGGER);
+                return 0;
+            }
+            return 1;
+
+        case TILEKIND_MULTI_SWITCH:
+            sw = state->m_beginMarker->FindChild(
+                ((x >> 5) * 0x100) + (y >> 5),
+                TRIGID_MULTI_SWITCH_3
+            );
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_MULTI_SWITCH);
+                return 0;
+            }
+            sw->SwitchDown();
+            if (sw->VerifyBlockLinksB() == 0) {
+                return 1;
+            }
+            anyHit = 0;
+            stop = 0;
+            pos = state->m_beginMarker->m_list1.GetHeadPosition();
+            while (pos != 0 && stop == 0) {
+                CTileTriggerLogic* el =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                    if (el->Tick() == 0) {
+                        stop = 1;
+                    }
+                    anyHit = 1;
+                }
+            }
+            if (anyHit == 0) {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_MULTI_TRIGGER);
+                return 0;
+            }
+            return 1;
+
+        case TILEKIND_EXCLUSIVE_SWITCH:
+            sw = state->m_beginMarker->FindChild(
+                ((x >> 5) * 0x100) + (y >> 5),
+                TRIGID_EXCLUSIVE_SWITCH_4
+            );
+            if (sw == 0) {
+                CString msg;
+                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_EXCLUSIVE_SWITCH);
+                return 0;
+            }
+            if (sw->SwitchDown() == 0) {
+                return 1;
+            }
+            anyHit = 0;
+            stop = 0;
+            pos = state->m_beginMarker->m_list1.GetHeadPosition();
+            while (pos != 0 && stop == 0) {
+                CTileTriggerLogic* el =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
+                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                    if (el->Tick() == 0) {
+                        stop = 1;
+                    }
+                    anyHit = 1;
+                }
+            }
+            if (anyHit == 0) {
+                CString msg;
+                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_EXCLUSIVE_TRIGGER);
+                return 0;
+            }
+            return 1;
+
         case TILEKIND_ARROW_UP_A:
         case TILEKIND_ARROW_UP_B:
-            if (g == 0 || g->m_entranceDropActive != 0) {
+            if (g == 0 || g->m_deathAnimStarted != 0) {
                 return 1;
             }
             g->m_entranceActive = 1;
-            g->StepArrivalDrop(x, y - 8, 0, -1, 1, 0);
-            return 1;
-
-        case TILEKIND_ARROW_DOWN_A:
-        case TILEKIND_ARROW_DOWN_B:
-            if (g == 0 || g->m_entranceDropActive != 0) {
-                return 1;
-            }
-            g->m_entranceActive = 1;
-            g->StepArrivalDrop(x, y + 8, 0, -1, 1, 0);
-            return 1;
-
-        case TILEKIND_ARROW_LEFT_A:
-        case TILEKIND_ARROW_LEFT_B:
-            if (g == 0 || g->m_entranceDropActive != 0) {
-                return 1;
-            }
-            g->m_entranceActive = 1;
-            g->StepArrivalDrop(x - 8, y, 0, -1, 1, 0);
+            g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_RIGHT_A:
         case TILEKIND_ARROW_RIGHT_B:
-            if (g == 0 || g->m_entranceDropActive != 0) {
+            if (g == 0 || g->m_deathAnimStarted != 0) {
                 return 1;
             }
             g->m_entranceActive = 1;
-            g->StepArrivalDrop(x + 8, y, 0, -1, 1, 0);
+            g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
+            return 1;
+
+        case TILEKIND_ARROW_DOWN_A:
+        case TILEKIND_ARROW_DOWN_B:
+            if (g == 0 || g->m_deathAnimStarted != 0) {
+                return 1;
+            }
+            g->m_entranceActive = 1;
+            g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
+            return 1;
+
+        case TILEKIND_ARROW_LEFT_A:
+        case TILEKIND_ARROW_LEFT_B:
+            if (g == 0 || g->m_deathAnimStarted != 0) {
+                return 1;
+            }
+            g->m_entranceActive = 1;
+            g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
-            if (g != 0 && g->m_entranceDropActive == 0) {
+            if (g != 0 && g->m_deathAnimStarted == 0) {
                 g->m_entranceActive = 1;
                 switch (g->m_entranceCell.direction) {
                     case 1:
-                        g->StepArrivalDrop(x, y - 8, 0, -1, 1, 0);
+                        g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
                         break;
                     case 3:
-                        g->StepArrivalDrop(x + 8, y, 0, -1, 1, 0);
+                        g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
                         break;
                     case 5:
-                        g->StepArrivalDrop(x, y + 8, 0, -1, 1, 0);
+                        g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
                         break;
                     case 7:
-                        g->StepArrivalDrop(x - 8, y, 0, -1, 1, 0);
+                        g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
                         break;
                     default:
                         g->StepArrivalDrop(x, y, 0, -1, 1, 0);
@@ -542,11 +739,11 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
 
         case TILEKIND_CRUMBLEWATERBRIDGE: {
-            CTileTriggerLogic* logic = trig->AddLogicDefaults(
+            CTileTriggerLogic* logic = state->m_beginMarker->AddLogicDefaults(
                 tag,
                 TRIGID_TILE_TRIGGER_24,
-                tx,
-                ty,
+                x >> 5,
+                y >> 5,
                 0,
                 0x9d,
                 0,
@@ -561,11 +758,11 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_CRUMBLEDEATHBRIDGE: {
             i32 token = state->m_levelType > 4 ? 0x72 : 0x75;
-            CTileTriggerLogic* logic = trig->AddLogicDefaults(
+            CTileTriggerLogic* logic = state->m_beginMarker->AddLogicDefaults(
                 tag,
                 TRIGID_TILE_TRIGGER_24,
-                tx,
-                ty,
+                x >> 5,
+                y >> 5,
                 0,
                 token,
                 0,
@@ -578,193 +775,14 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             return 1;
         }
 
-        case TILEKIND_SWITCH_A:
-        case TILEKIND_SWITCH_B:
-        case TILEKIND_SWITCH_C:
-            sw = trig->FindChild(cellKey, 0);
-            if (sw == 0) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SWITCH);
-                return 0;
-            }
-            sw->SwitchDown();
-            anyHit = 0;
-            stop = 0;
-            pos = trig->m_list1.GetHeadPosition();
-            while (pos != 0 && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
-                    if (el->Tick() == 0) {
-                        stop = 1;
-                    }
-                    anyHit = 1;
-                }
-            }
-            if (anyHit != 0) {
-                return 1;
-            }
-            {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TRIGGER);
-            }
-            return 0;
-
-        case TILEKIND_MULTI_SWITCH:
-            sw = trig->FindChild(cellKey, TRIGID_MULTI_SWITCH_3);
-            if (sw == 0) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_MULTI_SWITCH);
-                return 0;
-            }
-            sw->SwitchDown();
-            if (sw->VerifyBlockLinksB() == 0) {
-                return 1;
-            }
-            anyHit = 0;
-            stop = 0;
-            pos = trig->m_list1.GetHeadPosition();
-            while (pos != 0 && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
-                    if (el->Tick() == 0) {
-                        stop = 1;
-                    }
-                    anyHit = 1;
-                }
-            }
-            if (anyHit != 0) {
-                return 1;
-            }
-            {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_MULTI_TRIGGER);
-            }
-            return 0;
-
-        case TILEKIND_EXCLUSIVE_SWITCH:
-            sw = trig->FindChild(cellKey, TRIGID_EXCLUSIVE_SWITCH_4);
-            if (sw == 0) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_EXCLUSIVE_SWITCH);
-                return 0;
-            }
-            if (sw->SwitchDown() == 0) {
-                return 1;
-            }
-            anyHit = 0;
-            stop = 0;
-            pos = trig->m_list1.GetHeadPosition();
-            while (pos != 0 && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
-                    if (el->Tick() == 0) {
-                        stop = 1;
-                    }
-                    anyHit = 1;
-                }
-            }
-            if (anyHit != 0) {
-                return 1;
-            }
-            {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_EXCLUSIVE_TRIGGER);
-            }
-            return 0;
-
-        case TILEKIND_SECRET_SWITCH:
-            sw = trig->FindChild(cellKey, TRIGID_SECRET_SWITCH_6);
-            if (sw == 0) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SECRET_SWITCH);
-                return 0;
-            }
-            sw->SwitchDown();
-            anyHit = 0;
-            pos = trig->m_list1.GetHeadPosition();
-            while (pos != 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
-                    el->RecordMove();
-                    anyHit = 1;
-                }
-            }
-            if (anyHit != 0) {
-                g_gameReg->m_scoreHud->m_secretsFound++;
-                m_world->m_soundRegistry->RefreshAsset("GAME_SECRETSWITCH");
-                i32 cueX = g != 0 ? g->m_object->m_screenX : x;
-                i32 cueY = g != 0 ? g->m_object->m_screenY : y;
-                RECT* view = &g_gameReg->m_viewBounds;
-                if (cueX < view->right && cueX >= view->left && cueY < view->bottom
-                    && cueY >= view->top) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x3f2, -1, g == 0 ? 1 : 0, -1, -1);
-                }
-                return 1;
-            }
-            {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_SECRET_TRIGGER);
-            }
-            return 0;
-
-        case TILEKIND_TIME_SWITCH:
-            sw = trig->FindChild(cellKey, TRIGID_TIME_SWITCH_7);
-            if (sw == 0) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_TIME_SWITCH);
-                return 0;
-            }
-            sw->SwitchDown();
-            pos = trig->m_list2.GetHeadPosition();
-            while (pos != 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list2.GetNext(pos));
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
-                    return 1;
-                }
-            }
-            anyHit = 0;
-            pos = trig->m_list1.GetHeadPosition();
-            while (pos != 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
-                    el->RecordMove();
-                    anyHit = 1;
-                }
-            }
-            if (anyHit != 0) {
-                return 1;
-            }
-            {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TIME_TRIGGER);
-            }
-            return 0;
-
         case TILEKIND_CHECKPOINT:
             if (g_gameReg->m_gameMode != 1 || g == 0 || g->m_tileOwnerHi != g_curPlayer) {
                 return 0;
             }
-            sw = trig->FindChild(cellKey, TRIGID_CHECKPOINT_SWITCH_8);
+            sw = state->m_beginMarker->FindChild(
+                ((x >> 5) * 0x100) + (y >> 5),
+                TRIGID_CHECKPOINT_SWITCH_8
+            );
             if (sw == 0) {
                 CString msg;
                 msg.Format("No switch logic found for plate at: x=%d, y=%d", x, y);
@@ -797,9 +815,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             stop = 0;
-            pos = trig->m_list1.GetHeadPosition();
+            pos = state->m_beginMarker->m_list1.GetHeadPosition();
             while (pos != 0 && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
+                CTileTriggerLogic* el =
+                    static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;

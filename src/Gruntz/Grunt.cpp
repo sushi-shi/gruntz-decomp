@@ -942,7 +942,6 @@ i32 CGrunt::StepArrivalDrop(
     i32 clearFlag,
     i32 maskCIn
 ) {
-    CGruntzMapMgr* grid;
     CoordNode* n;
     CoordNode* cur;
     CoordPoolNode* pooled;
@@ -984,12 +983,13 @@ i32 CGrunt::StepArrivalDrop(
     m_arrivalTargetPx.m_x = pxX;
     m_arrivalTargetPx.m_y = pxY;
     maskC = maskCIn | m_passableMask;
-    grid = g_gameReg->m_tileGrid;
-    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC) == 0) {
-        goto nudgeTarget;
+    if (g_gameReg->m_tileGrid
+            ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
+        != 0) {
+        goto dropHead;
     }
+    goto nudgeTarget;
 dropHead:
-
     if (CoordCount() != 0) {
         pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
         pooled->m_next = g_coordPool.m_freeHead;
@@ -1002,14 +1002,14 @@ pathGate:
         goto commitEntrance;
     }
     tail = CoordHead()->m_coord;
-    headFlags = (static_cast<u32>(tail->m_x) >= grid->m_width
-                 || static_cast<u32>(tail->m_y) >= grid->m_height)
+    headFlags = (static_cast<u32>(tail->m_x) >= g_gameReg->m_tileGrid->m_width
+                 || static_cast<u32>(tail->m_y) >= g_gameReg->m_tileGrid->m_height)
                     ? 1
-                    : grid->m_rowInts[tail->m_y][tail->m_x * 7];
-    lastFlags =
-        (static_cast<u32>(lastX) >= grid->m_width || static_cast<u32>(lastY) >= grid->m_height)
-            ? 1
-            : grid->m_rowInts[lastY][lastX * 7];
+                    : g_gameReg->m_tileGrid->m_rowInts[tail->m_y][tail->m_x * 7];
+    lastFlags = (static_cast<u32>(lastX) >= g_gameReg->m_tileGrid->m_width
+                 || static_cast<u32>(lastY) >= g_gameReg->m_tileGrid->m_height)
+                    ? 1
+                    : g_gameReg->m_tileGrid->m_rowInts[lastY][lastX * 7];
     if ((lastFlags & 0x80) != 0) {
         goto commitEntrance;
     }
@@ -1039,7 +1039,7 @@ pathGate:
     {
 
         CPtrList probe(10);
-        if (grid->SearchEdge(
+        if (g_gameReg->m_tileGrid->SearchEdge(
                 lastX,
                 lastY,
                 tileX,
@@ -1095,19 +1095,13 @@ commitPhase:
 nudgeTarget:
     nudged = 0;
 
-    if (grid->m_rowInts[tileY][tileX * 7 + 4] != 0x21) {
+    if (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 4] != 0x21) {
         goto nudgeDone;
     }
-    free4 = (grid->m_rowInts[tileY + 1][tileX * 7 + 4] == 0x21) ? 1 : 0;
-    if (grid->m_rowInts[tileY - 1][tileX * 7 + 4] == 0x21) {
-        free4 |= 2;
-    }
-    if (grid->m_rowInts[tileY][tileX * 7 + 11] == 0x21) {
-        free4 |= 4;
-    }
-    if (grid->m_rowInts[tileY][tileX * 7 - 3] == 0x21) {
-        free4 |= 8;
-    }
+    free4 = (g_gameReg->m_tileGrid->m_rowInts[tileY + 1][tileX * 7 + 4] == 0x21) ? 1 : 0;
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY - 1][tileX * 7 + 4] == 0x21) ? 2 : 0;
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 11] == 0x21) ? 4 : 0;
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 - 3] == 0x21) ? 8 : 0;
     switch (free4) {
         case 5:
             tileX++;
@@ -1143,11 +1137,14 @@ nudgeTarget:
 
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rowInts[sy][sx * 7 + 7];
-            grid->m_rowInts[sy][sx * 7 + 7] = 0;
+            saved[sx - tileX + 1][sy - tileY + 1] =
+                g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7 + 7];
+            g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7 + 7] = 0;
         }
     }
-    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC) != 0
+    if (g_gameReg->m_tileGrid
+                ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
+            != 0
         && CoordCount() != 0) {
         pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
         pooled->m_next = g_coordPool.m_freeHead;
@@ -1166,7 +1163,8 @@ nudgeTarget:
     }
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            grid->m_rowInts[sy][sx * 7 + 7] = saved[sx - tileX + 1][sy - tileY + 1];
+            g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7 + 7] =
+                saved[sx - tileX + 1][sy - tileY + 1];
         }
     }
     if (nudged != 0) {
@@ -1199,9 +1197,10 @@ nudgeDone:
         sx = lastX;
         while (blocked == 0) {
             sy = acc >> 16;
-            err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
+            err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
+                   || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
                       ? 1
-                      : grid->m_rowInts[sy][sx * 7];
+                      : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
             if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                 blocked = 1;
             } else {
@@ -1217,9 +1216,10 @@ nudgeDone:
         sy = lastY;
         while (blocked == 0) {
             sx = acc >> 16;
-            err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
+            err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
+                   || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
                       ? 1
-                      : grid->m_rowInts[sy][sx * 7];
+                      : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
             if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                 blocked = 1;
             } else {
@@ -1244,7 +1244,8 @@ reCommit:
 reProbe:
     pxX = walkX * 32 + 0x10;
     pxY = walkY * 32 + 0x10;
-    if (grid->SearchEdge(walkX, walkY, lastX, lastY, &m_coordList, 1, maskA, maskC) != 0) {
+    if (g_gameReg->m_tileGrid->SearchEdge(walkX, walkY, lastX, lastY, &m_coordList, 1, maskA, maskC)
+        != 0) {
         goto dropHead;
     }
     SetEntrancePos(1, 1);
