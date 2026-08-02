@@ -55,7 +55,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CChatBoxOwner* ctl = static_cast<CChatBoxOwner*>(RezAlloc(0x1c));
+        CChatBoxOwner* ctl = static_cast<CChatBoxOwner*>(::operator new(0x1c));
         if (ctl) {
 
             ctl->m_world = 0;
@@ -72,7 +72,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
             if (m_hitTest) {
                 m_hitTest->Deactivate();
-                RezFree(m_hitTest);
+                ::operator delete(m_hitTest);
             }
             m_hitTest = 0;
             return 0;
@@ -92,7 +92,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTileTriggerContainer* r78 = static_cast<CTileTriggerContainer*>(RezAlloc(0x78));
+        CTileTriggerContainer* r78 = static_cast<CTileTriggerContainer*>(::operator new(0x78));
         if (r78) {
 
             new (&r78->m_base) CPtrList(0xa);
@@ -111,7 +111,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTimer* r50 = static_cast<CTimer*>(RezAlloc(0x50));
+        CTimer* r50 = static_cast<CTimer*>(::operator new(0x50));
         if (r50) {
             r50->Init();
         } else {

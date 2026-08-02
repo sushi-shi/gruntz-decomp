@@ -10,7 +10,6 @@
 #include <Gruntz/SpawnList.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/UserLogic.h>
-#include <Rez/RezAlloc.h>
 
 class CGruntVoice;
 struct StreamVoice;

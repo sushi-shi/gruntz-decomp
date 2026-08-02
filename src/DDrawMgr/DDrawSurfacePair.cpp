@@ -1,7 +1,6 @@
 #include <rva.h>
 #include <Pix16.h>
 #include <AddrWord.h>
-#include <Rez/RezAlloc.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/ParseSource.h>
@@ -722,7 +721,7 @@ fail:
         }
     }
     if (m_name != 0) {
-        RezFree(m_name);
+        ::operator delete(m_name);
         m_name = 0;
     }
     m_records.SetSize(0, -1);
@@ -751,13 +750,13 @@ i32 CAniElement::LoadFile(void* ctx, void* filename, i32 unused) {
         return 0;
     }
     u32 size = fr.GetLength();
-    void* buf = RezAlloc(size);
+    void* buf = ::operator new(size);
     if (fr.Read(buf, size) == 0) {
-        RezFree(buf);
+        ::operator delete(buf);
         return 0;
     }
     i32 r = Build(ctx, static_cast<CAniSource*>(buf), 0);
-    RezFree(buf);
+    ::operator delete(buf);
     return r;
 }
 
@@ -770,7 +769,7 @@ void CAniElement::DeleteAll() {
         }
     }
     if (m_name != 0) {
-        RezFree(m_name);
+        ::operator delete(m_name);
         m_name = 0;
     }
     m_records.SetSize(0, -1);

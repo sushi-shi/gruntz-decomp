@@ -1,3 +1,4 @@
+#include <Wap32/EngStr.h>
 #include <Gruntz/GlyphStringDraw.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -115,7 +116,7 @@ void ShowHudMessage(
     if (page == 0) {
         return;
     }
-    HudMsgPush(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
+    EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
 }
 // @early-stop
 RVA(0x00115520, 0x45)
@@ -134,5 +135,5 @@ void ShowHudMessageAlt(
     if (page == 0) {
         return;
     }
-    HudMsgPush(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
+    EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
 }

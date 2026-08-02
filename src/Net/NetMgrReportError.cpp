@@ -17,6 +17,10 @@ DATA(0x002bf6f8)
 i32 g_hr = 0;
 DATA(0x002bf6fc)
 i32 g_code = 0;
+DATA(0x002bf700)
+char g_szCode[0x40];
+DATA(0x002bf740)
+char g_szMsg[0x100];
 
 DATA(0x002293f4)
 char g_emptyString[] = "";

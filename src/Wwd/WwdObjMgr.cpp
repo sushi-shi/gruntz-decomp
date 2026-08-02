@@ -9,7 +9,6 @@
 #include <rva.h>
 #include <AddrWord.h>
 #include <Rez/FrameClock.h>
-#include <Rez/RezAlloc.h>
 #include <Io/FileMem.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>

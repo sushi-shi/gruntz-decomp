@@ -7,8 +7,6 @@
 
 #include <string.h>
 
-#include <Rez/RezAlloc.h>
-
 extern "C" i32 FirstDiffBit(const char* a, const char* b);
 
 class CButeNode;

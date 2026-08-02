@@ -1,5 +1,4 @@
 #include <rva.h>
-#include <Rez/RezAlloc.h>
 #include <Gruntz/ChatBox.h>
 #include <Image/CImage.h>
 #include <DDrawMgr/DDrawWorker.h>

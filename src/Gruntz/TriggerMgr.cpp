@@ -1367,7 +1367,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     CActionOptionsMenuBar* old = m_overlay;
     if (old != 0) {
         old->Clear();
-        RezFree(old);
+        ::operator delete(old);
         m_overlay = 0;
     }
     i32 hasOverlay;

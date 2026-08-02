@@ -6,7 +6,6 @@
 #include <Rez/RezMgr.h>
 
 #include <Rez/RezList.h>
-#include <Rez/RezAlloc.h>
 
 extern "C" void* Eng_fopen(const char* path, const char* mode);
 extern "C" i32 RezFClose(void* fp);

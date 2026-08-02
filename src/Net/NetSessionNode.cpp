@@ -15,11 +15,11 @@ CNetSessionNode::~CNetSessionNode() {
     m_id = 0;
     m_listPosition = 0;
     if (m_ownedBufferA) {
-        RezFree(m_ownedBufferA);
+        ::operator delete(m_ownedBufferA);
     }
     m_ownedBufferA = 0;
     if (m_ownedBufferB) {
-        RezFree(m_ownedBufferB);
+        ::operator delete(m_ownedBufferB);
     }
     m_ownedBufferB = 0;
 }

@@ -793,7 +793,7 @@ void CDDrawPtrCollections::SetupCaps() {
 }
 
 RVA(0x00143390, 0x35)
-i32 __stdcall AddDisplayMode(void* mode, i32 unused) {
+i32 __stdcall DdEnumModesCallback(void* mode, i32 unused) {
     void* rec = operator new(0x6c);
     memcpy(rec, mode, 0x6c);
     g_modeArray.SetAtGrow(g_modeArray.GetSize(), rec);

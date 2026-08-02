@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/StateDispatch.h>
 #include <rva.h>
 
@@ -6,7 +7,7 @@
 class CUserLogic;
 
 RVA(0x0009b770, 0xf1)
-i32 StateDispatch(CGameObject* obj) {
+i32 CreateLevelTime(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
 
     switch (static_cast<u32>(aux->ActKey())) {

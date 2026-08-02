@@ -1,7 +1,6 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Pix16.h>
 #include <Io/FileStream.h>
-#include <Rez/RezAlloc.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
@@ -545,7 +544,7 @@ void CDDSurface::FlipVertical() {
     }
 
     m_ddSurface->Unlock(0);
-    RezFree(tmp);
+    ::operator delete(tmp);
 }
 
 RVA(0x0013ece0, 0xc7)
@@ -738,7 +737,7 @@ i32 CDDSurface::ShadeBlt(
     u16* srcPtr = srcBits + (sr.top * srcStride + sr.left);
     i32 dstRowAdv = dstStride - dstW;
     i32 srcRowAdv = srcStride - srcW;
-    u16* temp = static_cast<u16*>(RezAlloc(dstW * 4));
+    u16* temp = static_cast<u16*>(::operator new(dstW * 4));
     i32 bank = ((shade & 0xff) >> 3) << 0xb;
 
     if (g_rDown != 3) {
@@ -817,10 +816,10 @@ i32 CDDSurface::ShadeBlt(
     }
     m_ddSurface->Unlock(0);
     src->m_ddSurface->Unlock(0);
-    RezFree(temp);
+    ::operator delete(temp);
     return 1;
 reject:
-    RezFree(temp);
+    ::operator delete(temp);
     m_ddSurface->Unlock(0);
     src->m_ddSurface->Unlock(0);
     return 0;

@@ -6,7 +6,6 @@
 
 #include <Bute/Hash.h>
 
-#include <Rez/RezAlloc.h>
 #include <Rez/RezList.h>
 #include <Gruntz/String.h>
 
@@ -112,9 +111,5 @@ public:
     u8* m_buf;
 };
 SIZE_UNKNOWN();
-
-extern "C" void RezFormat(CString* dst, const char* fmt, ...);
-
-extern "C" i32 RezFileExists(const char* szPath);
 
 #endif // SRC_REZ_REZMGR_H

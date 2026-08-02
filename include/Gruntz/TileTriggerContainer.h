@@ -6,7 +6,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
 #include <rva.h>
-#include <Rez/RezAlloc.h>
 
 class CTileTriggerContainer;
 class CTileTriggerLogic;

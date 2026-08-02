@@ -6,12 +6,12 @@
 #include <Gruntz/ActReg.h>
 
 extern "C" i32 g_dirVec[9][4];
-extern "C" unsigned char g_hitTable[];
-extern "C" float g_dtScale;
-extern "C" float g_tanC0;
-extern "C" float g_tanC1;
-extern "C" double g_tanC2;
-extern "C" double g_tanC3;
+extern "C" const u8 g_hitTable[23][23];
+extern "C" const float g_quarterScale;
+extern "C" const float g_slopeTwo;
+extern "C" const float g_slopeNegTwo;
+extern "C" const double g_slopeHalf;
+extern "C" const double g_slopeZero;
 
 static inline void GruntScratchTeardown();
 

@@ -677,7 +677,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_tilesDown = 1;
                 m_originX = 0;
                 m_originY = 0;
-                m_destRect = static_cast<RECT*>(RezAlloc(0x10));
+                m_destRect = static_cast<RECT*>(::operator new(0x10));
                 m_destRect->top = 0;
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
@@ -693,7 +693,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
             if (!rect) {
                 return 0;
             }
-            RECT* r = static_cast<RECT*>(RezAlloc(0x10));
+            RECT* r = static_cast<RECT*>(::operator new(0x10));
             m_destRect = r;
             r->left = rect->left;
             r->top = rect->top;

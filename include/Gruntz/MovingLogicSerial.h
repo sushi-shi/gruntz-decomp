@@ -5,7 +5,6 @@
 #include <Gruntz/MotionState.h>
 #include <rva.h>
 #include <Gruntz/SerialArchive.h>
-#include <Rez/RezAlloc.h>
 
 class ostream;
 class istream;

@@ -1,5 +1,4 @@
 #include <Ints.h>
-#include <Rez/RezAlloc.h>
 #include <Wap32/Object.h>
 #include <rva.h>
 #include <Mfc.h>
@@ -41,7 +40,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             m_nMaxSize = 0;
             m_nSize = 0;
         } else if (m_pData == 0) {
-            m_pData = static_cast<RezElem40*>(RezAlloc(n * sizeof(RezElem40)));
+            m_pData = static_cast<RezElem40*>(::operator new(n * sizeof(RezElem40)));
 
             memset(m_pData, 0, n * sizeof(RezElem40));
             m_nMaxSize = n;
@@ -67,7 +66,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             } else {
                 newMax = n;
             }
-            RezElem40* nd = static_cast<RezElem40*>(RezAlloc(newMax * sizeof(RezElem40)));
+            RezElem40* nd = static_cast<RezElem40*>(::operator new(newMax * sizeof(RezElem40)));
             memcpy(nd, m_pData, m_nSize * sizeof(RezElem40));
 
             ZeroRecords(&nd[m_nSize], n - m_nSize);

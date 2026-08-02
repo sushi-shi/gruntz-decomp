@@ -1,6 +1,5 @@
 #include <Gruntz/GameStateRecordLoad.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Rez/RezAlloc.h>
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -254,7 +253,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     while (m_payloads.GetCount() != 0 && m_payloads.GetHead() != 0) {
         void* rem = (&m_payloads)->RemoveHead();
-        RezFree(rem);
+        ::operator delete(rem);
     }
 
     ar->Read(&count, 4);

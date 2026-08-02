@@ -57,11 +57,11 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
     } else {
         critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
     }
-    CTrieNode* nn = static_cast<CTrieNode*>(RezAlloc(0x14));
+    CTrieNode* nn = static_cast<CTrieNode*>(::operator new(0x14));
     if (nn != 0) {
         nn->m_bit = critbit;
         nn->m_value = value;
-        char* kb = static_cast<char*>(RezAlloc((m_keyBitLength >> 3) + 1));
+        char* kb = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
         nn->m_key = kb;
         if (kb != 0) {
             memcpy(kb, key, strlen(key) + 1);

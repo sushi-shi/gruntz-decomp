@@ -3,7 +3,6 @@
 #include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Rez/FrameClock.h>
-#include <Rez/RezAlloc.h>
 #include <Gruntz/Random.h>
 #include <Io/FileMem.h>
 #include <Gruntz/AreaMgr.h>
@@ -962,7 +961,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     if (self->m_lightFx == 0) {
-        CLightFxRender* ctx = static_cast<CLightFxRender*>(RezAlloc(0x43c));
+        CLightFxRender* ctx = static_cast<CLightFxRender*>(::operator new(0x43c));
         if (ctx != 0) {
             ctx->m_mgr = 0;
             ctx->m_cmdGrid = 0;
@@ -1041,7 +1040,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 CTimer* spr = self->m_frameMarker;
                 if (spr != 0) {
                     spr->Reset();
-                    RezFree(spr);
+                    ::operator delete(spr);
                     self->m_frameMarker = 0;
                 }
             }

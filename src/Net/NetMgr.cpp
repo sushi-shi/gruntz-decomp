@@ -55,7 +55,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 
 
 
-    hr = m_releaseIface->QueryInterface(&g_netDirectPlayRiid, &m_directPlay);
+    hr = m_releaseIface->QueryInterface(&IID_IDirectPlay4A, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
         Destroy();
@@ -103,7 +103,7 @@ i32 CNetMgr::Init(void* a, NetGuid appGuid) {
         Destroy();
         return 0;
     }
-    hr = opened->QueryInterface(&g_netDirectPlayRiid, &m_directPlay);
+    hr = opened->QueryInterface(&IID_IDirectPlay4A, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x81, hr, 0);
         Destroy();
@@ -497,12 +497,12 @@ CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char
     iface = m_directPlay;
     hr = iface->GetPlayerData2(blob, &size);
     if (hr != 0) {
-        RezFree(blob);
+        ::operator delete(blob);
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2b1, hr, 0);
         return 0;
     }
     CNetPlayerListNode* r = AddPlayerNode(blob);
-    RezFree(blob);
+    ::operator delete(blob);
     return r;
 }
 

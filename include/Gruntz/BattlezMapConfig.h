@@ -195,8 +195,6 @@ public:
 };
 SIZE(0x1e8);
 
-extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
-
 extern const float g_diffScale;
 extern i32 g_stepRun;
 extern i32 g_stepCol;

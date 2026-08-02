@@ -227,7 +227,7 @@ RVA(0x0010d010, 0xf1)
 i32 CreateCoveredPowerup(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CCoveredPowerup)}
 
 RVA(0x0010d150, 0xf1)
-i32 StepController(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerTransition)}
+i32 CreateTileTriggerTransition(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerTransition)}
 
 RVA(0x0010d290, 0xf4)
 i32 CreateCheckpointTrigger(CGameObject* obj) {

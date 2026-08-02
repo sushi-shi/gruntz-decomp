@@ -85,7 +85,7 @@ HINSTANCE g_appHInstance;
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
-    CoordPoolNode* pool = static_cast<CoordPoolNode*>(RezAlloc(0x3a980));
+    CoordPoolNode* pool = static_cast<CoordPoolNode*>(::operator new(0x3a980));
     g_coordPool.m_block = pool;
     if (!pool) {
         ReportError(0x800a, 0x404);
@@ -116,7 +116,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     while (::ShowCursor(0) >= 0) {
     }
 
-    Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(RezAlloc(0x21c));
+    Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(::operator new(0x21c));
     if (reg) {
         reg->m_open = 0;
     }
@@ -202,7 +202,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (szCmdLine) {
         char buf[0x130];
         strcpy(buf, szCmdLine);
-        StrUpr(buf);
+        _strupr(buf);
         if (strstr(buf, "PLAY")) {
             mode = 3;
         }
@@ -290,7 +290,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     if (m_symParser) {
         m_symParser->CSymParser::~CSymParser();
-        RezFree(m_symParser);
+        ::operator delete(m_symParser);
         m_symParser = 0;
     }
     m_symParser = new CSymParser;
@@ -346,7 +346,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_inputState->Teardown();
 
         (&m_inputState->m_list)->CPtrList::~CPtrList();
-        RezFree(m_inputState);
+        ::operator delete(m_inputState);
         m_inputState = 0;
     }
     m_inputState = new CWorldSoundSet;
@@ -371,7 +371,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SetVoiceVolume(vVoiVol);
     m_scrollSpeed = vScroll;
 
-    m_logicPump = static_cast<CLightFxMgr*>(RezAlloc(0x3c));
+    m_logicPump = static_cast<CLightFxMgr*>(::operator new(0x3c));
     if (m_logicPump) {
         m_logicPump->m_reg = 0;
         m_logicPump->m_world = 0;
@@ -384,7 +384,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!m_logicPump->Init(0, this)) {
         if (m_logicPump) {
             m_logicPump->Reset();
-            RezFree(m_logicPump);
+            ::operator delete(m_logicPump);
             m_logicPump = 0;
         }
         ReportError(0x800a, 0x411);
@@ -398,7 +398,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_scoreHud = new CBattlezData;
     m_scoreHud->InitWithRecords(m_saveSink->m_pad24);
 
-    g_spawnConfig = static_cast<StateMgrBZ*>(RezAlloc(sizeof(StateMgrBZ)));
+    g_spawnConfig = static_cast<StateMgrBZ*>(::operator new(sizeof(StateMgrBZ)));
     if (g_spawnConfig) {
         g_spawnConfig->m_device = 0;
         g_spawnConfig->m_keyboard = 0;
@@ -415,7 +415,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_spawnConfig->m_joystick2 = 0;
             g_spawnConfig->m_deviceList = 0;
             g_spawnConfig->m_mode = 0;
-            RezFree(g_spawnConfig);
+            ::operator delete(g_spawnConfig);
             g_spawnConfig = 0;
         }
         ReportError(0x800a, 0x413);
@@ -433,7 +433,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x415);
         return 0;
     }
-    m_spriteFactory = static_cast<CSpriteRefTable*>(RezAlloc(0x94));
+    m_spriteFactory = static_cast<CSpriteRefTable*>(::operator new(0x94));
     if (m_spriteFactory) {
         m_spriteFactory->m_factory = 0;
         m_spriteFactory->m_spriteMgrHolder = 0;
@@ -447,7 +447,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
         if (m_spriteFactory) {
             m_spriteFactory->Reset();
-            RezFree(m_spriteFactory);
+            ::operator delete(m_spriteFactory);
             m_spriteFactory = 0;
         }
 
@@ -506,7 +506,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
                 g_buteMgr.m_parseFailed = 1;
                 ok = 0;
             }
-            RezFree(rdr);
+            ::operator delete(rdr);
         }
         if (!ok) {
             ReportError(0x800a, 0x418);

@@ -1,6 +1,5 @@
 #include <Gruntz/Fader.h>
 #include <EmptyString.h>
-#include <Rez/RezAlloc.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/FaderSubtypes.h>
 #include <Ints.h>
@@ -924,13 +923,14 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             i32 newSize = idx + 1;
             if (newSize == 0) {
                 if (mesh->m_pData) {
-                    RezFree(mesh->m_pData);
+                    ::operator delete(mesh->m_pData);
                     mesh->m_pData = 0;
                 }
                 mesh->m_nMaxSize = 0;
                 mesh->m_nSize = 0;
             } else if (mesh->m_pData == 0) {
-                mesh->m_pData = static_cast<RezElem40*>(RezAlloc(newSize * sizeof(RezElem40)));
+                mesh->m_pData =
+                    static_cast<RezElem40*>(::operator new(newSize * sizeof(RezElem40)));
                 memset(mesh->m_pData, 0, newSize * sizeof(RezElem40));
                 mesh->m_nMaxSize = newSize;
                 mesh->m_nSize = newSize;
@@ -954,10 +954,10 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 if (newSize >= newMax) {
                     newMax = newSize;
                 }
-                RezElem40* nd = static_cast<RezElem40*>(RezAlloc(newMax * sizeof(RezElem40)));
+                RezElem40* nd = static_cast<RezElem40*>(::operator new(newMax * sizeof(RezElem40)));
                 memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(RezElem40));
                 memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(RezElem40));
-                RezFree(mesh->m_pData);
+                ::operator delete(mesh->m_pData);
                 mesh->m_pData = nd;
                 mesh->m_nSize = newSize;
                 mesh->m_nMaxSize = newMax;
@@ -976,12 +976,12 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
     }
     if (nNewSize == 0) {
         if (m_pData != 0) {
-            RezFree(m_pData);
+            ::operator delete(m_pData);
             m_pData = 0;
         }
         m_nSize = m_nMaxSize = 0;
     } else if (m_pData == 0) {
-        m_pData = static_cast<RezElem40*>(RezAlloc(nNewSize * sizeof(RezElem40)));
+        m_pData = static_cast<RezElem40*>(::operator new(nNewSize * sizeof(RezElem40)));
         memset(m_pData, 0, nNewSize * sizeof(RezElem40));
         m_nSize = m_nMaxSize = nNewSize;
     } else if (nNewSize <= m_nMaxSize) {
@@ -1005,10 +1005,10 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         } else {
             nNewMax = nNewSize;
         }
-        RezElem40* pNewData = static_cast<RezElem40*>(RezAlloc(nNewMax * sizeof(RezElem40)));
+        RezElem40* pNewData = static_cast<RezElem40*>(::operator new(nNewMax * sizeof(RezElem40)));
         memcpy(pNewData, m_pData, m_nSize * sizeof(RezElem40));
         memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(RezElem40));
-        RezFree(m_pData);
+        ::operator delete(m_pData);
         m_pData = pNewData;
         m_nSize = nNewSize;
         m_nMaxSize = nNewMax;
@@ -1033,7 +1033,7 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     m_percent = s->m_durationPercent;
     m_previousFrame = 0;
     m_desc14 = s->m_splitPercent;
-    m_frames = static_cast<i32*>(RezAlloc(m_src->m_height << 2));
+    m_frames = static_cast<i32*>(::operator new(m_src->m_height << 2));
     for (i32 i = 0; i < m_src->m_height; i++) {
         m_frames[i] = 0;
     }
@@ -1119,7 +1119,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
 // @early-stop
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
-    void* scratch = RezAlloc(m_dstSurface->m_width);
+    void* scratch = ::operator new(m_dstSurface->m_width);
     m_dstSurface->Clear(0);
     m_srcSurface->Lock(0);
     u8* base = static_cast<u8*>(m_dstSurface->Lock(0));
@@ -1142,7 +1142,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
 
     m_srcSurface->m_ddSurface->Unlock(0);
     m_dstSurface->m_ddSurface->Unlock(0);
-    RezFree(scratch);
+    ::operator delete(scratch);
 }
 
 RVA_COMPGEN(0x00181700, 0x1e, ??_GCFaderShape@@UAEPAXI@Z)
@@ -1234,7 +1234,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         }
     }
 
-    m_warpTable = static_cast<i32*>(RezAlloc(m_halfWidth * 8));
+    m_warpTable = static_cast<i32*>(::operator new(m_halfWidth * 8));
     for (i = 0; i < 2 * m_halfWidth; i++) {
         m_warpTable[i] = static_cast<i32>(
             (acos(
@@ -1265,7 +1265,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         }
 
         i32 m = m_halfWidth << 1;
-        m_shadeRamp = static_cast<u8*>(RezAlloc(m));
+        m_shadeRamp = static_cast<u8*>(::operator new(m));
         for (i = 0; i < m; i++) {
             i32 t = static_cast<i32>(
                 (sin(static_cast<float>(i) / static_cast<float>(m) * 3.14f) * -32.0)
@@ -1274,9 +1274,9 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         }
     }
 
-    m_rowOfsA = static_cast<i32*>(RezAlloc(m_rowCount * 4));
-    m_rowOfsB = static_cast<i32*>(RezAlloc(m_rowCountB * 4));
-    m_rowOfsC = static_cast<i32*>(RezAlloc(m_rowCountC * 4));
+    m_rowOfsA = static_cast<i32*>(::operator new(m_rowCount * 4));
+    m_rowOfsB = static_cast<i32*>(::operator new(m_rowCountB * 4));
+    m_rowOfsC = static_cast<i32*>(::operator new(m_rowCountC * 4));
     for (i = 0; i < m_rowCount; i++) {
         m_rowOfsA[i] = m_surfA->m_pitch * i;
         m_rowOfsB[i] = m_surfB->m_pitch * i;
@@ -1284,7 +1284,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
 
     mx = (m_rowCount > m_span) ? m_rowCount : m_span;
-    m_lineBuf = static_cast<u8*>(RezAlloc(m_surfA->m_bytesPerPixel * mx));
+    m_lineBuf = static_cast<u8*>(::operator new(m_surfA->m_bytesPerPixel * mx));
     return 1;
 fail:
     return 0;

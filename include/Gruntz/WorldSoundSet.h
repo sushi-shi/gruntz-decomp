@@ -92,6 +92,4 @@ extern i32 g_posSoundReq;
 
 struct CGameObject;
 
-i32 SpawnPosSound(CGameObject* obj);
-
 #endif // GRUNTZ_CWORLDSOUNDSET_H

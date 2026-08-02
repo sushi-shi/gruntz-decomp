@@ -74,6 +74,4 @@ SIZE(0x28);
 extern CAreaMgr g_areaMgr;
 extern CAreaMgr* g_pAreaMgr;
 
-extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n);
-
 #endif // SRC_GRUNTZ_AREAMGR_H

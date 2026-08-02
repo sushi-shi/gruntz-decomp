@@ -1,6 +1,5 @@
 #include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Rez/RezAlloc.h>
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -29,7 +28,7 @@ i32 CWarpStoneFly::Tick(i32 dt) {
             m_owner->TryActivate();
         }
         if (m_owner->m_retabNotify != 0) {
-            RezFree(m_owner->m_retabNotify);
+            ::operator delete(m_owner->m_retabNotify);
             m_owner->m_retabNotify = 0;
         }
         return 1;

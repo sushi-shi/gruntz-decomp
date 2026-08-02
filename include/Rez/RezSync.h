@@ -8,8 +8,6 @@ extern i32 g_dlgVal_6451a4, g_dlgVal_645268, g_dlgVal_64526c, g_dlgVal_6452a8;
 extern i32 g_dlgVal_6452d0, g_dlgVal_6452d4, g_dlgVal_645538, g_dlgVal_645558;
 extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 
-extern "C" char* StrUpr(char*);
-
 extern "C" void ButeParseErrorSink(const char* msg);
 
 extern "C" i32 g_attractStateCount;

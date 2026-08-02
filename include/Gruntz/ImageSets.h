@@ -4,8 +4,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Rez/RezAlloc.h>
-
 struct WwdTileImageRecord {
     char m_header[8];
     i32 m_fields[1];
@@ -49,10 +47,10 @@ struct CImageSet1 : public CTileImageSet {
         m_width = 0;
     }
     void* operator new(size_t n) {
-        return RezAlloc(n);
+        return ::operator new(n);
     }
     void operator delete(void* p) {
-        RezFree(p);
+        ::operator delete(p);
     }
 
     i32 m_height;
@@ -80,10 +78,10 @@ struct CImageSet2 : public CTileImageSet {
         m_width = 0;
     }
     void* operator new(size_t n) {
-        return RezAlloc(n);
+        return ::operator new(n);
     }
     void operator delete(void* p) {
-        RezFree(p);
+        ::operator delete(p);
     }
 
     i32 m_height;
@@ -121,10 +119,10 @@ struct CImageSet3 : public CTileImageSet {
         m_pixels = 0;
     }
     void* operator new(size_t n) {
-        return RezAlloc(n);
+        return ::operator new(n);
     }
     void operator delete(void* p) {
-        RezFree(p);
+        ::operator delete(p);
     }
 
     i32 m_height;

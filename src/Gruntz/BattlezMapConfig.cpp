@@ -162,7 +162,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             }
             slot->m_x = cur->m_screenX / 32;
             slot->m_y = cur->m_screenY / 32;
-            SetAtGrow(m_candArray.GetSize(), slot);
+            m_candArray.SetAtGrow(m_candArray.GetSize(), slot);
         }
     }
 
@@ -186,7 +186,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             }
             slot->m_x = cur3->m_screenX >> 5;
             slot->m_y = cur3->m_screenY >> 5;
-            SetAtGrow(m_attackWaypoints.GetSize(), slot);
+            m_attackWaypoints.SetAtGrow(m_attackWaypoints.GetSize(), slot);
             cur3->m_flags |= 0x10000;
         }
     }

@@ -172,7 +172,7 @@ char* CParseSource::BeginParse() {
     if (m_length == 0) {
         return 0;
     }
-    m_buffer = static_cast<char*>(RezAlloc(m_length));
+    m_buffer = static_cast<char*>(::operator new(m_length));
     if (m_buffer == 0) {
         return 0;
     }
@@ -391,7 +391,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
     }
 
     if (m_size > 0) {
-        m_buf = static_cast<u8*>(RezAlloc(m_size));
+        m_buf = static_cast<u8*>(::operator new(m_size));
         if (m_buf != 0) {
             m_src->m_activeNode->Read(m_off, 0, m_size, m_buf);
         }
@@ -1385,7 +1385,7 @@ CParseSource* CSymParser::PopParseSlot() {
         rec = e->m_parseSource;
     }
     if (rec == 0) {
-        CSlotNode* node = static_cast<CSlotNode*>(RezAlloc(0xc));
+        CSlotNode* node = static_cast<CSlotNode*>(::operator new(0xc));
         if (node == 0) {
             return 0;
         }

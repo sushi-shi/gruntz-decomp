@@ -130,11 +130,11 @@ i32 CGruntzMgr::MakeRezPath() {
 
     CString rez(s_rezName);
     m_haveRez = 0;
-    RezFormat(&m_strRezPath, s_join, cwd, static_cast<LPCTSTR>(rez));
-    if (!RezFileExists(m_strRezPath)) {
+    m_strRezPath.Format(s_join, cwd, static_cast<LPCTSTR>(rez));
+    if (!FileExists(m_strRezPath)) {
         if (drive) {
-            RezFormat(&m_strRezPath, s_dataPath, drive, static_cast<LPCTSTR>(rez));
-            if (RezFileExists(m_strRezPath)) {
+            m_strRezPath.Format(s_dataPath, drive, static_cast<LPCTSTR>(rez));
+            if (FileExists(m_strRezPath)) {
                 m_haveRez = 1;
             } else {
                 found = 0;
@@ -150,16 +150,16 @@ i32 CGruntzMgr::MakeRezPath() {
 
     m_haveMoviez = 0;
     i32 movFound = 0;
-    RezFormat(&m_strMoviePath, s_join, cwd, static_cast<LPCTSTR>(fec));
-    if (!m_inGameDir && !RezFileExists(m_strMoviePath) && !g_disableHqMovie) {
-        RezFormat(&m_strMoviePath, s_join, cwd, static_cast<LPCTSTR>(fecHi));
-        if (RezFileExists(m_strMoviePath)) {
+    m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fec));
+    if (!m_inGameDir && !FileExists(m_strMoviePath) && !g_disableHqMovie) {
+        m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fecHi));
+        if (FileExists(m_strMoviePath)) {
             movFound = 1;
         }
     }
     if (!movFound && drive) {
-        RezFormat(&m_strMoviePath, s_moviezPath, drive, static_cast<LPCTSTR>(fec));
-        if (RezFileExists(m_strMoviePath)) {
+        m_strMoviePath.Format(s_moviezPath, drive, static_cast<LPCTSTR>(fec));
+        if (FileExists(m_strMoviePath)) {
             m_haveMoviez = 1;
         }
     }

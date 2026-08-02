@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Rez/RezAlloc.h>
-
 class DirectSoundMgr;
 
 struct DSoundLink {
@@ -27,7 +25,7 @@ struct PureSoundElem {
 };
 SIZE(0x4);
 inline void PureSoundElem::operator delete(void* p) {
-    RezFree(p);
+    ::operator delete(p);
 }
 
 struct DSoundElem : public PureSoundElem {

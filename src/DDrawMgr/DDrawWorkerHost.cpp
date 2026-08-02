@@ -1,5 +1,4 @@
 #include <rva.h>
-#include <Rez/RezAlloc.h>
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
@@ -33,15 +32,15 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         CWwdSpatialMgr* w = m_scroll;
         if (w != 0) {
             w->FreeGrids();
-            RezFree(w);
+            ::operator delete(w);
         }
     }
     if (m_tileGrid != 0) {
-        RezFree(m_tileGrid);
+        ::operator delete(m_tileGrid);
         m_tileGrid = 0;
     }
     if (m_colOffsets != 0) {
-        RezFree(m_colOffsets);
+        ::operator delete(m_colOffsets);
         m_colOffsets = 0;
     }
 }

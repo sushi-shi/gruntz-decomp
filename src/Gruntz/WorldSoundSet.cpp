@@ -669,7 +669,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
 }
 
 RVA(0x0000c840, 0x13d)
-i32 CommitSpriteAction(CGameObject* obj) {
+i32 CreateAmbientSound(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
     if (aux->m_actKey == 0) {
@@ -718,13 +718,13 @@ i32 CommitSpriteAction(CGameObject* obj) {
 }
 
 RVA(0x0000c9d0, 0x18)
-void StopPosSound(CGameObject* obj) {
+i32 CreateAmbientPosSound(CGameObject* obj) {
     g_posSoundReq = 2;
-    SpawnPosSound(obj);
+    return CreateSpotAmbientSound(obj);
 }
 
 RVA(0x0000ca00, 0xf0)
-i32 SpawnPosSound(CGameObject* obj) {
+i32 CreateSpotAmbientSound(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
     i32 state = aux->m_actKey;

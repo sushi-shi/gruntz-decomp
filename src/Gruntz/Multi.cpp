@@ -25,6 +25,9 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
 #include <Net/NetLobby.h>
+#include <Net/NetSession.h>
+#include <Gruntz/BracketValueParse.h>
+#include <Bute/ButeMgr.h>
 #include <Net/NetMgr.h>
 #include <Gruntz/Attract.h>
 
@@ -64,6 +67,10 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/Play.h>
 VTBL(CNetMgr, 0x001ea42c);
+// owner-TU unproven: bss sits in the gametext..gruntzcmdmgr window
+DATA(0x00245550)
+i32 g_cfgWord;
+
 DATA(0x002455fc)
 i32 g_optionsCursor = 0;
 
@@ -92,6 +99,10 @@ DATA(0x00246fe0)
 i32 g_chanStat422_val;
 DATA(0x00248ce0)
 HWND g_sharedFlag = 0;
+DATA(0x00248ce4)
+i32 g_playerLeftFlag;
+DATA(0x00248ce8)
+i32 g_scoreTimeBase;
 DATA(0x00248d04)
 i32 g_pauseGuard;
 DATA(0x00248d08)
@@ -133,6 +144,9 @@ i32 g_activePlayerCount = 0;
 DATA(0x002473d8)
 CString g_sessionName;
 
+DATA(0x002473e0)
+CChatPacket g_chatPacket;
+
 DATA(0x00248d00)
 HWND g_netPlayerListHwnd;
 
@@ -141,6 +155,8 @@ i32 g_hostServicesMode;
 
 DATA(0x00248cf4)
 CNetMgr* g_groupEnumMgr;
+DATA(0x00248cf8)
+CMulti* g_connectRptMgr;
 
 enum {
     STAT_VERIFY_REQUEST = 0x41c,
@@ -164,6 +180,8 @@ CMulti::~CMulti() {
 
 DATA(0x00246778)
 CFile g_obj646778;
+DATA(0x002467d8)
+char g_recvBuffer[0x800];
 
 // @early-stop
 RVA(0x000b5460, 0x914)
@@ -784,7 +802,7 @@ void CMulti::PumpB() {
         h->DrawBox(&m_hudRect, 0xff);
     }
     mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
-    PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
     if (mgr->m_level->m_mainPlane != 0) {
         (mgr->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
@@ -953,8 +971,8 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
     char nameBuf[0xa];
     char gameBuf[0x44];
-    g_setupDlgHwnd = hDlg;
-    if (BaseDlgProc(hDlg, msg, wParam, lParam) != 0) {
+    NetLobby::g_curDlg = hDlg;
+    if (BlockScreenSaver(hDlg, msg, wParam, lParam) != 0) {
         return 1;
     }
 
@@ -1078,8 +1096,8 @@ i32 CMulti::JoinSession() {
 
 RVA(0x000b8020, 0x22f)
 INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    g_setupDlgHwnd = hDlg;
-    if (BaseDlgProc(hDlg, msg, wParam, lParam) != 0) {
+    NetLobby::g_curDlg = hDlg;
+    if (BlockScreenSaver(hDlg, msg, wParam, lParam) != 0) {
         goto ret_true;
     }
     switch (msg) {
@@ -1295,7 +1313,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
 
         MsgParam name;
         i32 idx;
-        if (NetFormatKeyed(buf, player->m_desc.m_lpszName, "NAME")) {
+        if (ExtractBracketValue(buf, player->m_desc.m_lpszName, "NAME")) {
             name.m_str = buf;
             idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
         } else {
@@ -1323,10 +1341,10 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
-    Cfg_SetSection(buf, "%s", m_groupName);
-    Cfg_AppendKeyVal(buf, "CMDDELAY", m_commandDelay);
-    Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
-    Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
+    MakeButeSectionKey(buf, "%s", m_groupName);
+    AppendInt(buf, "CMDDELAY", m_commandDelay);
+    AppendInt(buf, "RESEND", m_drainReload);
+    AppendInt(buf, "LEVEL", ResyncLParam());
 
     CNetPlayerListNode* enumResult = g_groupEnumMgr->EnumGroupsInto(4, buf, 0, g_emptyString);
     if (enumResult == 0) {
@@ -1371,19 +1389,19 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 
     char buf[0x100];
 
-    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "CMDDELAY")) {
+    if (ExtractBracketValue(buf, sel->m_desc.m_lpszName, "CMDDELAY")) {
         m_commandDelay = atoi(buf);
     }
-    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "RESEND")) {
+    if (ExtractBracketValue(buf, sel->m_desc.m_lpszName, "RESEND")) {
         m_drainReload = atoi(buf);
     }
-    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "DynCmdDelay")) {
+    if (ExtractBracketValue(buf, sel->m_desc.m_lpszName, "DynCmdDelay")) {
         ApplyDynSetting(CString(buf));
     }
     m_syncGate = 0;
     ResyncLParam() = 1;
     m_hostIndex = LocalPlayer()->m_id;
-    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "LEVEL")) {
+    if (ExtractBracketValue(buf, sel->m_desc.m_lpszName, "LEVEL")) {
         ResyncLParam() = atoi(buf);
     }
 
@@ -1718,7 +1736,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (e == 0) {
                 break;
             }
-            PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             break;
         }
 
@@ -2456,13 +2474,13 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
             ->AddItem(line, 0x30, player->m_colorIndex);
     }
 
-    g_chatPacket_id = STAT_CHAT;
+    g_chatPacket.m_id = STAT_CHAT;
 
     i32 n = strlen(line);
-    g_chatPacket_val = 0;
-    strcpy(&g_chatPacket_buf, line);
-    g_chatPacket_flag |= 0x80;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket_flag, n + 0xd);
+    g_chatPacket.m_val = 0;
+    strcpy(g_chatPacket.m_buf, line);
+    g_chatPacket.m_flag |= 0x80;
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket, n + 0xd);
     return 1;
 }
 
@@ -3295,8 +3313,8 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
 
     packet.m_flags |= 0x80;
     packet.m_remoteVersion = g_remoteVersion;
-    packet.m_buteConfig = g_buteMgrField4;
     packet.m_cfgWord = g_cfgWord;
+    packet.m_butePos = g_buteMgr.m_pos;
     packet.m_localVersion = g_localVersion;
     packet.m_statId = STAT_VERSIONPACKET;
 

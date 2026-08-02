@@ -93,7 +93,7 @@ void CNetSession::ResetSync() {
     while (freeList.GetCount() != 0) {
         void* p = freeList.RemoveTail();
         if (p) {
-            RezFree(p);
+            ::operator delete(p);
         }
     }
 }

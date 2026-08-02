@@ -6,6 +6,11 @@
 #include <Gruntz/SerialArchive.h>
 #include <rva.h>
 
+DATA(0x00229a50)
+char g_syncErrMsgBuf[0x80];
+DATA(0x00229ad0)
+i32 g_serialCounter;
+
 RVA(0x00013610, 0x8c)
 i32 SerializeSyncMarker(CFileMemBase* arc, i32 mode, const char* name, i32 line) {
     if (mode == 4) {

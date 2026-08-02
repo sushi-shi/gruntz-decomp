@@ -94,11 +94,11 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
 
             i32 len;
             arc->Read(&len, 4);
-            void* buf = RezAlloc(len);
+            void* buf = ::operator new(len);
             arc->Read(buf, len);
             istrstream accum(static_cast<char*>(buf), len);
             accum >> m_link.m_str;
-            RezFree(buf);
+            ::operator delete(buf);
             arc->Read(&m_gatedActKey, 4);
             arc->Read(&m_reserved2c, 4);
             arc->Read(&g_logicTypesRegistered, 4);
@@ -212,11 +212,11 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameOb
 
             i32 len;
             arc->Read(&len, 4);
-            void* buf = RezAlloc(len);
+            void* buf = ::operator new(len);
             arc->Read(buf, len);
             istrstream accum(static_cast<char*>(buf), len);
             ReadCurve(accum, *Motion());
-            RezFree(buf);
+            ::operator delete(buf);
             arc->Read(&m_previousScreenPosition.m_x, 4);
             arc->Read(&m_previousScreenPosition.m_y, 4);
             arc->Read(&m_collisionFlags, 4);

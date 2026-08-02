@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h>
 #include <Mfc.h>
 #include <Rez/FrameClock.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -59,6 +60,39 @@ static const char s_keyC[] = "C";
 static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
+
+// damage% by [entrance reason][attack kind]; retail .rdata 23x23 matrix
+DATA(0x001e9788)
+const u8 g_hitTable[23][23] = {
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+     100, 100, 100, 100, 100, 100, 100, 0,   100, 100, 100},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 15, 20, 40, 25, 5, 10, 15, 25, 0, 20, 5, 30, 25, 20, 50, 100, 10, 0, 100, 50, 5},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {0, 100, 30, 10, 20, 10, 0, 5, 5, 50, 5, 40, 0, 15, 10, 10, 25, 100, 5, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+    {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
+};
+
+// zero-init; filled at runtime by the (unreconstructed) fn in gap 0x58f3c-0x59230
+DATA(0x00244970)
+i32 g_dirVec[9][4];
 
 DATA(0x00244ab0)
 GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, 1);
@@ -1157,7 +1191,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    i32 hit = g_hitTable[this->m_entranceReason * 23 + attackKind];
+    i32 hit = g_hitTable[this->m_entranceReason][attackKind];
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_gameMode == 1 && this->m_tileOwnerHi == g_curPlayer) {
         i32 t = hit / 2;
@@ -1167,7 +1201,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     if (attackerGruntKind == 0x3a) {
         hit = 0x64;
     } else if (this->m_gruntKind == 0x3c) {
-        hit = static_cast<i32>((static_cast<float>(hit) * g_dtScale));
+        hit = static_cast<i32>((static_cast<float>(hit) * g_quarterScale));
         if (fromProjectile == 0) {
             CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
             if (enemy != 0 && enemy->m_entranceCommitted != 0) {
@@ -1433,20 +1467,20 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     } else {
         float slope = static_cast<float>(dy) / dx;
-        if (slope > g_tanC0 || slope < g_tanC1) {
+        if (slope > g_slopeTwo || slope < g_slopeNegTwo) {
             if (srcPxY > this->m_object->m_screenY) {
                 SETDIR(2, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
             } else {
                 SETDIR(1, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
             }
-        } else if (slope > g_tanC2 || slope < g_tanC3) {
-            if (slope > g_tanC2) {
+        } else if (slope > g_slopeHalf || slope < g_slopeZero) {
+            if (slope > g_slopeHalf) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(6, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y - 0x20);
                 } else {
                     SETDIR(5, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y + 0x20);
                 }
-            } else if (slope < g_tanC3) {
+            } else if (slope < g_slopeZero) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(4, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y + 0x20);
                 } else {
@@ -1772,7 +1806,7 @@ CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
 }
 
 RVA(0x0005baf0, 0xf4)
-i32 GruntSpawnPump(CGameObject* owner) {
+i32 CreateGrunt(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
@@ -1922,3 +1956,15 @@ void CGrunt::Activate() {
 }
 
 #undef REGISTER_KEY_644AF0
+
+DATA(0x001e999c)
+const float g_quarterScale = 0.25f;
+
+DATA(0x001e99a0)
+const float g_slopeTwo = 2.0f;
+DATA(0x001e99a4)
+const float g_slopeNegTwo = -2.0f;
+DATA(0x001e99a8)
+const double g_slopeHalf = 0.5;
+DATA(0x001e99b0)
+const double g_slopeZero = 0.0;

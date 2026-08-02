@@ -1,5 +1,4 @@
 #include <Gruntz/GruntzMgr.h>
-#include <Rez/RezAlloc.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>

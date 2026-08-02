@@ -9,7 +9,6 @@
 #include <Crypto/FecCrypt.h>
 
 #include <ddraw.h>
-#include <Rez/RezAlloc.h>
 
 union SmackSource {
     const char* m_path;

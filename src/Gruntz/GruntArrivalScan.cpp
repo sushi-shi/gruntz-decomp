@@ -1,3 +1,4 @@
+#include <Gruntz/GameRand.h>
 #include <Mfc.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/Brickz.h>

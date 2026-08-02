@@ -1,5 +1,4 @@
 #include <Mfc.h>
-#include <Rez/RezAlloc.h>
 #include <Io/FileMem.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h>
@@ -127,11 +126,11 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     m_width = width;
     m_height = height;
     m_cellCount = count;
-    m_cellPool = static_cast<BrickzCell*>(RezAlloc(count * 0x1c));
+    m_cellPool = static_cast<BrickzCell*>(::operator new(count * 0x1c));
     if (m_cellPool == 0) {
         return 0;
     }
-    m_rows = static_cast<BrickzCell**>(RezAlloc(height * 4));
+    m_rows = static_cast<BrickzCell**>(::operator new(height * 4));
     if (m_rows == 0) {
         return 0;
     }

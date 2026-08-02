@@ -332,7 +332,6 @@ extern "C" i32 g_scoreTimeBase;
 i32 PumpIdleFrame();
 
 extern "C" i32 g_monologoShown;
-extern "C" void Format(CString* dst, const char* fmt, ...);
 
 extern "C" char g_msgScratch[256];
 
@@ -357,7 +356,6 @@ extern CString g_brickText2;
 extern "C" CGruntzMgr* g_gameReg;
 
 extern "C" u32 GameGetTime(void);
-extern "C" void RecomputePlaneCoords(void);
 
 extern i32 g_warpX;
 extern i32 g_warpY;
@@ -369,7 +367,7 @@ i32 FindProcessByName(const char* name, i32 flag, void** out);
 i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();
-i32 FileExists(char* szPath);
+i32 FileExists(const char* szPath);
 void operator delete(void*);
 void ChannelSlots_InitAll();
 

@@ -105,7 +105,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
         v3->m_scaledX = sx;
         v3->m_scaledY = sy;
     }
-    RecomputePlaneCoords();
+    v3->RecomputePlaneCoords();
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != 0) {
@@ -127,7 +127,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
             }
             g2->m_scaledX = fx;
             g2->m_scaledY = fy;
-            RecomputePlaneCoords();
+            g2->RecomputePlaneCoords();
             g_scrollLimit = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollAccum = g_frameTime;
         }

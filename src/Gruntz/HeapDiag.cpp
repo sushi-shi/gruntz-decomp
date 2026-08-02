@@ -31,7 +31,7 @@ void ClearTopmostStyle(HWND hWnd) {
 }
 
 RVA(0x001189c0, 0x45)
-i32 FileExists(char* szPath) {
+i32 FileExists(const char* szPath) {
     OFSTRUCT of;
 
     if (!szPath) {
@@ -186,7 +186,12 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
         do {
             MODULEENTRY32 me;
             memset(&me, 0, sizeof(me));
-            if (LegacyFindModule(pe.th32ProcessID, pe.th32ModuleID, &me, sizeof(me))) {
+            if (Utils::WinAPI::LegacyFindModule(
+                    pe.th32ProcessID,
+                    pe.th32ModuleID,
+                    &me,
+                    sizeof(me)
+                )) {
                 if (isFullPath) {
                     if (_stricmp(name, me.szExePath) == 0) {
                         matchCount++;

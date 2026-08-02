@@ -1,3 +1,4 @@
+#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -12,6 +13,13 @@
 #include <rva.h>
 #include <MsgParam.h>
 #include <string.h>
+
+DATA(0x0024bdc4)
+i32 g_watchBusy;
+DATA(0x0024bdc8)
+i32 g_watchBlinkA;
+DATA(0x0024bdcc)
+i32 g_watchBlinkB;
 
 #include <Gruntz/GruntzPlayer.h>
 
@@ -151,18 +159,6 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     text.m_str = buf;
     ::SendMessageA(edit, 0xc2, 0, text.m_lparam);
     ::SendMessageA(edit, 0xb6, 0, 0x270f);
-}
-
-static __inline i32 GameRand() {
-    i32 seed;
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = static_cast<i32>(::timeGetTime());
-    } else {
-        seed = g_randSeed;
-    }
-    g_randSeed = seed * 214013 + 2531011;
-    return (g_randSeed >> 0x10) & 0x7fff;
 }
 
 // @early-stop

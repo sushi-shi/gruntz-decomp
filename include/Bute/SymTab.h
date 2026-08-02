@@ -5,7 +5,6 @@
 #include <rva.h>
 
 #include <Bute/Hash.h>
-#include <Rez/RezAlloc.h>
 
 void* operator new(u32 size);
 
@@ -41,10 +40,10 @@ public:
 
     ~CSymRec();
     void* operator new(u32 n) {
-        return RezAlloc(n);
+        return ::operator new(n);
     }
     void operator delete(void* p) {
-        RezFree(p);
+        ::operator delete(p);
     }
 
     i32 m_key;
@@ -74,10 +73,10 @@ public:
     ~CSymTab();
 
     void* operator new(u32 n) {
-        return RezAlloc(n);
+        return ::operator new(n);
     }
     void operator delete(void* p) {
-        RezFree(p);
+        ::operator delete(p);
     }
 
     CSymTab* CreateSub(const char* name);

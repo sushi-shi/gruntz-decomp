@@ -154,7 +154,7 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
         }
         if (useHash != 0) {
             CString nm = e->GetName();
-            if (SpawnNameCmp(nm, name, nm.GetLength()) == 0) {
+            if (strncmp(nm, name, nm.GetLength()) == 0) {
                 return e;
             }
         } else {
@@ -180,7 +180,7 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
             return e;
         }
         CString empty;
-        if (SpawnNameCmp(nm, empty, nm.GetLength()) == 0) {
+        if (strncmp(nm, empty, nm.GetLength()) == 0) {
             return e;
         }
     }

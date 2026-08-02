@@ -3,10 +3,19 @@
 
 #include <Ints.h>
 
-i32 FileExists(char* path);
+i32 FileExists(const char* path);
 
 struct tagMODULEENTRY32;
-extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, struct tagMODULEENTRY32* out, u32 size);
+namespace Utils {
+    namespace WinAPI {
+        i32 LegacyFindModule(
+            unsigned long th32ProcessID,
+            unsigned long moduleID,
+            void* outBuf,
+            unsigned long bufSize
+        );
+    } // namespace WinAPI
+} // namespace Utils
 
 namespace ApiCallerStubs {
     void ReportHeapStatus(i32 status);

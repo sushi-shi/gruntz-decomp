@@ -1,3 +1,4 @@
+#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -721,18 +722,6 @@ RVA(0x000160d0, 0xb)
 i32 CBattlezDlg::OnInitDialog() {
     CDialog::OnInitDialog();
     return 1;
-}
-
-static __inline i32 GameRand() {
-    i32 seed;
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = static_cast<i32>(::timeGetTime());
-    } else {
-        seed = g_randSeed;
-    }
-    g_randSeed = seed * 214013 + 2531011;
-    return (g_randSeed >> 0x10) & 0x7fff;
 }
 
 // @early-stop

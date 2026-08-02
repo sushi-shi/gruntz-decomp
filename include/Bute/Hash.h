@@ -5,8 +5,6 @@
 #include <rva.h>
 #include <string.h>
 
-#include <Rez/RezAlloc.h>
-
 #include <Dsndmgr/SoundVoiceList.h>
 
 class CHashBase;

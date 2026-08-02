@@ -3,7 +3,6 @@
 #define CGAMEOBJECT_OOL_CTOR
 
 #include <Mfc.h>
-#include <Rez/RezAlloc.h>
 #include <rva.h>
 #include <Ints.h>
 #include <Win32.h>

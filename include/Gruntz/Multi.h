@@ -286,18 +286,10 @@ void MultiJoinHandler();
 class CFile;
 
 extern "C" i32 g_serviceId;
-extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, const char* arg);
 
-extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val);
 extern "C" CMulti* g_connectRptMgr;
-extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key);
-extern "C" HWND g_setupDlgHwnd;
-extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam);
 extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList);
-extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
 extern CFile g_obj646778;
-extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
-extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c);
 
 extern "C" HWND g_sharedFlag;
 

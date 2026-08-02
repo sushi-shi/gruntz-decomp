@@ -119,7 +119,7 @@ i32 CDemo::Render() {
 
 // @early-stop
 RVA(0x0003c300, 0x183)
-i32 DemoAutoScrollStep(CGameObject* owner) {
+i32 CreateDemoMover(CGameObject* owner) {
     AnimWorkerObj* st = owner->m_animWorker;
     switch (st->ActKey()) {
         case 1: {

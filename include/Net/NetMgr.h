@@ -40,7 +40,6 @@ union NetGuid {
 
 extern NetGuid g_dplayAppGuid;
 extern "C" i32 g_cfgWord;
-extern "C" i32 g_buteMgrField4;
 
 struct CNetVersionMsg {
     char m_pad0[0x18];
@@ -54,8 +53,8 @@ struct CNetVersionPacket {
     char m_pad1[3];
 
     i32 m_statId;
-    i32 m_buteConfig;
     i32 m_cfgWord;
+    i32 m_butePos;
     char m_pad10[8];
     i32 m_remoteVersion;
     i32 m_localVersion;
@@ -269,10 +268,10 @@ struct CNetSession {
     void BuildGruntzCrcInfo();
 
     void* operator new(size_t n) {
-        return RezAlloc(static_cast<u32>(n));
+        return ::operator new(static_cast<u32>(n));
     }
     void operator delete(void* p) {
-        RezFree(p);
+        ::operator delete(p);
     }
 
     CNetSession() {
@@ -466,7 +465,7 @@ public:
 };
 SIZE(0x24);
 
-extern "C" const GUID g_netDirectPlayRiid;
+extern "C" const GUID IID_IDirectPlay4A;
 
 extern "C" BOOL __stdcall
 NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
@@ -519,10 +518,15 @@ extern u8 g_chanStat423_flag;
 extern i32 g_chanStat423_id;
 extern i32 g_chanStat423_val;
 
-extern "C" u8 g_chatPacket_flag;
-extern "C" i32 g_chatPacket_id;
-extern "C" i32 g_chatPacket_val;
-extern "C" char g_chatPacket_buf;
+struct CChatPacket {
+    u8 m_flag;
+    char m_pad1[3];
+    i32 m_id;
+    i32 m_val;
+    char m_buf[0x100]; // capacity unproven
+};
+
+extern CChatPacket g_chatPacket;
 
 extern "C" i32 g_playerLeftFlag;
 extern "C" i32 g_activePlayerCount;
