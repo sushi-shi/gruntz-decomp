@@ -1730,7 +1730,6 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
 RVA(0x00171640, 0x3f2)
 bool CButeMgr::Save() {
     Init();
-    streambuf* outputBuffer = 0;
     if (m_str108.IsEmpty()) {
         return false;
     }
@@ -1754,8 +1753,7 @@ bool CButeMgr::Save() {
     iostream* source = &sourceStore;
     if (m_encrypted) {
         m_crypt.Decode(&input, source);
-        outputBuffer = new strstreambuf(length);
-        m_pText = new iostream(outputBuffer);
+        m_pText = new iostream(new strstreambuf(length));
     } else {
         char block[0x1000];
         while (!input.eof()) {
@@ -1780,7 +1778,7 @@ bool CButeMgr::Save() {
 
     delete[] static_cast<strstreambuf*>(source->rdbuf())->str();
     if (m_encrypted) {
-        delete outputBuffer;
+        delete m_pText->rdbuf();
     }
     delete m_pText;
 
