@@ -1743,12 +1743,13 @@ bool CButeMgr::Save() {
     input.clear();
     input.seekg(0);
 
-    // Retail shape (byte-proven): the strstream temp is bound through an iostream&
-    // cast, so cl5 registers/destroys it as a plain iostream (??_Diostream funclet,
-    // ??1iostream+??1ios teardown; ??_Dstrstream exists nowhere in GRUNTZ.EXE), and
-    // the parse buffer is allocated inline in the ctor args (arg-order-proven).
-    // clang rejects the non-const ref binding, so the label pass gets an
-    // equivalent two-line spelling.
+    // The parse stream is a plain local (its implicit dtor inlines to ??1iostream +
+    // ??1ios, so the unreferenced ??1strstream COMDAT is dropped at link - which is
+    // why GRUNTZ.EXE contains no strstream dtor). The buffer is allocated inline in
+    // the ctor args (arg-order proven), and the stream is handed around by POINTER:
+    // retail's neg/sbb/and at the Decode call is cl5's null-checked upcast of a
+    // pointer expression (strstream* -> ostream*, +0xc), which a reference cannot
+    // produce.
     strstream sourceStore(new char[length], length, ios::in | ios::out);
     iostream* source = &sourceStore;
     if (m_encrypted) {
@@ -1776,7 +1777,7 @@ bool CButeMgr::Save() {
         m_crypt.Encode(m_pText, &output);
     }
 
-    delete[] static_cast<strstreambuf*>(source->rdbuf())->str();
+    delete[] sourceStore.str();
     if (m_encrypted) {
         delete m_pText->rdbuf();
     }
