@@ -1576,10 +1576,12 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     return this;
 }
 
-// Force-emit device, wall-blocked (docs/patterns/msvc5-variable-ctor-inline-depth.md):
-// ??_Diostream@0x171a40 is only emitted for a STACK-constructed iostream (unwind
-// path); the natural `new iostream` at ParseText doesn't reference it. Dissolves
-// when a reconstructed ButeMgr function constructs an iostream by value.
+// Emit device for ??_Diostream@0x171a40. Save's iostream&-bound strstream temp is
+// now byte-true (state typed iostream, ??1iostream+??1ios teardown), but our cl
+// emits that funclet as inline dtor calls where retail's tail-jmps the ??_D helper,
+// so nothing else materializes the COMDAT. Dissolves when a ButeMgr function gains
+// a by-value stack iostream, or the funclet-helper divergence is solved
+// (docs/patterns/msvc5-variable-ctor-inline-depth.md).
 void EmitIostreamVbaseDtor(streambuf* b) {
     iostream s(b);
     s.flush();
@@ -1853,7 +1855,17 @@ bool CButeMgr::Save() {
     input.seekg(0);
 
     char* sourceData = new char[length];
-    strstream source(sourceData, length, ios::in | ios::out);
+    // Retail shape (byte-proven): the strstream temp is bound through an iostream&
+    // cast, so cl5 registers/destroys it as a plain iostream (??_Diostream funclet,
+    // ??1iostream+??1ios teardown; ??_Dstrstream exists nowhere in GRUNTZ.EXE).
+    // clang rejects the non-const ref binding, so the label pass gets an
+    // equivalent two-line spelling.
+#ifdef __clang__
+    strstream sourceStorage(sourceData, length, ios::in | ios::out);
+    iostream& source = sourceStorage;
+#else
+    iostream& source = (iostream&)strstream(sourceData, length, ios::in | ios::out);
+#endif
     if (m_encrypted) {
         BitStreamBlowfishDecode(&input, &source);
     } else {
@@ -1886,7 +1898,7 @@ bool CButeMgr::Save() {
         output.close();
     }
 
-    delete[] source.str();
+    delete[] sourceData;
     if (m_encrypted) {
         delete outputBuffer;
     }

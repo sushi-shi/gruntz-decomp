@@ -51,3 +51,15 @@ CGruntzMgr::ChangeState (70%) - through the normal matching/permute campaign.
 Re-test each device (delete it, census the emission) whenever its caller's
 fuzzy% materially improves; ForceEmitCStateDtor already fell this way once
 ??1CPlay/??_GCState landed in gruntzmgr.
+
+## Sibling divergence: funclet helper vs inline dtor pair (CButeMgr::Save)
+
+Retail registers Save's iostream&-bound strstream temp with a funclet that
+tail-jmps the `??_Diostream` helper; our cl, given the byte-proven same source
+shape (`iostream& source = (iostream&)strstream(...)` - the cast retypes the
+temp's EH registration, era ref-to-temp extension; clang gets an #ifdef
+spelling), emits the funclet as an inline `??1iostream`+`??1ios` call pair and
+never materializes the ??_D COMDAT. Same family of budget-dependent choices.
+The EmitIostreamVbaseDtor device carries the label until this converges.
+Byte-win from the reshape: ??_Dstrstream/??1strstream correctly vanish from
+the TU (retail has neither anywhere).
