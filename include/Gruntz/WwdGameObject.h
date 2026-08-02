@@ -12,16 +12,15 @@
 class CDDrawSurfaceMgr;
 
 struct WwdSnapshot {
-    i32 m_00;
-    i32 m_04;
-    i32 m_08;
-
+    i32 m_id;
+    i32 m_objectId;
+    i32 m_classId;
     i32 m_serialTypeId;
-    i32 m_10;
-    char m_name[0x80];
-    i32 m_94;
-    i32 m_98;
-    i32 m_9c;
+    i32 m_logicTypeId;
+    char m_workerName[0x80];
+    i32 m_screenX;
+    i32 m_screenY;
+    i32 m_sortKey;
 };
 SIZE(0xa0);
 

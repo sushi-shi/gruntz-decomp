@@ -94,70 +94,70 @@ CFxModeDesc::CFxModeDesc() {
 RVA(0x0017e7c0, 0x7a)
 CFxModeT1::CFxModeT1() {
     m_type = 1;
-    m_04 = 0;
-    m_08 = 0;
-    m_0c = 0;
-    m_10 = 0x32;
-    m_14 = 1;
-    m_18 = 1;
-    m_1c = 0;
-    m_20 = 0;
-    m_24 = g_emptyString;
-    m_28 = 0;
+    m_targetSurface = 0;
+    m_sourceSurface = 0;
+    m_warpSourceSurface = 0;
+    m_halfWidth = 0x32;
+    m_mode = 1;
+    m_stripCopy = 1;
+    m_useLut = 0;
+    m_shadeTable = 0;
+    m_shadeTablePath = g_emptyString;
+    m_palette = 0;
 }
 
 // @early-stop
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
     m_type = 2;
-    m_04 = 0;
-    m_08 = 0;
-    m_10 = 1;
-    m_14 = 0;
-    m_18 = 0x140;
-    m_1c = 0xf0;
-    m_20 = 0;
+    m_targetSurface = 0;
+    m_sourceSurface = 0;
+    m_clearMode = 1;
+    m_spanCount = 0;
+    m_centerX = 0x140;
+    m_centerY = 0xf0;
+    m_shadeTable = 0;
 }
 
 RVA(0x0017e880, 0x28)
 CFxModeT3::CFxModeT3() {
     m_type = 3;
-    m_04 = 0;
-    m_08 = 0;
-    m_0c = 1;
-    m_10 = 0xf;
+    m_targetSurface = 0;
+    m_sourceSurface = 0;
+    m_clearToBlack = 1;
+    m_intensityPercent = 0xf;
 }
 
 RVA(0x0017e8b0, 0x27)
 CFxModeT4::CFxModeT4() {
     m_type = 4;
-    m_04 = 0;
-    m_08 = 0;
-    m_10 = 0;
-    m_14 = 0;
+    m_targetSurface = 0;
+    m_sourceSurface = 0;
+    m_palette = 0;
+    m_shadeTable = 0;
     m_0c = 1;
 }
 
 RVA(0x0017e8e0, 0x27)
 CFxModeT5::CFxModeT5() {
     m_type = 5;
-    m_04 = 0;
-    m_08 = 0;
+    m_targetSurface = 0;
+    m_sourceSurface = 0;
     m_0c = 0;
-    m_14 = 0;
-    m_10 = 0x19;
+    m_splitPercent = 0;
+    m_durationPercent = 0x19;
 }
 
 RVA(0x0017e910, 0x29)
 CFxModeT6::CFxModeT6() {
     m_type = 6;
-    m_04 = 0;
-    m_08 = 0;
-    m_10 = 0;
-    m_14 = 0;
+    m_targetSurface = 0;
+    m_sourceSurface = 0;
+    m_flipTarget = 0;
+    m_reverseOrder = 0;
     m_18 = 0;
-    m_1c = 0;
-    m_20 = 0;
+    m_cols = 0;
+    m_rows = 0;
 }
 
 RVA(0x0017e940, 0x27)
@@ -182,10 +182,10 @@ void CFaderMesh::RenderFrame(i32 frame) {
         RezElem40* recs = m_meshBuf.m_pData;
         for (i32 i = 0; i < m_meshBuf.m_nSize; i++) {
             RezElem40* rec = &recs[i];
-            i32 r0 = rec->m_rectA[0], r1 = rec->m_rectA[1];
-            i32 r2 = rec->m_rectA[2], r3 = rec->m_rectA[3];
-            i32 r4 = rec->m_rectB[0], r5 = rec->m_rectB[1];
-            i32 r6 = rec->m_rectB[2], r7 = rec->m_rectB[3];
+            i32 r0 = rec->m_startRect.left, r1 = rec->m_startRect.top;
+            i32 r2 = rec->m_startRect.right, r3 = rec->m_startRect.bottom;
+            i32 r4 = rec->m_endRect.left, r5 = rec->m_endRect.top;
+            i32 r6 = rec->m_endRect.right, r7 = rec->m_endRect.bottom;
             float t = ff / static_cast<float>(GetFrameCount());
 
             i32 x0 = r0 + static_cast<i32>((static_cast<float>((r4 - r0)) * t));
@@ -209,20 +209,20 @@ void CFaderMesh::RenderFrame(i32 frame) {
                 y1 = dst->m_height - 1;
             }
 
-            i32 dstRect[4] = {x0, y0, x1, y1};
-            i32 srcRect[4];
+            RECT dstRect = {x0, y0, x1, y1};
+            RECT srcRect;
             if (m_recOrderFlag != 0) {
-                srcRect[0] = r0;
-                srcRect[1] = r1;
-                srcRect[2] = r2;
-                srcRect[3] = r3;
+                srcRect.left = r0;
+                srcRect.top = r1;
+                srcRect.right = r2;
+                srcRect.bottom = r3;
             } else {
-                srcRect[0] = bx0;
-                srcRect[1] = by0;
-                srcRect[2] = bx1;
-                srcRect[3] = by1;
+                srcRect.left = bx0;
+                srcRect.top = by0;
+                srcRect.right = bx1;
+                srcRect.bottom = by1;
             }
-            dst->BltEx(dstRect, m_bltSrc, srcRect, 0x1000000, 0);
+            dst->BltEx(&dstRect, m_bltSrc, &srcRect, 0x1000000, 0);
         }
     }
     m_flipTarget->Flip(0);
@@ -266,17 +266,18 @@ static __inline i32 FxRand(i32 range) {
 // @early-stop
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
+    CFxModeT3* cfg = static_cast<CFxModeT3*>(desc);
     i32 w;
     i32 p;
     i32 i;
-    m_20 = 0;
-    m_boxParam = desc->m_0c;
-    CDDSurface* src = desc->m_04;
+    m_previousFrame = 0;
+    m_boxParam = cfg->m_clearToBlack;
+    CDDSurface* src = cfg->m_targetSurface;
     if (!src) {
         src = m_timerA;
     }
     m_srcBox = src;
-    CDDSurface* alt = desc->m_08;
+    CDDSurface* alt = cfg->m_sourceSurface;
     if (!alt) {
         alt = m_timerB;
     }
@@ -290,7 +291,7 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     m_elemCount = m_srcBox->m_width;
     w = m_srcBox->m_height;
     m_frameCount = w;
-    p = desc->m_10;
+    p = cfg->m_intensityPercent;
 
     if (p < 0 || p > 100) {
         goto fail;
@@ -342,26 +343,26 @@ CFaderLight::~CFaderLight() {
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     CFxModeT2* d = static_cast<CFxModeT2*>(desc);
-    m_20 = 0;
-    CDDSurface* s = d->m_04;
+    m_previousFrame = 0;
+    CDDSurface* s = d->m_targetSurface;
     if (s == 0) {
         s = m_timerA;
     }
     m_surface = s;
-    CDDSurface* b = d->m_08;
+    CDDSurface* b = d->m_sourceSurface;
     if (b == 0) {
         m_dstSurface = m_timerB;
     } else {
         m_dstSurface = b;
     }
-    m_lightGate = d->m_10;
-    m_centerX = d->m_18;
-    m_centerY = d->m_1c;
-    CDDPalette* pal = d->m_pal0c;
+    m_lightGate = d->m_clearMode;
+    m_centerX = d->m_centerX;
+    m_centerY = d->m_centerY;
+    CDDPalette* pal = d->m_palette;
     m_palette = pal;
-    i32 cnt = d->m_14;
+    i32 cnt = d->m_spanCount;
     m_spanCount = cnt;
-    if (cnt > 0 && d->m_20 == 0 && pal == 0) {
+    if (cnt > 0 && d->m_shadeTable == 0 && pal == 0) {
         return 0;
     }
     if (m_surface == 0) {
@@ -403,12 +404,12 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
         }
     }
     if (m_spanCount > 0) {
-        if (d->m_20 == 0) {
+        if (d->m_shadeTable == 0) {
             m_table = m_cache.HueRampTable(m_palette->m_cacheA, m_spanCount, 0);
             m_flag = 1;
             return 1;
         }
-        m_table = d->m_20;
+        m_table = d->m_shadeTable;
     }
     return 1;
 }
@@ -421,7 +422,7 @@ void CFaderLight::SubFree() {}
 // @early-stop
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
-    i32 delta = frame - m_20;
+    i32 delta = frame - m_previousFrame;
     if (m_surface != 0) {
         m_srcBits = static_cast<u8*>(m_surface->Lock(0));
     }
@@ -672,7 +673,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             row++;
         }
     }
-    m_20 = frame;
+    m_previousFrame = frame;
     if (m_surface != 0) {
         m_surface->m_ddSurface->Unlock(0);
     }
@@ -759,7 +760,7 @@ CFaderShape::CFaderShape() {
     m_rowOfsC = 0;
     m_lineBuf = 0;
     m_shadeRamp = 0;
-    m_20 = 0;
+    m_previousFrame = 0;
 }
 
 // @early-stop
@@ -791,7 +792,7 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     }
     float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
-    m_34 = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
+    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
     EndFade();
 }
 
@@ -832,7 +833,7 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     }
     float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
-    m_34 = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
+    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
     EndFade();
 }
 
@@ -843,17 +844,17 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
     CRezBufferObject* mesh = &m_meshBuf;
 
-    m_dstSurface = cfg->m_04 ? cfg->m_04 : m_timerA;
-    m_bltSrc = cfg->m_08 ? cfg->m_08 : m_timerB;
-    if (cfg->m_10 == 0) {
+    m_dstSurface = cfg->m_targetSurface ? cfg->m_targetSurface : m_timerA;
+    m_bltSrc = cfg->m_sourceSurface ? cfg->m_sourceSurface : m_timerB;
+    if (cfg->m_flipTarget == 0) {
         return 0;
     }
-    m_primeSrc = cfg->m_surf0c;
-    m_flipTarget = cfg->m_surf10;
+    m_primeSrc = cfg->m_primeSource;
+    m_flipTarget = cfg->m_flipTarget;
     m_48 = cfg->m_18;
-    m_recOrderFlag = cfg->m_14;
-    m_cols = cfg->m_1c;
-    m_rows = cfg->m_20;
+    m_recOrderFlag = cfg->m_reverseOrder;
+    m_cols = cfg->m_cols;
+    m_rows = cfg->m_rows;
 
     mesh->SetSize(0, -1);
 
@@ -902,28 +903,22 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             pt64.bottom = dy;
             OffsetRect(&pt64, row, col);
 
-            i32 pt[10];
+            RezElem40 elem;
             if (m_recOrderFlag) {
-                pt[0] = pt64.right;
-                pt[1] = pt64.bottom;
-                pt[2] = pt64.left;
-                pt[3] = pt64.top;
-                pt[4] = pt48.left;
-                pt[5] = pt48.top;
-                pt[6] = pt48.right;
-                pt[7] = pt48.bottom;
+                elem.m_startRect.left = pt64.right;
+                elem.m_startRect.top = pt64.bottom;
+                elem.m_startRect.right = pt64.left;
+                elem.m_startRect.bottom = pt64.top;
+                elem.m_endRect = pt48;
             } else {
-                pt[0] = pt48.left;
-                pt[1] = pt48.top;
-                pt[2] = pt48.right;
-                pt[3] = pt48.bottom;
-                pt[4] = pt64.right;
-                pt[5] = pt64.bottom;
-                pt[6] = pt64.left;
-                pt[7] = pt64.top;
+                elem.m_startRect = pt48;
+                elem.m_endRect.left = pt64.right;
+                elem.m_endRect.top = pt64.bottom;
+                elem.m_endRect.right = pt64.left;
+                elem.m_endRect.bottom = pt64.top;
             }
-            pt[8] = 0;
-            pt[9] = 0x3f800000;
+            elem.m_20 = 0;
+            elem.m_scale = 1.0f;
 
             i32 idx = mesh->m_nSize;
             i32 newSize = idx + 1;
@@ -967,7 +962,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 mesh->m_nSize = newSize;
                 mesh->m_nMaxSize = newMax;
             }
-            memcpy(&mesh->m_pData[idx], pt, sizeof(RezElem40));
+            memcpy(&mesh->m_pData[idx], &elem, sizeof(RezElem40));
         }
     }
     return 1;
@@ -1024,20 +1019,20 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
 RVA(0x0017f5e0, 0x7d)
 i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     CFxModeT5* s = static_cast<CFxModeT5*>(desc);
-    CDDSurface* a = s->m_04;
+    CDDSurface* a = s->m_targetSurface;
     if (!a) {
         a = m_timerA;
     }
     m_desc04 = a;
-    if (s->m_08) {
-        m_src = s->m_08;
+    if (s->m_sourceSurface) {
+        m_src = s->m_sourceSurface;
     } else {
         m_src = m_timerB;
     }
     m_desc0c = s->m_0c;
-    m_percent = s->m_10;
-    m_20 = 0;
-    m_desc14 = s->m_14;
+    m_percent = s->m_durationPercent;
+    m_previousFrame = 0;
+    m_desc14 = s->m_splitPercent;
     m_frames = static_cast<i32*>(RezAlloc(m_src->m_height << 2));
     for (i32 i = 0; i < m_src->m_height; i++) {
         m_frames[i] = 0;
@@ -1055,25 +1050,25 @@ i32 CFaderFlat::GetFrameCount() {
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     CFxModeT4* cfg = static_cast<CFxModeT4*>(desc);
-    if (cfg->m_04 == 0) {
+    if (cfg->m_targetSurface == 0) {
         m_dstSurface = m_timerA;
     } else {
-        m_dstSurface = cfg->m_04;
+        m_dstSurface = cfg->m_targetSurface;
     }
 
-    if (cfg->m_08 == 0) {
+    if (cfg->m_sourceSurface == 0) {
         m_srcSurface = m_timerB;
     } else {
-        m_srcSurface = cfg->m_08;
+        m_srcSurface = cfg->m_sourceSurface;
     }
 
-    if (cfg->m_14 == 0) {
+    if (cfg->m_shadeTable == 0) {
 
-        CDDPalette* pal = cfg->m_pal10;
+        CDDPalette* pal = cfg->m_palette;
         m_table = m_cache.HueRampTable(pal->m_cacheA, 0x10, 0);
         m_flag = 1;
     } else {
-        m_table = cfg->m_14;
+        m_table = cfg->m_shadeTable;
         m_flag = 0;
     }
     if (m_table == 0) {
@@ -1114,7 +1109,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
             CFaderRadialCell* cell = &m_cells[y * m_srcSurface->m_width + x];
             cell->m_vx = vx;
             cell->m_vy = vy;
-            cell->m_fade = fade;
+            cell->m_fadeLevel = fade;
             cell->m_pixel = pix;
         }
     }
@@ -1134,7 +1129,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
 
     for (i32 i = 0; i < m_srcSurface->m_width * m_srcSurface->m_height; i++) {
         CFaderRadialCell* c = &m_cells[i];
-        float d = c->m_fade - static_cast<float>(static_cast<u32>(frame));
+        float d = c->m_fadeLevel - static_cast<float>(static_cast<u32>(frame));
         if (d > g_faderOne) {
             float sf = d / m_fadeDivisor - g_faderBiasFade;
             i32 px = m_centerX + static_cast<i32>((c->m_vx / sf));
@@ -1179,20 +1174,20 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
     i32 i;
     i32 mx;
-    m_20 = 0;
+    m_previousFrame = 0;
     if (pInit == 0) {
         goto fail;
     }
 
-    m_surfA = pInit->m_04 ? pInit->m_04 : m_timerA;
-    m_surfB = pInit->m_08 ? pInit->m_08 : m_timerB;
+    m_surfA = pInit->m_targetSurface ? pInit->m_targetSurface : m_timerA;
+    m_surfB = pInit->m_sourceSurface ? pInit->m_sourceSurface : m_timerB;
     if (m_surfA == 0) {
         goto fail;
     }
     if (m_surfB == 0) {
         goto fail;
     }
-    m_surfC = pInit->m_surf0c ? pInit->m_surf0c : m_surfB;
+    m_surfC = pInit->m_warpSourceSurface ? pInit->m_warpSourceSurface : m_surfB;
 
     if (!m_cache.Init()) {
         goto fail;
@@ -1223,15 +1218,15 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    if (static_cast<u32>(pInit->m_14) <= 0) {
+    if (static_cast<u32>(pInit->m_mode) <= 0) {
         goto fail;
     }
-    if (static_cast<u32>(pInit->m_14) >= 4) {
+    if (static_cast<u32>(pInit->m_mode) >= 4) {
         goto fail;
     }
-    m_mode = pInit->m_14;
-    m_stripCopy = pInit->m_18;
-    m_halfWidth = pInit->m_10;
+    m_mode = pInit->m_mode;
+    m_stripCopy = pInit->m_stripCopy;
+    m_halfWidth = pInit->m_halfWidth;
 
     if (m_mode == 1 || m_mode == 2) {
         if (m_span < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.141592653589793))) {
@@ -1250,22 +1245,22 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         );
     }
 
-    m_useLut = pInit->m_1c;
+    m_useLut = pInit->m_useLut;
     if (m_surfA->m_bitDepth != 8) {
         m_useLut = 0;
     }
 
     if (m_useLut != 0) {
-        if (pInit->m_20) {
+        if (pInit->m_shadeTable) {
             m_flag = 0;
-            m_table = pInit->m_20;
-        } else if (_access(pInit->m_24, 0) == 0) {
-            m_table = m_cache.AddFromArray(pInit->m_24);
+            m_table = pInit->m_shadeTable;
+        } else if (_access(pInit->m_shadeTablePath, 0) == 0) {
+            m_table = m_cache.AddFromArray(pInit->m_shadeTablePath);
             if (m_table == 0) {
                 m_useLut = 0;
             }
         } else {
-            CDDPalette* pal = pInit->m_28;
+            CDDPalette* pal = pInit->m_palette;
             m_table = m_cache.FlashTable(pal->m_cacheA, 0x20, 0x20, 0x32, 0xc8);
         }
 
@@ -1691,7 +1686,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
     }
     i32 y2 = y0;
     for (;;) {
-        i32 stop = y0 + frame - m_20;
+        i32 stop = y0 + frame - m_previousFrame;
         if (lastRow < stop) {
             stop = lastRow;
         }
@@ -1701,7 +1696,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
         memcpy(dstBits + m_desc04->m_pitch * y2 / 2, srcBits + m_src->m_pitch * y2 / 2, w * 2);
         y2++;
     }
-    m_20 = frame;
+    m_previousFrame = frame;
 
     m_src->m_ddSurface->Unlock(0);
     m_desc04->m_ddSurface->Unlock(0);
@@ -1816,7 +1811,7 @@ void CFaderSine::RenderFrame(i32 frame) {
         row++;
     }
 
-    i32 y = m_20;
+    i32 y = m_previousFrame;
     while (y < frame) {
         i32 done = m_scaledMag - y + m_frameCount - 1;
         if (done >= 0 && done < m_frameCount) {
@@ -1836,7 +1831,7 @@ void CFaderSine::RenderFrame(i32 frame) {
         }
         y++;
     }
-    m_20 = frame;
+    m_previousFrame = frame;
     if (m_srcBox != 0) {
         m_srcBox->m_ddSurface->Unlock(0);
     }
@@ -1883,32 +1878,32 @@ void CFaderShape::RenderFrame(i32 frame) {
         if (seam + frame <= static_cast<u32>(m_span - arc - m_halfWidth)) {
             switch (m_mode) {
                 case 1:
-                    RenderTile(frame, frame - m_20);
+                    RenderTile(frame, frame - m_previousFrame);
                     break;
                 case 2:
-                    RenderTile(m_span - frame - stride, frame - m_20);
+                    RenderTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
                     m_mode = 1;
-                    RenderTile(m_span / 2 + frame, frame - m_20);
+                    RenderTile(m_span / 2 + frame, frame - m_previousFrame);
                     m_mode = 2;
-                    RenderTile(m_span / 2 - frame - stride, frame - m_20);
+                    RenderTile(m_span / 2 - frame - stride, frame - m_previousFrame);
                     m_mode = 3;
                     break;
             }
         } else {
             switch (m_mode) {
                 case 1:
-                    RenderWarpTile(frame, frame - m_20);
+                    RenderWarpTile(frame, frame - m_previousFrame);
                     break;
                 case 2:
-                    RenderWarpTile(m_span - frame - stride, frame - m_20);
+                    RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
                     m_mode = 1;
-                    RenderWarpTile(m_span / 2 + frame, frame - m_20);
+                    RenderWarpTile(m_span / 2 + frame, frame - m_previousFrame);
                     m_mode = 2;
-                    RenderWarpTile(m_span - m_span / 2 - frame - stride, frame - m_20);
+                    RenderWarpTile(m_span - m_span / 2 - frame - stride, frame - m_previousFrame);
                     m_mode = 3;
                     break;
             }
@@ -1917,38 +1912,38 @@ void CFaderShape::RenderFrame(i32 frame) {
         if (seam + frame > static_cast<u32>(arc - m_halfWidth)) {
             switch (m_mode) {
                 case 1:
-                    RenderTile(frame, frame - m_20);
+                    RenderTile(frame, frame - m_previousFrame);
                     break;
                 case 2:
-                    RenderTile(m_span - frame - stride, frame - m_20);
+                    RenderTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
                     m_mode = 1;
-                    RenderTile(frame, frame - m_20);
+                    RenderTile(frame, frame - m_previousFrame);
                     m_mode = 2;
-                    RenderTile(m_span - frame - stride, frame - m_20);
+                    RenderTile(m_span - frame - stride, frame - m_previousFrame);
                     m_mode = 3;
                     break;
             }
         } else {
             switch (m_mode) {
                 case 1:
-                    RenderWarpTile(frame, frame - m_20);
+                    RenderWarpTile(frame, frame - m_previousFrame);
                     break;
                 case 2:
-                    RenderWarpTile(m_span - frame - stride, frame - m_20);
+                    RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
                     m_mode = 1;
-                    RenderWarpTile(frame, frame - m_20);
+                    RenderWarpTile(frame, frame - m_previousFrame);
                     m_mode = 2;
-                    RenderWarpTile(m_span - frame - stride, frame - m_20);
+                    RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
                     m_mode = 3;
                     break;
             }
         }
     }
-    m_20 = frame;
+    m_previousFrame = frame;
     m_surfA->m_ddSurface->Unlock(0);
     m_surfB->m_ddSurface->Unlock(0);
     if (m_surfB != m_surfC) {

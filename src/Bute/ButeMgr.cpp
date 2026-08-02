@@ -1642,7 +1642,7 @@ void CButeMgr::Init() {
     m_pos = 0;
     m_lineNo = 0;
     m_countLine = 1;
-    m_0d = 0;
+    m_parseFailed = 0;
     m_tagName = g_emptyString;
     m_str104 = g_emptyString;
 }
@@ -1850,7 +1850,7 @@ bool CButeMgr::Save() {
 
     char* sourceData = new char[length];
     strstream source(sourceData, length, ios::in | ios::out);
-    if (m_10e) {
+    if (m_encrypted) {
         BitStreamBlowfishDecode(&input, &source);
     } else {
         char block[0x1000];
@@ -1862,7 +1862,7 @@ bool CButeMgr::Save() {
     }
 
     streambuf* outputBuffer = 0;
-    if (m_10e) {
+    if (m_encrypted) {
         outputBuffer = new strstreambuf(length);
         m_pText = new iostream(outputBuffer);
     } else {
@@ -1876,14 +1876,14 @@ bool CButeMgr::Save() {
     m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
     m_pText->seekg(0);
 
-    if (m_10e) {
+    if (m_encrypted) {
         ofstream output(m_str108, ios::binary);
         BitStreamBlowfishEncode(m_pText, &output);
         output.close();
     }
 
     delete[] source.str();
-    if (m_10e) {
+    if (m_encrypted) {
         delete outputBuffer;
     }
     delete m_pText;

@@ -25,9 +25,9 @@ struct WaveFormatX {
 SIZE(0x14);
 
 union RiffCursor {
-    u32* m_w;
-    char* m_b;
-    WaveFormatX* m_fmt;
+    u32* m_words;
+    char* m_bytes;
+    WaveFormatX* m_format;
 };
 
 #endif // DSNDMGR_WAVEFORMATX_H

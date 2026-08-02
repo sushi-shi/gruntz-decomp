@@ -13,7 +13,7 @@ class CDemoSetup {
 public:
     i32 SetupDemoActors();
     char m_pad0[0xc];
-    CDDrawSurfaceMgr* m_c;
+    CDDrawSurfaceMgr* m_world;
 };
 SIZE_UNKNOWN();
 

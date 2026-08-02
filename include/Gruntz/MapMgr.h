@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Ints.h>
+#include <Gruntz/CoordNode.h>
 
 struct BrickzCell;
 struct BrickzNode;
@@ -17,8 +18,8 @@ public:
     ~CMapArrayA();
     i32 Allocate(u32 count);
 
-    BrickzNode* m_block;
-    BrickzNode* m_0;
+    BrickzNode* m_freeList;
+    BrickzNode* m_storage;
     u32 m_count;
 };
 SIZE_UNKNOWN();
@@ -29,15 +30,9 @@ public:
     ~CMapArrayB();
     i32 Allocate(u32 count);
 
-    BrickzNode* m_0;
-    BrickzNode* m_block;
+    BrickzNode* m_storage;
+    BrickzNode* m_freeList;
     u32 m_count;
-};
-SIZE_UNKNOWN();
-
-struct MapCell {
-    char m_pad0[0x18];
-    i32 m_18;
 };
 SIZE_UNKNOWN();
 
@@ -88,10 +83,8 @@ public:
     u32 m_cellCount;
     BrickzNode* m_openList;
     i32 m_1c;
-    i32 m_startX;
-    i32 m_startY;
-    i32 m_goalX;
-    i32 m_goalY;
+    Coord m_start;
+    Coord m_goal;
 
     CMapArrayA m_colA;
     CMapArrayB m_colB;

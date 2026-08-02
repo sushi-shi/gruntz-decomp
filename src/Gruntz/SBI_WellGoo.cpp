@@ -45,10 +45,10 @@ i32 CSBI_WellGoo::Setup(
     if (owner == 0) {
         goto fail;
     }
-    m_2c = owner;
-    m_24 = host;
+    m_owner = owner;
+    m_host = host;
     m_tab = tab;
-    m_28 = 0;
+    m_redrawFrames = 0;
     m_enabled = 1;
     m_rect14 = rc;
     m_cmd = cmd;
@@ -63,14 +63,14 @@ i32 CSBI_WellGoo::Setup(
     if (m_gooSrc == 0) {
         goto fail;
     }
-    sel = g_gameReg->m_options[g_curPlayer].m_008;
+    sel = g_gameReg->m_options[g_curPlayer].m_colorIndex;
     node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
     if (node == 0) {
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
 
     found = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_frame = (set != 0) ? set->GetAt(4) : 0;
     if (m_frame == 0) {
@@ -89,7 +89,7 @@ i32 CSBI_WellGoo::Setup(
     }
 
     found = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_baseFrame = (set != 0) ? set->GetAt(2) : 0;
     if (m_baseFrame == 0) {
@@ -104,7 +104,7 @@ i32 CSBI_WellGoo::Setup(
     }
 
     found = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_fgFrame = (set != 0) ? set->GetAt(3) : 0;
     if (m_fgFrame == 0) {
@@ -134,10 +134,10 @@ i32 CSBI_WellGoo::Refresh(i32) {
 
 RVA(0x000e6380, 0xf9)
 i32 CSBI_WellGoo::Render() {
-    if (m_28 <= 0) {
+    if (m_redrawFrames <= 0) {
         return 1;
     }
-    m_28--;
+    m_redrawFrames--;
     if (m_fillScale == 0) {
         return 1;
     }
@@ -250,7 +250,7 @@ i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 typeId, i32 p
             if (m_gooSrc == 0) {
                 return 0;
             }
-            i32 sel = g_gameReg->m_options[g_curPlayer].m_008;
+            i32 sel = g_gameReg->m_options[g_curPlayer].m_colorIndex;
             CShadeTable* node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
             if (node == 0) {
                 node = g_gameReg->m_spriteFactory->GetSel(1, 0);
@@ -286,7 +286,7 @@ RVA_COMPGEN(0x00104b80, 0x1e, ??_GCSBI_WellGoo@@UAEPAXI@Z)
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != 0) {
-        m_24->m_ptrColl->RemoveItemA(m_gooSrc);
+        m_host->m_ptrColl->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }
@@ -294,7 +294,7 @@ CSBI_WellGoo::~CSBI_WellGoo() {
 RVA(0x00104c80, 0x1f)
 void CSBI_WellGoo::Reset() {
     if (m_gooSrc != 0) {
-        m_24->m_ptrColl->RemoveItemA(m_gooSrc);
+        m_host->m_ptrColl->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }

@@ -55,8 +55,8 @@ struct CImageSet1 : public CTileImageSet {
         RezFree(p);
     }
 
-    i32 m_08;
-    i32 m_0c;
+    i32 m_height;
+    i32 m_collisionValue;
 };
 SIZE(0x10);
 struct CImageSet2 : public CTileImageSet {
@@ -86,13 +86,13 @@ struct CImageSet2 : public CTileImageSet {
         RezFree(p);
     }
 
-    i32 m_08;
-    i32 m_0c;
-    i32 m_10;
-    i32 m_14;
-    i32 m_18;
-    i32 m_1c;
-    i32 m_20;
+    i32 m_height;
+    i32 m_outsideValue;
+    i32 m_insideValue;
+    i32 m_left;
+    i32 m_top;
+    i32 m_right;
+    i32 m_bottom;
 };
 SIZE(0x24);
 struct CImageSet3 : public CTileImageSet {

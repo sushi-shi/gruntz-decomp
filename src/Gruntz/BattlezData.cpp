@@ -24,7 +24,7 @@ CBattlezData::~CBattlezData() {
 RVA(0x000fca10, 0x8a)
 void CBattlezData::Init() {
     m_count = 0;
-    m_08 = 0;
+    m_isCustomLevel = 0;
     m_allDone = 0;
     m_elapsedTimeMs = 0;
     m_toyzCount = 0;
@@ -370,7 +370,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
         rec->m_secretsFound = m_secretsFound;
         rec->m_coinsCollected = m_coinsCollected;
         rec->m_scoreValue = m_scoreValue;
-        rec->m_04 = g_gameReg->m_isEasyMode;
+        rec->m_isEasyMode = g_gameReg->m_isEasyMode;
     } else {
         rec->m_toyzAvailable = m_toyzAvailable;
         rec->m_toolzAvailable = m_toolzAvailable;
@@ -393,7 +393,7 @@ i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
     if (op != 4) {
         if (op == 7) {
             s->Read(&m_count, 4);
-            s->Read(&m_08, 4);
+            s->Read(&m_isCustomLevel, 4);
             s->Read(&m_allDone, 4);
             s->Read(&m_elapsedTimeMs, 4);
             s->Read(&m_toyzCount, 4);
@@ -452,7 +452,7 @@ i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
         return 1;
     }
     s->Write(&m_count, 4);
-    s->Write(&m_08, 4);
+    s->Write(&m_isCustomLevel, 4);
     s->Write(&m_allDone, 4);
     s->Write(&m_elapsedTimeMs, 4);
     s->Write(&m_toyzCount, 4);

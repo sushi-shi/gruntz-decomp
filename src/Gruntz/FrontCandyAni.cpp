@@ -76,8 +76,8 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // @early-stop
 RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == 0) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
@@ -142,8 +142,8 @@ i32 CEyeCandyAni::AdvanceAnim() {
 
 RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == 0) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);

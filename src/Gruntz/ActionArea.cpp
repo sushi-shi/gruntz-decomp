@@ -50,8 +50,8 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_timestamp = 0;
     m_duration = 0;
     m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     if (m_object->m_sortKey != 6) {
         m_object->m_sortKey = 6;
         m_object->m_flags |= 0x20000;
@@ -97,23 +97,21 @@ void CProjActObj::RegisterType() {
 
 RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
-    i64* ts = &m_timestamp;
-    i32* phase = &m_phase;
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts >= m_duration) {
-        *phase = (*phase == 0);
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timestamp >= m_duration) {
+        m_phase = (m_phase == 0);
         m_duration = 0x1f4;
-        *ts = static_cast<u32>(g_frameTime);
+        m_timestamp = static_cast<u32>(g_frameTime);
     }
-    if (*phase != 0) {
-        i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
+    if (m_phase != 0) {
+        i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timestamp;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        m_wwdObject->m_imageSet->SetAllLightLevels(
+        m_wwdObject->m_frameSet->SetAllLightLevels(
             static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
         );
     } else {
-        i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
+        i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timestamp;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        m_wwdObject->m_imageSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
+        m_wwdObject->m_frameSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;
 }
@@ -124,14 +122,14 @@ i32 CActionArea::ApplyColor(i32 owner) {
         case 1: {
             m_wwdObject->ApplyName("GAME_ACTIONAREA_BLUE");
 
-            CDDrawWorker* rec = m_wwdObject->m_imageSet;
+            CDDrawWorker* rec = m_wwdObject->m_frameSet;
             rec->SetAllTypes(8);
             break;
         }
         case 2: {
             m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
 
-            CDDrawWorker* rec = m_wwdObject->m_imageSet;
+            CDDrawWorker* rec = m_wwdObject->m_frameSet;
             rec->SetAllTypes(8);
             break;
         }
@@ -153,15 +151,14 @@ i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d)
     if (!Chain(ar, tag, c, d)) {
         return 0;
     }
-    i64* p = &m_timestamp;
     switch (tag) {
         case 4:
-            ar->Write(p, 8);
-            ar->Write(p + 1, 8);
+            ar->Write(&m_timestamp, 8);
+            ar->Write(&m_duration, 8);
             break;
         case 7:
-            ar->Read(p, 8);
-            ar->Read(p + 1, 8);
+            ar->Read(&m_timestamp, 8);
+            ar->Read(&m_duration, 8);
             break;
     }
     switch (tag) {

@@ -21,8 +21,8 @@ RVA_COMPGEN(0x000122b0, 0x44, ??1CGruntToySprite@@UAE@XZ)
 RVA(0x0007f350, 0x16a)
 CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_stateFlags |= 1;
     if (m_object->m_sortKey != 0xdbba0) {
         m_object->m_sortKey = 0xdbba0;
@@ -62,23 +62,23 @@ void CGruntToySprite::RegisterActs() {
 
 RVA(0x0007f920, 0x21)
 i32 CGruntToySprite::SetCell(i32 x, i32 y) {
-    m_cellX = x;
-    m_cellY = y;
+    m_cell.m_x = x;
+    m_cell.m_y = y;
     m_wwdObject->m_stateFlags &= ~1;
     return 1;
 }
 
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
+    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
     if (e == 0) {
         return 0;
     }
-    i32 layer = e->m_198;
+    i32 layer = e->m_vehiclePickupType;
     if (m_lastLayer != layer) {
         CWwdGameObjectA* r = m_object;
         m_lastLayer = layer;
-        CDDrawWorker* h = r->m_sprite;
+        CDDrawWorker* h = r->m_frameSet;
         if (h != 0) {
             CImage* mapped;
             if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
@@ -87,7 +87,7 @@ i32 CGruntToySprite::Update() {
                 mapped = 0;
             }
             r->m_layer = mapped;
-            r->m_190 = layer;
+            r->m_frameIndex = layer;
         }
     }
     m_object->m_screenX = e->m_object->m_screenX;
@@ -99,11 +99,11 @@ RVA(0x0007fa20, 0x89)
 i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     switch (mode) {
         case 4:
-            ar->Write(&m_cellX, 8);
+            ar->Write(&m_cell, 8);
             ar->Write(&m_lastLayer, 4);
             break;
         case 7:
-            ar->Read(&m_cellX, 8);
+            ar->Read(&m_cell, 8);
             ar->Read(&m_lastLayer, 4);
             break;
     }

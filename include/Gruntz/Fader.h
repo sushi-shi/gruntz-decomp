@@ -27,13 +27,13 @@ public:
 
     CShadeTableCache m_cache;
     CShadeTable* m_table;
-    i32 m_20;
+    i32 m_previousFrame;
     CDDSurface* m_timerA;
     CDDSurface* m_timerB;
 
     class CDDrawPtrCollections* m_ptrColl;
     i32 m_flag;
-    i32 m_34;
+    i32 m_measuredFps;
 };
 SIZE(0x38);
 

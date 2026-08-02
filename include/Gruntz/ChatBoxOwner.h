@@ -14,13 +14,13 @@ class CFontConfig;
 class CChatBoxOwner {
 public:
     CChatBoxOwner() {
-        m_18 = 0;
-        m_14 = 0;
-        m_c = 0;
-        m_10 = 0;
-        m_0 = 0;
-        m_4 = 0;
-        m_8 = 1;
+        m_world = 0;
+        m_fontConfig = 0;
+        m_attached = 0;
+        m_inputActive = 0;
+        m_originX = 0;
+        m_originY = 0;
+        m_mode = 1;
     }
 
     i32 Attach(CDDrawSurfaceMgr* world, CFontConfig* host);
@@ -35,14 +35,14 @@ public:
 
     i32 LoadChatBoxSprite(CDDrawSurfacePair* target);
 
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-    CFontConfig* m_14;
+    i32 m_originX;
+    i32 m_originY;
+    i32 m_mode;
+    i32 m_attached;
+    i32 m_inputActive;
+    CFontConfig* m_fontConfig;
 
-    CDDrawSurfaceMgr* m_18;
+    CDDrawSurfaceMgr* m_world;
 };
 SIZE(0x1c);
 

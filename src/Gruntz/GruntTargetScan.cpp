@@ -88,10 +88,10 @@
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
-    m_defenderX = m_lastTilePxX;
-    m_defenderY = m_lastTilePxY;
-    i32 cx = m_lastTilePxX >> 5;
-    i32 cy = m_lastTilePxY >> 5;
+    m_defenderPx.m_x = m_lastTilePx.m_x;
+    m_defenderPx.m_y = m_lastTilePx.m_y;
+    i32 cx = m_lastTilePx.m_x >> 5;
+    i32 cy = m_lastTilePx.m_y >> 5;
 
     CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
@@ -120,7 +120,7 @@ i32 CGrunt::ScanNearestTarget() {
         }
     }
 
-    i32 halfBox = m_defenderRadius + m_reachRadius + 1;
+    i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
     Coord pt;
     GetScreenPos(&pt);
     i32 by = pt.m_y >> 5;
@@ -137,8 +137,8 @@ i32 CGrunt::ScanNearestTarget() {
     box.bottom = by + halfBox + 1;
     if (best != 0) {
         POINT pt;
-        pt.x = best->m_lastTilePxX >> 5;
-        pt.y = best->m_lastTilePxY >> 5;
+        pt.x = best->m_lastTilePx.m_x >> 5;
+        pt.y = best->m_lastTilePx.m_y >> 5;
         if (!PtInRect(&box, pt)) {
             best = 0;
         }
@@ -147,7 +147,7 @@ i32 CGrunt::ScanNearestTarget() {
     i32 atTarget = 0;
     if (best != 0) {
         i32 x = best->m_object->m_screenX;
-        if (x == best->m_lastTilePxX && best->m_object->m_screenY == best->m_lastTilePxY
+        if (x == best->m_lastTilePx.m_x && best->m_object->m_screenY == best->m_lastTilePx.m_y
             && this->RectContains(x, best->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
@@ -197,8 +197,8 @@ i32 CGrunt::ScanNearestTarget() {
                 goto L_wander;
             }
             if (m_poweredUp == 0 && m_stamina >= 100
-                && best->m_object->m_screenX == best->m_lastTilePxX
-                && best->m_object->m_screenY == best->m_lastTilePxY) {
+                && best->m_object->m_screenX == best->m_lastTilePx.m_x
+                && best->m_object->m_screenY == best->m_lastTilePx.m_y) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
                 i32 pb;
@@ -209,8 +209,8 @@ i32 CGrunt::ScanNearestTarget() {
                     CommitNeighbor(
                         best->m_tileOwnerHi,
                         best->m_tileOwnerLo,
-                        best->m_lastTilePxX,
-                        best->m_lastTilePxY
+                        best->m_lastTilePx.m_x,
+                        best->m_lastTilePx.m_y
                     );
                     return 1;
                 }
@@ -231,8 +231,8 @@ i32 CGrunt::ScanNearestTarget() {
             if (static_cast<u32>(m_dwell) <= 0x3e8) {
                 goto L_wander;
             }
-            m_defenderX = m_lastTilePxX;
-            m_defenderY = m_lastTilePxY;
+            m_defenderPx.m_x = m_lastTilePx.m_x;
+            m_defenderPx.m_y = m_lastTilePx.m_y;
             {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
@@ -254,8 +254,8 @@ i32 CGrunt::ScanNearestTarget() {
                 }
             }
             SetEntrancePos(1, 1);
-            m_arrivalCol = best->m_tileOwnerHi;
-            m_arrivalRow = best->m_tileOwnerLo;
+            m_arrivalCell.m_x = best->m_tileOwnerHi;
+            m_arrivalCell.m_y = best->m_tileOwnerLo;
             m_defenderState = 1;
             {
                 if (CGameLevel::PointInBounds(
@@ -272,7 +272,7 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
 
         L_wander:
-            if (m_resetApplied != 0 || m_318 == 0 || static_cast<u32>(m_dwell) <= 0xbb8) {
+            if (m_resetApplied != 0 || m_hasExtent == 0 || static_cast<u32>(m_dwell) <= 0xbb8) {
                 return 1;
             }
 
@@ -331,11 +331,11 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
         }
         case 1: {
-            CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+            CGrunt* sg = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (best != 0 && best != sg) {
-                m_arrivalCol = -1;
+                m_arrivalCell.m_x = -1;
                 m_defenderState = 0;
-                m_arrivalRow = -1;
+                m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (sg == 0) {
@@ -355,7 +355,14 @@ i32 CGrunt::ScanNearestTarget() {
                 goto L_clearMode;
             }
             if (static_cast<u32>(m_dwell) > 0x1f4) {
-                StepArrivalDrop(sg->m_lastTilePxX, sg->m_lastTilePxY, m_arrivalFlags, 0, 1, 0);
+                StepArrivalDrop(
+                    sg->m_lastTilePx.m_x,
+                    sg->m_lastTilePx.m_y,
+                    m_arrivalFlags,
+                    0,
+                    1,
+                    0
+                );
                 m_dwell = 0;
             }
             if (m_poweredUp != 0 || m_stamina < 100) {
@@ -364,15 +371,15 @@ i32 CGrunt::ScanNearestTarget() {
             if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (sg->m_object->m_screenX != sg->m_lastTilePxX
-                || sg->m_object->m_screenY != sg->m_lastTilePxY) {
+            if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
+                || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
                 return 1;
             }
             CommitNeighbor(
                 sg->m_tileOwnerHi,
                 sg->m_tileOwnerLo,
-                sg->m_lastTilePxX,
-                sg->m_lastTilePxY
+                sg->m_lastTilePx.m_x,
+                sg->m_lastTilePx.m_y
             );
             m_defenderState = 2;
             return 1;
@@ -382,7 +389,8 @@ i32 CGrunt::ScanNearestTarget() {
         }
         case 2: {
             if (m_poweredUp != 0) {
-                CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+                CGrunt* sg =
+                    m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
                 if (sg == 0) {
                     goto L_setLock;
                 }
@@ -405,15 +413,15 @@ i32 CGrunt::ScanNearestTarget() {
                 if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
                     goto L_setLock;
                 }
-                if (sg->m_object->m_screenX != sg->m_lastTilePxX
-                    || sg->m_object->m_screenY != sg->m_lastTilePxY) {
+                if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
+                    || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
                     goto L_setLock;
                 }
                 CommitNeighbor(
                     sg->m_tileOwnerHi,
                     sg->m_tileOwnerLo,
-                    sg->m_lastTilePxX,
-                    sg->m_lastTilePxY
+                    sg->m_lastTilePx.m_x,
+                    sg->m_lastTilePx.m_y
                 );
                 m_defenderState = 2;
                 return 1;

@@ -36,7 +36,7 @@ i32 CSBI_WarlordHead::SetupImage(
 // @early-stop
 RVA(0x000eb740, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(i32 show, CShadeTable* palDescr) {
-    CDDrawWorker* cfg = m_34;
+    CDDrawWorker* cfg = m_frameSet;
     if (cfg == 0) {
         return 0;
     }
@@ -72,22 +72,22 @@ RVA(0x000eb830, 0x31)
 i32 CSBI_WarlordHead::SetState(i32 dir) {
     if (dir == 0 || dir == 1) {
         m_direction = dir;
-        m_38 = 1;
+        m_frameIndex = 1;
         return 1;
     }
     m_direction = dir;
-    m_38 = 2;
+    m_frameIndex = 2;
     return 1;
 }
 
 // @early-stop
 RVA(0x000eb880, 0xbd)
 i32 CSBI_WarlordHead::Render() {
-    if (m_28 > 0) {
-        m_28--;
+    if (m_redrawFrames > 0) {
+        m_redrawFrames--;
         CDDrawSurfacePair* target = g_gameReg->m_world->m_drawTarget->m_backPair;
 
-        CDDrawWorker* cfg = m_34;
+        CDDrawWorker* cfg = m_frameSet;
         CImage* f;
         if (m_direction == 1) {
             f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3)
@@ -102,8 +102,8 @@ i32 CSBI_WarlordHead::Render() {
             f->RenderFrame(target, m_rect14.left + f->m_anchorX, m_rect14.top + f->m_anchorY, 0);
         }
 
-        cfg = m_34;
-        i32 idx = m_38;
+        cfg = m_frameSet;
+        i32 idx = m_frameIndex;
         CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
                         ? 0
                         : static_cast<CImage*>(cfg->m_items.GetAt(idx));

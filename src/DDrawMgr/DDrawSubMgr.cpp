@@ -223,7 +223,7 @@ RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
     volatile LONG* pHi = &m_dirty.m_rect.left;
     volatile i32* pLo = &m_dirty.m_armed;
-    m_78b = 0;
+    m_pixelValue = 0;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     *pHi = static_cast<LONG>(0x80000000);
@@ -238,7 +238,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
 
 RVA(0x00157110, 0x20)
 i32 CDDrawWorkerA::PlaceFrameValue(i32 x, i32 y, i32 frame) {
-    m_78b = static_cast<char>(frame);
+    m_pixelValue = static_cast<char>(frame);
     m_refCount = 2;
     return CResolveNode::SetPosition(x, y);
 }
@@ -268,7 +268,7 @@ void* CDDrawWorkerList::CreateWorkerB30(
 
 RVA(0x00157200, 0xb)
 i32 CDDrawWorkerBase::IsLoaded() {
-    return m_78 != 0;
+    return m_frameValue != 0;
 }
 
 RVA(0x00157210, 0x6)
@@ -281,7 +281,7 @@ RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
     volatile LONG* pHi = &m_dirty.m_rect.left;
     volatile i32* pLo = &m_dirty.m_armed;
-    m_78 = 0;
+    m_frameValue = 0;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     *pHi = static_cast<LONG>(0x80000000);
@@ -317,7 +317,7 @@ i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
 
 RVA(0x001572f0, 0x20)
 i32 CDDrawWorkerB::PlaceFrameValue(i32 x, i32 y, i32 frame) {
-    m_78 = frame;
+    m_frameValue = frame;
     m_refCount = 2;
     return CResolveNode::SetPosition(x, y);
 }
@@ -326,7 +326,7 @@ RVA(0x00157310, 0x1a)
 void CDDrawWorkerBase::Unload() {
 
     i32 v = static_cast<i32>(0x80000000);
-    m_78 = 0;
+    m_frameValue = 0;
     m_screenX = v;
     m_dirty.m_rect.left = v;
     m_dirty.m_armed = -1;

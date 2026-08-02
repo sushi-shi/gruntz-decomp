@@ -77,8 +77,8 @@ i32 CDDrawWorkerHost::Read(
     }
 
     m_flags = pd->flags;
-    m_94 = pd->movementXPercent;
-    m_98 = pd->movementYPercent;
+    m_movementXPercent = pd->movementXPercent;
+    m_movementYPercent = pd->movementYPercent;
     m_scaledX = 0;
     m_scaledY = 0;
     m_zBound = -999999;
@@ -127,8 +127,8 @@ i32 CDDrawWorkerHost::Read(
         RecomputePlaneCoords();
     }
 
-    m_scaleX = static_cast<float>(m_94) * 0.01f;
-    m_scaleY = static_cast<float>(m_98) * 0.01f;
+    m_scaleX = static_cast<float>(m_movementXPercent) * 0.01f;
+    m_scaleY = static_cast<float>(m_movementYPercent) * 0.01f;
 
     m_tileGrid = static_cast<i32*>(operator new(m_gridH * m_gridW * 4));
     // Byte-forced view of packed WWD storage.
@@ -184,8 +184,8 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_bounds50.top = bounds->top;
     m_bounds50.right = bounds->right;
     m_bounds50.bottom = bounds->bottom;
-    m_94 = depthX;
-    m_98 = depthY;
+    m_movementXPercent = depthX;
+    m_movementYPercent = depthY;
     m_fillRect.left = 0;
     m_fillRect.top = 0;
     m_fillRect.bottom = tileH;
@@ -225,8 +225,8 @@ i32 CDDrawWorkerHost::InitGeometry(
         m_anchorY = m_viewH / 2;
         RecomputePlaneCoords();
     }
-    m_scaleX = static_cast<float>(m_94) * 0.01f;
-    m_scaleY = static_cast<float>(m_98) * 0.01f;
+    m_scaleX = static_cast<float>(m_movementXPercent) * 0.01f;
+    m_scaleY = static_cast<float>(m_movementYPercent) * 0.01f;
     m_tileGrid = static_cast<i32*>(operator new(m_gridW * m_gridH * 4));
     m_colOffsets = static_cast<i32*>(operator new(m_gridH * 4));
     for (i32 i = 0; i < m_gridH; i++) {
@@ -621,7 +621,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    const i32* p = &src->m_nameLen;
+    const i32* p = src->m_fields;
     i32 nameLen = *p++;
     i32 logicLen = *p++;
     i32 imageSetLen = *p++;
@@ -719,7 +719,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     }
 
     if (name.GetLength() != 0) {
-        obj->m_dc = static_cast<const char*>(name);
+        obj->m_name = static_cast<const char*>(name);
     }
 
     p++;
@@ -765,14 +765,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_switchRect.left = static_cast<i32>(0x80000000);
     }
 
-    anim->m_switchRectA.left = *p++;
-    anim->m_switchRectA.top = *p++;
-    anim->m_switchRectA.right = *p++;
-    anim->m_switchRectA.bottom = *p++;
-    anim->m_switchRectB.left = *p++;
-    anim->m_switchRectB.top = *p++;
-    anim->m_switchRectB.right = *p++;
-    anim->m_switchRectB.bottom = *p++;
+    anim->m_userRect1.left = *p++;
+    anim->m_userRect1.top = *p++;
+    anim->m_userRect1.right = *p++;
+    anim->m_userRect1.bottom = *p++;
+    anim->m_userRect2.left = *p++;
+    anim->m_userRect2.top = *p++;
+    anim->m_userRect2.right = *p++;
+    anim->m_userRect2.bottom = *p++;
     anim->m_user1 = *p++;
     anim->m_user2 = *p++;
     anim->m_user3 = *p++;
@@ -1057,8 +1057,8 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&m_zBound, 4);
     s->Write(&m_snappedX, 4);
     s->Write(&m_snappedY, 4);
-    s->Write(&m_94, 4);
-    s->Write(&m_98, 4);
+    s->Write(&m_movementXPercent, 4);
+    s->Write(&m_movementYPercent, 4);
 
     i32 gridSize = m_gridW * m_gridH * 4;
     s->Write(&gridSize, 4);
@@ -1085,8 +1085,8 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     s->Read(&m_zBound, 4);
     s->Read(&m_snappedX, 4);
     s->Read(&m_snappedY, 4);
-    s->Read(&m_94, 4);
-    s->Read(&m_98, 4);
+    s->Read(&m_movementXPercent, 4);
+    s->Read(&m_movementYPercent, 4);
 
     i32 gridSize = 0;
     s->Read(&gridSize, 4);

@@ -34,10 +34,10 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
 
     i32 key = m_object->m_smarts;
     i32 idx;
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         idx = key;
     } else if (g_gameReg->m_options[key].m_liveGate != 0) {
-        idx = g_gameReg->m_options[key].m_008;
+        idx = g_gameReg->m_options[key].m_colorIndex;
     } else {
         m_wwdObject->m_flags |= 0x10000;
 
@@ -52,8 +52,8 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_object->m_drawFillArg = sel;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
 }
 
 template<> DATA(0x00244700)
@@ -69,9 +69,9 @@ i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameOb
     }
     if (tag != 4 && tag == 8) {
         i32 idx;
-        if (g_gameReg->m_134 != 1) {
+        if (g_gameReg->m_gameMode != 1) {
             if (g_gameReg->m_options[m_object->m_smarts].m_liveGate != 0) {
-                idx = g_gameReg->m_options[m_object->m_smarts].m_008;
+                idx = g_gameReg->m_options[m_object->m_smarts].m_colorIndex;
             } else {
                 idx = ChannelSlots_FindFree();
             }

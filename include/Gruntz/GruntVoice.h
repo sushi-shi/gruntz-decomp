@@ -34,15 +34,15 @@ public:
     union {
         Clock64 m_startStamp;
         struct {
-            i32 m_icon;
-            i32 m_5c;
+            i32 m_startStampLo;
+            i32 m_startStampHi;
         };
     };
     union {
         Clock64 m_duration;
         struct {
             i32 m_durationMs;
-            i32 m_64;
+            i32 m_durationHi;
         };
     };
     i32 m_source;

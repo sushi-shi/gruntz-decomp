@@ -17,15 +17,15 @@
 // @early-stop
 RVA(0x00050a50, 0x1c5)
 i32 CGrunt::SetupTubeAnim(i32 isWater) {
-    m_reachRectLeft = -1;
-    m_reachRectTop = -1;
-    m_reachRadius = 1;
-    m_reachRectBottom = 1;
+    m_reachRect.left = -1;
+    m_reachRect.top = -1;
+    m_reachRect.right = 1;
+    m_reachRect.bottom = 1;
     m_coordToggle = isWater;
-    m_2a0 = 0;
-    m_2a4 = 0;
-    m_2a8 = 0;
-    m_2ac = 0;
+    m_reachExclusionRect.left = 0;
+    m_reachExclusionRect.top = 0;
+    m_reachExclusionRect.right = 0;
+    m_reachExclusionRect.bottom = 0;
 
     m_animSetName = (isWater == 0) ? "TOOBGRUNT" : "TOOBWATERGRUNT";
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);

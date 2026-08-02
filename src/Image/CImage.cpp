@@ -379,12 +379,12 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         return;
     }
     if (mode & 8) {
-        if (g_engineFrameDelta >= info->m_44) {
-            info->m_44 = info->m_48;
+        if (g_engineFrameDelta >= info->m_flashCountdown) {
+            info->m_flashCountdown = info->m_flashInterval;
             mode ^= 0x10000000;
             info->m_stateFlags = mode;
         } else {
-            info->m_44 -= g_engineFrameDelta;
+            info->m_flashCountdown -= g_engineFrameDelta;
         }
         mode = info->m_stateFlags;
         if (!(mode & 0x10000000)) {

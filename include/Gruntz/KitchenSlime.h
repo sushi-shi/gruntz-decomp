@@ -6,6 +6,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 
 class CKitchenSlime : public CUserLogic, public CWapX {
 public:
@@ -35,8 +36,7 @@ public:
     double m_posY;
     double m_dirX;
     double m_dirY;
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tilePosition;
     double m_stepMag;
 };
 SIZE(0x90);

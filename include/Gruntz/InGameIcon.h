@@ -48,7 +48,6 @@ public:
     Clock64 m_peekTimer;
     Clock64 m_peekWindow;
     CWwdGameObjectA* m_glitterSprite;
-    i32 m_7c;
 };
 SIZE(0x80);
 

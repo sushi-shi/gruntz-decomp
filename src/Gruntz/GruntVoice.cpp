@@ -157,25 +157,25 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
 // @early-stop
 RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_icon = 0;
-    m_5c = 0;
+    m_startStampLo = 0;
+    m_startStampHi = 0;
     m_durationMs = 0;
-    m_64 = 0;
+    m_durationHi = 0;
     m_wwdObject->ApplyName("GAME_EXCLAMATION");
     if (m_object->m_sortKey != 0xdbba1) {
         m_object->m_sortKey = 0xdbba1;
         m_object->m_flags |= 0x20000;
     }
     m_sample = 0;
-    m_icon = 0;
+    m_startStampLo = 0;
     m_durationMs = 0;
-    m_5c = 0;
-    m_64 = 0;
+    m_startStampHi = 0;
+    m_durationHi = 0;
     m_wwdObject->m_flags |= 0x4000002;
     m_wwdObject->m_stateFlags |= 1;
     m_playFlags = 0;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_source = 0;
     m_owner = 0;
 }
@@ -188,8 +188,8 @@ RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_stateFlags |= 1;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_object->m_area.left = m_object->m_screenX - (m_object->m_extent.left << 5) - 7;
@@ -275,20 +275,20 @@ i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner
     m_owner = owner;
     m_sample = sample;
     m_durationMs = sample->ComputeRatio();
-    m_64 = 0;
-    m_icon = g_frameTime;
-    m_5c = 0;
+    m_durationHi = 0;
+    m_startStampLo = g_frameTime;
+    m_startStampHi = 0;
     m_playFlags = playFlags;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("B");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("B");
     return 1;
 }
 
 RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
     m_sample = 0;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_playFlags = 0;
     m_source = 0;
 }
@@ -305,8 +305,8 @@ i32 CGruntVoice::Update() {
         m_sample = 0;
         m_source = 0;
         m_object->m_stateFlags |= 1;
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("A");
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("A");
         m_playFlags = 0;
         return 0;
     }

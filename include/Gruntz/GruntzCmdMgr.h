@@ -60,8 +60,8 @@ public:
     ~CGruntzCmdMgr();
 
     CPtrList m_base;
-    CPtrList m_1c;
-    CGruntzMgr* m_38;
+    CPtrList m_pendingCommands;
+    CGruntzMgr* m_manager;
 };
 SIZE_UNKNOWN();
 

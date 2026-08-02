@@ -40,14 +40,14 @@ i32 CSBI_MenuItem::SetupImage(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = owner;
-    m_24 = host;
+    m_owner = owner;
+    m_host = host;
     m_tab = tab;
     m_kind = 2;
     m_frame = 0;
 
     m_rect14 = rc;
-    m_28 = 0;
+    m_redrawFrames = 0;
     m_cmd = cmd;
     m_state = 1;
     m_enabled = 1;
@@ -72,7 +72,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     }
 
     CObject* rec_v = 0;
-    CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_24);
+    CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_host);
     host->m_imageRegistry->m_10map.Lookup(key, rec_v);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
     m_record = rec;
@@ -93,8 +93,8 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
 
 RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::Render() {
-    if (m_28 > 0) {
-        m_28--;
+    if (m_redrawFrames > 0) {
+        m_redrawFrames--;
         CImage* f = m_frame;
         if (f) {
             f->RenderFrame(
@@ -118,10 +118,10 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     }
 
     if (state == 3) {
-        m_2c->ClearTabGroup();
-        m_2c->m_activeTab = m_cmd;
-        m_2c->LoadTabSprites();
-        m_2c->Deactivate();
+        m_owner->ClearTabGroup();
+        m_owner->m_activeTab = m_cmd;
+        m_owner->LoadTabSprites();
+        m_owner->Deactivate();
     } else if (state == 2 && a) {
 
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
@@ -243,7 +243,7 @@ i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
             ar->Read(&m_cmd, 4);
             ar->Read(&m_tab, 4);
             ar->Read(&m_rect14, 0x10);
-            ar->Read(&m_28, 4);
+            ar->Read(&m_redrawFrames, 4);
             break;
         case 4:
             ar->Write(&m_enabled, 4);
@@ -251,7 +251,7 @@ i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
             ar->Write(&m_cmd, 4);
             ar->Write(&m_tab, 4);
             ar->Write(&m_rect14, 0x10);
-            ar->Write(&m_28, 4);
+            ar->Write(&m_redrawFrames, 4);
             break;
     }
     return 1;

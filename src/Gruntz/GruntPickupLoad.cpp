@@ -25,7 +25,7 @@
     } while (0)
 
 RVA(0x00065e80, 0x12b8)
-i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 countStats) {
+i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i32 countStats) {
     CAniElement* geo;
     if (m_gruntKind == 0x39 || m_gruntKind == 0x3a) {
         return 0;
@@ -90,8 +90,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
         }
     }
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("J");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("J");
 
     i32 id = 0;
     forced = 0;
@@ -423,7 +423,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 coun
             g->m_cueSink->SpawnVoiceDriver(this, id, -1, 0, -1, -1);
         }
     }
-    m_1a4 = a3;
+    m_helpCueId = helpCueId;
     m_entranceActive = 1;
     m_moveMode = type;
     if (m_healthSprite != 0) {

@@ -1,6 +1,7 @@
 #ifndef GRUNTZ_CTOYPEEK_H
 #define GRUNTZ_CTOYPEEK_H
 
+#include <Clock64.h>
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
@@ -21,10 +22,8 @@ public:
 
     char m_pad54[0x58 - 0x54];
 
-    i32 m_startClockLo;
-    i32 m_startClockHi;
-    i32 m_countdownLo;
-    i32 m_countdownHi;
+    Clock64 m_startClock;
+    Clock64 m_countdown;
 };
 SIZE_UNKNOWN();
 

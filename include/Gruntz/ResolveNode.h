@@ -70,8 +70,8 @@ public:
 
     class CGameLevel* m_level;
     i32 m_stateFlags;
-    i32 m_44;
-    i32 m_48;
+    i32 m_flashCountdown;
+    i32 m_flashInterval;
     CShadeTable* m_drawFillArg;
     i32 m_drawFillCmd;
     i32 m_fillFraction;

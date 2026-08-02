@@ -154,12 +154,12 @@ CMulti::~CMulti() {
 
     CMulti::ReleaseResources();
 
-    m_604.~CDWordArray();
-    m_5b8.~CString();
-    m_5b4.~CString();
+    m_readyPlayerIds.~CDWordArray();
+    m_customLevelName.~CString();
+    m_builtInLevelName.~CString();
     m_hostName.~CString();
     m_groupName.~CString();
-    m_598.~CString();
+    m_providerConfigPrefix.~CString();
 }
 
 DATA(0x00246778)
@@ -169,7 +169,7 @@ CFile g_obj646778;
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
-    g_gameReg->m_134 = 2;
+    g_gameReg->m_gameMode = 2;
     if (mgr == 0) {
         return 0;
     }
@@ -184,38 +184,38 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_region2Gate = 0;
     m_viewMode = 0;
     m_hudSuppressed = 1;
-    m_49c = -1;
+    m_cameraBookmarkIndex = -1;
     m_snapshotActive = 0;
     m_scrollEdgeActive = 0;
     m_scrollEdgeLock = 0;
-    m_530 = 0;
-    m_534 = 0;
+    m_customLevelVerificationPending = 0;
+    m_allPlayersReady = 0;
     m_sessionTerminated = 0;
-    m_538 = 0;
-    m_5ac = 0;
+    m_removedByHost = 0;
+    m_gameClosed = 0;
     m_pollAbort = 0;
-    m_56c = 0;
-    m_568 = 0;
-    m_574 = 0;
+    m_gameFull = 0;
+    m_colorSelectionRejected = 0;
+    m_outOfSync = 0;
     m_notifyLatch = 0;
-    m_1c0 = 0;
+    m_completedFinalLevel = 0;
     m_syncGate = 0;
     m_connected = 0;
     m_pumpGuard = 0;
-    m_584 = 0;
-    m_588 = 0;
-    m_570 = 0;
-    m_1c4 = 1;
-    m_5bc = 0;
+    m_waitDialogReplyReceived = 0;
+    m_lobbyLaunch = 0;
+    m_versionMismatch = 0;
+    m_initialFramePending = 1;
+    m_localPlayer = 0;
     m_hostIndex = 0;
-    m_5a4 = 0;
-    m_600 = 1;
+    m_commandDelay = 0;
+    m_autoCommandDelay = 1;
     m_drainReload = 0;
     m_lightFx = 0;
     m_savedClock = 0;
     m_rngSeed = static_cast<i32>(::timeGetTime());
-    m_58c = 0;
-    m_594 = 0;
+    m_connectAccepted = 0;
+    m_roundComplete = 0;
 
     i32* clat = m_channelLatency;
     for (i32 i = 0; i < 4; i++) {
@@ -224,7 +224,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         g_gameReg->m_options[i].m_latency.m_count = 0;
     }
 
-    NetGameMgr()->m_114 = 0;
+    NetGameMgr()->m_loadingSaveGame = 0;
     Mgr()->ResetClockGlobals();
     Mgr()->ClearOptionsSlots();
     ChannelSlots_InitAll();
@@ -250,18 +250,18 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     }
 
     if (m_isHost != 0) {
-        m_58c = 1;
+        m_connectAccepted = 1;
     }
     NetGameMgr()->m_modalBusy = 0;
     memset(&m_saveSlot, 0, sizeof(m_saveSlot));
-    m_590 = NetGameMgr()->m_isEffectsEnabled;
+    m_savedEffectsEnabled = NetGameMgr()->m_isEffectsEnabled;
     NetGameMgr()->m_isEffectsEnabled = 1;
     if (LoadImageBanks() == 0) {
         return 0;
     }
     PostLoadImageBanks();
-    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MULTI"));
-    if (m_2c == 0) {
+    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MULTI"));
+    if (m_stateBank == 0) {
         return 0;
     }
     if (ShowMultiStartDlg() == 0) {
@@ -273,11 +273,11 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
 
-    if (m_5b0 != 0) {
-        NetGameMgr()->m_12c = 0;
+    if (m_customLevel != 0) {
+        NetGameMgr()->m_isMultiLevel = 0;
         NetGameMgr()->m_strWorldFile = "custom\\" + GetConfigNameB();
     } else {
-        NetGameMgr()->m_12c = 1;
+        NetGameMgr()->m_isMultiLevel = 1;
         NetGameMgr()->m_strWorldFile = GetConfigNameA();
     }
     if (Mgr()->GetWorldFileName().GetLength() == 0) {
@@ -297,7 +297,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         m_hitTest = 0;
         return 0;
     }
-    m_hitTest->m_10 = 0;
+    m_hitTest->m_inputActive = 0;
     m_hitTest->Configure(1);
 
     CStatusBarMgr* sess = new CStatusBarMgr;
@@ -329,7 +329,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
     m_pumpGuard = 1;
-    m_534 = 0;
+    m_allPlayersReady = 0;
     i32 wr = WaitForOtherPlayers();
     m_pumpGuard = 0;
     if (wr == 0) {
@@ -357,7 +357,7 @@ CNetMgr::~CNetMgr() {
 
 RVA(0x000b6110, 0xc7)
 void CMulti::ReleaseResources() {
-    if (m_netGate && m_5bc && m_session && m_connected) {
+    if (m_netGate && m_localPlayer && m_session && m_connected) {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
     }
@@ -378,7 +378,7 @@ void CMulti::ReleaseResources() {
         ::operator delete(lightFx);
         m_lightFx = 0;
     }
-    Mgr()->m_isEffectsEnabled = m_590;
+    Mgr()->m_isEffectsEnabled = m_savedEffectsEnabled;
 
     CPlay::ReleaseResources();
 }
@@ -412,7 +412,7 @@ i32 CMulti::EnterState(i32 arg) {
     m_5ec = 0;
     m_5e8 = 0;
     m_accumTime = 0;
-    m_5e4 = tg();
+    m_lastFrameSyncTime = tg();
     if (m_connected != 0) {
         SendNetStat(0x402, 0x4d2, 1);
     }
@@ -472,9 +472,9 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_5ec = 0;
     m_5e8 = 0;
     m_accumTime = 0;
-    m_5e4 = timeGetTime();
+    m_lastFrameSyncTime = timeGetTime();
     m_curSlotId = m_session->m_tick - 1;
-    m_574 = 0;
+    m_outOfSync = 0;
 
     if (CPlay::LoadByMode(mode, 0) == 0) {
         return 0;
@@ -484,12 +484,12 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
         if (e == 0) {
             return 0;
         }
-        e->m_038.FreeArrays();
-        if (e->m_038.LoadConfig(Mgr(), i, e->m_configId) == 0) {
+        e->m_battlezConfig.FreeArrays();
+        if (e->m_battlezConfig.LoadConfig(Mgr(), i, e->m_configId) == 0) {
             return 0;
         }
-        if (e->m_014 && e->m_liveGate) {
-            e->m_038.Clear();
+        if (e->m_humanControlled && e->m_liveGate) {
+            e->m_battlezConfig.Clear();
         }
     }
     ResetPlayState();
@@ -505,9 +505,9 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_5ec = 0;
     m_5e8 = 0;
     m_accumTime = 0;
-    m_5e4 = timeGetTime();
+    m_lastFrameSyncTime = timeGetTime();
     m_curSlotId = m_session->m_tick - 1;
-    m_574 = 0;
+    m_outOfSync = 0;
     Mgr()->m_chatLog->FreeNodes();
     m_session->Reset();
     Mgr()->m_cueSink->PauseAllVoices();
@@ -518,7 +518,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
 RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
     m_connected = 0;
-    m_534 = 0;
+    m_allPlayersReady = 0;
     if (Mgr()->PassClickToPlayState(mode, 0, 0) == 0) {
         Mgr()->ReportError(0x8005, 0x446);
         return 0;
@@ -549,18 +549,18 @@ i32 CMulti::Render() {
         m_curSlotId = newId;
         CGruntzCmdMgr* mgr = Mgr()->m_cmdSubMgr;
         CGruntzCommand* node;
-        if (mgr->m_1c.GetCount() == 0) {
+        if (mgr->m_pendingCommands.GetCount() == 0) {
             node = 0;
         } else {
-            node = static_cast<CGruntzCommand*>(mgr->m_1c.RemoveHead());
+            node = static_cast<CGruntzCommand*>(mgr->m_pendingCommands.RemoveHead());
         }
         if (node) {
             node->m_submitted = 1;
 
-            i32 v = m_curSlotId + static_cast<i32>(m_5a4) * 2;
+            i32 v = m_curSlotId + static_cast<i32>(m_commandDelay) * 2;
             node->m_targetType = static_cast<u8>(v % 128);
         }
-        m_session->ArmSlot(node, static_cast<u8>(static_cast<u8>(m_5a4) << 1));
+        m_session->ArmSlot(node, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
     }
     i32 dt = m_frameDelta;
     if (static_cast<u32>(dt) >= g_frameDelta) {
@@ -589,7 +589,7 @@ i32 CMulti::Render() {
     }
 
     if (fin != 0) {
-        if (m_session->Verify() == 0 && m_574 == 0) {
+        if (m_session->Verify() == 0 && m_outOfSync == 0) {
             if (m_isHost != 0) {
                 SendStatFlag(0x404, 1);
                 OnOutOfSync();
@@ -619,7 +619,7 @@ i32 CMulti::Render() {
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
     i32 ready = FrameSyncWait();
-    if (m_594 == 0 && Mgr()->m_frameGate != 0 && ready == 0) {
+    if (m_roundComplete == 0 && Mgr()->m_frameGate != 0 && ready == 0) {
         PumpB();
         return 1;
     }
@@ -706,7 +706,7 @@ i32 CMulti::PumpA() {
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
     CDDrawSurfaceMgr* mgr = m_world;
-    if (m_594 == 0 && Mgr()->m_frameGate != 0) {
+    if (m_roundComplete == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
         mgr->m_level->VisitVisible(mgr->m_drawTarget->m_backPair, mgr->m_childGroup);
         mgr->m_workerList->PruneWorkers(
@@ -804,13 +804,13 @@ void CMulti::PumpB() {
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
     Mgr()->m_lobbyResult = 0;
-    m_588 = 1;
+    m_lobbyLaunch = 1;
     if (!m_netGate) {
         return 0;
     }
-    CSymTab* saved = m_2c;
+    CSymTab* saved = m_stateBank;
     CSymTab* st = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT"));
-    m_2c = st;
+    m_stateBank = st;
     if (!st) {
         return 0;
     }
@@ -819,14 +819,14 @@ i32 CMulti::StartTitle() {
     title.Format("TITLE%d", idx);
 
     if (RunTitleSeq(title, 0, 0, 1, 0) == 0) {
-        m_2c = saved;
+        m_stateBank = saved;
         return 0;
     }
 
     m_world->m_drawTarget->PresentBackPage();
 
     m_world->m_ptrColl->m_device->FlipToGDISurface();
-    m_2c = saved;
+    m_stateBank = saved;
     while (::ShowCursor(1) < 0) {
     }
     if (!Mgr()->m_lobby) {
@@ -1162,49 +1162,49 @@ ret_true:
 
 RVA(0x000b82e0, 0x230)
 i32 CMulti::DetectConnectionConfig() {
-    m_5ac = 0;
+    m_gameClosed = 0;
     InterfaceObject* provider = Peer()->m_groupSel;
     if (provider == 0) {
         return 0;
     }
 
-    m_598 = "Other";
+    m_providerConfigPrefix = "Other";
     if (provider->IsIpxProvider()) {
-        m_598 = "IPX";
-        m_5a4 = 2;
+        m_providerConfigPrefix = "IPX";
+        m_commandDelay = 2;
         m_drainReload = 0xa;
     } else if (provider->IsTcpIpProvider()) {
-        m_598 = "TcpIp";
-        m_5a4 = 3;
+        m_providerConfigPrefix = "TcpIp";
+        m_commandDelay = 3;
         m_drainReload = 0xa;
     } else if (provider->IsModemProvider()) {
-        m_598 = "Modem";
-        m_5a4 = 4;
+        m_providerConfigPrefix = "Modem";
+        m_commandDelay = 4;
         m_drainReload = 0x1e;
     } else if (provider->IsSerialProvider()) {
-        m_598 = "Serial";
-        m_5a4 = 2;
+        m_providerConfigPrefix = "Serial";
+        m_commandDelay = 2;
         m_drainReload = 0xa;
     } else {
-        m_5a4 = 2;
+        m_commandDelay = 2;
         m_drainReload = 0xa;
     }
 
     Utils::RegistryHelper* cfg = NetGameMgr()->m_settings;
-    CString kDelay = m_598 + "_CmdDelay";
-    CString kResend = m_598 + "_Resend";
-    CString kDyn = m_598 + "_DynCmdDelay";
+    CString kDelay = m_providerConfigPrefix + "_CmdDelay";
+    CString kResend = m_providerConfigPrefix + "_Resend";
+    CString kDyn = m_providerConfigPrefix + "_DynCmdDelay";
     i32 cd = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kDelay))), -1);
     i32 rs = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kResend))), -1);
     if (cd != -1 && rs != -1) {
-        m_5a4 = cd;
+        m_commandDelay = cd;
         m_drainReload = rs;
     }
 
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
 
     ch0->m_name = GetString5a0();
-    ch0->m_008 = 0;
+    ch0->m_colorIndex = 0;
 
     CNetPlayerListNode* r = JoinAndRegisterChannel();
     if (r == 0) {
@@ -1218,11 +1218,11 @@ RVA(0x000b85a0, 0xd2)
 void CMulti::ApplyCmdDelayDefaults() {
     Utils::RegistryHelper* reg = g_gameReg->m_settings;
 
-    CString cmdDelayName = m_598 + "_CmdDelay";
-    CString resendName = m_598 + "_Resend";
-    CString dynCmdName = m_598 + "_DynCmdDelay";
+    CString cmdDelayName = m_providerConfigPrefix + "_CmdDelay";
+    CString resendName = m_providerConfigPrefix + "_Resend";
+    CString dynCmdName = m_providerConfigPrefix + "_DynCmdDelay";
 
-    reg->SetValueDword(const_cast<char*>(static_cast<const char*>(cmdDelayName)), m_5a4);
+    reg->SetValueDword(const_cast<char*>(static_cast<const char*>(cmdDelayName)), m_commandDelay);
     reg->SetValueDword(const_cast<char*>(static_cast<const char*>(resendName)), m_drainReload);
 }
 
@@ -1238,10 +1238,10 @@ i32 CMulti::ShowMultiStartDlg() {
                 return 0;
             }
             rec->m_liveGate = 0;
-            ChannelSlots_Set(rec->m_008, 1);
+            ChannelSlots_Set(rec->m_colorIndex, 1);
             BroadcastChannelTable(0);
         }
-        if (m_isHost == 0 && m_538 == 0) {
+        if (m_isHost == 0 && m_removedByHost == 0) {
             SendStatFlag(0x3ea, 1);
         }
         return 0;
@@ -1324,7 +1324,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
     Cfg_SetSection(buf, "%s", m_groupName);
-    Cfg_AppendKeyVal(buf, "CMDDELAY", m_5a4);
+    Cfg_AppendKeyVal(buf, "CMDDELAY", m_commandDelay);
     Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
 
@@ -1335,7 +1335,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     }
 
     CNetSessionNode* node = Peer()->CreatePlayer(const_cast<char*>("Player"), g_emptyString, 0);
-    m_5bc = node;
+    m_localPlayer = node;
     if (node == 0) {
         ReportNetError(0);
         return 0;
@@ -1343,7 +1343,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
 
     m_hostIndex = node->m_id;
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
-    i32 chField = ch0->m_008;
+    i32 chField = ch0->m_colorIndex;
 
     i32 failed = (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0);
     return failed ? 0 : enumResult;
@@ -1362,7 +1362,8 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    m_5bc = Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), g_emptyString, 0);
+    m_localPlayer =
+        Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), g_emptyString, 0);
     if (LocalPlayer() == 0) {
         ReportNetError(0);
         return 0;
@@ -1371,7 +1372,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     char buf[0x100];
 
     if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "CMDDELAY")) {
-        m_5a4 = atoi(buf);
+        m_commandDelay = atoi(buf);
     }
     if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "RESEND")) {
         m_drainReload = atoi(buf);
@@ -1397,8 +1398,8 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     packet.m_slot = 1;
     packet.m_flagsB = 0;
     packet.m_configId = 0x63;
-    packet.m_0e = 0;
-    packet.m_0d = 0xf;
+    packet.m_humanControlled = 0;
+    packet.m_colorIndex = 0xf;
     strcpy(packet.m_name, GetString5a0());
     SendStatFrom(&packet, sizeof(packet), 1);
     return 1;
@@ -1413,8 +1414,8 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
         goto notVerified;
     }
 
-    if (m_530 != 0) {
-        i32 cfgId = m_5b0;
+    if (m_customLevelVerificationPending != 0) {
+        i32 cfgId = m_customLevel;
 
         i32 token = (g_gameReg)->BuildLevelRezPath(
             0,
@@ -1426,7 +1427,7 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
 
         g_connectRptMgr->m_levelVerifyResult = 0;
         if (g_connectRptMgr->Poll(token) == 0) {
-            m_530 = 0;
+            m_customLevelVerificationPending = 0;
             g_gameReg->EnterModalUI("Unable to verify custom level with other players");
             goto notVerified;
         }
@@ -1435,7 +1436,7 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
             return 1;
         }
         g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
-        m_530 = 0;
+        m_customLevelVerificationPending = 0;
         goto notVerified;
     }
     PollSession();
@@ -1451,16 +1452,16 @@ i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
     if (a2 == 0) {
         return 0;
     }
-    if (m_534 != 0) {
+    if (m_allPlayersReady != 0) {
         return 1;
     }
     PollSession();
-    return m_534 != 0;
+    return m_allPlayersReady != 0;
 }
 
 RVA(0x000b91f0, 0x31)
 i32 CMulti::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
-    pkt->m_0 |= 0x80;
+    pkt->m_flags |= 0x80;
     i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), flag, pkt, 0x10);
     return hr == 0;
 }
@@ -1468,7 +1469,7 @@ i32 CMulti::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
 RVA(0x000b9240, 0x38)
 void CMulti::SendStatFlag(i32 id, i32 flag) {
     CNetStatPacket pkt;
-    pkt.m_0 |= 0x80;
+    pkt.m_flags |= 0x80;
     pkt.m_statId = id;
     pkt.m_value = LocalPlayer()->m_id;
     SendStatBuf(&pkt, flag);
@@ -1477,7 +1478,7 @@ void CMulti::SendStatFlag(i32 id, i32 flag) {
 RVA(0x000b9290, 0x32)
 void CMulti::SendNetStat(i32 id, u32 value, i32 flag) {
     CNetStatPacket pkt;
-    pkt.m_0 |= 0x80;
+    pkt.m_flags |= 0x80;
     pkt.m_statId = id;
     pkt.m_value = value;
     SendStatBuf(&pkt, flag);
@@ -1497,7 +1498,7 @@ i32 CMulti::SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c)
     if (recipient == 0) {
         return 0;
     }
-    pkt->m_0 |= 0x80;
+    pkt->m_flags |= 0x80;
     i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, pkt, 0x10);
     return hr == 0;
 }
@@ -1508,7 +1509,7 @@ i32 CMulti::SendStatTo(CNetSessionNode* recipient, i32 id, i32 c) {
         return 0;
     }
     CNetStatPacket pkt;
-    pkt.m_0 |= 0x80;
+    pkt.m_flags |= 0x80;
     pkt.m_statId = id;
     pkt.m_value = LocalPlayer()->m_id;
     return SendStatPair(recipient, &pkt, c);
@@ -1517,7 +1518,7 @@ i32 CMulti::SendStatTo(CNetSessionNode* recipient, i32 id, i32 c) {
 RVA(0x000b9410, 0x51)
 i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
     CNetStatPacket pkt;
-    pkt.m_0 |= 0x80;
+    pkt.m_flags |= 0x80;
     pkt.m_statId = value;
     pkt.m_value = LocalPlayer()->m_id;
     i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
@@ -1530,7 +1531,7 @@ i32 CMulti::SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c) 
         return 0;
     }
     CNetStatPacket pkt;
-    pkt.m_0 |= 0x80;
+    pkt.m_flags |= 0x80;
     pkt.m_statId = id;
     pkt.m_value = value;
     return SendStatPair(recipient, &pkt, c);
@@ -1551,7 +1552,7 @@ i32 CMulti::SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32
 RVA(0x000b9570, 0x53)
 i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     CNetStatPacket pkt;
-    pkt.m_0 |= 0x80;
+    pkt.m_flags |= 0x80;
     pkt.m_statId = statId;
     pkt.m_value = value;
     i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
@@ -1641,21 +1642,21 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         }
     }
 
-    if ((msg->m_0 & 0x80) == 0) {
+    if ((msg->m_flags & 0x80) == 0) {
         return 0;
     }
 
     switch (msg->m_msgId) {
         case 0x3e8:
-            m_534 = 1;
+            m_allPlayersReady = 1;
             return 1;
 
         case 0x3fc:
-            m_530 = 1;
+            m_customLevelVerificationPending = 1;
             return 1;
 
         case 0x3ed:
-            if (m_534 != 0) {
+            if (m_allPlayersReady != 0) {
                 break;
             }
             RecordDropPlayer2(pd, sender);
@@ -1669,8 +1670,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 1;
             }
-            if (player->m_030 == 0) {
-                player->m_030 = 1;
+            if (player->m_presenceCounted == 0) {
+                player->m_presenceCounted = 1;
                 g_activePlayerCount++;
             }
             OnMultiOptions();
@@ -1685,17 +1686,17 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 1;
             }
-            if (player->m_030 == 0) {
+            if (player->m_presenceCounted == 0) {
                 break;
             }
-            player->m_030 = 0;
+            player->m_presenceCounted = 0;
             g_activePlayerCount--;
             break;
         }
 
         case 0x3f0: {
             if (g_sharedFlag != 0) {
-                NetLobby::AppendEditLine(g_sharedFlag, msg->m_c);
+                NetLobby::AppendEditLine(g_sharedFlag, msg->m_payload);
                 break;
             }
             if (m_connected == 0) {
@@ -1706,7 +1707,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-                ->AddItem(msg->m_c, 0x30, player->m_008);
+                ->AddItem(msg->m_payload, 0x30, player->m_colorIndex);
             CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
             if (host->m_emitGate != 0) {
                 break;
@@ -1731,7 +1732,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x410:
-            AckDropPlayer(msg->m_8);
+            AckDropPlayer(msg->m_value);
             break;
 
         case 0x3ea:
@@ -1785,15 +1786,17 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected != 0) {
                 break;
             }
-            GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(msg->m_14));
+            CNetOneChannelPacket* chan = wire.m_oneChannel;
+            GruntzPlayer* player =
+                static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(chan->m_slotKey));
             if (player == 0) {
                 return 0;
             }
-            if (player->SwapChannel(static_cast<u8>(msg->m_c[1])) == 0) {
-                msg->m_c[1] = static_cast<char>(player->m_008);
+            if (player->SwapChannel(chan->m_colorIndex) == 0) {
+                chan->m_colorIndex = static_cast<u8>(player->m_colorIndex);
                 SendStatTo(pd, 0x419, 1);
             }
-            ParseOneChannel(msg);
+            ParseOneChannel(chan);
             BroadcastChannelTable(0);
             g_playerLeftFlag = 1;
             break;
@@ -1803,36 +1806,36 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_isHost != 0) {
                 break;
             }
-            m_538 = 1;
+            m_removedByHost = 1;
             break;
 
         case 0x419:
             if (m_isHost != 0) {
                 break;
             }
-            m_568 = 1;
+            m_colorSelectionRejected = 1;
             break;
 
         case 0x3fd:
             if (m_isHost != 0) {
                 break;
             }
-            m_5ac = 1;
+            m_gameClosed = 1;
             break;
 
         case 0x3fe:
             if (m_isHost != 0) {
                 break;
             }
-            m_56c = 1;
+            m_gameFull = 1;
             break;
 
         case 0x41f:
-            SendStatValue(sender, 0x420, msg->m_8, 0);
+            SendStatValue(sender, 0x420, msg->m_value, 0);
             break;
 
         case 0x420: {
-            i32 stamp = msg->m_8;
+            i32 stamp = msg->m_value;
             u32 now = timeGetTime();
             i32 delta = now - stamp;
             GruntzPlayer* player = static_cast<GruntzPlayer*>((g_gameReg)->FindOptionsSlot(sender));
@@ -1854,7 +1857,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 1;
             }
-            m_channelLatency[player->m_playerIndex] = msg->m_8;
+            m_channelLatency[player->m_playerIndex] = msg->m_value;
             break;
         }
 
@@ -1874,13 +1877,13 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             m_recordAcked[player->m_playerIndex] = 1;
-            m_recordToken[player->m_playerIndex] = msg->m_8;
+            m_recordToken[player->m_playerIndex] = msg->m_value;
             break;
         }
 
         case 0x402:
-            m_lastSenderId = msg->m_8;
-            m_584 = 1;
+            m_lastSenderId = msg->m_value;
+            m_waitDialogReplyReceived = 1;
             return 1;
 
         case 0x403:
@@ -1890,7 +1893,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            if (m_534 == 0) {
+            if (m_allPlayersReady == 0) {
                 break;
             }
             SendStatFlag(0x404, 1);
@@ -1922,7 +1925,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (LoadConfig(msg) == 0) {
                 break;
             }
-            m_58c = 1;
+            m_connectAccepted = 1;
             break;
 
         case 0x417:
@@ -2008,16 +2011,16 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     if (slot->m_liveGate == 0) {
         return 0;
     }
-    if (slot->m_014 == 0) {
+    if (slot->m_humanControlled == 0) {
         return 0;
     }
 
-    if (slot->m_030 != 0) {
-        slot->m_030 = 0;
+    if (slot->m_presenceCounted != 0) {
+        slot->m_presenceCounted = 0;
         g_activePlayerCount--;
     }
     slot->m_liveGate = 0;
-    ChannelSlots_Set(slot->m_008, 1);
+    ChannelSlots_Set(slot->m_colorIndex, 1);
 
     CString line = slot->GetName() + " has left the game.";
     (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
@@ -2035,7 +2038,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
 
 RVA(0x000ba590, 0x63)
 void CMulti::AckDropPlayer(i32 id) {
-    if (m_534 == 0) {
+    if (m_allPlayersReady == 0) {
         RecordDropPlayer2(0, id);
         CNetCmdSlot* slot = Session()->FindCmdSlot(id);
         if (slot != 0) {
@@ -2068,7 +2071,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
             return 0;
         }
     }
-    if (m_530 == 0 && m_connected == 0) {
+    if (m_customLevelVerificationPending == 0 && m_connected == 0) {
         if (m_isHost != 0) {
             if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
                 SendStat3(ev->m_id, 0x3fe, 1);
@@ -2106,7 +2109,7 @@ i32 CMulti::ResolveLocalPlayer() {
     if (Peer() == 0) {
         return 0;
     }
-    m_5bc = Peer()->FindPlayerById(m_hostIndex);
+    m_localPlayer = Peer()->FindPlayerById(m_hostIndex);
     return LocalPlayer() != 0;
 }
 
@@ -2122,10 +2125,10 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
         if (ch != 0) {
             i32 v = ch->m_liveGate;
             packet.m_rows[i].m_liveGate = static_cast<u8>(v);
-            v = ch->m_008;
-            packet.m_rows[i].m_008 = static_cast<u8>(v);
-            v = ch->m_014;
-            packet.m_rows[i].m_014 = static_cast<u8>(v);
+            v = ch->m_colorIndex;
+            packet.m_rows[i].m_colorIndex = static_cast<u8>(v);
+            v = ch->m_humanControlled;
+            packet.m_rows[i].m_humanControlled = static_cast<u8>(v);
             v = ch->m_configId;
             packet.m_rows[i].m_configId = static_cast<u8>(v);
             v = ch->m_readyFlag;
@@ -2163,8 +2166,8 @@ i32 CMulti::ParseChannelTable(void* packet) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != 0) {
             ch->m_liveGate = p->m_rows[i].m_liveGate;
-            ch->m_008 = p->m_rows[i].m_008;
-            ch->m_014 = p->m_rows[i].m_014;
+            ch->m_colorIndex = p->m_rows[i].m_colorIndex;
+            ch->m_humanControlled = p->m_rows[i].m_humanControlled;
             ch->m_configId = p->m_rows[i].m_configId;
             if (p->m_rows[i].m_readyFlag != 0) {
                 ch->m_readyFlag = 1;
@@ -2175,7 +2178,7 @@ i32 CMulti::ParseChannelTable(void* packet) {
             ch->m_name = p->m_rows[i].m_name;
             ch->m_slotKey = p->m_rows[i].m_slotKey;
             if (m_isHost == 0 && ch->m_liveGate != 0) {
-                ChannelSlots_Set(ch->m_008, 0);
+                ChannelSlots_Set(ch->m_colorIndex, 0);
             }
         }
     }
@@ -2219,8 +2222,8 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
     ChannelSlots_Set(id, 0);
 
     ch->m_name = CString(name);
-    ch->m_008 = id;
-    ch->m_014 = c;
+    ch->m_colorIndex = id;
+    ch->m_humanControlled = c;
     ch->m_configId = d;
     ch->m_readyFlag = 0;
     ch->m_slotKey = e;
@@ -2256,7 +2259,7 @@ i32 CMulti::RemoveChannel(i32 idx) {
         return 0;
     }
     ch->m_liveGate = 0;
-    ChannelSlots_Set(ch->m_008, 1);
+    ChannelSlots_Set(ch->m_colorIndex, 1);
     return 1;
 }
 
@@ -2276,7 +2279,7 @@ void CMulti::OnMultiPause() {
         return;
     }
 
-    m_584 = 0;
+    m_waitDialogReplyReceived = 0;
     g_pauseGuard = 1;
     i32 r = RunErrorDialog("MULTI_PAUSE", NetLobby::HostWaitDlgProc, 0);
     g_pauseGuard = 0;
@@ -2294,7 +2297,7 @@ void CMulti::OnMultiOptions() {
         return;
     }
 
-    m_584 = 0;
+    m_waitDialogReplyReceived = 0;
     g_optionzGuard = 1;
     RunErrorDialog("MULTI_OPTIONZ", NetLobby::JoinWaitDlgProc, 0);
     g_optionzGuard = 0;
@@ -2303,12 +2306,12 @@ void CMulti::OnMultiOptions() {
 
 RVA(0x000bae40, 0x84)
 void CMulti::OnOutOfSync() {
-    if (m_574) {
+    if (m_outOfSync) {
         return;
     }
 
-    m_574 = 1;
-    m_584 = 0;
+    m_outOfSync = 1;
+    m_waitDialogReplyReceived = 0;
     i32 r = RunErrorDialog("MULTI_OUTOFSYNC", NetLobby::SessionWaitDlgProc, 0);
     g_sharedFlag = 0;
 
@@ -2336,10 +2339,10 @@ i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     packet.m_statId = STAT_CHANNEL_ONE;
     packet.m_playerIndex = ch->m_playerIndex;
 
-    i32 v = ch->m_008;
-    packet.m_008 = static_cast<u8>(v);
-    v = ch->m_014;
-    packet.m_014 = static_cast<u8>(v);
+    i32 v = ch->m_colorIndex;
+    packet.m_colorIndex = static_cast<u8>(v);
+    v = ch->m_humanControlled;
+    packet.m_humanControlled = static_cast<u8>(v);
     v = ch->m_configId;
     packet.m_configId = static_cast<u8>(v);
     v = ch->m_readyFlag;
@@ -2370,7 +2373,7 @@ i32 CMulti::ParseOneChannel(void* rec) {
     }
 
     ch->m_name = r->m_name;
-    ch->m_008 = r->m_008;
+    ch->m_colorIndex = r->m_colorIndex;
     ch->m_configId = r->m_configId;
     if (r->m_readyFlag != 0) {
         ch->m_readyFlag = 1;
@@ -2378,7 +2381,7 @@ i32 CMulti::ParseOneChannel(void* rec) {
         ch->m_readyFlag = 0;
     }
     ch->m_comboSel = r->m_comboSel;
-    ch->m_014 = r->m_014;
+    ch->m_humanControlled = r->m_humanControlled;
     ch->m_slotKey = r->m_slotKey;
     ch->m_liveGate = 1;
     return 1;
@@ -2449,7 +2452,8 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
         if (player == 0) {
             return 0;
         }
-        (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))->AddItem(line, 0x30, player->m_008);
+        (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
+            ->AddItem(line, 0x30, player->m_colorIndex);
     }
 
     g_chatPacket_id = STAT_CHAT;
@@ -2505,7 +2509,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
 
     void* data = Peer()->GetPlayerData(ch->m_slotKey);
 
-    i32 active = ch->m_014;
+    i32 active = ch->m_humanControlled;
     if (data == 0) {
         if (active != 0) {
             return 0;
@@ -2524,24 +2528,24 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
 
 RVA(0x000bb5e0, 0xd9)
 void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
-    if (m_534 != 0) {
+    if (m_allPlayersReady != 0) {
         return;
     }
     if (id == m_hostIndex) {
         return;
     }
 
-    i32 count = m_604.GetSize();
+    i32 count = m_readyPlayerIds.GetSize();
     i32 i;
     for (i = 0; i < count; i++) {
-        if (static_cast<i32>(m_604[i]) == id) {
+        if (static_cast<i32>(m_readyPlayerIds[i]) == id) {
             return;
         }
     }
 
     i32 slot = 0;
     while (slot < count) {
-        if (m_604[slot] == 0) {
+        if (m_readyPlayerIds[slot] == 0) {
             break;
         }
         slot++;
@@ -2549,7 +2553,7 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
     if (slot >= count) {
         return;
     }
-    m_604[slot] = id;
+    m_readyPlayerIds[slot] = id;
 
     i32 stateThree = 0;
     CNetCmdSlot* p = m_session->m_slots;
@@ -2560,10 +2564,10 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
         p++;
     }
 
-    i32 total = m_604.GetSize();
+    i32 total = m_readyPlayerIds.GetSize();
     i32 recorded = 0;
     for (i = 0; i < total; i++) {
-        if (m_604[i] != 0) {
+        if (m_readyPlayerIds[i] != 0) {
             recorded++;
         }
     }
@@ -2573,13 +2577,13 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
 
     SendStatFlag(STAT_DROP_ANNOUNCE, 1);
     SendStatFlag(STAT_DROP_ANNOUNCE, 1);
-    m_534 = 1;
+    m_allPlayersReady = 1;
 }
 
 // @early-stop
 RVA(0x000bb700, 0x265)
 i32 CMulti::WaitForOtherPlayers() {
-    CDWordArray* votes = &m_604;
+    CDWordArray* votes = &m_readyPlayerIds;
     votes->SetSize(0, -1);
     for (i32 k = 3; k != 0; k--) {
         votes->SetAtGrow(votes->GetSize(), 0);
@@ -2614,7 +2618,7 @@ i32 CMulti::WaitForOtherPlayers() {
 
             i32 resend = 0x1388;
             i32 abort = 0x1d4c0;
-            while (m_534 == 0) {
+            while (m_allPlayersReady == 0) {
                 u32 start = timeGetTime();
                 Sleep(0x32);
                 PollSession();
@@ -2661,7 +2665,7 @@ i32 CMulti::WaitForOtherPlayers() {
     }
 
 ready:
-    m_534 = 1;
+    m_allPlayersReady = 1;
     return 1;
 }
 
@@ -2725,7 +2729,7 @@ i32 CMulti::Poll(i32 token) {
 
         for (i32 i = 0; i < 4; i++) {
             GruntzPlayer* ch = &g_gameReg->m_options[i];
-            if (ch->m_slotKey != m_hostIndex && ch->m_liveGate != 0 && ch->m_014 != 0) {
+            if (ch->m_slotKey != m_hostIndex && ch->m_liveGate != 0 && ch->m_humanControlled != 0) {
                 if (m_recordAcked[i] == 0) {
                     allAcked = 0;
                 } else if (!(m_recordToken[i] == token && token != 0)) {
@@ -2782,7 +2786,7 @@ i32 CMulti::CreateSession() {
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         i32 code = 1;
-        if (ch->m_liveGate != 0 && ch->m_014 != 0) {
+        if (ch->m_liveGate != 0 && ch->m_humanControlled != 0) {
 
             code = 2;
             if (ch->m_slotKey != m_hostIndex) {
@@ -2864,14 +2868,14 @@ void CNetSession::ResetAll() {
 RVA(0x000bc070, 0x73)
 u32 CMulti::FrameSyncWait() {
     u32 now = timeGetTime();
-    u32 delta = now - m_5e4;
+    u32 delta = now - m_lastFrameSyncTime;
     u32 ret = 0;
     m_accumTime = delta;
-    m_5e4 = now;
+    m_lastFrameSyncTime = now;
 
     if (delta <= 0x1e) {
         ActiveWait(0x1f - delta);
-        m_5e4 = (now - m_accumTime) + 0x1f;
+        m_lastFrameSyncTime = (now - m_accumTime) + 0x1f;
         return ret;
     }
     if (delta > 0x28 && m_syncGate) {
@@ -2887,7 +2891,7 @@ void CMulti::OnDropPlayer() {
         return;
     }
 
-    m_584 = 0;
+    m_waitDialogReplyReceived = 0;
     g_dropGuard = 1;
     i32 r = RunErrorDialog("MULTI_DROPPLAYER", NetLobby::NetGameDlgProc, 0);
     g_dropGuard = 0;
@@ -2954,7 +2958,7 @@ CString CNetCmdSlot::BuildHostName() {
 
 RVA(0x000bc420, 0x2b)
 void CMulti::AckJoinFailure() {
-    if (m_netGate && m_5bc && m_connected) {
+    if (m_netGate && m_localPlayer && m_connected) {
         SendStatFlag(0x3f6, 1);
     }
 }
@@ -2962,28 +2966,28 @@ void CMulti::AckJoinFailure() {
 // @early-stop
 RVA(0x000bc460, 0x24e)
 i32 CMulti::SetupTcpIpConfig() {
-    m_598 = "TcpIp";
-    m_5ac = 0;
-    m_5a4 = 5;
+    m_providerConfigPrefix = "TcpIp";
+    m_gameClosed = 0;
+    m_commandDelay = 5;
     m_drainReload = 0x3c;
 
     Utils::RegistryHelper* cfg = NetGameMgr()->m_settings;
-    CString kDelay = m_598 + "_CmdDelay";
-    CString kResend = m_598 + "_Resend";
-    CString kDyn = m_598 + "_DynCmdDelay";
+    CString kDelay = m_providerConfigPrefix + "_CmdDelay";
+    CString kResend = m_providerConfigPrefix + "_Resend";
+    CString kDyn = m_providerConfigPrefix + "_DynCmdDelay";
     i32 cd = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kDelay))), -1);
     i32 rs = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kResend))), -1);
     if (cd != -1 && rs != -1) {
-        m_5a4 = cd;
+        m_commandDelay = cd;
         m_drainReload = rs;
     }
 
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
 
     ch0->m_name = GetString5a0();
-    ch0->m_008 = 0;
+    ch0->m_colorIndex = 0;
 
-    m_5bc = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
+    m_localPlayer = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
         const_cast<char*>(static_cast<const char*>(ch0->GetName())),
         g_emptyString,
         0
@@ -2994,7 +2998,7 @@ i32 CMulti::SetupTcpIpConfig() {
     }
 
     m_hostIndex = LocalPlayer()->m_id;
-    i32 chField = ch0->m_008;
+    i32 chField = ch0->m_colorIndex;
 
     if (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0) {
         return 0;
@@ -3006,7 +3010,7 @@ i32 CMulti::SetupTcpIpConfig() {
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
-        m_5bc = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
+        m_localPlayer = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
             const_cast<char*>(static_cast<const char*>(GetString5a0())),
             g_emptyString,
             0
@@ -3032,8 +3036,8 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_slot = 1;
     pkt.m_flagsB = 0;
 
-    pkt.m_0e = 0;
-    pkt.m_0d = 0xf;
+    pkt.m_humanControlled = 0;
+    pkt.m_colorIndex = 0xf;
     pkt.m_configId = 0x63;
     pkt.m_hostIndex = m_hostIndex;
     {
@@ -3057,20 +3061,20 @@ i32 CMulti::OpenHostChannel(
     if (a0 == 0) {
         return 0;
     }
-    m_5a4 = cmdDelay;
+    m_commandDelay = cmdDelay;
     m_drainReload = resend;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_5bc = Peer()->CreatePlayer(
+    m_localPlayer = Peer()->CreatePlayer(
         const_cast<char*>(static_cast<const char*>(GetString5a0())),
         g_emptyString,
         0
     );
-    if (m_5bc == 0) {
+    if (m_localPlayer == 0) {
         ReportNetError(0);
         return 0;
     }
-    m_hostIndex = m_5bc->m_id;
+    m_hostIndex = m_localPlayer->m_id;
     return RegisterChannelFrom(name, channelId, -1, m_hostIndex) != 0;
 }
 
@@ -3084,11 +3088,11 @@ i32 CMulti::WaitForConnect() {
     }
 
     SendStatFlag(STAT_CONNECTING, 1);
-    m_58c = 0;
+    m_connectAccepted = 0;
 
     u32 deadline = timeGetTime() + 60000;
 
-    while (m_58c == 0) {
+    while (m_connectAccepted == 0) {
 
         if (timeGetTime() > deadline
             || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
@@ -3100,19 +3104,19 @@ i32 CMulti::WaitForConnect() {
             ReportVersionMsg("The game session has been terminated.", 0);
             return 0;
         }
-        if (m_538) {
+        if (m_removedByHost) {
             ReportVersionMsg("You have been removed from the game by the host.", 0);
             return 0;
         }
-        if (m_5ac) {
+        if (m_gameClosed) {
             ReportVersionMsg("This game is closed.", 0);
             return 0;
         }
-        if (m_56c) {
+        if (m_gameFull) {
             ReportVersionMsg("This game is already full.", 0);
             return 0;
         }
-        if (m_570) {
+        if (m_versionMismatch) {
             ReportVersionMsg(
                 "This version is not the same as the host computer's version of the game.",
                 0
@@ -3125,7 +3129,7 @@ i32 CMulti::WaitForConnect() {
 
 RVA(0x000bcc10, 0x8e)
 i32 CMulti::AutoTuneCmdDelay() {
-    if (m_530 != 0) {
+    if (m_customLevelVerificationPending != 0) {
         return 1;
     }
 
@@ -3137,7 +3141,7 @@ i32 CMulti::AutoTuneCmdDelay() {
 
     i32 bump = (probe > 2) ? 2 : 1;
     base += bump;
-    m_5a4 = base;
+    m_commandDelay = base;
 
     i32 resend;
     if (base <= 5) {
@@ -3154,19 +3158,19 @@ RVA(0x000bccd0, 0x141)
 i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     CNetConfigBlob blob;
     memset(&blob, 0, sizeof(blob));
-    blob.m_0 |= 0x80;
+    blob.m_flags |= 0x80;
     blob.m_statId = STAT_CONFIG;
-    blob.m_8 = m_5b0;
+    blob.m_customLevel = m_customLevel;
     {
         wsprintfA(blob.m_nameA, static_cast<const char*>(GetConfigNameA()));
     }
     {
         wsprintfA(blob.m_nameB, static_cast<const char*>(GetConfigNameB()));
     }
-    blob.m_10c = m_5a4;
-    blob.m_110 = m_drainReload;
-    blob.m_114 = m_600;
-    blob.m_118 = m_rngSeed;
+    blob.m_commandDelay = m_commandDelay;
+    blob.m_resendInterval = m_drainReload;
+    blob.m_autoCommandDelay = m_autoCommandDelay;
+    blob.m_rngSeed = m_rngSeed;
 
     if (recipient != 0) {
         SendStatPairRaw(recipient, &blob, 0x11c, 1);
@@ -3183,13 +3187,13 @@ i32 CMulti::LoadConfig(void* cfg) {
     }
 
     CNetConfigBlob* c = static_cast<CNetConfigBlob*>(cfg);
-    m_5b0 = c->m_8;
-    m_5b4 = c->m_nameA;
-    m_5b8 = c->m_nameB;
-    m_5a4 = c->m_10c;
-    m_drainReload = c->m_110;
-    m_600 = c->m_114;
-    m_rngSeed = c->m_118;
+    m_customLevel = c->m_customLevel;
+    m_builtInLevelName = c->m_nameA;
+    m_customLevelName = c->m_nameB;
+    m_commandDelay = c->m_commandDelay;
+    m_drainReload = c->m_resendInterval;
+    m_autoCommandDelay = c->m_autoCommandDelay;
+    m_rngSeed = c->m_rngSeed;
     return 1;
 }
 
@@ -3209,12 +3213,12 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     }
 
     slot->Touch();
-    i32 seq = (slot->m_baseSeq + 1) * static_cast<i32>(m_5a4);
-    i32 end = seq + static_cast<i32>(m_5a4) * 3;
+    i32 seq = (slot->m_baseSeq + 1) * static_cast<i32>(m_commandDelay);
+    i32 end = seq + static_cast<i32>(m_commandDelay) * 3;
     for (; seq < end; seq++) {
 
         NetGameMgr()->m_cmdSubMgr->RemoveMatchingTarget(slot->m_desc->m_playerIndex, seq);
-        slot->RemoveCmd(seq / static_cast<i32>(m_5a4));
+        slot->RemoveCmd(seq / static_cast<i32>(m_commandDelay));
     }
     slot->ResetTriple(slot->m_rangeA);
     slot->ResetTriple(slot->m_rangeB);
@@ -3241,7 +3245,7 @@ u32 CMulti::GetMaxAckLatency() {
 
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
-            if (mgr->m_options[i].m_014 && mgr->m_options[i].m_liveGate) {
+            if (mgr->m_options[i].m_humanControlled && mgr->m_options[i].m_liveGate) {
                 if (mgr->m_options[i].m_latency.m_avg > max) {
                     max = mgr->m_options[i].m_latency.m_avg;
                 }
@@ -3267,7 +3271,7 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
 
     if (mismatch) {
         i32 wasConnected = m_connected;
-        m_570 = 1;
+        m_versionMismatch = 1;
         if (wasConnected) {
             ReportVersionMsg(
                 "This version is not the same as the host computer's version of the game.",
@@ -3289,7 +3293,7 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
     CNetVersionPacket packet;
     memset(&packet, 0, sizeof(packet));
 
-    packet.m_0 |= 0x80;
+    packet.m_flags |= 0x80;
     packet.m_remoteVersion = g_remoteVersion;
     packet.m_buteConfig = g_buteMgrField4;
     packet.m_cfgWord = g_cfgWord;
@@ -3301,7 +3305,7 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
 
 RVA(0x000bd210, 0x14d)
 i32 CMulti::OnChar(i32 key, i32 flag) {
-    if (m_hitTest && m_hitTest->m_10) {
+    if (m_hitTest && m_hitTest->m_inputActive) {
         if (m_connected) {
             if (Mgr()->m_chatLog->TypeChar(key, flag)) {
                 CString line = Mgr()->m_chatLog->GetInputText();

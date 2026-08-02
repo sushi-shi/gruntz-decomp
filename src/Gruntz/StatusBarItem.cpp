@@ -6,15 +6,15 @@
 
 RVA(0x001005b0, 0x8)
 void CStatusBarItem::SetSubtype() {
-    m_28 = 2;
+    m_redrawFrames = 2;
 }
 
 RVA(0x001005d0, 0x17)
 CStatusBarItem::CStatusBarItem() {
     m_enabled = 0;
     m_kind = 0;
-    m_24 = 0;
-    m_28 = 0;
+    m_host = 0;
+    m_redrawFrames = 0;
 }
 
 RVA(0x00100600, 0x8)
@@ -38,8 +38,8 @@ i32 CStatusBarItem::Setup(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = owner;
-    m_24 = host;
+    m_owner = owner;
+    m_host = host;
     m_tab = tab;
     m_rect14.left = rc.left;
     m_rect14.top = rc.top;

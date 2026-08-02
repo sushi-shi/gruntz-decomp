@@ -18,9 +18,9 @@ i32 CMultiStartDlg::SelectColor(i32 colorIndex, i32 playerId) {
             g_multiState->ReportVersionMsg("Someone has already selected that color.", r);
             return 0;
         }
-        ChannelSlots_Set(colorSlot->m_008, 1);
+        ChannelSlots_Set(colorSlot->m_colorIndex, 1);
         ChannelSlots_Set(playerId, 0);
     }
-    colorSlot->m_008 = playerId;
+    colorSlot->m_colorIndex = playerId;
     return 1;
 }

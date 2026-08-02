@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/SerialRecords.h>
 
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/HaznColl.h>
@@ -29,8 +30,13 @@ public:
     i32 Tick();
 
     i32 m_phase;
-    i64 m_timestamp;
-    i64 m_duration;
+    union {
+        struct {
+            i64 m_timestamp;
+            i64 m_duration;
+        };
+        CPairRecord m_timing;
+    };
 };
 SIZE_UNKNOWN();
 

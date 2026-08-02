@@ -4,14 +4,6 @@
 #include <Net/KeyedList.h>
 #include <rva.h>
 
-struct CLatencyItem {
-    CString m_text;
-    i32 m_id;
-    i32 m_param;
-    CString GetName();
-};
-SIZE_UNKNOWN();
-
 class CLatencyList : public CKeyedList {
 public:
     CLatencyList(i32 nBlockSize) : CKeyedList(nBlockSize) {}

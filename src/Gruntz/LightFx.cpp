@@ -75,7 +75,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
         CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
         i32 key = en->m_minIndex;
 
-        m_wwdObject->m_sprite = en;
+        m_wwdObject->m_frameSet = en;
         CImage* val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
@@ -83,7 +83,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
             val = static_cast<CImage*>(en->m_items.GetAt(key));
         }
         m_wwdObject->m_layer = val;
-        m_wwdObject->m_190 = key;
+        m_wwdObject->m_frameIndex = key;
     }
     node = 0;
     m_wwdObject->m_flags |= 2;
@@ -122,7 +122,7 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject*
             g_gameReg
                 ->m_logicPump
 
-                ->Push(m_wwdObject->m_sprite, m_anchorA, 7);
+                ->Push(m_wwdObject->m_frameSet, m_anchorA, 7);
             break;
     }
     return 1;
@@ -130,8 +130,8 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject*
 
 RVA(0x0009d770, 0x25)
 i32 CLightFx::RebindNode() {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     return 0;
 }
 

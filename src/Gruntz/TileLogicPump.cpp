@@ -278,12 +278,12 @@ RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         m_wwdObject->m_stateFlags |= 1;
         m_wwdObject->m_flags |= 0x10000;
     }
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
 }
 
 RVA(0x0010d8c0, 0x102)
@@ -324,8 +324,8 @@ i32 CWarpStonePad::AdvanceAnim() {
 
 RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
 
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
@@ -370,8 +370,8 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
 
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
     m_wwdObject->m_stateFlags |= 1;
@@ -418,8 +418,8 @@ void CTileTrigger::RegisterActs() {
 // @early-stop
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
     m_wwdObject->m_stateFlags |= 1;
@@ -476,8 +476,8 @@ i32 CTileTrigger::AdvanceAnim() {
 // @early-stop
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
 
@@ -597,16 +597,16 @@ i32 CCheckpointTrigger::Act() {
         }
     }
 
-    m_prevAnimSetNode = m_objAux->m_1c;
+    m_prevAnimSetNode = m_objAux->m_actKey;
 
-    m_objAux->m_1c = ActFindId("B");
+    m_objAux->m_actKey = ActFindId("B");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CHECKPOINTFLAGSET", 0);
 
     if (play->m_frameMarker != 0) {
         i32 a = m_object->m_score;
         i32 b = m_object->m_points;
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
             b += b;
             a += a;
             if (b > 0x3b) {
@@ -652,12 +652,12 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 gy = pad->m_key0c;
+    i32 gy = pad->m_tileY;
     i32 gx = pad->m_tileX;
     CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 owner;
     if (static_cast<u32>(gx) < grid->m_width && static_cast<u32>(gy) < grid->m_height) {
-        owner = grid->m_rows[gy][gx].m_4;
+        owner = grid->m_rows[gy][gx].m_occupantId;
     } else {
         owner = -1;
     }
@@ -772,11 +772,11 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
         return 0;
     }
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniDesc* elem =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    CAniRecordView* elem =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
     m_wwdObject->ApplyLookupSprite(sprite, elem->m_param);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     return 1;
 }
 

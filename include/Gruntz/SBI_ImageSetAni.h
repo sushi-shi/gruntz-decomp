@@ -10,7 +10,7 @@ public:
     CSBI_ImageSetAni() {
         m_frame = 0;
         m_kind = 8;
-        m_34 = 0;
+        m_frameSet = 0;
         m_loop = 0;
         m_interval = 0x64;
     }

@@ -17,8 +17,8 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 cellKey,
     const RECT* rect,
     i32 linkGate,
-    i32 a8,
-    i32 iconFrame
+    i32 damageParam,
+    i32 checkpointType
 ) {
     i32 px;
     i32 py;
@@ -31,12 +31,12 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         goto fail;
     }
     memcpy(m_block, rect, sizeof(m_block));
-    if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, a8, iconFrame)) {
+    if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType)) {
         goto fail;
     }
     px = (tileX << 5) + 0x10;
     py = (tileY << 5) + 0x10;
-    if (iconFrame == 0) {
+    if (checkpointType == 0) {
         return 1;
     }
     spr = g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
@@ -44,7 +44,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         goto fail;
     }
     spr->m_animWorker->m_notify(spr);
-    spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", iconFrame);
+    spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
     if (spr->m_layer == 0) {
         goto fail;
     }

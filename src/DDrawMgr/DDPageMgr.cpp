@@ -59,20 +59,20 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         info.bpp = 8;
     }
 
-    m_0c = 0;
-    if (DirectDrawCreate(0, &m_dd, 0) != 0) {
+    m_borrowedDisplayResources = 0;
+    if (DirectDrawCreate(0, &m_directDraw, 0) != 0) {
         return 0;
     }
     ComOutRef<IDirectDraw2> ddOut;
-    ddOut.m_asTyped = &m_dd2;
-    if (m_dd->QueryInterface(IID_IDirectDraw2, ddOut.m_asVoid) != 0) {
+    ddOut.m_asTyped = &m_directDraw2;
+    if (m_directDraw->QueryInterface(IID_IDirectDraw2, ddOut.m_asVoid) != 0) {
         return 0;
     }
-    if (m_dd2->SetCooperativeLevel(static_cast<HWND>(window), coopFlags) != 0) {
+    if (m_directDraw2->SetCooperativeLevel(static_cast<HWND>(window), coopFlags) != 0) {
         HandleError();
         return 0;
     }
-    if (m_dd2->SetDisplayMode(info.width, info.height, info.bpp, 0, 0) != 0) {
+    if (m_directDraw2->SetDisplayMode(info.width, info.height, info.bpp, 0, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -81,7 +81,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     m_primaryDesc.dwSize = sizeof(DDSURFACEDESC);
     m_primaryDesc.dwFlags = DDSD_CAPS;
     m_primaryDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-    if (m_dd2->CreateSurface(&m_primaryDesc, &m_primaryRaw, 0) != 0) {
+    if (m_directDraw2->CreateSurface(&m_primaryDesc, &m_primaryRaw, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -95,7 +95,8 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     Snapshot(static_cast<HWND>(window));
 
     if (mode->bpp == 8) {
-        if (m_dd2->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0)
+        if (m_directDraw2
+                ->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0)
             != 0) {
             HandleError();
             return 0;
@@ -168,13 +169,13 @@ i32 CMoviePlayer::InitMode(
     if (!wnd || !dd2 || !primary) {
         return 0;
     }
-    m_dd2 = dd2;
-    m_0c = 1;
+    m_directDraw2 = dd2;
+    m_borrowedDisplayResources = 1;
     m_primary = primary;
     Snapshot(wnd);
     i32 bpp = static_cast<i32>(desc.ddpfPixelFormat.dwRGBBitCount);
     if (bpp == 8) {
-        if (m_dd2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, 0)) {
+        if (m_directDraw2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, 0)) {
             HandleError();
             return 0;
         }
@@ -230,7 +231,7 @@ i32 CMoviePlayer::OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RE
         return 0;
     }
 
-    m_514 = mode;
+    m_blitMode = mode;
     SmackSoundUseDirectSound(m_directSound);
 
     u32 flags = 0;
@@ -268,7 +269,7 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT
         return 0;
     }
 
-    m_514 = mode;
+    m_blitMode = mode;
     SmackSoundUseDirectSound(m_directSound);
 
     u32 flags = 0;
@@ -452,11 +453,11 @@ i32 CMoviePlayer::Frame() {
             m_smackBufMode
         );
         SmackDoFrame(m_smackHandle);
-        m_50c = 1;
+        m_frameDecoded = 1;
         m_srcSurf->Unlock(m_srcDesc.lpSurface);
     }
 afterLock:
-    if (m_514 != 1) {
+    if (m_blitMode != 1) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
             BlitRegion(
                 m_smackHandle->LastRectx,
@@ -502,7 +503,7 @@ void CMoviePlayer::HandleError() {
             m_primary->Blt(0, 0, 0, 0x1000400, &fx);
         }
     }
-    if (m_0c == 0) {
+    if (m_borrowedDisplayResources == 0) {
         if (m_palette) {
             m_palette->Release();
             m_palette = 0;
@@ -515,14 +516,14 @@ void CMoviePlayer::HandleError() {
             m_primaryRaw->Release();
             m_primaryRaw = 0;
         }
-        if (m_dd2) {
-            m_dd2->RestoreDisplayMode();
-            m_dd2->Release();
-            m_dd2 = 0;
+        if (m_directDraw2) {
+            m_directDraw2->RestoreDisplayMode();
+            m_directDraw2->Release();
+            m_directDraw2 = 0;
         }
-        if (m_dd) {
-            m_dd->Release();
-            m_dd = 0;
+        if (m_directDraw) {
+            m_directDraw->Release();
+            m_directDraw = 0;
         }
     }
 }
@@ -681,7 +682,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
                 m_destRect->right = m_screenWidth;
-                m_514 = 1;
+                m_blitMode = 1;
             }
             break;
         case 3: {
@@ -707,7 +708,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     if (m_forceSingleRow != 0) {
         m_tilesDown = 1;
     }
-    m_50c = 0;
+    m_frameDecoded = 0;
     m_loopCount = 0;
     return 1;
 }
@@ -718,7 +719,7 @@ i32 CMoviePlayer::CheckMode16() {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
     desc.dwSize = 0x6c;
-    if (m_dd2->GetDisplayMode(&desc) != 0) {
+    if (m_directDraw2->GetDisplayMode(&desc) != 0) {
         return 0;
     }
 
@@ -818,7 +819,13 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                 return 0;
             }
             if (clip->m_openArg == 0) {
-                if (OpenLo(clip->m_src, clip->m_08, clip->m_useDS, clip->m_origin, clip->m_rect)
+                if (OpenLo(
+                        clip->m_src,
+                        clip->m_blitMode,
+                        clip->m_useDS,
+                        clip->m_origin,
+                        clip->m_rect
+                    )
                     == 0) {
                     return 0;
                 }
@@ -826,7 +833,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                 if (Open(
                         clip->m_src,
                         clip->m_openArg,
-                        clip->m_08,
+                        clip->m_blitMode,
                         clip->m_useDS,
                         clip->m_origin,
                         clip->m_rect

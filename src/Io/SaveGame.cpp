@@ -659,7 +659,7 @@ i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, void* mgr) {
     dst->m_levelId = (static_cast<CPlay*>(reg->m_curState))->m_levelIndex;
     dst->m_count = 0;
     dst->m_active = 1;
-    if (reg->m_cheatMgr->m_124 != 0) {
+    if (reg->m_cheatMgr->m_cheatsUsed != 0) {
         dst->m_type = 3;
     }
     strncpy(dst->m_name, name, 0x20);
@@ -695,7 +695,7 @@ i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr) {
     dst->m_type = 1;
     dst->m_levelId = levelId;
     dst->m_count = 0;
-    if ((static_cast<CGruntzMgr*>(mgr))->m_cheatMgr->m_124 != 0) {
+    if ((static_cast<CGruntzMgr*>(mgr))->m_cheatMgr->m_cheatsUsed != 0) {
         dst->m_type = 3;
     }
     dst->m_checksum = Register(dst);

@@ -52,8 +52,8 @@ RVA(0x00022ad0, 0x1f)
 BOOL CCheatMgr::Init(HWND owner) {
     m_owner = owner;
     m_flag = 0;
-    m_120 = 0;
-    m_124 = 0;
+    m_pendingCodeLength = 0;
+    m_cheatsUsed = 0;
     return TRUE;
 }
 
@@ -73,8 +73,8 @@ void CCheatMgr::Empty() {
     m_map.RemoveAll();
     m_owner = 0;
     m_flag = 0;
-    m_120 = 0;
-    m_124 = 0;
+    m_pendingCodeLength = 0;
+    m_cheatsUsed = 0;
 }
 
 
@@ -203,10 +203,10 @@ BOOL CCheatMgr::CheckCode(CString code) {
         if (found->commandId > 0) {
             PostMessageA(m_owner, 0x111, found->commandId, 0);
             if ((found->flag & 1) == 0) {
-                m_124 = 1;
+                m_cheatsUsed = 1;
             }
             m_flag = 0;
-            m_120 = 0;
+            m_pendingCodeLength = 0;
         }
     }
     return TRUE;

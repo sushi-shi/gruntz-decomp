@@ -86,8 +86,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     SERIALREF(m_powerupSprite);
 
     READCSTR(m_animSetName);
-    READCSTR(m_448);
-    READCSTR(m_44c);
+    READCSTR(m_frameSetName);
+    READCSTR(m_deathFrameSetName);
 
     NAMEREF(m_poseWalk);
     NAMEREF(m_poseAttack[GRUNT_ATTACK1]);
@@ -110,41 +110,41 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     ar->Read(&m_18c, 4);
     ar->Read(&m_toyBlendPct, 4);
-    ar->Read(&m_194, 4);
+    ar->Read(&m_brickPickupType, 4);
     ar->Read(&m_entranceReason, 4);
-    ar->Read(&m_198, 4);
+    ar->Read(&m_vehiclePickupType, 4);
     ar->Read(&m_toolId, 4);
     ar->Read(&m_moveMode, 4);
-    ar->Read(&m_1a4, 4);
+    ar->Read(&m_helpCueId, 4);
     ar->Read(&m_1a8, 4);
     ar->Read(&m_1ac, 4);
     ar->Read(&m_1b0, 4);
     ar->Read(&m_1b4, 4);
     ar->Read(&m_arrived, 4);
-    ar->Read(&m_entrancePxX, 8);
-    ar->Read(&m_lastTilePxX, 8);
-    ar->Read(&m_commitPxX, 8);
+    ar->Read(&m_entrancePx, 8);
+    ar->Read(&m_lastTilePx, 8);
+    ar->Read(&m_commitPx, 8);
     ar->Read(&m_1dc, 8);
     ar->Read(&m_entranceActive, 4);
     ar->Read(&m_arrivalPending, 4);
     ar->Read(&m_tileOwnerHi, 4);
     ar->Read(&m_tileOwnerLo, 4);
-    ar->Read(&m_1f4_moveIcon, 4);
-    ar->Read(&m_1f8, 4);
+    ar->Read(&m_moveIcon, 4);
+    ar->Read(&m_savedMoveIcon, 4);
     ar->Read(&m_entranceCommitted, 4);
-    ar->Read(&m_neighborCol, 8);
-    ar->Read(&m_208, 8);
+    ar->Read(&m_neighborCell, 8);
+    ar->Read(&m_attackTargetPx, 8);
     ar->Read(&m_210, 4);
-    ar->Read(&m_214, 4);
+    ar->Read(&m_struckPose, 4);
     ar->Read(&m_combatActive, 4);
     ar->Read(&m_neighborValid, 4);
     ar->Read(&m_poweredUp, 4);
     ar->Read(&m_224, 4);
     ar->Read(&m_entranceStamped, 4);
-    ar->Read(&m_22c, 4);
+    ar->Read(&m_bombRunActive, 4);
     ar->Read(&m_arrivalActive, 4);
-    ar->Read(&m_reachRectLeft, 0x10);
-    ar->Read(&m_2a0, 0x10);
+    ar->Read(&m_reachRect, 0x10);
+    ar->Read(&m_reachExclusionRect, 0x10);
     ar->Read(&m_toyRectA, 0x10);
     ar->Read(&m_toyRectB, 0x10);
     ar->Read(&m_health, 4);
@@ -155,26 +155,26 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_418, 4);
     ar->Read(&m_42c, 4);
     ar->Read(&m_430, 4);
-    ar->Read(&m_434, 4);
-    ar->Read(&m_438, 4);
+    ar->Read(&m_startingItemId, 4);
+    ar->Read(&m_recordedFrameTick, 4);
     ar->Read(&m_arrivalState, 4);
     ar->Read(&m_defenderState, 4);
-    ar->Read(&m_2d8, 4);
+    ar->Read(&m_battleState, 4);
     ar->Read(&m_defenderRadius, 4);
-    ar->Read(&m_2e0, 4);
-    ar->Read(&m_2e4, 4);
+    ar->Read(&m_defenderQueuePosition, 4);
+    ar->Read(&m_defenderPickupType, 4);
     ar->Read(&m_dwell, 4);
-    ar->Read(&m_arrivalCol, 8);
-    ar->Read(&m_defenderX, 8);
+    ar->Read(&m_arrivalCell, 8);
+    ar->Read(&m_defenderPx, 8);
     ar->Read(&m_354, 4);
-    ar->Read(&m_358, 4);
-    ar->Read(&m_35c, 4);
+    ar->Read(&m_neighborScanEnabled, 4);
+    ar->Read(&m_tileMoveCommitted, 4);
     ar->Read(&m_3dc, 8);
-    ar->Read(&m_moveTileX, 8);
+    ar->Read(&m_moveTile, 8);
     ar->Read(&m_arrivalPhase, 4);
     ar->Read(&m_timePerTile, 4);
-    ar->Read(&m_408, 8);
-    ar->Read(&m_410, 8);
+    ar->Read(&m_movePosX, 8);
+    ar->Read(&m_movePosY, 8);
     ar->Read(&m_8d0, 4);
     ar->Read(&m_coordToggle, 4);
     ar->Read(&m_wingzEnabled, 4);
@@ -182,32 +182,32 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_freezeUnfrozen, 4);
     ar->Read(&m_resetApplied, 4);
     ar->Read(&m_arrivalFlags, 4);
-    ar->Read(&m_24c, 4);
+    ar->Read(&m_passableMask, 4);
     ar->Read(&m_gruntKind, 4);
     ar->Read(&m_entranceArmed, 4);
     ar->Read(&m_deathType, 4);
     ar->Read(&m_entranceDropActive, 4);
-    ar->Read(&m_318, 4);
+    ar->Read(&m_hasExtent, 4);
     ar->Read(&m_2f8, 8);
-    ar->Read(&m_36c, 4);
-    ar->Read(&m_454, 4);
-    ar->Read(&m_370, 4);
+    ar->Read(&m_cellRemovalNotified, 4);
+    ar->Read(&m_pendingTrigger, 4);
+    ar->Read(&m_killerSlot, 4);
     ar->Read(&m_tileClaimed, 4);
     ar->Read(&m_deathAnimStarted, 4);
-    ar->Read(&m_458, 8);
-    ar->Read(&m_250, 4);
-    ar->Read(&m_254, 4);
-    ar->Read(&m_374, 4);
+    ar->Read(&m_pendingTriggerPx, 8);
+    ar->Read(&m_routeMaskA, 4);
+    ar->Read(&m_routeMaskC, 4);
+    ar->Read(&m_moveVariantOverride, 4);
     ar->Read(&m_moveKind, 4);
     ar->Read(&m_moveVariant, 4);
     ar->Read(&m_coordRetryCount, 4);
     ar->Read(&m_toyTileIndex, 4);
-    ar->Read(&m_390, 4);
-    ar->Read(&m_378, 4);
-    ar->Read(&m_38c, 4);
+    ar->Read(&m_blockedVoicePending, 4);
+    ar->Read(&m_powerupDuration, 4);
+    ar->Read(&m_warpstoneAnchorIndex, 4);
     ar->Read(&m_lowStaminaCued, 4);
-    ar->Read(&m_2e8, 4);
-    ar->Read(&m_288, 8);
+    ar->Read(&m_targetTeam, 4);
+    ar->Read(&m_arrivalTargetPx, 8);
 
     CGruntCellRec* row = m_cells;
     for (i32 gi = 0; gi < 3; ++gi) {
@@ -221,12 +221,12 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         row += 3;
     }
 
-    if (m_31c.GetCount() != 0) {
-        POSITION pos = m_31c.GetHeadPosition();
+    if (m_coordList.GetCount() != 0) {
+        POSITION pos = m_coordList.GetHeadPosition();
         if (pos != 0) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
-                void* buf = m_31c.GetNext(pos);
+                void* buf = m_coordList.GetNext(pos);
                 if (buf != 0) {
                     CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
                     n2->m_next = fl;
@@ -235,7 +235,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
                 }
             } while (pos != 0);
         }
-        (&m_31c)->RemoveAll();
+        (&m_coordList)->RemoveAll();
     }
 
     i32 count;
@@ -249,11 +249,11 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             g_coordPool.m_freeHead = nf;
         }
         ar->Read(item, 8);
-        (&m_31c)->AddTail(item);
+        (&m_coordList)->AddTail(item);
     }
 
-    while (m_338.GetCount() != 0 && m_338.GetHead() != 0) {
-        void* rem = (&m_338)->RemoveHead();
+    while (m_payloads.GetCount() != 0 && m_payloads.GetHead() != 0) {
+        void* rem = (&m_payloads)->RemoveHead();
         RezFree(rem);
     }
 
@@ -266,11 +266,11 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             item = mem;
         }
         ar->Read(item, 0x2c);
-        (&m_338)->AddTail(item);
+        (&m_payloads)->AddTail(item);
     }
 
     i32 flag = (m_entranceReason >= 0x17);
-    CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, flag);
+    CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, flag);
     CWwdGameObjectA* cb = m_object;
     cb->m_drawActive = 1;
     cb->m_drawFillCmd = 0xa;

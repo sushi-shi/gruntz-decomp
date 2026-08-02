@@ -95,11 +95,11 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         break;
                 }
                 if (triggers->AddToList3Switch(actionCode, tileX, tileY, cellKey, ownerHi) != 0) {
-                    unit->m_458 = px;
+                    unit->m_pendingTriggerPx.m_x = px;
                     unit->m_toyBlendPct = TILEKIND_COVERED_POWERUP;
                     unit->m_moveMode = -1;
-                    unit->m_45c = py;
-                    unit->m_454 = 1;
+                    unit->m_pendingTriggerPx.m_y = py;
+                    unit->m_pendingTrigger = 1;
                 }
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B) {
@@ -108,9 +108,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     unit->m_toyBlendPct = TILEKIND_COVERED_POWERUP;
                     unit->m_moveMode = -1;
                     if (cellType == TILEKIND_GAUNTLET_BRICK_A) {
-                        unit->m_458 = px;
-                        unit->m_45c = py;
-                        unit->m_454 = 1;
+                        unit->m_pendingTriggerPx.m_x = px;
+                        unit->m_pendingTriggerPx.m_y = py;
+                        unit->m_pendingTrigger = 1;
                     }
                 }
             }
@@ -288,7 +288,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
                             if (mapped == 0) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                                pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
@@ -353,7 +353,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
                             if (mapped == 0) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                                pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
@@ -423,7 +423,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
                             if (mapped == 0) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                                pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
@@ -488,7 +488,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
                             if (mapped == 0) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                pathGrid->m_rows[tileY][tileX].m_0 &= ~0x40000;
+                                pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =

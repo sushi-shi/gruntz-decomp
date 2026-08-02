@@ -18,21 +18,21 @@ class CState;
 class CGruntzCommand {
 public:
     u8 m_targetIndex;
-    char m_5;
+    char m_commandKind;
     u8 m_targetType;
-    char m_7;
-    i16 m_8;
-    i16 m_a;
+    char m_pad07;
+    i16 m_posX;
+    i16 m_posY;
     i32 m_submitted;
 
     union {
         struct {
-            char m_10;
-            char m_11;
+            char m_gruntIndex;
+            char m_extraByte;
         };
-        u16 m_flagWord;
+        u16 m_gruntMask;
     };
-    i16 m_12;
+    i16 m_pad12;
 
     virtual ~CGruntzCommand() {}
 

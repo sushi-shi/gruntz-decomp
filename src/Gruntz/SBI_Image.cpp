@@ -40,10 +40,10 @@ i32 CSBI_Image::SetupImage(
     if (owner == 0) {
         return 0;
     }
-    m_2c = owner;
+    m_owner = owner;
     m_tab = tab;
-    m_24 = host;
-    m_28 = 0;
+    m_host = host;
+    m_redrawFrames = 0;
     m_enabled = 0;
     m_rect14.left = rc.left;
     m_rect14.top = rc.top;
@@ -78,8 +78,8 @@ i32 CSBI_Image::Refresh(i32) {
 
 RVA(0x000e6dd0, 0x45)
 i32 CSBI_Image::Render() {
-    if (m_28 > 0) {
-        m_28--;
+    if (m_redrawFrames > 0) {
+        m_redrawFrames--;
         CImage* cel = m_frame;
         if (cel != 0) {
             cel->RenderFrame(

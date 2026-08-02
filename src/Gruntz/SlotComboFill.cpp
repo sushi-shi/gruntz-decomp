@@ -11,8 +11,8 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
             ::SendMessageA(combo, CB_RESETCONTENT, 0, 0);
             POSITION pos = m_list.GetHeadPosition();
             while (pos != 0) {
-                CLatencyItem* rec = static_cast<CLatencyItem*>(m_list.GetNext(pos));
-                i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
+                CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
+                i32 data = ((rec->m_drainReload & 0xffff) << 16) | (rec->m_commandDelay & 0xffff);
                 i32 idx;
                 {
                     MsgParam name;
@@ -34,8 +34,8 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
 }
 
 RVA(0x00038120, 0x1d)
-CString CLatencyItem::GetName() {
-    return m_text;
+CString CKeyedNode::GetName() {
+    return m_key;
 }
 
 RVA(0x00038150, 0x91)

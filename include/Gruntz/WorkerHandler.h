@@ -15,9 +15,9 @@ inline void Worker_DefaultPump(CUserLogic* sub) {
 
 #define LOGIC_WORKER_PUMP(LEAF)                                                                    \
     AnimWorkerObj* rec = owner->m_animWorker;                                                      \
-    switch (static_cast<u32>(rec->m_1c)) {                                                         \
+    switch (static_cast<u32>(rec->m_actKey)) {                                                     \
         case 0: {                                                                                  \
-            rec->m_1c = 0x3e8;                                                                     \
+            rec->m_actKey = 0x3e8;                                                                 \
             CUserLogic* sub = new LEAF(owner);                                                     \
             sub->Activate();                                                                       \
             rec->m_logic = sub;                                                                    \

@@ -17,8 +17,8 @@ public:
     CStatusBarItem() {
         m_enabled = 0;
         m_kind = 0;
-        m_24 = 0;
-        m_28 = 0;
+        m_host = 0;
+        m_redrawFrames = 0;
     }
 #endif
     virtual ~CStatusBarItem();
@@ -50,9 +50,9 @@ public:
     i32 m_tab;
 
     RECT m_rect14;
-    class CDDrawSurfaceMgr* m_24;
-    i32 m_28;
-    class CStatusBarMgr* m_2c;
+    class CDDrawSurfaceMgr* m_host;
+    i32 m_redrawFrames;
+    class CStatusBarMgr* m_owner;
 };
 SIZE_UNKNOWN();
 

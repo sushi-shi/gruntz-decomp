@@ -21,7 +21,7 @@ struct NetGruntRecMsg {
     u8 m_flags;
     u8 m_slot;
     i32 m_seq;
-    i32 m_06;
+    i32 m_windowBase;
     i32 m_checksum;
     u8 m_count;
     u8 m_payload[0x3f1];

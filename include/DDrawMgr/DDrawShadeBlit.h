@@ -59,7 +59,7 @@ public:
 
     void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta);
 
-    i32 m_00;
+    i32 m_doubleScanlines;
     i32 m_width;
     i32 m_height;
     u8* m_rleData;

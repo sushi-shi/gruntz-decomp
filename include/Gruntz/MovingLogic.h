@@ -2,6 +2,7 @@
 #define GRUNTZ_CMOVINGLOGIC_H
 
 #include <Mfc.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/SerialArchive.h>
@@ -36,7 +37,9 @@ public:
     }
 
     CMotionState m_motion;
-    i32 m_140, m_144, m_148, m_14c;
+    Coord m_previousScreenPosition;
+    i32 m_collisionFlags;
+    i32 m_moveFlags;
 };
 SIZE_UNKNOWN();
 

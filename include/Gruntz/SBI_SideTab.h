@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/CoordNode.h>
 #include <Image/CImage.h>
 
 class CStatusBarMgr;
@@ -50,8 +51,7 @@ public:
     i32 m_rowIndex;
     i32 m_colIndex;
     i32 m_sampleMode;
-    i32 m_drawX;
-    i32 m_drawY;
+    Coord m_drawPosition;
     i32 m_bottomFrameDy;
     i32 m_onLeft;
     i32 m_drawGate;

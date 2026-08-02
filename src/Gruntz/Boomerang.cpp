@@ -55,21 +55,21 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
     m_velScale = d;
     CGrunt* g = g_gameReg->m_cmdGrid->m_grid[15 * a + b];
     if (g != 0) {
-        g->m_280 = static_cast<i32>((d * m_flightDist * g_boomRetC3 - g_boomRetC4));
-        g->m_284 = 0;
-        g->m_278 = g_frameTime;
-        g->m_27c = 0;
+        g->m_holdWindowLo = static_cast<i32>((d * m_flightDist * g_boomRetC3 - g_boomRetC4));
+        g->m_holdWindowHi = 0;
+        g->m_holdAnchorLo = g_frameTime;
+        g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
-            POSITION pos = g->m_31c.GetHeadPosition();
+            POSITION pos = g->m_coordList.GetHeadPosition();
             while (pos != 0) {
-                void* data = g->m_31c.GetNext(pos);
+                void* data = g->m_coordList.GetNext(pos);
                 if (data != 0) {
                     CoordPoolNode* p = g_coordPool.NodeOf(data);
                     p->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = p;
                 }
             }
-            g->m_31c.RemoveAll();
+            g->m_coordList.RemoveAll();
         }
     }
     m_launched = 0;

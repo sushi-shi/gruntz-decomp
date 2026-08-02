@@ -32,10 +32,10 @@ i32 CAniPlayer::Start(
     if (Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == 0) {
         return 0;
     }
-    m_60 = m_interval;
-    m_64 = 0;
-    m_58 = g_frameTime;
-    m_5c = 0;
+    m_windowLo = m_interval;
+    m_windowHi = 0;
+    m_startLo = g_frameTime;
+    m_startHi = 0;
     return 1;
 }
 
@@ -43,11 +43,11 @@ i32 CAniPlayer::Start(
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 param) {
     if (static_cast<__int64>(g_frameTime) - m_start64 >= m_window64) {
-        m_38 = (m_38 == m_frameStart) ? m_frameEnd : m_frameStart;
-        m_60 = m_interval;
-        m_64 = 0;
-        m_58 = g_frameTime;
-        m_5c = 0;
+        m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
+        m_windowLo = m_interval;
+        m_windowHi = 0;
+        m_startLo = g_frameTime;
+        m_startHi = 0;
     }
     return 1;
 }
@@ -55,10 +55,10 @@ i32 CAniPlayer::TickToggle(i32 param) {
 // @early-stop
 RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel() {
-    CDDrawWorker* tbl = m_34;
+    CDDrawWorker* tbl = m_frameSet;
     CImage* cel;
-    if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-        cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
+    if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
+        cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
     } else {
         cel = 0;
     }

@@ -66,7 +66,7 @@ public:
     CString m_name;
     CString m_key;
     i32 m_cmdId;
-    i32 m_1c;
+    i32 m_secondaryCmdId;
     i32 m_flags;
     i32 m_state;
     CObject* m_sprite;

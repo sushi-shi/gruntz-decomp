@@ -105,9 +105,9 @@ i32 CPlay::ExecCommand(
                     g->m_arrivalRerollWindowLo = 0;
                     g->m_arrivalRerollHi = 0;
                     g->m_arrivalRerollWindowHi = 0;
-                    g->m_defenderX = g->m_lastTilePxX;
+                    g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
                     g->m_tileClaimed = 1;
-                    g->m_defenderY = g->m_lastTilePxY;
+                    g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
 
                     switch (g->m_entranceReason) {
                         case 2:
@@ -127,10 +127,10 @@ i32 CPlay::ExecCommand(
                                 g_buteMgr.GetIntDef(s_grunt, s_playerDefenderRadius, 3) + 1;
                     }
                     g->m_arrivalFlags |= 0x18040402;
-                    g->m_arrivalCol = -1;
+                    g->m_arrivalCell.m_x = -1;
                     g->m_arrivalState = 4;
                     g->m_defenderState = 0;
-                    g->m_arrivalRow = -1;
+                    g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = 0;
                     g->m_object->m_extent.left = 0;
                     g->m_object->m_extent.right = 0;
@@ -408,7 +408,7 @@ i32 CPlay::ExecCommand(
         case 8: {
             u32 player = static_cast<u8>(targetIndex);
             if (player == static_cast<u32>(g_curPlayer)) {
-                m_4f0 = 0;
+                m_playerCommandPending = 0;
             }
             gruntIndex = static_cast<u8>(gruntIndex);
             i32 idx = gruntIndex + player * 0xf;
@@ -424,7 +424,7 @@ i32 CPlay::ExecCommand(
                 g->SetEntrancePos(1, 1);
             }
             i32 sel = 0;
-            i32 live = (g_gameReg->m_134 != 1);
+            i32 live = (g_gameReg->m_gameMode != 1);
             CGrunt* g2 = m_mgr->m_cmdGrid->m_grid[idx];
             i32 r;
             if (g2 == 0 || g2->m_entranceCommitted == 0) {

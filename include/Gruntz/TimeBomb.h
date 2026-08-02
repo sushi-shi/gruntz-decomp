@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/SerialRecords.h>
 
 class CTimeBomb : public CUserLogic, public CWapX {
 public:
@@ -21,8 +22,13 @@ public:
     i32 LoadAttributes();
 
     i32 m_fastPhase;
-    i64 m_startTime;
-    i64 m_duration;
+    union {
+        struct {
+            i64 m_startTime;
+            i64 m_duration;
+        };
+        CPairRecord m_timing;
+    };
 };
 SIZE(0x68);
 

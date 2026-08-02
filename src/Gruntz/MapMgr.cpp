@@ -14,8 +14,8 @@
 VTBL(CMapMgr, 0x001ea3b4);
 RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
-    m_0 = 0;
-    m_block = 0;
+    m_storage = 0;
+    m_freeList = 0;
     m_count = 0;
 }
 
@@ -23,43 +23,43 @@ CMapArrayA::CMapArrayA() {
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
     BrickzNode* block = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
-    m_0 = block;
+    m_storage = block;
     if (!block) {
         return 0;
     }
 
-    m_block = block;
+    m_freeList = block;
     m_count = count;
-    block->m_18 = 0;
+    block->m_openPrev = 0;
 
     BrickzNode* e = block;
     for (u32 i = 0; i < m_count; ++i) {
-        if (e == m_block) {
-            e->m_18 = 0;
+        if (e == m_freeList) {
+            e->m_openPrev = 0;
         } else {
-            e->m_18 = e - 1;
+            e->m_openPrev = e - 1;
         }
-        e->m_14 = e + 1;
+        e->m_openNext = e + 1;
         ++e;
     }
-    m_block[m_count - 1].m_14 = 0;
+    m_freeList[m_count - 1].m_openNext = 0;
     return 1;
 }
 
 RVA(0x0009e7e0, 0x29)
 CMapArrayA::~CMapArrayA() {
-    if (m_0) {
-        ::operator delete(m_0);
+    if (m_storage) {
+        ::operator delete(m_storage);
     }
-    m_0 = 0;
-    m_block = 0;
+    m_storage = 0;
+    m_freeList = 0;
     m_count = 0;
 }
 
 RVA(0x0009e820, 0xd)
 CMapArrayB::CMapArrayB() {
-    m_0 = 0;
-    m_block = 0;
+    m_storage = 0;
+    m_freeList = 0;
     m_count = 0;
 }
 
@@ -67,37 +67,37 @@ CMapArrayB::CMapArrayB() {
 RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
     BrickzNode* block = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
-    m_0 = block;
+    m_storage = block;
     if (!block) {
         return 0;
     }
 
-    m_block = block;
+    m_freeList = block;
     m_count = count;
-    block->m_prev = 0;
+    block->m_cellPrev = 0;
 
     BrickzNode* e = block;
     for (u32 i = 0; i < m_count; ++i) {
-        if (e == m_block) {
-            e->m_prev = 0;
+        if (e == m_freeList) {
+            e->m_cellPrev = 0;
         } else {
-            e->m_prev = e - 1;
+            e->m_cellPrev = e - 1;
         }
-        e->m_child = 0;
-        e->m_next = e + 1;
+        e->m_searchNode = 0;
+        e->m_cellNext = e + 1;
         ++e;
     }
-    m_block[m_count - 1].m_next = 0;
+    m_freeList[m_count - 1].m_cellNext = 0;
     return 1;
 }
 
 RVA(0x0009e900, 0x28)
 CMapArrayB::~CMapArrayB() {
-    if (m_0) {
-        ::operator delete(m_0);
+    if (m_storage) {
+        ::operator delete(m_storage);
     }
-    m_0 = 0;
-    m_block = 0;
+    m_storage = 0;
+    m_freeList = 0;
     m_count = 0;
 }
 
@@ -211,7 +211,7 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     m_maskC = maskC;
     m_maskB = maskB;
     m_maskA = maskA;
-    i32 flags = m_rows[y2][x2].m_0;
+    i32 flags = m_rows[y2][x2].m_flags;
     if ((maskA & flags) != 0 && (maskC & flags) != 0) {
         return 0;
     }
@@ -226,40 +226,40 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     if (x1 == x2 && y1 == y2) {
         return 1;
     }
-    m_goalX = x2;
-    m_startX = x1;
-    m_goalY = y2;
-    m_startY = y1;
+    m_goal.m_x = x2;
+    m_start.m_x = x1;
+    m_goal.m_y = y2;
+    m_start.m_y = y1;
 
-    BrickzNode* seed = m_colA.m_block;
-    BrickzNode* slot = seed->m_14;
+    BrickzNode* seed = m_colA.m_freeList;
+    BrickzNode* slot = seed->m_openNext;
     if (slot == 0) {
-        m_colA.m_block = 0;
+        m_colA.m_freeList = 0;
     } else {
-        m_colA.m_block = slot;
-        slot->m_18 = 0;
+        m_colA.m_freeList = slot;
+        slot->m_openPrev = 0;
     }
     if (seed == 0) {
         return 0;
     }
-    seed->m_0 = x1;
-    seed->m_4 = y1;
-    seed->m_8 = 0;
-    i32 dx = abs(m_goalY - y1);
-    i32 dxx = abs(m_goalX - x1);
+    seed->m_col = x1;
+    seed->m_row = y1;
+    seed->m_cellNext = 0;
+    i32 dx = abs(m_goal.m_y - y1);
+    i32 dxx = abs(m_goal.m_x - x1);
     i32 h = (dx + dxx) * 2;
-    seed->m_c = h;
-    seed->m_10 = h;
-    seed->m_14 = 0;
-    seed->m_18 = 0;
+    seed->m_hCost = h;
+    seed->m_fCost = h;
+    seed->m_openNext = 0;
+    seed->m_openPrev = 0;
     seed->m_parent = 0;
     Insert(seed);
     (&m_rows[y1][x1])->m_count++;
     BrickzNode* node = 0;
     while (m_openList != 0) {
         node = PopFront();
-        (&m_rows[node->m_4][node->m_0])->m_count--;
-        if (node->m_0 == m_goalX && node->m_4 == m_goalY) {
+        (&m_rows[node->m_row][node->m_col])->m_count--;
+        if (node->m_col == m_goal.m_x && node->m_row == m_goal.m_y) {
             goto reached;
         }
         Expand(node, 0, 1, 2, 0);
@@ -287,8 +287,8 @@ reached:
         Coord* slot = 0;
         if (rec->m_next != 0) {
             slot = &rec->m_coord;
-            rec->m_coord.m_x = p->m_0;
-            rec->m_coord.m_y = p->m_4;
+            rec->m_coord.m_x = p->m_col;
+            rec->m_coord.m_y = p->m_row;
             g_coordPool.m_freeHead = rec->m_next;
         }
 
@@ -298,10 +298,10 @@ reached:
     if (m_stepCb != 0) {
         m_stepCb();
     }
-    node->m_18 = 0;
-    node->m_14 = m_colA.m_block;
-    m_colA.m_block->m_18 = node;
-    m_colA.m_block = node;
+    node->m_openPrev = 0;
+    node->m_openNext = m_colA.m_freeList;
+    m_colA.m_freeList->m_openPrev = node;
+    m_colA.m_freeList = node;
     Drain();
     Reset();
     return 1;
@@ -311,8 +311,8 @@ reached:
 RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     i32 ng = node->m_gCost + cost;
-    i32 ncol = node->m_0 + dx;
-    i32 nrow = node->m_4 + dy;
+    i32 ncol = node->m_col + dx;
+    i32 nrow = node->m_row + dy;
     BrickzNode* found0 = 0;
     if (static_cast<u32>((ncol - m_bounds.left)) >= static_cast<u32>(m_gridW)) {
         return 1;
@@ -321,8 +321,8 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
         return 1;
     }
     BrickzCell* ncell = &m_rows[nrow][ncol];
-    i32 nflags = ncell->m_0;
-    BrickzCell* cell = &m_rows[node->m_4][node->m_0];
+    i32 nflags = ncell->m_flags;
+    BrickzCell* cell = &m_rows[node->m_row][node->m_col];
     if ((m_edgeMask & nflags) != 0) {
         return 1;
     }
@@ -346,7 +346,7 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
         } else {
             goto relax;
         }
-        if ((m_maskB & cellA->m_0) != 0 || (m_maskB & cellB->m_0) != 0) {
+        if ((m_maskB & cellA->m_flags) != 0 || (m_maskB & cellB->m_flags) != 0) {
             return 1;
         }
     }
@@ -354,7 +354,7 @@ relax:
     BrickzNode* closed = 0;
     BrickzNode* head = ncell->m_head;
     if (head != 0) {
-        closed = static_cast<BrickzNode*>(head->m_child);
+        closed = static_cast<BrickzNode*>(head->m_searchNode);
     }
     if (closed != 0) {
         if (ng >= closed->m_gCost) {
@@ -377,7 +377,7 @@ relax:
                 CellPop(closed, 1);
             }
             Unlink(open);
-            open->m_10 = ng + open->m_c;
+            open->m_fCost = ng + open->m_hCost;
             open->m_parent = node;
             open->m_gCost = ng;
             Insert(open);
@@ -389,7 +389,7 @@ relax:
             CellPop(closed, 0);
             closed->m_parent = node;
             closed->m_gCost = ng;
-            closed->m_10 = closed->m_c + ng;
+            closed->m_fCost = closed->m_hCost + ng;
             Insert(closed);
             ncell->m_count++;
             return 1;
@@ -399,29 +399,29 @@ relax:
     if (open != 0) {
         return 1;
     }
-    BrickzNode* rec = m_colA.m_block;
-    BrickzNode* nx = rec->m_14;
+    BrickzNode* rec = m_colA.m_freeList;
+    BrickzNode* nx = rec->m_openNext;
     if (nx == 0) {
         rec = 0;
     } else {
-        m_colA.m_block = nx;
-        nx->m_18 = 0;
+        m_colA.m_freeList = nx;
+        nx->m_openPrev = 0;
     }
     if (rec == 0) {
         return 0;
     }
-    rec->m_0 = ncol;
-    rec->m_4 = nrow;
+    rec->m_col = ncol;
+    rec->m_row = nrow;
     rec->m_gCost = ng;
-    i32 hy = abs(m_goalY - nrow);
-    i32 hx = abs(m_goalX - ncol);
+    i32 hy = abs(m_goal.m_y - nrow);
+    i32 hx = abs(m_goal.m_x - ncol);
     i32 h = (hy + hx) * 2;
     rec->m_parent = node;
-    rec->m_c = h;
-    rec->m_10 = ng + h;
-    rec->m_14 = 0;
-    rec->m_18 = 0;
-    rec->m_20 = 0;
+    rec->m_hCost = h;
+    rec->m_fCost = ng + h;
+    rec->m_openNext = 0;
+    rec->m_openPrev = 0;
+    rec->m_cellLink = 0;
     Insert(rec);
     ncell->m_count++;
     return 1;
@@ -430,33 +430,33 @@ relax:
 RVA(0x0009f370, 0x8a)
 i32 CMapMgr::Insert(BrickzNode* node) {
     BrickzNode* cur = m_openList;
-    node->m_18 = 0;
-    node->m_14 = 0;
+    node->m_openPrev = 0;
+    node->m_openNext = 0;
     if (cur == 0) {
         m_openList = node;
         return 1;
     }
-    i32 key = node->m_10;
+    i32 key = node->m_fCost;
     while (cur != 0) {
-        if (key < cur->m_10) {
-            if (cur->m_18 != 0) {
-                node->m_18 = cur->m_18;
-                node->m_14 = cur;
-                cur->m_18->m_14 = node;
-                cur->m_18 = node;
+        if (key < cur->m_fCost) {
+            if (cur->m_openPrev != 0) {
+                node->m_openPrev = cur->m_openPrev;
+                node->m_openNext = cur;
+                cur->m_openPrev->m_openNext = node;
+                cur->m_openPrev = node;
             } else {
                 m_openList = node;
-                node->m_14 = cur;
-                cur->m_18 = node;
+                node->m_openNext = cur;
+                cur->m_openPrev = node;
             }
             return 1;
         }
-        if (cur->m_14 == 0) {
-            cur->m_14 = node;
-            node->m_18 = cur;
+        if (cur->m_openNext == 0) {
+            cur->m_openNext = node;
+            node->m_openPrev = cur;
             return 1;
         }
-        cur = cur->m_14;
+        cur = cur->m_openNext;
     }
     return 1;
 }
@@ -465,15 +465,15 @@ RVA(0x0009f430, 0x2a)
 BrickzNode* CMapMgr::PopFront() {
     BrickzNode* head = m_openList;
     if (head != 0) {
-        BrickzNode* next = head->m_14;
+        BrickzNode* next = head->m_openNext;
         if (next != 0) {
             m_openList = next;
-            next->m_18 = 0;
+            next->m_openPrev = 0;
         } else {
             m_openList = 0;
         }
-        head->m_14 = 0;
-        head->m_18 = 0;
+        head->m_openNext = 0;
+        head->m_openPrev = 0;
     }
     return head;
 }
@@ -481,27 +481,27 @@ BrickzNode* CMapMgr::PopFront() {
 // @early-stop
 RVA(0x0009f470, 0x62)
 void CMapMgr::CellPush(BrickzNode* node) {
-    BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
-    BrickzNode* slot = m_colB.m_block;
-    BrickzNode* nx = slot->m_8;
+    BrickzNode** head = &m_rows[node->m_row][node->m_col].m_head;
+    BrickzNode* slot = m_colB.m_freeList;
+    BrickzNode* nx = slot->m_cellNext;
     if (nx == 0) {
         slot = 0;
     } else {
-        m_colB.m_block = nx;
-        nx->m_4 = 0;
+        m_colB.m_freeList = nx;
+        nx->m_row = 0;
     }
     BrickzNode* old = *head;
     if (old == 0) {
         *head = slot;
-        slot->m_4 = 0;
-        slot->m_8 = 0;
-        slot->m_child = node;
-        node->m_20 = slot;
+        slot->m_row = 0;
+        slot->m_cellNext = 0;
+        slot->m_searchNode = node;
+        node->m_cellLink = slot;
     } else {
-        slot->m_prev = old;
-        slot->m_8 = (*head)->m_8;
+        slot->m_cellPrev = old;
+        slot->m_cellNext = (*head)->m_cellNext;
         *head = slot;
-        node->m_20 = slot;
+        node->m_cellLink = slot;
     }
 }
 
@@ -512,10 +512,10 @@ BrickzNode* CMapMgr::Find(i32 key1, i32 key2) {
         return 0;
     }
     do {
-        if (p->m_0 == key1 && p->m_4 == key2) {
+        if (p->m_col == key1 && p->m_row == key2) {
             return p;
         }
-        p = p->m_14;
+        p = p->m_openNext;
     } while (p != 0);
     return 0;
 }
@@ -524,11 +524,11 @@ RVA(0x0009f540, 0x40)
 BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
     BrickzNode* n = m_rows[row][col].m_head;
     while (n != 0) {
-        BrickzNode* child = static_cast<BrickzNode*>(n->m_child);
-        if (child->m_0 == col && child->m_4 == row) {
-            return static_cast<BrickzNode*>(n->m_child);
+        BrickzNode* child = static_cast<BrickzNode*>(n->m_searchNode);
+        if (child->m_col == col && child->m_row == row) {
+            return static_cast<BrickzNode*>(n->m_searchNode);
         }
-        n = n->m_8;
+        n = n->m_cellNext;
     }
     return 0;
 }
@@ -539,11 +539,11 @@ void CMapMgr::Drain() {
     BrickzNode* p = m_openList;
     if (p != 0) {
         do {
-            BrickzNode* next = p->m_14;
-            p->m_14 = m_colA.m_block;
-            p->m_18 = 0;
-            m_colA.m_block->m_18 = p;
-            m_colA.m_block = p;
+            BrickzNode* next = p->m_openNext;
+            p->m_openNext = m_colA.m_freeList;
+            p->m_openPrev = 0;
+            m_colA.m_freeList->m_openPrev = p;
+            m_colA.m_freeList = p;
             p = next;
         } while (p != 0);
     }
@@ -557,17 +557,17 @@ void CMapMgr::ResetCells() {
     for (u32 i = 0; i < m_height * m_width; i++) {
         BrickzNode* node = cell->m_head;
         while (node != 0) {
-            BrickzNode** link = &node->m_8;
+            BrickzNode** link = &node->m_cellNext;
             BrickzNode* next = *link;
-            BrickzNode* child = static_cast<BrickzNode*>(node->m_child);
-            child->m_14 = m_colA.m_block;
-            child->m_18 = 0;
-            m_colA.m_block->m_18 = child;
-            m_colA.m_block = child;
-            node->m_4 = 0;
-            *link = m_colB.m_block;
-            m_colB.m_block->m_prev = node;
-            m_colB.m_block = node;
+            BrickzNode* child = static_cast<BrickzNode*>(node->m_searchNode);
+            child->m_openNext = m_colA.m_freeList;
+            child->m_openPrev = 0;
+            m_colA.m_freeList->m_openPrev = child;
+            m_colA.m_freeList = child;
+            node->m_row = 0;
+            *link = m_colB.m_freeList;
+            m_colB.m_freeList->m_cellPrev = node;
+            m_colB.m_freeList = node;
             node = next;
         }
         cell->m_head = 0;
@@ -578,61 +578,61 @@ void CMapMgr::ResetCells() {
 // @early-stop
 RVA(0x0009f690, 0x5d)
 void CMapMgr::Unlink(BrickzNode* node) {
-    if (node->m_18 != 0) {
-        if (node->m_14 != 0) {
-            node->m_18->m_14 = node->m_14;
-            node->m_14->m_18 = node->m_18;
+    if (node->m_openPrev != 0) {
+        if (node->m_openNext != 0) {
+            node->m_openPrev->m_openNext = node->m_openNext;
+            node->m_openNext->m_openPrev = node->m_openPrev;
         }
-    } else if (node->m_14 == 0) {
+    } else if (node->m_openNext == 0) {
         m_openList = 0;
-    } else if (node->m_18 == 0) {
-        BrickzNode* next = node->m_14;
+    } else if (node->m_openPrev == 0) {
+        BrickzNode* next = node->m_openNext;
         if (next != 0) {
             m_openList = next;
-            next->m_18 = 0;
+            next->m_openPrev = 0;
         }
     }
-    if (node->m_18 != 0 && node->m_14 == 0) {
-        node->m_18->m_14 = 0;
+    if (node->m_openPrev != 0 && node->m_openNext == 0) {
+        node->m_openPrev->m_openNext = 0;
     }
-    node->m_18 = 0;
-    node->m_14 = 0;
+    node->m_openPrev = 0;
+    node->m_openNext = 0;
 }
 
 // @early-stop
 RVA(0x0009f710, 0xa7)
 void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
-    BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
-    BrickzNode* slot = node->m_20;
-    if (slot->m_prev != 0) {
-        if (slot->m_8 != 0) {
-            slot->m_prev->m_8 = slot->m_8;
-            slot->m_8->m_4 = slot->m_4;
+    BrickzNode** head = &m_rows[node->m_row][node->m_col].m_head;
+    BrickzNode* slot = node->m_cellLink;
+    if (slot->m_cellPrev != 0) {
+        if (slot->m_cellNext != 0) {
+            slot->m_cellPrev->m_cellNext = slot->m_cellNext;
+            slot->m_cellNext->m_row = slot->m_row;
         }
-    } else if (slot->m_8 == 0) {
+    } else if (slot->m_cellNext == 0) {
         *head = 0;
-    } else if (slot->m_prev == 0) {
-        BrickzNode* next = slot->m_8;
+    } else if (slot->m_cellPrev == 0) {
+        BrickzNode* next = slot->m_cellNext;
         if (next != 0) {
             *head = next;
-            next->m_4 = 0;
+            next->m_row = 0;
         }
     }
-    if (slot->m_prev != 0 && slot->m_8 == 0) {
-        slot->m_prev->m_8 = 0;
+    if (slot->m_cellPrev != 0 && slot->m_cellNext == 0) {
+        slot->m_cellPrev->m_cellNext = 0;
     }
-    node->m_18 = 0;
-    node->m_14 = 0;
-    node->m_20 = 0;
-    slot->m_8 = m_colB.m_block;
-    slot->m_4 = 0;
-    m_colB.m_block->m_prev = slot;
-    m_colB.m_block = slot;
+    node->m_openPrev = 0;
+    node->m_openNext = 0;
+    node->m_cellLink = 0;
+    slot->m_cellNext = m_colB.m_freeList;
+    slot->m_row = 0;
+    m_colB.m_freeList->m_cellPrev = slot;
+    m_colB.m_freeList = slot;
     if (flag != 0) {
-        node->m_18 = 0;
-        node->m_14 = m_colA.m_block;
-        m_colA.m_block->m_18 = node;
-        m_colA.m_block = node;
+        node->m_openPrev = 0;
+        node->m_openNext = m_colA.m_freeList;
+        m_colA.m_freeList->m_openPrev = node;
+        m_colA.m_freeList = node;
     }
 }
 
@@ -664,8 +664,8 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
     ar->Write(&m_width, 4);
     ar->Write(&m_height, 4);
     ar->Write(&m_cellCount, 4);
-    ar->Write(&m_startX, 8);
-    ar->Write(&m_goalX, 8);
+    ar->Write(&m_start, sizeof(m_start));
+    ar->Write(&m_goal, sizeof(m_goal));
     ar->Write(&m_maskA, 4);
     ar->Write(&m_maskC, 4);
     ar->Write(&m_maskB, 4);
@@ -689,8 +689,8 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_width, 4);
     ar->Read(&m_height, 4);
     ar->Read(&m_cellCount, 4);
-    ar->Read(&m_startX, 8);
-    ar->Read(&m_goalX, 8);
+    ar->Read(&m_start, sizeof(m_start));
+    ar->Read(&m_goal, sizeof(m_goal));
     ar->Read(&m_maskA, 4);
     ar->Read(&m_maskC, 4);
     ar->Read(&m_maskB, 4);

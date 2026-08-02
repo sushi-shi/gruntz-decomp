@@ -1,5 +1,4 @@
 #include <rva.h>
-#include <AddrWord.h>
 #include <Pix16.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -25,12 +24,12 @@ RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
 RVA(0x001657a0, 0x66)
 CAniRecordView::~CAniRecordView() {
     CAniRecordView* r = this;
-    if (r->m_indices != 0) {
-        ::operator delete(r->m_indices);
+    if (r->m_cues != 0) {
+        ::operator delete(r->m_cues);
     }
-    r->m_owner = 0xffff;
-    r->m_count = 0;
-    r->m_indices = 0;
+    r->m_loopMode = 0xffff;
+    r->m_cueCount = 0;
+    r->m_cues = 0;
 }
 
 RVA(0x00165d90, 0xb)
@@ -54,17 +53,17 @@ RVA(0x00168c60, 0xa0)
 i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
-    m_08 = *p++;
-    m_owner = *p++;
-    m_palette = *p++;
-    m_seedFrame = *p++;
-    m_frameCount = *p++;
-    m_1c = *p++;
-    m_20 = *p++;
-    m_24 = *p++;
+    m_stepMode = *p++;
+    m_loopMode = *p++;
+    m_positionMode = *p++;
+    m_param = *p++;
+    m_frameTime = *p++;
+    m_drawValue = *p++;
+    m_positionDeltaX = *p++;
+    m_positionDeltaY = *p++;
     m_28 = static_cast<u16>(*p++);
-    m_indices = 0;
-    m_count = 0;
+    m_cues = 0;
+    m_cueCount = 0;
     g_aniParsedNameLen = 0;
     if (m_flags & 0x2) {
 
@@ -104,25 +103,23 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
     if (n > 0) {
         tokens.SetAtGrow(tokens.GetSize(), tok);
     }
-    m_count = tokens.GetSize();
-    if (m_count > 0) {
-        m_indices = static_cast<i32*>(operator new(static_cast<u32>((m_count * 4))));
-        for (i32 i = 0; i < m_count; i++) {
+    m_cueCount = tokens.GetSize();
+    if (m_cueCount > 0) {
+        m_cues = static_cast<LeafCue**>(operator new(static_cast<u32>((m_cueCount * 4))));
+        for (i32 i = 0; i < m_cueCount; i++) {
 
             CString t = tokens.GetAt(i);
             void* v = 0;
             owner->m_cues.Lookup(t, v);
 
-            AddrWord<char> idx;
-            idx.m_addr = static_cast<char*>(v);
-            m_indices[i] = idx.m_word;
+            m_cues[i] = static_cast<LeafCue*>(v);
         }
     }
 }
 
 RVA(0x00168e50, 0x1e)
 i32 CAniRecordView::GetSize() {
-    i32 n = m_frameCount;
+    i32 n = m_frameTime;
     i32 size = 0x16;
     if (n > 0) {
         if (m_flags & 0x1) {

@@ -17,7 +17,7 @@
 
 RVA(0x00101580, 0x806)
 void CStatusBarMgr::BuildGameMenu() {
-    CDDrawSurfaceMgr* code = m_c;
+    CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
     CSBI_Image* it;
@@ -85,7 +85,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite6 = static_cast<CSBI_MenuItem*>(it);
-        if (g_gameReg->m_134 == 2) {
+        if (g_gameReg->m_gameMode == 2) {
             it->m_enabled = 0;
         }
 
@@ -102,7 +102,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite7 = static_cast<CSBI_MenuItem*>(it);
-        if (g_gameReg->m_134 == 2) {
+        if (g_gameReg->m_gameMode == 2) {
             it->m_enabled = 0;
         }
 
@@ -142,7 +142,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite9 = static_cast<CSBI_MenuItem*>(it);
-        if (g_gameReg->m_134 == 2) {
+        if (g_gameReg->m_gameMode == 2) {
             it->m_enabled = 0;
         }
 
@@ -182,7 +182,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_modeNotify = static_cast<CSBI_ImageSet*>(it);
-        if (g_gameReg->m_134 != 1) {
+        if (g_gameReg->m_gameMode != 1) {
             it->m_enabled = 0;
             m_modeState = 7;
             m_destructWarnActive = 0;

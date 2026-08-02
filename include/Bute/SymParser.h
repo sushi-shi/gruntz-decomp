@@ -42,17 +42,17 @@ struct SymTabFileHeader {
     u8 m_magic3f;
     char m_pad040[0x7e - 0x40];
     u8 m_magic7e;
-    i32 m_flag;
-    i32 m_scopeCount;
-    i32 m_leafCount;
-    i32 m_38;
-    i32 m_3c;
-    i32 m_48;
-    u32 m_54;
+    i32 m_version;
+    i32 m_rootDataOffset;
+    i32 m_rootDataSize;
+    i32 m_rootDirTime;
+    i32 m_nextWritePos;
+    i32 m_archiveTime;
+    u32 m_largestKeyArraySize;
     u32 m_longestScopeNameLen;
     u32 m_longestLeafNameLen;
-    u32 m_60;
-    u8 m_08;
+    u32 m_largestCommentSize;
+    u8 m_sorted;
 };
 SIZE(0xa8);
 
@@ -88,7 +88,7 @@ public:
 
     CParseSource* PopParseSlot();
 
-    i32 MakeSeed();
+    i32 MakeTimestamp();
 
     i32 CheckNodes();
 
@@ -99,32 +99,32 @@ public:
     void AddNode(void* rec);
 
     char* m_delims;
-    i32 m_08;
+    i32 m_sorted;
     i32 m_parseArmed;
     CParserObjList m_list;
     CRezItmBase* m_activeNode;
     i32 m_24;
     i32 m_nextGeneratedFileKey;
-    i32 m_2c;
-    i32 m_30;
-    i32 m_34;
-    i32 m_38;
-    i32 m_3c;
-    i32 m_40;
+    i32 m_maxOpenFiles;
+    i32 m_rootDataOffset;
+    i32 m_rootDataSize;
+    i32 m_rootDirTime;
+    i32 m_nextWritePos;
+    i32 m_readOnly;
     CSymTab* m_root;
-    i32 m_48;
-    i32 m_4c;
-    i32 m_50;
+    i32 m_archiveTime;
+    i32 m_newArchive;
+    i32 m_version;
 
-    u32 m_54;
+    u32 m_largestKeyArraySize;
     u32 m_longestScopeNameLen;
     u32 m_longestLeafNameLen;
-    u32 m_60;
+    u32 m_largestCommentSize;
     char* m_cachedSourceBuffer;
-    i32 m_68;
-    i32 m_6c;
-    i32 m_70;
-    i32 m_74;
+    i32 m_caseSensitive;
+    i32 m_useKeyIndex;
+    i32 m_valueBucketCount;
+    i32 m_keyBucketCount;
     i32 m_subTabBucketCount;
     i32 m_symbolBucketCount;
     CParserHash m_hash;

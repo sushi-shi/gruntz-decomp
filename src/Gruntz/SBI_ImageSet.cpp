@@ -35,10 +35,10 @@ i32 CSBI_ImageSet::SetupImage(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = owner;
+    m_owner = owner;
     m_tab = obj;
-    m_24 = host;
-    m_28 = 0;
+    m_host = host;
+    m_redrawFrames = 0;
     m_enabled = 1;
 
     m_rect14 = rect;
@@ -49,7 +49,7 @@ i32 CSBI_ImageSet::SetupImage(
     CObject* found = 0;
     host->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
-    m_34 = rec;
+    m_frameSet = rec;
     if (rec == 0) {
         return 0;
     }
@@ -57,7 +57,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (f == -1) {
         f = rec->m_minIndex;
     }
-    m_38 = f;
+    m_frameIndex = f;
 
     CImage* cel;
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
@@ -71,7 +71,7 @@ i32 CSBI_ImageSet::SetupImage(
 
 RVA(0x000e7400, 0x9)
 void CSBI_ImageSet::Reset() {
-    m_34 = 0;
+    m_frameSet = 0;
     m_frame = 0;
 }
 
@@ -82,12 +82,12 @@ i32 CSBI_ImageSet::Refresh(i32) {
 
 RVA(0x000e7440, 0x5e)
 i32 CSBI_ImageSet::Render() {
-    if (m_28 > 0) {
-        m_28--;
-        CDDrawWorker* tbl = m_34;
+    if (m_redrawFrames > 0) {
+        m_redrawFrames--;
+        CDDrawWorker* tbl = m_frameSet;
         CImage* cel;
-        if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
+        if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
+            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
         } else {
             cel = 0;
         }
@@ -107,9 +107,9 @@ i32 CSBI_ImageSet::Render() {
 RVA(0x000e74c0, 0x16)
 void CSBI_ImageSet::Notify(i32 id) {
     if (id != -1) {
-        m_38 = id;
+        m_frameIndex = id;
     }
-    m_28 = 2;
+    m_redrawFrames = 2;
 }
 
 RVA(0x000e74f0, 0x152)
@@ -124,7 +124,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pO
     char buf[0x80];
     switch (mode) {
         case 7:
-            s->Read(&m_38, 4);
+            s->Read(&m_frameIndex, 4);
             g_serialCounter++;
             s->Read(buf, 0x80);
             if (strlen(buf)) {
@@ -133,17 +133,17 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pO
                 CObject* outOb = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
                 out = static_cast<CDDrawWorker*>(outOb);
-                m_34 = out;
+                m_frameSet = out;
             } else {
-                m_34 = 0;
+                m_frameSet = 0;
             }
             break;
         case 4:
-            s->Write(&m_38, 4);
+            s->Write(&m_frameIndex, 4);
             g_serialCounter++;
             memset(buf, 0, 0x80);
-            if (m_34) {
-                strcpy(buf, m_34->m_name);
+            if (m_frameSet) {
+                strcpy(buf, m_frameSet->m_name);
             }
             s->Write(buf, 0x80);
             break;

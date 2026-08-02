@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Gruntz/GruntIndicatorSprite.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/SerialArchive.h>
 
@@ -26,10 +27,9 @@ public:
     CGruntHealthSprite();
     CGruntHealthSprite(CGameObject* obj);
 
-    i32 m_cellX;
-    i32 m_cellY;
+    Coord m_cell;
     i32 m_health;
-    i32 m_60;
+    i32 m_yOffset;
 };
 SIZE_UNKNOWN();
 

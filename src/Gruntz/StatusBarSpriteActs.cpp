@@ -65,8 +65,8 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_wwdObject->ApplyName("GAME_STATUSBARSPRITE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     if (m_object->m_sortKey != 0xf4240) {
         m_object->m_sortKey = 0xf4240;
         m_object->m_flags |= 0x20000;

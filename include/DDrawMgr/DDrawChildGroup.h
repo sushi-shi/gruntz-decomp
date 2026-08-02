@@ -131,19 +131,5 @@ public:
     CGameObject* Drain();
 };
 SIZE_UNKNOWN();
-SIZE_UNKNOWN();
-
-struct WwdObjDesc {
-    i32 m_00;
-    i32 m_04;
-    i32 m_08;
-    i32 m_0c;
-    i32 m_10;
-    char m_14[0x94 - 0x14];
-    i32 m_94;
-    i32 m_98;
-    i32 m_9c;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

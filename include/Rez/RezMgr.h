@@ -94,16 +94,7 @@ public:
 SIZE(0x38);
 
 class CRezDirNode;
-
-struct RezSrc {
-    char m_pad0[0x08];
-    i32 m_8;
-    char m_padc[0x1c - 0x0c];
-
-    u32 m_1c;
-    CRezItmBase* m_stream;
-};
-SIZE_UNKNOWN();
+class CSymParser;
 
 class CRezDirNode {
 public:
@@ -114,7 +105,7 @@ public:
     i32 m_off;
     u32 m_size;
     CRezDirNode* m_subdir;
-    RezSrc* m_src;
+    CSymParser* m_src;
     char m_pad1c[0x38 - 0x1c];
     CHashBase m_kids;
     char m_pad40[8];

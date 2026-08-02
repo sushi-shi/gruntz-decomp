@@ -34,10 +34,8 @@ public:
     i32 m_kind;
     i32 m_srcRow, m_srcCol;
     i32 m_targetX, m_targetY;
-    i32 m_184;
     double m_flightDist;
     i32 m_timePerTile;
-    i32 m_194;
     double m_velScale;
     double m_posX;
     double m_posY;

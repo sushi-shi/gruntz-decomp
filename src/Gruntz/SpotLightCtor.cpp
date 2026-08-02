@@ -37,14 +37,14 @@ RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 // @early-stop
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
 
     i32 ax = (m_object->m_screenX & ~0x1f) + 0x10;
     i32 cx = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_70 = static_cast<double>(ax);
-    m_78 = static_cast<double>(cx);
+    m_center.x = static_cast<double>(ax);
+    m_center.y = static_cast<double>(cx);
     i32 nx;
     if (m_object->m_smarts == 0) {
         nx = ax - 0x20;
@@ -53,14 +53,14 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_object->m_screenX = nx;
     m_object->m_screenY = cx;
-    m_60 = static_cast<double>(nx);
-    m_68 = m_78;
+    m_position.x = static_cast<double>(nx);
+    m_position.y = m_center.y;
     if (m_object->m_sortKey != 0xcf850) {
         m_object->m_sortKey = 0xcf850;
         m_object->m_flags |= 0x20000;
     }
-    m_80 = m_70 - m_60;
-    m_88 = m_78 - m_68;
+    m_offset.x = m_center.x - m_position.x;
+    m_offset.y = m_center.y - m_position.y;
 
     u32 v;
     if (m_object->m_damage == 0) {
@@ -68,14 +68,14 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     } else {
         v = m_object->m_damage;
     }
-    m_58 = g_spotRateNum / static_cast<double>(static_cast<u32>(v));
+    m_angularVelocity = g_spotRateNum / static_cast<double>(static_cast<u32>(v));
     if (m_object->m_direction == 1) {
-        m_58 = m_58 * g_spotRateMul;
+        m_angularVelocity = m_angularVelocity * g_spotRateMul;
     }
     if (m_object->m_points == 1) {
-        m_90 = 3.1415927;
+        m_angle = 3.1415927;
     } else {
-        m_90 = 0;
+        m_angle = 0;
     }
     CShadeTable* looked = g_gameReg->m_logicPump->m_tables[m_object->m_powerup];
     m_object->m_drawActive = 1;
@@ -86,11 +86,11 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.right = 0;
     m_object->m_area.top = 0;
     m_object->m_area.bottom = 0;
-    m_9c = -1;
-    m_a0 = -1;
-    m_a4 = 0;
-    if (g_gameReg->m_134 == 1) {
-        m_a4 = 1;
+    m_cellRow = -1;
+    m_cellCol = -1;
+    m_storyMode = 0;
+    if (g_gameReg->m_gameMode == 1) {
+        m_storyMode = 1;
     }
 }
 
@@ -115,35 +115,35 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
     CFileMemBase* s = static_cast<CFileMemBase*>(arc);
     switch (mode) {
         case 4:
-            s->Write(&m_58, 8);
-            s->Write(&m_60, 8);
-            s->Write(&m_68, 8);
-            s->Write(&m_70, 8);
-            s->Write(&m_78, 8);
-            s->Write(&m_80, 8);
-            s->Write(&m_88, 8);
-            s->Write(&m_90, 8);
+            s->Write(&m_angularVelocity, 8);
+            s->Write(&m_position.x, 8);
+            s->Write(&m_position.y, 8);
+            s->Write(&m_center.x, 8);
+            s->Write(&m_center.y, 8);
+            s->Write(&m_offset.x, 8);
+            s->Write(&m_offset.y, 8);
+            s->Write(&m_angle, 8);
             g_serialCounter++;
             {
                 i32 id = 0;
                 if (m_focus != 0) {
-                    id = m_focus->m_188;
+                    id = m_focus->m_objectId;
                 }
                 s->Write(&id, 4);
             }
-            s->Write(&m_9c, 4);
-            s->Write(&m_a0, 4);
-            s->Write(&m_a4, 4);
+            s->Write(&m_cellRow, 4);
+            s->Write(&m_cellCol, 4);
+            s->Write(&m_storyMode, 4);
             break;
         case 7:
-            s->Read(&m_58, 8);
-            s->Read(&m_60, 8);
-            s->Read(&m_68, 8);
-            s->Read(&m_70, 8);
-            s->Read(&m_78, 8);
-            s->Read(&m_80, 8);
-            s->Read(&m_88, 8);
-            s->Read(&m_90, 8);
+            s->Read(&m_angularVelocity, 8);
+            s->Read(&m_position.x, 8);
+            s->Read(&m_position.y, 8);
+            s->Read(&m_center.x, 8);
+            s->Read(&m_center.y, 8);
+            s->Read(&m_offset.x, 8);
+            s->Read(&m_offset.y, 8);
+            s->Read(&m_angle, 8);
             g_serialCounter++;
             {
                 i32 id;
@@ -162,9 +162,9 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
                     return 0;
                 }
             }
-            s->Read(&m_9c, 4);
-            s->Read(&m_a0, 4);
-            s->Read(&m_a4, 4);
+            s->Read(&m_cellRow, 4);
+            s->Read(&m_cellCol, 4);
+            s->Read(&m_storyMode, 4);
             break;
         case 8: {
             CWwdGameObjectA* o = m_object;
@@ -182,18 +182,19 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_gameMode != 1) {
         CWwdGameObjectA* o = m_object;
         CGrunt* tgt =
-            reg->m_cmdGrid->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &m_9c, &m_a0, 0);
-        if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
-            m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = ActFindId("B");
+            reg->m_cmdGrid
+                ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &m_cellRow, &m_cellCol, 0);
+        if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_storyMode != 0 && m_cellRow != 0)) {
+            m_prevAnimSetNode = m_objAux->m_actKey;
+            m_objAux->m_actKey = ActFindId("B");
             CWwdGameObjectA* t = tgt->m_object;
             o->m_screenX = t->m_screenX;
             o->m_screenY = t->m_screenY;
             if (o->m_score == 1) {
-                reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 5, -1);
+                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, 5, -1);
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {
                     g_randSeeded |= 1;
@@ -220,26 +221,26 @@ i32 CSpotLight::Tick() {
                 }
             } else {
                 tgt->SnapToLastTile(1);
-                reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 0xa, -1);
+                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, 0xa, -1);
             }
             return 0;
         }
     }
 
-    double s = sin(m_90);
-    double c = cos(m_90);
+    double s = sin(m_angle);
+    double c = cos(m_angle);
     double dt = static_cast<double>(static_cast<i32>(g_frameDelta));
     CWwdGameObjectA* mv = m_focus;
-    double rx = m_80 * c - m_88 * s;
-    double ry = m_80 * s + m_88 * c;
+    double rx = m_offset.x * c - m_offset.y * s;
+    double ry = m_offset.x * s + m_offset.y * c;
     if (mv != 0) {
-        m_70 = static_cast<double>(mv->m_screenX);
-        m_78 = static_cast<double>(mv->m_screenY);
+        m_center.x = static_cast<double>(mv->m_screenX);
+        m_center.y = static_cast<double>(mv->m_screenY);
     }
-    m_60 = m_70 + rx;
-    m_68 = m_78 + ry;
-    m_90 = m_90 + dt * m_58;
-    m_object->m_screenX = static_cast<i32>(m_60);
-    m_object->m_screenY = static_cast<i32>(m_68);
+    m_position.x = m_center.x + rx;
+    m_position.y = m_center.y + ry;
+    m_angle = m_angle + dt * m_angularVelocity;
+    m_object->m_screenX = static_cast<i32>(m_position.x);
+    m_object->m_screenY = static_cast<i32>(m_position.y);
     return 0;
 }

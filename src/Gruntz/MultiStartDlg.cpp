@@ -32,7 +32,7 @@ i32 g_savedMultiWndProc = 0;
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_host = mgr;
-    m_6c = 0;
+    m_customWorldFlag = 0;
     m_slotList = 0;
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
@@ -143,8 +143,8 @@ i32 CMultiStartDlg::UpdateColorItems() {
         return 0;
     }
     ::SendMessageA(it4ff->m_hWnd, 0x14e, static_cast<WPARAM>(-1), 0);
-    m_6c = g_multiState->m_5b0;
-    if (g_multiState->m_5b0 != 0) {
+    m_customWorldFlag = g_multiState->m_customLevel;
+    if (g_multiState->m_customLevel != 0) {
         itChild->SetWindowTextA(g_multiState->GetConfigNameB());
     } else {
         CString cur;
@@ -166,7 +166,7 @@ i32 CMultiStartDlg::BuildSlotList() {
     CMulti* reg = g_multiState;
     i32 count = 5;
     InterfaceObject* pi = reg->m_netGate->m_groupSel;
-    if (reg->m_588) {
+    if (reg->m_lobbyLaunch) {
         count = 2;
     } else if (pi) {
         if (pi->IsIpxProvider()) {
@@ -186,7 +186,7 @@ i32 CMultiStartDlg::BuildSlotList() {
     HWND v = GetSafe1c();
     m_slotList->FillCombo(v, 0x527);
     m_slotList->SelectItem(v, 0x527, 0, 0);
-    reg->m_600 = 1;
+    reg->m_autoCommandDelay = 1;
     return 1;
 }
 
@@ -208,10 +208,10 @@ i32 CMultiStartDlg::UpdateSlot() {
     w->EnableWindow(enable);
     HWND v = GetSafe1c();
     CMulti* reg2 = g_multiState;
-    if (reg2->m_600) {
+    if (reg2->m_autoCommandDelay) {
         m_slotList->SelectItem(v, 0x527, 0, 0);
     } else {
-        m_slotList->SelectItem(v, 0x527, reg2->m_5a4, reg2->m_drainReload);
+        m_slotList->SelectItem(v, 0x527, reg2->m_commandDelay, reg2->m_drainReload);
     }
     return 1;
 }
@@ -264,7 +264,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             char mapName[0x100];
             DWORD size = 0x100;
             reg->GetValueString("LastMultiMap", mapName, &size, g_emptyString);
-            m_6c = customFlag;
+            m_customWorldFlag = customFlag;
             if (customFlag != 0) {
                 char path[0x100];
                 sprintf(path, "custom\\%s", mapName);
@@ -276,9 +276,9 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                         return;
                     }
                     child->SetWindowTextA(mapName);
-                    g_multiState->m_5b0 = 1;
-                    g_multiState->m_5b8 = mapName;
-                    g_multiState->m_5b4 = g_emptyString;
+                    g_multiState->m_customLevel = 1;
+                    g_multiState->m_customLevelName = mapName;
+                    g_multiState->m_builtInLevelName = g_emptyString;
                     fclose(f);
                 }
             } else {
@@ -287,9 +287,9 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                     return;
                 }
                 child->SetWindowTextA(mapName);
-                g_multiState->m_5b0 = 0;
-                g_multiState->m_5b8 = g_emptyString;
-                g_multiState->m_5b4 = mapName;
+                g_multiState->m_customLevel = 0;
+                g_multiState->m_customLevelName = g_emptyString;
+                g_multiState->m_builtInLevelName = mapName;
             }
         }
         {
@@ -313,10 +313,10 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         if (child == 0) {
             return;
         }
-        child->GetWindowTextA(m_70);
+        child->GetWindowTextA(m_worldName);
         if (g_multiState->m_isHost != 0) {
-            reg->SetValueString("LastMultiMap", m_70);
-            reg->SetValueDword("CustomMultiMap", m_6c);
+            reg->SetValueString("LastMultiMap", m_worldName);
+            reg->SetValueDword("CustomMultiMap", m_customWorldFlag);
         }
         GruntzPlayer* slots = m_host->m_options;
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {

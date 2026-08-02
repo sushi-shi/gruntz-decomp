@@ -10,7 +10,6 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Wwd/WwdFile.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -42,8 +41,8 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     i32 cellKey,
     const RECT* rect,
     i32 linkGate,
-    i32 a8,
-    i32 a9
+    i32 damageParam,
+    i32 checkpointType
 ) {
     if (m_initGate != 0) {
         return 0;
@@ -52,7 +51,7 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
         return 0;
     }
     memcpy(m_block, rect, sizeof(m_block));
-    return Setup(owner, typeId, tileX, tileY, cellKey, linkGate, a8, a9);
+    return Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType);
 }
 
 RVA(0x001104f0, 0x56)
@@ -63,19 +62,19 @@ i32 CTileTriggerSwitchLogic::Setup(
     i32 tileY,
     i32 cellKey,
     i32 linkGate,
-    i32 a8,
-    i32 a9
+    i32 damageParam,
+    i32 checkpointType
 ) {
     if (m_initGate) {
         return 0;
     }
     m_typeId = typeId;
     m_tileX = tileX;
-    m_key0c = tileY;
-    m_key1 = cellKey;
+    m_tileY = tileY;
+    m_cellKey = cellKey;
     m_owner = owner;
-    m_18 = a8;
-    m_28 = a9;
+    m_damageParam = damageParam;
+    m_checkpointType = checkpointType;
     m_1c = 0;
     m_linkGate = linkGate;
     m_initGate = 1;
@@ -86,7 +85,7 @@ RVA(0x001107f0, 0x1c)
 CTileTriggerLogic::CTileTriggerLogic() {
 
     for (i32 i = 0; i < 24; i++) {
-        m_block[i] = 0;
+        m_linkKeys[i] = 0;
     }
     m_initGate = 0;
 }
@@ -94,7 +93,7 @@ CTileTriggerLogic::CTileTriggerLogic() {
 RVA(0x00110820, 0x23)
 i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
     for (i32 i = 0; i < 24; i++) {
-        if (m_block[i] == key) {
+        if (m_linkKeys[i] == key) {
             return 1;
         }
     }
@@ -529,7 +528,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
             break;
         }
         child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
-        if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
+        if (child != 0 && child->FindIndexByKey(m_cellKey) != 0) {
             found = 1;
         }
     }
@@ -539,7 +538,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     }
 
     for (i32 i = 0; i < 24; i++) {
-        i32 key = child->m_block[i];
+        i32 key = child->m_linkKeys[i];
         if (key == 0) {
             return 1;
         }
@@ -576,14 +575,14 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_BCAST_KEY_MISS);
             return 0;
         }
-        if (node->m_key1 != m_key1 && node->m_linkGate != 0) {
+        if (node->m_cellKey != m_cellKey && node->m_linkGate != 0) {
             node->SwitchUp();
             i32 any = 0;
             POSITION pos = m_owner->m_list1.GetHeadPosition();
             while (pos != 0) {
                 CTileTriggerLogic* o =
                     static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
-                if (o != 0 && o->FindIndexByKey(node->m_key1)) {
+                if (o != 0 && o->FindIndexByKey(node->m_cellKey)) {
                     o->Tick();
                     counter++;
                     any = 1;
@@ -851,10 +850,10 @@ RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_key0c]] + 1;
+    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_tileY]] + 1;
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_key0c]] = v;
-    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_key0c, v);
+    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_tileY]] = v;
+    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
     m_linkGate = 1;
     return 1;
 }
@@ -864,10 +863,10 @@ RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_key0c]] - 1;
+    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_tileY]] - 1;
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_key0c]] = v;
-    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_key0c, v);
+    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_tileY]] = v;
+    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
     m_linkGate = 0;
     return 1;
 }
@@ -887,7 +886,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
             break;
         }
         child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
-        if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
+        if (child != 0 && child->FindIndexByKey(m_cellKey) != 0) {
             found = 1;
         }
     }
@@ -897,7 +896,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     }
 
     for (i32 i = 0; i < 24; i++) {
-        i32 key = child->m_block[i];
+        i32 key = child->m_linkKeys[i];
         if (key == 0) {
             return 1;
         }
@@ -1350,13 +1349,13 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
         return 0;
     }
     ar->Write(&m_tileX, 4);
-    ar->Write(&m_key0c, 4);
-    ar->Write(&m_key1, 4);
+    ar->Write(&m_tileY, 4);
+    ar->Write(&m_cellKey, 4);
     ar->Write(&m_linkGate, 4);
-    ar->Write(&m_18, 4);
+    ar->Write(&m_damageParam, 4);
     ar->Write(&m_1c, 4);
     ar->Write(&m_initGate, 4);
-    ar->Write(&m_28, 4);
+    ar->Write(&m_checkpointType, 4);
     i32* p = m_block;
     i32 n = 24;
     do {
@@ -1375,13 +1374,13 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
         return 0;
     }
     s->Read(&m_tileX, 4);
-    s->Read(&m_key0c, 4);
-    s->Read(&m_key1, 4);
+    s->Read(&m_tileY, 4);
+    s->Read(&m_cellKey, 4);
     s->Read(&m_linkGate, 4);
-    s->Read(&m_18, 4);
+    s->Read(&m_damageParam, 4);
     s->Read(&m_1c, 4);
     s->Read(&m_initGate, 4);
-    s->Read(&m_28, 4);
+    s->Read(&m_checkpointType, 4);
     i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
         s->Read(p, 4);
@@ -1420,7 +1419,7 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     }
     s->Write(&m_tileX, 4);
     s->Write(&m_tileY, 4);
-    s->Write(&m_10, 4);
+    s->Write(&m_cellKey, 4);
     s->Write(&m_14, 4);
     s->Write(&m_18, 4);
     s->Write(&m_initGate, 4);
@@ -1430,7 +1429,7 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     s->Write(&m_tileToken, 4);
     s->Write(&m_dutyOn, 4);
     s->Write(&m_startClock, 4);
-    i32* p = m_block;
+    i32* p = m_linkKeys;
     for (i32 i = 0; i < 24; i++) {
         s->Write(p, 4);
         p++;
@@ -1448,7 +1447,7 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     }
     s->Read(&m_tileX, 4);
     s->Read(&m_tileY, 4);
-    s->Read(&m_10, 4);
+    s->Read(&m_cellKey, 4);
     s->Read(&m_14, 4);
     s->Read(&m_18, 4);
     s->Read(&m_initGate, 4);
@@ -1458,7 +1457,7 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     s->Read(&m_tileToken, 4);
     s->Read(&m_dutyOn, 4);
     s->Read(&m_startClock, 4);
-    i32* p = m_block;
+    i32* p = m_linkKeys;
     for (i32 i = 0; i < 24; i++) {
         s->Read(p, 4);
         p++;

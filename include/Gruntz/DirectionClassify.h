@@ -11,11 +11,11 @@ struct GruntDirectionCell;
 // allocation site, vtable, or RTTI identifies the owning class.
 struct MotionEntity {
     char _pad00[0x78];
-    double m_78;
-    double m_80;
+    double m_positionX;
+    double m_positionY;
     char _pad88[0x140 - 0x88];
-    i32 m_140;
-    i32 m_144;
+    i32 m_gridX;
+    i32 m_gridY;
     GruntDirectionCell* Classify(MotionEntity* other, char exact);
 };
 SIZE_UNKNOWN();

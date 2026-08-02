@@ -61,8 +61,8 @@ void CGruntPowerupSprite::RegisterActs() {
 
 RVA(0x00080380, 0x6c)
 i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
-    m_cellX = x;
-    m_cellY = y;
+    m_cell.m_x = x;
+    m_cell.m_y = y;
     m_powerupId = powerup;
     CShadeTable* rec = g_gameReg->m_logicPump->m_tables[powerup];
     CWwdGameObjectA* r = m_object;
@@ -70,15 +70,15 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     r->m_drawFillCmd = 7;
     r->m_drawFillArg = rec;
     m_wwdObject->m_stateFlags &= ~1;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     return 1;
 }
 
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
+    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
     if (e != 0) {
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;
@@ -96,11 +96,11 @@ i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, C
     }
     switch (mode) {
         case 4:
-            ar->Write(&m_cellX, 8);
+            ar->Write(&m_cell, 8);
             ar->Write(&m_powerupId, 4);
             break;
         case 7: {
-            ar->Read(&m_cellX, 8);
+            ar->Read(&m_cell, 8);
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
             CWwdGameObjectA* r = m_object;

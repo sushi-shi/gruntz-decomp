@@ -9,13 +9,13 @@ CState::CState() {
     m_symParser = 0;
     m_world = 0;
     m_levelBank = 0;
-    m_2c = 0;
+    m_stateBank = 0;
     m_blitSurface0 = 0;
     m_blitSurface1 = 0;
     m_38 = 0;
     m_ready = 0;
     m_versionString[0] = 0;
-    m_24 = 0;
+    m_previousStateId = 0;
     m_scratchSurface0 = 0;
     m_scratchSurface1 = 0;
     m_cursorSaveSrc0.left = 0;

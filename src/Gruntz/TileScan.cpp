@@ -3,13 +3,12 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/ScanGrid.h>
 #include <Gruntz/BattlezMapConfig.h>
 
 static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
     if (static_cast<u32>(x) < static_cast<u32>(g->m_width)
         && static_cast<u32>(y) < static_cast<u32>(g->m_height)) {
-        return g->m_rows[y][x].m_0;
+        return g->m_rows[y][x].m_flags;
     }
     return 1;
 }
@@ -17,10 +16,10 @@ static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
 // @early-stop
 RVA(0x00035f10, 0x155)
 i32 CBattlezMapConfig::Scan(CGrunt* arg) {
-    if (arg->m_dwell <= m_0c8) {
+    if (arg->m_dwell <= m_inactiveTargetRerouteDelay) {
         return 1;
     }
-    i32 v = arg->m_2e8;
+    i32 v = arg->m_targetTeam;
     i32 ok = 0;
     if (v != -1) {
         GruntzPlayer* fs = &m_ctx->m_options[v];

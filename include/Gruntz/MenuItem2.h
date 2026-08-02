@@ -34,8 +34,8 @@ public:
     CDDrawWorker* m_spriteSelected;
     CDDrawWorker* m_spriteDisabled;
     i32 m_frameIdx;
-    i32 m_6c;
-    i32 m_70;
+    i32 m_frameCountdown;
+    i32 m_frameDelay;
 };
 SIZE(0x74);
 
@@ -44,8 +44,8 @@ inline CMenuItem2::CMenuItem2() {
     m_spriteSelected = 0;
     m_spriteDisabled = 0;
     m_frameIdx = 0;
-    m_6c = 0;
-    m_70 = 0x64;
+    m_frameCountdown = 0;
+    m_frameDelay = 0x64;
 }
 
 #endif // GRUNTZ_MENUITEM2_H

@@ -6,7 +6,7 @@
 #include <rva.h>
 
 class CWwdGameObjectA;
-class CAniDesc;
+class CAniRecordView;
 class CAniElement;
 class CFileMemBase;
 
@@ -33,7 +33,7 @@ public:
     CWwdGameObjectA* m_boundObject;
     CAniElement* m_animation;
 
-    CAniDesc* m_element;
+    CAniRecordView* m_element;
     i32 m_index;
     u32 m_frameTicksLeft;
     i32 m_useElapsedTime;

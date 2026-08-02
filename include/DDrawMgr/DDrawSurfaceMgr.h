@@ -12,7 +12,7 @@ typedef struct HWND__* HWND;
 
 #pragma pack(push, 1)
 struct CSnapshotHeader {
-    i32 m_00;
+    i32 m_reserved;
     i32 m_version;
     i32 m_month;
     i32 m_dayThenYear;

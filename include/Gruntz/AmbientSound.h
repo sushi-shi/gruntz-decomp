@@ -85,8 +85,7 @@ public:
     );
     i32 InitFromSound(DirectSoundMgr* mgr, i32 level, i32 master, AmbientPoint* pos, i32 scaleB);
 
-    i32 m_40;
-    i32 m_44;
+    AmbientPoint m_position;
 };
 SIZE(0x48);
 

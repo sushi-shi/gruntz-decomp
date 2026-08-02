@@ -24,8 +24,8 @@ i32 CSBI_RectOnly::Setup(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = owner;
-    m_24 = host;
+    m_owner = owner;
+    m_host = host;
     m_tab = tab;
     m_rect14.left = rc.left;
     m_rect14.top = rc.top;

@@ -8,8 +8,8 @@
 class CRezItmBase;
 
 union DwordBytes {
-    u32 m_v;
-    u8 m_b[4];
+    u32 m_value;
+    u8 m_bytes[4];
 };
 
 struct CObjList : public CObjListBase {

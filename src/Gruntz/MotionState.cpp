@@ -12,33 +12,33 @@ const double g_motionNegTwo = -2.0;
 
 RVA(0x000136d0, 0x184)
 CMotionState::CMotionState() {
-    m_40 = 0.0;
-    m_48 = 0.0;
-    m_50 = 0.0;
-    m_28 = 0.0;
-    m_30 = 0.0;
-    m_38 = 0.0;
-    m_10 = 0.0;
-    m_18 = 0.0;
-    m_20 = 0.0;
-    m_00 = 0.0;
-    m_08 = 0.0;
-    m_c0 = 0.0;
-    m_c8 = 0.0;
-    m_d0 = 0.0;
-    m_b8 = 0;
-    m_70 = g_movingLogicMin;
-    m_88 = g_movingLogicMax;
-    m_78 = g_movingLogicMin;
-    m_90 = g_movingLogicMax;
-    m_80 = g_movingLogicMin;
-    m_98 = g_movingLogicMax;
-    m_d8 = g_movingLogicMax;
-    m_e0 = g_movingLogicMax;
-    m_e8 = g_movingLogicMax;
-    m_f0 = g_movingLogicMax;
-    m_f8 = g_movingLogicMax;
-    m_100 = g_movingLogicMax;
+    m_position.x = 0.0;
+    m_position.y = 0.0;
+    m_position.z = 0.0;
+    m_velocity.x = 0.0;
+    m_velocity.y = 0.0;
+    m_velocity.z = 0.0;
+    m_acceleration.x = 0.0;
+    m_acceleration.y = 0.0;
+    m_acceleration.z = 0.0;
+    m_time = 0.0;
+    m_deltaTime = 0.0;
+    m_c0.x = 0.0;
+    m_c0.y = 0.0;
+    m_c0.z = 0.0;
+    m_stepDisabled = 0;
+    m_minBounds.x = g_movingLogicMin;
+    m_maxBounds.x = g_movingLogicMax;
+    m_minBounds.y = g_movingLogicMin;
+    m_maxBounds.y = g_movingLogicMax;
+    m_minBounds.z = g_movingLogicMin;
+    m_maxBounds.z = g_movingLogicMax;
+    m_maxStep.x = g_movingLogicMax;
+    m_maxStep.y = g_movingLogicMax;
+    m_maxStep.z = g_movingLogicMax;
+    m_maxVelocity.x = g_movingLogicMax;
+    m_maxVelocity.y = g_movingLogicMax;
+    m_maxVelocity.z = g_movingLogicMax;
 }
 
 RVA(0x00058bc0, 0xa1)
@@ -55,25 +55,25 @@ i32 CMotionState::SetParams(
     double clock,
     double dt
 ) {
-    m_40 = posX;
-    m_48 = posY;
-    m_50 = posZ;
-    m_28 = velX;
-    m_30 = velY;
-    m_38 = velZ;
-    m_10 = accelX;
-    m_18 = accelY;
-    m_20 = accelZ;
-    m_00 = clock;
-    m_08 = dt;
+    m_position.x = posX;
+    m_position.y = posY;
+    m_position.z = posZ;
+    m_velocity.x = velX;
+    m_velocity.y = velY;
+    m_velocity.z = velZ;
+    m_acceleration.x = accelX;
+    m_acceleration.y = accelY;
+    m_acceleration.z = accelZ;
+    m_time = clock;
+    m_deltaTime = dt;
     return 1;
 }
 
 RVA(0x00058ca0, 0x19)
 void CMotionState::SetZ(double z) {
-    m_d8 = z;
-    m_e0 = z;
-    m_e8 = z;
+    m_maxStep.x = z;
+    m_maxStep.y = z;
+    m_maxStep.z = z;
 }
 
 #define STEP_AXIS(v, a, s, vmax, loBand, hiBand, posClamp, scr)                                    \
@@ -125,41 +125,70 @@ void CMotionState::SetZ(double z) {
 // @early-stop
 RVA(0x0016ecd0, 0x6e6)
 void CMotionState::Step(double dt) {
-    m_58 = m_40;
-    m_60 = m_48;
-    m_68 = m_50;
-    m_08 = dt;
-    m_00 += dt;
-    if (m_b8 != 0) {
+    m_previousPosition.x = m_position.x;
+    m_previousPosition.y = m_position.y;
+    m_previousPosition.z = m_position.z;
+    m_deltaTime = dt;
+    m_time += dt;
+    if (m_stepDisabled != 0) {
         return;
     }
-    STEP_AXIS(m_28, m_10, m_40, m_d8, m_70, m_88, m_f0, m_a0);
-    STEP_AXIS(m_30, m_18, m_48, m_e0, m_78, m_90, m_f8, m_a8);
-    STEP_AXIS(m_38, m_20, m_50, m_e8, m_80, m_98, m_100, m_b0);
+    STEP_AXIS(
+        m_velocity.x,
+        m_acceleration.x,
+        m_position.x,
+        m_maxStep.x,
+        m_minBounds.x,
+        m_maxBounds.x,
+        m_maxVelocity.x,
+        m_step.x
+    );
+    STEP_AXIS(
+        m_velocity.y,
+        m_acceleration.y,
+        m_position.y,
+        m_maxStep.y,
+        m_minBounds.y,
+        m_maxBounds.y,
+        m_maxVelocity.y,
+        m_step.y
+    );
+    STEP_AXIS(
+        m_velocity.z,
+        m_acceleration.z,
+        m_position.z,
+        m_maxStep.z,
+        m_minBounds.z,
+        m_maxBounds.z,
+        m_maxVelocity.z,
+        m_step.z
+    );
 }
 
 RVA(0x0016f3c0, 0x61)
 double CMotionState::ArrivalVelX(double target) {
-    if (m_10 == 0.0) {
-        return m_28;
+    if (m_acceleration.x == 0.0) {
+        return m_velocity.x;
     }
-    double disc = m_28 * m_28 - (target - m_40) * m_10 * g_motionNegTwo;
+    double disc =
+        m_velocity.x * m_velocity.x - (target - m_position.x) * m_acceleration.x * g_motionNegTwo;
     if (0.0 > disc) {
         disc = 0.0;
     }
     double r = sqrt(disc);
-    return (m_28 > 0.0) ? r : -r;
+    return (m_velocity.x > 0.0) ? r : -r;
 }
 
 RVA(0x0016f430, 0x61)
 double CMotionState::ArrivalVelY(double target) {
-    if (m_18 == 0.0) {
-        return m_30;
+    if (m_acceleration.y == 0.0) {
+        return m_velocity.y;
     }
-    double disc = m_30 * m_30 - (target - m_48) * m_18 * g_motionNegTwo;
+    double disc =
+        m_velocity.y * m_velocity.y - (target - m_position.y) * m_acceleration.y * g_motionNegTwo;
     if (0.0 > disc) {
         disc = 0.0;
     }
     double r = sqrt(disc);
-    return (m_30 > 0.0) ? r : -r;
+    return (m_velocity.y > 0.0) ? r : -r;
 }

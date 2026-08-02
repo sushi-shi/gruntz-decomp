@@ -18,7 +18,7 @@ RVA(0x000dbc80, 0x309)
 i32 CPlay::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     if (m_mgr->m_strWorldFile.GetLength() != 0) {
-        if (m_mgr->m_128 != 0) {
+        if (m_mgr->m_isBattlezLevel != 0) {
             CString key = "BATTLEZ\\" + m_mgr->GetWorldFileName();
             CParseSource* node = m_gameBank->ResolveQualified(key, 0x575744);
             if (node == 0) {
@@ -27,7 +27,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
             if (m_world->m_level->LoadFromSource(node) == 0) {
                 return 0;
             }
-        } else if (m_mgr->m_12c != 0) {
+        } else if (m_mgr->m_isMultiLevel != 0) {
             CString key = "MULTI\\" + m_mgr->GetWorldFileName();
             CParseSource* node = m_gameBank->ResolveQualified(key, 0x575744);
             if (node == 0) {

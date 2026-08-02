@@ -7,6 +7,7 @@
 
 class CUserLogic;
 class CFileMemBase;
+class CAmbientPosSound;
 
 struct CGameObject;
 
@@ -33,7 +34,7 @@ struct AnimWorkerObj : public CLoadable {
         m_payload = 0;
         m_logic = 0;
         m_target = 0;
-        m_1c = 0;
+        m_actKey = 0;
         m_targetId = 0;
         m_payloadSize = 0;
     }
@@ -52,12 +53,12 @@ struct AnimWorkerObj : public CLoadable {
     CUserLogic* m_logic;
 
     i32 ActKey() const {
-        return m_1c;
+        return m_actKey;
     }
     void SetActKey(i32 id) {
-        m_1c = id;
+        m_actKey = id;
     }
-    i32 m_1c;
+    i32 m_actKey;
 
     i32 m_timeDelay;
     i32 m_frameDelay;
@@ -107,11 +108,11 @@ struct AnimWorkerObj : public CLoadable {
     RECT m_d0;
     RECT m_e0;
 
-    RECT m_switchRectA;
-    RECT m_switchRectB;
+    RECT m_userRect1;
+    RECT m_userRect2;
     char m_pad110[0x120 - 0x110];
     RECT m_120;
-    i32 m_130;
+    i32 m_sparkleDelay;
     char m_pad134[0x138 - 0x134];
     i32 m_138;
     i32 m_13c;
@@ -125,7 +126,7 @@ struct AnimWorkerObj : public CLoadable {
     i32 m_15c;
     i32 m_160;
     i32 m_164;
-    i32 m_168;
+    CAmbientPosSound* m_positionedSound;
     i32 m_16c;
     CGameObject* m_target;
     i32 m_targetId;
@@ -140,7 +141,7 @@ inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFl
     m_payload = 0;
     m_logic = 0;
     m_target = 0;
-    m_1c = 0;
+    m_actKey = 0;
     m_targetId = 0;
     m_payloadSize = 0;
 }

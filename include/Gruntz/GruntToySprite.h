@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/GruntIndicatorSprite.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/GruntIndicatorSprite.h>
 
@@ -24,8 +25,7 @@ public:
     i32 SetCell(i32 x, i32 y);
     i32 Update();
 
-    i32 m_cellX;
-    i32 m_cellY;
+    Coord m_cell;
     i32 m_lastLayer;
 };
 SIZE(0x60);

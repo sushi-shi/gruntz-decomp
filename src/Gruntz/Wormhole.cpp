@@ -97,8 +97,8 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0x1869f;
         m_object->m_flags |= 0x20000;
     }
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     i32 kind = m_object->m_smarts;
     CShadeTable* color;
     if (kind == -1) {
@@ -212,8 +212,8 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_stateFlags |= 1;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -279,8 +279,8 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     obj->m_drawFillCmd = 0xa;
     obj->m_drawFillArg = rec;
     m_wwdObject->m_stateFlags &= ~1;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("B");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("B");
     if (placeIndex == 0) {
         m_placed = 1;
         m_pending = 0;
@@ -422,8 +422,8 @@ i32 CTeleporter::ReapplyConfig() {
     m_wwdObject->ApplyName("GAME_WORMHOLE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_armed = 1;
     m_tickHandled = 0;
     m_wwdObject->m_stateFlags &= ~1;
@@ -517,8 +517,8 @@ i32 CTeleporter::Begin() {
     m_armClock = static_cast<u32>(g_frameTime);
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("B");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("B");
     return 0;
 }
 

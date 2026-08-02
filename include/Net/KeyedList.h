@@ -6,8 +6,9 @@
 
 struct CKeyedNode {
     CString m_key;
-    i32 m_4;
-    i32 m_8;
+    i32 m_commandDelay;
+    i32 m_drainReload;
+    CString GetName();
     ~CKeyedNode();
 };
 SIZE_UNKNOWN();
@@ -20,7 +21,7 @@ public:
 
     ~CKeyedList();
 
-    CKeyedNode* AddNode(const char* key, i32 a2, i32 a3);
+    CKeyedNode* AddNode(const char* key, i32 commandDelay, i32 drainReload);
 
     void Clear();
 

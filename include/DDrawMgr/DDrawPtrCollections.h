@@ -131,7 +131,7 @@ public:
 
     IDirectDraw2* m_device;
 
-    IDirectDraw* m_dd1;
+    IDirectDraw* m_directDraw1;
 
     DDCAPS m_driverCaps;
     DDCAPS m_helCaps;
@@ -146,7 +146,7 @@ public:
 
     PALETTEENTRY m_palette[0x100];
     i32 m_hasPalette;
-    i32 m_940;
+    i32 m_paletteTag;
     i32 m_lastError;
 };
 SIZE_UNKNOWN();

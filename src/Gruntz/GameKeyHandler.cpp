@@ -58,7 +58,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (level->m_toggleHandle != 0) {
 
             if (key == 0x59 || key == 0xd) {
-                if (g_gameReg->m_134 == 1) {
+                if (g_gameReg->m_gameMode == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
@@ -79,7 +79,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         } else {
 
             if (key == 0x51) {
-                if (g_gameReg->m_134 == 1) {
+                if (g_gameReg->m_gameMode == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
@@ -89,12 +89,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
 
-            if (key == 0x53 && g_gameReg->m_134 == 1) {
+            if (key == 0x53 && g_gameReg->m_gameMode == 1) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
             }
             if (key == 0x52) {
-                if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase != 1) {
+                if (host->m_gameMode == 1 && g_gameReg->m_cmdGrid->m_phase != 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, 0x111, 0x806b, 0);
@@ -102,14 +102,14 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
             if (key == 0x4e) {
-                if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase == 1) {
+                if (host->m_gameMode == 1 && g_gameReg->m_cmdGrid->m_phase == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
                 }
                 return 1;
             }
             if (key == 0x4f) {
-                if (host->m_134 != 1 && self->m_guts->m_578 != 0) {
+                if (host->m_gameMode != 1 && self->m_guts->m_observerTabAvailable != 0) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     this->ReleaseLevelOverlay(0);
                 }
@@ -120,11 +120,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (key == 0xd) {
         CChatBoxOwner* rec = self->m_hitTest;
-        if (rec->m_10 != 0) {
+        if (rec->m_inputActive != 0) {
             rec->ProcessCheatInput(0xd, lparam);
         } else {
-            rec->m_14->EndInput();
-            rec->m_10 = 1;
+            rec->m_fontConfig->EndInput();
+            rec->m_inputActive = 1;
             self->m_hitTest->ProcessCheatInput(0xd, lparam);
         }
         return 1;
@@ -139,10 +139,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         h68->m_armed = 0;
         CChatBoxOwner* rec = self->m_hitTest;
-        if (rec->m_10 != 0) {
+        if (rec->m_inputActive != 0) {
             this->FlushPendingOps();
-            self->m_hitTest->m_14->EndInput();
-            self->m_hitTest->m_10 = 0;
+            self->m_hitTest->m_fontConfig->EndInput();
+            self->m_hitTest->m_inputActive = 0;
             return 1;
         }
         if (this->FlushPendingOps() != 0) {
@@ -157,7 +157,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (self->m_hitTest->m_10 != 0) {
+    if (self->m_hitTest->m_inputActive != 0) {
         return 1;
     }
     if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
@@ -167,7 +167,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     StateMgrBZ* dev = g_spawnConfig;
 
     if (key == 0x9) {
-        i32 idx = self->m_514;
+        i32 idx = self->m_focusPlayerIndex;
         i32 pick;
         GruntzPlayer* area;
         if (dev->m_edgeKeys & 1) {
@@ -204,7 +204,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
         }
         if (area->m_joined != 0 && area->m_doneFlag == 0 && area->m_clearedRound == 0) {
-            self->m_514 = pick;
+            self->m_focusPlayerIndex = pick;
             this->ResetGoals(area->m_focusX, area->m_focusY);
         }
     }
@@ -266,7 +266,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
             Coord* slot;
-            if (self->arr488Count() < 4) {
+            if (self->CameraBookmarkCount() < 4) {
                 CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 CoordPoolNode* nx = head->m_next;
                 if (nx != 0) {
@@ -277,67 +277,67 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 }
             } else {
 
-                slot = static_cast<Coord*>(self->m_488.GetAt(0));
-                self->m_488.RemoveAt(0, 1);
-                i32 c = self->m_49c - 1;
-                self->m_49c = c;
+                slot = static_cast<Coord*>(self->m_cameraBookmarks.GetAt(0));
+                self->m_cameraBookmarks.RemoveAt(0, 1);
+                i32 c = self->m_cameraBookmarkIndex - 1;
+                self->m_cameraBookmarkIndex = c;
                 if (c < 0) {
-                    self->m_49c = self->arr488Count() - 1;
+                    self->m_cameraBookmarkIndex = self->CameraBookmarkCount() - 1;
                 }
             }
             slot->m_x = v0;
             slot->m_y = v1;
-            if (self->m_49c != self->arr488Count() - 1) {
-                self->m_488.InsertAt(self->m_49c + 1, slot, 1);
-                self->m_49c = self->m_49c + 1;
+            if (self->m_cameraBookmarkIndex != self->CameraBookmarkCount() - 1) {
+                self->m_cameraBookmarks.InsertAt(self->m_cameraBookmarkIndex + 1, slot, 1);
+                self->m_cameraBookmarkIndex = self->m_cameraBookmarkIndex + 1;
                 return 1;
             }
-            self->m_488.SetAtGrow(self->arr488Count(), slot);
-            self->m_49c = self->m_49c + 1;
+            self->m_cameraBookmarks.SetAtGrow(self->CameraBookmarkCount(), slot);
+            self->m_cameraBookmarkIndex = self->m_cameraBookmarkIndex + 1;
             return 1;
         }
-        if (self->arr488Count() == 0) {
+        if (self->CameraBookmarkCount() == 0) {
             return 1;
         }
         if (dev->m_edgeKeys & 1) {
-            i32 c = self->m_49c - 1;
-            self->m_49c = c;
+            i32 c = self->m_cameraBookmarkIndex - 1;
+            self->m_cameraBookmarkIndex = c;
             if (c < 0) {
-                self->m_49c = self->arr488Count() - 1;
+                self->m_cameraBookmarkIndex = self->CameraBookmarkCount() - 1;
             }
         } else {
-            i32 c = self->m_49c + 1;
-            self->m_49c = c;
-            if (c >= self->arr488Count()) {
-                self->m_49c = 0;
+            i32 c = self->m_cameraBookmarkIndex + 1;
+            self->m_cameraBookmarkIndex = c;
+            if (c >= self->CameraBookmarkCount()) {
+                self->m_cameraBookmarkIndex = 0;
             }
         }
-        i32* e = static_cast<i32*>(self->m_488.GetAt(self->m_49c));
+        i32* e = static_cast<i32*>(self->m_cameraBookmarks.GetAt(self->m_cameraBookmarkIndex));
         this->ResetGoals(e[0], e[1]);
         return 1;
     }
 
     if (key == 0x8) {
-        if (self->arr488Count() <= 0) {
+        if (self->CameraBookmarkCount() <= 0) {
             return 1;
         }
-        i32 cur = self->m_49c;
+        i32 cur = self->m_cameraBookmarkIndex;
         if (cur < 0) {
             return 1;
         }
-        CoordPoolNode* node = g_coordPool.NodeOf(self->m_488.GetAt(cur));
-        self->m_488.RemoveAt(cur, 1);
+        CoordPoolNode* node = g_coordPool.NodeOf(self->m_cameraBookmarks.GetAt(cur));
+        self->m_cameraBookmarks.RemoveAt(cur, 1);
         node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
         g_coordPool.m_freeHead = node;
-        i32 c = self->m_49c - 1;
-        self->m_49c = c;
+        i32 c = self->m_cameraBookmarkIndex - 1;
+        self->m_cameraBookmarkIndex = c;
         if (c != -1) {
             return 1;
         }
-        if (self->arr488Count() == 0) {
+        if (self->CameraBookmarkCount() == 0) {
             return 1;
         }
-        self->m_49c = self->arr488Count() - 1;
+        self->m_cameraBookmarkIndex = self->CameraBookmarkCount() - 1;
         return 1;
     }
 
@@ -422,7 +422,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        if (g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_gameMode == 1) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
@@ -516,7 +516,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gooPuddlez == 0) {
             return 1;
         }
-        if (g_gameReg->m_134 == 2) {
+        if (g_gameReg->m_gameMode == 2) {
             return 1;
         }
         CGruntzMgr* h = self->m_mgr;
@@ -642,7 +642,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 recorder_place:
 
 {
-    if (self->m_4f0 != 0) {
+    if (self->m_playerCommandPending != 0) {
         return 1;
     }
     if (self->m_dragInhibit1 != 0) {

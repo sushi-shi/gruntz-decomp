@@ -31,7 +31,6 @@ struct SaveSlot {
     char m_levelName[0x83];
     union {
         i32 m_pathLo;
-        i32 m_f8;
         i32 m_isCustom;
     };
     union {

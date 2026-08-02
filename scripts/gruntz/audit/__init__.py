@@ -10,7 +10,8 @@ gates live in gruntz/cleanliness/ + gruntz/match/:
   layout     exe_diff (`gruntz audit exe-diff`) / link_order (`gruntz link`) /
              tu_layout + tu_order_check (the .text linker-order invariant) /
              interleavers (COMDAT methods inside foreign units)
-  quality    reinterpret_census (cross-cast inventory) / stale_walls
+  quality    reinterpret_census (cross-cast inventory) / flattened_aggregates
+             (scalar-address aggregate suspicion queue) / stale_walls
              (re-derive @early-stop blockers) / tidy_audit (`gruntz audit tidy`) /
              extern_harvest (unresolved-referent inventory)
   labeling   fid/ + fid_generate (library_labels.csv regeneration) /

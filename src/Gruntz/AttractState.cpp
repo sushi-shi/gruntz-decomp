@@ -40,7 +40,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
     owner()->RestoreVideoMode(0);
 
     CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
-    m_2c = (state);
+    m_stateBank = (state);
     if (state == 0) {
         return 0;
     }

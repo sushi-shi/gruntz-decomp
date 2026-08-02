@@ -54,7 +54,7 @@ i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 areaArg, i32 a2) {
     if (CPlay::LoadGameAssetNamespaces(ctx, areaArg, a2) == 0) {
         return 0;
     }
-    m_520 = 0x124f80;
+    m_demoCountdown = 0x124f80;
     return 1;
 }
 
@@ -71,8 +71,8 @@ i32 CDemo::CompleteLevel() {
 
 RVA(0x0003c070, 0x47)
 i32 CDemoSetup::SetupDemoActors() {
-    m_c->m_childGroup->CreateSprite(1, 0, 0, 0, "DemoMover", 0x40003);
-    m_c->m_childGroup->CreateSprite(1, 0, 0, 0x270f, "DemoSign", 0x40003);
+    m_world->m_childGroup->CreateSprite(1, 0, 0, 0, "DemoMover", 0x40003);
+    m_world->m_childGroup->CreateSprite(1, 0, 0, 0x270f, "DemoSign", 0x40003);
     return 1;
 }
 
@@ -106,12 +106,12 @@ i32 CDemo::Render() {
             break;
         }
     }
-    if (g_frameDelta >= static_cast<u32>(m_520)) {
-        m_520 = 0;
+    if (g_frameDelta >= static_cast<u32>(m_demoCountdown)) {
+        m_demoCountdown = 0;
     } else {
-        m_520 -= g_frameDelta;
+        m_demoCountdown -= g_frameDelta;
     }
-    if (m_520 == 0) {
+    if (m_demoCountdown == 0) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
     }
     return 1;
@@ -163,7 +163,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             }
 
             if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {
-                st->m_1c = 0;
+                st->m_actKey = 0;
             }
             return 1;
         }
@@ -215,14 +215,14 @@ RVA(0x0003c8f0, 0x76)
 i32 CTriRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     switch (tag) {
         case 4:
-            ar->Write(&m_0, 4);
-            ar->Write(&m_4, 4);
-            ar->Write(&m_8, 4);
+            ar->Write(&row, 4);
+            ar->Write(&column, 4);
+            ar->Write(&direction, 4);
             break;
         case 7:
-            ar->Read(&m_0, 4);
-            ar->Read(&m_4, 4);
-            ar->Read(&m_8, 4);
+            ar->Read(&row, 4);
+            ar->Read(&column, 4);
+            ar->Read(&direction, 4);
             break;
     }
     return 1;
@@ -290,7 +290,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
 
     bool result = true;
     if (!ParseGroup()) {
-        m_0d = 1;
+        m_parseFailed = 1;
         result = false;
     }
 

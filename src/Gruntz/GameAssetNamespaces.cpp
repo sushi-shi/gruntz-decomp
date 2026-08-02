@@ -30,7 +30,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_44 = -1;
     m_48 = -1;
     m_14c = 0;
-    m_24 = prevStateId;
+    m_previousStateId = prevStateId;
     m_levelType = t / 4 + 1;
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];

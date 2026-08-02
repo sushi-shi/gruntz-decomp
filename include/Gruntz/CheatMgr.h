@@ -25,9 +25,9 @@ public:
     HWND m_owner;
     CMapStringToPtr m_map;
     u8 m_flag;
-    char m_21[0x120 - 0x21];
-    i32 m_120;
-    i32 m_124;
+    char m_pendingCode[0x120 - 0x21];
+    i32 m_pendingCodeLength;
+    i32 m_cheatsUsed;
 };
 SIZE_UNKNOWN();
 

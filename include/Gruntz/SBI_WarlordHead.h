@@ -9,20 +9,12 @@
 
 struct CShadeTable;
 
-struct CWhRect {
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-};
-SIZE_UNKNOWN();
-
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
     CSBI_WarlordHead() {
         m_frame = 0;
         m_kind = 0xb;
-        m_34 = 0;
+        m_frameSet = 0;
     }
 
     virtual ~CSBI_WarlordHead() OVERRIDE;

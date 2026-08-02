@@ -28,20 +28,18 @@ public:
     i32 RenderCel();
     i32 Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj);
 
-    i32 m_54;
-
     union {
         i64 m_start64;
         struct {
-            i32 m_58;
-            i32 m_5c;
+            i32 m_startLo;
+            i32 m_startHi;
         };
     };
     union {
         i64 m_window64;
         struct {
-            i32 m_60;
-            i32 m_64;
+            i32 m_windowLo;
+            i32 m_windowHi;
         };
     };
 };

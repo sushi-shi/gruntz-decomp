@@ -13,7 +13,7 @@ char g_infoMaster[0x800] = {0};
 
 RVA(0x001182f0, 0xc)
 i32 CGameInfo::HasSupportedVersion() {
-    return m_version == 1;
+    return m_body.m_version == 1;
 }
 
 RVA(0x00118310, 0xc)
@@ -36,7 +36,7 @@ i32 BuildGameDate(CGameInfoTime* out) {
 
 RVA(0x001183b0, 0x211)
 i32 CGameInfo::FormatGameInfoString() {
-    char* name = m_name;
+    char* name = m_body.m_name;
     if (name == 0) {
         return 0;
     }
@@ -52,13 +52,13 @@ i32 CGameInfo::FormatGameInfoString() {
         g_infoScratch,
         "Name=%s&Type=%i&Location=%s&Version=%lu",
         name,
-        m_type,
-        m_location,
-        m_version
+        m_body.m_type,
+        m_body.m_location,
+        m_body.m_version
     );
     strcat(g_infoMaster, g_infoScratch);
 
-    CGameInfoTime* t = &m_time;
+    CGameInfoTime* t = &m_body.m_time;
     if (t == 0) {
         return 0;
     }
@@ -68,13 +68,13 @@ i32 CGameInfo::FormatGameInfoString() {
 
     u32 a = 0, b = 0, c = 0;
     SplitMillisToHMS(t->m_timeMs, &a, &b, &c);
-    sprintf(g_infoScratch, "&S=%lu&H=%i&M=%02i&SE=%02i", t->m_4, a, b, c);
+    sprintf(g_infoScratch, "&S=%lu&H=%i&M=%02i&SE=%02i", t->m_score, a, b, c);
     strcat(g_infoMaster, g_infoScratch);
 
     sprintf(g_infoScratch, "&Month=%i&Day=%i&Year=%i", t->m_month, t->m_day, t->m_year);
     strcat(g_infoMaster, g_infoScratch);
 
-    i32 chk = (69 * (b * a) + 1) * c + b + a + t->m_month + t->m_year + t->m_day + t->m_4;
+    i32 chk = (69 * (b * a) + 1) * c + b + a + t->m_month + t->m_year + t->m_day + t->m_score;
     sprintf(g_infoScratch, "&Checksum=%lu", chk);
     strcat(g_infoMaster, g_infoScratch);
 

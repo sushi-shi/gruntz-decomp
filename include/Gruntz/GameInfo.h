@@ -6,15 +6,26 @@
 
 struct CGameInfoTime {
     i32 m_0;
-    u32 m_4;
+    u32 m_score;
     u32 m_timeMs;
 
     i32 m_month;
     i32 m_day;
     i32 m_year;
-    i32 m_18;
+    i32 m_reserved;
 };
 SIZE_UNKNOWN();
+
+struct CGameInfoBody {
+    i32 m_headerWord;
+    u32 m_version;
+    char m_pad08[0x10 - 0x08];
+    char m_name[0x32 - 0x10];
+    char m_location[0xb4 - 0x32];
+    CGameInfoTime m_time;
+    u32 m_type;
+};
+SIZE(0xd4);
 
 class CGameInfo {
 public:
@@ -26,15 +37,9 @@ public:
     i32 FormatGameInfoString();
 
     char m_00[4];
-    i32 m_04;
-    u32 m_version;
-    char m_pad0c[0x14 - 0xc];
-    char m_name[0x36 - 0x14];
-    char m_location[0xb8 - 0x36];
-    CGameInfoTime m_time;
-    u32 m_type;
+    CGameInfoBody m_body;
 };
-SIZE_UNKNOWN();
+SIZE(0xd8);
 
 i32 BuildGameDate(CGameInfoTime* out);
 

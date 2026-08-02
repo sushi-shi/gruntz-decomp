@@ -18,10 +18,10 @@ public:
     virtual i32 BuildWorldLevelPath(i32) OVERRIDE;
 
     char m_pad51c[0x520 - 0x51c];
-    i32 m_520;
+    i32 m_demoCountdown;
     i32 m_524;
 };
-SIZE_UNKNOWN();
+SIZE(0x528);
 
 extern "C" const i32 g_directionClockwiseTable[27];
 extern "C" const i32 g_directionCounterclockwiseTable[27];

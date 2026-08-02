@@ -27,71 +27,71 @@ CMovingLogic::~CMovingLogic() {}
 
 RVA(0x0016cdd0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {
-    accum << c.m_00;
-    accum << c.m_08;
-    accum << c.m_10;
-    accum << c.m_18;
-    accum << c.m_20;
-    accum << c.m_28;
-    accum << c.m_30;
-    accum << c.m_38;
-    accum << c.m_40;
-    accum << c.m_48;
-    accum << c.m_50;
-    accum << c.m_70;
-    accum << c.m_78;
-    accum << c.m_80;
-    accum << c.m_88;
-    accum << c.m_90;
-    accum << c.m_98;
-    accum << c.m_a0;
-    accum << c.m_a8;
-    accum << c.m_b0;
-    accum << c.m_b8;
-    accum << c.m_c0;
-    accum << c.m_c8;
-    accum << c.m_d0;
-    accum << c.m_d8;
-    accum << c.m_e0;
-    accum << c.m_e8;
-    accum << c.m_f0;
-    accum << c.m_f8;
-    accum << c.m_100;
+    accum << c.m_time;
+    accum << c.m_deltaTime;
+    accum << c.m_acceleration.x;
+    accum << c.m_acceleration.y;
+    accum << c.m_acceleration.z;
+    accum << c.m_velocity.x;
+    accum << c.m_velocity.y;
+    accum << c.m_velocity.z;
+    accum << c.m_position.x;
+    accum << c.m_position.y;
+    accum << c.m_position.z;
+    accum << c.m_minBounds.x;
+    accum << c.m_minBounds.y;
+    accum << c.m_minBounds.z;
+    accum << c.m_maxBounds.x;
+    accum << c.m_maxBounds.y;
+    accum << c.m_maxBounds.z;
+    accum << c.m_step.x;
+    accum << c.m_step.y;
+    accum << c.m_step.z;
+    accum << c.m_stepDisabled;
+    accum << c.m_c0.x;
+    accum << c.m_c0.y;
+    accum << c.m_c0.z;
+    accum << c.m_maxStep.x;
+    accum << c.m_maxStep.y;
+    accum << c.m_maxStep.z;
+    accum << c.m_maxVelocity.x;
+    accum << c.m_maxVelocity.y;
+    accum << c.m_maxVelocity.z;
     return accum;
 }
 
 RVA(0x0016d000, 0x189)
 istream& ReadCurve(istream& accum, CMotionState& c) {
-    accum >> c.m_00;
-    accum >> c.m_08;
-    accum >> c.m_10;
-    accum >> c.m_18;
-    accum >> c.m_20;
-    accum >> c.m_28;
-    accum >> c.m_30;
-    accum >> c.m_38;
-    accum >> c.m_40;
-    accum >> c.m_48;
-    accum >> c.m_50;
-    accum >> c.m_70;
-    accum >> c.m_78;
-    accum >> c.m_80;
-    accum >> c.m_88;
-    accum >> c.m_90;
-    accum >> c.m_98;
-    accum >> c.m_a0;
-    accum >> c.m_a8;
-    accum >> c.m_b0;
-    accum >> c.m_b8;
-    accum >> c.m_c0;
-    accum >> c.m_c8;
-    accum >> c.m_d0;
-    accum >> c.m_d8;
-    accum >> c.m_e0;
-    accum >> c.m_e8;
-    accum >> c.m_f0;
-    accum >> c.m_f8;
-    accum >> c.m_100;
+    accum >> c.m_time;
+    accum >> c.m_deltaTime;
+    accum >> c.m_acceleration.x;
+    accum >> c.m_acceleration.y;
+    accum >> c.m_acceleration.z;
+    accum >> c.m_velocity.x;
+    accum >> c.m_velocity.y;
+    accum >> c.m_velocity.z;
+    accum >> c.m_position.x;
+    accum >> c.m_position.y;
+    accum >> c.m_position.z;
+    accum >> c.m_minBounds.x;
+    accum >> c.m_minBounds.y;
+    accum >> c.m_minBounds.z;
+    accum >> c.m_maxBounds.x;
+    accum >> c.m_maxBounds.y;
+    accum >> c.m_maxBounds.z;
+    accum >> c.m_step.x;
+    accum >> c.m_step.y;
+    accum >> c.m_step.z;
+    accum >> c.m_stepDisabled;
+    accum >> c.m_c0.x;
+    accum >> c.m_c0.y;
+    accum >> c.m_c0.z;
+    accum >> c.m_maxStep.x;
+    accum >> c.m_maxStep.y;
+    accum >> c.m_maxStep.z;
+    accum >> c.m_maxVelocity.x;
+    accum >> c.m_maxVelocity.y;
+    accum >> c.m_maxVelocity.z;
     return accum;
 }
 
@@ -111,16 +111,16 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
             istrstream accum(static_cast<char*>(buf), len);
             accum >> m_link.m_str;
             RezFree(buf);
-            arc->Read(&m_28, 4);
+            arc->Read(&m_gatedActKey, 4);
             arc->Read(&m_2c, 4);
             arc->Read(&g_logicTypesRegistered, 4);
             arc->Read(&m_prevAnimSetNode, 4);
-            m_0c = pObj;
+            m_logicObject = pObj;
             m_object = static_cast<CWwdGameObjectA*>(pObj);
             m_objAux = (pObj)->m_animWorker;
             m_deferredCallback = 0;
             m_gatedCallback = 0;
-            m_28 = 0x3e9;
+            m_gatedActKey = 0x3e9;
 
             break;
         }
@@ -132,7 +132,7 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
             i32 len = accum.pcount();
             arc->Write(&len, 4);
             arc->Write(accum.str(), len);
-            arc->Write(&m_28, 4);
+            arc->Write(&m_gatedActKey, 4);
             arc->Write(&m_2c, 4);
             arc->Write(&g_logicTypesRegistered, 4);
             arc->Write(&m_prevAnimSetNode, 4);
@@ -147,68 +147,68 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
 RVA(0x0016ea90, 0x234)
 void CMovingLogic::AdvanceMotion() {
 
-    m_140 = static_cast<i32>(Motion()->m_40);
-    m_144 = static_cast<i32>(Motion()->m_48);
-    Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_00);
+    m_previousScreenPosition.m_x = static_cast<i32>(Motion()->m_position.x);
+    m_previousScreenPosition.m_y = static_cast<i32>(Motion()->m_position.y);
+    Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_time);
 
     if ((m_object->m_flags & 0x10) && m_object->m_carrier != 0) {
         m_object->m_screenX += m_object->m_carrier->m_deltaX;
-        Motion()->m_40 = static_cast<double>(m_object->m_screenX);
+        Motion()->m_position.x = static_cast<double>(m_object->m_screenX);
         m_object->m_screenY += m_object->m_carrier->m_deltaY;
-        Motion()->m_48 = static_cast<double>(m_object->m_screenY);
+        Motion()->m_position.y = static_cast<double>(m_object->m_screenY);
     }
 
     if (m_object->m_moveMode == 1) {
-        m_148 = m_object->OwnerMgr()->m_level->MoveToward(
+        m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
-            static_cast<i32>(Motion()->m_40),
+            static_cast<i32>(Motion()->m_position.x),
             m_object->m_screenY,
-            m_14c
+            m_moveFlags
         );
-        Motion()->m_30 = 0.0;
+        Motion()->m_velocity.y = 0.0;
     } else {
         m_object->m_flags &= ~0x10;
-        m_148 = m_object->OwnerMgr()->m_level->MoveToward(
+        m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
-            static_cast<i32>(Motion()->m_40),
-            static_cast<i32>(Motion()->m_48),
-            m_14c
+            static_cast<i32>(Motion()->m_position.x),
+            static_cast<i32>(Motion()->m_position.y),
+            m_moveFlags
         );
     }
 
     CMotionState* ms = Motion();
     i32 sx = m_object->m_screenX;
-    if (static_cast<i32>(Motion()->m_40) != sx) {
+    if (static_cast<i32>(Motion()->m_position.x) != sx) {
         double d = static_cast<double>(sx);
-        ms->m_28 = ms->ArrivalVelX(d);
-        double a0new = ms->m_a0 - (ms->m_40 - d);
-        ms->m_40 = d;
-        ms->m_a0 = a0new;
+        ms->m_velocity.x = ms->ArrivalVelX(d);
+        double a0new = ms->m_step.x - (ms->m_position.x - d);
+        ms->m_position.x = d;
+        ms->m_step.x = a0new;
     }
 
     i32 sy = m_object->m_screenY;
-    if (static_cast<i32>(Motion()->m_48) != sy) {
+    if (static_cast<i32>(Motion()->m_position.y) != sy) {
         double d = static_cast<double>(sy);
-        ms->m_30 = ms->ArrivalVelY(d);
-        double a8new = ms->m_a8 - (ms->m_48 - d);
-        ms->m_48 = d;
-        ms->m_a8 = a8new;
+        ms->m_velocity.y = ms->ArrivalVelY(d);
+        double a8new = ms->m_step.y - (ms->m_position.y - d);
+        ms->m_position.y = d;
+        ms->m_step.y = a8new;
     }
 
     if (m_object->m_moveMode != 7) {
-        i32 f = m_148;
+        i32 f = m_collisionFlags;
         if (f & 0x800000) {
-            Motion()->m_30 = -Motion()->m_30;
+            Motion()->m_velocity.y = -Motion()->m_velocity.y;
             return;
         }
         if (f & 0x40000) {
-            Motion()->m_88 = static_cast<double>(m_140);
-            Motion()->m_28 = Motion()->m_28 * g_motionNegHalf;
+            Motion()->m_maxBounds.x = static_cast<double>(m_previousScreenPosition.m_x);
+            Motion()->m_velocity.x = Motion()->m_velocity.x * g_motionNegHalf;
             return;
         }
         if (f & 0x80000) {
-            Motion()->m_70 = static_cast<double>(m_140);
-            Motion()->m_28 = Motion()->m_28 * g_motionNegHalf;
+            Motion()->m_minBounds.x = static_cast<double>(m_previousScreenPosition.m_x);
+            Motion()->m_velocity.x = Motion()->m_velocity.x * g_motionNegHalf;
         }
     }
 }
@@ -229,10 +229,10 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameOb
             istrstream accum(static_cast<char*>(buf), len);
             ReadCurve(accum, *Motion());
             RezFree(buf);
-            arc->Read(&m_140, 4);
-            arc->Read(&m_144, 4);
-            arc->Read(&m_148, 4);
-            arc->Read(&m_14c, 4);
+            arc->Read(&m_previousScreenPosition.m_x, 4);
+            arc->Read(&m_previousScreenPosition.m_y, 4);
+            arc->Read(&m_collisionFlags, 4);
+            arc->Read(&m_moveFlags, 4);
 
             break;
         }
@@ -244,10 +244,10 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameOb
             i32 len = accum.pcount();
             arc->Write(&len, 4);
             arc->Write(accum.str(), len);
-            arc->Write(&m_140, 4);
-            arc->Write(&m_144, 4);
-            arc->Write(&m_148, 4);
-            arc->Write(&m_14c, 4);
+            arc->Write(&m_previousScreenPosition.m_x, 4);
+            arc->Write(&m_previousScreenPosition.m_y, 4);
+            arc->Write(&m_collisionFlags, 4);
+            arc->Write(&m_moveFlags, 4);
 
             break;
         }

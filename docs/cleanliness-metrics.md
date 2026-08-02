@@ -83,3 +83,17 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 WS1 de-hack casts · WS2 name backlog (incl. **no `Unknown`**) · WS3 fold
 fabricated/MFC views into real classes · WS4 promote cross-TU classes to headers +
 reconstruct real calls.
+
+## Aggregate suspicion queues
+
+Cast counts cannot detect a flattened aggregate when code legally takes the address of
+its first scalar field. Run `python -m gruntz.audit.flattened_aggregates` to find every
+integer or floating-point pointer initialized from a scalar member/global, plus I/O that
+spans beyond a scalar's declared extent. Pointer indexing and arithmetic strengthen a
+row but are not required for reporting: the scalar address escape is itself suspicious.
+This is an investigation queue, not a ratchet; confirm each row from retail accesses and
+serialization boundaries before regrouping fields.
+
+For the other global form—multiple `DATA()` symbols pinned at interior offsets of one
+typed object—run `python -m gruntz.audit.shredded`. That audit uses compiler-derived
+object extents; mere RVA adjacency is not treated as proof that globals share an owner.

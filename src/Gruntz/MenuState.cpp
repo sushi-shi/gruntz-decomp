@@ -58,8 +58,8 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
     m_mgr->RestoreVideoMode(0);
-    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MENU"));
-    if (m_2c == 0) {
+    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MENU"));
+    if (m_stateBank == 0) {
         return 0;
     }
 
@@ -92,29 +92,29 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     rc.top = 8;
     rc.right = 0x27f;
     rc.bottom = 0x1df;
-    m_1b4 = new CChatBox;
-    m_1b4->Init();
+    m_menuTree = new CChatBox;
+    m_menuTree->Init();
 
-    if (!m_1b4->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+    if (!m_menuTree->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 
-    if (m_1b4->ConfigureLeftCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
-        m_1b4->ConfigureRightCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
+    if (m_menuTree->ConfigureLeftCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
+        m_menuTree->ConfigureRightCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
     }
-    m_1b4->m_row0Key = "MENU_SELECT";
-    m_1b4->m_row1Key = "MENU_ACTIVATE";
+    m_menuTree->m_row0Key = "MENU_SELECT";
+    m_menuTree->m_row1Key = "MENU_ACTIVATE";
 
     LeafCue* e;
     MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
     if (e != 0) {
         MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
-        m_1b8 = e->m_sound->m_durationMs;
+        m_activateCueDurationMs = e->m_sound->m_durationMs;
     } else {
-        m_1b8 = 0;
+        m_activateCueDurationMs = 0;
     }
 
-    if (!BuildMainMenuTree(m_1b4, -1)) {
+    if (!BuildMainMenuTree(m_menuTree, -1)) {
         return 0;
     }
 
@@ -124,7 +124,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         "MENU_MENU",
         fm
     );
-    m_1bc = fm;
+    m_menuMusicCue = fm;
     return 1;
 }
 
@@ -155,17 +155,17 @@ void CMenuState::ReleaseResources() {
         m_world->m_workerList->ClearWorkers();
     }
 
-    CChatBox* ui = m_1b4;
+    CChatBox* ui = m_menuTree;
     if (ui) {
         delete ui;
-        m_1b4 = 0;
+        m_menuTree = 0;
     }
     CState::ReleaseResources();
 }
 
 RVA(0x000a05a0, 0x74)
 void CMenuState::StartMusic() {
-    if (m_1bc == 0) {
+    if (m_menuMusicCue == 0) {
         return;
     }
     if (g_gameReg->m_soundEnabled == 0) {
@@ -178,7 +178,7 @@ void CMenuState::StartMusic() {
         g_sndEnabled = 1;
     }
     i32 item = g_gameReg->m_soundVolume;
-    LeafCue* mus = m_1bc;
+    LeafCue* mus = m_menuMusicCue;
     if (flag) {
         u32 clk = g_killCueClock;
         if (clk - mus->m_lastPlayTime >= static_cast<u32>(mus->m_replayDelay)) {
@@ -193,15 +193,15 @@ void CMenuState::StartMusic() {
 
 RVA(0x000a0640, 0x6a)
 void CMenuState::StopMusicChain() {
-    if (m_1bc == 0) {
+    if (m_menuMusicCue == 0) {
         return;
     }
-    LeafCue* mus = m_1bc;
+    LeafCue* mus = m_menuMusicCue;
     if (!mus->m_sound->IsPlaying()) {
         return;
     }
-    m_1bc->m_sound->CloneAndPlay(0, 0x1f4, 1);
-    if (!m_1bc->m_sound->IsPlaying()) {
+    m_menuMusicCue->m_sound->CloneAndPlay(0, 0x1f4, 1);
+    if (!m_menuMusicCue->m_sound->IsPlaying()) {
         return;
     }
     do {
@@ -209,7 +209,7 @@ void CMenuState::StopMusicChain() {
         if (reg->m_soundStream) {
             reg->m_soundStream->PurgeVoiceList(-1);
         }
-    } while (m_1bc->m_sound->IsPlaying());
+    } while (m_menuMusicCue->m_sound->IsPlaying());
 }
 
 RVA(0x000a06d0, 0x5f)
@@ -218,7 +218,7 @@ i32 CMenuState::LeaveState(i32) {
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
-    while (timeGetTime() < start + m_1b8)
+    while (timeGetTime() < start + m_activateCueDurationMs)
         ;
     return 1;
 }
@@ -236,37 +236,37 @@ i32 CMenuState::Render() {
     i32 n = L->m_count;
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x80000000) {
-            m_1b4->MoveFocusUp();
+            m_menuTree->MoveFocusUp();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x40000000) {
-            m_1b4->MoveFocusDown();
+            m_menuTree->MoveFocusDown();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x20000000) {
-            m_1b4->MoveFocusRight();
+            m_menuTree->MoveFocusRight();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x10000000) {
-            m_1b4->MoveFocusLeft();
+            m_menuTree->MoveFocusLeft();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (L->m_items[c]->m_currentKeys & 0x3) {
-            m_1b4->ActivateFocusedItem();
+            m_menuTree->ActivateFocusedItem();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (L->m_items[c]->m_currentKeys & 0x100) {
-            if (!m_1b4->ReturnToPreviousPage()) {
+            if (!m_menuTree->ReturnToPreviousPage()) {
                 PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
             }
             goto tail;
@@ -274,28 +274,28 @@ i32 CMenuState::Render() {
     }
 tail:
 
-    m_1b4->Step(g_frameDelta);
-    m_1b4->Pre();
+    m_menuTree->Step(g_frameDelta);
+    m_menuTree->Pre();
     BuildVersionString(g_versionRect);
-    m_1b4->Post();
+    m_menuTree->Post();
     return 1;
 }
 
 RVA(0x000a0b90, 0xc7)
 i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     if (key == 0x28) {
-        m_1b4->MoveFocusDownFollowingLinks();
+        m_menuTree->MoveFocusDownFollowingLinks();
     } else if (key == 0x26) {
-        m_1b4->MoveFocusUpFollowingLinks();
+        m_menuTree->MoveFocusUpFollowingLinks();
     } else if (key == 0x27) {
-        m_1b4->MoveFocusRightFollowingLinks();
+        m_menuTree->MoveFocusRightFollowingLinks();
     } else if (key == 0x25) {
-        m_1b4->MoveFocusLeftFollowingLinks();
+        m_menuTree->MoveFocusLeftFollowingLinks();
     } else if (key == 0xd || key == 0x20) {
-        m_1b4->ActivateFocusedItem();
+        m_menuTree->ActivateFocusedItem();
     } else if (key == 0x1b) {
-        if (m_1b4->ReturnToPreviousPage() == 0) {
-            m_1b8 = 0;
+        if (m_menuTree->ReturnToPreviousPage() == 0) {
+            m_activateCueDurationMs = 0;
             PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
         }
     }
@@ -304,15 +304,15 @@ i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
 
 RVA(0x000a0ca0, 0x21)
 i32 CMenuState::OnLButtonDown(i32 unused, i32 x, i32 y) {
-    if (m_1b4) {
-        m_1b4->ClickAt(x, y);
+    if (m_menuTree) {
+        m_menuTree->ClickAt(x, y);
     }
     return 1;
 }
 RVA(0x000a0ce0, 0x21)
 i32 CMenuState::OnLButtonDblClk(i32 unused, i32 x, i32 y) {
-    if (m_1b4) {
-        m_1b4->ClickAt(x, y);
+    if (m_menuTree) {
+        m_menuTree->ClickAt(x, y);
     }
     return 1;
 }

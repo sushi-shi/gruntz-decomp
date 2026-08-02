@@ -38,14 +38,14 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
         sub->m_liveGate = 1;
-        sub->m_014 = 1;
+        sub->m_humanControlled = 1;
         m_region0Gate = 0;
         m_region1Gate = 0;
         m_region2Gate = 0;
         m_region3Gate = 0;
         m_viewMode = 0;
         m_hudSuppressed = 1;
-        m_49c = -1;
+        m_cameraBookmarkIndex = -1;
         m_snapshotActive = 0;
         m_scrollEdgeActive = 0;
         m_scrollEdgeLock = 0;
@@ -58,13 +58,13 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         CChatBoxOwner* ctl = static_cast<CChatBoxOwner*>(RezAlloc(0x1c));
         if (ctl) {
 
-            ctl->m_18 = 0;
-            ctl->m_14 = 0;
-            ctl->m_c = 0;
-            ctl->m_10 = 0;
-            ctl->m_0 = 0;
-            ctl->m_4 = 0;
-            ctl->m_8 = 1;
+            ctl->m_world = 0;
+            ctl->m_fontConfig = 0;
+            ctl->m_attached = 0;
+            ctl->m_inputActive = 0;
+            ctl->m_originX = 0;
+            ctl->m_originY = 0;
+            ctl->m_mode = 1;
         } else {
             ctl = 0;
         }
@@ -77,7 +77,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             m_hitTest = 0;
             return 0;
         }
-        m_hitTest->m_10 = 0;
+        m_hitTest->m_inputActive = 0;
         m_hitTest->Configure(1);
 
         m_guts = new CStatusBarMgr;
@@ -126,15 +126,15 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             while (ShowCursor(0) >= 0) {
             }
         }
-        m_1c4 = 1;
+        m_initialFramePending = 1;
         m_notifyLatch = 0;
-        m_1c0 = 0;
+        m_completedFinalLevel = 0;
         memset(&m_saveSlot, 0, sizeof(m_saveSlot));
         mgr->ResetClockGlobals();
         m_savedClock = 0;
         m_rngSeed = timeGetTime();
         m_lightFx = 0;
-        if (m_mgr->m_114 == 0) {
+        if (m_mgr->m_loadingSaveGame == 0) {
             m_mgr->m_saveInfoRec = 0;
         }
         if (!LoadImageBanks()) {

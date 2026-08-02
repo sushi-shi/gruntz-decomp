@@ -86,7 +86,7 @@ void CBootyState::ShowLevelCompleteMessage() {
     }
 
     CBattlezData* rec = g_gameReg->m_scoreHud;
-    if (rec->m_08 == 0 && m_secretGate != 0) {
+    if (rec->m_isCustomLevel == 0 && m_secretGate != 0) {
         CString s;
         RECT r;
         if (rec->m_count > 0x24) {
@@ -200,7 +200,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         return 1;
     }
     CBattlezData* rec = g_gameReg->m_scoreHud;
-    if (rec->m_08 != 0) {
+    if (rec->m_isCustomLevel != 0) {
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }

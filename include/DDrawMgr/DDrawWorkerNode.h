@@ -25,9 +25,9 @@ public:
     i32 m_refCount;
 
     union {
-        i32 m_78;
+        i32 m_frameValue;
         class CImage* m_frame;
-        char m_78b;
+        char m_pixelValue;
     };
 
     CDDrawWorkerBase() {}
@@ -52,7 +52,7 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     CDDrawWorkerA() {}
     CDDrawWorkerA(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
-        m_78b = 0;
+        m_pixelValue = 0;
     }
     virtual i32 PlaceFrameValue(i32 x, i32 y, i32 frame);
 };
@@ -64,7 +64,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     CDDrawWorkerB() {}
     CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
-        m_78 = 0;
+        m_frameValue = 0;
     }
     virtual i32 PlaceFrameValue(i32 x, i32 y, i32 frame);
     virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex);

@@ -266,7 +266,7 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
 
 RVA(0x00139cf0, 0xd7)
 CSymRec::~CSymRec() {
-    if (m_scope->m_owner->m_6c != 0) {
+    if (m_scope->m_owner->m_useKeyIndex != 0) {
         CHashElement* n = m_keyTable.First();
         while (n) {
             CHashElement* cur = n;
@@ -294,7 +294,7 @@ CSymTab::CSymTab(
     const char* name,
     i32 dataOff,
     i32 dataSize,
-    i32 seed,
+    i32 dirTime,
     i32 subN,
     i32 symN
 )
@@ -303,11 +303,11 @@ CSymTab::CSymTab(
     if (m_name) {
         strcpy(m_name, name);
     }
-    m_seed = seed;
+    m_dirTime = dirTime;
     m_dataSize = dataSize;
     m_dataOff = dataOff;
     m_owner = owner;
-    m_10 = 0;
+    m_totalSourceLength = 0;
     m_baseOffset = 0;
     m_mappedBuf = 0;
     m_parent = parent;
@@ -339,10 +339,10 @@ CSymTab::~CSymTab() {
         ::operator delete(m_mappedBuf);
     }
     m_name = 0;
-    m_seed = 0;
+    m_dirTime = 0;
     m_dataSize = 0;
     m_dataOff = 0;
-    m_10 = 0;
+    m_totalSourceLength = 0;
     m_baseOffset = 0;
     m_mappedBuf = 0;
     m_owner = 0;
@@ -356,7 +356,7 @@ CParseSource* CSymTab::Insert(const char* key, u32 fourcc) {
     if (!rec) {
         return 0;
     }
-    return static_cast<CParseSource*>(rec->m_valTable.Walk(key, m_owner->m_68 == 0));
+    return static_cast<CParseSource*>(rec->m_valTable.Walk(key, m_owner->m_caseSensitive == 0));
 }
 
 RVA(0x0013a040, 0xa2)
@@ -384,8 +384,8 @@ i32 CRezDirNode::Load(i32 childFlag) {
         return 1;
     }
 
-    RezSrc* src = m_src;
-    if (src->m_8 == 0 || src->m_1c > 1) {
+    CSymParser* src = m_src;
+    if (src->m_sorted == 0 || src->m_list.m_count > 1) {
         RezAssertFail("CRezDir::Load Failed! (File is not sorted!)");
         return 0;
     }
@@ -393,7 +393,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
     if (m_size > 0) {
         m_buf = static_cast<u8*>(RezAlloc(m_size));
         if (m_buf != 0) {
-            m_src->m_stream->Read(m_off, 0, m_size, m_buf);
+            m_src->m_activeNode->Read(m_off, 0, m_size, m_buf);
         }
     }
 
@@ -437,7 +437,7 @@ void* CSymTab::FindSub(const char* name) {
     if (!name) {
         return const_cast<char*>(name);
     }
-    return m_subTabs.Walk(name, m_owner->m_68 == 0);
+    return m_subTabs.Walk(name, m_owner->m_caseSensitive == 0);
 }
 
 RVA(0x0013a260, 0x11)
@@ -497,7 +497,7 @@ void* CSymTab::NextSym3(void* rec) {
 RVA(0x0013a330, 0xce)
 CSymTab* CSymTab::CreateSub(const char* name) {
 
-    if (m_subTabs.Walk(name, m_owner->m_68 == 0) != 0) {
+    if (m_subTabs.Walk(name, m_owner->m_caseSensitive == 0) != 0) {
         return 0;
     }
     CSymTab* child = new CSymTab(
@@ -506,7 +506,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
         name,
         0,
         0,
-        m_owner->MakeSeed(),
+        m_owner->MakeTimestamp(),
         m_owner->m_subTabBucketCount,
         m_owner->m_symbolBucketCount
     );
@@ -526,7 +526,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 RVA(0x0013a400, 0xa9)
 CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
-    if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_68 == 0) != 0) {
+    if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_caseSensitive == 0) != 0) {
         return 0;
     }
     CParseSource* slot = m_owner->PopParseSlot();
@@ -538,7 +538,7 @@ CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
         0,
         0,
         0,
-        m_owner->MakeSeed(),
+        m_owner->MakeTimestamp(),
         0,
         0,
         m_owner->m_activeNode
@@ -570,7 +570,7 @@ CParseSource* CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRe
         0,
         0,
         0,
-        m_owner->MakeSeed(),
+        m_owner->MakeTimestamp(),
         0,
         0,
         stream
@@ -586,11 +586,11 @@ CParseSource* CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRe
 RVA(0x0013a530, 0x47)
 i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
     CParseSource* src = static_cast<CParseSource*>(found);
-    m_10 -= static_cast<i32>(src->m_length);
+    m_totalSourceLength -= static_cast<i32>(src->m_length);
     (static_cast<CSymRec*>(rec))->m_valTable.Remove(&src->m_node1c);
     src->Teardown();
     m_owner->AddNode(found);
-    m_owner->m_08 = 0;
+    m_owner->m_sorted = 0;
     return 1;
 }
 
@@ -631,7 +631,7 @@ i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 
 // @early-stop
 RVA(0x0013a640, 0x2f7)
 i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
-    m_10 = 0;
+    m_totalSourceLength = 0;
     m_baseOffset = -1;
     i32 maxVal = 0;
     char* buf = static_cast<char*>(::operator new(static_cast<u32>(dataSize)));
@@ -654,7 +654,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             p += 8;
             char* name = p;
             p += strlen(name) + 1;
-            void* existing = m_subTabs.Walk(name, m_owner->m_68 == 0);
+            void* existing = m_subTabs.Walk(name, m_owner->m_caseSensitive == 0);
             if (existing == 0) {
                 CSymParser* o = m_owner;
                 CSymTab* node = new CSymTab(
@@ -671,7 +671,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             } else {
                 (static_cast<CSymTab*>(existing))->m_dataOff = fA;
                 (static_cast<CSymTab*>(existing))->m_dataSize = fB;
-                (static_cast<CSymTab*>(existing))->m_seed = fC;
+                (static_cast<CSymTab*>(existing))->m_dirTime = fC;
             }
         } else {
 
@@ -720,7 +720,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
                 entry.m_word = f4;
                 slot->Build(this, name1, entry.m_addr, rec, str2, f3, f1, f2, f6, arr, stream);
                 rec->m_valTable.Insert(&slot->m_node1c);
-                m_10 = m_10 + slot->m_length;
+                m_totalSourceLength = m_totalSourceLength + slot->m_length;
                 if (static_cast<u32>(slot->m_base) < static_cast<u32>(m_baseOffset)) {
                     m_baseOffset = slot->m_base;
                 }
@@ -742,10 +742,10 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
 
     CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(static_cast<u32>(key)));
     if (!rec) {
-        if (m_owner->m_6c != 0) {
-            rec = new CSymRec(key, this, m_owner->m_74, m_owner->m_70);
+        if (m_owner->m_useKeyIndex != 0) {
+            rec = new CSymRec(key, this, m_owner->m_keyBucketCount, m_owner->m_valueBucketCount);
         } else {
-            rec = new CSymRec(key, this, m_owner->m_70);
+            rec = new CSymRec(key, this, m_owner->m_valueBucketCount);
         }
         if (rec == 0) {
             return 0;
@@ -764,28 +764,28 @@ CSymParser::CSymParser() {
     m_parseArmed = 0;
     m_activeNode = 0;
     m_list.m_count = 0;
-    m_30 = 0;
-    m_3c = 0;
+    m_rootDataOffset = 0;
+    m_nextWritePos = 0;
     m_root = 0;
-    m_48 = 0;
-    m_4c = 0;
-    m_50 = 0;
-    m_54 = 0;
+    m_archiveTime = 0;
+    m_newArchive = 0;
+    m_version = 0;
+    m_largestKeyArraySize = 0;
     m_longestScopeNameLen = 0;
     m_longestLeafNameLen = 0;
-    m_60 = 0;
+    m_largestCommentSize = 0;
     m_cachedSourceBuffer = 0;
     m_delims = 0;
-    m_68 = 0;
-    m_6c = 0;
-    m_70 = 0x13;
-    m_74 = 0x13;
+    m_caseSensitive = 0;
+    m_useKeyIndex = 0;
+    m_valueBucketCount = 0x13;
+    m_keyBucketCount = 0x13;
     m_24 = 1;
-    m_40 = 1;
+    m_readOnly = 1;
     m_nextGeneratedFileKey = 0x77359400;
-    m_08 = 1;
+    m_sorted = 1;
     m_symbolBucketCount = 9;
-    m_2c = 3;
+    m_maxOpenFiles = 3;
     m_subTabBucketCount = 5;
     m_parseSlotBlockCount = 0x64;
 }
@@ -833,20 +833,20 @@ CSymParser::~CSymParser() {
     CSlotNode* node = HeadSlotNode(m_nodes);
     m_parseArmed = 0;
     m_activeNode = 0;
-    m_30 = 0;
-    m_34 = 0;
-    m_38 = 0;
-    m_3c = 0;
-    m_40 = 1;
+    m_rootDataOffset = 0;
+    m_rootDataSize = 0;
+    m_rootDirTime = 0;
+    m_nextWritePos = 0;
+    m_readOnly = 1;
     m_root = 0;
-    m_48 = 0;
-    m_4c = 0;
-    m_50 = 1;
-    m_54 = 0;
+    m_archiveTime = 0;
+    m_newArchive = 0;
+    m_version = 1;
+    m_largestKeyArraySize = 0;
     m_longestScopeNameLen = 0;
     m_longestLeafNameLen = 0;
-    m_60 = 0;
-    m_08 = 1;
+    m_largestCommentSize = 0;
+    m_sorted = 1;
     m_cachedSourceBuffer = 0;
     if (node) {
         do {
@@ -861,7 +861,7 @@ CSymParser::~CSymParser() {
 // @early-stop
 RVA(0x0013ad00, 0x3b8)
 i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
-    m_40 = a;
+    m_readOnly = a;
     if (a == 0) {
         return 0;
     }
@@ -874,10 +874,10 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     i32 tag = Classify(static_cast<char*>(buf));
     if (tag != 0) {
 
-        if (m_40 == 0) {
+        if (m_readOnly == 0) {
             return 0;
         }
-        CRezItmBase* reader = new CRezDir(this, m_2c);
+        CRezItmBase* reader = new CRezDir(this, m_maxOpenFiles);
         if (reader == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -896,7 +896,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             g_emptyString,
             0,
             0,
-            this->MakeSeed(),
+            this->MakeTimestamp(),
             m_subTabBucketCount,
             m_symbolBucketCount
         );
@@ -919,15 +919,15 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     }
     m_parseArmed = 1;
     if (b != 0) {
-        m_3c = 0xa8;
-        m_4c = 1;
+        m_nextWritePos = sizeof(SymTabFileHeader);
+        m_newArchive = 1;
         CSymTab* node = new CSymTab(
             this,
             0,
             g_emptyString,
             0,
             0,
-            this->MakeSeed(),
+            this->MakeTimestamp(),
             m_subTabBucketCount,
             m_symbolBucketCount
         );
@@ -937,17 +937,17 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 
     SymTabFileHeader hdr;
     reader->Read(0, 0, 0xa8, &hdr);
-    m_50 = hdr.m_flag;
-    m_30 = hdr.m_scopeCount;
-    m_34 = hdr.m_leafCount;
-    m_38 = hdr.m_38;
-    m_3c = hdr.m_3c;
-    m_48 = hdr.m_48;
-    m_54 = hdr.m_54;
+    m_version = hdr.m_version;
+    m_rootDataOffset = hdr.m_rootDataOffset;
+    m_rootDataSize = hdr.m_rootDataSize;
+    m_rootDirTime = hdr.m_rootDirTime;
+    m_nextWritePos = hdr.m_nextWritePos;
+    m_archiveTime = hdr.m_archiveTime;
+    m_largestKeyArraySize = hdr.m_largestKeyArraySize;
     m_longestScopeNameLen = hdr.m_longestScopeNameLen;
     m_longestLeafNameLen = hdr.m_longestLeafNameLen;
-    m_60 = hdr.m_60;
-    m_08 = hdr.m_08;
+    m_largestCommentSize = hdr.m_largestCommentSize;
+    m_sorted = hdr.m_sorted;
     if (hdr.m_magic0 != 0x0d || hdr.m_magic3f != 0x0a || hdr.m_magic7e != 0x1a || b != 1) {
         return 0;
     }
@@ -955,24 +955,24 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         this,
         0,
         g_emptyString,
-        m_30,
-        m_34,
-        m_38,
+        m_rootDataOffset,
+        m_rootDataSize,
+        m_rootDirTime,
         m_subTabBucketCount,
         m_symbolBucketCount
     );
     m_root = node;
-    node->ApplyRecursive(reader, m_30, m_34, 0);
+    node->ApplyRecursive(reader, m_rootDataOffset, m_rootDataSize, 0);
     return 1;
 }
 
 // @early-stop
 RVA(0x0013b0c0, 0x238)
 i32 CSymParser::LoadEntry(char* name, i32 flag) {
-    if (m_40 == 0) {
+    if (m_readOnly == 0) {
         return 0;
     }
-    m_08 = 0;
+    m_sorted = 0;
     if (m_cachedSourceBuffer) {
         ::operator delete(m_cachedSourceBuffer);
     }
@@ -981,7 +981,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     strcpy(buf, name);
 
     if (Classify(name)) {
-        CRezItmBase* node = new CRezDir(this, m_2c);
+        CRezItmBase* node = new CRezDir(this, m_maxOpenFiles);
         if (node == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -1012,9 +1012,9 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     SymTabFileHeader hdr;
     node->Read(0, 0, 0xa8, &hdr);
     u32 v;
-    v = hdr.m_54;
-    if (v > m_54) {
-        m_54 = v;
+    v = hdr.m_largestKeyArraySize;
+    if (v > m_largestKeyArraySize) {
+        m_largestKeyArraySize = v;
     }
     v = hdr.m_longestScopeNameLen;
     if (v > m_longestScopeNameLen) {
@@ -1024,11 +1024,11 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     if (v > m_longestLeafNameLen) {
         m_longestLeafNameLen = v;
     }
-    v = hdr.m_60;
-    if (v > m_60) {
-        m_60 = v;
+    v = hdr.m_largestCommentSize;
+    if (v > m_largestCommentSize) {
+        m_largestCommentSize = v;
     }
-    m_root->ApplyRecursive(node, hdr.m_scopeCount, hdr.m_leafCount, flag);
+    m_root->ApplyRecursive(node, hdr.m_rootDataOffset, hdr.m_rootDataSize, flag);
     return 1;
 }
 
@@ -1147,8 +1147,8 @@ u32 CSymParser::PackTag(const char* s) {
         return 0;
     }
     DwordBytes r;
-    r.m_v = 0;
-    u8* rb = r.m_b;
+    r.m_value = 0;
+    u8* rb = r.m_bytes;
     i32 len = static_cast<i32>(strlen(s));
     if (len > 0) {
         rb[len - 1] = s[0];
@@ -1162,7 +1162,7 @@ u32 CSymParser::PackTag(const char* s) {
     if (len > 3) {
         rb[len - 4] = s[3];
     }
-    return r.m_v;
+    return r.m_value;
 }
 
 RVA(0x0013b970, 0x72)
@@ -1170,8 +1170,9 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
     if (!dst) {
         return;
     }
-    // Byte-evidenced dword/byte representation seam.
-    u8* tb = reinterpret_cast<DwordBytes*>(&tag)->m_b;
+    DwordBytes tagBytes;
+    tagBytes.m_value = tag;
+    u8* tb = tagBytes.m_bytes;
     i32 len = 0;
     if (tb[3]) {
         len = 4;
@@ -1222,7 +1223,7 @@ i32 CSymParser::CheckNodes() {
 }
 
 RVA(0x0013ba70, 0x10)
-i32 CSymParser::MakeSeed() {
+i32 CSymParser::MakeTimestamp() {
     time_t t;
     return static_cast<i32>(time(&t));
 }

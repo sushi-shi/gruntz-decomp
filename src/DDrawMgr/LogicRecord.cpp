@@ -18,7 +18,7 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
         case 3:
             m_targetId = 0;
             if (m_target) {
-                m_targetId = m_target->m_188;
+                m_targetId = m_target->m_objectId;
             }
             break;
         case 4:
@@ -59,7 +59,7 @@ i32 AnimWorkerObj::CacheTargetId(void* a) {
     }
     m_targetId = 0;
     if (m_target) {
-        m_targetId = m_target->m_188;
+        m_targetId = m_target->m_objectId;
     }
     return 1;
 }
@@ -69,7 +69,7 @@ i32 AnimWorkerObj::Save(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
-    ar->Write(&m_1c, 4);
+    ar->Write(&m_actKey, 4);
     ar->Write(&m_timeDelay, 4);
     ar->Write(&m_frameDelay, 4);
     ar->Write(&m_userFlags, 4);
@@ -116,11 +116,11 @@ i32 AnimWorkerObj::Save(CFileMemBase* ar) {
     ar->Write(&m_height, 4);
     ar->Write(&m_d0, 16);
     ar->Write(&m_e0, 16);
-    ar->Write(&m_switchRectA, 16);
-    ar->Write(&m_switchRectB, 16);
+    ar->Write(&m_userRect1, 16);
+    ar->Write(&m_userRect2, 16);
     ar->Write(&m_pad110, 16);
     ar->Write(&m_120, 16);
-    ar->Write(&m_130, 4);
+    ar->Write(&m_sparkleDelay, 4);
     ar->Write(&m_pad134, 4);
     ar->Write(&m_138, 4);
     ar->Write(&m_13c, 4);
@@ -148,7 +148,7 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
-    ar->Read(&m_1c, 4);
+    ar->Read(&m_actKey, 4);
     ar->Read(&m_timeDelay, 4);
     ar->Read(&m_frameDelay, 4);
     ar->Read(&m_userFlags, 4);
@@ -195,11 +195,11 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
     ar->Read(&m_height, 4);
     ar->Read(&m_d0, 16);
     ar->Read(&m_e0, 16);
-    ar->Read(&m_switchRectA, 16);
-    ar->Read(&m_switchRectB, 16);
+    ar->Read(&m_userRect1, 16);
+    ar->Read(&m_userRect2, 16);
     ar->Read(&m_pad110, 16);
     ar->Read(&m_120, 16);
-    ar->Read(&m_130, 4);
+    ar->Read(&m_sparkleDelay, 4);
     ar->Read(&m_pad134, 4);
     ar->Read(&m_138, 4);
     ar->Read(&m_13c, 4);

@@ -21,9 +21,9 @@ public:
     i32 OnKey(i32 key, i32 param);
 
     char m_pad1b4[0x1b8 - 0x1b4];
-    u32 m_1b8;
-    CString m_1bc;
-    i32 m_1c0;
+    u32 m_previewCountdownMs;
+    CString m_previewName;
+    i32 m_previewIndex;
 };
 SIZE_UNKNOWN();
 

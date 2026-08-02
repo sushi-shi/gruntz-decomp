@@ -20,15 +20,15 @@ extern "C" u32 g_frameTime;
 void Str_Free(void* node);
 
 struct CGridCell {
-    i32 m_0;
+    i32 m_flags;
     char _pad[0x1c - 4];
 };
 SIZE_UNKNOWN();
 struct CGridLookup {
     char _00[8];
-    CGridCell** m_8;
-    i32 m_c;
-    i32 m_10;
+    CGridCell** m_rows;
+    i32 m_width;
+    i32 m_height;
     i32 Lookup(i32 x, i32 y);
 };
 SIZE_UNKNOWN();

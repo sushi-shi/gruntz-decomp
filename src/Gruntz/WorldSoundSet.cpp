@@ -5,10 +5,10 @@
 #include <Gruntz/BoundaryLeafLogicViews.h>
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/RandomAmbientSound.h>
-#include <Gruntz/PosSound.h>
 #include <Rez/RezMgr.h>
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 #include <math.h>
 #include <Gruntz/Random.h>
@@ -580,15 +580,14 @@ i32 CAmbientPosSound::InitFromSound(
     m_panIndex = 0;
     m_scaleB = scaleB;
     m_isPlaying = 0;
-    m_40 = pos->x;
-    m_44 = pos->y;
+    m_position = *pos;
     return 1;
 }
 
 RVA(0x0000c5b0, 0x1df)
 void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
-    i32 dx = abs(m_40 - x);
-    i32 dy = abs(m_44 - y);
+    i32 dx = abs(m_position.x - x);
+    i32 dy = abs(m_position.y - y);
     i32 dist2 = dx * dx + dy * dy;
     if (dx > 0x280 || dy > 0x280) {
         if (m_voice != 0 && m_isPlaying != 0) {
@@ -611,7 +610,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     } else if (pan < 0) {
         pan = 0;
     }
-    if (m_40 < x) {
+    if (m_position.x < x) {
         pan = -pan;
     }
 
@@ -670,22 +669,23 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
 }
 
 RVA(0x0000c840, 0x13d)
-i32 CommitSpriteAction(PosSoundObj* obj) {
-    PosSoundAux* aux = obj->m_aux;
-    if (aux->m_requestState == 0) {
-        obj->m_flags08 |= 1;
-        obj->m_flags40 |= 1;
-        if (aux->m_handler == CreateGlobalAmbientSound) {
-            obj->m_flags08 |= 2;
+i32 CommitSpriteAction(CGameObject* obj) {
+    AnimWorkerObj* aux = obj->m_animWorker;
+    CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
+    if (aux->m_actKey == 0) {
+        obj->m_flags |= 1;
+        obj->m_stateFlags |= 1;
+        if (aux->m_notify == CreateGlobalAmbientSound) {
+            obj->m_flags |= 2;
         } else {
-            obj->m_flags08 &= ~2;
+            obj->m_flags &= ~2;
         }
-        LeafCue* layer = obj->m_layer;
+        LeafCue* layer = sprite->m_soundCue;
         if (layer && g_gameReg) {
             RECT rc;
             CopyRect(&rc, &obj->m_area);
-            if (aux->m_srcL > 0 || aux->m_srcR > 0) {
-                SetRect(&rc, aux->m_srcL, aux->m_srcT, aux->m_srcR, aux->m_srcB);
+            if (aux->m_minX > 0 || aux->m_maxX > 0) {
+                SetRect(&rc, aux->m_minX, aux->m_minY, aux->m_maxX, aux->m_maxY);
             }
             if (g_gameReg->m_inputState) {
                 CAmbientSound* placed;
@@ -694,7 +694,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                         layer->m_sound,
                         0x64,
                         &rc,
-                        obj->m_120,
+                        obj->m_damage,
                         obj->m_extent.left,
                         obj->m_extent.top,
                         obj->m_extent.right,
@@ -702,35 +702,37 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                         0
                     );
                 } else {
-                    placed = g_gameReg->m_inputState
-                                 ->CreateAmbientFromSound(layer->m_sound, 0x64, &rc, obj->m_120, 0);
+                    placed =
+                        g_gameReg->m_inputState
+                            ->CreateAmbientFromSound(layer->m_sound, 0x64, &rc, obj->m_damage, 0);
                 }
-                if (placed && obj->m_placed.top > 0) {
-                    placed->m_box2 = obj->m_placed;
+                if (placed && obj->m_switchRect.top > 0) {
+                    placed->m_box2 = obj->m_switchRect;
                 }
             }
         }
-        obj->m_flags08 |= 0x10000;
-        aux->m_requestState = 5;
+        obj->m_flags |= 0x10000;
+        aux->m_actKey = 5;
     }
     return 1;
 }
 
 RVA(0x0000c9d0, 0x18)
-void StopPosSound(PosSoundObj* obj) {
+void StopPosSound(CGameObject* obj) {
     g_posSoundReq = 2;
     SpawnPosSound(obj);
 }
 
 RVA(0x0000ca00, 0xf0)
-i32 SpawnPosSound(PosSoundObj* obj) {
-    PosSoundAux* aux = obj->m_aux;
-    i32 state = aux->m_requestState;
+i32 SpawnPosSound(CGameObject* obj) {
+    AnimWorkerObj* aux = obj->m_animWorker;
+    CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
+    i32 state = aux->m_actKey;
     if (state != 0) {
         if (state != 0x1e) {
             return 1;
         }
-        CAmbientPosSound* sound = aux->m_voice;
+        CAmbientPosSound* sound = aux->m_positionedSound;
         if (sound == 0) {
             return 1;
         }
@@ -744,31 +746,31 @@ i32 SpawnPosSound(PosSoundObj* obj) {
             set->m_list.RemoveAt(sound->m_listNode);
             delete sound;
         }
-        aux->m_voice = 0;
-        aux->m_requestState = 0;
+        aux->m_positionedSound = 0;
+        aux->m_actKey = 0;
         return 1;
     }
 
-    obj->m_flags40 |= 1;
-    obj->m_flags08 = (obj->m_flags08 & ~2) | 0x100001;
-    aux->m_voice = 0;
-    LeafCue* layer = obj->m_layer;
+    obj->m_stateFlags |= 1;
+    obj->m_flags = (obj->m_flags & ~2) | 0x100001;
+    aux->m_positionedSound = 0;
+    LeafCue* layer = sprite->m_soundCue;
     if (layer != 0 && g_gameReg != 0) {
 
         CWorldSoundSet* set = g_gameReg->m_inputState;
         if (set != 0) {
             AmbientPoint pt;
-            pt.x = obj->m_x;
-            pt.y = obj->m_y;
+            pt.x = obj->m_screenX;
+            pt.y = obj->m_screenY;
 
             CAmbientPosSound* v =
-                set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_120, 0);
+                set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_damage, 0);
             if (v != 0) {
-                aux->m_voice = v;
+                aux->m_positionedSound = v;
             }
         }
     }
-    aux->m_requestState = 5;
+    aux->m_actKey = 5;
     return 1;
 }
 

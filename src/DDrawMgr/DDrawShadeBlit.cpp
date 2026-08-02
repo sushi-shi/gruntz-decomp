@@ -494,7 +494,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                     i32 vis = x - clip->left;
                     u8* dd = base;
                     u8* ss = &m_rleData[pos] - vis * m_srcBpp;
-                    if (m_00) {
+                    if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
 
                             i32 i;
@@ -594,7 +594,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                     u8* dd = base + (x - clip->left) * m_dstBpp;
                     u8* ss = &m_rleData[pos + 1];
                     i32 count = b;
-                    if (m_00) {
+                    if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
 
                             i32 i;
@@ -704,7 +704,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                 }
                 u8* dd = base + x * m_dstBpp;
                 u8* ss = &m_rleData[pos + 1];
-                if (m_00) {
+                if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
                         ConvertRowDoubleFwd(dd, ss, vis, pitch);
                     }
@@ -735,7 +735,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                 u8* src0 = &m_rleData[pos + 1];
                 i32 count = b;
                 i32 i;
-                if (m_00) {
+                if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
 
                         u8* d = dst0;
@@ -1023,7 +1023,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                     vis = v < 0 ? 0 : v;
                 }
                 u8* dd = base + (x - clip->left) * m_dstBpp;
-                if (m_00) {
+                if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
 
                         i32 i;
@@ -1143,7 +1143,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                     i32 vis = clip->right - x;
                     u8* ss = &m_rleData[pos] - vis * m_srcBpp;
                     u8* dd = base + clip->right * m_dstBpp;
-                    if (m_00) {
+                    if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
                             ConvertRowDouble(dd, ss, vis, pitch);
                         }
@@ -1165,7 +1165,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                     u8* dd = base + x * m_dstBpp;
                     u8* ss = &m_rleData[pos + 1];
                     i32 cnt = b;
-                    if (m_00) {
+                    if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
                             ConvertRowDouble(dd, ss, cnt, pitch);
                         }
@@ -1192,7 +1192,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                 u8* src0 = &m_rleData[pos + 1];
                 i32 count = b;
                 i32 i;
-                if (m_00) {
+                if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
 
                         u8* d = dst0;

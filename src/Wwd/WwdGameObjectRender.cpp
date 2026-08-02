@@ -159,14 +159,14 @@ void CWwdGameObjectC::BltDirtyRegions(
 
 RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
-    POSITION pos = m_1dc.GetHeadPosition();
+    POSITION pos = m_children.GetHeadPosition();
     while (pos != 0) {
-        CObject* p = m_1dc.GetNext(pos);
+        CObject* p = m_children.GetNext(pos);
         if (p != 0) {
             delete p;
         }
     }
-    m_1dc.RemoveAll();
+    m_children.RemoveAll();
     return CGameObject::Setup(x, y, sortKey, tmpl) != 0;
 }
 
@@ -188,7 +188,7 @@ CWwdGameObject* CWwdGameObject::CreateObject(
         delete result;
         return 0;
     }
-    POSITION node = m_1dc.AddTail(static_cast<CObject*>(result));
+    POSITION node = m_children.AddTail(static_cast<CObject*>(result));
     if (node == 0) {
         delete result;
         return 0;
@@ -220,7 +220,7 @@ i32 CWwdGameObject::AddChild(CGameObject* child) {
     if (child == 0) {
         return 0;
     }
-    POSITION pos = m_1dc.AddTail(static_cast<CObject*>(child));
+    POSITION pos = m_children.AddTail(static_cast<CObject*>(child));
     if (pos == 0) {
         return 0;
     }
@@ -230,14 +230,14 @@ i32 CWwdGameObject::AddChild(CGameObject* child) {
 
 RVA(0x00166810, 0x32)
 void CWwdGameObject::Clear() {
-    POSITION pos = m_1dc.GetHeadPosition();
+    POSITION pos = m_children.GetHeadPosition();
     while (pos != 0) {
-        CGameObject* o = static_cast<CGameObject*>(m_1dc.GetNext(pos));
+        CGameObject* o = static_cast<CGameObject*>(m_children.GetNext(pos));
         if (o) {
             delete o;
         }
     }
-    m_1dc.RemoveAll();
+    m_children.RemoveAll();
 }
 
 RVA(0x00166850, 0x29)
@@ -249,16 +249,16 @@ i32 CWwdGameObject::RemoveChild(CGameObject* child) {
     if (pos == 0) {
         return 0;
     }
-    m_1dc.RemoveAt(pos);
+    m_children.RemoveAt(pos);
     return 1;
 }
 
 RVA(0x00166880, 0x29)
 i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;
-    POSITION pos = m_1dc.GetHeadPosition();
+    POSITION pos = m_children.GetHeadPosition();
     while (pos != 0) {
-        CGameObject* o = static_cast<CGameObject*>(m_1dc.GetNext(pos));
+        CGameObject* o = static_cast<CGameObject*>(m_children.GetNext(pos));
         o->m_animWorker->m_notify(o);
         count++;
     }
@@ -267,23 +267,23 @@ i32 CWwdGameObject::WalkChildWorkers() {
 
 RVA(0x001668b0, 0x26)
 void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
-    POSITION pos = m_1dc.GetHeadPosition();
+    POSITION pos = m_children.GetHeadPosition();
     while (pos != 0) {
-        static_cast<CGameObject*>(m_1dc.GetNext(pos))->Render(ctx);
+        static_cast<CGameObject*>(m_children.GetNext(pos))->Render(ctx);
     }
 }
 RVA(0x001668e0, 0x2d)
 void CWwdGameObject::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    POSITION pos = m_1dc.GetHeadPosition();
+    POSITION pos = m_children.GetHeadPosition();
     while (pos != 0) {
-        static_cast<CGameObject*>(m_1dc.GetNext(pos))->BltDirty(a, b);
+        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirty(a, b);
     }
 }
 RVA(0x00166910, 0x34)
 void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    POSITION pos = m_1dc.GetHeadPosition();
+    POSITION pos = m_children.GetHeadPosition();
     while (pos != 0) {
-        static_cast<CGameObject*>(m_1dc.GetNext(pos))->BltDirtyEx(a, b, c);
+        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyEx(a, b, c);
     }
 }
 RVA(0x00166950, 0x34)
@@ -292,8 +292,8 @@ void CWwdGameObject::BltDirtyRegions(
     CDDrawSurfacePair* b,
     CDDrawSurfacePair* c
 ) {
-    POSITION pos = m_1dc.GetHeadPosition();
+    POSITION pos = m_children.GetHeadPosition();
     while (pos != 0) {
-        static_cast<CGameObject*>(m_1dc.GetNext(pos))->BltDirtyRegions(a, b, c);
+        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyRegions(a, b, c);
     }
 }

@@ -360,7 +360,7 @@ CNetPlayerListNode* CNetMgr::AddPlayerNode(void* playerDesc) {
         return 0;
     }
 
-    node->m_54 = static_cast<__POSITION*>(m_players.AddTail(static_cast<CObject*>(node)));
+    node->m_listPosition = static_cast<__POSITION*>(m_players.AddTail(static_cast<CObject*>(node)));
     return node;
 }
 
@@ -582,10 +582,10 @@ BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlag
 
 // @early-stop
 RVA(0x00178b30, 0x140)
-CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d) {
+CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 flags) {
     CNetSessionNode* node = new CNetSessionNode();
 
-    if (node->InitSession(id, nameA, nameB, d) != 0) {
+    if (node->InitSession(id, nameA, nameB, flags) != 0) {
         i32 hr = m_directPlay->GetData5(node->m_id, &node, 4, 1);
         if (hr != 0) {
 
@@ -822,7 +822,7 @@ i32 CNetMgr::RemovePlayerNode(CNetPlayerListNode* node) {
         m_playerSel = 0;
     }
     m_directPlay->v04();
-    __POSITION* pos = node->m_54;
+    __POSITION* pos = node->m_listPosition;
     delete node;
     if (pos != 0) {
         m_players.RemoveAt(pos);
@@ -987,11 +987,11 @@ void CNetPlayerListNode::FreeStrings() {
 }
 
 RVA(0x001796c0, 0x3f)
-i32 CNetSessionNode::InitSession(i32 id, const char* nameA, const char* nameB, i32 d) {
+i32 CNetSessionNode::InitSession(i32 id, const char* nameA, const char* nameB, i32 flags) {
     m_id = id;
     m_name = nameA;
     m_longName = nameB;
-    m_10 = d;
+    m_enumFlags = flags;
     m_ownedBufferA = 0;
     m_1c = 0;
     m_ownedBufferB = 0;

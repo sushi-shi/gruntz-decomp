@@ -7,15 +7,15 @@
 
 #include <Bute/SymParser.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LevelRezPath.h>
 #include <Gruntz/ParseSource.h>
+#include <Wwd/WwdFile.h>
 
 // @early-stop
 RVA(0x00093d40, 0x473)
 
 i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name) {
     char scratch[16];
-    LevelRezData buf;
+    WwdHeader buf;
     if (lo != 0) {
         CFile file;
         CString path;
@@ -28,7 +28,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             if (file.GetLength() >= 0x5f4) {
                 file.Read(&buf, 0x5f4);
                 file.Close();
-                return buf.m_2ec;
+                return buf.checksum;
             }
             file.Close();
         }
@@ -56,7 +56,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         }
         memcpy(&buf, parsed, 0x5f4);
         sub->EndParse();
-        return buf.m_2ec;
+        return buf.checksum;
     }
     if (hi == 0) {
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
@@ -73,7 +73,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         }
         memcpy(&buf, parsed, 0x5f4);
         sub->EndParse();
-        return buf.m_2ec;
+        return buf.checksum;
     }
     CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_BATTLEZ"));
     if (node == 0) {
@@ -89,5 +89,5 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
     }
     memcpy(&buf, parsed, 0x5f4);
     sub->EndParse();
-    return buf.m_2ec;
+    return buf.checksum;
 }

@@ -23,7 +23,7 @@ i32 CMoviePlayer::CheckGrid() {
     m_srcDesc.ddsCaps.dwCaps = 0x840;
     m_srcDesc.dwHeight = m_smackHandle->Height;
     m_srcDesc.dwWidth = m_smackHandle->Width;
-    if (m_dd2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {
+    if (m_directDraw2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {
         return 0;
     }
     ComOutRef<IDirectDrawSurface> srcOut;

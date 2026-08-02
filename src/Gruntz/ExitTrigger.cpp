@@ -26,8 +26,8 @@ VTBL(CExitTrigger, 0x001e822c);
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     if (m_object->m_sortKey != 0x124f8) {
@@ -61,7 +61,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
         GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_smarts];
         if (slot2 != 0) {
-            slot2->m_00c = e->m_188;
+            slot2->m_warlordObjectId = e->m_objectId;
         }
     }
     m_resolved = 1;
@@ -111,7 +111,7 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObj
                 g_serialCounter++;
                 i32 id = 0;
                 if (m_warlordLogic->m_object != 0) {
-                    id = m_warlordLogic->m_object->m_188;
+                    id = m_warlordLogic->m_object->m_objectId;
                 }
                 arc->Write(&id, 4);
             }

@@ -83,7 +83,7 @@ public:
     }
 
     CNetSessionNode* LocalPlayer() {
-        return m_5bc;
+        return m_localPlayer;
     }
 
     CGruntzMgr* NetGameMgr() {
@@ -106,11 +106,11 @@ public:
 
     RVA(0x000b6090, 0x23)
     CString GetConfigNameA() {
-        return m_5b4;
+        return m_builtInLevelName;
     }
     RVA(0x000b60d0, 0x23)
     CString GetConfigNameB() {
-        return m_5b8;
+        return m_customLevelName;
     }
     void ReportVersionMsg(char* msg, i32 code);
 
@@ -219,36 +219,36 @@ public:
     CNetMgr* m_netGate;
     i32 m_isHost;
     i32 m_sessionTerminated;
-    i32 m_530;
-    i32 m_534;
-    i32 m_538;
+    i32 m_customLevelVerificationPending;
+    i32 m_allPlayersReady;
+    i32 m_removedByHost;
     i32 m_levelVerifyResult;
     i32 m_verifyDone;
     i32 m_recordAcked[4];
     i32 m_recordToken[4];
     i32 m_pollAbort;
-    i32 m_568;
-    i32 m_56c;
-    i32 m_570;
-    i32 m_574;
+    i32 m_colorSelectionRejected;
+    i32 m_gameFull;
+    i32 m_versionMismatch;
+    i32 m_outOfSync;
     i32 m_syncGate;
     i32 m_pumpGuard;
     i32 m_connected;
-    i32 m_584;
-    i32 m_588;
-    i32 m_58c;
-    i32 m_590;
-    i32 m_594;
-    CString m_598;
+    i32 m_waitDialogReplyReceived;
+    i32 m_lobbyLaunch;
+    i32 m_connectAccepted;
+    i32 m_savedEffectsEnabled;
+    i32 m_roundComplete;
+    CString m_providerConfigPrefix;
     CString m_groupName;
     CString m_hostName;
-    i32 m_5a4;
+    i32 m_commandDelay;
     i32 m_drainReload;
-    i32 m_5ac;
-    i32 m_5b0;
-    CString m_5b4;
-    CString m_5b8;
-    CNetSessionNode* m_5bc;
+    i32 m_gameClosed;
+    i32 m_customLevel;
+    CString m_builtInLevelName;
+    CString m_customLevelName;
+    CNetSessionNode* m_localPlayer;
     i32 m_hostIndex;
     i32 m_lastSenderId;
     char _p5c4[0x5cc - 0x5c8];
@@ -258,13 +258,13 @@ public:
     i32 m_frameDelta;
     i32 m_lastTime;
     i32 m_accumTime;
-    i32 m_5e4;
+    i32 m_lastFrameSyncTime;
     i32 m_5e8;
     i32 m_5ec;
     i32 m_channelLatency[4];
-    i32 m_600;
+    i32 m_autoCommandDelay;
 
-    CDWordArray m_604;
+    CDWordArray m_readyPlayerIds;
 
     char m_pad618[0x660 - 0x618];
 };

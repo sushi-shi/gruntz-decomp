@@ -35,8 +35,8 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
     SetCursor(0);
     m_mgr->RestoreVideoMode(0);
 
-    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_SPLASH"));
-    if (!m_2c) {
+    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_SPLASH"));
+    if (!m_stateBank) {
         return 0;
     }
 
@@ -72,10 +72,10 @@ i32 CSplashState::Render() {
         reg->m_soundStream->PurgeVoiceList(-1);
     }
 
-    if (static_cast<u32>(g_wap32FrameDelta) >= m_1b8) {
-        m_1b8 = 0;
+    if (static_cast<u32>(g_wap32FrameDelta) >= m_splashCountdownMs) {
+        m_splashCountdownMs = 0;
     } else {
-        m_1b8 = m_1b8 - g_wap32FrameDelta;
+        m_splashCountdownMs = m_splashCountdownMs - g_wap32FrameDelta;
     }
 
     {
@@ -94,7 +94,7 @@ i32 CSplashState::Render() {
                 goto post;
             }
         }
-        if (m_1b8) {
+        if (m_splashCountdownMs) {
             return 1;
         }
     }

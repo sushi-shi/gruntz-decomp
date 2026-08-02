@@ -9,9 +9,9 @@
 // @early-stop
 RVA(0x000f7d90, 0x171)
 i32 CGrunt::StepPeerTracking() {
-    m_defenderX = m_lastTilePxX;
-    m_defenderY = m_lastTilePxY;
-    if (m_198 == 0) {
+    m_defenderPx.m_x = m_lastTilePx.m_x;
+    m_defenderPx.m_y = m_lastTilePx.m_y;
+    if (m_vehiclePickupType == 0) {
         m_arrivalState = 5;
         m_defenderState = 0;
         m_dwell = 0;
@@ -25,7 +25,7 @@ i32 CGrunt::StepPeerTracking() {
         return 1;
     }
     CGameObject* a = p->m_object;
-    if (a->m_screenX == p->m_lastTilePxX && a->m_screenY == p->m_lastTilePxY
+    if (a->m_screenX == p->m_lastTilePx.m_x && a->m_screenY == p->m_lastTilePx.m_y
         && RectContainsGated(a->m_screenX, a->m_screenY)) {
         CGameObject* b = p->m_object;
         g_gameReg->m_cmdGrid
@@ -39,7 +39,7 @@ i32 CGrunt::StepPeerTracking() {
         CGameObject* b = p->m_object;
         TileSwitch(b->m_screenX >> 5, b->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
-        if (m_390 == 0) {
+        if (m_blockedVoicePending == 0) {
             return 1;
         }
         CWwdGameObjectA* c = m_object;
@@ -52,6 +52,6 @@ i32 CGrunt::StepPeerTracking() {
             g->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
         }
     }
-    m_390 = 0;
+    m_blockedVoicePending = 0;
     return 1;
 }

@@ -33,8 +33,8 @@ RVA_COMPGEN(0x00010670, 0x44, ??1CGruntStartingPoint@@UAE@XZ)
 RVA(0x0003df30, 0x161)
 CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_EXIT");
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 1;
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_stateFlags |= 1;

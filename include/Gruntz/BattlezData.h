@@ -8,7 +8,7 @@
 
 struct BattlezRecord {
     i32 m_populated;
-    i32 m_04;
+    i32 m_isEasyMode;
     i32 m_elapsedTimeMs;
     i32 m_toyzCollected;
     i32 m_toolzCollected;
@@ -62,7 +62,7 @@ public:
 
     BattlezRecord* m_records;
     i32 m_count;
-    i32 m_08;
+    i32 m_isCustomLevel;
     i32 m_allDone;
 
     i32 m_elapsedTimeMs;

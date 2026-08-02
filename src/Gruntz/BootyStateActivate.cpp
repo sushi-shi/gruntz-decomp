@@ -438,10 +438,10 @@ i32 CBootyState::Render() {
     if (elapsed < m_frameInterval64) {
         return 0;
     }
-    m_1c8 = 0x21;
-    m_1cc = 0;
-    m_1c0 = g_frameTime;
-    m_1c4 = 0;
+    m_frameIntervalLo = 0x21;
+    m_frameIntervalHi = 0;
+    m_frameStampLo = g_frameTime;
+    m_frameStampHi = 0;
 
     switch (m_activation) {
         case 100: {
@@ -509,7 +509,7 @@ i32 CBootyState::Render() {
             LevelMsgHudDriver();
             UpdateBootyWalkingGruntz();
             CheckPerfectBonus();
-            if (m_1b8 == 0 && g_gameReg->m_scoreHud->m_08 == 0) {
+            if (m_secretHudHandled == 0 && g_gameReg->m_scoreHud->m_isCustomLevel == 0) {
                 CString s;
                 RECT rc;
                 CBattlezData* hud = g_gameReg->m_scoreHud;
@@ -539,9 +539,9 @@ i32 CBootyState::Render() {
                 }
                 m_secretGate = 1;
                 ShowHudMessage(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
-                m_1b8 = 1;
-            } else if (g_gameReg->m_scoreHud->m_08 != 0) {
-                m_1b8 = 1;
+                m_secretHudHandled = 1;
+            } else if (g_gameReg->m_scoreHud->m_isCustomLevel != 0) {
+                m_secretHudHandled = 1;
             }
             break;
         }
@@ -596,8 +596,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         return 0;
     }
     m_mgr->RestoreVideoMode(0);
-    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
-    if (!m_2c) {
+    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
+    if (!m_stateBank) {
         return 0;
     }
     m_gameBank = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME"));
@@ -618,7 +618,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     m_world->m_childGroup->ClearChildren();
     {
-        void* soundz = m_2c->FindSub("SOUNDZ");
+        void* soundz = m_stateBank->FindSub("SOUNDZ");
         if (!soundz) {
             return 0;
         }
@@ -636,7 +636,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (g_gameReg->m_options[i].m_joined == 0) {
             continue;
         }
-        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[i].m_008, 0);
+        CShadeTable* tint =
+            g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[i].m_colorIndex, 0);
         if (tint == 0) {
             return 0;
         }
@@ -823,7 +824,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         CString tabKey;
         CString flagKey;
         GruntzPlayer* pl = &g_gameReg->m_options[t];
-        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(pl->m_008, 0);
+        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(pl->m_colorIndex, 0);
         if (tint == 0) {
             return 0;
         }
@@ -866,7 +867,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
             i32 frame = (pl->m_joined != 0) ? 1 : 2;
             CWwdGameObjectA* o = m_tabSprites[t];
-            CDDrawWorker* set = o->m_sprite;
+            CDDrawWorker* set = o->m_frameSet;
             if (set != 0) {
                 CImage* mapped;
                 if (frame >= set->m_minIndex && frame <= set->m_maxIndex) {
@@ -875,15 +876,17 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                     mapped = 0;
                 }
                 o->m_layer = mapped;
-                o->m_190 = frame;
+                o->m_frameIndex = frame;
             }
         }
         m_tabSprites[t]->m_stateFlags &= ~1;
     }
 
     {
-        CShadeTable* tint =
-            g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[QueryGruntSlots()].m_008, 0);
+        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(
+            g_gameReg->m_options[QueryGruntSlots()].m_colorIndex,
+            0
+        );
         if (tint == 0) {
             return 0;
         }
@@ -1113,7 +1116,7 @@ void CMultiBootyState::DrawBattleStats() {
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_options[i].m_joined != 0) {
             i32 color;
-            switch (g_gameReg->m_options[i].m_008) {
+            switch (g_gameReg->m_options[i].m_colorIndex) {
                 case 0:
                     color = 0x80ff;
                     break;
@@ -1199,9 +1202,9 @@ i32 CMultiBootyState::Render() {
             return 0;
         }
     }
-    if (m_1b8 == 0x64) {
+    if (m_sequenceState == 0x64) {
         DrawBattleStats();
-        m_1b8 = 0xc7;
+        m_sequenceState = 0xc7;
     }
     m_world->m_childGroup->TickKillCues(1);
     m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
@@ -1288,7 +1291,7 @@ i32 CMultiBootyState::OnPaint() {
 
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
-    if (m_1b8 == 0xc7) {
+    if (m_sequenceState == 0xc7) {
         ::PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;

@@ -17,7 +17,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 1;
     }
 
-    const LevelCoordRect& lr = m_c->m_level->m_planeCtx;
+    const LevelCoordRect& lr = m_world->m_level->m_planeCtx;
     RECT src;
     src.left = lr.left;
     src.top = lr.top;
@@ -33,7 +33,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_Image* areYouSure = new CSBI_Image;
         if (!areYouSure->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x321,
                 6,
                 SbGeom(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
@@ -49,7 +49,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* yes = new CSBI_MenuItem;
         if (!yes->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x327,
                 6,
                 SbGeom(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
@@ -66,7 +66,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* no = new CSBI_MenuItem;
         if (!no->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x328,
                 6,
                 SbGeom(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
@@ -85,7 +85,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     CSBI_Image* dialog = new CSBI_Image;
     if (!dialog->SetupImage(
             this,
-            m_c,
+            m_world,
             0x321,
             6,
             SbGeom(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
@@ -98,14 +98,14 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
     m_tabLists[6].AddTail(dialog);
 
-    i32 reason = g_gameReg->m_cmdGrid->m_3ec;
+    i32 reason = g_gameReg->m_cmdGrid->m_finishReasonFrame;
 
     if (g_gameReg->m_cmdGrid->m_phase == 1) {
 
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x322,
                 6,
                 SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -121,7 +121,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_ImageSet* rsn = new CSBI_ImageSet;
         if (!rsn->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x326,
                 6,
                 SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -134,11 +134,11 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         m_tabLists[6].AddTail(rsn);
 
-        if (g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_gameMode == 1) {
             CSBI_MenuItem* next = new CSBI_MenuItem;
             if (!next->SetupImage(
                     this,
-                    m_c,
+                    m_world,
                     0x324,
                     6,
                     SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -155,7 +155,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             CSBI_MenuItem* quit = new CSBI_MenuItem;
             if (!quit->SetupImage(
                     this,
-                    m_c,
+                    m_world,
                     0x325,
                     6,
                     SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -172,7 +172,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             CSBI_MenuItem* statz = new CSBI_MenuItem;
             if (!statz->SetupImage(
                     this,
-                    m_c,
+                    m_world,
                     0x325,
                     6,
                     SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
@@ -192,7 +192,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     CSBI_ImageSet* status = new CSBI_ImageSet;
     if (!status->SetupImage(
             this,
-            m_c,
+            m_world,
             0x322,
             6,
             SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -208,7 +208,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     CSBI_ImageSet* rsn = new CSBI_ImageSet;
     if (!rsn->SetupImage(
             this,
-            m_c,
+            m_world,
             0x326,
             6,
             SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -221,11 +221,11 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
     m_tabLists[6].AddTail(rsn);
 
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         CSBI_MenuItem* replay = new CSBI_MenuItem;
         if (!replay->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x324,
                 6,
                 SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -242,7 +242,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* quit = new CSBI_MenuItem;
         if (!quit->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x325,
                 6,
                 SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -270,7 +270,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* observe = new CSBI_MenuItem;
         if (!observe->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x324,
                 6,
                 SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -283,12 +283,12 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         m_tabLists[6].AddTail(observe);
         m_tabSprite11 = observe;
-        m_578 = 1;
+        m_observerTabAvailable = 1;
 
         CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x325,
                 6,
                 SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -302,11 +302,11 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabLists[6].AddTail(statz);
         m_tabSprite12 = statz;
     } else {
-        m_578 = 0;
+        m_observerTabAvailable = 0;
         CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
                 this,
-                m_c,
+                m_world,
                 0x325,
                 6,
                 SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),

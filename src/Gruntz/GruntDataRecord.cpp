@@ -21,10 +21,10 @@ i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
         ar->Write(buf, sizeof(buf));
     }
 
-    ar->Write(&m_14, 0x10);
-    ar->Write(&m_24, 0x10);
-    ar->Write(&m_34, 0x10);
-    ar->Write(&m_dirX, 0x20);
+    ar->Write(&m_rects[0], sizeof(m_rects[0]));
+    ar->Write(&m_rects[1], sizeof(m_rects[1]));
+    ar->Write(&m_rects[2], sizeof(m_rects[2]));
+    ar->Write(&m_motion, sizeof(m_motion));
     return 1;
 }
 
@@ -41,9 +41,9 @@ i32 CGruntCellRec::DeserializeStrings(CFileMemBase* ar) {
         m_names[i] = buf;
     }
 
-    ar->Read(&m_14, 0x10);
-    ar->Read(&m_24, 0x10);
-    ar->Read(&m_34, 0x10);
-    ar->Read(&m_dirX, 0x20);
+    ar->Read(&m_rects[0], sizeof(m_rects[0]));
+    ar->Read(&m_rects[1], sizeof(m_rects[1]));
+    ar->Read(&m_rects[2], sizeof(m_rects[2]));
+    ar->Read(&m_motion, sizeof(m_motion));
     return 1;
 }

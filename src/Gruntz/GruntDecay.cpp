@@ -26,7 +26,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
                 m_object->m_screenX,
                 m_object->m_screenY,
                 m_tileOwnerHi,
-                m_1f4_moveIcon,
+                m_moveIcon,
                 m_deathType != 5,
                 0x19
             );
@@ -41,9 +41,9 @@ i32 CGrunt::LoadGruntDecayConfig() {
     }
     i32 mode = m_deathType;
     if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("R");
-        if (m_36c == 0) {
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("R");
+        if (m_cellRemovalNotified == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
         i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
@@ -68,7 +68,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
         m_object->m_fillFraction = r;
         return 0;
     }
-    if (m_36c == 0) {
+    if (m_cellRemovalNotified == 0) {
         m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
     m_wwdObject->m_flags |= 0x10000;
@@ -80,8 +80,8 @@ RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
         m_wwdObject->m_stateFlags |= 1;
-        m_wwdObject->m_imageSet->SetAllTypes(1);
-        if (m_36c == 0) {
+        m_wwdObject->m_frameSet->SetAllTypes(1);
+        if (m_cellRemovalNotified == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
         m_wwdObject->m_flags |= 0x10000;

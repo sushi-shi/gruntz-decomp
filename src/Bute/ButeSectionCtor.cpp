@@ -16,8 +16,8 @@ CButeMgr::CButeMgr() {
     m_countLine = 1;
     m_captureText = 0;
     m_writeMode = 0;
-    m_10e = 0;
-    m_0d = 0;
+    m_encrypted = 0;
+    m_parseFailed = 0;
     m_str108.Empty();
     m_tagName.Empty();
 }

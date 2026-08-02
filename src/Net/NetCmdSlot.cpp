@@ -45,7 +45,7 @@ i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
     m_session = owner;
     m_netMgr = netMgr;
     Reset();
-    m_period = owner->m_5a4;
+    m_period = owner->m_commandDelay;
     return 1;
 }
 

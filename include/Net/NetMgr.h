@@ -50,7 +50,7 @@ struct CNetVersionMsg {
 SIZE_UNKNOWN();
 
 struct CNetVersionPacket {
-    u8 m_0;
+    u8 m_flags;
     char m_pad1[3];
 
     i32 m_statId;
@@ -65,7 +65,7 @@ SIZE(0x20);
 class CNetSessionNode;
 
 struct CNetStatPacket {
-    u8 m_0;
+    u8 m_flags;
     char m_pad1[3];
     i32 m_statId;
     i32 m_value;
@@ -83,8 +83,8 @@ struct CNetChannelPacket {
     u8 m_slot;
     u8 m_flagsB;
     u8 m_configId;
-    u8 m_0d;
-    u8 m_0e;
+    u8 m_colorIndex;
+    u8 m_humanControlled;
     char m_pad0f[1];
     i32 m_hostIndex;
     char m_name[0x28 - 0x14];
@@ -97,8 +97,8 @@ struct CNetOneChannelPacket {
     i32 m_statId;
     i32 m_playerIndex;
     u8 m_present;
-    u8 m_008;
-    u8 m_014;
+    u8 m_colorIndex;
+    u8 m_humanControlled;
     u8 m_configId;
     char m_pad10[1];
     u8 m_comboSel;
@@ -111,8 +111,8 @@ SIZE(0x2c);
 
 struct CNetChannelRow {
     u8 m_liveGate;
-    u8 m_008;
-    u8 m_014;
+    u8 m_colorIndex;
+    u8 m_humanControlled;
     u8 m_configId;
     u8 m_pad04;
     u8 m_comboSel;
@@ -207,6 +207,7 @@ union CNetWireMsg {
     CNetMsg* m_msg;
     CNetCtrlMsg* m_ctrl;
     CNetChannelPacket* m_chan;
+    CNetOneChannelPacket* m_oneChannel;
     CNetVersionMsg* m_version;
     CNetCmdHdr* m_cmdHdr;
 };
@@ -425,11 +426,11 @@ class CNetPlayerListNode : public CObject {
 public:
     CNetSessionDesc m_desc;
 
-    __POSITION* m_54;
+    __POSITION* m_listPosition;
 
     CNetPlayerListNode() {
         memset(&m_desc, 0, sizeof(m_desc));
-        m_54 = 0;
+        m_listPosition = 0;
     }
     virtual ~CNetPlayerListNode() OVERRIDE;
     i32 Init(CNetSessionDesc* desc);
@@ -445,7 +446,7 @@ public:
     i32 m_id;
     CString m_name;
     CString m_longName;
-    i32 m_10;
+    i32 m_enumFlags;
     char* m_ownedBufferB;
     char* m_ownedBufferA;
     i32 m_1c;
@@ -459,7 +460,7 @@ public:
     }
     virtual ~CNetSessionNode() OVERRIDE;
 
-    i32 InitSession(i32 id, const char* nameA, const char* nameB, i32 d);
+    i32 InitSession(i32 id, const char* nameA, const char* nameB, i32 flags);
 
     CString GetName();
 };
@@ -586,7 +587,7 @@ public:
     EnumPlayersCb(CNetPlayerListNode* a, const char* name, const char* longName, i32 d);
     i32 EnumGroupsAll();
     i32 EnumGroupsRange(void* rec, i32 flags);
-    CNetSessionNode* AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d);
+    CNetSessionNode* AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 flags);
 
     CNetSessionNode* CreatePlayer(char* name, const char* longName, i32 c);
     void PopulateSessionList(void* hList);

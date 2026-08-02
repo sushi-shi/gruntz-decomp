@@ -148,7 +148,7 @@ public:
     i32 m_typeTag;
     i32 m_tileX;
     i32 m_tileY;
-    i32 m_10;
+    i32 m_cellKey;
     i32 m_14;
     i32 m_18;
     i32 m_initGate;
@@ -160,7 +160,7 @@ public:
     u32 m_dutyOffSpan;
     i32 m_tileToken;
     i32 m_dutyOn;
-    i32 m_block[24];
+    i32 m_linkKeys[24];
 };
 SIZE(0x9c);
 

@@ -35,30 +35,10 @@ public:
     CImage* m_frameColon;
     char m_pad24[0x28 - 0x24];
 
-    union {
-        Clock64 m_baseTime;
-        struct {
-            i32 m_baseTimeLo;
-            i32 m_baseTimeHi;
-        };
-    };
-    union {
-        Clock64 m_accum;
-        struct {
-            i32 m_accumLo;
-            i32 m_accumHi;
-        };
-    };
-
-    union {
-        Clock64 m_startStamp;
-        struct {
-            i32 m_38;
-            i32 m_3c;
-        };
-    };
-    i32 m_40;
-    i32 m_44;
+    Clock64 m_baseTime;
+    Clock64 m_accum;
+    Clock64 m_startStamp;
+    Clock64 m_40;
     i32 m_running;
     i32 m_currentMs;
 };

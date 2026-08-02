@@ -9,60 +9,59 @@ public:
     CFxModeDesc();
 
     i32 m_type;
-    class CDDSurface* m_04;
-    class CDDSurface* m_08;
-
-    union {
-        i32 m_0c;
-        class CDDPalette* m_pal0c;
-        class CDDSurface* m_surf0c;
-    };
-    union {
-        i32 m_10;
-        class CDDPalette* m_pal10;
-        class CDDSurface* m_surf10;
-    };
+    class CDDSurface* m_targetSurface;
+    class CDDSurface* m_sourceSurface;
 };
-SIZE_UNKNOWN();
+SIZE(0xc);
 
 class CFxModeT2 : public CFxModeDesc {
 public:
     CFxModeT2();
-    i32 m_14;
-    i32 m_18;
-    i32 m_1c;
-    class CShadeTable* m_20;
+    class CDDPalette* m_palette;
+    i32 m_clearMode;
+    i32 m_spanCount;
+    i32 m_centerX;
+    i32 m_centerY;
+    class CShadeTable* m_shadeTable;
 };
-SIZE_UNKNOWN();
+SIZE(0x24);
 
 class CFxModeT3 : public CFxModeDesc {
 public:
     CFxModeT3();
+    i32 m_clearToBlack;
+    i32 m_intensityPercent;
 };
-SIZE_UNKNOWN();
+SIZE(0x14);
 
 class CFxModeT4 : public CFxModeDesc {
 public:
     CFxModeT4();
-    class CShadeTable* m_14;
+    i32 m_0c;
+    class CDDPalette* m_palette;
+    class CShadeTable* m_shadeTable;
 };
-SIZE_UNKNOWN();
+SIZE(0x18);
 
 class CFxModeT5 : public CFxModeDesc {
 public:
     CFxModeT5();
-    i32 m_14;
+    i32 m_0c;
+    i32 m_durationPercent;
+    i32 m_splitPercent;
 };
-SIZE_UNKNOWN();
+SIZE(0x18);
 
 class CFxModeT6 : public CFxModeDesc {
 public:
     CFxModeT6();
-    i32 m_14;
+    class CDDSurface* m_primeSource;
+    class CDDSurface* m_flipTarget;
+    i32 m_reverseOrder;
     i32 m_18;
-    i32 m_1c;
-    i32 m_20;
+    i32 m_cols;
+    i32 m_rows;
 };
-SIZE_UNKNOWN();
+SIZE(0x24);
 
 #endif // GRUNTZ_CFXMODEDESC_H

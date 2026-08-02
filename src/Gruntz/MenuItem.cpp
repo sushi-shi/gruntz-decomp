@@ -56,15 +56,15 @@ void CMenuItem::Reset() {
 }
 RVA(0x00184780, 0x17)
 void CMenuItem2::Disable(i32 mode) {
-    i32 frameLimit = m_70;
+    i32 frameLimit = m_frameDelay;
     m_state = mode;
     m_frameIdx = 0;
-    m_6c = frameLimit;
+    m_frameCountdown = frameLimit;
 }
 
 RVA(0x001847a0, 0xa)
 void CMenuItem2::SetFrame(i32 v) {
-    m_70 = v;
+    m_frameDelay = v;
 }
 RVA(0x001847b0, 0x6)
 i32 CMenuItem2::OnInit() {
@@ -79,12 +79,12 @@ CMenuItem2::~CMenuItem2() {
 
 RVA(0x00184890, 0x1a)
 void CMenuItem2::Reset() {
-    m_70 = 0x64;
+    m_frameDelay = 0x64;
     m_spriteNormal = 0;
     m_spriteSelected = 0;
     m_spriteDisabled = 0;
     m_frameIdx = 0;
-    m_6c = 0;
+    m_frameCountdown = 0;
 }
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(
@@ -105,7 +105,7 @@ i32 CMenuItem::Init(
     m_name = name;
     m_key = key;
     m_cmdId = cmdId;
-    m_1c = 0;
+    m_secondaryCmdId = 0;
     m_cmdParam = 0;
     if (m_flags & 1) {
         m_state = 3;
@@ -162,8 +162,8 @@ i32 CMenuItem::NotifyCmd() {
     if (wnd) {
         PostMessageA(wnd, WM_COMMAND, id, m_cmdParam);
     }
-    if (m_1c && wnd) {
-        PostMessageA(wnd, WM_COMMAND, m_1c, 0);
+    if (m_secondaryCmdId && wnd) {
+        PostMessageA(wnd, WM_COMMAND, m_secondaryCmdId, 0);
     }
     return 1;
 }
@@ -261,8 +261,8 @@ i32 CMenuItem2::Init(
         return 0;
     }
     m_frameIdx = 0;
-    m_6c = 0;
-    m_70 = 0x64;
+    m_frameCountdown = 0;
+    m_frameDelay = 0x64;
 
     char buf[0x80];
     CObject* sprite;
@@ -304,12 +304,12 @@ i32 CMenuItem2::GetWidth() {
 
 RVA(0x001858a0, 0x2b)
 i32 CMenuItem2::Notify(u32 a) {
-    if (a >= static_cast<u32>(m_6c)) {
-        m_6c = m_70;
+    if (a >= static_cast<u32>(m_frameCountdown)) {
+        m_frameCountdown = m_frameDelay;
         NextFrame();
         return 1;
     }
-    m_6c = m_6c - a;
+    m_frameCountdown = m_frameCountdown - a;
     return 1;
 }
 

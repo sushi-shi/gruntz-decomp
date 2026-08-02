@@ -26,9 +26,9 @@ Coord* Coord::Set(i32 a, i32 b) {
 
 RVA(0x00075a40, 0x34)
 i32 CGridLookup::Lookup(i32 x, i32 y) {
-    if (static_cast<u32>(x) < static_cast<u32>(m_c)
-        && static_cast<u32>(y) < static_cast<u32>(m_10)) {
-        return m_8[y][x].m_0;
+    if (static_cast<u32>(x) < static_cast<u32>(m_width)
+        && static_cast<u32>(y) < static_cast<u32>(m_height)) {
+        return m_rows[y][x].m_flags;
     }
     return 1;
 }
@@ -125,7 +125,7 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 i32 val;
                 if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
                     && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
-                    val = grid->m_rows[y][x].m_4;
+                    val = grid->m_rows[y][x].m_occupantId;
                 } else {
                     val = -1;
                 }

@@ -20,7 +20,7 @@ VTBL(CSBI_GruntMachine, 0x001eadbc);
 RVA(0x00102250, 0x1de4)
 RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 i32 CStatusBarMgr::LoadTabSprites() {
-    CDDrawSurfaceMgr* code = m_c;
+    CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
 
@@ -84,14 +84,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_tabLists[2].AddTail(set);
                     *aptr = set;
                     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                        g_gameReg->m_options[g_curPlayer].m_008,
+                        g_gameReg->m_options[g_curPlayer].m_colorIndex,
                         0
                     );
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    (static_cast<CDDrawWorker*>(set->m_34))->SetAllTypes(10);
-                    (static_cast<CDDrawWorker*>(set->m_34))->SetAllFormats(sel);
+                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllTypes(10);
+                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;
@@ -684,7 +684,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 do {
                     CShadeTable* sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
-                        sel = g_gameReg->m_spriteFactory->GetSel(p->m_008, 0);
+                        sel = g_gameReg->m_spriteFactory->GetSel(p->m_colorIndex, 0);
                         if (pi == m_tabCycle) {
                             (*slot)->SetState(1);
                         }

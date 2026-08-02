@@ -21,9 +21,8 @@ struct CSbiSlot {
 
     CSbiSlot() {
         m_startTimeLo = 0;
-        m_10 = 0;
+        m_interval = 0;
         m_startTimeHi = 0;
-        m_14 = 0;
     }
     i32 m_state;
     i32 m_value;
@@ -34,8 +33,7 @@ struct CSbiSlot {
             i32 m_startTimeHi;
         };
     };
-    i32 m_10;
-    i32 m_14;
+    i64 m_interval;
 };
 SIZE(0x18);
 
@@ -204,16 +202,16 @@ public:
     i32 DockStatusBarRight();
 
     i32 m_position;
-    i32 m_4;
+    i32 m_restorePosition;
 
     class CWwdGameObjectA* m_barSprite;
 
-    CDDrawSurfaceMgr* m_c;
+    CDDrawSurfaceMgr* m_world;
 
     RECT m_rect10;
-    i32 m_20;
-    i32 m_24;
-    i32 m_28;
+    i32 m_redrawFrames;
+    i32 m_barX;
+    i32 m_barY;
 
     CPtrList m_tabLists[8];
     i32 m_activeTab;
@@ -247,10 +245,8 @@ public:
     i32 m_gauge;
     i32 m_gaugeTarget;
 
-    i32 m_2a0;
-    i32 m_2a4;
-    i32 m_2a8;
-    i32 m_2ac;
+    i64 m_2a0;
+    i64 m_2a8;
     i32 m_2b0;
     i32 m_2b4;
     i32 m_2b8;
@@ -306,7 +302,7 @@ public:
     i64 m_destructWarnDelay;
     CSBI_ImageSet* m_modeNotify;
     i32 m_modeArmed;
-    i32 m_578;
+    i32 m_observerTabAvailable;
     i32 m_battlezPct[38];
     i32 m_barFrameGate;
     DirectSoundMgr* m_destructButton;
@@ -318,29 +314,10 @@ SIZE(0x630);
 
 SIZE_UNKNOWN();
 
-struct SbiTabFrameSub {
-    char m_pad0[0x10];
-    i32 m_10;
-};
-SIZE_UNKNOWN();
-struct SbiTabFrame {
-    char m_pad0[0x14];
-    SbiTabFrameSub* m_14;
-    char m_pad18[0x64 - 0x18];
-    i32 m_64;
-    i32 m_68;
-};
-SIZE_UNKNOWN();
-
-struct CTabList {};
-SIZE_UNKNOWN();
-
 inline CStatusBarMgr::CStatusBarMgr() {
 
     m_2a0 = 0;
-    m_2a4 = 0;
     m_2a8 = 0;
-    m_2ac = 0;
     m_2b0 = 0;
     m_2b4 = 0;
     m_2b8 = 0;
@@ -377,8 +354,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
     m_barSprite = 0;
-    m_c = 0;
-    m_20 = 0;
+    m_world = 0;
+    m_redrawFrames = 0;
     m_activeTab = 0;
     m_hitTestDisabled = 0;
     m_tabsBuilt = 0;

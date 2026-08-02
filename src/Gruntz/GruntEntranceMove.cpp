@@ -198,9 +198,9 @@ i32 CGrunt::RunEntranceMove() {
             m_poweredUp = 0;
             ResetEntranceAnimation(1, 0, 0);
         }
-        m_35c = 0;
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId(s_codeD);
+        m_tileMoveCommitted = 0;
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId(s_codeD);
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
         GruntDirectionCell cell = m_entranceCell;
@@ -226,7 +226,7 @@ i32 CGrunt::RunEntranceMove() {
         return LoadVehicleGruntSprites(mode);
     }
     if (mode >= 0x22) {
-        m_194 = mode;
+        m_brickPickupType = mode;
         m_moveMode = -1;
         return 1;
     }
@@ -242,13 +242,13 @@ RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     CGrunt* other = m_tileMgr->m_grid[col * TM_GRID_COLS + row];
     if (other != 0 && other->m_entranceCommitted != 0 && other->m_gruntKind != 0x36) {
-        i32 ox = other->m_lastTilePxX >> 5;
-        i32 oy = other->m_lastTilePxY >> 5;
-        i32 tx = m_defenderX >> 5;
-        i32 ty = m_defenderY >> 5;
+        i32 ox = other->m_lastTilePx.m_x >> 5;
+        i32 oy = other->m_lastTilePx.m_y >> 5;
+        i32 tx = m_defenderPx.m_x >> 5;
+        i32 ty = m_defenderPx.m_y >> 5;
         i32 dx = oy - ty;
         i32 dy = ox - tx;
-        i32 sum = m_defenderRadius + m_reachRadius;
+        i32 sum = m_defenderRadius + m_reachRect.right;
         i32 dist2 = abs(dx * dx + dy * dy);
         return dist2 < sum * sum ? 1 : 0;
     }
@@ -257,8 +257,8 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
 
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(i32 mode) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_animKeyK);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_animKeyK);
 
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
@@ -356,8 +356,9 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(found);
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniDesc* elem =
-            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
         m_wwdObject->ApplyLookupSprite(key, elem->m_param);
     }
 }
@@ -395,16 +396,16 @@ i32 CGrunt::LoadEntranceConfig() {
         }
 
         h = m_object;
-        i32 oldX = m_lastTilePxX;
+        i32 oldX = m_lastTilePx.m_x;
         m_entranceArmed = 0;
         i32 newPxX = h->m_screenX;
         i32 newPxY = h->m_screenY;
         i32 oldTileX = oldX >> 5;
-        i32 oldTileY = m_lastTilePxY >> 5;
+        i32 oldTileY = m_lastTilePx.m_y >> 5;
         i32 newTileX = newPxX >> 5;
         i32 newTileY = newPxY >> 5;
 
-        if (oldX != -1 && m_lastTilePxY != -1) {
+        if (oldX != -1 && m_lastTilePx.m_y != -1) {
             CMapMgr* og = g_gameReg->m_tileGrid;
 
             og->m_rows[oldTileY][oldTileX].m_flagBytes[3] &= ~0x20;
@@ -416,8 +417,8 @@ i32 CGrunt::LoadEntranceConfig() {
             ng->m_rows[newTileY][newTileX].m_flagBytes[3] |= 0x20;
             ng->m_rowInts[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }
-        m_lastTilePxX = newPxX;
-        m_lastTilePxY = newPxY;
+        m_lastTilePx.m_x = newPxX;
+        m_lastTilePx.m_y = newPxY;
         m_tileMgr->WireTileSwitchLogic(this, newPxX, newPxY);
 
         h = m_object;
@@ -469,13 +470,14 @@ i32 CGrunt::RearmEntranceDrop() {
 
     if (m_wwdObject->m_animCursor.m_finished != 0
         && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
-        m_22c = 0;
+        m_bombRunActive = 0;
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseItem[GRUNT_ITEM2]);
 
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniDesc* elem =
-            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
         i32 frame = elem->m_param;
 
         GruntDirectionCell cell = m_entranceCell;
@@ -486,7 +488,7 @@ i32 CGrunt::RearmEntranceDrop() {
         m_wwdObject->ApplyLookupSprite(name, frame);
     }
 
-    if (m_22c == 0) {
+    if (m_bombRunActive == 0) {
         i32 a;
         i32 b;
         m_entranceCommitted = 0;
@@ -560,12 +562,12 @@ i32 CGrunt::StartBombGruntRun() {
         dx += h->m_screenX >> 5;
     }
     PlayMoveSoundAtTile(dx, dy);
-    m_moveTileX = dx;
-    m_moveTileY = dy;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_codeM);
+    m_moveTile.m_x = dx;
+    m_moveTile.m_y = dy;
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_codeM);
     m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
-    m_22c = 1;
+    m_bombRunActive = 1;
     {
         CWwdGameObjectA* h = m_object;
         i32 vx = h->m_screenX;
@@ -683,14 +685,15 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_poseIdle[GRUNT_IDLE5] = _out;
     }
 
-    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
+    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     GruntScratchTeardown();
     if (strcmp(*rec, s_codeD) == 0) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniDesc* elem =
-            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
         i32 frame = elem->m_param;
         i32 idx = 3 * m_entranceCell.row + m_entranceCell.column;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
@@ -698,14 +701,15 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         return 1;
     }
 
-    CString* rec2 = g_typeColl.ScratchResolve(m_objAux->m_1c);
+    CString* rec2 = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     GruntScratchTeardown();
     if (strcmp(*rec2, "A") == 0) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseIdle[GRUNT_IDLE1]);
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniDesc* elem =
-            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
         i32 frame = elem->m_param;
         i32 idx = 3 * m_entranceCell.row + m_entranceCell.column;
         char* buf = m_cells[idx].IdleName().GetBuffer(0);
@@ -728,11 +732,12 @@ i32 CGrunt::UpdateEntranceAnim() {
         m_wwdObject->m_animCursor.Setup(m_poseToy[GRUNT_TOY_BREAK]);
 
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniDesc* elem =
-            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
         i32 frame = elem->m_param;
 
-        char* buf = (&m_448)->GetBuffer(0);
+        char* buf = (&m_frameSetName)->GetBuffer(0);
         m_wwdObject->ApplyLookupSprite(buf, frame);
 
         m_entranceStamped = 1;
@@ -751,14 +756,14 @@ i32 CGrunt::UpdateEntranceAnim() {
         CreateToySprite();
     }
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     LoadGruntTypeTable(m_toolId, 1, 0, 0);
     m_entranceActive = 0;
 
     CGruntzMgr* g = g_gameReg;
-    i32 tx = m_lastTilePxX >> 5;
-    i32 ty = m_lastTilePxY >> 5;
+    i32 tx = m_lastTilePx.m_x >> 5;
+    i32 ty = m_lastTilePx.m_y >> 5;
     CGruntzMapMgr* board = g->m_tileGrid;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(board->m_width)
@@ -770,7 +775,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         return 0;
     }
 
@@ -792,24 +797,24 @@ i32 CGrunt::StepArrivalCommit() {
 
     bool eq;
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") != 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
     if (!eq) {
         goto finalize;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) != 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
     if (!eq) {
         goto finalize;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_188);
+            g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
-            m_moveTileX,
-            m_moveTileY,
+            m_moveTile.m_x,
+            m_moveTile.m_y,
             m_entranceReason,
             -1
         );
@@ -819,25 +824,25 @@ i32 CGrunt::StepArrivalCommit() {
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         return 0;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "G") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "L") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "P") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
     if (eq) {
         SnapToLastTile(1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         goto finalize;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "J") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
     if (eq) {
 
         m_entranceActive = 0;
@@ -850,9 +855,9 @@ i32 CGrunt::StepArrivalCommit() {
                 m_poweredUp = 0;
                 ResetEntranceAnimation(1, 0, 0);
             }
-            m_35c = 0;
-            m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = ActFindId(s_codeD);
+            m_tileMoveCommitted = 0;
+            m_prevAnimSetNode = m_objAux->m_actKey;
+            m_objAux->m_actKey = ActFindId(s_codeD);
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(m_poseWalk);
             GruntDirectionCell cell = m_entranceCell;
@@ -866,12 +871,12 @@ i32 CGrunt::StepArrivalCommit() {
         goto modeDispatch;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeN) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
     if (eq) {
         i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
         i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
         i32 redo = 1;
-        if (px != m_lastTilePxX || py != m_lastTilePxY) {
+        if (px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) {
             if (IsDropReady(1)) {
                 m_coordToggle = (m_coordToggle == 0);
                 redo = 0;
@@ -879,13 +884,13 @@ i32 CGrunt::StepArrivalCommit() {
         }
         SnapToLastTile(1);
         if (redo) {
-            m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = ActFindId(s_codeD);
+            m_prevAnimSetNode = m_objAux->m_actKey;
+            m_objAux->m_actKey = ActFindId(s_codeD);
         }
         goto finalize;
     }
     {
-        const char* prev = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+        const char* prev = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
         GruntScratchTeardown();
         eq = (strcmp(prev, s_codeM) == 0);
         if (eq) {
@@ -897,7 +902,7 @@ i32 CGrunt::StepArrivalCommit() {
 
 idleReseed:
     if (m_entranceReason == 0x1e) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_188);
+        g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 0);
     {
@@ -920,11 +925,11 @@ modeDispatch: {
     if (mode >= 0x32) {
         LoadGruntTypeTable(mode, 1, 0, 1);
         m_moveMode = -1;
-        m_1a4 = 0;
+        m_helpCueId = 0;
         goto finalize;
     }
     if (mode >= 0x22) {
-        m_194 = mode;
+        m_brickPickupType = mode;
         m_moveMode = -1;
         goto finalize;
     }
@@ -968,8 +973,8 @@ finalize:
     }
     m_entranceActive = 1;
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_codeQ);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_codeQ);
     {
         i32 z = m_object->m_screenY + 0x186a0;
         if (m_object->m_sortKey != z) {
@@ -981,8 +986,9 @@ finalize:
     m_wwdObject->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
     {
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniDesc* elem =
-            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
         i32 frame = elem->m_param;
         m_wwdObject->ApplyLookupSprite(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
@@ -1003,8 +1009,9 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
-            if (s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePxX >> 5, m_lastTilePxY >> 5) & 0x80) {
-                m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+            if (s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePx.m_x >> 5, m_lastTilePx.m_y >> 5)
+                & 0x80) {
+                m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             }
             return 0;
         }
@@ -1040,7 +1047,7 @@ i32 CGrunt::FinishEntranceMove() {
     if (cur->m_finished == 0 || cur->m_frameTicksLeft != 0) {
         return 0;
     }
-    if (m_36c == 0) {
+    if (m_cellRemovalNotified == 0) {
 
         m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
@@ -1073,32 +1080,32 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 #define MV_VEC(V) m_entranceCell = g_gruntDir##V
 #define MV_N                                                                                       \
     MV_VEC(North);                                                                                 \
-    m_lastTilePxY -= 0x10
+    m_lastTilePx.m_y -= 0x10
 #define MV_S                                                                                       \
     MV_VEC(South);                                                                                 \
-    m_lastTilePxY += 0x10
+    m_lastTilePx.m_y += 0x10
 #define MV_E                                                                                       \
     MV_VEC(East);                                                                                  \
-    m_lastTilePxX += 0x10
+    m_lastTilePx.m_x += 0x10
 #define MV_W                                                                                       \
     MV_VEC(West);                                                                                  \
-    m_lastTilePxX -= 0x10
+    m_lastTilePx.m_x -= 0x10
 #define MV_NE                                                                                      \
     MV_VEC(NorthEast);                                                                             \
-    m_lastTilePxX += 0x10;                                                                         \
-    m_lastTilePxY -= 0x10
+    m_lastTilePx.m_x += 0x10;                                                                      \
+    m_lastTilePx.m_y -= 0x10
 #define MV_NW                                                                                      \
     MV_VEC(NorthWest);                                                                             \
-    m_lastTilePxX -= 0x10;                                                                         \
-    m_lastTilePxY -= 0x10
+    m_lastTilePx.m_x -= 0x10;                                                                      \
+    m_lastTilePx.m_y -= 0x10
 #define MV_SE                                                                                      \
     MV_VEC(SouthEast);                                                                             \
-    m_lastTilePxX += 0x10;                                                                         \
-    m_lastTilePxY += 0x10
+    m_lastTilePx.m_x += 0x10;                                                                      \
+    m_lastTilePx.m_y += 0x10
 #define MV_SW                                                                                      \
     MV_VEC(SouthWest);                                                                             \
-    m_lastTilePxX -= 0x10;                                                                         \
-    m_lastTilePxY += 0x10
+    m_lastTilePx.m_x -= 0x10;                                                                      \
+    m_lastTilePx.m_y += 0x10
 
     if (sel < 5) {
         switch (dir) {
@@ -1242,56 +1249,56 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 #undef MV_SE
 #undef MV_SW
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_animKeyS);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_animKeyS);
     return 1;
 }
 
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_188);
+            g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
-            m_moveTileX,
-            m_moveTileY,
+            m_moveTile.m_x,
+            m_moveTile.m_y,
             m_entranceReason,
             -1
         );
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "G") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "L") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "P") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
     if (eq) {
         SnapToLastTile(1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxY, m_lastTilePxX);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "J") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
     if (eq) {
         m_entranceActive = 0;
         eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), s_codeD) == 0);
@@ -1303,9 +1310,9 @@ i32 CGrunt::FinishActiveAction() {
                 m_poweredUp = 0;
                 ResetEntranceAnimation(1, 0, 0);
             }
-            m_35c = 0;
-            m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = ActFindId(s_codeD);
+            m_tileMoveCommitted = 0;
+            m_prevAnimSetNode = m_objAux->m_actKey;
+            m_objAux->m_actKey = ActFindId(s_codeD);
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(m_poseWalk);
 
@@ -1320,25 +1327,25 @@ i32 CGrunt::FinishActiveAction() {
         goto modeDispatch;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeN) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
     if (eq) {
         i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
         i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
         i32 redo = 1;
-        if ((px != m_lastTilePxX || py != m_lastTilePxY) && IsDropReady(1)) {
+        if ((px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) && IsDropReady(1)) {
             m_coordToggle = (m_coordToggle == 0);
             redo = 0;
         }
         SnapToLastTile(1);
         if (redo) {
-            m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = ActFindId(s_codeD);
+            m_prevAnimSetNode = m_objAux->m_actKey;
+            m_objAux->m_actKey = ActFindId(s_codeD);
             SetupTubeAnim(m_coordToggle);
         }
         return 1;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeK) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeK) == 0);
     if (!eq || m_entranceArmed == 0) {
         return 0;
     }
@@ -1372,15 +1379,15 @@ i32 CGrunt::FinishActiveAction() {
             }
         }
 
-        i32 oldX = m_lastTilePxX;
+        i32 oldX = m_lastTilePx.m_x;
         m_entranceArmed = 0;
         i32 newX = object->m_screenX;
         i32 newY = object->m_screenY;
         i32 oldTx = oldX >> 5;
-        i32 oldTy = m_lastTilePxY >> 5;
+        i32 oldTy = m_lastTilePx.m_y >> 5;
         i32 newTx = newX >> 5;
         i32 newTy = newY >> 5;
-        if (oldX != -1 && m_lastTilePxY != -1) {
+        if (oldX != -1 && m_lastTilePx.m_y != -1) {
             CMapMgr* oldGrid = game->m_tileGrid;
             oldGrid->m_rows[oldTy][oldTx].m_flagBytes[3] &= ~0x20;
             oldGrid->m_rowInts[oldTy][oldTx * 7 + 1] = -1;
@@ -1388,8 +1395,8 @@ i32 CGrunt::FinishActiveAction() {
         CMapMgr* newGrid = game->m_tileGrid;
         newGrid->m_rows[newTy][newTx].m_flagBytes[3] |= 0x20;
         newGrid->m_rowInts[newTy][newTx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-        m_lastTilePxX = newX;
-        m_lastTilePxY = newY;
+        m_lastTilePx.m_x = newX;
+        m_lastTilePx.m_y = newY;
         m_tileMgr->WireTileSwitchLogic(this, newX, newY);
 
         m_entranceCommitted = 1;
@@ -1431,7 +1438,7 @@ i32 CGrunt::FinishActiveAction() {
 
 idleReseed:
     if (m_entranceReason == 0x1e) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_188);
+        g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
@@ -1454,11 +1461,11 @@ modeDispatch: {
     if (mode >= 0x32) {
         LoadGruntTypeTable(mode, 1, 0, 1);
         m_moveMode = -1;
-        m_1a4 = 0;
+        m_helpCueId = 0;
         return 1;
     }
     if (mode >= 0x22) {
-        m_194 = mode;
+        m_brickPickupType = mode;
         m_moveMode = -1;
         return 1;
     }

@@ -10,15 +10,15 @@ RVA_COMPGEN(0x000121f0, 0x44, ??1CGruntWingzTimeSprite@@UAE@XZ)
 RVA(0x0007fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
     m_wwdObject->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0xdbba0) {
         o->m_sortKey = 0xdbba0;
         o->m_flags |= 0x20000;
     }
     m_health = 0;
-    m_60 = -0x26;
+    m_yOffset = -0x26;
 }
 
 VTBL(CGruntWingzTimeSprite, 0x001e77cc);

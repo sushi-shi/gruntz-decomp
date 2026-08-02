@@ -57,7 +57,7 @@ RVA_COMPGEN(0x00010c50, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
-    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
         m_wwdObject->m_flags |= 0x10000;
     } else {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -68,8 +68,8 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         }
         m_wwdObject->m_flags |= 2;
         m_wwdObject->m_stateFlags |= 1;
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("A");
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("A");
         g_gameReg->m_scoreHud->m_secretsAvailable++;
     }
 }
@@ -107,7 +107,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
 
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
+    if (g_gameReg->m_gameMode == 1 && g_gameReg->m_isCustomLevel == 0) {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
         m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
         if (m_object->m_sortKey != 0) {
@@ -116,8 +116,8 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
         }
         m_wwdObject->m_flags |= 2;
         m_wwdObject->m_stateFlags |= 1;
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("A");
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("A");
     } else {
         m_wwdObject->m_flags |= 0x10000;
     }
@@ -169,7 +169,7 @@ i32 CSecretLevelTrigger::Tick() {
         if (lvl != 0 && hit->m_entranceReason != lvl) {
             ok = 0;
         }
-        if (lyr != 0 && hit->m_198 != lyr) {
+        if (lyr != 0 && hit->m_vehiclePickupType != lyr) {
             ok = 0;
         }
         if (ok) {

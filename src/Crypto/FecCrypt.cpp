@@ -15,7 +15,7 @@ i32 CFecFile::Init() {
     m_readOpen = 0;
     m_writeOpen = 0;
     m_index.SetSize(0, -1);
-    memset(&m_versionMajor, 0, 12);
+    memset(&m_header, 0, sizeof(m_header));
     memset(&m_entry, 0, sizeof(m_entry));
     m_nextIndex = 0;
     m_openGate = 1;
@@ -68,7 +68,7 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (magic[0] != 'F' || magic[1] != 'E' || magic[2] != 'C') {
         goto fail;
     }
-    if (m_stream.Read(&m_versionMajor, 0xc) != 0xc) {
+    if (m_stream.Read(&m_header, sizeof(m_header)) != sizeof(m_header)) {
         goto fail;
     }
 
@@ -77,9 +77,9 @@ i32 CFecFile::ReadArchive(const char* name) {
     sprintf(
         buf,
         "FEC File Version: %d.%d\nNumber of Files: %d\n",
-        m_versionMajor,
-        m_versionMinor,
-        m_fileCount
+        m_header.m_versionMajor,
+        m_header.m_versionMinor,
+        m_header.m_fileCount
     );
 
     if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
@@ -91,7 +91,7 @@ i32 CFecFile::ReadArchive(const char* name) {
         }
         m_index.Add(m_entry.m_scramble - 0x19d);
 
-        for (u16 i = 1; i < static_cast<u32>(m_fileCount); i++) {
+        for (u16 i = 1; i < static_cast<u32>(m_header.m_fileCount); i++) {
             i32 stride = m_entry.m_payloadLen;
             if (m_stream.Seek(stride, 1) != static_cast<i32>(m_index[i - 1]) + stride) {
                 goto fail;
@@ -116,7 +116,7 @@ fail:
 
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
-    if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_fileCount) && idx != 0) {
+    if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_header.m_fileCount) && idx != 0) {
         const DWORD* slot = &m_index.GetData()[idx - 1];
         if (m_stream.Seek(static_cast<i32>(*slot), 0) == static_cast<i32>(*slot)) {
             return m_stream.m_hFile;
@@ -136,11 +136,11 @@ i32 CFecFile::CreateArchive(const char* name) {
         magic[2] = 'C';
         m_stream.Write(magic, 3);
 
-        memset(&m_versionMajor, 0, 0xc);
-        m_fileCount = 0;
-        m_versionMajor = 1;
-        m_versionMinor = 1;
-        m_stream.Write(&m_versionMajor, 0xc);
+        memset(&m_header, 0, sizeof(m_header));
+        m_header.m_fileCount = 0;
+        m_header.m_versionMajor = 1;
+        m_header.m_versionMinor = 1;
+        m_stream.Write(&m_header, sizeof(m_header));
         m_stream.Flush();
         return 1;
     }
@@ -241,7 +241,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     if (m_readOpen == 0 || m_openGate == 0) {
         return 0;
     }
-    if (m_versionMajor == 1 && m_versionMinor == 0) {
+    if (m_header.m_versionMajor == 1 && m_header.m_versionMinor == 0) {
         return 0;
     }
 
@@ -256,7 +256,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     CFile file;
     m_stream.Seek(0xf, 0);
 
-    for (u16 i = 0; i < static_cast<u32>(m_fileCount); i++) {
+    for (u16 i = 0; i < static_cast<u32>(m_header.m_fileCount); i++) {
         u32 copied = 0;
         if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
             _chdir(cwd);

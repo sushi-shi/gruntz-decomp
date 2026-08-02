@@ -8,12 +8,14 @@
 class CFxModeT1 : public CFxModeDesc {
 public:
     CFxModeT1();
-    i32 m_14;
-    i32 m_18;
-    i32 m_1c;
-    class CShadeTable* m_20;
-    CString m_24;
-    class CDDPalette* m_28;
+    class CDDSurface* m_warpSourceSurface;
+    i32 m_halfWidth;
+    i32 m_mode;
+    i32 m_stripCopy;
+    i32 m_useLut;
+    class CShadeTable* m_shadeTable;
+    CString m_shadeTablePath;
+    class CDDPalette* m_palette;
 };
 SIZE(0x2c);
 

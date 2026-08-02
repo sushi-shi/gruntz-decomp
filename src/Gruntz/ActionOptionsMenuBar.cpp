@@ -131,7 +131,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         m_buttonIcon[1] = 0;
         m_buttonIcon[0] = 0;
     } else {
-        m_buttonIcon[1] = grunt->m_198;
+        m_buttonIcon[1] = grunt->m_vehiclePickupType;
         if (grunt->m_entranceReason >= 0x17) {
             m_buttonState[1] = 3;
         } else if (m_buttonState[1] == 3) {
@@ -142,7 +142,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         if (prim == 0) {
             m_buttonIcon[0] = 0x21;
         } else if (prim == 3) {
-            m_buttonIcon[0] = grunt->m_194;
+            m_buttonIcon[0] = grunt->m_brickPickupType;
         }
         if (!grunt->CanShowStamina()) {
             m_buttonState[0] = 3;

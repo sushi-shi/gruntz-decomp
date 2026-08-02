@@ -162,16 +162,16 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
     } while (0)
 
 void GruntRecycleCoords(CGrunt* g) {
-    POSITION pos = g->m_31c.GetHeadPosition();
+    POSITION pos = g->m_coordList.GetHeadPosition();
     while (pos != 0) {
-        void* coord = g->m_31c.GetNext(pos);
+        void* coord = g->m_coordList.GetNext(pos);
         if (coord != 0) {
             CoordPoolNode* node = g_coordPool.NodeOf(coord);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
-    g->m_31c.RemoveAll();
+    g->m_coordList.RemoveAll();
 }
 
 static __inline void GruntScratchTeardown() {
@@ -211,27 +211,27 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     CMotionState* m = Motion();
     i32 lo0 = m_objAux->m_minX;
     if (lo0 == 0) {
-        m->m_70 = g_movingLogicMin;
+        m->m_minBounds.x = g_movingLogicMin;
     } else {
-        m->m_70 = static_cast<double>(lo0);
+        m->m_minBounds.x = static_cast<double>(lo0);
     }
     i32 lo1 = m_objAux->m_minY;
     if (lo1 == 0) {
-        m->m_78 = g_movingLogicMin;
+        m->m_minBounds.y = g_movingLogicMin;
     } else {
-        m->m_78 = static_cast<double>(lo1);
+        m->m_minBounds.y = static_cast<double>(lo1);
     }
     i32 hi0 = m_objAux->m_maxX;
     if (hi0 == 0) {
-        m->m_88 = g_movingLogicMax;
+        m->m_maxBounds.x = g_movingLogicMax;
     } else {
-        m->m_88 = static_cast<double>(hi0);
+        m->m_maxBounds.x = static_cast<double>(hi0);
     }
     i32 hi1 = m_objAux->m_maxY;
     if (hi1 == 0) {
-        m->m_90 = g_movingLogicMax;
+        m->m_maxBounds.y = g_movingLogicMax;
     } else {
-        m->m_90 = static_cast<double>(hi1);
+        m->m_maxBounds.y = static_cast<double>(hi1);
     }
     m->SetParams(
         static_cast<double>(m_object->m_screenX),
@@ -248,8 +248,8 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     );
     m->SetZ(static_cast<double>(g_defaultZ));
 
-    m_148 = 0;
-    m_14c = 0;
+    m_collisionFlags = 0;
+    m_moveFlags = 0;
     m_object->m_moveMode = 7;
 
     CMovingLogic::AdvanceMotion();
@@ -261,10 +261,10 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_struckTimerLo = 0;
     m_struckClockHi = 0;
     m_struckTimerHi = 0;
-    m_278 = 0;
-    m_280 = 0;
-    m_27c = 0;
-    m_284 = 0;
+    m_holdAnchorLo = 0;
+    m_holdWindowLo = 0;
+    m_holdAnchorHi = 0;
+    m_holdWindowHi = 0;
     m_arrivalRerollLo = 0;
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
@@ -314,16 +314,16 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_shimmerWindowLo = 0;
     m_shimmerClockHi = 0;
     m_shimmerWindowHi = 0;
-    m_8c0 = 0;
-    m_8c8 = 0;
-    m_8c4 = 0;
-    m_8cc = 0;
+    m_arrivalVoiceClockLo = 0;
+    m_arrivalVoiceWindowLo = 0;
+    m_arrivalVoiceClockHi = 0;
+    m_arrivalVoiceWindowHi = 0;
 
     m_entranceCell.row = g_gruntMoveDirSouth.row;
     m_entranceCell.column = g_gruntMoveDirSouth.column;
     m_entranceCell.direction = g_gruntMoveDirSouth.direction;
-    m_434 = m_object->m_powerup;
-    m_438 = g_frameTicks;
+    m_startingItemId = m_object->m_powerup;
+    m_recordedFrameTick = g_frameTicks;
     m_object->m_moveMode = 1;
     m_430 = 0;
     m_42c = 0;
@@ -342,21 +342,21 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_wwdObject->m_hitTypeFlags = 0x3d1;
     m_wwdObject->m_flags |= 0x2000100;
     m_wwdObject->m_collMask |= 0x103f;
-    m_wwdObject->m_f0 = 1;
+    m_wwdObject->m_attackTypeMask = 1;
     m_tileOwnerHi = -1;
     m_tileOwnerLo = -1;
-    m_neighborCol = -1;
-    m_38c = 0;
+    m_neighborCell.m_x = -1;
+    m_warpstoneAnchorIndex = 0;
     m_entranceReason = 0;
-    m_198 = 0;
-    m_194 = 0;
+    m_vehiclePickupType = 0;
+    m_brickPickupType = 0;
     m_gruntKind = 0;
     m_toolId = 0;
     m_animSetName = s_NORMALGRUNT;
-    m_neighborRow = -1;
+    m_neighborCell.m_y = -1;
     m_entranceCommitted = 1;
     m_healthSprite = 0;
-    m_reachRectLeft = -1;
+    m_reachRect.left = -1;
     m_staminaSprite = 0;
     m_toyTimeSprite = 0;
     m_wingzTimeSprite = 0;
@@ -371,13 +371,13 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_wingzEnabled = 0;
     m_tileClaimed = 0;
     m_struckVoiceSound = 0;
-    m_reachRectTop = -1;
-    m_reachRadius = 1;
-    m_reachRectBottom = 1;
-    m_2a0 = 0;
-    m_2a4 = 0;
-    m_2a8 = 0;
-    m_2ac = 0;
+    m_reachRect.top = -1;
+    m_reachRect.right = 1;
+    m_reachRect.bottom = 1;
+    m_reachExclusionRect.left = 0;
+    m_reachExclusionRect.top = 0;
+    m_reachExclusionRect.right = 0;
+    m_reachExclusionRect.bottom = 0;
     m_toyRectA.left = 0;
     m_toyRectA.top = 0;
     m_toyRectA.right = 0;
@@ -431,19 +431,19 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_shimmerWindowLo = 0;
     m_shimmerClockHi = 0;
     m_shimmerWindowHi = 0;
-    m_8c0 = 0;
-    m_8c8 = 0;
-    m_8c4 = 0;
-    m_8cc = 0;
+    m_arrivalVoiceClockLo = 0;
+    m_arrivalVoiceWindowLo = 0;
+    m_arrivalVoiceClockHi = 0;
+    m_arrivalVoiceWindowHi = 0;
     m_arrivalRerollLo = 0;
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
     m_arrivalRerollWindowHi = 0;
-    m_2f8 = -1;
-    m_2fc = -1;
+    m_2f8.m_x = -1;
+    m_2f8.m_y = -1;
     m_arrivalNotified = 0;
     m_defenderState = 0;
-    m_2d8 = 0;
+    m_battleState = 0;
     {
         CWwdGameObjectA* h = m_object;
         i32 lim = h->m_screenY + 0x186a0;
@@ -452,7 +452,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
             h->m_flags |= 0x20000;
         }
     }
-    m_390 = 1;
+    m_blockedVoicePending = 1;
 }
 
 DATA(0x00229ad0)
@@ -462,28 +462,28 @@ RVA(0x00048360, 0x7e)
 void CGrunt::OnObjectRemoved() {
     if (CoordCount() != 0) {
 
-        POSITION pos = m_31c.GetHeadPosition();
+        POSITION pos = m_coordList.GetHeadPosition();
         while (pos != 0) {
-            void* buf = m_31c.GetNext(pos);
+            void* buf = m_coordList.GetNext(pos);
             if (buf) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(buf);
                 slot->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = slot;
             }
         }
-        m_31c.RemoveAll();
+        m_coordList.RemoveAll();
     }
 
     while (1) {
         i32 n = PayloadCount();
-        void* head = (n == 0) ? 0 : m_338.GetHead();
+        void* head = (n == 0) ? 0 : m_payloads.GetHead();
         if (head == 0) {
             return;
         }
         if (n == 0) {
             continue;
         }
-        void* p = m_338.RemoveHead();
+        void* p = m_payloads.RemoveHead();
         delete static_cast<char*>(p);
     }
 }
@@ -652,7 +652,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_cells[6].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
         m_cells[7].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
         m_cells[8].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
-        m_44c = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
+        m_deathFrameSetName = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
     } else if (dirOnly != 0) {
         m_cells[0].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
         m_cells[1].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
@@ -663,11 +663,11 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_cells[6].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
         m_cells[7].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
         m_cells[8].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
-        m_448 = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
+        m_frameSetName = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
     } else {
-        m_448 = s_GRUNTZ_ + m_animSetName;
+        m_frameSetName = s_GRUNTZ_ + m_animSetName;
     }
-    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, kind);
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, kind);
     CWwdGameObjectA* h = m_object;
     i32 keep50 = h->m_drawFillCmd;
 
@@ -772,32 +772,32 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeF) == 0);
     if (eq) {
         return;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
     if (eq) {
         goto walk;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeK) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeK) == 0);
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "E") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "E") == 0);
     if (eq) {
 
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseAttackIdle);
         {
             CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-            CAniDesc* elem = desc->m_records.GetSize() > 0
-                                 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
-                                 : 0;
+            CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                       ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                       : 0;
             i32 frame = elem->m_param;
             i32 row = m_entranceCell.row;
             i32 column = m_entranceCell.column;
@@ -808,11 +808,11 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
         }
         goto store;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
         goto codeI;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeM) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) == 0);
     if (eq) {
         goto walk;
     }
@@ -833,8 +833,9 @@ idle:
     m_wwdObject->ApplyGeometryDirect(m_poseIdle[GRUNT_IDLE1], 0);
     {
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniDesc* elem =
-            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
         i32 frame = elem->m_param;
         i32 row = rec.row;
         i32 column = rec.column;
@@ -871,7 +872,7 @@ i32 CGrunt::CommitArrival() {
         return 1;
     }
 
-    if (m_tileClaimed != 0 && g_gameReg->m_134 == 2) {
+    if (m_tileClaimed != 0 && g_gameReg->m_gameMode == 2) {
         m_tileMgr->GridAction7(m_tileOwnerHi, m_tileOwnerLo);
     } else if (m_tileClaimed != 0) {
         m_arrivalRerollLo = 0;
@@ -961,9 +962,9 @@ i32 CGrunt::StepArrivalDrop(
     i32 sx, sy;
     bool eq;
 
-    m_454 = 0;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
-    if (!eq && pxX == m_entrancePxX && pxY == m_entrancePxY) {
+    m_pendingTrigger = 0;
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
+    if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
         goto commitPhase;
     }
 
@@ -976,26 +977,26 @@ i32 CGrunt::StepArrivalDrop(
                 g_coordPool.Push(cur->m_coord);
             }
         }
-        m_31c.RemoveAll();
+        m_coordList.RemoveAll();
     }
-    lastX = m_lastTilePxX >> 5;
-    lastY = m_lastTilePxY >> 5;
+    lastX = m_lastTilePx.m_x >> 5;
+    lastY = m_lastTilePx.m_y >> 5;
     tileX = pxX >> 5;
     tileY = pxY >> 5;
     if (maskA == -1) {
         maskA = m_arrivalFlags;
     }
-    m_288 = pxX;
-    m_28c = pxY;
-    maskC = maskCIn | m_24c;
+    m_arrivalTargetPx.m_x = pxX;
+    m_arrivalTargetPx.m_y = pxY;
+    maskC = maskCIn | m_passableMask;
     grid = g_gameReg->m_tileGrid;
-    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, clearFlag, maskA, maskC) == 0) {
+    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC) == 0) {
         goto nudgeTarget;
     }
 dropHead:
 
     if (CoordCount() != 0) {
-        pooled = g_coordPool.NodeOf(m_31c.RemoveHead());
+        pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
         pooled->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = pooled;
     }
@@ -1031,7 +1032,7 @@ pathGate:
     if (cnt == 1 && m_arrivalPending == 0) {
 
         SetEntrancePos(1, 1);
-        if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
+        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
             PlayMoveSoundAtTile(tileX, tileY);
         }
         return 0;
@@ -1076,19 +1077,19 @@ pathGate:
                             g_coordPool.m_freeHead = pooled;
                         }
                     }
-                    m_31c.RemoveAll();
+                    m_coordList.RemoveAll();
                 }
                 pos = probe.GetHeadPosition();
                 while (pos != 0) {
-                    m_31c.AddTail(probe.GetNext(pos));
+                    m_coordList.AddTail(probe.GetNext(pos));
                 }
             }
             probe.RemoveAll();
         }
     }
 commitEntrance:
-    m_entrancePxX = pxX;
-    m_entrancePxY = pxY;
+    m_entrancePx.m_x = pxX;
+    m_entrancePx.m_y = pxY;
     if (reinit != 0) {
         StepEntranceReinit();
     }
@@ -1151,13 +1152,13 @@ nudgeTarget:
             grid->m_rowInts[sy][sx * 7 + 7] = 0;
         }
     }
-    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, clearFlag, maskA, maskC) != 0
+    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC) != 0
         && CoordCount() != 0) {
-        pooled = g_coordPool.NodeOf(m_31c.RemoveHead());
+        pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
         pooled->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = pooled;
         if (CoordCount() != 0) {
-            pooled = g_coordPool.NodeOf(m_31c.RemoveTail());
+            pooled = g_coordPool.NodeOf(m_coordList.RemoveTail());
             pooled->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = pooled;
             if (CoordCount() != 0) {
@@ -1179,8 +1180,8 @@ nudgeTarget:
             SetEntrancePos(1, 1);
             return 1;
         }
-        m_288 = pxX;
-        m_28c = pxY;
+        m_arrivalTargetPx.m_x = pxX;
+        m_arrivalTargetPx.m_y = pxY;
     }
 nudgeDone:
     if (nudged != 0) {
@@ -1206,7 +1207,7 @@ nudgeDone:
             err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
                       ? 1
                       : grid->m_rowInts[sy][sx * 7];
-            if ((maskA & err) != 0 && (m_24c & err) == 0) {
+            if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                 blocked = 1;
             } else {
                 walkX = sx;
@@ -1224,7 +1225,7 @@ nudgeDone:
             err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
                       ? 1
                       : grid->m_rowInts[sy][sx * 7];
-            if ((maskA & err) != 0 && (m_24c & err) == 0) {
+            if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                 blocked = 1;
             } else {
                 walkX = sx;
@@ -1248,11 +1249,11 @@ reCommit:
 reProbe:
     pxX = walkX * 32 + 0x10;
     pxY = walkY * 32 + 0x10;
-    if (grid->SearchEdge(walkX, walkY, lastX, lastY, &m_31c, 1, maskA, maskC) != 0) {
+    if (grid->SearchEdge(walkX, walkY, lastX, lastY, &m_coordList, 1, maskA, maskC) != 0) {
         goto dropHead;
     }
     SetEntrancePos(1, 1);
-    if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
+    if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
         PlayMoveSoundAtTile(walkX, walkY);
     }
     if (m_arrivalPending == 0) {
@@ -1275,15 +1276,15 @@ i32 CGrunt::StepGruntMovement() {
     CGruntzMapMgr* bd;
 
     {
-        i32 entX = m_entrancePxX;
-        i32 lastX = m_lastTilePxX;
-        i32 entY = m_entrancePxY;
-        if (lastX == entX && m_lastTilePxY == entY) {
+        i32 entX = m_entrancePx.m_x;
+        i32 lastX = m_lastTilePx.m_x;
+        i32 entY = m_entrancePx.m_y;
+        if (lastX == entX && m_lastTilePx.m_y == entY) {
             goto label_ret1;
         }
     }
     if (m_arrivalState == 0x11) {
-        CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_038;
+        CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_battlezConfig;
         if (slot != 0 && slot->ValidateUnitPath(this) == 0) {
             SetEntrancePos(1, 1);
             return 0;
@@ -1293,7 +1294,7 @@ i32 CGrunt::StepGruntMovement() {
         goto label_dropRet0;
     }
     if (m_arrivalState != 0x11) {
-        Coord* co = static_cast<Coord*>(m_31c.RemoveHead());
+        Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
         coordX = co->m_x;
         coordY = co->m_y;
         CoordPoolNode* p = g_coordPool.NodeOf(co);
@@ -1362,8 +1363,8 @@ i32 CGrunt::StepGruntMovement() {
     {
         i32 blockMove = 1;
         if (m_arrivalState == 6) {
-            if (((m_defenderX ^ tgtPxX) & 0xffffffe0) == 0
-                && ((m_defenderY ^ tgtPxY) & 0xffffffe0) == 0) {
+            if (((m_defenderPx.m_x ^ tgtPxX) & 0xffffffe0) == 0
+                && ((m_defenderPx.m_y ^ tgtPxY) & 0xffffffe0) == 0) {
                 blockMove = 0;
             }
         }
@@ -1373,7 +1374,7 @@ i32 CGrunt::StepGruntMovement() {
                 if (mask == 0) {
                     goto label_4c6e4;
                 }
-                if (flagHead & m_24c) {
+                if (flagHead & m_passableMask) {
                     goto label_4c6e4;
                 }
             }
@@ -1384,8 +1385,8 @@ i32 CGrunt::StepGruntMovement() {
     }
     {
         i32 lastFlag;
-        i32 ltx = m_lastTilePxX >> 5;
-        i32 lty = m_lastTilePxY >> 5;
+        i32 ltx = m_lastTilePx.m_x >> 5;
+        i32 lty = m_lastTilePx.m_y >> 5;
         if (static_cast<u32>(ltx) < static_cast<u32>(bd->m_width)
             && static_cast<u32>(lty) < static_cast<u32>(bd->m_height)) {
             lastFlag = bd->m_rowInts[lty][ltx * 7];
@@ -1407,7 +1408,7 @@ i32 CGrunt::StepGruntMovement() {
         if (mask & 0x20000000) {
             goto label_4cb2a;
         }
-        if (mask != 0 && !(flagHead & m_24c)) {
+        if (mask != 0 && !(flagHead & m_passableMask)) {
             goto label_4cb2a;
         }
     }
@@ -1423,7 +1424,7 @@ i32 CGrunt::StepGruntMovement() {
         }
         (static_cast<i32*>(node))[0] = tgtTileX;
         (static_cast<i32*>(node))[1] = tgtTileY;
-        m_31c.AddHead(node);
+        m_coordList.AddHead(node);
     }
     if (PathScan() == 0) {
         PlaySound(0x3e8, rec);
@@ -1487,7 +1488,7 @@ i32 CGrunt::StepGruntMovement() {
             SetEntrancePos(1, 0);
             return 0;
         }
-        Coord* co2 = static_cast<Coord*>(m_31c.RemoveHead());
+        Coord* co2 = static_cast<Coord*>(m_coordList.RemoveHead());
         CoordPoolNode* p = g_coordPool.NodeOf(co2);
         p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1508,7 +1509,7 @@ label_4c68b:
 
 label_4c6e4:
     if (m_arrivalState == 0x11 && CoordCount() != 0) {
-        Coord* co = static_cast<Coord*>(m_31c.RemoveHead());
+        Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
         CoordPoolNode* p = g_coordPool.NodeOf(co);
         p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1516,7 +1517,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = 1;
     } else {
-        CString* r = g_typeColl.ScratchResolve(m_objAux->m_1c);
+        CString* r = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         GruntScratchTeardown();
         bool ne;
         ne = (strcmp(*r, "L") != 0);
@@ -1544,15 +1545,15 @@ label_4c6e4:
             goto label_4cb4b;
         }
     }
-    if (tgtPxX == m_entrancePxX && tgtPxY == m_entrancePxY) {
+    if (tgtPxX == m_entrancePx.m_x && tgtPxY == m_entrancePx.m_y) {
         if ((flagHead & 0x939) == 0) {
             goto label_4c92b;
         }
         goto label_4cb2a;
     }
     {
-        i32 beyondPxX = tgtPxX * 2 - m_lastTilePxX;
-        i32 beyondPxY = tgtPxY * 2 - m_lastTilePxY;
+        i32 beyondPxX = tgtPxX * 2 - m_lastTilePx.m_x;
+        i32 beyondPxY = tgtPxY * 2 - m_lastTilePx.m_y;
         i32 btx = beyondPxX >> 5;
         i32 bty = beyondPxY >> 5;
         i32 beyondFlag;
@@ -1567,13 +1568,13 @@ label_4c6e4:
             goto label_4cb2a;
         }
         if (CoordCount() != 0 && m_arrivalState != 0x11) {
-            Coord* co = static_cast<Coord*>(m_31c.RemoveHead());
+            Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
             if (co->m_x == btx && co->m_y == bty) {
                 CoordPoolNode* p = g_coordPool.NodeOf(co);
                 p->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = p;
             } else {
-                m_31c.AddHead(co);
+                m_coordList.AddHead(co);
             }
         }
         i32 hudY = m_object->m_screenY;
@@ -1587,9 +1588,9 @@ label_4c6e4:
     }
 
 label_4c92b: {
-    i32 lastTileX = m_lastTilePxX >> 5;
+    i32 lastTileX = m_lastTilePx.m_x >> 5;
     tgtTileX = tgtPxX >> 5;
-    i32 lastTileY = m_lastTilePxY >> 5;
+    i32 lastTileY = m_lastTilePx.m_y >> 5;
     tgtTileY = tgtPxY >> 5;
     CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
     if (lastTileX == tgtTileX && lastTileY == tgtTileY) {
@@ -1604,12 +1605,12 @@ label_4c92b: {
     }
     BrickzCell** rowtable = bd->m_rows;
     BrickzCell* tgtT = &rowtable[tgtTileY][tgtTileX];
-    i32 tgtFlag = tgtT->m_0;
+    i32 tgtFlag = tgtT->m_flags;
     i32 mask = m_arrivalFlags & tgtFlag;
     if (mask & 0x20000000) {
         goto label_4cb2a;
     }
-    if (mask != 0 && !(tgtFlag & m_24c)) {
+    if (mask != 0 && !(tgtFlag & m_passableMask)) {
         goto label_4cb2a;
     }
     BrickzCell* lastT = &rowtable[lastTileY][lastTileX];
@@ -1623,58 +1624,58 @@ label_4c92b: {
     }
 
     if (dx > 0 && dy > 0) {
-        if ((lastT + 1)->m_0 & 0x2000) {
+        if ((lastT + 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((lastT + xbound)->m_0 & 0x2000) {
+        if ((lastT + xbound)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((tgtT - 1)->m_0 & 0x2000) {
+        if ((tgtT - 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if (!((tgtT - xbound)->m_0 & 0x2000)) {
+        if (!((tgtT - xbound)->m_flags & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx < 0 && dy > 0) {
-        if ((lastT - 1)->m_0 & 0x2000) {
+        if ((lastT - 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((lastT + xbound)->m_0 & 0x2000) {
+        if ((lastT + xbound)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((tgtT + 1)->m_0 & 0x2000) {
+        if ((tgtT + 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if (!((tgtT - xbound)->m_0 & 0x2000)) {
+        if (!((tgtT - xbound)->m_flags & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx > 0 && dy < 0) {
-        if ((lastT + 1)->m_0 & 0x2000) {
+        if ((lastT + 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((lastT - xbound)->m_0 & 0x2000) {
+        if ((lastT - xbound)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((tgtT - 1)->m_0 & 0x2000) {
+        if ((tgtT - 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if (!((tgtT + xbound)->m_0 & 0x2000)) {
+        if (!((tgtT + xbound)->m_flags & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx < 0 && dy < 0) {
-        if ((lastT - 1)->m_0 & 0x2000) {
+        if ((lastT - 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((lastT - xbound)->m_0 & 0x2000) {
+        if ((lastT - xbound)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if ((tgtT + 1)->m_0 & 0x2000) {
+        if ((tgtT + 1)->m_flags & 0x2000) {
             goto label_4cb2a;
         }
-        if (!((tgtT + xbound)->m_0 & 0x2000)) {
+        if (!((tgtT + xbound)->m_flags & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
@@ -1689,27 +1690,27 @@ label_4cb2a:
 
 label_4cb4b:
     m_210 = 0;
-    m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
+    m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     m_coordRetryCount = 0;
     PlaySound(0x3e8, rec);
     {
-        m_commitPxX = m_lastTilePxX;
-        m_commitPxY = m_lastTilePxY;
-        i32 lastTileX = m_lastTilePxX >> 5;
-        i32 lastTileY = m_lastTilePxY >> 5;
+        m_commitPx.m_x = m_lastTilePx.m_x;
+        m_commitPx.m_y = m_lastTilePx.m_y;
+        i32 lastTileX = m_lastTilePx.m_x >> 5;
+        i32 lastTileY = m_lastTilePx.m_y >> 5;
         CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
 
         bdl->m_rows[lastTileY][lastTileX].m_flagBytes[3] &= 0xdf;
-        bdl->m_rows[lastTileY][lastTileX].m_4 = -1;
+        bdl->m_rows[lastTileY][lastTileX].m_occupantId = -1;
 
         tgtTileX = tgtPxX >> 5;
         tgtTileY = tgtPxY >> 5;
         CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
-        bd2->m_rows[tgtTileY][tgtTileX].m_0 |= 0x20000000;
-        bd2->m_rows[tgtTileY][tgtTileX].m_4 = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+        bd2->m_rows[tgtTileY][tgtTileX].m_flags |= 0x20000000;
+        bd2->m_rows[tgtTileY][tgtTileX].m_occupantId = (m_tileOwnerHi << 8) | m_tileOwnerLo;
 
-        m_lastTilePxX = rec.row;
-        m_lastTilePxY = rec.column;
+        m_lastTilePx.m_x = rec.row;
+        m_lastTilePx.m_y = rec.column;
         ComputeFacing(1.0);
     }
     m_arrivalPending = 1;
@@ -1754,24 +1755,24 @@ label_ret1:
 RVA(0x0004d060, 0x98)
 void CGrunt::SetEntrancePos(i32 a, i32 b) {
     m_210 = 0;
-    m_entrancePxX = m_lastTilePxX;
-    m_entrancePxY = m_lastTilePxY;
+    m_entrancePx.m_x = m_lastTilePx.m_x;
+    m_entrancePx.m_y = m_lastTilePx.m_y;
     if (a) {
         m_arrivalPhase = 0;
         m_arrivalActive = 0;
     }
     if (b && m_arrivalState != 0x11 && CoordCount() != 0) {
 
-        POSITION pos = m_31c.GetHeadPosition();
+        POSITION pos = m_coordList.GetHeadPosition();
         while (pos != 0) {
-            void* buf = m_31c.GetNext(pos);
+            void* buf = m_coordList.GetNext(pos);
             if (buf) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(buf);
                 slot->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = slot;
             }
         }
-        m_31c.RemoveAll();
+        m_coordList.RemoveAll();
     }
 }
 
@@ -2000,78 +2001,78 @@ i32 CGrunt::Place(
         }
     } else {
         m_arrivalFlags = 0x4000901;
-        if (g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_gameMode == 1) {
             m_arrivalFlags = 0x4000911;
         }
     }
-    m_288 = -1;
-    m_28c = -1;
-    m_defenderX = -1;
-    m_defenderY = -1;
-    m_378 = 0;
-    m_390 = 1;
+    m_arrivalTargetPx.m_x = -1;
+    m_arrivalTargetPx.m_y = -1;
+    m_defenderPx.m_x = -1;
+    m_defenderPx.m_y = -1;
+    m_powerupDuration = 0;
+    m_blockedVoicePending = 1;
     m_struckCount = 0;
     m_toyTileIndex = 0;
     m_moveMode = -1;
     m_coordRetryCount = 0;
     m_moveKind = 0;
-    m_374 = 0;
+    m_moveVariantOverride = 0;
     m_moveVariant = 0;
-    m_1a4 = 0;
+    m_helpCueId = 0;
     m_arrivalState = kind;
-    m_194 = 0x22;
+    m_brickPickupType = 0x22;
     m_tileOwnerHi = col;
-    m_2e0 = a9;
+    m_defenderQueuePosition = a9;
     m_tileOwnerLo = row;
-    m_arrivalCol = -1;
-    m_arrivalRow = -1;
-    m_2e4 = a10;
+    m_arrivalCell.m_x = -1;
+    m_arrivalCell.m_y = -1;
+    m_defenderPickupType = a10;
     m_defenderRadius = a8 + 1;
     m_arrivalRerollLo = 0;
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
     m_arrivalRerollWindowHi = 0;
-    m_278 = 0;
-    m_280 = 0;
-    m_27c = 0;
-    m_284 = 0;
-    m_1f4_moveIcon = moveIcon;
+    m_holdAnchorLo = 0;
+    m_holdWindowLo = 0;
+    m_holdAnchorHi = 0;
+    m_holdWindowHi = 0;
+    m_moveIcon = moveIcon;
     m_tileMgr = board;
     m_224 = 1;
     m_arrivalPhase = 0;
     m_354 = 1;
     m_tileClaimed = 0;
-    m_358 = 1;
-    m_35c = 0;
+    m_neighborScanEnabled = 1;
+    m_tileMoveCommitted = 0;
     m_entranceArmed = 0;
     m_entranceDropActive = 0;
     m_deathType = -1;
-    m_454 = 0;
-    m_36c = 0;
-    m_370 = -1;
-    m_24c = 0;
-    m_1f8 = -1;
+    m_pendingTrigger = 0;
+    m_cellRemovalNotified = 0;
+    m_killerSlot = -1;
+    m_passableMask = 0;
+    m_savedMoveIcon = -1;
     m_lowStaminaCued = 0;
-    m_2e8 = -1;
+    m_targetTeam = -1;
     LoadVehicleGruntSprites(vehicleKind);
     LoadGruntTypeTable(typeKind, 1, 0, 0);
     if (span != 0) {
-        m_object->m_extent.left = (m_lastTilePxX >> 5) - span->left;
-        m_object->m_extent.right = span->right + (m_lastTilePxX >> 5);
-        m_object->m_extent.top = (m_lastTilePxY >> 5) - span->top;
-        m_object->m_extent.bottom = span->bottom + (m_lastTilePxY >> 5);
+        m_object->m_extent.left = (m_lastTilePx.m_x >> 5) - span->left;
+        m_object->m_extent.right = span->right + (m_lastTilePx.m_x >> 5);
+        m_object->m_extent.top = (m_lastTilePx.m_y >> 5) - span->top;
+        m_object->m_extent.bottom = span->bottom + (m_lastTilePx.m_y >> 5);
     }
     RECT reach;
     ::CopyRect(&reach, &m_object->m_extent);
     if (reach.right - reach.left == 0 && reach.top - reach.bottom == 0) {
-        m_318 = 0;
+        m_hasExtent = 0;
     } else {
-        m_318 = 1;
+        m_hasExtent = 1;
     }
-    if (m_1f4_moveIcon < 0 || m_1f4_moveIcon >= 0x11) {
-        m_1f4_moveIcon = 0;
+    if (m_moveIcon < 0 || m_moveIcon >= 0x11) {
+        m_moveIcon = 0;
     }
-    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, 0);
+    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, 0);
     if (shade == 0) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
@@ -2084,8 +2085,8 @@ i32 CGrunt::Place(
     }
 
     CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-    i32 tx = m_lastTilePxX >> 5;
-    i32 ty = m_lastTilePxY >> 5;
+    i32 tx = m_lastTilePx.m_x >> 5;
+    i32 ty = m_lastTilePx.m_y >> 5;
     plane->m_rowInts[ty][tx * 7] |= 0x20000000;
     plane->m_rowInts[ty][tx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
     m_entranceActive = 0;
@@ -2095,26 +2096,26 @@ i32 CGrunt::Place(
     ResetEntranceAnimation(1, 0, 0);
     switch (kind) {
         case 5:
-            m_defenderX = m_lastTilePxX;
-            m_defenderY = m_lastTilePxY;
+            m_defenderPx.m_x = m_lastTilePx.m_x;
+            m_defenderPx.m_y = m_lastTilePx.m_y;
             break;
         case 6:
             if (a9 == 0 && a10 == 0) {
-                m_defenderX = m_lastTilePxX;
-                m_defenderY = m_lastTilePxY;
+                m_defenderPx.m_x = m_lastTilePx.m_x;
+                m_defenderPx.m_y = m_lastTilePx.m_y;
                 m_arrivalState = 5;
             } else {
                 i32 px = (a9 << 5) + 0x10;
                 i32 py = (a10 << 5) + 0x10;
-                m_defenderX = px;
-                m_defenderY = py;
+                m_defenderPx.m_x = px;
+                m_defenderPx.m_y = py;
                 StepArrivalDrop(px, py - 0x20, 0, -1, 1, 0);
             }
             break;
         case 4:
         case 7:
-            m_defenderX = m_lastTilePxX;
-            m_defenderY = m_lastTilePxY;
+            m_defenderPx.m_x = m_lastTilePx.m_x;
+            m_defenderPx.m_y = m_lastTilePx.m_y;
             break;
     }
     return 1;
@@ -2148,9 +2149,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         if (m_entranceActive != 0) {
             goto fail;
         }
-        eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_1c)), "A") != 0);
+        eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), "A") != 0);
         if (eq) {
-            eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_1c)), "D") != 0);
+            eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), "D") != 0);
             if (eq) {
                 goto fail;
             }
@@ -2203,14 +2204,14 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         case 0: {
             m_animSetName = "NORMALGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2218,24 +2219,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 1: {
             m_animSetName = "BOMBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2243,24 +2244,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 2: {
             m_animSetName = "BOOMERANGGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2271,24 +2272,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_arrivalState == 4) {
                 m_defenderRadius = 1;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 3: {
             m_animSetName = "BRICKGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2296,24 +2297,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 4: {
             m_animSetName = "CLUBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2321,24 +2322,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 5: {
             m_animSetName = "GAUNTLETZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2346,24 +2347,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 6: {
             m_animSetName = "GLOVEZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2371,24 +2372,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 7: {
             m_animSetName = "GOOBERGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2396,13 +2397,13 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             if (m_arrivalState == 0x11) {
-                if (m_2d8 != 4) {
+                if (m_battleState != 4) {
                     if (CoordCount() != 0) {
                         CoordNode* p = CoordHead();
                         while (p != 0) {
@@ -2412,20 +2413,20 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                                 g_coordPool.Push(c->m_coord);
                             }
                         }
-                        m_31c.RemoveAll();
+                        m_coordList.RemoveAll();
                     }
                     for (;;) {
                         void* h;
-                        if (m_338.GetCount() != 0) {
-                            h = m_338.GetHead();
+                        if (m_payloads.GetCount() != 0) {
+                            h = m_payloads.GetHead();
                         } else {
                             h = 0;
                         }
                         if (h == 0) {
                             break;
                         }
-                        if (m_338.GetCount() != 0) {
-                            ::operator delete(m_338.RemoveHead());
+                        if (m_payloads.GetCount() != 0) {
+                            ::operator delete(m_payloads.RemoveHead());
                         }
                     }
                     i32* payload = static_cast<i32*>(::operator new(0x2c));
@@ -2433,7 +2434,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                         memset(payload, 0, 0x2c);
                     }
                     payload[0] = 9;
-                    m_338.AddTail(payload);
+                    m_payloads.AddTail(payload);
                 }
             }
             break;
@@ -2441,14 +2442,14 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         case 8: {
             m_animSetName = "GRAVITYBOOTZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2456,24 +2457,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0x400;
+            m_passableMask = 0x400;
             m_354 = 1;
             break;
         }
         case 9: {
             m_animSetName = "GUNHATGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2481,27 +2482,27 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == 4) {
                 m_defenderRadius = 1;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0xa: {
             m_animSetName = "NERFGUNGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2509,27 +2510,27 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == 4) {
                 m_defenderRadius = 1;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0xb: {
             m_animSetName = "ROCKGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2537,27 +2538,27 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == 4) {
                 m_defenderRadius = 1;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0xc: {
             m_animSetName = "SHIELDGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2565,24 +2566,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0xd: {
             m_animSetName = "SHOVELGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2590,24 +2591,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0xe: {
             m_animSetName = "SPRINGGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2615,24 +2616,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0x1000;
+            m_passableMask = 0x1000;
             m_354 = 1;
             break;
         }
         case 0xf: {
             m_animSetName = "SPYGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2640,24 +2641,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0x10: {
             m_animSetName = "SWORDGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2665,24 +2666,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0x11: {
             m_animSetName = "TIMEBOMBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2690,25 +2691,25 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0x12: {
             m_animSetName = "TOOBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
             m_coordToggle = 0;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2716,24 +2717,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0x100;
+            m_passableMask = 0x100;
             m_354 = 1;
             break;
         }
         case 0x13: {
             m_animSetName = "WANDGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2741,24 +2742,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0x14: {
             m_animSetName = "WARPSTONEGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2766,24 +2767,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 0;
             break;
         }
         case 0x15: {
             m_animSetName = "WELDERGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2791,27 +2792,27 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == 4) {
                 m_defenderRadius = 1;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_354 = 1;
             break;
         }
         case 0x16: {
             m_animSetName = "WINGZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
-            m_reachRectLeft = -r;
-            m_reachRectTop = -r;
-            m_reachRadius = r;
-            m_reachRectBottom = r;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -r;
+            m_reachRect.top = -r;
+            m_reachRect.right = r;
+            m_reachRect.bottom = r;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == 0) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2819,13 +2820,13 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == 4) {
                 m_defenderRadius = 1;
             }
-            m_24c = 0xd02;
+            m_passableMask = 0xd02;
             m_wingzEnabled = 0;
             m_wingzTime = 0x64;
             m_354 = 1;
@@ -2839,12 +2840,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "BABYWALKERGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2862,12 +2863,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "BEACHBALLGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2884,12 +2885,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "BIGWHEELGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2907,12 +2908,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "GOKARTGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2929,12 +2930,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2951,12 +2952,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "JUMPROPEGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2974,12 +2975,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "POGOSTICKGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2997,13 +2998,13 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
             m_moveVariant = variant;
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "SCROLLGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -3020,12 +3021,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "SQUEAKTOYGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -3042,12 +3043,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 1;
+            m_passableMask = 1;
             m_animSetName = "YOYOGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -3082,14 +3083,14 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         }
         case 0x39: {
             m_toolId = m_entranceReason;
-            m_reachRectLeft = -1;
-            m_reachRectTop = -1;
-            m_reachRadius = 1;
-            m_reachRectBottom = 1;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -1;
+            m_reachRect.top = -1;
+            m_reachRect.right = 1;
+            m_reachRect.bottom = 1;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             fresh = 0;
             m_animSetName = "HAREKRISHNAGRUNT";
             if (m_arrivalState == 0) {
@@ -3099,10 +3100,10 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_gruntKind = 0x39;
             m_convertTimeLo = g_buteMgr.GetDwordDef("Powerupz", "ConversionTime", 0x1f4);
             m_convertTimeHi = 0;
@@ -3114,14 +3115,14 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         }
         case 0x3a: {
             m_toolId = m_entranceReason;
-            m_reachRectLeft = -1;
-            m_reachRectTop = -1;
-            m_reachRadius = 1;
-            m_reachRectBottom = 1;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -1;
+            m_reachRect.top = -1;
+            m_reachRect.right = 1;
+            m_reachRect.bottom = 1;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             fresh = 0;
             m_animSetName = "REAPERGRUNT";
             if (m_arrivalState == 0) {
@@ -3131,15 +3132,15 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            m_24c = 0;
+            m_passableMask = 0;
             m_gruntKind = 0x3a;
-            if (m_378 == 0) {
-                m_378 = g_buteMgr.GetDwordDef("Powerupz", "DeathTouchTime", 0x4e20);
+            if (m_powerupDuration == 0) {
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            m_convertTimeLo = m_378;
+            m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -3155,10 +3156,10 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_object->m_drawActive = 1;
             m_object->m_drawFillCmd = 0xb;
             m_object->m_fillFraction = t;
-            if (m_378 == 0) {
-                m_378 = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
+            if (m_powerupDuration == 0) {
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
             }
-            m_convertTimeLo = m_378;
+            m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -3170,10 +3171,11 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         }
         case 0x38: {
             m_gruntKind = 0x38;
-            if (m_378 == 0) {
-                m_378 = g_buteMgr.GetDwordDef("Powerupz", "InvulnerabilityTime", 0x4e20);
+            if (m_powerupDuration == 0) {
+                m_powerupDuration =
+                    g_buteMgr.GetDwordDef("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            m_convertTimeLo = m_378;
+            m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -3186,10 +3188,10 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         case 0x3c: {
             m_gruntKind = 0x3c;
             CreatePowerupSprite(3);
-            if (m_378 == 0) {
-                m_378 = g_buteMgr.GetDwordDef("Powerupz", "ReactiveArmorTime", 0x4e20);
+            if (m_powerupDuration == 0) {
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            m_convertTimeLo = m_378;
+            m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -3202,10 +3204,10 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         case 0x3b: {
             m_gruntKind = 0x3b;
             CreatePowerupSprite(1);
-            if (m_378 == 0) {
-                m_378 = g_buteMgr.GetDwordDef("Powerupz", "RoidzTime", 0x4e20);
+            if (m_powerupDuration == 0) {
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "RoidzTime", 0x4e20);
             }
-            m_convertTimeLo = m_378;
+            m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -3218,10 +3220,10 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         case 0x37: {
             m_gruntKind = 0x37;
             CreatePowerupSprite(2);
-            if (m_378 == 0) {
-                m_378 = g_buteMgr.GetDwordDef("Powerupz", "SuperSpeedTime", 0x4e20);
+            if (m_powerupDuration == 0) {
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            m_convertTimeLo = m_378;
+            m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -3287,7 +3289,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             return 1;
         }
         case 0x5e: {
-            (static_cast<CPlay*>(g_gameReg->m_curState))->PostActionCue(m_moveMode);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->PostActionCue(m_helpCueId);
             return 1;
         }
         case 0x50: {
@@ -3301,7 +3303,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
             i32 secs = g_buteMgr.GetIntDef("Powerupz", "StopwatchSeconds", 0);
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
                 secs += secs;
                 mins += mins;
                 if (secs > 0x3b) {
@@ -3313,14 +3315,14 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             return 1;
         }
         default: {
-            m_reachRectLeft = -1;
-            m_reachRectTop = -1;
-            m_reachRadius = 1;
-            m_reachRectBottom = 1;
-            m_2a0 = 0;
-            m_2a4 = 0;
-            m_2a8 = 0;
-            m_2ac = 0;
+            m_reachRect.left = -1;
+            m_reachRect.top = -1;
+            m_reachRect.right = 1;
+            m_reachRect.bottom = 1;
+            m_reachExclusionRect.left = 0;
+            m_reachExclusionRect.top = 0;
+            m_reachExclusionRect.right = 0;
+            m_reachExclusionRect.bottom = 0;
             fresh = 0;
             m_animSetName = "NORMALGRUNT";
             break;
@@ -3360,9 +3362,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         eq = (strcmp(*rec, "H") == 0);
         if (eq) {
             CAniElement* el = m_wwdObject->m_animCursor.m_animation;
-            CAniDesc* first;
+            CAniRecordView* first;
             if (el->m_records.GetSize() > 0) {
-                first = static_cast<CAniDesc*>(el->m_records[0]);
+                first = static_cast<CAniRecordView*>(el->m_records[0]);
             } else {
                 first = 0;
             }
@@ -3408,17 +3410,18 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 ResetEntranceAnimation(1, 0, 0);
                 if (m_arrivalPending == 0) {
-                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
-                    i32 col = m_lastTilePxX >> 5;
-                    i32 row = m_lastTilePxY >> 5;
-                    i32 tk = g_gameReg->m_tileGrid->m_rows[row][col].m_10;
+                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                    i32 col = m_lastTilePx.m_x >> 5;
+                    i32 row = m_lastTilePx.m_y >> 5;
+                    i32 tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
                     if (tk == 0x41) {
                         UpdateArrival(col, row);
                     } else if (tk == 0x42) {
-                        if (m_object->m_screenX == m_lastTilePxX
-                            && m_object->m_screenY == m_lastTilePxY) {
-                            m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
-                            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+                        if (m_object->m_screenX == m_lastTilePx.m_x
+                            && m_object->m_screenY == m_lastTilePx.m_y) {
+                            m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                            m_tileMgr
+                                ->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                         }
                     }
                 }
@@ -3447,9 +3450,9 @@ void CGrunt::XferName(char*) {
     m_dwell += g_frameDelta;
 
     if (m_entranceDropActive != 0) {
-        bool differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeA) != 0);
+        bool differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeA) != 0);
         if (differs) {
-            differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeK) != 0);
+            differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeK) != 0);
             if (differs) {
                 goto dropExpire;
             }
@@ -3505,15 +3508,15 @@ void CGrunt::XferName(char*) {
 
     {
         CWwdGameObjectA* obj = m_object;
-        if (obj->m_screenX != m_lastTilePxX || obj->m_screenY != m_lastTilePxY) {
+        if (obj->m_screenX != m_lastTilePx.m_x || obj->m_screenY != m_lastTilePx.m_y) {
             goto afterTile;
         }
     }
     {
         CGruntzMgr* reg = g_gameReg;
         CMapMgr* grid = reg->m_tileGrid;
-        i32 tx = m_lastTilePxX >> 5;
-        i32 ty = m_lastTilePxY >> 5;
+        i32 tx = m_lastTilePx.m_x >> 5;
+        i32 ty = m_lastTilePx.m_y >> 5;
         i32 cellObj;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -3565,13 +3568,17 @@ void CGrunt::XferName(char*) {
             }
         }
         if (flags & 0x100000) {
-            reg2->m_options[0].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[0]
+                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
         } else if (flags & 0x200000) {
-            reg2->m_options[1].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[1]
+                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
         } else if (flags & 0x400000) {
-            reg2->m_options[2].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[2]
+                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
         } else if (flags & 0x800000) {
-            reg2->m_options[3].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[3]
+                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
         }
 
         if (onWingzTile != 0) {
@@ -3587,11 +3594,11 @@ void CGrunt::XferName(char*) {
         } else if (onMoveTile != 0) {
             if (flags & 0x100) {
                 if (m_coordToggle == 0) {
-                    RunMoveConfig(m_lastTilePxX >> 5, m_lastTilePxY >> 5);
+                    RunMoveConfig(m_lastTilePx.m_x >> 5, m_lastTilePx.m_y >> 5);
                     return;
                 }
             } else if (m_coordToggle != 0) {
-                RunMoveConfig(m_lastTilePxX >> 5, m_lastTilePxY >> 5);
+                RunMoveConfig(m_lastTilePx.m_x >> 5, m_lastTilePx.m_y >> 5);
                 return;
             }
         }
@@ -3602,7 +3609,7 @@ void CGrunt::XferName(char*) {
                 if (mask == 0) {
                     goto tileKindDone;
                 }
-                if (flags & m_24c) {
+                if (flags & m_passableMask) {
                     goto tileKindDone;
                 }
             }
@@ -3610,8 +3617,8 @@ void CGrunt::XferName(char*) {
 
         {
 
-            i32 ptx = m_lastTilePxX >> 5;
-            i32 pty = m_lastTilePxY >> 5;
+            i32 ptx = m_lastTilePx.m_x >> 5;
+            i32 pty = m_lastTilePx.m_y >> 5;
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 cx = ptx;
             if (cx < 0) {
@@ -3702,7 +3709,7 @@ void CGrunt::XferName(char*) {
             }
             if (m_entranceReason == 1) {
                 bool nameDiffers =
-                    (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeM) != 0);
+                    (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) != 0);
                 if (!nameDiffers) {
                     goto afterTile;
                 }
@@ -3715,7 +3722,7 @@ void CGrunt::XferName(char*) {
                 CGruntzMgr* reg3 = g_gameReg;
                 i32 hp;
 
-                if (reg3->m_isEasyMode != 0 && reg3->m_134 == 1) {
+                if (reg3->m_isEasyMode != 0 && reg3->m_gameMode == 1) {
                     i32 bite = m_health - 5;
                     hp = (bite < 0) ? 0 : bite;
                 } else {
@@ -3745,7 +3752,7 @@ void CGrunt::XferName(char*) {
             m_entranceClockHi = 0;
         } else if (flags & 0x2000000) {
             if (m_entranceReason == 0x12) {
-                CString* node = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
@@ -3766,11 +3773,11 @@ afterTile:
     if (m_entranceActive == 0 && m_entranceCommitted != 0) {
         CWwdGameObjectA* obj = m_object;
         i32 sx = obj->m_screenX;
-        if (sx != m_lastTilePxX) {
+        if (sx != m_lastTilePx.m_x) {
             goto afterArrival;
         }
         i32 sy = obj->m_screenY;
-        if (sy != m_lastTilePxY) {
+        if (sy != m_lastTilePx.m_y) {
             goto afterArrival;
         }
         {
@@ -3790,9 +3797,9 @@ afterTile:
         }
         {
 
-            i32 col5 = m_defenderX >> 5;
-            i32 row5 = m_defenderY >> 5;
-            i32 reach = m_defenderRadius + m_reachRadius;
+            i32 col5 = m_defenderPx.m_x >> 5;
+            i32 row5 = m_defenderPx.m_y >> 5;
+            i32 reach = m_defenderRadius + m_reachRect.right;
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
             RECT gb;
@@ -3877,7 +3884,7 @@ afterTile:
                 }
             }
         } else if (m_poweredUp != 0 && m_neighborValid == 0 && m_combatActive == 0
-                   && m_stamina >= 0x64 && m_358 != 0) {
+                   && m_stamina >= 0x64 && m_neighborScanEnabled != 0) {
             FindGridNeighbor(0);
         }
         {
@@ -3959,7 +3966,7 @@ afterArrival:
         if (m_poweredUp != 0 && m_stamina >= 0x64) {
             bool eq;
             {
-                CString* node = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
@@ -3971,7 +3978,7 @@ afterArrival:
                 eq = (strcmp(*node, s_codeE) == 0);
             }
             if (!eq) {
-                CString* node = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
@@ -4049,7 +4056,7 @@ kindDispatch:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_shimmerClock64
                 >= m_shimmerWindow64) {
                 i32 pick = rand() % 16;
-                if (pick == m_1f4_moveIcon) {
+                if (pick == m_moveIcon) {
                     pick = 0x10;
                 }
                 CShadeTable* sel =
@@ -4082,8 +4089,8 @@ kindDispatch:
             } else {
                 CWwdGameObjectA* obj = m_object;
                 if ((obj->m_stateFlags & 8) == 0) {
-                    obj->m_48 = 0x7d;
-                    obj->m_44 = 0;
+                    obj->m_flashInterval = 0x7d;
+                    obj->m_flashCountdown = 0;
                     m_object->m_stateFlags |= 8;
                 }
             }
@@ -4144,9 +4151,14 @@ kindDispatch:
         }
     }
 
-    if (m_454 != 0 && m_stamina >= 0x64) {
-        m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, m_458, m_45c);
-        m_454 = 0;
+    if (m_pendingTrigger != 0 && m_stamina >= 0x64) {
+        m_tileMgr->ApplyTriggerA(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_pendingTriggerPx.m_x,
+            m_pendingTriggerPx.m_y
+        );
+        m_pendingTrigger = 0;
     }
 }
 
@@ -4154,7 +4166,7 @@ RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != 0x11) {
         bool eq;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
         if (eq && CoordCount() != 0) {
             CoordNode* head = CoordHead();
             Coord* co = head->m_coord;
@@ -4162,15 +4174,15 @@ void CGrunt::AdvanceMotion() {
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
                 && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
-                m_entrancePxX = (co->m_x << 5) + 0x10;
-                m_entrancePxY = (co->m_y << 5) + 0x10;
+                m_entrancePx.m_x = (co->m_x << 5) + 0x10;
+                m_entrancePx.m_y = (co->m_y << 5) + 0x10;
                 m_coordRetryCount = 0;
                 StepEntranceReinit();
             } else if (m_coordRetryCount <= 5) {
                 if (PathScan() != 0) {
                     Coord* h2 = (CoordHead())->m_coord;
-                    m_entrancePxX = (h2->m_x << 5) + 0x10;
-                    m_entrancePxY = (h2->m_y << 5) + 0x10;
+                    m_entrancePx.m_x = (h2->m_x << 5) + 0x10;
+                    m_entrancePx.m_y = (h2->m_y << 5) + 0x10;
                     if (CoordCount() != 0) {
                         Coord* h3 = (CoordHead())->m_coord;
                         i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
@@ -4186,25 +4198,25 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    CString* code = g_typeColl.ScratchResolve(m_objAux->m_1c);
+    CString* code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     GruntScratchTeardown();
     if (strcmp(*code, s_codeD) != 0) {
-        code = g_typeColl.ScratchResolve(m_objAux->m_1c);
+        code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         GruntScratchTeardown();
         if (strcmp(*code, s_codeN) != 0) {
-            code = g_typeColl.ScratchResolve(m_objAux->m_1c);
+            code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             GruntScratchTeardown();
             if (strcmp(*code, s_codeL) == 0) {
                 if (m_entranceStamped != 0) {
                     return;
                 }
             } else {
-                code = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                 GruntScratchTeardown();
                 if (strcmp(*code, s_codeM) != 0) {
                     return;
                 }
-                if (m_22c != 0) {
+                if (m_bombRunActive != 0) {
                     return;
                 }
             }
@@ -4212,28 +4224,32 @@ void CGrunt::AdvanceMotion() {
     }
     LoadWingzGruntSprites(0);
 
-    if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
+    if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
         if (m_arrivalPending != 0) {
-            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_arrivalPending = 0;
 
             if (m_arrivalPhase != 0) {
                 i32 result = -1;
                 if (m_arrivalPhase == 2) {
                     if (m_coordToggle == 0) {
-                        result =
-                            m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, m_288, m_28c);
+                        result = m_tileMgr->ApplyTriggerA(
+                            m_tileOwnerHi,
+                            m_tileOwnerLo,
+                            m_arrivalTargetPx.m_x,
+                            m_arrivalTargetPx.m_y
+                        );
                     } else {
                         CGrunt* other =
-                            m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+                            m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
                         if (other == 0) {
                             result = 0;
                         } else {
                             i32 x = (other->m_object->m_screenX & ~0x1f) + 0x10;
                             i32 y = (other->m_object->m_screenY & ~0x1f) + 0x10;
-                            if (m_defenderX != x || m_defenderY != y) {
-                                m_defenderX = x;
-                                m_defenderY = y;
+                            if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
+                                m_defenderPx.m_x = x;
+                                m_defenderPx.m_y = y;
                                 if (StepArrivalDrop(x, y, 2, -1, 1, 0) == 0) {
                                     m_arrivalPhase = 0;
                                 }
@@ -4242,13 +4258,14 @@ void CGrunt::AdvanceMotion() {
                             i32 targetX;
                             i32 targetY;
                             if (RectContains(x, y) == 0) {
-                                if (RectContains(other->m_lastTilePxX, other->m_lastTilePxY) == 0) {
-                                    targetX = m_288;
-                                    targetY = m_28c;
+                                if (RectContains(other->m_lastTilePx.m_x, other->m_lastTilePx.m_y)
+                                    == 0) {
+                                    targetX = m_arrivalTargetPx.m_x;
+                                    targetY = m_arrivalTargetPx.m_y;
                                 } else {
                                     SnapToLastTile(0);
-                                    targetX = other->m_lastTilePxX;
-                                    targetY = other->m_lastTilePxY;
+                                    targetX = other->m_lastTilePx.m_x;
+                                    targetY = other->m_lastTilePx.m_y;
                                 }
                             } else {
                                 targetX = x;
@@ -4261,19 +4278,23 @@ void CGrunt::AdvanceMotion() {
                     }
                 } else if (m_arrivalPhase == 3) {
                     if (m_coordToggle == 0) {
-                        result =
-                            m_tileMgr->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, m_288, m_28c);
+                        result = m_tileMgr->ApplyTriggerB(
+                            m_tileOwnerHi,
+                            m_tileOwnerLo,
+                            m_arrivalTargetPx.m_x,
+                            m_arrivalTargetPx.m_y
+                        );
                     } else {
                         CGrunt* other =
-                            m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+                            m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
                         if (other == 0) {
                             result = 0;
                         } else {
                             i32 x = (other->m_object->m_screenX & ~0x1f) + 0x10;
                             i32 y = (other->m_object->m_screenY & ~0x1f) + 0x10;
-                            if (m_defenderX != x || m_defenderY != y) {
-                                m_defenderX = x;
-                                m_defenderY = y;
+                            if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
+                                m_defenderPx.m_x = x;
+                                m_defenderPx.m_y = y;
                                 if (StepArrivalDrop(x, y, 3, -1, 1, 0) == 0) {
                                     m_arrivalPhase = 0;
                                 }
@@ -4282,14 +4303,17 @@ void CGrunt::AdvanceMotion() {
                             i32 targetX;
                             i32 targetY;
                             if (RectContainsGated(x, y) == 0) {
-                                if (RectContainsGated(other->m_lastTilePxX, other->m_lastTilePxY)
+                                if (RectContainsGated(
+                                        other->m_lastTilePx.m_x,
+                                        other->m_lastTilePx.m_y
+                                    )
                                     == 0) {
-                                    targetX = m_288;
-                                    targetY = m_28c;
+                                    targetX = m_arrivalTargetPx.m_x;
+                                    targetY = m_arrivalTargetPx.m_y;
                                 } else {
                                     SnapToLastTile(0);
-                                    targetX = other->m_lastTilePxX;
-                                    targetY = other->m_lastTilePxY;
+                                    targetX = other->m_lastTilePx.m_x;
+                                    targetY = other->m_lastTilePx.m_y;
                                 }
                             } else {
                                 targetX = x;
@@ -4312,11 +4336,11 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        const char* name = *g_typeColl.GetNameRecord(m_objAux->m_1c);
+        const char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
         if (strcmp(name, s_codeN) == 0) {
             return;
         }
-        name = *g_typeColl.GetNameRecord(m_objAux->m_1c);
+        name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
         if (strcmp(name, s_codeL) == 0) {
             if (StepCompassMove() != 0) {
                 return;
@@ -4324,7 +4348,7 @@ void CGrunt::AdvanceMotion() {
             m_idleAnchor = 0;
             return;
         }
-        name = *g_typeColl.GetNameRecord(m_objAux->m_1c);
+        name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
         if (strcmp(name, s_codeM) == 0) {
             if (ClaimSwitchTile() != 0) {
                 return;
@@ -4332,7 +4356,7 @@ void CGrunt::AdvanceMotion() {
             m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
             return;
         }
-        if (m_lastTilePxX == m_entrancePxX && m_lastTilePxY == m_entrancePxY) {
+        if (m_lastTilePx.m_x == m_entrancePx.m_x && m_lastTilePx.m_y == m_entrancePx.m_y) {
             m_arrivalPhase = 0;
             ResetEntranceAnimation(1, 0, 0);
             return;
@@ -4343,17 +4367,19 @@ void CGrunt::AdvanceMotion() {
     }
 
     CGruntCellRec* cell = &m_cells[3 * m_entranceCell.row + m_entranceCell.column];
-    double dirX = cell->m_dirX;
-    double dirY = cell->m_dirY;
-    m_408 = static_cast<double>(static_cast<i64>(g_frameDelta)) * dirX * m_moveSpeed + m_408;
-    m_410 = static_cast<double>(static_cast<i64>(g_frameDelta)) * dirY * m_moveSpeed + m_410;
-    i32 x = static_cast<i32>(cell->m_stepX + m_408);
-    i32 y = static_cast<i32>(cell->m_stepY + m_410);
-    if ((dirX > 0.0 && x > m_lastTilePxX) || (dirX < 0.0 && x < m_lastTilePxX)) {
-        x = m_lastTilePxX;
+    double dirX = cell->m_motion.m_direction.x;
+    double dirY = cell->m_motion.m_direction.y;
+    m_movePosX =
+        static_cast<double>(static_cast<i64>(g_frameDelta)) * dirX * m_moveSpeed + m_movePosX;
+    m_movePosY =
+        static_cast<double>(static_cast<i64>(g_frameDelta)) * dirY * m_moveSpeed + m_movePosY;
+    i32 x = static_cast<i32>(cell->m_motion.m_step.x + m_movePosX);
+    i32 y = static_cast<i32>(cell->m_motion.m_step.y + m_movePosY);
+    if ((dirX > 0.0 && x > m_lastTilePx.m_x) || (dirX < 0.0 && x < m_lastTilePx.m_x)) {
+        x = m_lastTilePx.m_x;
     }
-    if ((dirY > 0.0 && y > m_lastTilePxY) || (dirY < 0.0 && y < m_lastTilePxY)) {
-        y = m_lastTilePxY;
+    if ((dirY > 0.0 && y > m_lastTilePx.m_y) || (dirY < 0.0 && y < m_lastTilePx.m_y)) {
+        y = m_lastTilePx.m_y;
     }
     m_object->m_screenX = x;
     m_object->m_screenY = y;

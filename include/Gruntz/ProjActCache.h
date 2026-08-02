@@ -16,9 +16,9 @@ class CButeNode;
 struct CTrieNode {
     CTrieNode* m_child[2];
 
-    i32 m_8;
-    char* m_c;
-    CButeNode* m_10;
+    i32 m_bit;
+    char* m_key;
+    CButeNode* m_value;
 };
 SIZE_UNKNOWN();
 
@@ -27,14 +27,14 @@ public:
     CButeNode* Insert(const char* key, CButeNode* value);
 
     char _vft0[4];
-    CVariantSlot* m_4;
+    CVariantSlot* m_errSink;
     char m_pad8[0x14 - 0x8];
-    i32 m_14;
-    CTrieNode* m_18;
-    CTrieNode* m_1c;
-    CTrieNode* m_20;
-    i32 m_24;
-    i32 m_28;
+    i32 m_nodeCount;
+    CTrieNode* m_root;
+    CTrieNode* m_descentCursor;
+    CTrieNode* m_candidateLeaf;
+    i32 m_keyBitLength;
+    i32 m_lookupPending;
 };
 SIZE_UNKNOWN();
 

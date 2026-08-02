@@ -40,8 +40,8 @@ i32 CSBI_StatzTabGruntBar::Refresh(i32 arg) {
 RVA(0x000ea4e0, 0x172)
 i32 CSBI_StatzTabGruntBar::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-    if (m_28 > 0) {
-        m_28--;
+    if (m_redrawFrames > 0) {
+        m_redrawFrames--;
         m_statusGlyph->RenderFrame(
             ctx,
             m_rect14.left + m_statusGlyph->m_anchorX,
@@ -160,10 +160,10 @@ i32 CSBI_StatzTabGruntBar::Update() {
                 abilityVal = unit->m_toolId;
             }
             if (abilityVal == 3) {
-                abilityVal = unit->m_194 + 0x11;
+                abilityVal = unit->m_brickPickupType + 0x11;
             }
         }
-        i32 badge = unit->m_198;
+        i32 badge = unit->m_vehiclePickupType;
         if (badge != 0) {
             overrideVal = badge;
         }

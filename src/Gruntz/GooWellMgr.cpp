@@ -88,9 +88,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             goto done;
         }
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
-            if (g_gameReg->m_134 == 2) {
+            if (g_gameReg->m_gameMode == 2) {
 
-                (static_cast<CMulti*>(g_gameReg->m_curState))->m_594 = 1;
+                (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
             m_countdownActive = 0;
@@ -103,7 +103,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (static_cast<i64>(g_frameTime) - m_timerBase < m_timerWindow) {
             goto done;
         }
-        if (g_gameReg->m_134 == 1 && m_pendingFx != 0) {
+        if (g_gameReg->m_gameMode == 1 && m_pendingFx != 0) {
             goto done;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
@@ -113,7 +113,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
 
     {
         CPlay* obj = static_cast<CPlay*>(g_gameReg->m_curState);
-        if (g_gameReg->m_134 != 1) {
+        if (g_gameReg->m_gameMode != 1) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
                 GruntzPlayer* lastSlot = pslot;
@@ -129,7 +129,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                             CGameObject* out = 0;
                             if (MapLookupById(
                                     g_gameReg->m_world->m_childGroup->m_map48,
-                                    slot->m_00c,
+                                    slot->m_warlordObjectId,
                                     out
                                 )
                                 && out) {
@@ -149,7 +149,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                             CGameObject* out = 0;
                             if (MapLookupById(
                                     g_gameReg->m_world->m_childGroup->m_map48,
-                                    lastSlot->m_00c,
+                                    lastSlot->m_warlordObjectId,
                                     out
                                 )
                                 && out) {
@@ -170,13 +170,13 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_overlay) {
             m_overlay->Activate(off);
         }
-        if (g_gameReg->m_134 == 3) {
+        if (g_gameReg->m_gameMode == 3) {
             if (obj->m_winLoseBanner != 0 && m_rowCount[g_curPlayer] == 0) {
                 LoadFinishLevelSprite(4);
                 return 0;
             }
         }
-        if (g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_gameMode == 1) {
             if (m_rowCount[g_curPlayer] != 0) {
                 goto done;
             }

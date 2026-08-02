@@ -34,7 +34,7 @@ public:
     class CGruntzMgr* m_slots;
     char m_pad60[8];
     i32 m_customNameFlag;
-    CString m_6c;
+    CString m_worldName;
 
     CWnd* GetCtrlA(i32 index);
     CWnd* GetCtrlB(i32 index);
@@ -126,7 +126,7 @@ SIZE_UNKNOWN();
 
 class CBattlezDlgColors : public CDialog {
 public:
-    CBattlezDlgColors(class CGruntzMgr* mgr, i32 slotIndex, i32 a2, CWnd* pParent);
+    CBattlezDlgColors(class CGruntzMgr* mgr, i32 slotIndex, i32 networked, CWnd* pParent);
 
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
@@ -136,7 +136,7 @@ public:
     class CGruntzMgr* m_slots;
     i32 m_slotIndex;
     i32 m_pickedColor;
-    i32 m_68;
+    i32 m_networked;
 };
 SIZE_UNKNOWN();
 
@@ -218,8 +218,8 @@ public:
 
     CLatencyList* m_slotList;
     char m_pad64[8];
-    i32 m_6c;
-    CString m_70;
+    i32 m_customWorldFlag;
+    CString m_worldName;
     CStringList m_74;
 };
 SIZE_UNKNOWN();

@@ -336,7 +336,7 @@ namespace NetLobby {
         if (hWnd && session) {
             g_sessionFlag = 0;
             session->PollSession();
-            if (session->m_584) {
+            if (session->m_waitDialogReplyReceived) {
                 KillTimer(hWnd, 1);
                 EndDialog(hWnd, session->m_lastSenderId);
             } else if (g_curMulti->m_sessionTerminated) {

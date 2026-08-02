@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/SerialRecords.h>
 
 class CFileMemBase;
 
@@ -34,8 +35,13 @@ public:
     i32 m_lastDropTileY;
     i32 m_scrollMode;
     char m_pad84[0x88 - 0x84];
-    i64 m_lastDropTime;
-    i64 m_dropInterval;
+    union {
+        struct {
+            i64 m_lastDropTime;
+            i64 m_dropInterval;
+        };
+        CPairRecord m_dropTiming;
+    };
 };
 SIZE(0x98);
 

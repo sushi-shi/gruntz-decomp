@@ -39,10 +39,10 @@ i32 CSBI_ImageSetAni::Init(
     if (owner == 0) {
         return 0;
     }
-    m_2c = owner;
+    m_owner = owner;
     m_tab = tab;
-    m_24 = host;
-    m_28 = 0;
+    m_host = host;
+    m_redrawFrames = 0;
     m_enabled = 1;
 
     m_rect14 = rc;
@@ -53,7 +53,7 @@ i32 CSBI_ImageSetAni::Init(
     CObject* found = 0;
     host->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* tbl = static_cast<CDDrawWorker*>(found);
-    m_34 = tbl;
+    m_frameSet = tbl;
     if (tbl == 0) {
         return 0;
     }
@@ -71,7 +71,7 @@ i32 CSBI_ImageSetAni::Init(
     } else {
         m_frameEnd = b1;
     }
-    m_38 = m_frameStart;
+    m_frameIndex = m_frameStart;
 
     CImage* cel;
     if (m_frameStart < tbl->m_minIndex || m_frameStart > tbl->m_maxIndex) {
@@ -91,11 +91,11 @@ i32 CSBI_ImageSetAni::Refresh(i32) {
 // @early-stop
 RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
-    if (m_28 > 0) {
-        CDDrawWorker* tbl = m_34;
+    if (m_redrawFrames > 0) {
+        CDDrawWorker* tbl = m_frameSet;
         CImage* cel;
-        if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
+        if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
+            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
         } else {
             cel = 0;
         }
@@ -111,29 +111,29 @@ i32 CSBI_ImageSetAni::Render() {
         }
         u32 now = timeGetTime();
         if (now - static_cast<u32>(m_lastTime) > static_cast<u32>(m_interval)) {
-            m_38 += m_step;
+            m_frameIndex += m_step;
             m_lastTime = timeGetTime();
         }
         if (m_step > 0) {
-            if (m_38 > m_frameEnd) {
+            if (m_frameIndex > m_frameEnd) {
                 if (m_loop != 0) {
-                    m_38 = m_frameStart;
+                    m_frameIndex = m_frameStart;
                     return 1;
                 }
-                m_38 = m_frameEnd;
-                m_28--;
+                m_frameIndex = m_frameEnd;
+                m_redrawFrames--;
             }
         } else if (m_step < 0) {
-            if (m_38 < m_frameEnd) {
+            if (m_frameIndex < m_frameEnd) {
                 if (m_loop != 0) {
-                    m_38 = m_frameStart;
+                    m_frameIndex = m_frameStart;
                     return 1;
                 }
-                m_38 = m_frameEnd;
-                m_28--;
+                m_frameIndex = m_frameEnd;
+                m_redrawFrames--;
             }
         } else {
-            m_28--;
+            m_redrawFrames--;
         }
     }
     return 1;
@@ -144,18 +144,18 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
 
     if (start == -1) {
         if (step >= 0) {
-            m_frameStart = m_34->m_minIndex;
+            m_frameStart = m_frameSet->m_minIndex;
         } else {
-            m_frameStart = m_34->m_maxIndex;
+            m_frameStart = m_frameSet->m_maxIndex;
         }
     } else {
         m_frameStart = start;
     }
     if (end == -1) {
         if (step >= 0) {
-            m_frameEnd = m_34->m_maxIndex;
+            m_frameEnd = m_frameSet->m_maxIndex;
         } else {
-            m_frameEnd = m_34->m_minIndex;
+            m_frameEnd = m_frameSet->m_minIndex;
         }
     } else {
         m_frameEnd = end;
@@ -165,8 +165,8 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
     }
     m_step = step;
     m_loop = loop;
-    m_38 = m_frameStart;
-    m_28 = 2;
+    m_frameIndex = m_frameStart;
+    m_redrawFrames = 2;
     m_lastTime = ::timeGetTime();
 }
 

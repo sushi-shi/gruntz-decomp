@@ -17,7 +17,7 @@ struct CDDPalette;
 struct CFaderRadialCell {
     float m_vx;
     float m_vy;
-    float m_fade;
+    float m_fadeLevel;
     i32 m_pixel;
 };
 SIZE(0x10);

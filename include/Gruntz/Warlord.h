@@ -10,15 +10,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/ActReg.h>
 
-class CWarlordAnimSub {
-public:
-    char m_pad00[0x20];
-    i32 m_20;
-    char m_pad24[0x28 - 0x24];
-    i32 m_28;
-};
-SIZE_UNKNOWN();
-
 extern "C" u32 g_engineFrameDelta;
 
 extern "C" u32 g_frameTime;
@@ -56,7 +47,7 @@ public:
     i32 ResolveIdleAnimation();
     i32 ResolveBattlecryAnimation();
 
-    CString m_54;
+    CString m_warlordName;
 
     CAniElement* m_idleAnims[4];
     CAniElement* m_battlecryAnims[3];
@@ -66,36 +57,11 @@ public:
     CAniElement* m_animPanic;
     char m_pad84[0x88 - 0x84];
 
-    union {
-        i64 m_cooldownStamp64;
-        struct {
-            i32 m_cooldownStampLo;
-            i32 m_cooldownStampHi;
-        };
-    };
-    union {
-        i64 m_cooldownWindow64;
-        struct {
-            i32 m_cooldownWindowLo;
-            i32 m_cooldownWindowHi;
-        };
-    };
-
-    union {
-        i64 m_timer2Stamp64;
-        struct {
-            i32 m_timer2StampLo;
-            i32 m_timer2StampHi;
-        };
-    };
-    union {
-        i64 m_timer2Window64;
-        struct {
-            i32 m_timer2WindowLo;
-            i32 m_timer2WindowHi;
-        };
-    };
-    i32 m_a8;
+    i64 m_cooldownStamp;
+    i64 m_cooldownWindow;
+    i64 m_timer2Stamp;
+    i64 m_timer2Window;
+    i32 m_deathStarted;
 
     i32 m_ownerTag;
 };

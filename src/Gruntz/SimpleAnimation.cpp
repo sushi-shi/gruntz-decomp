@@ -56,8 +56,8 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
 
 RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     CImage* aux = m_object->m_layer;
     if (aux != 0) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")

@@ -471,7 +471,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
         i32 ok = 0;
         if (stream) {
-            g_buteMgr.m_10e = 1;
+            g_buteMgr.m_encrypted = 1;
             char* esz = stream->BeginParse();
             // This entry kind stores bytes and length in the opposite word/address arms.
             AddrWord<char> lenSlot;
@@ -503,7 +503,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.m_tree74.m_nodeCount = 0;
             ok = 1;
             if (!g_buteMgr.ParseGroup()) {
-                g_buteMgr.m_0d = 1;
+                g_buteMgr.m_parseFailed = 1;
                 ok = 0;
             }
             RezFree(rdr);

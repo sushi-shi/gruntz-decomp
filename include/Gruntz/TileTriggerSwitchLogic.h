@@ -18,8 +18,8 @@ public:
         i32 tileY,
         i32 cellKey,
         i32 linkGate,
-        i32 a8,
-        i32 a9
+        i32 damageParam,
+        i32 checkpointType
     );
 
     virtual i32 BuildSmall(
@@ -30,8 +30,8 @@ public:
         i32 cellKey,
         const RECT* rect,
         i32 linkGate,
-        i32 a8,
-        i32 a9
+        i32 damageParam,
+        i32 checkpointType
     );
     virtual i32 SwitchDown();
     virtual i32 SwitchUp();
@@ -53,15 +53,15 @@ public:
     i32 m_typeId;
 
     i32 m_tileX;
-    i32 m_key0c;
-    i32 m_key1;
+    i32 m_tileY;
+    i32 m_cellKey;
     i32 m_linkGate;
-    i32 m_18;
+    i32 m_damageParam;
     i32 m_1c;
     i32 m_initGate;
 
     CTileTriggerContainer* m_owner;
-    i32 m_28;
+    i32 m_checkpointType;
     i32 m_block[24];
 };
 SIZE(0x8c);
@@ -118,8 +118,8 @@ public:
         i32 cellKey,
         const RECT* rect,
         i32 linkGate,
-        i32 a8,
-        i32 iconFrame
+        i32 damageParam,
+        i32 checkpointType
     ) OVERRIDE;
 };
 SIZE(0x8c);

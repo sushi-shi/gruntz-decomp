@@ -24,7 +24,7 @@
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         CWwdGameObjectA* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
@@ -67,7 +67,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 CGameObject* warlordObj = 0;
                 if (MapLookupById(
                         g_gameReg->m_world->m_childGroup->m_map48,
-                        claimed->m_00c,
+                        claimed->m_warlordObjectId,
                         found
                     )) {
                     warlordObj = found;
@@ -85,7 +85,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        g_gameReg->m_options[owningPlayer].m_008,
+                        g_gameReg->m_options[owningPlayer].m_colorIndex,
                         0
                     );
                     cur->m_drawActive = 1;
@@ -110,7 +110,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        g_gameReg->m_options[owningPlayer].m_008,
+                        g_gameReg->m_options[owningPlayer].m_colorIndex,
                         0
                     );
                     cur->m_drawActive = 1;
@@ -122,8 +122,8 @@ i32 CExitTrigger::AdvanceAnim() {
                 g_gameReg->m_cmdGrid->LoadFinishLevelSprite(5);
             } else {
                 GruntzPlayer* board = &g_gameReg->m_options[owningPlayer];
-                if (board != 0 && board->m_014 == 0) {
-                    board->m_038.Clear();
+                if (board != 0 && board->m_humanControlled == 0) {
+                    board->m_battlezConfig.Clear();
                 }
             }
         } else {

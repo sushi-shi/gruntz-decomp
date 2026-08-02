@@ -23,8 +23,8 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
     m_wwdObject->ApplyName("GAME_GRUNTSELECTEDSPRITE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     if (m_object->m_sortKey != 0x14) {
         m_object->m_sortKey = 0x14;
         m_object->m_flags |= 0x20000;
@@ -62,8 +62,8 @@ void CGruntSelectedSprite::RegisterActs() {
 
 RVA(0x0007e9c0, 0x16)
 i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
-    m_cellX = x;
-    m_cellY = y;
+    m_cell.m_x = x;
+    m_cell.m_y = y;
     return 1;
 }
 
@@ -71,7 +71,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGruntzMgr* reg = g_gameReg;
-    CGrunt* e = reg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
+    CGrunt* e = reg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
     if (e != 0 && e->m_arrived != 0) {
         m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;
@@ -91,10 +91,10 @@ i32 CGruntSelectedSprite::SerializeMove(
 
     if (mode != 4) {
         if (mode == 7) {
-            sa->Read(&m_cellX, 8);
+            sa->Read(&m_cell, 8);
         }
     } else {
-        sa->Write(&m_cellX, 8);
+        sa->Write(&m_cell, 8);
     }
     if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
         return 0;

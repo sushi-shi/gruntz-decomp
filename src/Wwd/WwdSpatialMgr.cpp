@@ -162,7 +162,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                         w->SetActKey(0x1e);
                         w->m_notify(obj);
                         if (w->ActKey() == 0x1e) {
-                            w->m_1c = saved;
+                            w->m_actKey = saved;
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);
@@ -189,7 +189,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                         w->SetActKey(0x1e);
                         w->m_notify(obj);
                         if (w->ActKey() == 0x1e) {
-                            w->m_1c = saved;
+                            w->m_actKey = saved;
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);
@@ -216,7 +216,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                         w->SetActKey(0x1e);
                         w->m_notify(obj);
                         if (w->ActKey() == 0x1e) {
-                            w->m_1c = saved;
+                            w->m_actKey = saved;
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);

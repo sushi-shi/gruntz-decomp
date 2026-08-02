@@ -77,13 +77,13 @@ public:
     typedef i32 (CUserLogic::*ActCallback)();
     ActCallback m_deferredCallback;
     ActCallback m_gatedCallback;
-    CGameObject* m_0c;
+    CGameObject* m_logicObject;
 
     CWwdGameObjectA* m_object;
 
     AnimWorkerObj* m_objAux;
     CUserBaseLink m_link;
-    i32 m_28;
+    i32 m_gatedActKey;
     i32 m_2c;
 
     i32 m_prevAnimSetNode;
@@ -92,7 +92,7 @@ SIZE(0x34);
 
 #ifndef USERLOGIC_OOL_CTOR
 inline CUserLogic::CUserLogic(CGameObject* obj) {
-    m_0c = obj;
+    m_logicObject = obj;
     m_object = static_cast<CWwdGameObjectA*>(obj);
     m_objAux = obj->m_animWorker;
     {
@@ -105,14 +105,14 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_object->AddLogicBump("LogicBump");
     m_deferredCallback = 0;
     m_gatedCallback = 0;
-    m_28 = 0x3e9;
+    m_gatedActKey = 0x3e9;
     m_2c = 2;
 }
 #endif
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
     if (!g_logicTypesRegistered) {
-        BuildLogicTypeTable(m_0c);
+        BuildLogicTypeTable(m_logicObject);
         g_logicTypesRegistered = 1;
     }
 }

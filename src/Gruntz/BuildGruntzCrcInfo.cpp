@@ -113,14 +113,14 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_stamina,
                 grunt->m_toyTime,
                 tool,
-                grunt->m_198,
+                grunt->m_vehiclePickupType,
                 grunt->m_224,
                 wp,
                 grunt->m_poweredUp,
                 grunt->m_neighborValid,
                 grunt->m_arrivalPhase,
                 grunt->m_combatActive,
-                grunt->m_358,
+                grunt->m_neighborScanEnabled,
                 rnd
             );
             info += "\n";

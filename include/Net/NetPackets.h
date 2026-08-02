@@ -5,27 +5,25 @@
 #include <rva.h>
 
 struct CNetConfigBlob {
-    u8 m_0;
+    u8 m_flags;
     char m_pad1[3];
     i32 m_statId;
-    i32 m_8;
+    i32 m_customLevel;
     char m_nameA[0x80];
     char m_nameB[0x80];
-    i32 m_10c;
-    i32 m_110;
-    i32 m_114;
-    i32 m_118;
+    i32 m_commandDelay;
+    i32 m_resendInterval;
+    i32 m_autoCommandDelay;
+    i32 m_rngSeed;
 };
 SIZE(0x11c);
 
 struct CNetMsg {
-    u8 m_0;
+    u8 m_flags;
     char m_pad1[3];
     i32 m_msgId;
-    i32 m_8;
-    char m_c[4];
-    i32 m_10;
-    i32 m_14;
+    i32 m_value;
+    char m_payload[4];
 };
 SIZE_UNKNOWN();
 

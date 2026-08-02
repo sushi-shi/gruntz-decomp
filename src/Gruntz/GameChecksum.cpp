@@ -21,14 +21,14 @@ i32 CNetSession::Checksum() {
                 CGameObject* sub = obj->m_object;
                 sum += obj->m_entranceCell.direction + obj->m_stamina + obj->m_toyTime
                        + obj->m_health + sub->m_screenY + sub->m_sortKey + sub->m_screenX
-                       + obj->m_lastTilePxX + obj->m_lastTilePxY;
+                       + obj->m_lastTilePx.m_x + obj->m_lastTilePx.m_y;
                 i32 n = obj->m_entranceReason;
                 i32 d = n;
                 if (n > 0x16) {
                     d = obj->m_toolId;
                 }
-                sum +=
-                    obj->m_198 + obj->m_entranceCommitted + obj->m_entranceActive + obj->m_224 + d;
+                sum += obj->m_vehiclePickupType + obj->m_entranceCommitted + obj->m_entranceActive
+                       + obj->m_224 + d;
                 i32 v = obj->m_entranceReason - 1;
                 i32 r;
                 if (static_cast<u32>(v) > 0x15) {
@@ -106,8 +106,8 @@ i32 CNetSession::Checksum() {
                             break;
                     }
                 }
-                sum += obj->m_arrivalPhase + obj->m_358 + obj->m_combatActive + obj->m_neighborValid
-                       + obj->m_poweredUp + g_frameTime + r;
+                sum += obj->m_arrivalPhase + obj->m_neighborScanEnabled + obj->m_combatActive
+                       + obj->m_neighborValid + obj->m_poweredUp + g_frameTime + r;
                 sum += rand();
             }
             idx++;

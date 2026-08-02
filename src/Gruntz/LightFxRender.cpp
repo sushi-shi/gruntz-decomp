@@ -145,7 +145,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             u16* dst = Pix16(base + y * m_surface->m_pitch + x * m_surface->m_bytesPerPixel);
             i32 tile;
             if (x < m_tileGrid->m_width && y < m_tileGrid->m_height) {
-                tile = m_tileGrid->m_rows[y][x].m_4;
+                tile = m_tileGrid->m_rows[y][x].m_occupantId;
             } else {
                 tile = -1;
             }
@@ -164,7 +164,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - desc->m_combatClock64
                         >= desc->m_combatTimeout64
                     || desc->m_tileOwnerHi != g_curPlayer) {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_1f4_moveIcon);
+                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_moveIcon);
                     if (node == 0) {
                         *dst = 0;
                         continue;
@@ -188,7 +188,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 
                     i32 idx;
                     if (x < m_tileGrid->m_width && y < m_tileGrid->m_height) {
-                        idx = m_tileGrid->m_rows[y][x].m_c;
+                        idx = m_tileGrid->m_rows[y][x].m_tileId;
                     } else {
                         idx = 0;
                     }
@@ -198,7 +198,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                         *dst = m_buf[idx];
                     }
                 } else {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_1f4_moveIcon);
+                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_moveIcon);
                     if (node == 0) {
                         *dst = 0;
                         continue;
@@ -208,7 +208,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             } else {
                 i32 idx;
                 if (x < m_tileGrid->m_width && y < m_tileGrid->m_height) {
-                    idx = m_tileGrid->m_rows[y][x].m_c;
+                    idx = m_tileGrid->m_rows[y][x].m_tileId;
                 } else {
                     idx = 0;
                 }

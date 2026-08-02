@@ -10,44 +10,42 @@ struct tagRECT;
 struct BrickzNode {
 
     union {
-        i32 m_0;
-        BrickzNode* m_child;
+        i32 m_col;
+        BrickzNode* m_searchNode;
     };
     union {
-        i32 m_4;
-        BrickzNode* m_prev;
+        i32 m_row;
+        BrickzNode* m_cellPrev;
     };
     union {
-        BrickzNode* m_8;
-        BrickzNode* m_next;
-
+        BrickzNode* m_cellNext;
         i32 m_gCost;
     };
-    i32 m_c;
-    i32 m_10;
-    BrickzNode* m_14;
-    BrickzNode* m_18;
+    i32 m_hCost;
+    i32 m_fCost;
+    BrickzNode* m_openNext;
+    BrickzNode* m_openPrev;
 
     BrickzNode* m_parent;
-    BrickzNode* m_20;
+    BrickzNode* m_cellLink;
 };
 SIZE_UNKNOWN();
 
 struct BrickzCell {
 
     union {
-        i32 m_0;
+        i32 m_flags;
         u8 m_flagBytes[4];
     };
 
     union {
-        i32 m_4;
-        u8 m_4Bytes[4];
+        i32 m_occupantId;
+        u8 m_occupantIdBytes[4];
     };
 
     i32 m_objectId;
-    i32 m_c;
-    i32 m_10;
+    i32 m_tileId;
+    i32 m_typeCode;
     i32 m_count;
     BrickzNode* m_head;
 };

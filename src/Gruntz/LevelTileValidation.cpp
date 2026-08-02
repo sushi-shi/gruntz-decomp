@@ -69,7 +69,7 @@ i32 CPlay::PlaceStartGruntz() {
     i32 result = 1;
     i32 counter = 0;
     i32 flag14 = 0;
-    if (reg->m_134 == 1) {
+    if (reg->m_gameMode == 1) {
         flag14 = 1;
     }
     if (pos == 0) {
@@ -112,7 +112,7 @@ i32 CPlay::PlaceStartGruntz() {
                     return 0;
                 }
                 obj->m_flags |= 0x10000;
-            } else if (g_gameReg->m_134 != 1 && who == CreateGruntCreationPoint
+            } else if (g_gameReg->m_gameMode != 1 && who == CreateGruntCreationPoint
                        && obj->m_smarts == g_curPlayer) {
 
                 GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
@@ -230,8 +230,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x38,
                             obj->m_damage,
                             0
@@ -255,8 +255,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x3c,
                             obj->m_damage,
                             0
@@ -280,8 +280,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x3e,
                             obj->m_damage,
                             0
@@ -305,8 +305,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x40,
                             obj->m_damage,
                             0
@@ -330,8 +330,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x42,
                             obj->m_damage,
                             obj->m_smarts
@@ -355,8 +355,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_damage,
                             0
@@ -380,8 +380,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_damage,
                             0
@@ -405,8 +405,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_switchRectA,
-                            obj->m_animWorker->m_switchRectB,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_damage,
                             0
@@ -432,8 +432,8 @@ i32 CPlay::ValidateLevelTiles() {
             obj->m_flags |= 0x10000;
         } else if (who == CreateLevelTime) {
 
-            if (m_frameMarker != 0 && m_mgr->m_134 != 2 && g_gameReg->m_isEasyMode != 0
-                && g_gameReg->m_134 == ok) {
+            if (m_frameMarker != 0 && m_mgr->m_gameMode != 2 && g_gameReg->m_isEasyMode != 0
+                && g_gameReg->m_gameMode == ok) {
                 i32 a = obj->m_points;
                 i32 b = obj->m_score;
                 a += a;
@@ -541,7 +541,7 @@ i32 CPlay::ValidateLevelTiles() {
             if (static_cast<u32>(cy) < gg->m_width && static_cast<u32>(cx) < gg->m_height) {
             }
         } else if (who == CreateWarpStonePad) {
-            if (g_gameReg->m_134 != ok) {
+            if (g_gameReg->m_gameMode != ok) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 if (cell->m_next != 0) {
                     g_coordPool.m_freeHead = cell->m_next;

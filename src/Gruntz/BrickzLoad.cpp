@@ -101,12 +101,12 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             if (tileId != -1) {
                 tileId &= 0xffff;
             }
-            cell->m_0 = 0;
-            cell->m_4 = -1;
+            cell->m_flags = 0;
+            cell->m_occupantId = -1;
             cell->m_objectId = 0;
-            cell->m_c = -1;
+            cell->m_tileId = -1;
 
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
                 if (tileId == 0x105) {
                     tileId = 0x101;
                     grid->m_tileGrid[grid->m_colOffsets[col] + row] = 0x101;
@@ -116,7 +116,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 }
             }
 
-            if (g_gameReg->m_134 != 1) {
+            if (g_gameReg->m_gameMode != 1) {
                 switch (tileId) {
                     case 0x12f:
                     case 0x132:
@@ -158,175 +158,175 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             }
 
             i32 typeCode = m_attrMgr->m_level->LookupTile(row, col);
-            i32 oldFlags = cell->m_0;
+            i32 oldFlags = cell->m_flags;
             i32 keep = oldFlags & 0x1bf40000;
             i32 edgeBit = oldFlags & 0x20000000;
             switch (typeCode - 1) {
                 case 0:
-                    cell->m_0 = 0x1;
+                    cell->m_flags = 0x1;
                     break;
                 case 3:
-                    cell->m_0 = 0x2;
+                    cell->m_flags = 0x2;
                     break;
                 case 9:
-                    cell->m_0 = 0x100;
+                    cell->m_flags = 0x100;
                     break;
                 case 10:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 11:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 12:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 13:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 14:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 15:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 16:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 17:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 18:
-                    cell->m_0 = 0x80;
+                    cell->m_flags = 0x80;
                     break;
                 case 29:
-                    cell->m_0 = 0x2021;
+                    cell->m_flags = 0x2021;
                     break;
                 case 30:
-                    cell->m_0 = 0x2021;
+                    cell->m_flags = 0x2021;
                     break;
                 case 31:
-                    cell->m_0 = 0x400;
+                    cell->m_flags = 0x400;
                     break;
                 case 32:
-                    cell->m_0 = 0x2021;
+                    cell->m_flags = 0x2021;
                     break;
                 case 33:
-                    cell->m_0 = 0x10000;
+                    cell->m_flags = 0x10000;
                     break;
                 case 34:
-                    cell->m_0 = 0x42;
+                    cell->m_flags = 0x42;
                     break;
                 case 35:
-                    cell->m_0 = 0x800;
+                    cell->m_flags = 0x800;
                     break;
                 case 50:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 51:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 52:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 53:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 54:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 55:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 56:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 57:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 58:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 59:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 60:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 61:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 62:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 63:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 64:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 65:
-                    cell->m_0 = 0x4;
+                    cell->m_flags = 0x4;
                     break;
                 case 92:
-                    cell->m_0 = 0x4002008;
+                    cell->m_flags = 0x4002008;
                     break;
                 case 94:
-                    cell->m_0 = 0x4002008;
+                    cell->m_flags = 0x4002008;
                     break;
                 case 96:
-                    cell->m_0 = 0x4002008;
+                    cell->m_flags = 0x4002008;
                     break;
                 case 98:
-                    cell->m_0 = 0x4002008;
+                    cell->m_flags = 0x4002008;
                     break;
                 case 100:
-                    cell->m_0 = 0x4002008;
+                    cell->m_flags = 0x4002008;
                     break;
                 case 102:
-                    cell->m_0 = 0x4002008;
+                    cell->m_flags = 0x4002008;
                     break;
                 case 104:
-                    cell->m_0 = 0x4002008;
+                    cell->m_flags = 0x4002008;
                     break;
                 case 107:
-                    cell->m_0 = 0x108;
+                    cell->m_flags = 0x108;
                     break;
                 case 109:
-                    cell->m_0 = 0xa;
+                    cell->m_flags = 0xa;
                     break;
                 case 113:
-                    cell->m_0 = 0x300;
+                    cell->m_flags = 0x300;
                     break;
                 case 115:
-                    cell->m_0 = 0x202;
+                    cell->m_flags = 0x202;
                     break;
                 case 149:
-                    cell->m_0 = 0x8000;
+                    cell->m_flags = 0x8000;
                     break;
                 case 150:
-                    cell->m_0 = 0x6021;
+                    cell->m_flags = 0x6021;
                     break;
                 case 151:
-                    cell->m_0 = 0x6021;
+                    cell->m_flags = 0x6021;
                     break;
                 case 152:
-                    cell->m_0 = 0x6021;
+                    cell->m_flags = 0x6021;
                     break;
                 case 153:
-                    cell->m_0 = 0x2001;
+                    cell->m_flags = 0x2001;
                     break;
                 default:
-                    cell->m_0 = (tileId == -1) ? 2 : 0;
+                    cell->m_flags = (tileId == -1) ? 2 : 0;
                     break;
             }
             if (edgeBit != 0) {
-                cell->m_0 |= 0x20000000;
+                cell->m_flags |= 0x20000000;
             }
-            cell->m_0 |= keep;
-            cell->m_c = tileId;
-            cell->m_10 = typeCode;
+            cell->m_flags |= keep;
+            cell->m_tileId = tileId;
+            cell->m_typeCode = typeCode;
 
-            if ((cell->m_0 & 0x100) != 0) {
+            if ((cell->m_flags & 0x100) != 0) {
                 i32 colCount = m_width;
                 for (i32 r = row - 1; r <= row + 1; r++) {
                     if (r < 0 || static_cast<u32>(r) >= static_cast<u32>(m_width)) {
@@ -337,8 +337,8 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                             continue;
                         }
                         BrickzCell* nc = &m_rows[c][r];
-                        i32 nf = nc->m_0 & ~0x1000;
-                        nc->m_0 = nf;
+                        i32 nf = nc->m_flags & ~0x1000;
+                        nc->m_flags = nf;
                         if ((nf & 0x100) == 0) {
                             continue;
                         }
@@ -352,17 +352,18 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                         BrickzCell* ul = (up && left) ? up - colCount : 0;
                         BrickzCell* dr = (down && right) ? down + colCount : 0;
                         bool set = false;
-                        if (up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939)) {
+                        if (up && down && !(up->m_flags & 0x939) && !(down->m_flags & 0x939)) {
                             set = true;
-                        } else if (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939)) {
+                        } else if (right && left && !(right->m_flags & 0x939)
+                                   && !(left->m_flags & 0x939)) {
                             set = true;
-                        } else if (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939)) {
+                        } else if (ur && dl && !(ur->m_flags & 0x939) && !(dl->m_flags & 0x939)) {
                             set = true;
-                        } else if (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939)) {
+                        } else if (ul && dr && !(ul->m_flags & 0x939) && !(dr->m_flags & 0x939)) {
                             set = true;
                         }
                         if (set) {
-                            nc->m_0 = nf | 0x1000;
+                            nc->m_flags = nf | 0x1000;
                         }
                     }
                 }
@@ -400,8 +401,8 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 Coord* elem = static_cast<Coord*>(m_arr[k]);
                 if (elem != 0 && static_cast<u32>(elem->m_x) < static_cast<u32>(m_width)
                     && static_cast<u32>(elem->m_y) < static_cast<u32>(m_height)) {
-                    m_cellPool[elem->m_y * m_width + elem->m_x].m_0 = 0x10;
-                    m_cellPool[elem->m_y * m_width + elem->m_x].m_c = 0;
+                    m_cellPool[elem->m_y * m_width + elem->m_x].m_flags = 0x10;
+                    m_cellPool[elem->m_y * m_width + elem->m_x].m_tileId = 0;
 
                     CoordPoolNode* node = g_coordPool.NodeOf(elem);
                     node->m_next = g_coordPool.m_freeHead;

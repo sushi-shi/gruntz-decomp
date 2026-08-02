@@ -306,11 +306,11 @@ void __cdecl DDrawLogLine(char*, ...) {}
 RVA(0x00141cc0, 0x84)
 CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_poolItems() {
     m_device = 0;
-    m_dd1 = 0;
+    m_directDraw1 = 0;
     m_bltCaps = 0;
     m_palBpp = 0;
     m_hasPalette = 0;
-    m_940 = 0;
+    m_paletteTag = 0;
     m_lastError = 0;
 }
 
@@ -329,12 +329,12 @@ i32 CDDrawPtrCollections::CreateDevice(
     u32 coopFlags
 ) {
     m_hasPalette = 0;
-    m_940 = 0;
+    m_paletteTag = 0;
     IDirectDraw2* dd = g_DirectDraw;
     if (dd != 0) {
         m_device = dd;
     } else {
-        i32 chr = DirectDrawCreate(static_cast<GUID*>(driverGuid), &m_dd1, 0);
+        i32 chr = DirectDrawCreate(static_cast<GUID*>(driverGuid), &m_directDraw1, 0);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_lastError == 0) {
@@ -344,7 +344,7 @@ i32 CDDrawPtrCollections::CreateDevice(
         }
         ComOutRef<IDirectDraw2> devOut;
         devOut.m_asTyped = &m_device;
-        chr = m_dd1->QueryInterface(IID_IDirectDraw2, devOut.m_asVoid);
+        chr = m_directDraw1->QueryInterface(IID_IDirectDraw2, devOut.m_asVoid);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(0, 0, chr);
             if (m_lastError == 0) {
@@ -441,9 +441,9 @@ void CDDrawPtrCollections::Clear(i32 mode) {
         m_device->Release();
         m_device = 0;
     }
-    if (m_dd1) {
-        m_dd1->Release();
-        m_dd1 = 0;
+    if (m_directDraw1) {
+        m_directDraw1->Release();
+        m_directDraw1 = 0;
     }
     m_bltCaps = 0;
 }
@@ -806,21 +806,21 @@ i32 __stdcall AddDisplayMode(void* mode, i32 unused) {
 
 RVA(0x001433d0, 0x4f)
 i32 __stdcall CDDrawPtrCollections::Compare(void* pa, void* pb) {
-    CDdMode* a = static_cast<CDdMode*>(pa);
-    CDdMode* b = static_cast<CDdMode*>(pb);
-    if (a->m_c > b->m_c) {
+    DDSURFACEDESC* a = static_cast<DDSURFACEDESC*>(pa);
+    DDSURFACEDESC* b = static_cast<DDSURFACEDESC*>(pb);
+    if (a->dwWidth > b->dwWidth) {
         return 1;
     }
-    if (a->m_c < b->m_c) {
+    if (a->dwWidth < b->dwWidth) {
         return 0;
     }
-    if (a->m_8 > b->m_8) {
+    if (a->dwHeight > b->dwHeight) {
         return 1;
     }
-    if (a->m_8 < b->m_8) {
+    if (a->dwHeight < b->dwHeight) {
         return 0;
     }
-    return a->m_54 > b->m_54;
+    return a->ddpfPixelFormat.dwRGBBitCount > b->ddpfPixelFormat.dwRGBBitCount;
 }
 
 RVA(0x00143420, 0x4b)
@@ -832,10 +832,10 @@ CDdModePair CDDrawPtrCollections::FindMatch(u32 k0, u32 k1, i32 k2) {
         none.b = -1;
         return none;
     }
-    CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
+    DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[idx]);
     CDdModePair r;
-    r.a = e->m_c;
-    r.b = e->m_8;
+    r.a = e->dwWidth;
+    r.b = e->dwHeight;
     return r;
 }
 
@@ -843,8 +843,8 @@ RVA(0x00143470, 0x47)
 i32 CDDrawPtrCollections::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
     for (i32 i = m_poolItems.GetSize() - 1; i >= 0; i--) {
-        CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[i]);
-        if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2) {
+        DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[i]);
+        if (e->dwWidth >= k0 && e->dwHeight >= k1 && e->ddpfPixelFormat.dwRGBBitCount == k2) {
             r = i;
         }
     }
@@ -854,8 +854,9 @@ i32 CDDrawPtrCollections::FindLast(u32 k0, u32 k1, i32 k2) {
 RVA(0x001434c0, 0x45)
 i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
-        CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[i]);
-        if (e->m_c == static_cast<u32>(k0) && e->m_8 == static_cast<u32>(k1) && e->m_54 == k2) {
+        DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[i]);
+        if (e->dwWidth == static_cast<u32>(k0) && e->dwHeight == static_cast<u32>(k1)
+            && e->ddpfPixelFormat.dwRGBBitCount == k2) {
             return i;
         }
     }
@@ -870,10 +871,10 @@ CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, i32 k2) {
         idx++;
         if (idx < m_poolItems.GetSize()) {
             for (; idx < m_poolItems.GetSize(); idx++) {
-                CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
-                if (e->m_54 == k2) {
-                    r.a = e->m_c;
-                    r.b = e->m_8;
+                DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[idx]);
+                if (e->ddpfPixelFormat.dwRGBBitCount == k2) {
+                    r.a = e->dwWidth;
+                    r.b = e->dwHeight;
                     return r;
                 }
             }
@@ -892,10 +893,10 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
         idx--;
         if (idx >= 0) {
             for (; idx >= 0; idx--) {
-                CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
-                if (e->m_54 == k2) {
-                    r.a = e->m_c;
-                    r.b = e->m_8;
+                DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[idx]);
+                if (e->ddpfPixelFormat.dwRGBBitCount == k2) {
+                    r.a = e->dwWidth;
+                    r.b = e->dwHeight;
                     return r;
                 }
             }
@@ -1024,7 +1025,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
         *dst++ = *src++;
     }
     m_hasPalette = 1;
-    m_940 = tag;
+    m_paletteTag = tag;
     return 1;
 }
 
@@ -1041,7 +1042,7 @@ CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
         m_palette[i].peFlags = 0;
     }
     m_hasPalette = 1;
-    m_940 = z;
+    m_paletteTag = z;
 
     AddrWord<CDDPalette> ok;
     ok.m_word = 1;
@@ -1058,7 +1059,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag
         m_palette[i] = *src++;
     }
     m_hasPalette = 1;
-    m_940 = tag;
+    m_paletteTag = tag;
     return 1;
 }
 

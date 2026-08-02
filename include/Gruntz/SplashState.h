@@ -25,7 +25,7 @@ public:
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
     i32 m_1b4;
-    i32 m_1b8;
+    i32 m_splashCountdownMs;
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();

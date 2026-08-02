@@ -6,17 +6,16 @@
 #include <new>
 
 #include <Gruntz/TileActionEvent.h>
-#include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TileTriggerWiring.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 RVA(0x000c8640, 0x70)
 CTileTriggerContainer::~CTileTriggerContainer() {
@@ -94,8 +93,8 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     RECT switchRectA,
     RECT switchRectB,
     i32 isMatch,
-    i32 m120,
-    i32 zero
+    i32 damageParam,
+    i32 checkpointType
 ) {
     CTileTriggerSwitchLogic* obj = 0;
     switch (tag) {
@@ -132,7 +131,8 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     local[4] = switchRectA;
     local[5] = switchRectB;
 
-    if (obj->BuildSmall(this, tag, col, row, key, local, isMatch, m120, zero) == 0) {
+    if (obj->BuildSmall(this, tag, col, row, key, local, isMatch, damageParam, checkpointType)
+        == 0) {
 
         delete obj;
         return 0;
@@ -147,7 +147,7 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
     while (pos != 0) {
         POSITION cur = pos;
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
-        if (data->m_typeId == k2 && data->m_key1 == k1) {
+        if (data->m_typeId == k2 && data->m_cellKey == k1) {
 
             delete data;
             m_base.RemoveAt(cur);
@@ -170,18 +170,19 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
+    RECT empty = {0, 0, 0, 0};
     return AddLogic(
         tileType,
         logicType,
         tileX,
         tileY,
         cellKey,
-        CTrigParam(),
-        CTrigParam(),
-        CTrigParam(),
-        CTrigParam(),
-        CTrigParam(),
-        CTrigParam(),
+        empty,
+        empty,
+        empty,
+        empty,
+        empty,
+        empty,
         tileToken,
         dutyOnSpan,
         leadInSpan,
@@ -190,27 +191,23 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
 }
 
 RVA(0x001164a0, 0x116)
-void CTileTriggerContainer::AddLogicFromRecord(
-    i32 tileType,
-    i32 logicType,
-    CTrigSourceRecord* rec
-) {
+void CTileTriggerContainer::AddLogicFromRecord(i32 tileType, i32 logicType, CGameObject* object) {
     AddLogic(
         tileType,
         logicType,
-        rec->m_164,
-        rec->m_168,
-        rec->m_4,
-        rec->m_134,
-        rec->m_144,
-        rec->m_154,
-        rec->m_64,
-        rec->m_7c->m_f0,
-        rec->m_7c->m_100,
-        rec->m_124,
-        rec->m_120,
-        rec->m_118,
-        rec->m_128
+        object->m_speedX,
+        object->m_speedY,
+        object->m_id,
+        object->m_extent,
+        object->m_area,
+        object->m_switchRect,
+        object->m_clip,
+        object->m_animWorker->m_userRect1,
+        object->m_animWorker->m_userRect2,
+        object->m_smarts,
+        object->m_damage,
+        object->m_points,
+        object->m_health
     );
 }
 
@@ -223,12 +220,12 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    CTrigParam extent,
-    CTrigParam area,
-    CTrigParam switchRect,
-    CTrigParam clip,
-    CTrigParam switchRectA,
-    CTrigParam switchRectB,
+    RECT extent,
+    RECT area,
+    RECT switchRect,
+    RECT clip,
+    RECT switchRectA,
+    RECT switchRectB,
     i32 tileToken,
     i32 dutyOnSpan,
     i32 leadInSpan,
@@ -254,7 +251,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
         return 0;
     }
 
-    CTrigParam local[6];
+    RECT local[6];
     local[0] = extent;
     local[1] = area;
     local[2] = switchRect;
@@ -264,13 +261,13 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
 
     i32 ok = 0;
     if (obj->m_initGate == 0) {
-        memcpy(obj->m_block, local, sizeof(local));
+        memcpy(obj->m_linkKeys, local, sizeof(local));
         if (obj->m_initGate == 0) {
             obj->m_tileY = tileY;
             obj->m_tileX = tileX;
             obj->m_owner = this;
             obj->m_typeTag = logicType;
-            obj->m_10 = cellKey;
+            obj->m_cellKey = cellKey;
             obj->m_initGate = 1;
             obj->m_tileToken = tileToken;
             obj->m_startClock = g_frameTime;
@@ -419,7 +416,7 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
     e->m_tileY = tileY;
     e->m_typeTag = TRIGID_GIANT_ROCK_22;
     e->m_tileX = tileX;
-    e->m_10 = cellKey;
+    e->m_cellKey = cellKey;
     e->m_owner = this;
     e->m_initGate = 1;
     e->m_dutyOn = 0;
@@ -455,7 +452,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, i32 k2) {
     POSITION pos = m_base.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
-        if (data->m_key1 == k1) {
+        if (data->m_cellKey == k1) {
             if (k2 == 0 || data->m_typeId == k2) {
                 return data;
             }
@@ -469,7 +466,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
     POSITION pos = m_list1.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
-        if (elem->m_10 == a) {
+        if (elem->m_cellKey == a) {
             if (b == 0) {
                 return elem;
             }
@@ -481,7 +478,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
     pos = m_list2.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
-        if (elem->m_10 == a) {
+        if (elem->m_cellKey == a) {
             if (b == 0) {
                 return elem;
             }

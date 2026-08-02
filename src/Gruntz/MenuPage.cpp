@@ -649,7 +649,7 @@ CMenuItem* CMenuPage::AddSubItem(
         return 0;
     }
     item->m_cmdParam = cmdParam;
-    item->m_1c = tag;
+    item->m_secondaryCmdId = tag;
     return Append(item) ? item : 0;
 }
 
@@ -694,6 +694,6 @@ CMenuItem2* CMenuPage::AddSubItem2(
     }
     item->SetFrame(frame);
     item->m_cmdParam = cmdParam;
-    item->m_1c = parentCtx;
+    item->m_secondaryCmdId = parentCtx;
     return Append(item) ? item : 0;
 }

@@ -112,8 +112,8 @@ public:
     i32 m_snappedY;
     i32 m_shiftX;
     i32 m_shiftY;
-    i32 m_94;
-    i32 m_98;
+    i32 m_movementXPercent;
+    i32 m_movementYPercent;
     CObArray m_frameSets;
 
     CWwdSpatialMgr* m_scroll;

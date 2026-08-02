@@ -40,7 +40,7 @@ RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(i32 unused) {
     owner()->m_sound->IsPlaying();
     owner()->m_sound->StopAndFlush();
-    m_2c = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
+    m_stateBank = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
     RunTitleSeq("TITLE", 0, 0, 1, 0);
     return 1;
 }
@@ -57,17 +57,17 @@ i32 CMenuState::EnterState(i32 mode) {
 
         CSymTab* saved = attractState();
         CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
-        m_2c = (state);
+        m_stateBank = (state);
         if (state == 0) {
             return 0;
         }
 
         i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
         if (faded == 0) {
-            m_2c = (saved);
+            m_stateBank = (saved);
             return 0;
         }
-        m_2c = (saved);
+        m_stateBank = (saved);
 
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
         (static_cast<CDDSurface*>(tgt))
@@ -115,17 +115,17 @@ i32 CMenuState::RestoreDisplay() {
 
     CSymTab* saved = attractState();
     CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
-    m_2c = (state);
+    m_stateBank = (state);
     if (state == 0) {
         return 0;
     }
 
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
     if (faded == 0) {
-        m_2c = (saved);
+        m_stateBank = (saved);
         return 0;
     }
-    m_2c = (saved);
+    m_stateBank = (saved);
 
     CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(
@@ -156,7 +156,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_symParser) {
         return 0;
     }
-    if (!m_2c) {
+    if (!m_stateBank) {
         return 0;
     }
 
@@ -191,7 +191,7 @@ i32 CState::RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_symParser) {
         return 0;
     }
-    if (!m_2c) {
+    if (!m_stateBank) {
         return 0;
     }
     menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(0);
@@ -206,7 +206,7 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (!m_symParser) {
         return 0;
     }
-    if (!m_2c) {
+    if (!m_stateBank) {
         return 0;
     }
     if (FadeInTitle(name, a, b, c, d, 0) == 0) {
@@ -230,11 +230,11 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     }
 
     CFxModeT2 t;
-    t.m_10 = 1;
-    t.m_18 = centerX;
-    t.m_1c = centerY;
-    t.m_04 = chan;
-    t.m_08 = 0;
+    t.m_clearMode = 1;
+    t.m_centerX = centerX;
+    t.m_centerY = centerY;
+    t.m_targetSurface = chan;
+    t.m_sourceSurface = 0;
     CFader* f = mgr->Add(1, &t);
     if (f == 0) {
         return 0;
@@ -272,11 +272,11 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     }
 
     CFxModeT2 t;
-    t.m_18 = centerX;
-    t.m_10 = 0;
-    t.m_1c = centerY;
-    t.m_04 = chanA;
-    t.m_08 = chanB;
+    t.m_centerX = centerX;
+    t.m_clearMode = 0;
+    t.m_centerY = centerY;
+    t.m_targetSurface = chanA;
+    t.m_sourceSurface = chanB;
     CFader* f = mgr->Add(1, &t);
     if (f == 0) {
         return 0;
@@ -335,10 +335,10 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     }
 
     CFxModeT3 t;
-    t.m_0c = 0;
-    t.m_10 = pct;
-    t.m_04 = chanA;
-    t.m_08 = chanB;
+    t.m_clearToBlack = 0;
+    t.m_intensityPercent = pct;
+    t.m_targetSurface = chanA;
+    t.m_sourceSurface = chanB;
     CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
@@ -382,10 +382,10 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     }
 
     CFxModeT3 t;
-    t.m_0c = 0;
-    t.m_10 = pct;
-    t.m_04 = chanA;
-    t.m_08 = chanB;
+    t.m_clearToBlack = 0;
+    t.m_intensityPercent = pct;
+    t.m_targetSurface = chanA;
+    t.m_sourceSurface = chanB;
     CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
@@ -416,10 +416,10 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     }
 
     CFxModeT3 t;
-    t.m_0c = 1;
-    t.m_10 = pct;
-    t.m_04 = chan;
-    t.m_08 = 0;
+    t.m_clearToBlack = 1;
+    t.m_intensityPercent = pct;
+    t.m_targetSurface = chan;
+    t.m_sourceSurface = 0;
     CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
@@ -540,7 +540,7 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     }
     ar->Write(&m_levelIndex, 4);
     ar->Write(&m_levelType, 4);
-    ar->Write(&m_24, 4);
+    ar->Write(&m_previousStateId, 4);
     ar->Write(&m_38, 4);
     ar->Write(&m_ready, 4);
     ar->Write(&m_notifyLatch, 4);
@@ -572,7 +572,7 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     }
     ar->Read(&m_levelIndex, 4);
     ar->Read(&m_levelType, 4);
-    ar->Read(&m_24, 4);
+    ar->Read(&m_previousStateId, 4);
     ar->Read(&m_38, 4);
     ar->Read(&m_ready, 4);
     ar->Read(&m_notifyLatch, 4);

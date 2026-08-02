@@ -35,7 +35,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TileGridCommand.h>
+#include <Gruntz/TileTriggerLogic.h>
 
 #include <Gruntz/GameObjectFactory.h>
 
@@ -60,10 +60,10 @@ static char s_CombatTimeout[] = "CombatTimeout";
 // @early-stop
 RVA(0x00077f80, 0xab)
 CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
-    i32 tx = g->m_lastTilePxX >> 5;
+    i32 tx = g->m_lastTilePx.m_x >> 5;
     i32 rowIdx = g->m_tileOwnerHi;
     CGrunt** cell = &m_grid[rowIdx * TM_GRID_COLS];
-    i32 ty = g->m_lastTilePxY >> 5;
+    i32 ty = g->m_lastTilePx.m_y >> 5;
     CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
     i32 i = 15;
@@ -168,7 +168,7 @@ found:
     if (cell != 0) {
         (static_cast<CGrunt*>(cell))->ClearAllSprites();
     }
-    if (m_recX == p[0] && m_recY == p[1]) {
+    if (m_recordPosition.m_x == p[0] && m_recordPosition.m_y == p[1]) {
         CWwdGameObjectA* goal = m_goal;
         if (goal != 0) {
             goal->m_flags |= 0x10000;
@@ -352,7 +352,7 @@ void CTriggerMgr::ClearRecords() {
 // @early-stop
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
-    CGameObject* src = m_grid[m_recX * TM_GRID_COLS + m_recY]->m_object;
+    CGameObject* src = m_grid[m_recordPosition.m_x * TM_GRID_COLS + m_recordPosition.m_y]->m_object;
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
@@ -467,7 +467,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {
-        i32 alt = cell->m_198;
+        i32 alt = cell->m_vehiclePickupType;
         if (hitFlag != 0) {
             world->LoadCursorSprites(alt + 0xc8, 1);
             return 1;
@@ -509,19 +509,15 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             return 1;
         }
 
-        LONG sourceX = cell->m_object->m_screenX;
-        LONG sourceY = cell->m_object->m_screenY;
-        grid->WrapCoord(&sourceX, &sourceY);
-        LONG destX = x;
-        LONG destY = y;
-        grid->WrapCoord(&destX, &destY);
+        POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+        grid->WrapCoord(&source.x, &source.y);
+        POINT destination = {x, y};
+        grid->WrapCoord(&destination.x, &destination.y);
         i32 blocked = cell->RectContains(x, y);
         world->LoadCursorSprites(blocked ? gruntKind + 0xc8 : pfk, blocked != 0);
-        world->m_418 = sourceX;
-        world->m_41c = sourceY;
-        world->m_420 = destX;
-        world->m_424 = destY;
-        world->m_428 = blocked ? red : grey;
+        world->m_pathPreviewSource = source;
+        world->m_pathPreviewDestination = destination;
+        world->m_pathPreviewColor = blocked ? red : grey;
         world->m_drewThisFrame = 1;
         return 1;
     }
@@ -538,19 +534,15 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         case 0x15:
         case 0x16:
             if (pfk != 0) {
-                LONG sourceX = cell->m_object->m_screenX;
-                LONG sourceY = cell->m_object->m_screenY;
-                grid->WrapCoord(&sourceX, &sourceY);
-                LONG destX = x;
-                LONG destY = y;
-                grid->WrapCoord(&destX, &destY);
+                POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+                grid->WrapCoord(&source.x, &source.y);
+                POINT destination = {x, y};
+                grid->WrapCoord(&destination.x, &destination.y);
                 i32 blocked = cell->RectContains(x, y);
                 world->LoadCursorSprites(blocked ? gruntKind + 0xc8 : pfk, blocked != 0);
-                world->m_418 = sourceX;
-                world->m_41c = sourceY;
-                world->m_420 = destX;
-                world->m_424 = destY;
-                world->m_428 = blocked ? red : grey;
+                world->m_pathPreviewSource = source;
+                world->m_pathPreviewDestination = destination;
+                world->m_pathPreviewColor = blocked ? red : grey;
                 world->m_drewThisFrame = 1;
                 return 1;
             }
@@ -607,7 +599,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
 
         case 0x14:
-            if (g_gameReg->m_134 != 1) {
+            if (g_gameReg->m_gameMode != 1) {
                 world->LoadCursorSprites(pfk ? gruntKind + 0xc8 : 0, pfk != 0);
                 return 1;
             }
@@ -707,7 +699,7 @@ i32 CTriggerMgr::ResetGroup(
         case 3:
             if (hit != 0) {
                 if (hit->m_tileOwnerHi == g_curPlayer && g_traitorMode == 0
-                    && (hit != cell || hit->m_198 != 0x1e)) {
+                    && (hit != cell || hit->m_vehiclePickupType != 0x1e)) {
                     goto reportError;
                 }
                 g_gameReg->m_cmdSubMgr->EnqueueSingle(
@@ -813,10 +805,10 @@ i32 CTriggerMgr::ByteTableHas(i32 b) {
 // @early-stop
 RVA(0x00079b80, 0x194)
 i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
-    if (m_284 != 0) {
+    if (m_groupInitialized != 0) {
         return 0;
     }
-    if (g_gameReg->m_134 != 1) {
+    if (g_gameReg->m_gameMode != 1) {
         return 0;
     }
     CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -849,16 +841,16 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     } else {
         m_byteArr.InsertAt(m_byteArr.GetSize(), 0, 0);
     }
-    m_284 = 1;
+    m_groupInitialized = 1;
     return 1;
 }
 
 RVA(0x00079d90, 0xc5)
 void CTriggerMgr::ResetSpawnState() {
-    if (g_gameReg->m_134 != 1) {
+    if (g_gameReg->m_gameMode != 1) {
         return;
     }
-    if (m_284 == 0) {
+    if (m_groupInitialized == 0) {
         return;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -876,7 +868,7 @@ void CTriggerMgr::ResetSpawnState() {
             world->m_guts->TryActivate();
         }
     }
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         CWarlord* fx = m_pendingFx;
         if (fx != 0) {
             fx->ResolveDeathAnimation();
@@ -888,7 +880,7 @@ void CTriggerMgr::ResetSpawnState() {
 // @early-stop
 RVA(0x00079ea0, 0xc2)
 i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
-    if (g_gameReg->m_134 != 1) {
+    if (g_gameReg->m_gameMode != 1) {
         return 0;
     }
     CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
@@ -923,20 +915,20 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     if (cell == 0) {
         return;
     }
-    if (cell->m_36c != 0) {
+    if (cell->m_cellRemovalNotified != 0) {
         return;
     }
     if (cell->m_arrivalPending == 0) {
-        this->ApplySwitch(cell, cell->m_lastTilePxX, cell->m_lastTilePxY);
+        this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
     }
     Coord pt;
-    pt.m_x = cell->m_lastTilePxX;
-    pt.m_y = cell->m_lastTilePxY;
+    pt.m_x = cell->m_lastTilePx.m_x;
+    pt.m_y = cell->m_lastTilePx.m_y;
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.m_y >> 5;
     i32 cellCol = pt.m_x >> 5;
     tg->m_rows[rowIdx][cellCol].m_flagBytes[3] &= 0xdf;
-    tg->m_rows[rowIdx][cellCol].m_4 = -1;
+    tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
     m_grid[idx] = 0;
     m_rowCount[col] -= 1;
 
@@ -951,14 +943,14 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         if (k != 0x14) {
             goto mark;
         }
-        if (g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_gameMode == 1) {
             CWarlord* fx = m_pendingFx;
             if (fx != 0) {
                 fx->ResolveDeathAnimation();
             }
         }
         this->LoadFinishLevelSprite(1);
-        cell->m_36c = 1;
+        cell->m_cellRemovalNotified = 1;
         return;
     }
     k = cell->m_entranceReason;
@@ -970,7 +962,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     }
     m_gruntzLostByPlayer[col] += 1;
 mark:
-    cell->m_36c = 1;
+    cell->m_cellRemovalNotified = 1;
 }
 
 RVA(0x0007a180, 0x86)
@@ -1144,7 +1136,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             CGrunt* g = *cell;
             i32 id = 0;
             if (g != 0) {
-                id = g->m_object->m_188;
+                id = g->m_object->m_objectId;
                 void* found = 0;
                 MapLookupById(lvl->m_childGroup->m_map48, id, found);
             }
@@ -1185,13 +1177,13 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     CWwdGameObjectA* goal = m_goal;
     i32 goalId = 0;
     if (goal != 0) {
-        goalId = goal->m_188;
+        goalId = goal->m_objectId;
     }
     ar->Write(&goalId, 4);
     CWarlord* ov = m_pendingFx;
     i32 ovId = 0;
     if (ov != 0 && ov->m_object != 0) {
-        ovId = ov->m_object->m_188;
+        ovId = ov->m_object->m_objectId;
     }
     ar->Write(&ovId, 4);
     ar->Write(m_274, 0x10);
@@ -1203,7 +1195,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         if (obj == 0) {
             return 0;
         }
-        i32 oid = obj->m_object->m_188;
+        i32 oid = obj->m_object->m_objectId;
         void* found = 0;
         MapLookupById(lvl->m_childGroup->m_map48, oid, found);
         ar->Write(&oid, 4);
@@ -1218,11 +1210,11 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         return 0;
     }
     ar->Write(&m_armed, 4);
-    ar->Write(&m_284, 4);
+    ar->Write(&m_groupInitialized, 4);
     ar->Write(&m_phase, 4);
-    ar->Write(&m_recX, 8);
+    ar->Write(&m_recordPosition, 8);
     ar->Write(&m_countdownActive, 4);
-    ar->Write(&m_3ec, 4);
+    ar->Write(&m_finishReasonFrame, 4);
     ar->Write(&m_groupFlag, 4);
     ar->Write(&g_curPlayer, 4);
     ar->Write(&g_groupSentinel, 4);
@@ -1389,11 +1381,11 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     }
 
     ar->Read(&m_armed, 4);
-    ar->Read(&m_284, 4);
+    ar->Read(&m_groupInitialized, 4);
     ar->Read(&m_phase, 4);
-    ar->Read(&m_recX, 8);
+    ar->Read(&m_recordPosition, 8);
     ar->Read(&m_countdownActive, 4);
-    ar->Read(&m_3ec, 4);
+    ar->Read(&m_finishReasonFrame, 4);
     ar->Read(&m_groupFlag, 4);
     ar->Read(&g_curPlayer, 4);
     ar->Read(&g_groupSentinel, 4);
@@ -1426,11 +1418,11 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         }
         if (alt == 0x13) {
             g_gameReg->m_cmdGrid
-                ->ResetGroup(cell->m_lastTilePxX, cell->m_lastTilePxY, 0, 0, 0, 2, 1);
+                ->ResetGroup(cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
 
-        i32 alt = cell->m_198;
+        i32 alt = cell->m_vehiclePickupType;
         if (alt == 0x1e) {
             CGameObject* o = cell->m_object;
             g_gameReg->m_cmdGrid->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
@@ -1747,9 +1739,9 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         i32 px = (g->m_tileX << 5) + 0x10;
         i32 py = (g->m_tileY << 5) + 0x10;
 
-        if (g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_gameMode == 1) {
             i32 radius = 0;
-            if (cfg->m_014 == 0) {
+            if (cfg->m_humanControlled == 0) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
@@ -1772,12 +1764,12 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 ok = 1;
             }
         } else if (cfg->m_liveGate != 0 && cfg->m_doneFlag == 0 && cfg->m_clearedRound == 0) {
-            if (cfg->m_014 != 0) {
+            if (cfg->m_humanControlled != 0) {
                 if (PlaceObject(type, px, py, 0x186a0, 3, g->m_placeIndex, 0, 0, 0, 0, 0, 0, 0)
                     != -1) {
                     ok = 1;
                 }
-            } else if (cfg->m_038.TrySeedSpawnAt(g->m_tileX, g->m_tileY) != 0) {
+            } else if (cfg->m_battlezConfig.TrySeedSpawnAt(g->m_tileX, g->m_tileY) != 0) {
                 ok = 1;
             }
         }
@@ -1819,7 +1811,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     if (k > 0x16) {
         k = src->m_toolId;
     }
-    i32 vis = src->m_198;
+    i32 vis = src->m_vehiclePickupType;
     this->CellDispatch(col, row, 0, a18);
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
@@ -1853,14 +1845,14 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                 if (g != 0) {
                     if (enable != 0) {
                         i32 t = rand() % 0x11;
-                        if (g->m_1f8 == -1) {
-                            g->m_1f8 = g->m_1f4_moveIcon;
+                        if (g->m_savedMoveIcon == -1) {
+                            g->m_savedMoveIcon = g->m_moveIcon;
                         }
                         (static_cast<CGrunt*>(g))->SelectMoveIcon(t);
                         (static_cast<CPlay*>(g_gameReg->m_curState))->SetRandomMoveIconsCurse(1);
-                    } else if (g->m_1f8 != -1) {
-                        (static_cast<CGrunt*>(g))->SelectMoveIcon(g->m_1f8);
-                        g->m_1f8 = -1;
+                    } else if (g->m_savedMoveIcon != -1) {
+                        (static_cast<CGrunt*>(g))->SelectMoveIcon(g->m_savedMoveIcon);
+                        g->m_savedMoveIcon = -1;
                     }
                 }
                 cell++;
@@ -1894,7 +1886,7 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
                 }
                 m_phase = 1;
                 m_groupFlag = 0;
-                m_3ec = state;
+                m_finishReasonFrame = state;
                 return;
             }
             goto Lab_56b;
@@ -1930,7 +1922,7 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
     m_timerBase = g_frameTime;
 Lab_56b:
     m_groupFlag = 0;
-    m_3ec = state;
+    m_finishReasonFrame = state;
 }
 
 RVA(0x0007c620, 0x4f7)
@@ -2006,7 +1998,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
         case PICKUP_WARPSTONE:
-            if (g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_gameMode == 1) {
 
                 CState* st = g_gameReg->m_curState;
                 CString lvl;
@@ -2284,8 +2276,8 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
             i32 recX = cell2->m_tileOwnerHi;
             i32 recY = cell2->m_tileOwnerLo;
             if (RecordListHas(recX, recY)) {
-                m_recX = recX;
-                m_recY = recY;
+                m_recordPosition.m_x = recX;
+                m_recordPosition.m_y = recY;
                 m_armed = 1;
                 LoadCameraSprite();
             }
@@ -2424,7 +2416,7 @@ void CTriggerMgr::DestroyAllAnims() {
             slot.m_fn = desc->m_notify;
             want.m_method = &CGrunt::ReadConfigFromButeMgr;
             if (slot.m_bits == want.m_bits) {
-                (static_cast<CGrunt*>(desc->m_logic))->m_neighborCol = 0;
+                (static_cast<CGrunt*>(desc->m_logic))->m_neighborCell.m_x = 0;
             }
         }
     }
@@ -2485,8 +2477,8 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     if (v == 0x13) {
         Coord pt;
-        pt.m_x = cell->m_lastTilePxX;
-        pt.m_y = cell->m_lastTilePxY;
+        pt.m_x = cell->m_lastTilePx.m_x;
+        pt.m_y = cell->m_lastTilePx.m_y;
         g_gameReg->m_cmdGrid->ResetGroup(pt.m_x, pt.m_y, 0, 0, 0, 2, 1);
         OverlayTick();
         return 1;
@@ -2523,7 +2515,7 @@ i32 CTriggerMgr::ToggleRegionB() {
         OverlayTick();
         return 1;
     }
-    i32 kind = cell->m_198;
+    i32 kind = cell->m_vehiclePickupType;
     if (kind == 0x1e) {
         CGameObject* o = cell->m_object;
         g_gameReg->m_cmdGrid->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);

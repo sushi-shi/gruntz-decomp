@@ -44,11 +44,11 @@ public:
 
     i32 m_playerIndex;
     CString m_name;
-    i32 m_008;
+    i32 m_colorIndex;
 
-    i32 m_00c;
+    i32 m_warlordObjectId;
     i32 m_configId;
-    i32 m_014;
+    i32 m_humanControlled;
 
     i32 m_slotKey;
     i32 m_readyFlag;
@@ -57,10 +57,10 @@ public:
     i32 m_joined;
     i32 m_doneFlag;
 
-    i32 m_030;
+    i32 m_presenceCounted;
     char m_pad034[0x38 - 0x34];
 
-    CBattlezMapConfig m_038;
+    CBattlezMapConfig m_battlezConfig;
     i32 m_focusX;
     i32 m_focusY;
     i32 m_comboSel;

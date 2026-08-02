@@ -233,7 +233,7 @@ public:
     i32 m_bytesPerPixel;
     i32 m_pixelsPerRow;
 
-    i32(__cdecl* m_b8)(CDDSurface*);
+    i32(__cdecl* m_restoreCallback)(CDDSurface*);
     i32 m_hasColorKey;
 };
 SIZE(0xc0);
@@ -246,7 +246,7 @@ inline CDDSurface::CDDSurface() {
     m_pos = 0;
     m_dontOwn = 0;
     m_bitDepth = 0;
-    m_b8 = 0;
+    m_restoreCallback = 0;
 }
 
 extern "C" const GUID IID_IDirectDrawSurface3;

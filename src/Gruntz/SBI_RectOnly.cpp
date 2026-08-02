@@ -127,8 +127,8 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
             if (commit != 0) {
                 CTriggerMgr* obj = g_gameReg->m_cmdGrid;
                 if (obj->RecordListHas(col, row)) {
-                    obj->m_recX = col;
-                    obj->m_recY = row;
+                    obj->m_recordPosition.m_x = col;
+                    obj->m_recordPosition.m_y = row;
                     obj->m_armed = 1;
                     obj->LoadCameraSprite();
                 }
@@ -395,10 +395,10 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     do {
         if (op == 4) {
             s->Write(&p->m_startTime, 8);
-            s->Write(&p->m_10, 8);
+            s->Write(&p->m_interval, 8);
         } else if (op == 7) {
             s->Read(&p->m_startTime, 8);
-            s->Read(&p->m_10, 8);
+            s->Read(&p->m_interval, 8);
         }
         p++;
         n--;
@@ -549,21 +549,21 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     }
 
     s->Write(this, 4);
-    s->Write(&m_4, 4);
+    s->Write(&m_restorePosition, 4);
 
     g_serialCounter++;
 
     i32 tmp = 0;
 
     if (m_barSprite) {
-        tmp = m_barSprite->m_188;
+        tmp = m_barSprite->m_objectId;
     }
     s->Write(&tmp, 4);
 
     s->Write(&m_rect10.left, 0x10);
-    s->Write(&m_20, 4);
-    s->Write(&m_24, 4);
-    s->Write(&m_28, 4);
+    s->Write(&m_redrawFrames, 4);
+    s->Write(&m_barX, 4);
+    s->Write(&m_barY, 4);
     s->Write(&m_itemKind, 4);
     s->Write(&m_tabCycle, 4);
 
@@ -601,7 +601,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_destructWarnActive, 4);
     s->Write(&m_modeState, 4);
     s->Write(&m_modeArmed, 4);
-    s->Write(&m_578, 4);
+    s->Write(&m_observerTabAvailable, 4);
 
     for (i32 j = 0; j < 5; j++) {
         s->Write(&m_slots[j].m_state, 4);
@@ -644,7 +644,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     ResetWidgets(0);
 
     s->Read(this, 4);
-    s->Read(&m_4, 4);
+    s->Read(&m_restorePosition, 4);
 
     g_serialCounter++;
 
@@ -669,9 +669,9 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     }
 
     s->Read(&m_rect10.left, 0x10);
-    s->Read(&m_20, 4);
-    s->Read(&m_24, 4);
-    s->Read(&m_28, 4);
+    s->Read(&m_redrawFrames, 4);
+    s->Read(&m_barX, 4);
+    s->Read(&m_barY, 4);
     s->Read(&m_itemKind, 4);
     s->Read(&m_tabCycle, 4);
 
@@ -709,7 +709,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_destructWarnActive, 4);
     s->Read(&m_modeState, 4);
     s->Read(&m_modeArmed, 4);
-    s->Read(&m_578, 4);
+    s->Read(&m_observerTabAvailable, 4);
 
     for (i32 j = 0; j < 5; j++) {
         s->Read(&m_slots[j].m_state, 4);
@@ -760,7 +760,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_hlBusy != 0) {
         return;
     }
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         return;
     }
     if (m_position == kSubtypeTag) {
@@ -787,7 +787,8 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
 
 RVA(0x0010b5d0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup0(i32 row) {
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
+        && m_hlGrid[row].m_state == 1) {
         i32 handle = m_hlGrid[row].m_value;
         i32* slot = &m_hlGrid[row].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
@@ -820,7 +821,7 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
 
 RVA(0x0010b6f0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup1(i32 row) {
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
         && m_hlGrid[row + 4].m_state == 1) {
         i32 handle = m_hlGrid[row + 4].m_value;
         i32* slot = &m_hlGrid[row + 4].m_value;
@@ -854,7 +855,7 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
 
 RVA(0x0010b810, 0xdd)
 i32 CStatusBarMgr::HlClickGroup2(i32 row) {
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
         && m_hlGrid[row + 8].m_state == 1) {
         i32 handle = m_hlGrid[row + 8].m_value;
         i32* slot = &m_hlGrid[row + 8].m_value;
@@ -1004,8 +1005,8 @@ i32 CStatusBarMgr::Deactivate() {
 
         i32 w = g_gameReg->m_modeW;
         i32 h = g_gameReg->m_modeH;
-        m_24 = w - 0x45;
-        m_28 = h - 0x30;
+        m_barX = w - 0x45;
+        m_barY = h - 0x30;
         SetSpritePos(w - 0x45, h - 0x30);
     }
 
@@ -1027,7 +1028,7 @@ i32 CStatusBarMgr::Deactivate() {
     }
 
     ClearTabSprites(-1);
-    m_20 = 2;
+    m_redrawFrames = 2;
     return 1;
 }
 
@@ -1098,13 +1099,14 @@ i32 CStatusBarMgr::Activate() {
     }
     i32 w = g_gameReg->m_modeW;
     i32 d = g_gameReg->m_modeH;
-    if (m_24 > w - 0x22) {
-        m_24 = w - 0x22;
+    if (m_barX > w - 0x22) {
+        m_barX = w - 0x22;
     }
-    if (m_28 > d - 9) {
-        m_28 = d - 0x22;
+    if (m_barY > d - 9) {
+        m_barY = d - 0x22;
     }
-    m_barSprite = (m_c)->m_childGroup->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1);
+    m_barSprite =
+        (m_world)->m_childGroup->CreateSprite(0, m_barX, m_barY, 0xf4240, "StatusBarSprite", 1);
     return m_barSprite != 0;
 }
 
@@ -1595,7 +1597,7 @@ void CStatusBarMgr::ExitMode() {
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
     m_hlBusy = 0;
-    if (handle == 0 && g_gameReg->m_134 != 1) {
+    if (handle == 0 && g_gameReg->m_gameMode != 1) {
         if (m_position == 2) {
             RefreshState();
         }
@@ -1966,7 +1968,7 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
 
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 != 0) {
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending != 0) {
         goto notActivated;
     }
     if (idx == -1) {
@@ -2057,7 +2059,7 @@ i32 CStatusBarMgr::SetState(i32 state) {
         if (Activate() == 0) {
             return 0;
         }
-        m_4 = m_position;
+        m_restorePosition = m_position;
     } else {
         Deactivate();
     }
@@ -2126,7 +2128,7 @@ i32 CStatusBarMgr::RefreshState() {
     if (m_position != 2) {
         return 1;
     }
-    if (m_4 == 1) {
+    if (m_restorePosition == 1) {
         return RefreshA();
     }
     return DockStatusBarRight();
@@ -2140,8 +2142,8 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     }
     m_barSprite->m_screenX = x;
     m_barSprite->m_screenY = y;
-    m_24 = x;
-    m_28 = y;
+    m_barX = x;
+    m_barY = y;
     return 1;
 }
 
@@ -2202,12 +2204,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
         return 1;
     }
-    if (m_c == 0) {
+    if (m_world == 0) {
         return 0;
     }
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
-    CDDrawSurfaceMgr* code = m_c;
+    CDDrawSurfaceMgr* code = m_world;
     CStatusBarItem* it;
 
     it = new CSBI_RectOnly;
@@ -2340,7 +2342,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(it);
     m_tabSprite3 = static_cast<CSBI_MenuItem*>(it);
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         CSBI_MenuItem* mp = static_cast<CSBI_MenuItem*>(it);
         mp->m_state = 4;
         CDDrawWorker* f = mp->m_record;
@@ -2418,7 +2420,7 @@ i32 CStatusBarItem::Render() {
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     i32 result;
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         if (m_ptrPool.GetSize() > 0) {
             void* p = m_ptrPool.GetData()[0];
             result = *static_cast<i32*>(p);
@@ -2536,15 +2538,15 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 // @early-stop
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
-    m_c = world;
-    m_4 = 0;
+    m_world = world;
+    m_restorePosition = 0;
     m_position = 0;
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
     SetRect(&m_rect10, vx - 0xa0, 0, vx, 0x1e0);
-    m_20 = 0;
-    m_24 = vx - 0x45;
-    m_28 = vy - 0x30;
+    m_redrawFrames = 0;
+    m_barX = vx - 0x45;
+    m_barY = vy - 0x30;
     m_itemKind = 5;
     m_tabCycle = g_curPlayer;
     Reset();
@@ -2608,8 +2610,8 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != kSubtypeTag) {
-        if (m_20 > 0) {
-            m_20--;
+        if (m_redrawFrames > 0) {
+            m_redrawFrames--;
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
@@ -2621,7 +2623,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 below.bottom = v;
                 tgt->Restore(&below, 0);
             }
-            CMapStringToOb* map = &m_c->m_imageRegistry->m_10map;
+            CMapStringToOb* map = &m_world->m_imageRegistry->m_10map;
             CObject* found = 0;
 
             map->Lookup("GAME_STATUSBAR_MAINBAR", found);
@@ -2861,7 +2863,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     SetTab(5, 0);
                     return 1;
                 case 0x1fc:
-                    if (g_gameReg->m_134 != 1) {
+                    if (g_gameReg->m_gameMode != 1) {
                         return 1;
                     }
                     if (m_modeArmed != 0) {
@@ -2904,7 +2906,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         HiCueLookup();
                         g_gameReg->AccrueScoreTime();
-                    } else if (g_gameReg->m_134 == 1) {
+                    } else if (g_gameReg->m_gameMode == 1) {
                         HiCueLookup();
                         HiPost(0x806b);
                     } else {
@@ -2912,7 +2914,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     }
                     return 1;
                 case 0x325:
-                    if (g_gameReg->m_134 == 1) {
+                    if (g_gameReg->m_gameMode == 1) {
                         if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
@@ -2924,7 +2926,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     }
                     return 1;
                 case 0x327:
-                    if (g_gameReg->m_134 == 1) {
+                    if (g_gameReg->m_gameMode == 1) {
                         if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
@@ -3040,7 +3042,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != 0) {
         return 0;
     }
-    if (g_gameReg->m_134 == 1 && m_hlBusy == 0) {
+    if (g_gameReg->m_gameMode == 1 && m_hlBusy == 0) {
         if (m_position == kSubtypeTag) {
             RefreshState();
         }
@@ -3052,8 +3054,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     sp->m_state = 1;
 
     CSbiSlot* s = &m_slots[idx];
-    s->m_10 = 0x7fffffff;
-    s->m_14 = 0;
+    s->m_interval = 0x7fffffff;
     s->m_startTimeLo = g_frameTime;
     s->m_startTimeHi = 0;
     if (m_activeTab == 2 && m_position != 2) {
@@ -3628,7 +3629,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     memset(m_statFlags, 0, sizeof(m_statFlags));
     Reset();
 
-    i32 mode = g_gameReg->m_134;
+    i32 mode = g_gameReg->m_gameMode;
     if (mode == 2) {
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Multiplayer", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = kSlotCommitLevel;
@@ -3660,7 +3661,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         m_retabNotify = 0;
     }
     ExitMode();
-    m_578 = 0;
+    m_observerTabAvailable = 0;
     m_modeArmed = 0;
     TryActivate();
 }

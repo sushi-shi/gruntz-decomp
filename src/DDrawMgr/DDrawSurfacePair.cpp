@@ -596,11 +596,11 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_plotDX = 0;
     m_plotDY = 0;
     m_stateFlags = 0;
-    m_44 = 0;
+    m_flashCountdown = 0;
     m_drawFillArg = 0;
     m_drawActive = 0;
     m_screenY = y;
-    m_48 = 0x32;
+    m_flashInterval = 0x32;
     m_drawFillCmd = 1;
     m_level = OwnerMgr()->m_level;
     return 1;
@@ -1008,7 +1008,7 @@ RVA(0x00165fa0, 0x93)
 void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     {
 
-        char c = m_78b;
+        char c = m_pixelValue;
         i32 y = m_screenY;
         i32 x = m_screenX;
         CDDSurface* s = b->m_surface;
@@ -1019,7 +1019,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         }
     }
     {
-        char c = m_78b;
+        char c = m_pixelValue;
         i32 y = m_screenY;
         i32 x = m_screenX;
         CDDSurface* s = a->m_surface;

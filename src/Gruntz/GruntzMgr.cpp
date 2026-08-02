@@ -199,8 +199,8 @@ inline CPlay::CPlay() {
     m_cueInterval = 0;
     m_cueTimerHi = 0;
     m_cueIntervalHi = 0;
-    m_1bc = 0;
-    m_1c0 = 0;
+    m_returnToMenuOnComplete = 0;
+    m_completedFinalLevel = 0;
     m_1c8 = 0;
     m_hitTest = 0;
     m_frameMarker = 0;
@@ -221,7 +221,7 @@ inline CPlay::CPlay() {
     m_savedZonedSound = 0;
     m_worldReady = 0;
     m_dragSnapActive = 0;
-    m_4f0 = 0;
+    m_playerCommandPending = 0;
     m_dragInhibit1 = 0;
     m_dragInhibit2 = 0;
     m_dragInProgress = 0;
@@ -230,9 +230,9 @@ inline CPlay::CPlay() {
 CMulti::CMulti() {
     m_session = 0;
     m_netGate = 0;
-    m_590 = 1;
-    m_5b0 = 0;
-    m_600 = 1;
+    m_savedEffectsEnabled = 1;
+    m_customLevel = 0;
+    m_autoCommandDelay = 1;
 }
 
 RVA(0x0008b960, 0x808)
@@ -260,7 +260,7 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 areaArg, i32 keepCurrent, i32 u
         ClearStateStack();
     }
 
-    if (m_a4 != 0) {
+    if (m_delayedQuitPending != 0) {
 
         m_curState = new CState;
         return 1;
@@ -727,8 +727,8 @@ i32 CGruntzMgr::CaptureWorldFile() {
         return 0;
     }
     m_strWorldFile = name;
-    m_12c = 0;
-    m_128 = 0;
+    m_isMultiLevel = 0;
+    m_isBattlezLevel = 0;
     ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x8005, 0);
     return 1;
 }
@@ -1803,7 +1803,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
-    if (m_cheatMgr->m_124 != 0) {
+    if (m_cheatMgr->m_cheatsUsed != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
@@ -1909,7 +1909,7 @@ i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* slot = &m_options[i];
-        if (slot && slot->m_liveGate != 0 && (anyState != 0 || slot->m_014 != 0)) {
+        if (slot && slot->m_liveGate != 0 && (anyState != 0 || slot->m_humanControlled != 0)) {
             count++;
         }
     }
@@ -2078,7 +2078,7 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 typeId, i32 pObj) {
 
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::UpdateScoreHud() {
-    if (g_gameReg->m_134 != 1) {
+    if (g_gameReg->m_gameMode != 1) {
         return;
     }
     CState* sub = g_gameReg->m_curState;
@@ -2088,18 +2088,18 @@ void CGruntzMgr::UpdateScoreHud() {
 
     if (m_strWorldFile.GetLength() != 0) {
         m_scoreHud->SetCount(1);
-        m_scoreHud->m_08 = 1;
+        m_scoreHud->m_isCustomLevel = 1;
         return;
     }
 
-    if (m_cheatMgr->m_124 == 0) {
+    if (m_cheatMgr->m_cheatsUsed == 0) {
         m_scoreHud->FillRecord(sub->m_levelIndex, 0);
         g_gameReg->m_saveSink->SetCurLevel(sub->m_levelIndex);
         g_gameReg->m_saveSink->SetMaxLevel((sub->m_levelIndex % 0x28) + 1);
         g_gameReg->m_saveSink->Save(0, 0x81a6);
     }
     m_scoreHud->SetCount(sub->m_levelIndex);
-    m_scoreHud->m_08 = 0;
+    m_scoreHud->m_isCustomLevel = 0;
 }
 
 RVA(0x00093620, 0x254)
@@ -2117,12 +2117,12 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     strcpy(buf, m_strWorldFile);
     ar->Write(buf, 0x80);
 
-    ar->Write(&m_114, 4);
+    ar->Write(&m_loadingSaveGame, 4);
     ar->Write(&m_soundVolume, 4);
-    ar->Write(&m_128, 4);
-    ar->Write(&m_12c, 4);
-    ar->Write(&m_130, 4);
-    ar->Write(&m_134, 4);
+    ar->Write(&m_isBattlezLevel, 4);
+    ar->Write(&m_isMultiLevel, 4);
+    ar->Write(&m_isCustomLevel, 4);
+    ar->Write(&m_gameMode, 4);
     ar->Write(&m_optionsCount, 4);
     ar->Write(&m_viewBounds.left, 0x10);
     ar->Write(&g_lastNow, 4);
@@ -2164,12 +2164,12 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(buf, 0x80);
     m_strWorldFile = buf;
 
-    ar->Read(&m_114, 4);
+    ar->Read(&m_loadingSaveGame, 4);
     ar->Read(&m_soundVolume, 4);
-    ar->Read(&m_128, 4);
-    ar->Read(&m_12c, 4);
-    ar->Read(&m_130, 4);
-    ar->Read(&m_134, 4);
+    ar->Read(&m_isBattlezLevel, 4);
+    ar->Read(&m_isMultiLevel, 4);
+    ar->Read(&m_isCustomLevel, 4);
+    ar->Read(&m_gameMode, 4);
     ar->Read(&m_optionsCount, 4);
     ar->Read(&m_viewBounds.left, 0x10);
     ar->Read(&g_lastNow, 4);
@@ -2208,8 +2208,8 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
     }
 
     strcpy(dst->m_levelName, GetWorldFileName());
-    dst->m_isWon = (m_134 == 3);
-    dst->m_f8 = m_130;
+    dst->m_isWon = (m_gameMode == 3);
+    dst->m_isCustom = m_isCustomLevel;
 
     m_saveSink->CopySlot(dst, &src->m_saveSlot);
     m_saveInfoRec = dst;
@@ -2458,8 +2458,8 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
     g_optionsCursor = cursor;
     for (i32 i = 0; i < m_optionsCount + 1; i++) {
         GruntzPlayer* slot = &m_options[i];
-        if (cursor == i && slot->m_014 == 0 && slot->m_liveGate != 0) {
-            slot->m_038.StepBoard();
+        if (cursor == i && slot->m_humanControlled == 0 && slot->m_liveGate != 0) {
+            slot->m_battlezConfig.StepBoard();
             cursor = g_optionsCursor;
         }
     }
@@ -2486,32 +2486,32 @@ i32 CGruntzMgr::SyncOptionsState() {
     for (i32 i = 0; i < m_optionsCount; i++) {
         i32 cfg;
         if (idx == g_curPlayer) {
-            opt->m_014 = 1;
+            opt->m_humanControlled = 1;
             cfg = opt->m_configId;
             if (matched) {
                 cfg = 0;
             }
-            if (!opt->m_038.LoadConfig(this, idx, cfg)) {
+            if (!opt->m_battlezConfig.LoadConfig(this, idx, cfg)) {
                 return 0;
             }
-            opt->m_038.Clear();
+            opt->m_battlezConfig.Clear();
             opt++;
             idx++;
-            opt->m_014 = 0;
+            opt->m_humanControlled = 0;
             cfg = opt->m_configId;
             if (matched) {
                 cfg = 0;
             }
-            if (!opt->m_038.LoadConfig(this, idx, cfg)) {
+            if (!opt->m_battlezConfig.LoadConfig(this, idx, cfg)) {
                 return 0;
             }
         } else {
-            opt->m_014 = 0;
+            opt->m_humanControlled = 0;
             cfg = opt->m_configId;
             if (matched) {
                 cfg = 0;
             }
-            if (!opt->m_038.LoadConfig(this, idx, cfg)) {
+            if (!opt->m_battlezConfig.LoadConfig(this, idx, cfg)) {
                 return 0;
             }
         }
@@ -2682,7 +2682,7 @@ void CGruntzMgr::Close() {
 RVA(0x000861e0, 0xc5)
 void CGruntzMgr::AccrueScoreTime() {
     CState* st = m_curState;
-    if (m_134 == 1) {
+    if (m_gameMode == 1) {
         if (m_cmdGrid->m_phase == 1) {
             UpdateScoreHud();
         }
@@ -2690,7 +2690,7 @@ void CGruntzMgr::AccrueScoreTime() {
         return;
     }
     g_gameReg->m_scoreHud->SetCount(st->m_levelIndex);
-    if (m_134 == 3) {
+    if (m_gameMode == 3) {
 
         CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
         i64 d = static_cast<i64>(g_frameTime) - clk->m_startStamp.m_v;
@@ -2718,10 +2718,10 @@ void CGruntzMgr::OnCheckpointReached() {
 // @early-stop
 RVA(0x0008f530, 0xbd)
 void CGruntzMgr::DelayedQuit() {
-    if (m_a4 != 0) {
+    if (m_delayedQuitPending != 0) {
         return;
     }
-    m_a4 = 1;
+    m_delayedQuitPending = 1;
     LeafCue* out = 0;
     MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", out);
     i32 base;
@@ -2824,7 +2824,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
 
 RVA(0x00092420, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
-    if (m_cheatMgr->m_124 != 0) {
+    if (m_cheatMgr->m_cheatsUsed != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
@@ -2846,11 +2846,11 @@ i32 CGruntzMgr::SaveGameAs() {
         return 0;
     }
     if (dlg.m_customNameFlag != 0) {
-        m_128 = 0;
-        m_strWorldFile = "custom\\" + dlg.m_6c;
+        m_isBattlezLevel = 0;
+        m_strWorldFile = "custom\\" + dlg.m_worldName;
     } else {
-        m_128 = 1;
-        m_strWorldFile = dlg.m_6c;
+        m_isBattlezLevel = 1;
+        m_strWorldFile = dlg.m_worldName;
     }
     if (m_strWorldFile.GetLength() == 0) {
         return 0;
@@ -2885,12 +2885,12 @@ CGruntzMgr::CGruntzMgr() {
     m_logicPump = 0;
     m_lobbyResult = 0;
     m_lobbyProbed = 0;
-    m_a4 = 0;
+    m_delayedQuitPending = 0;
     m_a8 = 0;
     m_modalBusy = 0;
     m_renderGate = 0;
     m_b4 = 0;
-    m_114 = 0;
+    m_loadingSaveGame = 0;
     m_isCheckpointPrompts = 1;
     m_connSettings = 0;
     m_saveInfoRec = 0;
@@ -2909,10 +2909,10 @@ CGruntzMgr::CGruntzMgr() {
     m_isAmbientEnabled = 1;
     m_isInterlaced = 0;
     m_isEasyMode = 0;
-    m_130 = 0;
-    m_128 = 0;
-    m_12c = 0;
-    m_134 = 0;
+    m_isCustomLevel = 0;
+    m_isBattlezLevel = 0;
+    m_isMultiLevel = 0;
+    m_gameMode = 0;
     m_isHighDetail = 1;
     m_isEffectsEnabled = 1;
     m_optionsCount = 3;

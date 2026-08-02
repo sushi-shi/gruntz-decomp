@@ -53,7 +53,7 @@
     }
 #define WARP(N, ERR)                                                                               \
     {                                                                                              \
-        m_134 = 1;                                                                                 \
+        m_gameMode = 1;                                                                            \
         m_strWorldFile.Empty();                                                                    \
         if (!PassClickToPlayState((N), 0, 1))                                                      \
             ReportError(0x8005, (ERR));                                                            \
@@ -138,28 +138,28 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
     switch (nID) {
         case kCmdNewGame:
         case kCmdNewGameAlt:
-            m_134 = 1;
+            m_gameMode = 1;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x41e);
             }
             return 1;
         case kCmdLoadWorld:
             m_strWorldFile.Empty();
-            m_134 = 1;
+            m_gameMode = 1;
             if (!PassClickToPlayState(lParam, 0, 1)) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
         case kCmdContinueAtMaxLevel:
             m_strWorldFile.Empty();
-            m_134 = 1;
+            m_gameMode = 1;
 
             if (!PassClickToPlayState(m_saveSink->m_maxLevel, 0, 1)) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
         case kCmdNewGameReplay:
-            m_134 = 3;
+            m_gameMode = 3;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x420);
             }
@@ -319,7 +319,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 0;
                         }
                         m_cmdGrid->ClearRowAndRefresh(5);
-                        i32 _key = g_gameReg->m_options[0].m_00c;
+                        i32 _key = g_gameReg->m_options[0].m_warlordObjectId;
                         if (_key) {
                             CGameObject* _dr = 0;
                             if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, _key, _dr)
@@ -340,10 +340,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 0;
                         }
                         CTimer* _t = _g->m_frameMarker;
-                        _t->m_40 = 0;
-                        _t->m_44 = 0;
-                        _t->m_accumLo = 0;
-                        _t->m_accumHi = 0;
+                        _t->m_40.m_v = 0;
+                        _t->m_accum.m_v = 0;
                         _t->m_running = 0;
                         _t->m_currentMs = 0;
                         PLAYCUE("GAME_MAJORCHEAT");
@@ -503,7 +501,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         return 1;
                     case kCheatClearCheats:
                         PLAYCUE("GAME_MAJORCHEAT");
-                        m_cheatMgr->m_124 = 0;
+                        m_cheatMgr->m_cheatsUsed = 0;
                         AppendChatMessage("Cheatz cleared");
                         return 1;
                     case kCheatWarpTropicz:
@@ -566,28 +564,28 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             if (!(si->m_flags & 1)) {
                 return 1;
             }
-            m_114 = 1;
+            m_loadingSaveGame = 1;
             CString tmp(si->m_levelName);
             m_strWorldFile = tmp;
             static_cast<void>(notifyCode);
             if (tmp.GetLength()) {
                 if (si->m_isWon) {
-                    if (si->m_f8) {
-                        m_128 = 0;
-                        m_130 = 1;
-                        m_134 = 3;
+                    if (si->m_isCustom) {
+                        m_isBattlezLevel = 0;
+                        m_isCustomLevel = 1;
+                        m_gameMode = 3;
                     } else {
-                        m_128 = 1;
-                        m_130 = 0;
-                        m_134 = 3;
+                        m_isBattlezLevel = 1;
+                        m_isCustomLevel = 0;
+                        m_gameMode = 3;
                     }
                 } else {
-                    m_134 = 1;
-                    m_130 = 1;
+                    m_gameMode = 1;
+                    m_isCustomLevel = 1;
                 }
             } else {
-                m_134 = 1;
-                m_130 = 0;
+                m_gameMode = 1;
+                m_isCustomLevel = 0;
             }
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
                 ReportError(0x8005, 0x421);
@@ -596,7 +594,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 ReportError(0x8005, 0x465);
             }
             CheckSavedMode();
-            m_114 = 0;
+            m_loadingSaveGame = 0;
             return 1;
         }
         case kCmdNoOp80b8:
@@ -791,7 +789,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             return 1;
         case kCmdMultiJoin:
-            m_134 = 2;
+            m_gameMode = 2;
             g_hostServicesMode = 0;
             if (TransitionState(0x11, 1, 0, 0)) {
                 return 1;
@@ -802,7 +800,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             ReportError(0x8005, 0x424);
             return 1;
         case kCmdMultiHost:
-            m_134 = 2;
+            m_gameMode = 2;
             g_hostServicesMode = 1;
             if (TransitionState(0x11, 1, 0, 0)) {
                 return 1;

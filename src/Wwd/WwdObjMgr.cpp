@@ -46,7 +46,7 @@ inline void* operator new(u32, void* p) {
 
 inline void* WwdKey(CGameObject* o) {
     AddrWord<char> k;
-    k.m_word = o->m_188;
+    k.m_word = o->m_objectId;
     return k.m_addr;
 }
 
@@ -470,7 +470,7 @@ void CDDrawChildGroup::CollideBroadcast() {
 
                 if (!(fi & 4) && !(fj & 0x80)) {
                     i32 mask1 = static_cast<i32>(oj->m_objectType) & oi->m_hitTypeFlags;
-                    i32 mask2 = static_cast<i32>(oi->m_objectType) & oj->m_f0;
+                    i32 mask2 = static_cast<i32>(oi->m_objectType) & oj->m_attackTypeMask;
                     if (mask1 || mask2) {
                         i32 overlap;
                         if (oj->m_switchRect.left == static_cast<i32>(0x80000000)) {
@@ -497,7 +497,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                             if (mask2) {
                                 AnimWorkerObj* nf = oj->m_attackWorker;
                                 if (nf != 0) {
-                                    oj->m_8c = oi;
+                                    oj->m_attackTarget = oi;
 
                                     nf->m_notify(oj);
                                 }
@@ -513,7 +513,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                 } else {
                                     AnimWorkerObj* nf = oi->m_hitWorker;
                                     if (nf != 0) {
-                                        oi->m_84 = oj;
+                                        oi->m_hitSource = oj;
                                         nf->m_notify(oi);
                                     }
                                 }
@@ -529,12 +529,12 @@ void CDDrawChildGroup::CollideBroadcast() {
                     continue;
                 }
                 i32 mask1b = oj->m_hitTypeFlags & static_cast<i32>(oi->m_objectType);
-                i32 mask2b = static_cast<i32>(oj->m_objectType) & oi->m_f0;
+                i32 mask2b = static_cast<i32>(oj->m_objectType) & oi->m_attackTypeMask;
                 if ((mask1b || mask2b) && BoxesOverlap(oj, oi)) {
                     if (mask2b) {
                         AnimWorkerObj* nf = oi->m_attackWorker;
                         if (nf != 0) {
-                            oi->m_8c = oj;
+                            oi->m_attackTarget = oj;
                             nf->m_notify(oi);
                         }
                     }
@@ -1091,31 +1091,31 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         return 0;
     }
     for (u32 i = 0; i < count; i++) {
-        WwdObjDesc desc;
+        WwdSnapshot desc;
         reader->Read(&desc, 0xa0);
 
         void* found;
-        if (MapLookupById(m_map48, desc.m_04, found) && found != 0) {
+        if (MapLookupById(m_map48, desc.m_objectId, found) && found != 0) {
             return 0;
         }
 
         savedCounter = g_wwdObjIdCounter;
-        g_wwdObjIdCounter = desc.m_04;
+        g_wwdObjIdCounter = desc.m_objectId;
 
         CGameObject* createdObj = 0;
-        switch (desc.m_08) {
+        switch (desc.m_classId) {
             case 5: {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
-                    static_cast<const char*>(desc.m_14),
+                    static_cast<const char*>(desc.m_workerName),
                     val
                 );
                 if (val != 0) {
                     createdObj = CreateSpriteObject(
-                        desc.m_00,
-                        desc.m_94,
-                        desc.m_98,
-                        desc.m_9c,
+                        desc.m_id,
+                        desc.m_screenX,
+                        desc.m_screenY,
+                        desc.m_sortKey,
                         static_cast<AnimWorkerObj*>(val),
                         0
                     );
@@ -1125,25 +1125,29 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             case 0x16: {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
-                    static_cast<const char*>(desc.m_14),
+                    static_cast<const char*>(desc.m_workerName),
                     val
                 );
-                createdObj =
-                    CreateDeferredObject(desc.m_00, desc.m_9c, static_cast<AnimWorkerObj*>(val), 0);
+                createdObj = CreateDeferredObject(
+                    desc.m_id,
+                    desc.m_sortKey,
+                    static_cast<AnimWorkerObj*>(val),
+                    0
+                );
                 break;
             }
             case 0x1b: {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
-                    static_cast<const char*>(desc.m_14),
+                    static_cast<const char*>(desc.m_workerName),
                     val
                 );
                 if (val != 0) {
                     createdObj = CreateContainerObject(
-                        desc.m_00,
-                        desc.m_94,
-                        desc.m_98,
-                        desc.m_9c,
+                        desc.m_id,
+                        desc.m_screenX,
+                        desc.m_screenY,
+                        desc.m_sortKey,
                         static_cast<AnimWorkerObj*>(val),
                         0
                     );
@@ -1153,16 +1157,24 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             case 0x1c: {
 
                 void* out = 0;
-                if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, &out) == 0) {
+                if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_serialTypeId, &out) == 0) {
                     return 0;
                 }
                 CWwdGameObject* rec = static_cast<CWwdGameObject*>(out);
                 if (rec == 0) {
                     return 0;
                 }
-                rec->m_id = desc.m_00;
+                rec->m_id = desc.m_id;
 
-                if (AttachSprite(rec, desc.m_94, desc.m_98, desc.m_9c, desc.m_14, 0) == 0) {
+                if (AttachSprite(
+                        rec,
+                        desc.m_screenX,
+                        desc.m_screenY,
+                        desc.m_sortKey,
+                        desc.m_workerName,
+                        0
+                    )
+                    == 0) {
                     return 0;
                 }
                 createdObj = rec;
@@ -1179,10 +1191,10 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         if (createdObj->m_animWorker == 0) {
             return 0;
         }
-        if (desc.m_10 != 0) {
+        if (desc.m_logicTypeId != 0) {
 
             void* childOut = 0;
-            if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_10, &childOut) == 0) {
+            if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_logicTypeId, &childOut) == 0) {
                 return 0;
             }
             CUserLogic* child = static_cast<CUserLogic*>(childOut);

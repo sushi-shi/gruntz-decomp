@@ -149,7 +149,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 chosen;
     if (b < a) {
         chosen = 1;
-        if (c == gate->m_188) {
+        if (c == gate->m_objectId) {
             chosen = 0;
             if (b != 0 && streams[1] != 0) {
                 (static_cast<DirectSoundMgr*>(streams[1]))
@@ -161,7 +161,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     } else {
         chosen = 0;
-        if (d == gate->m_188) {
+        if (d == gate->m_objectId) {
             chosen = 1;
             if (a != 0 && streams[0] != 0) {
                 (static_cast<DirectSoundMgr*>(streams[0]))
@@ -186,7 +186,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         stream->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];
-    return voice->Setup(gate->m_188, stream, priority, 0) != 0;
+    return voice->Setup(gate->m_objectId, stream, priority, 0) != 0;
 }
 
 static __inline i32 GameRand() {
@@ -239,7 +239,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     }
     i32 id = 0;
     if (objId == 0 && who != 0) {
-        id = who->m_object->m_188;
+        id = who->m_object->m_objectId;
     }
     CParseSource* src = PickWeighted(voiceId, which);
     if (src == 0) {

@@ -20,7 +20,7 @@
 
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        POSITION pos = (g)->m_31c.GetHeadPosition();                                               \
+        POSITION pos = (g)->m_coordList.GetHeadPosition();                                         \
         if (pos != 0) {                                                                            \
             do {                                                                                   \
                 void* d = (g)->CoordListOps()->NextData(pos);                                      \
@@ -29,7 +29,7 @@
                 }                                                                                  \
             } while (pos != 0);                                                                    \
         }                                                                                          \
-        (g)->m_31c.RemoveAll();                                                                    \
+        (g)->m_coordList.RemoveAll();                                                              \
     }
 
 #define STEP_BOUNDS(grid)                                                                          \
@@ -64,7 +64,12 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
 
         Coord tp;
         g->GetScreenPos(&tp);
-        CGrunt* nb = FindIdleGruntInBox(tp.m_x >> 5, tp.m_y >> 5, m_08c, m_090);
+        CGrunt* nb = FindIdleGruntInBox(
+            tp.m_x >> 5,
+            tp.m_y >> 5,
+            m_defenderSearchRadiusX,
+            m_defenderSearchRadiusY
+        );
         if (nb != 0) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
@@ -102,8 +107,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             nb->GetScreenPos(&p);
             if (g->TileSwitch(p.m_x >> 5, p.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
                 g->m_defenderState = 2;
-                g->m_arrivalCol = nb->m_tileOwnerHi;
-                g->m_arrivalRow = nb->m_tileOwnerLo;
+                g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
+                g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
                 g->m_dwell = 0;
             }
             if (dist <= 0xa) {
@@ -114,13 +119,13 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     }
 
     {
-        i32 col = g->m_arrivalCol;
-        i32 row = g->m_arrivalRow;
+        i32 col = g->m_arrivalCell.m_x;
+        i32 row = g->m_arrivalCell.m_y;
         CGrunt* cur = m_triggerMgr->m_grid[15 * col + row];
         if (cur == 0) {
 
-            g->m_arrivalCol = -1;
-            g->m_arrivalRow = -1;
+            g->m_arrivalCell.m_x = -1;
+            g->m_arrivalCell.m_y = -1;
             g->m_defenderState = 0;
             GruntRecycleCoords(g);
             goto tail;
@@ -131,8 +136,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
-            g->m_arrivalCol = -1;
-            g->m_arrivalRow = -1;
+            g->m_arrivalCell.m_x = -1;
+            g->m_arrivalCell.m_y = -1;
             if (g != 0 && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm = *g_typeColl.GetNameRecord(g->m_objAux->ActKey());
@@ -154,14 +159,14 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         i32 dist = static_cast<i32>(
             sqrt(static_cast<double>((iabs(dx) * iabs(dx) + iabs(dy) * iabs(dy))))
         );
-        if (dist > m_0a4) {
-            if (m_0f0.GetSize() != 0) {
-                Coord* e = CoordAt(rand() % m_0f0.GetSize());
+        if (dist > m_defenderTargetMaxDistance) {
+            if (m_attackWaypoints.GetSize() != 0) {
+                Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
-            g->m_arrivalCol = -1;
+            g->m_arrivalCell.m_x = -1;
             g->m_dwell = 0;
-            g->m_arrivalRow = -1;
+            g->m_arrivalCell.m_y = -1;
             g->m_defenderState = 0;
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
@@ -202,8 +207,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         Coord cp;
         cur->GetScreenPos(&cp);
         if (!g->TileSwitch(cp.m_x >> 5, cp.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
-            g->m_arrivalCol = -1;
-            g->m_arrivalRow = -1;
+            g->m_arrivalCell.m_x = -1;
+            g->m_arrivalCell.m_y = -1;
             g->m_defenderState = 0;
         }
         if (dist2 <= 0xa) {
@@ -215,9 +220,10 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
 
 tail:
     if (CanPlaySpecialAnim(g)) {
-        if (g->CoordCount() == 0 && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_0a0)
-            && m_0f0.GetSize() != 0) {
-            Coord* e = CoordAt(rand() % m_0f0.GetSize());
+        if (g->CoordCount() == 0
+            && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
+            && m_attackWaypoints.GetSize() != 0) {
+            Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
             g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }

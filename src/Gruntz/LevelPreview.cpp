@@ -38,8 +38,8 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_PREVIEW"));
-    if (m_2c == 0) {
+    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_PREVIEW"));
+    if (m_stateBank == 0) {
         return 0;
     }
     if (g_disableAudio == 0 && g_disableSound == 0) {
@@ -48,8 +48,8 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
             m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "PREVIEW", "_");
         }
     }
-    m_1bc = "PREVIEW0";
-    m_1c0 = 0;
+    m_previewName = "PREVIEW0";
+    m_previewIndex = 0;
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
     return 1;
 }
@@ -69,7 +69,7 @@ i32 CPreviewState::NextScreenCmd(i32 param) {
     while (ShowCursor(FALSE) >= 0) {
     }
     LoadLevelPreviewScreen();
-    m_1b8 = 60000;
+    m_previewCountdownMs = 60000;
     return 1;
 }
 
@@ -86,10 +86,10 @@ i32 CPreviewState::Tick() {
     if (reg->m_soundStream != 0) {
         reg->m_soundStream->PurgeVoiceList(-1);
     }
-    if (static_cast<u32>(g_wap32FrameDelta) >= m_1b8) {
-        m_1b8 = 0;
+    if (static_cast<u32>(g_wap32FrameDelta) >= m_previewCountdownMs) {
+        m_previewCountdownMs = 0;
     } else {
-        m_1b8 = m_1b8 - g_wap32FrameDelta;
+        m_previewCountdownMs = m_previewCountdownMs - g_wap32FrameDelta;
     }
     return 1;
 }
@@ -101,7 +101,7 @@ i32 CPreviewState::Refade() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1);
+    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1);
     return r;
 }
@@ -113,7 +113,7 @@ i32 CPreviewState::RefadeVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1);
+    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1);
     return r;
 }
@@ -132,14 +132,15 @@ i32 CPreviewState::OnKey(i32 key, i32 param) {
 RVA(0x000de420, 0x115)
 void CPreviewState::LoadLevelPreviewScreen() {
     char buf[64];
-    i32 idx = m_1c0;
-    m_1c0 = idx + 1;
+    i32 idx = m_previewIndex;
+    m_previewIndex = idx + 1;
     sprintf(buf, "PREVIEW%i", idx);
-    m_1bc = buf;
-    sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_1bc));
+    m_previewName = buf;
+    sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_previewName));
     SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
     i32 failed = 0;
-    if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1) == 0) {
+    if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1)
+        == 0) {
         failed = 1;
     } else {
         CDDrawSubMgrLeafScan* h = m_world->m_soundRegistry;
@@ -159,7 +160,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
         }
         RetireScene(0x50, 0x3e8, 0, 1);
     }
-    m_1b8 = 60000;
+    m_previewCountdownMs = 60000;
     if (failed) {
         Cancel();
     }
@@ -175,7 +176,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (m_symParser == 0) {
         return 0;
     }
-    if (m_2c == 0) {
+    if (m_stateBank == 0) {
         return 0;
     }
     char buf[64];

@@ -1328,12 +1328,12 @@ RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut) {
 
     RiffCursor p;
-    p.m_b = static_cast<char*>(riff) + 4;
-    u32 riffSize = *p.m_w;
-    p.m_w++;
-    u32 waveTag = *p.m_w;
-    p.m_w++;
-    char* end = p.m_b + riffSize - 4;
+    p.m_bytes = static_cast<char*>(riff) + 4;
+    u32 riffSize = *p.m_words;
+    p.m_words++;
+    u32 waveTag = *p.m_words;
+    p.m_words++;
+    char* end = p.m_bytes + riffSize - 4;
     if (*static_cast<u32*>(riff) != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
@@ -1342,18 +1342,18 @@ i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeO
     }
     *fmtOut = 0;
     *dataOut = 0;
-    while (p.m_b < end) {
-        u32 id = *p.m_w++;
-        u32 size = *p.m_w++;
+    while (p.m_bytes < end) {
+        u32 id = *p.m_words++;
+        u32 size = *p.m_words++;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
-            *fmtOut = p.m_fmt;
+            *fmtOut = p.m_format;
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
-            *dataOut = p.m_w;
+            *dataOut = p.m_words;
             *sizeOut = size;
             return *fmtOut != 0;
         }
 
-        p.m_b += ((size + 1) & ~1);
+        p.m_bytes += ((size + 1) & ~1);
     }
     return 0;
 }

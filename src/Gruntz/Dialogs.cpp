@@ -112,8 +112,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastDiff%d", i);
             g_battlezLastDifficulties[i] = reg->GetValueDword(key, 1);
             sprintf(key, "LastColour%d", i);
-            g_battlezLastColors[i] = reg->GetValueDword(key, g_gameReg->m_options[i].m_008);
-            g_gameReg->m_options[i].m_008 = g_battlezLastColors[i];
+            g_battlezLastColors[i] = reg->GetValueDword(key, g_gameReg->m_options[i].m_colorIndex);
+            g_gameReg->m_options[i].m_colorIndex = g_battlezLastColors[i];
         }
 
         CWnd* combo = GetDlgItem(0x4ff);
@@ -209,9 +209,9 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 }
             }
         } else {
-            m_slots->m_options[1].m_014 = 1;
-            m_slots->m_options[2].m_014 = 1;
-            m_slots->m_options[3].m_014 = 1;
+            m_slots->m_options[1].m_humanControlled = 1;
+            m_slots->m_options[2].m_humanControlled = 1;
+            m_slots->m_options[3].m_humanControlled = 1;
         }
 
         SetCtrlBText(0, "Player");
@@ -305,8 +305,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         if (comboChild == 0) {
             return;
         }
-        comboChild->GetWindowTextA(m_6c);
-        reg->SetValueString("LastMap", m_6c);
+        comboChild->GetWindowTextA(m_worldName);
+        reg->SetValueString("LastMap", m_worldName);
         reg->SetValueDword("CustomMap", m_customNameFlag);
 
         for (i = 0; i < 4; i++) {
@@ -337,7 +337,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 m_slots->m_options[i].m_liveGate == 0 ? -1 : m_slots->m_options[i].m_configId;
             reg->SetValueDword(key, difficulty);
             sprintf(key, "LastColour%d", i);
-            reg->SetValueDword(key, g_gameReg->m_options[i].m_008);
+            reg->SetValueDword(key, g_gameReg->m_options[i].m_colorIndex);
         }
         g_sharedFlag = 0;
     }
@@ -395,12 +395,12 @@ void CBattlezDlg::ShowCustomDlg() {
 }
 
 RVA(0x00017930, 0x3a)
-CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* mgr, i32 slotIndex, i32 a2, CWnd* pParent)
+CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* mgr, i32 slotIndex, i32 networked, CWnd* pParent)
     : CDialog(0xc2, pParent) {
     m_slots = mgr;
     m_slotIndex = slotIndex;
     m_pickedColor = 0;
-    m_68 = a2;
+    m_networked = networked;
 }
 
 RVA(0x000179b0, 0xcb)
@@ -422,7 +422,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
             i32 avail = 1;
             GruntzPlayer* rec = m_slots->m_options;
             for (i32 j = 0; j < 4; j++) {
-                if (rec->m_liveGate != 0 && rec->m_008 == i) {
+                if (rec->m_liveGate != 0 && rec->m_colorIndex == i) {
                     avail = 0;
                 }
                 rec++;
@@ -559,7 +559,7 @@ i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
 
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
-    m_slots->m_options[index].m_008 = val;
+    m_slots->m_options[index].m_colorIndex = val;
     return 1;
 }
 
@@ -784,7 +784,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
-                switch (m_slots->m_options[0].m_008) {
+                switch (m_slots->m_options[0].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;
@@ -845,7 +845,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
-                switch (m_slots->m_options[1].m_008) {
+                switch (m_slots->m_options[1].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;
@@ -906,7 +906,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
-                switch (m_slots->m_options[2].m_008) {
+                switch (m_slots->m_options[2].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;
@@ -967,7 +967,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
-                switch (m_slots->m_options[3].m_008) {
+                switch (m_slots->m_options[3].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;

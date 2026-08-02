@@ -38,7 +38,7 @@ class CWwdGameObjectA;
 class CMenuState : public CState {
 public:
     CMenuState() {
-        m_1b4 = 0;
+        m_menuTree = 0;
     }
     virtual i32 RestoreDisplay() OVERRIDE;
 
@@ -65,9 +65,9 @@ public:
 
     i32 CommitState();
 
-    CChatBox* m_1b4;
-    i32 m_1b8;
-    LeafCue* m_1bc;
+    CChatBox* m_menuTree;
+    i32 m_activateCueDurationMs;
+    LeafCue* m_menuMusicCue;
 
     void BuildVersionString(tagRECT r);
 };
@@ -124,7 +124,7 @@ public:
 
     CRect m_scrollRect;
     CRect m_drawRect;
-    CRgn m_1e8;
+    CRgn m_clipRegion;
     CString m_caption;
     i32 m_scrollReseedTimer;
 
@@ -146,11 +146,11 @@ SIZE_UNKNOWN();
 class CBootyState : public CState {
 public:
     CBootyState() {
-        m_1c0 = 0;
-        m_1c8 = 0;
-        m_1c4 = 0;
-        m_1cc = 0;
-        m_1b8 = 0;
+        m_frameStampLo = 0;
+        m_frameIntervalLo = 0;
+        m_frameStampHi = 0;
+        m_frameIntervalHi = 0;
+        m_secretHudHandled = 0;
         m_activation = 0x64;
         m_slot = 0;
         m_stepIndex = 0;
@@ -210,21 +210,21 @@ public:
     void GenMenuRandPos(i32 sel, i32* outX, i32* outY);
 
     i32 m_initGate;
-    i32 m_1b8;
+    i32 m_secretHudHandled;
     i32 m_activation;
 
     union {
         i64 m_frameStamp64;
         struct {
-            i32 m_1c0;
-            i32 m_1c4;
+            i32 m_frameStampLo;
+            i32 m_frameStampHi;
         };
     };
     union {
         i64 m_frameInterval64;
         struct {
-            i32 m_1c8;
-            i32 m_1cc;
+            i32 m_frameIntervalLo;
+            i32 m_frameIntervalHi;
         };
     };
     i32 m_initOnce;
@@ -269,7 +269,7 @@ class CMultiBootyState : public CState {
 public:
     CMultiBootyState() {
         m_1b4 = 0;
-        m_1b8 = 0x64;
+        m_sequenceState = 0x64;
     }
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
@@ -307,7 +307,7 @@ public:
     i32 PostCommandIfKey();
 
     i32 m_1b4;
-    i32 m_1b8;
+    i32 m_sequenceState;
     CWwdGameObjectA* m_puddleSprites[4];
     CWwdGameObjectA* m_gruntSprites[4];
     CWwdGameObjectA* m_weaponIcons[4];

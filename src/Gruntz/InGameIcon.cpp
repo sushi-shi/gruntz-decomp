@@ -115,8 +115,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 
     AnimWorkerObj* aux = m_objAux;
-    m_prevAnimSetNode = aux->m_1c;
-    aux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = aux->m_actKey;
+    aux->m_actKey = ActFindId("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
@@ -130,10 +130,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_peekWindow.m_hi = 0;
 
     i32 glitter = 0;
-    char* rec = static_cast<CWwdGameObjectA*>(obj)->m_194;
-    if (rec != 0) {
+    CDDrawWorker* frameSet = static_cast<CWwdGameObjectA*>(obj)->m_frameSet;
+    if (frameSet != 0) {
         CString name;
-        name = rec + 0x24;
+        name = frameSet->m_name;
 
         if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
             m_object->m_smarts = 1;
@@ -297,28 +297,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_smarts = 0x5a;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_smarts = 0x5b;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_smarts = 0x5c;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
@@ -352,7 +352,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 
-    if (m_object->m_smarts == 0x14 && g_gameReg->m_134 == 1) {
+    if (m_object->m_smarts == 0x14 && g_gameReg->m_gameMode == 1) {
         CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
         CString levelStr;
         levelStr.Format("Level%i", lvl->m_levelIndex);
@@ -387,7 +387,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         return;
     }
 
-    i32 mv = m_object->m_188;
+    i32 mv = m_object->m_objectId;
     CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 col = m_object->m_screenX >> 5;
     i32 row = m_object->m_screenY >> 5;
@@ -416,7 +416,7 @@ i32 CInGameIcon::HandleInput() {
         if (sub < 0x17 || sub > 0x20) {
             return 0;
         }
-        i32 icon = g_gameReg->m_options[key].m_008;
+        i32 icon = g_gameReg->m_options[key].m_colorIndex;
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }
@@ -555,7 +555,7 @@ i32 CInGameIcon::PeekCycle() {
         i32 cell;
         if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            cell = grid->m_rows[tileY][tileX].m_0;
+            cell = grid->m_rows[tileY][tileX].m_flags;
         } else {
             cell = 1;
         }
@@ -565,7 +565,7 @@ i32 CInGameIcon::PeekCycle() {
                 BrickzCell* row0 = grid->m_rows[tileY];
                 row0[tileX].m_objectId = 0;
                 BrickzCell* row1 = grid->m_rows[tileY];
-                row1[tileX].m_0 &= ~0x40000;
+                row1[tileX].m_flags &= ~0x40000;
             }
             m_wwdObject->m_flags |= 0x10000;
         }
@@ -622,7 +622,7 @@ RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_134 == 1 && tileOwnerHi != g_curPlayer && m_object->m_smarts != 0x55) {
+    if (reg->m_gameMode == 1 && tileOwnerHi != g_curPlayer && m_object->m_smarts != 0x55) {
         return 0;
     }
     CWwdGameObjectA* obj = m_object;
@@ -683,7 +683,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     if (cmd == 0x14) {
         CGrunt* placed = reg->m_cmdGrid->m_grid[idx];
         if (placed != 0) {
-            placed->m_38c = m_object->m_health;
+            placed->m_warpstoneAnchorIndex = m_object->m_health;
             reg = g_gameReg;
         }
     }
@@ -701,8 +701,8 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     if (owner->m_damage > 0) {
         owner->m_stateFlags |= 1;
         AnimWorkerObj* aux = m_objAux;
-        m_prevAnimSetNode = aux->m_1c;
-        aux->m_1c = ActFindId("B");
+        m_prevAnimSetNode = aux->m_actKey;
+        aux->m_actKey = ActFindId("B");
         owner = m_wwdObject;
         m_driftPos.m_lo = owner->m_damage;
         m_driftPos.m_hi = 0;
@@ -728,8 +728,8 @@ i32 CInGameIcon::Reposition() {
     if (delta >= m_driftThresh.m_v) {
         CWwdGameObjectA* r = m_wwdObject;
         r->m_stateFlags &= ~1;
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("A");
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("A");
 
         CGruntzMgr* reg = g_gameReg;
         CWwdGameObjectA* obj = m_object;
@@ -761,7 +761,7 @@ i32 CInGameIcon::Reposition() {
         grid = g_gameReg->m_tileGrid;
         i32 tileX2 = obj->m_screenX >> 5;
         i32 tileY2 = obj->m_screenY >> 5;
-        i32 mv = obj->m_188;
+        i32 mv = obj->m_objectId;
         if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_height)) {
             grid->m_rowInts[tileY2][tileX2 * 7 + 2] = mv;
@@ -855,7 +855,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
             g_serialCounter++;
             i32 id = 0;
             if (m_glitterSprite != 0) {
-                id = m_glitterSprite->m_188;
+                id = m_glitterSprite->m_objectId;
             }
             ar->Write(&id, 4);
             break;
@@ -902,12 +902,12 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
 // @early-stop
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (g_gameReg->m_134 == 2) {
+    if (g_gameReg->m_gameMode == 2) {
         m_wwdObject->m_flags |= 0x10000;
         return;
     }
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_wwdObject->ApplyName("GAME_HELPBOX");
@@ -916,12 +916,12 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 vis = m_object->m_health;
     if (vis == 1) {
 
-        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
+        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != 1) {
             m_wwdObject->m_flags |= 0x10000;
             return;
         }
     } else if (vis == 2) {
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
             m_wwdObject->m_flags |= 0x10000;
             return;
         }

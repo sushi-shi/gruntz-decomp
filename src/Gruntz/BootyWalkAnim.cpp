@@ -39,7 +39,7 @@ char g_secretChars[] = "WARP";
 // @early-stop
 RVA(0x0001b450, 0x1ac)
 i32 CBootyState::BuildBootyWalkingGruntz() {
-    if (g_gameReg->m_scoreHud->m_08 != 0) {
+    if (g_gameReg->m_scoreHud->m_isCustomLevel != 0) {
         return 1;
     }
     if (g_gameReg->m_scoreHud->m_count > 0x24) {
@@ -82,7 +82,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 RVA(0x0001b690, 0x7e0)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
     CBattlezData* rec = g_gameReg->m_scoreHud;
-    if (rec->m_08 != 0) {
+    if (rec->m_isCustomLevel != 0) {
         return 1;
     }
     i32 n = rec->m_count;

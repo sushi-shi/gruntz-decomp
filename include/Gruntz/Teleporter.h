@@ -9,14 +9,6 @@
 
 class CFileMemBase;
 
-struct CTeleAnimSink {
-    char m_pad00[0x20];
-    i32 m_20;
-    char m_pad24[0x28 - 0x24];
-    i32 m_28;
-};
-SIZE_UNKNOWN();
-
 extern "C" u32 g_engineFrameDelta;
 
 extern "C" u32 g_frameTime;

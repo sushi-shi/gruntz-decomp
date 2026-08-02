@@ -26,37 +26,37 @@
 
 RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
-    m_18 = world;
-    m_14 = host;
-    return m_c = 1;
+    m_world = world;
+    m_fontConfig = host;
+    return m_attached = 1;
 }
 
 RVA(0x00020510, 0x8)
 void CChatBoxOwner::Deactivate() {
-    m_c = 0;
+    m_attached = 0;
 }
 
 // @early-stop
 RVA(0x00020530, 0x61)
 void CChatBoxOwner::Configure(i32 mode) {
-    m_8 = mode;
+    m_mode = mode;
 
     if (mode == 1 || mode == 3) {
-        m_0 = 0;
-        m_4 = g_gameReg->m_modeH - 66;
+        m_originX = 0;
+        m_originY = g_gameReg->m_modeH - 66;
     } else if (mode == 2) {
-        m_0 = 0xa0;
-        m_4 = g_gameReg->m_modeH - 66;
+        m_originX = 0xa0;
+        m_originY = g_gameReg->m_modeH - 66;
     }
-    m_14->m_34 = 1;
+    m_fontConfig->m_34 = 1;
 }
 
 // @early-stop
 RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
-    if (m_10) {
+    if (m_inputActive) {
 
-        if (m_8 == 3) {
+        if (m_mode == 3) {
             if (x < 0x40) {
                 if (y >= g_gameReg->m_modeH - 0x40) {
                     return 1;
@@ -75,10 +75,10 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
                 return 1;
             }
         }
-        if (x <= m_0 + 0x40) {
+        if (x <= m_originX + 0x40) {
             return 0;
         }
-        if (x >= m_0 + 0x1e0) {
+        if (x >= m_originX + 0x1e0) {
             return 0;
         }
         if (y < g_gameReg->m_modeH - 0x20) {
@@ -91,16 +91,16 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 
 RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
-    if (m_14->TypeChar(a, b) == 0) {
+    if (m_fontConfig->TypeChar(a, b) == 0) {
         return;
     }
 
     if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
-        CString input = m_14->GetInputText();
+        CString input = m_fontConfig->GetInputText();
         static_cast<CMulti*>(g_gameReg->m_curState)
             ->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(input)), 1, 1, 0);
     } else {
-        CString input = m_14->GetInputText();
+        CString input = m_fontConfig->GetInputText();
         if (_strcmpi(input.Left(17), "Enable Cheatzfile") == 0) {
             CString args = input.Right(input.GetLength() - 18);
             i32 split = args.Find(' ');
@@ -182,11 +182,11 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                 }
             }
         } else {
-            g_gameReg->m_cheatMgr->CheckCode(m_14->GetInputText());
+            g_gameReg->m_cheatMgr->CheckCode(m_fontConfig->GetInputText());
         }
     }
-    m_14->EndInput();
-    m_10 = 0;
+    m_fontConfig->EndInput();
+    m_inputActive = 0;
 }
 
 RVA(0x00020ef0, 0x20)
@@ -197,7 +197,7 @@ CString CFontConfig::GetInputText() {
 RVA(0x00020f40, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     CChatBoxOwner* self = this;
-    if (!self->m_10) {
+    if (!self->m_inputActive) {
         return 1;
     }
 
@@ -208,24 +208,24 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
 
     CDDrawWorker* spr = 0;
     CObject* sprOb = 0;
-    self->m_18->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", sprOb);
+    self->m_world->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", sprOb);
     spr = static_cast<CDDrawWorker*>(sprOb);
     if (!spr) {
         return 0;
     }
 
-    if (self->m_8 == 3) {
+    if (self->m_mode == 3) {
         CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_maxIndex));
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(target, self->m_0 + 0x140, self->m_4 + 0x20, 0);
+        frame->RenderFrame(target, self->m_originX + 0x140, self->m_originY + 0x20, 0);
     } else {
         CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_minIndex));
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(target, self->m_0 + 0xf0, self->m_4 + 0x20, 0);
+        frame->RenderFrame(target, self->m_originX + 0xf0, self->m_originY + 0x20, 0);
     }
 
     HDC hdc = 0;
@@ -238,18 +238,18 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetBkColor(hdc, 0);
 
     RECT rect;
-    if (self->m_8 == 3) {
-        rect.left = self->m_0 + 0x4c;
-        rect.right = self->m_0 + 0x267;
-        rect.top = self->m_4 + 0x2b;
-        rect.bottom = self->m_4 + 0x37;
-        self->m_14->RenderInputText(hdc, 0x21b, &rect);
+    if (self->m_mode == 3) {
+        rect.left = self->m_originX + 0x4c;
+        rect.right = self->m_originX + 0x267;
+        rect.top = self->m_originY + 0x2b;
+        rect.bottom = self->m_originY + 0x37;
+        self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
     } else {
-        rect.left = self->m_0 + 0x4c;
-        rect.right = self->m_0 + 0x1c7;
-        rect.top = self->m_4 + 0x2b;
-        rect.bottom = self->m_4 + 0x37;
-        self->m_14->RenderInputText(hdc, 0x17b, &rect);
+        rect.left = self->m_originX + 0x4c;
+        rect.right = self->m_originX + 0x1c7;
+        rect.top = self->m_originY + 0x2b;
+        rect.bottom = self->m_originY + 0x37;
+        self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
     }
     host->m_ddSurface->ReleaseDC(hdc);
     return 1;

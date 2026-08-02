@@ -26,32 +26,32 @@ i32 CMapMgr::SearchEdge(
     }
     BrickzCell* cellB = &m_rows[yB][xB];
     BrickzCell* cellA = &m_rows[yA][xA];
-    i32 savedB0 = cellB->m_0;
-    i32 savedA4 = cellA->m_4;
-    i32 savedA0 = cellA->m_0;
+    i32 savedB0 = cellB->m_flags;
+    i32 savedA4 = cellA->m_occupantId;
+    i32 savedA0 = cellA->m_flags;
     i32 bBit29 = (static_cast<u32>(savedB0) >> 29) & 1;
-    i32 savedB4 = cellB->m_4;
+    i32 savedB4 = cellB->m_occupantId;
     if (bBit29 != 0) {
-        cellB->m_0 = savedB0 & 0xdfffffff;
+        cellB->m_flags = savedB0 & 0xdfffffff;
     }
 
-    m_rows[yA][xA].m_4 = -1;
-    m_rows[yB][xB].m_4 = -1;
+    m_rows[yA][xA].m_occupantId = -1;
+    m_rows[yB][xB].m_occupantId = -1;
     m_edgeMask = maskA & 0x20000000;
     if (clearFlag != 0) {
-        m_rows[yA][xA].m_0 = 0;
-        m_rows[yB][xB].m_0 = 0;
+        m_rows[yA][xA].m_flags = 0;
+        m_rows[yB][xB].m_flags = 0;
     }
     i32 ret = Search(xA, yA, xB, yB, list, maskA, 0x2000, maskC);
     m_edgeMask = 0;
-    m_rows[yA][xA].m_4 = savedA4;
-    m_rows[yB][xB].m_4 = savedB4;
+    m_rows[yA][xA].m_occupantId = savedA4;
+    m_rows[yB][xB].m_occupantId = savedB4;
     if (clearFlag != 0) {
-        m_rows[yA][xA].m_0 = savedA0;
-        m_rows[yB][xB].m_0 = savedB0;
+        m_rows[yA][xA].m_flags = savedA0;
+        m_rows[yB][xB].m_flags = savedB0;
     }
     if (bBit29 != 0) {
-        m_rows[yB][xB].m_0 |= 0x20000000;
+        m_rows[yB][xB].m_flags |= 0x20000000;
     }
     return ret;
 }
@@ -63,7 +63,7 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     if (m_dirty != 0) {
         for (u32 r = 0; r < m_height; r++) {
             for (u32 c = 0; c < m_width; c++) {
-                if ((cell->m_0 & 0x100) != 0) {
+                if ((cell->m_flags & 0x100) != 0) {
                     BrickzCell* down = 0;
                     BrickzCell* right = 0;
                     BrickzCell* left = 0;
@@ -96,12 +96,12 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
                     if (down && left) {
                         dl = down - 1;
                     }
-                    cell->m_0 &= ~0x1000;
-                    if ((up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939))
-                        || (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939))
-                        || (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939))
-                        || (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939))) {
-                        cell->m_0 |= 0x1000;
+                    cell->m_flags &= ~0x1000;
+                    if ((up && down && !(up->m_flags & 0x939) && !(down->m_flags & 0x939))
+                        || (right && left && !(right->m_flags & 0x939) && !(left->m_flags & 0x939))
+                        || (ur && dl && !(ur->m_flags & 0x939) && !(dl->m_flags & 0x939))
+                        || (ul && dr && !(ul->m_flags & 0x939) && !(dr->m_flags & 0x939))) {
+                        cell->m_flags |= 0x1000;
                     }
                 }
                 cell++;
@@ -126,14 +126,14 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
         i32 yacc = y0 << 16;
         if (dx > 0) {
             for (i32 x = x0; x < x1; x++) {
-                if (m_rows[yacc >> 16][x].m_0 != 0) {
+                if (m_rows[yacc >> 16][x].m_flags != 0) {
                     return 0;
                 }
                 yacc += slope;
             }
         } else {
             for (i32 x = x0; x > x1; x--) {
-                if (m_rows[yacc >> 16][x].m_0 != 0) {
+                if (m_rows[yacc >> 16][x].m_flags != 0) {
                     return 0;
                 }
                 yacc += slope;
@@ -144,14 +144,14 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
         i32 xacc = x0 << 16;
         if (dy > 0) {
             for (i32 y = y0; y < y1; y++) {
-                if (m_rows[y][xacc >> 16].m_0 != 0) {
+                if (m_rows[y][xacc >> 16].m_flags != 0) {
                     return 0;
                 }
                 xacc += slope;
             }
         } else {
             for (i32 y = y0; y > y1; y--) {
-                if (m_rows[y][xacc >> 16].m_0 != 0) {
+                if (m_rows[y][xacc >> 16].m_flags != 0) {
                     return 0;
                 }
                 xacc += slope;
@@ -167,7 +167,7 @@ i32 CMapMgr::IsCellClear(i32 x, i32 y) {
     if (static_cast<u32>(x) >= m_width || static_cast<u32>(y) >= m_height) {
         occ = 1;
     } else {
-        occ = m_rows[y][x].m_0;
+        occ = m_rows[y][x].m_flags;
     }
     return occ == 0;
 }

@@ -53,16 +53,16 @@ void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     CObject* sprOb = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
     spr = static_cast<CDDrawWorker*>(sprOb);
-    m_sprite = spr;
+    m_frameSet = spr;
     if (spr) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
 
             CImage* f = static_cast<CImage*>(spr->m_items.GetAt(frame));
-            m_190 = frame;
+            m_frameIndex = frame;
             m_layer = f;
         } else {
             CImage* f = 0;
-            m_190 = frame;
+            m_frameIndex = frame;
             m_layer = f;
         }
     }
@@ -74,10 +74,10 @@ void CWwdGameObjectA::ApplyName(const char* name) {
     CObject* sprOb = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
     spr = static_cast<CDDrawWorker*>(sprOb);
-    m_sprite = spr;
+    m_frameSet = spr;
     if (spr) {
         i32 n = spr->m_minIndex;
-        m_190 = n;
+        m_frameIndex = n;
         if (n >= spr->m_minIndex && n <= spr->m_maxIndex) {
             m_layer = static_cast<CImage*>(spr->m_items.GetAt(n));
             return;
@@ -104,12 +104,12 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 // @early-stop
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
-    CDDrawWorker* spr = 0;
-    MapLookup(OwnerMgr()->m_soundRegistry->m_cues, name, spr);
-    if (spr == 0) {
+    LeafCue* cue = 0;
+    MapLookup(OwnerMgr()->m_soundRegistry->m_cues, name, cue);
+    if (cue == 0) {
         return 0;
     }
-    m_19cSprite = spr;
+    m_soundCue = cue;
     return 1;
 }
 
@@ -271,7 +271,7 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
         return 0;
     }
     ar->Write(&m_18c, 4);
-    ar->Write(&m_190, 4);
+    ar->Write(&m_frameIndex, 4);
     i32 flag = 0;
     if (m_layer != 0) {
         flag = 1;
@@ -280,14 +280,14 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
 
     char tmp[0x100];
     memset(tmp, 0, 0x80);
-    if (m_sprite != 0) {
-        strcpy(tmp, m_sprite->m_name);
+    if (m_frameSet != 0) {
+        strcpy(tmp, m_frameSet->m_name);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, 0x80);
     {
-        strcpy(tmp, OwnerMgr()->m_soundRegistry->FindKeyOfValue(m_19c));
+        strcpy(tmp, OwnerMgr()->m_soundRegistry->FindKeyOfValue(m_soundCue));
     }
     ar->Write(tmp, 0x80);
     return 1;
@@ -300,10 +300,10 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
         return 0;
     }
     ar->Read(&m_18c, 4);
-    ar->Read(&m_190, 4);
+    ar->Read(&m_frameIndex, 4);
     i32 flag;
     ar->Read(&flag, 4);
-    m_sprite = 0;
+    m_frameSet = 0;
 
     char name[0x100];
     ar->Read(name, 0x80);
@@ -314,9 +314,9 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         mgr->m_imageRegistry->m_10map.Lookup(name, foundOb);
         found = static_cast<CDDrawWorker*>(foundOb);
-        m_sprite = found;
+        m_frameSet = found;
         if (found != 0 && flag == 1) {
-            i32 idx = m_190;
+            i32 idx = m_frameIndex;
             CImage* frame;
             if (idx >= found->m_minIndex && idx <= found->m_maxIndex) {
                 frame = static_cast<CImage*>(found->m_items.GetAt(idx));
@@ -327,14 +327,14 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
         }
     }
 
-    m_19c = 0;
+    m_soundCue = 0;
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
 
         void* found = 0;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         mgr->m_soundRegistry->m_cues.Lookup(name, found);
-        m_19c = static_cast<LeafCue*>(found);
+        m_soundCue = static_cast<LeafCue*>(found);
     }
     return 1;
 }
@@ -346,10 +346,10 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_screenX = x;
     m_screenY = y;
     m_sortKey = sortKey;
-    m_104 = x;
+    m_spawnX = x;
     AnimWorkerObj* w = m_animWorker;
-    m_108 = y;
-    m_10c = sortKey;
+    m_spawnY = y;
+    m_spawnSortKey = sortKey;
     m_strideX = 10;
     m_strideY = 10;
     m_points = 0;
@@ -371,12 +371,12 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_hitWorker = 0;
     m_attackWorker = 0;
     m_collideWorker = 0;
-    m_84 = 0;
-    m_8c = 0;
+    m_hitSource = 0;
+    m_attackTarget = 0;
     m_hitOther = 0;
     m_objectType = 0;
     m_hitTypeFlags = 0;
-    m_f0 = 0;
+    m_attackTypeMask = 0;
     m_collMask = 0;
     m_extent.left = static_cast<i32>(0x80000000);
     m_area.left = static_cast<i32>(0x80000000);
@@ -478,21 +478,21 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
 
     switch (mode) {
         case 3: {
-            m_184 = 0;
+            m_carrierId = 0;
             if (m_carrier != 0) {
-                m_184 = m_carrier->m_188;
+                m_carrierId = m_carrier->m_objectId;
             }
             AnimWorkerObj* w3 = m_animWorker;
             if (w3 == 0) {
                 goto fail;
             }
-            i32 saved3 = w3->m_1c;
+            i32 saved3 = w3->m_actKey;
             w3->SetActKey(0x50);
 
             m_animWorker->m_notify(this);
             w3 = m_animWorker;
             if (w3->ActKey() == 0x50) {
-                w3->m_1c = saved3;
+                w3->m_actKey = saved3;
             }
             break;
         }
@@ -504,13 +504,13 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             if (w4 == 0) {
                 goto fail;
             }
-            i32 saved4 = w4->m_1c;
+            i32 saved4 = w4->m_actKey;
             w4->SetActKey(0x51);
 
             m_animWorker->m_notify(this);
             w4 = m_animWorker;
             if (w4->ActKey() == 0x51) {
-                w4->m_1c = saved4;
+                w4->m_actKey = saved4;
             }
             break;
         }
@@ -522,18 +522,18 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             if (w7 == 0) {
                 goto fail;
             }
-            i32 saved7 = w7->m_1c;
+            i32 saved7 = w7->m_actKey;
             w7->SetActKey(0x52);
 
             m_animWorker->m_notify(this);
             w7 = m_animWorker;
             if (w7->ActKey() == 0x52) {
-                w7->m_1c = saved7;
+                w7->m_actKey = saved7;
             }
             break;
         }
         case 8: {
-            i32 node = m_184;
+            i32 node = m_carrierId;
             if (node != 0) {
                 void* found = 0;
                 if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, node, found) == 0) {
@@ -549,13 +549,13 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             if (w8 == 0) {
                 goto fail;
             }
-            i32 saved8 = w8->m_1c;
+            i32 saved8 = w8->m_actKey;
             w8->SetActKey(0x53);
 
             m_animWorker->m_notify(this);
             w8 = m_animWorker;
             if (w8->ActKey() == 0x53) {
-                w8->m_1c = saved8;
+                w8->m_actKey = saved8;
             }
             break;
         }
@@ -576,20 +576,20 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     char tmp[0x80];
     memset(tmp, 0, sizeof(tmp));
-    strcpy(tmp, m_dc);
+    strcpy(tmp, m_name);
     ar->Write(tmp, 0x80);
 
     ar->Write(&m_moveMode, 4);
     ar->Write(&m_objectType, 4);
     ar->Write(&m_hitTypeFlags, 4);
-    ar->Write(&m_f0, 4);
+    ar->Write(&m_attackTypeMask, 4);
     ar->Write(&m_collMask, 4);
     ar->Write(&m_strideX, 4);
     ar->Write(&m_strideY, 4);
     ar->Write(&m_100, 4);
-    ar->Write(&m_104, 4);
-    ar->Write(&m_108, 4);
-    ar->Write(&m_10c, 4);
+    ar->Write(&m_spawnX, 4);
+    ar->Write(&m_spawnY, 4);
+    ar->Write(&m_spawnSortKey, 4);
     ar->Write(&m_110, 4);
     ar->Write(&m_score, 4);
     ar->Write(&m_points, 4);
@@ -612,17 +612,17 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_180, 4);
     ar->Write(&m_plotDX, 4);
     ar->Write(&m_plotDY, 4);
-    ar->Write(&m_dirty.m_lastX, 0x24);
+    ar->Write(&m_dirty, sizeof(m_dirty));
     ar->Write(&m_stateFlags, 4);
-    ar->Write(&m_44, 4);
-    ar->Write(&m_48, 4);
+    ar->Write(&m_flashCountdown, 4);
+    ar->Write(&m_flashInterval, 4);
     ar->Write(&m_drawFillCmd, 4);
     ar->Write(&m_fillFraction, 4);
     ar->Write(&m_drawActive, 4);
     ar->Write(&m_clip.left, 0x10);
     ar->Write(&m_id, 4);
     ar->Write(&m_flags, 4);
-    ar->Write(&m_184, 4);
+    ar->Write(&m_carrierId, 4);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_hitWorker != 0) {
@@ -655,19 +655,19 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
 
     char name[0x80];
     ar->Read(name, 0x80);
-    m_dc = name;
+    m_name = name;
 
     ar->Read(&m_moveMode, 4);
     ar->Read(&m_objectType, 4);
     ar->Read(&m_hitTypeFlags, 4);
-    ar->Read(&m_f0, 4);
+    ar->Read(&m_attackTypeMask, 4);
     ar->Read(&m_collMask, 4);
     ar->Read(&m_strideX, 4);
     ar->Read(&m_strideY, 4);
     ar->Read(&m_100, 4);
-    ar->Read(&m_104, 4);
-    ar->Read(&m_108, 4);
-    ar->Read(&m_10c, 4);
+    ar->Read(&m_spawnX, 4);
+    ar->Read(&m_spawnY, 4);
+    ar->Read(&m_spawnSortKey, 4);
     ar->Read(&m_110, 4);
     ar->Read(&m_score, 4);
     ar->Read(&m_points, 4);
@@ -690,17 +690,17 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_180, 4);
     ar->Read(&m_plotDX, 4);
     ar->Read(&m_plotDY, 4);
-    ar->Read(&m_dirty.m_lastX, 0x24);
+    ar->Read(&m_dirty, sizeof(m_dirty));
     ar->Read(&m_stateFlags, 4);
-    ar->Read(&m_44, 4);
-    ar->Read(&m_48, 4);
+    ar->Read(&m_flashCountdown, 4);
+    ar->Read(&m_flashInterval, 4);
     ar->Read(&m_drawFillCmd, 4);
     ar->Read(&m_fillFraction, 4);
     ar->Read(&m_drawActive, 4);
     ar->Read(&m_clip.left, 0x10);
     ar->Read(&m_id, 4);
     ar->Read(&m_flags, 4);
-    ar->Read(&m_184, 4);
+    ar->Read(&m_carrierId, 4);
 
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
@@ -737,9 +737,9 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (gate == 0) {
         return 0;
     }
-    if (m_184 != 0) {
+    if (m_carrierId != 0) {
         void* found = 0;
-        if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, m_184, found) == 0) {
+        if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, m_carrierId, found) == 0) {
             m_carrier = 0;
             return 1;
         }
@@ -760,7 +760,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
     if (w == 0) {
         return 0;
     }
-    if (w->m_1c == 0) {
+    if (w->m_actKey == 0) {
         w->m_notify(this);
     }
 
@@ -778,17 +778,17 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
     }
 
     WwdSnapshot rec;
-    rec.m_00 = m_id;
-    rec.m_08 = this->GetClassId();
-    rec.m_04 = m_188;
-    rec.m_94 = m_screenX;
-    rec.m_98 = m_screenY;
-    rec.m_9c = m_sortKey;
+    rec.m_id = m_id;
+    rec.m_classId = this->GetClassId();
+    rec.m_objectId = m_objectId;
+    rec.m_screenX = m_screenX;
+    rec.m_screenY = m_screenY;
+    rec.m_sortKey = m_sortKey;
     rec.m_serialTypeId = serialTypeId;
-    rec.m_10 = typeTag;
+    rec.m_logicTypeId = typeTag;
 
     {
-        strcpy(rec.m_name, OwnerMgr()->m_workerCache->FindKeyOfValue(m_animWorker));
+        strcpy(rec.m_workerName, OwnerMgr()->m_workerCache->FindKeyOfValue(m_animWorker));
     }
     ar->Write(&rec, 0xa0);
     return 1;
@@ -800,11 +800,11 @@ i32 CGameObject::NotifyHooked(i32 arg) {
     if (!p) {
         return 0;
     }
-    i32 saved = p->m_1c;
-    p->m_1c = arg;
+    i32 saved = p->m_actKey;
+    p->m_actKey = arg;
     m_animWorker->m_notify(this);
-    if (m_animWorker->m_1c == arg) {
-        m_animWorker->m_1c = saved;
+    if (m_animWorker->m_actKey == arg) {
+        m_animWorker->m_actKey = saved;
     }
     return 1;
 }
@@ -849,7 +849,7 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
     m_minY = 0;
     m_maxX = 0;
     m_maxY = 0;
-    m_168 = 0;
+    m_positionedSound = 0;
     m_16c = 0;
     m_userFlags = 0;
     return 1;

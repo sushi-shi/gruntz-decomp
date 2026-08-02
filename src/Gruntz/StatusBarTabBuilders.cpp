@@ -52,10 +52,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
-    m_2c = owner;
+    m_owner = owner;
     m_tab = tab;
-    m_24 = h;
-    m_28 = 0;
+    m_host = h;
+    m_redrawFrames = 0;
     m_enabled = 1;
 
     m_rect14 = g;
@@ -75,7 +75,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     found = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
     m_config = cfg;
     if (cfg == 0) {
@@ -94,7 +94,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CShadeTable* sel =
-        g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[g_curPlayer].m_008, 0);
+        g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[g_curPlayer].m_colorIndex, 0);
     if (sel == 0) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
@@ -124,9 +124,9 @@ i32 CSBI_GruntMachine::Refresh(i32) {
 
 RVA(0x000e8cb0, 0xc4)
 i32 CSBI_GruntMachine::Render() {
-    if (m_28 > 0) {
+    if (m_redrawFrames > 0) {
         i32 idx = m_frameIdxA;
-        m_28--;
+        m_redrawFrames--;
         CDDrawWorker* cfg = m_config;
 
         m_frameA = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
@@ -168,7 +168,7 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     if (idxB != -1) {
         m_frameIdxB = idxB;
     }
-    m_28 = 2;
+    m_redrawFrames = 2;
 }
 
 // @early-stop
@@ -328,11 +328,11 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     if (host == 0 || parent == 0) {
         return 0;
     }
-    m_24 = host;
+    m_host = host;
     m_tab = tab;
-    m_2c = parent;
+    m_owner = parent;
     m_rect14.left = left;
-    m_28 = 0;
+    m_redrawFrames = 0;
     m_rect14.top = top;
     m_rect14.right = right;
     m_rect14.bottom = bottom;
@@ -365,7 +365,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = 1;
-        m_drawX = parent->m_rect10.left - (right - left) / 2;
+        m_drawPosition.m_x = parent->m_rect10.left - (right - left) / 2;
     } else {
         CDDrawWorker* n = 0;
         CObject* nOb = 0;
@@ -384,9 +384,9 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = -1;
-        m_drawX = (right - left) / 2 + parent->m_rect10.right;
+        m_drawPosition.m_x = (right - left) / 2 + parent->m_rect10.right;
     }
-    m_drawY = colIndex * 0x12 + 0xd1;
+    m_drawPosition.m_y = colIndex * 0x12 + 0xd1;
     if (m_topFrame == 0) {
         return 0;
     }
@@ -417,7 +417,7 @@ i32 CSBI_SideTab::BuildHandle() {
     }
     CGrunt* unit = g_gameReg->m_cmdGrid->m_grid[m_colIndex + 15 * m_rowIndex];
     if (unit == 0) {
-        m_2c->ClearStat(m_colIndex);
+        m_owner->ClearStat(m_colIndex);
         return 0;
     }
     i32 val;
@@ -435,7 +435,7 @@ i32 CSBI_SideTab::BuildHandle() {
             }
         }
     } else if (mode == 3) {
-        val = unit->m_198;
+        val = unit->m_vehiclePickupType;
         if (val == 0) {
             m_sampleMode = 1;
         }
@@ -474,8 +474,9 @@ RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {
         CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-        m_topFrame->RenderFrame(ctx, m_drawX, m_drawY, 0);
-        m_bottomFrame->RenderFrame(ctx, m_drawX + m_bottomFrameDy, m_drawY, 0);
+        m_topFrame->RenderFrame(ctx, m_drawPosition.m_x, m_drawPosition.m_y, 0);
+        m_bottomFrame
+            ->RenderFrame(ctx, m_drawPosition.m_x + m_bottomFrameDy, m_drawPosition.m_y, 0);
     }
     return 1;
 }
@@ -518,7 +519,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pOb
             s->Write(&m_rowIndex, 4);
             s->Write(&m_colIndex, 4);
             s->Write(&m_sampleMode, 4);
-            s->Write(&m_drawX, 8);
+            s->Write(&m_drawPosition, 8);
             s->Write(&m_bottomFrameDy, 4);
             s->Write(&m_onLeft, 4);
             s->Write(&m_drawGate, 4);
@@ -571,7 +572,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pOb
             s->Read(&m_rowIndex, 4);
             s->Read(&m_colIndex, 4);
             s->Read(&m_sampleMode, 4);
-            s->Read(&m_drawX, 8);
+            s->Read(&m_drawPosition, 8);
             s->Read(&m_bottomFrameDy, 4);
             s->Read(&m_onLeft, 4);
             s->Read(&m_drawGate, 4);
@@ -637,10 +638,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
-    m_2c = owner;
+    m_owner = owner;
     m_tab = tab;
-    m_24 = h;
-    m_28 = 0;
+    m_host = h;
+    m_redrawFrames = 0;
     m_enabled = 1;
 
     m_rect14 = g;
@@ -677,7 +678,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CImage* val;
     if (selMode != 0) {
         found = 0;
-        m_24->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", found);
+        m_host->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", found);
         CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
         m_timerGlyphMap = sel;
         if (sel == 0) {
@@ -700,7 +701,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         }
     } else {
         found = 0;
-        m_24->m_imageRegistry->m_10map.Lookup(
+        m_host->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
             found
         );

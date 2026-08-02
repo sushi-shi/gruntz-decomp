@@ -44,14 +44,10 @@ i32 CPlay::LoadLoadingBarSprite() {
 
 RVA(0x0009bab0, 0x35)
 CTimer* CTimer::Init() {
-    m_baseTimeLo = 0;
-    m_accumLo = 0;
-    m_baseTimeHi = 0;
-    m_accumHi = 0;
-    m_38 = 0;
-    m_40 = 0;
-    m_3c = 0;
-    m_44 = 0;
+    m_baseTime.m_v = 0;
+    m_accum.m_v = 0;
+    m_startStamp.m_v = 0;
+    m_40.m_v = 0;
     m_sprite = 0;
     m_frameMinTens = 0;
     m_frameMinOnes = 0;
@@ -135,10 +131,8 @@ i32 CTimer::Tick(i32 dt) {
 
     if (v == 0) {
 
-        m_40 = 0;
-        m_44 = 0;
-        m_accumLo = 0;
-        m_accumHi = 0;
+        m_40.m_v = 0;
+        m_accum.m_v = 0;
         m_running = 0;
         m_currentMs = 0;
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -152,7 +146,7 @@ i32 CTimer::Tick(i32 dt) {
         if (slot != 0) {
             slot->m_clearedRound = 1;
         }
-        i32 key = g_gameReg->m_options[0].m_00c;
+        i32 key = g_gameReg->m_options[0].m_warlordObjectId;
         if (key != 0) {
             i32 found = 0;
 
@@ -170,7 +164,7 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     if (static_cast<u32>(v) < 0xea60) {
-        i32 key = g_gameReg->m_options[0].m_00c;
+        i32 key = g_gameReg->m_options[0].m_warlordObjectId;
         if (key != 0) {
             i32 found = 0;
 
@@ -310,31 +304,25 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
         }
     }
 
-    i32* p = &m_baseTimeLo;
     switch (kind) {
         case 4:
-            ar->Write(p, 8);
-            p += 2;
-            ar->Write(p, 8);
+            ar->Write(&m_baseTime, sizeof(m_baseTime));
+            ar->Write(&m_accum, sizeof(m_accum));
             break;
         case 7:
-            ar->Read(p, 8);
-            p += 2;
-            ar->Read(p, 8);
+            ar->Read(&m_baseTime, sizeof(m_baseTime));
+            ar->Read(&m_accum, sizeof(m_accum));
             break;
     }
 
-    p = &m_38;
     switch (kind) {
         case 4:
-            ar->Write(p, 8);
-            p += 2;
-            ar->Write(p, 8);
+            ar->Write(&m_startStamp, sizeof(m_startStamp));
+            ar->Write(&m_40, sizeof(m_40));
             return 1;
         case 7:
-            ar->Read(p, 8);
-            p += 2;
-            ar->Read(p, 8);
+            ar->Read(&m_startStamp, sizeof(m_startStamp));
+            ar->Read(&m_40, sizeof(m_40));
             break;
     }
     return 1;

@@ -81,8 +81,8 @@ enum GruntDeathType {
 #define DEATH_FRAME()                                                                              \
     (m_wwdObject->m_animCursor.m_animation->m_records.GetSize() > 0                                \
          ? static_cast<CAniRecordView*>(m_wwdObject->m_animCursor.m_animation->m_records.GetAt(0)) \
-               ->m_seedFrame                                                                       \
-         : static_cast<CAniRecordView*>(0)->m_seedFrame)
+               ->m_param                                                                           \
+         : static_cast<CAniRecordView*>(0)->m_param)
 
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
@@ -150,8 +150,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     }
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_dAnimKeyC);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_dAnimKeyC);
 
     m_wwdObject->m_flags |= 1;
     if (m_object->m_sortKey != 0x15f90) {
@@ -160,7 +160,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     }
 
     if (killerSlot != -1) {
-        m_370 = killerSlot;
+        m_killerSlot = killerSlot;
         g_gameReg->m_scoreHud->BumpWin(killerSlot, m_tileOwnerHi);
     }
 
@@ -363,15 +363,15 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(m_poseDeath);
             m_wwdObject->ApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
-            m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = ActFindId(s_dExitKeyB);
+            m_prevAnimSetNode = m_objAux->m_actKey;
+            m_objAux->m_actKey = ActFindId(s_dExitKeyB);
             goto tail;
         }
 
         default:
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(m_poseDeath);
-            m_wwdObject->ApplyName(static_cast<const char*>(m_44c));
+            m_wwdObject->ApplyName(static_cast<const char*>(m_deathFrameSetName));
             {
                 CGruntzMgr* g = g_gameReg;
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
@@ -382,7 +382,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
                 }
             }
 
-            if (m_entranceReason == 0x14 && g_gameReg->m_134 != 1) {
+            if (m_entranceReason == 0x14 && g_gameReg->m_gameMode != 1) {
                 m_wwdObject->ApplyLookupGeometry(s_NORMALGRUNT_DEATH, 0);
                 m_wwdObject->ApplyName(s_NORMALGRUNT_DEATH);
             }
@@ -390,7 +390,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     }
 
 pathA:
-    m_wwdObject->ApplyName(static_cast<const char*>(m_44c));
+    m_wwdObject->ApplyName(static_cast<const char*>(m_deathFrameSetName));
     {
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
@@ -409,8 +409,8 @@ finalize:
 
 tail:
 
-    if (m_entranceReason == 0x14 && g_gameReg->m_134 != 1) {
-        SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_38c);
+    if (m_entranceReason == 0x14 && g_gameReg->m_gameMode != 1) {
+        SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
     if (m_arrivalState == 0xd) {
         TryPowerupAtTile();

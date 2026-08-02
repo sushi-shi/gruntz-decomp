@@ -4,8 +4,8 @@
 RVA(0x000379f0, 0x57)
 CKeyedNode::~CKeyedNode() {
     m_key.Empty();
-    m_4 = 0;
-    m_8 = 0;
+    m_commandDelay = 0;
+    m_drainReload = 0;
 }
 
 RVA(0x000379a0, 0x3d)
@@ -22,13 +22,13 @@ void CKeyedList::Clear() {
 
 // @early-stop
 RVA(0x00037a70, 0x9a)
-CKeyedNode* CKeyedList::AddNode(const char* key, i32 a2, i32 a3) {
+CKeyedNode* CKeyedList::AddNode(const char* key, i32 commandDelay, i32 drainReload) {
     CKeyedNode* node = new CKeyedNode;
-    node->m_4 = 0;
-    node->m_8 = 0;
+    node->m_commandDelay = 0;
+    node->m_drainReload = 0;
     node->m_key = key;
-    node->m_4 = a2;
-    node->m_8 = a3;
+    node->m_commandDelay = commandDelay;
+    node->m_drainReload = drainReload;
     m_list.AddTail(node);
     return node;
 }

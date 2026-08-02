@@ -375,7 +375,7 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
             rec.m_addr = static_cast<char*>(name);
             g_recs23[idx].m_callback(rec.m_word, value);
         } else if (m_typeTag == 1) {
-            g_recs23[idx].m_8 = static_cast<short>(value);
+            g_recs23[idx].m_value = static_cast<short>(value);
         }
     }
 }
@@ -685,7 +685,7 @@ i32 CVariantSlot::Find(i32 key) {
     if (hi >= 0) {
         do {
             i32 mid = (hi + lo) / 2;
-            m_04 = mid;
+            m_searchIndex = mid;
             i32 d = g_recs23[mid].m_key - key;
             if (d < 0) {
                 lo = mid + 1;
@@ -696,7 +696,7 @@ i32 CVariantSlot::Find(i32 key) {
             }
         } while (lo <= hi);
     }
-    m_04 = hi + 1;
+    m_searchIndex = hi + 1;
     return -1;
 }
 
@@ -791,18 +791,18 @@ void* CVariantSlot::Add(void* key, void* val) {
         }
         if (g_recCount23 != 0) {
             memcpy(
-                &g_recs23[m_04 + 1],
-                &g_recs23[m_04],
-                (g_recCount23 - m_04) * sizeof(TypeKeyRec)
+                &g_recs23[m_searchIndex + 1],
+                &g_recs23[m_searchIndex],
+                (g_recCount23 - m_searchIndex) * sizeof(TypeKeyRec)
             );
         }
         callbackWord.generic = val;
-        g_recs23[m_04].m_callback = callbackWord.callback;
+        g_recs23[m_searchIndex].m_callback = callbackWord.callback;
         AddrWord<char> nk;
         nk.m_addr = static_cast<char*>(key);
-        g_recs23[m_04].m_key = nk.m_word;
+        g_recs23[m_searchIndex].m_key = nk.m_word;
         g_recCount23 = g_recCount23 + 1;
-        g_recs23[m_04].m_8 = 0;
+        g_recs23[m_searchIndex].m_value = 0;
         return 0;
     }
     callbackWord.callback = g_recs23[idx].m_callback;
@@ -812,7 +812,11 @@ void* CVariantSlot::Add(void* key, void* val) {
         g_recs23[idx].m_callback = callbackWord.callback;
         return old;
     }
-    memcpy(&g_recs23[m_04], &g_recs23[m_04 + 1], (g_recCount23 - m_04 - 1) * sizeof(TypeKeyRec));
+    memcpy(
+        &g_recs23[m_searchIndex],
+        &g_recs23[m_searchIndex + 1],
+        (g_recCount23 - m_searchIndex - 1) * sizeof(TypeKeyRec)
+    );
     g_recCount23 = g_recCount23 - 1;
     return old;
 }

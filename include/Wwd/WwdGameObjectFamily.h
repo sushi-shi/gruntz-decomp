@@ -80,9 +80,9 @@ public:
 
     AnimWorkerObj* m_animWorker;
     AnimWorkerObj* m_hitWorker;
-    CGameObject* m_84;
+    CGameObject* m_hitSource;
     AnimWorkerObj* m_attackWorker;
-    CGameObject* m_8c;
+    CGameObject* m_attackTarget;
     AnimWorkerObj* m_collideWorker;
     CGameObject* m_hitOther;
 
@@ -92,7 +92,7 @@ public:
 
     WwdDirtyRect m_shadow;
 
-    CString m_dc;
+    CString m_name;
 
     i32 m_e0;
 
@@ -100,15 +100,15 @@ public:
     u32 m_objectType;
 
     i32 m_hitTypeFlags;
-    i32 m_f0;
+    i32 m_attackTypeMask;
 
     u32 m_collMask;
     i32 m_strideX;
     i32 m_strideY;
     i32 m_100;
-    i32 m_104;
-    i32 m_108;
-    i32 m_10c;
+    i32 m_spawnX;
+    i32 m_spawnY;
+    i32 m_spawnSortKey;
     i32 m_110;
     i32 m_score;
     i32 m_points;
@@ -135,8 +135,8 @@ public:
     i32 m_deltaY;
     i32 m_17c;
     i32 m_180;
-    i32 m_184;
-    i32 m_188;
+    i32 m_carrierId;
+    i32 m_objectId;
 };
 SIZE_UNKNOWN();
 
@@ -150,7 +150,7 @@ inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     m_hitWorker = 0;
     m_attackWorker = 0;
     m_collideWorker = 0;
-    m_188 = g_wwdObjIdCounter;
+    m_objectId = g_wwdObjIdCounter;
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
 #endif
@@ -160,19 +160,19 @@ public:
     CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
         : CGameObject(owner, id, stateFlags), m_animCursor(owner, id, stateFlags) {
         m_18c = -1;
-        m_190 = -1;
+        m_frameIndex = -1;
         m_layer = 0;
-        m_194 = 0;
-        m_19c = 0;
+        m_frameSet = 0;
+        m_soundCue = 0;
     }
     virtual ~CWwdGameObjectA() OVERRIDE;
 
     RVA(0x0015b980, 0x96)
     virtual void Unload() OVERRIDE {
         m_18c = -1;
-        m_190 = -1;
+        m_frameIndex = -1;
         m_layer = 0;
-        m_194 = 0;
+        m_frameSet = 0;
         CGameObject::Unload();
     }
     virtual i32 GetClassId() OVERRIDE;
@@ -198,19 +198,10 @@ public:
     i32 ReadState(CFileMemBase* src);
 
     i32 m_18c;
-    i32 m_190;
-    union {
-
-        char* m_194;
-        CDDrawWorker* m_sprite;
-        CDDrawWorker* m_imageSet;
-    };
+    i32 m_frameIndex;
+    CDDrawWorker* m_frameSet;
     CImage* m_layer;
-    union {
-
-        LeafCue* m_19c;
-        CDDrawWorker* m_19cSprite;
-    };
+    LeafCue* m_soundCue;
     CAniAdvanceCursor m_animCursor;
 };
 SIZE(0x1dc);
@@ -218,7 +209,7 @@ SIZE(0x1dc);
 class CWwdGameObject : public CWwdGameObjectA {
 public:
     CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CWwdGameObjectA(owner, id, stateFlags), m_1dc(0xa) {
+        : CWwdGameObjectA(owner, id, stateFlags), m_children(0xa) {
         m_1f8 = 0;
     }
     virtual ~CWwdGameObject() OVERRIDE;
@@ -229,9 +220,9 @@ public:
         Clear();
         m_1f8 = 0;
         m_18c = -1;
-        m_190 = -1;
+        m_frameIndex = -1;
         m_layer = 0;
-        m_194 = 0;
+        m_frameSet = 0;
         CGameObject::Unload();
     }
     virtual i32 GetClassId() OVERRIDE;
@@ -254,7 +245,7 @@ public:
     CWwdGameObject*
     CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags);
 
-    CObList m_1dc;
+    CObList m_children;
 
     i32 m_1f8;
 };

@@ -14,6 +14,13 @@ struct FecEntry {
 };
 SIZE(0x10c);
 
+struct FecArchiveHeader {
+    i32 m_versionMajor;
+    i32 m_versionMinor;
+    i32 m_fileCount;
+};
+SIZE(0xc);
+
 class CFecFile {
 public:
     CFecFile();
@@ -33,9 +40,7 @@ public:
     i32 m_openGate;
     i32 m_readOpen;
     i32 m_writeOpen;
-    i32 m_versionMajor;
-    i32 m_versionMinor;
-    i32 m_fileCount;
+    FecArchiveHeader m_header;
     FecEntry m_entry;
 
     CFile m_stream;

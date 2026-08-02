@@ -101,13 +101,13 @@ void CUserLogic::FinalizeStep(char*) {
     if (m_deferredCallback == 0) {
         return;
     }
-    if (m_gatedCallback != 0 && m_objAux->ActKey() == m_28) {
+    if (m_gatedCallback != 0 && m_objAux->ActKey() == m_gatedActKey) {
         (this->*m_gatedCallback)();
         m_gatedCallback = 0;
     }
     (this->*m_deferredCallback)();
     m_deferredCallback = 0;
-    m_28 = 0x3e9;
+    m_gatedActKey = 0x3e9;
 }
 
 // @early-stop

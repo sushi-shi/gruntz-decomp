@@ -5,7 +5,6 @@
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
-#include <Gruntz/TileTriggerWiring.h>
 #include <rva.h>
 #include <Rez/RezAlloc.h>
 
@@ -13,6 +12,7 @@ class CTileTriggerContainer;
 class CTileTriggerLogic;
 class CGiantRockLogic;
 class CTileTriggerSwitchLogic;
+struct CGameObject;
 
 extern "C" u32 g_frameTime;
 
@@ -44,12 +44,12 @@ public:
         i32 tileY,
         i32 cellKey,
 
-        CTrigParam extent,
-        CTrigParam area,
-        CTrigParam switchRect,
-        CTrigParam clip,
-        CTrigParam switchRectA,
-        CTrigParam switchRectB,
+        RECT extent,
+        RECT area,
+        RECT switchRect,
+        RECT clip,
+        RECT switchRectA,
+        RECT switchRectB,
         i32 tileToken,
         i32 dutyOnSpan,
         i32 leadInSpan,
@@ -68,7 +68,7 @@ public:
         i32 dutyOffSpan
     );
 
-    void AddLogicFromRecord(i32 tileType, i32 logicType, CTrigSourceRecord* rec);
+    void AddLogicFromRecord(i32 tileType, i32 logicType, CGameObject* object);
 
     CTileActionEvent* AddToList3(
         i32 actionCode,
@@ -116,8 +116,8 @@ public:
         RECT switchRectA,
         RECT switchRectB,
         i32 isMatch,
-        i32 m120,
-        i32 zero
+        i32 damageParam,
+        i32 checkpointType
     );
 
     i32 Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);

@@ -115,7 +115,7 @@ typedef enum WarlordBattleTag {
     {                                                                                              \
         void* h = 0;                                                                               \
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(                              \
-            s_GRUNTZ_ + m_54 + (suffix),                                                           \
+            s_GRUNTZ_ + m_warlordName + (suffix),                                                  \
             h                                                                                      \
         );                                                                                         \
         /* Lookup exposes void*& at this API boundary; */                                          \
@@ -128,14 +128,10 @@ typedef enum WarlordBattleTag {
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
-    m_cooldownStampLo = 0;
-    m_cooldownWindowLo = 0;
-    m_cooldownStampHi = 0;
-    m_cooldownWindowHi = 0;
-    m_timer2StampLo = 0;
-    m_timer2WindowLo = 0;
-    m_timer2StampHi = 0;
-    m_timer2WindowHi = 0;
+    m_cooldownStamp = 0;
+    m_cooldownWindow = 0;
+    m_timer2Stamp = 0;
+    m_timer2Window = 0;
 
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -148,7 +144,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 0x2000002;
 
     i32 owner = m_object->m_smarts;
-    i32 cfg = g_gameReg->m_options[owner].m_008;
+    i32 cfg = g_gameReg->m_options[owner].m_colorIndex;
     if (cfg < 0 || cfg >= 0x11) {
         cfg = 0;
     }
@@ -163,19 +159,19 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     switch (owner) {
         case WARLORDZ_KING:
-            m_54 = s_WARLORDZ_KING;
+            m_warlordName = s_WARLORDZ_KING;
             m_ownerTag = WARLORD_TAG_KING;
             break;
         case WARLORDZ_NAPOLEAN:
-            m_54 = s_WARLORDZ_NAPOLEAN;
+            m_warlordName = s_WARLORDZ_NAPOLEAN;
             m_ownerTag = WARLORD_TAG_NAPOLEAN;
             break;
         case WARLORDZ_PATTON:
-            m_54 = s_WARLORDZ_PATTON;
+            m_warlordName = s_WARLORDZ_PATTON;
             m_ownerTag = WARLORD_TAG_PATTON;
             break;
         case WARLORDZ_VIKING:
-            m_54 = s_WARLORDZ_VIKING;
+            m_warlordName = s_WARLORDZ_VIKING;
             m_ownerTag = WARLORD_TAG_VIKING;
             break;
         default:
@@ -184,7 +180,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             return;
     }
 
-    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_54, 1, 0, 0);
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, 0);
 
     WARLORD_ANIM_LOOKUP(m_idleAnims[0], s__IDLE1);
     WARLORD_ANIM_LOOKUP(m_idleAnims[1], s__IDLE2);
@@ -198,11 +194,9 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     WARLORD_ANIM_LOOKUP(m_animMoving, s__MOVING);
     WARLORD_ANIM_LOOKUP(m_animPanic, s__PANIC);
 
-    m_timer2StampLo = 0;
-    m_timer2WindowLo = 0;
-    m_timer2StampHi = 0;
-    m_timer2WindowHi = 0;
-    m_a8 = 0;
+    m_timer2Stamp = 0;
+    m_timer2Window = 0;
+    m_deathStarted = 0;
     ResolveMovingAnimation();
 }
 #undef WARLORD_ANIM_LOOKUP
@@ -263,7 +257,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             }
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
-            strcpy(buf, static_cast<const char*>(m_54));
+            strcpy(buf, static_cast<const char*>(m_warlordName));
             ar->Write(buf, 0x80);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
@@ -361,7 +355,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
                 );
             }
             ar->Write(buf, 0x80);
-            ar->Write(&m_a8, 4);
+            ar->Write(&m_deathStarted, 4);
             ar->Write(&m_ownerTag, 4);
             break;
         }
@@ -372,7 +366,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             }
             g_serialCounter++;
             ar->Read(buf, 0x80);
-            m_54 = buf;
+            m_warlordName = buf;
 
             g_serialCounter++;
             ar->Read(buf, 0x80);
@@ -473,14 +467,14 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             } else {
                 m_animPanic = 0;
             }
-            ar->Read(&m_a8, 4);
+            ar->Read(&m_deathStarted, 4);
             ar->Read(&m_ownerTag, 4);
             break;
         }
         case 8: {
 
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                g_gameReg->m_options[m_object->m_smarts].m_008,
+                g_gameReg->m_options[m_object->m_smarts].m_colorIndex,
                 0
             );
             if (sel == 0) {
@@ -496,30 +490,24 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
     }
 
     {
-        i32* cooldown = &m_cooldownStampLo;
         switch (mode) {
             case 7:
-                ar->Read(cooldown, 8);
-                cooldown += 2;
-                ar->Read(cooldown, 8);
+                ar->Read(&m_cooldownStamp, sizeof(m_cooldownStamp));
+                ar->Read(&m_cooldownWindow, sizeof(m_cooldownWindow));
                 break;
             case 4:
-                ar->Write(cooldown, 8);
-                cooldown += 2;
-                ar->Write(cooldown, 8);
+                ar->Write(&m_cooldownStamp, sizeof(m_cooldownStamp));
+                ar->Write(&m_cooldownWindow, sizeof(m_cooldownWindow));
                 break;
         }
-        i32* timer2 = &m_timer2StampLo;
         switch (mode) {
             case 7:
-                ar->Read(timer2, 8);
-                timer2 += 2;
-                ar->Read(timer2, 8);
+                ar->Read(&m_timer2Stamp, sizeof(m_timer2Stamp));
+                ar->Read(&m_timer2Window, sizeof(m_timer2Window));
                 break;
             case 4:
-                ar->Write(timer2, 8);
-                timer2 += 2;
-                ar->Write(timer2, 8);
+                ar->Write(&m_timer2Stamp, sizeof(m_timer2Stamp));
+                ar->Write(&m_timer2Window, sizeof(m_timer2Window));
                 break;
         }
     }
@@ -570,7 +558,7 @@ i32 CWarlord::LoadAttributes() {
     }
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_134 != 1) {
+    if (reg->m_gameMode != 1) {
         CWwdGameObjectA* o = m_object;
         i32 dist = reg->m_cmdGrid->NearestCellDist(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -579,7 +567,7 @@ i32 CWarlord::LoadAttributes() {
         }
     }
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp64 >= m_cooldownWindow64) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp >= m_cooldownWindow) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -595,7 +583,7 @@ i32 CWarlord::LoadAttributes2() {
         return 0;
     }
 
-    if (g_gameReg->m_134 != 1) {
+    if (g_gameReg->m_gameMode != 1) {
         CWwdGameObjectA* o = m_object;
         i32 dist = g_gameReg->m_cmdGrid->NearestCellDist(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -608,11 +596,10 @@ i32 CWarlord::LoadAttributes2() {
             ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp64
-            >= m_cooldownWindow64) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
-            m_cooldownWindow64 = 0x7530;
-            m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp >= m_cooldownWindow) {
+            g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
+            m_cooldownWindow = 0x7530;
+            m_cooldownStamp = static_cast<u32>(g_frameTime);
         }
     }
     return 0;
@@ -674,7 +661,7 @@ i32 CWarlord::BuildFortSplashParticles() {
 
         GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_smarts];
         if (slot != 0) {
-            slot->m_00c = 0;
+            slot->m_warlordObjectId = 0;
         }
         m_wwdObject->m_flags |= 0x10000;
     }
@@ -684,20 +671,20 @@ i32 CWarlord::BuildFortSplashParticles() {
 // @early-stop
 RVA(0x00045100, 0x112)
 i32 CWarlord::ResolveMovingAnimation() {
-    if (m_a8 != 0) {
+    if (m_deathStarted != 0) {
         return 0;
     }
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__MOVING);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__MOVING);
 
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_animMoving);
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_keyB);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_keyB);
 
-    m_cooldownWindow64 = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
-    m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+    m_cooldownWindow = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
+    m_cooldownStamp = static_cast<u32>(g_frameTime);
     return 1;
 }
 
@@ -705,18 +692,19 @@ i32 CWarlord::ResolveMovingAnimation() {
 RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
-    if (m_a8 == 0) {
-        bool alreadyPanicking = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
+    if (m_deathStarted == 0) {
+        bool alreadyPanicking =
+            (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
         if (!alreadyPanicking) {
-            if (g_gameReg->m_134 == 1) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
-                m_cooldownWindow64 = 0x7530;
-                m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+            if (g_gameReg->m_gameMode == 1) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
+                m_cooldownWindow = 0x7530;
+                m_cooldownStamp = static_cast<u32>(g_frameTime);
             } else {
-                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timer2Stamp64
-                        >= m_timer2Window64
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timer2Stamp
+                        >= m_timer2Window
                     && g_gameReg->m_cmdGrid->m_pendingFx == this) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x440, -1, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x440, -1, -1, -1);
                     static CString s_alert("ALERT - Your Fort is under attack!");
                     g_gameReg->m_chatLog->AddItem(
                         static_cast<LPCTSTR>(
@@ -725,21 +713,21 @@ i32 CWarlord::NotifyFortUnderAttack() {
                         0,
                         0x11
                     );
-                    m_timer2Window64 =
+                    m_timer2Window =
                         static_cast<u32>(g_buteMgr.GetIntDef("Warlordz", "NotifyTimer", 0x1770));
-                    m_timer2Stamp64 = static_cast<u32>(g_frameTime);
+                    m_timer2Stamp = static_cast<u32>(g_frameTime);
                 }
-                m_cooldownWindow64 = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
-                m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+                m_cooldownWindow = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
+                m_cooldownStamp = static_cast<u32>(g_frameTime);
             }
 
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(m_animPanic);
 
-            m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);
+            m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__PANIC);
 
-            m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = ActFindId(s_codeD);
+            m_prevAnimSetNode = m_objAux->m_actKey;
+            m_objAux->m_actKey = ActFindId(s_codeD);
             return 1;
         }
     }
@@ -749,75 +737,75 @@ i32 CWarlord::NotifyFortUnderAttack() {
 // @early-stop
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
-    if (m_a8 != 0) {
+    if (m_deathStarted != 0) {
         return 0;
     }
-    m_a8 = 1;
+    m_deathStarted = 1;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_134 == 1) {
+    if (g->m_gameMode == 1) {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
             && y >= g->m_viewBounds.top) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_188, m_ownerTag, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, m_ownerTag, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, m_ownerTag, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, m_ownerTag, -1, -1, -1);
     }
 
     CAniElement* anim = m_animDeath;
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(anim);
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__DEATH);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__DEATH);
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_keyC);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_keyC);
     return 1;
 }
 
 RVA(0x000457b0, 0x14c)
 i32 CWarlord::RaiseBattleAlert() {
-    if (m_a8 != 0) {
+    if (m_deathStarted != 0) {
         return 0;
     }
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_134 == 1) {
+    if (g->m_gameMode == 1) {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
             && y >= g->m_viewBounds.top) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_188, 0x435, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, 0x435, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x43f, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x43f, -1, -1, -1);
     }
 
     CAniElement* anim = m_animJoy;
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(anim);
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__JOY);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__JOY);
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_keyE);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_keyE);
     return 1;
 }
 
 RVA(0x00045960, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {
-    if (m_a8 != 0) {
+    if (m_deathStarted != 0) {
         return 0;
     }
 
     i32 idx = GruntRand() % 3 + 1;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_134 == 1) {
+    if (g->m_gameMode == 1) {
         CWwdGameObjectA* h = m_object;
 
         i32 cue = idx + 0x431;
@@ -825,10 +813,10 @@ i32 CWarlord::ResolveIdleAnimation() {
         i32 y = h->m_screenY;
         if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
             && y >= g->m_viewBounds.top) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_188, cue, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, cue, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x43b, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, idx + 0x43b, -1, -1, -1);
     }
 
     CAniElement* anim = m_idleAnims[idx];
@@ -836,46 +824,46 @@ i32 CWarlord::ResolveIdleAnimation() {
     m_wwdObject->m_animCursor.Setup(anim);
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniDesc* elem =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    CAniRecordView* elem =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
 
-    m_wwdObject->ApplyLookupSprite(s_GRUNTZ_ + m_54 + s__IDLE, frame);
+    m_wwdObject->ApplyLookupSprite(s_GRUNTZ_ + m_warlordName + s__IDLE, frame);
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_keyA);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_keyA);
     return 1;
 }
 
 RVA(0x00045b60, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
-    if (m_a8 != 0) {
+    if (m_deathStarted != 0) {
         return 0;
     }
 
     i32 idx = GruntRand() % 3;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_134 == 1) {
+    if (g->m_gameMode == 1) {
         CWwdGameObjectA* h = m_object;
         i32 cue = idx + 0x42e;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
             && y >= g->m_viewBounds.top) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_188, cue, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, cue, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x438, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, idx + 0x438, -1, -1, -1);
     }
 
     CAniElement* anim = m_battlecryAnims[idx];
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(anim);
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_54 + s__BATTLECRY);
+    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__BATTLECRY);
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(s_keyF);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(s_keyF);
     return 1;
 }

@@ -208,8 +208,7 @@ public:
     CDDrawSurfaceMgr* m_world;
 
     i32 m_armed;
-    i32 m_recX;
-    i32 m_recY;
+    Coord m_recordPosition;
     CWwdGameObjectA* m_goal;
 
     CPtrList m_recList;
@@ -220,7 +219,7 @@ public:
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;
     char m_274[0x10];
-    i32 m_284;
+    i32 m_groupInitialized;
 
     i32 m_phase;
     char _pad28c[0x4];
@@ -248,7 +247,7 @@ public:
     i32 m_resourceIntervalHi;
     CPtrList m_selLists[10];
     i32 m_selSentinel;
-    i32 m_3ec;
+    i32 m_finishReasonFrame;
 
     DirectSoundMgr* m_rollingballLoop;
     DirectSoundMgr* m_teleportLoop;

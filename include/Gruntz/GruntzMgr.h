@@ -276,7 +276,8 @@ public:
     i32 m_savedModeW, m_savedModeH;
     i32 m_lobbyResult;
     i32 m_lobbyProbed;
-    i32 m_a4, m_a8;
+    i32 m_delayedQuitPending;
+    i32 m_a8;
     i32 m_modalBusy;
     i32 m_renderGate;
 
@@ -304,7 +305,7 @@ public:
     i32 m_isInterlaced;
     i32 m_isHighDetail;
     i32 m_isEffectsEnabled;
-    i32 m_114;
+    i32 m_loadingSaveGame;
     i32 m_isEasyMode;
 
     i32 m_soundVolume;
@@ -313,7 +314,10 @@ public:
 
     i32 m_scrollSpeed;
 
-    i32 m_128, m_12c, m_130, m_134;
+    i32 m_isBattlezLevel;
+    i32 m_isMultiLevel;
+    i32 m_isCustomLevel;
+    i32 m_gameMode;
     i32 m_optionsCount;
     RECT m_viewBounds;
     char m_pad14c[0x150 - 0x14c];

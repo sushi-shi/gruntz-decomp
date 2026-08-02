@@ -5,6 +5,6 @@
 
 RVA(0x0007d810, 0x25)
 void CGruntPuddle::SetBute(char* key) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId(key);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId(key);
 }

@@ -80,12 +80,12 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     GruntzPlayer* s = &m_host->m_options[ch];
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
-        if (s->m_014 != 0) {
+        if (s->m_humanControlled != 0) {
             if (s->m_liveGate != 0) {
                 g_multiState->DropChannelPlayer(s->m_playerIndex);
             }
         } else if (s->m_liveGate != 0) {
-            ChannelSlots_Set(s->m_008, 1);
+            ChannelSlots_Set(s->m_colorIndex, 1);
         }
         s->m_liveGate = 0;
         s->m_readyFlag = 0;
@@ -93,20 +93,20 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
         c2->EnableWindow(0);
     } else {
         if (pSend(owner->m_hWnd, 0x147, 0, 0) != 4) {
-            if (s->m_014 != 0) {
+            if (s->m_humanControlled != 0) {
                 if (s->m_liveGate != 0) {
                     g_multiState->DropChannelPlayer(s->m_playerIndex);
                 }
                 i32 free = ChannelSlots_FindFree();
-                s->m_008 = free;
+                s->m_colorIndex = free;
                 ChannelSlots_Set(free, 0);
             } else if (s->m_liveGate == 0) {
                 i32 free = ChannelSlots_FindFree();
-                s->m_008 = free;
+                s->m_colorIndex = free;
                 ChannelSlots_Set(free, 0);
             }
             s->m_readyFlag = 1;
-            s->m_014 = 0;
+            s->m_humanControlled = 0;
             s->m_configId = static_cast<i32>(pSend(owner->m_hWnd, 0x147, 0, 0)) - 1;
             s->m_liveGate = 1;
             s->m_name = g_gruntNames[ch];
@@ -206,7 +206,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
-                switch (m_host->m_options[0].m_008) {
+                switch (m_host->m_options[0].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;
@@ -267,7 +267,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
-                switch (m_host->m_options[1].m_008) {
+                switch (m_host->m_options[1].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;
@@ -328,7 +328,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
-                switch (m_host->m_options[2].m_008) {
+                switch (m_host->m_options[2].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;
@@ -389,7 +389,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
-                switch (m_host->m_options[3].m_008) {
+                switch (m_host->m_options[3].m_colorIndex) {
                     case 8:
                         color = 0x800000;
                         break;
@@ -462,7 +462,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnColorSlot0() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || m_host->m_options[0].m_014 != 0)
+    if ((mp->m_isHost == 0 || m_host->m_options[0].m_humanControlled != 0)
         && (m_host->m_options[0].m_readyFlag != 0
             || m_host->m_options[0].m_slotKey != mp->m_hostIndex)) {
         return;
@@ -479,7 +479,7 @@ void CMultiStartDlg::OnColorSlot0() {
 RVA(0x000c3950, 0xd1)
 void CMultiStartDlg::OnColorSlot1() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || m_host->m_options[1].m_014 != 0)
+    if ((mp->m_isHost == 0 || m_host->m_options[1].m_humanControlled != 0)
         && (m_host->m_options[1].m_readyFlag != 0
             || m_host->m_options[1].m_slotKey != mp->m_hostIndex)) {
         return;
@@ -496,7 +496,7 @@ void CMultiStartDlg::OnColorSlot1() {
 RVA(0x000c3a70, 0xd1)
 void CMultiStartDlg::OnColorSlot2() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || m_host->m_options[2].m_014 != 0)
+    if ((mp->m_isHost == 0 || m_host->m_options[2].m_humanControlled != 0)
         && (m_host->m_options[2].m_readyFlag != 0
             || m_host->m_options[2].m_slotKey != mp->m_hostIndex)) {
         return;
@@ -513,7 +513,7 @@ void CMultiStartDlg::OnColorSlot2() {
 RVA(0x000c3b90, 0xd1)
 void CMultiStartDlg::OnColorSlot3() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || m_host->m_options[3].m_014 != 0)
+    if ((mp->m_isHost == 0 || m_host->m_options[3].m_humanControlled != 0)
         && (m_host->m_options[3].m_readyFlag != 0
             || m_host->m_options[3].m_slotKey != mp->m_hostIndex)) {
         return;
@@ -543,10 +543,10 @@ void CMultiStartDlg::OnCustomWorld() {
         }
         dlg.m_customName.MakeUpper();
         child->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
-        m_6c = 1;
-        g_multiState->m_5b0 = 1;
-        g_multiState->m_5b8 = static_cast<LPCTSTR>(dlg.m_customName);
-        g_multiState->m_5b4 = g_emptyString;
+        m_customWorldFlag = 1;
+        g_multiState->m_customLevel = 1;
+        g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
+        g_multiState->m_builtInLevelName = g_emptyString;
         g_multiState->SaveConfig(0);
     }
 }
@@ -561,11 +561,11 @@ void CMultiStartDlg::CommitWorldHost() {
                 CString name;
                 (static_cast<CComboBox*>(item))->GetLBText(r, name);
                 if (name.GetLength() != 0) {
-                    m_6c = 0;
+                    m_customWorldFlag = 0;
                 }
-                g_multiState->m_5b0 = 0;
-                g_multiState->m_5b8 = g_emptyString;
-                g_multiState->m_5b4 = static_cast<LPCTSTR>(name);
+                g_multiState->m_customLevel = 0;
+                g_multiState->m_customLevelName = g_emptyString;
+                g_multiState->m_builtInLevelName = static_cast<LPCTSTR>(name);
                 g_multiState->SaveConfig(0);
             }
         }
@@ -609,7 +609,7 @@ i32 CMultiStartDlg::EnableControls() {
     GetDlgItem(0x42d)->EnableWindow(1);
     GetDlgItem(0x511)->EnableWindow(1);
     CString s1;
-    if (g_multiState->m_5b0 == 0) {
+    if (g_multiState->m_customLevel == 0) {
         CString s2;
     }
     return 1;
@@ -628,11 +628,12 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     do {
         GruntzPlayer* slot = &g_gameReg->m_options[idx];
         if (slot) {
-            if (slot->m_slotKey != g_multiState->m_hostIndex && slot->m_014 && slot->m_liveGate) {
+            if (slot->m_slotKey != g_multiState->m_hostIndex && slot->m_humanControlled
+                && slot->m_liveGate) {
                 f18 = 1;
             }
             i32 enName;
-            if (g_multiState->m_isHost && slot->m_014 == 0) {
+            if (g_multiState->m_isHost && slot->m_humanControlled == 0) {
                 enName = 1;
             } else {
                 enName = slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0;
@@ -666,7 +667,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                 if (this->GetSlotIndex() == idx) {
                     goto next;
                 }
-                if (g_multiState->m_isHost && slot->m_014 == 0) {
+                if (g_multiState->m_isHost && slot->m_humanControlled == 0) {
                     goto next;
                 }
             }
@@ -675,7 +676,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     force = 0;
                     GetCtrlB(idx)->SetWindowTextA(slot->GetName());
                 }
-                if (slot->m_014) {
+                if (slot->m_humanControlled) {
                     ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 4, 0);
                 } else {
                     ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, slot->m_configId + 1, 0);
@@ -726,7 +727,7 @@ void CMultiStartDlg::Watchdog() {
             g_multiState->ReportAckLatency();
         }
         EnableWindow(0);
-        i32 r = g_multiState->VerifyCustomLevel(h, g_multiState->m_5bc);
+        i32 r = g_multiState->VerifyCustomLevel(h, g_multiState->m_localPlayer);
         EnableWindow(1);
         if (r != 0) {
             EndDialog(1);
@@ -735,7 +736,7 @@ void CMultiStartDlg::Watchdog() {
         }
     } else {
         g_multiState->PollSession();
-        if (g_multiState->m_600 != 0) {
+        if (g_multiState->m_autoCommandDelay != 0) {
             g_multiState->AutoTuneCmdDelay();
         }
     }
@@ -767,7 +768,7 @@ void CMultiStartDlg::Watchdog() {
                     item2 = GetDlgItem(0x538);
                     break;
             }
-            if (slot->m_liveGate != 0 && slot->m_014 != 0) {
+            if (slot->m_liveGate != 0 && slot->m_humanControlled != 0) {
                 char buf[0x20];
                 wsprintfA(buf, "%d", slot->m_latency.m_avg);
                 item1->SetWindowTextA(buf);
@@ -789,23 +790,23 @@ void CMultiStartDlg::Watchdog() {
         g_watchBusy = 0;
         return;
     }
-    if (g_multiState->m_568 != 0) {
-        g_multiState->m_568 = 0;
+    if (g_multiState->m_colorSelectionRejected != 0) {
+        g_multiState->m_colorSelectionRejected = 0;
         g_multiState->ReportVersionMsg("selected", 0);
         g_watchBusy = 0;
         return;
     }
     char* msg;
-    if (g_multiState->m_538 != 0) {
+    if (g_multiState->m_removedByHost != 0) {
         ::KillTimer(m_hWnd, 1);
         msg = "removed";
-    } else if (g_multiState->m_5ac != 0) {
+    } else if (g_multiState->m_gameClosed != 0) {
         ::KillTimer(m_hWnd, 1);
         msg = "closed";
-    } else if (g_multiState->m_56c != 0) {
+    } else if (g_multiState->m_gameFull != 0) {
         ::KillTimer(m_hWnd, 1);
         msg = "full";
-    } else if (g_multiState->m_570 != 0) {
+    } else if (g_multiState->m_versionMismatch != 0) {
         ::KillTimer(m_hWnd, 1);
         msg = "version";
     } else {
@@ -816,11 +817,11 @@ void CMultiStartDlg::Watchdog() {
             UpdateSlot();
             g_playerLeftFlag = 0;
         }
-        if (g_multiState->m_58c != 0) {
+        if (g_multiState->m_connectAccepted != 0) {
             EnableControls();
             UpdateColorItems();
             UpdateSlot();
-            g_multiState->m_58c = 0;
+            g_multiState->m_connectAccepted = 0;
         }
         g_watchBusy = 0;
         return;
@@ -848,24 +849,24 @@ void CMultiStartDlg::OnOK() {
     }
     mgr->SendStatFlag(0x3fc, 1);
     i32 token;
-    if (g_multiState->m_5b0 != 0) {
+    if (g_multiState->m_customLevel != 0) {
         CString b = mgr->GetConfigNameB();
-        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, b);
+        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_customLevel, 0, 0, b);
     } else {
         CString a = mgr->GetConfigNameA();
-        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, a);
+        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_customLevel, 0, 0, a);
     }
     g_multiState->m_levelVerifyResult = 0;
     if (g_multiState->Poll(token) == 0) {
-        g_multiState->m_530 = 0;
+        g_multiState->m_customLevelVerificationPending = 0;
         EnableWindow(0);
         g_gameReg->EnterModalUI("Unable to verify custom level with other players");
         EnableWindow(1);
     } else if (g_multiState->m_levelVerifyResult == 0) {
-        g_multiState->m_530 = 1;
+        g_multiState->m_customLevelVerificationPending = 1;
         CDialog::OnOK();
     } else {
-        g_multiState->m_530 = 0;
+        g_multiState->m_customLevelVerificationPending = 0;
         EnableWindow(0);
         g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
         EnableWindow(1);
@@ -910,12 +911,12 @@ void CMultiStartDlg::CommitLatencyOption() {
     HWND h = GetSafe1c();
     GetSelItemData(h, 0x527, &lo, &hi);
     if (lo != 0 || hi != 0) {
-        g_multiState->m_5a4 = lo;
+        g_multiState->m_commandDelay = lo;
         g_multiState->m_drainReload = hi;
-        g_multiState->m_600 = 0;
+        g_multiState->m_autoCommandDelay = 0;
         g_multiState->SaveConfig(0);
     } else {
-        g_multiState->m_600 = 1;
+        g_multiState->m_autoCommandDelay = 1;
     }
 }
 
@@ -960,6 +961,6 @@ i32 CMultiStartDlg::DestroyWindow() {
 RVA(0x000c52f0, 0x43)
 void CMultiStartDlg::EchoLatencySettings() {
     char buf[128];
-    wsprintfA(buf, s_UsingCmdDelay, g_multiState->m_5a4, g_multiState->m_drainReload);
+    wsprintfA(buf, s_UsingCmdDelay, g_multiState->m_commandDelay, g_multiState->m_drainReload);
     AppendChatLine(buf);
 }

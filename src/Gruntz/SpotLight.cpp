@@ -13,23 +13,23 @@
 RVA(0x000b1ee0, 0x11d)
 int CSpotLight::Update() {
     if (m_object->m_score == 1) {
-        double c = cos(m_90);
-        double s = sin(m_90);
+        double c = cos(m_angle);
+        double s = sin(m_angle);
 
-        double newAngle = static_cast<double>(g_frameDelta) * m_58 + m_90;
-        m_60 = -(m_88 * s + m_80 * c);
-        m_68 = m_80 * s - m_88 * c;
+        double newAngle = static_cast<double>(g_frameDelta) * m_angularVelocity + m_angle;
+        m_position.x = -(m_offset.y * s + m_offset.x * c);
+        m_position.y = m_offset.x * s - m_offset.y * c;
         if (m_focus) {
-            m_70 = static_cast<double>(m_focus->m_screenX);
-            m_78 = static_cast<double>(m_focus->m_screenY);
+            m_center.x = static_cast<double>(m_focus->m_screenX);
+            m_center.y = static_cast<double>(m_focus->m_screenY);
         }
-        m_60 = m_70 + m_60;
-        m_68 = m_78 + m_68;
-        m_90 = newAngle;
+        m_position.x = m_center.x + m_position.x;
+        m_position.y = m_center.y + m_position.y;
+        m_angle = newAngle;
     }
-    if (g_gameReg->m_cmdGrid->m_grid[m_a0 + m_9c * 15] == 0) {
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("A");
+    if (g_gameReg->m_cmdGrid->m_grid[m_cellCol + m_cellRow * 15] == 0) {
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("A");
     }
     return 0;
 }

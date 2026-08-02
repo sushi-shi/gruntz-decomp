@@ -58,8 +58,8 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0x13;
         m_object->m_flags |= 0x20000;
     }
-    m_tileY = snapY;
-    m_tileX = snapX;
+    m_tilePosition.m_y = snapY;
+    m_tilePosition.m_x = snapX;
 
     m_object->m_speedX = (m_object->m_speedX << 5) + 0x10;
     m_object->m_speedY = (m_object->m_speedY << 5) + 0x10;
@@ -86,10 +86,10 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_object->m_extent.bottom = exBottom;
 
-    char* rec = Anim()->m_194;
-    if (rec != 0) {
+    CDDrawWorker* frameSet = Anim()->m_frameSet;
+    if (frameSet != 0) {
         CString name;
-        name = rec + 0x24;
+        name = frameSet->m_name;
         const char* s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
             m_object->m_smarts = 1;
@@ -106,8 +106,8 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (LoadSprites() == 0) {
         m_wwdObject->m_flags |= 0x10000;
     }
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_object->m_area.left = 0;
@@ -167,7 +167,7 @@ i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_gameMode != 1) {
         CGameObject* lvl = Level();
         i32 outX, outY;
         CGrunt* ent = static_cast<CGrunt*>(reg->m_cmdGrid->FindGruntAt(
@@ -184,7 +184,8 @@ i32 CKitchenSlime::Tick() {
     }
 
     CGameObject* lvl = Level();
-    if (lvl->m_screenX == m_tileX && lvl->m_screenY == m_tileY && LoadSprites() == 0) {
+    if (lvl->m_screenX == m_tilePosition.m_x && lvl->m_screenY == m_tilePosition.m_y
+        && LoadSprites() == 0) {
         m_wwdObject->m_flags |= 0x10000;
         return 0;
     }
@@ -196,7 +197,7 @@ i32 CKitchenSlime::Tick() {
     if (m_dirX > 0.0) {
         double t = (m_posX = m_posX + step);
         newX = static_cast<i32>(floor(t));
-        i32 tx = m_tileX;
+        i32 tx = m_tilePosition.m_x;
         *m88d = fabs(m_posX - static_cast<double>(tx));
 
         if (newX > tx) {
@@ -205,7 +206,7 @@ i32 CKitchenSlime::Tick() {
     } else if (m_dirX < 0.0) {
         double t = (m_posX = m_posX - step);
         newX = static_cast<i32>(ceil(t));
-        i32 tx = m_tileX;
+        i32 tx = m_tilePosition.m_x;
         *m88d = fabs(m_posX - static_cast<double>(tx));
         if (newX < tx) {
             newX = newX;
@@ -218,7 +219,7 @@ i32 CKitchenSlime::Tick() {
     if (m_dirY > 0.0) {
         double t = (m_posY = m_posY + step);
         newY = static_cast<i32>(floor(t));
-        i32 ty = m_tileY;
+        i32 ty = m_tilePosition.m_y;
         *m88d = fabs(m_posY - static_cast<double>(ty));
         if (newY > ty) {
             Level()->m_screenX = newX;
@@ -228,7 +229,7 @@ i32 CKitchenSlime::Tick() {
     } else if (m_dirY < 0.0) {
         double t = (m_posY = m_posY - step);
         newY = static_cast<i32>(ceil(t));
-        i32 ty = m_tileY;
+        i32 ty = m_tilePosition.m_y;
         *m88d = fabs(m_posY - static_cast<double>(ty));
         if (newY < ty) {
             Level()->m_screenX = newX;
@@ -255,7 +256,7 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
             s->Read(&m_posY, 8);
             s->Read(&m_dirX, 8);
             s->Read(&m_dirY, 8);
-            s->Read(&m_tileX, 8);
+            s->Read(&m_tilePosition, 8);
             s->Read(&m_stepMag, 8);
         }
     } else {
@@ -264,7 +265,7 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
         s->Write(&m_posY, 8);
         s->Write(&m_dirX, 8);
         s->Write(&m_dirY, 8);
-        s->Write(&m_tileX, 8);
+        s->Write(&m_tilePosition, 8);
         s->Write(&m_stepMag, 8);
     }
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
@@ -285,20 +286,20 @@ i32 CKitchenSlime::LoadSprites() {
         i32 sw = lvl->m_smarts - 1;
         switch (sw) {
             case 0:
-                tileX = m_tileX;
-                tileY = m_tileY - 0x20;
+                tileX = m_tilePosition.m_x;
+                tileY = m_tilePosition.m_y - 0x20;
                 break;
             case 1:
-                tileX = m_tileX + 0x20;
-                tileY = m_tileY;
+                tileX = m_tilePosition.m_x + 0x20;
+                tileY = m_tilePosition.m_y;
                 break;
             case 2:
-                tileX = m_tileX;
-                tileY = m_tileY + 0x20;
+                tileX = m_tilePosition.m_x;
+                tileY = m_tilePosition.m_y + 0x20;
                 break;
             case 3:
-                tileX = m_tileX - 0x20;
-                tileY = m_tileY;
+                tileX = m_tilePosition.m_x - 0x20;
+                tileY = m_tilePosition.m_y;
                 break;
         }
 
@@ -389,19 +390,19 @@ i32 CKitchenSlime::LoadSprites() {
     }
 
     m_speed = g_slimeSpeedNum / static_cast<double>(static_cast<i64>(static_cast<u64>(time)));
-    m_tileX = tileX;
-    m_tileY = tileY;
+    m_tilePosition.m_x = tileX;
+    m_tilePosition.m_y = tileY;
 
     CWwdGameObjectA* player = Anim();
-    CDDrawWorker* spr = player->m_sprite;
+    CDDrawWorker* spr = player->m_frameSet;
     if (changed != 0 && spr != 0) {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
-            player->m_190 = 1;
+            player->m_frameIndex = 1;
             player->m_layer = static_cast<CImage*>(spr->m_items.GetAt(1));
             m_stepMag = 0.0;
             return 1;
         }
-        player->m_190 = 1;
+        player->m_frameIndex = 1;
         player->m_layer = 0;
         m_stepMag = 0.0;
         return 1;

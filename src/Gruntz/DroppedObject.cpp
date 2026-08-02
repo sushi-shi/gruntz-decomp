@@ -218,8 +218,8 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_dropInterval = 0;
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_OBJECTDROPPER", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
 
     CWwdGameObjectA* o = m_object;
@@ -235,9 +235,9 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 
     CWwdGameObjectA* obj38 = m_wwdObject;
-    if (obj38->m_194 != 0) {
+    if (obj38->m_frameSet != 0) {
         CString name;
-        name = obj38->m_194 + 0x24;
+        name = obj38->m_frameSet->m_name;
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
             o->m_direction = DROPDIR_NORTH;
@@ -263,7 +263,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_lastDropTileX = -1;
     m_lastDropTileY = -1;
     m_speed = g_objDropDiv / static_cast<double>(static_cast<i64>(static_cast<u32>(time)));
-    if (g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_gameMode == 1) {
         m_scrollMode = 1;
     }
     CShadeTable* sel = g_gameReg->m_logicPump->m_tables[5];
@@ -310,7 +310,7 @@ void CObjectDropper::RegisterActs() {
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
-        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
+        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != 1) {
             CWwdGameObjectA* o = m_object;
             RECT box;
             box.left = o->m_screenX - o->m_layer->m_anchorX + 7;
@@ -337,7 +337,7 @@ i32 CObjectDropper::Update() {
                             flags = 1;
                         } else {
 
-                            flags = static_cast<u32>(plane->m_rows[cy][cx].m_0);
+                            flags = static_cast<u32>(plane->m_rows[cy][cx].m_flags);
                         }
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup
@@ -402,17 +402,14 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
         return 0;
     }
 
-    i64* p = &m_lastDropTime;
     switch (tag) {
         case 4:
-            ar->Write(p, 8);
-            p += 1;
-            ar->Write(p, 8);
+            ar->Write(&m_lastDropTime, 8);
+            ar->Write(&m_dropInterval, 8);
             break;
         case 7:
-            ar->Read(p, 8);
-            p += 1;
-            ar->Read(p, 8);
+            ar->Read(&m_lastDropTime, 8);
+            ar->Read(&m_dropInterval, 8);
             break;
     }
 
@@ -452,8 +449,8 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
 // @early-stop
 RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
@@ -540,7 +537,7 @@ i32 CDroppedObject::AdvanceFall() {
             i32 cy = m_landY >> 5;
             if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
                 && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-                cell = g->m_rows[cy][cx].m_0;
+                cell = g->m_rows[cy][cx].m_flags;
             } else {
                 cell = 1;
             }
@@ -596,8 +593,8 @@ i32 CDroppedObject::AdvanceFall() {
         }
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("B");
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("B");
         g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, 7, -1);
         return 0;
     }
@@ -641,8 +638,8 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
 // @early-stop
 RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);

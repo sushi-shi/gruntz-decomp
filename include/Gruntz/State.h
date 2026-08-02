@@ -142,7 +142,7 @@ public:
         return static_cast<CGruntzMgr*>(m_mgr);
     }
     CSymTab* attractState() {
-        return (m_2c);
+        return (m_stateBank);
     }
 
     i32 BuildAssetNamespacePrefixes(
@@ -165,14 +165,14 @@ public:
     i32 m_levelIndex;
     i32 m_levelType;
 
-    i32 m_24;
+    i32 m_previousStateId;
 
     CSymTab* m_levelBank;
 
-    CSymTab* m_2c;
+    CSymTab* m_stateBank;
 
     CSymTab* SymTab2c() {
-        return (m_2c);
+        return (m_stateBank);
     }
     CSymTab* m_gruntzBank;
     CSymTab* m_gameBank;

@@ -13,15 +13,6 @@ struct IDirectDrawPalette;
 
 void __cdecl DDrawLogLine(char* fmt, ...);
 
-struct CDdMode {
-    char _0[8];
-    u32 m_8;
-    u32 m_c;
-    char _10[0x54 - 0x10];
-    u32 m_54;
-};
-SIZE_UNKNOWN();
-
 struct CDdModePair {
     i32 a, b;
 };
@@ -98,14 +89,6 @@ struct DDModeInfo {
     i32 width;
     i32 height;
     i32 bpp;
-};
-SIZE_UNKNOWN();
-
-struct CPageRec {
-    u8* m_00;
-    char m_pad04[0x10 - 4];
-    u8* m_10;
-    u8* m_14;
 };
 SIZE_UNKNOWN();
 

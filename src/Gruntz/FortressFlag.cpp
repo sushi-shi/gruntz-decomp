@@ -111,12 +111,12 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             return;
     }
     m_wwdObject->ApplyName(name);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_wwdObject->m_flags |= 3;
-    i32 idx = g_gameReg->m_options[m_object->m_smarts].m_008;
+    i32 idx = g_gameReg->m_options[m_object->m_smarts].m_colorIndex;
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
@@ -171,7 +171,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
     }
     if (tag == 8) {
         CWwdGameObjectA* spr = m_object;
-        i32 idx = g_gameReg->m_options[spr->m_smarts].m_008;
+        i32 idx = g_gameReg->m_options[spr->m_smarts].m_colorIndex;
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
@@ -282,8 +282,8 @@ i32 CreateExplosion(CGameObject* owner) {
 
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
     if (m_object->m_sortKey != 0xcf84f) {
         m_object->m_sortKey = 0xcf84f;
@@ -336,8 +336,8 @@ i32 CParticlez::Update() {
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_EXPLOSION");
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0xf4240) {

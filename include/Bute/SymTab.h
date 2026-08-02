@@ -66,7 +66,7 @@ public:
         const char* name,
         i32 dataOff,
         i32 dataSize,
-        i32 seed,
+        i32 dirTime,
         i32 subN,
         i32 symN
     );
@@ -121,9 +121,9 @@ public:
     i32 m_dataSize;
     i32 m_baseOffset;
 
-    i32 m_10;
+    i32 m_totalSourceLength;
 
-    i32 m_seed;
+    i32 m_dirTime;
     CSymParser* m_owner;
 
     CSymTab* m_parent;

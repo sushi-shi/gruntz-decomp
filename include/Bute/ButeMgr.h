@@ -21,7 +21,6 @@ struct CBSecStream : zPTree {
 SIZE(0x2c);
 
 struct CButeTail {
-    char m_00;
     CButeTail();
 
     ~CButeTail();
@@ -160,7 +159,7 @@ public:
     i32 m_lineNo;
     bool m_countLine;
 
-    char m_0d;
+    char m_parseFailed;
     char m_pad0e[0x10 - 0xe];
     CString m_errStr;
     ErrCallback m_errCallback;
@@ -183,7 +182,7 @@ public:
     char m_captureText;
     char m_writeMode;
 
-    char m_10e;
+    char m_encrypted;
     CButeTail m_10f;
 
     ButeIntRect* GetRect(const char* tag, const char* key);

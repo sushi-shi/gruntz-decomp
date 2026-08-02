@@ -65,14 +65,14 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wp[7].y = (m_object->m_clip.top << 5) + 0x10;
     m_wp[8].x = (m_object->m_clip.right << 5) + 0x10;
     m_wp[8].y = (m_object->m_clip.bottom << 5) + 0x10;
-    m_wp[9].x = (m_object->m_animWorker->m_switchRectA.left << 5) + 0x10;
-    m_wp[9].y = (m_object->m_animWorker->m_switchRectA.top << 5) + 0x10;
-    m_wp[10].x = (m_object->m_animWorker->m_switchRectA.right << 5) + 0x10;
-    m_wp[10].y = (m_object->m_animWorker->m_switchRectA.bottom << 5) + 0x10;
-    m_wp[11].x = (m_object->m_animWorker->m_switchRectB.left << 5) + 0x10;
-    m_wp[11].y = (m_object->m_animWorker->m_switchRectB.top << 5) + 0x10;
-    m_wp[12].x = (m_object->m_animWorker->m_switchRectB.right << 5) + 0x10;
-    m_wp[12].y = (m_object->m_animWorker->m_switchRectB.bottom << 5) + 0x10;
+    m_wp[9].x = (m_object->m_animWorker->m_userRect1.left << 5) + 0x10;
+    m_wp[9].y = (m_object->m_animWorker->m_userRect1.top << 5) + 0x10;
+    m_wp[10].x = (m_object->m_animWorker->m_userRect1.right << 5) + 0x10;
+    m_wp[10].y = (m_object->m_animWorker->m_userRect1.bottom << 5) + 0x10;
+    m_wp[11].x = (m_object->m_animWorker->m_userRect2.left << 5) + 0x10;
+    m_wp[11].y = (m_object->m_animWorker->m_userRect2.top << 5) + 0x10;
+    m_wp[12].x = (m_object->m_animWorker->m_userRect2.right << 5) + 0x10;
+    m_wp[12].y = (m_object->m_animWorker->m_userRect2.bottom << 5) + 0x10;
 
     i32 i = 1;
     i32 found = 0;
@@ -97,8 +97,8 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (BeginLeg() == 0) {
         m_wwdObject->m_flags |= 0x10000;
     } else {
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("A");
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("A");
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
@@ -126,14 +126,14 @@ i32 CPathHazard::Tick() {
     rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_gameMode != 1) {
         i32 outA, outB;
         CGrunt* ent =
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
 
-            if (g_gameReg->m_134 != 1 || outA == 0) {
+            if (g_gameReg->m_gameMode != 1 || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }
@@ -154,8 +154,8 @@ i32 CPathHazard::Tick() {
             if (segs > 0) {
                 m_leg.m_window = segs;
                 m_leg.m_deadline = static_cast<u32>(g_frameTime);
-                m_prevAnimSetNode = m_objAux->m_1c;
-                m_objAux->m_1c = ActFindId("B");
+                m_prevAnimSetNode = m_objAux->m_actKey;
+                m_objAux->m_actKey = ActFindId("B");
                 return 0;
             }
             this->BeginLeg();
@@ -246,7 +246,7 @@ i32 CPathHazard::SiblingTick() {
     rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
+    if (reg->m_isEasyMode != 0 && reg->m_gameMode == 1) {
 
     } else {
         i32 outA, outB;
@@ -255,7 +255,7 @@ i32 CPathHazard::SiblingTick() {
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
 
-            if (g_gameReg->m_134 != 1 || outA == 0) {
+            if (g_gameReg->m_gameMode != 1 || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }
@@ -270,8 +270,8 @@ i32 CPathHazard::SiblingTick() {
         o->m_drawFillCmd = 7;
         o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
         this->BeginLeg();
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId("A");
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId("A");
         m_strikeArmed = 0;
     }
     return 0;

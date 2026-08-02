@@ -13,7 +13,7 @@ public:
     CSBI_ImageSet() {
         m_frame = 0;
         m_kind = 4;
-        m_34 = 0;
+        m_frameSet = 0;
     }
     virtual ~CSBI_ImageSet() OVERRIDE;
 
@@ -26,8 +26,8 @@ public:
 
     virtual void Notify(i32 on);
 
-    CDDrawWorker* m_34;
-    i32 m_38;
+    CDDrawWorker* m_frameSet;
+    i32 m_frameIndex;
 };
 SIZE(0x3c);
 

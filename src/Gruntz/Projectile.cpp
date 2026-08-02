@@ -72,13 +72,13 @@ RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
 RVA(0x00013c70, 0x47)
 void CMovingLogic::FinalizeStep(char*) {
     if (m_deferredCallback != 0) {
-        if (m_gatedCallback != 0 && m_objAux->ActKey() == m_28) {
+        if (m_gatedCallback != 0 && m_objAux->ActKey() == m_gatedActKey) {
             (this->*m_gatedCallback)();
             m_gatedCallback = 0;
         }
         (this->*m_deferredCallback)();
         m_deferredCallback = 0;
-        m_28 = 0x3e9;
+        m_gatedActKey = 0x3e9;
     }
     AdvanceMotion();
 }
@@ -89,27 +89,27 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
 
     i32 lo0 = m_objAux->m_minX;
     if (lo0 == 0) {
-        Motion()->m_70 = g_movingLogicMin;
+        Motion()->m_minBounds.x = g_movingLogicMin;
     } else {
-        Motion()->m_70 = static_cast<double>(lo0);
+        Motion()->m_minBounds.x = static_cast<double>(lo0);
     }
     i32 lo1 = m_objAux->m_minY;
     if (lo1 == 0) {
-        Motion()->m_78 = g_movingLogicMin;
+        Motion()->m_minBounds.y = g_movingLogicMin;
     } else {
-        Motion()->m_78 = static_cast<double>(lo1);
+        Motion()->m_minBounds.y = static_cast<double>(lo1);
     }
     i32 hi0 = m_objAux->m_maxX;
     if (hi0 == 0) {
-        Motion()->m_88 = g_movingLogicMax;
+        Motion()->m_maxBounds.x = g_movingLogicMax;
     } else {
-        Motion()->m_88 = static_cast<double>(hi0);
+        Motion()->m_maxBounds.x = static_cast<double>(hi0);
     }
     i32 hi1 = m_objAux->m_maxY;
     if (hi1 == 0) {
-        Motion()->m_90 = g_movingLogicMax;
+        Motion()->m_maxBounds.y = g_movingLogicMax;
     } else {
-        Motion()->m_90 = static_cast<double>(hi1);
+        Motion()->m_maxBounds.y = static_cast<double>(hi1);
     }
     Motion()->SetParams(
         static_cast<double>(m_object->m_screenX),
@@ -127,11 +127,11 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
 
     CMotionState* m = Motion();
     double z = static_cast<double>(g_defaultZ);
-    m->m_d8 = z;
-    m->m_e0 = z;
-    m->m_e8 = z;
-    m_148 = 0;
-    m_14c = 0;
+    m->m_maxStep.x = z;
+    m->m_maxStep.y = z;
+    m->m_maxStep.z = z;
+    m_collisionFlags = 0;
+    m_moveFlags = 0;
     m_object->m_moveMode = 7;
 
     CMovingLogic::AdvanceMotion();
@@ -325,8 +325,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
     }
 
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     return 1;
 }
 
@@ -831,7 +831,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             g_serialCounter++;
             i32 n = 0;
             if (m_shadow != 0) {
-                n = m_shadow->m_188;
+                n = m_shadow->m_objectId;
             }
             s->Write(&n, 4);
 
@@ -948,8 +948,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
         o->m_flags |= 0x20000;
     }
     m_wwdObject->ApplyName("GAME_TIMEBOMB");
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     if (m_object->m_damage > 0) {
         m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
@@ -969,7 +969,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     CMapMgr* g = g_gameReg->m_tileGrid;
     if (cx < g->m_width && cy < g->m_height) {
         BrickzCell* row = g->m_rows[cy];
-        row[cx].m_0 |= 0x1000000;
+        row[cx].m_flags |= 0x1000000;
     }
     m_object->m_smarts = -1;
 }
@@ -981,7 +981,7 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
         BrickzCell* row = g->m_rows[cy];
-        return row[cx].m_0;
+        return row[cx].m_flags;
     }
     return 1;
 }
@@ -992,7 +992,7 @@ static inline void TBombGridClear(CGameObject* obj) {
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
         BrickzCell* row = g->m_rows[cy];
-        row[cx].m_0 &= ~0x1000000;
+        row[cx].m_flags &= ~0x1000000;
     }
 }
 
@@ -1036,17 +1036,14 @@ i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObjec
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    i64* clock = &m_startTime;
     switch (mode) {
         case 7:
-            sa->Read(clock, 8);
-            clock++;
-            sa->Read(clock, 8);
+            sa->Read(&m_startTime, 8);
+            sa->Read(&m_duration, 8);
             break;
         case 4:
-            sa->Write(clock, 8);
-            clock++;
-            sa->Write(clock, 8);
+            sa->Write(&m_startTime, 8);
+            sa->Write(&m_duration, 8);
             break;
     }
     switch (mode) {

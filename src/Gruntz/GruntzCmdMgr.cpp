@@ -85,20 +85,20 @@ static inline void PokeI16(void* p, i16 v) {
 
 RVA(0x000239d0, 0xf)
 i32 CGruntzCmdMgr::SetMgr(CGruntzMgr* mgr) {
-    m_38 = mgr;
+    m_manager = mgr;
     return 1;
 }
 
 RVA(0x000239f0, 0xc)
 void CGruntzCmdMgr::ClearAndReset() {
-    m_38 = 0;
+    m_manager = 0;
     Clear();
 }
 
 // @early-stop
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ScanTargets(i32 param) {
-    CState* sp = m_38->m_curState;
+    CState* sp = m_manager->m_curState;
 
     i32 isPlay = (sp->Update() == GAMESTATE_NONE);
     CGruntzCommand* table[4];
@@ -167,7 +167,7 @@ void CGruntzCmdMgr::DrainBase() {
 RVA(0x00023c00, 0x1c)
 void CGruntzCmdMgr::Clear() {
     DrainBase();
-    m_1c.RemoveAll();
+    m_pendingCommands.RemoveAll();
     CGruntzSingleCommand::FreeAll();
     CGruntzMultiCommand::FreeAll();
 }
@@ -210,12 +210,12 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
         return;
     }
     if (flag) {
-        if (m_38->m_curState->Update() == GAMESTATE_PLAY) {
+        if (m_manager->m_curState->Update() == GAMESTATE_PLAY) {
             (static_cast<CGruntzCommand*>(cmd))->m_submitted = 2;
-        } else if (m_38->m_curState->Update() == GAMESTATE_NONE) {
+        } else if (m_manager->m_curState->Update() == GAMESTATE_NONE) {
             (static_cast<CGruntzCommand*>(cmd))->m_submitted = 4;
         }
-        m_1c.AddTail(cmd);
+        m_pendingCommands.AddTail(cmd);
     }
     m_base.AddTail(cmd);
 }
@@ -223,7 +223,7 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 // @early-stop
 RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType) {
-    CGameLevel* p = m_38->m_world->m_level;
+    CGameLevel* p = m_manager->m_world->m_level;
     CDDrawWorkerHost* r = p->m_mainPlane;
     i32 sx = ((r->m_viewRect.left - p->m_planeCtx.left + (x & 0xffff)) & ~0x1f) + 0x10;
     i32 sy = ((r->m_viewRect.top - p->m_planeCtx.top + (y & 0xffff)) & ~0x1f) + 0x10;
@@ -242,10 +242,10 @@ void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 
 RVA(0x00023e20, 0x2f)
 i32 CGruntzCommand::SetParams(char targetIndex, char cmdKind, char targetType, i16 posX, i16 posY) {
     m_targetIndex = targetIndex;
-    m_5 = cmdKind;
+    m_commandKind = cmdKind;
     m_targetType = targetType;
-    m_8 = posX;
-    m_a = posY;
+    m_posX = posX;
+    m_posY = posY;
     return 1;
 }
 
@@ -262,8 +262,8 @@ i32 CGruntzCommand::SetParamsEx(
     if (!CGruntzCommand::SetParams(targetIndex, cmdKind, targetType, posX, posY)) {
         return 0;
     }
-    m_10 = gruntIndex;
-    m_11 = extraByte;
+    m_gruntIndex = gruntIndex;
+    m_extraByte = extraByte;
     return 1;
 }
 
@@ -287,9 +287,9 @@ i32 CGruntzCommand::SetMaskFromList(
         return 0;
     }
 
-    m_flagWord = 0;
+    m_gruntMask = 0;
     for (i32 i = 0; i < (count & 0xff); i++) {
-        m_flagWord |= g_cmdBitTable[gruntList[i]];
+        m_gruntMask |= g_cmdBitTable[gruntList[i]];
     }
     return 1;
 }
@@ -299,16 +299,16 @@ RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32) {
     char* buf = static_cast<char*>(data) + 1;
     m_targetIndex = *buf++;
-    m_5 = *buf++;
+    m_commandKind = *buf++;
     m_targetType = *buf++;
-    m_8 = PeekI16(buf);
+    m_posX = PeekI16(buf);
     buf += 2;
-    m_a = PeekI16(buf);
+    m_posY = PeekI16(buf);
     buf += 2;
-    m_10 = *buf++;
+    m_gruntIndex = *buf++;
 
-    if (static_cast<u8>(m_5) >= 8) {
-        m_11 = *buf++;
+    if (static_cast<u8>(m_commandKind) >= 8) {
+        m_extraByte = *buf++;
     }
     return buf - static_cast<char*>(data);
 }
@@ -318,13 +318,13 @@ RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32) {
     char* buf = static_cast<char*>(data) + 1;
     m_targetIndex = *buf++;
-    m_5 = *buf++;
+    m_commandKind = *buf++;
     m_targetType = *buf++;
-    m_8 = PeekI16(buf);
+    m_posX = PeekI16(buf);
     buf += 2;
-    m_a = PeekI16(buf);
+    m_posY = PeekI16(buf);
     buf += 2;
-    m_flagWord = static_cast<u16>(PeekI16(buf));
+    m_gruntMask = static_cast<u16>(PeekI16(buf));
     buf += 2;
     return buf - static_cast<char*>(data);
 }
@@ -334,17 +334,17 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
     *++buf = m_targetIndex;
-    *++buf = m_5;
+    *++buf = m_commandKind;
     *++buf = m_targetType;
     char* w = buf + 1;
-    PokeI16(w, static_cast<i16>(m_8));
+    PokeI16(w, static_cast<i16>(m_posX));
     w += 2;
-    PokeI16(w, static_cast<i16>(m_a));
+    PokeI16(w, static_cast<i16>(m_posY));
     w += 2;
-    *w = m_10;
+    *w = m_gruntIndex;
     w++;
-    if (static_cast<u8>(m_5) >= 8) {
-        *w = m_11;
+    if (static_cast<u8>(m_commandKind) >= 8) {
+        *w = m_extraByte;
         w++;
     }
     return w - start;
@@ -355,14 +355,14 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
     *++buf = m_targetIndex;
-    *++buf = m_5;
+    *++buf = m_commandKind;
     *++buf = m_targetType;
     char* w = buf + 1;
-    PokeI16(w, static_cast<i16>(m_8));
+    PokeI16(w, static_cast<i16>(m_posX));
     w += 2;
-    PokeI16(w, static_cast<i16>(m_a));
+    PokeI16(w, static_cast<i16>(m_posY));
     w += 2;
-    PokeI16(w, static_cast<i16>(m_flagWord));
+    PokeI16(w, static_cast<i16>(m_gruntMask));
     w += 2;
     return w - start;
 }
@@ -374,7 +374,15 @@ i32 CGruntzSingleCommand::Select(CState* state) {
         return 0;
     }
 
-    return p->ExecCommand(m_targetIndex, m_10, m_5, m_8, m_a, m_11, m_targetType);
+    return p->ExecCommand(
+        m_targetIndex,
+        m_gruntIndex,
+        m_commandKind,
+        m_posX,
+        m_posY,
+        m_extraByte,
+        m_targetType
+    );
 }
 
 RVA(0x00024190, 0x6c)
@@ -385,13 +393,13 @@ i32 CGruntzMultiCommand::Select(CState* state) {
     }
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
-        if (g_cmdBitTable[i] & m_flagWord) {
+        if (g_cmdBitTable[i] & m_gruntMask) {
             if (!p->ExecCommand(
                     m_targetIndex,
                     static_cast<char>(i),
-                    m_5,
-                    m_8,
-                    m_a,
+                    m_commandKind,
+                    m_posX,
+                    m_posY,
                     0,
                     m_targetType
                 )) {
@@ -514,13 +522,13 @@ i32 CGruntzSingleCommand::Save(CFileMemBase* s) {
         return 0;
     }
     s->Write(&m_targetIndex, 1);
-    s->Write(&m_5, 1);
+    s->Write(&m_commandKind, 1);
     s->Write(&m_targetType, 1);
-    s->Write(&m_8, 2);
-    s->Write(&m_a, 2);
+    s->Write(&m_posX, 2);
+    s->Write(&m_posY, 2);
     s->Write(&m_submitted, 4);
-    s->Write(&m_10, 1);
-    s->Write(&m_11, 1);
+    s->Write(&m_gruntIndex, 1);
+    s->Write(&m_extraByte, 1);
     return 1;
 }
 
@@ -533,13 +541,13 @@ i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
         return 0;
     }
     s->Read(&m_targetIndex, 1);
-    s->Read(&m_5, 1);
+    s->Read(&m_commandKind, 1);
     s->Read(&m_targetType, 1);
-    s->Read(&m_8, 2);
-    s->Read(&m_a, 2);
+    s->Read(&m_posX, 2);
+    s->Read(&m_posY, 2);
     s->Read(&m_submitted, 4);
-    s->Read(&m_10, 1);
-    s->Read(&m_11, 1);
+    s->Read(&m_gruntIndex, 1);
+    s->Read(&m_extraByte, 1);
     return 1;
 }
 
@@ -572,12 +580,12 @@ i32 CGruntzMultiCommand::Save(CFileMemBase* s) {
         return 0;
     }
     s->Write(&m_targetIndex, 1);
-    s->Write(&m_5, 1);
+    s->Write(&m_commandKind, 1);
     s->Write(&m_targetType, 1);
-    s->Write(&m_8, 2);
-    s->Write(&m_a, 2);
+    s->Write(&m_posX, 2);
+    s->Write(&m_posY, 2);
     s->Write(&m_submitted, 4);
-    s->Write(&m_10, 2);
+    s->Write(&m_gruntMask, 2);
     return 1;
 }
 
@@ -590,12 +598,12 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
         return 0;
     }
     s->Read(&m_targetIndex, 1);
-    s->Read(&m_5, 1);
+    s->Read(&m_commandKind, 1);
     s->Read(&m_targetType, 1);
-    s->Read(&m_8, 2);
-    s->Read(&m_a, 2);
+    s->Read(&m_posX, 2);
+    s->Read(&m_posY, 2);
     s->Read(&m_submitted, 4);
-    s->Read(&m_10, 2);
+    s->Read(&m_gruntMask, 2);
     return 1;
 }
 

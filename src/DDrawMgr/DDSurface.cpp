@@ -246,7 +246,7 @@ void CDDSurface::FreeSurfaces() {
         }
         this->m_ddSurfaceBack = 0;
     }
-    this->m_b8 = 0;
+    this->m_restoreCallback = 0;
 }
 
 RVA(0x0013e550, 0x71)
@@ -988,8 +988,8 @@ i32 CDDSurface::SaveFile(char* buf, i32 type, void* pal, i32 flag) {
 
 RVA(0x0013f960, 0x22)
 i32 CDDSurface::RestoreLost() {
-    if (m_b8 != 0) {
-        if (m_b8(this) != 0) {
+    if (m_restoreCallback != 0) {
+        if (m_restoreCallback(this) != 0) {
             return 1;
         }
     }

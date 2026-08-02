@@ -31,8 +31,8 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
 }
 
 RVA(0x000aaf80, 0x102)

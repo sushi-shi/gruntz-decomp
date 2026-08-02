@@ -15,7 +15,7 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
     m_palDescr = 0;
     m_drawType = 1;
     m_light = 0x80;
-    m_00 = 0;
+    m_doubleScanlines = 0;
     m_palette = 0;
     m_srcBpp = 1;
     m_dstBpp = 1;

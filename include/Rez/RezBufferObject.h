@@ -5,10 +5,10 @@
 
 struct RezElem40 {
     RezElem40();
-    i32 m_rectA[4];
-    i32 m_rectB[4];
+    RECT m_startRect;
+    RECT m_endRect;
     i32 m_20;
-    i32 m_scaleBits;
+    float m_scale;
 };
 SIZE(0x28);
 

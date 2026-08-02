@@ -14,7 +14,7 @@ CImageSet1::~CImageSet1() {}
 
 RVA(0x00161380, 0x6)
 i32 CImageSet1::GetCollisionAt(i32, i32) {
-    return m_0c;
+    return m_collisionValue;
 }
 
 RVA(0x00161390, 0x5)
@@ -49,7 +49,7 @@ i32 CImageSet1::ScanRightForValue(i32, i32, i32, i32*) {
 
 RVA(0x001613f0, 0x7)
 i32 CImageSet1::ScanDown(i32, i32, i32*, i32*) {
-    return m_08 - 1;
+    return m_height - 1;
 }
 
 RVA(0x00161400, 0x5)
@@ -67,7 +67,7 @@ RVA(0x00166d40, 0x24)
 i32 CImageSet1::Parse(void* record) {
     i32* p = static_cast<WwdTileImageRecord*>(record)->m_fields;
     m_width = *p++;
-    m_08 = *p++;
-    m_0c = *p++;
+    m_height = *p++;
+    m_collisionValue = *p++;
     return 1;
 }

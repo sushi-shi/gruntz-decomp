@@ -23,7 +23,7 @@ struct DDModeInfo;
 struct PLAYLISTINFOSTRUCT {
     char* m_src;
     i32 m_openArg;
-    i32 m_08;
+    i32 m_blitMode;
     i32 m_useDS;
     POINT* m_origin;
     RECT* m_rect;
@@ -40,16 +40,16 @@ public:
         m_window = 0;
         m_initialized = 0;
         m_smackHandle = 0;
-        m_dd2 = 0;
-        m_dd = 0;
+        m_directDraw2 = 0;
+        m_directDraw = 0;
         m_primary = 0;
         m_primaryRaw = 0;
         m_srcSurf = 0;
         m_srcSurfRaw = 0;
-        m_0c = 0;
+        m_borrowedDisplayResources = 0;
         m_palette = 0;
-        m_50c = 0;
-        m_514 = 0;
+        m_frameDecoded = 0;
+        m_blitMode = 0;
         m_tilesAcross = 0;
         m_tilesDown = 0;
         m_destRect = 0;
@@ -99,11 +99,11 @@ public:
     HWND m_window;
     i32 m_initialized;
     i32 m_streamOpen;
-    i32 m_0c;
+    i32 m_borrowedDisplayResources;
 
     SmackTag* m_smackHandle;
-    IDirectDraw2* m_dd2;
-    IDirectDraw* m_dd;
+    IDirectDraw2* m_directDraw2;
+    IDirectDraw* m_directDraw;
 
     IDirectDrawSurface* m_primary;
     IDirectDrawSurface* m_primaryRaw;
@@ -119,10 +119,10 @@ public:
     PALETTEENTRY m_palEntries[0x100];
     struct IDirectSound* m_directSound;
 
-    i32 m_50c;
+    i32 m_frameDecoded;
     u32 m_smackBufMode;
 
-    i32 m_514;
+    i32 m_blitMode;
     u32 m_screenWidth;
     u32 m_screenHeight;
 

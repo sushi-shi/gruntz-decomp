@@ -14,13 +14,13 @@
 // @early-stop
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
-    m_defenderX = m_lastTilePxX;
-    m_defenderY = m_lastTilePxY;
+    m_defenderPx.m_x = m_lastTilePx.m_x;
+    m_defenderPx.m_y = m_lastTilePx.m_y;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
     if (g != 0) {
         CGameObject* gp = g->m_object;
-        if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
+        if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
             && RectContains(gp->m_screenX, gp->m_screenY)) {
             hitGate = 1;
         }
@@ -77,13 +77,13 @@ i32 CGrunt::ChargeStep() {
             if (g != 0) {
                 if (hitGate != 0 && m_stamina >= 100) {
                     CGameObject* gp = g->m_object;
-                    if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
+                    if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
                         CommitNeighbor(
                             g->m_tileOwnerHi,
                             g->m_tileOwnerLo,
-                            g->m_lastTilePxX,
-                            g->m_lastTilePxY
+                            g->m_lastTilePx.m_x,
+                            g->m_lastTilePx.m_y
                         );
                         return 1;
                     }
@@ -102,8 +102,8 @@ i32 CGrunt::ChargeStep() {
                         )
                         != 0) {
                         SetEntrancePos(1, 1);
-                        m_arrivalCol = g->m_tileOwnerHi;
-                        m_arrivalRow = g->m_tileOwnerLo;
+                        m_arrivalCell.m_x = g->m_tileOwnerHi;
+                        m_arrivalCell.m_y = g->m_tileOwnerLo;
                         m_defenderState = 1;
                         CWwdGameObjectA* mp = m_object;
                         CGruntzMgr* mgr = g_gameReg;
@@ -121,7 +121,7 @@ i32 CGrunt::ChargeStep() {
                     return 1;
                 }
             }
-            if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
+            if (m_resetApplied == 0 && m_hasExtent != 0 && m_dwell > 3000) {
                 CWwdGameObjectA* mp = m_object;
                 i32 baseX = mp->m_extent.left;
                 i32 spanX = mp->m_extent.right - baseX;
@@ -140,11 +140,11 @@ i32 CGrunt::ChargeStep() {
                     && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_height)) {
                     TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
-                if (m_31c.GetCount() != 0) {
+                if (m_coordList.GetCount() != 0) {
                     if (spanX <= spanY) {
                         spanX = spanY;
                     }
-                    if (spanX < m_31c.GetCount()) {
+                    if (spanX < m_coordList.GetCount()) {
                         SetEntrancePos(1, 1);
                     }
                 }
@@ -154,12 +154,12 @@ i32 CGrunt::ChargeStep() {
         }
         case 1: {
 
-            CGrunt* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+            CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
             CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != 0 && cur != t) {
-                m_arrivalCol = -1;
+                m_arrivalCell.m_x = -1;
                 m_defenderState = 0;
-                m_arrivalRow = -1;
+                m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (t == 0 || t->m_entranceCommitted == 0
@@ -168,18 +168,18 @@ i32 CGrunt::ChargeStep() {
                 return 1;
             }
             if (static_cast<u32>(m_dwell) > 500) {
-                StepArrivalDrop(t->m_lastTilePxX, t->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+                StepArrivalDrop(t->m_lastTilePx.m_x, t->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
             if (m_poweredUp == 0 && m_stamina >= 100
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
-                && t->m_object->m_screenX == t->m_lastTilePxX
-                && t->m_object->m_screenY == t->m_lastTilePxY) {
+                && t->m_object->m_screenX == t->m_lastTilePx.m_x
+                && t->m_object->m_screenY == t->m_lastTilePx.m_y) {
                 CommitNeighbor(
                     t->m_tileOwnerHi,
                     t->m_tileOwnerLo,
-                    t->m_lastTilePxX,
-                    t->m_lastTilePxY
+                    t->m_lastTilePx.m_x,
+                    t->m_lastTilePx.m_y
                 );
                 m_defenderState = 2;
                 return 1;
@@ -189,7 +189,7 @@ i32 CGrunt::ChargeStep() {
         case 2: {
 
             if (m_poweredUp != 0) {
-                CGrunt* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+                CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
                 if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = 1;
@@ -200,8 +200,8 @@ i32 CGrunt::ChargeStep() {
                     return 1;
                 }
                 if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
-                    || t->m_object->m_screenX != t->m_lastTilePxX
-                    || t->m_object->m_screenY != t->m_lastTilePxY) {
+                    || t->m_object->m_screenX != t->m_lastTilePx.m_x
+                    || t->m_object->m_screenY != t->m_lastTilePx.m_y) {
                     m_defenderState = 1;
                     m_dwell = 0x1f4;
                     return 1;
@@ -209,8 +209,8 @@ i32 CGrunt::ChargeStep() {
                 CommitNeighbor(
                     t->m_tileOwnerHi,
                     t->m_tileOwnerLo,
-                    t->m_lastTilePxX,
-                    t->m_lastTilePxY
+                    t->m_lastTilePx.m_x,
+                    t->m_lastTilePx.m_y
                 );
                 return 1;
             }

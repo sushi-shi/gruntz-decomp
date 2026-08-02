@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/CoordNode.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/View.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -28,12 +29,6 @@ struct CGameObject;
 class CWwdGameObjectA;
 
 class CMulti;
-
-struct CHitMarker {
-    i32 m_0;
-    i32 m_4;
-};
-SIZE(0x8);
 
 class CFileMemBase;
 
@@ -107,29 +102,23 @@ public:
     virtual i32 BuildMusicCategoryTable(i32);
     virtual i32 BuildWorldLevelPath(i32);
 
-    CHitMarker** markerData() {
-
-        union {
-            void** m_untyped;
-            CHitMarker** m_typed;
-        } band;
-        band.m_untyped = m_startMarkers.GetData();
-        return band.m_typed;
+    Coord* StartMarkerAt(i32 index) {
+        return static_cast<Coord*>(m_startMarkers.GetAt(index));
     }
-    i32 markerCount() {
+    i32 StartMarkerCount() {
         return m_startMarkers.GetSize();
     }
-    void** arrData(i32 k) {
-        return m_3a4[k].GetData();
+    Coord* PlacedObjectCellAt(i32 group, i32 index) {
+        return static_cast<Coord*>(m_placedObjectCells[group].GetAt(index));
     }
-    i32 arrCount(i32 k) {
-        return m_3a4[k].GetSize();
+    i32 PlacedObjectCellCount(i32 group) {
+        return m_placedObjectCells[group].GetSize();
     }
-    void** arr488Data() {
-        return m_488.GetData();
+    void** CameraBookmarkData() {
+        return m_cameraBookmarks.GetData();
     }
-    i32 arr488Count() {
-        return m_488.GetSize();
+    i32 CameraBookmarkCount() {
+        return m_cameraBookmarks.GetSize();
     }
 
     i32 StepInputA();
@@ -244,9 +233,9 @@ public:
 
     CString m_1b4;
     char m_pad1b8[0x1bc - 0x1b8];
-    i32 m_1bc;
-    i32 m_1c0;
-    i32 m_1c4;
+    i32 m_returnToMenuOnComplete;
+    i32 m_completedFinalLevel;
+    i32 m_initialFramePending;
     i32 m_1c8;
     i32 m_savedClock;
 
@@ -265,7 +254,7 @@ public:
     i32 m_2f0;
     i32 m_cursorFrame;
     i32 m_levelId;
-    i32 m_2fc, m_300;
+    Coord m_cursorOffset;
     i32 m_dragClampMaxX;
     i32 m_dragClampMaxY;
     i32 m_worldReady;
@@ -290,8 +279,7 @@ public:
     i32 m_ambientInitDone;
     char m_pad34c[0x350 - 0x34c];
     i32 m_syncTimerLo, m_syncTimerHi, m_syncInterval, m_syncIntervalHi;
-    i32 m_tileClickX;
-    i32 m_tileClickY;
+    Coord m_tileClick;
     i32 m_dragInhibit1;
     i32 m_dragInhibit2;
 
@@ -303,7 +291,7 @@ public:
     };
     Anchor m_anchors[4];
 
-    CPtrArray m_3a4[4];
+    CPtrArray m_placedObjectCells[4];
     CTimer* m_frameMarker;
     i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval, m_cueIntervalHi;
     i32 m_cueToggle;
@@ -311,8 +299,9 @@ public:
     CString m_cueText;
     i32 m_drewThisFrame;
 
-    i32 m_418, m_41c, m_420, m_424;
-    i16 m_428;
+    POINT m_pathPreviewSource;
+    POINT m_pathPreviewDestination;
+    i16 m_pathPreviewColor;
     char m_pad42a[0x430 - 0x42a];
 
     union {
@@ -360,8 +349,8 @@ public:
     i32 m_viewMode;
     i32 m_hudSuppressed;
 
-    CPtrArray m_488;
-    i32 m_49c;
+    CPtrArray m_cameraBookmarks;
+    i32 m_cameraBookmarkIndex;
     union {
         Clock64 m_snapBase64;
         struct {
@@ -386,7 +375,7 @@ public:
     CWwdGameObjectA* m_scrollSink;
     i32 m_gridWalkActive;
     i32 m_renderDisabled;
-    i32 m_4f0;
+    i32 m_playerCommandPending;
     i32 m_winLoseBanner;
     i32 m_inGame;
     i32 m_overlayDrag;
@@ -395,7 +384,7 @@ public:
     i32 m_lastScrollTimeX;
     i32 m_lastScrollTimeY;
     i32 m_stepCountdown;
-    i32 m_514;
+    i32 m_focusPlayerIndex;
     CGruntzSoundInnerZ* m_savedZonedSound;
 
     i32 DrawCursorSaveUnder(CDDrawSurfacePair* pair);

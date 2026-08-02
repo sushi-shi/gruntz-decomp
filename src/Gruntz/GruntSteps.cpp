@@ -85,8 +85,8 @@ static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
 
 static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-    i32 tx = g->m_lastTilePxX >> 5;
-    i32 ty = g->m_lastTilePxY >> 5;
+    i32 tx = g->m_lastTilePx.m_x >> 5;
+    i32 ty = g->m_lastTilePx.m_y >> 5;
     i32 mtx = moveX >> 5;
     i32 mty = moveY >> 5;
     i32 arr = g->m_arrivalFlags | 0x20000000;
@@ -104,7 +104,7 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
         return 0;
     }
     if (hit != 0) {
-        i32 mask = g->m_24c | 0x18000482;
+        i32 mask = g->m_passableMask | 0x18000482;
         if ((tflags & mask) == 0) {
             return 0;
         }
@@ -175,14 +175,14 @@ i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
 
     i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
     m_moveMode = -1;
-    m_1a4 = 0;
+    m_helpCueId = 0;
     return r;
 }
 
 // @early-stop
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
-    m_198 = kind;
+    m_vehiclePickupType = kind;
     m_moveMode = -1;
 
     CString name;
@@ -249,12 +249,13 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    i32 code = g_gameReg->m_tileGrid->m_rowInts[m_lastTilePxY >> 5][(m_lastTilePxX >> 5) * 7 + 4];
+    i32 code =
+        g_gameReg->m_tileGrid->m_rowInts[m_lastTilePx.m_y >> 5][(m_lastTilePx.m_x >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
-        if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
+        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
 
-            m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
-            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+            m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         }
     }
     return 1;
@@ -327,8 +328,8 @@ RVA(0x00051510, 0x20f)
 i32 CGrunt::IsDropReady(i32 a) {
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        i32 x = m_commitPxX >> 5;
-        i32 y = m_commitPxY >> 5;
+        i32 x = m_commitPx.m_x >> 5;
+        i32 y = m_commitPx.m_y >> 5;
         i32 owner;
         if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
             && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
@@ -342,30 +343,30 @@ i32 CGrunt::IsDropReady(i32 a) {
     }
 
     CWwdGameObjectA* object = m_object;
-    i32 lastX = m_lastTilePxX;
+    i32 lastX = m_lastTilePx.m_x;
     if (object->m_screenX == lastX) {
-        i32 lastY = m_lastTilePxY;
+        i32 lastY = m_lastTilePx.m_y;
         if (object->m_screenY == lastY) {
             return 0;
         }
     }
 
-    if (m_31c.GetCount() != 0) {
+    if (m_coordList.GetCount() != 0) {
         Coord* coord = 0;
         CoordPoolNode* node = g_coordPool.m_freeHead;
-        i32 coordX = m_lastTilePxX >> 5;
-        i32 coordY = m_lastTilePxY >> 5;
+        i32 coordX = m_lastTilePx.m_x >> 5;
+        i32 coordY = m_lastTilePx.m_y >> 5;
         if (node->m_next != 0) {
             coord = &node->m_coord;
             coord->m_x = coordX;
             coord->m_y = coordY;
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
-        m_31c.AddHead(coord);
+        m_coordList.AddHead(coord);
     }
 
-    m_object->m_screenX = m_commitPxX;
-    m_object->m_screenY = m_commitPxY;
+    m_object->m_screenX = m_commitPx.m_x;
+    m_object->m_screenY = m_commitPx.m_y;
     object = m_object;
     if (object->m_sortKey != object->m_screenY + 0x186a0) {
         object->m_sortKey = object->m_screenY + 0x186a0;
@@ -373,32 +374,32 @@ i32 CGrunt::IsDropReady(i32 a) {
         object->m_flags = flags | 0x20000;
     }
 
-    i32 oldY = m_lastTilePxY >> 5;
-    i32 oldX = m_lastTilePxX >> 5;
-    i32 newX = m_commitPxX >> 5;
-    i32 newY = m_commitPxY >> 5;
+    i32 oldY = m_lastTilePx.m_y >> 5;
+    i32 oldX = m_lastTilePx.m_x >> 5;
+    i32 newX = m_commitPx.m_x >> 5;
+    i32 newY = m_commitPx.m_y >> 5;
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
         board->m_rows[oldY][oldX].m_flagBytes[3] &= 0xdf;
-        board->m_rows[oldY][oldX].m_4 = -1;
+        board->m_rows[oldY][oldX].m_occupantId = -1;
     }
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
         i32 ownerLo = m_tileOwnerLo;
         i32 ownerHi = m_tileOwnerHi;
         board->m_rows[newY][newX].m_flagBytes[3] |= 0x20;
-        board->m_rows[newY][newX].m_4 = (ownerHi << 8) | ownerLo;
+        board->m_rows[newY][newX].m_occupantId = (ownerHi << 8) | ownerLo;
     }
 
-    m_lastTilePxX = m_commitPxX;
-    m_lastTilePxY = m_commitPxY;
-    m_commitPxX = m_entrancePxX;
-    m_commitPxY = m_entrancePxY;
-    m_35c = 1;
+    m_lastTilePx.m_x = m_commitPx.m_x;
+    m_lastTilePx.m_y = m_commitPx.m_y;
+    m_commitPx.m_x = m_entrancePx.m_x;
+    m_commitPx.m_y = m_entrancePx.m_y;
+    m_tileMoveCommitted = 1;
 
     SetEntrancePos(a, 1);
     if (m_arrivalPending != 0) {
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         m_arrivalPending = 0;
     }
     return 1;
@@ -406,8 +407,8 @@ i32 CGrunt::IsDropReady(i32 a) {
 
 RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 a) {
-    m_object->m_screenX = m_lastTilePxX;
-    m_object->m_screenY = m_lastTilePxY;
+    m_object->m_screenX = m_lastTilePx.m_x;
+    m_object->m_screenY = m_lastTilePx.m_y;
     CWwdGameObjectA* h = m_object;
     if (h->m_sortKey != h->m_screenY + 0x186a0) {
         h->m_sortKey = h->m_screenY + 0x186a0;
@@ -416,7 +417,7 @@ void CGrunt::SnapToLastTile(i32 a) {
     SetEntrancePos(a, 1);
     if (m_arrivalPending != 0) {
 
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         m_arrivalPending = 0;
     }
 }
@@ -424,25 +425,22 @@ void CGrunt::SnapToLastTile(i32 a) {
 // @early-stop
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
-    i32 dx = m_lastTilePxX >> 5;
-    i32 dy = m_lastTilePxY >> 5;
+    i32 dx = m_lastTilePx.m_x >> 5;
+    i32 dy = m_lastTilePx.m_y >> 5;
     i32 px = x >> 5;
     i32 py = y >> 5;
 
-    i32* ra = ((&m_reachRectLeft));
-    i32* rb = ((&m_2a0));
-
     RECT r1;
-    r1.left = ra[0] + dx;
-    r1.top = ra[1] + dy;
-    r1.right = ra[2] + dx + 1;
-    r1.bottom = ra[3] + dy + 1;
+    r1.left = m_reachRect.left + dx;
+    r1.top = m_reachRect.top + dy;
+    r1.right = m_reachRect.right + dx + 1;
+    r1.bottom = m_reachRect.bottom + dy + 1;
 
     RECT r2;
-    r2.left = rb[0] + dx;
-    r2.top = rb[1] + dy;
-    r2.right = rb[2] + dx;
-    r2.bottom = rb[3] + dy;
+    r2.left = m_reachExclusionRect.left + dx;
+    r2.top = m_reachExclusionRect.top + dy;
+    r2.right = m_reachExclusionRect.right + dx;
+    r2.bottom = m_reachExclusionRect.bottom + dy;
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
@@ -469,8 +467,8 @@ RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 px = x >> 5;
     i32 py = y >> 5;
-    i32 dx = m_lastTilePxX >> 5;
-    i32 dy = m_lastTilePxY >> 5;
+    i32 dx = m_lastTilePx.m_x >> 5;
+    i32 dy = m_lastTilePx.m_y >> 5;
 
     RECT r1;
     r1.left = m_toyRectA.left + dx;
@@ -484,7 +482,7 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     r2.right = m_toyRectB.right + dx;
     r2.bottom = m_toyRectB.bottom + dy;
 
-    if (m_198 == 0) {
+    if (m_vehiclePickupType == 0) {
         return 0;
     }
 
@@ -509,8 +507,8 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-    i32 x = m_lastTilePxX;
-    i32 y = m_lastTilePxY;
+    i32 x = m_lastTilePx.m_x;
+    i32 y = m_lastTilePx.m_y;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 result = 0;
@@ -736,14 +734,14 @@ i32 CGrunt::StepCompassMove() {
     }
 
 commit:
-    m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
+    m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     PlaySound(0x3e8, voice);
-    m_commitPxX = m_lastTilePxX;
-    m_commitPxY = m_lastTilePxY;
+    m_commitPx.m_x = m_lastTilePx.m_x;
+    m_commitPx.m_y = m_lastTilePx.m_y;
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-        i32 ox = m_lastTilePxX >> 5;
-        i32 oy = m_lastTilePxY >> 5;
+        i32 ox = m_lastTilePx.m_x >> 5;
+        i32 oy = m_lastTilePx.m_y >> 5;
         b->m_rowBytes[oy][ox * 7 * 4 + 3] &= 0xdf;
         b->m_rowInts[oy][ox * 7 + 1] = -1;
     }
@@ -755,8 +753,8 @@ commit:
         b->m_rowBytes[ny][nx * 7 * 4 + 3] |= 0x20;
         b->m_rowInts[ny][nx * 7 + 1] = owner;
     }
-    m_lastTilePxX = moveX;
-    m_lastTilePxY = moveY;
+    m_lastTilePx.m_x = moveX;
+    m_lastTilePx.m_y = moveY;
     ComputeFacing(1.0);
     m_arrivalPending = 1;
     m_toyTileIndex += 1;
@@ -766,8 +764,8 @@ commit:
 // @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
-    i32 x = m_lastTilePxX;
-    i32 y = m_lastTilePxY;
+    i32 x = m_lastTilePx.m_x;
+    i32 y = m_lastTilePx.m_y;
     switch (m_entranceCell.direction - 1) {
         case 0:
             y -= 0x20;
@@ -815,13 +813,13 @@ i32 CGrunt::ClaimSwitchTile() {
         return 0;
     }
 
-    m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
+    m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
-    m_commitPxX = m_lastTilePxX;
-    m_commitPxY = m_lastTilePxY;
+    m_commitPx.m_x = m_lastTilePx.m_x;
+    m_commitPx.m_y = m_lastTilePx.m_y;
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
-    i32 oldTx = m_lastTilePxX >> 5;
-    i32 oldTy = m_lastTilePxY >> 5;
+    i32 oldTx = m_lastTilePx.m_x >> 5;
+    i32 oldTy = m_lastTilePx.m_y >> 5;
     gb->m_rowInts[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
     *&gb->m_rowInts[oldTy][oldTx * 7 * 4 + 4] = -1;
 
@@ -829,8 +827,8 @@ i32 CGrunt::ClaimSwitchTile() {
     gb->m_rowInts[ty][tx * 7 * 4 + 3] |= 0x20;
     *&gb->m_rowInts[ty][tx * 7 * 4 + 4] = owner;
 
-    m_lastTilePxX = x;
-    m_lastTilePxY = y;
+    m_lastTilePx.m_x = x;
+    m_lastTilePx.m_y = y;
     ComputeFacing(1.0);
     m_arrivalPending = 1;
     return 1;
@@ -839,11 +837,11 @@ i32 CGrunt::ClaimSwitchTile() {
 // @early-stop
 RVA(0x00052ed0, 0x42)
 void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
-    m_arrivalCol = a;
-    m_arrivalRow = b;
+    m_arrivalCell.m_x = a;
+    m_arrivalCell.m_y = b;
     m_arrivalActive = 1;
-    m_defenderX = (c & ~0x1f) + 0x10;
-    m_defenderY = (d & ~0x1f) + 0x10;
+    m_defenderPx.m_x = (c & ~0x1f) + 0x10;
+    m_defenderPx.m_y = (d & ~0x1f) + 0x10;
 }
 
 // @early-stop
@@ -852,7 +850,7 @@ void CGrunt::ConsiderArrival(i32 a) {
     CWwdGameObjectA* h = m_object;
     i32 px = (h->m_screenX & ~0x1f) + 0x10;
     i32 py = (h->m_screenY & ~0x1f) + 0x10;
-    if (px != m_lastTilePxX || py != m_lastTilePxY) {
+    if (px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) {
         if (IsDropReady(a)) {
             return;
         }
@@ -872,25 +870,25 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
     if (eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
     if (eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
 
         if (m_entranceReason == 0x13) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_188);
+            g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
-            m_moveTileX,
-            m_moveTileY,
+            m_moveTile.m_x,
+            m_moveTile.m_y,
             m_entranceReason,
             -1
         );
@@ -900,30 +898,30 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "G") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "L") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "P") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
     if (eq) {
 
         SnapToLastTile(1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxY, m_lastTilePxX);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeQ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeQ) == 0);
     if (eq) {
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "J") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
     if (eq) {
 
         m_entranceActive = 0;
@@ -931,9 +929,9 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
             m_entranceCommitted = 0;
             ResetEntranceAnimation(1, 0, 0);
         }
-        m_35c = 0;
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = ActFindId(s_codeD);
+        m_tileMoveCommitted = 0;
+        m_prevAnimSetNode = m_objAux->m_actKey;
+        m_objAux->m_actKey = ActFindId(s_codeD);
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
 
@@ -951,7 +949,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
 idleReseed:
 
     if (m_entranceReason == 0x1e) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_188);
+        g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
@@ -985,11 +983,11 @@ modeDispatch: {
     if (mode >= 0x32) {
         LoadGruntTypeTable(mode, 1, 0, 1);
         m_moveMode = -1;
-        m_1a4 = 0;
+        m_helpCueId = 0;
         return 1;
     }
     if (mode >= 0x22) {
-        m_194 = mode;
+        m_brickPickupType = mode;
         m_moveMode = -1;
         return 1;
     }
@@ -1033,7 +1031,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* p
             m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
-    SerTriRecord(&m_entranceCell, ar, mode, typeId, pObj);
+    m_entranceCell.Serialize(ar, mode, typeId, pObj);
     SerRecord(ar, mode, &m_toyClock);
     SerRecord(ar, mode, &m_idleAnchor);
     SerRecord(ar, mode, &m_idleTimer);
@@ -1042,12 +1040,12 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* p
     SerRecord(ar, mode, &m_attackClockLo);
     SerRecord(ar, mode, &m_combatClockLo);
     SerRecord(ar, mode, &m_hudRetireClockLo);
-    SerPairRecord(&m_wingzClockLo, ar, mode, typeId, pObj);
-    SerPairRecord(&m_convertClockLo, ar, mode, typeId, pObj);
-    SerPairRecord(&m_shimmerClockLo, ar, mode, typeId, pObj);
-    SerPairRecord(&m_8c0, ar, mode, typeId, pObj);
-    SerPairRecord(&m_arrivalRerollLo, ar, mode, typeId, pObj);
-    SerPairRecord(&m_278, ar, mode, typeId, pObj);
+    m_wingzTiming.Serialize(ar, mode, typeId, pObj);
+    m_conversionTiming.Serialize(ar, mode, typeId, pObj);
+    m_shimmerTiming.Serialize(ar, mode, typeId, pObj);
+    m_arrivalVoiceTiming.Serialize(ar, mode, typeId, pObj);
+    m_arrivalRerollTiming.Serialize(ar, mode, typeId, pObj);
+    m_holdTiming.Serialize(ar, mode, typeId, pObj);
     return 1;
 }
 
@@ -1068,7 +1066,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 tmp = 0;
         CWwdGameObjectA* sp = m_selectedSprite;
         if (sp) {
-            tmp = sp->m_188;
+            tmp = sp->m_objectId;
         }
         ar->Write(&tmp, 4);
     }
@@ -1077,7 +1075,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 tmp = 0;
         CWwdGameObjectA* sp = m_toySprite;
         if (sp) {
-            tmp = sp->m_188;
+            tmp = sp->m_objectId;
         }
         ar->Write(&tmp, 4);
     }
@@ -1086,7 +1084,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 tmp = 0;
         CWwdGameObjectA* sp = m_healthSprite;
         if (sp) {
-            tmp = sp->m_188;
+            tmp = sp->m_objectId;
         }
         ar->Write(&tmp, 4);
     }
@@ -1095,7 +1093,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 tmp = 0;
         CWwdGameObjectA* sp = m_staminaSprite;
         if (sp) {
-            tmp = sp->m_188;
+            tmp = sp->m_objectId;
         }
         ar->Write(&tmp, 4);
     }
@@ -1104,7 +1102,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 tmp = 0;
         CWwdGameObjectA* sp = m_toyTimeSprite;
         if (sp) {
-            tmp = sp->m_188;
+            tmp = sp->m_objectId;
         }
         ar->Write(&tmp, 4);
     }
@@ -1113,7 +1111,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 tmp = 0;
         CWwdGameObjectA* sp = m_wingzTimeSprite;
         if (sp) {
-            tmp = sp->m_188;
+            tmp = sp->m_objectId;
         }
         ar->Write(&tmp, 4);
     }
@@ -1122,7 +1120,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 tmp = 0;
         CWwdGameObjectA* sp = m_powerupSprite;
         if (sp) {
-            tmp = sp->m_188;
+            tmp = sp->m_objectId;
         }
         ar->Write(&tmp, 4);
     }
@@ -1132,11 +1130,11 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, m_448);
+    strcpy(buf, m_frameSetName);
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, m_44c);
+    strcpy(buf, m_deathFrameSetName);
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
@@ -1302,41 +1300,41 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(buf, 0x80);
     ar->Write(&m_18c, 4);
     ar->Write(&m_toyBlendPct, 4);
-    ar->Write(&m_194, 4);
+    ar->Write(&m_brickPickupType, 4);
     ar->Write(&m_entranceReason, 4);
-    ar->Write(&m_198, 4);
+    ar->Write(&m_vehiclePickupType, 4);
     ar->Write(&m_toolId, 4);
     ar->Write(&m_moveMode, 4);
-    ar->Write(&m_1a4, 4);
+    ar->Write(&m_helpCueId, 4);
     ar->Write(&m_1a8, 4);
     ar->Write(&m_1ac, 4);
     ar->Write(&m_1b0, 4);
     ar->Write(&m_1b4, 4);
     ar->Write(&m_arrived, 4);
-    ar->Write(&m_entrancePxX, 8);
-    ar->Write(&m_lastTilePxX, 8);
-    ar->Write(&m_commitPxX, 8);
+    ar->Write(&m_entrancePx, 8);
+    ar->Write(&m_lastTilePx, 8);
+    ar->Write(&m_commitPx, 8);
     ar->Write(&m_1dc, 8);
     ar->Write(&m_entranceActive, 4);
     ar->Write(&m_arrivalPending, 4);
     ar->Write(&m_tileOwnerHi, 4);
     ar->Write(&m_tileOwnerLo, 4);
-    ar->Write(&m_1f4_moveIcon, 4);
-    ar->Write(&m_1f8, 4);
+    ar->Write(&m_moveIcon, 4);
+    ar->Write(&m_savedMoveIcon, 4);
     ar->Write(&m_entranceCommitted, 4);
-    ar->Write(&m_neighborCol, 8);
-    ar->Write(&m_208, 8);
+    ar->Write(&m_neighborCell, 8);
+    ar->Write(&m_attackTargetPx, 8);
     ar->Write(&m_210, 4);
-    ar->Write(&m_214, 4);
+    ar->Write(&m_struckPose, 4);
     ar->Write(&m_combatActive, 4);
     ar->Write(&m_neighborValid, 4);
     ar->Write(&m_poweredUp, 4);
     ar->Write(&m_224, 4);
     ar->Write(&m_entranceStamped, 4);
-    ar->Write(&m_22c, 4);
+    ar->Write(&m_bombRunActive, 4);
     ar->Write(&m_arrivalActive, 4);
-    ar->Write(&m_reachRectLeft, 16);
-    ar->Write(&m_2a0, 16);
+    ar->Write(&m_reachRect, 16);
+    ar->Write(&m_reachExclusionRect, 16);
     ar->Write(&m_toyRectA, 16);
     ar->Write(&m_toyRectB, 16);
     ar->Write(&m_health, 4);
@@ -1347,26 +1345,26 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_418, 4);
     ar->Write(&m_42c, 4);
     ar->Write(&m_430, 4);
-    ar->Write(&m_434, 4);
-    ar->Write(&m_438, 4);
+    ar->Write(&m_startingItemId, 4);
+    ar->Write(&m_recordedFrameTick, 4);
     ar->Write(&m_arrivalState, 4);
     ar->Write(&m_defenderState, 4);
-    ar->Write(&m_2d8, 4);
+    ar->Write(&m_battleState, 4);
     ar->Write(&m_defenderRadius, 4);
-    ar->Write(&m_2e0, 4);
-    ar->Write(&m_2e4, 4);
+    ar->Write(&m_defenderQueuePosition, 4);
+    ar->Write(&m_defenderPickupType, 4);
     ar->Write(&m_dwell, 4);
-    ar->Write(&m_arrivalCol, 8);
-    ar->Write(&m_defenderX, 8);
+    ar->Write(&m_arrivalCell, 8);
+    ar->Write(&m_defenderPx, 8);
     ar->Write(&m_354, 4);
-    ar->Write(&m_358, 4);
-    ar->Write(&m_35c, 4);
+    ar->Write(&m_neighborScanEnabled, 4);
+    ar->Write(&m_tileMoveCommitted, 4);
     ar->Write(&m_3dc, 8);
-    ar->Write(&m_moveTileX, 8);
+    ar->Write(&m_moveTile, 8);
     ar->Write(&m_arrivalPhase, 4);
     ar->Write(&m_timePerTile, 4);
-    ar->Write(&m_408, 8);
-    ar->Write(&m_410, 8);
+    ar->Write(&m_movePosX, 8);
+    ar->Write(&m_movePosY, 8);
     ar->Write(&m_8d0, 4);
     ar->Write(&m_coordToggle, 4);
     ar->Write(&m_wingzEnabled, 4);
@@ -1374,32 +1372,32 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_freezeUnfrozen, 4);
     ar->Write(&m_resetApplied, 4);
     ar->Write(&m_arrivalFlags, 4);
-    ar->Write(&m_24c, 4);
+    ar->Write(&m_passableMask, 4);
     ar->Write(&m_gruntKind, 4);
     ar->Write(&m_entranceArmed, 4);
     ar->Write(&m_deathType, 4);
     ar->Write(&m_entranceDropActive, 4);
-    ar->Write(&m_318, 4);
+    ar->Write(&m_hasExtent, 4);
     ar->Write(&m_2f8, 8);
-    ar->Write(&m_36c, 4);
-    ar->Write(&m_454, 4);
-    ar->Write(&m_370, 4);
+    ar->Write(&m_cellRemovalNotified, 4);
+    ar->Write(&m_pendingTrigger, 4);
+    ar->Write(&m_killerSlot, 4);
     ar->Write(&m_tileClaimed, 4);
     ar->Write(&m_deathAnimStarted, 4);
-    ar->Write(&m_458, 8);
-    ar->Write(&m_250, 4);
-    ar->Write(&m_254, 4);
-    ar->Write(&m_374, 4);
+    ar->Write(&m_pendingTriggerPx, 8);
+    ar->Write(&m_routeMaskA, 4);
+    ar->Write(&m_routeMaskC, 4);
+    ar->Write(&m_moveVariantOverride, 4);
     ar->Write(&m_moveKind, 4);
     ar->Write(&m_moveVariant, 4);
     ar->Write(&m_coordRetryCount, 4);
     ar->Write(&m_toyTileIndex, 4);
-    ar->Write(&m_390, 4);
-    ar->Write(&m_378, 4);
-    ar->Write(&m_38c, 4);
+    ar->Write(&m_blockedVoicePending, 4);
+    ar->Write(&m_powerupDuration, 4);
+    ar->Write(&m_warpstoneAnchorIndex, 4);
     ar->Write(&m_lowStaminaCued, 4);
-    ar->Write(&m_2e8, 4);
-    ar->Write(&m_288, 8);
+    ar->Write(&m_targetTeam, 4);
+    ar->Write(&m_arrivalTargetPx, 8);
 
     {
         i32 row, col;
@@ -1413,19 +1411,19 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     }
 
     {
-        n = m_31c.GetCount();
+        n = m_coordList.GetCount();
         ar->Write(&n, 4);
-        POSITION cpos = m_31c.GetHeadPosition();
+        POSITION cpos = m_coordList.GetHeadPosition();
         while (cpos != 0) {
-            ar->Write(m_31c.GetNext(cpos), 8);
+            ar->Write(m_coordList.GetNext(cpos), 8);
         }
     }
     {
-        n = m_338.GetCount();
+        n = m_payloads.GetCount();
         ar->Write(&n, 4);
-        POSITION pos = m_338.GetHeadPosition();
+        POSITION pos = m_payloads.GetHeadPosition();
         while (pos != 0) {
-            ar->Write(m_338.GetNext(pos), 0x2c);
+            ar->Write(m_payloads.GetNext(pos), 0x2c);
         }
     }
     return 1;

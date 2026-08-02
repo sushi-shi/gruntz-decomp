@@ -9,6 +9,7 @@
 
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 
 class CFileMemBase;
 
@@ -33,49 +34,17 @@ public:
     char m_pad54[0x58 - 0x54];
     double m_moveSpeed;
 
-    union {
-        double m_subX;
-        struct {
-            i32 m_subXLo;
-            i32 m_subXHi;
-        };
-    };
-    union {
-        double m_subY;
-        struct {
-            i32 m_subYLo;
-            i32 m_subYHi;
-        };
-    };
+    double m_subX;
+    double m_subY;
     i32 m_stepDirX;
     i32 m_stepDirY;
-    i32 m_targetX;
-    i32 m_targetY;
+    Coord m_target;
     i32 m_explodeLatch;
     i32 m_fallLatch;
 
-    union {
-        i64 m_explodeStart64;
-        struct {
-            i32 m_explodeStartLo;
-            i32 m_explodeStartHi;
-        };
-    };
-    union {
-        i64 m_explodeWindow64;
-        struct {
-            i32 m_explodeWindowLo;
-            i32 m_explodeWindowHi;
-        };
-    };
-
-    union {
-        double m_moveDelta;
-        struct {
-            i32 m_moveDeltaLo;
-            i32 m_moveDeltaHi;
-        };
-    };
+    i64 m_explodeStart;
+    i64 m_explodeWindow;
+    double m_moveDelta;
 };
 SIZE(0xa0);
 

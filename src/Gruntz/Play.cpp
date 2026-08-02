@@ -263,7 +263,7 @@ i32 CPlay::Render() {
     }
     {
         CGruntzMgr* reg = g_gameReg;
-        if (reg->m_134 != 2 && m_overlayDrag != 0) {
+        if (reg->m_gameMode != 2 && m_overlayDrag != 0) {
             goto alt2;
         }
     }
@@ -395,11 +395,11 @@ i32 CPlay::Render() {
                 m_guts->SetMode(0);
                 m_snapshotActive = 0;
 
-                if (g_gameReg->m_options[0].m_00c != 0) {
+                if (g_gameReg->m_options[0].m_warlordObjectId != 0) {
                     void* out = 0;
                     if (MapLookupById(
                             g_gameReg->m_world->m_childGroup->m_map48,
-                            g_gameReg->m_options[0].m_00c,
+                            g_gameReg->m_options[0].m_warlordObjectId,
                             out
                         )) {
                         CGameObject* object = static_cast<CGameObject*>(out);
@@ -585,10 +585,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CTimer* worker = self->m_frameMarker;
     if (worker != 0) {
-        worker->m_40 = 0;
-        worker->m_44 = 0;
-        worker->m_accumLo = 0;
-        worker->m_accumHi = 0;
+        worker->m_40.m_v = 0;
+        worker->m_accum.m_v = 0;
         worker->m_running = 0;
         worker->m_currentMs = 0;
     }
@@ -604,7 +602,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_mgr->RestoreVideoMode(0);
 
     gameReg = g_gameReg;
-    if (gameReg->m_134 != 2) {
+    if (gameReg->m_gameMode != 2) {
         g_curPlayer = 0;
         if (gameReg->m_frameGate != 0) {
             i32 v = gameReg->m_frameGate ^ 1;
@@ -630,7 +628,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CGruntzMgr* hostBase = self->m_mgr;
         gameReg = g_gameReg;
         GruntzPlayer* team = &hostBase->m_options[t];
-        if (gameReg->m_134 == 1) {
+        if (gameReg->m_gameMode == 1) {
             team->SeedForSlot(0);
             if (t == 0) {
                 team->m_liveGate = 1;
@@ -645,7 +643,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     i32 modeFlag = (static_cast<i32>(Update()) == 0x11) ? 1 : 0;
     CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : 0;
-    self->m_1c4 = 1;
+    self->m_initialFramePending = 1;
     self->m_levelIndex = level;
     {
         i32 r = (level - 1) % 0x24;
@@ -654,21 +652,21 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     gameReg = g_gameReg;
     g_frameTime = 0;
-    if (gameReg->m_134 == 3) {
+    if (gameReg->m_gameMode == 3) {
         srand(timeGetTime());
     }
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
     gameReg->m_scoreHud->Init();
-    gameReg->m_cmdSubMgr->m_1c.RemoveAll();
+    gameReg->m_cmdSubMgr->m_pendingCommands.RemoveAll();
     gameReg->m_cmdSubMgr->DrainBase();
     g_frameTicks = 0;
-    self->m_1bc = 0;
-    self->m_mgr->m_130 = 0;
+    self->m_returnToMenuOnComplete = 0;
+    self->m_mgr->m_isCustomLevel = 0;
 
     CGruntzMgr* host = self->m_mgr;
     if (host->m_strWorldFile.GetLength() != 0) {
-        if (host->m_128 != 0) {
+        if (host->m_isBattlezLevel != 0) {
 
             set = host->m_symParser->ResolvePath("GAME_BATTLEZ");
             if (set == 0) {
@@ -697,7 +695,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             i32 num = atoi(p);
             (static_cast<CParseSource*>(set))->EndParse();
             level = num;
-        } else if (host->m_12c != 0) {
+        } else if (host->m_isMultiLevel != 0) {
 
             set = host->m_symParser->ResolvePath("GAME_MULTI");
             if (set == 0) {
@@ -729,8 +727,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         } else {
 
             level = WwdFile::ValidateMainBlock(self->m_mgr->GetWorldFileName());
-            self->m_1bc = 0;
-            self->m_mgr->m_130 = 0;
+            self->m_returnToMenuOnComplete = 0;
+            self->m_mgr->m_isCustomLevel = 0;
         }
 
         i32 r = (level - 1) % 0x24;
@@ -787,13 +785,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     {
-        CSymTab* prevTiles = self->m_2c;
-        self->m_2c = (self->m_levelBank);
+        CSymTab* prevTiles = self->m_stateBank;
+        self->m_stateBank = (self->m_levelBank);
         UpdateWindow(self->m_mgr->m_gameWnd->m_hwnd);
 
         host = self->m_mgr;
         if (host->m_strWorldFile.GetLength() != 0) {
-            if (host->m_128 == 0 && host->m_12c == 0) {
+            if (host->m_isBattlezLevel == 0 && host->m_isMultiLevel == 0) {
                 sprintf(nameBuf, "CUSTOMLEVEL");
             }
         } else if (level > 0x24) {
@@ -807,7 +805,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RetireScene(0x50, 0x3e8, 0, 1);
     DrawLevelInfoText();
-    self->m_2c = 0;
+    self->m_stateBank = 0;
     {
         i32* z = initScratch;
         i32 n = 0x25;
@@ -859,7 +857,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (modeFlag != 0 && (g_gameReg)->m_134 == 1) {
+    if (modeFlag != 0 && (g_gameReg)->m_gameMode == 1) {
         BuildWarlordNameTable(savedThis);
     }
     BuildHelpReveal(0);
@@ -987,7 +985,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     gameReg = g_gameReg;
-    if (gameReg->m_134 != 1) {
+    if (gameReg->m_gameMode != 1) {
         CString warp;
         i32 same = 0;
         if (warp.LoadString(0x81ab)) {
@@ -1011,7 +1009,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    if (self->m_mgr->m_134 == 3) {
+    if (self->m_mgr->m_gameMode == 3) {
         self->m_mgr->SyncOptionsState();
     }
     self->m_mgr->m_saveSink->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, 0);
@@ -1091,13 +1089,13 @@ okContinue:
     }
 
     gameReg = g_gameReg;
-    if (gameReg->m_114 == 0) {
+    if (gameReg->m_loadingSaveGame == 0) {
         CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontPair->m_surface;
         mapHost->ShadeRect(0x32, 0);
         gameReg = g_gameReg;
     }
 
-    if (gameReg->m_134 != 2 && gameReg->m_114 == 0) {
+    if (gameReg->m_gameMode != 2 && gameReg->m_loadingSaveGame == 0) {
         CString scr;
         self->m_inGame = 1;
         self->m_hudSuppressed = 0;
@@ -1116,7 +1114,7 @@ okContinue:
     self->m_scrollEdgeLock = 0;
     self->m_overlayDrag = 0;
     self->m_paused = 0;
-    self->m_4f0 = 0;
+    self->m_playerCommandPending = 0;
     self->m_winLoseBanner = 0;
     self->m_cueInterval = 0x1f4;
     self->m_cueIntervalHi = 0;
@@ -1130,11 +1128,11 @@ okContinue:
     self->m_region2Gate = 0;
     self->m_region3Gate = 0;
     self->m_snapshotActive = 0;
-    self->m_514 = 3;
+    self->m_focusPlayerIndex = 3;
     self->m_renderDisabled = 1;
     g_playActive = 0;
     ResetViewport();
-    if ((g_gameReg)->m_134 == 2) {
+    if ((g_gameReg)->m_gameMode == 2) {
         g_playActive = 1;
         self->m_renderDisabled = 0;
         self->m_mgr->CheckSavedMode();
@@ -1158,9 +1156,9 @@ void CPlay::OnExit() {
     if (m_world) {
         m_world->m_childGroup->ClearChildren();
     }
-    g_gameReg->m_128 = 0;
-    if (g_gameReg->m_134 == 3) {
-        g_gameReg->m_134 = 0;
+    g_gameReg->m_isBattlezLevel = 0;
+    if (g_gameReg->m_gameMode == 3) {
+        g_gameReg->m_gameMode = 0;
     }
     g_gameReg->m_tileGrid->Reset();
 }
@@ -1225,7 +1223,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
     }
 
     if (m_mgr->m_frameGate == 0) {
-        if (m_hitTest->m_10 != 0) {
+        if (m_hitTest->m_inputActive != 0) {
             m_mgr->m_chatLog->TypeChar(key, flag);
             return 1;
         }
@@ -1314,7 +1312,7 @@ i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
             if (m_gridHasSprite) {
                 CGruntzMgr* w = m_mgr;
                 i32 id = g_curPlayer;
-                CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
+                CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_colorIndex, 0);
                 if (spr == 0) {
                     spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
                 }
@@ -1376,23 +1374,23 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 
     i32 count;
 
-    s->Write(&m_1bc, 4);
-    s->Write(&m_1c0, 4);
+    s->Write(&m_returnToMenuOnComplete, 4);
+    s->Write(&m_completedFinalLevel, 4);
     s->Write(&m_savedClock, 4);
     s->Write(&m_rngSeed, 4);
     s->Write(&m_dragInProgress, 4);
     s->Write(&m_2f0, 4);
     s->Write(&m_cursorFrame, 4);
     s->Write(&m_levelId, 4);
-    s->Write(&m_2fc, 8);
-    s->Write(&m_tileClickX, 8);
+    s->Write(&m_cursorOffset, sizeof(m_cursorOffset));
+    s->Write(&m_tileClick, sizeof(m_tileClick));
     s->Write(&m_dragInhibit1, 4);
     s->Write(&m_dragInhibit2, 4);
 
-    count = markerCount();
+    count = StartMarkerCount();
     s->Write(&count, 4);
     for (u32 i0 = 0; i0 < static_cast<u32>(count); i0++) {
-        s->Write(markerData()[i0], 8);
+        s->Write(StartMarkerAt(i0), 8);
     }
 
     Anchor* p = m_anchors;
@@ -1402,10 +1400,10 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     }
 
     for (i32 k1 = 0; k1 < 4; k1++) {
-        count = arrCount(k1);
+        count = PlacedObjectCellCount(k1);
         s->Write(&count, 4);
         for (u32 i1 = 0; i1 < static_cast<u32>(count); i1++) {
-            s->Write(arrData(k1)[i1], 8);
+            s->Write(PlacedObjectCellAt(k1, i1), 8);
         }
     }
 
@@ -1454,7 +1452,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     {
         i32 v = 0;
         if (m_scrollSink != 0) {
-            v = m_scrollSink->m_188;
+            v = m_scrollSink->m_objectId;
         }
         s->Write(&v, 4);
     }
@@ -1462,19 +1460,19 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_gridWalkActive, 4);
     s->Write(&m_renderDisabled, 4);
     s->Write(&m_winLoseBanner, 4);
-    s->Write(&m_1c4, 4);
+    s->Write(&m_initialFramePending, 4);
     s->Write(&m_hudSuppressed, 4);
     s->Write(&m_inGame, 4);
     s->Write(&m_overlayDrag, 4);
     s->Write(&m_paused, 4);
-    s->Write(&m_4f0, 4);
+    s->Write(&m_playerCommandPending, 4);
     s->Write(&m_dragEndNotify, 4);
     s->Write(&m_drewThisFrame, 4);
-    s->Write(&m_418, 4);
-    s->Write(&m_41c, 4);
-    s->Write(&m_420, 4);
-    s->Write(&m_424, 4);
-    s->Write(&m_428, 2);
+    s->Write(&m_pathPreviewSource.x, 4);
+    s->Write(&m_pathPreviewSource.y, 4);
+    s->Write(&m_pathPreviewDestination.x, 4);
+    s->Write(&m_pathPreviewDestination.y, 4);
+    s->Write(&m_pathPreviewColor, 2);
     s->Write(&m_region0Gate, 4);
     s->Write(&m_region1Gate, 4);
     s->Write(&m_region2Gate, 4);
@@ -1482,13 +1480,13 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_viewMode, 4);
     s->Write(&m_snapshotActive, 4);
     s->Write(&m_gridHasSprite, 4);
-    s->Write(&m_49c, 4);
-    s->Write(&m_514, 4);
+    s->Write(&m_cameraBookmarkIndex, 4);
+    s->Write(&m_focusPlayerIndex, 4);
 
-    count = arr488Count();
+    count = CameraBookmarkCount();
     s->Write(&count, 4);
-    for (i32 fi = 0; fi < arr488Count(); fi++) {
-        void* el = arr488Data()[fi];
+    for (i32 fi = 0; fi < CameraBookmarkCount(); fi++) {
+        void* el = CameraBookmarkData()[fi];
         if (el != 0) {
             s->Write(el, 8);
         }
@@ -1508,23 +1506,23 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         return 0;
     }
 
-    ar->Read(&m_1bc, 4);
-    ar->Read(&m_1c0, 4);
+    ar->Read(&m_returnToMenuOnComplete, 4);
+    ar->Read(&m_completedFinalLevel, 4);
     ar->Read(&m_savedClock, 4);
     ar->Read(&m_rngSeed, 4);
     ar->Read(&m_dragInProgress, 4);
     ar->Read(&m_2f0, 4);
     ar->Read(&m_cursorFrame, 4);
     ar->Read(&m_levelId, 4);
-    ar->Read(&m_2fc, 8);
-    ar->Read(&m_tileClickX, 8);
+    ar->Read(&m_cursorOffset, sizeof(m_cursorOffset));
+    ar->Read(&m_tileClick, sizeof(m_tileClick));
     ar->Read(&m_dragInhibit1, 4);
     ar->Read(&m_dragInhibit2, 4);
 
     {
 
-        for (i32 i = 0; i < markerCount(); i++) {
-            void* node = markerData()[i];
+        for (i32 i = 0; i < StartMarkerCount(); i++) {
+            Coord* node = StartMarkerAt(i);
             if (node) {
                 CoordPoolNode* q = g_coordPool.NodeOf(node);
                 q->m_next = g_coordPool.m_freeHead;
@@ -1535,7 +1533,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 n;
         ar->Read(&n, 4);
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
-            void* node = 0;
+            Coord* node = 0;
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;
             if (next) {
@@ -1543,7 +1541,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
-            m_startMarkers.SetAtGrow(markerCount(), node);
+            m_startMarkers.SetAtGrow(StartMarkerCount(), node);
         }
     }
 
@@ -1559,9 +1557,9 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
 
         for (i32 k = 0; k < 4; k++) {
-            CPtrArray* coll = &m_3a4[k];
-            for (i32 i = 0; i < arrCount(k); i++) {
-                void* node = arrData(k)[i];
+            CPtrArray* coll = &m_placedObjectCells[k];
+            for (i32 i = 0; i < PlacedObjectCellCount(k); i++) {
+                Coord* node = PlacedObjectCellAt(k, i);
                 if (node) {
                     CoordPoolNode* q = g_coordPool.NodeOf(node);
                     q->m_next = g_coordPool.m_freeHead;
@@ -1572,7 +1570,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             i32 n;
             ar->Read(&n, 4);
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
-                void* node = 0;
+                Coord* node = 0;
                 CoordPoolNode* head = g_coordPool.m_freeHead;
                 CoordPoolNode* next = head->m_next;
                 if (next) {
@@ -1580,7 +1578,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                     g_coordPool.m_freeHead = next;
                 }
                 ar->Read(node, 8);
-                coll->SetAtGrow(arrCount(k), node);
+                coll->SetAtGrow(PlacedObjectCellCount(k), node);
             }
         }
     }
@@ -1648,19 +1646,19 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_gridWalkActive, 4);
     ar->Read(&m_renderDisabled, 4);
     ar->Read(&m_winLoseBanner, 4);
-    ar->Read(&m_1c4, 4);
+    ar->Read(&m_initialFramePending, 4);
     ar->Read(&m_hudSuppressed, 4);
     ar->Read(&m_inGame, 4);
     ar->Read(&m_overlayDrag, 4);
     ar->Read(&m_paused, 4);
-    ar->Read(&m_4f0, 4);
+    ar->Read(&m_playerCommandPending, 4);
     ar->Read(&m_dragEndNotify, 4);
     ar->Read(&m_drewThisFrame, 4);
-    ar->Read(&m_418, 4);
-    ar->Read(&m_41c, 4);
-    ar->Read(&m_420, 4);
-    ar->Read(&m_424, 4);
-    ar->Read(&m_428, 2);
+    ar->Read(&m_pathPreviewSource.x, 4);
+    ar->Read(&m_pathPreviewSource.y, 4);
+    ar->Read(&m_pathPreviewDestination.x, 4);
+    ar->Read(&m_pathPreviewDestination.y, 4);
+    ar->Read(&m_pathPreviewColor, 2);
     ar->Read(&m_region0Gate, 4);
     ar->Read(&m_region1Gate, 4);
     ar->Read(&m_region2Gate, 4);
@@ -1668,23 +1666,23 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_viewMode, 4);
     ar->Read(&m_snapshotActive, 4);
     ar->Read(&m_gridHasSprite, 4);
-    ar->Read(&m_49c, 4);
+    ar->Read(&m_cameraBookmarkIndex, 4);
     m_stepCountdown = 2;
-    ar->Read(&m_514, 4);
+    ar->Read(&m_focusPlayerIndex, 4);
 
     i32 n488;
     ar->Read(&n488, 4);
     {
-        for (i32 i = 0; i < arr488Count(); i++) {
-            void* node = arr488Data()[i];
+        for (i32 i = 0; i < CameraBookmarkCount(); i++) {
+            void* node = CameraBookmarkData()[i];
             if (node) {
                 CoordPoolNode* q = g_coordPool.NodeOf(node);
                 q->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = q;
             }
         }
-        m_488.SetSize(0, -1);
-        m_488.SetSize(n488, -1);
+        m_cameraBookmarks.SetSize(0, -1);
+        m_cameraBookmarks.SetSize(n488, -1);
         for (u32 j = 0; j < static_cast<u32>(n488); j++) {
             void* node = 0;
             CoordPoolNode* head = g_coordPool.m_freeHead;
@@ -1694,7 +1692,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
-            arr488Data()[j] = node;
+            CameraBookmarkData()[j] = node;
         }
     }
     return 1;
@@ -2074,7 +2072,7 @@ void CPlay::DrawWorldFrame() {
     g_engineFrameDelta = g_frameDelta;
     m_world->m_childGroup->TickKillCues(0);
     m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
-    if (g_gameReg->m_134 == 3) {
+    if (g_gameReg->m_gameMode == 3) {
 
         (g_gameReg)->AdvanceOptionsCycle();
     }
@@ -2125,7 +2123,7 @@ i32 CPlay::DrawWorldFrames() {
             }
             m_world->m_childGroup->TickKillCues(0);
             m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
-            if (g_gameReg->m_134 == 3) {
+            if (g_gameReg->m_gameMode == 3) {
                 (g_gameReg)->AdvanceOptionsCycle();
             }
             m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
@@ -2354,9 +2352,9 @@ i32 CPlay::DrawLevelInfoText() {
             s0 = g_emptyString;
     }
 
-    i32 mode = g_gameReg->m_134;
+    i32 mode = g_gameReg->m_gameMode;
     if (mode == 1) {
-        if (g_gameReg->m_130 != 0) {
+        if (g_gameReg->m_isCustomLevel != 0) {
             s1.LoadString(0x81a0);
         } else {
             i32 stage = m_levelIndex;
@@ -2498,13 +2496,13 @@ i32 CPlay::DrawLevelInfoText() {
             }
         }
     } else if (mode == 3) {
-        if (g_gameReg->m_130 != 0) {
+        if (g_gameReg->m_isCustomLevel != 0) {
             s1.LoadString(0x819f);
         } else {
             s1.LoadString(0x819e);
         }
     } else if (mode == 2) {
-        if (g_gameReg->m_130 != 0) {
+        if (g_gameReg->m_isCustomLevel != 0) {
             s1.LoadString(0x819d);
         } else {
             s1.LoadString(0x819c);
@@ -2551,18 +2549,18 @@ i32 CPlay::DrawLevelInfoText() {
 RVA(0x000da030, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
-        CPtrArray* rec = &m_3a4[blockIdx];
+        CPtrArray* rec = &m_placedObjectCells[blockIdx];
         i32 i = 0;
         i32 restart = 0;
         while (i < rec->GetSize()) {
-            CHitMarker* obj = static_cast<CHitMarker*>(rec->GetAt(i));
+            Coord* obj = static_cast<Coord*>(rec->GetAt(i));
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
             i32 occupantId = 0;
-            if (static_cast<u32>(obj->m_0) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(obj->m_4) < static_cast<u32>(grid->m_height)) {
-                i32 stride = obj->m_0 * 7;
-                i32* row = grid->m_rowInts[obj->m_4];
+            if (static_cast<u32>(obj->m_x) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(obj->m_y) < static_cast<u32>(grid->m_height)) {
+                i32 stride = obj->m_x * 7;
+                i32* row = grid->m_rowInts[obj->m_y];
                 occupantId = row[stride + 2];
             }
             i32 stillPlaced = 0;
@@ -2579,12 +2577,12 @@ i32 CPlay::ClearPlacedObjects() {
                 if (result == 0) {
 
                     CMapMgr* g = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(obj->m_0) < static_cast<u32>(g->m_width)
-                        && static_cast<u32>(obj->m_4) < static_cast<u32>(g->m_height)) {
-                        i32 stride = obj->m_0 * 7;
-                        i32* row = g->m_rowInts[obj->m_4];
+                    if (static_cast<u32>(obj->m_x) < static_cast<u32>(g->m_width)
+                        && static_cast<u32>(obj->m_y) < static_cast<u32>(g->m_height)) {
+                        i32 stride = obj->m_x * 7;
+                        i32* row = g->m_rowInts[obj->m_y];
                         row[stride + 2] = 0;
-                        i32* row2 = g->m_rowInts[obj->m_4];
+                        i32* row2 = g->m_rowInts[obj->m_y];
                         row2[stride] &= 0xfffbffff;
                     }
                     rec->RemoveAt(i, 1);
@@ -2619,7 +2617,7 @@ i32 CPlay::ClearPlacedObjects() {
 RVA(0x000da200, 0x9b)
 i32 CPlay::GetAmbientId() {
     CGruntzMgr* gr = g_gameReg;
-    if (gr->m_134 == 1 && gr->m_130 == 0) {
+    if (gr->m_gameMode == 1 && gr->m_isCustomLevel == 0) {
         return (m_levelIndex + 1) % 2;
     }
     if (!(g_coinRolled & 1)) {
@@ -2639,7 +2637,7 @@ i32 CPlay::GetAmbientId() {
 
 RVA(0x000da2d0, 0xa5)
 i32 CPlay::FlushPendingOps() {
-    if (m_4f0 != 0) {
+    if (m_playerCommandPending != 0) {
         return 0;
     }
     i32 changed = 0;
@@ -2693,15 +2691,15 @@ GruntzPlayer::GruntzPlayer() {
     m_slotKey = -2;
     m_liveGate = 0;
     m_joined = 0;
-    m_014 = 1;
+    m_humanControlled = 1;
     m_name = g_emptyString;
-    m_008 = 0;
+    m_colorIndex = 0;
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
     m_comboSel = 0xf;
     m_doneFlag = 0;
-    m_030 = 0;
+    m_presenceCounted = 0;
     m_latency.Clear();
 }
 
@@ -2716,16 +2714,16 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_slotKey = -2;
     m_liveGate = 0;
     m_joined = 0;
-    m_014 = 1;
+    m_humanControlled = 1;
     m_name = g_emptyString;
 
-    m_008 = index;
+    m_colorIndex = index;
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
     m_comboSel = 0xf;
     m_doneFlag = 0;
-    m_030 = 0;
+    m_presenceCounted = 0;
     m_name = GetDefaultName(0);
     m_latency.Clear();
     return 1;
@@ -2736,15 +2734,15 @@ void GruntzPlayer::Clear() {
     m_playerIndex = -1;
     m_slotKey = -2;
     m_liveGate = 0;
-    m_014 = 1;
+    m_humanControlled = 1;
     m_name = g_emptyString;
-    m_008 = 0;
+    m_colorIndex = 0;
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
     m_comboSel = 0xf;
     m_doneFlag = 0;
-    m_030 = 0;
+    m_presenceCounted = 0;
     m_latency.Clear();
 }
 
@@ -2753,15 +2751,15 @@ i32 GruntzPlayer::Reset() {
     m_playerIndex = -1;
     m_slotKey = -2;
     m_liveGate = 0;
-    m_014 = 1;
+    m_humanControlled = 1;
     m_name = g_emptyString;
-    m_008 = 0;
+    m_colorIndex = 0;
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
     m_comboSel = 0xf;
     m_doneFlag = 0;
-    m_030 = 0;
+    m_presenceCounted = 0;
     m_latency.Clear();
     return 1;
 }
@@ -2771,7 +2769,7 @@ i32 GruntzPlayer::ClearRoundState() {
     m_liveGate = 1;
     m_readyFlag = 0;
     m_doneFlag = 0;
-    m_030 = 0;
+    m_presenceCounted = 0;
     m_latency.Clear();
     return 1;
 }
@@ -2829,10 +2827,10 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
         if (kind == 7) {
 
             ar->Read(&m_playerIndex, 4);
-            ar->Read(&m_008, 4);
-            ar->Read(&m_00c, 4);
+            ar->Read(&m_colorIndex, 4);
+            ar->Read(&m_warlordObjectId, 4);
             ar->Read(&m_configId, 4);
-            ar->Read(&m_014, 4);
+            ar->Read(&m_humanControlled, 4);
             ar->Read(&m_slotKey, 4);
             ar->Read(&m_readyFlag, 4);
             ar->Read(&m_liveGate, 4);
@@ -2848,10 +2846,10 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     } else {
 
         ar->Write(&m_playerIndex, 4);
-        ar->Write(&m_008, 4);
-        ar->Write(&m_00c, 4);
+        ar->Write(&m_colorIndex, 4);
+        ar->Write(&m_warlordObjectId, 4);
         ar->Write(&m_configId, 4);
-        ar->Write(&m_014, 4);
+        ar->Write(&m_humanControlled, 4);
         ar->Write(&m_slotKey, 4);
         ar->Write(&m_readyFlag, 4);
         ar->Write(&m_liveGate, 4);
@@ -2865,7 +2863,9 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
         ar->Write(&m_focusY, 4);
         ar->Write(&m_comboSel, 4);
     }
-    return (static_cast<CBattlezMapConfig*>(&m_038))->SerializeState(ar, kind, typeId, pObj) != 0;
+    return (static_cast<CBattlezMapConfig*>(&m_battlezConfig))
+               ->SerializeState(ar, kind, typeId, pObj)
+           != 0;
 }
 
 RVA(0x000dafb0, 0x71)
@@ -2913,13 +2913,13 @@ void ChannelSlots_InitAll() {
 
 RVA(0x000db200, 0x51)
 i32 GruntzPlayer::SwapChannel(i32 channel) {
-    if (m_008 == channel) {
+    if (m_colorIndex == channel) {
         return 1;
     }
     if (ChannelSlots_Get(channel)) {
-        ChannelSlots_Set(m_008, 1);
+        ChannelSlots_Set(m_colorIndex, 1);
         ChannelSlots_Set(channel, 0);
-        m_008 = channel;
+        m_colorIndex = channel;
         return 1;
     }
     return 0;
@@ -2950,8 +2950,8 @@ i32 GruntzPlayer::Deactivate() {
     if (m_liveGate == 0) {
         return 0;
     }
-    if (m_014 == 0) {
-        (static_cast<CBattlezMapConfig*>(&m_038))->Clear();
+    if (m_humanControlled == 0) {
+        (static_cast<CBattlezMapConfig*>(&m_battlezConfig))->Clear();
     }
     m_liveGate = 0;
     return 1;
@@ -3079,13 +3079,13 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
     CGameLevel* h = m_mgr->m_world->m_level;
     i32 px = h->m_mainPlane->m_viewRect.left - h->m_planeCtx.left + x;
     i32 py = h->m_mainPlane->m_viewRect.top - h->m_planeCtx.top + y;
-    for (i32 i = 0; i < markerCount(); i++) {
-        CHitMarker* e = markerData()[i];
+    for (i32 i = 0; i < StartMarkerCount(); i++) {
+        Coord* e = StartMarkerAt(i);
         if (e == 0) {
             continue;
         }
         RECT er;
-        SetRect(&er, e->m_0 - 0x10, e->m_4 - 0x10, e->m_0 + 0x10, e->m_4 + 0x10);
+        SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
         if (px < er.right && px >= er.left && py < er.bottom && py >= er.top) {
             if (!m_guts->FindReadySlot()) {
                 return 1;
@@ -3119,7 +3119,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     if (hasGrid != 0) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
+        CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_colorIndex, 0);
         if (spr == 0) {
             spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
@@ -3316,13 +3316,13 @@ inline CState::CState() {
     m_symParser = 0;
     m_world = 0;
     m_levelBank = 0;
-    m_2c = 0;
+    m_stateBank = 0;
     m_blitSurface0 = 0;
     m_blitSurface1 = 0;
     m_38 = 0;
     m_ready = 0;
     m_versionString[0] = 0;
-    m_24 = 0;
+    m_previousStateId = 0;
     m_scratchSurface0 = 0;
     m_scratchSurface1 = 0;
     m_cursorSaveSrc0.left = 0;
@@ -3385,8 +3385,8 @@ CPlay::CPlay()
       m_snapDur(0),
       m_snapBaseHi(0),
       m_snapDurHi(0) {
-    m_1bc = 0;
-    m_1c0 = 0;
+    m_returnToMenuOnComplete = 0;
+    m_completedFinalLevel = 0;
     m_1c8 = 0;
     m_hitTest = 0;
     m_frameMarker = 0;
@@ -3407,7 +3407,7 @@ CPlay::CPlay()
     m_savedZonedSound = 0;
     m_worldReady = 0;
     m_dragSnapActive = 0;
-    m_4f0 = 0;
+    m_playerCommandPending = 0;
     m_dragInhibit1 = 0;
     m_dragInhibit2 = 0;
     m_dragInProgress = 0;
@@ -3493,7 +3493,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
         if (m_dragInhibit1 == 0) {
             goto mode_36c;
         }
-        if (m_4f0 != 0) {
+        if (m_playerCommandPending != 0) {
             goto mode_36c;
         }
         i32 placed = 0;
@@ -3534,7 +3534,7 @@ mode_36c:
     if (m_dragInhibit2 == 0) {
         goto drag_path;
     }
-    if (m_4f0 != 0) {
+    if (m_playerCommandPending != 0) {
         goto drag_path;
     }
     {
@@ -3570,7 +3570,7 @@ mode_36c:
                 static_cast<char>(tok),
                 0
             );
-            m_4f0 = 1;
+            m_playerCommandPending = 1;
             return 1;
         }
 
@@ -3806,8 +3806,8 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         i32 rawY = geom->m_viewRect.top - ds->m_planeCtx.top + y;
         i32 snapX = (rawX & ~0x1f) + 0x10;
         i32 snapY = (rawY & ~0x1f) + 0x10;
-        m_tileClickX = snapX;
-        m_tileClickY = snapY;
+        m_tileClick.m_x = snapX;
+        m_tileClick.m_y = snapY;
         CTriggerMgr* w = m_mgr->m_cmdGrid;
         if (w->m_overlay != 0 && w->m_overlay->m_active != 0) {
             w->OverlayTick();
@@ -3821,8 +3821,8 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
 // @early-stop
 RVA(0x000d0b30, 0x200)
 i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
-    i32 x = m_cursorX + m_2fc;
-    i32 y = m_cursorY + m_300;
+    i32 x = m_cursorX + m_cursorOffset.m_x;
+    i32 y = m_cursorY + m_cursorOffset.m_y;
 
     CDDSurface* half;
     RECT* dst;
@@ -3870,7 +3870,15 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
         RECT vp = m_world->m_level->m_planeCtx;
         RECT clip;
         CopyRect((&clip), (&vp));
-        target->DecodeThunk(m_418, m_41c, m_420, m_424, 3, m_428, clip);
+        target->DecodeThunk(
+            m_pathPreviewSource.x,
+            m_pathPreviewSource.y,
+            m_pathPreviewDestination.x,
+            m_pathPreviewDestination.y,
+            3,
+            m_pathPreviewColor,
+            clip
+        );
     }
 
     m_gridCurFrame->RenderFrame(pair, x, y, 0);
@@ -4019,7 +4027,7 @@ i32 CPlay::ReleaseLevelOverlay(i32) {
         CStatusBarMgr* worker = m_guts;
         m_overlayDrag = 0;
         worker->ExitMode();
-        if (g_gameReg->m_134 != 2) {
+        if (g_gameReg->m_gameMode != 2) {
             g_frameTime = m_savedClock;
         }
     }
@@ -4060,7 +4068,7 @@ RVA(0x000cef50, 0x46)
 i32 CPlay::QuitToMenu() {
 
     m_mgr->m_strWorldFile.Empty();
-    if (m_1c0 != 0) {
+    if (m_completedFinalLevel != 0) {
         if (m_world->m_drawTarget->HasOverlay() != 0) {
             m_world->m_drawTarget->TransEnter();
         }
@@ -4077,7 +4085,7 @@ void CPlay::TickStateMgrs() {
 RVA(0x000cfbd0, 0x8f)
 i32 CPlay::CompleteLevel() {
     if (m_levelIndex == 0x20) {
-        m_1c0 = 1;
+        m_completedFinalLevel = 1;
         m_notifyLatch = 1;
 
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
@@ -4090,7 +4098,7 @@ i32 CPlay::CompleteLevel() {
         ::PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }
-    if (m_1bc) {
+    if (m_returnToMenuOnComplete) {
         ::PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }
@@ -5133,7 +5141,7 @@ i32 CPlay::EnterState(i32 mode) {
             return 0;
         }
         m_stepCountdown = 2;
-    } else if (m_renderDisabled == 0 || m_mgr->m_134 == 2) {
+    } else if (m_renderDisabled == 0 || m_mgr->m_gameMode == 2) {
         if (!EnterMode(mode)) {
             return 0;
         }
@@ -5166,20 +5174,20 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 
     if (slot != 0 && g_gameReg->m_cmdGrid->m_rowCount[id] < slot->m_comboSel) {
         i32 i = 0;
-        if (i < markerCount()) {
+        if (i < StartMarkerCount()) {
             do {
-                CHitMarker* m = markerData()[i];
+                Coord* m = StartMarkerAt(i);
                 if (m != 0) {
                     RECT rc;
-                    SetRect(&rc, m->m_0 - 0x20, m->m_4 - 0x20, m->m_0 + 0x20, m->m_4 + 0x20);
+                    SetRect(&rc, m->m_x - 0x20, m->m_y - 0x20, m->m_x + 0x20, m->m_y + 0x20);
                     if (x < rc.right && x >= rc.left && y < rc.bottom && y >= rc.top) {
-                        *outX = m->m_0;
-                        *outY = m->m_4;
+                        *outX = m->m_x;
+                        *outY = m->m_y;
                         return 1;
                     }
                 }
                 i++;
-            } while (i < markerCount());
+            } while (i < StartMarkerCount());
         }
     }
     return 0;
@@ -5188,7 +5196,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char buf[0x40];
-    if (m_mgr->m_musicEnabled != 0 && g_gameReg->m_134 == 1) {
+    if (m_mgr->m_musicEnabled != 0 && g_gameReg->m_gameMode == 1) {
         m_ambientInterval = AMBIENT_INTRO_INTERVAL_MS;
         m_ambientIntervalHi = 0;
         m_ambientTimerLo = g_frameTime;
@@ -5209,7 +5217,7 @@ i32 CPlay::ResetPlayState() {
             m_mgr->m_sound->m_pCurrent->SetLoop(1);
         }
         CGruntzMgr* reg = g_gameReg;
-        if (reg->m_musicEnabled != 0 && reg->m_134 == 3) {
+        if (reg->m_musicEnabled != 0 && reg->m_gameMode == 3) {
             m_mgr->m_sound->PlayByName(buf, 1);
         }
         m_ambientTimerLo = 0;
@@ -5218,14 +5226,14 @@ i32 CPlay::ResetPlayState() {
         m_ambientIntervalHi = 0;
         m_ambientInitDone = 1;
     }
-    if (m_mgr->m_134 == 1) {
+    if (m_mgr->m_gameMode == 1) {
         CGruntzMgr* reg = g_gameReg;
 
         if (reg->m_strWorldFile.GetLength() == 0) {
             m_mgr->m_scoreHud->FillRecord(m_levelIndex, 1);
             reg = g_gameReg;
 
-            if (reg->m_cheatMgr->m_124 == 0) {
+            if (reg->m_cheatMgr->m_cheatsUsed == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
                     (static_cast<CSaveGame*>(reg->m_saveSink))->SetMaxLevel(id);
@@ -5253,24 +5261,19 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->m_options[i].m_038.StepAllRowSpawns();
+        g_gameReg->m_options[i].m_battlezConfig.StepAllRowSpawns();
     }
     m_winLoseBanner = 0;
     CTimer* fm = m_frameMarker;
     if (fm != 0) {
-        fm->m_40 = -1;
-        fm->m_44 = 0;
+        fm->m_40.m_v = 0xffffffff;
         if (fm->m_currentMs != 0) {
-            fm->m_38 = g_frameTime;
-            fm->m_3c = 0;
-            fm->m_accumLo = fm->m_currentMs;
-            fm->m_accumHi = 0;
-            fm->m_baseTimeLo = g_frameTime;
-            fm->m_baseTimeHi = 0;
+            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
+            fm->m_accum.m_v = static_cast<u32>(fm->m_currentMs);
+            fm->m_baseTime.m_v = static_cast<u32>(g_frameTime);
             fm->m_running = 1;
         } else {
-            fm->m_38 = g_frameTime;
-            fm->m_3c = 0;
+            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
         }
     }
     CTriggerMgr* tl = m_mgr->m_cmdGrid;
@@ -5285,7 +5288,7 @@ i32 CPlay::ResetPlayState() {
     tl->m_resourceIntervalLo = 0;
     tl->m_resourceTimerBaseHi = 0;
     tl->m_resourceIntervalHi = 0;
-    tl->m_3ec = 0;
+    tl->m_finishReasonFrame = 0;
     tl->m_rollingballWanted = 0;
     tl->m_teleportWanted = 0;
     tl->m_groupFlag = 1;
@@ -5339,12 +5342,12 @@ void CPlay::FreeListTeardown() {
     CTriggerMgr* tl68 = m_mgr->m_cmdGrid;
 
     tl68->m_byteArr.SetSize(0, -1);
-    tl68->m_284 = 0;
+    tl68->m_groupInitialized = 0;
     m_mgr->m_cmdGrid->m_baseList.RemoveAll();
     m_mgr->m_cmdGrid->m_pendingFx = 0;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
-    for (i = 0; i < markerCount(); i++) {
-        void* node = markerData()[i];
+    for (i = 0; i < StartMarkerCount(); i++) {
+        Coord* node = StartMarkerAt(i);
         if (node != 0) {
             CoordPoolNode* p = g_coordPool.NodeOf(node);
             p->m_next = g_coordPool.m_freeHead;
@@ -5353,30 +5356,30 @@ void CPlay::FreeListTeardown() {
     }
     m_startMarkers.SetSize(0, -1);
     for (k = 0; k < 4; k++) {
-        for (i = 0; i < arrCount(k); i++) {
-            void* node = arrData(k)[i];
+        for (i = 0; i < PlacedObjectCellCount(k); i++) {
+            Coord* node = PlacedObjectCellAt(k, i);
             if (node != 0) {
                 CoordPoolNode* p = g_coordPool.NodeOf(node);
                 p->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = p;
             }
         }
-        m_3a4[k].SetSize(0, -1);
+        m_placedObjectCells[k].SetSize(0, -1);
     }
-    for (i = 0; i < arr488Count(); i++) {
-        void* node = arr488Data()[i];
+    for (i = 0; i < CameraBookmarkCount(); i++) {
+        void* node = CameraBookmarkData()[i];
         if (node != 0) {
             CoordPoolNode* p = g_coordPool.NodeOf(node);
             p->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = p;
         }
     }
-    m_488.SetSize(0, -1);
+    m_cameraBookmarks.SetSize(0, -1);
     for (i = 0; i < 4; i++) {
-        m_mgr->m_options[i].m_038.FreeArrays();
-        m_mgr->m_options[i].m_038.Clear();
+        m_mgr->m_options[i].m_battlezConfig.FreeArrays();
+        m_mgr->m_options[i].m_battlezConfig.Clear();
     }
-    m_49c = -1;
+    m_cameraBookmarkIndex = -1;
 }
 
 RVA(0x000c8700, 0x1f4)
@@ -5391,7 +5394,7 @@ void CPlay::ReleaseResources() {
     }
     OnExit();
     if (m_mgr) {
-        m_mgr->m_128 = 0;
+        m_mgr->m_isBattlezLevel = 0;
         m_mgr->m_strWorldFile.Empty();
     }
     m_saveSlot.m_type = 0;
@@ -5423,8 +5426,8 @@ void CPlay::ReleaseResources() {
         ::operator delete(fm);
         m_frameMarker = 0;
     }
-    for (i = 0; i < markerCount(); i++) {
-        void* node = markerData()[i];
+    for (i = 0; i < StartMarkerCount(); i++) {
+        Coord* node = StartMarkerAt(i);
         if (node != 0) {
             CoordPoolNode* p = g_coordPool.NodeOf(node);
             p->m_next = g_coordPool.m_freeHead;
@@ -5433,26 +5436,26 @@ void CPlay::ReleaseResources() {
     }
     m_startMarkers.SetSize(0, -1);
     for (i32 k = 0; k < 4; k++) {
-        for (i = 0; i < arrCount(k); i++) {
-            void* node = arrData(k)[i];
+        for (i = 0; i < PlacedObjectCellCount(k); i++) {
+            Coord* node = PlacedObjectCellAt(k, i);
             if (node != 0) {
                 CoordPoolNode* p = g_coordPool.NodeOf(node);
                 p->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = p;
             }
         }
-        m_3a4[k].SetSize(0, -1);
+        m_placedObjectCells[k].SetSize(0, -1);
     }
-    for (i = 0; i < arr488Count(); i++) {
-        void* node = arr488Data()[i];
+    for (i = 0; i < CameraBookmarkCount(); i++) {
+        void* node = CameraBookmarkData()[i];
         if (node != 0) {
             CoordPoolNode* p = g_coordPool.NodeOf(node);
             p->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = p;
         }
     }
-    m_49c = -1;
-    m_488.SetSize(0, -1);
+    m_cameraBookmarkIndex = -1;
+    m_cameraBookmarks.SetSize(0, -1);
     CState::ReleaseResources();
 }
 
@@ -5463,8 +5466,8 @@ i32 CPlay::EnterMode(i32 mode) {
     m_guts->LoadDestructButtonSprite(0);
     m_mgr->RefreshGameClock();
 
-    if (m_1c4 != 0) {
-        m_1c4 = 0;
+    if (m_initialFramePending != 0) {
+        m_initialFramePending = 0;
         m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
         UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
         if (m_region1Gate != 0) {
@@ -5647,7 +5650,7 @@ i32 CPlay::BuildWarlordNameTable(CMulti* arg) {
 
 RVA(0x000d65d0, 0x7cc)
 i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
-    if (g_gameReg->m_134 != 1) {
+    if (g_gameReg->m_gameMode != 1) {
         for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
             if (loaded[id] == 0) {
                 BuildHelpReveal(0);
@@ -6202,7 +6205,7 @@ void CPlay::DrawCustomLevelBanner() {
             return;
         }
         CString base;
-        if (m_mgr->m_128 == 0 && m_mgr->m_12c == 0) {
+        if (m_mgr->m_isBattlezLevel == 0 && m_mgr->m_isMultiLevel == 0) {
             base = WwdFile::GetMapBaseName(world);
         } else {
             base = world;

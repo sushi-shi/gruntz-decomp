@@ -57,8 +57,8 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     m_mgr->RestoreVideoMode(0);
 
-    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
-    if (!m_2c) {
+    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
+    if (!m_stateBank) {
         goto done;
     }
     m_gameBank = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME"));
@@ -100,7 +100,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
 
-    m_1b8 = 0;
+    m_secretHudHandled = 0;
 
     if (!BuildWarpStoneGlitterAnimation()) {
         goto done;
@@ -118,10 +118,10 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         goto done;
     }
 
-    m_1c8 = 0x21;
-    m_1cc = 0;
-    m_1c0 = g_frameTime;
-    m_1c4 = 0;
+    m_frameIntervalLo = 0x21;
+    m_frameIntervalHi = 0;
+    m_frameStampLo = g_frameTime;
+    m_frameStampHi = 0;
     ok = 1;
 
 done:

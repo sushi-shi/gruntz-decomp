@@ -90,8 +90,8 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
 
 extern i32 g_posSoundReq;
 
-struct PosSoundObj;
+struct CGameObject;
 
-i32 SpawnPosSound(PosSoundObj* obj);
+i32 SpawnPosSound(CGameObject* obj);
 
 #endif // GRUNTZ_CWORLDSOUNDSET_H
