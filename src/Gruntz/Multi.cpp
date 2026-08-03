@@ -55,6 +55,7 @@
 #include <Net/NetMsgId.h>
 #include <Net/NetPackets.h>
 #include <Net/NetSession.h>
+#include <Net/NetSlotState.h>
 #include <Rez/FrameClock.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/RegistryHelper.h>
@@ -2056,7 +2057,7 @@ void CMulti::AckDropPlayer(i32 id) {
         if (slot != NULL) {
             slot->Touch();
             slot->FullReset();
-            slot->m_state = 1;
+            slot->m_state = NETSLOT_DONE;
             slot->m_desc->m_doneFlag = 1;
         }
         return;
@@ -2570,7 +2571,7 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
     i32 stateThree = 0;
     CNetCmdSlot* p = m_session->m_slots;
     for (i = 0; i < 4; i++) {
-        if (p != NULL && p->m_state == 3) {
+        if (p != NULL && p->m_state == NETSLOT_ACTIVE) {
             stateThree++;
         }
         p++;
@@ -2606,8 +2607,8 @@ i32 CMulti::WaitForOtherPlayers() {
     {
         i32 count = 0;
         CNetCmdSlot* slot = m_session->m_slots;
-        for (i32 j = 4; j != 0; j--) {
-            if (slot != NULL && slot->m_state == 3) {
+        for (i32 j = NET_SLOT_COUNT; j != 0; j--) {
+            if (slot != NULL && slot->m_state == NETSLOT_ACTIVE) {
                 count++;
             }
             slot++;
@@ -2650,7 +2651,7 @@ i32 CMulti::WaitForOtherPlayers() {
                 }
                 for (i32 i = 0; i < 4; i++) {
                     CNetCmdSlot* s = &m_session->m_slots[i];
-                    if (s->m_state == 3) {
+                    if (s->m_state == NETSLOT_ACTIVE) {
                         s->m_latency += elapsed;
                     }
                 }
@@ -2814,7 +2815,7 @@ i32 CMulti::CreateSession() {
 
 RVA(0x000bbec0, 0x81)
 CNetCmdSlot::CNetCmdSlot() {
-    m_state = 0;
+    m_state = NETSLOT_EMPTY;
     m_isRemote = 0;
     m_latchedSeq = 0;
     m_desc = NULL;
@@ -2824,7 +2825,7 @@ CNetCmdSlot::CNetCmdSlot() {
     m_owner = NULL;
     ClearCmds();
 
-    for (i32 i = 0; i < 4; i++) {
+    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
         m_ackFlags[i] = 0;
     }
     ResetTriple(m_rangeA);
@@ -2846,7 +2847,7 @@ void CNetSession::ResetAll() {
     i32 i;
     CNetCmdSlot* slot = m_slots;
     for (i = 4; i != 0; i--) {
-        slot->m_state = 0;
+        slot->m_state = NETSLOT_EMPTY;
         slot->m_isRemote = 0;
         slot->m_latchedSeq = 0;
         slot->m_desc = NULL;

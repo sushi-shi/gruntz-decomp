@@ -414,6 +414,7 @@ include/Net/NetMgrReportError.h	pending
 include/Net/NetMsgId.h	pending	
 include/Net/NetPackets.h	pending	
 include/Net/NetSession.h	pending	
+include/Net/NetSlotState.h	pending	
 include/Net/StringStaticPool.h	pending	
 include/Pix16.h	pending	
 include/ProcAddr.h	pending	

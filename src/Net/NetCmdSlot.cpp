@@ -9,6 +9,7 @@
 #include <Ints.h>
 #include <Net/CmdPool.h>
 #include <Net/NetMgr.h>
+#include <Net/NetSlotState.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
 
@@ -69,7 +70,7 @@ void CNetSession::ResetSync() {
     do {
         s->m_isRemote = 0;
         s->m_latchedSeq = 0;
-        s->m_state = 0;
+        s->m_state = NETSLOT_EMPTY;
         s->m_desc = NULL;
         s->m_latency = 0;
         s->m_baseSeq = 0;
@@ -104,7 +105,7 @@ void CNetSession::ResetSync() {
 
 RVA(0x000bf120, 0x11)
 void CNetCmdSlot::ClearAckFlags() {
-    for (i32 i = 0; i < 4; i++) {
+    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
         m_ackFlags[i] = 0;
     }
 }
@@ -141,7 +142,7 @@ i32 CNetSession::Poll(i32 delta) {
     CNetCmdSlot* s = m_slots;
     i32 n = 4;
     do {
-        if (s->m_state == 3) {
+        if (s->m_state == NETSLOT_ACTIVE) {
             s->m_latency += delta;
         }
         s++;
@@ -275,13 +276,13 @@ i32 CNetSession::SendAll() {
     i32 count = 0;
     CNetCmdSlot* outer = m_slots;
     for (i32 oi = 0; oi < 4; oi++, outer++) {
-        if (outer && outer->m_state == 3 && outer->m_isRemote != 0) {
+        if (outer && outer->m_state == NETSLOT_ACTIVE && outer->m_isRemote != 0) {
             i32 lo, hi;
             outer->GetRange(&lo, &hi);
             CNetCmdSlot* inner = m_slots;
             i32 in = 4;
             do {
-                if (inner && inner->m_state == 3 && inner->m_isRemote == 0) {
+                if (inner && inner->m_state == NETSLOT_ACTIVE && inner->m_isRemote == 0) {
                     for (i32 v = lo; v <= hi; v++) {
                         GruntRec* r = outer->FindCmd(v);
                         if (r) {
@@ -335,7 +336,7 @@ i32 CNetSession::SendBatch() {
     CNetCmdSlot* s = m_slots;
     i32 n = 4;
     do {
-        if (s && s->m_state == 3 && s->m_isRemote == 0) {
+        if (s && s->m_state == NETSLOT_ACTIVE && s->m_isRemote == 0) {
             i32 t = m_seq + 2;
             if (m_snapshotDone == 0 && (m_tick + 1) % m_period == 0) {
                 if (SendOne(s, t)) {
@@ -410,7 +411,7 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
 
 RVA(0x000bfff0, 0x5d)
 CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
-    if (index < 0 || index >= 4) {
+    if (index < 0 || index >= NET_SLOT_COUNT) {
         return 0;
     }
     CNetCmdSlot* slot = &m_slots[index];
@@ -463,10 +464,10 @@ void CNetSession::Reconcile() {
         CNetCmdSlot* s = base;
         i32 n = 4;
         do {
-            if (s && s->m_state == 3) {
+            if (s && s->m_state == NETSLOT_ACTIVE) {
                 s->FullReset();
                 GruntzPlayer* p = s->m_desc;
-                s->m_state = 1;
+                s->m_state = NETSLOT_DONE;
                 p->m_doneFlag = 1;
             }
             s++;
@@ -475,10 +476,11 @@ void CNetSession::Reconcile() {
         CNetCmdSlot* s = base;
         i32 n = 4;
         do {
-            if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_latchedSeq + 2) {
+            if (s && s->m_state == NETSLOT_ACTIVE && s->m_isRemote != 0
+                && m_seq > s->m_latchedSeq + 2) {
                 s->FullReset();
                 GruntzPlayer* p = s->m_desc;
-                s->m_state = 1;
+                s->m_state = NETSLOT_DONE;
                 p->m_doneFlag = 1;
             }
             s++;
@@ -501,7 +503,7 @@ i32 CNetSession::Advance() {
     CNetCmdSlot* s = m_slots;
     i32 n = 4;
     do {
-        if (s && s->m_state == 3 && s->m_isRemote == 0) {
+        if (s && s->m_state == NETSLOT_ACTIVE && s->m_isRemote == 0) {
             s->RemoveCmd(m_seq - 4);
         }
         s++;
@@ -517,11 +519,11 @@ i32 CNetSession::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* s = &m_slots[i];
         if (s != NULL) {
-            if (s->m_state == 3 && s->m_isRemote == 0) {
+            if (s->m_state == NETSLOT_ACTIVE && s->m_isRemote == 0) {
                 if (s->m_baseSeq < n) {
                     return 0;
                 }
-            } else if (s->m_state == 3 && s->m_isRemote != 0) {
+            } else if (s->m_state == NETSLOT_ACTIVE && s->m_isRemote != 0) {
                 if (s->Ready() == 0) {
                     return 0;
                 }
@@ -538,7 +540,8 @@ RVA(0x000c0320, 0x37)
 i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0 && slot->m_maxSeq < seq) {
+        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isRemote == 0
+            && slot->m_maxSeq < seq) {
             return 0;
         }
     }
@@ -549,7 +552,7 @@ RVA(0x000c0370, 0x28)
 void CNetSession::AdvanceAllSlots(i32 id) {
     CNetCmdSlot* slot = m_slots;
     for (i32 i = 4; i != 0; i--) {
-        if (slot->m_state == 3) {
+        if (slot->m_state == NETSLOT_ACTIVE) {
             slot->AdvanceSeq(id);
         }
         slot++;
@@ -560,7 +563,7 @@ RVA(0x000c03b0, 0x28)
 void CNetSession::RaiseAllSlotsMax(i32 v) {
     CNetCmdSlot* slot = m_slots;
     for (i32 i = 4; i != 0; i--) {
-        if (slot->m_state == 3) {
+        if (slot->m_state == NETSLOT_ACTIVE) {
             slot->RaiseMax(v);
         }
         slot++;
@@ -582,7 +585,8 @@ CNetCmdSlot* CNetSession::FindSlot(u32 key) {
 
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* p = &m_slots[i];
-        if (p && p->m_state == 3 && p->m_isRemote == 0 && static_cast<u32>(p->m_latency) > key) {
+        if (p && p->m_state == NETSLOT_ACTIVE && p->m_isRemote == 0
+            && static_cast<u32>(p->m_latency) > key) {
             return p;
         }
     }
@@ -593,7 +597,7 @@ RVA(0x000c04a0, 0x37)
 i32 CNetSession::CheckLatency(i32 cap) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0
+        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isRemote == 0
             && static_cast<u32>(slot->m_latency) > static_cast<u32>(cap)) {
             return 0;
         }
@@ -608,7 +612,7 @@ i32 CNetSession::Verify() {
     if (e != NULL) {
         for (i32 i = 0; i < 4; i++) {
             CNetCmdSlot* slot = &m_slots[i];
-            if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0) {
+            if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isRemote == 0) {
                 GruntRec* c = slot->FindCmd(seq);
                 if (c != NULL && c->m_checksum != e->m_checksum) {
                     return 0;
@@ -638,7 +642,7 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
     m_maxSeq = 0;
     ClearCmds();
 
-    for (i32 i = 0; i < 4; i++) {
+    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
         m_ackFlags[i] = 0;
     }
     ResetTriple(m_rangeA);
@@ -648,7 +652,7 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
 
 RVA(0x000c0bb0, 0x47)
 void CNetCmdSlot::ResetAll() {
-    m_state = 0;
+    m_state = NETSLOT_EMPTY;
     m_isRemote = 0;
     m_latchedSeq = 0;
     m_desc = NULL;
@@ -658,7 +662,7 @@ void CNetCmdSlot::ResetAll() {
     m_owner = NULL;
     ClearCmds();
 
-    for (i32 i = 0; i < 4; i++) {
+    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
         m_ackFlags[i] = 0;
     }
     ResetTriple(m_rangeA);
@@ -674,7 +678,7 @@ void CNetCmdSlot::FullReset() {
     m_maxSeq = 0;
     ClearCmds();
 
-    for (i32 i = 0; i < 4; i++) {
+    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
         m_ackFlags[i] = 0;
     }
     ResetTriple(m_rangeA);
@@ -690,7 +694,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     u8 opcode = *static_cast<u8*>(rec);
     i32 odd = opcode & 1;
     char* p = static_cast<char*>(rec) + 1;
-    if (m_state != 3) {
+    if (m_state != NETSLOT_ACTIVE) {
         return 1;
     }
     if (opcode & 0x80) {
@@ -944,7 +948,8 @@ i32 CNetCmdSlot::Ready() {
     CNetSession* sess = mgr->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &sess->m_slots[i];
-        if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0 && m_ackFlags[i] == 0) {
+        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isRemote == 0
+            && m_ackFlags[i] == 0) {
             return 0;
         }
     }

@@ -12,6 +12,7 @@
 #include <Gruntz/String.h>
 #include <Ints.h>
 #include <Net/NetMsgId.h>
+#include <Net/NetSlotState.h>
 #include <Rez/RezMgr.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/Object.h>
@@ -151,7 +152,7 @@ struct CNetCmdSlot {
     CMulti* m_owner;
 
     CPtrList m_cmds;
-    i32 m_ackFlags[4];
+    i32 m_ackFlags[NET_SLOT_COUNT];
     i32 m_rangeA[3];
     i32 m_rangeB[3];
 
@@ -231,7 +232,7 @@ struct CNetSession {
     i32 m_snapshotDone;
     i32 m_seq;
     i32 m_period;
-    CNetCmdSlot m_slots[4];
+    CNetCmdSlot m_slots[NET_SLOT_COUNT];
     CGruntzCommand* m_idMap[0x80];
     GruntRec m_records[0x80];
 
