@@ -11,6 +11,8 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
 
+#include <limits.h>
+
 // @early-stop
 RVA(0x00077790, 0x630)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
@@ -269,7 +271,7 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
 RVA(0x00077df0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     CGrunt* best = 0;
-    i32 bestDist = 0x7fffffff;
+    i32 bestDist = INT_MAX;
     i32 tileX = w->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 tileY = w->m_lastTilePx.m_y >> TILE_SHIFT_PX;
     CGrunt** rowPtr = m_grid;

@@ -75,8 +75,13 @@ RANGE_TEST = re.compile(r"(?<![<>])([<>]=?)(?![<>])[ \t]*([A-Z][A-Z0-9_]{2,})\b"
 # EXTENT - a grid dimension (_COLS/_ROWS) or a pixel dimension (_PX). An extent
 # is not a member of a value set, it is the size of one, so `x > SCREEN_W_PX`
 # ("off the right edge") is the extent being used for the only thing it is for.
+# _FULL/_EMPTY/_HALF are marks on a CONTINUOUS SCALE (a percentage, a gauge)
+# rather than members of a set of alternatives. `m_stamina >= STAMINA_FULL` is
+# the only thing a scale's top is for, so requiring a separate marker at the
+# same value would just duplicate the name.
 MARKER_OK = re.compile(
-    r"(_FIRST|_LAST|_BEGIN|_END|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS|_PX)$")
+    r"(_FIRST|_LAST|_BEGIN|_END|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS|_PX"
+    r"|_FULL|_EMPTY|_HALF)$")
 
 
 def is_tag_type(body: str) -> bool:

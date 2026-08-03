@@ -24,6 +24,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
@@ -319,7 +320,7 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
 
 RVA(0x000514a0, 0x26)
 i32 CGrunt::CanShowStamina() {
-    if (m_combatActive == 0 && m_stamina >= 0x64 && m_entranceActive == 0) {
+    if (m_combatActive == 0 && m_stamina >= STAMINA_FULL && m_entranceActive == 0) {
         return 1;
     }
     return 0;

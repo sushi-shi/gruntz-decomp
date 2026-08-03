@@ -7,6 +7,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 #include <Wap32/Rect.h>
@@ -36,7 +37,7 @@
 
 RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
-    if (g->m_stamina >= 0x64) {
+    if (g->m_stamina >= STAMINA_FULL) {
         if (g->CoordCount() != 0) {
             Coord* c = static_cast<Coord*>(g->m_coordList.GetTail());
             i32 col = c->m_x;

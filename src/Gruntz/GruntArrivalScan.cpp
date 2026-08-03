@@ -32,6 +32,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Wap32/TileGeometry.h>
+#include <Gruntz/StaminaPct.h>
+#include <limits.h>
 
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
@@ -314,7 +316,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         if (m_combatActive != 0) {
             return 1;
         }
-        if (m_stamina >= 100) {
+        if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
@@ -350,7 +352,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     if (m_neighborValid != 0) {
         return 1;
     }
-    if (m_combatActive == 0 && m_stamina >= 100) {
+    if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
         if (atTarget) {
             CommitNeighbor(
                 g->m_tileOwnerHi,
@@ -377,7 +379,7 @@ L_ed006:
     if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (m_stamina >= 100 && g->m_object->m_screenX == g->m_lastTilePx.m_x
+    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
         && g->m_object->m_screenY == g->m_lastTilePx.m_y
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         CommitNeighbor(
@@ -453,7 +455,7 @@ L_ed153:
         isect = box;
     }
 
-    i32 best = 0x7fffffff;
+    i32 best = INT_MAX;
     i32 bestCol = -1;
     i32 bestRow = -1;
     {
@@ -492,7 +494,7 @@ L_ed153:
             cell++;
         }
     }
-    if (best != 0x7fffffff) {
+    if (best != INT_MAX) {
         i32 dc = bestCol - cx;
         IABS(dc);
         i32 dr = bestRow - cy;
@@ -535,7 +537,7 @@ i32 CGrunt::WanderStep() {
             m_neighborValid = 0;
         } else if (m_combatActive == 0) {
             bool reset;
-            if (m_stamina >= 0x64) {
+            if (m_stamina >= STAMINA_FULL) {
                 if (FindGridNeighbor(1) != NULL) {
                     m_defenderState = AISTATE_RETREAT;
                     return 1;
@@ -558,7 +560,7 @@ i32 CGrunt::WanderStep() {
     switch (m_defenderState) {
         case AISTATE_SEEK:
             if (g != NULL) {
-                if (m_poweredUp == 0 && m_stamina >= 0x64
+                if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                     && g->m_object->m_screenX == g->m_lastTilePx.m_x
                     && g->m_object->m_screenY == g->m_lastTilePx.m_y
                     && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
@@ -647,7 +649,7 @@ i32 CGrunt::WanderStep() {
             if (m_poweredUp != 0) {
                 return 1;
             }
-            if (m_stamina < 0x64) {
+            if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
@@ -697,7 +699,7 @@ i32 CGrunt::WanderStep() {
             if (m_combatActive != 0) {
                 return 1;
             }
-            if (m_stamina < 0x64) {
+            if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
@@ -742,7 +744,7 @@ i32 CGrunt::WanderStep() {
             if (m_combatActive != 0) {
                 return 1;
             }
-            if (m_stamina >= 0x64) {
+            if (m_stamina >= STAMINA_FULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -884,7 +886,7 @@ i32 CGrunt::ArrivalReticleScan() {
         if (m_combatActive) {
             return 1;
         }
-        if (m_stamina >= 0x64) {
+        if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1)) {
                 return 1;
             }
@@ -913,7 +915,7 @@ i32 CGrunt::ArrivalReticleScan() {
         if (m_neighborValid) {
             return 1;
         }
-        if (m_combatActive == 0 && m_stamina >= 0x64 && occOnTile) {
+        if (m_combatActive == 0 && m_stamina >= STAMINA_FULL && occOnTile) {
             CommitNeighbor(
                 occ->m_tileOwnerHi,
                 occ->m_tileOwnerLo,
@@ -1106,7 +1108,7 @@ i32 CGrunt::ChargeStep() {
         if (m_combatActive != 0) {
             return 1;
         }
-        if (m_stamina >= 100) {
+        if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
@@ -1147,7 +1149,7 @@ i32 CGrunt::ChargeStep() {
         case AISTATE_SEEK: {
 
             if (g != NULL) {
-                if (hitGate != 0 && m_stamina >= 100) {
+                if (hitGate != 0 && m_stamina >= STAMINA_FULL) {
                     CGameObject* gp = g->m_object;
                     if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
@@ -1243,7 +1245,7 @@ i32 CGrunt::ChargeStep() {
                 StepArrivalDrop(t->m_lastTilePx.m_x, t->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
-            if (m_poweredUp == 0 && m_stamina >= 100
+            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && t->m_object->m_screenX == t->m_lastTilePx.m_x
                 && t->m_object->m_screenY == t->m_lastTilePx.m_y) {
@@ -1268,7 +1270,7 @@ i32 CGrunt::ChargeStep() {
                     m_dwell = 0x1f4;
                     return 1;
                 }
-                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
+                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
                 if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
@@ -1320,7 +1322,7 @@ i32 CGrunt::UpdateArrival() {
         if (this->m_combatActive != 0) {
             return 1;
         }
-        if (this->m_stamina < 100) {
+        if (this->m_stamina < STAMINA_FULL) {
             if (atTarget) {
                 return 1;
             }
@@ -1587,7 +1589,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
         if (m_combatActive != 0) {
             return 1;
         }
-        if (m_stamina >= 100) {
+        if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
@@ -1623,7 +1625,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
     if (m_neighborValid != 0) {
         return 1;
     }
-    if (m_combatActive == 0 && m_stamina >= 100) {
+    if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
         if (atTarget) {
             CommitNeighbor(
                 g->m_tileOwnerHi,
@@ -1649,7 +1651,7 @@ L_ed006b:
     if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if (m_stamina >= 100 && g->m_object->m_screenX == g->m_lastTilePx.m_x
+    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
         && g->m_object->m_screenY == g->m_lastTilePx.m_y
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         CommitNeighbor(
@@ -1748,7 +1750,7 @@ L_scanb:
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
-    i32 best = 0x7fffffff;
+    i32 best = INT_MAX;
     i32 bestX = 0;
     i32 bestY = 0;
 
@@ -1788,7 +1790,7 @@ L_scanb:
             }
         }
     }
-    if (best != 0x7fffffff) {
+    if (best != INT_MAX) {
         i32 dx = bestX - cx;
         IABS(dx);
         i32 dy = bestY - cy;
@@ -1830,7 +1832,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         if (m_combatActive != 0) {
             goto tail;
         }
-        if (m_stamina >= 0x64) {
+        if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 goto tail;
             }
@@ -1869,7 +1871,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 if (m_poweredUp != 0) {
                     goto tail;
                 }
-                if (m_stamina >= 0x64 && o->m_object->m_screenX == o->m_lastTilePx.m_x
+                if (m_stamina >= STAMINA_FULL && o->m_object->m_screenX == o->m_lastTilePx.m_x
                     && o->m_object->m_screenY == o->m_lastTilePx.m_y
                     && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                     CommitNeighbor(
@@ -1970,7 +1972,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_poweredUp != 0) {
                 goto tail;
             }
-            if (m_stamina < 0x64) {
+            if (m_stamina < STAMINA_FULL) {
                 goto tail;
             }
             if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
@@ -2014,7 +2016,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (o == NULL) {
                 goto tail;
             }
-            if (m_poweredUp == 0 && m_stamina >= 0x64
+            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                 && o->m_object->m_screenX == o->m_lastTilePx.m_x
                 && o->m_object->m_screenY == o->m_lastTilePx.m_y
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
@@ -2075,7 +2077,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
         if (m_combatActive != 0) {
             return 1;
         }
-        if (m_stamina < 0x64) {
+        if (m_stamina < STAMINA_FULL) {
             return 1;
         }
         FindGridNeighbor(1);
@@ -2090,7 +2092,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     if (m_poweredUp != 0) {
         return 1;
     }
-    if (m_stamina < 0x64) {
+    if (m_stamina < STAMINA_FULL) {
         return 1;
     }
     if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
@@ -2140,7 +2142,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_combatActive != 0) {
                 return 1;
             }
-            if (m_stamina < 0x64) {
+            if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
@@ -2221,7 +2223,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_poweredUp != 0) {
                 return 1;
             }
-            if (m_stamina < 0x64) {
+            if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
@@ -2255,7 +2257,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ == NULL) {
                 goto L_f308a;
             }
-            if (m_poweredUp == 0 && m_stamina >= 0x64
+            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                 && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
                 && occ->m_object->m_screenY == occ->m_lastTilePx.m_y
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
@@ -2414,7 +2416,7 @@ i32 CGrunt::StepDiggerBehavior() {
         if (m_combatActive != 0) {
             return 1;
         }
-        if (m_stamina >= 100) {
+        if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
@@ -2458,7 +2460,7 @@ i32 CGrunt::StepDiggerBehavior() {
     if (m_poweredUp != 0) {
         goto L_tailc;
     }
-    if (m_stamina >= 100 && g->m_object->m_screenX == g->m_lastTilePx.m_x
+    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
         && g->m_object->m_screenY == g->m_lastTilePx.m_y
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         CommitNeighbor(
@@ -2548,7 +2550,7 @@ L_tailc:
             grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
             grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
         }
-        i32 best = 0x7fffffff;
+        i32 best = INT_MAX;
         i32 bestCol = -1;
         i32 bestRow = -1;
         for (i32 row = isect.top; row < isect.bottom; row++) {
@@ -2569,7 +2571,7 @@ L_tailc:
                 cell++;
             }
         }
-        if (best != 0x7fffffff) {
+        if (best != INT_MAX) {
             i32 dc = bestCol - cx;
             IABS(dc);
             i32 dr = bestRow - cy;
@@ -2602,7 +2604,7 @@ i32 CGrunt::ScanNearestTarget() {
     i32 cy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     CGrunt* best = 0;
-    i32 bestDist = 0x7fffffff;
+    i32 bestDist = INT_MAX;
     for (i32 row = 0; row < 4; row++) {
         if (row == ownerHi) {
             continue;
@@ -2670,7 +2672,7 @@ i32 CGrunt::ScanNearestTarget() {
         if (m_combatActive != 0) {
             return 1;
         }
-        if (m_stamina >= 100) {
+        if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
@@ -2705,7 +2707,7 @@ i32 CGrunt::ScanNearestTarget() {
             if (best == NULL) {
                 goto L_wander;
             }
-            if (m_poweredUp == 0 && m_stamina >= 100
+            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                 && best->m_object->m_screenX == best->m_lastTilePx.m_x
                 && best->m_object->m_screenY == best->m_lastTilePx.m_y) {
                 i32 pa;
@@ -2881,7 +2883,7 @@ i32 CGrunt::ScanNearestTarget() {
                 );
                 m_dwell = 0;
             }
-            if (m_poweredUp != 0 || m_stamina < 100) {
+            if (m_poweredUp != 0 || m_stamina < STAMINA_FULL) {
                 return 1;
             }
             if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
@@ -2923,7 +2925,7 @@ i32 CGrunt::ScanNearestTarget() {
                 if (sg->m_entranceCommitted == 0) {
                     goto L_setLock;
                 }
-                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
+                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
                 if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
@@ -3088,7 +3090,8 @@ state0: {
     if (nb->m_entranceCommitted == 0) {
         goto common;
     }
-    if (m_poweredUp == 0 && m_stamina >= 0x64 && nb->m_object->m_screenX == nb->m_lastTilePx.m_x
+    if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
+        && nb->m_object->m_screenX == nb->m_lastTilePx.m_x
         && nb->m_object->m_screenY == nb->m_lastTilePx.m_y
         && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
         CommitNeighbor(
@@ -3308,7 +3311,7 @@ i32 CGrunt::SeekTarget() {
             if (this->m_defenderState != AISTATE_SEEK) {
                 return 1;
             }
-            i32 best = 0x7fffffff;
+            i32 best = INT_MAX;
             i32 bestIdx = -1;
             CGrunt** slots = g_gameReg->m_cmdGrid->m_grid;
             i32 i = 0;
@@ -3398,7 +3401,7 @@ i32 CGrunt::SeekTarget() {
             if (this->m_combatActive != 0) {
                 return 1;
             }
-            if (this->m_stamina < 100) {
+            if (this->m_stamina < STAMINA_FULL) {
                 if (atTarget) {
                     return 1;
                 }
@@ -3567,7 +3570,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (m_combatActive != 0) {
                 return 1;
             }
-            if (m_stamina < 0x64) {
+            if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
@@ -3651,7 +3654,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (m_poweredUp != 0) {
                 return 1;
             }
-            if (m_stamina < 0x64) {
+            if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
@@ -3675,7 +3678,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
 
         case AISTATE_SEEK:
             occ = m_tileMgr->FindNearestEnemy(this);
-            if (rand() % 0x64 == 0 && m_health > 0x1a && occ != NULL && m_stamina >= 0x64
+            if (rand() % 0x64 == 0 && m_health > 0x1a && occ != NULL && m_stamina >= STAMINA_FULL
                 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
                 m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,

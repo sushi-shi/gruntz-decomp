@@ -50,6 +50,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -1961,7 +1962,7 @@ i32 CGrunt::CreateToySprite() {
 // @early-stop
 RVA(0x0004d2f0, 0xb4)
 i32 CGrunt::CreateStaminaSprite() {
-    if (m_staminaSprite || m_stamina == 0x64) {
+    if (m_staminaSprite || m_stamina == STAMINA_FULL) {
         return 0;
     }
 
@@ -4023,7 +4024,7 @@ afterTile:
                 }
             }
         } else if (m_poweredUp != 0 && m_neighborValid == 0 && m_combatActive == 0
-                   && m_stamina >= 0x64 && m_neighborScanEnabled != 0) {
+                   && m_stamina >= STAMINA_FULL && m_neighborScanEnabled != 0) {
             FindGridNeighbor(0);
         }
         {
@@ -4063,11 +4064,11 @@ afterArrival:
         }
     }
 
-    if (m_stamina < 0x64) {
+    if (m_stamina < STAMINA_FULL) {
         i64 left =
             m_attackDowntime64 + m_attackClock64 - static_cast<i64>(static_cast<u32>(g_frameTime));
         if (static_cast<u32>((left < 0 ? 0 : static_cast<u32>(left))) == 0) {
-            m_stamina = 0x64;
+            m_stamina = STAMINA_FULL;
         } else {
             i64 spent = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_attackClock64;
             m_stamina = static_cast<i32>(
@@ -4076,7 +4077,7 @@ afterArrival:
                 - g_wingzBias
             );
         }
-        if (m_stamina == 0x64) {
+        if (m_stamina == STAMINA_FULL) {
             if (m_staminaSprite != NULL) {
                 m_staminaSprite->m_flags |= 0x10000;
                 m_staminaSprite = NULL;
@@ -4102,7 +4103,7 @@ afterArrival:
     }
 
     if (m_arrivalState == AI_BATTLEZ_PATH) {
-        if (m_poweredUp != 0 && m_stamina >= 0x64) {
+        if (m_poweredUp != 0 && m_stamina >= STAMINA_FULL) {
             bool eq;
             {
                 CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
@@ -4290,7 +4291,7 @@ kindDispatch:
         }
     }
 
-    if (m_pendingTrigger != 0 && m_stamina >= 0x64) {
+    if (m_pendingTrigger != 0 && m_stamina >= STAMINA_FULL) {
         m_tileMgr->ApplyTriggerA(
             m_tileOwnerHi,
             m_tileOwnerLo,

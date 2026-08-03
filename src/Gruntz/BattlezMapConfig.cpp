@@ -46,6 +46,8 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Wap32/TileGeometry.h>
 #include <Gruntz/BattlezTask.h>
+#include <Gruntz/StaminaPct.h>
+#include <limits.h>
 
 DATA(0x001e96ec)
 const float g_diffScale = 0.01f;
@@ -1167,7 +1169,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                             if (special != 0) {
                                 if (unit->m_poweredUp != 0 && unit->m_neighborValid == 0
-                                    && unit->m_combatActive == 0 && unit->m_stamina >= 0x64) {
+                                    && unit->m_combatActive == 0
+                                    && unit->m_stamina >= STAMINA_FULL) {
                                     if (unit->FindGridNeighbor(0) != NULL) {
                                         return 1;
                                     }
@@ -2499,7 +2502,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
     rect.top = cy - halfH;
     rect.bottom = cy + halfH;
     CGrunt* best = 0;
-    i32 bestDist = 0x7fffffff;
+    i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
         if (band == m_ownerId) {
             continue;
@@ -3793,7 +3796,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     box.left = (cD.m_x >> TILE_SHIFT_PX) - 7;
 
     CGrunt* best = 0;
-    i32 bestDist = 0x7fffffff;
+    i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
         if (band == m_ownerId) {
             continue;
@@ -4879,7 +4882,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     }
     i32 bestX = col;
     i32 bestY = col;
-    i32 bestDist = 0x7fffffff;
+    i32 bestDist = INT_MAX;
     if (cell != NULL) {
 
         i32 s;
@@ -4918,7 +4921,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             }
         }
     }
-    if (bestDist == 0x7fffffff) {
+    if (bestDist == INT_MAX) {
         return 0;
     }
     if (IsCoordOccupied(unit, bestX, bestY) != 0) {
@@ -5841,7 +5844,7 @@ RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
         CGruntPuddle* best = 0;
-        i32 bestDist = 0x7fffffff;
+        i32 bestDist = INT_MAX;
         POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (pos != NULL) {
             CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));

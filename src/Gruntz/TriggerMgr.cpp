@@ -51,6 +51,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
+#include <limits.h>
 #include <stdlib.h>
 
 DATA(0x00244ca4)
@@ -73,7 +74,7 @@ CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
     CGrunt** cell = &m_grid[rowIdx * TM_GRID_COLS];
     i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
     CGrunt* best = 0;
-    i32 bestDist = 0x7fffffff;
+    i32 bestDist = INT_MAX;
     i32 i = 15;
     do {
         CGrunt* c = *cell;
@@ -2365,7 +2366,7 @@ RVA(0x0007d1d0, 0x9d)
 i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
     i32 tx = px >> TILE_SHIFT_PX;
     i32 ty = py >> TILE_SHIFT_PX;
-    i32 best = 0x7fffffff;
+    i32 best = INT_MAX;
     i32 r = 0;
     CGrunt** row = m_grid;
     do {

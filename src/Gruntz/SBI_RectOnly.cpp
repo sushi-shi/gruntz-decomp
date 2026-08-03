@@ -61,6 +61,7 @@
 #include <Utils/RegistryHelper.h>
 #include <Wap32/ScreenGeometry.h>
 
+#include <limits.h>
 #include <math.h>
 #include <new>
 #include <string.h>
@@ -1940,7 +1941,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     sp->m_state = SLOT_FILLING;
 
     CSbiSlot* s = &m_slots[idx];
-    s->m_interval = 0x7fffffff;
+    s->m_interval = INT_MAX;
     s->m_startTimeLo = g_frameTime;
     s->m_startTimeHi = 0;
     if (m_activeTab == TAB_GRUNTZ && m_position != STATUSBAR_HIDDEN) {
@@ -2179,7 +2180,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     } else if (pA->m_state == 6) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x44) {
-                SetHudRectB(0x2b, 0, 0x7fffffff);
+                SetHudRectB(0x2b, 0, INT_MAX);
             } else {
                 pA->m_interval =
                     g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
@@ -2358,7 +2359,7 @@ void CStatusBarMgr::ResetGroupA() {
 RVA(0x00106660, 0x68)
 void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     SetHudRectA(1, 1, g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 100));
-    SetHudRectB(0x2b, 0, 0x7fffffff);
+    SetHudRectB(0x2b, 0, INT_MAX);
     if (m_machineDisplay) {
         m_machineDisplay->SetFrames(m_machineA.m_counter, m_machineB.m_counter);
     }

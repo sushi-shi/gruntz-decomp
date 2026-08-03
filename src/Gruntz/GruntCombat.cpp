@@ -40,6 +40,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpellzEffect.h>
+#include <Gruntz/StaminaPct.h>
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -1720,7 +1721,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     m_neighborCell.m_y = b;
     m_attackTargetPx.m_x = c;
     m_attackTargetPx.m_y = d;
-    if (m_stamina < 0x64 || m_entranceActive != 0) {
+    if (m_stamina < STAMINA_FULL || m_entranceActive != 0) {
         m_neighborValid = 1;
         return 1;
     }
@@ -1745,7 +1746,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
             goto fail;
         }
     }
-    if (m_stamina < 0x64) {
+    if (m_stamina < STAMINA_FULL) {
         goto fail;
     }
 
@@ -1944,7 +1945,7 @@ void CGrunt::Activate() {
     m_reserved1dc.m_x = 0;
     m_reserved1dc.m_y = 0;
     m_health = 0x64;
-    m_stamina = 0x64;
+    m_stamina = STAMINA_FULL;
     m_toyTime = 0;
     m_wingzTime = 0;
     m_entranceActive = 0;

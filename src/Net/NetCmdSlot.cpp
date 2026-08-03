@@ -13,6 +13,7 @@
 #include <Rez/RezMgr.h>
 
 #include <dplay.h>
+#include <limits.h>
 #include <string.h>
 
 #pragma intrinsic(memcpy)
@@ -893,7 +894,7 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
         return;
     }
     *pMax = 0x80000001;
-    *pMin = 0x7fffffff;
+    *pMin = INT_MAX;
     POSITION pos = m_cmds.GetHeadPosition();
     if (pos == NULL) {
         *pMax = 0;

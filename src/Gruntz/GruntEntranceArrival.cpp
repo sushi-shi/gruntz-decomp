@@ -33,6 +33,7 @@
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -151,7 +152,7 @@ i32 CGrunt::UpdateGruntStatus() {
 
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (m_stamina >= 0x64) {
+    if (m_stamina >= STAMINA_FULL) {
         if (m_neighborValid == 0) {
             return 0;
         }
@@ -171,7 +172,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    if (m_stamina <= 0x32) {
+    if (m_stamina <= STAMINA_HALF) {
         return 0;
     }
     if (m_lowStaminaCued != 0) {
