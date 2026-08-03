@@ -8,6 +8,8 @@
 #include <Enums.h>
 #include <Ints.h>
 
+GZ_ENUM_FORWARD(MenuItemState);
+
 class CMenuPage;
 class CMenuItem;
 class CDDrawSurfacePair;
@@ -32,7 +34,7 @@ public:
     virtual void Reset();
     virtual i32 GetWidth();
     virtual i32 GetFrameWidth();
-    virtual void Disable(i32 mode);
+    virtual void Disable(MenuItemState mode);
 
     virtual i32 Detach();
 
@@ -70,7 +72,7 @@ public:
     i32 m_cmdId;
     i32 m_secondaryCmdId;
     i32 m_flags;
-    i32 m_state;
+    MenuItemState m_state;
     CObject* m_sprite;
 
     POSITION m_listPos;

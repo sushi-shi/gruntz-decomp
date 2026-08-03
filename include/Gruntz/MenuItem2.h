@@ -5,10 +5,13 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/MenuItem.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
 #include <Ints.h>
+
+GZ_ENUM_FORWARD(MenuItemState);
 
 class CMenuPage;
 class CMenuItem2 : public CMenuItem {
@@ -19,7 +22,7 @@ public:
     virtual void Reset() OVERRIDE;
     virtual i32 GetWidth() OVERRIDE;
     virtual i32 GetFrameWidth() OVERRIDE;
-    virtual void Disable(i32 mode) OVERRIDE;
+    virtual void Disable(MenuItemState mode) OVERRIDE;
     virtual i32 Notify(u32 dt) OVERRIDE;
     virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y) OVERRIDE;
     virtual i32 OnInit() OVERRIDE;

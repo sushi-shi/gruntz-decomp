@@ -11,6 +11,7 @@
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/MenuItem2.h>
+#include <Gruntz/MenuItemState.h>
 #include <Gruntz/MenuPage.h>
 #include <Image/CImage.h>
 
@@ -29,7 +30,7 @@ CString CMenuItem::GetDownName() {
     return m_downName;
 }
 RVA(0x00184650, 0xa)
-void CMenuItem::Disable(i32 mode) {
+void CMenuItem::Disable(MenuItemState mode) {
     m_state = mode;
 }
 
@@ -55,7 +56,7 @@ void CMenuItem::Reset() {
     m_downName.Empty();
 }
 RVA(0x00184780, 0x17)
-void CMenuItem2::Disable(i32 mode) {
+void CMenuItem2::Disable(MenuItemState mode) {
     i32 frameLimit = m_frameDelay;
     m_state = mode;
     m_frameIdx = 0;
@@ -108,9 +109,9 @@ i32 CMenuItem::Init(
     m_secondaryCmdId = 0;
     m_cmdParam = 0;
     if (m_flags & 1) {
-        m_state = 3;
+        m_state = MENUSTATE_DISABLED;
     } else {
-        m_state = 1;
+        m_state = MENUSTATE_NORMAL;
     }
     if (!OnInit()) {
         CObject* slot = 0;
@@ -189,7 +190,7 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
         x = m_fixedX;
         y = m_fixedY;
     }
-    i32 idx = m_state;
+    MenuItemState idx = m_state;
     CImage* row;
     if (idx >= page->m_minIndex && idx <= page->m_maxIndex) {
         row = static_cast<CImage*>(page->m_items.GetAt(idx));
@@ -211,12 +212,12 @@ i32 CMenuItem::Configure(i32 notify) {
     if (notify) {
         m_host->PlayFocusSound();
     }
-    Disable(2);
+    Disable(MENUSTATE_SELECTED);
     return 1;
 }
 RVA(0x001856c0, 0xd)
 i32 CMenuItem::Release() {
-    Disable(1);
+    Disable(MENUSTATE_NORMAL);
     return 1;
 }
 
@@ -334,11 +335,11 @@ i32 CMenuItem2::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
 RVA(0x00185950, 0x1b)
 CDDrawWorker* CMenuItem2::GetCurrentSprite() {
     switch (m_state) {
-        case 1:
+        case MENUSTATE_NORMAL:
             return m_spriteNormal;
-        case 2:
+        case MENUSTATE_SELECTED:
             return m_spriteSelected;
-        case 3:
+        case MENUSTATE_DISABLED:
             return m_spriteDisabled;
     }
     return 0;

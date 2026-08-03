@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MenuItemState.h>
 #include <Gruntz/MenuPage.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <Io/SaveGame.h>
@@ -212,13 +213,13 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     }
     it = page->AddItem(s_SINGLEPLAYER, s_MENU_MAINMENU_SINGLEPLAYER, 0, s_SINGLEPLAYER, 0);
     if (g_cdPromptResult != 0) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_MULTIPLAYER, s_MENU_MAINMENU_MULTIPLAYER, 0, s_MULTIPLAYER, 0);
     page->AddItem(s_OPTIONZ, s_MENU_MAINMENU_OPTIONZ, 0x80e2, 0, 0);
     it = page->AddItem(s_MOVIEZ, s_MENU_MAINMENU_MOVIEZ, 0, s_MOVIEZ, 0);
     if (g_cdPromptResult != 0) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_HELP, s_MENU_MAINMENU_HELP, 0x8035, 0, 0);
     page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, 0, 0);
@@ -248,7 +249,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     }
     it = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, 0, 0);
     if (g_cdPromptResult != 0) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, 0, 0);
     page->AddItem(s_BACK, s_MENU_MULTIPLAYER_BACK, 0, s_MAIN, 0);
@@ -266,7 +267,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, 0, 0);
     it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, 0, 0);
     if (g_gameReg->m_saveSink->CheckMagic() == 0) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_CREDITZ, s_MENU_MOVIEZ_CREDITZ, 0x8021, 0, 0);
     page->AddItem(s_BACK, s_MENU_MOVIEZ_BACK, 0, s_MAIN, 0);
@@ -284,31 +285,31 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     page->AddSubItem(s_AREA1, s_MENU_QUESTZ_AREA1, 0x8149, 0x1, 0, s_AREA1, 0);
     it = page->AddSubItem(s_AREA2, s_MENU_QUESTZ_AREA2, 0x8149, 0x2, 0, s_AREA2, 0);
     if (progress > 0x24 || progress < 0x4) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_AREA3, s_MENU_QUESTZ_AREA3, 0x8149, 0x3, 0, s_AREA3, 0);
     if (progress > 0x24 || progress < 0x8) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_AREA4, s_MENU_QUESTZ_AREA4, 0x8149, 0x4, 0, s_AREA4, 0);
     if (progress > 0x24 || progress < 0xc) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_AREA5, s_MENU_QUESTZ_AREA5, 0x8149, 0x5, 0, s_AREA5, 0);
     if (progress > 0x24 || progress < 0x10) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_AREA6, s_MENU_QUESTZ_AREA6, 0x8149, 0x6, 0, s_AREA6, 0);
     if (progress > 0x24 || progress < 0x14) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_AREA7, s_MENU_QUESTZ_AREA7, 0x8149, 0x7, 0, s_AREA7, 0);
     if (progress > 0x24 || progress < 0x18) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_AREA8, s_MENU_QUESTZ_AREA8, 0x8149, 0x8, 0, s_AREA8, 0);
     if (progress > 0x24 || progress < 0x1c) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_BACK, s_MENU_QUESTZ_BACK, 0, s_SINGLEPLAYER, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -339,15 +340,15 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1, 0, 0, 0);
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x2, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x3, 0, 0, 0);
     if (progress > 0x24 || progress < 0x2) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x4, 0, 0, 0);
     if (progress > 0x24 || progress < 0x3) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -362,19 +363,19 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x5, 0, 0, 0);
     if (progress > 0x24 || progress < 0x4) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x6, 0, 0, 0);
     if (progress > 0x24 || progress < 0x5) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x7, 0, 0, 0);
     if (progress > 0x24 || progress < 0x6) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x8, 0, 0, 0);
     if (progress > 0x24 || progress < 0x7) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -389,19 +390,19 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x9, 0, 0, 0);
     if (progress > 0x24 || progress < 0x8) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0xa, 0, 0, 0);
     if (progress > 0x24 || progress < 0x9) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0xb, 0, 0, 0);
     if (progress > 0x24 || progress < 0xa) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0xc, 0, 0, 0);
     if (progress > 0x24 || progress < 0xb) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -416,19 +417,19 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0xd, 0, 0, 0);
     if (progress > 0x24 || progress < 0xc) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0xe, 0, 0, 0);
     if (progress > 0x24 || progress < 0xd) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0xf, 0, 0, 0);
     if (progress > 0x24 || progress < 0xe) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x10, 0, 0, 0);
     if (progress > 0x24 || progress < 0xf) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -443,19 +444,19 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x11, 0, 0, 0);
     if (progress > 0x24 || progress < 0x10) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x12, 0, 0, 0);
     if (progress > 0x24 || progress < 0x11) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x13, 0, 0, 0);
     if (progress > 0x24 || progress < 0x12) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x14, 0, 0, 0);
     if (progress > 0x24 || progress < 0x13) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -470,19 +471,19 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x15, 0, 0, 0);
     if (progress > 0x24 || progress < 0x14) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x16, 0, 0, 0);
     if (progress > 0x24 || progress < 0x15) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x17, 0, 0, 0);
     if (progress > 0x24 || progress < 0x16) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x18, 0, 0, 0);
     if (progress > 0x24 || progress < 0x17) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -497,19 +498,19 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x19, 0, 0, 0);
     if (progress > 0x24 || progress < 0x18) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x1a, 0, 0, 0);
     if (progress > 0x24 || progress < 0x19) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x1b, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1a) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x1c, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1b) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     if (RegisterPage(menu, page) == 0) {
@@ -524,19 +525,19 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1d, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1c) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x1e, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1d) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x1f, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1e) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x20, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1f) {
-        it->Disable(3);
+        it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
     return RegisterPage(menu, page) != 0;

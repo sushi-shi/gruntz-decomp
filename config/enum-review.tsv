@@ -219,6 +219,7 @@ include/Gruntz/MapMgr.h	pending
 include/Gruntz/MapStringToOb.h	pending	
 include/Gruntz/MenuItem.h	pending	
 include/Gruntz/MenuItem2.h	pending	
+include/Gruntz/MenuItemState.h	pending	
 include/Gruntz/MenuPage.h	pending	
 include/Gruntz/MenuSparkle.h	pending	
 include/Gruntz/MenuSparkleSerial.h	pending	

@@ -9,6 +9,7 @@
 #include <Enums.h>
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/MenuItemState.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
 
@@ -198,8 +199,8 @@ i32 CMenuPage::RestoreFocus() {
             if (item) {
                 bool match = item->GetName() == m_focusName;
                 if (match) {
-                    i32 k = item->m_state;
-                    if (k == 1 || k == 2) {
+                    MenuItemState k = item->m_state;
+                    if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
                         if (SetFocus(item, 0)) {
                             return 1;
                         }
@@ -212,8 +213,8 @@ i32 CMenuPage::RestoreFocus() {
     while (node) {
         CMenuItem* item = NextItem(node);
         if (item) {
-            i32 k = item->m_state;
-            if (k == 1 || k == 2) {
+            MenuItemState k = item->m_state;
+            if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
                 if (SetFocus(item, 0)) {
                     return 1;
                 }
@@ -228,11 +229,11 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
     if (!item) {
         return 0;
     }
-    i32 kind = item->m_state;
-    if (kind == 2) {
+    MenuItemState kind = item->m_state;
+    if (kind == MENUSTATE_SELECTED) {
         return 1;
     }
-    if (kind != 1) {
+    if (kind != MENUSTATE_NORMAL) {
         return 0;
     }
     if (m_focus) {
@@ -278,7 +279,7 @@ i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(target, x, y);
-            if (item->m_state == 2 && !(m_flags & 8)) {
+            if (item->m_state == MENUSTATE_SELECTED && !(m_flags & 8)) {
                 m_host->Draw(target, item, x, y);
             }
             y += item->GetWidth() / 2;
@@ -304,8 +305,8 @@ i32 CMenuPage::FocusNext() {
     while (node) {
         found = PrevItem(node);
         if (found) {
-            i32 k = found->m_state;
-            if (k == 1 || k == 2) {
+            MenuItemState k = found->m_state;
+            if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
 
                 node = 0;
                 continue;
@@ -326,8 +327,8 @@ i32 CMenuPage::FocusNext() {
             while (n2) {
                 CMenuItem* it = NextItem(n2);
                 if (it) {
-                    i32 k = it->m_state;
-                    if (k == 1 || k == 2) {
+                    MenuItemState k = it->m_state;
+                    if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
                         found = it;
                     }
                 }
@@ -337,8 +338,8 @@ i32 CMenuPage::FocusNext() {
             return 0;
         }
     }
-    i32 kind = found->m_state;
-    if (kind != 1 && kind != 2) {
+    MenuItemState kind = found->m_state;
+    if (kind != MENUSTATE_NORMAL && kind != MENUSTATE_SELECTED) {
         return 0;
     }
     if (found == m_focus) {
@@ -363,8 +364,8 @@ i32 CMenuPage::FocusPrev() {
     while (node) {
         found = NextItem(node);
         if (found) {
-            i32 k = found->m_state;
-            if (k == 1 || k == 2) {
+            MenuItemState k = found->m_state;
+            if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
 
                 node = 0;
                 continue;
@@ -385,8 +386,8 @@ i32 CMenuPage::FocusPrev() {
             while (n2) {
                 CMenuItem* it = PrevItem(n2);
                 if (it) {
-                    i32 k = it->m_state;
-                    if (k == 1 || k == 2) {
+                    MenuItemState k = it->m_state;
+                    if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
                         found = it;
                     }
                 }
@@ -396,8 +397,8 @@ i32 CMenuPage::FocusPrev() {
             return 0;
         }
     }
-    i32 kind = found->m_state;
-    if (kind != 1 && kind != 2) {
+    MenuItemState kind = found->m_state;
+    if (kind != MENUSTATE_NORMAL && kind != MENUSTATE_SELECTED) {
         return 0;
     }
     if (found == m_focus) {
@@ -469,7 +470,7 @@ i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(target, col, y);
-            if (item->m_state == 2 && !(m_flags & 8)) {
+            if (item->m_state == MENUSTATE_SELECTED && !(m_flags & 8)) {
                 m_host->Draw(target, item, col, y);
             }
             y += item->GetWidth() / 2;
@@ -515,8 +516,8 @@ i32 CMenuPage::MoveFocusRightColumn() {
     if (!found) {
         return 0;
     }
-    i32 k = found->m_state;
-    if (k != 1 && k != 2) {
+    MenuItemState k = found->m_state;
+    if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
         return 0;
     }
     if (found == cur) {
@@ -554,8 +555,8 @@ i32 CMenuPage::MoveFocusLeftColumn() {
     if (!found) {
         return 0;
     }
-    i32 k = found->m_state;
-    if (k != 1 && k != 2) {
+    MenuItemState k = found->m_state;
+    if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
         return 0;
     }
     if (found == cur) {
@@ -629,8 +630,8 @@ i32 CMenuPage::MoveFocusLeft() {
     }
     CMenuItem* item = FindByName(m_focus->GetLeftName());
     if (item) {
-        i32 k = item->m_state;
-        if (k != 1 && k != 2) {
+        MenuItemState k = item->m_state;
+        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
             return 0;
         }
         if (item == m_focus) {
@@ -648,8 +649,8 @@ i32 CMenuPage::MoveFocusRight() {
     }
     CMenuItem* item = FindByName(m_focus->GetRightName());
     if (item) {
-        i32 k = item->m_state;
-        if (k != 1 && k != 2) {
+        MenuItemState k = item->m_state;
+        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
             return 0;
         }
         if (item == m_focus) {
@@ -667,8 +668,8 @@ i32 CMenuPage::MoveFocusUp() {
     }
     CMenuItem* item = FindByName(m_focus->GetUpName());
     if (item) {
-        i32 k = item->m_state;
-        if (k != 1 && k != 2) {
+        MenuItemState k = item->m_state;
+        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
             return 0;
         }
         if (item == m_focus) {
@@ -686,8 +687,8 @@ i32 CMenuPage::MoveFocusDown() {
     }
     CMenuItem* item = FindByName(m_focus->GetDownName());
     if (item) {
-        i32 k = item->m_state;
-        if (k != 1 && k != 2) {
+        MenuItemState k = item->m_state;
+        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
             return 0;
         }
         if (item == m_focus) {
