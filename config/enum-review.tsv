@@ -95,6 +95,7 @@ include/Gruntz/Blk6c.h	pending
 include/Gruntz/Boomerang.h	pending	
 include/Gruntz/BootyCheatState.h	pending	
 include/Gruntz/BootyMessages.h	pending	
+include/Gruntz/BootyStatRow.h	pending	
 include/Gruntz/BootyStateActivate.h	pending	
 include/Gruntz/BootyWalkAnim.h	pending	
 include/Gruntz/BracketValueParse.h	pending	

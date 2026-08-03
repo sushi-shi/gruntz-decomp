@@ -18,6 +18,7 @@
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyMessages.h>
+#include <Gruntz/BootyStatRow.h>
 #include <Gruntz/BootyWalkAnim.h>
 #include <Gruntz/BzState.h>
 #include <Gruntz/ColorTint.h>
@@ -502,20 +503,20 @@ void CBootyState::MoveLettersByDir() {
                                                                 : g_gameReg->m_scoreHud->field)
 
 RVA(0x0001af70, 0x3e0)
-void CBootyState::FormatHudText(CString* buf, i32 sel) {
+void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
     switch (sel) {
-        case 0: {
+        case BOOTYSTAT_TIME: {
             u32 secs = static_cast<u32>((STAT(SumElapsedTimeForGroup, m_elapsedTimeMs) / 1000));
             buf->Format("%d:%2.2d", secs / 60, secs % 60);
             return;
         }
-        case 1:
+        case BOOTYSTAT_GRUNTZ_EXITED:
             buf->Format("%d", STAT(SumGruntzExitedForGroup, m_gruntzExited));
             return;
-        case 2:
+        case BOOTYSTAT_GRUNTZ_LOST:
             buf->Format("%d", STAT(SumGruntzLostForGroup, m_gruntzLost));
             return;
-        case 3: {
+        case BOOTYSTAT_TOOLZ: {
             i32 total = STAT(SumToolzAvailableForGroup, m_toolzAvailable);
             i32 cap = STAT(SumToolzAvailableForGroup, m_toolzAvailable);
             i32 cur = STAT(SumToolzCollectedForGroup, m_toolzCount);
@@ -525,7 +526,7 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             buf->Format("%d of %d", cur, total);
             return;
         }
-        case 4: {
+        case BOOTYSTAT_TOYZ: {
             i32 total = STAT(SumToyzAvailableForGroup, m_toyzAvailable);
             i32 cap = STAT(SumToyzAvailableForGroup, m_toyzAvailable);
             i32 cur = STAT(SumToyzCollectedForGroup, m_toyzCount);
@@ -535,7 +536,7 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             buf->Format("%d of %d", cur, total);
             return;
         }
-        case 5: {
+        case BOOTYSTAT_POWERUPZ: {
             i32 total = STAT(SumPowerupzAvailableForGroup, m_powerupzAvailable);
             i32 cap = STAT(SumPowerupzAvailableForGroup, m_powerupzAvailable);
             i32 cur = STAT(SumPowerupzCollectedForGroup, m_powerupCount);
@@ -545,7 +546,7 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             buf->Format("%d of %d", cur, total);
             return;
         }
-        case 6: {
+        case BOOTYSTAT_COINZ: {
             i32 total = STAT(SumCoinsAvailableForGroup, m_coinsAvailable);
             i32 cap = STAT(SumCoinsAvailableForGroup, m_coinsAvailable);
             i32 cur = STAT(SumCoinsCollectedForGroup, m_coinsCollected);
@@ -555,7 +556,7 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
             buf->Format("%d of %d", cur, total);
             return;
         }
-        case 7: {
+        case BOOTYSTAT_SECRETZ: {
             i32 total = STAT(SumSecretsAvailableForGroup, m_secretsAvailable);
             i32 cap = STAT(SumSecretsAvailableForGroup, m_secretsAvailable);
             i32 cur = STAT(SumSecretsFoundForGroup, m_secretsFound);
@@ -797,7 +798,7 @@ void CBootyState::ShowLevelCompleteMessage() {
             RECT r2;
             CopyRect(&r2, &g_levelMsgRectsB[i]);
             CString t2;
-            FormatHudText(&t2, i);
+            FormatHudText(&t2, static_cast<BootyStatRow>(i));
             ShowHudMessage(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }

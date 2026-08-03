@@ -339,7 +339,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_templateFlags[i] = 1;
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CopyRect(&box, &g_levelMsgRectsB[i]);
-            this->FormatHudText(&text, i);
+            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_animCursor.m_animation == 0)) {
@@ -407,7 +407,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             RECT box;
             CString text;
             CopyRect(&box, &g_levelMsgRectsB[i]);
-            this->FormatHudText(&text, i);
+            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CWwdGameObjectA* e = m_expl[i];

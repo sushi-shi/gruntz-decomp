@@ -7,6 +7,7 @@
 #include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/BootyStatRow.h>
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
@@ -197,7 +198,7 @@ public:
 
     i32 LoadGruntEffectSprites();
     i32 LevelMsgHudDriver();
-    void FormatHudText(CString* buf, i32 sel);
+    void FormatHudText(CString* buf, BootyStatRow sel);
 
     i32 BuildWarpStoneGlitterAnimation();
 
