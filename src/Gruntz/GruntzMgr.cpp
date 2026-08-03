@@ -739,7 +739,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
     m_strWorldFile = name;
     m_isMultiLevel = 0;
     m_isBattlezLevel = 0;
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8005, 0);
+    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEW_GAME), 0);
     return 1;
 }
 
@@ -958,7 +958,7 @@ i32 CGruntzMgr::ClearWorldFile() {
     GameStateId mode = m_curState->Update();
     if (mode == GAMESTATE_MENU || mode == GAMESTATE_ATTRACT || mode == GAMESTATE_PLAY) {
         m_strWorldFile.Empty();
-        PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8005, 0);
+        PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEW_GAME), 0);
         return 1;
     }
     return 0;
@@ -1713,7 +1713,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
         return 0;
     }
     CAssetRootStorage::s_value = path;
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x80ab, 0);
+    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_STATE0), 0);
     return 1;
 }
 
@@ -1976,7 +1976,7 @@ i32 CGruntzMgr::Quickload() {
         if (m_saveSink->VerifySlot(m_saveInfoRec) == 0) {
             return 1;
         }
-        PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x807e, 0);
+        PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
         m_chatLog->AddItem("Game Quickloaded successfully.", 0, 0x11);
         return 1;
     }
@@ -2843,7 +2843,7 @@ void CGruntzMgr::OnCheckpointReached() {
     }
     CCheckpointDlg dlg(0);
     if (ExitModalUI(&dlg, 0) == 1) {
-        SendMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x80cf, 0);
+        SendMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_QUICK_SAVE_PROMPT), 0);
     }
 }
 
@@ -2988,7 +2988,7 @@ i32 CGruntzMgr::SaveGameAs() {
     if (m_strWorldFile.GetLength() == 0) {
         return 0;
     }
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x80e3, 0);
+    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEW_GAME_REPLAY), 0);
     return 1;
 }
 

@@ -3,6 +3,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SlotHolder.h>
 #include <Ints.h>
@@ -12,7 +13,7 @@ RVA(0x001128b0, 0x88)
 i32 CSlotHolder::DoSwap() {
     i32 oldTok = m_tileToken;
     if (oldTok == 0) {
-        g_gameReg->ReportError(0x8009, 0x451);
+        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x451);
         return 0;
     }
     CGruntzMgr* mgr = g_gameReg;

@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SaveSlotCtrlId.h>
@@ -204,7 +205,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             EnableWindow(hwnd, TRUE);
             if (r) {
                 g_gameReg->m_saveInfoRec = slot;
-                PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, 0x807e, 0);
+                PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
                 EndDialog(hwnd, 1);
             }
             return 1;

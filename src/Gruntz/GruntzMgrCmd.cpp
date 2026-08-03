@@ -61,7 +61,7 @@
         m_gameMode = GAMEMODE_SINGLE;                                                              \
         m_strWorldFile.Empty();                                                                    \
         if (!PassClickToPlayState((N), 0, 1))                                                      \
-            ReportError(0x8005, (ERR));                                                            \
+            ReportError(IDX(CMD_NEW_GAME), (ERR));                                                 \
         return 1;                                                                                  \
     }
 #define BRICKPICKUP(ID, MSG)                                                                       \
@@ -145,14 +145,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_NEW_GAME_ALT:
             m_gameMode = GAMEMODE_SINGLE;
             if (!PassClickToPlayState(1, 0, 1)) {
-                ReportError(0x8005, 0x41e);
+                ReportError(IDX(CMD_NEW_GAME), 0x41e);
             }
             return 1;
         case CMD_LOAD_WORLD:
             m_strWorldFile.Empty();
             m_gameMode = GAMEMODE_SINGLE;
             if (!PassClickToPlayState(lParam, 0, 1)) {
-                ReportError(0x8005, 0x41f);
+                ReportError(IDX(CMD_NEW_GAME), 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
@@ -160,13 +160,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             m_gameMode = GAMEMODE_SINGLE;
 
             if (!PassClickToPlayState(m_saveSink->m_maxLevel, 0, 1)) {
-                ReportError(0x8005, 0x41f);
+                ReportError(IDX(CMD_NEW_GAME), 0x41f);
             }
             return 1;
         case CMD_NEW_GAME_REPLAY:
             m_gameMode = GAMEMODE_REPLAY;
             if (!PassClickToPlayState(1, 0, 1)) {
-                ReportError(0x8005, 0x420);
+                ReportError(IDX(CMD_NEW_GAME), 0x420);
             }
             return 1;
         case CMD_SAVE_GAME_AS:
@@ -596,10 +596,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 m_isCustomLevel = 0;
             }
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
-                ReportError(0x8005, 0x421);
+                ReportError(IDX(CMD_NEW_GAME), 0x421);
             }
             if (!ParseSerial(this, si->m_serial)) {
-                ReportError(0x8005, 0x465);
+                ReportError(IDX(CMD_NEW_GAME), 0x465);
             }
             CheckSavedMode();
             m_loadingSaveGame = 0;
@@ -862,7 +862,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 ReportError(IDX(CMD_NEW_GAME), 0x42c);
                 return 1;
             }
-            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_SHOW_STATE0:
             if (TransitionState(GAMESTATE_SPLASH, 1, 0, 0)) {
@@ -930,7 +930,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 return 1;
             }
             if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
-                PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+                PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 return 1;
             }
             ReportError(IDX(CMD_NEW_GAME), 0x430);

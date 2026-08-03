@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SoundState.h>
@@ -180,7 +181,7 @@ i32 CAttract::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_items[i]->m_currentKeys & 0x100) {
-            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         }
     }
@@ -223,14 +224,14 @@ i32 CAttract::RestoreDisplay() {
 RVA(0x00014720, 0x37)
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_SPACE || code == VK_RETURN || code == VK_ESCAPE) {
-        PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+        PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }
 
 RVA(0x00014770, 0x24)
 i32 CAttract::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+    PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }
 

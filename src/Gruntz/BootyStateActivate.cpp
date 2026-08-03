@@ -32,6 +32,7 @@
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
@@ -877,7 +878,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
     CBattlezData* rec = g_gameReg->m_scoreHud;
     if (rec->m_isCustomLevel != 0) {
-        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     if (m_initOnce == 0) {
@@ -970,7 +971,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             sub->Stop();
         }
         g_gameReg->ChangeState(3);
-        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, 0x8021, 0);
+        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
     } else {
 
         g_gameReg->PassClickToPlayState((rec2->m_count % 0x28) + 1, 0, 1);
@@ -1696,7 +1697,7 @@ i32 CMultiBootyState::OnPaint() {
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
     if (m_sequenceState == 0xc7) {
-        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }

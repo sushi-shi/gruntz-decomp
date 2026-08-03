@@ -30,6 +30,7 @@
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LeafCue.h>
@@ -1726,7 +1727,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 break;
             }
             ReportVersionMsg("You have been dropped from the game.", 0);
-            PostMessageA(NetGameMgr()->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(NetGameMgr()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             m_pollAbort = 1;
             break;
 
@@ -2295,7 +2296,7 @@ void CMulti::OnMultiPause() {
 
     if (r == DISPATCH_RESYNC) {
         HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-        PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
+        PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MULTI_CONNECT), ResyncLParam());
     }
 }
 
@@ -2326,14 +2327,14 @@ void CMulti::OnOutOfSync() {
     switch (r) {
         case DISPATCH_RESYNC: {
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
+            PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MULTI_CONNECT), ResyncLParam());
             break;
         }
         case DISPATCH_RESET:
             break;
         default: {
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }
     }
@@ -2912,7 +2913,7 @@ void CMulti::OnDropPlayer() {
         case DISPATCH_ABORT: {
             Session()->ResetCmdBuffers();
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }
         case DISPATCH_PLAYERLEFT:
@@ -3286,7 +3287,7 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
                 0
             );
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         }
     }
     if (mismatch) {

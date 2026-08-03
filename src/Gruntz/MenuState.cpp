@@ -26,6 +26,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
@@ -343,7 +344,7 @@ i32 CMenuState::Render() {
     for (c = 0; c < n; c++) {
         if (L->m_items[c]->m_currentKeys & 0x100) {
             if (!m_menuTree->ReturnToPreviousPage()) {
-                PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, 0x8036, 0);
+                PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             }
             goto tail;
         }
@@ -443,7 +444,7 @@ i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     } else if (key == VK_ESCAPE) {
         if (m_menuTree->ReturnToPreviousPage() == 0) {
             m_activateCueDurationMs = 0;
-            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, 0x8027, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
         }
     }
     return 1;

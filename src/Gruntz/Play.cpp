@@ -49,6 +49,7 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
@@ -1401,7 +1402,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x816e, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -1469,7 +1470,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
                     }
-                    PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+                    PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                     return 1;
                 }
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
@@ -1490,7 +1491,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
                     }
-                    PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+                    PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 }
                 return 1;
             }
@@ -1503,7 +1504,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (host->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_cmdGrid->m_phase != 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     CGameWnd* r = g_gameReg->m_gameWnd;
-                    PostMessageA(r->m_hwnd, WM_COMMAND, 0x806b, 0);
+                    PostMessageA(r->m_hwnd, WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
                 }
                 return 1;
             }
@@ -4373,7 +4374,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
     m_stepCountdown = 2;
     m_paused = 1;
 
-    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, 0x816e, 0);
+    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_scrollSink) {
         m_scrollSink->m_stateFlags |= 1;
     }
@@ -4475,7 +4476,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x816e, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -4766,7 +4767,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x816e, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
     if (m_overlayDrag != 0) {
@@ -5177,11 +5178,11 @@ i32 CPlay::CompleteLevel() {
         m_mgr->m_sound->StopAndFlush();
         m_mgr->m_inputState->Teardown();
         m_mgr->m_cueSink->ClearSprites();
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     if (m_returnToMenuOnComplete) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     m_mgr->Post(m_levelIndex + 1);

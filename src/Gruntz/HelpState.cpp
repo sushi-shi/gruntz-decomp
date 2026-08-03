@@ -17,6 +17,7 @@
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SplashState.h>
 
@@ -116,7 +117,7 @@ i32 CHelpState::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_items[i]->m_currentKeys & 0xffffff) {
-            PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8036, 0);
+            PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             m_mgr->m_owner->m_running = 0;
             return 1;
         }
@@ -150,13 +151,13 @@ i32 CHelpState::RestoreDisplay() {
 RVA(0x000953f0, 0x37)
 i32 CHelpState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8036, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
     }
     return 1;
 }
 
 RVA(0x00095440, 0x24)
 i32 CHelpState::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8036, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
     return 1;
 }

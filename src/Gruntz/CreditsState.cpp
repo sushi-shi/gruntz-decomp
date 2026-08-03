@@ -24,6 +24,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/ParseSource.h>
@@ -184,9 +185,9 @@ i32 CCreditsState::Render() {
         for (i32 j = 0; j < n; j++) {
             if (L->m_items[j]->m_currentKeys & 0xffffff) {
 
-                u32 wp = 0x8027;
+                u32 wp = IDX(CMD_ATTRACT);
                 if (m_previousStateId == 5) {
-                    wp = 0x8023;
+                    wp = IDX(CMD_MAIN_MENU);
                 }
                 PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, wp, 0);
                 Owner(this)->m_owner->m_running = 0;
@@ -246,9 +247,9 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == 5) {
-            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         } else {
-            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, 0x8027, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
         }
     }
     return 1;

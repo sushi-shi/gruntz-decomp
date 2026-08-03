@@ -5,6 +5,7 @@
 #include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>
+#include <Gruntz/GruntzCommandId.h>
 
 #include <stddef.h>
 
@@ -118,25 +119,25 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
 
 RVA(0x00022c80, 0x173)
 void CCheatMgr::RegisterCheats() {
-    AddCheat(s_cheat_20c920, 0x804b, 1);
-    AddCheat(s_cheat_20c918, 0x804c, 1);
-    AddCheat(s_cheat_20c90c, 0x804d, 1);
-    AddCheat(s_cheat_20c900, 0x804e, 1);
-    AddCheat(s_cheat_20c8f0, 0x806e, 1);
-    AddCheat(s_cheat_20c8e0, 0x807a, 1);
-    AddCheat(s_cheat_20c8d4, 0x807b, 1);
-    AddCheat(s_cheat_20c8c4, 0x807b, 1);
-    AddCheat(s_cheat_20c8b8, 0x803b, 1);
-    AddCheat(s_cheat_20c8ac, 0x803b, 1);
-    AddCheat(s_cheat_20c8a4, 0x807b, 1);
-    AddCheat(s_cheat_20c89c, 0x8086, 1);
-    AddCheat(s_cheat_20c894, 0x8086, 1);
-    AddCheat(s_cheat_20c884, 0x8086, 1);
-    AddCheat(s_cheat_20c878, 0x8086, 1);
-    AddCheat(s_cheat_20c868, 0x8087, 1);
-    AddCheat(s_cheat_20c85c, 0x816f, 1);
+    AddCheat(s_cheat_20c920, IDX(CHEAT_FRAME_RATE_DISPLAY), 1);
+    AddCheat(s_cheat_20c918, IDX(CHEAT_WORLD_POSITION_DISPLAY), 1);
+    AddCheat(s_cheat_20c90c, IDX(CHEAT_OBJECT_COUNT_DISPLAY), 1);
+    AddCheat(s_cheat_20c900, IDX(CHEAT_DEBUG_FLAG20), 1);
+    AddCheat(s_cheat_20c8f0, IDX(CHEAT_ELAPSED_TIME_DISPLAY), 1);
+    AddCheat(s_cheat_20c8e0, IDX(CHEAT_KEVIN_LAMBERT), 1);
+    AddCheat(s_cheat_20c8d4, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
+    AddCheat(s_cheat_20c8c4, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
+    AddCheat(s_cheat_20c8b8, IDX(CHEAT_PROGRAMMING_GOD), 1);
+    AddCheat(s_cheat_20c8ac, IDX(CHEAT_PROGRAMMING_GOD), 1);
+    AddCheat(s_cheat_20c8a4, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
+    AddCheat(s_cheat_20c89c, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheat_20c894, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheat_20c884, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheat_20c878, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheat_20c868, IDX(CHEAT_NO_OP), 1);
+    AddCheat(s_cheat_20c85c, IDX(CHEAT_DEBUG_FLAG400), 1);
     AddCheat(s_cheat_20c84c, 0x80be, 1);
-    AddCheat(s_cheat_20c838, 0x8175, 1);
+    AddCheat(s_cheat_20c838, IDX(CHEAT_WAWA), 1);
     LoadCheatConfig();
 }
 

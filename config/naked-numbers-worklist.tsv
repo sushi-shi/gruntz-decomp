@@ -20,7 +20,7 @@ src/DDrawMgr/DDSurface.cpp	664	none (bits/bitcount are a bits-per-pixel count; e
 src/Gruntz/GruntEntranceMove.cpp	599	none (56 tileId cases are per-tileset WWD image indices - no engine names exist)
 src/Gruntz/TriggerMgrGrid.cpp	558	done (GruntDirection arm named by its +-32 delta; TM_GRID_ROW_ALL sentinel + TM_GRID_COLS)
 src/Gruntz/GruntSteps.cpp	490	done (toy-ordinal bias is byte-evidenced and kept; each arm is named by its bute key; directions already DIR_*)
-src/DDrawMgr/Fader.cpp	490	pending
+src/DDrawMgr/Fader.cpp	490	none (fade step counts, frame spans and palette indices)
 src/Gruntz/Dialogs.cpp	463	none (index is a 0..3 player-slot ordinal mapping to control ids)
 src/Gruntz/MainMenuBuilder.cpp	459	partial (LevelArea + QuestLevel + CMD_LOAD_WORLD applied; 0x8149 has no handler in-tree)
 src/Gruntz/TileTriggerSwitchLogic.cpp	458	none (<<5 / +0x10 is tile-to-pixel-centre geometry)
@@ -30,8 +30,8 @@ src/Dsndmgr/DirectSoundMgr.cpp	445	none (literals are buffer sizes, sample rates
 src/Gruntz/MultiStartDlgRoster.cpp	437	done (23 raw Win32 message ids named from the SDK; rest are slot ordinals)
 src/Gruntz/InGameIcon.cpp	434	done
 src/Image/FileImage.cpp	427	none (bitDepth cases are bits-per-pixel; PCX 0xc0 is the RLE run marker)
-src/Gruntz/GruntzMgrCmd.cpp	415	pending
-src/Gruntz/StatusBarMgr.cpp	408	pending
+src/Gruntz/GruntzMgrCmd.cpp	415	done (ReportError command ids named; 0x4xx are the error-string ordinals with no recovered table)
+src/Gruntz/StatusBarMgr.cpp	408	none (HUD pixel geometry - x/y/width literals with no naming evidence)
 src/Gruntz/PlayerCommandStep.cpp	342	partial
 src/Bute/SymTab.cpp	323	done (_A_SUBDIR from the CRT; rest are string/hash arithmetic)
 src/DDrawMgr/DDPageMgr.cpp	322	done (WM_* message compares named; bpp values are bit counts)
@@ -39,7 +39,7 @@ src/Io/SaveGame.cpp	320	partial
 src/Gruntz/GameMode.cpp	314	done
 src/Net/NetCmdSlot.cpp	311	done (DPSYS_* system-message ids from dplay.h)
 src/DDrawMgr/ShadeTableCache.cpp	310	none (literals are palette-index arithmetic)
-src/Gruntz/GruntSpawnConfig.cpp	304	pending
+src/Gruntz/GruntSpawnConfig.cpp	304	none (214013/2531011 are the LCG constants; rest are tuning magnitudes)
 src/Net/NetMgr.cpp	303	partial (kind is NOT NetConnectionType - retail transposes 1/2 there, verified in disasm; recorded at the site)
 src/DDrawMgr/DDrawSurfacePair.cpp	296	partial (the 0x3e9->0x80e9 arms re-bank a pool error; no name table for either bank)
 src/DDrawMgr/DDrawSubMgr.cpp	293	done (COORD_UNSET; rest is layer/extent arithmetic)
@@ -47,71 +47,71 @@ src/Gruntz/WorldSoundSet.cpp	291	done (COORD_UNSET; 0x64 is a volume percent cla
 src/Image/ImagePool.cpp	290	done
 src/DDrawMgr/LevelPlane.cpp	285	done (COORD_UNSET x4; 0x80 is a WWD type bit, rest is plane arithmetic)
 src/DDrawMgr/DirectDrawMgr.cpp	284	done (44 DDERR_* named by their own strings; 3 corrected against the SDK, incl. retail mislabelling NOTLOCKED as LOCKEDSURFACES)
-src/Wwd/WwdGameObject.cpp	277	pending
-src/Image/CImage.cpp	268	pending
-src/Gruntz/Warlord.cpp	266	pending
+src/Wwd/WwdGameObject.cpp	277	none (0x80 is the 128-byte serialized name field, a size; flags bits need the WWD table)
+src/Image/CImage.cpp	268	none (0x40000 etc. are REZ buffer sizes and DIB flags)
+src/Gruntz/Warlord.cpp	266	none (0x80 is the serialized name field; 0x1770/0x7530 are millisecond timers)
 src/Gruntz/Demo.cpp	251	done (AnimWorkerAct dispatch named)
-src/Gruntz/BattlezData.cpp	249	pending
-src/Rez/RezSync.cpp	244	pending
-src/Gruntz/Projectile.cpp	240	pending
+src/Gruntz/BattlezData.cpp	249	none (0x37 is a record stride; rest are scoreboard column widths)
+src/Rez/RezSync.cpp	244	done (INPUTDEV_KEYBOARD_JOYSTICK1 named earlier; 0x280/0x1e0 are the 640x480 screen extents)
+src/Gruntz/Projectile.cpp	240	none (0x10000 is a fixed-point one; 0xbb8 a millisecond lifetime)
 src/Gruntz/BootyWalkAnim.cpp	219	done
-src/Gruntz/FontConfig.cpp	214	pending
-src/Bute/TypeKeyColl.cpp	211	pending
+src/Gruntz/FontConfig.cpp	214	none (glyph metrics and scroll thresholds)
+src/Bute/TypeKeyColl.cpp	211	none (ASCII character codes in the parser)
 src/Gruntz/RollingBall.cpp	205	done
-src/Gruntz/StatusBarTabBuilders.cpp	204	pending
+src/Gruntz/StatusBarTabBuilders.cpp	204	none (0x80 is the serialized name field; rest are tab geometry)
 src/Gruntz/TileTriggerContainer.cpp	203	none (0..3 are m_playerFlags[4] indices; the ALL sentinel is already named)
 src/Wwd/WwdObjMgr.cpp	196	partial (classId 5/0x16/0x1b/0x1c are WWD object-class tags; no spec recovered)
 src/Gruntz/TerrainTileLoader.cpp	193	partial (four brick PickupTypes named; m_toyBlendPct holding a brick id looks like a wrong-member read)
-src/Image/ImagePolyClip.cpp	192	pending
+src/Image/ImagePolyClip.cpp	192	none (clip-buffer sizes and edge arithmetic)
 src/Gruntz/DroppedObject.cpp	190	done
-src/Gruntz/GruntzCmdMgr.cpp	189	pending
+src/Gruntz/GruntzCmdMgr.cpp	189	none (packet field widths and byte masks)
 src/Gruntz/TileLogicPump.cpp	182	done (AnimWorkerAct dispatch named)
-src/DDrawMgr/DirPal.cpp	178	pending
-src/Gruntz/SBI_TabzDialogEh.cpp	174	pending
-src/Dsndmgr/SoundStream.cpp	172	pending
+src/DDrawMgr/DirPal.cpp	178	none (0x100/0x300/0x400 are palette entry counts and byte sizes)
+src/Gruntz/SBI_TabzDialogEh.cpp	174	none (HUD geometry and sprite frame indices)
+src/Dsndmgr/SoundStream.cpp	172	none (buffer/notify sizes and a volume percent)
 src/Net/LobbyDialogs.cpp	170	done (IDC_NETCHAT_SEND by six-way unanimity, IDCANCEL, VK_PAUSE; per-dialog button ids are indistinguishable)
-src/Gruntz/Wormhole.cpp	170	pending
-src/Gruntz/BrickzLoad.cpp	168	pending
-src/Crypto/FecCrypt.cpp	167	pending
-src/Gruntz/MapMgr.cpp	166	pending
+src/Gruntz/Wormhole.cpp	170	none (tile shifts and millisecond timers)
+src/Gruntz/BrickzLoad.cpp	168	none (0x4002008/0x6021 are WWD flag words needing the bit table)
+src/Crypto/FecCrypt.cpp	167	none (block sizes and polynomial constants)
+src/Gruntz/MapMgr.cpp	166	none (tile-grid stride arithmetic)
 src/Wwd/WwdFactoryObject.cpp	162	partial (WwdAnimStepMode recovered; modeWord/positionMode still open)
 src/Gruntz/ActionOptionsMenuBar.cpp	162	done (MenuItemState)
-src/Gruntz/SpriteRef.cpp	155	pending
+src/Gruntz/SpriteRef.cpp	155	none (pixel byte values in the blitter)
 src/Gruntz/MultiStartDlg.cpp	154	none (index is the same 0..3 slot ordinal)
-src/Gruntz/CreditsState.cpp	152	pending
-src/Gruntz/GruntPickupLoad.cpp	151	pending
+src/Gruntz/CreditsState.cpp	152	done (CMD_MAIN_MENU/CMD_ATTRACT named; 0x1e0 is the screen height)
+src/Gruntz/GruntPickupLoad.cpp	151	none (0x10000 is fixed-point one; 0x3bf.. are sprite-table ordinals)
 src/Gruntz/VideoConfig.cpp	148	done (SB_* scroll codes and TBM_GETPOS/SETPOS named from the SDK)
-src/Gruntz/LevelTileValidation.cpp	147	pending
-src/DDrawMgr/DDrawSurfaceMgr.cpp	145	pending
-src/Gruntz/SpriteLoaders.cpp	143	pending
-src/Dsndmgr/GruntzSoundZ.cpp	143	pending
-src/Gruntz/PathHazard.cpp	142	pending
+src/Gruntz/LevelTileValidation.cpp	147	done (PLAYERCMD_PLACE_GRUNT named earlier; 0x1f/0x10 are tile-centre arithmetic)
+src/DDrawMgr/DDrawSurfaceMgr.cpp	145	partial (m_lastError codes are a per-class bank with no name table)
+src/Gruntz/SpriteLoaders.cpp	143	none (0x80 is the serialized name field; 60000 a millisecond timeout)
+src/Dsndmgr/GruntzSoundZ.cpp	143	none (volume/pan percentages and channel counts)
+src/Gruntz/PathHazard.cpp	142	none (0x10 is the tile half-extent; 0xcf850 a fixed-point speed)
 src/Gruntz/AreaMgr.cpp	142	none (case value IS the level ordinal; every arm is InitializeLevel<that number>)
-src/Font/Font.cpp	141	pending
-src/Gruntz/MenuState.cpp	138	pending
-src/Gruntz/Attract.cpp	133	pending
-src/Gruntz/MenuPage.cpp	130	pending
-src/Gruntz/BrickzCellFlags.cpp	128	pending
-src/Gruntz/GruntAssetLoaders.cpp	120	pending
-src/Gruntz/CustomWorldDialog.cpp	120	pending
-src/Net/LatencyList.cpp	115	pending
+src/Font/Font.cpp	141	none (256-entry glyph tables and byte masks)
+src/Gruntz/MenuState.cpp	138	none (menu geometry and fade percentages)
+src/Gruntz/Attract.cpp	133	done (FADERKIND_* named earlier; rest are palette bytes)
+src/Gruntz/MenuPage.cpp	130	none (menu item pixel offsets)
+src/Gruntz/BrickzCellFlags.cpp	128	none (0x4002008/0x6021 are WWD flag words needing the bit table)
+src/Gruntz/GruntAssetLoaders.cpp	120	none (0x10000 fixed-point; 0x357.. are anim ids with no table)
+src/Gruntz/CustomWorldDialog.cpp	120	none (dialog control ids with no resource script; arms are indistinguishable)
+src/Net/LatencyList.cpp	115	none (each AddNode row is labelled by its own string - "High Latency [ping < 400]"; the numbers are its delay/window tuning)
 src/Wwd/GameLevelMove.cpp	113	done (COORD_UNSET; the duplicated file-local AXIS_UNSET is gone)
-src/Gruntz/SpriteRefTable.cpp	109	pending
-src/Gruntz/LoadGameMenu.cpp	108	pending
+src/Gruntz/SpriteRefTable.cpp	109	none (sprite-table strides)
+src/Gruntz/LoadGameMenu.cpp	108	none (dialog control ids, one use each)
 src/Wap32/GameApp.cpp	107	done (WM_QUIT/WM_CLOSE named)
-src/Gruntz/StaticHazard.cpp	105	pending
-src/Gruntz/AttractState.cpp	105	pending
-src/Gruntz/GruntStateStep.cpp	100	pending
-src/Rez/RezFile.cpp	99	pending
-src/Image/ImageOwned.cpp	97	pending
+src/Gruntz/StaticHazard.cpp	105	none (0x20000/0xf7ffffff are flag words needing the WWD bit table)
+src/Gruntz/AttractState.cpp	105	none (LCG constants and palette bytes)
+src/Gruntz/GruntStateStep.cpp	100	none (anim/logic ids with no recovered table)
+src/Rez/RezFile.cpp	99	none (REZ header field offsets)
+src/Image/ImageOwned.cpp	97	none (buffer sizes and byte masks)
 src/Gruntz/GruntVoice.cpp	97	done (AnimWorkerAct dispatch named)
-src/Gruntz/CheatMgr.cpp	96	pending
+src/Gruntz/CheatMgr.cpp	96	done (18 cheat registrations bound to their GruntzCommandId names - the header was never included here; 0x80be has no enumerator)
 src/Gruntz/KitchenSlime.cpp	94	done
 src/Gruntz/StateMgrBZ.cpp	91	done
-src/Wwd/WwdGameObjectRender.cpp	85	pending
-src/Gruntz/ChatBox.cpp	84	pending
-src/Gruntz/LevelPreview.cpp	81	pending
-src/Gruntz/ChatBoxOwner.cpp	80	pending
+src/Wwd/WwdGameObjectRender.cpp	85	none (0x1000000 is a draw flag bit; rest is blit arithmetic)
+src/Gruntz/ChatBox.cpp	84	none (chat-box geometry and character codes)
+src/Gruntz/LevelPreview.cpp	81	none (preview thumbnail geometry and a millisecond timeout)
+src/Gruntz/ChatBoxOwner.cpp	80	none (chat-box geometry)
 src/Gruntz/SBI_WellGoo.cpp	78	pending
 src/Crypto/Blowfish.cpp	78	pending
 src/DDrawMgr/FaderMgr.cpp	76	done
@@ -265,7 +265,7 @@ src/Gruntz/GruntWingzTimeSprite.cpp	6	pending
 src/Gruntz/GruntToyTimeSprite.cpp	6	pending
 src/Gruntz/GruntStaminaSprite.cpp	6	pending
 src/Gruntz/WormholeActs.cpp	5	pending
-src/Gruntz/MgrSlotSwap.cpp	5	pending
+src/Gruntz/MgrSlotSwap.cpp	5	done (CMD_TOGGLE_SOUND named)
 src/Gruntz/KeyedList.cpp	5	pending
 src/Gruntz/DestructButton.cpp	5	pending
 src/Gruntz/CursorSnapActReg.cpp	5	pending

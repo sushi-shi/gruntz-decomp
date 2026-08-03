@@ -19,6 +19,7 @@
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
@@ -102,7 +103,7 @@ i32 CSplashState::Render() {
         }
     }
 post:
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     m_mgr->m_owner->m_running = 0;
     return 1;
 }
@@ -130,13 +131,13 @@ i32 CSplashState::RestoreDisplay() {
 RVA(0x000f9b40, 0x37)
 i32 CSplashState::OnKeyDown(i32 code, i32) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }
 
 RVA(0x000f9b90, 0x24)
 i32 CSplashState::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }
