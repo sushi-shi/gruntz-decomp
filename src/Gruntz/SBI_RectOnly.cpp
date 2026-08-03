@@ -32,8 +32,10 @@
 #include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_WarlordHead.h>
 #include <Gruntz/SBI_WellGoo.h>
+#include <Gruntz/SbiBeltPhase.h>
 #include <Gruntz/SbiCommandId.h>
 #include <Gruntz/SbiHlRowState.h>
+#include <Gruntz/SbiMachineState.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -2084,7 +2086,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                         ph->m_interval =
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
                         ph->m_last = static_cast<u32>(g_frameTime);
-                        m_machinePhase = 8;
+                        m_machinePhase = BELT_FALLING_OFF;
                         m_beltInterval =
                             g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                         m_beltLast = static_cast<u32>(g_frameTime);
@@ -2186,7 +2188,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     }
 
     switch (pB->m_state) {
-        case 1:
+        case MACHINE_SNOOZING:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 8) {
                     SetHudRectA(
@@ -2201,7 +2203,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 }
             }
             break;
-        case 2:
+        case MACHINE_WAKING:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x13) {
                     SetHudRectA(
@@ -2220,7 +2222,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         s->m_value = 1;
                         s++;
                     }
-                    m_machinePhase = 2;
+                    m_machinePhase = BELT_IN_MACHINE;
                     m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = static_cast<u32>(g_frameTime);
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
@@ -2246,7 +2248,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 }
             }
             break;
-        case 3:
+        case MACHINE_TURNING_WHEEL:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x1d) {
                     SetHudRectA(
@@ -2261,15 +2263,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 }
             }
             break;
-        case 4:
+        case MACHINE_LEVER:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter == 0x26) {
                     i32 col;
                     i32 which = m_extraNotifyArg0;
-                    if (which >= 0x22) {
+                    if (which >= PICKUP_BRICKZ_FIRST) {
                         col = 2;
                     } else {
-                        col = (which >= 0x17) ? 1 : 0;
+                        col = (which >= PICKUP_TOYZ_FIRST) ? 1 : 0;
                     }
                     i32 found = 0;
                     for (i32 r = 3; r >= 0; r--) {
@@ -2432,7 +2434,7 @@ void CStatusBarMgr::InitTabRects() {
         ClearHlCell(1, i);
         ClearHlCell(2, i);
     }
-    m_machinePhase = 1;
+    m_machinePhase = BELT_IDLE;
     m_extraNotifyArg0 = 0;
     m_fallActive = 0;
     m_extraNotifyArg1 = 0;
@@ -2518,7 +2520,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;
     switch (m_machinePhase) {
-        case 2:
+        case BELT_IN_MACHINE:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRect.left += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRect.right += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
@@ -2528,27 +2530,27 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (m_itemRect.left >= 0x6d) {
                 m_itemRect.left = 0x6d;
                 m_itemRect.right = 0x84;
-                m_machinePhase = 3;
+                m_machinePhase = BELT_SPEWING;
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemInMachineTime", 0x7d0);
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
             refreshFlag = 1;
             break;
-        case 3:
+        case BELT_SPEWING:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 SetHudRectB(
                     0x35,
                     6,
                     g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d)
                 );
-                m_machinePhase = 4;
+                m_machinePhase = BELT_DROP_START;
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemWaitTime", 0x1f4);
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
             break;
-        case 4:
+        case BELT_DROP_START:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
-                m_machinePhase = 5;
+                m_machinePhase = BELT_FALLING;
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
@@ -2569,7 +2571,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
             break;
-        case 5:
+        case BELT_FALLING:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
@@ -2596,7 +2598,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         }
                     }
                 }
-                m_machinePhase = 7;
+                m_machinePhase = BELT_TRAVELLING;
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = static_cast<u32>(g_frameTime);
                 if (m_extraNotifyArg0 >= 0x22) {
@@ -2609,7 +2611,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             refreshFlag = 1;
             break;
-        case 7:
+        case BELT_TRAVELLING:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRect.left -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRect.right -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
@@ -2625,13 +2627,17 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     4,
                     g_buteMgr.GetDwordDef("StatusBar", "LeftMachineLeverDelay", 0x64)
                 );
-                m_machinePhase = 1;
+                m_machinePhase = BELT_IDLE;
             }
             refreshFlag = 1;
             break;
-        case 8: {
+        case BELT_FALLING_OFF: {
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                // RETAIL'S TYPO, kept: the shipped EXE's string table carries both
+                // "(FallingItemSpeed" and "FallingItemSpeed" as separate strings, so
+                // this lookup always misses and takes the default. Correcting it would
+                // drop a string from .rdata and stop matching.
                 m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                 m_beltLast = static_cast<u32>(g_frameTime);
@@ -2988,7 +2994,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
         }
     }
     m_extraNotifyArg1 = result;
-    m_machinePhase = 1;
+    m_machinePhase = BELT_IDLE;
     SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
         i32 x = m_rect10.left;

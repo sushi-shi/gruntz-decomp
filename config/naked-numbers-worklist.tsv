@@ -8,7 +8,7 @@ src/Gruntz/BattlezMapConfig.cpp	1944	done (BattlezDifficulty from the bute keys;
 src/Gruntz/Grunt.cpp	1698	done (RockNeighborMask recovered; TILEKIND_GIANT_ROCK named; rest are pixel/tick magnitudes)
 src/Gruntz/GruntArrivalScan.cpp	1611	done (3 AISTATE cases named; the rest are >>5 tile shifts and priority magnitudes)
 src/Gruntz/LightFxRender.cpp	1423	done (shape switch un-biased onto LevelArea; rest are palette data)
-src/Gruntz/SBI_RectOnly.cpp	1381	partial (SbiHlRowState recovered; pB->m_state and op/phase switches still open)
+src/Gruntz/SBI_RectOnly.cpp	1381	done (SbiHlRowState, SbiMachineState, SbiBeltPhase; 11 left are HUD geometry with no naming evidence)
 src/Gruntz/BootyStateActivate.cpp	1221	pending
 src/Gruntz/Multi.cpp	1168	pending
 src/Gruntz/GruntCombat.cpp	1165	pending
