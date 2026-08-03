@@ -6,6 +6,7 @@
 #include <Net/EmptyString.h>
 #include <Net/NetMgr.h>
 
+#include <dplay.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -51,32 +52,37 @@ void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
     sprintf(g_szCode, "Unknown Error Code");
     strcpy(szLine, g_emptyString);
 
+    // Eight of these arms keep their raw HRESULT: DPERR_APPNOTSTARTED,
+    // BUFFERTOOLARGE, CANTCREATEPROCESS, INVALIDINTERFACE, NOTLOBBIED,
+    // PLAYERLOST, SESSIONLOST and UNKNOWNAPPLICATION are not in the DPLAY.H
+    // that MSVC 5.0 ships - retail built against a later DirectPlay SDK than
+    // its own compiler bundled. The names survive in the strings either way.
     switch (hr) {
-        case static_cast<i32>(0x80004001):
+        case static_cast<i32>(DPERR_UNSUPPORTED):
             strcpy(g_szCode, "DPERR_UNSUPPORTED");
             strcpy(g_szMsg, "The function is not available in this implementation.");
             break;
-        case static_cast<i32>(0x80004005):
+        case static_cast<i32>(DPERR_GENERIC):
             strcpy(g_szCode, "DPERR_GENERIC");
             strcpy(g_szMsg, "An undefined error condition occurred.");
             break;
-        case static_cast<i32>(0x8007000e):
+        case static_cast<i32>(DPERR_OUTOFMEMORY):
             strcpy(g_szCode, "DPERR_OUTOFMEMORY");
             strcpy(g_szMsg, "There is insufficient memory to perform the requested operation.");
             break;
-        case static_cast<i32>(0x80070057):
+        case static_cast<i32>(DPERR_INVALIDPARAMS):
             strcpy(g_szCode, "DPERR_INVALIDPARAMS");
             strcpy(g_szMsg, "One or more of the parameters passed to the function are invalid.");
             break;
-        case static_cast<i32>(0x88770005):
+        case static_cast<i32>(DPERR_ALREADYINITIALIZED):
             strcpy(g_szCode, "DPERR_ALREADYINITIALIZED");
             strcpy(g_szMsg, "This object is already initialized.");
             break;
-        case static_cast<i32>(0x8877000a):
+        case static_cast<i32>(DPERR_ACCESSDENIED):
             strcpy(g_szCode, "DPERR_ACCESSDENIED");
             strcpy(g_szMsg, "The session is full or an incorrect password was supplied.");
             break;
-        case static_cast<i32>(0x88770014):
+        case static_cast<i32>(DPERR_ACTIVEPLAYERS):
             strcpy(g_szCode, "DPERR_ACTIVEPLAYERS");
             strcpy(
                 g_szMsg,
@@ -84,71 +90,71 @@ void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
                 "players."
             );
             break;
-        case static_cast<i32>(0x8877001e):
+        case static_cast<i32>(DPERR_BUFFERTOOSMALL):
             strcpy(g_szCode, "DPERR_BUFFERTOOSMALL");
             strcpy(
                 g_szMsg,
                 "The supplied buffer is not large enough to contain the requested data."
             );
             break;
-        case static_cast<i32>(0x88770028):
+        case static_cast<i32>(DPERR_CANTADDPLAYER):
             strcpy(g_szCode, "DPERR_CANTADDPLAYER");
             strcpy(g_szMsg, "The player cannot be added to the session.");
             break;
-        case static_cast<i32>(0x88770032):
+        case static_cast<i32>(DPERR_CANTCREATEGROUP):
             strcpy(g_szCode, "DPERR_CANTCREATEGROUP");
             strcpy(g_szMsg, "A new group cannot be created.");
             break;
-        case static_cast<i32>(0x8877003c):
+        case static_cast<i32>(DPERR_CANTCREATEPLAYER):
             strcpy(g_szCode, "DPERR_CANTCREATEPLAYER");
             strcpy(g_szMsg, "A new player cannot be created.");
             break;
-        case static_cast<i32>(0x88770046):
+        case static_cast<i32>(DPERR_CANTCREATESESSION):
             strcpy(g_szCode, "DPERR_CANTCREATESESSION");
             strcpy(g_szMsg, "A new session cannot be created.");
             break;
-        case static_cast<i32>(0x88770050):
+        case static_cast<i32>(DPERR_CAPSNOTAVAILABLEYET):
             strcpy(g_szCode, "DPERR_CAPSNOTAVAILABLEYET");
             strcpy(
                 g_szMsg,
                 "The capabilities of the DirectPlay object have not been determined yet."
             );
             break;
-        case static_cast<i32>(0x8877005a):
+        case static_cast<i32>(DPERR_EXCEPTION):
             strcpy(g_szCode, "DPERR_EXCEPTION");
             strcpy(g_szMsg, "An exception occurred when processing the request.");
             break;
-        case static_cast<i32>(0x88770078):
+        case static_cast<i32>(DPERR_INVALIDFLAGS):
             strcpy(g_szCode, "DPERR_INVALIDFLAGS");
             strcpy(g_szMsg, "The flags passed to this function are invalid.");
             break;
-        case static_cast<i32>(0x88770082):
+        case static_cast<i32>(DPERR_INVALIDOBJECT):
             strcpy(g_szCode, "DPERR_INVALIDOBJECT");
             strcpy(g_szMsg, "The DirectPlay object pointer is invalid.");
             break;
-        case static_cast<i32>(0x88770096):
+        case static_cast<i32>(DPERR_INVALIDPLAYER):
             strcpy(g_szCode, "DPERR_INVALIDPLAYER");
             strcpy(
                 g_szMsg,
                 "The player ID is not recognized as a valid player ID for this game session."
             );
             break;
-        case static_cast<i32>(0x887700a0):
+        case static_cast<i32>(DPERR_NOCAPS):
             strcpy(g_szCode, "DPERR_NOCAPS");
             strcpy(
                 g_szMsg,
                 "The communication link underneath DirectPlay is not capable of this function."
             );
             break;
-        case static_cast<i32>(0x887700aa):
+        case static_cast<i32>(DPERR_NOCONNECTION):
             strcpy(g_szCode, "DPERR_NOCONNECTION");
             strcpy(g_szMsg, "No communication link was established.");
             break;
-        case static_cast<i32>(0x887700be):
+        case static_cast<i32>(DPERR_NOMESSAGES):
             strcpy(g_szCode, "DPERR_NOMESSAGES");
             strcpy(g_szMsg, "There are no messages to be received.");
             break;
-        case static_cast<i32>(0x887700c8):
+        case static_cast<i32>(DPERR_NONAMESERVERFOUND):
             strcpy(g_szCode, "DPERR_NONAMESERVERFOUND");
             strcpy(
                 g_szMsg,
@@ -156,34 +162,34 @@ void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
                 "create a player."
             );
             break;
-        case static_cast<i32>(0x887700d2):
+        case static_cast<i32>(DPERR_NOPLAYERS):
             strcpy(g_szCode, "DPERR_NOPLAYERS");
             strcpy(g_szMsg, "There are no active players in the session.");
             break;
-        case static_cast<i32>(0x887700dc):
+        case static_cast<i32>(DPERR_NOSESSIONS):
             strcpy(g_szCode, "DPERR_NOSESSIONS");
             strcpy(g_szMsg, "There are no existing sessions for this game.");
             break;
-        case static_cast<i32>(0x887700e6):
+        case static_cast<i32>(DPERR_SENDTOOBIG):
             strcpy(g_szCode, "DPERR_SENDTOOBIG");
             strcpy(
                 g_szMsg,
                 "The message buffer passed to the IDirectPlay2::Send method is larger than allowed."
             );
             break;
-        case static_cast<i32>(0x887700f0):
+        case static_cast<i32>(DPERR_TIMEOUT):
             strcpy(g_szCode, "DPERR_TIMEOUT");
             strcpy(g_szMsg, "The operation could not be completed in the specified time.");
             break;
-        case static_cast<i32>(0x887700fa):
+        case static_cast<i32>(DPERR_UNAVAILABLE):
             strcpy(g_szCode, "DPERR_UNAVAILABLE");
             strcpy(g_szMsg, "The requested function is not available at this time.");
             break;
-        case static_cast<i32>(0x8877010e):
+        case static_cast<i32>(DPERR_BUSY):
             strcpy(g_szCode, "DPERR_BUSY");
             strcpy(g_szMsg, "The DirectPlay message queue is full.");
             break;
-        case static_cast<i32>(0x88770118):
+        case static_cast<i32>(DPERR_USERCANCEL):
             strcpy(g_szCode, "DPERR_USERCANCEL");
             strcpy(
                 g_szMsg,
