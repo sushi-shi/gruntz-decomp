@@ -151,30 +151,6 @@ i32 CChatBox::ReturnToPreviousPage() {
     return m_activeNode->Switch(1) != 0;
 }
 
-RVA(0x00183130, 0x16)
-i32 CChatBox::MoveFocusLeft() {
-    if (!m_activeNode) {
-        return 0;
-    }
-    return m_activeNode->MoveFocusLeftColumn() != 0;
-}
-
-RVA(0x00183150, 0x16)
-i32 CChatBox::MoveFocusRight() {
-    if (!m_activeNode) {
-        return 0;
-    }
-    return m_activeNode->MoveFocusRightColumn() != 0;
-}
-
-RVA(0x00183170, 0x24)
-i32 CChatBox::FocusSelect(i32 x, i32 y) {
-    if (!m_activeNode) {
-        return 0;
-    }
-    return m_activeNode->FocusAndSelect(x, y) != 0;
-}
-
 RVA(0x00182da0, 0x2a)
 i32 CChatBox::AttachNode(CMenuPage* n) {
     if (!n) {
@@ -354,6 +330,30 @@ i32 CChatBox::PlayActivationSound() {
     return 0;
 }
 
+RVA(0x00183130, 0x16)
+i32 CChatBox::MoveFocusLeft() {
+    if (!m_activeNode) {
+        return 0;
+    }
+    return m_activeNode->MoveFocusLeftColumn() != 0;
+}
+
+RVA(0x00183150, 0x16)
+i32 CChatBox::MoveFocusRight() {
+    if (!m_activeNode) {
+        return 0;
+    }
+    return m_activeNode->MoveFocusRightColumn() != 0;
+}
+
+RVA(0x00183170, 0x24)
+i32 CChatBox::FocusSelect(i32 x, i32 y) {
+    if (!m_activeNode) {
+        return 0;
+    }
+    return m_activeNode->FocusAndSelect(x, y) != 0;
+}
+
 RVA(0x001831a0, 0x24)
 i32 CChatBox::ClickAt(i32 x, i32 y) {
     CMenuPage* n = m_activeNode;
@@ -361,24 +361,6 @@ i32 CChatBox::ClickAt(i32 x, i32 y) {
         return 0;
     }
     return n->Click(x, y) != 0;
-}
-
-RVA(0x00183210, 0x16)
-i32 CChatBox::MoveFocusUpFollowingLinks() {
-    CMenuPage* n = m_activeNode;
-    if (!n) {
-        return 0;
-    }
-    return n->MoveFocusUp() != 0;
-}
-
-RVA(0x00183230, 0x16)
-i32 CChatBox::MoveFocusDownFollowingLinks() {
-    CMenuPage* n = m_activeNode;
-    if (!n) {
-        return 0;
-    }
-    return n->MoveFocusDown() != 0;
 }
 
 RVA(0x001831d0, 0x16)
@@ -397,6 +379,24 @@ i32 CChatBox::MoveFocusRightFollowingLinks() {
         return 0;
     }
     return n->MoveFocusRight() != 0;
+}
+
+RVA(0x00183210, 0x16)
+i32 CChatBox::MoveFocusUpFollowingLinks() {
+    CMenuPage* n = m_activeNode;
+    if (!n) {
+        return 0;
+    }
+    return n->MoveFocusUp() != 0;
+}
+
+RVA(0x00183230, 0x16)
+i32 CChatBox::MoveFocusDownFollowingLinks() {
+    CMenuPage* n = m_activeNode;
+    if (!n) {
+        return 0;
+    }
+    return n->MoveFocusDown() != 0;
 }
 
 RVA_COMPGEN(0x00183250, 0x71, ??1CMenuPage@@QAE@XZ)

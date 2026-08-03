@@ -16,7 +16,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/BoundaryUpperViews.h>
+#include <Gruntz/Blk6c.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>

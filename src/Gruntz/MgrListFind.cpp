@@ -3,7 +3,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgrViews.h>
+#include <Gruntz/TriggerMgrRecords.h>
 
 // @early-stop
 RVA(0x000f0db0, 0x48)

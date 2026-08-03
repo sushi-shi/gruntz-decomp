@@ -2,7 +2,7 @@
 
 #include <Gruntz/DoNothing.h>
 
-#include <Gruntz/DoNothingNormalDtor.h>
+#include <Gruntz/DoNothingNormal.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>

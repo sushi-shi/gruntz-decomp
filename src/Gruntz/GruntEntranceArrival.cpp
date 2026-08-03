@@ -14,7 +14,6 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Enums.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -26,14 +25,17 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Ints.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/Object.h>
 #include <Wap32/Wap32.h>
 
 #include <math.h>

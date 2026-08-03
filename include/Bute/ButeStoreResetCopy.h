@@ -1,5 +1,5 @@
-#ifndef SRC_BUTE_BUTESTOREDTORCOPIES_H
-#define SRC_BUTE_BUTESTOREDTORCOPIES_H
+#ifndef SRC_BUTE_BUTESTORERESETCOPY_H
+#define SRC_BUTE_BUTESTORERESETCOPY_H
 
 #include <rva.h>
 
@@ -10,4 +10,4 @@ struct CButeStoreResetCopyClear : public zPTree {
 };
 SIZE(0x2c);
 
-#endif // SRC_BUTE_BUTESTOREDTORCOPIES_H
+#endif // SRC_BUTE_BUTESTORERESETCOPY_H

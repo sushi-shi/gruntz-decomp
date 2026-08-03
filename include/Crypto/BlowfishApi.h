@@ -1,5 +1,5 @@
-#ifndef CRYPTO_BLOWFISHCOPY_H
-#define CRYPTO_BLOWFISHCOPY_H
+#ifndef CRYPTO_BLOWFISHAPI_H
+#define CRYPTO_BLOWFISHAPI_H
 
 #include <rva.h>
 
@@ -14,4 +14,4 @@ class ostream;
 
 void __stdcall BitStreamBlowfishEncode(istream* src, ostream* dst);
 
-#endif // CRYPTO_BLOWFISHCOPY_H
+#endif // CRYPTO_BLOWFISHAPI_H

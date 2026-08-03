@@ -17,6 +17,18 @@ CActReg CActRegPool<CStatusBarSprite>::s_table(2000, 2010);
 
 VTBL(CStatusBarSprite, 0x001e7fc4);
 
+RVA(0x00011ac0, 0x6)
+LogicTypeId CStatusBarSprite::GetTypeTag() {
+    return LOGIC_STATUSBARSPRITE;
+}
+
+RVA(0x00011ae0, 0x47)
+i32 CStatusBarSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+        return 0;
+    }
+    return Chain(ar, mode, typeId, pObj) != 0;
+}
 RVA_COMPGEN(0x00011b50, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
@@ -107,17 +119,4 @@ RVA(0x0010c810, 0x17)
 i32 CStatusBarSprite::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
-}
-
-RVA(0x00011ac0, 0x6)
-LogicTypeId CStatusBarSprite::GetTypeTag() {
-    return LOGIC_STATUSBARSPRITE;
-}
-
-RVA(0x00011ae0, 0x47)
-i32 CStatusBarSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
-    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(ar, mode, typeId, pObj) != 0;
 }

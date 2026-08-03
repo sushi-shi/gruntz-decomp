@@ -1144,6 +1144,11 @@ i32 CSymParser::Clear(i32 final) {
     return r;
 }
 
+RVA(0x0013b900, 0x4)
+CSymTab* CSymParser::GetRoot() {
+    return m_root;
+}
+
 RVA(0x0013b910, 0x58)
 u32 CSymParser::PackTag(const char* s) {
     if (!s) {
@@ -1342,11 +1347,6 @@ CParseSource* CSymTab::ResolveQualified(const char* name, i32 fourcc) {
         return 0;
     }
     return scope->Insert(leaf, fourcc);
-}
-
-RVA(0x0013b900, 0x4)
-CSymTab* CSymParser::GetRoot() {
-    return m_root;
 }
 
 RVA(0x0013bff0, 0x19)

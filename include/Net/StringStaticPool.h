@@ -1,5 +1,5 @@
-#ifndef GRUNTZ_NET_NETMGRMISC_H
-#define GRUNTZ_NET_NETMGRMISC_H
+#ifndef GRUNTZ_NET_STRINGSTATICPOOL_H
+#define GRUNTZ_NET_STRINGSTATICPOOL_H
 
 class CString;
 
@@ -13,4 +13,4 @@ template<class Tag> struct CStringStaticPool {
 struct CAssetRootTag;
 typedef CStringStaticPool<CAssetRootTag> CAssetRootStorage;
 
-#endif // GRUNTZ_NET_NETMGRMISC_H
+#endif // GRUNTZ_NET_STRINGSTATICPOOL_H

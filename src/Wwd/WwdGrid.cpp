@@ -16,6 +16,40 @@ CWwdGridShell::~CWwdGridShell() {}
 RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
 RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
+RVA(0x001915c0, 0x15d)
+i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
+    m_count = 0;
+    m_bounds.m_minX = rect.left;
+    m_bounds.m_minY = rect.top;
+    m_bounds.m_maxX = rect.right;
+    m_bounds.m_maxY = rect.bottom;
+    i32 lox = rect.left, hix = rect.right;
+    if (rect.right < rect.left) {
+        lox = rect.right;
+        hix = rect.left;
+    }
+    i32 loy = rect.top, hiy = rect.bottom;
+    if (rect.bottom < rect.top) {
+        loy = rect.bottom;
+        hiy = rect.top;
+    }
+    m_width = hix - lox;
+    m_height = hiy - loy;
+    m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
+    m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
+    m_cellH = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftY)));
+    m_cellW = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftX)));
+    m_cols = m_width / m_cellH + 1;
+    m_rows = m_height / m_cellW + 1;
+    m_cellCount = m_rows * m_cols;
+    BucketHead* arr = new BucketHead[m_cellCount];
+    m_buckets = arr;
+    if (!arr) {
+        return 0;
+    }
+    m_allocated = 1;
+    return 1;
+}
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
 RVA(0x00191770, 0x8d)
@@ -236,37 +270,3 @@ RVA(0x00191d10, 0x1)
 BucketHead::~BucketHead() {}
 
 // @early-stop
-RVA(0x001915c0, 0x15d)
-i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
-    m_count = 0;
-    m_bounds.m_minX = rect.left;
-    m_bounds.m_minY = rect.top;
-    m_bounds.m_maxX = rect.right;
-    m_bounds.m_maxY = rect.bottom;
-    i32 lox = rect.left, hix = rect.right;
-    if (rect.right < rect.left) {
-        lox = rect.right;
-        hix = rect.left;
-    }
-    i32 loy = rect.top, hiy = rect.bottom;
-    if (rect.bottom < rect.top) {
-        loy = rect.bottom;
-        hiy = rect.top;
-    }
-    m_width = hix - lox;
-    m_height = hiy - loy;
-    m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
-    m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
-    m_cellH = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftY)));
-    m_cellW = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftX)));
-    m_cols = m_width / m_cellH + 1;
-    m_rows = m_height / m_cellW + 1;
-    m_cellCount = m_rows * m_cols;
-    BucketHead* arr = new BucketHead[m_cellCount];
-    m_buckets = arr;
-    if (!arr) {
-        return 0;
-    }
-    m_allocated = 1;
-    return 1;
-}

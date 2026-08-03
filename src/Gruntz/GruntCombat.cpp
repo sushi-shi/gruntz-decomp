@@ -6,6 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -13,7 +14,6 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -28,6 +28,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
@@ -35,8 +36,10 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WorkerHandler.h>
+#include <Ints.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/Object.h>
 #include <Wap32/Rect.h>
 
 #include <math.h>

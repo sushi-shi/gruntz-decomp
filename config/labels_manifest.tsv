@@ -23,7 +23,6 @@ bitarray	3
 bitarraystream	2
 bitstreamblowfish	1
 blowfish	4
-blowfishcopy	1
 boomerang	6
 bootycheatstate	1
 bootymessages	3
@@ -40,6 +39,7 @@ butemgr	55
 butenode	5
 butestoreclear	1
 butetail	2
+butetailencode	1
 butetree	1
 bzkinddispatch	1
 chainforward	2
@@ -219,6 +219,7 @@ mgrlistfind	1
 mgrsettings	1
 modeobjinit	2
 motionstate	5
+moviepaletteupload	1
 movieplayer	2
 movinglogic	5
 multi	126
@@ -235,7 +236,6 @@ netsessionnode	3
 objecttracker	1
 packetpool	1
 palettebmp	2
-palettecopy	1
 palettesnapshot	1
 pathhazard	15
 pathhazardactreg	1

@@ -23,6 +23,10 @@ u32 g_bfInitS[4][256] = BF_PI_S_INIT;
       + g_bfS[3][(R) & 0xff]))
 
 // @early-stop
+RVA(0x0016f6c0, 0x12)
+void __stdcall Blowfish_InitKey(const char* key) {
+    InitializeBlowfish(key, 4);
+}
 RVA(0x0016f7f0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
     u32 l = *xl;
@@ -116,9 +120,4 @@ i16 InitializeBlowfish(const char* key, i16 keybytes) {
         }
     }
     return 0;
-}
-
-RVA(0x0016f6c0, 0x12)
-void __stdcall Blowfish_InitKey(const char* key) {
-    InitializeBlowfish(key, 4);
 }

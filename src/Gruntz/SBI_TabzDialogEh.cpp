@@ -5,8 +5,9 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SbGeom.h>
+#include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/SBI_MenuItem.h>
-#include <Gruntz/SbiTabzDialogViews.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>

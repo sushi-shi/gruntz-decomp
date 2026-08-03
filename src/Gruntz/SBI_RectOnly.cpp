@@ -1,3 +1,5 @@
+#include <rva.h>
+
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -21,18 +23,19 @@
 #include <Gruntz/SBI_GruntMachine.h>
 #include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/SBI_ImageSetAni.h>
+#include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_WarlordHead.h>
 #include <Gruntz/SBI_WellGoo.h>
-#include <Gruntz/SbiSideTabBuildViews.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTabWidgets.h>
-#include <Gruntz/StatusBarUpdatersViews.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/WarpStoneFly.h>
 #include <Image/CImage.h>
+#include <Ints.h>
 #include <Io/FileMem.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>

@@ -2,12 +2,12 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -18,12 +18,15 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Ints.h>
 #include <Io/FileMem.h>
 #include <Pix16.h>
+#include <Wap32/Object.h>
 
 #include <math.h>
 #include <stdlib.h>

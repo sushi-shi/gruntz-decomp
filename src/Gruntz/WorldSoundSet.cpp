@@ -5,7 +5,6 @@
 #include <Mfc.h>
 
 #include <Gruntz/AmbientSound.h>
-#include <Gruntz/BoundaryLeafLogicViews.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h>

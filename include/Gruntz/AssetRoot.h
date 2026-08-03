@@ -2,6 +2,6 @@
 #define GRUNTZ_ASSETROOT_H
 
 #include <Gruntz/String.h>
-#include <Net/NetMgrMisc.h>
+#include <Net/StringStaticPool.h>
 
 #endif // GRUNTZ_ASSETROOT_H

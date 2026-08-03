@@ -4,7 +4,7 @@
 
 #include <AddrWord.h>
 #include <Crypto/BitStreamBlowfish.h>
-#include <Crypto/BlowfishCopy.h>
+#include <Crypto/BlowfishApi.h>
 #include <EmptyString.h>
 #include <strstrea.h>
 

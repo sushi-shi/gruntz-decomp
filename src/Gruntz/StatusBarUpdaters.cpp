@@ -6,9 +6,11 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
-#include <Gruntz/StatusBarUpdatersViews.h>
+#include <Gruntz/Sprite.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Ints.h>
 #include <Rez/FrameClock.h>
 
 // @early-stop

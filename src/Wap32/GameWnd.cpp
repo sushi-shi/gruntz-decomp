@@ -10,6 +10,38 @@ VTBL(CGameWnd, 0x001ea344);
 
 RVA_COMPGEN(0x00094c10, 0x16, ??1CGameWnd@@UAE@XZ)
 
+RVA(0x00094c80, 0x5)
+i32 CGameWnd::OnKeyUp(WPARAM, LPARAM) {
+    return 0;
+}
+i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
+    return 0;
+}
+i32 CGameWnd::OnLButtonDown(WPARAM, i32, i32) {
+    return 0;
+}
+RVA(0x00094cc0, 0x5)
+i32 CGameWnd::OnRButtonDown(WPARAM, i32, i32) {
+    return 0;
+}
+RVA(0x00094ce0, 0x5)
+i32 CGameWnd::OnLButtonUp(WPARAM, i32, i32) {
+    return 0;
+}
+RVA(0x00094d00, 0x5)
+i32 CGameWnd::OnRButtonUp(WPARAM, i32, i32) {
+    return 0;
+}
+i32 CGameWnd::OnMouseMove(WPARAM, i32, i32) {
+    return 0;
+}
+RVA(0x00094d40, 0x5)
+i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
+    return 0;
+}
+i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
+    return 0;
+}
 RVA_COMPGEN(0x00094d80, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)
 
 RVA(0x0013cf00, 0x11)
@@ -66,66 +98,6 @@ void CGameWnd::Destroy() {
     }
     m_owner = 0;
     g_activeGameWnd = 0;
-}
-
-RVA(0x0013d3a0, 0x6a)
-i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
-    i32 notifyCode = static_cast<i32>((wParam >> 16));
-    i32 cmdId = static_cast<i32>((wParam & 0xffff));
-
-    if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)) {
-        return 1;
-    }
-    if (HandleWindowCommand(notifyCode, cmdId, lParam)) {
-        return 1;
-    }
-    return m_owner->m_gameMgr->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)
-           != 0;
-}
-
-RVA(0x0013d4c0, 0x1e)
-i32 CGameWnd::OnClose() {
-    if (!m_closeGuard) {
-        m_closeGuard = 1;
-        DestroyWindow(m_hwnd);
-    }
-    return 1;
-}
-
-RVA(0x0013d470, 0x12)
-i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM) {
-    m_owner->m_appActive = wParam;
-    return 0;
-}
-
-RVA(0x0013d490, 0x29)
-i32 CGameWnd::QuitMessageLoop() {
-    m_owner->FreeGameManager();
-    if (m_owner->m_errorReported) {
-        m_owner->ShowError();
-    }
-    PostQuitMessage(0);
-    return 0;
-}
-
-RVA(0x0013d4e0, 0x43)
-void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
-    MSG msg;
-    for (i32 i = 0; i < count; ++i) {
-        if (!PeekMessageA(&msg, m_hwnd, filterMsg, filterMsg, PM_REMOVE)) {
-            break;
-        }
-    }
-}
-
-RVA(0x0013d530, 0x55)
-void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
-    MSG msg;
-    for (i32 i = 0; i < count; ++i) {
-        if (!PeekMessageA(&msg, m_hwnd, filterMin, filterMax, PM_REMOVE)) {
-            break;
-        }
-    }
 }
 
 RVA(0x0013cff0, 0x3a0)
@@ -309,35 +281,62 @@ i32 CGameWnd::OnChar(WPARAM, LPARAM) {
 i32 CGameWnd::OnKeyDown(WPARAM, LPARAM) {
     return 0;
 }
-RVA(0x00094c80, 0x5)
-i32 CGameWnd::OnKeyUp(WPARAM, LPARAM) {
+RVA(0x0013d3a0, 0x6a)
+i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
+    i32 notifyCode = static_cast<i32>((wParam >> 16));
+    i32 cmdId = static_cast<i32>((wParam & 0xffff));
+
+    if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)) {
+        return 1;
+    }
+    if (HandleWindowCommand(notifyCode, cmdId, lParam)) {
+        return 1;
+    }
+    return m_owner->m_gameMgr->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)
+           != 0;
+}
+
+RVA(0x0013d470, 0x12)
+i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM) {
+    m_owner->m_appActive = wParam;
     return 0;
 }
-i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
+
+RVA(0x0013d490, 0x29)
+i32 CGameWnd::QuitMessageLoop() {
+    m_owner->FreeGameManager();
+    if (m_owner->m_errorReported) {
+        m_owner->ShowError();
+    }
+    PostQuitMessage(0);
     return 0;
 }
-i32 CGameWnd::OnLButtonDown(WPARAM, i32, i32) {
-    return 0;
+
+RVA(0x0013d4c0, 0x1e)
+i32 CGameWnd::OnClose() {
+    if (!m_closeGuard) {
+        m_closeGuard = 1;
+        DestroyWindow(m_hwnd);
+    }
+    return 1;
 }
-RVA(0x00094cc0, 0x5)
-i32 CGameWnd::OnRButtonDown(WPARAM, i32, i32) {
-    return 0;
+
+RVA(0x0013d4e0, 0x43)
+void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
+    MSG msg;
+    for (i32 i = 0; i < count; ++i) {
+        if (!PeekMessageA(&msg, m_hwnd, filterMsg, filterMsg, PM_REMOVE)) {
+            break;
+        }
+    }
 }
-RVA(0x00094ce0, 0x5)
-i32 CGameWnd::OnLButtonUp(WPARAM, i32, i32) {
-    return 0;
-}
-RVA(0x00094d00, 0x5)
-i32 CGameWnd::OnRButtonUp(WPARAM, i32, i32) {
-    return 0;
-}
-i32 CGameWnd::OnMouseMove(WPARAM, i32, i32) {
-    return 0;
-}
-RVA(0x00094d40, 0x5)
-i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
-    return 0;
-}
-i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
-    return 0;
+
+RVA(0x0013d530, 0x55)
+void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
+    MSG msg;
+    for (i32 i = 0; i < count; ++i) {
+        if (!PeekMessageA(&msg, m_hwnd, filterMin, filterMax, PM_REMOVE)) {
+            break;
+        }
+    }
 }

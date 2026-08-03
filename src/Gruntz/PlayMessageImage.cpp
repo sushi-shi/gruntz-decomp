@@ -10,23 +10,6 @@
 #include <Image/ImageSet.h>
 
 // @early-stop
-RVA(0x000d1650, 0x90)
-void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
-    CObject* set_ob = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
-    CDDrawWorker* set = static_cast<CDDrawWorker*>(set_ob);
-    if (set != 0) {
-        CImage* frame = set->GetAt(index);
-        if (frame != 0) {
-            LevelCoordRect& vp = m_world->m_level->m_planeCtx;
-            i32 cx = vp.left + (vp.right - vp.left) / 2;
-            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
-            LayerBlitFrame(m_world, frame, cx, cy, useFront, 1);
-        }
-    }
-}
-
-// @early-stop
 RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
@@ -56,3 +39,20 @@ i32 CPlay::DrawStateMessage() {
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
     return 1;
 }
+RVA(0x000d1650, 0x90)
+void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
+    CObject* set_ob = 0;
+    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
+    CDDrawWorker* set = static_cast<CDDrawWorker*>(set_ob);
+    if (set != 0) {
+        CImage* frame = set->GetAt(index);
+        if (frame != 0) {
+            LevelCoordRect& vp = m_world->m_level->m_planeCtx;
+            i32 cx = vp.left + (vp.right - vp.left) / 2;
+            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
+            LayerBlitFrame(m_world, frame, cx, cy, useFront, 1);
+        }
+    }
+}
+
+// @early-stop

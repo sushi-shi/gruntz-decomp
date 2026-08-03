@@ -5,13 +5,13 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -21,12 +21,15 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Ints.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/Object.h>
 
 #include <math.h>
 #include <stdlib.h>

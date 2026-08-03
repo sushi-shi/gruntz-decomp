@@ -23,7 +23,7 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/BoundaryUpperViews.h>
+#include <Gruntz/Blk6c.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/Demo.h>
@@ -63,6 +63,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
+#include <Ints.h>
 #include <Io/FileMem.h>
 #include <Io/FileStream.h>
 #include <Io/MoviePlayer.h>
@@ -74,6 +75,7 @@
 #include <Utils/MapTyped.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/GameApp.h>
+#include <Wap32/Object.h>
 #include <Wwd/WwdFile.h>
 
 #include <ddraw.h>

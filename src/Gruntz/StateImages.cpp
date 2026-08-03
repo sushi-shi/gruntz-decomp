@@ -10,29 +10,6 @@
 #include <Gruntz/GameMode.h>
 #include <Gruntz/ImageState.h>
 
-RVA(0x000a09a0, 0x6a)
-i32 CMenuState::InputVirtual() {
-    if (CState::InputVirtual() == 0) {
-        return 0;
-    }
-    void* tree = SymTab2c()->ResolvePath("IMAGEZ");
-    if (tree == 0) {
-        return 0;
-    }
-    if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
-        return 0;
-    }
-    if (RestoreDisplay() == 0) {
-        return 0;
-    }
-    int(WINAPI * sc)(BOOL) = ShowCursor;
-    i32 r = sc(1);
-    while (r < 0) {
-        r = sc(1);
-    }
-    return 1;
-}
-
 RVA(0x0001c8a0, 0xec)
 i32 CBootyState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
@@ -67,5 +44,27 @@ i32 CBootyState::InputVirtual() {
     }
     m_world->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, 1);
+    return 1;
+}
+RVA(0x000a09a0, 0x6a)
+i32 CMenuState::InputVirtual() {
+    if (CState::InputVirtual() == 0) {
+        return 0;
+    }
+    void* tree = SymTab2c()->ResolvePath("IMAGEZ");
+    if (tree == 0) {
+        return 0;
+    }
+    if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
+        return 0;
+    }
+    if (RestoreDisplay() == 0) {
+        return 0;
+    }
+    int(WINAPI * sc)(BOOL) = ShowCursor;
+    i32 r = sc(1);
+    while (r < 0) {
+        r = sc(1);
+    }
     return 1;
 }

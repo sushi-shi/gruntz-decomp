@@ -1,6 +1,0 @@
-#ifndef GRUNTZ_TRIGGERMGRVIEWS_H
-#define GRUNTZ_TRIGGERMGRVIEWS_H
-
-#include <Gruntz/TriggerMgrRecords.h>
-
-#endif // GRUNTZ_TRIGGERMGRVIEWS_H

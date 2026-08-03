@@ -13,7 +13,7 @@
 #include <Gruntz/CheckpointTrigger.h>
 #include <Gruntz/CursorSnapSprite.h>
 #include <Gruntz/DoNothing.h>
-#include <Gruntz/DoNothingNormalDtor.h>
+#include <Gruntz/DoNothingNormal.h>
 #include <Gruntz/DroppedObject.h>
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/ExitTrigger.h>

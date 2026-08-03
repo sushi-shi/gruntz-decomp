@@ -5,7 +5,7 @@
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SbiSideTabBuildViews.h>
+#include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
 

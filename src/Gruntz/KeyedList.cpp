@@ -2,13 +2,6 @@
 
 #include <Net/KeyedList.h>
 
-RVA(0x000379f0, 0x57)
-CKeyedNode::~CKeyedNode() {
-    m_key.Empty();
-    m_commandDelay = 0;
-    m_drainReload = 0;
-}
-
 RVA(0x000379a0, 0x3d)
 void CKeyedList::Clear() {
 
@@ -22,6 +15,13 @@ void CKeyedList::Clear() {
 }
 
 // @early-stop
+RVA(0x000379f0, 0x57)
+CKeyedNode::~CKeyedNode() {
+    m_key.Empty();
+    m_commandDelay = 0;
+    m_drainReload = 0;
+}
+
 RVA(0x00037a70, 0x9a)
 CKeyedNode* CKeyedList::AddNode(const char* key, i32 commandDelay, i32 drainReload) {
     CKeyedNode* node = new CKeyedNode;

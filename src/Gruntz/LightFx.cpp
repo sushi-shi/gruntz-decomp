@@ -30,6 +30,51 @@ VTBL(CLightFx, 0x001e7af4);
 RVA_COMPGEN(0x00012400, 0x1e, ??_GCLightFx@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
+RVA(0x0009cdc0, 0xf1)
+i32 CreateLightFx(CGameObject* obj) {
+    AnimWorkerObj* aux = obj->m_animWorker;
+    switch (static_cast<u32>(static_cast<size_t>(aux->ActKey()))) {
+        case 0:
+            aux->SetActKey(0x3e8);
+            {
+                CLightFx* p = new CLightFx(obj);
+                (static_cast<CUserLogic*>(p))->Activate();
+                aux->m_logic = p;
+            }
+            break;
+        case 0x1d:
+            aux->m_logic->OnObjectRemoved();
+            break;
+        case 0x1e:
+            aux->m_logic->OnLeaveActiveRegion();
+            break;
+        case 0x50:
+            aux->m_logic->PrepareSave();
+            break;
+        case 0x51:
+            aux->m_logic->AfterSave();
+            break;
+        case 0x52:
+            aux->m_logic->AfterLoad();
+            break;
+        case 0x53:
+            aux->m_logic->AfterLoadReferences();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            ProjTypeXfer(aux->m_logic);
+            break;
+    }
+    return 1;
+}
+
+// @early-stop
+RVA(0x0009cf00, 0x1a5)
+CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+    m_anchorA = 2;
+    m_anchorB = 1;
+}
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CLightFx>::s_table.ResolveEntry(id));
@@ -143,50 +188,4 @@ i32 CLightFx::AdvanceAnim() {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
-}
-
-RVA(0x0009cdc0, 0xf1)
-i32 CreateLightFx(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
-    switch (static_cast<u32>(static_cast<size_t>(aux->ActKey()))) {
-        case 0:
-            aux->SetActKey(0x3e8);
-            {
-                CLightFx* p = new CLightFx(obj);
-                (static_cast<CUserLogic*>(p))->Activate();
-                aux->m_logic = p;
-            }
-            break;
-        case 0x1d:
-            aux->m_logic->OnObjectRemoved();
-            break;
-        case 0x1e:
-            aux->m_logic->OnLeaveActiveRegion();
-            break;
-        case 0x50:
-            aux->m_logic->PrepareSave();
-            break;
-        case 0x51:
-            aux->m_logic->AfterSave();
-            break;
-        case 0x52:
-            aux->m_logic->AfterLoad();
-            break;
-        case 0x53:
-            aux->m_logic->AfterLoadReferences();
-            break;
-        case 0x3e8:
-            break;
-        default:
-            ProjTypeXfer(aux->m_logic);
-            break;
-    }
-    return 1;
-}
-
-// @early-stop
-RVA(0x0009cf00, 0x1a5)
-CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_anchorA = 2;
-    m_anchorB = 1;
 }

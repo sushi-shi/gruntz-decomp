@@ -14,7 +14,6 @@
 #include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 #include <Gruntz/SbiConfig.h>
-#include <Gruntz/SbiSideTabBuildViews.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarItem.h>

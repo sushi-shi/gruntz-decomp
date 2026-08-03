@@ -4,7 +4,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TriggerMgrViews.h>
+#include <Gruntz/TriggerMgrRecords.h>
 
 RVA(0x000759e0, 0x18)
 Coord* CTriggerMgr::GetOriginXY(Coord* out) {

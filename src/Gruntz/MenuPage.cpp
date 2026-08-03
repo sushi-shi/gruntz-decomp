@@ -87,6 +87,91 @@ i32 CMenuPage::Append(CMenuItem* item) {
     return 1;
 }
 
+RVA(0x00183460, 0x13d)
+CMenuItem* CMenuPage::AddItem(
+    const char* label,
+    const char* spriteKey,
+    i32 cmdId,
+    const char* key,
+    i32 flags
+) {
+    CMenuItem* item = new CMenuItem();
+
+    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
+        if (item) {
+            delete item;
+        }
+        return 0;
+    }
+    return Append(item) ? item : 0;
+}
+
+RVA(0x001835a0, 0x14b)
+CMenuItem* CMenuPage::AddSubItem(
+    const char* label,
+    const char* spriteKey,
+    i32 cmdId,
+    i32 cmdParam,
+    i32 tag,
+    const char* key,
+    i32 flags
+) {
+    CMenuItem* item = new CMenuItem();
+    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
+        if (item) {
+            delete item;
+        }
+        return 0;
+    }
+    item->m_cmdParam = cmdParam;
+    item->m_secondaryCmdId = tag;
+    return Append(item) ? item : 0;
+}
+
+RVA(0x001836f0, 0x160)
+CMenuItem2* CMenuPage::AddItem2(
+    const char* name,
+    const char* spriteKey,
+    i32 cmdId,
+    const char* key,
+    i32 flags,
+    i32 frame
+) {
+    CMenuItem2* item = new CMenuItem2();
+    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
+        if (item) {
+            delete item;
+        }
+        return 0;
+    }
+    item->SetFrame(frame);
+    return Append(item) ? item : 0;
+}
+
+// @early-stop
+RVA(0x00183850, 0x13b)
+CMenuItem2* CMenuPage::AddSubItem2(
+    const char* name,
+    const char* spriteKey,
+    i32 cmdId,
+    i32 cmdParam,
+    i32 parentCtx,
+    const char* key,
+    i32 flags,
+    i32 frame
+) {
+    CMenuItem2* item = new CMenuItem2();
+    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
+        if (item) {
+            delete item;
+        }
+        return 0;
+    }
+    item->SetFrame(frame);
+    item->m_cmdParam = cmdParam;
+    item->m_secondaryCmdId = parentCtx;
+    return Append(item) ? item : 0;
+}
 RVA(0x00183990, 0x38)
 i32 CMenuPage::ReleaseAll() {
     if (m_focus) {
@@ -163,6 +248,40 @@ i32 CMenuPage::NotifyAll(u32 dt) {
         CMenuItem* item = NextItem(node);
         if (item) {
             item->Notify(dt);
+        }
+    }
+    return 1;
+}
+
+RVA(0x00183b60, 0xe8)
+i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
+    if (m_flags & 4) {
+        return LayoutOne(target);
+    }
+    i32 x0 = m_rect.left;
+    i32 x1 = m_rect.right;
+    i32 y = m_offsetY + m_rect.top;
+    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
+    CDDrawWorker* sub = m_subPage;
+    if (sub) {
+        CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
+        if (head) {
+            y += head->m_anchorY;
+            head->RenderFrame(target, x, y, 0);
+            y += m_headGap + head->m_anchorY;
+        }
+    }
+    POSITION node = m_items.GetHeadPosition();
+    while (node) {
+        CMenuItem* item = NextItem(node);
+        if (item) {
+            y += item->GetWidth() / 2;
+            item->Place(target, x, y);
+            if (item->m_state == 2 && !(m_flags & 8)) {
+                m_host->Draw(target, item, x, y);
+            }
+            y += item->GetWidth() / 2;
+            y += m_rowSpacing;
         }
     }
     return 1;
@@ -287,40 +406,6 @@ i32 CMenuPage::FocusPrev() {
 }
 
 // @early-stop
-RVA(0x00183b60, 0xe8)
-i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
-    if (m_flags & 4) {
-        return LayoutOne(target);
-    }
-    i32 x0 = m_rect.left;
-    i32 x1 = m_rect.right;
-    i32 y = m_offsetY + m_rect.top;
-    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
-    CDDrawWorker* sub = m_subPage;
-    if (sub) {
-        CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
-        if (head) {
-            y += head->m_anchorY;
-            head->RenderFrame(target, x, y, 0);
-            y += m_headGap + head->m_anchorY;
-        }
-    }
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
-        if (item) {
-            y += item->GetWidth() / 2;
-            item->Place(target, x, y);
-            if (item->m_state == 2 && !(m_flags & 8)) {
-                m_host->Draw(target, item, x, y);
-            }
-            y += item->GetWidth() / 2;
-            y += m_rowSpacing;
-        }
-    }
-    return 1;
-}
-
 RVA(0x00183dd0, 0x16)
 i32 CMenuPage::Activate() {
     if (!m_focus) {
@@ -610,90 +695,4 @@ i32 CMenuPage::MoveFocusDown() {
         return SetFocus(item, 1);
     }
     return FocusPrev();
-}
-
-RVA(0x00183460, 0x13d)
-CMenuItem* CMenuPage::AddItem(
-    const char* label,
-    const char* spriteKey,
-    i32 cmdId,
-    const char* key,
-    i32 flags
-) {
-    CMenuItem* item = new CMenuItem();
-
-    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
-        if (item) {
-            delete item;
-        }
-        return 0;
-    }
-    return Append(item) ? item : 0;
-}
-
-RVA(0x001835a0, 0x14b)
-CMenuItem* CMenuPage::AddSubItem(
-    const char* label,
-    const char* spriteKey,
-    i32 cmdId,
-    i32 cmdParam,
-    i32 tag,
-    const char* key,
-    i32 flags
-) {
-    CMenuItem* item = new CMenuItem();
-    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
-        if (item) {
-            delete item;
-        }
-        return 0;
-    }
-    item->m_cmdParam = cmdParam;
-    item->m_secondaryCmdId = tag;
-    return Append(item) ? item : 0;
-}
-
-RVA(0x001836f0, 0x160)
-CMenuItem2* CMenuPage::AddItem2(
-    const char* name,
-    const char* spriteKey,
-    i32 cmdId,
-    const char* key,
-    i32 flags,
-    i32 frame
-) {
-    CMenuItem2* item = new CMenuItem2();
-    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
-        if (item) {
-            delete item;
-        }
-        return 0;
-    }
-    item->SetFrame(frame);
-    return Append(item) ? item : 0;
-}
-
-// @early-stop
-RVA(0x00183850, 0x13b)
-CMenuItem2* CMenuPage::AddSubItem2(
-    const char* name,
-    const char* spriteKey,
-    i32 cmdId,
-    i32 cmdParam,
-    i32 parentCtx,
-    const char* key,
-    i32 flags,
-    i32 frame
-) {
-    CMenuItem2* item = new CMenuItem2();
-    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
-        if (item) {
-            delete item;
-        }
-        return 0;
-    }
-    item->SetFrame(frame);
-    item->m_cmdParam = cmdParam;
-    item->m_secondaryCmdId = parentCtx;
-    return Append(item) ? item : 0;
 }

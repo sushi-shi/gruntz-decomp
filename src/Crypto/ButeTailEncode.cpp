@@ -1,9 +1,8 @@
 #include <rva.h>
 
-#include <Crypto/BlowfishCopy.h>
-
 #include <Bute/ButeMgr.h>
 #include <Crypto/Blowfish.h>
+#include <Crypto/BlowfishApi.h>
 #include <Ints.h>
 
 #include <iostream.h>

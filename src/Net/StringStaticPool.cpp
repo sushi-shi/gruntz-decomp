@@ -1,6 +1,6 @@
 #include <rva.h>
 
-#include <Net/NetMgrMisc.h>
+#include <Net/StringStaticPool.h>
 
 #include <Mfc.h>
 

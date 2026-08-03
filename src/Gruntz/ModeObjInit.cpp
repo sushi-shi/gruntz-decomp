@@ -15,16 +15,6 @@
 #include <new>
 #include <string.h>
 
-RVA(0x000c86d0, 0x11)
-CSbiHlRow::CSbiHlRow() {
-
-    m_lastLo = 0;
-    m_intervalLo = 0;
-    m_lastHi = 0;
-    m_intervalHi = 0;
-}
-
-// @early-stop
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -152,3 +142,13 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         return 1;
     }
 }
+RVA(0x000c86d0, 0x11)
+CSbiHlRow::CSbiHlRow() {
+
+    m_lastLo = 0;
+    m_intervalLo = 0;
+    m_lastHi = 0;
+    m_intervalHi = 0;
+}
+
+// @early-stop

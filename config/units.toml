@@ -1361,8 +1361,8 @@ source = "src/Crypto/Blowfish.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "blowfishcopy"
-source = "src/Crypto/BlowfishCopy.cpp"
+unit = "butetailencode"
+source = "src/Crypto/ButeTailEncode.cpp"
 flags = "cpp"
 
 [[unit]]
@@ -1630,16 +1630,16 @@ unit = "recordfill"
 source = "src/Utils/RecordFill.cpp"
 flags = "cpp"
 [[unit]]
-unit = "netmgrmisc"
-source = "src/Net/NetMgrMisc.cpp"
+unit = "stringstaticpool"
+source = "src/Net/StringStaticPool.cpp"
 flags = "cpp"
 [[unit]]
 unit = "mgrlistfind"
 source = "src/Gruntz/MgrListFind.cpp"
 flags = "cpp-rtti"
 [[unit]]
-unit = "palettecopy"
-source = "src/Image/PaletteCopy.cpp"
+unit = "moviepaletteupload"
+source = "src/Image/MoviePaletteUpload.cpp"
 flags = "cpp"
 [[unit]]
 unit = "chainforward"

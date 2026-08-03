@@ -28,11 +28,13 @@
 #include <Gruntz/LightFx.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/Sprite.h>
 #include <Gruntz/State.h>
-#include <Gruntz/StatusBarUpdatersViews.h>
 #include <Gruntz/TimeBomb.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Ints.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>

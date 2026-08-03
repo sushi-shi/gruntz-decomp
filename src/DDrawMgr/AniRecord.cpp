@@ -5,7 +5,6 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/AniRecordBase2.h>
-#include <DDrawMgr/AniRecordViews.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -14,6 +13,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <Gruntz/AniRecordView.h>
+#include <Ints.h>
 #include <Pix16.h>
 #include <Wap32/Object.h>
 

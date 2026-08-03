@@ -32,6 +32,11 @@ void* g_previewImage;
 DATA(0x0024c86c)
 CSaveGame* g_saveDlgSink = 0;
 
+RVA(0x00085b50, 0x56)
+CSaveGame::~CSaveGame() {
+    Reset();
+}
+
 RVA(0x000e35f0, 0x77)
 i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -245,6 +250,21 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
 }
 
 // @early-stop
+RVA(0x000e3e80, 0x86)
+void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+    i32 flag;
+    if (TempFileExists(item)) {
+        SetDlgItemTextA(hWnd, id3, item->m_name);
+        flag = 1;
+    } else {
+        SetDlgItemTextA(hWnd, id3, "(Empty)");
+        flag = 0;
+    }
+    EnableWindow(GetDlgItem(hWnd, id3), 1);
+    EnableWindow(GetDlgItem(hWnd, id4), 1);
+    EnableWindow(GetDlgItem(hWnd, id5), flag);
+    EnableWindow(GetDlgItem(hWnd, id6), flag);
+}
 RVA(0x000e3f40, 0x478)
 i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     i32 c;
@@ -531,11 +551,6 @@ void SetSaveSlotDialogName(HWND hWnd, void* gate, SaveSlot* item) {
     if (hWnd && gate && item) {
         SetDlgItemTextA(hWnd, 0x40d, item->m_name);
     }
-}
-
-RVA(0x00085b50, 0x56)
-CSaveGame::~CSaveGame() {
-    Reset();
 }
 
 RVA(0x000e4b60, 0x158)
@@ -844,20 +859,4 @@ int TempFileExists(SaveSlot* p) {
         }
     }
     return 0;
-}
-
-RVA(0x000e3e80, 0x86)
-void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
-    i32 flag;
-    if (TempFileExists(item)) {
-        SetDlgItemTextA(hWnd, id3, item->m_name);
-        flag = 1;
-    } else {
-        SetDlgItemTextA(hWnd, id3, "(Empty)");
-        flag = 0;
-    }
-    EnableWindow(GetDlgItem(hWnd, id3), 1);
-    EnableWindow(GetDlgItem(hWnd, id4), 1);
-    EnableWindow(GetDlgItem(hWnd, id5), flag);
-    EnableWindow(GetDlgItem(hWnd, id6), flag);
 }

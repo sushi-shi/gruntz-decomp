@@ -55,43 +55,6 @@ void CChatBoxOwner::Configure(i32 mode) {
 }
 
 // @early-stop
-RVA(0x00021140, 0xda)
-i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
-    if (m_inputActive) {
-
-        if (m_mode == 3) {
-            if (x < 0x40) {
-                if (y >= g_gameReg->m_modeH - 0x40) {
-                    return 1;
-                }
-            }
-            if (x <= 0x40) {
-                return 0;
-            }
-            if (y < g_gameReg->m_modeH - 0x20) {
-                return 0;
-            }
-            return 1;
-        }
-        if (x < 0x40) {
-            if (y >= g_gameReg->m_modeH - 0x40) {
-                return 1;
-            }
-        }
-        if (x <= m_originX + 0x40) {
-            return 0;
-        }
-        if (x >= m_originX + 0x1e0) {
-            return 0;
-        }
-        if (y < g_gameReg->m_modeH - 0x20) {
-            return 0;
-        }
-        return 1;
-    }
-    return 0;
-}
-
 RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     if (m_fontConfig->TypeChar(a, b) == 0) {
@@ -257,4 +220,40 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
     host->m_ddSurface->ReleaseDC(hdc);
     return 1;
+}
+RVA(0x00021140, 0xda)
+i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
+    if (m_inputActive) {
+
+        if (m_mode == 3) {
+            if (x < 0x40) {
+                if (y >= g_gameReg->m_modeH - 0x40) {
+                    return 1;
+                }
+            }
+            if (x <= 0x40) {
+                return 0;
+            }
+            if (y < g_gameReg->m_modeH - 0x20) {
+                return 0;
+            }
+            return 1;
+        }
+        if (x < 0x40) {
+            if (y >= g_gameReg->m_modeH - 0x40) {
+                return 1;
+            }
+        }
+        if (x <= m_originX + 0x40) {
+            return 0;
+        }
+        if (x >= m_originX + 0x1e0) {
+            return 0;
+        }
+        if (y < g_gameReg->m_modeH - 0x20) {
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
 }

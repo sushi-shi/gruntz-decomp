@@ -1,8 +1,0 @@
-#ifndef GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H
-#define GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H
-
-#include <rva.h>
-
-#include <Gruntz/UserLogic.h>
-
-#endif // GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H

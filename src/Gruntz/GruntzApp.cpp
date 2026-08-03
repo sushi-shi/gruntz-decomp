@@ -25,6 +25,12 @@ RVA(0x00080850, 0x12)
 CGruntzApp::CGruntzApp() {}
 
 RVA_COMPGEN(0x00080880, 0x1e, ??_GCGruntzApp@@UAEPAXI@Z)
+RVA(0x000808b0, 0x60)
+CGruntzApp::~CGruntzApp() {
+
+    CGameApp::CloseResources();
+}
+
 RVA(0x00080930, 0x31)
 i32 CGruntzApp::Init(
     HINSTANCE hInstance,
@@ -47,15 +53,19 @@ i32 CGruntzApp::Init(
            != 0;
 }
 
-RVA(0x000808b0, 0x60)
-CGruntzApp::~CGruntzApp() {
-
-    CGameApp::CloseResources();
-}
-
 RVA(0x00080980, 0x5)
 void CGruntzApp::CloseResources() {
     CGameApp::CloseResources();
+}
+
+RVA(0x000809a0, 0x57)
+CGameWnd* CGruntzApp::InitializeGameWindow() {
+    CGruntzWnd* p = new CGruntzWnd;
+    return p;
+}
+RVA(0x00080a20, 0x5a)
+CGameMgr* CGruntzApp::InitializeGameManager() {
+    return new CGruntzMgr;
 }
 
 RVA(0x00080ac0, 0xf3)
@@ -86,9 +96,10 @@ void CGruntzApp::ShowError() {
     DialogBoxParamA(m_hInstance, "ERROR", 0, CGruntzApp::ErrorDialogProc, 0);
 }
 
-RVA(0x00080a20, 0x5a)
-CGameMgr* CGruntzApp::InitializeGameManager() {
-    return new CGruntzMgr;
+RVA(0x00080c00, 0x48)
+void CGruntzApp::ShowMessage(const char* msg, HWND hParent) {
+    strcpy(g_errorText, msg);
+    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, CGruntzApp::ErrorDialogProc, 0);
 }
 
 RVA(0x00080c70, 0x55)
@@ -110,16 +121,4 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
     }
 
     return 0;
-}
-
-RVA(0x00080c00, 0x48)
-void CGruntzApp::ShowMessage(const char* msg, HWND hParent) {
-    strcpy(g_errorText, msg);
-    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, CGruntzApp::ErrorDialogProc, 0);
-}
-
-RVA(0x000809a0, 0x57)
-CGameWnd* CGruntzApp::InitializeGameWindow() {
-    CGruntzWnd* p = new CGruntzWnd;
-    return p;
 }

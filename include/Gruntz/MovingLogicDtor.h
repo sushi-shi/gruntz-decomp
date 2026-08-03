@@ -1,6 +1,0 @@
-#ifndef GRUNTZ_CMOVINGLOGICDTOR_H
-#define GRUNTZ_CMOVINGLOGICDTOR_H
-
-#include <Gruntz/MovingLogic.h>
-
-#endif // GRUNTZ_CMOVINGLOGICDTOR_H

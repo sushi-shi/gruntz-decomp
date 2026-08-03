@@ -23,7 +23,7 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TriggerMgrViews.h>
+#include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Wwd/WwdFile.h>

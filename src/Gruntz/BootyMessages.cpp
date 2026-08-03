@@ -56,68 +56,6 @@ char g_secretMsgA[0x20];
 char g_secretMsgB[0x80];
 
 // @early-stop
-RVA(0x0001c9d0, 0x351)
-void CBootyState::ShowLevelCompleteMessage() {
-    for (i32 i = 0; i < 8; i++) {
-        if (m_templateFlags[i]) {
-            RECT r1;
-            CopyRect(&r1, &g_levelMsgRectsA[i]);
-            CString t(g_levelMsgStrings[i]);
-            ShowHudMessage(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
-        }
-        if (m_readyFlags[i]) {
-            RECT r2;
-            CopyRect(&r2, &g_levelMsgRectsB[i]);
-            CString t2;
-            FormatHudText(&t2, i);
-            ShowHudMessage(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
-        }
-    }
-
-    if (m_levelCompleteGate) {
-        if (g_gameReg->m_scoreHud->m_allDone != 0) {
-            RECT r = {0, 0x24, 0x1ea, 0x64};
-            CString s("World Completed!");
-            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
-        } else {
-            RECT r = {0, 0x24, 0x1ea, 0x64};
-            CString s("Level Completed!");
-            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
-        }
-    }
-
-    CBattlezData* rec = g_gameReg->m_scoreHud;
-    if (rec->m_isCustomLevel == 0 && m_secretGate != 0) {
-        CString s;
-        RECT r;
-        if (rec->m_count > 0x24) {
-            if (rec->m_allDone != 0) {
-                s = "You have completed training! Now go and conquer the Battlez!";
-            } else {
-                s = "You are closer to achieving masterz status!";
-            }
-            SetRect(&r, 0x194, 0xaa, 0x263, 0x1e0);
-        } else {
-            if (rec->m_allDone != 0) {
-                if ((rec)->GroupAllScored()) {
-                    s.Format("WARP letterz recovered! Prepare to warp!");
-                } else {
-                    s = "WARP letterz not recovered! No checkpoint this time.";
-                }
-            } else {
-                if (rec->m_scoreValue != 0) {
-                    s = "Keep finding those WARP letterz!";
-                } else {
-                    s = "Collect all four WARP letterz to reach the checkpoint!";
-                }
-            }
-            SetRect(&r, 0x194, 0xe6, 0x263, 0x1e0);
-        }
-        ShowHudMessage(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
-    }
-}
-
-// @early-stop
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0 && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {
@@ -190,6 +128,68 @@ i32 CBootyState::ShowSecretBonusMessage() {
         ShowHudMessage(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
     return 1;
+}
+
+// @early-stop
+RVA(0x0001c9d0, 0x351)
+void CBootyState::ShowLevelCompleteMessage() {
+    for (i32 i = 0; i < 8; i++) {
+        if (m_templateFlags[i]) {
+            RECT r1;
+            CopyRect(&r1, &g_levelMsgRectsA[i]);
+            CString t(g_levelMsgStrings[i]);
+            ShowHudMessage(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+        if (m_readyFlags[i]) {
+            RECT r2;
+            CopyRect(&r2, &g_levelMsgRectsB[i]);
+            CString t2;
+            FormatHudText(&t2, i);
+            ShowHudMessage(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+    }
+
+    if (m_levelCompleteGate) {
+        if (g_gameReg->m_scoreHud->m_allDone != 0) {
+            RECT r = {0, 0x24, 0x1ea, 0x64};
+            CString s("World Completed!");
+            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+        } else {
+            RECT r = {0, 0x24, 0x1ea, 0x64};
+            CString s("Level Completed!");
+            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+        }
+    }
+
+    CBattlezData* rec = g_gameReg->m_scoreHud;
+    if (rec->m_isCustomLevel == 0 && m_secretGate != 0) {
+        CString s;
+        RECT r;
+        if (rec->m_count > 0x24) {
+            if (rec->m_allDone != 0) {
+                s = "You have completed training! Now go and conquer the Battlez!";
+            } else {
+                s = "You are closer to achieving masterz status!";
+            }
+            SetRect(&r, 0x194, 0xaa, 0x263, 0x1e0);
+        } else {
+            if (rec->m_allDone != 0) {
+                if ((rec)->GroupAllScored()) {
+                    s.Format("WARP letterz recovered! Prepare to warp!");
+                } else {
+                    s = "WARP letterz not recovered! No checkpoint this time.";
+                }
+            } else {
+                if (rec->m_scoreValue != 0) {
+                    s = "Keep finding those WARP letterz!";
+                } else {
+                    s = "Collect all four WARP letterz to reach the checkpoint!";
+                }
+            }
+            SetRect(&r, 0x194, 0xe6, 0x263, 0x1e0);
+        }
+        ShowHudMessage(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
+    }
 }
 
 // @early-stop

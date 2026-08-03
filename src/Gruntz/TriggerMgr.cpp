@@ -31,7 +31,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TriggerMgrViews.h>
+#include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>

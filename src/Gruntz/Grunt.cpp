@@ -13,7 +13,6 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/FreeNodePool.h>
@@ -31,13 +30,16 @@
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Ints.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/Object.h>
 #include <Wap32/Rect.h>
 #include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>

@@ -6,7 +6,7 @@
 #include <Gruntz/BehindCandy.h>
 #include <Gruntz/BehindCandyAni.h>
 #include <Gruntz/DoNothing.h>
-#include <Gruntz/DoNothingNormalDtor.h>
+#include <Gruntz/DoNothingNormal.h>
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/EyeCandyAni.h>
 #include <Gruntz/FrontCandy.h>
