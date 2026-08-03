@@ -18,6 +18,8 @@
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
 
+#include <stddef.h>
+
 RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
@@ -41,7 +43,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.bottom = 1;
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_warlordLogic = 0;
+    m_warlordLogic = NULL;
     GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_smarts];
     if (slot->m_liveGate == 0) {
         m_resolved = 0;
@@ -52,7 +54,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CGameObject* e =
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
-    if (e != 0) {
+    if (e != NULL) {
         e->m_smarts = m_object->m_smarts;
         e->m_animWorker->m_notify(e);
 
@@ -61,7 +63,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             g_gameReg->m_cmdGrid->m_pendingFx = m_warlordLogic;
         }
         GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_smarts];
-        if (slot2 != 0) {
+        if (slot2 != NULL) {
             slot2->m_warlordObjectId = e->m_objectId;
         }
     }
@@ -101,24 +103,24 @@ i32 CExitTrigger::SerializeMove(
                     obj = found;
                 }
                 m_warlordLogic = static_cast<CWarlord*>(obj->m_animWorker->m_logic);
-                if (m_warlordLogic == 0) {
+                if (m_warlordLogic == NULL) {
                     return 0;
                 }
             } else {
-                m_warlordLogic = 0;
+                m_warlordLogic = NULL;
             }
             break;
         }
         case SERIAL_SAVE: {
             arc->Write(&m_resolved, 4);
-            if (m_warlordLogic == 0) {
+            if (m_warlordLogic == NULL) {
                 g_serialCounter++;
                 i32 id = 0;
                 arc->Write(&id, 4);
             } else {
                 g_serialCounter++;
                 i32 id = 0;
-                if (m_warlordLogic->m_object != 0) {
+                if (m_warlordLogic->m_object != NULL) {
                     id = m_warlordLogic->m_object->m_objectId;
                 }
                 arc->Write(&id, 4);

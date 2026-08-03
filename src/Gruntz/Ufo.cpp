@@ -10,6 +10,8 @@
 #include <Gruntz/SpotLight.h>
 #include <Io/FileMem.h>
 
+#include <stddef.h>
+
 VTBL(CUFO, 0x001e72b4);
 RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
 RVA(0x000b4330, 0x8)
@@ -29,7 +31,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     for (i32 i = 0; i < 2; ++i) {
         CWwdGameObjectA* sl =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
-        if (sl != 0) {
+        if (sl != NULL) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
             AnimWorkerObj* sub = sl->m_animWorker;
             sl->m_score = 1;

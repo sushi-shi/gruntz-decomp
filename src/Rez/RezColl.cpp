@@ -8,11 +8,13 @@
 #include <Enums.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 RVA(0x001848b0, 0x47)
 CHashElement* CHashElement::Next() {
 
     CHashElement* n = CHashBase::FromLink(m_link.m_next);
-    if (n == 0) {
+    if (n == NULL) {
         u32 i = m_bucket + 1;
         CHashBase* coll = m_owner;
         u32 count = coll->m_count;
@@ -34,7 +36,7 @@ CHashElement* CHashElement::Next() {
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
     CHashElement* e = CHashBase::FromLink(m_link.m_prev);
-    if (e == 0) {
+    if (e == NULL) {
 
         if (m_bucket > 0) {
 
@@ -43,7 +45,7 @@ CHashElement* CHashElement::Prev() {
             do {
                 --i;
                 e = CHashBase::FromLink(b[i].m_chain.m_tail);
-            } while (e == 0 && i > 0);
+            } while (e == NULL && i > 0);
         }
     }
     return e;
@@ -52,7 +54,7 @@ CHashElement* CHashElement::Prev() {
 RVA(0x00184950, 0x10)
 CHash::CHash() {
     m_count = 0;
-    m_buckets = 0;
+    m_buckets = NULL;
 }
 
 RVA(0x00184960, 0x70)
@@ -99,7 +101,7 @@ CHashElement* CHashBase::First() {
     do {
         n = FromLink(m_buckets[i].m_chain.m_head);
         i++;
-    } while (n == 0 && i < m_count);
+    } while (n == NULL && i < m_count);
     return n;
 }
 
@@ -115,7 +117,7 @@ CHashElement* CHashBase::Last() {
         }
         --i;
         t -= 4;
-        if (e != 0) {
+        if (e != NULL) {
             break;
         }
     }

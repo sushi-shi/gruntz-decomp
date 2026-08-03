@@ -33,8 +33,8 @@ RVA(0x00174eb0, 0x1b)
 void CImagePool::Clear() {
     ClearSurfaces();
     ClearPalettes();
-    m_resourceModuleHandle = 0;
-    m_sourceHwnd = 0;
+    m_resourceModuleHandle = NULL;
+    m_sourceHwnd = NULL;
     m_reserved08 = 0;
 }
 
@@ -100,7 +100,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
     if (node->DecodeBmpHeader(hdc, width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
-            m_selectedPalette = 0;
+            m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
@@ -113,7 +113,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
     node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
-        m_selectedPalette = 0;
+        m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
     return node;
@@ -126,7 +126,7 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
     if (node->DecodeBlit(src, hdc, width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
-            m_selectedPalette = 0;
+            m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
@@ -139,7 +139,7 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
     node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
-        m_selectedPalette = 0;
+        m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
     return node;
@@ -152,7 +152,7 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     if (node->DispatchDecode(buf, kind, hdc, ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
-            m_selectedPalette = 0;
+            m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
@@ -165,7 +165,7 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
-        m_selectedPalette = 0;
+        m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
     return node;
@@ -179,7 +179,7 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     if (node->LoadFromRez(name, hdc, ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
-            m_selectedPalette = 0;
+            m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
@@ -192,7 +192,7 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
-        m_selectedPalette = 0;
+        m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
     return node;
@@ -205,7 +205,7 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
     if (node->Convert8To16(hdc, src, pal) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
-            m_selectedPalette = 0;
+            m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
@@ -218,7 +218,7 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
     node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
-        m_selectedPalette = 0;
+        m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
     return node;
@@ -287,14 +287,14 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 
 RVA(0x00175710, 0x69)
 i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 flag) {
-    if (img == 0) {
+    if (img == NULL) {
         return 0;
     }
     HDC dc = GetDC(m_sourceHwnd);
     i32 result = img->EnsureSize(dc, w, h, bitCount, flag);
     if (m_selectedPalette) {
         SelectPalette(dc, m_selectedPalette, FALSE);
-        m_selectedPalette = 0;
+        m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, dc);
     return result;
@@ -322,7 +322,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
     }
     m_rowPad = m_stride - width;
     m_paletteScalar = 0;
-    m_paletteNode = 0;
+    m_paletteNode = NULL;
     m_transparent = 1;
     memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
     m_bih.biWidth = m_width;
@@ -410,11 +410,11 @@ i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
 // @early-stop
 RVA(0x00175b80, 0x105)
 i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
-    if (pal == 0) {
+    if (pal == NULL) {
         return 0;
     }
     u32* palette = (static_cast<ScanlinePalette*>(pal))->m_colors;
-    if (palette == 0) {
+    if (palette == NULL) {
         return 0;
     }
     if (!DecodeBmpHeader(dc, src->m_width, src->m_height, 0x10, 0)) {
@@ -443,14 +443,14 @@ RVA(0x00175c90, 0x45)
 void CRezImage::Free() {
     if (m_dibSection) {
         DeleteObject(m_dibSection);
-        m_dibSection = 0;
+        m_dibSection = NULL;
     }
     if (m_rowOffsets) {
         ::operator delete(m_rowOffsets);
-        m_rowOffsets = 0;
+        m_rowOffsets = NULL;
     }
-    m_pixels = 0;
-    m_paletteNode = 0;
+    m_pixels = NULL;
+    m_paletteNode = NULL;
 }
 
 RVA(0x00175ce0, 0x6b)
@@ -766,7 +766,7 @@ void CRezImage::FlipVertical() {
         return;
     }
     u8* scratch = static_cast<u8*>(::operator new(m_width));
-    if (scratch == 0) {
+    if (scratch == NULL) {
         return;
     }
     i32 wid = m_width;
@@ -811,9 +811,9 @@ i32 CRezImage::Save(const char* filename, void* paletteObj) {
 RVA(0x00176b30, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     void* obj = paletteObj;
-    if (obj == 0) {
+    if (obj == NULL) {
         obj = m_paletteNode;
-        if (obj == 0) {
+        if (obj == NULL) {
             return 0;
         }
     }
@@ -830,7 +830,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     info.bmiHeader.biSizeImage = 0;
 
     PALETTEENTRY* pal = static_cast<CImagePaletteNode*>(obj)->m_pal.palPalEntry;
-    if (pal == 0) {
+    if (pal == NULL) {
         return 0;
     }
 
@@ -897,7 +897,7 @@ i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
         m_systemTuned = 1;
     }
     m_palette = CreatePalette(&m_pal);
-    return m_palette != 0;
+    return m_palette != NULL;
 }
 
 RVA(0x00176e70, 0x4e)
@@ -964,7 +964,7 @@ RVA(0x00177070, 0x22)
 void CImagePaletteNode::Run() {
     if (m_palette) {
         DeleteObject(m_palette);
-        m_palette = 0;
+        m_palette = NULL;
     }
     m_flags = 0;
 }

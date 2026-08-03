@@ -21,6 +21,8 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CSecretTeleporterTrigger, 0x001e7564);
 VTBL(CSecretLevelTrigger, 0x001e8804);
 template<> DATA(0x00244688)
@@ -110,7 +112,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -163,7 +165,7 @@ void CSecretLevelTrigger::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

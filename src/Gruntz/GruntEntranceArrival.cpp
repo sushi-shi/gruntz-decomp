@@ -107,7 +107,7 @@ static void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
-        if (slot != 0) {
+        if (slot != NULL) {
             slot->~CString();
         }
         slot++;
@@ -155,7 +155,7 @@ i32 CGrunt::UpdateGruntStatus() {
         }
         m_neighborValid = 0;
         CGrunt* n = m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
-        if (n == 0 || n->m_entranceCommitted == 0) {
+        if (n == NULL || n->m_entranceCommitted == 0) {
             return 0;
         }
         if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
@@ -392,7 +392,7 @@ i32 CGrunt::StepAttackFire() {
 
                 CGrunt* tgt =
                     m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
-                if (tgt == 0) {
+                if (tgt == NULL) {
                     flag = 1;
                     break;
                 }
@@ -434,7 +434,7 @@ i32 CGrunt::StepAttackFire() {
         m_attackClockHi = 0;
         m_lowStaminaCued = 0;
         m_stamina = 0;
-        if (m_healthSprite != 0) {
+        if (m_healthSprite != NULL) {
             CreateStaminaSprite();
         }
         m_combatActive = 0;
@@ -470,7 +470,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         StopStruckSlotSound();
         if (m_arrivalPhase == 3 && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (occ != 0) {
+            if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 yMasked = (inner->m_screenY & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_screenX & ~0x1f) + 0x10;
@@ -498,9 +498,9 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         if (CoordCount() != 0) {
 
             POSITION pos = m_coordList.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 void* buf = m_coordList.GetNext(pos);
-                if (buf != 0) {
+                if (buf != NULL) {
                     CoordPoolNode* sp = g_coordPool.NodeOf(buf);
                     sp->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = sp;
@@ -510,13 +510,13 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
 
         m_entranceStamped = 0;
-        if (m_healthSprite != 0) {
+        if (m_healthSprite != NULL) {
             m_healthSprite->m_flags |= 0x10000;
-            m_healthSprite = 0;
+            m_healthSprite = NULL;
         }
-        if (m_toySprite != 0) {
+        if (m_toySprite != NULL) {
             m_toySprite->m_flags |= 0x10000;
-            m_toySprite = 0;
+            m_toySprite = NULL;
         }
 
         if (m_entranceReason == PICKUP_SCROLL) {
@@ -699,9 +699,9 @@ i32 CGrunt::StepEntranceRelatchA() {
 
     i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_toyClock;
     if (diff >= m_toyDuration && m_entranceStamped == 0 && ready == 1) {
-        if (m_toyTimeSprite != 0) {
+        if (m_toyTimeSprite != NULL) {
             m_toyTimeSprite->m_flags |= 0x10000;
-            m_toyTimeSprite = 0;
+            m_toyTimeSprite = NULL;
         }
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(AT(m_poseToy, GRUNT_TOY_BREAK));
@@ -943,7 +943,7 @@ i32 CGrunt::ResolveEntranceArrival() {
         GameModeId mode = g->m_gameMode;
         if (mode != GAMEMODE_SINGLE) {
             GruntzPlayer* slot = &g->m_options[m_tileOwnerHi];
-            if (slot != 0 && slot->m_humanControlled != 0) {
+            if (slot != NULL && slot->m_humanControlled != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == GAMEMODE_MULTIPLAYER
                     && g_curPlayer == m_tileOwnerHi && m_arrived == 0) {
                     m_tileMgr->GridAction6(m_tileOwnerHi, m_tileOwnerLo);
@@ -1206,7 +1206,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             && m_object->m_screenY == m_lastTilePx.m_y) {
             if (m_toyTimeSprite) {
                 m_toyTimeSprite->m_flags |= 0x10000;
-                m_toyTimeSprite = 0;
+                m_toyTimeSprite = NULL;
             }
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
@@ -1285,31 +1285,31 @@ i32 CGrunt::BuildGruntExitAnimation() {
 
     if (m_healthSprite) {
         m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = 0;
+        m_healthSprite = NULL;
     }
     if (m_staminaSprite) {
         m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = 0;
+        m_staminaSprite = NULL;
     }
     if (m_toySprite) {
         m_toySprite->m_flags |= 0x10000;
-        m_toySprite = 0;
+        m_toySprite = NULL;
     }
     if (m_toyTimeSprite) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
     if (m_wingzTimeSprite) {
         m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = 0;
+        m_wingzTimeSprite = NULL;
     }
     if (m_powerupSprite) {
         m_powerupSprite->m_flags |= 0x10000;
-        m_powerupSprite = 0;
+        m_powerupSprite = NULL;
     }
     if (m_selectedSprite) {
         m_selectedSprite->m_flags |= 0x10000;
-        m_selectedSprite = 0;
+        m_selectedSprite = NULL;
     }
 
     m_gruntKind = GRUNT_NORMAL;
@@ -1534,9 +1534,9 @@ reject:
             h->m_flags |= 0x20000;
         }
     }
-    if (m_toyTimeSprite != 0) {
+    if (m_toyTimeSprite != NULL) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
     m_toyTime = 0;
     StopStruckSlotSound();
@@ -1581,7 +1581,7 @@ tail:
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_codeH);
             void* cellObj = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
-            if (cellObj != 0) {
+            if (cellObj != NULL) {
                 CGameObject* oh = (static_cast<CGrunt*>(cellObj))->m_object;
                 i32 cx = oh->m_screenX;
                 i32 cy = oh->m_screenY;
@@ -1611,7 +1611,7 @@ tail:
         if (desc->m_records.GetSize() > 0) {
             elem = static_cast<CAniRecordView*>(desc->m_records.GetAt(0));
         } else {
-            elem = 0;
+            elem = NULL;
         }
         frame = elem->m_param;
     }
@@ -1828,7 +1828,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             m_attackClockHi = 0;
             m_lowStaminaCued = 0;
             m_stamina = 0;
-            if (m_healthSprite != 0) {
+            if (m_healthSprite != NULL) {
                 CreateStaminaSprite();
             }
             if (m_entranceReason == PICKUP_WAND) {
@@ -1902,14 +1902,14 @@ i32 CGrunt::StepEntranceRelatchB() {
     void* cellObj;
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-        cellObj = 0;
+        cellObj = NULL;
     } else {
 
         AddrWord<char> slot;
         slot.m_word = ((grid->m_rowInts[ty]))[tx * 7 + 2];
         cellObj = slot.m_addr;
     }
-    if (cellObj == 0) {
+    if (cellObj == NULL) {
         return 0;
     }
     CGameObject* found = 0;
@@ -1917,7 +1917,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (MapLookup(g->m_world->m_childGroup->m_map48, cellObj, found)) {
         result = found;
     }
-    if (result != 0) {
+    if (result != NULL) {
 
         CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_animWorker->m_logic);
         icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);

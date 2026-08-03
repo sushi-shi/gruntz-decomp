@@ -2,10 +2,12 @@
 
 #include <Dsndmgr/SoundVoiceList.h>
 
+#include <stddef.h>
+
 RVA(0x001390e0, 0x25)
 void DSoundList::InsertHead(DSoundLink* node) {
     node->m_next = m_head;
-    node->m_prev = 0;
+    node->m_prev = NULL;
     if (m_head) {
         m_head->m_prev = node;
     } else {
@@ -16,7 +18,7 @@ void DSoundList::InsertHead(DSoundLink* node) {
 
 RVA(0x00139110, 0x27)
 void DSoundList::InsertTail(DSoundLink* node) {
-    node->m_next = 0;
+    node->m_next = NULL;
     node->m_prev = m_tail;
     if (m_tail) {
         m_tail->m_next = node;
@@ -28,7 +30,7 @@ void DSoundList::InsertTail(DSoundLink* node) {
 
 RVA(0x00139140, 0x41)
 void DSoundList::InsertAfter(DSoundLink* after, DSoundLink* node) {
-    if (after == 0) {
+    if (after == NULL) {
         InsertHead(node);
     }
     if (after->m_next) {
@@ -43,7 +45,7 @@ void DSoundList::InsertAfter(DSoundLink* after, DSoundLink* node) {
 
 RVA(0x00139190, 0x44)
 void DSoundList::InsertBefore(DSoundLink* before, DSoundLink* node) {
-    if (before == 0) {
+    if (before == NULL) {
         InsertTail(node);
     }
     if (before->m_prev) {

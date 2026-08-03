@@ -21,17 +21,17 @@ RVA(0x001682f0, 0x4a)
 void CWwdSpatialMgr::FreeGrids() {
     if (m_grid0) {
         delete m_grid0;
-        m_grid0 = 0;
+        m_grid0 = NULL;
     }
     if (m_grid1) {
         delete m_grid1;
-        m_grid1 = 0;
+        m_grid1 = NULL;
     }
     if (m_grid2) {
         delete m_grid2;
-        m_grid2 = 0;
+        m_grid2 = NULL;
     }
-    m_mgr = 0;
+    m_mgr = NULL;
 }
 
 // @early-stop
@@ -77,7 +77,7 @@ RVA(0x00168460, 0x95)
 i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
-    for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
+    for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
         CGameObject* w = obj->m_object;
         if ((w->m_flags & 0x2) || (w->m_animWorker->m_flags & 0x4)) {
             m_mgr->InsertSorted(w, 1);
@@ -106,7 +106,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
     i32 hi2y = newY + m_org2y;
 
     POSITION pos = m_mgr->m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_mgr->m_list.GetNext(pos));
         if (obj->m_flags & 0x40) {
@@ -119,13 +119,13 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     w->m_notify(obj);
                 }
                 m_mgr->RemoveAll(cur, obj);
-                if (obj != 0) {
+                if (obj != NULL) {
                     delete obj;
                 }
-                obj = 0;
+                obj = NULL;
             }
         }
-        if (obj != 0 && !(obj->m_flags & 0x2) && (obj->m_flags & 0x40000)) {
+        if (obj != NULL && !(obj->m_flags & 0x2) && (obj->m_flags & 0x40000)) {
             i32 x = obj->m_screenX;
             i32 y = obj->m_screenY;
             WwdRegion* r = &obj->m_region;
@@ -278,7 +278,7 @@ RVA(0x00168990, 0x85)
 i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
-    for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
+    for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
         CGameObject* w = obj->m_object;
         m_mgr->InsertSorted(w, 1);
         grid->Remove(obj);
@@ -289,7 +289,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
 
 RVA(0x00168a20, 0x46)
 i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
-    if (cb == 0) {
+    if (cb == NULL) {
         return 0;
     }
     i32 n = ForEachGrid(m_grid0, cb);
@@ -302,7 +302,7 @@ RVA(0x00168a70, 0x73)
 i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*)) {
     i32 count = 0;
     CWwdGridIter it;
-    for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
+    for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
         cb(obj->m_object);
         ++count;
     }
@@ -326,13 +326,13 @@ CGameObject* CWwdSpatialMgr::GetFirstObject() {
     if (n) {
         return n->m_object;
     }
-    m_curGrid = 0;
+    m_curGrid = NULL;
     return 0;
 }
 
 RVA(0x00168b60, 0x85)
 CGameObject* CWwdSpatialMgr::GetNextObject() {
-    if (m_curGrid == 0) {
+    if (m_curGrid == NULL) {
         return 0;
     }
     WwdRegion* n = m_iter.GetNext();
@@ -353,6 +353,6 @@ CGameObject* CWwdSpatialMgr::GetNextObject() {
             return n->m_object;
         }
     }
-    m_curGrid = 0;
+    m_curGrid = NULL;
     return 0;
 }

@@ -35,7 +35,7 @@ static inline CString* TypeLookup(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return g_typeColl.Elem(key);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
         return g_typeColl.Elem(key);
     }
     char* msg = g_errOutOfMem;
@@ -86,7 +86,7 @@ void CProjActObj::RegisterType() {
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
-            if (nodes != 0) {
+            if (nodes != NULL) {
                 nodes->~CString();
             }
             nodes++;
@@ -145,7 +145,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
 
 RVA(0x00008600, 0xcd)
 i32 CActionArea::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {

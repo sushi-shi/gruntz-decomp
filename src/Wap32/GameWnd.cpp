@@ -14,7 +14,7 @@ VTBL(CGameWnd, 0x001ea344);
 // (10 fns) came from the static library. It belongs to another compiland.
 RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
-    m_hwnd = 0;
+    m_hwnd = NULL;
     m_closeGuard = 0;
 }
 
@@ -62,10 +62,10 @@ void CGameWnd::Destroy() {
         if (IsWindow(m_hwnd)) {
             DestroyWindow(m_hwnd);
         }
-        m_hwnd = 0;
+        m_hwnd = NULL;
     }
-    m_owner = 0;
-    g_activeGameWnd = 0;
+    m_owner = NULL;
+    g_activeGameWnd = NULL;
 }
 
 RVA(0x0013cff0, 0x3a0)

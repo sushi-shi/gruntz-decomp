@@ -233,7 +233,7 @@ void CSpriteRef::Free() {
     CShadeTableCache* cache = m_cache;
     if (cache && m_alphaKey) {
         cache->FindRemove(m_alphaKey);
-        m_cache = 0;
-        m_alphaKey = 0;
+        m_cache = NULL;
+        m_alphaKey = NULL;
     }
 }

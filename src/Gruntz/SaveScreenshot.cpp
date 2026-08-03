@@ -25,19 +25,19 @@ i32 SaveScreenshot(
     i32 descB[6];
     i32 descA[4];
 
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
-    if (bute == 0) {
+    if (bute == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
-    if (owner->m_world == 0) {
+    if (owner->m_world == NULL) {
         return 0;
     }
-    if (name == 0) {
+    if (name == NULL) {
         i32 cnt = bute->GetValueDword("Screen Dump Count", 0) + 1;
         bute->SetValueDword("Screen Dump Count", cnt);
         wsprintfA(nameBuf, "Gruntz%04i.BMP", cnt);
@@ -45,11 +45,11 @@ i32 SaveScreenshot(
     }
 
     CDDrawPtrCollections* surf = owner->m_world->m_ptrColl;
-    if (surf == 0) {
+    if (surf == NULL) {
         return 0;
     }
     CDDSurface* img = surf->MakeAndAddB(width, height, 0x10, 0, -1);
-    if (img == 0) {
+    if (img == NULL) {
         return 0;
     }
 

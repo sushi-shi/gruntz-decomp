@@ -10,6 +10,8 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CSingleAnimation, 0x001e745c);
 template<> DATA(0x00245f70)
 CActReg CActRegPool<CSingleAnimation>::s_table(2000, 2010);
@@ -60,7 +62,7 @@ void CSingleAnimation::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

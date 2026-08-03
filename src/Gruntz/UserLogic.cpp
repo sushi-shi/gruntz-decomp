@@ -119,7 +119,7 @@ RVA(0x00008c00, 0x152)
 i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj) {
     char name[0x80];
 
-    if (arc == 0) {
+    if (arc == NULL) {
         return 0;
     }
     switch (mode) {
@@ -131,7 +131,7 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
             m_animWorker = obj->m_animWorker;
             if (strlen(name) == 0) {
-                m_value = 0;
+                m_value = NULL;
                 return 1;
             }
 
@@ -144,7 +144,7 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
         case SERIAL_SAVE: {
 
             memset(name, 0, sizeof(name));
-            if (m_value != 0) {
+            if (m_value != NULL) {
                 CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
                 strcpy(name, static_cast<const char*>(nm));
             }

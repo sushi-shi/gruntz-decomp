@@ -13,6 +13,8 @@
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
 
+#include <stddef.h>
+
 inline void* operator new(size_t, void* p) {
     return p;
 }
@@ -46,16 +48,16 @@ i32 CMenuPage::Configure(
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
     m_subPage = static_cast<CDDrawWorker*>(slot_ob);
-    return slot_ob != 0;
+    return slot_ob != NULL;
 }
 
 RVA(0x001833a0, 0x1a)
 void CMenuPage::InitDefaults() {
     Clear();
-    m_owner = 0;
-    m_host = 0;
-    m_subPage = 0;
-    m_focus = 0;
+    m_owner = NULL;
+    m_host = NULL;
+    m_subPage = NULL;
+    m_focus = NULL;
     m_flags = 0;
 }
 
@@ -77,7 +79,7 @@ i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
     m_subPage = static_cast<CDDrawWorker*>(slot_ob);
-    return slot_ob != 0;
+    return slot_ob != NULL;
 }
 
 RVA(0x00183430, 0x24)
@@ -178,7 +180,7 @@ RVA(0x00183990, 0x38)
 i32 CMenuPage::ReleaseAll() {
     if (m_focus) {
         m_focus->Release();
-        m_focus = 0;
+        m_focus = NULL;
     }
     POSITION node = m_items.GetHeadPosition();
     while (node) {
@@ -308,11 +310,11 @@ i32 CMenuPage::FocusNext() {
             MenuItemState k = found->m_state;
             if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
 
-                node = 0;
+                node = NULL;
                 continue;
             }
         }
-        found = 0;
+        found = NULL;
     }
     if (!found) {
 
@@ -367,11 +369,11 @@ i32 CMenuPage::FocusPrev() {
             MenuItemState k = found->m_state;
             if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
 
-                node = 0;
+                node = NULL;
                 continue;
             }
         }
-        found = 0;
+        found = NULL;
     }
     if (!found) {
 
@@ -506,10 +508,10 @@ i32 CMenuPage::MoveFocusRightColumn() {
     if (n >= 0) {
         n++;
         do {
-            if (pos != 0) {
+            if (pos != NULL) {
                 found = static_cast<CMenuItem*>(m_items.GetNext(pos));
             } else {
-                found = 0;
+                found = NULL;
             }
         } while (--n);
     }
@@ -545,10 +547,10 @@ i32 CMenuPage::MoveFocusLeftColumn() {
     if (n >= 0) {
         n++;
         do {
-            if (pos != 0) {
+            if (pos != NULL) {
                 found = static_cast<CMenuItem*>(m_items.GetPrev(pos));
             } else {
-                found = 0;
+                found = NULL;
             }
         } while (--n);
     }

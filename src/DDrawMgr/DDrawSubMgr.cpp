@@ -83,7 +83,7 @@ CLoadable::CLoadable(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
 
 RVA(0x00156cd0, 0x16)
 i32 CDDrawWorkerMapSmall::IsLoaded() {
-    if (m_ownerCtx == 0) {
+    if (m_ownerCtx == NULL) {
         goto fail;
     }
     if (m_id != -1) {
@@ -112,7 +112,7 @@ i32 CDDrawWorkerMapSmall::IsReady() {
 
 RVA(0x00156dc0, 0x16)
 i32 CDDrawWorkerRegistry::IsLoaded() {
-    if (m_ownerCtx != 0 && m_id != -1) {
+    if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -133,7 +133,7 @@ RVA(0x00156e80, 0x38)
 i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
     void* result = parser->GetRoot()->FindSub(key);
 
-    if (result != 0) {
+    if (result != NULL) {
         return InstallTree(result, g_emptyString, "_");
     }
     return 0;
@@ -151,7 +151,7 @@ void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
 
 RVA(0x00156f00, 0x16)
 i32 CDDrawWorkerList::IsLoaded() {
-    if (m_ownerCtx == 0) {
+    if (m_ownerCtx == NULL) {
         goto fail;
     }
     if (m_id != -1) {
@@ -182,7 +182,7 @@ RVA(0x00156fd0, 0x8b)
 void* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
     CDDrawWorkerA* w = new CDDrawWorkerA(OwnerMgr());
     if (w->PlaceFrameValue(x, y, frame) == 0) {
-        if (w != 0) {
+        if (w != NULL) {
             delete w;
         }
         return 0;
@@ -212,7 +212,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     *pLo = -1;
     m_id = -1;
     m_flags = 0;
-    m_ownerCtx = 0;
+    m_ownerCtx = NULL;
 }
 
 RVA(0x00157110, 0x20)
@@ -232,7 +232,7 @@ void* CDDrawWorkerList::CreateWorkerB30(
 ) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceBound(x, y, key, frameIndex) == 0) {
-        if (w != 0) {
+        if (w != NULL) {
             delete w;
         }
         return 0;
@@ -270,7 +270,7 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     *pLo = -1;
     m_id = -1;
     m_flags = 0;
-    m_ownerCtx = 0;
+    m_ownerCtx = NULL;
 }
 
 RVA(0x00157280, 0x30)
@@ -287,7 +287,7 @@ i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
 
         frame = static_cast<CImage*>(src->m_items[frameIndex]);
     } else {
-        frame = 0;
+        frame = NULL;
     }
     m_frame = frame;
     m_refCount = 2;
@@ -321,7 +321,7 @@ void* CDDrawWorkerList::CreateWorkerB2C(
 ) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceFrame(x, y, src, frameIndex) == 0) {
-        if (w != 0) {
+        if (w != NULL) {
             delete w;
         }
         return 0;
@@ -338,7 +338,7 @@ RVA(0x001573e0, 0xa0)
 void* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceFrameValue(x, y, frame) == 0) {
-        if (w != 0) {
+        if (w != NULL) {
             delete w;
         }
         return 0;
@@ -353,13 +353,13 @@ void* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead) {
 
 RVA(0x00157480, 0x1e)
 i32 CDDrawSubMgrPages::IsLoaded() {
-    if (m_backPair == 0) {
+    if (m_backPair == NULL) {
         goto fail;
     }
-    if (m_overlayPair == 0) {
+    if (m_overlayPair == NULL) {
         goto fail;
     }
-    if (m_frontPair != 0) {
+    if (m_frontPair != NULL) {
         return 1;
     }
 
@@ -384,7 +384,7 @@ CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
 
 RVA(0x001575e0, 0x16)
 i32 CDDrawChildGroup::IsLoaded() {
-    if (m_ownerCtx == 0 || m_id == -1) {
+    if (m_ownerCtx == NULL || m_id == -1) {
         return 0;
     }
     return 1;
@@ -415,7 +415,7 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {
 
 RVA(0x001577a0, 0x16)
 i32 CDDrawSubMgrLeaf::IsLoaded() {
-    if (m_ownerCtx == 0) {
+    if (m_ownerCtx == NULL) {
         goto fail;
     }
     if (m_id != -1) {
@@ -502,19 +502,19 @@ void CFileMem::Close() {
 RVA(0x00157a80, 0x51)
 i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     SoundStream* stream = mgr->m_soundStream;
     if (force == 0) {
-        if (stream == 0) {
+        if (stream == NULL) {
             return 0;
         }
         if (stream->m_initialized == 0) {
             return 0;
         }
     }
-    if (stream == 0) {
+    if (stream == NULL) {
         m_emitGate = 1;
     } else {
         m_emitGate = 0;
@@ -527,13 +527,13 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
 RVA(0x00157ae0, 0x11)
 void CDDrawSubMgrLeafScan::Unload() {
     ClearMap();
-    m_soundStream = 0;
+    m_soundStream = NULL;
 }
 
 // @early-stop
 RVA(0x00157b00, 0xb2)
 void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
-    if (p == 0) {
+    if (p == NULL) {
         return;
     }
     POSITION pos = m_cues.GetStartPosition();
@@ -554,13 +554,13 @@ void CDDrawSubMgrLeafScan::ClearMap() {
     POSITION pos = m_cues.GetStartPosition();
     CString key;
     void* val = 0;
-    if (pos != 0) {
+    if (pos != NULL) {
         do {
             m_cues.GetNextAssoc(pos, key, val);
-            if (val != 0) {
+            if (val != NULL) {
                 delete (static_cast<LeafCue*>(val));
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     m_cues.RemoveAll();
 }
@@ -574,11 +574,11 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
     void* val = 0;
     POSITION pos = m_cues.GetStartPosition();
     i32 n = 0;
-    while (pos != 0) {
+    while (pos != NULL) {
         m_cues.GetNextAssoc(pos, key, val);
         if (strncmp(key, match, len) == 0) {
             m_cues.RemoveKey(key);
-            if (val != 0) {
+            if (val != NULL) {
                 delete (static_cast<LeafCue*>(val));
             }
             ++n;
@@ -593,7 +593,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
         return 0;
     }
     LeafCue* e = new LeafCue(LeafReadMapCount(this), m_ownerCtx);
-    if (e == 0) {
+    if (e == NULL) {
         return 0;
     }
     if (e->Configure(static_cast<CParseSource*>(src)) == 0) {
@@ -611,7 +611,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* src) {
         return 0;
     }
     LeafCue* e = new LeafCue(LeafReadMapCount(this), m_ownerCtx);
-    if (e == 0) {
+    if (e == NULL) {
         return 0;
     }
     if (e->LoadSoundB(src) == 0) {
@@ -628,7 +628,7 @@ LeafCue* CDDrawSubMgrLeafScan::AddFromSource(CParseSource* src) {
     if (m_emitGate != 0) {
         return 0;
     }
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     return CreateEntry(src->m_name, src);
@@ -647,13 +647,13 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
     }
     i32 count = 0;
     char* buf = static_cast<char*>(operator new(0x100));
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     buf[0] = 0;
     CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
-    while (node != 0) {
-        if (prefix != 0 && *prefix != 0) {
+    while (node != NULL) {
+        if (prefix != NULL && *prefix != 0) {
             sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
         } else {
             strcpy(buf, node->m_name);
@@ -663,20 +663,20 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
     }
 
     void* file = tree->FirstSym();
-    if (file != 0) {
+    if (file != NULL) {
         do {
             CParseSource* fn = static_cast<CParseSource*>(tree->NextSym2(file));
-            while (fn != 0) {
+            while (fn != NULL) {
                 if (fn->GetEntryTag() == PARSETAG_VAW) {
-                    if (prefix != 0 && *prefix != 0) {
+                    if (prefix != NULL && *prefix != 0) {
                         sprintf(buf, "%s%s%s", prefix, suffix, fn->m_name);
                     } else {
                         strcpy(buf, fn->m_name);
                     }
                     void* val = 0;
                     m_cues.Lookup(buf, val);
-                    if (val == 0) {
-                        if (CreateEntry(buf, fn) != 0) {
+                    if (val == NULL) {
+                        if (CreateEntry(buf, fn) != NULL) {
                             ++count;
                         }
                     }
@@ -684,7 +684,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
                 fn = static_cast<CParseSource*>(tree->NextSym3(fn));
             }
             file = tree->NextSym(file);
-        } while (file != 0);
+        } while (file != NULL);
     }
     ::operator delete(buf);
     return count;
@@ -700,10 +700,10 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
     void* val = 0;
     POSITION pos = m_cues.GetStartPosition();
     i32 sum = 0;
-    while (pos != 0) {
+    while (pos != NULL) {
         m_cues.GetNextAssoc(pos, key, val);
-        if (val != 0) {
-            if (str == 0 || *str == 0) {
+        if (val != NULL) {
+            if (str == NULL || *str == 0) {
                 sum += (static_cast<LeafCue*>(val))->m_sound->m_sampleCount;
             } else if (strncmp(key, str, strlen(str)) == 0) {
                 sum += (static_cast<LeafCue*>(val))->m_sound->m_sampleCount;
@@ -715,10 +715,10 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
 RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2) {
     CGameLevel* lvl = OwnerMgr()->m_level;
-    if (lvl != 0 && lvl->m_mainPlane != 0 && m_emitGate == 0) {
+    if (lvl != NULL && lvl->m_mainPlane != NULL && m_emitGate == 0) {
         void* val = 0;
         m_cues.Lookup(key, val);
-        if (val != 0) {
+        if (val != NULL) {
             return (static_cast<LeafCue*>(val))->TriggerBlit(pos, -1, range1, range2);
         }
     }
@@ -731,7 +731,7 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
         return 0;
     }
     POSITION pos = m_cues.GetStartPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         return 0;
     }
     LeafCue* val = 0;
@@ -742,25 +742,25 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
 
 RVA(0x001582c0, 0xf6)
 LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
-    if (target == 0) {
+    if (target == NULL) {
         return 0;
     }
     if (m_emitGate != 0) {
         return 0;
     }
     POSITION pos = m_cues.GetStartPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         return 0;
     }
     LeafCue* val = 0;
     CString key;
-    while (pos != 0) {
+    while (pos != NULL) {
         MapGetNext(m_cues, pos, key, val);
         if (val == target) {
-            if (pos == 0) {
+            if (pos == NULL) {
                 return 0;
             }
-            val = 0;
+            val = NULL;
             MapGetNext(m_cues, pos, key, val);
             return val;
         }
@@ -774,7 +774,7 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
     CString key;
     void* val = 0;
     POSITION pos = m_cues.GetStartPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         m_cues.GetNextAssoc(pos, key, val);
         if (strncmp(key, str, len) == 0) {
             return 1;
@@ -785,15 +785,15 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
 
 RVA(0x001584a0, 0x43)
 i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
-    if (m_soundStream == 0) {
+    if (m_soundStream == NULL) {
         return 0;
     }
     LeafCue* val = GetFirstValue();
-    if (val == 0) {
+    if (val == NULL) {
         return 0;
     }
 
-    if (val->m_sound == 0) {
+    if (val->m_sound == NULL) {
         return 0;
     }
     return MatchSub(val, arg) != 0;
@@ -801,10 +801,10 @@ i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
 
 RVA(0x001584f0, 0x80)
 i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
-    if (cue == 0) {
+    if (cue == NULL) {
         return 0;
     }
-    if (m_soundStream == 0) {
+    if (m_soundStream == NULL) {
         return 0;
     }
 
@@ -826,12 +826,12 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
 RVA(0x00158570, 0xd4)
 CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
     CString key;
-    if (target == 0) {
+    if (target == NULL) {
         return key;
     }
     LeafCue* val = 0;
     POSITION pos = m_cues.GetStartPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         MapGetNext(m_cues, pos, key, val);
         if (val == target) {
             return key;
@@ -854,7 +854,7 @@ i32 LeafCue::LoadSoundA(void* riff) {
         return 0;
     }
     m_sound = dev->Acquire(riff, 0x100ea, 0);
-    return m_sound != 0;
+    return m_sound != NULL;
 }
 
 RVA(0x00158720, 0x34)
@@ -864,35 +864,35 @@ i32 LeafCue::LoadSoundB(void* src) {
         return 0;
     }
     m_sound = dev->AcquireFile(static_cast<char*>(src), 0x100ea, 0);
-    return m_sound != 0;
+    return m_sound != NULL;
 }
 
 // @early-stop
 RVA(0x00158760, 0x59)
 i32 LeafCue::Configure(CParseSource* src) {
     char* blob = src->BeginParse();
-    if (blob == 0) {
+    if (blob == NULL) {
         return 0;
     }
     SoundDevice* dev = OwnerMgr()->m_soundStream;
-    if (dev == 0) {
+    if (dev == NULL) {
         src->EndParse();
         return 0;
     }
     DSoundCloneInst* buf = dev->Acquire(blob, 0x100ea, 0);
     m_sound = buf;
-    i32 ok = buf != 0;
+    i32 ok = buf != NULL;
     src->EndParse();
     return ok;
 }
 
 RVA(0x001587c0, 0x23)
 void LeafCue::Unload() {
-    if (m_sound != 0) {
+    if (m_sound != NULL) {
         SoundDevice* dev = OwnerMgr()->m_soundStream;
-        if (dev != 0) {
+        if (dev != NULL) {
             dev->RemoveBuffer(m_sound);
-            m_sound = 0;
+            m_sound = NULL;
         }
     }
 }
@@ -968,17 +968,17 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, i32 bpp, i32 flags) {
 
 RVA(0x00158ac0, 0x44)
 void CDDrawSubMgrPages::Unload() {
-    if (m_frontPair != 0) {
+    if (m_frontPair != NULL) {
         delete m_frontPair;
-        m_frontPair = 0;
+        m_frontPair = NULL;
     }
-    if (m_backPair != 0) {
+    if (m_backPair != NULL) {
         delete m_backPair;
-        m_backPair = 0;
+        m_backPair = NULL;
     }
-    if (m_overlayPair != 0) {
+    if (m_overlayPair != NULL) {
         delete m_overlayPair;
-        m_overlayPair = 0;
+        m_overlayPair = NULL;
     }
 }
 
@@ -1213,7 +1213,7 @@ i32 CDrawSubWorker::IsLoaded() {
     if (m_width <= 0) {
         return 0;
     }
-    if (m_ownerCtx != 0 && m_id != -1) {
+    if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -1271,7 +1271,7 @@ void CDrawSubWorker::Unload() {
 
 RVA(0x00159090, 0x24)
 i32 CDDrawSurfacePair::IsLoaded() {
-    if (m_surface != 0 && m_width > 0 && m_ownerCtx != 0 && m_id != -1) {
+    if (m_surface != NULL && m_width > 0 && m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -1290,7 +1290,7 @@ CDDrawSurfacePair::~CDDrawSurfacePair() {
 
 RVA(0x00159150, 0x24)
 i32 CDDrawSurfaceChildA::IsLoaded() {
-    if (m_surface != 0 && m_width > 0 && m_ownerCtx != 0 && m_id != -1) {
+    if (m_surface != NULL && m_width > 0 && m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;

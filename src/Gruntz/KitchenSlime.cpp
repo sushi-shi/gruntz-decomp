@@ -93,7 +93,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_extent.bottom = exBottom;
 
     CDDrawWorker* frameSet = Anim()->m_frameSet;
-    if (frameSet != 0) {
+    if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
         const char* s = static_cast<LPCTSTR>(name);
@@ -127,7 +127,7 @@ static inline CString* TypeLookup(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return g_typeColl.Elem(key);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
         return g_typeColl.Elem(key);
     }
     char* msg = g_errOutOfMem;
@@ -156,7 +156,7 @@ void CKitchenSlime::RegisterType() {
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
-            if (nodes != 0) {
+            if (nodes != NULL) {
                 nodes->~CString();
             }
             nodes++;
@@ -407,7 +407,7 @@ i32 CKitchenSlime::LoadSprites() {
 
     CWwdGameObjectA* player = Anim();
     CDDrawWorker* spr = player->m_frameSet;
-    if (changed != 0 && spr != 0) {
+    if (changed != 0 && spr != NULL) {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
             player->m_frameIndex = 1;
             player->m_layer = static_cast<CImage*>(spr->m_items.GetAt(1));
@@ -415,7 +415,7 @@ i32 CKitchenSlime::LoadSprites() {
             return 1;
         }
         player->m_frameIndex = 1;
-        player->m_layer = 0;
+        player->m_layer = NULL;
         m_stepMag = 0.0;
         return 1;
     }

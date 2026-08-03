@@ -12,8 +12,8 @@
 
 RVA(0x00179700, 0x10)
 Font::Font() {
-    m_surfaces = 0;
-    m_glyphs = 0;
+    m_surfaces = NULL;
+    m_glyphs = NULL;
     m_ready = 0;
     m_count = 0;
 }
@@ -36,7 +36,7 @@ i32 Font::AllocateMemory(i32 count) {
     m_glyphs = new Glyph[m_count];
 
     for (i32 i = 0; i < m_count; i++) {
-        m_surfaces[i] = 0;
+        m_surfaces[i] = NULL;
 
         Glyph g;
         g.width = 0;
@@ -55,14 +55,14 @@ void Font::FreeMemory() {
         for (i32 i = 0; i < m_count; i++) {
             if (m_surfaces[i]) {
                 operator delete(m_surfaces[i]);
-                m_surfaces[i] = 0;
+                m_surfaces[i] = NULL;
             }
         }
         operator delete(m_surfaces);
-        m_surfaces = 0;
+        m_surfaces = NULL;
         if (m_glyphs) {
             operator delete(m_glyphs);
-            m_glyphs = 0;
+            m_glyphs = NULL;
         }
         m_count = 0;
         m_ready = 0;
@@ -144,7 +144,7 @@ i32 Font::GetMaxHeight() {
 
 RVA(0x00179be0, 0x14)
 FontRenderer::FontRenderer() {
-    m_font = 0;
+    m_font = NULL;
     m_color = 0x00ffffff;
     m_clip = 0;
     m_surface = 0;
@@ -166,7 +166,7 @@ void FontRenderer::SetColor(i32 color) {
 RVA(0x00179c30, 0xdb)
 void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
     TextExtent ext = MeasureText(text);
-    if (m_font == 0) {
+    if (m_font == NULL) {
         return;
     }
     i32 limit = surf->m_height;
@@ -198,7 +198,7 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
 // @early-stop
 RVA(0x00179e70, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
-    if (m_font == 0) {
+    if (m_font == NULL) {
         return;
     }
     if (rc.left < 0) {
@@ -238,7 +238,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     u16* bits = static_cast<u16*>(surf->Lock(0));
-    if (bits == 0) {
+    if (bits == NULL) {
         return;
     }
     i32 pitch = surf->m_pitch;
@@ -492,7 +492,7 @@ TextExtent FontRenderer::MeasureText(CString text) {
     g.height = 0;
     i32 i = 0;
     i32 width = 0;
-    if (m_font == 0) {
+    if (m_font == NULL) {
 
         ext.height = 0;
         ext.width = 0;

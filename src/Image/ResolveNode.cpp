@@ -3,14 +3,16 @@
 #include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
 
+#include <stddef.h>
+
 RVA(0x001549d0, 0x29)
 CResolveNode::CResolveNode() {
-    m_ownerCtx = 0;
+    m_ownerCtx = NULL;
     m_dirty.m_rect.left = static_cast<i32>(0x80000000);
     m_dirty.m_armed = -1;
     m_screenX = static_cast<i32>(0x80000000);
     m_clip.left = static_cast<i32>(0x80000000);
-    m_level = 0;
+    m_level = NULL;
     m_stateFlags = 0;
 }
 
@@ -20,7 +22,7 @@ LoadableClassId CLoadable::GetClassId() {
 }
 RVA(0x00154a10, 0x16)
 i32 CResolveNode::IsLoaded() {
-    if (m_ownerCtx != 0 && m_id != -1) {
+    if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;

@@ -7,6 +7,8 @@
 #include <Gruntz/ResolveNode.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawSurfaceMgr;
 
 class CDDrawWorker;
@@ -42,7 +44,7 @@ public:
         m_dirty.m_armed = -1;
         m_screenX = static_cast<i32>(0x80000000);
         m_clip.left = static_cast<i32>(0x80000000);
-        m_level = 0;
+        m_level = NULL;
         m_stateFlags = 0;
     }
 };

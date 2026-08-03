@@ -21,11 +21,11 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
     LogicTypeId typeId,
     i32 pObj
 ) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
-    if (reg == 0) {
+    if (reg == NULL) {
         return 0;
     }
 
@@ -68,14 +68,14 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
-            if (m_glyphMap != 0) {
+            if (m_glyphMap != NULL) {
                 strcpy(buf, m_glyphMap->m_name);
             }
             s->Write(buf, 0x80);
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
-            if (m_timerGlyphMap != 0) {
+            if (m_timerGlyphMap != NULL) {
                 strcpy(buf, m_timerGlyphMap->m_name);
             }
             s->Write(buf, 0x80);

@@ -12,13 +12,15 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CStatusBarMgr;
 
 class CSBI_SideTab : public CStatusBarItem {
 public:
     CSBI_SideTab() {
-        m_topFrame = 0;
-        m_bottomFrame = 0;
+        m_topFrame = NULL;
+        m_bottomFrame = NULL;
         m_sampledValue = -1;
         m_sampleMode = -1;
     }

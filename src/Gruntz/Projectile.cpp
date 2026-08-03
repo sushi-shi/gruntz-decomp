@@ -151,19 +151,19 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
         o->m_flags |= 0x20000;
     }
     memset(&m_frames[0], 0, 0x1c);
-    m_sound = 0;
-    m_shadow = 0;
+    m_sound = NULL;
+    m_shadow = NULL;
 }
 
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
-    if (m_sound != 0) {
+    if (m_sound != NULL) {
         m_sound->StopAndRewind();
-        m_sound = 0;
+        m_sound = NULL;
     }
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
         void* data = m_hitList.GetNext(pos);
-        if (data != 0) {
+        if (data != NULL) {
 
             CoordPoolNode* node = g_coordPool.NodeOf(data);
             node->m_next = g_coordPool.m_freeHead;
@@ -254,28 +254,28 @@ i32 CProjectile::LoadProjectileSprites(
 
     CMapStringToPtr& map = m_wwdObject->OwnerMgr()->m_animRegistry->m_animations;
     void* out;
-    out = 0;
+    out = NULL;
     map.Lookup(key + "1", out);
     m_frames[0] = static_cast<CAniElement*>(out);
-    if (m_frames[0] == 0) {
+    if (m_frames[0] == NULL) {
         return 0;
     }
-    out = 0;
+    out = NULL;
     map.Lookup(key + "2", out);
     m_frames[1] = static_cast<CAniElement*>(out);
-    out = 0;
+    out = NULL;
     map.Lookup(key + "3", out);
     m_frames[2] = static_cast<CAniElement*>(out);
-    out = 0;
+    out = NULL;
     map.Lookup(key + "4", out);
     m_frames[3] = static_cast<CAniElement*>(out);
-    out = 0;
+    out = NULL;
     map.Lookup(key + "5", out);
     m_frames[4] = static_cast<CAniElement*>(out);
-    out = 0;
+    out = NULL;
     map.Lookup(key + "IMPACT", out);
     m_frames[PF_IMPACT] = static_cast<CAniElement*>(out);
-    out = 0;
+    out = NULL;
     map.Lookup(key + "FALL", out);
     m_frames[PF_FALL] = static_cast<CAniElement*>(out);
 
@@ -317,7 +317,7 @@ i32 CProjectile::LoadProjectileSprites(
     m_shadow =
         (factory
              ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003));
-    if (m_shadow != 0) {
+    if (m_shadow != NULL) {
         m_shadow->m_animWorker->m_notify(m_shadow);
         (static_cast<CLightFx*>(m_shadow->m_animWorker->m_logic))
             ->Activate(
@@ -342,7 +342,7 @@ static inline CString* ProjTypeLookup(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return g_typeColl.Elem(key);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
         return g_typeColl.Elem(key);
     }
     char* msg = g_errOutOfMem;
@@ -369,7 +369,7 @@ void CProjectile::RegisterType() {
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
-            if (nodes != 0) {
+            if (nodes != NULL) {
                 nodes->~CString();
             }
             nodes++;
@@ -395,9 +395,9 @@ void CProjectile::AdvanceMotion() {
             && owner->m_screenY < reg->m_viewBounds.bottom
             && owner->m_screenY >= reg->m_viewBounds.top) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
-        } else if (m_sound != 0) {
+        } else if (m_sound != NULL) {
             m_sound->StopAndRewind();
-            m_sound = 0;
+            m_sound = NULL;
         }
     }
 
@@ -446,7 +446,7 @@ void CProjectile::AdvanceMotion() {
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[0]) {
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->m_animCursor.Setup(m_frames[0]);
-                    if (m_shadow != 0) {
+                    if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[0]);
                     }
                 }
@@ -456,7 +456,7 @@ void CProjectile::AdvanceMotion() {
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[1]) {
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->m_animCursor.Setup(m_frames[1]);
-                    if (m_shadow != 0) {
+                    if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[1]);
                     }
                 }
@@ -466,7 +466,7 @@ void CProjectile::AdvanceMotion() {
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[2]) {
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->m_animCursor.Setup(m_frames[2]);
-                    if (m_shadow != 0) {
+                    if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[2]);
                     }
                 }
@@ -476,7 +476,7 @@ void CProjectile::AdvanceMotion() {
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[3]) {
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->m_animCursor.Setup(m_frames[3]);
-                    if (m_shadow != 0) {
+                    if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[3]);
                     }
                 }
@@ -486,7 +486,7 @@ void CProjectile::AdvanceMotion() {
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[4]) {
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->m_animCursor.Setup(m_frames[4]);
-                    if (m_shadow != 0) {
+                    if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[4]);
                     }
                 }
@@ -494,21 +494,21 @@ void CProjectile::AdvanceMotion() {
         }
         m_object->m_screenX = offX + m_curX;
         m_object->m_screenY = offY + m_curY;
-        if (m_shadow != 0) {
+        if (m_shadow != NULL) {
             m_shadow->m_screenX = localX;
             m_shadow->m_screenY = yRes;
         }
         return;
     }
 
-    if (m_sound != 0) {
+    if (m_sound != NULL) {
         m_sound->StopAndRewind();
-        m_sound = 0;
+        m_sound = NULL;
     }
     ScanTargets(0);
-    if (m_shadow != 0) {
+    if (m_shadow != NULL) {
         m_shadow->m_flags |= 0x10000;
-        m_shadow = 0;
+        m_shadow = NULL;
     }
     m_arrived = 1;
     i32 tier = 0;
@@ -531,7 +531,7 @@ void CProjectile::AdvanceMotion() {
                 CWwdGameObjectA* fx =
                     reg->m_world->m_childGroup
                         ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
-                if (fx != 0) {
+                if (fx != NULL) {
                     fx->ApplyName("GAME_WATER");
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
                 }
@@ -565,7 +565,7 @@ void CProjectile::AdvanceMotion() {
                                 "Particlez",
                                 0x40003
                             );
-                            if (fx != 0) {
+                            if (fx != NULL) {
                                 fx->ApplyName("LEVEL_DEATHSPLASH");
                                 fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                             }
@@ -577,7 +577,7 @@ void CProjectile::AdvanceMotion() {
         }
     }
     CAniElement* sprite = (tier != 0) ? m_frames[PF_FALL] : m_frames[PF_IMPACT];
-    if (sprite == 0) {
+    if (sprite == NULL) {
         m_wwdObject->m_flags |= 0x10000;
         return;
     }
@@ -606,7 +606,7 @@ void CBoomerang::AdvanceMotion() {
 
             m_object->m_screenX = m_targetX;
             m_object->m_screenY = m_targetY;
-            if (m_shadow != 0) {
+            if (m_shadow != NULL) {
                 m_shadow->m_screenX = m_targetX;
                 m_shadow->m_screenY = m_targetY;
             }
@@ -616,9 +616,9 @@ void CBoomerang::AdvanceMotion() {
     } else if (m_phase > g_projPhase1) {
 
         ScanTargets(1);
-        if (m_shadow != 0) {
+        if (m_shadow != NULL) {
             m_shadow->m_flags |= 0x10000;
-            m_shadow = 0;
+            m_shadow = NULL;
         }
         m_wwdObject->m_flags |= 0x10000;
         return;
@@ -638,7 +638,7 @@ step:
     m_phase = px;
     m_object->m_screenX = static_cast<i32>(m_posX);
     m_object->m_screenY = static_cast<i32>(m_posY);
-    if (m_shadow != 0) {
+    if (m_shadow != NULL) {
         m_shadow->m_screenX = static_cast<i32>(m_posX);
         m_shadow->m_screenY = static_cast<i32>(m_posY);
     }
@@ -660,7 +660,7 @@ void CProjectile::ScanTargets(i32 impact) {
         colOff = rowBase;
         for (; col < 0xf; col++, colOff++) {
             CGrunt* g = g_gameReg->m_cmdGrid->m_grid[colOff];
-            if (g == 0) {
+            if (g == NULL) {
                 continue;
             }
             if (g->m_entranceCommitted == 0) {
@@ -703,7 +703,7 @@ void CProjectile::ScanTargets(i32 impact) {
 
             Coord* slot = 0;
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            if (p->m_next != 0) {
+            if (p->m_next != NULL) {
                 slot = &p->m_coord;
                 slot->m_x = keyX;
                 slot->m_y = keyY;
@@ -735,7 +735,7 @@ i32 CProjectile::SerializeMove(
     CGameObject* pObj
 ) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
-    if (reg == 0) {
+    if (reg == NULL) {
         return 0;
     }
 
@@ -743,7 +743,7 @@ i32 CProjectile::SerializeMove(
 
     switch (mode) {
         case SERIAL_LOAD: {
-            m_sound = 0;
+            m_sound = NULL;
             s->Read(&m_kind, 4);
             s->Read(&m_srcRow, 4);
             s->Read(&m_srcCol, 4);
@@ -770,23 +770,23 @@ i32 CProjectile::SerializeMove(
                 g_serialCounter++;
                 s->Read(buf, 0x80);
                 if (strlen(buf) != 0) {
-                    out = 0;
+                    out = NULL;
                     reg->m_animRegistry->m_animations.Lookup(buf, out);
                     m_frames[ni] = static_cast<CAniElement*>(out);
                 } else {
-                    m_frames[ni] = 0;
+                    m_frames[ni] = NULL;
                 }
             }
 
             g_serialCounter++;
             i32 key;
             s->Read(&key, 4);
-            out = 0;
+            out = NULL;
             CGameObject* r;
             if (MapLookupById(reg->m_childGroup->m_map48, key, out) == 0) {
-                r = 0;
-            } else if (out == 0) {
-                r = 0;
+                r = NULL;
+            } else if (out == NULL) {
+                r = NULL;
             } else {
 
                 r = (static_cast<CGameObject*>(out)->GetClassId() == CLASSID_SERIALREF)
@@ -794,7 +794,7 @@ i32 CProjectile::SerializeMove(
                         : 0;
             }
             m_shadow = static_cast<CWwdGameObjectA*>(r);
-            if (m_shadow == 0 && key != 0) {
+            if (m_shadow == NULL && key != 0) {
                 return 0;
             }
 
@@ -803,7 +803,7 @@ i32 CProjectile::SerializeMove(
             for (i32 ci = 0; ci < cnt; ci++) {
                 CoordPoolNode* node = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 void* payload = 0;
-                if (node->m_next != 0) {
+                if (node->m_next != NULL) {
                     g_coordPool.m_freeHead = node->m_next;
                     payload = &node->m_coord;
                 }
@@ -839,7 +839,7 @@ i32 CProjectile::SerializeMove(
             for (i32 fi = 0; fi < 7; fi++) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
-                if (*fp != 0) {
+                if (*fp != NULL) {
                     strcpy(buf, reg->m_animRegistry->KeyOfValue(*fp));
                 }
                 s->Write(buf, 0x80);
@@ -848,7 +848,7 @@ i32 CProjectile::SerializeMove(
 
             g_serialCounter++;
             i32 n = 0;
-            if (m_shadow != 0) {
+            if (m_shadow != NULL) {
                 n = m_shadow->m_objectId;
             }
             s->Write(&n, 4);
@@ -857,7 +857,7 @@ i32 CProjectile::SerializeMove(
             s->Write(&v2, 4);
 
             POSITION pos = m_hitList.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 s->Write(m_hitList.GetNext(pos), 8);
             }
             break;
@@ -867,7 +867,7 @@ i32 CProjectile::SerializeMove(
     if (CMovingLogic::SerializeMove(s, mode, typeId, pObj) == 0) {
         return 0;
     }
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
 
@@ -880,7 +880,7 @@ i32 CProjectile::SerializeMove(
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
             m_animWorker = obj->m_animWorker;
             if (strlen(buf) == 0) {
-                m_value = 0;
+                m_value = NULL;
                 return 1;
             }
             void* out = 0;
@@ -891,7 +891,7 @@ i32 CProjectile::SerializeMove(
         case SERIAL_SAVE: {
             char blob[0x80];
             memset(blob, 0, sizeof(blob));
-            if (m_value != 0) {
+            if (m_value != NULL) {
                 strcpy(blob, m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value));
             }
             s->Write(blob, 0x80);
@@ -915,7 +915,7 @@ static inline CString* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return g_typeColl.Elem(id);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
         return g_typeColl.Elem(id);
     }
     char* msg = g_errOutOfMem;
@@ -943,7 +943,7 @@ void CTimeBomb::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -1055,7 +1055,7 @@ i32 CTimeBomb::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
@@ -1089,7 +1089,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     CDDrawSurfaceMgr* world;
     void* entry_ob;
     LeafCue* entry;
-    if (m_sound != 0) {
+    if (m_sound != NULL) {
         goto fail;
     }
     reg = g_gameReg;
@@ -1097,18 +1097,18 @@ i32 CProjectile::LaunchSound(const char* key) {
         goto fail;
     }
     world = reg->m_world;
-    entry_ob = 0;
+    entry_ob = NULL;
     world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
     entry = static_cast<LeafCue*>(entry_ob);
-    if (entry == 0) {
+    if (entry == NULL) {
         goto fail;
     }
-    if (entry->m_sound == 0) {
+    if (entry->m_sound == NULL) {
         goto fail;
     }
 
     m_sound = static_cast<DirectSoundMgr*>(entry->m_sound->GetItem());
-    if (m_sound != 0) {
+    if (m_sound != NULL) {
         m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
         return 1;
     }

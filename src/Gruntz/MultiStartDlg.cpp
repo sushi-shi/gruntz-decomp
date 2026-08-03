@@ -33,7 +33,7 @@ CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent)
     : CDialog(0xc5, pParent), m_reserved74(0xa) {
     m_host = mgr;
     m_customWorldFlag = 0;
-    m_slotList = 0;
+    m_slotList = NULL;
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
 
@@ -41,15 +41,15 @@ RVA_COMPGEN(0x000c1810, 0x1e, ??_GCMultiStartDlg@@UAEPAXI@Z)
 RVA(0x000c1840, 0x16e)
 i32 CMultiStartDlg::SetupWorldCombo() {
     CWnd* combo = GetDlgItem(0x4ff);
-    if (combo == 0) {
+    if (combo == NULL) {
         return 0;
     }
     CSymTab* st = static_cast<CSymTab*>(m_host->m_symParser->ResolvePath("GAME_MULTI"));
-    if (st == 0) {
+    if (st == NULL) {
         return 0;
     }
     MpSymItem* item = static_cast<MpSymItem*>(st->NextSym2(st->FirstSym()));
-    while (item != 0) {
+    while (item != NULL) {
         CString name(item->m_name);
         name.MakeUpper();
         MsgParam text;
@@ -63,7 +63,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     }
     CWnd* combo2 = GetDlgItem(0x4ff);
     CWnd* child = CWnd::FromHandle(::GetWindow(combo2->m_hWnd, GW_CHILD));
-    if (child == 0) {
+    if (child == NULL) {
         return 0;
     }
     ::SendMessageA(child->m_hWnd, EM_SETREADONLY, 1, 0);
@@ -197,7 +197,7 @@ i32 CMultiStartDlg::BuildSlotList() {
 RVA(0x000c1fd0, 0x99)
 i32 CMultiStartDlg::UpdateSlot() {
     CWnd* w = GetDlgItem(0x527);
-    if (w == 0) {
+    if (w == NULL) {
         return 0;
     }
     CMulti* reg = g_multiState;
@@ -256,7 +256,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             CWnd* e = GetCtrlB(i);
-            if (e != 0) {
+            if (e != NULL) {
                 pSend(e->m_hWnd, EM_LIMITTEXT, 9, 0);
             }
         }
@@ -272,10 +272,10 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 char path[0x100];
                 sprintf(path, "custom\\%s", mapName);
                 FILE* f = fopen(path, "rb");
-                if (f != 0) {
+                if (f != NULL) {
                     HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
                     CWnd* child = CWnd::FromHandle(::GetWindow(worldCombo, GW_CHILD));
-                    if (child == 0) {
+                    if (child == NULL) {
                         return;
                     }
                     child->SetWindowTextA(mapName);
@@ -286,7 +286,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 }
             } else {
                 CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
-                if (child == 0) {
+                if (child == NULL) {
                     return;
                 }
                 child->SetWindowTextA(mapName);
@@ -297,9 +297,9 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         {
             CWnd* w = GetDlgItem(0x511);
-            g_sharedFlag = (w == 0) ? 0 : w->m_hWnd;
+            g_sharedFlag = (w == NULL) ? 0 : w->m_hWnd;
         }
-        g_multiState->m_netGate->m_sessionSel = 0;
+        g_multiState->m_netGate->m_sessionSel = NULL;
         g_multiState->PollSession();
         if (!UpdateColorItems()) {
             return;
@@ -313,7 +313,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     } else {
         HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
         CWnd* child = CWnd::FromHandle(::GetWindow(worldCombo, GW_CHILD));
-        if (child == 0) {
+        if (child == NULL) {
             return;
         }
         child->GetWindowTextA(m_worldName);
@@ -324,13 +324,13 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         GruntzPlayer* slots = m_host->m_options;
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
             CWnd* e = GetCtrlB(i);
-            if (e != 0) {
+            if (e != NULL) {
                 CString temp;
                 e->GetWindowTextA(temp);
                 slots[i].m_name = temp;
             }
         }
-        NetLobby::g_curDlg = 0;
+        NetLobby::g_curDlg = NULL;
     }
     FlashCtrlD();
 }
@@ -445,7 +445,7 @@ CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
 RVA(0x000c28c0, 0x27)
 void CMultiStartDlg::SetComboSelE(i32 index, i32 sel) {
     CWnd* c = GetCtrlE(index);
-    if (c != 0) {
+    if (c != NULL) {
         ::SendMessageA(c->m_hWnd, 0x14e, sel, 0);
     }
 }
@@ -453,7 +453,7 @@ void CMultiStartDlg::SetComboSelE(i32 index, i32 sel) {
 RVA(0x000c2900, 0x2a)
 i32 CMultiStartDlg::GetComboSelE(i32 index) {
     CWnd* c = GetCtrlE(index);
-    if (c == 0) {
+    if (c == NULL) {
         return -1;
     }
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0);
@@ -462,7 +462,7 @@ i32 CMultiStartDlg::GetComboSelE(i32 index) {
 RVA(0x000c2940, 0x2b)
 i32 CMultiStartDlg::GetComboSelC(i32 id) {
     CWnd* c = GetCtrlC(id);
-    if (c == 0) {
+    if (c == NULL) {
         return -1;
     }
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;

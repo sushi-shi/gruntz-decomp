@@ -61,7 +61,7 @@ static inline CString* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return g_typeColl.Elem(id);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
         return g_typeColl.Elem(id);
     }
     char* msg = g_errOutOfMem;
@@ -79,7 +79,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return g_typeColl.Elem(id);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
         return g_typeColl.Elem(id);
     }
     g_typeColl.Report(g_errOutOfMem, 0xc);
@@ -240,7 +240,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 
     CWwdGameObjectA* obj38 = m_wwdObject;
-    if (obj38->m_frameSet != 0) {
+    if (obj38->m_frameSet != NULL) {
         CString name;
         name = obj38->m_frameSet->m_name;
         const char* s = name;
@@ -300,7 +300,7 @@ void CObjectDropper::RegisterActs() {
         i32 cnt = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (cnt-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -327,7 +327,7 @@ i32 CObjectDropper::Update() {
             CGrunt* found =
                 g_gameReg->m_cmdGrid
                     ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &tx, &ty, &box);
-            if (found != 0) {
+            if (found != NULL) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
                     if (m_scrollMode == 0 || tx == 0) {
                         CGameObject* fo = found->m_object;
@@ -495,7 +495,7 @@ void CDroppedObject::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -515,7 +515,7 @@ void CDroppedObject::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -572,7 +572,7 @@ i32 CDroppedObject::AdvanceFall() {
                                     "Particlez",
                                     0x40003
                                 );
-                                if (s != 0) {
+                                if (s != NULL) {
                                     s->ApplyName("LEVEL_DEATHSPLASH");
                                     s->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                                 }
@@ -590,7 +590,7 @@ i32 CDroppedObject::AdvanceFall() {
                 CWwdGameObjectA* s =
                     g_gameReg->m_world->m_childGroup
                         ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
-                if (s != 0) {
+                if (s != NULL) {
                     s->ApplyName("GAME_WATER");
                     s->ApplyLookupGeometry("GAME_WATER", 0);
                 }
@@ -675,7 +675,7 @@ void CDroppedObjectShadow::RegisterActs() {
         i32 cnt = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (cnt-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

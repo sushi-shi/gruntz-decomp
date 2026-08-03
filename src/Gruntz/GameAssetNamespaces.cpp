@@ -40,12 +40,12 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     sprintf(area, "AREA%i", m_levelType);
     CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(area));
     m_levelBank = node;
-    if (node == 0) {
+    if (node == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->HasKeyEqual("GAME") == 0) {
         void* img = m_symParser->ResolvePath("GAME_IMAGEZ");
-        if (img == 0) {
+        if (img == NULL) {
             return 0;
         }
         g_resourceInstallActive = 1;
@@ -54,14 +54,14 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     }
     if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
         void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
-        if (snd == 0) {
+        if (snd == NULL) {
             return 0;
         }
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
     if (m_world->m_animRegistry->HasKeyPrefix("GAME") == 0) {
         void* aniz = m_symParser->ResolvePath("GAME_ANIZ");
-        if (aniz == 0) {
+        if (aniz == NULL) {
             return 0;
         }
         m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(aniz), "GAME", "_");
@@ -70,17 +70,17 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_symParser) == 0) {
         return 0;
     }
-    if (m_scratchSurface0 == 0 && m_scratchSurface1 == 0) {
+    if (m_scratchSurface0 == NULL && m_scratchSurface1 == NULL) {
         CDDrawPtrCollections* coll = m_world->m_ptrColl;
-        if (coll == 0) {
+        if (coll == NULL) {
             return 0;
         }
         m_scratchSurface0 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
-        if (m_scratchSurface0 == 0) {
+        if (m_scratchSurface0 == NULL) {
             return 0;
         }
         m_scratchSurface1 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
-        if (m_scratchSurface1 == 0) {
+        if (m_scratchSurface1 == NULL) {
             return 0;
         }
     }

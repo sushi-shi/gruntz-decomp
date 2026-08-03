@@ -36,7 +36,7 @@ struct CButeValue {
             *p = v;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
     CButeValue(ButeType t, unsigned long v) {
@@ -46,7 +46,7 @@ struct CButeValue {
             *p = v;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
     CButeValue(ButeType t, float v) {
@@ -56,7 +56,7 @@ struct CButeValue {
             *p = v;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
     CButeValue(ButeType t, double v) {
@@ -66,7 +66,7 @@ struct CButeValue {
             *p = v;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
     CButeValue(ButeType t, const CString& s) {
@@ -81,7 +81,7 @@ struct CButeValue {
             p[1] = b;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
     CButeValue(ButeType t, i32 a, i32 b, i32 c, i32 d) {
@@ -94,7 +94,7 @@ struct CButeValue {
             p[3] = d;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
     CButeValue(ButeType t, double x, double y) {
@@ -105,7 +105,7 @@ struct CButeValue {
             p[1] = y;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
     CButeValue(ButeType t, double x, double y, double z) {
@@ -117,7 +117,7 @@ struct CButeValue {
             p[2] = z;
             pValue = p;
         } else {
-            pValue = 0;
+            pValue = NULL;
         }
     }
 

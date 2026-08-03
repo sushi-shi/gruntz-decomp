@@ -167,7 +167,7 @@ static void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
-        if (slot != 0) {
+        if (slot != NULL) {
             slot->~CString();
         }
         slot++;
@@ -242,7 +242,7 @@ i32 CGrunt::RunEntranceMove() {
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     CGrunt* other = m_tileMgr->m_grid[col * TM_GRID_COLS + row];
-    if (other != 0 && other->m_entranceCommitted != 0 && other->m_gruntKind != GRUNT_GHOST) {
+    if (other != NULL && other->m_entranceCommitted != 0 && other->m_gruntKind != GRUNT_GHOST) {
         i32 ox = other->m_lastTilePx.m_x >> 5;
         i32 oy = other->m_lastTilePx.m_y >> 5;
         i32 tx = m_defenderPx.m_x >> 5;
@@ -493,7 +493,7 @@ i32 CGrunt::RearmEntranceDrop() {
         i32 a;
         i32 b;
         m_entranceCommitted = 0;
-        if (m_tileMgr->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0) != 0) {
+        if (m_tileMgr->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0) != NULL) {
             m_tileMgr->CellDispatch(a, b, DEATH_EXPLODE, -1);
             m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
         } else {
@@ -507,33 +507,33 @@ i32 CGrunt::RearmEntranceDrop() {
 RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     FinishActiveAction();
-    if (m_healthSprite != 0) {
+    if (m_healthSprite != NULL) {
         m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = 0;
+        m_healthSprite = NULL;
     }
-    if (m_staminaSprite != 0) {
+    if (m_staminaSprite != NULL) {
         m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = 0;
+        m_staminaSprite = NULL;
     }
-    if (m_toySprite != 0) {
+    if (m_toySprite != NULL) {
         m_toySprite->m_flags |= 0x10000;
-        m_toySprite = 0;
+        m_toySprite = NULL;
     }
-    if (m_toyTimeSprite != 0) {
+    if (m_toyTimeSprite != NULL) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
-    if (m_wingzTimeSprite != 0) {
+    if (m_wingzTimeSprite != NULL) {
         m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = 0;
+        m_wingzTimeSprite = NULL;
     }
-    if (m_powerupSprite != 0) {
+    if (m_powerupSprite != NULL) {
         m_powerupSprite->m_flags |= 0x10000;
-        m_powerupSprite = 0;
+        m_powerupSprite = NULL;
     }
-    if (m_selectedSprite != 0) {
+    if (m_selectedSprite != NULL) {
         m_selectedSprite->m_flags |= 0x10000;
-        m_selectedSprite = 0;
+        m_selectedSprite = NULL;
     }
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
@@ -620,10 +620,10 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[7].WalkName() = s_S_ITEM;
         m_cells[8].WalkName() = s_SE_ITEM;
 
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM, _out);
         m_poseWalk = _out;
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM, _out);
         AT(m_poseIdle, GRUNT_IDLE3) = 0;
         AT(m_poseIdle, GRUNT_IDLE1) = _out;
@@ -642,9 +642,9 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_wingzEnabled = 0;
         m_wingzDurationLo = 0;
         m_wingzDurationHi = 0;
-        if (m_wingzTimeSprite != 0) {
+        if (m_wingzTimeSprite != NULL) {
             m_wingzTimeSprite->m_flags |= 0x10000;
-            m_wingzTimeSprite = 0;
+            m_wingzTimeSprite = NULL;
         }
 
         m_cells[0].WalkName() = s_NW_WALK;
@@ -666,22 +666,22 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[7].IdleName() = s_S_IDLE;
         m_cells[8].IdleName() = s_SE_IDLE;
 
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_WALK, _out);
         m_poseWalk = _out;
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE1, _out);
         AT(m_poseIdle, GRUNT_IDLE1) = _out;
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE2, _out);
         AT(m_poseIdle, GRUNT_IDLE2) = _out;
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE3, _out);
         AT(m_poseIdle, GRUNT_IDLE3) = _out;
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE4, _out);
         AT(m_poseIdle, GRUNT_IDLE4) = _out;
-        _out = 0;
+        _out = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE5, _out);
         AT(m_poseIdle, GRUNT_IDLE5) = _out;
     }
@@ -913,9 +913,9 @@ idleReseed:
             m_object->m_flags |= 0x20000;
         }
     }
-    if (m_toyTimeSprite != 0) {
+    if (m_toyTimeSprite != NULL) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
     m_toyTime = 0;
     StopStruckSlotSound();
@@ -945,25 +945,25 @@ modeDispatch: {
 
 finalize:
     ConsiderArrival(1);
-    if (m_healthSprite != 0) {
+    if (m_healthSprite != NULL) {
         m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = 0;
+        m_healthSprite = NULL;
     }
-    if (m_staminaSprite != 0) {
+    if (m_staminaSprite != NULL) {
         m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = 0;
+        m_staminaSprite = NULL;
     }
-    if (m_toySprite != 0) {
+    if (m_toySprite != NULL) {
         m_toySprite->m_flags |= 0x10000;
-        m_toySprite = 0;
+        m_toySprite = NULL;
     }
-    if (m_toyTimeSprite != 0) {
+    if (m_toyTimeSprite != NULL) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
-    if (m_wingzTimeSprite != 0) {
+    if (m_wingzTimeSprite != NULL) {
         m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = 0;
+        m_wingzTimeSprite = NULL;
     }
     if (m_poweredUp == 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
@@ -1456,9 +1456,9 @@ idleReseed:
             m_object->m_flags |= 0x20000;
         }
     }
-    if (m_toyTimeSprite != 0) {
+    if (m_toyTimeSprite != NULL) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
     m_toyTime = 0;
     StopStruckSlotSound();

@@ -53,7 +53,7 @@ RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
 RVA(0x0015b2b0, 0xe)
 WwdRegion::WwdRegion() {
-    m_object = 0;
+    m_object = NULL;
 }
 
 RVA_COMPGEN(0x0015b2c0, 0x3d, ??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
@@ -76,10 +76,10 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 
 RVA(0x0015b370, 0x1d)
 i32 CGameObject::IsLoaded() {
-    if (m_animWorker == 0) {
+    if (m_animWorker == NULL) {
         return 0;
     }
-    if (m_ownerCtx != 0 && m_id != -1) {
+    if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -90,12 +90,12 @@ RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CResolveNode(owner, id, stateFlags) {
     m_screenX = static_cast<i32>(0x80000000);
-    m_posCache = 0;
+    m_posCache = NULL;
     m_animWorker = new AnimWorkerObj(owner, id, 0);
-    m_carrier = 0;
-    m_hitWorker = 0;
-    m_attackWorker = 0;
-    m_collideWorker = 0;
+    m_carrier = NULL;
+    m_hitWorker = NULL;
+    m_attackWorker = NULL;
+    m_collideWorker = NULL;
     m_objectId = g_wwdObjIdCounter;
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
@@ -122,7 +122,7 @@ void CGameObject::Notify(void* p) {
         }
     } else {
         AnimWorkerObj* h = m_hitWorker;
-        if (h != 0) {
+        if (h != NULL) {
             m_hitSource = static_cast<CGameObject*>(p);
             h->m_notify(this);
         }
@@ -131,7 +131,7 @@ void CGameObject::Notify(void* p) {
 
 RVA(0x0015b6a0, 0xb)
 i32 CAniAdvanceCursor::IsLoaded() {
-    return m_boundObject != 0;
+    return m_boundObject != NULL;
 }
 
 RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
@@ -140,15 +140,15 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
     Unload();
     m_id = -1;
     m_flags = 0;
-    m_ownerCtx = 0;
+    m_ownerCtx = NULL;
 }
 
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(field04, field08, owner) {
-    m_boundObject = 0;
-    m_animation = 0;
-    m_element = 0;
+    m_boundObject = NULL;
+    m_animation = NULL;
+    m_element = NULL;
 }
 
 RVA(0x0015b760, 0x6)
@@ -164,7 +164,7 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObjectA::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
-    m_soundCue = 0;
+    m_soundCue = NULL;
     m_animCursor.Construct(this);
     return CGameObject::Setup(x, y, sortKey, tmpl);
 }
@@ -178,10 +178,10 @@ void CWwdGameObjectA::Render(CDDrawSurfacePair* pair) {
 
 RVA(0x0015ba40, 0x1d)
 i32 CWwdGameObjectF::IsLoaded() {
-    if (m_animWorker == 0) {
+    if (m_animWorker == NULL) {
         return 0;
     }
-    if (m_ownerCtx != 0 && m_id != -1) {
+    if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -218,7 +218,7 @@ i32 CWwdGameObjectF::SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl) {
 
 RVA(0x0015bcd0, 0xb)
 i32 CWwdGameObject::IsLoaded() {
-    return m_animWorker != 0;
+    return m_animWorker != NULL;
 }
 
 RVA(0x0015bce0, 0x6)
@@ -248,10 +248,10 @@ i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
 
 RVA(0x0015c000, 0x1d)
 i32 CWwdGameObjectC::IsLoaded() {
-    if (m_animWorker == 0) {
+    if (m_animWorker == NULL) {
         return 0;
     }
-    if (m_ownerCtx != 0 && m_id != -1) {
+    if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -289,7 +289,7 @@ RVA(0x0015c290, 0x2f)
 void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
     m_boundObject = src;
     m_finished = 1;
-    m_animation = 0;
+    m_animation = NULL;
     m_scale = 1.0f;
     m_useElapsedTime = 1;
 
@@ -298,9 +298,9 @@ void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
 
 RVA(0x0015c2c0, 0xc)
 void CAniAdvanceCursor::Unload() {
-    m_boundObject = 0;
-    m_animation = 0;
-    m_element = 0;
+    m_boundObject = NULL;
+    m_animation = NULL;
+    m_element = NULL;
 }
 
 RVA(0x0015c2d0, 0x45)
@@ -315,7 +315,7 @@ void CAniAdvanceCursor::Setup(CAniElement* src) {
     if (src->m_records.GetSize() > 0) {
         e = static_cast<CAniRecordView*>(src->m_records.GetAt(0));
     } else {
-        e = 0;
+        e = NULL;
     }
     m_element = e;
     m_frameTicksLeft = 0;
@@ -333,7 +333,7 @@ RVA(0x0015c320, 0x40)
 
 void CAniAdvanceCursor::Recompute(i32 resetGate) {
     CAniElement* src = m_animation;
-    if (src == 0) {
+    if (src == NULL) {
         return;
     }
     m_index = 0;
@@ -341,7 +341,7 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
     if (src->m_records.GetSize() > 0) {
         e = static_cast<CAniRecordView*>(src->m_records.GetAt(0));
     } else {
-        e = 0;
+        e = NULL;
     }
     m_element = e;
     m_finished = 0;
@@ -357,7 +357,7 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
 // @early-stop
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
-    if (m_animation == 0) {
+    if (m_animation == NULL) {
         return -1;
     }
 
@@ -386,13 +386,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 0: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
-                if (seq == 0) {
+                if (seq == NULL) {
                     break;
                 }
                 i32 idx = c->m_frameIndex + 1;
                 c->m_frameIndex = idx;
                 c->m_layer = seq->GetFrame(idx);
-                if (c->m_layer == 0) {
+                if (c->m_layer == NULL) {
                     i32 first = c->m_frameSet->m_minIndex;
                     c->m_frameIndex = first;
                     c->m_layer = c->m_frameSet->GetFrame(first);
@@ -402,7 +402,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 1: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
-                if (seq == 0) {
+                if (seq == NULL) {
                     break;
                 }
                 i32 idx = c->m_frameIndex;
@@ -418,7 +418,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 frame = d->m_param;
                 CDDrawWorker* seq = c->m_frameSet;
-                if (seq == 0) {
+                if (seq == NULL) {
                     break;
                 }
                 c->m_layer = seq->GetFrame(frame);
@@ -428,7 +428,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 3: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
-                if (seq == 0) {
+                if (seq == NULL) {
                     break;
                 }
                 i32 first = seq->m_minIndex;
@@ -439,7 +439,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 4: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
-                if (seq == 0) {
+                if (seq == NULL) {
                     break;
                 }
                 i32 last = seq->m_maxIndex;
@@ -451,13 +451,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_frameSet;
-                if (seq == 0) {
+                if (seq == NULL) {
                     break;
                 }
                 i32 idx = c->m_frameIndex + step;
                 c->m_frameIndex = idx;
                 c->m_layer = seq->GetFrame(idx);
-                if (c->m_layer == 0) {
+                if (c->m_layer == NULL) {
                     c->ClampLast();
                 }
                 break;
@@ -466,13 +466,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_frameSet;
-                if (seq == 0) {
+                if (seq == NULL) {
                     break;
                 }
                 i32 idx = c->m_frameIndex - step;
                 c->m_frameIndex = idx;
                 c->m_layer = seq->GetFrame(idx);
-                if (c->m_layer == 0) {
+                if (c->m_layer == NULL) {
                     c->ClampFirst();
                 }
                 break;
@@ -528,24 +528,24 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 LeafCue** tbl;
                 LeafCue* entry;
                 if (dd->m_cueCount == 0) {
-                    entry = 0;
+                    entry = NULL;
                 } else {
                     tbl = dd->m_cues;
                     entry = tbl[Rng2Next() % dd->m_cueCount];
                 }
-                if (entry != 0) {
+                if (entry != NULL) {
                     entry->TriggerBlit(cue, 0, 0, 0);
                 }
             } else {
                 LeafCue** tbl;
                 LeafCue* entry;
                 if (dd->m_cueCount == 0) {
-                    entry = 0;
+                    entry = NULL;
                 } else {
                     tbl = dd->m_cues;
                     entry = tbl[Rng2Next() % dd->m_cueCount];
                 }
-                if (entry != 0) {
+                if (entry != NULL) {
                     entry->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
@@ -570,7 +570,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 m_finished = 1;
                 break;
             case 8: {
-                if (m_animation != 0) {
+                if (m_animation != NULL) {
                     m_index = 0;
                     m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(0));
                     m_finished = 0;
@@ -583,11 +583,11 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 7: {
                 m_index = 1;
                 m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(1));
-                if (m_element == 0) {
+                if (m_element == NULL) {
                     m_index = 0;
                     m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(0));
                 }
-                if (m_element != 0) {
+                if (m_element != NULL) {
                     m_finished = 0;
                     m_frameTicksLeft = 0;
                     m_curDraw = m_pendingDraw;
@@ -603,11 +603,11 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         i32 j = m_index + 1;
                         m_index = j;
                         m_element = static_cast<CAniRecordView*>(a->AtChecked(j));
-                        if (m_element == 0) {
+                        if (m_element == NULL) {
                             m_index = 0;
                             m_element = static_cast<CAniRecordView*>(a->AtChecked(0));
                         }
-                        if (m_element != 0) {
+                        if (m_element != NULL) {
                             m_curDraw = m_pendingDraw;
                             m_pendingDraw = m_element->m_drawValue;
                         }
@@ -648,14 +648,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (i >= 0 && i < arr->m_records.GetSize()) {
                         nd = static_cast<CAniRecordView*>(arr->m_records.GetAt(i));
                     } else {
-                        nd = 0;
+                        nd = NULL;
                     }
                     m_element = nd;
-                    if (nd == 0) {
+                    if (nd == NULL) {
                         m_index = 0;
                         m_element = static_cast<CAniRecordView*>(arr->AtChecked(0));
                     }
-                    if (m_element != 0) {
+                    if (m_element != NULL) {
                         m_curDraw = m_pendingDraw;
                         m_pendingDraw = m_element->m_drawValue;
                     }
@@ -673,21 +673,21 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         if (j >= 0 && j < a->m_records.GetSize()) {
                             p = static_cast<CAniRecordView*>(a->m_records.GetAt(j));
                         } else {
-                            p = 0;
+                            p = NULL;
                         }
                         m_element = p;
-                        if (p == 0) {
+                        if (p == NULL) {
                             m_index = 0;
                             i32 cnt = a->m_records.GetSize();
                             CAniRecordView* first;
                             if (cnt > 0) {
                                 first = static_cast<CAniRecordView*>(a->m_records.GetAt(0));
                             } else {
-                                first = 0;
+                                first = NULL;
                             }
                             m_element = first;
                         }
-                        if (m_element != 0) {
+                        if (m_element != NULL) {
                             m_curDraw = m_pendingDraw;
                             m_pendingDraw = m_element->m_drawValue;
                         }
@@ -718,7 +718,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
 RVA(0x0015c900, 0x5c)
 i32 CAniAdvanceCursor::Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, void* self) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     switch (type) {
@@ -746,7 +746,7 @@ i32 CAniAdvanceCursor::Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeI
 
 RVA(0x0015c970, 0xfe)
 i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     ar->Write(&m_index, 4);
@@ -759,7 +759,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     ar->Write(&m_scale, 4);
     char buf[0x80];
     memset(buf, 0, sizeof(buf));
-    if (m_animation != 0) {
+    if (m_animation != NULL) {
 
         strcpy(buf, OwnerMgr()->m_animRegistry->KeyOfValue(m_animation));
     }
@@ -770,7 +770,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
 // @early-stop
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     ar->Read(&m_index, 4);
@@ -784,7 +784,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     char buf[0x80];
     ar->Read(buf, 0x80);
     if (strlen(buf) == 0) {
-        m_animation = 0;
+        m_animation = NULL;
     } else {
 
         void* out = 0;
@@ -792,24 +792,24 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
         m_animation = static_cast<CAniElement*>(out);
     }
     CAniElement* w = m_animation;
-    if (w != 0) {
+    if (w != NULL) {
         CAniRecordView* e;
         if (m_index >= 0 && m_index < w->m_records.GetSize()) {
             e = static_cast<CAniRecordView*>(w->m_records.GetAt(m_index));
         } else {
-            e = 0;
+            e = NULL;
         }
         m_element = e;
-        if (e == 0) {
+        if (e == NULL) {
             m_index = 0;
             if (w->m_records.GetSize() > 0) {
                 e = static_cast<CAniRecordView*>(w->m_records.GetAt(0));
             } else {
-                e = 0;
+                e = NULL;
             }
             m_element = e;
         }
-        if (m_element != 0) {
+        if (m_element != NULL) {
             m_frameTicksLeft = 0;
             m_finished = 0;
             m_curDraw = m_pendingDraw;
@@ -844,7 +844,7 @@ CImage* CDDrawWorker::GetFrame(i32 n) {
 RVA(0x0015cc50, 0x38)
 void CWwdGameObjectA::ClampFirst() {
     CDDrawWorker* seq = m_frameSet;
-    if (seq == 0) {
+    if (seq == NULL) {
         return;
     }
     i32 n = seq->m_minIndex;
@@ -852,7 +852,7 @@ void CWwdGameObjectA::ClampFirst() {
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
         m_layer = static_cast<CImage*>(seq->m_items.GetAt(n));
     } else {
-        m_layer = 0;
+        m_layer = NULL;
     }
 }
 
@@ -860,7 +860,7 @@ void CWwdGameObjectA::ClampFirst() {
 RVA(0x0015cc90, 0x38)
 void CWwdGameObjectA::ClampLast() {
     CDDrawWorker* seq = m_frameSet;
-    if (seq == 0) {
+    if (seq == NULL) {
         return;
     }
     i32 n = seq->m_maxIndex;
@@ -868,7 +868,7 @@ void CWwdGameObjectA::ClampLast() {
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
         m_layer = static_cast<CImage*>(seq->m_items.GetAt(n));
     } else {
-        m_layer = 0;
+        m_layer = NULL;
     }
 }
 

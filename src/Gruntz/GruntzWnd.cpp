@@ -8,6 +8,7 @@
 #include <Wap32/Wap32.h>
 
 #include <mmsystem.h>
+#include <stddef.h>
 
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
@@ -44,7 +45,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (!isIconic(m_hwnd)) {
                 break;
             }
-            if (NetLobby::g_curDlg == 0) {
+            if (NetLobby::g_curDlg == NULL) {
                 break;
             }
             SendMessageA(NetLobby::g_curDlg, WM_SYSCOMMAND, wParam, lParam);
@@ -52,10 +53,10 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         case MM_MCINOTIFY: {
             CGruntzMgr* mgr = GameMgr();
-            if (mgr == 0) {
+            if (mgr == NULL) {
                 return 1;
             }
-            if (mgr->m_sound == 0) {
+            if (mgr->m_sound == NULL) {
                 return 1;
             }
             EmptyMsgHook(wParam, lParam);

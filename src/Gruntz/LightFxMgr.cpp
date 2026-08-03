@@ -74,10 +74,10 @@ i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
 
 RVA(0x0009dc80, 0x1d)
 void CLightFxMgr::Reset() {
-    m_reg = 0;
-    m_world = 0;
-    m_cache = 0;
-    m_greyTable = 0;
+    m_reg = NULL;
+    m_world = NULL;
+    m_cache = NULL;
+    m_greyTable = NULL;
     memset(m_tables, 0, sizeof(m_tables));
 }
 

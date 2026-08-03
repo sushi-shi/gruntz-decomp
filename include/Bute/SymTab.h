@@ -8,6 +8,8 @@
 #include <Ints.h>
 #include <Rez/RezTypeTag.h>
 
+#include <stddef.h>
+
 void* operator new(u32 size);
 
 struct CSymTabNode : public CHashElement {
@@ -15,7 +17,7 @@ struct CSymTabNode : public CHashElement {
     virtual u32 Hash() OVERRIDE;
 
     CSymTabNode() {
-        m_symTab = 0;
+        m_symTab = NULL;
     }
 };
 SIZE(0x18);
@@ -30,7 +32,7 @@ struct CSymRecNode : public CHashElement {
 
     virtual u32 Hash() OVERRIDE;
     CSymRecNode() {
-        m_symRec = 0;
+        m_symRec = NULL;
     }
 };
 SIZE(0x18);

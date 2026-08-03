@@ -16,14 +16,14 @@ struct CParseSource;
 class CDDrawSubMgrLeafScan : public CLoadable {
 public:
     CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CLoadable(owner) {
-        m_soundStream = 0;
+        m_soundStream = NULL;
         m_replayDelay = 0;
     }
 
     RVA(0x00157530, 0x17)
     virtual i32 IsLoaded() OVERRIDE {
 
-        if (m_soundStream == 0 && m_emitGate == 0) {
+        if (m_soundStream == NULL && m_emitGate == 0) {
             return 0;
         }
         return 1;

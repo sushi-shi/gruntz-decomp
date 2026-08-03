@@ -82,7 +82,7 @@ static void GruntPosScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
-        if (slot != 0) {
+        if (slot != NULL) {
             slot->~CString();
         }
         slot++;
@@ -207,9 +207,9 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 
 void GruntRecycleCoords(CGrunt* g) {
     POSITION pos = g->m_coordList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         void* coord = g->m_coordList.GetNext(pos);
-        if (coord != 0) {
+        if (coord != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(coord);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
@@ -222,7 +222,7 @@ static __inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
-        if (slot != 0) {
+        if (slot != NULL) {
             slot->~CString();
         }
         slot++;
@@ -371,15 +371,15 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_reserved430 = 0;
     m_reserved42c = 0;
 
-    m_poseWalk = 0;
+    m_poseWalk = NULL;
     memset(m_poseAttack, 0, sizeof(m_poseAttack));
-    m_poseAttackIdle = 0;
+    m_poseAttackIdle = NULL;
     memset(m_poseStruck, 0, sizeof(m_poseStruck));
     memset(m_poseIdle, 0, sizeof(m_poseIdle));
     memset(m_poseItem, 0, sizeof(m_poseItem));
-    m_poseDeath = 0;
+    m_poseDeath = NULL;
     memset(m_poseToy, 0, sizeof(m_poseToy));
-    m_pickupGeoSrc = 0;
+    m_pickupGeoSrc = NULL;
     m_arrived = 0;
     m_wwdObject->m_objectType = 0x100000;
     m_wwdObject->m_hitTypeFlags = 0x3d1;
@@ -398,14 +398,14 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_animSetName = s_NORMALGRUNT;
     m_neighborCell.m_y = -1;
     m_entranceCommitted = 1;
-    m_healthSprite = 0;
+    m_healthSprite = NULL;
     m_reachRect.left = -1;
-    m_staminaSprite = 0;
-    m_toyTimeSprite = 0;
-    m_wingzTimeSprite = 0;
-    m_selectedSprite = 0;
-    m_toySprite = 0;
-    m_powerupSprite = 0;
+    m_staminaSprite = NULL;
+    m_toyTimeSprite = NULL;
+    m_wingzTimeSprite = NULL;
+    m_selectedSprite = NULL;
+    m_toySprite = NULL;
+    m_powerupSprite = NULL;
     m_reserved210 = 0;
     m_combatActive = 0;
     m_neighborValid = 0;
@@ -413,7 +413,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_coordToggle = 0;
     m_wingzEnabled = 0;
     m_tileClaimed = 0;
-    m_struckVoiceSound = 0;
+    m_struckVoiceSound = NULL;
     m_reachRect.top = -1;
     m_reachRect.right = 1;
     m_reachRect.bottom = 1;
@@ -503,7 +503,7 @@ void CGrunt::OnObjectRemoved() {
     if (CoordCount() != 0) {
 
         POSITION pos = m_coordList.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             void* buf = m_coordList.GetNext(pos);
             if (buf) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(buf);
@@ -517,7 +517,7 @@ void CGrunt::OnObjectRemoved() {
     while (1) {
         i32 n = PayloadCount();
         void* head = (n == 0) ? 0 : m_payloads.GetHead();
-        if (head == 0) {
+        if (head == NULL) {
             return;
         }
         if (n == 0) {
@@ -761,7 +761,7 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 
 RVA(0x0004a780, 0x1ec)
 GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
-    if (other == 0) {
+    if (other == NULL) {
         return &g_gruntMoveDirCenter;
     }
     i32 dy = static_cast<i32>((other->m_positionX - m_positionX));
@@ -837,7 +837,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::IntersectsTileObjectAxes() {
     CGrunt* tgt = m_tileMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);
-    if (tgt == 0) {
+    if (tgt == NULL) {
         return 0;
     }
     RECT r;
@@ -1013,28 +1013,28 @@ RVA(0x0004b240, 0xaa)
 void CGrunt::ClearAllSprites() {
     if (m_selectedSprite) {
         m_selectedSprite->m_flags |= 0x10000;
-        m_selectedSprite = 0;
+        m_selectedSprite = NULL;
     }
     if (m_healthSprite) {
         m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = 0;
+        m_healthSprite = NULL;
     }
     if (m_toySprite) {
         m_toySprite->m_flags |= 0x10000;
-        m_toySprite = 0;
+        m_toySprite = NULL;
     }
     if (m_entranceCommitted == 0) {
         if (m_staminaSprite) {
             m_staminaSprite->m_flags |= 0x10000;
-            m_staminaSprite = 0;
+            m_staminaSprite = NULL;
         }
         if (m_toyTimeSprite) {
             m_toyTimeSprite->m_flags |= 0x10000;
-            m_toyTimeSprite = 0;
+            m_toyTimeSprite = NULL;
         }
         if (m_wingzTimeSprite) {
             m_wingzTimeSprite->m_flags |= 0x10000;
-            m_wingzTimeSprite = 0;
+            m_wingzTimeSprite = NULL;
         }
     }
     m_arrived = 0;
@@ -1084,10 +1084,10 @@ i32 CGrunt::StepArrivalDrop(
 
     if (CoordCount() != 0) {
         n = CoordHead();
-        while (n != 0) {
+        while (n != NULL) {
             cur = n;
             n = n->m_next;
-            if (cur->m_coord != 0) {
+            if (cur->m_coord != NULL) {
                 g_coordPool.Push(cur->m_coord);
             }
         }
@@ -1172,7 +1172,7 @@ pathGate:
             && probe.GetCount() != 0) {
             if (probe.GetCount() > cnt + 3) {
                 pos = probe.GetHeadPosition();
-                while (pos != 0) {
+                while (pos != NULL) {
                     pooled = g_coordPool.NodeOf(probe.GetNext(pos));
                     pooled->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = pooled;
@@ -1183,10 +1183,10 @@ pathGate:
                 g_coordPool.m_freeHead = pooled;
                 if (CoordCount() != 0) {
                     n = CoordHead();
-                    while (n != 0) {
+                    while (n != NULL) {
                         cur = n;
                         n = n->m_next;
-                        if (cur->m_coord != 0) {
+                        if (cur->m_coord != NULL) {
                             pooled = g_coordPool.NodeOf(cur->m_coord);
                             pooled->m_next = g_coordPool.m_freeHead;
                             g_coordPool.m_freeHead = pooled;
@@ -1195,7 +1195,7 @@ pathGate:
                     m_coordList.RemoveAll();
                 }
                 pos = probe.GetHeadPosition();
-                while (pos != 0) {
+                while (pos != NULL) {
                     m_coordList.AddTail(probe.GetNext(pos));
                 }
             }
@@ -1402,7 +1402,7 @@ i32 CGrunt::StepGruntMovement() {
     }
     if (m_arrivalState == AI_BATTLEZ_PATH) {
         CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_battlezConfig;
-        if (slot != 0 && slot->ValidateUnitPath(this) == 0) {
+        if (slot != NULL && slot->ValidateUnitPath(this) == 0) {
             SetEntrancePos(1, 1);
             return 0;
         }
@@ -1535,7 +1535,7 @@ i32 CGrunt::StepGruntMovement() {
     {
         void* node = 0;
         CoordPoolNode* head = g_coordPool.m_freeHead;
-        if (head->m_next != 0) {
+        if (head->m_next != NULL) {
             node = &head->m_coord;
             g_coordPool.m_freeHead = head->m_next;
         }
@@ -1881,7 +1881,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
     if (b && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
 
         POSITION pos = m_coordList.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             void* buf = m_coordList.GetNext(pos);
             if (buf) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(buf);
@@ -1914,7 +1914,7 @@ i32 CGrunt::CreateHealthSprite() {
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_health)) {
         reg->m_wwdObject->m_flags |= 0x10000;
-        m_healthSprite = 0;
+        m_healthSprite = NULL;
         return 0;
     }
     return 1;
@@ -1940,7 +1940,7 @@ i32 CGrunt::CreateToySprite() {
     CGruntToySprite* reg = static_cast<CGruntToySprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_wwdObject->m_flags |= 0x10000;
-        m_toySprite = 0;
+        m_toySprite = NULL;
         return 0;
     }
     return 1;
@@ -1967,7 +1967,7 @@ i32 CGrunt::CreateStaminaSprite() {
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_stamina)) {
         reg->m_wwdObject->m_flags |= 0x10000;
-        m_staminaSprite = 0;
+        m_staminaSprite = NULL;
         return 0;
     }
     return 1;
@@ -1982,11 +1982,11 @@ i32 CGrunt::CreateToyTimeSprite() {
 
     if (m_staminaSprite) {
         m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = 0;
+        m_staminaSprite = NULL;
     }
     if (m_wingzTimeSprite) {
         m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = 0;
+        m_wingzTimeSprite = NULL;
     }
 
     m_toyTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2003,7 +2003,7 @@ i32 CGrunt::CreateToyTimeSprite() {
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_toyTime)) {
         reg->m_wwdObject->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
         return 0;
     }
     return 1;
@@ -2018,7 +2018,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     if (m_toyTimeSprite) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
 
     m_wingzTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2035,7 +2035,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_wingzTime)) {
         reg->m_wwdObject->m_flags |= 0x10000;
-        m_wingzTimeSprite = 0;
+        m_wingzTimeSprite = NULL;
         return 0;
     }
     return 1;
@@ -2061,7 +2061,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     CGruntPowerupSprite* reg = static_cast<CGruntPowerupSprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo, a)) {
         reg->m_wwdObject->m_flags |= 0x10000;
-        m_powerupSprite = 0;
+        m_powerupSprite = NULL;
         return 0;
     }
     return 1;
@@ -2087,7 +2087,7 @@ i32 CGrunt::CreateSelectedSprite() {
     CGruntSelectedSprite* reg = static_cast<CGruntSelectedSprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_wwdObject->m_flags |= 0x10000;
-        m_selectedSprite = 0;
+        m_selectedSprite = NULL;
         return 0;
     }
     return 1;
@@ -2173,7 +2173,7 @@ i32 CGrunt::Place(
     m_targetTeam = -1;
     LoadVehicleGruntSprites(static_cast<PickupType>(vehicleKind));
     LoadGruntTypeTable(typeKind, 1, 0, 0);
-    if (span != 0) {
+    if (span != NULL) {
         m_object->m_extent.left = (m_lastTilePx.m_x >> 5) - span->left;
         m_object->m_extent.right = span->right + (m_lastTilePx.m_x >> 5);
         m_object->m_extent.top = (m_lastTilePx.m_y >> 5) - span->top;
@@ -2190,7 +2190,7 @@ i32 CGrunt::Place(
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, 0);
-    if (shade == 0) {
+    if (shade == NULL) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     m_object->m_drawFillArg = shade;
@@ -2311,9 +2311,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         m_wingzEnabled = 0;
         m_wingzDurationLo = 0;
         m_wingzDurationHi = 0;
-        if (m_wingzTimeSprite != 0) {
+        if (m_wingzTimeSprite != NULL) {
             m_wingzTimeSprite->m_flags |= 0x10000;
-            m_wingzTimeSprite = 0;
+            m_wingzTimeSprite = NULL;
         }
     }
     fresh = 0;
@@ -2527,10 +2527,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 if (m_battleState != 4) {
                     if (CoordCount() != 0) {
                         CoordNode* p = CoordHead();
-                        while (p != 0) {
+                        while (p != NULL) {
                             CoordNode* c = p;
                             p = p->m_next;
-                            if (c->m_coord != 0) {
+                            if (c->m_coord != NULL) {
                                 g_coordPool.Push(c->m_coord);
                             }
                         }
@@ -2541,9 +2541,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                         if (m_payloads.GetCount() != 0) {
                             h = m_payloads.GetHead();
                         } else {
-                            h = 0;
+                            h = NULL;
                         }
-                        if (h == 0) {
+                        if (h == NULL) {
                             break;
                         }
                         if (m_payloads.GetCount() != 0) {
@@ -2551,7 +2551,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                         }
                     }
                     i32* payload = static_cast<i32*>(::operator new(0x2c));
-                    if (payload != 0) {
+                    if (payload != NULL) {
                         memset(payload, 0, 0x2c);
                     }
                     payload[0] = 9;
@@ -3419,7 +3419,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_STOPWATCH: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            if (play->m_frameMarker == 0) {
+            if (play->m_frameMarker == NULL) {
                 return 1;
             }
             i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
@@ -3469,7 +3469,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             g_typeColl.m_grown = 0;
             if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
                 rec = g_typeColl.Elem(key);
-            } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+            } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
                 rec = g_typeColl.Elem(key);
             } else {
                 char* msg = g_errOutOfMem;
@@ -3487,7 +3487,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (el->m_records.GetSize() > 0) {
                 first = static_cast<CAniRecordView*>(el->m_records[0]);
             } else {
-                first = 0;
+                first = NULL;
             }
             i32 handle = first->m_param;
             GruntDirectionCell cell = m_entranceCell;
@@ -3509,7 +3509,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 g_typeColl.m_grown = 0;
                 if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
                     rec2 = g_typeColl.Elem(key2);
-                } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key2, 0) != 0) {
+                } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key2, 0) != NULL) {
                     rec2 = g_typeColl.Elem(key2);
                 } else {
                     char* msg2 = g_errOutOfMem;
@@ -3652,7 +3652,7 @@ void CGrunt::XferName(char*) {
             if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellObj, found)) {
                 result = found;
             }
-            if (result == 0) {
+            if (result == NULL) {
                 grid = g_gameReg->m_tileGrid;
                 if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
                     && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
@@ -3880,7 +3880,7 @@ void CGrunt::XferName(char*) {
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
-                    if (slot != 0) {
+                    if (slot != NULL) {
                         slot->CString::CString();
                     }
                     slot++;
@@ -3938,7 +3938,7 @@ afterTile:
             gb.right = grid->m_width;
             gb.bottom = grid->m_height;
             const RECT* pr = &rs;
-            if (pr != 0) {
+            if (pr != NULL) {
                 box = *pr;
                 box.right++;
                 box.bottom++;
@@ -4041,9 +4041,9 @@ afterArrival:
         i64 left2 = m_toyDuration - static_cast<i64>(static_cast<u32>(g_frameTime)) + m_toyClock;
         if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
             m_toyTime = 0;
-            if (m_toyTimeSprite != 0) {
+            if (m_toyTimeSprite != NULL) {
                 m_toyTimeSprite->m_flags |= 0x10000;
-                m_toyTimeSprite = 0;
+                m_toyTimeSprite = NULL;
             }
         }
     }
@@ -4062,9 +4062,9 @@ afterArrival:
             );
         }
         if (m_stamina == 0x64) {
-            if (m_staminaSprite != 0) {
+            if (m_staminaSprite != NULL) {
                 m_staminaSprite->m_flags |= 0x10000;
-                m_staminaSprite = 0;
+                m_staminaSprite = NULL;
             }
         }
     }
@@ -4094,7 +4094,7 @@ afterArrival:
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
-                    if (slot != 0) {
+                    if (slot != NULL) {
                         slot->CString::CString();
                     }
                     slot++;
@@ -4106,7 +4106,7 @@ afterArrival:
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
-                    if (slot != 0) {
+                    if (slot != NULL) {
                         slot->CString::CString();
                     }
                     slot++;
@@ -4136,17 +4136,17 @@ afterArrival:
             if (m_arrived == 0
                 && static_cast<i64>(static_cast<u32>(g_frameTime)) - m_hudRetireClock64
                        >= m_hudRetireWindow64) {
-                if (m_healthSprite != 0) {
+                if (m_healthSprite != NULL) {
                     m_healthSprite->m_flags |= 0x10000;
-                    m_healthSprite = 0;
+                    m_healthSprite = NULL;
                 }
-                if (m_toySprite != 0) {
+                if (m_toySprite != NULL) {
                     m_toySprite->m_flags |= 0x10000;
-                    m_toySprite = 0;
+                    m_toySprite = NULL;
                 }
-                if (m_staminaSprite != 0) {
+                if (m_staminaSprite != NULL) {
                     m_staminaSprite->m_flags |= 0x10000;
-                    m_staminaSprite = 0;
+                    m_staminaSprite = NULL;
                 }
             }
         }
@@ -4235,18 +4235,18 @@ kindDispatch:
                     case PICKUP_REACTIVEARMOR: {
                         CWwdGameObjectA* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
-                        if (ps != 0) {
+                        if (ps != NULL) {
                             ps->m_flags |= 0x10000;
-                            m_powerupSprite = 0;
+                            m_powerupSprite = NULL;
                         }
                         break;
                     }
                     case PICKUP_DEATHTOUCH: {
                         CWwdGameObjectA* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
-                        if (ps != 0) {
+                        if (ps != NULL) {
                             ps->m_flags |= 0x10000;
-                            m_powerupSprite = 0;
+                            m_powerupSprite = NULL;
                         }
                         PickupType typeId = m_toolId;
                         m_entranceReason = PICKUP_INVALID;
@@ -4290,13 +4290,13 @@ RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
-    if (m_struckSlotSound != 0) {
+    if (m_struckSlotSound != NULL) {
         bool neL = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") != 0);
         if (neL && strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") != 0) {
             StopStruckSlotSound();
         }
     }
-    if (m_struckVoiceSound != 0) {
+    if (m_struckVoiceSound != NULL) {
         if (m_gruntKind == GRUNT_NORMAL) {
             StopStruckVoiceSound();
         } else {
@@ -4465,7 +4465,7 @@ void CGrunt::AdvanceMotion() {
                     } else {
                         CGrunt* other =
                             m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-                        if (other == 0) {
+                        if (other == NULL) {
                             result = 0;
                         } else {
                             i32 x = (other->m_object->m_screenX & ~0x1f) + 0x10;
@@ -4510,7 +4510,7 @@ void CGrunt::AdvanceMotion() {
                     } else {
                         CGrunt* other =
                             m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-                        if (other == 0) {
+                        if (other == NULL) {
                             result = 0;
                         } else {
                             i32 x = (other->m_object->m_screenX & ~0x1f) + 0x10;

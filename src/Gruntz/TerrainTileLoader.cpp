@@ -74,7 +74,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     switch (reason) {
         case PICKUP_BRICK:
-            if (sel != 0x63 || unit == 0) {
+            if (sel != 0x63 || unit == NULL) {
                 return 1;
             }
             if (cellType == TILEKIND_HIDDEN_POWERUP) {
@@ -96,7 +96,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         actionCode = 0x12f;
                         break;
                 }
-                if (triggers->AddToList3Switch(actionCode, tileX, tileY, cellKey, ownerHi) != 0) {
+                if (triggers->AddToList3Switch(actionCode, tileX, tileY, cellKey, ownerHi)
+                    != NULL) {
                     unit->m_pendingTriggerPx.m_x = px;
                     unit->m_toyBlendPct = 0x22;
                     unit->m_entrancePickup = PICKUP_INVALID;
@@ -106,7 +107,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event = triggers->FindActionByCellKey(cellKey);
-                if (event != 0 && event->MorphByTool(unit->m_toyBlendPct, ownerHi) != 0) {
+                if (event != NULL && event->MorphByTool(unit->m_toyBlendPct, ownerHi) != 0) {
                     unit->m_toyBlendPct = 0x22;
                     unit->m_entrancePickup = PICKUP_INVALID;
                     if (cellType == TILEKIND_GAUNTLET_BRICK_A) {
@@ -145,7 +146,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cellType == TILEKIND_GAUNTLET_ROCK_A || cellType == TILEKIND_GAUNTLET_ROCK_B) {
                 CTileTriggerLogic* found =
                     triggers->FindInLists12(cellKey, TRIGID_COVERED_POWERUP_26);
-                if (found == 0) {
+                if (found == NULL) {
                     i32 replacement = cellType == TILEKIND_GAUNTLET_ROCK_A ? 0x5a : 0x5b;
                     plane->SetCell(tileX, tileY, replacement);
                     g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, replacement);
@@ -155,7 +156,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
             } else if (cellType == TILEKIND_GIANT_ROCK) {
                 CGiantRockLogic* rock = triggers->ScanNeighborhood(tileX, tileY);
-                if (rock == 0) {
+                if (rock == NULL) {
                     diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
                     g_gameReg->EnterModalUI(static_cast<const char*>(diag));
                     g_gameReg->ReportError(
@@ -171,7 +172,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                        || cellType == TILEKIND_GAUNTLET_BRICK_B
                        || cellType == TILEKIND_GAUNTLET_BRICK_C) {
                 CTileActionEvent* event = triggers->FindActionByCellKey(cellKey);
-                if (event != 0 && event->Process(unit) != 0) {
+                if (event != NULL && event->Process(unit) != 0) {
                     triggers->DelFromList3(event);
                 }
                 return 1;
@@ -186,7 +187,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     CWwdGameObjectA* particle =
                         level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
-                    if (particle != 0) {
+                    if (particle != NULL) {
                         particle->ApplyName("LEVEL_ROCKBREAK");
                         particle->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
                     }
@@ -197,7 +198,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
         case PICKUP_GOOBER: {
             POSITION pos = m_baseList.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 POSITION current = pos;
                 CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
                 if (puddle->m_tileX != tileX || puddle->m_tileY != tileY) {
@@ -234,7 +235,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     CWwdGameObjectA* set =
                         level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
-                    if (set != 0) {
+                    if (set != NULL) {
                         set->ApplyName("LEVEL_DIRT");
                         set->ApplyLookupGeometry("GAME_DIRT", 0);
                     }
@@ -248,7 +249,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cellType == TILEKIND_COVERED_POWERUP) {
                 CTileTriggerLogic* found =
                     triggers->FindInLists12(cellKey, TRIGID_COVERED_POWERUP_26);
-                if (found != 0) {
+                if (found != NULL) {
                     found->ApplyMove(TILEKIND_COVERED_POWERUP);
                     triggers->DelFromList1(found);
                 } else {
@@ -291,7 +292,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             void* mapped = 0;
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
-                            if (mapped == 0) {
+                            if (mapped == NULL) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
                                 pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
@@ -328,7 +329,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             "ToyPeek",
                                             0x40003
                                         );
-                                        if (peek != 0) {
+                                        if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
@@ -356,7 +357,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             void* mapped = 0;
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
-                            if (mapped == 0) {
+                            if (mapped == NULL) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
                                 pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
@@ -393,7 +394,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             "ToyPeek",
                                             0x40003
                                         );
-                                        if (peek != 0) {
+                                        if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
@@ -426,7 +427,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             void* mapped = 0;
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
-                            if (mapped == 0) {
+                            if (mapped == NULL) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
                                 pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
@@ -463,7 +464,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             "ToyPeek",
                                             0x40003
                                         );
-                                        if (peek != 0) {
+                                        if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
@@ -491,7 +492,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             void* mapped = 0;
                             level->m_childGroup->m_map48.Lookup(objectKey.m_addr, mapped);
-                            if (mapped == 0) {
+                            if (mapped == NULL) {
                                 pathGrid->m_rows[tileY][tileX].m_objectId = 0;
                                 pathGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                             } else {
@@ -528,7 +529,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             "ToyPeek",
                                             0x40003
                                         );
-                                        if (peek != 0) {
+                                        if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
                                         }
                                     }
@@ -541,7 +542,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
 
         case PICKUP_TOOB:
-            if (sel == 0x63 && unit != 0) {
+            if (sel == 0x63 && unit != NULL) {
                 i32 waterX = unit->m_object->m_screenX;
                 i32 waterY = unit->m_object->m_screenY;
                 POINT pt;
@@ -551,7 +552,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     CWwdGameObjectA* splash =
                         level->m_childGroup
                             ->CreateSprite(0, waterX, waterY, 0xcf84f, "Particlez", 0x40003);
-                    if (splash != 0) {
+                    if (splash != NULL) {
                         splash->ApplyName("GAME_WATER");
                         splash->ApplyLookupGeometry("GAME_WATER", 0);
                         level->m_soundRegistry->RefreshAsset("GAME_WATERSPLASH");

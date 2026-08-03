@@ -35,13 +35,13 @@ void CDDrawSubMgrLeaf::Unload() {
 // @early-stop
 RVA(0x00152660, 0xb2)
 void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
-    if (target == 0) {
+    if (target == NULL) {
         return;
     }
     POSITION pos = m_animations.GetStartPosition();
     CString key;
     CAniElement* val = 0;
-    while (pos != 0) {
+    while (pos != NULL) {
         MapGetNext(m_animations, pos, key, val);
         if (target == val) {
             m_animations.RemoveKey(key);
@@ -56,13 +56,13 @@ void CDDrawSubMgrLeaf::FreeAll() {
     POSITION pos = m_animations.GetStartPosition();
     CString key;
     void* val = 0;
-    if (pos != 0) {
+    if (pos != NULL) {
         do {
             m_animations.GetNextAssoc(pos, key, val);
-            if (val != 0) {
+            if (val != NULL) {
                 delete (static_cast<CAniElement*>(val));
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     m_animations.RemoveAll();
 }
@@ -76,11 +76,11 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
     void* val = 0;
     POSITION pos = m_animations.GetStartPosition();
     i32 n = 0;
-    while (pos != 0) {
+    while (pos != NULL) {
         m_animations.GetNextAssoc(pos, key, val);
         if (strncmp(key, match, len) == 0) {
             m_animations.RemoveKey(key);
-            if (val != 0) {
+            if (val != NULL) {
                 delete (static_cast<CAniElement*>(val));
             }
             ++n;
@@ -92,7 +92,7 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
 RVA(0x001528d0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
     CAniElement* el = new CAniElement;
-    if (el == 0) {
+    if (el == NULL) {
         return 0;
     }
     if (el->Configure(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
@@ -107,7 +107,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
 RVA(0x001529b0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, void* entry) {
     CAniElement* el = new CAniElement;
-    if (el == 0) {
+    if (el == NULL) {
         return 0;
     }
     if (el->LoadFile(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
@@ -123,13 +123,13 @@ RVA(0x00152ad0, 0x17f)
 i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* suffix) {
     i32 count = 0;
     char* buf = static_cast<char*>(operator new(0x100));
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     buf[0] = 0;
     CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
-    while (node != 0) {
-        if (prefix != 0 && *prefix != 0) {
+    while (node != NULL) {
+        if (prefix != NULL && *prefix != 0) {
             sprintf(buf, g_fmtPathJoin, prefix, suffix, node->m_name);
         } else {
             strcpy(buf, node->m_name);
@@ -138,25 +138,25 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
     void* grp = tree->FirstSym();
-    if (grp != 0) {
+    if (grp != NULL) {
         do {
 
             CParseSource* fn = static_cast<CParseSource*>(tree->NextSym2(grp));
-            while (fn != 0) {
+            while (fn != NULL) {
                 if (fn->GetEntryTag() == REZ_TAG_ANI) {
-                    if (prefix != 0 && *prefix != 0) {
+                    if (prefix != NULL && *prefix != 0) {
                         sprintf(buf, g_fmtPathJoin, prefix, suffix, fn->m_name);
                     } else {
                         strcpy(buf, fn->m_name);
                     }
-                    if (CreateAniEntry(buf, fn) != 0) {
+                    if (CreateAniEntry(buf, fn) != NULL) {
                         ++count;
                     }
                 }
                 fn = static_cast<CParseSource*>(tree->NextSym3(fn));
             }
             grp = tree->NextSym(grp);
-        } while (grp != 0);
+        } while (grp != NULL);
     }
     ::operator delete(buf);
     return count;
@@ -168,7 +168,7 @@ i32 CDDrawSubMgrLeaf::HasKeyPrefix(const char* str) {
     CString key;
     void* val = 0;
     POSITION pos = m_animations.GetStartPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         m_animations.GetNextAssoc(pos, key, val);
         if (strncmp(key, str, len) == 0) {
             return 1;
@@ -180,12 +180,12 @@ i32 CDDrawSubMgrLeaf::HasKeyPrefix(const char* str) {
 RVA(0x00152d30, 0xd4)
 CString CDDrawSubMgrLeaf::KeyOfValue(CObject* target) {
     CString key;
-    if (target == 0) {
+    if (target == NULL) {
         return key;
     }
     void* val = 0;
     POSITION pos = m_animations.GetStartPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         m_animations.GetNextAssoc(pos, key, val);
         if (val == target) {
             return key;

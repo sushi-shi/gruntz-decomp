@@ -42,9 +42,9 @@ public:
 SIZE(0x74);
 
 inline CMenuItem2::CMenuItem2() {
-    m_spriteNormal = 0;
-    m_spriteSelected = 0;
-    m_spriteDisabled = 0;
+    m_spriteNormal = NULL;
+    m_spriteSelected = NULL;
+    m_spriteDisabled = NULL;
     m_frameIdx = 0;
     m_frameCountdown = 0;
     m_frameDelay = 0x64;

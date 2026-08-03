@@ -16,6 +16,8 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 template<> DATA(0x002460b0)
 CActReg CActRegPool<CFrontCandyAni>::s_table(2000, 2010);
 
@@ -59,10 +61,10 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_flags |= 0x20000;
     }
     CImage* aux = m_object->m_layer;
-    if (aux != 0) {
+    if (aux != NULL) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != 0) {
+            if (m_object->m_animWorker != NULL) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
                 m_wwdObject->m_flags &= ~0x1000002;
@@ -77,12 +79,12 @@ RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_wwdObject->m_animCursor.m_animation == 0) {
+    if (m_wwdObject->m_animCursor.m_animation == NULL) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey == 0 && o->m_layer != 0) {
+    if (o->m_sortKey == 0 && o->m_layer != NULL) {
         i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
         if (o->m_sortKey != v) {
             o->m_sortKey = v;
@@ -90,10 +92,10 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
     CImage* aux = m_object->m_layer;
-    if (aux != 0) {
+    if (aux != NULL) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != 0) {
+            if (m_object->m_animWorker != NULL) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
                 m_wwdObject->m_flags &= ~0x1000002;
@@ -125,7 +127,7 @@ void CEyeCandyAni::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -149,7 +151,7 @@ RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_wwdObject->m_animCursor.m_animation == 0) {
+    if (m_wwdObject->m_animCursor.m_animation == NULL) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
@@ -186,7 +188,7 @@ void CFrontCandyAni::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

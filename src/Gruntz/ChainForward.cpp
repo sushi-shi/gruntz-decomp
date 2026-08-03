@@ -10,6 +10,8 @@
 #include <Ints.h>
 #include <Utils/RegistryHelper.h>
 
+#include <stddef.h>
+
 RVA(0x00114f50, 0x3e)
 i32 ChainForward14(
     Utils::RegistryHelper* bute,
@@ -20,11 +22,11 @@ i32 ChainForward14(
     i32 saveFlag
 ) {
     CDDrawSurfacePair* pair = owner->m_world->m_drawTarget->m_backPair;
-    if (pair == 0) {
+    if (pair == NULL) {
         return 0;
     }
     CDDSurface* leaf = pair->m_surface;
-    if (leaf == 0) {
+    if (leaf == NULL) {
         return 0;
     }
     return SaveScreenshot(leaf, bute, owner, width, height, name, saveFlag);
@@ -40,11 +42,11 @@ i32 ChainForward(
     i32 saveFlag
 ) {
     CDDrawSurfacePair* pair = owner->m_world->m_drawTarget->m_overlayPair;
-    if (pair == 0) {
+    if (pair == NULL) {
         return 0;
     }
     CDDSurface* leaf = pair->m_surface;
-    if (leaf == 0) {
+    if (leaf == NULL) {
         return 0;
     }
     return SaveScreenshot(leaf, bute, owner, width, height, name, saveFlag);

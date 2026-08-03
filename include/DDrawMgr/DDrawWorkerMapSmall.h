@@ -9,10 +9,12 @@
 #include <Gruntz/ParseSource.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawWorkerMapSmall : public CLoadable {
 public:
     CDDrawWorkerMapSmall(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
-        m_cachedWorker = 0;
+        m_cachedWorker = NULL;
     }
     virtual i32 IsLoaded() OVERRIDE;
     virtual i32 IsReady() OVERRIDE;

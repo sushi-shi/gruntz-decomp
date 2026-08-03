@@ -102,11 +102,11 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     m_owner = owner;
     m_playFlags = 0;
     m_durationMs = 0;
-    m_reacquireCb = 0;
+    m_reacquireCb = NULL;
     m_reacquireCtx = 0;
     m_rateBase = 0;
     m_sampleRate = 0;
-    if (buf == 0) {
+    if (buf == NULL) {
         return;
     }
 
@@ -165,7 +165,7 @@ i32 DirectSoundMgr::ReacquireBuffer() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    if (m_reacquireCb != 0) {
+    if (m_reacquireCb != NULL) {
         if (m_reacquireCb(this, m_reacquireCtx) != 0) {
             return 1;
         }
@@ -315,7 +315,7 @@ i32 DirectSoundMgr::CloneAndPlay(i32 key, i32 mode, i32 slot) {
     }
 
     DSoundVoice* voice = new DSoundVoice(key, GetVolumePercent(), mode, this, slot, -1);
-    if (voice == 0) {
+    if (voice == NULL) {
         return 0;
     }
     m_owner->m_voiceList.InsertHead(&voice->m_link);
@@ -482,7 +482,7 @@ RVA_COMPGEN(0x00135b80, 0x1e, ??_GDSoundCloneInst@@UAEPAXI@Z)
 
 RVA(0x00135bb0, 0x63)
 DSoundCloneInst::~DSoundCloneInst() {
-    while (m_cloneList.m_head != 0) {
+    while (m_cloneList.m_head != NULL) {
         RemoveClone(static_cast<CloneNode*>(m_cloneList.m_head)->m_inst);
     }
 }
@@ -493,7 +493,7 @@ DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
         return 0;
     }
     DSoundBaseSub* clone = new DSoundBaseSub(m_buffer, m_owner, this);
-    if (clone == 0) {
+    if (clone == NULL) {
         return 0;
     }
     IDirectSound* dev = m_owner->m_device;
@@ -515,7 +515,7 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
     if (clone != this) {
         IDirectSoundBuffer* buf = clone->m_buffer;
         buf->Release();
-        clone->m_buffer = 0;
+        clone->m_buffer = NULL;
     }
     ((&m_cloneList))->Unlink(&clone->m_cloneNode);
     if (clone != this) {
@@ -543,7 +543,7 @@ DirectSoundMgr* DSoundCloneInst::GetItem() {
     }
     DirectSoundMgr* found;
     if (!node) {
-        found = 0;
+        found = NULL;
     } else {
         found = node->m_inst;
     }
@@ -710,7 +710,7 @@ void DSoundCloneInst::StopAllClones() {
     if (m_owner->m_initialized == 0) {
         return;
     }
-    for (CloneNode* node = static_cast<CloneNode*>(m_cloneList.m_head); node != 0;
+    for (CloneNode* node = static_cast<CloneNode*>(m_cloneList.m_head); node != NULL;
          node = static_cast<CloneNode*>(node->m_next)) {
         node->m_inst->StopAndRewind();
     }
@@ -832,7 +832,7 @@ SoundDevice::SoundDevice() {
     m_initialized = 0;
     BuildVolumeTable();
     m_reacquireProc = 0;
-    m_primaryBuffer = 0;
+    m_primaryBuffer = NULL;
     m_coopLevel = 0;
     m_bufferFlags = 0;
     m_force8Bit = 0;
@@ -934,7 +934,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     if (bytes == 0) {
         goto done;
     }
-    if (fmt == 0) {
+    if (fmt == NULL) {
         goto done;
     }
     if (fmt->wFormatTag != 1) {
@@ -947,7 +947,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     wf.m_blockWord = fmt->m_blockWord;
     wf.cbSize = fmt->cbSize;
 
-    out = 0;
+    out = NULL;
 
     memset(&desc, 0, sizeof(DSBUFFERDESC));
     desc.dwSize = DSBUFFERDESC_SIZE;
@@ -964,7 +964,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
         goto done;
     }
-    if (out == 0) {
+    if (out == NULL) {
         goto done;
     }
 
@@ -985,7 +985,7 @@ DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 loadOpts) {
         return 0;
     }
     FILE* fp = fopen(path, s_rb);
-    if (fp == 0) {
+    if (fp == NULL) {
         return 0;
     }
     u32 size = _filelength(fp->_file);
@@ -1006,15 +1006,15 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
-    if (riff == 0) {
+    if (riff == NULL) {
         return 0;
     }
 
     void* data;
     u32 size;
     WaveFormatX* fmt;
-    fmt = 0;
-    data = 0;
+    fmt = NULL;
+    data = NULL;
     size = 0;
     if (ParseWaveChunks(riff, &fmt, &data, &size) == 0) {
         return 0;
@@ -1035,7 +1035,7 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32 flags, u32 loadOpts) {
     }
 
     DSoundCloneInst* wrapper = CreateBuffer(fmt, size, flags);
-    if (wrapper == 0) {
+    if (wrapper == NULL) {
         return 0;
     }
     if (wrapper->LockConvert(data, size, cvt) == 0) {
@@ -1076,7 +1076,7 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
     if (size == 0) {
         return 0;
     }
-    if (fmt == 0) {
+    if (fmt == NULL) {
         return 0;
     }
     if (fmt->wFormatTag != 1) {
@@ -1094,7 +1094,7 @@ i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts) {
         return 1;
     }
     FILE* fp = fopen(path, s_rb);
-    if (fp == 0) {
+    if (fp == NULL) {
         return 0;
     }
     u32 size = _filelength(fp->_file);
@@ -1115,7 +1115,7 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
-    if (riff == 0) {
+    if (riff == NULL) {
         return 0;
     }
     if (buf->IsLooping() == 0) {
@@ -1125,8 +1125,8 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts) {
     void* data;
     u32 size;
     WaveFormatX* fmt;
-    fmt = 0;
-    data = 0;
+    fmt = NULL;
+    data = NULL;
     size = 0;
     if (ParseWaveChunks(riff, &fmt, &data, &size) == 0) {
         return 0;
@@ -1185,7 +1185,7 @@ void SoundDevice::RemoveBuffer(DirectSoundMgr* node) {
         m_voiceList.RemoveMatching(node, 0xffff);
         if (node->m_buffer) {
             node->m_buffer->Release();
-            node->m_buffer = 0;
+            node->m_buffer = NULL;
         }
         m_bufferList.Unlink(node ? &node->m_link : 0);
         if (node) {
@@ -1213,7 +1213,7 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
     }
     DSoundLink* head = m_voiceList.m_head;
     DSoundVoice* e = elemOf<DSoundVoice>(head);
-    if (e == 0) {
+    if (e == NULL) {
         return 0;
     }
     if (time == -1) {
@@ -1344,8 +1344,8 @@ i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeO
     if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
         return 0;
     }
-    *fmtOut = 0;
-    *dataOut = 0;
+    *fmtOut = NULL;
+    *dataOut = NULL;
     while (p.m_bytes < end) {
         u32 id = *p.m_words++;
         u32 size = *p.m_words++;
@@ -1354,7 +1354,7 @@ i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeO
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
             *dataOut = p.m_words;
             *sizeOut = size;
-            return *fmtOut != 0;
+            return *fmtOut != NULL;
         }
 
         p.m_bytes += ((size + 1) & ~1);
@@ -1403,7 +1403,7 @@ i32 SoundDevice::CreatePrimaryBuffer() {
     if (m_coopLevel == DSSCL_NORMAL) {
         return 0;
     }
-    if (m_primaryBuffer == 0) {
+    if (m_primaryBuffer == NULL) {
         DSBUFFERDESC desc;
         memset(&desc, 0, sizeof(desc));
         desc.dwSize = sizeof(DSBUFFERDESC);

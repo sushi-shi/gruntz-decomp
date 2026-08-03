@@ -41,7 +41,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
     if (isEmpty != 0) {
         sprintf(scratch, "AREA%i_WORLDZ", ((id - 1) % 0x24) / 4 + 1);
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(scratch));
-        if (node == 0) {
+        if (node == NULL) {
             return 0;
         }
         if (id > 0x24) {
@@ -50,11 +50,11 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             sprintf(scratch, "LEVEL%i", id);
         }
         CParseSource* sub = node->Insert(scratch, REZ_TAG_WWD);
-        if (sub == 0) {
+        if (sub == NULL) {
             return 0;
         }
         void* parsed = sub->BeginParse();
-        if (parsed == 0) {
+        if (parsed == NULL) {
             return 0;
         }
         memcpy(&buf, parsed, 0x5f4);
@@ -63,15 +63,15 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
     }
     if (hi == 0) {
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
-        if (node == 0) {
+        if (node == NULL) {
             return 0;
         }
         CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
-        if (sub == 0) {
+        if (sub == NULL) {
             return 0;
         }
         void* parsed = sub->BeginParse();
-        if (parsed == 0) {
+        if (parsed == NULL) {
             return 0;
         }
         memcpy(&buf, parsed, 0x5f4);
@@ -79,15 +79,15 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         return buf.checksum;
     }
     CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_BATTLEZ"));
-    if (node == 0) {
+    if (node == NULL) {
         return 0;
     }
     CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
-    if (sub == 0) {
+    if (sub == NULL) {
         return 0;
     }
     void* parsed = sub->BeginParse();
-    if (parsed == 0) {
+    if (parsed == NULL) {
         return 0;
     }
     memcpy(&buf, parsed, 0x5f4);

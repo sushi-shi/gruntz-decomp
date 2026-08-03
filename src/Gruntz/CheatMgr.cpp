@@ -6,6 +6,8 @@
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>
 
+#include <stddef.h>
+
 // clang-format off
 wchar_t* s_cheat_1 = L"MPWAWAWAWAWAWA";
 
@@ -65,13 +67,13 @@ void CCheatMgr::Empty() {
         do {
             void* value = 0;
             m_map.GetNextAssoc(pos, key, value);
-            if (value != 0) {
+            if (value != NULL) {
                 delete static_cast<CheatEntry*>(value);
             }
         } while (pos != static_cast<POSITION>(0));
     }
     m_map.RemoveAll();
-    m_owner = 0;
+    m_owner = NULL;
     m_flag = 0;
     m_pendingCodeLength = 0;
     m_cheatsUsed = 0;
@@ -105,7 +107,7 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
         return FALSE;
     }
     CheatEntry* entry = new CheatEntry;
-    if (entry == 0) {
+    if (entry == NULL) {
         return FALSE;
     }
     entry->commandId = cmdId;
@@ -199,7 +201,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
     CheatEntry* found = m_map.Lookup(static_cast<const char*>(code), value)
                             ? static_cast<CheatEntry*>(value)
                             : 0;
-    if (found != 0) {
+    if (found != NULL) {
         if (found->commandId > 0) {
             PostMessageA(m_owner, 0x111, found->commandId, 0);
             if ((found->flag & 1) == 0) {

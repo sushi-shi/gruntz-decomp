@@ -920,7 +920,7 @@ void CButeMgr::ReportError(const char* fmt, ...) {
     vsprintf(m_errStr.GetBuffer(0x100), fmt, args);
     m_errStr.ReleaseBuffer(-1);
 
-    if (m_errCallback != 0) {
+    if (m_errCallback != NULL) {
         m_errCallback(m_errStr.GetBuffer(0));
     }
 
@@ -1349,7 +1349,7 @@ RVA(0x00171a60, 0x34)
 bool CButeMgr::Exists(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        if (key == 0) {
+        if (key == NULL) {
             return true;
         }
         if ((static_cast<CButeNode*>(grp))->Find(key)) {

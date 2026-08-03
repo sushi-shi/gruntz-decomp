@@ -23,7 +23,7 @@ public:
 
     virtual ~CGameWnd() {
         Destroy();
-        g_activeGameWnd = 0;
+        g_activeGameWnd = NULL;
     }
 
     virtual i32 PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

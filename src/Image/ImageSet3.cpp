@@ -10,7 +10,7 @@ CImageSet3::~CImageSet3() {
     if (m_pixels) {
         ::operator delete(m_pixels);
     }
-    m_pixels = 0;
+    m_pixels = NULL;
 }
 
 RVA(0x00166e00, 0x60)

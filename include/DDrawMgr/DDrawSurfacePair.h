@@ -8,6 +8,8 @@
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDSurface;
 class CDDrawSurfaceMgr;
 struct CParseSource;
@@ -22,7 +24,7 @@ public:
 public:
     CDDrawSurfacePair(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
         : CDrawSubWorker(INLINE_CTOR, mgr, kind, flags) {
-        m_surface = 0;
+        m_surface = NULL;
         m_ownsSurface = 1;
     }
 

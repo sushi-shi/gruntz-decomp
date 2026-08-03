@@ -38,10 +38,10 @@ i32 CSBI_Image::SetupImage(
     i32 frame,
     i32 extra
 ) {
-    if (host == 0) {
+    if (host == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     m_owner = owner;
@@ -54,25 +54,25 @@ i32 CSBI_Image::SetupImage(
     m_rect14.right = rc.right;
     m_rect14.bottom = rc.bottom;
     m_cmd = cmd;
-    if (key == 0) {
-        m_frame = 0;
+    if (key == NULL) {
+        m_frame = NULL;
         return 0 != 0;
     }
     CObject* found = 0;
     host->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
-    if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
-        m_frame = 0;
+    if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
+        m_frame = NULL;
         return 0 != 0;
     }
     CImage* val = static_cast<CImage*>(rec->m_items.GetAt(1));
     m_frame = val;
-    return val != 0;
+    return val != NULL;
 }
 
 RVA(0x000e6d90, 0x8)
 void CSBI_Image::Reset() {
-    m_frame = 0;
+    m_frame = NULL;
 }
 
 RVA(0x000e6db0, 0x8)
@@ -85,7 +85,7 @@ i32 CSBI_Image::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
         CImage* cel = m_frame;
-        if (cel != 0) {
+        if (cel != NULL) {
             cel->RenderFrame(
                 g_gameReg->m_world->m_drawTarget->m_backPair,
                 m_rect14.left + cel->m_anchorX,
@@ -100,11 +100,11 @@ i32 CSBI_Image::Render() {
 // @early-stop
 RVA(0x000e6e40, 0x17c)
 i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
 
@@ -123,10 +123,10 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
                 if (r && idx >= r->m_minIndex && idx <= r->m_maxIndex) {
                     m_frame = static_cast<CImage*>(r->m_items.GetAt(idx));
                 } else {
-                    m_frame = 0;
+                    m_frame = NULL;
                 }
             } else {
-                m_frame = 0;
+                m_frame = NULL;
             }
             break;
         case SERIAL_SAVE:

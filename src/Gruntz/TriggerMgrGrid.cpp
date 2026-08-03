@@ -35,14 +35,16 @@
 #include <Gruntz/UserLogic.h>
 #include <Wwd/WwdFile.h>
 
+#include <stddef.h>
+
 RVA(0x0006b640, 0x2f)
 i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
-    if (lvl == 0) {
+    if (lvl == NULL) {
         return 0;
     }
     m_world = lvl;
     m_armed = 0;
-    m_pendingFx = 0;
+    m_pendingFx = NULL;
     m_countdownActive = 1;
     return 1;
 }
@@ -50,10 +52,10 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
 RVA(0x0006b680, 0x39)
 void CTriggerMgr::Cleanup() {
     CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != 0) {
+    if (ov != NULL) {
         ov->Clear();
         operator delete(ov);
-        m_overlay = 0;
+        m_overlay = NULL;
     }
     ClearRecords();
     ClearSelections();
@@ -79,7 +81,7 @@ i32 CTriggerMgr::PlaceObject(
 
     {
         CDDrawSurfaceMgr* world = m_world;
-        if (world == 0) {
+        if (world == NULL) {
             goto fail;
         }
         i32 wantSlot = 0;
@@ -120,7 +122,7 @@ i32 CTriggerMgr::PlaceObject(
         }
 
         i32 base = row * TM_GRID_COLS;
-        if (m_grid[base] != 0) {
+        if (m_grid[base] != NULL) {
 
             CGrunt** cells = &m_grid[row * TM_GRID_COLS];
             do {
@@ -129,14 +131,14 @@ i32 CTriggerMgr::PlaceObject(
                 }
                 cells++;
                 col++;
-            } while (*cells != 0);
+            } while (*cells != NULL);
         }
         if (col >= TM_GRID_COLS) {
             goto fail;
         }
 
         CWwdGameObjectA* sprite = m_world->m_childGroup->CreateSprite(0, x, y, z, "Grunt", 0x40003);
-        if (sprite == 0) {
+        if (sprite == NULL) {
             goto fail;
         }
         sprite->m_animWorker->m_notify(sprite);
@@ -248,7 +250,7 @@ i32 CTriggerMgr::PlaceObject(
         if (mode == 1) {
             CWwdGameObjectA* hole =
                 m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
-            if (hole == 0) {
+            if (hole == NULL) {
                 logic->m_wwdObject->m_flags |= 0x10000;
                 return -1;
             }
@@ -298,7 +300,7 @@ i32 CTriggerMgr::DispatchCellForObject(CGrunt* obj, i32 startRow, GruntDeathType
 RVA(0x0006bcb0, 0x6a)
 i32 CTriggerMgr::CellDispatch(i32 row, i32 col, GruntDeathType kind, i32 arg) {
     CGrunt* cell = m_grid[row * TM_GRID_COLS + col];
-    if (cell == 0) {
+    if (cell == NULL) {
         return 0;
     }
     if (cell->m_deathAnimStarted != 0) {
@@ -336,9 +338,9 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
             i32 col = 0;
             do {
                 CGrunt* c = *cell;
-                if (c != 0) {
+                if (c != NULL) {
                     c->m_wwdObject->m_flags |= 0x10000;
-                    *cell = 0;
+                    *cell = NULL;
                     m_cellFlag[g2 + col] = 0;
                 }
                 col++;
@@ -382,16 +384,16 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
             CGrunt** cell = &m_grid[row * TM_GRID_COLS];
             for (i32 col = 0; col < 15; col++) {
                 CGrunt* g = cell[col];
-                if (g != 0 && g->m_entranceCommitted != 0) {
+                if (g != NULL && g->m_entranceCommitted != 0) {
                     CWwdGameObjectA* o = g->m_object;
-                    if (o->m_layer != 0) {
+                    if (o->m_layer != NULL) {
                         i32 x0 = o->m_screenX - 15;
                         i32 y0 = o->m_screenY - 15;
                         if (px < x0 + 30 && px >= x0 && py < y0 + 30 && py >= y0) {
-                            if (outRow != 0) {
+                            if (outRow != NULL) {
                                 *outRow = row;
                             }
-                            if (outCol != 0) {
+                            if (outCol != NULL) {
                                 *outCol = col;
                             }
                             return m_grid[row * TM_GRID_COLS + col];
@@ -409,7 +411,7 @@ RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     i32 idx = col * TM_GRID_COLS + row;
     CGrunt* cell = m_grid[idx];
-    if (cell == 0 || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == 0) {
         return 0;
     }
     if (col != g_curPlayer) {
@@ -433,7 +435,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     }
     CoordPoolNode* node = g_coordPool.m_freeHead;
     Coord* slot = 0;
-    if (node->m_next != 0) {
+    if (node->m_next != NULL) {
         slot = &node->m_coord;
         slot->m_x = col;
         slot->m_y = row;
@@ -449,7 +451,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
 
-    if (g != 0) {
+    if (g != NULL) {
         g->m_neighborScanEnabled = 1;
     }
 
@@ -495,7 +497,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 ((x >> 5) * 0x100) + (y >> 5),
                 TRIGID_TIME_SWITCH_7
             );
-            if (sw == 0) {
+            if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
@@ -504,7 +506,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             sw->SwitchDown();
             pos = state->m_beginMarker->m_list2.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CTileTriggerLogic* el =
                     static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list2.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
@@ -513,7 +515,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             pos = state->m_beginMarker->m_list1.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CTileTriggerLogic* el =
                     static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
@@ -535,7 +537,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 ((x >> 5) * 0x100) + (y >> 5),
                 TRIGID_SECRET_SWITCH_6
             );
-            if (sw == 0) {
+            if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
@@ -545,7 +547,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             sw->SwitchDown();
             anyHit = 0;
             pos = state->m_beginMarker->m_list1.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CTileTriggerLogic* el =
                     static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
@@ -567,12 +569,12 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     if (set->m_emitGate == 0) {
                         void* found = 0;
                         set->m_cues.Lookup("GAME_SECRETSWITCH", found);
-                        if (found != 0) {
+                        if (found != NULL) {
                             static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                         }
                     }
                 }
-                if (g != 0) {
+                if (g != NULL) {
                     i32 cueX = g->m_object->m_screenX;
                     i32 cueY = g->m_object->m_screenY;
                     if (cueX < g_gameReg->m_viewBounds.right && cueX >= g_gameReg->m_viewBounds.left
@@ -592,7 +594,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         case TILEKIND_SWITCH_B:
         case TILEKIND_SWITCH_C:
             sw = state->m_beginMarker->FindChild(((x >> 5) * 0x100) + (y >> 5), TRIGID_ANY);
-            if (sw == 0) {
+            if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
@@ -603,7 +605,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             anyHit = 0;
             stop = 0;
             pos = state->m_beginMarker->m_list1.GetHeadPosition();
-            while (pos != 0 && stop == 0) {
+            while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el =
                     static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
@@ -627,7 +629,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 ((x >> 5) * 0x100) + (y >> 5),
                 TRIGID_MULTI_SWITCH_3
             );
-            if (sw == 0) {
+            if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
@@ -641,7 +643,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             anyHit = 0;
             stop = 0;
             pos = state->m_beginMarker->m_list1.GetHeadPosition();
-            while (pos != 0 && stop == 0) {
+            while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el =
                     static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
@@ -665,7 +667,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 ((x >> 5) * 0x100) + (y >> 5),
                 TRIGID_EXCLUSIVE_SWITCH_4
             );
-            if (sw == 0) {
+            if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
@@ -681,7 +683,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             anyHit = 0;
             stop = 0;
             pos = state->m_beginMarker->m_list1.GetHeadPosition();
-            while (pos != 0 && stop == 0) {
+            while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el =
                     static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
@@ -705,7 +707,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_UP_A:
         case TILEKIND_ARROW_UP_B:
-            if (g == 0 || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != 0) {
                 return 1;
             }
             g->m_entranceActive = 1;
@@ -714,7 +716,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_RIGHT_A:
         case TILEKIND_ARROW_RIGHT_B:
-            if (g == 0 || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != 0) {
                 return 1;
             }
             g->m_entranceActive = 1;
@@ -723,7 +725,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_DOWN_A:
         case TILEKIND_ARROW_DOWN_B:
-            if (g == 0 || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != 0) {
                 return 1;
             }
             g->m_entranceActive = 1;
@@ -732,7 +734,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_LEFT_A:
         case TILEKIND_ARROW_LEFT_B:
-            if (g == 0 || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != 0) {
                 return 1;
             }
             g->m_entranceActive = 1;
@@ -740,7 +742,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
-            if (g != 0 && g->m_deathAnimStarted == 0) {
+            if (g != NULL && g->m_deathAnimStarted == 0) {
                 g->m_entranceActive = 1;
                 switch (g->m_entranceCell.direction) {
                     case 1:
@@ -774,7 +776,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 g_buteMgr.GetDword("Hazardz", "CrumbleTileDelay"),
                 0
             );
-            if (logic != 0) {
+            if (logic != NULL) {
                 logic->RecordMove();
             }
             return 1;
@@ -793,14 +795,14 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 g_buteMgr.GetDword("Hazardz", "CrumbleTileDelay"),
                 0
             );
-            if (logic != 0) {
+            if (logic != NULL) {
                 logic->RecordMove();
             }
             return 1;
         }
 
         case TILEKIND_CHECKPOINT:
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || g == 0
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || g == NULL
                 || g->m_tileOwnerHi != g_curPlayer) {
                 return 0;
             }
@@ -808,7 +810,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 ((x >> 5) * 0x100) + (y >> 5),
                 TRIGID_CHECKPOINT_SWITCH_8
             );
-            if (sw == 0) {
+            if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for plate at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
@@ -843,7 +845,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             anyHit = 0;
             stop = 0;
             pos = state->m_beginMarker->m_list1.GetHeadPosition();
-            while (pos != 0 && stop == 0) {
+            while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el =
                     static_cast<CTileTriggerLogic*>(state->m_beginMarker->m_list1.GetNext(pos));
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
@@ -912,7 +914,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 ((sx >> 5) * 0x100) + (sy >> 5),
                 TRIGID_TIME_SWITCH_7
             );
-            if (obj == 0) {
+            if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
@@ -925,7 +927,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         case TILEKIND_SWITCH_A_UP: {
             CTileTriggerSwitchLogic* obj =
                 state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), TRIGID_ANY);
-            if (obj == 0) {
+            if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
@@ -938,7 +940,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         case TILEKIND_SWITCH_B_UP: {
             CTileTriggerSwitchLogic* obj =
                 state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), TRIGID_ANY);
-            if (obj == 0) {
+            if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
@@ -950,7 +952,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             POSITION pos = state->m_beginMarker->m_list1.GetHeadPosition();
             i32 found = 0;
             i32 stop = 0;
-            while (pos != 0) {
+            while (pos != NULL) {
                 if (stop != 0) {
                     break;
                 }
@@ -977,7 +979,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 ((sx >> 5) * 0x100) + (sy >> 5),
                 TRIGID_MULTI_SWITCH_3
             );
-            if (obj == 0) {
+            if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
@@ -988,7 +990,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (obj->VerifyBlockLinksB() != 0) {
                 POSITION pos = state->m_beginMarker->m_list1.GetHeadPosition();
                 i32 stop = 0;
-                while (pos != 0) {
+                while (pos != NULL) {
                     if (stop != 0) {
                         break;
                     }
@@ -1020,7 +1022,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 return 0;
             }
-            if (g == 0) {
+            if (g == NULL) {
                 return 0;
             }
             if (g->m_tileOwnerHi != g_curPlayer) {
@@ -1030,7 +1032,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 ((sx >> 5) * 0x100) + (sy >> 5),
                 TRIGID_CHECKPOINT_SWITCH_8
             );
-            if (obj == 0) {
+            if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
@@ -1061,7 +1063,7 @@ void CTriggerMgr::GridAction7(i32 a, i32 b) {
 RVA(0x0006dae0, 0x4b7)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
-    if (cell == 0 || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == 0) {
         return 0;
     }
     i32 cellTileX = cell->m_lastTilePx.m_x >> 5;
@@ -1126,7 +1128,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     i32 hitRow;
     i32 hitCol;
     CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, 5);
-    if (hit != 0) {
+    if (hit != NULL) {
         if (hit->m_tileOwnerHi == cell->m_tileOwnerHi && g_traitorMode == 0) {
             return 0;
         }
@@ -1159,7 +1161,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
             return 0;
         case PICKUP_GOOBER: {
             POSITION pos = m_baseList.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
                 if (cand->m_pending == 0 && cand->m_tileX == argTileX
                     && cand->m_tileY == argTileY) {
@@ -1225,7 +1227,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
-    if (cell == 0 || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
+    if (cell == NULL || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
     i32 cellTileX = cell->m_lastTilePx.m_x >> 5;
@@ -1254,7 +1256,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     i32 hitRow;
     i32 hitCol;
     CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, 5);
-    if (hit == 0) {
+    if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
         i32 flags = 1;
         if (static_cast<u32>(argTileX) < map->m_width
@@ -1354,7 +1356,7 @@ RVA(0x0006e800, 0x189)
 i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 worldY) {
     i32 idx = col * TM_GRID_COLS + row;
     CGrunt* cell = m_grid[idx];
-    if (cell == 0 || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == 0) {
         return 0;
     }
     if (cell->m_tileClaimed == 0) {
@@ -1390,7 +1392,7 @@ RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
 
     CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outCol, &y, 0);
-    if (cell == 0 || span.m_outCol != g_curPlayer) {
+    if (cell == NULL || span.m_outCol != g_curPlayer) {
         return;
     }
     const char* name = *g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);

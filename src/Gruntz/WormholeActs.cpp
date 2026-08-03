@@ -9,6 +9,8 @@
 #include <Gruntz/Wormhole.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 template<> DATA(0x002445c0)
 CActReg CActRegPool<CExitTrigger>::s_table(2000, 2010);
 
@@ -31,7 +33,7 @@ void CExitTrigger::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

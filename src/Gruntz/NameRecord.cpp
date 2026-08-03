@@ -7,7 +7,7 @@
 
 RVA(0x00118040, 0xb6)
 i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
-    if (name == 0) {
+    if (name == NULL) {
         return 0;
     }
     i32 len = static_cast<i32>(strlen(name));
@@ -17,7 +17,7 @@ i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (len > 16) {
         return 0;
     }
-    if (name2 != 0) {
+    if (name2 != NULL) {
         i32 len2 = static_cast<i32>(strlen(name));
         if (len2 < 0) {
             goto fail;
@@ -28,7 +28,7 @@ i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     }
     memset(&m_body, 0, sizeof(m_body));
     strcpy(m_body.m_name, name);
-    if (name2 != 0) {
+    if (name2 != NULL) {
         strcpy(m_body.m_location, name2);
     }
     m_body.m_version = 1;
@@ -39,7 +39,7 @@ fail:
 
 RVA(0x00118130, 0x44)
 i32 CGameInfo::CopyBody(char* body) {
-    if (body != 0) {
+    if (body != NULL) {
         i32 len = static_cast<i32>(strlen(body + 0x10));
         if (len > 0 && len < 16) {
             memcpy(&m_body, body, sizeof(m_body));
@@ -59,7 +59,7 @@ i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
         return 0;
     }
     CGameInfoTime* b = &m_body.m_time;
-    if (b == 0) {
+    if (b == NULL) {
         return 0;
     }
     if (b->m_score > s) {
@@ -79,11 +79,11 @@ i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118260, 0x63)
 i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     CGameInfoTime* dst = &m_body.m_time;
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
     if (dst->m_score > src->m_score) {

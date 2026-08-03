@@ -60,18 +60,18 @@ void CDDrawChildGroup::Unload() {
 RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
     CGameLevel* p = OwnerMgr()->m_level;
-    if (p != 0) {
+    if (p != NULL) {
 
         CDDrawWorkerHost* q = static_cast<CDDrawWorkerHost*>(p->m_mainPlane);
-        if (q != 0) {
+        if (q != NULL) {
             q->Prune();
         }
     }
     POSITION n = m_list.GetHeadPosition();
-    while (n != 0) {
+    while (n != NULL) {
         CGameObject* cur_obj = NextChild(n);
         CGameObject* obj = cur_obj;
-        if (obj != 0) {
+        if (obj != NULL) {
             delete obj;
         }
     }
@@ -92,7 +92,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
 ) {
     CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), id, stateFlags);
     if (result->SetupFlagged(x, y, sortKey, tmpl, dotColor) == 0) {
-        if (result != 0) {
+        if (result != NULL) {
             delete result;
         }
         return 0;
@@ -135,7 +135,7 @@ CWwdGameObjectF*
 CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
     CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, stateFlags);
     if (result->SetupDeferred(sortKey, tmpl) == 0) {
-        if (result != 0) {
+        if (result != NULL) {
             delete result;
         }
         return 0;
@@ -168,7 +168,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
 ) {
     CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags);
     if (result->Setup(x, y, sortKey, tmpl) == 0) {
-        if (result != 0) {
+        if (result != NULL) {
             delete result;
         }
         return 0;
@@ -244,7 +244,7 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
 ) {
     CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), id, stateFlags);
     if (result->Setup(x, y, sortKey, tmpl) == 0) {
-        if (result != 0) {
+        if (result != NULL) {
             delete result;
         }
         return 0;
@@ -268,7 +268,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 ) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
-    if (val == 0) {
+    if (val == NULL) {
         return 0;
     }
     return CreateContainerObject(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
@@ -289,7 +289,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     }
 
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         AnimWorkerObj* rec = obj->m_animWorker;
         if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
@@ -317,14 +317,14 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
             rec->m_notify(static_cast<CGameObject*>(obj));
         }
         if (obj->m_flags & 0x800) {
-            if (obj != 0) {
+            if (obj != NULL) {
                 delete obj;
             }
         } else {
             m_list.RemoveAt(obj->m_posCache);
             m_map48.RemoveKey(WwdKey(obj));
             m_map2c.RemoveKey(WwdKey(obj));
-            if (obj != 0) {
+            if (obj != NULL) {
                 delete obj;
             }
         }
@@ -341,22 +341,22 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 RVA(0x00159c90, 0x23)
 void CDDrawChildGroup::RenderChildren(CDDrawSurfacePair* target) {
     POSITION n = m_list.GetHeadPosition();
-    if (n != 0) {
+    if (n != NULL) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->Render(target);
-        } while (n != 0);
+        } while (n != NULL);
     }
 }
 
 RVA(0x00159cc0, 0x2a)
 void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
     POSITION n = m_list.GetHeadPosition();
-    if (n != 0) {
+    if (n != NULL) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirty(dst, src);
-        } while (n != 0);
+        } while (n != NULL);
     }
 }
 
@@ -367,11 +367,11 @@ void CDDrawChildGroup::BltDirtyChildrenEx(
     CDDrawSurfacePair* restoreSrc
 ) {
     POSITION n = m_list.GetHeadPosition();
-    if (n != 0) {
+    if (n != NULL) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirtyEx(dst, src, restoreSrc);
-        } while (n != 0);
+        } while (n != NULL);
     }
     BltDirtyChildren(src, restoreSrc);
 }
@@ -383,11 +383,11 @@ void CDDrawChildGroup::BltDirtyChildRegions(
     CDDrawSurfacePair* restoreSrc
 ) {
     POSITION n = m_list.GetHeadPosition();
-    if (n != 0) {
+    if (n != NULL) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirtyRegions(dst, src, restoreSrc);
-        } while (n != 0);
+        } while (n != NULL);
     }
     BltDirtyChildren(src, restoreSrc);
 }
@@ -395,11 +395,11 @@ void CDDrawChildGroup::BltDirtyChildRegions(
 RVA(0x00159d90, 0x1c)
 void CDDrawChildGroup::InvalidateChildShadows() {
     POSITION n = m_list.GetHeadPosition();
-    if (n != 0) {
+    if (n != NULL) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->m_shadow.m_armed = -1;
-        } while (n != 0);
+        } while (n != NULL);
     }
 }
 
@@ -425,7 +425,7 @@ void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
 RVA(0x00159e40, 0xaa)
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (obj->m_flags & 0x800) {
-        obj->m_posCache = 0;
+        obj->m_posCache = NULL;
         return;
     }
     if (addToMaps != 0) {
@@ -434,7 +434,7 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     }
     POSITION pos = m_list.GetHeadPosition();
     i32 key = obj->m_sortKey;
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* data = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
@@ -455,11 +455,11 @@ void CDDrawChildGroup::ClearChildren() {
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* oi = static_cast<CGameObject*>(m_list.GetNext(pos));
         if (!(oi->m_flags & 1)) {
             POSITION ip = pos;
-            while (ip != 0) {
+            while (ip != NULL) {
                 CGameObject* oj = static_cast<CGameObject*>(m_list.GetNext(ip));
                 i32 fj = oj->m_flags;
                 if (fj & 1) {
@@ -498,7 +498,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                         if (overlap) {
                             if (mask2) {
                                 AnimWorkerObj* nf = oj->m_attackWorker;
-                                if (nf != 0) {
+                                if (nf != NULL) {
                                     oj->m_attackTarget = oi;
 
                                     nf->m_notify(oj);
@@ -514,7 +514,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     }
                                 } else {
                                     AnimWorkerObj* nf = oi->m_hitWorker;
-                                    if (nf != 0) {
+                                    if (nf != NULL) {
                                         oi->m_hitSource = oj;
                                         nf->m_notify(oi);
                                     }
@@ -535,7 +535,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                 if ((mask1b || mask2b) && BoxesOverlap(oj, oi)) {
                     if (mask2b) {
                         AnimWorkerObj* nf = oi->m_attackWorker;
-                        if (nf != 0) {
+                        if (nf != NULL) {
                             oi->m_attackTarget = oj;
                             nf->m_notify(oi);
                         }
@@ -600,7 +600,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
-        if (pos != 0) {
+        if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
                 if (obj->m_area.left != static_cast<i32>(0x80000000)) {
@@ -615,14 +615,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     view->WrapCoord(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
-            } while (pos != 0);
+            } while (pos != NULL);
         }
     }
     if (m_flags & 0x20000) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
-        if (pos != 0) {
+        if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
                 if (obj->m_switchRect.left != static_cast<i32>(0x80000000)) {
@@ -637,14 +637,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     view->WrapCoord(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
-            } while (pos != 0);
+            } while (pos != NULL);
         }
     }
     if (m_flags & 0x40000) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
-        if (pos != 0) {
+        if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
                 if (obj->m_extent.left != static_cast<i32>(0x80000000)) {
@@ -659,14 +659,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     view->WrapCoord(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
-            } while (pos != 0);
+            } while (pos != NULL);
         }
     }
     if (m_flags & 0x100000) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
-        if (pos != 0) {
+        if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
                 i32 x = obj->m_screenX;
@@ -703,14 +703,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         view->m_bounds50.top - view->m_viewRect.top + y
                     );
                 }
-            } while (pos != 0);
+            } while (pos != NULL);
         }
     }
     if (m_flags & 0x1000000) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
-        if (pos != 0) {
+        if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
                 if (obj->m_screenX == static_cast<i32>(0x80000000)) {
@@ -720,7 +720,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     continue;
                 }
                 CImage* fr = obj->m_layer;
-                if (fr == 0) {
+                if (fr == NULL) {
                     continue;
                 }
                 i32 x = obj->m_screenX;
@@ -734,13 +734,13 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 rc.bottom = box.bottom;
                 view->WrapCoord(&rc.left, &rc.top);
                 view->WrapCoord(&rc.right, &rc.bottom);
-                if (fr->m_owned != 0) {
+                if (fr->m_owned != NULL) {
                     drawHost->DrawLabel(&rc, s_dbgRle);
                 } else {
 
                     DDSCAPS caps;
                     i32 vid;
-                    if (fr->m_surface != 0 && fr->m_surface->m_ddSurface->GetCaps(&caps) == 0) {
+                    if (fr->m_surface != NULL && fr->m_surface->m_ddSurface->GetCaps(&caps) == 0) {
                         vid = caps.dwCaps & DDSCAPS_VIDEOMEMORY;
                     } else {
                         vid = 0;
@@ -750,7 +750,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     } else {
                         DDSCAPS caps2;
                         i32 sys;
-                        if (fr->m_surface != 0
+                        if (fr->m_surface != NULL
                             && fr->m_surface->m_ddSurface->GetCaps(&caps2) == 0) {
                             sys = caps2.dwCaps & DDSCAPS_SYSTEMMEMORY;
                         } else {
@@ -763,7 +763,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         }
                     }
                 }
-            } while (pos != 0);
+            } while (pos != NULL);
         }
     }
 }
@@ -777,7 +777,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
     POSITION pos = m_list.GetHeadPosition();
     CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
     CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
-    if (pos == 0) {
+    if (pos == NULL) {
         return;
     }
     do {
@@ -821,20 +821,20 @@ void CDDrawChildGroup::DrawObjectCounts() {
 
         view->WrapCoord(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);
-    } while (pos != 0);
+    } while (pos != NULL);
 }
 
 RVA(0x0015a780, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder() {
     POSITION node = m_list.GetHeadPosition();
     CWwdGameObject* anchor = static_cast<CWwdGameObject*>(NextChild(node));
-    if (anchor != 0) {
-        while (node != 0 && anchor != 0 && (anchor->m_flags & 0x20000) != 0) {
+    if (anchor != NULL) {
+        while (node != NULL && anchor != NULL && (anchor->m_flags & 0x20000) != 0) {
             anchor = static_cast<CWwdGameObject*>(NextChild(node));
         }
-        if (anchor != 0) {
+        if (anchor != NULL) {
             i32 key = anchor->m_sortKey;
-            while (node != 0) {
+            while (node != NULL) {
                 CGameObject* cur_obj = NextChild(node);
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
                 if ((obj->m_flags & 0x20000) == 0) {
@@ -856,7 +856,7 @@ i32 CDDrawChildGroup::CheckSortOrder() {
 RVA(0x0015a7f0, 0x20)
 CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == type) {
@@ -869,7 +869,7 @@ CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
 RVA(0x0015a810, 0x42)
 CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
@@ -882,7 +882,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
 RVA(0x0015a860, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
 
@@ -904,7 +904,7 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
     OwnerMgr()->m_workerCache->m_workers.Lookup(key, found);
     AnimWorkerObj* fp = static_cast<AnimWorkerObj*>(found);
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(m_list.GetNext(pos));
         LoadableClassId tag = obj->GetClassId();
         if (tag == CLASSID_WWDOBJA && obj->m_id == id
@@ -918,7 +918,7 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
 RVA(0x0015a940, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 collisionCategory) {
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
 
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id
@@ -932,7 +932,7 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
 RVA(0x0015a9a0, 0x23)
 CWwdGameObject* CDDrawChildGroup::FindByKey(void* key) {
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (WwdKey(obj) == key) {
@@ -945,7 +945,7 @@ CWwdGameObject* CDDrawChildGroup::FindByKey(void* key) {
 RVA(0x0015a9d0, 0x45)
 CWwdGameObject* CDDrawChildGroup::FindByStatusKey(void* key) {
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && WwdKey(obj) == key) {
@@ -959,11 +959,11 @@ RVA(0x0015aa20, 0x3c)
 i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
     CWwdGameObject* found = 0;
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == kind) {
-            if (found != 0) {
+            if (found != NULL) {
                 return 0;
             }
             found = obj;
@@ -976,7 +976,7 @@ RVA(0x0015aa60, 0x23)
 i32 CDDrawChildGroup::CountByKind(i32 kind) {
     i32 count = 0;
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == kind) {
@@ -989,10 +989,10 @@ i32 CDDrawChildGroup::CountByKind(i32 kind) {
 RVA(0x0015aa90, 0x5d)
 void CDDrawChildGroup::PruneList() {
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-        if (obj != 0 && !(obj->m_flags & 0x200)) {
+        if (obj != NULL && !(obj->m_flags & 0x200)) {
             m_list.RemoveAt(cur);
             m_map2c.RemoveKey(WwdKey(obj));
             m_map48.RemoveKey(WwdKey(obj));
@@ -1007,7 +1007,7 @@ i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;
     i32 sum = 0;
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
@@ -1038,54 +1038,54 @@ RVA(0x0015abc0, 0x5e)
 i32 CDDrawChildGroup::CountActive() {
     i32 n = 0;
     POSITION pos = m_map48.GetStartPosition();
-    if (pos != 0) {
+    if (pos != NULL) {
         do {
             void* key = 0;
             CWwdGameObject* val = 0;
             MapGetNext(m_map48, pos, key, val);
-            if (val != 0 && !(val->m_flags & 0x4000000)) {
+            if (val != NULL && !(val->m_flags & 0x4000000)) {
                 ++n;
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     return n;
 }
 
 RVA(0x0015ac20, 0x81)
 i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     POSITION pos = m_map48.GetStartPosition();
-    if (pos != 0) {
+    if (pos != NULL) {
         do {
             void* key = 0;
             CWwdGameObject* val = 0;
             MapGetNext(m_map48, pos, key, val);
-            if (val != 0 && !(val->m_flags & 0x4000000)) {
+            if (val != NULL && !(val->m_flags & 0x4000000)) {
                 val->Play(ar, mode, typeId, val);
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     return 1;
 }
 
 RVA(0x0015acb0, 0x76)
 i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     POSITION pos = m_map48.GetStartPosition();
-    if (pos != 0) {
+    if (pos != NULL) {
         do {
             void* key = 0;
             CWwdGameObject* val = 0;
             MapGetNext(m_map48, pos, key, val);
-            if (val != 0 && !(val->m_flags & 0x4000000)) {
+            if (val != NULL && !(val->m_flags & 0x4000000)) {
 
                 val->WriteSnapshot(ar, typeId);
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     return 1;
 }
@@ -1094,7 +1094,7 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
 RVA(0x0015ad30, 0x2ec)
 i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused) {
     i32 savedCounter = 0;
-    if (reader == 0) {
+    if (reader == NULL) {
         return 0;
     }
     for (u32 i = 0; i < count; i++) {
@@ -1102,7 +1102,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         reader->Read(&desc, 0xa0);
 
         void* found;
-        if (MapLookupById(m_map48, desc.m_objectId, found) && found != 0) {
+        if (MapLookupById(m_map48, desc.m_objectId, found) && found != NULL) {
             return 0;
         }
 
@@ -1117,7 +1117,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                     static_cast<const char*>(desc.m_workerName),
                     val
                 );
-                if (val != 0) {
+                if (val != NULL) {
                     createdObj = CreateSpriteObject(
                         desc.m_id,
                         desc.m_screenX,
@@ -1149,7 +1149,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                     static_cast<const char*>(desc.m_workerName),
                     val
                 );
-                if (val != 0) {
+                if (val != NULL) {
                     createdObj = CreateContainerObject(
                         desc.m_id,
                         desc.m_screenX,
@@ -1177,7 +1177,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                     return 0;
                 }
                 CWwdGameObject* rec = static_cast<CWwdGameObject*>(out);
-                if (rec == 0) {
+                if (rec == NULL) {
                     return 0;
                 }
                 rec->m_id = desc.m_id;
@@ -1201,10 +1201,10 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         }
 
         g_wwdObjIdCounter = savedCounter;
-        if (createdObj == 0) {
+        if (createdObj == NULL) {
             return 0;
         }
-        if (createdObj->m_animWorker == 0) {
+        if (createdObj->m_animWorker == NULL) {
             return 0;
         }
         if (desc.m_logicTypeId != 0) {
@@ -1215,7 +1215,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 return 0;
             }
             CUserLogic* child = static_cast<CUserLogic*>(childOut);
-            if (child == 0) {
+            if (child == NULL) {
                 return 0;
             }
 
@@ -1227,15 +1227,15 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
 
 RVA(0x0015b020, 0xc0)
 i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     POSITION pos = m_map48.GetStartPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         void* key = 0;
         CWwdGameObject* val = 0;
         MapGetNext(m_map48, pos, key, val);
-        if (val != 0 && !(val->m_flags & 0x4000000)) {
+        if (val != NULL && !(val->m_flags & 0x4000000)) {
             void* k = WwdKey(val);
             ar->Write(&k, 4);
             if (val->Play(ar, SERIAL_SAVE, typeId, val) == 0) {
@@ -1249,23 +1249,23 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
 // @early-stop
 RVA(0x0015b0e0, 0xec)
 i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     for (u32 i = 0; i < count; i++) {
         void* key = 0;
         ar->Read(&key, 4);
-        if (key == 0) {
+        if (key == NULL) {
             return 0;
         }
         CWwdGameObject* obj = 0;
         if (!MapLookup(m_map48, key, obj)) {
-            obj = 0;
+            obj = NULL;
         }
-        if (obj == 0) {
+        if (obj == NULL) {
             return 0;
         }
-        if (obj->m_animWorker == 0) {
+        if (obj->m_animWorker == NULL) {
             return 0;
         }
         if (obj->Play(ar, SERIAL_LOAD, flag, obj) == 0) {
@@ -1280,16 +1280,16 @@ RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
     POSITION pos = m_map48.GetStartPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         void* key = 0;
         CWwdGameObject* val = 0;
         MapGetNext(m_map48, pos, key, val);
-        if (val != 0) {
+        if (val != NULL) {
 
             void* found = 0;
-            if (m_map2c.Lookup(WwdKey(val), found) == 0 || found == 0) {
+            if (m_map2c.Lookup(WwdKey(val), found) == 0 || found == NULL) {
                 m_map48.RemoveKey(WwdKey(val));
-                if (val != 0) {
+                if (val != NULL) {
                     delete val;
                 }
                 ++n;
@@ -1307,6 +1307,6 @@ WwdDirtyRect::WwdDirtyRect() {
 
 RVA(0x0015b2a0, 0xb)
 WwdGridNode::WwdGridNode() {
-    m_bucket = 0;
+    m_bucket = NULL;
     m_reserved08 = 0;
 }

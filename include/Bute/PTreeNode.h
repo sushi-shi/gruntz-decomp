@@ -6,6 +6,8 @@
 #include <Ints.h>
 #include <Wap32/zBitVec.h>
 
+#include <stddef.h>
+
 struct CVariantSlot;
 struct CButeTreeNode;
 extern CVariantSlot g_symTabErrorSlot;
@@ -30,7 +32,7 @@ public:
 
     void Reset() {
         ClearRecursive(0);
-        m_root = 0;
+        m_root = NULL;
         m_lookupPending = 0;
         m_nodeCount = 0;
     }

@@ -51,7 +51,7 @@ RVA(0x0003ad90, 0x97)
 CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_pathStr.Empty();
     HWND v = parent;
-    if (parent == 0) {
+    if (parent == NULL) {
         v = g_gameReg->m_gameWnd->m_hwnd;
     }
     g_customWorldParent = v;
@@ -61,10 +61,10 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     if (g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, 0) == 0) {
         g_pathStr.Empty();
     }
-    g_dat62c268 = 0;
-    g_customWorldParent = 0;
-    g_customWorldInst = 0;
-    if (outSource != 0) {
+    g_dat62c268 = NULL;
+    g_customWorldParent = NULL;
+    g_customWorldInst = NULL;
+    if (outSource != NULL) {
         *outSource = g_str62c264;
     }
     return g_pathStr;
@@ -96,7 +96,7 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
             }
             MsgParam listWnd;
             listWnd.m_hwnd = g_customLevelList;
-            if (g_customLevelList != 0 && lParam == listWnd.m_lparam) {
+            if (g_customLevelList != NULL && lParam == listWnd.m_lparam) {
                 if (HIWORD(wParam) == LBN_SELCHANGE) {
                     FillLevelInfoDialog(hDlg);
                     return 1;
@@ -219,7 +219,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     }
 
     CGameLevel* lvl = g_gameReg->m_world->m_level;
-    if (lvl == 0) {
+    if (lvl == NULL) {
         return -1;
     }
 
@@ -242,7 +242,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_dat62c268 != 0 && FileExists(g_pathStr)
+            if (g_dat62c268 != NULL && FileExists(g_pathStr)
                 && g_dat62c268->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
                 SetDlgItemTextA(hDlg, 0x428, info.levelName + 0x40);
@@ -318,11 +318,11 @@ CString BuildCustomWwdPath(CString name) {
     if (name.GetLength() == 0) {
         return name;
     }
-    if (strstr(name, "\\") != 0) {
+    if (strstr(name, "\\") != NULL) {
         return name;
     }
     char cwd[254];
-    if (_getcwd(cwd, 254) == 0) {
+    if (_getcwd(cwd, 254) == NULL) {
         return name;
     }
     CString orig = name;
@@ -330,7 +330,7 @@ CString BuildCustomWwdPath(CString name) {
     name += "\\CUSTOM\\";
     name += orig;
     name.MakeUpper();
-    if (strstr(name, ".WWD") == 0) {
+    if (strstr(name, ".WWD") == NULL) {
         name += ".WWD";
     }
     return name;

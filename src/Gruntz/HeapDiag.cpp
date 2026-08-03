@@ -58,7 +58,7 @@ int HeapCheckDump(int walkOnBad) {
         memset(&hinfo, 0, sizeof(hinfo));
         _heapwalk(&hinfo);
         OutputDebugStringA("Walking heap...\n");
-        hinfo._pentry = 0;
+        hinfo._pentry = NULL;
         int r = _heapwalk(&hinfo);
         while (r == _HEAPOK) {
             r = _heapwalk(&hinfo);
@@ -110,11 +110,11 @@ int HeapStats() {
     ReportHeapStatus(status);
     unsigned long total = 0, used = 0, free = 0;
     if (status == _HEAPOK) {
-        hinfo._pentry = 0;
+        hinfo._pentry = NULL;
         hinfo._size = 0;
         hinfo._useflag = 0;
         _heapwalk(&hinfo);
-        hinfo._pentry = 0;
+        hinfo._pentry = NULL;
         int r = _heapwalk(&hinfo);
         while (r == status) {
             total += hinfo._size;
@@ -137,38 +137,38 @@ typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 // @early-stop
 RVA(0x00118ce0, 0x1f5)
 i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
-    if (name == 0 || *name == 0) {
+    if (name == NULL || *name == 0) {
         return 0;
     }
-    if (pHandleOut != 0) {
-        *pHandleOut = 0;
+    if (pHandleOut != NULL) {
+        *pHandleOut = NULL;
     }
 
     i32 isFullPath = 0;
-    if (strstr(name, "\\") != 0) {
+    if (strstr(name, "\\") != NULL) {
         isFullPath = 1;
     }
 
     HMODULE hK32 = GetModuleHandleA("KERNEL32.DLL");
-    if (hK32 == 0) {
+    if (hK32 == NULL) {
         return 0;
     }
 
     ProcAddr<PFN_CreateSnapshot> snapProc;
     snapProc.m_raw = GetProcAddress(hK32, "CreateToolhelp32Snapshot");
     PFN_CreateSnapshot pCreate = snapProc.m_fn;
-    if (pCreate == 0) {
+    if (pCreate == NULL) {
         return 0;
     }
     ProcAddr<PFN_Process32> walkProc;
     walkProc.m_raw = GetProcAddress(hK32, "Process32First");
     PFN_Process32 pFirst = walkProc.m_fn;
-    if (pFirst == 0) {
+    if (pFirst == NULL) {
         return 0;
     }
     walkProc.m_raw = GetProcAddress(hK32, "Process32Next");
     PFN_Process32 pNext = walkProc.m_fn;
-    if (pNext == 0) {
+    if (pNext == NULL) {
         return 0;
     }
 
@@ -195,7 +195,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                 if (isFullPath) {
                     if (_stricmp(name, me.szExePath) == 0) {
                         matchCount++;
-                        if (matchCount == 1 && pHandleOut != 0) {
+                        if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
                                 OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
                         }
@@ -206,7 +206,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                 } else {
                     if (_stricmp(name, me.szModule) == 0) {
                         matchCount++;
-                        if (matchCount == 1 && pHandleOut != 0) {
+                        if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
                                 OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
                         }

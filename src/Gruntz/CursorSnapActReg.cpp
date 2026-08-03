@@ -6,6 +6,8 @@
 #include <Gruntz/CursorSnapSprite.h>
 #include <Rez/FrameClock.h>
 
+#include <stddef.h>
+
 template<> DATA(0x0022bfa0)
 CActReg CActRegPool<CCursorSnapSprite>::s_table(2000, 2010);
 
@@ -18,7 +20,7 @@ static inline i32 RegisterActionName() {
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
-            if (nodes != 0) {
+            if (nodes != NULL) {
                 nodes->CString::~CString();
             }
             nodes++;

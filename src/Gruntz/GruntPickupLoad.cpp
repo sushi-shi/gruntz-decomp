@@ -220,7 +220,7 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            geo = 0;
+            geo = NULL;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 "GRUNTZ_PICKUPS_MEGAPHONE",
@@ -425,7 +425,7 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
     }
 
-    if (m_pickupGeoSrc == 0) {
+    if (m_pickupGeoSrc == NULL) {
         return 0;
     }
     if (id != 0) {
@@ -440,25 +440,25 @@ i32 CGrunt::LoadPickupSprites(
     m_helpCueId = helpCueId;
     m_entranceActive = 1;
     m_entrancePickup = type;
-    if (m_healthSprite != 0) {
+    if (m_healthSprite != NULL) {
         m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = 0;
+        m_healthSprite = NULL;
     }
-    if (m_staminaSprite != 0) {
+    if (m_staminaSprite != NULL) {
         m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = 0;
+        m_staminaSprite = NULL;
     }
-    if (m_toySprite != 0) {
+    if (m_toySprite != NULL) {
         m_toySprite->m_flags |= 0x10000;
-        m_toySprite = 0;
+        m_toySprite = NULL;
     }
-    if (m_toyTimeSprite != 0) {
+    if (m_toyTimeSprite != NULL) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
-    if (m_wingzTimeSprite != 0) {
+    if (m_wingzTimeSprite != NULL) {
         m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = 0;
+        m_wingzTimeSprite = NULL;
     }
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_pickupGeoSrc);

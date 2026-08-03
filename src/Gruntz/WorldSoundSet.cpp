@@ -27,7 +27,7 @@ inline void* operator new(u32, void* p) {
 
 RVA(0x0000b5e0, 0x29)
 i32 CWorldSoundSet::Init(void* world, i32 volume) {
-    if (world == 0) {
+    if (world == NULL) {
         return 0;
     }
     m_world = static_cast<CRandomAmbientWorld*>(world);
@@ -40,19 +40,19 @@ i32 CWorldSoundSet::Init(void* world, i32 volume) {
 
 RVA(0x0000b620, 0x26)
 void CWorldSoundSet::Deactivate() {
-    if (m_world != 0 && m_world->m_soundDev != 0) {
+    if (m_world != NULL && m_world->m_soundDev != NULL) {
         m_world->m_soundDev->FreeSamples();
     }
     Teardown();
-    m_world = 0;
+    m_world = NULL;
 }
 
 RVA(0x0000b660, 0x2b)
 void CWorldSoundSet::Teardown() {
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != 0) {
+        if (ch != NULL) {
             delete ch;
         }
     }
@@ -68,7 +68,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
     i32 unused
 ) {
     CAmbientSound* obj = new CAmbientSound;
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
     if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
@@ -91,7 +91,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
     i32 unused
 ) {
     CAmbientSound* obj = new CAmbientSound;
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
     if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
@@ -111,7 +111,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
     i32 unused
 ) {
     CAmbientPosSound* obj = new CAmbientPosSound;
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
     if (obj->InitFromKey(m_world, key, level, m_volume, pos, scaleB) == 0) {
@@ -134,7 +134,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
     i32 unused
 ) {
     CAmbientPosSound* obj = new CAmbientPosSound;
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
     if (obj->InitFromSound(mgr, level, m_volume, pos, scaleB) == 0) {
@@ -164,7 +164,7 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
         return 0;
     }
     CRandomAmbientSound* obj = new CRandomAmbientSound;
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
     if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
@@ -192,7 +192,7 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandom(
     i32 unused
 ) {
     CRandomAmbientSound* obj = new CRandomAmbientSound;
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
     if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
@@ -207,13 +207,13 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandom(
 RVA(0x0000bc30, 0x3a)
 void CWorldSoundSet::Restart(i32 volume) {
     m_volume = volume;
-    if (m_world->m_soundDev != 0) {
+    if (m_world->m_soundDev != NULL) {
         m_world->m_soundDev->FreeSamples();
     }
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != 0) {
+        if (ch != NULL) {
             ch->Recompute(static_cast<i32>(volume));
         }
     }
@@ -221,13 +221,13 @@ void CWorldSoundSet::Restart(i32 volume) {
 
 RVA(0x0000bc80, 0x44)
 void CWorldSoundSet::Stop() {
-    if (m_world != 0 && m_world->m_soundDev != 0) {
+    if (m_world != NULL && m_world->m_soundDev != NULL) {
         m_world->m_soundDev->FreeSamples();
     }
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != 0 && ch->m_voice != 0) {
+        if (ch != NULL && ch->m_voice != NULL) {
             ch->m_voice->StopAndRewind();
             ch->m_isPlaying = 0;
         }
@@ -237,16 +237,16 @@ void CWorldSoundSet::Stop() {
 RVA(0x0000bcf0, 0x43)
 void CWorldSoundSet::Resume() {
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != 0) {
+        if (ch != NULL) {
             ch->m_isPlaying = 0;
             ch->Update(m_listenerX, m_listenerY, 1);
         }
     }
 
     CRandomAmbientWorld* w = m_world;
-    if (w->m_soundDev != 0) {
+    if (w->m_soundDev != NULL) {
         w->m_soundDev->PurgeVoiceList(-1);
     }
 }
@@ -256,15 +256,15 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
     m_listenerX = x;
     m_listenerY = y;
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != 0) {
+        if (ch != NULL) {
             ch->Update(x, y, 0);
         }
     }
 
     CRandomAmbientWorld* world = m_world;
-    if (world->m_soundDev != 0) {
+    if (world->m_soundDev != NULL) {
         world->m_soundDev->PurgeVoiceList(-1);
     }
 }
@@ -281,7 +281,7 @@ i32 CAmbientSound::InitFromKey(
     void* out_ob = 0;
     world->m_map.Lookup(key, out_ob);
     AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
-    if (out == 0) {
+    if (out == NULL) {
         return 0;
     }
     return InitFromSound(out->m_mgr, level, master, box, scaleB);
@@ -295,7 +295,7 @@ i32 CAmbientSound::InitFromSound(
     RECT* box,
     i32 scaleB
 ) {
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     m_voice = mgr;
@@ -305,7 +305,7 @@ i32 CAmbientSound::InitFromSound(
     m_panIndex = 0;
     m_isPlaying = 0;
     RECT* p = &m_box1;
-    if (box != 0) {
+    if (box != NULL) {
         *p = *box;
     } else {
         p->left = static_cast<i32>(0x80000000);
@@ -344,7 +344,7 @@ RVA(0x0000bfb0, 0xa9)
 void CAmbientSound::Restart() {
     DirectSoundMgr* voice = m_voice;
     i32 pos = m_level;
-    if (voice == 0) {
+    if (voice == NULL) {
         return;
     }
     if (m_isPlaying != 0) {
@@ -386,7 +386,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         }
         DirectSoundMgr* voice = m_voice;
         i32 lvl = m_level;
-        if (voice == 0) {
+        if (voice == NULL) {
             return;
         }
         if (lvl == 0) {
@@ -426,7 +426,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
             return;
         }
         if (force != 0) {
-            if (m_voice == 0) {
+            if (m_voice == NULL) {
                 return;
             }
             m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
@@ -470,7 +470,7 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 // @early-stop
 RVA(0x0000c2a0, 0x19e)
 void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
-    if (m_voice == 0) {
+    if (m_voice == NULL) {
         return;
     }
     if (playFlag != 0) {
@@ -556,7 +556,7 @@ i32 CAmbientPosSound::InitFromKey(
     void* out_ob = 0;
     world->m_map.Lookup(key, out_ob);
     AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
-    if (out == 0) {
+    if (out == NULL) {
         return 0;
     }
     return InitFromSound(out->m_mgr, level, master, pos, scaleB);
@@ -570,10 +570,10 @@ i32 CAmbientPosSound::InitFromSound(
     AmbientPoint* pos,
     i32 scaleB
 ) {
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (pos == 0) {
+    if (pos == NULL) {
         return 0;
     }
     m_voice = mgr;
@@ -592,7 +592,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     i32 dy = abs(m_position.y - y);
     i32 dist2 = dx * dx + dy * dy;
     if (dx > 0x280 || dy > 0x280) {
-        if (m_voice != 0 && m_isPlaying != 0) {
+        if (m_voice != NULL && m_isPlaying != 0) {
             m_voice->StopAndRewind();
             m_isPlaying = 0;
         }
@@ -639,7 +639,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     if (m_isPlaying != 0) {
         return;
     }
-    if (m_voice == 0) {
+    if (m_voice == NULL) {
         return;
     }
     if (g_gameReg->m_soundEnabled == 0) {
@@ -741,39 +741,39 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
             return 1;
         }
         CAmbientPosSound* sound = aux->m_positionedSound;
-        if (sound == 0) {
+        if (sound == NULL) {
             return 1;
         }
 
         CWorldSoundSet* set = g_gameReg->m_inputState;
-        if (sound->m_voice != 0) {
+        if (sound->m_voice != NULL) {
             sound->m_voice->StopAndRewind();
             sound->m_isPlaying = 0;
         }
-        if (sound->m_listNode != 0) {
+        if (sound->m_listNode != NULL) {
             set->m_list.RemoveAt(sound->m_listNode);
             delete sound;
         }
-        aux->m_positionedSound = 0;
+        aux->m_positionedSound = NULL;
         aux->m_actKey = 0;
         return 1;
     }
 
     obj->m_stateFlags |= 1;
     obj->m_flags = (obj->m_flags & ~2) | 0x100001;
-    aux->m_positionedSound = 0;
+    aux->m_positionedSound = NULL;
     LeafCue* layer = sprite->m_soundCue;
-    if (layer != 0 && g_gameReg != 0) {
+    if (layer != NULL && g_gameReg != NULL) {
 
         CWorldSoundSet* set = g_gameReg->m_inputState;
-        if (set != 0) {
+        if (set != NULL) {
             AmbientPoint pt;
             pt.x = obj->m_screenX;
             pt.y = obj->m_screenY;
 
             CAmbientPosSound* v =
                 set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_damage, 0);
-            if (v != 0) {
+            if (v != NULL) {
                 aux->m_positionedSound = v;
             }
         }
@@ -801,7 +801,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
     }
 
     if (inBox == 0) {
-        if (m_isPlaying != 0 && m_voice != 0) {
+        if (m_isPlaying != 0 && m_voice != NULL) {
             SetLevel(0, 0x3e8, 1);
             m_isPlaying = 0;
         }

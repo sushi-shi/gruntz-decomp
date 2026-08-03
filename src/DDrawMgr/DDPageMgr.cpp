@@ -28,12 +28,12 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {
         return 0;
     }
-    if (window == 0) {
+    if (window == NULL) {
         return 0;
     }
 
     DDModeInfo info;
-    if (mode != 0) {
+    if (mode != NULL) {
         info = *mode;
     } else {
         info.width = 0x280;
@@ -99,8 +99,8 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     m_screenWidth = info.width;
-    m_srcSurf = 0;
-    m_srcSurfRaw = 0;
+    m_srcSurf = NULL;
+    m_srcSurfRaw = NULL;
     m_screenHeight = info.height;
     m_bpp = info.bpp;
     m_window = window;
@@ -115,7 +115,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 RVA(0x0017c2a0, 0x14e)
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
     CString cls(AfxRegisterWndClass(3, 0, 0, 0));
-    if (m_videoWnd != 0) {
+    if (m_videoWnd != NULL) {
         return 0;
     }
     m_videoWnd = new CWnd;
@@ -179,8 +179,8 @@ i32 CMoviePlayer::InitMode(
     m_bpp = bpp;
     m_window = wnd;
     m_streamOpen = 0;
-    m_srcSurf = 0;
-    m_srcSurfRaw = 0;
+    m_srcSurf = NULL;
+    m_srcSurfRaw = NULL;
     m_directSound = dsound;
     ShowCursor(0);
     m_initialized = 1;
@@ -195,13 +195,13 @@ void CMoviePlayer::Teardown() {
     }
     CloseSmacker();
     FreeAll();
-    m_window = 0;
+    m_window = NULL;
     m_initialized = 0;
     HandleError();
     if (m_videoWnd) {
         m_videoWnd->DestroyWindow();
         delete m_videoWnd;
-        m_videoWnd = 0;
+        m_videoWnd = NULL;
     }
     ShowCursor(1);
 }
@@ -235,11 +235,11 @@ i32 CMoviePlayer::OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* or
     }
     if (m_srcSurf) {
         m_srcSurf->Release();
-        m_srcSurf = 0;
+        m_srcSurf = NULL;
     }
     if (m_srcSurfRaw) {
         m_srcSurfRaw->Release();
-        m_srcSurfRaw = 0;
+        m_srcSurfRaw = NULL;
     }
     CloseSmacker();
     return r;
@@ -276,11 +276,11 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* orig
     }
     if (m_srcSurf) {
         m_srcSurf->Release();
-        m_srcSurf = 0;
+        m_srcSurf = NULL;
     }
     if (m_srcSurfRaw) {
         m_srcSurfRaw->Release();
-        m_srcSurfRaw = 0;
+        m_srcSurfRaw = NULL;
     }
     CloseSmacker();
     return r;
@@ -403,10 +403,10 @@ i32 CMoviePlayer::CloseSmacker() {
         return 0;
     }
     SmackClose(m_smackHandle);
-    m_smackHandle = 0;
+    m_smackHandle = NULL;
     if (m_rezBuffer) {
         ::operator delete(m_rezBuffer);
-        m_rezBuffer = 0;
+        m_rezBuffer = NULL;
     }
     m_streamOpen = 0;
     return 1;
@@ -485,11 +485,11 @@ RVA(0x0017cc80, 0x109)
 void CMoviePlayer::HandleError() {
     if (m_srcSurf) {
         m_srcSurf->Release();
-        m_srcSurf = 0;
+        m_srcSurf = NULL;
     }
     if (m_srcSurfRaw) {
         m_srcSurfRaw->Release();
-        m_srcSurfRaw = 0;
+        m_srcSurfRaw = NULL;
     }
     if (m_bpp == 8) {
         ResetPalette();
@@ -510,24 +510,24 @@ void CMoviePlayer::HandleError() {
     if (m_borrowedDisplayResources == 0) {
         if (m_palette) {
             m_palette->Release();
-            m_palette = 0;
+            m_palette = NULL;
         }
         if (m_primary) {
             m_primary->Release();
-            m_primary = 0;
+            m_primary = NULL;
         }
         if (m_primaryRaw) {
             m_primaryRaw->Release();
-            m_primaryRaw = 0;
+            m_primaryRaw = NULL;
         }
         if (m_directDraw2) {
             m_directDraw2->RestoreDisplayMode();
             m_directDraw2->Release();
-            m_directDraw2 = 0;
+            m_directDraw2 = NULL;
         }
         if (m_directDraw) {
             m_directDraw->Release();
-            m_directDraw = 0;
+            m_directDraw = NULL;
         }
     }
 }
@@ -566,7 +566,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 
     for (;;) {
         i32 hr;
-        if (m_tilesAcross == 1 && m_tilesDown == 1 && m_destRect == 0) {
+        if (m_tilesAcross == 1 && m_tilesDown == 1 && m_destRect == NULL) {
             hr = m_primary->BltFast(dst.left, dst.top, m_srcSurf, &src, 0x10);
             if (hr != 0x887601c2) {
                 return hr;
@@ -791,15 +791,15 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     PLAYLISTINFOSTRUCT* rec = m_playlist[idx - 1];
     if (rec->m_src) {
         ::operator delete(rec->m_src);
-        rec->m_src = 0;
+        rec->m_src = NULL;
     }
     if (rec->m_origin) {
         ::operator delete(rec->m_origin);
-        rec->m_origin = 0;
+        rec->m_origin = NULL;
     }
     if (rec->m_rect) {
         ::operator delete(rec->m_rect);
-        rec->m_rect = 0;
+        rec->m_rect = NULL;
     }
 
     m_playlist.RemoveAt(idx - 1);
@@ -832,7 +832,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
     do {
         for (i32 i = 0; i < m_playlist.GetSize(); i++) {
             PLAYLISTINFOSTRUCT* clip = m_playlist[i];
-            if (clip->m_src == 0) {
+            if (clip->m_src == NULL) {
                 return 0;
             }
             if (clip->m_openArg == 0) {
@@ -865,7 +865,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                 CloseSmacker();
                 return result;
             }
-            if (m_primary != 0) {
+            if (m_primary != NULL) {
                 DDBLTFX fx;
                 memset(&fx, 0, sizeof(fx));
                 fx.dwSize = sizeof(fx);

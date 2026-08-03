@@ -362,7 +362,7 @@ i32 CGrunt::IsDropReady(i32 a) {
         CoordPoolNode* node = g_coordPool.m_freeHead;
         i32 coordX = m_lastTilePx.m_x >> 5;
         i32 coordY = m_lastTilePx.m_y >> 5;
-        if (node->m_next != 0) {
+        if (node->m_next != NULL) {
             coord = &node->m_coord;
             coord->m_x = coordX;
             coord->m_y = coordY;
@@ -968,9 +968,9 @@ idleReseed:
             m_object->m_flags |= 0x20000;
         }
     }
-    if (m_toyTimeSprite != 0) {
+    if (m_toyTimeSprite != NULL) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
     m_toyTime = 0;
     StopStruckSlotSound();
@@ -1017,7 +1017,7 @@ i32 CGrunt::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
 
@@ -1428,7 +1428,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         n = m_coordList.GetCount();
         ar->Write(&n, 4);
         POSITION cpos = m_coordList.GetHeadPosition();
-        while (cpos != 0) {
+        while (cpos != NULL) {
             ar->Write(m_coordList.GetNext(cpos), 8);
         }
     }
@@ -1436,7 +1436,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         n = m_payloads.GetCount();
         ar->Write(&n, 4);
         POSITION pos = m_payloads.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             ar->Write(m_payloads.GetNext(pos), 0x2c);
         }
     }

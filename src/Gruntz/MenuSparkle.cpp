@@ -41,7 +41,7 @@ static inline i32 RegisterActionName() {
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
-            if (nodes != 0) {
+            if (nodes != NULL) {
                 nodes->CString::~CString();
             }
             nodes++;
@@ -79,7 +79,7 @@ i32 CMenuSparkle::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (arc == 0) {
+    if (arc == NULL) {
         return 0;
     }
 
@@ -116,7 +116,7 @@ i32 CMenuSparkle::AdvanceAnim() {
     CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
     i32 active = m_wwdObject->m_animCursor.m_finished;
     if (active != 0 && anim->m_frameTicksLeft == 0) {
-        if (anim != 0) {
+        if (anim != NULL) {
             anim->Recompute(1);
         }
         m_animWorker->m_timeDelay = rand() % 0xfa1 + 0x3e8;

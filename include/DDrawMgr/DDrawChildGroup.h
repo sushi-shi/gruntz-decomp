@@ -24,8 +24,8 @@ class CWwdGameObjectF;
 class CDDrawChildGroup : public CLoadable {
 public:
     CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
-        m_walkCursor = 0;
-        m_scanCursor = 0;
+        m_walkCursor = NULL;
+        m_scanCursor = NULL;
     }
 
     virtual ~CDDrawChildGroup() OVERRIDE;

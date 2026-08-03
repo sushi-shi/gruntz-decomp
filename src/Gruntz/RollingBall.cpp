@@ -63,7 +63,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 
     CWwdGameObjectA* obj38 = m_wwdObject;
-    if (obj38->m_frameSet != 0) {
+    if (obj38->m_frameSet != NULL) {
         CString name;
         name = obj38->m_frameSet->m_name;
         const char* s;
@@ -127,7 +127,7 @@ void CRollingBall::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -267,7 +267,7 @@ i32 CRollingBall::Update() {
                                 CWwdGameObjectA* fx =
                                     g_gameReg->m_world->m_childGroup
                                         ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
-                                if (fx != 0) {
+                                if (fx != NULL) {
                                     fx->ApplyName("LEVEL_DEATHSPLASH");
                                     fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                                 }
@@ -381,7 +381,7 @@ i32 CRollingBall::Update() {
                         CWwdGameObjectA* fx =
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
-                        if (fx != 0) {
+                        if (fx != NULL) {
                             fx->ApplyName("GAME_WATER");
                             fx->ApplyLookupGeometry("GAME_WATER", 0);
                         }

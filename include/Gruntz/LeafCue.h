@@ -6,6 +6,8 @@
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class DSoundCloneInst;
 struct CParseSource;
 
@@ -13,7 +15,7 @@ struct LeafCue : public CLoadable {
 
     RVA(0x00158650, 0xb)
     virtual i32 IsLoaded() OVERRIDE {
-        return m_sound != 0;
+        return m_sound != NULL;
     }
 
     virtual void Unload() OVERRIDE;
@@ -36,7 +38,7 @@ struct LeafCue : public CLoadable {
 };
 SIZE(0x1c);
 inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) : CLoadable(count, handle) {
-    m_sound = 0;
+    m_sound = NULL;
     m_replayDelay = 0;
     m_lastPlayTime = 0;
 }

@@ -38,11 +38,11 @@ public:
         m_name[0] = 0;
         m_pauseDepth = 0;
         m_playMode = 0;
-        m_playOwner = 0;
+        m_playOwner = NULL;
         m_tempoPct = 0x64;
         m_volumePct = 0x64;
-        m_seqHandle = 0;
-        m_loadBuffer = 0;
+        m_seqHandle = NULL;
+        m_loadBuffer = NULL;
     }
 
     i32 IsBusy();

@@ -14,8 +14,8 @@ struct InterfaceObject : public CObject {
     __POSITION* m_listPosition;
 
     InterfaceObject() {
-        m_guid = 0;
-        m_listPosition = 0;
+        m_guid = NULL;
+        m_listPosition = NULL;
     }
     virtual ~InterfaceObject() OVERRIDE;
     CString GetName();

@@ -6,6 +6,8 @@
 #include <Gruntz/CoordNode.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 struct CoordPoolNode {
     CoordPoolNode* m_next;
     Coord m_coord;
@@ -17,11 +19,11 @@ public:
     FreeNodePool() : m_block(0), m_freeHead(0), m_count(0), m_linkOffset(0) {}
 
     ~FreeNodePool() {
-        if (m_block != 0) {
+        if (m_block != NULL) {
             ::operator delete(m_block);
         }
-        m_block = 0;
-        m_freeHead = 0;
+        m_block = NULL;
+        m_freeHead = NULL;
         m_count = 0;
         m_linkOffset = 0;
     }

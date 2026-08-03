@@ -40,23 +40,23 @@ i32 DrawPageDebugText(
     i32 g,
     i32 b
 ) {
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     CDrawSubWorker* page;
     if (useFrontPage != 0) {
         page = mgr->m_drawTarget->m_frontPair;
-        if (page == 0) {
+        if (page == NULL) {
             return 0;
         }
     } else {
         page = mgr->m_drawTarget->m_backPair;
-        if (page == 0) {
+        if (page == NULL) {
             return 0;
         }
     }
     CDDSurface* surf = page->m_surface;
-    if (surf == 0) {
+    if (surf == NULL) {
         return 0;
     }
 
@@ -124,7 +124,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
             obj = new CCheckpointTriggerSwitchLogic;
             break;
     }
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
 
@@ -149,7 +149,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
 RVA(0x00116320, 0x66)
 i32 CTileTriggerContainer::RemoveByKeys(i32 k1, TrigLogicId k2) {
     POSITION pos = m_base.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
         if (data->m_typeId == k2 && data->m_cellKey == k1) {
@@ -256,7 +256,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             obj = new CTileTimeTriggerLogic;
             break;
     }
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
 
@@ -319,7 +319,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
     i32 player3
 ) {
     CTileActionEvent* m = new CTileActionEvent;
-    if (m == 0) {
+    if (m == NULL) {
         return 0;
     }
     if (m->m_live != 0) {
@@ -352,7 +352,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     i32 playerSlot
 ) {
     CTileActionEvent* m = new CTileActionEvent;
-    if (m == 0) {
+    if (m == NULL) {
         return 0;
     }
     i32 a = 0, b = 0, c = 0, d = 0;
@@ -408,7 +408,7 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
     i32 dutyOffSpan
 ) {
     CGiantRockLogic* e = new CGiantRockLogic;
-    if (e == 0) {
+    if (e == NULL) {
         return 0;
     }
     if (e->m_initGate != 0) {
@@ -443,7 +443,7 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
 RVA(0x00116e60, 0x59)
 i32 CTileTriggerContainer::DelFromList1(CTileTriggerLogic* want) {
     POSITION pos = m_list1.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
         if (elem == want) {
@@ -459,7 +459,7 @@ i32 CTileTriggerContainer::DelFromList1(CTileTriggerLogic* want) {
 RVA(0x00116ee0, 0x2f)
 CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, TrigLogicId k2) {
     POSITION pos = m_base.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
         if (data->m_cellKey == k1) {
             if (k2 == TRIGID_ANY || data->m_typeId == k2) {
@@ -473,7 +473,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, TrigLogicId k2
 RVA(0x00116f20, 0x51)
 CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, TrigLogicId b) {
     POSITION pos = m_list1.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
         if (elem->m_cellKey == a) {
             if (b == TRIGID_ANY) {
@@ -485,7 +485,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, TrigLogicId b) {
         }
     }
     pos = m_list2.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
         if (elem->m_cellKey == a) {
             if (b == TRIGID_ANY) {
@@ -502,36 +502,36 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, TrigLogicId b) {
 RVA(0x00116fa0, 0xc7)
 void CTileTriggerContainer::RemoveAll() {
     POSITION pos = m_list1.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
         delete elem;
     }
     m_list1.RemoveAll();
     pos = m_base.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileTriggerSwitchLogic* elem = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
         delete elem;
     }
     m_base.RemoveAll();
     pos = m_list2.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
         delete elem;
     }
     m_list2.RemoveAll();
     pos = m_list3.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
         delete elem;
     }
     m_list3.RemoveAll();
-    m_latchedLeaf = 0;
+    m_latchedLeaf = NULL;
 }
 
 RVA(0x001170b0, 0x72)
 i32 CTileTriggerContainer::FilterList2(i32 arg) {
     POSITION pos = m_list2.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
         i32 r = elem->Classify(arg);
@@ -549,7 +549,7 @@ i32 CTileTriggerContainer::FilterList2(i32 arg) {
 RVA(0x00117150, 0x53)
 i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
     POSITION pos = m_list1.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         void* elem = m_list1.GetNext(pos);
         if (elem == data) {
@@ -565,7 +565,7 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
 RVA(0x001171d0, 0x20)
 CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
     POSITION pos = m_list3.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CTileActionEvent* data = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
         if (data->m_cellKey == cellKey) {
             return data;
@@ -577,7 +577,7 @@ CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
 RVA(0x00117200, 0x53)
 i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
     POSITION pos = m_list3.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur_node = pos;
         CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
         if (elem == want) {
@@ -592,7 +592,7 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
 // @early-stop
 RVA(0x00117280, 0x2ec)
 i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     if (op == SERIAL_SAVE) {
@@ -601,7 +601,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         i32 cnt = m_base.GetCount();
         s->Write(&cnt, 4);
         pos = m_base.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             CTileTriggerSwitchLogic* e0 =
                 static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
             if (SerializeApplyA(s, SERIAL_SAVE, typeId, pObj, e0) == 0) {
@@ -611,7 +611,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         cnt = m_list1.GetCount();
         s->Write(&cnt, 4);
         pos = m_list1.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             CTileTriggerLogic* e1 = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
             if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e1) == 0) {
                 return 0;
@@ -620,7 +620,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         cnt = m_list2.GetCount();
         s->Write(&cnt, 4);
         pos = m_list2.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             CTileTriggerLogic* e2 = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
             if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e2) == 0) {
                 return 0;
@@ -629,7 +629,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         cnt = m_list3.GetCount();
         s->Write(&cnt, 4);
         pos = m_list3.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             CTileActionEvent* e3 = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
             if (e3->Serialize(s, SERIAL_SAVE, typeId, pObj) == 0) {
                 return 0;
@@ -651,7 +651,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
         e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-        if (e == 0) {
+        if (e == NULL) {
             return 0;
         }
         m_base.AddTail(e);
@@ -659,7 +659,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
         e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-        if (e == 0) {
+        if (e == NULL) {
             return 0;
         }
         m_list1.AddTail(e);
@@ -667,7 +667,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
         e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-        if (e == 0) {
+        if (e == NULL) {
             return 0;
         }
         m_list2.AddTail(e);
@@ -695,7 +695,7 @@ i32 __stdcall SerializeApplyA(
     i32 pObj,
     CTileTriggerSwitchLogic* o
 ) {
-    if (o == 0) {
+    if (o == NULL) {
         return 0;
     }
     TrigLogicId tag = o->m_typeId;
@@ -758,7 +758,7 @@ i32 __stdcall SerializeApplyB(
     i32 pObj,
     CTileTriggerLogic* o
 ) {
-    if (o == 0) {
+    if (o == NULL) {
         return 0;
     }
     TrigLogicId tag = o->m_typeTag;
@@ -841,7 +841,7 @@ void* CTileTriggerContainer::LoadElement(
     LogicTypeId typeId,
     i32 pObj
 ) {
-    if (reader == 0) {
+    if (reader == NULL) {
         return 0;
     }
     if (kind != SERIAL_LOAD) {
@@ -948,10 +948,10 @@ void* CTileTriggerContainer::LoadElement(
 
 RVA(0x00117e20, 0x36)
 i32 CTileTriggerContainer::TransferFlag74(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     s->Write(&m_built, 4);
@@ -960,10 +960,10 @@ i32 CTileTriggerContainer::TransferFlag74(CFileMemBase* s) {
 
 RVA(0x00117e70, 0x36)
 i32 CTileTriggerContainer::LoadFlag74(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     s->Read(&m_built, 4);
@@ -979,7 +979,7 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
 
             CGiantRockLogic* r =
                 static_cast<CGiantRockLogic*>(FindInLists12(py + base, TRIGID_GIANT_ROCK_22));
-            if (r != 0) {
+            if (r != NULL) {
                 return r;
             }
         }
@@ -992,7 +992,7 @@ RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     i32 key = (tileX << 8) + tileY;
     CTileActionEvent* elem = FindActionByCellKey(key);
-    if (elem != 0) {
+    if (elem != NULL) {
         if (playerSlot == PLAYERSLOT_ALL) {
             elem->m_playerFlags[0] = 1;
             elem->m_playerFlags[1] = 1;
@@ -1005,8 +1005,8 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
         return 1;
     }
 
-    if (FindInLists12(key, TRIGID_COVERED_POWERUP_26) != 0) {
+    if (FindInLists12(key, TRIGID_COVERED_POWERUP_26) != NULL) {
         return 1;
     }
-    return ScanNeighborhood(tileX, tileY) != 0;
+    return ScanNeighborhood(tileX, tileY) != NULL;
 }

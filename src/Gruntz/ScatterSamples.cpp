@@ -2,6 +2,8 @@
 
 #include <Ints.h>
 
+#include <stddef.h>
+
 RVA(0x00182a80, 0x2e)
 i32 IsPrime(i32 n) {
     i32 d = 2;
@@ -38,7 +40,7 @@ void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {
     }
 
     i32* used = static_cast<i32*>(operator new(prime * sizeof(i32)));
-    if (used == 0) {
+    if (used == NULL) {
         return;
     }
 

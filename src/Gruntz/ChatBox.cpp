@@ -14,6 +14,8 @@
 #include <Image/ImageSet.h>
 #include <Rez/FrameClock.h>
 
+#include <stddef.h>
+
 RVA(0x00182ab0, 0x7b)
 i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e, i32 f) {
     if (!src) {
@@ -24,7 +26,7 @@ i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e
     m_wrapFlag = f;
     m_headGap = d;
     m_rowSpacing = e;
-    m_activeNode = 0;
+    m_activeNode = NULL;
     if (rc) {
         CopyRect(&m_rect8, rc);
         return 1;
@@ -39,13 +41,13 @@ i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e
 RVA(0x00182b30, 0x30)
 void CChatBox::Reset() {
     Clear();
-    m_page = 0;
-    m_wnd = 0;
-    m_activeNode = 0;
-    m_row0Anim = 0;
-    m_row1Anim = 0;
-    m_row0Frame = 0;
-    m_row1Frame = 0;
+    m_page = NULL;
+    m_wnd = NULL;
+    m_activeNode = NULL;
+    m_row0Anim = NULL;
+    m_row1Anim = NULL;
+    m_row0Frame = NULL;
+    m_row1Frame = NULL;
     m_row0Key.Empty();
     m_row1Key.Empty();
 }
@@ -58,7 +60,7 @@ void CChatBox::Clear() {
         delete payload;
     }
     m_nodeList.RemoveAll();
-    m_activeNode = 0;
+    m_activeNode = NULL;
 }
 
 RVA(0x00182ba0, 0x35)
@@ -224,10 +226,10 @@ i32 CChatBox::Step(i32 delta) {
             if (f >= a->m_minIndex && f <= a->m_maxIndex) {
                 v = static_cast<CImage*>(a->m_items.GetAt(f));
             } else {
-                v = 0;
+                v = NULL;
             }
             m_row0Frame = v;
-            if (v == 0) {
+            if (v == NULL) {
                 m_row0Frame = static_cast<CImage*>(a->m_items.GetAt(a->m_minIndex));
                 m_row0FrameIdx = a->m_minIndex;
             }
@@ -246,10 +248,10 @@ i32 CChatBox::Step(i32 delta) {
         if (f >= b->m_minIndex && f <= b->m_maxIndex) {
             v = static_cast<CImage*>(b->m_items.GetAt(f));
         } else {
-            v = 0;
+            v = NULL;
         }
         m_row1Frame = v;
-        if (v == 0) {
+        if (v == NULL) {
             m_row1Frame = static_cast<CImage*>(b->m_items.GetAt(b->m_minIndex));
             m_row1FrameIdx = b->m_minIndex;
         }
@@ -293,7 +295,7 @@ i32 CChatBox::PlayFocusSound() {
         void* t_ob = 0;
         roster->m_cues.Lookup(static_cast<const char*>(m_row0Key), t_ob);
         LeafCue* t = static_cast<LeafCue*>(t_ob);
-        if (t != 0 && g_sndEnabled != 0) {
+        if (t != NULL && g_sndEnabled != 0) {
             i32 delta = g_sndCueTag;
             i32 clock = g_killCueClock;
             u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
@@ -317,7 +319,7 @@ i32 CChatBox::PlayActivationSound() {
         void* t_ob = 0;
         roster->m_cues.Lookup(static_cast<const char*>(m_row1Key), t_ob);
         LeafCue* t = static_cast<LeafCue*>(t_ob);
-        if (t != 0 && g_sndEnabled != 0) {
+        if (t != NULL && g_sndEnabled != 0) {
             i32 delta = g_sndCueTag;
             i32 clock = g_killCueClock;
             u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);

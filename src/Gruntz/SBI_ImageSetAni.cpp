@@ -36,10 +36,10 @@ i32 CSBI_ImageSetAni::Init(
     i32 b4
 ) {
 
-    if (host == 0) {
+    if (host == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     m_owner = owner;
@@ -50,14 +50,14 @@ i32 CSBI_ImageSetAni::Init(
 
     m_rect14 = rc;
     m_cmd = cmd;
-    if (key == 0) {
+    if (key == NULL) {
         return 0;
     }
     CObject* found = 0;
     host->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* tbl = static_cast<CDDrawWorker*>(found);
     m_frameSet = tbl;
-    if (tbl == 0) {
+    if (tbl == NULL) {
         return 0;
     }
     m_interval = b2;
@@ -78,12 +78,12 @@ i32 CSBI_ImageSetAni::Init(
 
     CImage* cel;
     if (m_frameStart < tbl->m_minIndex || m_frameStart > tbl->m_maxIndex) {
-        cel = 0;
+        cel = NULL;
     } else {
         cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameStart));
     }
     m_frame = cel;
-    return cel != 0;
+    return cel != NULL;
 }
 
 RVA(0x000e7ae0, 0x8)
@@ -100,10 +100,10 @@ i32 CSBI_ImageSetAni::Render() {
         if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
             cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
         } else {
-            cel = 0;
+            cel = NULL;
         }
         m_frame = cel;
-        if (cel != 0) {
+        if (cel != NULL) {
             CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
             cel->RenderFrame(
                 surfaceCtx,
@@ -180,10 +180,10 @@ i32 CSBI_ImageSetAni::SerializeFields(
     LogicTypeId typeId,
     i32 pObj
 ) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     switch (mode) {

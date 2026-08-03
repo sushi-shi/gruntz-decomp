@@ -6,6 +6,8 @@
 #include <Bute/ObjListBase.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CRezItmBase;
 
 union DwordBytes {
@@ -24,8 +26,8 @@ SIZE(0xc);
 
 struct CRezList : public CObjList {
     CRezList() {
-        m_head = 0;
-        m_tail = 0;
+        m_head = NULL;
+        m_tail = NULL;
     }
     virtual void UnusedListHook() OVERRIDE;
 

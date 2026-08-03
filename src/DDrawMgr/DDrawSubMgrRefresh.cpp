@@ -59,7 +59,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
     }
     void* val = 0;
     m_cues.Lookup(key, val);
-    if (val == 0) {
+    if (val == NULL) {
         return 0;
     }
     i32 gate = g_sndEnabled;

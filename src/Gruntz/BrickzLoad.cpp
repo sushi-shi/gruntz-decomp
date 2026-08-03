@@ -86,7 +86,7 @@ RVA(0x000810f0, 0x8b4)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
     CDDrawWorkerHost* grid = m_attrMgr->m_level->m_mainPlane;
-    if (grid == 0) {
+    if (grid == NULL) {
         return 0;
     }
     AllocGrid(width, height, 0);
@@ -390,12 +390,12 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     CDDrawChildGroup* mgr = g_gameReg->m_world->m_childGroup;
     mgr->m_walkCursor = mgr->m_list.GetHeadPosition();
     CGameObject* obj;
-    if (mgr->m_walkCursor != 0) {
+    if (mgr->m_walkCursor != NULL) {
         obj = static_cast<CGameObject*>(mgr->m_list.GetNext(mgr->m_walkCursor));
     } else {
-        obj = 0;
+        obj = NULL;
     }
-    while (obj != 0) {
+    while (obj != NULL) {
 
         if (obj->m_animWorker->m_notify == &CreateExitTrigger) {
             i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & 0x1f)) >> 5;
@@ -404,7 +404,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 for (i32 yo = -1; yo < 2; yo++) {
 
                     Coord* elem = 0;
-                    if (g_coordPool.m_freeHead->m_next != 0) {
+                    if (g_coordPool.m_freeHead->m_next != NULL) {
                         elem = &g_coordPool.m_freeHead->m_coord;
                         elem->m_x = tileX + xo;
                         elem->m_y = tileY + yo;
@@ -415,7 +415,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             }
             for (i32 k = 0; k < m_arr.GetSize(); k++) {
                 Coord* elem = static_cast<Coord*>(m_arr[k]);
-                if (elem != 0 && static_cast<u32>(elem->m_x) < static_cast<u32>(m_width)
+                if (elem != NULL && static_cast<u32>(elem->m_x) < static_cast<u32>(m_width)
                     && static_cast<u32>(elem->m_y) < static_cast<u32>(m_height)) {
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_flags = 0x10;
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_tileId = 0;
@@ -427,10 +427,10 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             }
             m_arr.SetSize(0, -1);
         }
-        if (mgr->m_walkCursor != 0) {
+        if (mgr->m_walkCursor != NULL) {
             obj = static_cast<CGameObject*>(mgr->m_list.GetNext(mgr->m_walkCursor));
         } else {
-            obj = 0;
+            obj = NULL;
         }
     }
 

@@ -26,7 +26,7 @@ class CAniElement : public CObject {
 public:
     CAniElement() {
         m_flags = 0;
-        m_name = 0;
+        m_name = NULL;
     }
     virtual ~CAniElement() OVERRIDE;
     CObject* AtChecked(i32 i) const;

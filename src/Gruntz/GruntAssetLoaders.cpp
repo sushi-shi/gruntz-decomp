@@ -21,7 +21,7 @@ static void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
-        if (slot != 0) {
+        if (slot != NULL) {
             slot->~CString();
         }
         slot++;
@@ -103,31 +103,31 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
     if (m_healthSprite) {
         m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = 0;
+        m_healthSprite = NULL;
     }
     if (m_staminaSprite) {
         m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = 0;
+        m_staminaSprite = NULL;
     }
     if (m_toySprite) {
         m_toySprite->m_flags |= 0x10000;
-        m_toySprite = 0;
+        m_toySprite = NULL;
     }
     if (m_toyTimeSprite) {
         m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = 0;
+        m_toyTimeSprite = NULL;
     }
     if (m_wingzTimeSprite) {
         m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = 0;
+        m_wingzTimeSprite = NULL;
     }
     if (m_powerupSprite) {
         m_powerupSprite->m_flags |= 0x10000;
-        m_powerupSprite = 0;
+        m_powerupSprite = NULL;
     }
     if (m_selectedSprite) {
         m_selectedSprite->m_flags |= 0x10000;
-        m_selectedSprite = 0;
+        m_selectedSprite = NULL;
     }
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {

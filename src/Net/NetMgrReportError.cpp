@@ -240,14 +240,14 @@ void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
     }
 
     if (g_logEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", g_szCode, g_code, g_szMsg);
         } else {
             sprintf(szLine, "%s, line %i: %s (%i) - %s\n", file, line, g_szCode, g_code, g_szMsg);
         }
     }
     if (g_msgBoxEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", g_szCode, g_code, g_szMsg);
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, g_szCode, g_code, g_szMsg);

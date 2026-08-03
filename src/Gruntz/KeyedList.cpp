@@ -2,11 +2,13 @@
 
 #include <Net/KeyedList.h>
 
+#include <stddef.h>
+
 RVA(0x000379a0, 0x3d)
 void CKeyedList::Clear() {
 
     POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CKeyedNode* sub = static_cast<CKeyedNode*>(m_list.GetNext(pos));
         delete sub;
     }

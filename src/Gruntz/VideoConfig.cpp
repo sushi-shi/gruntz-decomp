@@ -139,24 +139,24 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 MsgParam from;
                 from.m_lparam = lParam;
                 HWND ctrl = from.m_hwnd;
-                if (g_optHwndMusic != 0 && ctrl == g_optHwndMusic) {
+                if (g_optHwndMusic != NULL && ctrl == g_optHwndMusic) {
                     OnToggleMusicOption(hDlg);
                     return FALSE;
                 }
-                if (g_optHwndVoice != 0 && ctrl == g_optHwndVoice) {
+                if (g_optHwndVoice != NULL && ctrl == g_optHwndVoice) {
                     OnToggleVoiceOption(hDlg);
                     return FALSE;
                 }
-                if (g_optHwndSpeech != 0 && ctrl == g_optHwndSpeech) {
+                if (g_optHwndSpeech != NULL && ctrl == g_optHwndSpeech) {
                     OnToggleSpeechOption(hDlg);
                     return FALSE;
                 }
-                if (g_optHwndEasy != 0 && ctrl == g_optHwndEasy) {
+                if (g_optHwndEasy != NULL && ctrl == g_optHwndEasy) {
                     OnToggleEasyModeOption(hDlg);
                     return FALSE;
                 }
 
-                if (g_optHwndResSlider != 0 && ctrl == g_optHwndResSlider) {
+                if (g_optHwndResSlider != NULL && ctrl == g_optHwndResSlider) {
                     OnToggleCk5Option(hDlg);
                 }
             }
@@ -207,7 +207,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 RVA(0x00036860, 0x16f)
 void LoadGameOptionsToDialog(HWND hDlg) {
-    if (g_gameReg == 0) {
+    if (g_gameReg == NULL) {
         return;
     }
     g_opt_22bd70 = g_gameReg->m_isEasyMode;
@@ -236,7 +236,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 // @early-stop
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
-    if (g_gameReg == 0) {
+    if (g_gameReg == NULL) {
         return;
     }
     g_gameReg->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
@@ -275,7 +275,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
 // @early-stop
 RVA(0x00036be0, 0xd3)
 void ApplyGameOptions() {
-    if (g_gameReg == 0) {
+    if (g_gameReg == NULL) {
         return;
     }
     g_gameReg->m_isEasyMode = g_opt_22bd70;
@@ -572,7 +572,7 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 RVA(0x00037870, 0x3c)
 void DialogInit(HWND hDlg) {
-    if (g_gameReg == 0) {
+    if (g_gameReg == NULL) {
         return;
     }
     CheckDlgButton(hDlg, 0x46f, g_gameReg->m_isHighDetail);
@@ -582,7 +582,7 @@ void DialogInit(HWND hDlg) {
 // @early-stop
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
-    if (g_gameReg == 0) {
+    if (g_gameReg == NULL) {
         return;
     }
     g_gameReg->m_isHighDetail = IsDlgButtonChecked(hDlg, 0x46f);

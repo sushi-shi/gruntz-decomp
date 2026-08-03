@@ -59,22 +59,22 @@ i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
 
 RVA(0x00147530, 0x54)
 void CDDPalette::Destroy() {
-    m_pos = 0;
+    m_pos = NULL;
     m_8 = 0;
-    if (m_palette != 0) {
-        m_palette = 0;
+    if (m_palette != NULL) {
+        m_palette = NULL;
     }
-    if (m_cacheA != 0) {
+    if (m_cacheA != NULL) {
         ::operator delete(m_cacheA);
-        m_cacheA = 0;
+        m_cacheA = NULL;
     }
-    if (m_cacheB != 0) {
+    if (m_cacheB != NULL) {
         ::operator delete(m_cacheB);
-        m_cacheB = 0;
+        m_cacheB = NULL;
     }
-    if (m_sourcePalette != 0) {
+    if (m_sourcePalette != NULL) {
         ::operator delete(m_sourcePalette);
-        m_sourcePalette = 0;
+        m_sourcePalette = NULL;
     }
     m_active = 0;
 }
@@ -197,7 +197,7 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
     for (u32 i = start; i < start + count; i++) {
         m_cacheA[i] = data[i - start];
     }
-    if (g_DirectDrawMgr != 0) {
+    if (g_DirectDrawMgr != NULL) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
@@ -207,7 +207,7 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
 RVA(0x00147b10, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused) {
     PALETTEENTRY* buf = static_cast<PALETTEENTRY*>(::operator new(count * 4));
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0x80070057;
     }
 
@@ -225,7 +225,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused)
 RVA(0x00147ba0, 0x82)
 i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
     PALETTEENTRY* buf = static_cast<PALETTEENTRY*>(::operator new(count * 4));
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0x80070057;
     }
 
@@ -242,9 +242,9 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
 
 RVA(0x00147c30, 0x4d)
 void CDDPalette::GetEntries() {
-    if (m_cacheB == 0) {
+    if (m_cacheB == NULL) {
         m_cacheB = static_cast<PALETTEENTRY*>(::operator new(0x400));
-        if (m_cacheB == 0) {
+        if (m_cacheB == NULL) {
             return;
         }
     }
@@ -257,14 +257,14 @@ void CDDPalette::GetEntries() {
 RVA(0x00147c80, 0x4d)
 void CDDPalette::Apply(i32 unused) {
     PALETTEENTRY* readback = m_cacheB;
-    if (readback == 0) {
+    if (readback == NULL) {
         return;
     }
 
     for (u32 i = 0; i < 0x100; i++) {
         m_cacheA[i] = readback[i];
     }
-    if (g_DirectDrawMgr != 0) {
+    if (g_DirectDrawMgr != NULL) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
@@ -333,7 +333,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     m_durationMs = durationMs;
     m_startTimeMs = timeGetTime();
     m_lastElapsedMs = -1;
-    m_targetPalette = 0;
+    m_targetPalette = NULL;
     m_fixedColor.peRed = r;
     m_fixedColor.peGreen = g;
     m_fixedColor.peBlue = b;
@@ -382,7 +382,7 @@ i32 CDDPalette::Tick() {
         Flush();
         return 0;
     }
-    if (m_targetPalette != 0) {
+    if (m_targetPalette != NULL) {
         if (dt != static_cast<u32>(m_lastElapsedMs)) {
             i32 i = m_firstColorIndex;
             if (i < m_firstColorIndex + m_colorCount) {
@@ -468,9 +468,9 @@ void CDDPalette::Flush() {
     }
     PALETTEENTRY* v = m_targetPalette;
     m_active = 0;
-    if (v != 0) {
+    if (v != NULL) {
         SetAndNotify(m_firstColorIndex, m_colorCount, v, 0);
-        m_targetPalette = 0;
+        m_targetPalette = NULL;
     } else {
 
         PALETTEENTRY pe = m_fixedColor;
@@ -543,7 +543,7 @@ i32 CDDPalette::CaptureSystemPalette() {
 RVA(0x00148720, 0x9f)
 i32 BlackoutSystemPalette() {
     HDC hdc = GetDC(0);
-    if (hdc != 0) {
+    if (hdc != NULL) {
         LogPal256 lp;
         lp.palVersion = 0x300;
         lp.palNumEntries = 0x100;
@@ -554,7 +554,7 @@ i32 BlackoutSystemPalette() {
             lp.palPalEntry[i].peFlags = 4;
         }
         HPALETTE hpal = CreatePalette(&lp.m_lp);
-        if (hpal != 0) {
+        if (hpal != NULL) {
             HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = SelectPalette;
             HPALETTE old = pSelect(hdc, hpal, 0);
             RealizePalette(hdc);

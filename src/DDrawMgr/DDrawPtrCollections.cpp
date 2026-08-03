@@ -89,15 +89,15 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
     flags |= 0x40;
     i32 doFill = 1;
     char* ext = strrchr(path, '.');
-    if (ext != 0 && _strcmpi(ext, ".BMP") == 0) {
+    if (ext != NULL && _strcmpi(ext, ".BMP") == 0) {
         if (LoadFile2(info, path, flags) == 0) {
             return 0;
         }
-    } else if (ext != 0 && _strcmpi(ext, ".PCX") == 0) {
+    } else if (ext != NULL && _strcmpi(ext, ".PCX") == 0) {
         if (LoadFile(info, path, flags) == 0) {
             return 0;
         }
-    } else if (ext != 0 && _strcmpi(ext, ".PID") == 0) {
+    } else if (ext != NULL && _strcmpi(ext, ".PID") == 0) {
         if (DecodePcxEx(info, path, flags, key) == 0) {
             return 0;
         }

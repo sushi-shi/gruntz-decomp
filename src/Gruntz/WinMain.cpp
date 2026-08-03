@@ -31,11 +31,11 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         && FindProcessByName(szModulePath, 2, 0) != 0) {
 
         HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
-        if (hPrev != 0) {
+        if (hPrev != NULL) {
             if (IsIconic(hPrev)) {
                 SendMessageA(hPrev, WM_SYSCOMMAND, SC_RESTORE, 0);
             }
-            if (lpCmdLine != 0 && strstr(lpCmdLine, "LOBBYLAUNCH") != 0) {
+            if (lpCmdLine != NULL && strstr(lpCmdLine, "LOBBYLAUNCH") != NULL) {
                 PostMessageA(hPrev, WM_COMMAND, IDX(CMD_LOBBY_RESET), 0);
             }
         }
@@ -70,7 +70,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     g_pApp = new CGruntzApp;
-    if (g_pApp == 0) {
+    if (g_pApp == NULL) {
         return 0;
     }
 
@@ -87,23 +87,23 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         bAdvanced = 1;
     }
 
-    if (lpCmdLine != 0) {
-        if (strstr(lpCmdLine, "advanced") != 0) {
+    if (lpCmdLine != NULL) {
+        if (strstr(lpCmdLine, "advanced") != NULL) {
             bAdvanced = 1;
         }
-        if (strstr(lpCmdLine, "optionz") != 0) {
+        if (strstr(lpCmdLine, "optionz") != NULL) {
             bAdvanced = 1;
         }
-        if (strstr(lpCmdLine, "ADVANCED") != 0) {
+        if (strstr(lpCmdLine, "ADVANCED") != NULL) {
             bAdvanced = 1;
         }
-        if (strstr(lpCmdLine, "OPTIONZ") != 0) {
+        if (strstr(lpCmdLine, "OPTIONZ") != NULL) {
             bAdvanced = 1;
         }
-        if (strstr(lpCmdLine, "ADV") != 0) {
+        if (strstr(lpCmdLine, "ADV") != NULL) {
             bAdvanced = 1;
         }
-        if (strstr(lpCmdLine, "adv") != 0) {
+        if (strstr(lpCmdLine, "adv") != NULL) {
             bAdvanced = 1;
         }
     }
@@ -112,27 +112,27 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         i32 nDlgResult =
             DialogBoxParamA(g_hInstance, "CONFIG_ADVANCED", 0, &AdvancedOptionsDialogProc, 0);
         if (nDlgResult == 0) {
-            if (g_pApp != 0) {
+            if (g_pApp != NULL) {
                 delete g_pApp;
             }
-            g_pApp = 0;
+            g_pApp = NULL;
             return 0;
         }
     }
 
     if (g_pApp->Init(hInstance, "Gruntz", "Gruntz", lpCmdLine, 0, CW_USEDEFAULT, CW_USEDEFAULT)
         == 0) {
-        if (g_pApp != 0) {
+        if (g_pApp != NULL) {
             delete g_pApp;
         }
-        g_pApp = 0;
+        g_pApp = NULL;
         return 0;
     }
 
     i32 rc = g_pApp->RunMessageLoop();
-    if (g_pApp != 0) {
+    if (g_pApp != NULL) {
         delete g_pApp;
     }
-    g_pApp = 0;
+    g_pApp = NULL;
     return rc;
 }

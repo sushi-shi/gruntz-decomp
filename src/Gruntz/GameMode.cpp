@@ -144,13 +144,13 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
     CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
-    if (handleA == 0) {
+    if (handleA == NULL) {
         return 0;
     }
     CShadeTable* handleB = g_gameReg->m_spriteFactory->GetSel(0, 1);
 
     void* img = m_gruntzBank->ResolvePath("IMAGEZ_GOKARTGRUNT");
-    if (img == 0) {
+    if (img == NULL) {
         return 0;
     }
     m_world->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
@@ -159,7 +159,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
 
     CWwdGameObjectA* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[0] = sw;
-    if (sw == 0) {
+    if (sw == NULL) {
         return 0;
     }
     sw->ApplyName("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
@@ -169,7 +169,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     CWwdGameObjectA* wh =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[7] = wh;
-    if (wh == 0) {
+    if (wh == NULL) {
         return 0;
     }
     CShadeTable* tint =
@@ -184,7 +184,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     CWwdGameObjectA* ex =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[1] = ex;
-    if (ex == 0) {
+    if (ex == NULL) {
         return 0;
     }
     ex->ApplyName("GRUNTZ_EXITZ");
@@ -198,7 +198,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     CWwdGameObjectA* dt =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[2] = dt;
-    if (dt == 0) {
+    if (dt == NULL) {
         return 0;
     }
     dt->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
@@ -212,7 +212,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     CWwdGameObjectA* gl =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[3] = gl;
-    if (gl == 0) {
+    if (gl == NULL) {
         return 0;
     }
     gl->ApplyName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
@@ -226,7 +226,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     CWwdGameObjectA* bb =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[4] = bb;
-    if (bb == 0) {
+    if (bb == NULL) {
         return 0;
     }
     bb->ApplyName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
@@ -240,7 +240,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     CWwdGameObjectA* rz =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[5] = rz;
-    if (rz == 0) {
+    if (rz == NULL) {
         return 0;
     }
     rz->ApplyName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
@@ -254,7 +254,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     CWwdGameObjectA* cn =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[6] = cn;
-    if (cn == 0) {
+    if (cn == NULL) {
         return 0;
     }
     cn->ApplyName("GAME_INGAMEICONZ_POWERUPZ_COIN");
@@ -269,7 +269,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         CWwdGameObjectA* b =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_bomb[i] = b;
-        if (b == 0) {
+        if (b == NULL) {
             return 0;
         }
         b->ApplyName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
@@ -285,7 +285,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         CWwdGameObjectA* e =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_expl[i] = e;
-        if (e == 0) {
+        if (e == NULL) {
             return 0;
         }
         e->ApplyName("GAME_EXPLOSION");
@@ -294,7 +294,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         CWwdGameObjectA* g =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_gokart[i] = g;
-        if (g == 0) {
+        if (g == NULL) {
             return 0;
         }
         g->ApplyName("GRUNTZ_GOKARTGRUNT_EAST");
@@ -342,7 +342,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            if (i >= m_slot && (i != m_slot || m_expl[i]->m_animCursor.m_animation == 0)) {
+            if (i >= m_slot && (i != m_slot || m_expl[i]->m_animCursor.m_animation == NULL)) {
                 CWwdGameObjectA* e = m_expl[i];
                 e->m_stateFlags &= ~1;
                 e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
@@ -355,7 +355,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                         void* cue_ob = 0;
                         host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
                         LeafCue* cue = static_cast<LeafCue*>(cue_ob);
-                        if (cue != 0) {
+                        if (cue != NULL) {
                             cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                         }
                     }
@@ -423,7 +423,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                 void* cue_ob = 0;
                 host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
                 LeafCue* cue = static_cast<LeafCue*>(cue_ob);
-                if (cue != 0 && g_sndEnabled != 0
+                if (cue != NULL && g_sndEnabled != 0
                     && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
                            >= static_cast<u32>(cue->m_replayDelay)) {
                     cue->m_lastPlayTime = g_killCueClock;

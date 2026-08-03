@@ -137,7 +137,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     SetupSprite(0);
 
-    m_glitterSprite = 0;
+    m_glitterSprite = NULL;
     m_peekTimer.m_lo = 0;
     m_peekWindow.m_lo = 0;
     m_peekTimer.m_hi = 0;
@@ -145,7 +145,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     i32 glitter = 0;
     CDDrawWorker* frameSet = static_cast<CWwdGameObjectA*>(obj)->m_frameSet;
-    if (frameSet != 0) {
+    if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
 
@@ -435,7 +435,7 @@ i32 CInGameIcon::HandleInput() {
             icon = 0;
         }
         rec = g_gameReg->m_spriteFactory->GetSel(icon, 0);
-        if (rec == 0) {
+        if (rec == NULL) {
             rec = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
     } else if (cmd == 0x1e || cmd == 0x13) {
@@ -464,7 +464,7 @@ i32 CInGameIcon::HandleInput() {
                 break;
         }
         rec = g_gameReg->m_spriteFactory->GetSel(icon, 0);
-        if (rec == 0) {
+        if (rec == NULL) {
             rec = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
     } else {
@@ -702,7 +702,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         i32 idx = tileOwnerHi * 15 + tileOwnerLo;
         CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
         i32 ok;
-        if (cell == 0 || cell->m_entranceCommitted == 0) {
+        if (cell == NULL || cell->m_entranceCommitted == 0) {
             ok = 0;
         } else if (matchActive) {
             ok = cell->LoadPickupSprites(static_cast<PickupType>(param), flag, 0, sub, 0);
@@ -713,7 +713,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         if (ok == 0) {
             return 0;
         }
-        if (m_cue != 0) {
+        if (m_cue != NULL) {
             CWwdGameObjectA* o = m_object;
             if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
                 && o->m_screenY < reg->m_viewBounds.bottom
@@ -734,7 +734,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     i32 idx = tileOwnerHi * 15 + tileOwnerLo;
     CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
     i32 ok;
-    if (cell == 0 || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == 0) {
         ok = 0;
     } else {
         ok = cell->LoadPickupSprites(static_cast<PickupType>(cmd), 0, 0, sub, 1);
@@ -745,12 +745,12 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     }
     if (cmd == 0x14) {
         CGrunt* placed = reg->m_cmdGrid->m_grid[idx];
-        if (placed != 0) {
+        if (placed != NULL) {
             placed->m_warpstoneAnchorIndex = m_object->m_health;
             reg = g_gameReg;
         }
     }
-    if (m_cue != 0) {
+    if (m_cue != NULL) {
         CWwdGameObjectA* o = m_object;
         if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
             && o->m_screenY < reg->m_viewBounds.bottom && o->m_screenY >= reg->m_viewBounds.top) {
@@ -774,9 +774,9 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         return 1;
     }
     CWwdGameObjectA* rend = m_glitterSprite;
-    if (rend != 0) {
+    if (rend != NULL) {
         rend->m_flags |= 0x10000;
-        m_glitterSprite = 0;
+        m_glitterSprite = NULL;
     }
     CWwdGameObjectA* r = m_wwdObject;
     r->m_flags |= 0x10000;
@@ -809,7 +809,8 @@ i32 CInGameIcon::Reposition() {
         if (cellVal != 0) {
 
             void* found = 0;
-            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found) && found != 0) {
+            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found)
+                && found != NULL) {
                 (static_cast<CGameObject*>(found))->m_flags |= 0x10000;
             }
         }
@@ -849,7 +850,7 @@ i32 CInGameIcon::SerializeMove(
 
     char chainName[0x80];
 
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     if (CUserLogic::SerializeMove(ar, mode, typeId, obj) == 0) {
@@ -864,7 +865,7 @@ i32 CInGameIcon::SerializeMove(
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
             m_animWorker = obj->m_animWorker;
             if (strlen(chainName) == 0) {
-                m_value = 0;
+                m_value = NULL;
             } else {
                 void* val = 0;
                 m_animWorker->m_ownerCtx->m_animRegistry->m_animations.Lookup(chainName, val);
@@ -874,7 +875,7 @@ i32 CInGameIcon::SerializeMove(
         }
         case SERIAL_SAVE: {
             memset(chainName, 0, sizeof(chainName));
-            if (m_value != 0) {
+            if (m_value != NULL) {
                 CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
                 strcpy(chainName, static_cast<const char*>(nm));
             }
@@ -915,14 +916,14 @@ i32 CInGameIcon::SerializeMove(
     switch (mode) {
         case SERIAL_SAVE: {
             memset(tailName, 0, sizeof(tailName));
-            if (m_cue != 0) {
+            if (m_cue != NULL) {
                 CString nm = m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
                 strcpy(tailName, static_cast<const char*>(nm));
             }
             ar->Write(tailName, 0x80);
             g_serialCounter++;
             i32 id = 0;
-            if (m_glitterSprite != 0) {
+            if (m_glitterSprite != NULL) {
                 id = m_glitterSprite->m_objectId;
             }
             ar->Write(&id, 4);
@@ -932,7 +933,7 @@ i32 CInGameIcon::SerializeMove(
             ar->Read(tailName, 0x80);
 
             if (strlen(tailName) == 0) {
-                m_cue = 0;
+                m_cue = NULL;
             } else {
                 void* val = 0;
                 m_animWorker->m_ownerCtx->m_soundRegistry->m_cues.Lookup(tailName, val);
@@ -944,12 +945,12 @@ i32 CInGameIcon::SerializeMove(
             void* found = 0;
             CWwdGameObjectA* sprite = 0;
             if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0
-                && found != 0
+                && found != NULL
                 && static_cast<CGameObject*>(found)->GetClassId() == CLASSID_SERIALREF) {
                 sprite = static_cast<CWwdGameObjectA*>(found);
             }
             m_glitterSprite = sprite;
-            if (sprite != 0) {
+            if (sprite != NULL) {
                 break;
             }
 
@@ -1036,7 +1037,7 @@ i32 CInGameText::Update() {
     CGrunt* found = g_gameReg->m_cmdGrid
                         ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
 
-    if (found != 0) {
+    if (found != NULL) {
         if (areaId != g_curPlayer) {
             return 0;
         }
@@ -1049,7 +1050,7 @@ i32 CInGameText::Update() {
         CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;
         while (n-- != 0) {
-            if (p != 0) {
+            if (p != NULL) {
                 p->CString::CString();
             }
             p++;
@@ -1074,7 +1075,7 @@ i32 CInGameText::Update() {
                 void* res_ob = 0;
                 set->m_cues.Lookup("GAME_HELPBOOK", res_ob);
                 LeafCue* res = static_cast<LeafCue*>(res_ob);
-                if (res != 0) {
+                if (res != NULL) {
                     i32 enable = g_sndEnabled;
                     i32 token = g_sndCueTag;
                     if (enable != 0) {
@@ -1101,7 +1102,7 @@ i32 CInGameText::Update() {
 
 RVA(0x00099a30, 0xaa)
 i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, CGameObject* b) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
@@ -1127,7 +1128,7 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, 
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
     LeafCue* cue = 0;
-    if (category != 0) {
+    if (category != NULL) {
 
         CGruntzMgr* reg = g_gameReg;
         void* found = 0;

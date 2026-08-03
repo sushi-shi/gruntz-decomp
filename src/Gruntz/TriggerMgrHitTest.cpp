@@ -6,6 +6,8 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 
+#include <stddef.h>
+
 RVA(0x000759e0, 0x18)
 Coord* CTriggerMgr::GetOriginXY(Coord* out) {
     out->m_x = m_cellFlag[0x16];
@@ -59,7 +61,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
     i32 row = (attr >> 8) & 0xff;
     i32 col = attr & 0xff;
     CGrunt* cell = m_grid[col + row * TM_GRID_COLS];
-    if (cell == 0 || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == 0) {
         return 0;
     }
 

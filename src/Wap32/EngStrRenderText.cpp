@@ -20,16 +20,16 @@ i32 EngStr_RenderText(
     i32 b,
     i32 flag
 ) {
-    if (self == 0) {
+    if (self == NULL) {
         return 0;
     }
-    if (text == 0) {
+    if (text == NULL) {
         return 0;
     }
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
-    if (drawSurface == 0) {
+    if (drawSurface == NULL) {
         return 0;
     }
     switch (fontSel) {

@@ -14,6 +14,8 @@
 #include <Io/FileMem.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CGruntPowerupSprite, 0x001e76c4);
 
 template<> DATA(0x00244d30)
@@ -50,7 +52,7 @@ void CGruntPowerupSprite::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -82,7 +84,7 @@ RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
-    if (e != 0) {
+    if (e != NULL) {
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;
     }

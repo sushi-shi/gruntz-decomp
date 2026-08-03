@@ -5,12 +5,14 @@
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
+#include <stddef.h>
+
 VTBL(CGruntzMapMgr, 0x001e9bb4);
 
 // @early-stop
 RVA(0x00082430, 0x161)
 i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     switch (mode) {
@@ -21,7 +23,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
             ar->Read(&count, 4);
             for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
                 void* elem = m_arr.GetData()[fi];
-                if (elem != 0) {
+                if (elem != NULL) {
                     CoordPoolNode* node = g_coordPool.NodeOf(elem);
                     node->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = node;
@@ -32,7 +34,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 CoordPoolNode* node = g_coordPool.m_freeHead;
                 void* elem = 0;
-                if (node->m_next != 0) {
+                if (node->m_next != NULL) {
                     elem = &node->m_coord;
                     g_coordPool.m_freeHead = node->m_next;
                 }
@@ -48,7 +50,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
             ar->Write(&wn, 4);
             for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {
                 void* elem = m_arr.GetData()[wi];
-                if (elem == 0) {
+                if (elem == NULL) {
                     return 0;
                 }
                 ar->Write(elem, 8);
@@ -64,7 +66,7 @@ RVA(0x00085480, 0x52)
 void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         void* elem = m_arr.GetData()[i];
-        if (elem != 0) {
+        if (elem != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(elem);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
@@ -78,7 +80,7 @@ RVA(0x00085d10, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         void* elem = m_arr.GetAt(i);
-        if (elem != 0) {
+        if (elem != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(elem);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;

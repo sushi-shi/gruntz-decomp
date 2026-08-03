@@ -23,6 +23,8 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 template<> DATA(0x00245ad0)
 CActReg CActRegPool<CLightFx>::s_table(2000, 2010);
 
@@ -94,7 +96,7 @@ void CLightFx::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -116,7 +118,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     node = nodeOb;
     void* found = node;
     g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, SHADE_DST_BY_SRC_16);
-    if (found != 0) {
+    if (found != NULL) {
 
         CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
         i32 key = en->m_minIndex;
@@ -124,21 +126,21 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
         m_wwdObject->m_frameSet = en;
         CImage* val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
-            val = 0;
+            val = NULL;
         } else {
             val = static_cast<CImage*>(en->m_items.GetAt(key));
         }
         m_wwdObject->m_layer = val;
         m_wwdObject->m_frameIndex = key;
     }
-    node = 0;
+    node = NULL;
     m_wwdObject->m_flags |= 2;
     m_anchorA = anchorA;
     m_anchorB = anchorB;
 
     MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
-    if (node != 0) {
-        node = 0;
+    if (node != NULL) {
+        node = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(static_cast<CAniElement*>(node));

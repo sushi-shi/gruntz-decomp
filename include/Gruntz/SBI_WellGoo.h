@@ -14,6 +14,8 @@
 #include <Image/ImageSet.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CFileMemBase;
 
 class CImage;
@@ -24,7 +26,7 @@ class CSBI_WellGoo : public CSBI_Image {
 public:
     CSBI_WellGoo() {
         m_kind = 7;
-        m_frame = 0;
+        m_frame = NULL;
     }
 
     virtual ~CSBI_WellGoo() OVERRIDE;

@@ -81,10 +81,10 @@
 
 RVA(0x0000d210, 0x65)
 i32 ParseSerial(CGruntzMgr* mgr, char* s) {
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     if (strlen(s) == 0) {
@@ -92,7 +92,7 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     }
     g_serialCounter = 0;
     memset(g_saveBuf, 0, 0x90);
-    if (mgr->m_world == 0) {
+    if (mgr->m_world == NULL) {
         return 0;
     }
     return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, LOGIC_NONE) != 0;
@@ -101,7 +101,7 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
 RVA(0x0000d2a0, 0x1984)
 i32 __cdecl
 SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
-    if (ctx == 0 || ar == 0) {
+    if (ctx == NULL || ar == NULL) {
         return 0;
     }
 

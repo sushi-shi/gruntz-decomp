@@ -455,6 +455,13 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.enum_case_labels", ["--gate"],
           "a switch with an enum-typed key still has numeric case labels - "
           "python -m gruntz.audit.enum_case_labels --apply", "full")
+    # The rest of the same problem: a literal written where the surrounding TYPE
+    # already says what it means - a 0 against a pointer, a byte count that is
+    # sizeof the thing beside it, a bare value against an enum. Ratcheted
+    # down-only against config/bare-constants-baseline.tsv. FULL tier: libclang.
+    _gate("gruntz.audit.bare_constants", ["--gate"],
+          "bare-constants ratchet regressed - a literal was added where a type "
+          "already names it (python -m gruntz.audit.bare_constants --detail)", "full")
     # The #include block is canonical: no duplicates, and one order tree-wide
     # (rva -> platform preludes -> own header -> project -> library). See
     # docs/patterns/include-order.md; the fixer is mechanical and line-conserving.

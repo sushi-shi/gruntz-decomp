@@ -69,7 +69,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     switch (msg) {
         case WM_PAINT: {
             HWND item = GetDlgItem(hDlg, 0x51d);
-            if (g_previewMgr == 0 || g_previewImage == 0 || item == 0) {
+            if (g_previewMgr == NULL || g_previewImage == NULL || item == NULL) {
                 return 1;
             }
             RECT wr;
@@ -131,7 +131,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             return 1;
         }
         case WM_INITDIALOG: {
-            if (g_slotState == 0) {
+            if (g_slotState == NULL) {
                 EndDialog(hDlg, 0);
                 return 1;
             }
@@ -147,12 +147,12 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             if (wParam != 2 && wParam != 1) {
                 return 0;
             }
-            if (g_previewMgr != 0) {
-                if (g_previewImage != 0) {
+            if (g_previewMgr != NULL) {
+                if (g_previewImage != NULL) {
                     g_previewMgr->Free(static_cast<CRezImage*>(g_previewImage));
                 }
                 delete g_previewMgr;
-                g_previewMgr = 0;
+                g_previewMgr = NULL;
             }
             EndDialog(hDlg, 0);
             return 1;
@@ -165,7 +165,7 @@ RVA(0x000e3a40, 0xb0)
 i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            if (g_slotState == 0) {
+            if (g_slotState == NULL) {
                 // API-forced INT_PTR boundary.
 
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
@@ -193,7 +193,7 @@ RVA(0x000e3b20, 0x86)
 i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            if (g_slotState == 0) {
+            if (g_slotState == NULL) {
                 // API-forced INT_PTR boundary.
 
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
@@ -236,7 +236,7 @@ i32 CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 RVA(0x000e3c60, 0x1a3)
 void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
-    if (hWnd == 0 || sg == 0) {
+    if (hWnd == NULL || sg == NULL) {
         return;
     }
     LabelSaveSlot(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
@@ -349,7 +349,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
     if (info != -1) {
         g_slotState = obj->GetSlot(info);
-        if (g_slotState == 0) {
+        if (g_slotState == NULL) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
@@ -393,7 +393,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
     if (del != -1) {
         g_slotState = obj->GetSlot(del);
-        if (g_slotState == 0) {
+        if (g_slotState == NULL) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
@@ -459,7 +459,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         }
         if (TempFileExists(obj->GetSlot(slot))) {
             g_slotState = obj->GetSlot(slot);
-            if (g_slotState != 0) {
+            if (g_slotState != NULL) {
                 EnableWindow(hDlg, FALSE);
                 i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", InfoLineDialogProc, 0);
                 EnableWindow(hDlg, TRUE);
@@ -512,7 +512,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     } else {
 
         char* bs = strrchr(lev->m_levelName, '\\');
-        if (bs != 0) {
+        if (bs != NULL) {
             if (lev->m_isBattlez) {
                 wsprintfA(title, "Custom Battlez Level: ");
             } else {
@@ -520,7 +520,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
             }
             strcat(title, bs + 1);
             char* dot = strchr(title, '.');
-            if (dot != 0) {
+            if (dot != NULL) {
                 *dot = 0;
             }
         } else {
@@ -534,11 +534,11 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
 
     CFile f;
     if (f.Open(lev->m_savePath, 0x8000, 0) == 0) {
-        g_previewImage = 0;
+        g_previewImage = NULL;
     } else {
         f.Seek(-0x3843a, 2);
         if (f.Read(readBuf, 0x3843a) != 0x3843a) {
-            g_previewImage = 0;
+            g_previewImage = NULL;
             f.Close();
         } else {
             f.Close();
@@ -557,7 +557,7 @@ void SetSaveSlotDialogName(HWND hWnd, void* gate, SaveSlot* item) {
 
 RVA(0x000e4b60, 0x158)
 i32 CSaveGame::SaveGameFile(const char* dir) {
-    if (dir == 0) {
+    if (dir == NULL) {
         return 0;
     }
     m_str0 = dir;
@@ -567,7 +567,7 @@ i32 CSaveGame::SaveGameFile(const char* dir) {
     Load();
     for (i32 i = 0; i < 10; i++) {
         SaveSlot* slot = GetSlot(i);
-        if (slot != 0) {
+        if (slot != NULL) {
             char numbuf[16];
             _itoa(i + 1, numbuf, 10);
             wsprintfA(slot->m_savePath, m_str0 + "Slot" + numbuf + ".sav");
@@ -587,7 +587,7 @@ void CSaveGame::Init() {
     m_maxLevel = 0x25;
     for (i32 i = 0; i < 10; i++) {
         SaveSlot* p = GetSlot(i);
-        if (p != 0) {
+        if (p != NULL) {
             memset(p, 0, sizeof(SaveSlot));
         }
     }
@@ -624,7 +624,7 @@ i32 CSaveGame::Save(char* path, i32 msgId) {
     file.Write(m_slots, 0xa00);
     file.Close();
     Verify();
-    if (path != 0) {
+    if (path != NULL) {
         CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
         g_gameReg->m_world->m_drawTarget->TransEnter();
         state->LoadSBITextEdges(msgId);
@@ -665,10 +665,10 @@ i32 CSaveGame::Verify() {
 
 RVA(0x000e5130, 0x78)
 i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, void* mgr) {
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     dst->m_type = 1;
@@ -686,10 +686,10 @@ i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, void* mgr) {
 
 RVA(0x000e51d0, 0x49)
 i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     dst->m_type = src->m_type;
@@ -703,10 +703,10 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
 
 RVA(0x000e5240, 0x54)
 i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr) {
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     dst->m_type = 1;
@@ -721,7 +721,7 @@ i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr) {
 
 RVA(0x000e52c0, 0x99)
 i32 CSaveGame::VerifySlot(SaveSlot* slot) {
-    if (slot == 0) {
+    if (slot == NULL) {
         return 0;
     }
     i32 fc = slot->m_pathHi;
@@ -747,7 +747,7 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
 
 RVA(0x000e5390, 0x59)
 i32 CSaveGame::Register(SaveSlot* slot) {
-    if (slot == 0) {
+    if (slot == NULL) {
         return 0;
     }
     i32 fc = slot->m_pathHi;
@@ -759,7 +759,7 @@ i32 CSaveGame::Register(SaveSlot* slot) {
 
 RVA(0x000e5410, 0x3d)
 i32 CSaveGame::Encode(u8* buf) {
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     i32 acc = 0;
@@ -773,7 +773,7 @@ i32 CSaveGame::Encode(u8* buf) {
 
 RVA(0x000e5460, 0x3f)
 i32 CSaveGame::Decode(u8* buf) {
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     i32 acc = 0;
@@ -806,7 +806,7 @@ i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
 
 RVA(0x000e5550, 0x9a)
 i32 CSaveGame::CloseTempFile(SaveSlot* p) {
-    if (p == 0) {
+    if (p == NULL) {
         return 0;
     }
     CFile file;
@@ -853,7 +853,7 @@ void CSaveGame::SetMagic() {
 
 RVA(0x000e5700, 0x9e)
 int TempFileExists(SaveSlot* p) {
-    if (p != 0 && (p->m_type & 1)) {
+    if (p != NULL && (p->m_type & 1)) {
         CFile file;
         if (file.Open(p->m_savePath, 0, 0)) {
             file.Close();

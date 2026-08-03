@@ -86,7 +86,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                 );
                 CButeMgr bute;
                 bool parsed = false;
-                if (source != 0) {
+                if (source != NULL) {
                     char* encoded = source->BeginParse();
                     u32 length = source->m_length;
                     istrstream* inputStream = new istrstream(encoded, length);

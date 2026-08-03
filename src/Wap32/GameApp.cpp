@@ -29,10 +29,10 @@ VTBL(CGameApp, 0x001e9b0c);
 // (23 fns) came from the static library. It belongs to another compiland.
 RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
-    m_gameWnd = 0;
-    m_gameMgr = 0;
-    m_hAccel = 0;
-    m_hInstance = 0;
+    m_gameWnd = NULL;
+    m_gameMgr = NULL;
+    m_hAccel = NULL;
+    m_hInstance = NULL;
     m_appActive = 0;
     m_errorReported = 0;
     m_errorCode = 0;
@@ -104,7 +104,7 @@ i32 CGameApp::InitInstance(
 
     if (!m_gameWnd->CreateAndShow(&m_createStruct, this)) {
         delete m_gameWnd;
-        m_gameWnd = 0;
+        m_gameWnd = NULL;
         return 0;
     }
 
@@ -115,7 +115,7 @@ i32 CGameApp::InitInstance(
 
     if (!m_gameMgr->Run(m_gameWnd, m_gameInfo.szCmdLine)) {
         delete m_gameMgr;
-        m_gameMgr = 0;
+        m_gameMgr = NULL;
         return 0;
     }
     return 1;
@@ -163,15 +163,15 @@ RVA(0x0013d8c0, 0x42)
 void CGameApp::CloseResources() {
     if (m_hAccel) {
         DestroyAcceleratorTable(m_hAccel);
-        m_hAccel = 0;
+        m_hAccel = NULL;
     }
     if (m_gameMgr) {
         delete m_gameMgr;
-        m_gameMgr = 0;
+        m_gameMgr = NULL;
     }
     if (m_gameWnd) {
         delete m_gameWnd;
-        m_gameWnd = 0;
+        m_gameWnd = NULL;
     }
 }
 
@@ -219,7 +219,7 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.szGameIdentifier);
     m_wc.hCursor = hCursor;
     m_wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(4));
-    m_wc.lpszMenuName = 0;
+    m_wc.lpszMenuName = NULL;
     m_wc.lpszClassName = m_gameInfo.szWindowClassName;
 }
 
@@ -270,8 +270,8 @@ void CGameApp::InitializeDefaultCreateStruct() {
     m_createStruct.hMenu = hMenu;
     m_createStruct.y = y;
     m_createStruct.cx = cx;
-    m_createStruct.lpCreateParams = 0;
-    m_createStruct.hwndParent = 0;
+    m_createStruct.lpCreateParams = NULL;
+    m_createStruct.hwndParent = NULL;
     m_createStruct.x = x;
     m_createStruct.cy = cy;
     m_createStruct.lpszName = m_gameInfo.szWindowName;
@@ -294,10 +294,10 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     if (lpTable && *lpTable) {
         if (m_hAccel) {
             DestroyAcceleratorTable(m_hAccel);
-            m_hAccel = 0;
+            m_hAccel = NULL;
         }
         m_hAccel = LoadAcceleratorsA(m_hInstance, lpTable);
-        return m_hAccel != 0;
+        return m_hAccel != NULL;
     }
     return 0;
 }
@@ -313,7 +313,7 @@ RVA(0x0013dc90, 0x19)
 void CGameApp::FreeGameManager() {
     if (m_gameMgr) {
         delete m_gameMgr;
-        m_gameMgr = 0;
+        m_gameMgr = NULL;
     }
 }
 
@@ -324,7 +324,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     }
     CGameWnd* wnd = m_gameWnd;
     m_errorReported = 1;
-    if (wnd != 0 && wnd->m_closeGuard == 0) {
+    if (wnd != NULL && wnd->m_closeGuard == 0) {
         PostMessageA(wnd->m_hwnd, 0x10, 0, 0);
     }
     m_running = 0;
@@ -336,8 +336,8 @@ RVA(0x0013dd10, 0x35)
 CGameMgr::CGameMgr() {
     m_soundEnabled = 1;
     m_musicEnabled = 1;
-    m_gameWnd = 0;
-    m_owner = 0;
+    m_gameWnd = NULL;
+    m_owner = NULL;
     m_frameGate = 0;
     m_pacingGate = 0;
     InitTimeFields(1);
@@ -365,8 +365,8 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
 RVA(0x0013ddb0, 0x9)
 void CGameMgr::Close() {
-    m_gameWnd = 0;
-    m_owner = 0;
+    m_gameWnd = NULL;
+    m_owner = NULL;
 }
 
 RVA(0x0013ddc0, 0xaa)

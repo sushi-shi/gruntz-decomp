@@ -53,7 +53,7 @@ static inline CString* TypeLookup(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return g_typeColl.Elem(key);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
         return g_typeColl.Elem(key);
     }
     char* msg = g_errOutOfMem;
@@ -85,7 +85,7 @@ void ActReg4RegisterType() {
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
-            if (nodes != 0) {
+            if (nodes != NULL) {
                 nodes->~CString();
             }
             nodes++;

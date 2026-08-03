@@ -228,7 +228,7 @@ public:
     i32 FlashCtrlD();
 
     HWND GetSafe1c() {
-        return this == 0 ? 0 : m_hWnd;
+        return this == NULL ? 0 : m_hWnd;
     }
 
     class CGruntzMgr* m_host;

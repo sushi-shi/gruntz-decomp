@@ -34,7 +34,7 @@ RVA_COMPGEN(0x00137330, 0x7, ??1PureSoundElem@@QAE@XZ)
 
 RVA(0x00137340, 0x33)
 i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     m_source = src;
@@ -48,7 +48,7 @@ i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
 
 RVA(0x00137380, 0x10e)
 i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
-    if (dst1 != 0 && n1 > 0) {
+    if (dst1 != NULL && n1 > 0) {
         u32 want = n1;
         if (m_sourceOffset + n1 > m_windowEnd) {
             want = m_windowEnd - m_sourceOffset;
@@ -65,7 +65,7 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
             m_sourceOffset += *got1;
         }
     }
-    if (dst2 != 0 && n2 > 0) {
+    if (dst2 != NULL && n2 > 0) {
         u32 want = n2;
         if (m_sourceOffset + n2 > m_windowEnd) {
             want = m_windowEnd - m_sourceOffset;
@@ -97,7 +97,7 @@ void StreamVoiceFeeder::OnDrain() {}
 
 RVA(0x001374c0, 0x5d)
 i32 StreamVoice::SetSource(CParseSource* src) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     WaveFormatX wf;
@@ -172,7 +172,7 @@ i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
 
 RVA(0x00137740, 0x3e)
 void SoundStream::Free() {
-    for (StreamVoice* p = elemOf<StreamVoice>(m_voices.m_head); p != 0;
+    for (StreamVoice* p = elemOf<StreamVoice>(m_voices.m_head); p != NULL;
          p = elemOf<StreamVoice>(m_voices.m_head)) {
         DestroyVoice(p);
     }
@@ -200,7 +200,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     if (bytes == 0) {
         goto done;
     }
-    if (fmt == 0) {
+    if (fmt == NULL) {
         goto done;
     }
     if (fmt->wFormatTag != 1) {
@@ -215,7 +215,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     wf.wBitsPerSample = fmt->wBitsPerSample;
     wf.cbSize = fmt->cbSize;
 
-    out = 0;
+    out = NULL;
 
     memset(&desc, 0, sizeof(DSBUFFERDESC));
     desc.dwFlags = dsFlags;
@@ -232,7 +232,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
         goto done;
     }
-    if (out == 0) {
+    if (out == NULL) {
         goto done;
     }
 
@@ -256,7 +256,7 @@ StreamVoice* SoundStream::OpenStream(
     i32 stopWhenIdle,
     i32 retireWhenIdle
 ) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     WaveFormatX wf;
@@ -266,7 +266,7 @@ StreamVoice* SoundStream::OpenStream(
         return 0;
     }
     StreamVoice* voice = CreateStreamBuffer(&wf, bytes, dsFlags, stopWhenIdle, retireWhenIdle);
-    if (voice == 0) {
+    if (voice == NULL) {
         return 0;
     }
     StreamFeeder* feeder = &voice->m_feeder;
@@ -290,7 +290,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 
         m_voiceList.RemoveMatching(voice, 0xffff);
         voice->m_buffer->Release();
-        voice->m_buffer = 0;
+        voice->m_buffer = NULL;
         m_voices.Unlink(voice ? &voice->m_link : 0);
         if (voice) {
             delete voice;
@@ -301,7 +301,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 RVA(0x00137a30, 0x4b)
 StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 bytes, i32 format, i32 dsFlags) {
     StreamVoice* voice = OpenStream(src, bytes, format, dsFlags, 0, 1);
-    if (voice == 0) {
+    if (voice == NULL) {
         return 0;
     }
     if (voice->m_feeder.Resume() != 0) {
@@ -314,7 +314,7 @@ StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 bytes, i32 format, i
 RVA(0x00137a80, 0x3d)
 void SoundStream::Stop() {
     StreamVoice* node = elemOf<StreamVoice>(m_voices.m_head);
-    while (node != 0) {
+    while (node != NULL) {
         node->m_feeder.Pause();
         node = elemOf<StreamVoice>(node->m_link.m_next);
     }
@@ -338,7 +338,7 @@ i32 SoundStream::TickSubManagers(i32 time) {
             }
             if (o->m_retireWhenIdle != 0) {
                 DestroyVoice(o);
-                o = 0;
+                o = NULL;
             }
         }
         if (o) {
@@ -411,7 +411,7 @@ i32 SoundStream::ParseWave(
 RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
 
-    m_buffer = 0;
+    m_buffer = NULL;
     m_armed = 0;
     m_bufferCursor = 0;
     m_drained = 0;
@@ -423,7 +423,7 @@ StreamFeeder::~StreamFeeder() {
     if (m_armed != 0) {
         FeederReset(1);
     }
-    m_buffer = 0;
+    m_buffer = NULL;
 }
 
 // @early-stop
@@ -445,12 +445,12 @@ i32 StreamFeeder::FeederStart(
     } else {
         m_silenceByte = 0x80;
     }
-    if (buf == 0) {
+    if (buf == NULL) {
         m_buffer = owner->CreateBuffer(fmt, len, 0x100e0);
     } else {
         m_buffer = buf;
     }
-    if (m_buffer == 0) {
+    if (m_buffer == NULL) {
         return 0;
     }
     m_armed = 1;
@@ -476,7 +476,7 @@ void StreamFeeder::FeederReset(i32 doStop) {
 
             m_owner->RemoveBuffer(m_buffer);
         }
-        m_buffer = 0;
+        m_buffer = NULL;
         m_armed = 0;
     }
 }
@@ -690,7 +690,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
     }
 
     if (g_ssLogEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
         } else {
             sprintf(szLine, "%s, line %i: %s (%i) - %s\n", file, line, szCode, code, szMsg);
@@ -698,7 +698,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
         OutputDebugStringA(szLine);
     }
     if (g_ssMsgBoxEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);

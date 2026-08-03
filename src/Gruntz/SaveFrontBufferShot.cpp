@@ -10,6 +10,8 @@
 #include <Gruntz/SaveScreenshot.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 RVA(0x00114ec0, 0x27)
 void SaveFrontBufferShot(
     Utils::RegistryHelper* bute,
@@ -33,10 +35,10 @@ void SaveFrontBufferShotImpl(
     i32 saveFlag
 ) {
     CDDrawSurfaceChildA* pair = mgr->m_world->m_drawTarget->m_frontPair;
-    if (pair == 0) {
+    if (pair == NULL) {
         return;
     }
-    if (pair->m_surface == 0) {
+    if (pair->m_surface == NULL) {
         return;
     }
 

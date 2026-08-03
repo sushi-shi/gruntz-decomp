@@ -11,7 +11,7 @@ RVA(0x001933b0, 0x28f)
 CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
     i32 path[28];
     m_lookupPending = 0;
-    if (key == 0 || value == 0) {
+    if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0x16);
@@ -19,14 +19,14 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
     }
 
     i32 nbits = static_cast<i32>((strlen(key) * 8));
-    m_candidateLeaf = 0;
+    m_candidateLeaf = NULL;
     m_descentCursor = m_root;
     m_keyBitLength = nbits;
 
     i32 sbit = nbits + 7;
     i32 dir;
     i32* p = path;
-    if (m_root != 0) {
+    if (m_root != NULL) {
         dir = sbit;
         for (;;) {
             CTrieNode* node = m_descentCursor;
@@ -39,7 +39,7 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
             *p++ = dir;
             CTrieNode* child = dir ? node->m_child[1] : node->m_child[0];
             m_candidateLeaf = child;
-            if (child == 0) {
+            if (child == NULL) {
                 break;
             }
             if (child->m_bit <= m_descentCursor->m_bit) {
@@ -53,18 +53,18 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
     }
 
     i32 critbit;
-    if (m_candidateLeaf == 0) {
+    if (m_candidateLeaf == NULL) {
         critbit = nbits - 1;
     } else {
         critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
     }
     CTrieNode* nn = static_cast<CTrieNode*>(::operator new(0x14));
-    if (nn != 0) {
+    if (nn != NULL) {
         nn->m_bit = critbit;
         nn->m_value = value;
         char* kb = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
         nn->m_key = kb;
-        if (kb != 0) {
+        if (kb != NULL) {
             memcpy(kb, key, strlen(key) + 1);
 
             i32 selfdir = (1 << (critbit & 7))
@@ -75,10 +75,10 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
                 nn->m_child[0] = nn;
             }
 
-            if (m_descentCursor == 0) {
+            if (m_descentCursor == NULL) {
                 m_root = nn;
             } else if (critbit < m_descentCursor->m_bit) {
-                m_descentCursor = 0;
+                m_descentCursor = NULL;
                 m_candidateLeaf = m_root;
                 i32* pp = path;
                 if (m_candidateLeaf->m_bit <= critbit) {
@@ -89,7 +89,7 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
                             d ? m_candidateLeaf->m_child[1] : m_candidateLeaf->m_child[0];
                     } while (m_candidateLeaf->m_bit <= critbit);
                 }
-                if (m_descentCursor == 0) {
+                if (m_descentCursor == NULL) {
                     m_root = nn;
                 } else {
 

@@ -151,7 +151,7 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     CWnd* item = GetDlgItem(0x511);
     HWND edit;
     if (!item) {
-        edit = 0;
+        edit = NULL;
     } else {
         edit = item->m_hWnd;
     }
@@ -184,7 +184,7 @@ i32 CMultiStartDlg::FlashCtrlD() {
     BOOL(WINAPI * stc)(HWND, LPPOINT) = ::ScreenToClient;
     for (i32 i = 0; i < 4; i++) {
         CWnd* it = GetCtrlD(i);
-        if (it == 0) {
+        if (it == NULL) {
             continue;
         }
 
@@ -549,7 +549,7 @@ void CMultiStartDlg::OnCustomWorld() {
         CWnd* item = GetDlgItem(0x4ff);
         CWnd* child = CWnd::FromHandle(::GetWindow(item->m_hWnd, GW_CHILD));
 
-        if (child == 0) {
+        if (child == NULL) {
             return;
         }
         dlg.m_customName.MakeUpper();
@@ -566,7 +566,7 @@ RVA(0x000c3e30, 0xfe)
 void CMultiStartDlg::CommitWorldHost() {
     if (g_multiState->m_isHost != 0) {
         CWnd* item = GetDlgItem(0x4ff);
-        if (item != 0) {
+        if (item != NULL) {
             i32 r = ::SendMessageA(item->m_hWnd, 0x147, 0, 0);
             if (r != -1) {
                 CString name;
@@ -586,7 +586,7 @@ void CMultiStartDlg::CommitWorldHost() {
 RVA(0x000c3f70, 0xfb)
 void CMultiStartDlg::OnChatSend() {
     CWnd* input = GetDlgItem(0x42d);
-    if (input == 0) {
+    if (input == NULL) {
         return;
     }
     CString a, b;
@@ -704,7 +704,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     } while (off < 0x8e0);
     if (g_multiState->m_isHost) {
         CWnd* ok = this->GetDlgItem(1);
-        if (ok == 0) {
+        if (ok == NULL) {
             return 0;
         }
         ok->EnableWindow(f18 & f1c);
@@ -724,7 +724,7 @@ void CMultiStartDlg::Watchdog() {
     }
     g_watchBusy = 1;
     void* h = g_multiState->m_netGate->m_playerSel;
-    if (h == 0) {
+    if (h == NULL) {
         return;
     }
     g_multiState->m_netGate->EnumGroupsRange(h, 0);
@@ -845,7 +845,7 @@ void CMultiStartDlg::Watchdog() {
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
     GruntzPlayer* slot = m_host->FindOptionsSlot(g_multiState->m_hostIndex);
-    if (slot == 0) {
+    if (slot == NULL) {
         return -1;
     }
     return slot->m_playerIndex;
@@ -980,7 +980,7 @@ i32 CMultiStartDlg::DestroyWindow() {
     if (p) {
         p->CKeyedList::~CKeyedList();
         ::operator delete(p);
-        m_slotList = 0;
+        m_slotList = NULL;
     }
     return CWnd::DestroyWindow();
 }

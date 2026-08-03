@@ -11,6 +11,8 @@
 #include <Io/FileMem.h>
 #include <strstrea.h>
 
+#include <stddef.h>
+
 DATA(0x001f04f8)
 const double g_motionNegHalf = -0.5;
 
@@ -95,7 +97,7 @@ i32 CUserLogic::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (arc == 0) {
+    if (arc == NULL) {
         return 0;
     }
     switch (mode) {
@@ -148,7 +150,7 @@ void CMovingLogic::AdvanceMotion() {
     m_previousScreenPosition.m_y = static_cast<i32>(Motion()->m_position.y);
     Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_time);
 
-    if ((m_object->m_flags & 0x10) && m_object->m_carrier != 0) {
+    if ((m_object->m_flags & 0x10) && m_object->m_carrier != NULL) {
         m_object->m_screenX += m_object->m_carrier->m_deltaX;
         Motion()->m_position.x = static_cast<double>(m_object->m_screenX);
         m_object->m_screenY += m_object->m_carrier->m_deltaY;
@@ -218,7 +220,7 @@ i32 CMovingLogic::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (arc == 0) {
+    if (arc == NULL) {
         return 0;
     }
     switch (mode) {

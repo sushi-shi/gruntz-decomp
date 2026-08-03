@@ -40,17 +40,17 @@ i32 CSBI_MenuItem::SetupImage(
     i32 unused
 ) {
     static_cast<void>(unused);
-    if (key == 0) {
+    if (key == NULL) {
         return 0;
     }
-    if (host == 0 || owner == 0) {
+    if (host == NULL || owner == NULL) {
         return 0;
     }
     m_owner = owner;
     m_host = host;
     m_tab = tab;
     m_kind = 2;
-    m_frame = 0;
+    m_frame = NULL;
 
     m_rect14 = rc;
     m_redrawFrames = 0;
@@ -62,7 +62,7 @@ i32 CSBI_MenuItem::SetupImage(
 
 RVA(0x000e81a0, 0x8)
 void CSBI_MenuItem::Reset() {
-    m_frame = 0;
+    m_frame = NULL;
 }
 
 RVA(0x000e81c0, 0x8)
@@ -73,7 +73,7 @@ i32 CSBI_MenuItem::Refresh(i32) {
 // @early-stop
 RVA(0x000e81e0, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
-    if (key == 0) {
+    if (key == NULL) {
         return 0;
     }
 
@@ -82,7 +82,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     host->m_imageRegistry->m_10map.Lookup(key, rec_v);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
     m_record = rec;
-    if (rec == 0) {
+    if (rec == NULL) {
         return 0;
     }
 
@@ -92,9 +92,9 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     } else if (a >= r->m_minIndex && a <= r->m_maxIndex) {
         m_frame = static_cast<CImage*>(r->m_items.GetAt(a));
     } else {
-        m_frame = 0;
+        m_frame = NULL;
     }
-    return m_frame != 0;
+    return m_frame != NULL;
 }
 
 RVA(0x000e82a0, 0x45)
@@ -116,7 +116,7 @@ i32 CSBI_MenuItem::Render() {
 
 RVA(0x000e8310, 0x112)
 i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
-    if (m_state == state || m_record == 0) {
+    if (m_state == state || m_record == NULL) {
         return 0;
     }
     if (state == MENUITEM_HIGHLIGHT && m_state == MENUITEM_SELECTED) {
@@ -159,7 +159,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
     if (state >= r->m_minIndex && state <= r->m_maxIndex) {
         frame = static_cast<CImage*>(r->m_items.GetAt(state));
     } else {
-        frame = 0;
+        frame = NULL;
     }
     m_frame = frame;
     m_state = state;
@@ -169,7 +169,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
 
 RVA(0x000e8480, 0x4a)
 i32 CSBI_MenuItem::ProbeState(SbiMenuItemState state) {
-    if (state == MENUITEM_NORMAL || m_record == 0) {
+    if (state == MENUITEM_NORMAL || m_record == NULL) {
         return 0;
     }
     if (state == MENUITEM_HIGHLIGHT && m_state == state) {
@@ -191,11 +191,11 @@ i32 CSBI_MenuItem::Blit() {
 
 RVA(0x000e8520, 0x152)
 i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
 
@@ -210,7 +210,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
                 mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
                 m_record = static_cast<CDDrawWorker*>(found_ob);
             } else {
-                m_record = 0;
+                m_record = NULL;
             }
             break;
         case SERIAL_SAVE:
@@ -232,11 +232,11 @@ void CStatusBarItem::Reset() {}
 
 RVA(0x0010bfc0, 0xe8)
 i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     switch (kind) {

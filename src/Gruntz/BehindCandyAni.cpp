@@ -12,6 +12,8 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CBehindCandyAni, 0x001e838c);
 template<> DATA(0x00245f98)
 CActReg CActRegPool<CBehindCandyAni>::s_table(2000, 2010);
@@ -38,7 +40,7 @@ RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_wwdObject->m_animCursor.m_animation == 0) {
+    if (m_wwdObject->m_animCursor.m_animation == NULL) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
@@ -46,10 +48,10 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
         m_object->m_sortKey = 0;
         m_object->m_flags |= 0x20000;
     }
-    if (m_object->m_layer != 0) {
+    if (m_object->m_layer != NULL) {
         if (m_object->m_layer->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != 0) {
+            if (m_object->m_animWorker != NULL) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
                 m_wwdObject->m_flags &= ~0x1000002;
@@ -77,7 +79,7 @@ void CBehindCandyAni::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

@@ -6,6 +6,8 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 
+#include <stddef.h>
+
 struct WwdTileImageRecord {
     char m_header[8];
     i32 m_fields[1];
@@ -118,7 +120,7 @@ struct CImageSet3 : public CTileImageSet {
 
     CImageSet3() {
         m_width = 0;
-        m_pixels = 0;
+        m_pixels = NULL;
     }
     void* operator new(size_t n) {
         return ::operator new(n);

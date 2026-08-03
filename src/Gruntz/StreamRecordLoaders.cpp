@@ -17,11 +17,11 @@
 // @early-stop
 RVA(0x0009c650, 0x372)
 i32 CTimer::Deserialize(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
-    if (reg == 0) {
+    if (reg == NULL) {
         return 0;
     }
 
@@ -35,11 +35,11 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
-        out = 0;
+        out = NULL;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         m_sprite = static_cast<CDDrawWorker*>(out);
     } else {
-        m_sprite = 0;
+        m_sprite = NULL;
     }
 
     s->Read(&m_active, 4);
@@ -49,18 +49,18 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_frameMinTens = r;
     } else {
-        m_frameMinTens = 0;
+        m_frameMinTens = NULL;
     }
 
     g_serialCounter++;
@@ -68,18 +68,18 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_frameMinOnes = r;
     } else {
-        m_frameMinOnes = 0;
+        m_frameMinOnes = NULL;
     }
 
     g_serialCounter++;
@@ -87,18 +87,18 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_frameSecTens = r;
     } else {
-        m_frameSecTens = 0;
+        m_frameSecTens = NULL;
     }
 
     g_serialCounter++;
@@ -106,18 +106,18 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_frameSecOnes = r;
     } else {
-        m_frameSecOnes = 0;
+        m_frameSecOnes = NULL;
     }
 
     g_serialCounter++;
@@ -125,18 +125,18 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_frameColon = r;
     } else {
-        m_frameColon = 0;
+        m_frameColon = NULL;
     }
 
     s->Read(&m_running, 4);

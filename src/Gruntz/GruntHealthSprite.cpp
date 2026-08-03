@@ -14,6 +14,8 @@
 #include <Io/FileMem.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CGruntHealthSprite, 0x001e7ba4);
 
 RVA(0x00011ef0, 0x4b)
@@ -54,7 +56,7 @@ void CGruntHealthSprite::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -78,7 +80,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
         if (slot >= map->m_minIndex && slot <= map->m_maxIndex) {
             glyph = static_cast<CImage*>(map->m_items.GetAt(slot));
         } else {
-            glyph = 0;
+            glyph = NULL;
         }
         obj->m_layer = glyph;
         obj->m_frameIndex = slot;
@@ -96,7 +98,7 @@ RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
 
     CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
-    if (e == 0) {
+    if (e == NULL) {
         return 0;
     }
     i32 result = GetDisplayedValue(e);
@@ -104,12 +106,12 @@ i32 CGruntHealthSprite::HealthUpdate() {
         i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
         CWwdGameObjectA* obj = m_object;
         CDDrawWorker* holder = obj->m_frameSet;
-        if (holder != 0) {
+        if (holder != NULL) {
             CImage* glyph;
             if (slot >= holder->m_minIndex && slot <= holder->m_maxIndex) {
                 glyph = static_cast<CImage*>(holder->m_items.GetAt(slot));
             } else {
-                glyph = 0;
+                glyph = NULL;
             }
             obj->m_layer = glyph;
             obj->m_frameIndex = slot;

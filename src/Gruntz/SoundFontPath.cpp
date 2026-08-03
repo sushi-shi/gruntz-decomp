@@ -11,11 +11,11 @@
 
 RVA(0x000f8e20, 0x56)
 void CloseSoundFontDevice() {
-    if (g_sfReady != 0 && g_sfDevice != 0 && g_sfDeviceCount != 0) {
+    if (g_sfReady != 0 && g_sfDevice != NULL && g_sfDeviceCount != 0) {
         SfDeviceInitKeys();
         g_sfDevice->SF_Close(g_sfDeviceId);
         FreeLibrary(g_sfDll);
-        g_sfDll = 0;
+        g_sfDll = NULL;
         g_sfReady = 0;
     }
 }

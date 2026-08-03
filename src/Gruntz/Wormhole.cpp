@@ -71,7 +71,7 @@ static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     CString* list = ActNameSlots();
     while (n-- != 0) {
-        if (list != 0) {
+        if (list != NULL) {
             list->CString::~CString();
         }
         list++;
@@ -182,23 +182,23 @@ i32 CWormhole::SpawnPartners() {
     }
 
     CObList* list = &g_gameReg->m_world->m_childGroup->m_list;
-    if (list == 0) {
+    if (list == NULL) {
         return 0;
     }
     POSITION pos = list->GetHeadPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         return 0;
     }
     do {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
-        if (obj != 0) {
+        if (obj != NULL) {
             AnimWorkerObj* aux = obj->m_animWorker;
             if (aux->m_notify == &CreateTeleporter && obj->m_screenX == tx && obj->m_screenY == ty
-                && aux->m_logic != 0) {
+                && aux->m_logic != NULL) {
                 static_cast<CTeleporter*>(aux->m_logic)->ReapplyConfig();
             }
         }
-    } while (pos != 0);
+    } while (pos != NULL);
     return 0;
 }
 
@@ -310,7 +310,7 @@ i32 CGruntPuddle::Remove() {
             m_wwdObject->m_flags |= 0x10000;
             CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
             POSITION pos = list.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 POSITION current = pos;
                 if (list.GetNext(pos) == this) {
                     list.RemoveAt(current);
@@ -363,7 +363,7 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
             break;
         case SERIAL_POSTLOAD: {
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_placeIndex, 0);
-            if (sel == 0) {
+            if (sel == NULL) {
                 sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
             CGameObject* obj = m_object;
@@ -568,7 +568,7 @@ i32 CTeleporter::Update() {
     i32 outA;
     i32 outB;
     CGrunt* found = mgr->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
-    if (found == 0) {
+    if (found == NULL) {
         return 0;
     }
 
@@ -586,7 +586,7 @@ i32 CTeleporter::Update() {
             "Teleporter",
             0x40003
         );
-        if (spawned != 0) {
+        if (spawned != NULL) {
             spawned->m_smarts = 1;
             spawned->m_health = m_object->m_health;
             spawned->m_speedX = m_object->m_score;
@@ -616,7 +616,7 @@ i32 CTeleporter::Update() {
     mgr = g_gameReg;
     CGrunt* current;
     if ((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetCount() != 1) {
-        current = 0;
+        current = NULL;
     } else {
         i32* pair =
             static_cast<i32*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetHead());

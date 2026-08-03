@@ -28,7 +28,7 @@ struct CFaderArray : public CObject {
 SIZE_UNKNOWN();
 
 inline CFaderArray::CFaderArray() {
-    m_pData = 0;
+    m_pData = NULL;
     m_nGrowBy = 0;
     m_nMaxSize = 0;
     m_nSize = 0;
@@ -61,10 +61,10 @@ inline void CFaderArray::SetSize(i32 size, i32 growBy) {
     if (size == 0) {
         if (m_pData) {
             ::operator delete(m_pData);
-            m_pData = 0;
+            m_pData = NULL;
         }
         m_nSize = m_nMaxSize = 0;
-    } else if (m_pData == 0) {
+    } else if (m_pData == NULL) {
         m_pData = static_cast<CFader**>(::operator new(size * sizeof(CFader*)));
         memset(m_pData, 0, size * sizeof(CFader*));
         m_nSize = m_nMaxSize = size;

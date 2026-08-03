@@ -198,7 +198,7 @@ void SetMenuTextRect() {
 
 RVA(0x000a11d0, 0x180d)
 i32 BuildMainMenuTree(CChatBox* menu, i32) {
-    if (menu == 0) {
+    if (menu == NULL) {
         return 0;
     }
 

@@ -81,7 +81,7 @@ void CWwdGameObjectA::ApplyName(const char* name) {
             return;
         }
     }
-    m_layer = 0;
+    m_layer = NULL;
 }
 
 RVA(0x001505b0, 0x5e)
@@ -104,7 +104,7 @@ RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
     LeafCue* cue = 0;
     MapLookup(OwnerMgr()->m_soundRegistry->m_cues, name, cue);
-    if (cue == 0) {
+    if (cue == NULL) {
         return 0;
     }
     m_soundCue = cue;
@@ -196,7 +196,7 @@ void CWwdGameObjectA::BltDirtyRegions(
 // @early-stop
 RVA(0x001509c0, 0xab)
 i32 CWwdGameObjectA::Test() {
-    if (m_layer == 0) {
+    if (m_layer == NULL) {
         return 0;
     }
     i32 sx = m_screenX;
@@ -241,7 +241,7 @@ i32 CWwdGameObjectA::Test() {
 
 RVA(0x00150a70, 0x89)
 i32 CWwdGameObjectA::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     if (m_animCursor.Find(ar, mode, typeId, self) == 0) {
@@ -265,20 +265,20 @@ i32 CWwdGameObjectA::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId,
 RVA(0x00150b00, 0x12b)
 i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
     CFileMemBase* ar = src;
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     ar->Write(&m_reserved18c, 4);
     ar->Write(&m_frameIndex, 4);
     i32 flag = 0;
-    if (m_layer != 0) {
+    if (m_layer != NULL) {
         flag = 1;
     }
     ar->Write(&flag, 4);
 
     char tmp[0x100];
     memset(tmp, 0, 0x80);
-    if (m_frameSet != 0) {
+    if (m_frameSet != NULL) {
         strcpy(tmp, m_frameSet->m_name);
     }
     ar->Write(tmp, 0x80);
@@ -294,14 +294,14 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
 RVA(0x00150c30, 0x130)
 i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     CFileMemBase* ar = src;
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     ar->Read(&m_reserved18c, 4);
     ar->Read(&m_frameIndex, 4);
     i32 flag;
     ar->Read(&flag, 4);
-    m_frameSet = 0;
+    m_frameSet = NULL;
 
     char name[0x100];
     ar->Read(name, 0x80);
@@ -313,19 +313,19 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
         mgr->m_imageRegistry->m_10map.Lookup(name, foundOb);
         found = static_cast<CDDrawWorker*>(foundOb);
         m_frameSet = found;
-        if (found != 0 && flag == 1) {
+        if (found != NULL && flag == 1) {
             i32 idx = m_frameIndex;
             CImage* frame;
             if (idx >= found->m_minIndex && idx <= found->m_maxIndex) {
                 frame = static_cast<CImage*>(found->m_items.GetAt(idx));
             } else {
-                frame = 0;
+                frame = NULL;
             }
             m_layer = frame;
         }
     }
 
-    m_soundCue = 0;
+    m_soundCue = NULL;
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
 
@@ -366,12 +366,12 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     if (w->Init(tmpl->m_notify, tmpl->m_flags) == 0) {
         return 0;
     }
-    m_hitWorker = 0;
-    m_attackWorker = 0;
-    m_collideWorker = 0;
-    m_hitSource = 0;
-    m_attackTarget = 0;
-    m_hitOther = 0;
+    m_hitWorker = NULL;
+    m_attackWorker = NULL;
+    m_collideWorker = NULL;
+    m_hitSource = NULL;
+    m_attackTarget = NULL;
+    m_hitOther = NULL;
     m_objectType = 0;
     m_hitTypeFlags = 0;
     m_attackTypeMask = 0;
@@ -395,15 +395,15 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
 
 RVA(0x00150eb0, 0x98)
 i32 CGameObject::EnsureHitWorker(AnimWorkerObj* src) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
-    if (m_hitWorker != 0) {
+    if (m_hitWorker != NULL) {
         m_hitWorker->Unload();
     } else {
         m_hitWorker = new AnimWorkerObj(m_ownerCtx, m_id);
     }
-    if (m_hitWorker == 0) {
+    if (m_hitWorker == NULL) {
         return 0;
     }
 
@@ -420,15 +420,15 @@ void CGameObject::AddLogicHit(char* key) {
 
 RVA(0x00150f90, 0x98)
 i32 CGameObject::EnsureAttackWorker(AnimWorkerObj* src) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
-    if (m_attackWorker != 0) {
+    if (m_attackWorker != NULL) {
         m_attackWorker->Unload();
     } else {
         m_attackWorker = new AnimWorkerObj(m_ownerCtx, m_id);
     }
-    if (m_attackWorker == 0) {
+    if (m_attackWorker == NULL) {
         return 0;
     }
 
@@ -445,15 +445,15 @@ void CGameObject::AddLogicAttack(char* key) {
 
 RVA(0x00151070, 0x98)
 i32 CGameObject::EnsureBumpWorker(AnimWorkerObj* src) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
-    if (m_collideWorker != 0) {
+    if (m_collideWorker != NULL) {
         m_collideWorker->Unload();
     } else {
         m_collideWorker = new AnimWorkerObj(m_ownerCtx, m_id);
     }
-    if (m_collideWorker == 0) {
+    if (m_collideWorker == NULL) {
         return 0;
     }
 
@@ -470,18 +470,18 @@ void CGameObject::AddLogicBump(char* key) {
 
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
 
     switch (mode) {
         case SERIAL_PRESAVE: {
             m_carrierId = 0;
-            if (m_carrier != 0) {
+            if (m_carrier != NULL) {
                 m_carrierId = m_carrier->m_objectId;
             }
             AnimWorkerObj* w3 = m_animWorker;
-            if (w3 == 0) {
+            if (w3 == NULL) {
                 goto fail;
             }
             i32 saved3 = w3->m_actKey;
@@ -499,7 +499,7 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 return 0;
             }
             AnimWorkerObj* w4 = m_animWorker;
-            if (w4 == 0) {
+            if (w4 == NULL) {
                 goto fail;
             }
             i32 saved4 = w4->m_actKey;
@@ -517,7 +517,7 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 return 0;
             }
             AnimWorkerObj* w7 = m_animWorker;
-            if (w7 == 0) {
+            if (w7 == NULL) {
                 goto fail;
             }
             i32 saved7 = w7->m_actKey;
@@ -535,16 +535,16 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
             if (node != 0) {
                 void* found = 0;
                 if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, node, found) == 0) {
-                    m_carrier = 0;
+                    m_carrier = NULL;
                 } else {
 
                     m_carrier = static_cast<CWwdGameObject*>(found);
                 }
             } else {
-                m_carrier = 0;
+                m_carrier = NULL;
             }
             AnimWorkerObj* w8 = m_animWorker;
-            if (w8 == 0) {
+            if (w8 == NULL) {
                 goto fail;
             }
             i32 saved8 = w8->m_actKey;
@@ -566,7 +566,7 @@ fail:
 RVA(0x00151320, 0x454)
 i32 CGameObject::Serialize(CFileMemBase* arParam) {
     CFileMemBase* ar = arParam;
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
 
@@ -623,19 +623,19 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_carrierId, 4);
 
     memset(tmp, 0, sizeof(tmp));
-    if (m_hitWorker != 0) {
+    if (m_hitWorker != NULL) {
         strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_hitWorker));
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
-    if (m_attackWorker != 0) {
+    if (m_attackWorker != NULL) {
         strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_attackWorker));
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
-    if (m_collideWorker != 0) {
+    if (m_collideWorker != NULL) {
         strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_collideWorker));
     }
     ar->Write(tmp, 0x80);
@@ -645,7 +645,7 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 RVA(0x00151780, 0x40d)
 i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     CFileMemBase* ar = arParam;
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
 
@@ -738,24 +738,24 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (m_carrierId != 0) {
         void* found = 0;
         if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, m_carrierId, found) == 0) {
-            m_carrier = 0;
+            m_carrier = NULL;
             return 1;
         }
         m_carrier = static_cast<CWwdGameObject*>(found);
         return 1;
     }
-    m_carrier = 0;
+    m_carrier = NULL;
     return 1;
 }
 
 RVA(0x00151c00, 0x118)
 i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     CFileMemBase* ar = dst;
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     AnimWorkerObj* w = m_animWorker;
-    if (w == 0) {
+    if (w == NULL) {
         return 0;
     }
     if (w->m_actKey == 0) {
@@ -773,7 +773,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     // Seeded with 0, NOT LOGIC_NONE(-1): retail writes 0 into the record when
     // the worker has no logic, and 0 is not a member of this domain.
     LogicTypeId typeTag = static_cast<LogicTypeId>(0);
-    if (logic != 0) {
+    if (logic != NULL) {
         typeTag = logic->GetTypeTag();
     }
 
@@ -811,7 +811,7 @@ i32 CGameObject::NotifyHooked(i32 arg) {
 
 RVA(0x00151d60, 0xb)
 i32 AnimWorkerObj::IsLoaded() {
-    return m_notify != 0;
+    return m_notify != NULL;
 }
 
 RVA(0x00151d70, 0x6)
@@ -821,35 +821,35 @@ LoadableClassId AnimWorkerObj::GetClassId() {
 
 RVA(0x00151da0, 0x80)
 AnimWorkerObj::~AnimWorkerObj() {
-    m_notify = 0;
+    m_notify = NULL;
     if (m_payload) {
         ::operator delete(m_payload);
-        m_payload = 0;
+        m_payload = NULL;
         m_payloadSize = 0;
     }
     if (m_logic) {
         delete m_logic;
-        m_logic = 0;
+        m_logic = NULL;
     }
-    m_target = 0;
+    m_target = NULL;
 }
 
 RVA(0x00151e20, 0x46)
 i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
-    if (callback == 0) {
+    if (callback == NULL) {
         return 0;
     }
     m_notify = callback;
     m_flags = frame;
-    m_payload = 0;
-    m_logic = 0;
+    m_payload = NULL;
+    m_logic = NULL;
     m_timeDelay = 0;
     m_frameDelay = 0;
     m_minX = 0;
     m_minY = 0;
     m_maxX = 0;
     m_maxY = 0;
-    m_positionedSound = 0;
+    m_positionedSound = NULL;
     m_reserved16c = 0;
     m_userFlags = 0;
     return 1;
@@ -857,24 +857,24 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
 
 RVA(0x00151e70, 0x3b)
 void AnimWorkerObj::Unload() {
-    m_notify = 0;
+    m_notify = NULL;
     if (m_payload) {
         ::operator delete(m_payload);
-        m_payload = 0;
+        m_payload = NULL;
         m_payloadSize = 0;
     }
     if (m_logic) {
         delete m_logic;
-        m_logic = 0;
+        m_logic = NULL;
     }
-    m_target = 0;
+    m_target = NULL;
 }
 
 RVA(0x00151eb0, 0x43)
 void CDDrawWorker::Unload() {
     for (i32 i = 0; i < m_items.GetSize(); i++) {
         CImage* el = static_cast<CImage*>(m_items.GetAt(i));
-        if (el != 0) {
+        if (el != NULL) {
             delete el;
         }
     }
@@ -886,7 +886,7 @@ void CDDrawWorker::Unload() {
 
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
-    if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != 0) {
+    if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
         return 0;
     }
 
@@ -909,14 +909,14 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
 
 RVA(0x00151fb0, 0xa4)
 CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner());
 
     if (nf->Create(path, keyed) == 0) {
-        if (nf != 0) {
+        if (nf != NULL) {
             delete nf;
         }
         return 0;
@@ -935,14 +935,14 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
 RVA(0x00152060, 0xab)
 CImage*
 CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner());
 
     if (nf->LoadDispatch(desc, mode, size, 1) == 0) {
-        if (nf != 0) {
+        if (nf != NULL) {
             delete nf;
         }
         return 0;
@@ -960,14 +960,14 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
 
 RVA(0x00152110, 0xa9)
 CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner());
 
     if (nf->CreateBlankSurface(width, height, keyed) == 0) {
-        if (nf != 0) {
+        if (nf != NULL) {
             delete nf;
         }
         return 0;
@@ -998,9 +998,9 @@ RVA(0x001521f0, 0xbc)
 i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
     i32 count = 0;
     void* sym = tab->FirstSym();
-    while (sym != 0) {
+    while (sym != NULL) {
         void* val = tab->NextSym2(sym);
-        while (val != 0) {
+        while (val != NULL) {
             char* p = (static_cast<CParseSource*>(val))->m_name;
             while (*p != 0) {
                 if (*p >= '0' && *p <= '9') {
@@ -1009,17 +1009,17 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
                 p++;
             }
             i32 fi = atoi(p);
-            if (InsertFrame(val, fi, 1) != 0) {
+            if (InsertFrame(val, fi, 1) != NULL) {
                 count++;
             }
             val = tab->NextSym3(val);
             if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
-                val = 0;
+                val = NULL;
             }
         }
         sym = tab->NextSym(sym);
         if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
-            sym = 0;
+            sym = NULL;
         }
     }
     return count;
@@ -1036,16 +1036,16 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
         if (i >= m_minIndex && i <= m_maxIndex) {
             el = static_cast<CImage*>(m_items.GetAt(i));
         } else {
-            el = 0;
+            el = NULL;
         }
-        if (el != 0) {
+        if (el != NULL) {
             liveFrames++;
         }
     }
     void* sym = tab->FirstSym();
-    while (sym != 0) {
+    while (sym != NULL) {
         void* val = tab->NextSym2(sym);
-        while (val != 0) {
+        while (val != NULL) {
             i32 tag = (static_cast<CParseSource*>(val))->GetEntryTag();
             if (tag == 'PCX' || tag == 'BMP' || tag == 'RID' || tag == 'PID') {
                 char* p = (static_cast<CParseSource*>(val))->m_name;
@@ -1074,9 +1074,9 @@ i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
     if (n >= m_minIndex && n <= m_maxIndex) {
         el = static_cast<CImage*>(m_items.GetAt(n));
     } else {
-        el = 0;
+        el = NULL;
     }
-    if (el == 0) {
+    if (el == NULL) {
         return 0;
     }
     return el->Reload(rec, flag) != 0;
@@ -1152,11 +1152,11 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
 RVA(0x00152570, 0x24)
 ShadeMode CDDrawWorker::GetFirstFrameState() {
     CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
-    if (frame == 0) {
+    if (frame == NULL) {
         return SHADE_COPY;
     }
     CDDrawShadeBlit* fmt = frame->m_owned;
-    if (fmt == 0) {
+    if (fmt == NULL) {
         return SHADE_COPY;
     }
     return fmt->m_drawType;

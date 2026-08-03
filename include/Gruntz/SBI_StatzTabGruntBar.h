@@ -11,6 +11,8 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
@@ -24,22 +26,22 @@ public:
         m_timerAnchorHi = 0;
         m_timerWindowHi = 0;
         m_kind = 6;
-        m_statusGlyphLatched = 0;
-        m_abilityGlyphLatched = 0;
-        m_overrideGlyphLatched = 0;
-        m_selectGlyph = 0;
-        m_glyphMap = 0;
-        m_statusGlyph = 0;
-        m_abilityGlyph = 0;
-        m_overrideGlyph = 0;
-        m_selectKey = 0;
+        m_statusGlyphLatched = NULL;
+        m_abilityGlyphLatched = NULL;
+        m_overrideGlyphLatched = NULL;
+        m_selectGlyph = NULL;
+        m_glyphMap = NULL;
+        m_statusGlyph = NULL;
+        m_abilityGlyph = NULL;
+        m_overrideGlyph = NULL;
+        m_selectKey = NULL;
         m_overrideValue = -1;
         m_abilityValue = -1;
         m_statusValue = -1;
         m_selectValue = 0;
-        m_timerGlyphMap = 0;
+        m_timerGlyphMap = NULL;
         m_timerValue = -1;
-        m_timerGlyph = 0;
+        m_timerGlyph = NULL;
     }
     virtual ~CSBI_StatzTabGruntBar() OVERRIDE;
 

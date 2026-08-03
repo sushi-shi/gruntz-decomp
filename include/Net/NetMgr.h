@@ -427,7 +427,7 @@ public:
 
     CNetPlayerListNode() {
         memset(&m_desc, 0, sizeof(m_desc));
-        m_listPosition = 0;
+        m_listPosition = NULL;
     }
     virtual ~CNetPlayerListNode() OVERRIDE;
     i32 Init(CNetSessionDesc* desc);
@@ -451,9 +451,9 @@ public:
 
     CNetSessionNode() {
         m_id = 0;
-        m_listPosition = 0;
-        m_ownedBufferA = 0;
-        m_ownedBufferB = 0;
+        m_listPosition = NULL;
+        m_ownedBufferA = NULL;
+        m_ownedBufferB = NULL;
     }
     virtual ~CNetSessionNode() OVERRIDE;
 
@@ -684,8 +684,8 @@ public:
     i32 m_reserved88;
 
     CNetMgr() {
-        m_releaseIface = 0;
-        m_directPlay = 0;
+        m_releaseIface = NULL;
+        m_directPlay = NULL;
     }
 
     i32 DetectConnectionConfig();

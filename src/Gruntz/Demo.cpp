@@ -86,7 +86,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) {
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
     CParseSource* node = m_levelBank->ResolveQualified(key, REZ_TAG_WWD);
-    if (node == 0) {
+    if (node == NULL) {
         return 0;
     }
     if (m_world->m_level->LoadFromSource(node) == 0) {

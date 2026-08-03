@@ -15,11 +15,11 @@ struct CImagePaletteNode;
 class CImagePool {
 public:
     CImagePool() : m_surfaces(0xa), m_palettes(0xa) {
-        m_resourceModuleHandle = 0;
-        m_sourceHwnd = 0;
+        m_resourceModuleHandle = NULL;
+        m_sourceHwnd = NULL;
         m_reserved08 = 0;
         m_reserved48 = 0;
-        m_selectedPalette = 0;
+        m_selectedPalette = NULL;
     }
     ~CImagePool() {
         Clear();

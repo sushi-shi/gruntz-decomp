@@ -3,14 +3,16 @@
 #include <ComOutRef.h>
 #include <DinMgr2/DirectInputMgr2.h>
 
+#include <stddef.h>
+
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
 RVA(0x00134cb0, 0x94)
 i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) {
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
-    if (hwnd == 0) {
+    if (hwnd == NULL) {
         return 0;
     }
     m_hwnd = hwnd;
@@ -19,7 +21,7 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) 
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
     }
-    if (m_device == 0) {
+    if (m_device == NULL) {
         return 0;
     }
     ComOutRef<IDirectInputDevice2A> devOut;
@@ -29,27 +31,27 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) 
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x3e, hr);
         return 0;
     }
-    return m_device2 != 0;
+    return m_device2 != NULL;
 }
 
 RVA(0x00134d50, 0x3b)
 void CInputDevRoot::ReleaseDevices() {
-    if (m_device2 != 0) {
+    if (m_device2 != NULL) {
         Unacquire();
         m_device2->Release();
     }
-    if (m_device != 0) {
+    if (m_device != NULL) {
         m_device->Release();
     }
-    m_device = 0;
-    m_device2 = 0;
-    m_hwnd = 0;
-    m_stateBuffer = 0;
+    m_device = NULL;
+    m_device2 = NULL;
+    m_hwnd = NULL;
+    m_stateBuffer = NULL;
 }
 
 RVA(0x00134d90, 0x60)
 DeviceState* CInputDevRoot::ReadState() {
-    if (m_stateBuffer == 0) {
+    if (m_stateBuffer == NULL) {
         return 0;
     }
     i32 hr = m_device2->GetDeviceState(m_stateBufferSize, m_stateBuffer);
@@ -100,7 +102,7 @@ DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
 
 RVA(0x00134eb0, 0x3b)
 i32 CInputDevRoot::SetDataFormat(const void* fmt) {
-    if (fmt == 0) {
+    if (fmt == NULL) {
         return 0;
     }
     i32 hr = m_device2->SetDataFormat(static_cast<LPCDIDATAFORMAT>(fmt));
@@ -123,7 +125,7 @@ i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
 
 RVA(0x00134f30, 0x40)
 i32 CInputDevRoot::SetProperty(REFGUID rguid, void* prop) {
-    if (prop == 0) {
+    if (prop == NULL) {
         return 0;
     }
     i32 hr = m_device2->SetProperty(rguid, static_cast<LPCDIPROPHEADER>(prop));
@@ -163,7 +165,7 @@ i32 CInputDevRoot::Unacquire() {
 
 RVA(0x00135000, 0x3b)
 i32 CInputDevRoot::Escape(void* data) {
-    if (data == 0) {
+    if (data == NULL) {
         return 0;
     }
     i32 hr = m_device2->Escape(static_cast<LPDIEFFESCAPE>(data));

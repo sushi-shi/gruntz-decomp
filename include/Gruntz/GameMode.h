@@ -36,7 +36,7 @@ class CWwdGameObjectA;
 class CMenuState : public CState {
 public:
     CMenuState() {
-        m_menuTree = 0;
+        m_menuTree = NULL;
     }
     virtual i32 RestoreDisplay() OVERRIDE;
 
@@ -89,7 +89,7 @@ public:
         ::SetRect(&m_scrollRect, 0, 0, 0x280, 0x1e0);
         ::SetRect(&m_drawRect, 0, 0, 0x280, 0x1e0);
         m_reserved20c = 1;
-        m_videoHandle = 0;
+        m_videoHandle = NULL;
         m_videoPlaying = 0;
         m_musicStarted = 0;
     }
@@ -164,7 +164,7 @@ public:
         m_initOnce = 0;
         m_secretBannerOnce = 0;
         for (i32 t = 0; t < 4; t++) {
-            m_trailSprites[t] = 0;
+            m_trailSprites[t] = NULL;
         }
         for (i32 i = 0; i < 8; i++) {
             m_readyFlags[i] = 0;

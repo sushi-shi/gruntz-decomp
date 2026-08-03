@@ -126,21 +126,21 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
 
         CWnd* combo = GetDlgItem(0x4ff);
         CWnd* comboChild = CWnd::FromHandle(::GetWindow(combo->m_hWnd, GW_CHILD));
-        if (comboChild == 0) {
+        if (comboChild == NULL) {
             return;
         }
         ::SendMessageA(comboChild->m_hWnd, EM_SETREADONLY, 1, 0);
         comboChild->SetWindowTextA(g_emptyString);
 
         CSymTab* worlds = static_cast<CSymTab*>(m_slots->m_symParser->ResolvePath("GAME_BATTLEZ"));
-        if (worlds == 0) {
+        if (worlds == NULL) {
             return;
         }
         CSymRec* record = static_cast<CSymRec*>(worlds->FirstSym());
         CParseSource* entry =
-            record == 0 ? 0 : static_cast<CParseSource*>(worlds->NextSym2(record));
+            record == NULL ? 0 : static_cast<CParseSource*>(worlds->NextSym2(record));
         i32 first = 1;
-        while (entry != 0) {
+        while (entry != NULL) {
             CString upper(entry->m_name);
             upper.MakeUpper();
             CString display;
@@ -238,7 +238,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         }
         for (i = 0; i < 4; i++) {
             CWnd* edit = GetCtrlB(i);
-            if (edit != 0) {
+            if (edit != NULL) {
                 ::SendMessageA(edit->m_hWnd, EM_LIMITTEXT, 9, 0);
             }
         }
@@ -301,7 +301,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             } else {
                 sprintf(key, "custom\\%s", mapName);
                 FILE* file = fopen(key, "rb");
-                if (file != 0) {
+                if (file != NULL) {
                     comboChild->SetWindowTextA(mapName);
                     fclose(file);
                 }
@@ -310,7 +310,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     } else {
         CWnd* combo = GetDlgItem(0x4ff);
         CWnd* comboChild = CWnd::FromHandle(::GetWindow(combo->m_hWnd, GW_CHILD));
-        if (comboChild == 0) {
+        if (comboChild == NULL) {
             return;
         }
         comboChild->GetWindowTextA(m_worldName);
@@ -319,7 +319,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
 
         for (i = 0; i < 4; i++) {
             CWnd* edit = GetCtrlB(i);
-            if (edit != 0) {
+            if (edit != NULL) {
                 CString name;
                 edit->GetWindowTextA(name);
                 m_slots->m_options[i].m_name = name;
@@ -347,7 +347,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastColour%d", i);
             reg->SetValueDword(key, g_gameReg->m_options[i].m_colorIndex);
         }
-        g_sharedFlag = 0;
+        g_sharedFlag = NULL;
     }
     FlashCtrlD();
 }
@@ -420,7 +420,7 @@ void CBattlezDlg::ShowCustomDlg() {
             dlg.m_customName.MakeUpper();
             CWnd* item = GetDlgItem(0x4ff);
             CWnd* child = CWnd::FromHandle(::GetWindow(item->m_hWnd, GW_CHILD));
-            if (child != 0) {
+            if (child != NULL) {
                 child->SetWindowTextA(dlg.m_customName);
                 m_customNameFlag = 1;
             }
@@ -726,7 +726,7 @@ void CBattlezDlg::ApplyColorSlot3() {
 RVA(0x000171b0, 0xca)
 void CBattlezDlg::CopyComboSelToChild() {
     CWnd* combo = GetDlgItem(0x4ff);
-    if (combo == 0) {
+    if (combo == NULL) {
         return;
     }
     long sel = ::SendMessageA(combo->m_hWnd, 0x147, 0, 0);
@@ -737,7 +737,7 @@ void CBattlezDlg::CopyComboSelToChild() {
     (static_cast<CComboBox*>(combo))->GetLBText(sel, s);
     if (s.GetLength() != 0) {
         CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
-        if (child != 0) {
+        if (child != NULL) {
             child->SetWindowTextA(s);
             m_customNameFlag = 0;
         }
@@ -765,7 +765,7 @@ void CBattlezDlg::FlashCtrlD() {
     BOOL(WINAPI * stc)(HWND, LPPOINT) = ::ScreenToClient;
     for (i32 i = 0; i < 4; i++) {
         CWnd* it = GetCtrlD(i);
-        if (it == 0) {
+        if (it == NULL) {
             continue;
         }
 

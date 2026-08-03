@@ -1,0 +1,6 @@
+# gruntz.audit.bare_constants - numeric literals a TYPE already names.
+# RATCHET: down-only. Bless a lower number with --update; a higher one is
+# a regression and fails the gate.
+pointer-vs-0	0
+enum-vs-int	0
+sizeof-literal	1638

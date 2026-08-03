@@ -47,13 +47,13 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         return 1;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
-    if (sel == 0) {
+    if (sel == NULL) {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
         m_animSprites[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
-        if (m_animSprites[i] == 0) {
+        if (m_animSprites[i] == NULL) {
             return 0;
         }
         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_NORTH_WALK");
@@ -64,7 +64,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->m_drawFillArg = sel;
         m_visSprites[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
-        if (m_visSprites[i] == 0) {
+        if (m_visSprites[i] == NULL) {
             return 0;
         }
         static CString buf;
@@ -155,7 +155,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             if (ss->m_emitGate == 0) {
                 LeafCue* res = 0;
                 MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
-                if (res != 0) {
+                if (res != NULL) {
                     res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
@@ -166,7 +166,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
         LeafCue* res = 0;
         MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
-        if (res == 0) {
+        if (res == NULL) {
             return 1;
         }
         if (res->m_sound->IsPlaying() != 0) {
@@ -194,13 +194,13 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     break;
             }
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
-            if (sel != 0) {
+            if (sel != NULL) {
                 if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) != 0) {
                     CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
                     if (ss->m_emitGate == 0) {
                         LeafCue* res = 0;
                         MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
-                        if (res != 0 && g_sndEnabled != 0) {
+                        if (res != NULL && g_sndEnabled != 0) {
                             u32 clock = g_killCueClock;
                             if (clock - res->m_lastPlayTime >= res->m_replayDelay) {
                                 res->m_lastPlayTime = clock;

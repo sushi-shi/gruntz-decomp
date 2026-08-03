@@ -11,6 +11,8 @@
 #include <Image/ImageSet.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
@@ -18,10 +20,10 @@ class CSBI_GruntMachine : public CStatusBarItem {
 public:
     CSBI_GruntMachine() {
         m_kind = 9;
-        m_frameA = 0;
-        m_frameB = 0;
-        m_standaloneFrame = 0;
-        m_config = 0;
+        m_frameA = NULL;
+        m_frameB = NULL;
+        m_standaloneFrame = NULL;
+        m_config = NULL;
     }
 
     virtual ~CSBI_GruntMachine() OVERRIDE;

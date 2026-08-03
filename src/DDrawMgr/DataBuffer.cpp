@@ -8,7 +8,7 @@ RVA(0x00150180, 0xd)
 CShadeTable::CShadeTable() {
     m_alloc = 0;
     m_size = 0;
-    m_data = 0;
+    m_data = NULL;
 }
 
 RVA(0x00150190, 0xb)
@@ -68,7 +68,7 @@ void CShadeTable::Free() {
     if (m_alloc != 0) {
         if (m_data) {
             ::operator delete(m_data);
-            m_data = 0;
+            m_data = NULL;
         }
         m_size = 0;
     }

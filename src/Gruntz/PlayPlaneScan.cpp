@@ -17,19 +17,21 @@
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 // @early-stop
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CDDrawSurfaceMgr* v = m_world;
 
     CObList* pl = &v->m_childGroup->m_list;
-    if (pl == 0) {
+    if (pl == NULL) {
         return 0;
     }
     POSITION pos = pl->GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
-        if (p == 0) {
+        if (p == NULL) {
             continue;
         }
         if (p->m_extent.left == static_cast<i32>(0x80000000)) {
@@ -65,7 +67,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_points,
                     p->m_faceDirection
                 )
-                == 0) {
+                == NULL) {
                 CString s;
                 s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 g_gameReg->EnterModalUI(s);
@@ -131,7 +133,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_points,
                     p->m_faceDirection
                 )
-                == 0) {
+                == NULL) {
                 CString s;
                 s.Format("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 g_gameReg->EnterModalUI(s);

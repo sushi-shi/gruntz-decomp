@@ -27,15 +27,15 @@ struct CRandomAmbientWorld;
 class CAmbientSound : public CUserBase {
 public:
     CAmbientSound() {
-        m_voice = 0;
+        m_voice = NULL;
         m_level = 0x64;
         m_isPlaying = 0;
-        m_listNode = 0;
+        m_listNode = NULL;
     }
 
     virtual ~CAmbientSound() OVERRIDE {
-        m_voice = 0;
-        m_listNode = 0;
+        m_voice = NULL;
+        m_listNode = NULL;
     }
 
     i32 SetLevel(i32 value, i32 mode, i32 extra);

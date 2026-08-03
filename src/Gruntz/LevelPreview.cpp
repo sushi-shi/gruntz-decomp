@@ -42,12 +42,12 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
     while (ShowCursor(FALSE) >= 0) {
     }
     m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_PREVIEW"));
-    if (m_stateBank == 0) {
+    if (m_stateBank == NULL) {
         return 0;
     }
     if (g_disableAudio == 0 && g_disableSound == 0) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
-        if (set != 0) {
+        if (set != NULL) {
             m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "PREVIEW", "_");
         }
     }
@@ -60,7 +60,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
 RVA(0x000de140, 0x33)
 void CPreviewState::ResetPreview() {
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-    if (reg->m_soundStream != 0) {
+    if (reg->m_soundStream != NULL) {
         reg->m_soundStream->Stop();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("PREVIEW", "_");
@@ -79,14 +79,14 @@ i32 CPreviewState::NextScreenCmd(i32 param) {
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
-    if (surf == 0 || surf->IsLost() != 0) {
+    if (surf == NULL || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0xfa0);
             return 0;
         }
     }
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-    if (reg->m_soundStream != 0) {
+    if (reg->m_soundStream != NULL) {
         reg->m_soundStream->PurgeVoiceList(-1);
     }
     if (static_cast<u32>(g_wap32FrameDelta) >= m_previewCountdownMs) {
@@ -151,7 +151,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
             void* p_ob = 0;
             h->m_cues.Lookup("GAME_TELEPORTEROPEN", p_ob);
             LeafCue* p = static_cast<LeafCue*>(p_ob);
-            if (p != 0) {
+            if (p != NULL) {
                 i32 tag = g_sndCueTag;
                 if (g_sndEnabled != 0
                     && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
@@ -182,19 +182,19 @@ void CPreviewState::Cancel() {
 // (attract) and OnPaint (attract): a first-use placement.
 RVA(0x000fab90, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
-    if (m_symParser == 0) {
+    if (m_symParser == NULL) {
         return 0;
     }
-    if (m_stateBank == 0) {
+    if (m_stateBank == NULL) {
         return 0;
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
     CParseSource* sym = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
-    if (sym == 0) {
+    if (sym == NULL) {
         return 0;
     }
     if (m_world->m_drawTarget->LoadPageImage(sym, 1) == 0) {

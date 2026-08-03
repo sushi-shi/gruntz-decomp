@@ -121,15 +121,15 @@ void CFontConfig::Reset() {
     m_inputText.Empty();
     if (m_arialFont) {
         DeleteObject(m_arialFont);
-        m_arialFont = 0;
+        m_arialFont = NULL;
     }
     if (m_trainingFont) {
         DeleteObject(m_trainingFont);
-        m_trainingFont = 0;
+        m_trainingFont = NULL;
     }
     if (m_messageFont) {
         DeleteObject(m_messageFont);
-        m_messageFont = 0;
+        m_messageFont = NULL;
     }
 }
 
@@ -268,7 +268,7 @@ void CFontConfig::EndInput() {
 // @early-stop
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
-    if (hdc == 0) {
+    if (hdc == NULL) {
         return 0;
     }
     CString text(m_inputText);
@@ -290,7 +290,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     }
 
     CDC* dc = CDC::FromHandle(hdc);
-    if (dc != 0) {
+    if (dc != NULL) {
         CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
         CPen* saved = dc->SelectObject(&pen);
         dc->MoveTo(rect->left + g_chatTextWidth, rect->top);
@@ -303,7 +303,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 // @early-stop
 RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
-    if (hdc != 0) {
+    if (hdc != NULL) {
         CString text(m_inputText);
         if (GetAsyncKeyState(0x11) & 0x8000) {
             for (i32 i = 0; i < text.GetLength(); i++) {
@@ -398,7 +398,7 @@ typedef enum TextColorRef {
 // @early-stop
 RVA(0x00022360, 0x338)
 i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
-    if (hdc == 0) {
+    if (hdc == NULL) {
         return 0;
     }
     if (count <= 0) {
@@ -409,7 +409,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     }
     while (m_list.GetCount() > count) {
         FontItem* dead = static_cast<FontItem*>(m_list.RemoveHead());
-        if (dead != 0) {
+        if (dead != NULL) {
             dead->name.Empty();
             delete dead;
         }
@@ -435,7 +435,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             savedFont = SelectObject(hdc, m_arialFont);
         }
         FontItem* item = static_cast<FontItem*>(m_list.GetAt(m_list.FindIndex(i)));
-        if (item != 0) {
+        if (item != NULL) {
             if (item->type & FONTITEM_SHADOW) {
                 SetTextColor(hdc, TCLR_BLACK);
                 work.left = cur.left + 1;
@@ -531,13 +531,13 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
 
 RVA(0x00022770, 0x7d)
 i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
-    if (hdc == 0) {
+    if (hdc == NULL) {
         return 0;
     }
-    if (text == 0) {
+    if (text == NULL) {
         return 0;
     }
-    if (rect == 0) {
+    if (rect == NULL) {
         return 0;
     }
     HGDIOBJ prev = 0;
@@ -565,13 +565,13 @@ i32 CFontConfig::Draw3DText(
     i32 dx,
     i32 dy
 ) {
-    if (hdc == 0) {
+    if (hdc == NULL) {
         return 0;
     }
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
-    if (strSrc == 0) {
+    if (strSrc == NULL) {
         return 0;
     }
     HGDIOBJ selPrev = 0;

@@ -10,6 +10,7 @@
 
 #include <afxtempl.h>
 #include <ddraw.h>
+#include <stddef.h>
 
 union SmackSource {
     const char* m_path;
@@ -58,28 +59,28 @@ typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 class CMoviePlayer {
 public:
     CMoviePlayer() {
-        m_window = 0;
+        m_window = NULL;
         m_initialized = 0;
-        m_smackHandle = 0;
-        m_directDraw2 = 0;
-        m_directDraw = 0;
-        m_primary = 0;
-        m_primaryRaw = 0;
-        m_srcSurf = 0;
-        m_srcSurfRaw = 0;
+        m_smackHandle = NULL;
+        m_directDraw2 = NULL;
+        m_directDraw = NULL;
+        m_primary = NULL;
+        m_primaryRaw = NULL;
+        m_srcSurf = NULL;
+        m_srcSurfRaw = NULL;
         m_borrowedDisplayResources = 0;
-        m_palette = 0;
+        m_palette = NULL;
         m_frameDecoded = 0;
         m_blitMode = MOVIE_TILE;
         m_tilesAcross = 0;
         m_tilesDown = 0;
-        m_destRect = 0;
+        m_destRect = NULL;
         m_originX = 0;
         m_originY = 0;
         m_forceSingleRow = 0;
         m_smackBufMode = 0;
-        m_videoWnd = 0;
-        m_directSound = 0;
+        m_videoWnd = NULL;
+        m_directSound = NULL;
     }
 
     i32 Init(HWND window, DDModeInfo* mode, u32 coopFlags);

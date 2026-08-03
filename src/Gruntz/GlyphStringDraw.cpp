@@ -115,7 +115,7 @@ void EngStr_DrawText(
 ) {
     CDDrawSurfaceChildA* pair = obj->m_drawTarget->m_frontPair;
 
-    if (pair == 0) {
+    if (pair == NULL) {
         return;
     }
     EngStr_RenderText(obj, text, dst, pair->m_surface, fontSel, shadow, r, g, b, flag);
@@ -135,7 +135,7 @@ void ShowHudMessage(
 ) {
     CDDrawSurfacePair* page = sink->m_drawTarget->m_overlayPair;
 
-    if (page == 0) {
+    if (page == NULL) {
         return;
     }
     EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
@@ -154,7 +154,7 @@ void ShowHudMessageAlt(
     i32 flag
 ) {
     CDDrawSurfacePair* page = sink->m_drawTarget->m_backPair;
-    if (page == 0) {
+    if (page == NULL) {
         return;
     }
     EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);

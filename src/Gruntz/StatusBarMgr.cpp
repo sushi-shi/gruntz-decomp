@@ -89,7 +89,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         g_gameReg->m_options[g_curPlayer].m_colorIndex,
                         0
                     );
-                    if (sel == 0) {
+                    if (sel == NULL) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
                     (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllTypes(SHADE_PAL_16);

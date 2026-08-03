@@ -53,7 +53,7 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-    if (reg->m_soundStream != 0) {
+    if (reg->m_soundStream != NULL) {
         reg->m_soundStream->Stop();
     }
     m_world->m_soundRegistry->ClearMap();

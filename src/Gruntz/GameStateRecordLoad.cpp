@@ -60,11 +60,11 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
 // @early-stop
 RVA(0x000555e0, 0x12f8)
 i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* dir = g_gameReg->m_world;
-    if (dir == 0) {
+    if (dir == NULL) {
         return 0;
     }
 
@@ -72,8 +72,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     void* obj;
     char buf[0x80];
 
-    m_struckSlotSound = 0;
-    m_struckVoiceSound = 0;
+    m_struckSlotSound = NULL;
+    m_struckVoiceSound = NULL;
     m_struckCount = 0;
     m_struckClockLo = 0;
     m_struckTimerLo = 0;
@@ -226,17 +226,17 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     if (m_coordList.GetCount() != 0) {
         POSITION pos = m_coordList.GetHeadPosition();
-        if (pos != 0) {
+        if (pos != NULL) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
                 void* buf = m_coordList.GetNext(pos);
-                if (buf != 0) {
+                if (buf != NULL) {
                     CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
                     n2->m_next = fl;
                     fl = n2;
                     g_coordPool.m_freeHead = n2;
                 }
-            } while (pos != 0);
+            } while (pos != NULL);
         }
         (&m_coordList)->RemoveAll();
     }
@@ -247,7 +247,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         CoordPoolNode* slot = g_coordPool.m_freeHead;
         CoordPoolNode* nf = slot->m_next;
         void* item = 0;
-        if (nf != 0) {
+        if (nf != NULL) {
             item = &slot->m_coord;
             g_coordPool.m_freeHead = nf;
         }
@@ -255,7 +255,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_coordList)->AddTail(item);
     }
 
-    while (m_payloads.GetCount() != 0 && m_payloads.GetHead() != 0) {
+    while (m_payloads.GetCount() != 0 && m_payloads.GetHead() != NULL) {
         void* rem = (&m_payloads)->RemoveHead();
         ::operator delete(rem);
     }
@@ -264,7 +264,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     for (i32 b = 0; b < count; ++b) {
         void* mem = operator new(0x2c);
         void* item = 0;
-        if (mem != 0) {
+        if (mem != NULL) {
             memset(mem, 0, 0xb * 4);
             item = mem;
         }

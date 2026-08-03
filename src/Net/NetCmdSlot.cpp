@@ -35,13 +35,13 @@ char g_idListBuf[0x40];
 
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
-    if (netMgr == 0) {
+    if (netMgr == NULL) {
         return 0;
     }
     m_mgr = mgr;
@@ -55,10 +55,10 @@ i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
 // @early-stop
 RVA(0x000bf000, 0xd5)
 void CNetSession::ResetSync() {
-    m_mgr = 0;
-    m_session = 0;
-    m_netMgr = 0;
-    m_localDesc = 0;
+    m_mgr = NULL;
+    m_session = NULL;
+    m_netMgr = NULL;
+    m_localDesc = NULL;
     m_tick = 0;
     m_snapshotDone = 0;
     m_seq = 0;
@@ -69,11 +69,11 @@ void CNetSession::ResetSync() {
         s->m_isRemote = 0;
         s->m_latchedSeq = 0;
         s->m_state = 0;
-        s->m_desc = 0;
+        s->m_desc = NULL;
         s->m_latency = 0;
         s->m_baseSeq = 0;
         s->m_maxSeq = 0;
-        s->m_owner = 0;
+        s->m_owner = NULL;
         s->ClearCmds();
         s->ClearAckFlags();
         s->ResetTriple(s->m_rangeA);
@@ -81,7 +81,7 @@ void CNetSession::ResetSync() {
         s++;
     } while (--n);
     for (i32 j = 0; j < 0x80; j++) {
-        m_idMap[j] = 0;
+        m_idMap[j] = NULL;
     }
     GruntRec* r = m_records;
     i32 k = 0x80;
@@ -119,7 +119,7 @@ void CNetSession::Reset() {
     }
 
     for (i = 0; i < 0x80; i++) {
-        m_idMap[i] = 0;
+        m_idMap[i] = NULL;
     }
     for (i = 0; i < 0x80; i++) {
         m_records[i].m_seq = 0;
@@ -147,7 +147,7 @@ i32 CNetSession::Poll(i32 delta) {
     } while (--n);
 
     i32 avail;
-    if (m_localDesc == 0) {
+    if (m_localDesc == NULL) {
         avail = 0;
     } else {
         i32 got;
@@ -413,7 +413,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     CNetCmdSlot* slot = &m_slots[index];
-    if (slot == 0) {
+    if (slot == NULL) {
         return 0;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetAll();
@@ -515,7 +515,7 @@ RVA(0x000c0290, 0x63)
 i32 CNetSession::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* s = &m_slots[i];
-        if (s != 0) {
+        if (s != NULL) {
             if (s->m_state == 3 && s->m_isRemote == 0) {
                 if (s->m_baseSeq < n) {
                     return 0;
@@ -537,7 +537,7 @@ RVA(0x000c0320, 0x37)
 i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0 && slot->m_maxSeq < seq) {
+        if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0 && slot->m_maxSeq < seq) {
             return 0;
         }
     }
@@ -592,7 +592,7 @@ RVA(0x000c04a0, 0x37)
 i32 CNetSession::CheckLatency(i32 cap) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0
+        if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0
             && static_cast<u32>(slot->m_latency) > static_cast<u32>(cap)) {
             return 0;
         }
@@ -604,12 +604,12 @@ RVA(0x000c04f0, 0x7c)
 i32 CNetSession::Verify() {
     i32 seq = m_seq - 2;
     GruntRec* e = &m_records[seq % 128];
-    if (e != 0) {
+    if (e != NULL) {
         for (i32 i = 0; i < 4; i++) {
             CNetCmdSlot* slot = &m_slots[i];
-            if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0) {
+            if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0) {
                 GruntRec* c = slot->FindCmd(seq);
-                if (c != 0 && c->m_checksum != e->m_checksum) {
+                if (c != NULL && c->m_checksum != e->m_checksum) {
                     return 0;
                 }
             }
@@ -621,10 +621,10 @@ i32 CNetSession::Verify() {
 // @early-stop
 RVA(0x000c0b10, 0x72)
 i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
-    if (desc == 0) {
+    if (desc == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     m_owner = owner;
@@ -650,11 +650,11 @@ void CNetCmdSlot::ResetAll() {
     m_state = 0;
     m_isRemote = 0;
     m_latchedSeq = 0;
-    m_desc = 0;
+    m_desc = NULL;
     m_latency = 0;
     m_baseSeq = 0;
     m_maxSeq = 0;
-    m_owner = 0;
+    m_owner = NULL;
     ClearCmds();
 
     for (i32 i = 0; i < 4; i++) {
@@ -683,7 +683,7 @@ void CNetCmdSlot::FullReset() {
 // @early-stop
 RVA(0x000c0c70, 0x20f)
 i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
-    if (rec == 0) {
+    if (rec == NULL) {
         return 0;
     }
     u8 opcode = *static_cast<u8*>(rec);
@@ -724,7 +724,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
 
     if (m_isRemote != 0 && odd) {
         CNetCmdSlot* slot = m_owner->m_session->FindCmdSlot(playerId);
-        if (slot == 0) {
+        if (slot == NULL) {
             return 0;
         }
         if (opcode & 2) {
@@ -860,7 +860,7 @@ char* __stdcall NetCmdIdToString(i32* arr) {
 
 RVA(0x000c1170, 0x26)
 void CNetCmdSlot::AddCmd(GruntRec* cmd) {
-    if (cmd != 0 && FindCmd(cmd->m_seq) == 0) {
+    if (cmd != NULL && FindCmd(cmd->m_seq) == NULL) {
         m_cmds.AddTail(cmd);
     }
 }
@@ -868,10 +868,10 @@ void CNetCmdSlot::AddCmd(GruntRec* cmd) {
 RVA(0x000c11b0, 0x55)
 void CNetCmdSlot::RemoveCmd(i32 seq) {
     POSITION pos = m_cmds.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         GruntRec* cmd = static_cast<GruntRec*>(m_cmds.GetNext(pos));
         if (seq == cmd->m_seq) {
-            if (pos != 0) {
+            if (pos != NULL) {
 
                 m_cmds.GetPrev(pos);
                 m_cmds.RemoveAt(pos);
@@ -886,16 +886,16 @@ void CNetCmdSlot::RemoveCmd(i32 seq) {
 
 RVA(0x000c1230, 0x55)
 void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
-    if (pMin == 0) {
+    if (pMin == NULL) {
         return;
     }
-    if (pMax == 0) {
+    if (pMax == NULL) {
         return;
     }
     *pMax = 0x80000001;
     *pMin = 0x7fffffff;
     POSITION pos = m_cmds.GetHeadPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         *pMax = 0;
         *pMin = 0;
         return;
@@ -908,13 +908,13 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
         if (cmd->m_seq < *pMin) {
             *pMin = cmd->m_seq;
         }
-    } while (pos != 0);
+    } while (pos != NULL);
 }
 
 RVA(0x000c12b0, 0x1f)
 GruntRec* CNetCmdSlot::FindCmd(i32 seq) {
     POSITION pos = m_cmds.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         GruntRec* cmd = static_cast<GruntRec*>(m_cmds.GetNext(pos));
         if (seq == cmd->m_seq) {
             return cmd;
@@ -927,7 +927,7 @@ RVA(0x000c12e0, 0x2c)
 void CNetCmdSlot::ClearCmds() {
     while (m_cmds.GetCount() != 0) {
         GruntRec* cmd = static_cast<GruntRec*>(m_cmds.RemoveHead());
-        if (cmd != 0) {
+        if (cmd != NULL) {
             RecycleCmd(cmd);
         }
     }
@@ -937,13 +937,13 @@ void CNetCmdSlot::ClearCmds() {
 RVA(0x000c1320, 0x4a)
 i32 CNetCmdSlot::Ready() {
     CMulti* mgr = m_owner;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     CNetSession* sess = mgr->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &sess->m_slots[i];
-        if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0 && m_ackFlags[i] == 0) {
+        if (slot != NULL && slot->m_state == 3 && slot->m_isRemote == 0 && m_ackFlags[i] == 0) {
             return 0;
         }
     }

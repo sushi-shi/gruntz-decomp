@@ -152,9 +152,9 @@ void CAreaMgr::Reset() {
 
 RVA(0x0009a0d0, 0x133)
 CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
-    for (POSITION n = m_list.GetHeadPosition(); n != 0;) {
+    for (POSITION n = m_list.GetHeadPosition(); n != NULL;) {
         CSpawnEntry* e = NextEntry(n);
-        if (e == 0) {
+        if (e == NULL) {
             continue;
         }
         if (useHash != 0) {
@@ -175,9 +175,9 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
     CString key(name);
-    for (POSITION n = m_list.GetHeadPosition(); n != 0;) {
+    for (POSITION n = m_list.GetHeadPosition(); n != NULL;) {
         CSpawnEntry* e = NextEntry(n);
-        if (e == 0) {
+        if (e == NULL) {
             continue;
         }
         CString nm = e->GetName();
@@ -195,23 +195,23 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
 RVA(0x0009a420, 0x1c)
 void CSpawnList::ClearFlags() {
     POSITION p = m_list.GetHeadPosition();
-    if (p == 0) {
+    if (p == NULL) {
         return;
     }
     do {
         CSpawnEntry* e = NextEntry(p);
-        if (e != 0) {
+        if (e != NULL) {
             e->m_flag = 0;
         }
-    } while (p != 0);
+    } while (p != NULL);
 }
 
 RVA(0x0009a450, 0x36)
 void CSpawnList::DeleteAllEntries() {
     POSITION node = m_list.GetHeadPosition();
-    while (node != 0) {
+    while (node != NULL) {
         CSpawnEntry* e = NextEntry(node);
-        if (e != 0) {
+        if (e != NULL) {
             delete e;
         }
     }
@@ -220,7 +220,7 @@ void CSpawnList::DeleteAllEntries() {
 
 RVA(0x0009a4c0, 0x3e)
 i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == 0) {
+    if (entry == NULL) {
         return 0;
     }
     LoadObjectImageResources(entry, src);
@@ -232,13 +232,13 @@ i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 // @early-stop
 RVA(0x0009a510, 0x275)
 i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == 0) {
+    if (entry == NULL) {
         return 0;
     }
     m_spawnEntryList.ClearFlags();
 
     CMapStringToOb* srcMap = &entry->m_imageRegistry->m_10map;
-    if (srcMap == 0) {
+    if (srcMap == NULL) {
         return 0;
     }
 
@@ -250,7 +250,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         srcMap->GetNextAssoc(pos, key, val);
         if (strncmp(static_cast<const char*>(static_cast<LPCTSTR>(key)), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
-            if (found != 0) {
+            if (found != NULL) {
                 found->m_flag = 1;
             } else {
                 toAdd.AddTail(val);
@@ -268,18 +268,18 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     CSpawnList* b = &m_spawnEntryList;
     b->m_cursor = b->m_list.GetHeadPosition();
     CSpawnEntry* e;
-    if (b->m_cursor == 0) {
-        e = 0;
+    if (b->m_cursor == NULL) {
+        e = NULL;
     } else {
         e = b->NextEntry(b->m_cursor);
     }
-    while (e != 0) {
+    while (e != NULL) {
         if (e->m_flag == 0) {
             char buf[0x80];
             g_resourceInstallActive = 1;
             sprintf(buf, "IMAGEZ_%s", static_cast<const char*>(static_cast<LPCTSTR>(e->GetTail())));
             void* handle = src->ResolvePath(buf);
-            if (handle == 0) {
+            if (handle == NULL) {
                 return 0;
             }
             entry->m_imageRegistry
@@ -287,8 +287,8 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             g_resourceInstallActive = 0;
             e->m_flag = 1;
         }
-        if (b->m_cursor == 0) {
-            e = 0;
+        if (b->m_cursor == NULL) {
+            e = NULL;
         } else {
             e = b->NextEntry(b->m_cursor);
         }
@@ -313,13 +313,13 @@ CString CSpawnEntry::GetTail() {
 // @early-stop
 RVA(0x0009a910, 0x261)
 i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == 0) {
+    if (entry == NULL) {
         return 0;
     }
     m_spawnEntryList.ClearFlags();
 
     CMapStringToPtr* srcMap = &entry->m_soundRegistry->m_cues;
-    if (srcMap == 0) {
+    if (srcMap == NULL) {
         return 0;
     }
 
@@ -331,7 +331,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         srcMap->GetNextAssoc(pos, key, val);
         if (strncmp(static_cast<const char*>(static_cast<LPCTSTR>(key)), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
-            if (found != 0) {
+            if (found != NULL) {
                 found->m_flag = 1;
             } else {
                 toAdd.AddTail(val);
@@ -349,17 +349,17 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     CSpawnList* b = &m_spawnEntryList;
     b->m_cursor = b->m_list.GetHeadPosition();
     CSpawnEntry* e;
-    if (b->m_cursor == 0) {
-        e = 0;
+    if (b->m_cursor == NULL) {
+        e = NULL;
     } else {
         e = b->NextEntry(b->m_cursor);
     }
-    while (e != 0) {
+    while (e != NULL) {
         if (e->m_flag == 0) {
             char buf[0x80];
             sprintf(buf, "SOUNDZ_%s", static_cast<const char*>(static_cast<LPCTSTR>(e->GetTail())));
             void* handle = src->ResolvePath(buf);
-            if (handle == 0) {
+            if (handle == NULL) {
                 return 0;
             }
             entry->m_soundRegistry->ScanTree(
@@ -369,8 +369,8 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             );
             e->m_flag = 1;
         }
-        if (b->m_cursor == 0) {
-            e = 0;
+        if (b->m_cursor == NULL) {
+            e = NULL;
         } else {
             e = b->NextEntry(b->m_cursor);
         }
@@ -381,13 +381,13 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 // @early-stop
 RVA(0x0009ac20, 0x261)
 i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == 0) {
+    if (entry == NULL) {
         return 0;
     }
     m_spawnEntryList.ClearFlags();
 
     CMapStringToPtr* srcMap = &entry->m_animRegistry->m_animations;
-    if (srcMap == 0) {
+    if (srcMap == NULL) {
         return 0;
     }
 
@@ -399,7 +399,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         srcMap->GetNextAssoc(pos, key, val);
         if (strncmp(static_cast<const char*>(static_cast<LPCTSTR>(key)), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
-            if (found != 0) {
+            if (found != NULL) {
                 found->m_flag = 1;
             } else {
                 toAdd.AddTail(val);
@@ -417,17 +417,17 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     CSpawnList* b = &m_spawnEntryList;
     b->m_cursor = b->m_list.GetHeadPosition();
     CSpawnEntry* e;
-    if (b->m_cursor == 0) {
-        e = 0;
+    if (b->m_cursor == NULL) {
+        e = NULL;
     } else {
         e = b->NextEntry(b->m_cursor);
     }
-    while (e != 0) {
+    while (e != NULL) {
         if (e->m_flag == 0) {
             char buf[0x80];
             sprintf(buf, "ANIZ_%s", static_cast<const char*>(static_cast<LPCTSTR>(e->GetTail())));
             void* handle = src->ResolvePath(buf);
-            if (handle == 0) {
+            if (handle == NULL) {
                 return 0;
             }
             entry->m_animRegistry->ScanTree(
@@ -437,8 +437,8 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             );
             e->m_flag = 1;
         }
-        if (b->m_cursor == 0) {
-            e = 0;
+        if (b->m_cursor == NULL) {
+            e = NULL;
         } else {
             e = b->NextEntry(b->m_cursor);
         }

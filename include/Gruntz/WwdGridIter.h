@@ -7,6 +7,8 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 
+#include <stddef.h>
+
 class CWwdGrid;
 struct BucketHead;
 
@@ -39,14 +41,14 @@ SIZE(0x1c);
 // docs/patterns/ob1-inline-budget-divergence.md.
 #ifndef WWDGRIDNODE_OOL_CTOR
 inline WwdGridNode::WwdGridNode() {
-    m_bucket = 0;
+    m_bucket = NULL;
     m_reserved08 = 0;
 }
 #endif
 
 #ifndef WWDREGION_OOL_CTOR
 inline WwdRegion::WwdRegion() {
-    m_object = 0;
+    m_object = NULL;
 }
 #endif
 
@@ -76,8 +78,8 @@ public:
 SIZE(0x44);
 
 inline CWwdGridIter::CWwdGridIter() {
-    m_grid = 0;
-    m_cur = 0;
+    m_grid = NULL;
+    m_cur = NULL;
 }
 inline CWwdGridIter::~CWwdGridIter() {}
 

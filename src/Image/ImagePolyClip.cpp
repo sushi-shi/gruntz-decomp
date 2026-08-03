@@ -121,7 +121,7 @@ void ImageRotateBlit(
     i32 w = src->m_height;
 
     i32 sq[4];
-    if (pivot != 0) {
+    if (pivot != NULL) {
         sq[0] = pivot[0];
         sq[1] = pivot[1];
         sq[2] = pivot[2];

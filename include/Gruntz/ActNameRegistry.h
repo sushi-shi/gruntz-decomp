@@ -24,7 +24,7 @@ static inline CString* ActNameLookup(i32 id) {
     CString* slot;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         slot = g_typeColl.Elem(id);
-    } else if (g_typeColl._zvec::GrowTo(id, 0) != 0) {
+    } else if (g_typeColl._zvec::GrowTo(id, 0) != NULL) {
         slot = g_typeColl.Elem(id);
     } else {
         char* msg = g_errOutOfMem;
@@ -40,7 +40,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     CString* slot;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         slot = g_typeColl.Elem(id);
-    } else if (g_typeColl._zvec::GrowTo(id, 0) != 0) {
+    } else if (g_typeColl._zvec::GrowTo(id, 0) != NULL) {
         slot = g_typeColl.Elem(id);
     } else {
         g_typeColl.Report(g_errOutOfMem, 0xc);

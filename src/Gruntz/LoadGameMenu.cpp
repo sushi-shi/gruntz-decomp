@@ -42,7 +42,7 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 RVA(0x0009e0b0, 0x1a3)
 void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
-    if (hWnd == 0 || sg == 0) {
+    if (hWnd == NULL || sg == NULL) {
         return;
     }
     LabelGameInfoSlot(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);

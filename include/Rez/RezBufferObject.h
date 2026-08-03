@@ -3,6 +3,8 @@
 #include <rva.h>
 #include <Wap32/Object.h>
 
+#include <stddef.h>
+
 struct RezElem40 {
     RezElem40();
     RECT m_startRect;
@@ -19,7 +21,7 @@ struct CRezBufferObject : public CObject {
     i32 m_nGrowBy;
 
     CRezBufferObject() {
-        m_pData = 0;
+        m_pData = NULL;
         m_nGrowBy = 0;
         m_nMaxSize = 0;
         m_nSize = 0;

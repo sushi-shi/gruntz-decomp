@@ -62,7 +62,7 @@ RVA(0x000d2b20, 0x21f)
 i32 CPlay::PlaceStartGruntz() {
 
     CObList* list = &m_world->m_childGroup->m_list;
-    if (list == 0) {
+    if (list == NULL) {
         return 0;
     }
     CGruntzMgr* reg = m_mgr;
@@ -73,12 +73,12 @@ i32 CPlay::PlaceStartGruntz() {
     if (reg->m_gameMode == GAMEMODE_SINGLE) {
         flag14 = 1;
     }
-    if (pos == 0) {
+    if (pos == NULL) {
         return result;
     }
     do {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
-        if (obj != 0) {
+        if (obj != NULL) {
             AnimWorkerObj* aux = obj->m_animWorker;
 
             GameObjNotifyFn who = aux->m_notify;
@@ -117,7 +117,7 @@ i32 CPlay::PlaceStartGruntz() {
                        && obj->m_smarts == g_curPlayer) {
 
                 GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
-                if (e != 0 && counter < e->m_comboSel) {
+                if (e != NULL && counter < e->m_comboSel) {
                     reg->m_cmdSubMgr->EnqueueSingle(
                         result,
                         static_cast<char>(obj->m_smarts),
@@ -132,7 +132,7 @@ i32 CPlay::PlaceStartGruntz() {
                 }
             }
         }
-    } while (pos != 0);
+    } while (pos != NULL);
     return result;
 }
 
@@ -146,18 +146,18 @@ i32 CPlay::ValidateLevelTiles() {
     counts[3] = 0;
 
     CObList* list = &m_world->m_childGroup->m_list;
-    if (list == 0) {
+    if (list == NULL) {
         return 0;
     }
     POSITION pos = list->GetHeadPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         return 1;
     }
 
     i32 ok = 1;
     do {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
-        if (obj == 0) {
+        if (obj == NULL) {
             continue;
         }
 
@@ -174,26 +174,26 @@ i32 CPlay::ValidateLevelTiles() {
                 i32 row = obj->m_speedY - 1;
                 while (col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
-                    if (hit != 0) {
+                    if (hit != NULL) {
                         break;
                     }
                     while (row < obj->m_speedY + 2) {
                         void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
-                        if (r != 0) {
+                        if (r != NULL) {
                             hit = r;
                         }
-                        if (hit != 0) {
+                        if (hit != NULL) {
                             break;
                         }
                         row++;
                     }
-                    if (hit != 0) {
+                    if (hit != NULL) {
                         break;
                     }
                     col++;
                     colOff += 0x100;
                 }
-                if (hit == 0) {
+                if (hit == NULL) {
                     return 0;
                 }
                 i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
@@ -209,7 +209,7 @@ i32 CPlay::ValidateLevelTiles() {
 
                 CTileTriggerLogic* r =
                     m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
-                if (r == 0) {
+                if (r == NULL) {
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
@@ -439,7 +439,7 @@ i32 CPlay::ValidateLevelTiles() {
             obj->m_flags |= 0x10000;
         } else if (who == CreateLevelTime) {
 
-            if (m_frameMarker != 0 && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
+            if (m_frameMarker != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
                 && g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == ok) {
                 i32 a = obj->m_points;
                 i32 b = obj->m_score;
@@ -461,11 +461,11 @@ i32 CPlay::ValidateLevelTiles() {
             if (obj->m_smarts == g_curPlayer) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 void* slot = 0;
-                if (cell->m_next != 0) {
+                if (cell->m_next != NULL) {
                     slot = &cell->m_coord;
                     g_coordPool.m_freeHead = cell->m_next;
                 }
-                if (slot != 0) {
+                if (slot != NULL) {
                     (static_cast<i32*>(slot))[0] = (obj->m_screenX & ~0x1f) + 0x10;
                     (static_cast<i32*>(slot))[1] = (obj->m_screenY & ~0x1f) + 0x10;
                 }
@@ -485,7 +485,7 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_extent.right,
                         obj->m_extent.bottom
                     )
-                    != 0) {
+                    != NULL) {
                     validCount++;
                     obj->m_flags |= 0x10000;
                 }
@@ -550,12 +550,12 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateWarpStonePad) {
             if (g_gameReg->m_gameMode != ok) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
-                if (cell->m_next != 0) {
+                if (cell->m_next != NULL) {
                     g_coordPool.m_freeHead = cell->m_next;
                 }
             }
         }
-    } while (pos != 0);
+    } while (pos != NULL);
 
     return ok;
 }
@@ -570,21 +570,21 @@ i32 CPlay::PositionBridgeToggle(i32 mode, i32) {
     if (mode == 1) {
         m_hitTest->Configure(2);
         pt = m_frameMarker;
-        if (pt == 0) {
+        if (pt == NULL) {
             goto done;
         }
         ex -= 0x37;
     } else if (mode == 0) {
         m_hitTest->Configure(1);
         pt = m_frameMarker;
-        if (pt == 0) {
+        if (pt == NULL) {
             goto done;
         }
         ex -= 0xd7;
     } else {
         m_hitTest->Configure(3);
         pt = m_frameMarker;
-        if (pt == 0) {
+        if (pt == NULL) {
             goto done;
         }
         ex -= 0x37;
@@ -596,10 +596,10 @@ done:
 
     CTriggerMgr* g = m_mgr->m_cmdGrid;
     CWwdGameObjectA* goal = g->m_goal;
-    if (goal != 0) {
-        if (goal != 0) {
+    if (goal != NULL) {
+        if (goal != NULL) {
             goal->m_flags |= 0x10000;
-            g->m_goal = 0;
+            g->m_goal = NULL;
         }
         m_mgr->m_cmdGrid->LoadCameraSprite();
     }

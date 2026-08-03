@@ -16,6 +16,8 @@
 #include <Io/FileMem.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CGruntToySprite, 0x001e7b4c);
 
 template<> DATA(0x00244d58)
@@ -53,7 +55,7 @@ void CGruntToySprite::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -76,7 +78,7 @@ i32 CGruntToySprite::SetCell(i32 x, i32 y) {
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
     CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
-    if (e == 0) {
+    if (e == NULL) {
         return 0;
     }
     PickupType layer = e->m_vehiclePickupType;
@@ -84,12 +86,12 @@ i32 CGruntToySprite::Update() {
         CWwdGameObjectA* r = m_object;
         m_lastLayer = layer;
         CDDrawWorker* h = r->m_frameSet;
-        if (h != 0) {
+        if (h != NULL) {
             CImage* mapped;
             if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
                 mapped = static_cast<CImage*>(h->m_items.GetAt(IDX(layer)));
             } else {
-                mapped = 0;
+                mapped = NULL;
             }
             r->m_layer = mapped;
             r->m_frameIndex = layer;

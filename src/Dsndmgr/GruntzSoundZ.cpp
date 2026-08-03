@@ -32,14 +32,14 @@ RVA(0x00138490, 0x5e)
 i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
     m_hInstance = hInst;
     m_ownerWnd = hwnd;
-    m_pCurrent = 0;
+    m_pCurrent = NULL;
     m_enabled = 1;
     g_midiResModule = hInst;
     if (noMidi != 0) {
         m_enabled = 0;
     } else {
         AIL_startup();
-        if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {
+        if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == NULL) {
             m_enabled = 0;
         }
     }
@@ -49,19 +49,19 @@ i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
 RVA(0x001384f0, 0x3b)
 void CGruntzSoundZ::Shutdown() {
     StopAndFlush();
-    if (m_pCurrent != 0) {
+    if (m_pCurrent != NULL) {
         m_pCurrent->Stop();
     }
     StopAndFlush();
-    m_ownerWnd = 0;
-    m_pCurrent = 0;
-    g_ailMidiDriver = 0;
+    m_ownerWnd = NULL;
+    m_pCurrent = NULL;
+    g_ailMidiDriver = NULL;
     AIL_shutdown();
 }
 
 RVA(0x00138530, 0xa2)
 void CGruntzSoundZ::StopAndFlush() {
-    if (m_pCurrent != 0) {
+    if (m_pCurrent != NULL) {
         m_pCurrent->Stop();
     }
     POSITION pos = m_map.GetStartPosition();
@@ -70,13 +70,13 @@ void CGruntzSoundZ::StopAndFlush() {
             CString key;
             CObject* val = 0;
             m_map.GetNextAssoc(pos, key, val);
-            if (val != 0) {
+            if (val != NULL) {
                 delete static_cast<CGruntzSoundInnerZ*>(val);
             }
         } while (pos != static_cast<POSITION>(0));
     }
     m_map.RemoveAll();
-    m_pCurrent = 0;
+    m_pCurrent = NULL;
 }
 
 RVA(0x001385e0, 0x85)
@@ -86,7 +86,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2(const char* path, const char* nam
     }
     CGruntzSoundInnerZ* inner = new CGruntzSoundInnerZ();
     if (inner->Load(path, name) == 0) {
-        if (inner != 0) {
+        if (inner != NULL) {
             delete inner;
         }
         return 0;
@@ -102,7 +102,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank(const void* buf, u32 len, const ch
     }
     CGruntzSoundInnerZ* inner = new CGruntzSoundInnerZ();
     if (inner->DecodeBuf(buf, len, name) == 0) {
-        if (inner != 0) {
+        if (inner != NULL) {
             delete inner;
         }
         return 0;
@@ -113,24 +113,24 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank(const void* buf, u32 len, const ch
 
 RVA(0x00138700, 0x2d)
 void CGruntzSoundZ::Insert(CGruntzSoundInnerZ* inner) {
-    if (inner == 0) {
+    if (inner == NULL) {
         return;
     }
     if (m_enabled == 0) {
         return;
     }
     m_map[inner->m_name] = static_cast<CObject*>(inner);
-    if (m_pCurrent == 0) {
+    if (m_pCurrent == NULL) {
         m_pCurrent = inner;
     }
 }
 
 RVA(0x00138730, 0x41)
 CGruntzSoundInnerZ* CGruntzSoundZ::FindBank(const char* key) {
-    if (m_ownerWnd == 0) {
+    if (m_ownerWnd == NULL) {
         return 0;
     }
-    if (key == 0) {
+    if (key == NULL) {
         return 0;
     }
     if (*key == 0) {
@@ -146,7 +146,7 @@ i32 CGruntzSoundZ::PlayCreate2(const char* path, i32 playMode, const char* name)
         return 0;
     }
     CGruntzSoundInnerZ* inner = CreateBank2(path, name);
-    if (inner == 0) {
+    if (inner == NULL) {
         return 0;
     }
     StopCurrent();
@@ -163,7 +163,7 @@ i32 CGruntzSoundZ::PlayCreate3(const void* buf, u32 len, i32 playMode, const cha
         return 0;
     }
     CGruntzSoundInnerZ* inner = CreateBank(buf, len, name);
-    if (inner == 0) {
+    if (inner == NULL) {
         return 0;
     }
     StopCurrent();
@@ -180,7 +180,7 @@ i32 CGruntzSoundZ::PlayByName(const char* name, i32 playMode) {
         return 0;
     }
     CGruntzSoundInnerZ* inner = FindBank(name);
-    if (inner == 0) {
+    if (inner == NULL) {
         return 0;
     }
     StopCurrent();
@@ -193,15 +193,15 @@ i32 CGruntzSoundZ::PlayByName(const char* name, i32 playMode) {
 
 RVA(0x001388a0, 0x18)
 void CGruntzSoundZ::StopCurrent() {
-    if (m_pCurrent != 0) {
+    if (m_pCurrent != NULL) {
         m_pCurrent->Stop();
-        m_pCurrent = 0;
+        m_pCurrent = NULL;
     }
 }
 
 RVA(0x001388c0, 0x2a)
 i32 CGruntzSoundZ::Restart(i32 playMode) {
-    if (m_pCurrent == 0) {
+    if (m_pCurrent == NULL) {
         return 0;
     }
     m_pCurrent->Stop();
@@ -210,7 +210,7 @@ i32 CGruntzSoundZ::Restart(i32 playMode) {
 
 RVA(0x001388f0, 0xf)
 i32 CGruntzSoundZ::StopAll() {
-    if (m_pCurrent == 0) {
+    if (m_pCurrent == NULL) {
         return 0;
     }
     return m_pCurrent->StopAll();
@@ -218,7 +218,7 @@ i32 CGruntzSoundZ::StopAll() {
 
 RVA(0x00138900, 0x19)
 i32 CGruntzSoundZ::StopBank(i32 bank) {
-    if (m_pCurrent == 0) {
+    if (m_pCurrent == NULL) {
         return 0;
     }
     return m_pCurrent->StopBank(bank);
@@ -226,7 +226,7 @@ i32 CGruntzSoundZ::StopBank(i32 bank) {
 
 RVA(0x00138920, 0xf)
 i32 CGruntzSoundZ::IsPlaying() {
-    if (m_pCurrent == 0) {
+    if (m_pCurrent == NULL) {
         return 0;
     }
     return m_pCurrent->Stop();
@@ -237,7 +237,7 @@ void __stdcall EmptyMsgHook(WPARAM, LPARAM) {}
 
 RVA(0x00138950, 0x70)
 i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
-    if (g_ailMidiDriver == 0) {
+    if (g_ailMidiDriver == NULL) {
         return 0;
     }
     i32 scaled;
@@ -255,7 +255,7 @@ i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
 // @early-stop
 RVA(0x001389c0, 0x47)
 i32 CGruntzSoundZ::GetXMidiVolume() {
-    if (g_ailMidiDriver == 0) {
+    if (g_ailMidiDriver == NULL) {
         return 0x64;
     }
     i32 v = AIL_XMIDI_master_volume(g_ailMidiDriver);
@@ -270,7 +270,7 @@ i32 CGruntzSoundZ::GetXMidiVolume() {
 
 RVA(0x00138a10, 0xb)
 i32 CGruntzSoundInnerZ::IsStarted() {
-    return m_seqHandle != 0;
+    return m_seqHandle != NULL;
 }
 
 RVA(0x00138a20, 0x6)
@@ -286,7 +286,7 @@ CGruntzSoundInnerZ::~CGruntzSoundInnerZ() {
 
 RVA(0x00138aa0, 0x175)
 i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
-    if (strstr(path, g_dot) == 0) {
+    if (strstr(path, g_dot) == NULL) {
         return LoadSpecial(path, name);
     }
     CFile file;
@@ -298,7 +298,7 @@ i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
         return 0;
     }
     m_loadBuffer = static_cast<char*>(operator new(length));
-    if (m_loadBuffer == 0) {
+    if (m_loadBuffer == NULL) {
         return 0;
     }
     if (file.Read(m_loadBuffer, length) != length) {
@@ -309,38 +309,38 @@ i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
 
 RVA(0x00138c20, 0x122)
 i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     if (len < 4) {
         return 0;
     }
-    if (g_ailMidiDriver == 0) {
+    if (g_ailMidiDriver == NULL) {
         return 0;
     }
     ++g_midiSeqCounter;
     m_playMode = 0;
     m_tempoPct = 100;
     m_volumePct = 100;
-    if (name != 0) {
+    if (name != NULL) {
         strcpy(m_name, name);
     } else {
         sprintf(m_name, "MIDI%i", g_midiSeqCounter);
     }
-    if (m_loadBuffer == 0) {
+    if (m_loadBuffer == NULL) {
         m_loadBuffer = static_cast<char*>(operator new(len));
-        if (m_loadBuffer == 0) {
+        if (m_loadBuffer == NULL) {
             return 0;
         }
         memcpy(m_loadBuffer, buf, len);
     }
     m_seqHandle = AIL_allocate_sequence_handle(g_ailMidiDriver);
-    if (m_seqHandle == 0) {
+    if (m_seqHandle == NULL) {
         return 0;
     }
     if (AIL_init_sequence(m_seqHandle, m_loadBuffer, 0) == 0) {
         AIL_release_sequence_handle(m_seqHandle);
-        m_seqHandle = 0;
+        m_seqHandle = NULL;
         return 0;
     }
     return 1;
@@ -349,15 +349,15 @@ i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
 RVA(0x00138d50, 0x74)
 i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
     HRSRC rsrc = FindResourceA(g_midiResModule, resName, "MIDI");
-    if (rsrc == 0) {
+    if (rsrc == NULL) {
         return 0;
     }
     HGLOBAL hRes = LoadResource(g_midiResModule, rsrc);
-    if (hRes == 0) {
+    if (hRes == NULL) {
         return 0;
     }
     void* p = LockResource(hRes);
-    if (p == 0) {
+    if (p == NULL) {
         return 0;
     }
     u32 size = SizeofResource(g_midiResModule, rsrc);
@@ -367,13 +367,13 @@ i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
 RVA(0x00138dd0, 0x36)
 void CGruntzSoundInnerZ::ReleaseHandle() {
     Stop();
-    if (m_seqHandle != 0) {
+    if (m_seqHandle != NULL) {
         AIL_release_sequence_handle(m_seqHandle);
-        m_seqHandle = 0;
+        m_seqHandle = NULL;
     }
-    if (m_loadBuffer != 0) {
+    if (m_loadBuffer != NULL) {
         operator delete(m_loadBuffer);
-        m_loadBuffer = 0;
+        m_loadBuffer = NULL;
     }
 }
 

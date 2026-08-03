@@ -29,20 +29,20 @@
 
 RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
-    m_drawTarget = 0;
-    m_childGroup = 0;
-    m_workerList = 0;
-    m_imageRegistry = 0;
-    m_workerCache = 0;
-    m_workerMap = 0;
-    m_ptrColl = 0;
-    m_soundStream = 0;
-    m_level = 0;
-    m_soundRegistry = 0;
-    m_animRegistry = 0;
+    m_drawTarget = NULL;
+    m_childGroup = NULL;
+    m_workerList = NULL;
+    m_imageRegistry = NULL;
+    m_workerCache = NULL;
+    m_workerMap = NULL;
+    m_ptrColl = NULL;
+    m_soundStream = NULL;
+    m_level = NULL;
+    m_soundRegistry = NULL;
+    m_animRegistry = NULL;
     m_flags = 0;
     m_lastError = 0;
-    m_callback = 0;
+    m_callback = NULL;
     g_killCueClock = 0;
     g_engineFrameDelta = 0;
 }
@@ -130,7 +130,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
     }
     if (!m_soundStream->PlaySoundDefaulted(hWnd, mode)) {
         delete m_soundStream;
-        m_soundStream = 0;
+        m_soundStream = NULL;
         if (flags & 8) {
             if (m_lastError == 0) {
                 m_lastError = 0x3f1;
@@ -138,9 +138,9 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
             return 0;
         }
     }
-    if (m_soundStream != 0 && (flags & 4)) {
+    if (m_soundStream != NULL && (flags & 4)) {
         delete m_soundStream;
-        m_soundStream = 0;
+        m_soundStream = NULL;
     }
     if (!m_soundRegistry->BindSoundStream(1)) {
         if (m_lastError == 0) {
@@ -155,74 +155,74 @@ RVA(0x00155e20, 0xd1)
 void CDDrawSurfaceMgr::Cleanup() {
     if (m_level) {
         delete m_level;
-        m_level = 0;
+        m_level = NULL;
     }
     if (m_soundRegistry) {
         delete m_soundRegistry;
-        m_soundRegistry = 0;
+        m_soundRegistry = NULL;
     }
     if (m_soundStream) {
         delete m_soundStream;
-        m_soundStream = 0;
+        m_soundStream = NULL;
     }
     if (m_drawTarget) {
         delete m_drawTarget;
-        m_drawTarget = 0;
+        m_drawTarget = NULL;
     }
     if (m_childGroup) {
         delete m_childGroup;
-        m_childGroup = 0;
+        m_childGroup = NULL;
     }
     if (m_workerList) {
         delete m_workerList;
-        m_workerList = 0;
+        m_workerList = NULL;
     }
     if (m_imageRegistry) {
         delete m_imageRegistry;
-        m_imageRegistry = 0;
+        m_imageRegistry = NULL;
     }
     if (m_workerCache) {
         delete m_workerCache;
-        m_workerCache = 0;
+        m_workerCache = NULL;
     }
     if (m_workerMap) {
         delete m_workerMap;
-        m_workerMap = 0;
+        m_workerMap = NULL;
     }
     if (m_animRegistry) {
         delete m_animRegistry;
-        m_animRegistry = 0;
+        m_animRegistry = NULL;
     }
     if (m_ptrColl) {
         delete m_ptrColl;
-        m_ptrColl = 0;
+        m_ptrColl = NULL;
     }
-    m_callback = 0;
+    m_callback = NULL;
 }
 
 RVA(0x00155f00, 0x41)
 i32 CDDrawSurfaceMgr::IsReady() {
     CDDrawSubMgrPages* first = m_drawTarget;
 
-    if (first == 0) {
+    if (first == NULL) {
         goto fail;
     }
-    if (m_childGroup == 0) {
+    if (m_childGroup == NULL) {
         goto fail;
     }
-    if (m_workerList == 0) {
+    if (m_workerList == NULL) {
         goto fail;
     }
-    if (m_imageRegistry == 0) {
+    if (m_imageRegistry == NULL) {
         goto fail;
     }
-    if (m_workerCache == 0) {
+    if (m_workerCache == NULL) {
         goto fail;
     }
     if (first->IsLoaded() == 0) {
         goto fail;
     }
-    if (m_level != 0) {
+    if (m_level != NULL) {
         return 1;
     }
 
@@ -243,7 +243,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
         if (m_drawTarget->ResizePages(x, y, flags) == 0) {
             return 0;
         }
-        if (m_level != 0) {
+        if (m_level != NULL) {
 
             if (m_level->SetExtentsAndBuildAll(x, y) == 0) {
                 return 0;
@@ -255,22 +255,22 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
 
 RVA(0x00155fc0, 0x2e)
 void CDDrawSurfaceMgr::FreeContext() {
-    if (m_soundRegistry != 0) {
+    if (m_soundRegistry != NULL) {
 
         SoundStream* inner = m_soundRegistry->m_soundStream;
-        if (inner != 0) {
+        if (inner != NULL) {
             inner->Stop();
         }
         m_soundRegistry->ClearMap();
     }
-    if (m_soundStream != 0) {
+    if (m_soundStream != NULL) {
         m_soundStream->Free();
     }
 }
 
 RVA(0x00155ff0, 0x22)
 i32 CDDrawSurfaceMgr::PlayDefaultSound() {
-    if (m_soundStream != 0 && m_soundStream->m_initialized == 0) {
+    if (m_soundStream != NULL && m_soundStream->m_initialized == 0) {
         return m_soundStream->PlaySoundDefaulted(m_hWnd, 1);
     }
     return 1;
@@ -280,7 +280,7 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 RVA(0x00156020, 0x505)
 
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
-    if (path == 0) {
+    if (path == NULL) {
         return 0;
     }
     m_callback = cb;
@@ -348,7 +348,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
-    if (name == 0) {
+    if (name == NULL) {
         return 0;
     }
     m_callback = cb;
@@ -368,7 +368,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
 
     void* headerArg = &header;
 
-    if (m_callback == 0 || m_callback(this, &S, SERIAL_RESTORE_BEGIN, typeId, headerArg) == 0) {
+    if (m_callback == NULL || m_callback(this, &S, SERIAL_RESTORE_BEGIN, typeId, headerArg) == 0) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
@@ -376,7 +376,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, SERIAL_PRELOAD, typeId, headerArg) == 0) {
+    if (m_callback == NULL || m_callback(this, &S, SERIAL_PRELOAD, typeId, headerArg) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_PRELOAD, typeId) == 0) {
@@ -385,7 +385,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_level->EditDispatch(&S, SERIAL_PRELOAD, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, SERIAL_LOAD, typeId, headerArg) == 0) {
+    if (m_callback == NULL || m_callback(this, &S, SERIAL_LOAD, typeId, headerArg) == 0) {
         return 0;
     }
     if (m_childGroup->Deserialize(&S, header.m_childCount, typeId) == 0) {
@@ -394,7 +394,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_level->EditDispatch(&S, SERIAL_LOAD, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, SERIAL_POSTLOAD, typeId, headerArg) == 0) {
+    if (m_callback == NULL || m_callback(this, &S, SERIAL_POSTLOAD, typeId, headerArg) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTLOAD, typeId) == 0) {
@@ -427,7 +427,7 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, SerialMode mode, LogicTypeId type
 RVA(0x00156ad0, 0x1d2)
 i32 __stdcall
 LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i32 unused) {
-    if (name == 0) {
+    if (name == NULL) {
         return 0;
     }
     CFileMem S;
@@ -439,7 +439,7 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
     }
 
     S.Read(&hdrOut, sizeof(CSnapshotHeader));
-    if (buf != 0 && len > 0) {
+    if (buf != NULL && len > 0) {
         S.Read(buf, len);
     }
     S.Ready();

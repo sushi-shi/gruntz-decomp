@@ -10,6 +10,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawWorker;
 
 class CDDrawSurfaceMgr;
@@ -19,8 +21,8 @@ public:
     CSBI_MenuItem() {
         m_kind = 2;
         m_state = MENUITEM_UNSET;
-        m_frame = 0;
-        m_record = 0;
+        m_frame = NULL;
+        m_record = NULL;
     }
 
     virtual ~CSBI_MenuItem() OVERRIDE;

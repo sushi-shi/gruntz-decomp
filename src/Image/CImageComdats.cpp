@@ -33,12 +33,12 @@ i32 CState::DrawScreenTextImage(const char* name) {
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%sTEXT", name);
     CParseSource* src = SymTab2c()->ResolveQualified(buf, IMGTAG_DIP);
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* world = m_world;
     CDDrawSurfacePair* page = world->m_drawTarget->m_backPair;
-    if (page == 0) {
+    if (page == NULL) {
         return 0;
     }
     CImage img(0, world);

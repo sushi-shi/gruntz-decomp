@@ -187,7 +187,7 @@ static inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
-        if (slot != 0) {
+        if (slot != NULL) {
             slot->~CString();
         }
         slot++;
@@ -367,7 +367,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
         MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
-        if (sout != 0) {
+        if (sout != NULL) {
 
             sout->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
@@ -625,7 +625,7 @@ i32 CGrunt::TryPowerupAtTile() {
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
     DirectSoundMgr*& sample = m_struckSlotSound;
-    if (sample != 0) {
+    if (sample != NULL) {
         return;
     }
     if (g_gameReg->m_soundEnabled == 0) {
@@ -634,14 +634,14 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     void* entry_ob = 0;
     g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
     LeafCue* entry = static_cast<LeafCue*>(entry_ob);
-    if (entry == 0) {
+    if (entry == NULL) {
         return;
     }
-    if (entry->m_sound == 0) {
+    if (entry->m_sound == NULL) {
         return;
     }
     sample = static_cast<DirectSoundMgr*>(entry->m_sound->GetItem());
-    if (sample == 0) {
+    if (sample == NULL) {
         return;
     }
     sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
@@ -652,27 +652,27 @@ void CGrunt::StopStruckSlotSound() {
     DirectSoundMgr* p = m_struckSlotSound;
     if (p) {
         p->StopAndRewind();
-        m_struckSlotSound = 0;
+        m_struckSlotSound = NULL;
     }
 }
 
 RVA(0x00057c40, 0x71)
 void CGrunt::EnsureStruckVoice(const char* key) {
     DirectSoundMgr*& sample = m_struckVoiceSound;
-    if (sample != 0) {
+    if (sample != NULL) {
         return;
     }
     void* entry_ob = 0;
     g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
     LeafCue* entry = static_cast<LeafCue*>(entry_ob);
-    if (entry == 0) {
+    if (entry == NULL) {
         return;
     }
-    if (entry->m_sound == 0) {
+    if (entry->m_sound == NULL) {
         return;
     }
     sample = static_cast<DirectSoundMgr*>(entry->m_sound->GetItem());
-    if (sample == 0) {
+    if (sample == NULL) {
         return;
     }
     sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
@@ -683,7 +683,7 @@ void CGrunt::StopStruckVoiceSound() {
     DirectSoundMgr* p = m_struckVoiceSound;
     if (p) {
         p->StopAndRewind();
-        m_struckVoiceSound = 0;
+        m_struckVoiceSound = NULL;
     }
 }
 
@@ -693,11 +693,11 @@ void CGrunt::ReapplyVoiceParams() {
         return;
     }
     DirectSoundMgr* a = m_struckSlotSound;
-    if (a != 0) {
+    if (a != NULL) {
         a->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
     DirectSoundMgr* b = m_struckVoiceSound;
-    if (b != 0) {
+    if (b != NULL) {
         b->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
 }
@@ -736,7 +736,7 @@ i32 CGrunt::PathScan() {
         rs.bottom = row5 + 2;
         RECT box;
         const RECT* pr = &rs;
-        if (pr != 0) {
+        if (pr != NULL) {
 
             box = *pr;
             box.right++;
@@ -756,9 +756,9 @@ i32 CGrunt::PathScan() {
     i32 trow = tail->m_coord->m_y;
     i32 hits = 0;
 
-    while (node != 0) {
+    while (node != NULL) {
         Coord* co = static_cast<Coord*>(coordz->GetNext(node));
-        if (co != 0) {
+        if (co != NULL) {
 
             if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0
                 || (co->m_x == tcol && co->m_y == trow)) {
@@ -777,11 +777,11 @@ i32 CGrunt::PathScan() {
                 if (res != 0) {
                     if (s.GetCount() != 0) {
 
-                        while (node != 0) {
+                        while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
                             Coord* fresh = 0;
                             CoordPoolNode* free = g_coordPool.m_freeHead;
-                            if (free->m_next != 0) {
+                            if (free->m_next != NULL) {
                                 fresh = &free->m_coord;
                                 fresh->m_x = src->m_x;
                                 fresh->m_y = src->m_y;
@@ -792,30 +792,30 @@ i32 CGrunt::PathScan() {
 
                         if (CoordCount() != 0) {
                             POSITION pos = m_coordList.GetHeadPosition();
-                            if (pos != 0) {
+                            if (pos != NULL) {
                                 do {
                                     void* d = m_coordList.GetNext(pos);
-                                    if (d != 0) {
+                                    if (d != NULL) {
                                         g_coordPool.Push(d);
                                     }
-                                } while (pos != 0);
+                                } while (pos != NULL);
                             }
                             coordz->RemoveAll();
                         }
 
                         POSITION p = s.GetHeadPosition();
-                        if (p != 0) {
+                        if (p != NULL) {
                             do {
                                 Coord* d = static_cast<Coord*>(s.GetNext(p));
-                                if (d != 0) {
+                                if (d != NULL) {
                                     if (d->m_x != col5 || d->m_y != row5) {
                                         coordz->AddTail(d);
                                     }
                                 }
-                            } while (p != 0);
+                            } while (p != NULL);
                         }
                         void* elem = s.RemoveHead();
-                        if (elem != 0) {
+                        if (elem != NULL) {
                             FREELIST_PUSH(elem);
                         }
                         s.RemoveAll();
@@ -846,7 +846,7 @@ i32 CGrunt::PathScan() {
         CRect rb(0, 0, grid->m_width, grid->m_height);
         RECT ra;
         const RECT* pn = &nb;
-        if (pn != 0) {
+        if (pn != NULL) {
             ra = *pn;
             ra.right++;
             ra.bottom++;
@@ -899,7 +899,7 @@ i32 CGrunt::PathScan() {
                         return 0;
                     }
                     void* elem = s.RemoveHead();
-                    if (elem != 0) {
+                    if (elem != NULL) {
                         FREELIST_PUSH(elem);
                     }
                     if (s.GetCount() == 0) {
@@ -909,22 +909,22 @@ i32 CGrunt::PathScan() {
 
                     if (CoordCount() != 0) {
                         POSITION pos = m_coordList.GetHeadPosition();
-                        if (pos != 0) {
+                        if (pos != NULL) {
                             do {
                                 void* d = static_cast<CGruntCoordList*>(coordz)->NextData(pos);
-                                if (d != 0) {
+                                if (d != NULL) {
                                     g_coordPool.Push(d);
                                 }
-                            } while (pos != 0);
+                            } while (pos != NULL);
                         }
                         coordz->RemoveAll();
                     }
 
                     POSITION p = s.GetHeadPosition();
-                    if (p != 0) {
+                    if (p != NULL) {
                         do {
                             coordz->AddTail(s.GetNext(p));
-                        } while (p != 0);
+                        } while (p != NULL);
                     }
                     s.RemoveAll();
 
@@ -932,15 +932,15 @@ i32 CGrunt::PathScan() {
                         != 0) {
                         if (s.GetCount() != 0) {
                             void* e2 = s.RemoveHead();
-                            if (e2 != 0) {
+                            if (e2 != NULL) {
                                 FREELIST_PUSH(e2);
                             }
                             if (s.GetCount() != 0) {
                                 POSITION q = s.GetHeadPosition();
-                                if (q != 0) {
+                                if (q != NULL) {
                                     do {
                                         coordz->AddTail(s.GetNext(q));
-                                    } while (q != 0);
+                                    } while (q != NULL);
                                 }
                                 s.RemoveAll();
                             }
@@ -1057,7 +1057,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         i32 phase = m_arrivalPhase;
         if ((phase == 3 || phase == 2) && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (occ != 0) {
+            if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 yMasked = (inner->m_screenY & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_screenX & ~0x1f) + 0x10;
@@ -1101,7 +1101,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         g_typeColl.m_grown = 0;
         CString* rec;
         if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
-            if (g_typeColl.GrowTo(coord, 0) != 0) {
+            if (g_typeColl.GrowTo(coord, 0) != NULL) {
                 rec = g_typeColl.Elem(coord);
             } else {
                 g_typeColl.Report(g_errOutOfMem, 0xc);
@@ -1122,7 +1122,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         g_typeColl.m_grown = 0;
         CString* rec;
         if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
-            if (g_typeColl.GrowTo(coord, 0) != 0) {
+            if (g_typeColl.GrowTo(coord, 0) != NULL) {
                 rec = g_typeColl.Elem(coord);
             } else {
                 char* msg = g_errOutOfMem;
@@ -1161,7 +1161,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     if (attackerGruntKind == GRUNT_CONVERSION) {
         CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
-        if (enemy != 0
+        if (enemy != NULL
             && m_tileMgr->SpawnGrunt(
                    this->m_tileOwnerHi,
                    this->m_tileOwnerLo,
@@ -1178,7 +1178,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 (static_cast<CDDrawSurfaceMgr*>(m_animWorker->m_ownerCtx))->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 LeafCue* cc = static_cast<LeafCue*>(host->Lookup(s_CONVERSIONHIT));
-                if (cc != 0) {
+                if (cc != NULL) {
                     cc->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
@@ -1200,7 +1200,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         hit = static_cast<i32>((static_cast<float>(hit) * g_quarterScale));
         if (fromProjectile == 0) {
             CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
-            if (enemy != 0 && enemy->m_entranceCommitted != 0) {
+            if (enemy != NULL && enemy->m_entranceCommitted != 0) {
                 i32 nh = enemy->m_health - hit * 3;
                 if (nh < 0) {
                     nh = 0;
@@ -1384,7 +1384,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     L_cue:
 
-        if (cue != 0 && g_sndEnabled != 0) {
+        if (cue != NULL && g_sndEnabled != 0) {
             i32 clk = g_killCueClock;
             if (static_cast<u32>((clk - cue->m_lastPlayTime))
                 >= static_cast<u32>(cue->m_replayDelay)) {
@@ -1415,7 +1415,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;
         do {
-            if (p != 0) {
+            if (p != NULL) {
                 new (p) CString();
             }
             p++;
@@ -1567,7 +1567,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             Coord* node = 0;
             i32 rx = this->m_lastTilePx.m_x >> 5;
             i32 ry = this->m_lastTilePx.m_y >> 5;
-            if (g_coordPool.m_freeHead->m_next != 0) {
+            if (g_coordPool.m_freeHead->m_next != NULL) {
                 node = &g_coordPool.m_freeHead->m_coord;
                 node->m_x = rx;
                 node->m_y = ry;
@@ -1590,16 +1590,16 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         if (m_coordList.GetCount() != 0) {
             POSITION pos = m_coordList.GetHeadPosition();
-            if (pos != 0) {
+            if (pos != NULL) {
                 do {
                     Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
-                    if (data != 0) {
+                    if (data != NULL) {
 
                         CoordPoolNode* slot = g_coordPool.NodeOf(data);
                         slot->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = slot;
                     }
-                } while (pos != 0);
+                } while (pos != NULL);
             }
             m_coordList.RemoveAll();
         }
@@ -1644,7 +1644,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     m_neighborScanEnabled = 1;
 
     CGrunt* nb = m_tileMgr->m_grid[a * TM_GRID_COLS + b];
-    if (nb == 0 || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
+    if (nb == NULL || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
         return 0;
     }
 
@@ -1773,7 +1773,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     }
 
     CGrunt* n = m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
-    if (n != 0 && n->m_entranceCommitted != 0) {
+    if (n != NULL && n->m_entranceCommitted != 0) {
         if (validate != 0) {
             if (n->m_object->m_screenX != n->m_lastTilePx.m_x) {
                 return 0;

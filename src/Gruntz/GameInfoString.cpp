@@ -23,13 +23,13 @@ i32 CGameInfo::HasSupportedVersion() {
 
 RVA(0x00118310, 0xc)
 i32 ValidateGameTime(CGameInfoTime* t) {
-    return t != 0;
+    return t != NULL;
 }
 
 // @early-stop
 RVA(0x00118330, 0x57)
 i32 BuildGameDate(CGameInfoTime* out) {
-    if (out == 0) {
+    if (out == NULL) {
         return 0;
     }
     CTime now = CTime::GetCurrentTime();
@@ -42,7 +42,7 @@ i32 BuildGameDate(CGameInfoTime* out) {
 RVA(0x001183b0, 0x211)
 i32 CGameInfo::FormatGameInfoString() {
     char* name = m_body.m_name;
-    if (name == 0) {
+    if (name == NULL) {
         return 0;
     }
     if (strlen(name) == 0) {
@@ -64,7 +64,7 @@ i32 CGameInfo::FormatGameInfoString() {
     strcat(g_infoMaster, g_infoScratch);
 
     CGameInfoTime* t = &m_body.m_time;
-    if (t == 0) {
+    if (t == NULL) {
         return 0;
     }
     if (!ValidateGameTime(t)) {

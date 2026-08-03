@@ -8,6 +8,8 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
+#include <stddef.h>
+
 struct CParseSource;
 
 class CDDrawPtrCollections;
@@ -37,8 +39,8 @@ public:
     CImage(i32 index, CDDrawSurfaceMgr* parent) : CWapObj(index, parent) {
         m_width = 0;
         m_height = 0;
-        m_surface = 0;
-        m_owned = 0;
+        m_surface = NULL;
+        m_owned = NULL;
     }
 
     virtual ~CImage() OVERRIDE;
@@ -87,7 +89,7 @@ inline CImage::~CImage() {
     FreeAll();
     m_id = -1;
     m_flags = 0;
-    m_ownerCtx = 0;
+    m_ownerCtx = NULL;
 }
 #endif
 

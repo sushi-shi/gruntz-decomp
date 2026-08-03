@@ -50,11 +50,11 @@ void CRangeSet::AddFromString(char* str) {
     char buf[0x100];
     while (*str != 0) {
         char* x = strstr(str, "X");
-        if (x == 0) {
+        if (x == NULL) {
             return;
         }
         str = strpbrk(x, "0123456789");
-        if (str == 0) {
+        if (str == NULL) {
             return;
         }
         strcpy(buf, str);
@@ -72,7 +72,7 @@ void CRangeSet::AddFromString(char* str) {
         i32 hi;
         if (*str == '-') {
             str = strpbrk(str, "0123456789");
-            if (str == 0) {
+            if (str == NULL) {
                 return;
             }
             strcpy(buf, str);
@@ -204,7 +204,7 @@ CDebugConfig::CDebugConfig() {
     g_debugChannels.m_count = 0;
     g_debugPrintMode = 1;
     char* env = getenv("DPRINTF");
-    if (env != 0) {
+    if (env != NULL) {
         strcpy(buf, env);
         _strupr(buf);
         if (strstr(buf, "MONO")) {

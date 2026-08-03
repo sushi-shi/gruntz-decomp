@@ -48,7 +48,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     }
     CDDSurface* item = m_ownerCtx->m_ptrColl->LoadFileSurface(path, capArg, flagsArg);
     m_surface = item;
-    if (item == 0) {
+    if (item == NULL) {
         return 0;
     }
 
@@ -86,7 +86,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
             return 0;
     }
     char* resolved = src->BeginParse();
-    if (resolved == 0) {
+    if (resolved == NULL) {
         return 0;
     }
 
@@ -114,7 +114,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
             return 0;
         }
 
-        if (m_owned != 0 && (HAS(desc->flags, PID_SRC_8BPP_SHADE))) {
+        if (m_owned != NULL && (HAS(desc->flags, PID_SRC_8BPP_SHADE))) {
             m_owned->Select(SHADE_DST_BY_SRC, 0);
             return 1;
         }
@@ -138,7 +138,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     CDDSurface* item =
         m_ownerCtx->m_ptrColl->LoadSurfaceFromPid(desc, mode, size, capArg, flagsArg);
     m_surface = item;
-    if (item == 0) {
+    if (item == NULL) {
         return 0;
     }
     i32 w = item->m_width;
@@ -165,7 +165,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     CDDSurface* item =
         m_ownerCtx->m_ptrColl->CreateKeyedSurface(width, height, 0, capArg, flagsArg);
     m_surface = item;
-    if (item == 0) {
+    if (item == NULL) {
         return 0;
     }
     i32 w = item->m_width;
@@ -189,7 +189,7 @@ RVA(0x00153180, 0xda)
 i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
     m_owned = owned;
-    if (owned == 0) {
+    if (owned == NULL) {
         return 0;
     }
 
@@ -212,30 +212,30 @@ RVA(0x00153260, 0x41)
 void CImage::FreeAll() {
     m_width = 0;
     m_height = 0;
-    if (m_surface != 0) {
+    if (m_surface != NULL) {
         m_ownerCtx->m_ptrColl->RemoveItemA(m_surface);
-        m_surface = 0;
+        m_surface = NULL;
     }
     CDDrawShadeBlit* owned = m_owned;
-    if (owned != 0) {
+    if (owned != NULL) {
         owned->Teardown();
         ::operator delete(owned);
-        m_owned = 0;
+        m_owned = NULL;
     }
 }
 
 RVA(0x001532b0, 0x80)
 i32 CImage::CopyFrom(CImage* other) {
-    if (other == 0) {
+    if (other == NULL) {
         return 0;
     }
-    if (other->m_owned != 0) {
+    if (other->m_owned != NULL) {
         return 0;
     }
-    if (m_surface == 0) {
+    if (m_surface == NULL) {
         return 0;
     }
-    if (m_owned != 0) {
+    if (m_owned != NULL) {
         return 0;
     }
     if (m_width != other->m_width) {
@@ -274,11 +274,11 @@ RVA(0x00153380, 0xeb)
 i32 CImage::Reload(CParseSource* src, i32 arg) {
 
     CDDSurface* surf = m_surface;
-    if (surf == 0) {
+    if (surf == NULL) {
         return 1;
     }
     IDirectDrawSurface* s = surf->m_ddSurface;
-    if (s != 0) {
+    if (s != NULL) {
         if (s->IsLost() == 0) {
             return 1;
         }
@@ -307,7 +307,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
             return 0;
     }
     char* resolved = src->BeginParse();
-    if (resolved == 0) {
+    if (resolved == NULL) {
         return 0;
     }
     if (src->m_length == 0) {
@@ -471,7 +471,7 @@ void CImage::RenderFrameClipped(
 ) {
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
-        if (clipRect != 0) {
+        if (clipRect != NULL) {
             g_imageClipRect[0] = clipRect->left;
             g_imageClipRect[1] = clipRect->top;
             g_imageClipRect[2] = clipRect->right;

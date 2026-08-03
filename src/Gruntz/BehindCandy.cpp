@@ -6,6 +6,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
 
+#include <stddef.h>
+
 RVA(0x0000fb90, 0x47)
 i32 CBehindCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -23,10 +25,10 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0;
         m_object->m_flags |= 0x20000;
     }
-    if (m_object->m_layer != 0) {
+    if (m_object->m_layer != NULL) {
         if (m_object->m_layer->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != 0) {
+            if (m_object->m_animWorker != NULL) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
                 m_wwdObject->m_flags &= ~0x1000002;

@@ -16,7 +16,7 @@
 // @early-stop
 RVA(0x00164830, 0xec)
 i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, void* d) {
-    if (a == 0) {
+    if (a == NULL) {
         return 0;
     }
     switch (mode) {
@@ -59,7 +59,7 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, voi
 
 RVA(0x00164920, 0x35)
 i32 AnimWorkerObj::CacheTargetId(void* a) {
-    if (a == 0) {
+    if (a == NULL) {
         return 0;
     }
     m_targetId = 0;
@@ -71,7 +71,7 @@ i32 AnimWorkerObj::CacheTargetId(void* a) {
 
 RVA(0x00164960, 0x41a)
 i32 AnimWorkerObj::Save(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     ar->Write(&m_actKey, 4);
@@ -150,7 +150,7 @@ i32 AnimWorkerObj::Save(CFileMemBase* ar) {
 
 RVA(0x00164d80, 0x421)
 i32 AnimWorkerObj::Load(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     ar->Read(&m_actKey, 4);
@@ -230,14 +230,14 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
 // @early-stop
 RVA(0x001651b0, 0x5d)
 i32 AnimWorkerObj::ResolveTarget(void* a) {
-    if (a == 0) {
+    if (a == NULL) {
         return 0;
     }
     if (m_targetId) {
         CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;
         void* out = 0;
         if (!MapLookupById(*res, m_targetId, out)) {
-            m_target = 0;
+            m_target = NULL;
         } else {
             m_target = static_cast<CGameObject*>(out);
         }

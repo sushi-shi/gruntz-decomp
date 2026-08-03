@@ -43,7 +43,7 @@ static inline u16* Pix16(void* p) {
 
 RVA(0x000a32c0, 0x72)
 i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 refreshInterval) {
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     m_mgr = mgr;
@@ -70,11 +70,11 @@ i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 refreshInterval) {
 RVA(0x000a3360, 0x29)
 void CLightFxRender::Reset() {
     FreeSurface();
-    m_mgr = 0;
-    m_cmdGrid = 0;
-    m_tileGrid = 0;
-    m_world = 0;
-    m_surface = 0;
+    m_mgr = NULL;
+    m_cmdGrid = NULL;
+    m_tileGrid = NULL;
+    m_world = NULL;
+    m_surface = NULL;
     m_handle = 0;
     m_refreshInterval = 0;
     m_refreshRemaining = 0;
@@ -82,18 +82,18 @@ void CLightFxRender::Reset() {
 
 RVA(0x000a33a0, 0x23)
 void CLightFxRender::FreeSurface() {
-    if (m_world != 0 && m_surface != 0) {
+    if (m_world != NULL && m_surface != NULL) {
         m_world->m_ptrColl->RemoveItemA(m_surface);
-        m_surface = 0;
+        m_surface = NULL;
     }
 }
 
 RVA(0x000a33e0, 0x55)
 i32 CLightFxRender::AllocSurface() {
-    if (m_tileGrid == 0) {
+    if (m_tileGrid == NULL) {
         return 0;
     }
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
     FreeSurface();
@@ -103,7 +103,7 @@ i32 CLightFxRender::AllocSurface() {
     SIZE
     dims = GridSize(info);
     m_surface = mgr->m_ptrColl->MakeAndAddB(dims.cx, dims.cy, 0, 0, -1);
-    if (m_surface == 0) {
+    if (m_surface == NULL) {
         return 0;
     }
     m_surface->Clear(0);
@@ -126,7 +126,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
         m_refreshRemaining = m_refreshInterval;
     }
     m_refreshRemaining = m_refreshInterval;
-    if (m_surface == 0) {
+    if (m_surface == NULL) {
         if (!AllocSurface()) {
             return 0;
         }
@@ -138,7 +138,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
         }
     }
     char* base = static_cast<char*>(m_surface->Lock(0));
-    if (base == 0) {
+    if (base == NULL) {
         return 0;
     }
     for (u32 y = 0; y < m_tileGrid->m_height; y++) {
@@ -154,7 +154,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             if (tile != -1) {
 
                 CGrunt* desc = m_cmdGrid->m_grid[(tile & 0xff) + ((tile >> 8) & 0xff) * 15];
-                if (desc == 0) {
+                if (desc == NULL) {
                     continue;
                 }
                 i32 alt = 0;
@@ -166,7 +166,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                         >= desc->m_combatTimeout64
                     || desc->m_tileOwnerHi != g_curPlayer) {
                     CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_moveIcon);
-                    if (node == 0) {
+                    if (node == NULL) {
                         *dst = 0;
                         continue;
                     }
@@ -200,7 +200,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                     }
                 } else {
                     CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_moveIcon);
-                    if (node == 0) {
+                    if (node == NULL) {
                         *dst = 0;
                         continue;
                     }
@@ -229,7 +229,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     CDDSurface* surf = m_surface;
-    if (surf == 0) {
+    if (surf == NULL) {
         return 0;
     }
     RECT* srcRect = &m_srcRect;
@@ -325,7 +325,7 @@ RVA(0x000a3b50, 0xfa)
 void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
     CDDSurface* surf = ctx->m_surface;
     char* base = static_cast<char*>(surf->Lock(0));
-    if (base == 0) {
+    if (base == NULL) {
         return;
     }
     i32 w = r->right - r->left + 1;
@@ -1334,7 +1334,7 @@ i32 CLightFxRender::BeginMinimapPan(i32, i32 x, i32 y) {
     }
 
     CPlay* ctx = static_cast<CPlay*>(m_mgr->m_curState);
-    if (ctx != 0) {
+    if (ctx != NULL) {
         ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
     m_handle = 1;
@@ -1369,7 +1369,7 @@ i32 CLightFxRender::ContinueMinimapPan(i32, i32 x, i32 y) {
         return 0;
     }
     CPlay* ctx = static_cast<CPlay*>(m_mgr->m_curState);
-    if (ctx != 0) {
+    if (ctx != NULL) {
         ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
     return 1;

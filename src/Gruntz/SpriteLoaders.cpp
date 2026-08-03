@@ -28,12 +28,12 @@ CTimer* CTimer::Init() {
     m_accum.m_v = 0;
     m_startStamp.m_v = 0;
     m_unusedStamp.m_v = 0;
-    m_sprite = 0;
-    m_frameMinTens = 0;
-    m_frameMinOnes = 0;
-    m_frameColon = 0;
-    m_frameSecTens = 0;
-    m_frameSecOnes = 0;
+    m_sprite = NULL;
+    m_frameMinTens = NULL;
+    m_frameMinOnes = NULL;
+    m_frameColon = NULL;
+    m_frameSecTens = NULL;
+    m_frameSecOnes = NULL;
     m_active = 0;
     m_running = 0;
     return this;
@@ -89,12 +89,12 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
 
 RVA(0x0009bc70, 0x18)
 void CTimer::Reset() {
-    m_sprite = 0;
-    m_frameMinTens = 0;
-    m_frameMinOnes = 0;
-    m_frameColon = 0;
-    m_frameSecTens = 0;
-    m_frameSecOnes = 0;
+    m_sprite = NULL;
+    m_frameMinTens = NULL;
+    m_frameMinOnes = NULL;
+    m_frameColon = NULL;
+    m_frameSecTens = NULL;
+    m_frameSecOnes = NULL;
     m_active = 0;
 }
 
@@ -123,7 +123,7 @@ i32 CTimer::Tick(i32 dt) {
         ls->m_cueTimerHi = 0;
         g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer];
-        if (slot != 0) {
+        if (slot != NULL) {
             slot->m_clearedRound = 1;
         }
         i32 key = g_gameReg->m_options[0].m_warlordObjectId;
@@ -136,7 +136,7 @@ i32 CTimer::Tick(i32 dt) {
             AddrWord<CGameObject> raw;
             raw.m_word = key;
             CGameObject* hit = found ? obj : raw.m_addr;
-            if (hit != 0 && hit->m_animWorker->m_logic != 0) {
+            if (hit != NULL && hit->m_animWorker->m_logic != NULL) {
                 static_cast<CWarlord*>(hit->m_animWorker->m_logic)->ResolveDeathAnimation();
             }
         }
@@ -154,7 +154,7 @@ i32 CTimer::Tick(i32 dt) {
             AddrWord<CGameObject> raw;
             raw.m_word = key;
             CGameObject* hit = found ? obj : raw.m_addr;
-            if (hit != 0 && hit->m_animWorker->m_logic != 0) {
+            if (hit != NULL && hit->m_animWorker->m_logic != NULL) {
                 static_cast<CWarlord*>(hit->m_animWorker->m_logic)->NotifyFortUnderAttack();
             }
         }
@@ -264,7 +264,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 // @early-stop
 RVA(0x0009c1c0, 0xdb)
 i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i32 pObj) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     switch (kind) {
@@ -310,11 +310,11 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i
 
 RVA(0x0009c2e0, 0x2b6)
 i32 CTimer::Serialize(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
 

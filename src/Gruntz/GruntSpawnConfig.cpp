@@ -27,14 +27,14 @@ CGruntSpawnConfig::~CGruntSpawnConfig() {
 // @early-stop
 RVA(0x0011adc0, 0x44)
 BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
-    m_configTree = 0;
-    m_voices[0] = 0;
-    m_voices[1] = 0;
-    m_streams[0] = 0;
-    m_streams[1] = 0;
+    m_configTree = NULL;
+    m_voices[0] = NULL;
+    m_voices[1] = NULL;
+    m_streams[0] = NULL;
+    m_streams[1] = NULL;
     m_owner = owner;
     m_voiceVolume = 0x64;
     m_configTree = owner->m_world;
@@ -50,22 +50,22 @@ void CGruntSpawnConfig::Clear() {
         delete e;
     }
     m_voiceLists.SetSize(0, -1);
-    if (m_configTree != 0 && m_configTree->m_soundStream != 0) {
+    if (m_configTree != NULL && m_configTree->m_soundStream != NULL) {
         StreamVoice** p = m_streams;
         for (i32 k = 0; k < 2; k++) {
-            if (p[0] != 0) {
+            if (p[0] != NULL) {
                 m_configTree->m_soundStream->DestroyVoice(p[0]);
-                p[0] = 0;
+                p[0] = NULL;
             }
             p++;
         }
     }
-    m_owner = 0;
-    m_configTree = 0;
-    m_voices[0] = 0;
-    m_voices[1] = 0;
-    m_streams[0] = 0;
-    m_streams[1] = 0;
+    m_owner = NULL;
+    m_configTree = NULL;
+    m_voices[0] = NULL;
+    m_voices[1] = NULL;
+    m_streams[0] = NULL;
+    m_streams[1] = NULL;
 }
 
 RVA(0x0011af00, 0x62)
@@ -79,7 +79,7 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
         spr->m_animWorker->m_notify(spr);
         CGruntVoice* got = static_cast<CGruntVoice*>(spr->m_animWorker->m_logic);
         *slot = got;
-        if (got == 0) {
+        if (got == NULL) {
             return 0;
         }
     }
@@ -91,7 +91,7 @@ RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
     CGruntVoice** p = m_voices;
     for (i32 i = 0; i < 2; i++) {
-        p[i] = 0;
+        p[i] = NULL;
     }
 }
 
@@ -105,10 +105,10 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 priority,
     i32 percent
 ) {
-    if (m_voices[0] == 0 && !LoadGruntVoices()) {
+    if (m_voices[0] == NULL && !LoadGruntVoices()) {
         return 0;
     }
-    if (who == 0) {
+    if (who == NULL) {
         return 0;
     }
     if (!IsReady()) {
@@ -141,7 +141,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     CParseSource* src = PickWeighted(voiceId, which);
-    if (src == 0 || m_configTree->m_soundStream == 0) {
+    if (src == NULL || m_configTree->m_soundStream == NULL) {
         return 0;
     }
     CGruntVoice* v8 = m_voices[0];
@@ -158,11 +158,11 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         chosen = 1;
         if (c == gate->m_objectId) {
             chosen = 0;
-            if (b != 0 && streams[1] != 0) {
+            if (b != 0 && streams[1] != NULL) {
                 (static_cast<DirectSoundMgr*>(streams[1]))
                     ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-        } else if (a != 0 && streams[0] != 0) {
+        } else if (a != 0 && streams[0] != NULL) {
             (static_cast<DirectSoundMgr*>(streams[0]))
                 ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
@@ -170,19 +170,19 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         chosen = 0;
         if (d == gate->m_objectId) {
             chosen = 1;
-            if (a != 0 && streams[0] != 0) {
+            if (a != 0 && streams[0] != NULL) {
                 (static_cast<DirectSoundMgr*>(streams[0]))
                     ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-        } else if (b != 0 && streams[1] != 0) {
+        } else if (b != 0 && streams[1] != NULL) {
             (static_cast<DirectSoundMgr*>(streams[1]))
                 ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
-    if (streams[chosen] == 0) {
+    if (streams[chosen] == NULL) {
         streams[chosen] =
             m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
-        if (streams[chosen] == 0) {
+        if (streams[chosen] == NULL) {
             return 0;
         }
     }
@@ -207,10 +207,10 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 percent
 ) {
     CGruntVoice** voices = m_voices;
-    if (voices[0] == 0 && !LoadGruntVoices()) {
+    if (voices[0] == NULL && !LoadGruntVoices()) {
         return 0;
     }
-    if (who == 0 && objId == 0) {
+    if (who == NULL && objId == 0) {
         return 0;
     }
     if (!IsReady()) {
@@ -233,14 +233,14 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         }
     }
     i32 id = 0;
-    if (objId == 0 && who != 0) {
+    if (objId == 0 && who != NULL) {
         id = who->m_object->m_objectId;
     }
     CParseSource* src = PickWeighted(voiceId, which);
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
-    if (m_configTree->m_soundStream == 0) {
+    if (m_configTree->m_soundStream == NULL) {
         return 0;
     }
     CGruntVoice* v8 = voices[0];
@@ -254,11 +254,11 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         chosen = 1;
         if (c == id) {
             chosen = 0;
-            if (b != 0 && m_streams[1] != 0) {
+            if (b != 0 && m_streams[1] != NULL) {
                 (static_cast<DirectSoundMgr*>(m_streams[1]))
                     ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-        } else if (a != 0 && m_streams[0] != 0) {
+        } else if (a != 0 && m_streams[0] != NULL) {
             (static_cast<DirectSoundMgr*>(m_streams[0]))
                 ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
@@ -266,7 +266,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         chosen = 0;
         if (d == id) {
             chosen = 1;
-            if (a != 0 && m_streams[0] != 0) {
+            if (a != 0 && m_streams[0] != NULL) {
                 (static_cast<DirectSoundMgr*>(m_streams[0]))
                     ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
@@ -276,10 +276,10 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
                 ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
-    if (m_streams[chosen] == 0) {
+    if (m_streams[chosen] == NULL) {
         m_streams[chosen] =
             m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
-        if (m_streams[chosen] == 0) {
+        if (m_streams[chosen] == NULL) {
             return 0;
         }
     }
@@ -302,7 +302,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 percent
 ) {
     CGruntVoice** voices = m_voices;
-    if (voices[0] == 0 && !LoadGruntVoices()) {
+    if (voices[0] == NULL && !LoadGruntVoices()) {
         return 0;
     }
     if (objId == 0) {
@@ -328,10 +328,10 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         }
     }
     CParseSource* src = PickWeighted(voiceId, which);
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
-    if (m_configTree->m_soundStream == 0) {
+    if (m_configTree->m_soundStream == NULL) {
         return 0;
     }
     CGruntVoice* v8 = voices[0];
@@ -345,11 +345,11 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         chosen = 1;
         if (c == objId) {
             chosen = 0;
-            if (b != 0 && m_streams[1] != 0) {
+            if (b != 0 && m_streams[1] != NULL) {
                 (static_cast<DirectSoundMgr*>(m_streams[1]))
                     ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-        } else if (a != 0 && m_streams[0] != 0) {
+        } else if (a != 0 && m_streams[0] != NULL) {
             (static_cast<DirectSoundMgr*>(m_streams[0]))
                 ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
@@ -357,19 +357,19 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         chosen = 0;
         if (d == objId) {
             chosen = 1;
-            if (a != 0 && m_streams[0] != 0) {
+            if (a != 0 && m_streams[0] != NULL) {
                 (static_cast<DirectSoundMgr*>(m_streams[0]))
                     ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-        } else if (b != 0 && m_streams[1] != 0) {
+        } else if (b != 0 && m_streams[1] != NULL) {
             (static_cast<DirectSoundMgr*>(m_streams[1]))
                 ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
-    if (m_streams[chosen] == 0) {
+    if (m_streams[chosen] == NULL) {
         m_streams[chosen] =
             m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
-        if (m_streams[chosen] == 0) {
+        if (m_streams[chosen] == NULL) {
             return 0;
         }
     }
@@ -384,7 +384,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
 
 RVA(0x0011bba0, 0x280)
 i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
-    if (config == 0) {
+    if (config == NULL) {
         return 0;
     }
     if (config->m_gruntKind == GRUNT_DEATHTOUCH) {
@@ -484,7 +484,7 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
         return 0;
     }
     CSpawnList* list = static_cast<CSpawnList*>(m_voiceLists[voiceId]);
-    if (list == 0) {
+    if (list == NULL) {
         return 0;
     }
 
@@ -542,26 +542,26 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     list->m_lastPicked = pick;
     CSpawnEntry* entry;
     if (pick >= list->m_list.GetCount()) {
-        entry = 0;
+        entry = NULL;
     } else {
 
         CGruntCoordList* nodes = static_cast<CGruntCoordList*>(&list->m_list);
         POSITION& cursor = list->m_cursor;
         cursor = list->m_list.GetHeadPosition();
-        if (cursor == 0) {
-            entry = 0;
+        if (cursor == NULL) {
+            entry = NULL;
         } else {
             entry = static_cast<CSpawnEntry*>(nodes->NextData(cursor));
         }
         for (i32 i = pick; i > 0; i--) {
-            if (cursor == 0) {
-                entry = 0;
+            if (cursor == NULL) {
+                entry = NULL;
             } else {
                 entry = static_cast<CSpawnEntry*>(nodes->NextData(cursor));
             }
         }
     }
-    if (entry == 0) {
+    if (entry == NULL) {
         return 0;
     }
     return m_owner->m_symParser->ResolveQualified(
@@ -616,7 +616,7 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
             }
             CParseSource* res =
                 m_owner->m_symParser->ResolveQualified(static_cast<LPCTSTR>(name), REZ_TAG_WAV);
-            if (res != 0) {
+            if (res != NULL) {
 
                 list->AddVoiceSound(name, 0);
                 sub.Format("S%i", i);
@@ -636,7 +636,7 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
 RVA(0x0011c560, 0x91)
 void CSpawnList::AddVoiceSound(CString s, i32 flag) {
     CSpawnEntry* node = new CSpawnEntry(s, flag);
-    if (node != 0) {
+    if (node != NULL) {
         m_list.AddTail(node);
     }
 }
@@ -653,7 +653,7 @@ i32 CGruntSpawnConfig::AnyVoicePlaying() {
     i32 i = 0;
     CGruntVoice** p = m_voices;
     for (; i < 2; i++, p++) {
-        if (*p != 0 && (*p)->m_playFlags != 0) {
+        if (*p != NULL && (*p)->m_playFlags != 0) {
             return 1;
         }
     }
@@ -663,7 +663,7 @@ i32 CGruntSpawnConfig::AnyVoicePlaying() {
 RVA(0x0011c700, 0x20)
 i32 CGruntSpawnConfig::VoicePlaying(i32 i) {
     CGruntVoice* v = m_voices[i];
-    if (v != 0 && v->m_playFlags != 0) {
+    if (v != NULL && v->m_playFlags != 0) {
         return 1;
     }
     return 0;
@@ -674,17 +674,17 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
     i32 tag08 = m_voices[0]->m_source;
     i32 tag0c = m_voices[1]->m_source;
     if (tag08 == id) {
-        if (m_streams[0] != 0) {
+        if (m_streams[0] != NULL) {
             m_streams[0]->m_feeder.Pause();
         }
-        if (m_voices[0] != 0) {
+        if (m_voices[0] != NULL) {
             m_voices[0]->Reset();
         }
     } else if (tag0c == id) {
-        if (m_streams[1] != 0) {
+        if (m_streams[1] != NULL) {
             m_streams[1]->m_feeder.Pause();
         }
-        if (m_voices[1] != 0) {
+        if (m_voices[1] != NULL) {
             m_voices[1]->Reset();
         }
     }
@@ -694,10 +694,10 @@ RVA(0x0011c7b0, 0x2d)
 void CGruntSpawnConfig::PauseAllVoices() {
 
     for (i32 k = 0; k < 2; k++) {
-        if (m_streams[k] != 0) {
+        if (m_streams[k] != NULL) {
             m_streams[k]->m_feeder.Pause();
         }
-        if (m_voices[k] != 0) {
+        if (m_voices[k] != NULL) {
             m_voices[k]->Reset();
         }
     }
@@ -708,7 +708,7 @@ void CGruntSpawnConfig::ResetPicks() {
     PauseAllVoices();
     for (i32 i = 0; i < m_voiceLists.GetSize(); i++) {
         CSpawnList* e = static_cast<CSpawnList*>(m_voiceLists[i]);
-        if (e != 0) {
+        if (e != NULL) {
             e->m_lastPicked = -1;
         }
     }

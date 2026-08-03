@@ -83,13 +83,13 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
     m_mgr->RestoreVideoMode(0);
     m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MENU"));
-    if (m_stateBank == 0) {
+    if (m_stateBank == NULL) {
         return 0;
     }
 
     if (!m_world->m_imageRegistry->HasKeyEqual("MENU")) {
         void* set = SymTab2c()->ResolvePath("IMAGEZ");
-        if (set == 0) {
+        if (set == NULL) {
             return 0;
         }
         g_resourceInstallActive = 1;
@@ -99,7 +99,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
 
     if (!m_world->m_soundRegistry->HasKeyEqual("MENU")) {
         void* set = SymTab2c()->ResolvePath("SOUNDZ");
-        if (set == 0) {
+        if (set == NULL) {
             return 0;
         }
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "MENU", "_");
@@ -131,7 +131,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
 
     LeafCue* e;
     MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
-    if (e != 0) {
+    if (e != NULL) {
         MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
         m_activateCueDurationMs = e->m_sound->m_durationMs;
     } else {
@@ -154,13 +154,13 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
 
 RVA(0x000a0280, 0x2b)
 void CChatBox::Init() {
-    m_page = 0;
-    m_wnd = 0;
-    m_activeNode = 0;
-    m_row0Anim = 0;
-    m_row1Anim = 0;
-    m_row0Frame = 0;
-    m_row1Frame = 0;
+    m_page = NULL;
+    m_wnd = NULL;
+    m_activeNode = NULL;
+    m_row0Anim = NULL;
+    m_row1Anim = NULL;
+    m_row0Frame = NULL;
+    m_row1Frame = NULL;
     m_row0Key.Empty();
     m_row1Key.Empty();
 }
@@ -182,7 +182,7 @@ void CMenuState::ReleaseResources() {
     CChatBox* ui = m_menuTree;
     if (ui) {
         delete ui;
-        m_menuTree = 0;
+        m_menuTree = NULL;
     }
     CState::ReleaseResources();
 }
@@ -200,7 +200,7 @@ i32 CMenuState::EnterState(GameStateId mode) {
         CSymTab* saved = attractState();
         CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
         m_stateBank = (state);
-        if (state == 0) {
+        if (state == NULL) {
             return 0;
         }
 
@@ -241,7 +241,7 @@ i32 CMenuState::EnterState(GameStateId mode) {
 
 RVA(0x000a05a0, 0x74)
 void CMenuState::StartMusic() {
-    if (m_menuMusicCue == 0) {
+    if (m_menuMusicCue == NULL) {
         return;
     }
     if (g_gameReg->m_soundEnabled == 0) {
@@ -269,7 +269,7 @@ void CMenuState::StartMusic() {
 
 RVA(0x000a0640, 0x6a)
 void CMenuState::StopMusicChain() {
-    if (m_menuMusicCue == 0) {
+    if (m_menuMusicCue == NULL) {
         return;
     }
     LeafCue* mus = m_menuMusicCue;
@@ -363,7 +363,7 @@ i32 CMenuState::InputVirtual() {
         return 0;
     }
     void* tree = SymTab2c()->ResolvePath("IMAGEZ");
-    if (tree == 0) {
+    if (tree == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
@@ -399,7 +399,7 @@ i32 CMenuState::RestoreDisplay() {
     CSymTab* saved = attractState();
     CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
     m_stateBank = (state);
-    if (state == 0) {
+    if (state == NULL) {
         return 0;
     }
 

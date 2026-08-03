@@ -36,7 +36,7 @@ inline void* operator new(u32, void* p) {
 
 static __inline i32 IsTokenChar(const char* delims, char ch) {
     if (delims) {
-        return strchr(delims, ch) == 0;
+        return strchr(delims, ch) == NULL;
     }
     if (ch >= ' ' && ch <= '.') {
         return 1;
@@ -65,9 +65,9 @@ static inline i32 PeekI32(const char* p) {
 RVA(0x001396f0, 0x1a)
 CParseSource::CParseSource() {
 
-    m_reader = 0;
-    m_owner = 0;
-    m_name = 0;
+    m_reader = NULL;
+    m_owner = NULL;
+    m_name = NULL;
     m_node1c.m_parseSource = this;
 }
 
@@ -88,7 +88,7 @@ void CParseSource::Build(
 ) {
     m_reader = stream;
     m_owner = owner;
-    if (name == 0) {
+    if (name == NULL) {
         m_name = const_cast<char*>(name);
     } else {
         m_name = static_cast<char*>(::operator new(strlen(name) + 1));
@@ -100,7 +100,7 @@ void CParseSource::Build(
     m_length = f3;
     m_base = f1;
     m_typeTag = f2;
-    m_buffer = 0;
+    m_buffer = NULL;
     m_cursor = 0;
     m_node1c.m_parseSource = this;
 }
@@ -110,8 +110,8 @@ void CParseSource::Teardown() {
     if (m_name) {
         ::operator delete(m_name);
     }
-    if (m_owner != 0) {
-        if (m_owner->m_mappedBuf == 0) {
+    if (m_owner != NULL) {
+        if (m_owner->m_mappedBuf == NULL) {
             if (m_buffer) {
                 ::operator delete(m_buffer);
             }
@@ -121,15 +121,15 @@ void CParseSource::Teardown() {
             ::operator delete(m_buffer);
         }
     }
-    m_name = 0;
-    m_entry = 0;
+    m_name = NULL;
+    m_entry = NULL;
     m_typeTag = 0;
     m_length = 0;
-    m_buffer = 0;
-    m_owner = 0;
+    m_buffer = NULL;
+    m_owner = NULL;
     m_base = 0;
     m_cursor = 0;
-    m_node1c.m_parseSource = 0;
+    m_node1c.m_parseSource = NULL;
 }
 
 RVA(0x00139800, 0x6)
@@ -141,15 +141,15 @@ RezTypeTag CParseSource::GetEntryTag() {
 
 RVA(0x00139810, 0x140)
 char* CParseSource::CurrentScopePath(char* dst, i32 size) {
-    if (m_owner->m_parent == 0) {
+    if (m_owner->m_parent == NULL) {
         strcpy(dst, g_sepSlash);
     } else {
         char* scratch = static_cast<char*>(::operator new(size));
         strcpy(dst, g_emptyString);
         CSymTab* node = m_owner;
-        while (node != 0) {
+        while (node != NULL) {
             strcpy(scratch, dst);
-            if (node->m_parent != 0) {
+            if (node->m_parent != NULL) {
                 strcpy(dst, g_sepSlash);
             } else {
                 dst[0] = 0;
@@ -170,31 +170,31 @@ char* CParseSource::CurrentScopeName() {
 
 RVA(0x00139960, 0x6b)
 char* CParseSource::BeginParse() {
-    if (m_owner->m_mappedBuf != 0) {
+    if (m_owner->m_mappedBuf != NULL) {
         return m_owner->m_mappedBuf + (m_base - m_owner->m_baseOffset);
     }
-    if (m_buffer != 0) {
+    if (m_buffer != NULL) {
         return m_buffer;
     }
     if (m_length == 0) {
         return 0;
     }
     m_buffer = static_cast<char*>(::operator new(m_length));
-    if (m_buffer == 0) {
+    if (m_buffer == NULL) {
         return 0;
     }
     if (m_reader->Read(m_base, 0, m_length, m_buffer) != static_cast<i32>(m_length)) {
         delete m_buffer;
-        m_buffer = 0;
+        m_buffer = NULL;
     }
     return m_buffer;
 }
 
 RVA(0x001399d0, 0x21)
 i32 CParseSource::EndParse() {
-    if (m_buffer != 0) {
+    if (m_buffer != NULL) {
         ::operator delete(m_buffer);
-        m_buffer = 0;
+        m_buffer = NULL;
     }
     return 1;
 }
@@ -202,11 +202,11 @@ i32 CParseSource::EndParse() {
 RVA(0x00139a40, 0x95)
 i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
     CSymTab* sd = m_owner;
-    if (sd->m_mappedBuf != 0) {
+    if (sd->m_mappedBuf != NULL) {
         memcpy(dst, sd->m_mappedBuf + (m_base - sd->m_baseOffset + pos), len);
         return 1;
     }
-    if (m_buffer != 0) {
+    if (m_buffer != NULL) {
         memcpy(dst, (m_buffer + pos), len);
         return 1;
     }
@@ -290,7 +290,7 @@ CSymRec::~CSymRec() {
         m_scope->m_owner->AddNode(cur->m_parseSource);
     }
     m_key = 0;
-    m_symNode.m_symRec = 0;
+    m_symNode.m_symRec = NULL;
 }
 
 // @early-stop
@@ -316,7 +316,7 @@ CSymTab::CSymTab(
     m_owner = owner;
     m_totalSourceLength = 0;
     m_baseOffset = 0;
-    m_mappedBuf = 0;
+    m_mappedBuf = NULL;
     m_parent = parent;
     m_node20.m_symTab = this;
 }
@@ -325,14 +325,14 @@ RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
 
     CHashElement* e;
-    for (e = m_symbols.First(); e != 0;) {
+    for (e = m_symbols.First(); e != NULL;) {
         CHashElement* cur = e;
         e = cur->Next();
         m_symbols.Remove(cur);
         CSymRec* rec = cur->m_symRec;
         delete rec;
     }
-    for (e = m_subTabs.First(); e != 0;) {
+    for (e = m_subTabs.First(); e != NULL;) {
         CHashElement* cur = e;
         e = cur->Next();
         m_subTabs.Remove(cur);
@@ -345,16 +345,16 @@ CSymTab::~CSymTab() {
     if (m_mappedBuf) {
         ::operator delete(m_mappedBuf);
     }
-    m_name = 0;
+    m_name = NULL;
     m_dirTime = 0;
     m_dataSize = 0;
     m_dataOff = 0;
     m_totalSourceLength = 0;
     m_baseOffset = 0;
-    m_mappedBuf = 0;
-    m_owner = 0;
-    m_parent = 0;
-    m_node20.m_symTab = 0;
+    m_mappedBuf = NULL;
+    m_owner = NULL;
+    m_parent = NULL;
+    m_node20.m_symTab = NULL;
 }
 
 RVA(0x0013a000, 0x37)
@@ -387,7 +387,7 @@ void* CSymTab::Find(const char* path) {
 
 RVA(0x0013a0f0, 0x99)
 i32 CRezDirNode::Load(i32 childFlag) {
-    if (m_buf != 0) {
+    if (m_buf != NULL) {
         return 1;
     }
 
@@ -399,13 +399,13 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
     if (m_size > 0) {
         m_buf = static_cast<u8*>(::operator new(m_size));
-        if (m_buf != 0) {
+        if (m_buf != NULL) {
             m_src->m_activeNode->Read(m_off, 0, m_size, m_buf);
         }
     }
 
     if (childFlag != 0) {
-        for (CHashElement* n = m_kids.First(); n != 0; n = n->Next()) {
+        for (CHashElement* n = m_kids.First(); n != NULL; n = n->Next()) {
 
             n->m_rezDirNode->Load(1);
         }
@@ -415,9 +415,9 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
 RVA(0x0013a190, 0x94)
 i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
-    if (m_mappedBuf != 0) {
+    if (m_mappedBuf != NULL) {
         ::operator delete(m_mappedBuf);
-        m_mappedBuf = 0;
+        m_mappedBuf = NULL;
     } else {
         void* rec = FirstSym();
         while (rec) {
@@ -504,7 +504,7 @@ void* CSymTab::NextSym3(void* rec) {
 RVA(0x0013a330, 0xce)
 CSymTab* CSymTab::CreateSub(const char* name) {
 
-    if (m_subTabs.Walk(name, m_owner->m_caseSensitive == 0) != 0) {
+    if (m_subTabs.Walk(name, m_owner->m_caseSensitive == 0) != NULL) {
         return 0;
     }
     CSymTab* child = new CSymTab(
@@ -533,7 +533,8 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 RVA(0x0013a400, 0xa9)
 CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
-    if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_caseSensitive == 0) != 0) {
+    if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_caseSensitive == 0)
+        != NULL) {
         return 0;
     }
     CParseSource* slot = m_owner->PopParseSlot();
@@ -550,7 +551,7 @@ CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
         0,
         m_owner->m_activeNode
     );
-    if (slot == 0) {
+    if (slot == NULL) {
         return 0;
     }
     rec->m_valTable.Insert(&slot->m_node1c);
@@ -564,7 +565,7 @@ CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
 RVA(0x0013a4b0, 0x75)
 CParseSource* CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRezItmBase* stream) {
     CParseSource* slot = m_owner->PopParseSlot();
-    if (slot == 0) {
+    if (slot == NULL) {
         return slot;
     }
     slot->Build(
@@ -662,7 +663,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             char* name = p;
             p += strlen(name) + 1;
             void* existing = m_subTabs.Walk(name, m_owner->m_caseSensitive == 0);
-            if (existing == 0) {
+            if (existing == NULL) {
                 CSymParser* o = m_owner;
                 CSymTab* node = new CSymTab(
                     o,
@@ -706,7 +707,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             }
             char* str2 = p;
             if (*str2 == 0) {
-                str2 = 0;
+                str2 = NULL;
             }
             p += strlen(p) + 1;
             void* arr;
@@ -719,7 +720,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
                 }
                 arr = static_cast<char*>(arr) - f6 * 4;
             } else {
-                arr = 0;
+                arr = NULL;
             }
             if (!skip) {
                 CParseSource* slot = m_owner->PopParseSlot();
@@ -754,7 +755,7 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
         } else {
             rec = new CSymRec(key, this, m_owner->m_valueBucketCount);
         }
-        if (rec == 0) {
+        if (rec == NULL) {
             return 0;
         }
         m_symbols.Insert(&rec->m_symNode);
@@ -765,15 +766,15 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
 // @early-stop
 RVA(0x0013aa10, 0xdc)
 CSymParser::CSymParser() {
-    m_list.m_head = 0;
-    m_list.m_tail = 0;
+    m_list.m_head = NULL;
+    m_list.m_tail = NULL;
     m_hash.Construct(1);
     m_parseArmed = 0;
-    m_activeNode = 0;
+    m_activeNode = NULL;
     m_list.m_count = 0;
     m_rootDataOffset = 0;
     m_nextWritePos = 0;
-    m_root = 0;
+    m_root = NULL;
     m_archiveTime = 0;
     m_newArchive = 0;
     m_version = 0;
@@ -781,8 +782,8 @@ CSymParser::CSymParser() {
     m_longestScopeNameLen = 0;
     m_longestLeafNameLen = 0;
     m_largestCommentSize = 0;
-    m_cachedSourceBuffer = 0;
-    m_delims = 0;
+    m_cachedSourceBuffer = NULL;
+    m_delims = NULL;
     m_caseSensitive = 0;
     m_useKeyIndex = 0;
     m_valueBucketCount = 0x13;
@@ -803,8 +804,8 @@ RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 
-    m_list.m_head = 0;
-    m_list.m_tail = 0;
+    m_list.m_head = NULL;
+    m_list.m_tail = NULL;
     m_hash.Construct(1);
     {
         CSymParser tmp;
@@ -819,7 +820,7 @@ CSymParser::~CSymParser() {
         Clear(0);
     }
     CRezItmBase* p;
-    for (p = m_list.m_head; p != 0; p = m_list.m_head) {
+    for (p = m_list.m_head; p != NULL; p = m_list.m_head) {
         m_list.Remove(p);
         m_list.m_count--;
         delete p;
@@ -827,25 +828,25 @@ CSymParser::~CSymParser() {
     CSymTab* root = m_root;
     if (root) {
         delete root;
-        m_root = 0;
+        m_root = NULL;
     }
     if (m_cachedSourceBuffer) {
         ::operator delete(m_cachedSourceBuffer);
-        m_cachedSourceBuffer = 0;
+        m_cachedSourceBuffer = NULL;
     }
     if (m_delims) {
         ::operator delete(m_delims);
-        m_delims = 0;
+        m_delims = NULL;
     }
     CSlotNode* node = HeadSlotNode(m_nodes);
     m_parseArmed = 0;
-    m_activeNode = 0;
+    m_activeNode = NULL;
     m_rootDataOffset = 0;
     m_rootDataSize = 0;
     m_rootDirTime = 0;
     m_nextWritePos = 0;
     m_readOnly = 1;
-    m_root = 0;
+    m_root = NULL;
     m_archiveTime = 0;
     m_newArchive = 0;
     m_version = 1;
@@ -854,7 +855,7 @@ CSymParser::~CSymParser() {
     m_longestLeafNameLen = 0;
     m_largestCommentSize = 0;
     m_sorted = 1;
-    m_cachedSourceBuffer = 0;
+    m_cachedSourceBuffer = NULL;
     if (node) {
         do {
             ::operator delete(node->m_buffer);
@@ -885,9 +886,9 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             return 0;
         }
         CRezItmBase* reader = new CRezDir(this, m_maxOpenFiles);
-        if (reader == 0) {
+        if (reader == NULL) {
             ::operator delete(m_cachedSourceBuffer);
-            m_cachedSourceBuffer = 0;
+            m_cachedSourceBuffer = NULL;
             return 0;
         }
         m_activeNode = reader;
@@ -913,9 +914,9 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     }
 
     CRezItmBase* reader = new CRezItm(this);
-    if (reader == 0) {
+    if (reader == NULL) {
         ::operator delete(m_cachedSourceBuffer);
-        m_cachedSourceBuffer = 0;
+        m_cachedSourceBuffer = NULL;
         return 0;
     }
     m_activeNode = reader;
@@ -989,9 +990,9 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 
     if (Classify(name)) {
         CRezItmBase* node = new CRezDir(this, m_maxOpenFiles);
-        if (node == 0) {
+        if (node == NULL) {
             ::operator delete(m_cachedSourceBuffer);
-            m_cachedSourceBuffer = 0;
+            m_cachedSourceBuffer = NULL;
             return 0;
         }
         m_list.AddHead(node);
@@ -1005,9 +1006,9 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     }
 
     CRezItmBase* node = new CRezItm(this);
-    if (node == 0) {
+    if (node == NULL) {
         ::operator delete(m_cachedSourceBuffer);
-        m_cachedSourceBuffer = 0;
+        m_cachedSourceBuffer = NULL;
         return 0;
     }
     m_list.AddHead(node);
@@ -1066,9 +1067,9 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             strcpy(childpath + strlen(childpath), fd.name);
             _strlwr(childpath);
             void* child = node->FindSub(fd.name);
-            if (child == 0) {
+            if (child == NULL) {
                 child = node->CreateSub(fd.name);
-                if (child == 0) {
+                if (child == NULL) {
                     continue;
                 }
             }
@@ -1104,13 +1105,13 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         CSymRec* rec = node->FindOrAddSym(static_cast<i32>(extKey));
         CParseSource* entry = node->Insert(fname, static_cast<RezTypeTag>(extKey));
         CParseSource* source = 0;
-        if (entry == 0) {
+        if (entry == NULL) {
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
         } else if (flag != 0) {
             node->AddNodeSubEntry(rec, entry);
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
         }
-        if (source != 0) {
+        if (source != NULL) {
             source->m_typeTag = static_cast<i32>(fd.time_write);
             source->m_length = static_cast<u32>(fd.size);
             source->m_reader = new CRezFile(this, full, static_cast<CRezDir*>(reader));
@@ -1128,9 +1129,9 @@ i32 CSymParser::Clear(i32 final) {
     m_list.Remove(m_activeNode);
     m_list.m_count--;
     delete m_activeNode;
-    m_activeNode = 0;
+    m_activeNode = NULL;
     CRezItmBase* p;
-    for (p = m_list.m_head; p != 0; p = m_list.m_head) {
+    for (p = m_list.m_head; p != NULL; p = m_list.m_head) {
         p->Close();
         m_list.Remove(p);
         m_list.m_count--;
@@ -1138,11 +1139,11 @@ i32 CSymParser::Clear(i32 final) {
     }
     if (m_root) {
         delete m_root;
-        m_root = 0;
+        m_root = NULL;
     }
     if (m_cachedSourceBuffer) {
         ::operator delete(m_cachedSourceBuffer);
-        m_cachedSourceBuffer = 0;
+        m_cachedSourceBuffer = NULL;
     }
     m_parseArmed = 0;
     return r;
@@ -1226,7 +1227,7 @@ i32 CSymParser::Retry() {
 RVA(0x0013ba20, 0x27)
 i32 CSymParser::CheckNodes() {
     i32 ok = 1;
-    for (CRezItmBase* n = m_list.m_head; n != 0; n = n->m_next) {
+    for (CRezItmBase* n = m_list.m_head; n != NULL; n = n->m_next) {
         if (n->Check() == 0) {
             ok = 0;
         }
@@ -1242,7 +1243,7 @@ i32 CSymParser::MakeTimestamp() {
 
 RVA(0x0013ba80, 0x57)
 void CSymParser::SetDelims(char* s) {
-    if (m_delims != 0) {
+    if (m_delims != NULL) {
         ::operator delete(m_delims);
     }
     m_delims = static_cast<char*>(::operator new(strlen(s) + 1));
@@ -1386,17 +1387,17 @@ RVA(0x0013c0c0, 0x14b)
 CParseSource* CSymParser::PopParseSlot() {
     void* rec = 0;
     CHashElement* e = m_hash.First();
-    if (e != 0) {
+    if (e != NULL) {
         rec = e->m_parseSource;
     }
-    if (rec == 0) {
+    if (rec == NULL) {
         CSlotNode* node = static_cast<CSlotNode*>(::operator new(0xc));
-        if (node == 0) {
+        if (node == NULL) {
             return 0;
         }
         CParseSource* arr = new CParseSource[m_parseSlotBlockCount];
         node->m_buffer = arr;
-        if (arr == 0) {
+        if (arr == NULL) {
             ::operator delete(node);
             return 0;
         }

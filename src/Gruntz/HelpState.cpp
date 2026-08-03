@@ -95,7 +95,7 @@ i32 CHelpState::LeaveState(GameStateId) {
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
-    if (busy == 0 || busy->IsLost() != 0) {
+    if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x445);
             return 0;

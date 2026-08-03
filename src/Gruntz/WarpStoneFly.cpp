@@ -17,8 +17,8 @@
 
 RVA(0x00109bb0, 0xb)
 CWarpStoneFly::CWarpStoneFly() {
-    m_sprite = 0;
-    m_owner = 0;
+    m_sprite = NULL;
+    m_owner = NULL;
 }
 
 // @early-stop
@@ -32,9 +32,9 @@ i32 CWarpStoneFly::Tick(i32 dt) {
             m_owner->ResetWidgets(0);
             m_owner->TryActivate();
         }
-        if (m_owner->m_retabNotify != 0) {
+        if (m_owner->m_retabNotify != NULL) {
             ::operator delete(m_owner->m_retabNotify);
-            m_owner->m_retabNotify = 0;
+            m_owner->m_retabNotify = NULL;
         }
         return 1;
     }

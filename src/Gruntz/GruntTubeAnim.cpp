@@ -47,7 +47,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     CString* p = g_typeColl.Slots();
     i32 count = g_typeColl.m_grown;
     for (i32 i = count; i != 0; i--) {
-        if (p != 0) {
+        if (p != NULL) {
             p->CString::CString();
         }
         p++;

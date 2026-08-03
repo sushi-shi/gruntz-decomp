@@ -21,11 +21,11 @@
 
 RVA(0x00109e00, 0x245)
 i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
-    if (arc == 0) {
+    if (arc == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* lvl = g_gameReg->m_world;
-    if (lvl == 0) {
+    if (lvl == NULL) {
         return 0;
     }
     switch (mode) {
@@ -51,14 +51,14 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
                 lvl->m_imageRegistry->m_10map.Lookup(name, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
                     r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
-                    r = 0;
+                    r = NULL;
                 }
                 m_sprite = r;
             } else {
-                m_sprite = 0;
+                m_sprite = NULL;
             }
             return 1;
         }
@@ -78,7 +78,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
             char name[0x80];
             i32 index = 0;
             memset(name, 0, 0x80);
-            if (obj != 0) {
+            if (obj != NULL) {
                 lvl->m_imageRegistry->AnyValueMatches(obj, name, &index);
             }
             arc->Write(name, 0x80);

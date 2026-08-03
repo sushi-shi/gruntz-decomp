@@ -12,6 +12,8 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 RVA_COMPGEN(0x00012c30, 0x1e, ??_GCToobSpikez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
@@ -101,7 +103,7 @@ void CToobSpikez::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

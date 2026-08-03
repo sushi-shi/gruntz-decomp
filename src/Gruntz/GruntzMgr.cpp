@@ -183,17 +183,17 @@ i32 PumpIdleFrame() {
     }
     CGruntzMgr* mgr = g_gameReg;
     g_pendingFrame = 0;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* world = mgr->m_world;
-    if (world == 0) {
+    if (world == NULL) {
         return 0;
     }
-    if (world->m_imageRegistry == 0) {
+    if (world->m_imageRegistry == NULL) {
         return 0;
     }
-    if (mgr->m_curState == 0) {
+    if (mgr->m_curState == NULL) {
         return 0;
     }
     if (mgr->m_curState->InputVirtual() == 0) {
@@ -206,8 +206,8 @@ i32 PumpIdleFrame() {
 }
 
 CMulti::CMulti() {
-    m_session = 0;
-    m_netGate = 0;
+    m_session = NULL;
+    m_netGate = NULL;
     m_savedEffectsEnabled = 1;
     m_customLevel = 0;
     m_autoCommandDelay = 1;
@@ -218,21 +218,21 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
     static_cast<void>(unused);
     CState* cur = m_curState;
     GameStateId local10 = static_cast<GameStateId>(0);
-    if (cur != 0) {
+    if (cur != NULL) {
         local10 = cur->Update();
         i32 savedSub = cur->m_levelIndex;
         cur->LeaveState(stateId);
         if (keepCurrent != 0) {
             PushState(m_curState);
             areaArg = savedSub;
-            m_curState = 0;
+            m_curState = NULL;
         } else {
-            if (m_curState != 0) {
+            if (m_curState != NULL) {
                 delete m_curState;
             }
-            m_curState = 0;
+            m_curState = NULL;
             ClearStateStack();
-            m_curState = 0;
+            m_curState = NULL;
         }
     } else if (keepCurrent == 0) {
         ClearStateStack();
@@ -282,7 +282,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
     m_curState = obj;
 
 install:
-    if (m_curState == 0) {
+    if (m_curState == NULL) {
         m_owner->m_running = 0;
         return 0;
     }
@@ -293,10 +293,10 @@ install:
         i32 ok = st->LoadGameAssetNamespaces(this, areaArg, local10);
         st = m_curState;
         if (ok == 0) {
-            if (st != 0) {
+            if (st != NULL) {
                 delete st;
             }
-            m_curState = 0;
+            m_curState = NULL;
             return 0;
         }
         st->EnterState(local10);
@@ -405,11 +405,11 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     CObList* list = &m_world->m_childGroup->m_list;
-    if (list == 0) {
+    if (list == NULL) {
         return;
     }
     POSITION pos = list->GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj) {
             obj->m_stateFlags ^= mask;
@@ -420,7 +420,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
 RVA(0x0008dc90, 0xb1)
 void CGruntzMgr::RegisterLevelAssetKeys() {
     CDDrawSurfaceMgr* w = m_world;
-    if (w == 0) {
+    if (w == NULL) {
         return;
     }
 
@@ -498,7 +498,7 @@ i32 CGruntzMgr::IsStandardMode() {
 RVA(0x0008f9c0, 0x1d)
 i32 CGruntzMgr::AppendChatMessage(char* msg) {
     CFontConfig* log = m_chatLog;
-    if (log == 0) {
+    if (log == NULL) {
         return 0;
     }
     return log->AddItem(msg, 0, 0x11);
@@ -516,7 +516,7 @@ i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
 
 RVA(0x0008fa40, 0x16)
 i32 CGruntzMgr::IsInPlayState() {
-    if (m_curState == 0) {
+    if (m_curState == NULL) {
         return 0;
     }
     return CheckPlayState() != 0;
@@ -534,7 +534,7 @@ char CGruntzMgr::GetGruntzDriveLetter() {
 
 RVA(0x0008ec50, 0x33)
 i32 CGruntzMgr::CheckPlayState() {
-    if (m_curState == 0) {
+    if (m_curState == NULL) {
         return 0;
     }
     if (m_curState->Update() == GAMESTATE_PLAY) {
@@ -554,7 +554,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     if (m_lobby) {
         m_lobby->Release();
-        m_lobby = 0;
+        m_lobby = NULL;
     }
 
     i32 hr = DirectPlayLobbyCreate(0, &m_lobby, 0, 0, 0);
@@ -569,7 +569,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     if (m_connSettings) {
 
         ::operator delete(m_connSettings);
-        m_connSettings = 0;
+        m_connSettings = NULL;
     }
 
     DWORD dwSize = 0;
@@ -577,14 +577,14 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     if (hr != 0 && hr != static_cast<i32>(DPERR_BUFFERTOOSMALL)) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
-        m_lobby = 0;
+        m_lobby = NULL;
         return 0;
     }
 
     m_connSettings = static_cast<CNetLobbyConnection*>(operator new(dwSize));
     if (!m_connSettings) {
         m_lobby->Release();
-        m_lobby = 0;
+        m_lobby = NULL;
         return 0;
     }
 
@@ -592,7 +592,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     if (hr) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
-        m_lobby = 0;
+        m_lobby = NULL;
         return 0;
     }
 
@@ -774,7 +774,7 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32) {
             return;
         }
         if (CheckPlayState() == 0
-            && (m_curState == 0 || m_curState->Update() != GAMESTATE_CREDITS)) {
+            && (m_curState == NULL || m_curState->Update() != GAMESTATE_CREDITS)) {
             return;
         }
         m_sound->StopBank(1);
@@ -1013,7 +1013,7 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
     if (!FileExists(regBuf)) {
         return 0;
     }
-    if (outPath != 0) {
+    if (outPath != NULL) {
         strcpy(outPath, regBuf);
     }
     return 1;
@@ -1037,7 +1037,7 @@ i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
         wsprintfA(cmdline, "%s", exe);
     }
     if (dir && *dir == 0) {
-        dir = 0;
+        dir = NULL;
     }
     return CreateProcessA(0, cmdline, 0, 0, 0, 0, 0, dir, &si, &pi);
 }
@@ -1106,7 +1106,7 @@ void CGruntzMgr::Post(i32 code) {
 // @early-stop
 RVA(0x00090ac0, 0x1cc)
 void CGruntzMgr::ReportWorldStatus(i32 a) {
-    if (m_world == 0) {
+    if (m_world == NULL) {
         ReportError(IDX(CMD_TOGGLE_MUSIC), a);
     }
     u32 status = m_world->m_lastError;
@@ -1161,13 +1161,13 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
 
 RVA(0x00090d10, 0x18e)
 i32 CGruntzMgr::LoadMonologoSprite() {
-    if (m_curState == 0) {
+    if (m_curState == NULL) {
         return 0;
     }
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
 
@@ -1177,19 +1177,19 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         m_world->m_imageRegistry->m_10map.Lookup("GAME_MONOLITH", out);
         rec = static_cast<CDDrawWorker*>(out);
     }
-    if (rec == 0) {
+    if (rec == NULL) {
         return 0;
     }
     i32 savedIdx = rec->m_minIndex;
     CImage* e = static_cast<CImage*>(rec->m_items.GetAt(savedIdx));
-    if (e == 0) {
+    if (e == NULL) {
         return 0;
     }
     i32 geoA = e->m_width;
     i32 geoB = e->m_height;
     CDDrawWorkerHost* found =
         static_cast<CDDrawWorkerHost*>(m_world->m_level->FindPlaneByName("MONOLITH"));
-    if (found == 0) {
+    if (found == NULL) {
         CDDrawWorkerHost* spr = m_world->m_level->ReadObjectPlane(
             0x20,
             0x20,
@@ -1199,7 +1199,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             -0x19,
             const_cast<char*>("MONOLITH")
         );
-        if (spr == 0) {
+        if (spr == NULL) {
             return 0;
         }
         spr->m_frameSets.SetAtGrow(0, static_cast<CObject*>(rec));
@@ -1237,7 +1237,7 @@ i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
             CImage* dst = static_cast<CImage*>(row->m_items.GetAt(row->m_minIndex));
             if (dst) {
                 CImage* src = sink->GetAt(idx);
-                if (src != 0) {
+                if (src != NULL) {
                     dst->CopyFrom(src);
                     return 1;
                 }
@@ -1275,19 +1275,19 @@ i32 CGruntzMgr::WarpCheat() {
 
 RVA(0x00090f10, 0x151)
 i32 CGruntzMgr::CheatRevealTreasures() {
-    if (m_curState == 0) {
+    if (m_curState == NULL) {
         return 0;
     }
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
     CObject* found = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_DEVHEADS", found);
     CDDrawWorker* out = static_cast<CDDrawWorker*>(found);
-    if (out == 0) {
+    if (out == NULL) {
         return 0;
     }
     SetGruntColor(out, "GAME_TREASURE_GECKOS_RED", 0);
@@ -1464,14 +1464,14 @@ i32 CGruntzMgr::MakeRezPath() {
 
 RVA(0x00092180, 0x98)
 i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user) {
-    if (cb == 0) {
+    if (cb == NULL) {
         return 0;
     }
     i32 r2 = radius * radius;
     i32 count = 0;
     CObList& chain = m_world->m_childGroup->m_list;
     POSITION pos = chain.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj->m_objectType & mask) {
             i32 adx = abs(obj->m_screenX - x);
@@ -1490,11 +1490,11 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
 // @early-stop
 RVA(0x00092250, 0xba)
 i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user) {
-    if (cb == 0) {
+    if (cb == NULL) {
         return 0;
     }
     RECT* r = rect;
-    if (r == 0) {
+    if (r == NULL) {
         return 0;
     }
     i32 loX = r->left + offX;
@@ -1504,7 +1504,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     i32 count = 0;
     CObList& chain = m_world->m_childGroup->m_list;
     POSITION pos = chain.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj->m_objectType & mask) {
             i32 ox = obj->m_screenX;
@@ -1528,7 +1528,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
     if (depth != 8 && depth != 0x10 && depth != 0x18) {
         return 0;
     }
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
     if (depth == 8) {
@@ -1553,7 +1553,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 // @early-stop
 RVA(0x00091a40, 0x2f9)
 i32 CGruntzMgr::LoadWorldMode(i32 mode) {
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
     if (m_colorDepth == mode) {
@@ -1569,13 +1569,13 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         in->m_list.CPtrList::~CPtrList();
         ::operator delete(in);
     }
-    m_inputState = 0;
+    m_inputState = NULL;
 
     CSymParser* surf = m_symParser;
     if (surf) {
         delete surf;
     }
-    m_symParser = 0;
+    m_symParser = NULL;
 
     m_colorDepth = mode;
     g_enableTrueColor = 0;
@@ -1603,7 +1603,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CSymParser* old = m_symParser;
     if (old) {
         delete old;
-        m_symParser = 0;
+        m_symParser = NULL;
     }
 
     m_symParser = new CSymParser;
@@ -1622,7 +1622,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         in2->m_list.CPtrList::~CPtrList();
         ::operator delete(in2);
     }
-    m_inputState = 0;
+    m_inputState = NULL;
 
     CWorldSoundSet* ni = new CWorldSoundSet();
     m_inputState = ni;
@@ -1650,7 +1650,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
 RVA(0x00091e20, 0x17d)
 i32 CGruntzMgr::ResetWorldState() {
     CState* st = m_curState;
-    if (st == 0) {
+    if (st == NULL) {
         return 1;
     }
     GameStateId stateId = st->Update();
@@ -1663,7 +1663,7 @@ i32 CGruntzMgr::ResetWorldState() {
     m_renderGate = 1;
     if (s) {
         delete s;
-        m_curState = 0;
+        m_curState = NULL;
     }
 
     int(WINAPI * show)(BOOL) = ShowCursor;
@@ -1708,7 +1708,7 @@ void CGruntzMgr::StopBank0IfActive() {
 
 RVA(0x00092060, 0x3c)
 i32 CGruntzMgr::SetAssetRoot(char* path) {
-    if (path == 0) {
+    if (path == NULL) {
         return 0;
     }
     CAssetRootStorage::s_value = path;
@@ -1755,11 +1755,11 @@ INT_PTR CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 RVA(0x00091500, 0x42)
 i32 CGruntzMgr::IsLobbyHostReady() {
-    if (m_curState == 0) {
+    if (m_curState == NULL) {
         return 0;
     }
     CGameApp* app = m_owner;
-    if (app == 0) {
+    if (app == NULL) {
         return 0;
     }
     if (app->m_appActive == 0) {
@@ -1781,14 +1781,14 @@ i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
 
 RVA(0x000915d0, 0x3f)
 void CGruntzMgr::MuteMusicIfActive(i32 ms) {
-    if (m_sound == 0) {
+    if (m_sound == NULL) {
         return;
     }
     if (m_musicEnabled == 0) {
         return;
     }
     i32 ok;
-    if (m_sound->m_pCurrent != 0) {
+    if (m_sound->m_pCurrent != NULL) {
         ok = m_sound->m_pCurrent->IsBusy();
     } else {
         ok = 0;
@@ -1805,14 +1805,14 @@ void CGruntzMgr::MuteMusicIfActive(i32 ms) {
 
 RVA(0x00091620, 0x3f)
 void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
-    if (m_sound == 0) {
+    if (m_sound == NULL) {
         return;
     }
     if (m_musicEnabled == 0) {
         return;
     }
     i32 ok;
-    if (m_sound->m_pCurrent != 0) {
+    if (m_sound->m_pCurrent != NULL) {
         ok = m_sound->m_pCurrent->IsBusy();
     } else {
         ok = 0;
@@ -1850,7 +1850,7 @@ void CGruntzMgr::SetRunState(i32 v) {
         return;
     }
     m_soundEnabled = v;
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return;
     }
     SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
@@ -1903,17 +1903,17 @@ void CGruntzMgr::SetSoundLevelState(i32 loaded) {
     }
     m_musicEnabled = loaded;
     CGruntzSoundZ* snd = m_sound;
-    if (snd == 0) {
+    if (snd == NULL) {
         return;
     }
     if (loaded != 0) {
         CGruntzSoundInnerZ* cur = snd->m_pCurrent;
-        if (cur == 0) {
+        if (cur == NULL) {
             return;
         }
         if (cur->m_playMode != 0) {
             snd->Restart(1);
-        } else if (snd->m_pCurrent != 0) {
+        } else if (snd->m_pCurrent != NULL) {
 
             snd->StopBank(1);
         }
@@ -1930,7 +1930,7 @@ i32 CGruntzMgr::RunLoadGameDialog() {
 
 RVA(0x00092530, 0x17c)
 i32 CGruntzMgr::Quicksave() {
-    if (m_saveSink == 0) {
+    if (m_saveSink == NULL) {
         return 0;
     }
     if (m_curState->Update() != GAMESTATE_PLAY) {
@@ -1942,11 +1942,11 @@ i32 CGruntzMgr::Quicksave() {
         EnterModalUI(name);
         return 1;
     }
-    if (m_saveInfoRec == 0 || !(m_saveInfoRec->m_flags & 1)) {
+    if (m_saveInfoRec == NULL || !(m_saveInfoRec->m_flags & 1)) {
         return LoadSaveMessageSprite();
     }
 
-    if (&(static_cast<CPlay*>(m_curState))->m_saveSlot == 0) {
+    if (&(static_cast<CPlay*>(m_curState))->m_saveSlot == NULL) {
         return 0;
     }
     if (m_cueSink) {
@@ -1964,7 +1964,7 @@ i32 CGruntzMgr::Quicksave() {
 
 RVA(0x00092710, 0x77)
 i32 CGruntzMgr::Quickload() {
-    if (m_saveSink == 0) {
+    if (m_saveSink == NULL) {
         return 0;
     }
     if (m_cueSink) {
@@ -2016,7 +2016,7 @@ i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
         return 0;
     }
     GruntzPlayer* s = &m_options[idx];
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     if (s->m_liveGate == 0) {
@@ -2030,7 +2030,7 @@ RVA(0x00092df0, 0x24)
 void CGruntzMgr::ResetAllOptionsSlots() {
     GruntzPlayer* s = &m_options[0];
     for (i32 d = 4; d != 0; d--) {
-        if (s != 0) {
+        if (s != NULL) {
             s->Reset();
         }
         s++;
@@ -2078,13 +2078,13 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
 
     if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
         void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
-        if (snd == 0) {
+        if (snd == NULL) {
             player.Teardown();
             return 0;
         }
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
-    if (front == 0 || dd2 == 0) {
+    if (front == NULL || dd2 == NULL) {
         player.Teardown();
         return 0;
     }
@@ -2108,7 +2108,7 @@ CGruntzMgr::~CGruntzMgr() {
 
 RVA(0x00085560, 0xb)
 i32 CGameMgr::IsActive() {
-    return m_gameWnd != 0;
+    return m_gameWnd != NULL;
 }
 
 RVA(0x00083300, 0x17)
@@ -2129,7 +2129,7 @@ i32 CGameMgr::HandleCommand(i32, GruntzCommandId, i32) {
 // @early-stop
 RVA(0x0008f7f0, 0x131)
 void CGruntzMgr::RecomputeViewScale() {
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return;
     }
     CGameLevel* view = m_world->m_level;
@@ -2151,7 +2151,7 @@ void CGruntzMgr::RecomputeViewScale() {
     view->MainPlaneNotify();
 
     CGameLevel* v = m_world->m_level;
-    if (v->m_mainPlane == 0) {
+    if (v->m_mainPlane == NULL) {
         return;
     }
     m_viewBounds.left = (v->m_mainPlane)->m_viewRect.left - 0x60;
@@ -2162,7 +2162,7 @@ void CGruntzMgr::RecomputeViewScale() {
 
 RVA(0x00093460, 0x15c)
 i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeId, i32 pObj) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     switch (cmd) {
@@ -2183,7 +2183,7 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
     i32 i;
     GruntzPlayer* slot;
     for (i = 0, slot = m_options; i < 4; i++) {
-        if (slot == 0 || slot->Serialize(ar, cmd, typeId, pObj) == 0) {
+        if (slot == NULL || slot->Serialize(ar, cmd, typeId, pObj) == 0) {
             return 0;
         }
         slot++;
@@ -2237,10 +2237,10 @@ void CGruntzMgr::UpdateScoreHud() {
 
 RVA(0x00093620, 0x254)
 i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
     g_serialCounter++;
@@ -2285,10 +2285,10 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
 
 RVA(0x00093920, 0x22f)
 i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     g_serialCounter++;
@@ -2332,11 +2332,11 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
 
 RVA(0x000927b0, 0xc4)
 i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
     CPlay* src = PickPlayOrPausedState();
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
 
@@ -2359,7 +2359,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         i32 done = 0;
         CNetCmdSlot* s = static_cast<CMulti*>(m_curState)->m_session->m_slots;
         for (i32 d = 4; d != 0; d--) {
-            if (s != 0 && s->m_state == 3) {
+            if (s != NULL && s->m_state == 3) {
                 done++;
             }
             s++;
@@ -2413,7 +2413,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 RVA(0x0008ef10, 0x9e)
 void CGruntzMgr::EnterModalUI(const char* msg) {
     CGameApp* app = m_owner;
-    if (app == 0) {
+    if (app == NULL) {
         return;
     }
     if (m_cueSink) {
@@ -2433,7 +2433,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 
     m_modalBusy = 1;
     static_cast<CGruntzApp*>(app)->ShowMessage(msg, m_gameWnd->m_hwnd);
-    NetLobby::g_curDlg = 0;
+    NetLobby::g_curDlg = NULL;
     m_modalBusy = 0;
     if (shown <= 0) {
         while (show(0) >= 0) {
@@ -2467,7 +2467,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
 
     m_modalBusy = 1;
     i32 result = dlg->DoModal();
-    NetLobby::g_curDlg = 0;
+    NetLobby::g_curDlg = NULL;
     m_modalBusy = 0;
     if (m_curState && notify) {
         m_curState->RestoreDisplay();
@@ -2496,7 +2496,7 @@ i32 CGruntzMgr::SwitchToNextState() {
         return 0;
     }
     CState* next = TopState();
-    if (next == 0) {
+    if (next == NULL) {
         return 0;
     }
     if (m_curState == next) {
@@ -2509,7 +2509,7 @@ i32 CGruntzMgr::SwitchToNextState() {
         if (m_curState) {
             delete m_curState;
         }
-        m_curState = 0;
+        m_curState = NULL;
     }
     m_curState = next;
     PopTopIfMatches(next);
@@ -2576,7 +2576,7 @@ void CGruntzMgr::ClearOptionsSlots() {
 
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* p = &m_options[i];
-        if (p != 0) {
+        if (p != NULL) {
             p->m_liveGate = 0;
             p->m_clearedRound = 0;
         }
@@ -2695,119 +2695,119 @@ void CGruntzMgr::Close() {
     ClearStateStack();
     if (m_curState) {
         delete m_curState;
-        m_curState = 0;
+        m_curState = NULL;
     }
     if (m_spriteFactory) {
         m_spriteFactory->Reset();
         operator delete(m_spriteFactory);
-        m_spriteFactory = 0;
+        m_spriteFactory = NULL;
     }
     if (m_cmdGrid) {
         delete m_cmdGrid;
-        m_cmdGrid = 0;
+        m_cmdGrid = NULL;
     }
     if (m_tileGrid) {
 
         delete m_tileGrid;
-        m_tileGrid = 0;
+        m_tileGrid = NULL;
     }
     CBattlezData* scoreHud = m_scoreHud;
     if (scoreHud) {
         delete scoreHud;
-        m_scoreHud = 0;
+        m_scoreHud = NULL;
     }
     if (m_cmdSubMgr) {
 
         delete m_cmdSubMgr;
-        m_cmdSubMgr = 0;
+        m_cmdSubMgr = NULL;
     }
     if (g_spawnConfig) {
         StateMgrBZ* v = g_spawnConfig;
-        v->m_device = 0;
-        v->m_keyboard = 0;
-        v->m_joystick = 0;
-        v->m_joystick2 = 0;
-        v->m_deviceList = 0;
+        v->m_device = NULL;
+        v->m_keyboard = NULL;
+        v->m_joystick = NULL;
+        v->m_joystick2 = NULL;
+        v->m_deviceList = NULL;
         v->m_mode = 0;
         operator delete(v);
-        g_spawnConfig = 0;
+        g_spawnConfig = NULL;
     }
     if (g_inputMgr) {
 
         delete g_inputMgr;
-        g_inputMgr = 0;
+        g_inputMgr = NULL;
     }
     if (m_cheatMgr) {
         delete m_cheatMgr;
-        m_cheatMgr = 0;
+        m_cheatMgr = NULL;
     }
     if (m_sound) {
         m_sound->Shutdown();
         operator delete(m_sound);
-        m_sound = 0;
+        m_sound = NULL;
     }
     if (m_inputState) {
         m_inputState->Teardown();
         operator delete(m_inputState);
-        m_inputState = 0;
+        m_inputState = NULL;
     }
     if (m_faderMgr) {
         delete m_faderMgr;
-        m_faderMgr = 0;
+        m_faderMgr = NULL;
     }
     if (m_chatLog) {
 
         m_chatLog->~CFontConfig();
         operator delete(m_chatLog);
-        m_chatLog = 0;
+        m_chatLog = NULL;
     }
     if (m_cueSink) {
         m_cueSink->~CGruntSpawnConfig();
         operator delete(m_cueSink);
-        m_cueSink = 0;
+        m_cueSink = NULL;
     }
     if (m_world) {
         delete m_world;
-        m_world = 0;
+        m_world = NULL;
     }
     if (m_symParser) {
         delete m_symParser;
-        m_symParser = 0;
+        m_symParser = NULL;
     }
     if (m_settings) {
 
         delete m_settings;
-        m_settings = 0;
+        m_settings = NULL;
     }
     if (m_reserved3c) {
         delete m_reserved3c;
-        m_reserved3c = 0;
+        m_reserved3c = NULL;
     }
     if (m_shadeCache) {
         delete m_shadeCache;
-        m_shadeCache = 0;
+        m_shadeCache = NULL;
     }
     if (m_saveSink) {
 
         delete m_saveSink;
-        m_saveSink = 0;
+        m_saveSink = NULL;
     }
     if (m_logicPump) {
         m_logicPump->Reset();
         operator delete(m_logicPump);
-        m_logicPump = 0;
+        m_logicPump = NULL;
     }
     CloseSoundFontDevice();
     if (m_lobby) {
         m_lobby->Release();
-        m_lobby = 0;
+        m_lobby = NULL;
     }
     if (m_connSettings) {
         operator delete(m_connSettings);
-        m_connSettings = 0;
+        m_connSettings = NULL;
     }
     this->CGameMgr::Close();
-    g_gameReg = 0;
+    g_gameReg = NULL;
 }
 
 RVA(0x000861e0, 0xc5)
@@ -2856,8 +2856,8 @@ void CGruntzMgr::DelayedQuit() {
     LeafCue* out = 0;
     MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", out);
     i32 base;
-    if (out != 0) {
-        out = 0;
+    if (out != NULL) {
+        out = NULL;
         MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", out);
         base = out->m_sound->m_durationMs + 0x1f4;
     } else {
@@ -2896,10 +2896,10 @@ i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
 
 RVA(0x00090260, 0x13e)
 i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
-    if (tmpl == 0) {
+    if (tmpl == NULL) {
         return 0;
     }
-    if (dlgProc == 0) {
+    if (dlgProc == NULL) {
         return 0;
     }
     if (m_cueSink) {
@@ -2932,7 +2932,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
         static_cast<DLGPROC>(dlgProc),
         0
     );
-    NetLobby::g_curDlg = 0;
+    NetLobby::g_curDlg = NULL;
     m_modalBusy = 0;
     if (m_curState && flag) {
         m_curState->RestoreDisplay();
@@ -2993,28 +2993,28 @@ i32 CGruntzMgr::SaveGameAs() {
 
 RVA(0x00083030, 0x1b6)
 CGruntzMgr::CGruntzMgr() {
-    m_curState = 0;
-    m_world = 0;
-    m_symParser = 0;
-    m_settings = 0;
-    m_scoreHud = 0;
-    m_reserved3c = 0;
-    m_faderMgr = 0;
-    m_cheatMgr = 0;
-    m_sound = 0;
+    m_curState = NULL;
+    m_world = NULL;
+    m_symParser = NULL;
+    m_settings = NULL;
+    m_scoreHud = NULL;
+    m_reserved3c = NULL;
+    m_faderMgr = NULL;
+    m_cheatMgr = NULL;
+    m_sound = NULL;
     m_reserved4c = 0;
-    m_shadeCache = 0;
+    m_shadeCache = NULL;
     m_reserved64 = 0;
-    m_lobby = 0;
-    m_inputState = 0;
-    m_saveSink = 0;
-    m_chatLog = 0;
-    m_cueSink = 0;
-    m_cmdGrid = 0;
-    m_cmdSubMgr = 0;
-    m_tileGrid = 0;
-    m_spriteFactory = 0;
-    m_logicPump = 0;
+    m_lobby = NULL;
+    m_inputState = NULL;
+    m_saveSink = NULL;
+    m_chatLog = NULL;
+    m_cueSink = NULL;
+    m_cmdGrid = NULL;
+    m_cmdSubMgr = NULL;
+    m_tileGrid = NULL;
+    m_spriteFactory = NULL;
+    m_logicPump = NULL;
     m_lobbyResult = 0;
     m_lobbyProbed = 0;
     m_delayedQuitPending = 0;
@@ -3024,8 +3024,8 @@ CGruntzMgr::CGruntzMgr() {
     m_reservedb4 = 0;
     m_loadingSaveGame = 0;
     m_isCheckpointPrompts = 1;
-    m_connSettings = 0;
-    m_saveInfoRec = 0;
+    m_connSettings = NULL;
+    m_saveInfoRec = NULL;
     m_numRuns = 0;
     m_numMovies = 0;
     m_reservedcc = 0x1e;
@@ -3195,17 +3195,17 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (w == m_modeW && h == m_modeH) {
         return 1;
     }
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
     if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
-        if (m_world->m_level != 0) {
+        if (m_world->m_level != NULL) {
             CDDrawWorkerHost* f = m_world->m_level->m_mainPlane;
-            if (f != 0) {
+            if (f != NULL) {
                 if (w > f->m_wrapW || h > f->m_wrapH) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
-                    if (st->m_guts != 0) {
+                    if (st->m_guts != NULL) {
                         st->m_guts->m_barFrameGate = m_modeH;
                         if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
                             st->m_guts->RefreshA();
@@ -3246,7 +3246,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         }
         CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
-        if (st->m_guts != 0) {
+        if (st->m_guts != NULL) {
             st->m_guts->m_barFrameGate = h;
             if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
                 st->m_guts->RefreshA();

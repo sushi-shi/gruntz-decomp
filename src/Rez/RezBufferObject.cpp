@@ -26,13 +26,13 @@ void CRezBufferObject::Serialize(CArchive& ar) {
     } else {
         i32 n = ar.ReadCount();
         if (n == 0) {
-            if (m_pData != 0) {
+            if (m_pData != NULL) {
                 ::operator delete(m_pData);
-                m_pData = 0;
+                m_pData = NULL;
             }
             m_nMaxSize = 0;
             m_nSize = 0;
-        } else if (m_pData == 0) {
+        } else if (m_pData == NULL) {
             m_pData = static_cast<RezElem40*>(::operator new(n * sizeof(RezElem40)));
 
             memset(m_pData, 0, n * sizeof(RezElem40));

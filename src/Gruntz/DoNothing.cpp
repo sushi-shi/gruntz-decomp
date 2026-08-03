@@ -8,6 +8,8 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 VTBL(CDoNothingNormal, 0x001e859c);
 VTBL(CDoNothing, 0x001e85f4);
 RVA(0x0000f6d0, 0x47)
@@ -47,10 +49,10 @@ RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 1;
     CImage* aux = m_object->m_layer;
-    if (aux != 0) {
+    if (aux != NULL) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != 0) {
+            if (m_object->m_animWorker != NULL) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
                 m_wwdObject->m_flags &= ~0x1000002;

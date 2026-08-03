@@ -101,7 +101,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         p = p->m_next;
         ++i;
     } while (i < static_cast<u32>(g_coordPool.m_count) - 1);
-    p->m_next = 0;
+    p->m_next = NULL;
     g_coordPool.m_freeHead = pool;
     g_coordPool.m_linkOffset = 4;
 
@@ -293,7 +293,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (m_symParser) {
         m_symParser->CSymParser::~CSymParser();
         ::operator delete(m_symParser);
-        m_symParser = 0;
+        m_symParser = NULL;
     }
     m_symParser = new CSymParser;
     {
@@ -333,7 +333,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     m_sound = new CGruntzSoundZ;
-    g_ailMidiDriver = 0;
+    g_ailMidiDriver = NULL;
     if (!m_sound->Init(m_owner->m_hInstance, m_gameWnd->m_hwnd, 0)) {
         ReportError(IDX(CMD_TOGGLE_MUSIC), 0x40c);
         return 0;
@@ -349,7 +349,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
         (&m_inputState->m_list)->CPtrList::~CPtrList();
         ::operator delete(m_inputState);
-        m_inputState = 0;
+        m_inputState = NULL;
     }
     m_inputState = new CWorldSoundSet;
     if (!m_inputState->Init(world->m_soundRegistry, vSndVol)) {
@@ -375,19 +375,19 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_logicPump = static_cast<CLightFxMgr*>(::operator new(0x3c));
     if (m_logicPump) {
-        m_logicPump->m_reg = 0;
-        m_logicPump->m_world = 0;
-        m_logicPump->m_cache = 0;
-        m_logicPump->m_greyTable = 0;
+        m_logicPump->m_reg = NULL;
+        m_logicPump->m_world = NULL;
+        m_logicPump->m_cache = NULL;
+        m_logicPump->m_greyTable = NULL;
         for (i32 k = 0; k < 10; ++k) {
-            m_logicPump->m_tables[k] = 0;
+            m_logicPump->m_tables[k] = NULL;
         }
     }
     if (!m_logicPump->Init(0, this)) {
         if (m_logicPump) {
             m_logicPump->Reset();
             ::operator delete(m_logicPump);
-            m_logicPump = 0;
+            m_logicPump = NULL;
         }
         ReportError(IDX(CMD_TOGGLE_MUSIC), 0x411);
         return 0;
@@ -402,23 +402,23 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     g_spawnConfig = static_cast<StateMgrBZ*>(::operator new(sizeof(StateMgrBZ)));
     if (g_spawnConfig) {
-        g_spawnConfig->m_device = 0;
-        g_spawnConfig->m_keyboard = 0;
-        g_spawnConfig->m_joystick = 0;
-        g_spawnConfig->m_joystick2 = 0;
-        g_spawnConfig->m_deviceList = 0;
+        g_spawnConfig->m_device = NULL;
+        g_spawnConfig->m_keyboard = NULL;
+        g_spawnConfig->m_joystick = NULL;
+        g_spawnConfig->m_joystick2 = NULL;
+        g_spawnConfig->m_deviceList = NULL;
         g_spawnConfig->m_mode = 0;
     }
     if (!g_spawnConfig->Init(g_inputMgr, 6)) {
         if (g_spawnConfig) {
-            g_spawnConfig->m_device = 0;
-            g_spawnConfig->m_keyboard = 0;
-            g_spawnConfig->m_joystick = 0;
-            g_spawnConfig->m_joystick2 = 0;
-            g_spawnConfig->m_deviceList = 0;
+            g_spawnConfig->m_device = NULL;
+            g_spawnConfig->m_keyboard = NULL;
+            g_spawnConfig->m_joystick = NULL;
+            g_spawnConfig->m_joystick2 = NULL;
+            g_spawnConfig->m_deviceList = NULL;
             g_spawnConfig->m_mode = 0;
             ::operator delete(g_spawnConfig);
-            g_spawnConfig = 0;
+            g_spawnConfig = NULL;
         }
         ReportError(IDX(CMD_TOGGLE_MUSIC), 0x413);
         return 0;
@@ -437,12 +437,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_spriteFactory = static_cast<CSpriteRefTable*>(::operator new(0x94));
     if (m_spriteFactory) {
-        m_spriteFactory->m_factory = 0;
-        m_spriteFactory->m_spriteMgrHolder = 0;
+        m_spriteFactory->m_factory = NULL;
+        m_spriteFactory->m_spriteMgrHolder = NULL;
         m_spriteFactory->m_built = 0;
         for (i32 k = 0; k < 0x11; ++k) {
-            m_spriteFactory->m_toolRefs[k] = 0;
-            m_spriteFactory->m_toyRefs[k] = 0;
+            m_spriteFactory->m_toolRefs[k] = NULL;
+            m_spriteFactory->m_toyRefs[k] = NULL;
         }
     }
 
@@ -450,7 +450,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         if (m_spriteFactory) {
             m_spriteFactory->Reset();
             ::operator delete(m_spriteFactory);
-            m_spriteFactory = 0;
+            m_spriteFactory = NULL;
         }
 
         ReportError(IDX(CMD_TOGGLE_MUSIC), 0x416);
@@ -493,15 +493,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             stream->EndParse();
             g_buteMgr.Init();
             g_buteMgr.m_tree.ClearRecursive(0);
-            g_buteMgr.m_tree.m_root = 0;
+            g_buteMgr.m_tree.m_root = NULL;
             g_buteMgr.m_tree.m_lookupPending = 0;
             g_buteMgr.m_tree.m_nodeCount = 0;
             g_buteMgr.m_tree48.ClearRecursive(0);
-            g_buteMgr.m_tree48.m_root = 0;
+            g_buteMgr.m_tree48.m_root = NULL;
             g_buteMgr.m_tree48.m_lookupPending = 0;
             g_buteMgr.m_tree48.m_nodeCount = 0;
             g_buteMgr.m_tree74.ClearRecursive(0);
-            g_buteMgr.m_tree74.m_root = 0;
+            g_buteMgr.m_tree74.m_root = NULL;
             g_buteMgr.m_tree74.m_lookupPending = 0;
             g_buteMgr.m_tree74.m_nodeCount = 0;
             ok = 1;

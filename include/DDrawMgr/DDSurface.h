@@ -257,12 +257,12 @@ SIZE(0xc0);
 SIZE_UNKNOWN();
 
 inline CDDSurface::CDDSurface() {
-    m_ddSurface = 0;
-    m_ddSurfaceBack = 0;
-    m_pos = 0;
+    m_ddSurface = NULL;
+    m_ddSurfaceBack = NULL;
+    m_pos = NULL;
     m_dontOwn = 0;
     m_bitDepth = 0;
-    m_restoreCallback = 0;
+    m_restoreCallback = NULL;
 }
 
 inline CDDSurface::~CDDSurface() {

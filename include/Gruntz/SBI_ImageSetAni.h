@@ -8,12 +8,14 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
     CSBI_ImageSetAni() {
-        m_frame = 0;
+        m_frame = NULL;
         m_kind = 8;
-        m_frameSet = 0;
+        m_frameSet = NULL;
         m_loop = 0;
         m_interval = 0x64;
     }

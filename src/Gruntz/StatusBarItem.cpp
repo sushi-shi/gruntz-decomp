@@ -2,6 +2,8 @@
 
 #include <Gruntz/StatusBarItem.h>
 
+#include <stddef.h>
+
 RVA(0x001005b0, 0x8)
 void CStatusBarItem::SetSubtype() {
     m_redrawFrames = 2;
@@ -23,7 +25,7 @@ i32 CStatusBarItem::Setup(
     const char* key,
     i32 a10
 ) {
-    if (host == 0 || owner == 0) {
+    if (host == NULL || owner == NULL) {
         return 0;
     }
     m_owner = owner;

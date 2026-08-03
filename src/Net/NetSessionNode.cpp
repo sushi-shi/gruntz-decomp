@@ -15,15 +15,15 @@ CNetPlayerListNode::~CNetPlayerListNode() {
 RVA(0x00179420, 0x8a)
 CNetSessionNode::~CNetSessionNode() {
     m_id = 0;
-    m_listPosition = 0;
+    m_listPosition = NULL;
     if (m_ownedBufferA) {
         ::operator delete(m_ownedBufferA);
     }
-    m_ownedBufferA = 0;
+    m_ownedBufferA = NULL;
     if (m_ownedBufferB) {
         ::operator delete(m_ownedBufferB);
     }
-    m_ownedBufferB = 0;
+    m_ownedBufferB = NULL;
 }
 
 RVA(0x001795a0, 0xdb)
@@ -33,8 +33,8 @@ i32 CNetPlayerListNode::Init(CNetSessionDesc* src) {
     }
     memcpy(&m_desc, src, 0x50);
     m_desc.m_dwSize = 0x50;
-    m_desc.m_lpszName = 0;
-    m_desc.m_lpszPassword = 0;
+    m_desc.m_lpszName = NULL;
+    m_desc.m_lpszPassword = NULL;
     if (src->m_lpszName && strlen(src->m_lpszName)) {
         m_desc.m_lpszName = static_cast<char*>(::operator new(strlen(src->m_lpszName) + 8));
         strcpy(m_desc.m_lpszName, src->m_lpszName);

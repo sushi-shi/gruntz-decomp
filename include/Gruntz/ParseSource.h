@@ -8,6 +8,8 @@
 #include <Ints.h>
 #include <Rez/RezTypeTag.h>
 
+#include <stddef.h>
+
 class CSymTab;
 class CSymRec;
 
@@ -16,7 +18,7 @@ class CRezItmBase;
 struct CParseSlotHashNode : public CHashElement {
 
     CParseSlotHashNode() {
-        m_parseSource = 0;
+        m_parseSource = NULL;
     }
 
     virtual u32 Hash() OVERRIDE;

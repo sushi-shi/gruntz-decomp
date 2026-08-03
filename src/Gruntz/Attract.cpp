@@ -56,7 +56,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%s", name);
     CParseSource* page = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
-    if (page == 0) {
+    if (page == NULL) {
         return 0;
     }
 
@@ -111,14 +111,14 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
 RVA(0x000fa410, 0xf5)
 i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == 0) {
+    if (m_resChain->m_ptrColl == NULL) {
         return 0;
     }
     CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;
-    if (chan == 0) {
+    if (chan == NULL) {
         return 0;
     }
 
@@ -127,9 +127,9 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     t.m_centerX = centerX;
     t.m_centerY = centerY;
     t.m_targetSurface = chan;
-    t.m_sourceSurface = 0;
+    t.m_sourceSurface = NULL;
     CFader* f = mgr->Add(1, &t);
-    if (f == 0) {
+    if (f == NULL) {
         return 0;
     }
 
@@ -149,18 +149,18 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
 RVA(0x000fa550, 0x10c)
 i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == 0) {
+    if (m_resChain->m_ptrColl == NULL) {
         return 0;
     }
     CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
-    if (chanA == 0) {
+    if (chanA == NULL) {
         return 0;
     }
     CDDSurface* chanB = m_resChain->m_drawTarget->m_backPair->m_surface;
-    if (chanB == 0) {
+    if (chanB == NULL) {
         return 0;
     }
 
@@ -171,7 +171,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     t.m_targetSurface = chanA;
     t.m_sourceSurface = chanB;
     CFader* f = mgr->Add(1, &t);
-    if (f == 0) {
+    if (f == NULL) {
         return 0;
     }
 
@@ -189,16 +189,16 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
 
 RVA(0x000fa6b0, 0xa7)
 i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
-    if (str == 0) {
+    if (str == NULL) {
         return 0;
     }
     CDDSurface* s = m_world->m_drawTarget->m_frontPair->m_surface;
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     HDC hdc = 0;
     s->m_ddSurface->GetDC(&hdc);
-    if (hdc == 0) {
+    if (hdc == NULL) {
         return 0;
     }
     SetBkMode(hdc, bkMode);
@@ -212,18 +212,18 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 RVA(0x000fa790, 0x104)
 i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == 0) {
+    if (m_resChain->m_ptrColl == NULL) {
         return 0;
     }
     CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
-    if (chanA == 0) {
+    if (chanA == NULL) {
         return 0;
     }
     CDDSurface* chanB = m_resChain->m_drawTarget->m_backPair->m_surface;
-    if (chanB == 0) {
+    if (chanB == NULL) {
         return 0;
     }
 
@@ -233,7 +233,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     t.m_targetSurface = chanA;
     t.m_sourceSurface = chanB;
     CFader* f = mgr->Add(2, &t);
-    if (f == 0) {
+    if (f == NULL) {
         return 0;
     }
 
@@ -253,14 +253,14 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
 RVA(0x000fa8f0, 0x118)
 i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     CFaderMgr* mgr = m_faderMgr;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (m_world->m_ptrColl == 0) {
+    if (m_world->m_ptrColl == NULL) {
         return 0;
     }
     CDDSurface* chanA = m_world->m_drawTarget->m_frontPair->m_surface;
-    if (chanA == 0) {
+    if (chanA == NULL) {
         return 0;
     }
     CDDrawSurfacePair* holderB;
@@ -270,7 +270,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
         holderB = m_world->m_drawTarget->m_backPair;
     }
     CDDSurface* chanB = holderB->m_surface;
-    if (chanB == 0) {
+    if (chanB == NULL) {
         return 0;
     }
 
@@ -280,7 +280,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     t.m_targetSurface = chanA;
     t.m_sourceSurface = chanB;
     CFader* f = mgr->Add(2, &t);
-    if (f == 0) {
+    if (f == NULL) {
         return 0;
     }
 
@@ -297,14 +297,14 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
 RVA(0x000faa60, 0xed)
 i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == 0) {
+    if (m_resChain->m_ptrColl == NULL) {
         return 0;
     }
     CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;
-    if (chan == 0) {
+    if (chan == NULL) {
         return 0;
     }
 
@@ -312,9 +312,9 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     t.m_clearToBlack = 1;
     t.m_intensityPercent = pct;
     t.m_targetSurface = chan;
-    t.m_sourceSurface = 0;
+    t.m_sourceSurface = NULL;
     CFader* f = mgr->Add(2, &t);
-    if (f == 0) {
+    if (f == NULL) {
         return 0;
     }
 
@@ -347,7 +347,7 @@ i32 CState::OnPaint() {
 // @early-stop
 RVA(0x000face0, 0x17c)
 i32 CState::InputVirtual() {
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
 
@@ -369,7 +369,7 @@ i32 CState::InputVirtual() {
         ;
     g_playActive = 0;
     char* path = static_cast<char*>(m_symParser->ResolvePath("GAME_IMAGEZ"));
-    if (path == 0) {
+    if (path == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->LoadNamespace(path, "GAME", "_") == -1) {
@@ -405,7 +405,7 @@ i32 CState::ShadeScreen(i32 pct) {
 
 RVA(0x000fafa0, 0x3b)
 i32 CPlay::HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId a2, i32 a3) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     switch (mode) {
@@ -457,10 +457,10 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
 
 RVA(0x000fb1c0, 0x168)
 i32 CState::HeaderRead(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     ar->Read(&m_levelIndex, 4);

@@ -8,6 +8,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
@@ -16,7 +18,7 @@ public:
     CStatusBarItem() {
         m_enabled = 0;
         m_kind = 0;
-        m_host = 0;
+        m_host = NULL;
         m_redrawFrames = 0;
     }
     virtual ~CStatusBarItem();

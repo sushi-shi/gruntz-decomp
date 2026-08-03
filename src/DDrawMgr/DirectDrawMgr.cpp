@@ -279,7 +279,7 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
     }
 
     if (g_ddLogEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
         } else {
             sprintf(szLine, "%s, line %i: %s (%i) - %s\n", file, line, szCode, code, szMsg);
@@ -287,7 +287,7 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
         DDrawLogLine(szLine);
     }
     if (g_ddMsgBoxEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
@@ -301,8 +301,8 @@ void __cdecl DDrawLogLine(char*, ...) {}
 
 RVA(0x00141cc0, 0x84)
 CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_poolItems() {
-    m_device = 0;
-    m_directDraw1 = 0;
+    m_device = NULL;
+    m_directDraw1 = NULL;
     m_bltCaps = 0;
     m_palBpp = 0;
     m_hasPalette = 0;
@@ -327,7 +327,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     m_hasPalette = 0;
     m_paletteTag = 0;
     IDirectDraw2* dd = g_DirectDraw;
-    if (dd != 0) {
+    if (dd != NULL) {
         m_device = dd;
     } else {
         i32 chr = DirectDrawCreate(static_cast<GUID*>(driverGuid), &m_directDraw1, 0);
@@ -407,10 +407,10 @@ i32 CDDrawPtrCollections::Init(
     i32 bpp,
     u32 coop
 ) {
-    if (factory == 0) {
+    if (factory == NULL) {
         return 0;
     }
-    g_ddCreateCtx = 0;
+    g_ddCreateCtx = NULL;
     DdDriverEnumFn cb;
     cb.m_body = CreateDirectDrawVia;
     i32 hr = DirectDrawEnumerateA(cb.m_sdk, factory);
@@ -432,14 +432,14 @@ void CDDrawPtrCollections::Clear(i32 mode) {
     m_poolItems.SetSize(0, -1);
     EmptyPoolA();
     EmptyPoolB();
-    g_DirectDrawMgr = 0;
+    g_DirectDrawMgr = NULL;
     if (m_device) {
         m_device->Release();
-        m_device = 0;
+        m_device = NULL;
     }
     if (m_directDraw1) {
         m_directDraw1->Release();
-        m_directDraw1 = 0;
+        m_directDraw1 = NULL;
     }
     m_bltCaps = 0;
 }
@@ -549,14 +549,14 @@ i32 CDDrawPtrCollections::CreateRange(
     for (i32 i = start; i < end; i++) {
         char buf[32];
         sprintf(buf, "%s%i", baseName, i);
-        if (suffix != 0) {
+        if (suffix != NULL) {
             if (suffix[0] != '.') {
                 strcpy(buf, g_dot);
             }
             strcat(buf, suffix);
         }
         CDDSurface* item = LoadFileSurface(buf, caps, colorKey);
-        if (item == 0) {
+        if (item == NULL) {
             break;
         }
         *p++ = item;
@@ -989,9 +989,9 @@ CreateDirectDrawVia(
     i32 driverName,
     IDirectDraw2*(__cdecl* factory)(void*, i32, i32)
 ) {
-    if (factory != 0) {
+    if (factory != NULL) {
         IDirectDraw2* dd = factory(ctx, driverDesc, driverName);
-        if (dd != 0) {
+        if (dd != NULL) {
             g_DirectDraw = dd;
             g_ddCreateCtx = ctx;
             return 0;
@@ -1014,11 +1014,11 @@ IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
 RVA(0x00143900, 0x4d)
 i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
 
-    if (pal == 0) {
+    if (pal == NULL) {
         return 0;
     }
     PALETTEENTRY* src = pal->m_cacheA;
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     PALETTEENTRY* dst = m_palette;
@@ -1032,7 +1032,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
 
 RVA(0x00143950, 0x56)
 CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     const u8* src = static_cast<const u8*>(buf);
@@ -1052,7 +1052,7 @@ CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
 
 RVA(0x001439b0, 0x3f)
 i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag) {
-    if (entries == 0) {
+    if (entries == NULL) {
         return 0;
     }
     PALETTEENTRY* src = entries;
@@ -1066,7 +1066,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag
 
 RVA(0x001439f0, 0x35)
 CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag) {
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     if (static_cast<u32>(size) < 0x3e8) {

@@ -8,6 +8,8 @@
 #include <Rez/RezSync.h>
 #include <Wap32/GameApp.h>
 
+#include <stddef.h>
+
 typedef CGameMgr CGameMgrBase;
 
 DATA(0x00245580)
@@ -32,7 +34,7 @@ i32 g_timer100 = 0;
 
 RVA(0x0008b740, 0x12d)
 i32 CGruntzMgr::PerFrameTick() {
-    if (m_curState == 0) {
+    if (m_curState == NULL) {
         return 0;
     }
 

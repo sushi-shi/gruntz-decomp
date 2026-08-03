@@ -43,11 +43,11 @@ RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
 RVA_COMPGEN(0x00184690, 0x91, ??1CMenuItem@@UAE@XZ)
 RVA(0x00184730, 0x41)
 void CMenuItem::Reset() {
-    m_host = 0;
-    m_template = 0;
-    m_sprite = 0;
-    m_owner = 0;
-    m_listPos = 0;
+    m_host = NULL;
+    m_template = NULL;
+    m_sprite = NULL;
+    m_owner = NULL;
+    m_listPos = NULL;
     m_hitLeft = static_cast<i32>(0xeeeeeeee);
     m_fixedX = static_cast<i32>(0xeeeeeeee);
     m_leftName.Empty();
@@ -81,9 +81,9 @@ CMenuItem2::~CMenuItem2() {
 RVA(0x00184890, 0x1a)
 void CMenuItem2::Reset() {
     m_frameDelay = 0x64;
-    m_spriteNormal = 0;
-    m_spriteSelected = 0;
-    m_spriteDisabled = 0;
+    m_spriteNormal = NULL;
+    m_spriteSelected = NULL;
+    m_spriteDisabled = NULL;
     m_frameIdx = 0;
     m_frameCountdown = 0;
 }
@@ -195,7 +195,7 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     if (idx >= page->m_minIndex && idx <= page->m_maxIndex) {
         row = static_cast<CImage*>(page->m_items.GetAt(idx));
     } else {
-        row = 0;
+        row = NULL;
     }
     if (!row) {
         return 0;
@@ -269,17 +269,17 @@ i32 CMenuItem2::Init(
     CObject* sprite;
 
     sprintf(buf, "%s_NORMAL", spriteKey);
-    sprite = 0;
+    sprite = NULL;
     m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
     m_spriteNormal = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(buf, "%s_SELECTED", spriteKey);
-    sprite = 0;
+    sprite = NULL;
     m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
     m_spriteSelected = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(buf, "%s_DISABLED", spriteKey);
-    sprite = 0;
+    sprite = NULL;
     m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
     m_spriteDisabled = static_cast<CDDrawWorker*>(sprite);
 
@@ -353,7 +353,7 @@ CImage* CMenuItem2::GetCurrentFrame() {
     }
 
     CImage* f = s->GetAt(m_frameIdx);
-    if (f == 0) {
+    if (f == NULL) {
         m_frameIdx = s->m_minIndex;
         f = s->GetAt(m_frameIdx);
     }
@@ -374,5 +374,5 @@ i32 CMenuItem2::NextFrame() {
             }
         }
     }
-    return GetCurrentFrame() != 0;
+    return GetCurrentFrame() != NULL;
 }

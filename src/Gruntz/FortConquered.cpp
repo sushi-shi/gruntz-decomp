@@ -21,6 +21,8 @@
 #include <Utils/MapTyped.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
+#include <stddef.h>
+
 // @early-stop
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
@@ -37,7 +39,7 @@ i32 CExitTrigger::AdvanceAnim() {
         CGrunt* hit =
             g_gameReg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &hitPlayer, &hitRow, 0);
-        if (hit != 0) {
+        if (hit != NULL) {
             i32 owningPlayer = m_object->m_smarts;
             if (hitPlayer == owningPlayer) {
                 goto done;
@@ -45,7 +47,7 @@ i32 CExitTrigger::AdvanceAnim() {
             m_resolved = 0;
             GruntzPlayer* loser = &g_gameReg->m_options[owningPlayer];
             GruntzPlayer* winner = &g_gameReg->m_options[hitPlayer];
-            if (loser != 0) {
+            if (loser != NULL) {
                 g_gameReg->m_chatLog->AddItem(
                     static_cast<const char*>(
                         loser->GetName() + " was conquered by " + winner->GetName() + "!"
@@ -58,12 +60,12 @@ i32 CExitTrigger::AdvanceAnim() {
             g_gameReg->m_scoreHud->MarkFlag(hitPlayer, owningPlayer);
             g_gameReg->m_cmdGrid->ClearRowAndRefresh(owningPlayer);
             g_gameReg->m_cmdGrid->CellDispatch(hitPlayer, hitRow, DEATH_EXIT, -1);
-            if (m_warlordLogic != 0) {
+            if (m_warlordLogic != NULL) {
                 m_warlordLogic->ResolveDeathAnimation();
-                m_warlordLogic = 0;
+                m_warlordLogic = NULL;
             }
             GruntzPlayer* claimed = &g_gameReg->m_options[hitPlayer];
-            if (claimed != 0) {
+            if (claimed != NULL) {
                 CGameObject* found = 0;
                 CGameObject* warlordObj = 0;
                 if (MapLookupById(
@@ -74,13 +76,13 @@ i32 CExitTrigger::AdvanceAnim() {
                     warlordObj = found;
                 }
                 CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_animWorker->m_logic);
-                if (wl != 0) {
+                if (wl != NULL) {
                     wl->RaiseBattleAlert();
                 }
             }
             CDDrawChildGroup* grp = g_gameReg->m_world->m_childGroup;
             POSITION pos = grp->m_list.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
                 if (cur->m_animWorker->m_notify == CreateGruntCreationPoint
                     && cur->m_smarts == owningPlayer) {
@@ -95,7 +97,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     if (hitPlayer == g_curPlayer) {
                         CoordPoolNode* head = g_coordPool.m_freeHead;
                         Coord* mark = 0;
-                        if (head->m_next != 0) {
+                        if (head->m_next != NULL) {
                             mark = &head->m_coord;
                             head = head->m_next;
                             g_coordPool.m_freeHead = head;
@@ -123,7 +125,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 g_gameReg->m_cmdGrid->LoadFinishLevelSprite(5);
             } else {
                 GruntzPlayer* board = &g_gameReg->m_options[owningPlayer];
-                if (board != 0 && board->m_humanControlled == 0) {
+                if (board != NULL && board->m_humanControlled == 0) {
                     board->m_battlezConfig.Clear();
                 }
             }
@@ -145,13 +147,13 @@ i32 CExitTrigger::AdvanceAnim() {
             }
             slot->m_clearedRound = 1;
             m_resolved = 0;
-            if (m_warlordLogic != 0) {
+            if (m_warlordLogic != NULL) {
                 m_warlordLogic->ResolveDeathAnimation();
-                m_warlordLogic = 0;
+                m_warlordLogic = NULL;
             }
             CDDrawChildGroup* grp = g_gameReg->m_world->m_childGroup;
             POSITION pos = grp->m_list.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
                 GameObjNotifyFn who = cur->m_animWorker->m_notify;
                 if (who == CreateGruntCreationPoint || who == CreateFortressFlag) {
@@ -164,7 +166,7 @@ i32 CExitTrigger::AdvanceAnim() {
                             CWwdGameObjectA* fx =
                                 g_gameReg->m_world->m_childGroup
                                     ->CreateSprite(0, x, y, 0xf4240, "Explosion", 0x40003);
-                            if (fx != 0) {
+                            if (fx != NULL) {
                                 fx->ApplyLookupGeometry("GAME_EXPLOSION3", 0);
                                 fx->m_smarts = 0;
                                 fx->m_score = 0;

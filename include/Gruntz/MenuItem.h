@@ -96,11 +96,11 @@ inline CMenuItem::~CMenuItem() {
 }
 
 inline CMenuItem::CMenuItem() {
-    m_host = 0;
-    m_template = 0;
-    m_sprite = 0;
-    m_owner = 0;
-    m_listPos = 0;
+    m_host = NULL;
+    m_template = NULL;
+    m_sprite = NULL;
+    m_owner = NULL;
+    m_listPos = NULL;
     m_hitLeft = static_cast<i32>(0xeeeeeeee);
     m_fixedX = static_cast<i32>(0xeeeeeeee);
     m_leftName.Empty();

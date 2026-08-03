@@ -73,7 +73,7 @@ CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
     i32 i = 15;
     do {
         CGrunt* c = *cell;
-        if (c != 0) {
+        if (c != NULL) {
             CGameObject* o = c->m_object;
             i32 dx = (o->m_screenX >> 5) - tx;
             i32 dy = (o->m_screenY >> 5) - ty;
@@ -136,7 +136,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
         i32 k = 10;
         do {
             POSITION pos = list->GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 POSITION cur = pos;
                 i32* p = static_cast<i32*>(list->GetNext(pos));
                 if (p[0] == x && p[1] == y) {
@@ -151,7 +151,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
         } while (k != 0);
     }
     POSITION pos = m_recList.GetHeadPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         return 0;
     }
     POSITION cur;
@@ -162,26 +162,26 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
         if (p[0] == x && p[1] == y) {
             goto found;
         }
-    } while (pos != 0);
+    } while (pos != NULL);
     return 0;
 found:
     if (m_recList.GetCount() == 1) {
         StopPendingFx();
     }
     CGrunt* cell = m_grid[y + x * TM_GRID_COLS];
-    if (cell != 0) {
+    if (cell != NULL) {
         (static_cast<CGrunt*>(cell))->ClearAllSprites();
     }
     if (m_recordPosition.m_x == p[0] && m_recordPosition.m_y == p[1]) {
         CWwdGameObjectA* goal = m_goal;
-        if (goal != 0) {
+        if (goal != NULL) {
             goal->m_flags |= 0x10000;
-            m_goal = 0;
+            m_goal = NULL;
         }
         m_armed = 0;
     }
     CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != 0 && ov->m_gridX == p[0] && ov->m_gridY == p[1]) {
+    if (ov != NULL && ov->m_gridX == p[0] && ov->m_gridY == p[1]) {
         OverlayTick();
     }
     CoordPoolNode* slot = g_coordPool.NodeOf(p);
@@ -194,11 +194,11 @@ found:
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
     POSITION pos = m_recList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
         i32 idx = payload[1] + TM_GRID_COLS * payload[0];
         CGrunt* cell = m_grid[idx];
-        if (cell != 0) {
+        if (cell != NULL) {
             (static_cast<CGrunt*>(cell))->ClearAllSprites();
             CoordPoolNode* slot = g_coordPool.NodeOf(payload);
             slot->m_next = g_coordPool.m_freeHead;
@@ -208,16 +208,16 @@ void CTriggerMgr::ResetAll() {
     m_recList.RemoveAll();
     StopPendingFx();
     CWwdGameObjectA* goal = m_goal;
-    if (goal != 0) {
+    if (goal != NULL) {
         goal->m_flags |= 0x10000;
-        m_goal = 0;
+        m_goal = NULL;
     }
 }
 
 RVA(0x000784d0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
     POSITION pos = m_recList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         i32* p = static_cast<i32*>(m_recList.GetNext(pos));
         if (p[0] == x && p[1] == y) {
             return 1;
@@ -235,7 +235,7 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
     u8 firstByte = 0;
     u8 bytes[0x70];
     POSITION pos = m_recList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
         firstByte = static_cast<u8>(payload[0]);
         CGrunt* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
@@ -279,7 +279,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
     u8 firstByte = 0;
     u8 bytes[0x70];
     POSITION pos = m_recList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
         firstByte = static_cast<u8>(payload[0]);
         CGrunt* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
@@ -343,12 +343,12 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
 RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
     POSITION pos = m_recList.GetHeadPosition();
-    if (pos != 0) {
+    if (pos != NULL) {
         do {
             CoordPoolNode* slot = g_coordPool.NodeOf(m_recList.GetNext(pos));
             slot->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = slot;
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     m_recList.RemoveAll();
 }
@@ -374,7 +374,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
 
 RVA(0x00078960, 0x9b)
 i32 CTriggerMgr::LoadCameraSprite() {
-    if (m_goal != 0) {
+    if (m_goal != NULL) {
         return 0;
     }
 
@@ -414,12 +414,12 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
-        cell = 0;
+        cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
-    if (cell == 0) {
+    if (cell == NULL) {
         return 1;
     }
     if (cell->m_tileOwnerHi != g_curPlayer) {
@@ -427,7 +427,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != 0 && ov->m_active != 0) {
+    if (ov != NULL && ov->m_active != 0) {
         ov->HitClick(x, y);
         return 1;
     }
@@ -641,20 +641,20 @@ i32 CTriggerMgr::ResetGroup(
     CGrunt* hit = CellHitTest(x, y, 0, 0, 5);
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
-        cell = 0;
+        cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
 
     i32 sel;
-    if (cell != 0) {
+    if (cell != NULL) {
         if (cell->m_tileOwnerHi != g_curPlayer) {
             return 1;
         }
         if (selector != 0) {
             sel = selector;
-        } else if (hit == 0) {
+        } else if (hit == NULL) {
             sel = 1;
         } else if (hit == cell) {
             m_pendingFxKind = 0;
@@ -667,7 +667,7 @@ i32 CTriggerMgr::ResetGroup(
             sel = 2;
         }
     } else {
-        sel = (hit != 0) ? 2 : 1;
+        sel = (hit != NULL) ? 2 : 1;
     }
 
     CGameObject* sprite;
@@ -683,7 +683,7 @@ i32 CTriggerMgr::ResetGroup(
             kindArg = 2;
             goto arm;
         case 2:
-            if (hit == 0) {
+            if (hit == NULL) {
                 this->ReportRecordsB(1, x, y, 0);
             } else {
                 i32 owner = hit->m_tileOwnerHi;
@@ -713,7 +713,7 @@ i32 CTriggerMgr::ResetGroup(
             kindArg = 1;
             goto arm;
         case 3:
-            if (hit != 0) {
+            if (hit != NULL) {
                 if (hit->m_tileOwnerHi == g_curPlayer && g_traitorMode == 0
                     && (hit != cell || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
                     goto reportError;
@@ -765,14 +765,14 @@ reportError:
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
     CActionOptionsMenuBar* ov = m_overlay;
-    if (ov == 0) {
+    if (ov == NULL) {
         m_overlay = new CActionOptionsMenuBar;
         if (m_overlay->LoadAssets() == 0) {
             CActionOptionsMenuBar* o2 = m_overlay;
-            if (o2 != 0) {
+            if (o2 != NULL) {
                 o2->Clear();
                 operator delete(o2);
-                m_overlay = 0;
+                m_overlay = NULL;
             }
             g_gameReg->ReportError(IDX(CMD_TOGGLE_MUSIC), 0x3ff);
         }
@@ -783,7 +783,7 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
     }
     i32* rec = static_cast<i32*>(m_recList.GetHead());
     CGrunt* cellp = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
-    if (cellp == 0 || cellp->m_tileOwnerHi != g_curPlayer) {
+    if (cellp == NULL || cellp->m_tileOwnerHi != g_curPlayer) {
         return 0;
     }
     if (ov->Init(0, 0, screenX, screenY, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
@@ -871,9 +871,9 @@ void CTriggerMgr::ResetSpawnState() {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     CStatusBarMgr* st = world->m_guts;
-    if (st->m_retabNotify != 0) {
+    if (st->m_retabNotify != NULL) {
         operator delete(st->m_retabNotify);
-        st->m_retabNotify = 0;
+        st->m_retabNotify = NULL;
     }
     world->m_guts->m_hlBusy = 0;
     if (m_byteArr.GetSize() > 0) {
@@ -886,7 +886,7 @@ void CTriggerMgr::ResetSpawnState() {
     }
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CWarlord* fx = m_pendingFx;
-        if (fx != 0) {
+        if (fx != NULL) {
             fx->ResolveDeathAnimation();
         }
     }
@@ -923,7 +923,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 idx = anchorIndex - 1;
     CPlay::Anchor* rec = (static_cast<u32>(idx) < 4) ? &world->m_anchors[idx] : 0;
-    if (rec != 0) {
+    if (rec != NULL) {
         g_gameReg->m_cmdGrid
             ->LoadPowerupIconSprites(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
     }
@@ -935,7 +935,7 @@ RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 idx = col * TM_GRID_COLS + row;
     CGrunt* cell = m_grid[idx];
-    if (cell == 0) {
+    if (cell == NULL) {
         return;
     }
     if (cell->m_cellRemovalNotified != 0) {
@@ -952,7 +952,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 cellCol = pt.m_x >> 5;
     tg->m_rows[rowIdx][cellCol].m_flagBytes[3] &= 0xdf;
     tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
-    m_grid[idx] = 0;
+    m_grid[idx] = NULL;
     m_rowCount[col] -= 1;
 
     PickupType k;
@@ -968,7 +968,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         }
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             CWarlord* fx = m_pendingFx;
-            if (fx != 0) {
+            if (fx != NULL) {
                 fx->ResolveDeathAnimation();
             }
         }
@@ -992,7 +992,7 @@ RVA(0x0007a180, 0x86)
 i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
-    if (sprite == 0) {
+    if (sprite == NULL) {
 
         g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x400);
         return 0;
@@ -1020,7 +1020,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     POSITION pos = m_baseList.GetHeadPosition();
     i32 manyFlag = (m_baseList.GetCount() > 0x3b) ? 1 : 0;
     i32 unlinked = 0;
-    while (pos != 0 && unlinked == 0) {
+    while (pos != NULL && unlinked == 0) {
         POSITION cur = pos;
         CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (o->m_tileX == tgt->m_tileX && o->m_tileY == tgt->m_tileY) {
@@ -1035,7 +1035,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     }
     if (manyFlag != 0 && unlinked == 0) {
         pos = m_baseList.GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             POSITION cur = pos;
             CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
             if (o->m_pending == 0) {
@@ -1055,7 +1055,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     i32 ty = y >> 5;
 
     POSITION pos = fac->m_list.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(fac->m_list.GetNext(pos));
         GameObjNotifyFn init = obj->m_animWorker->m_notify;
         if (init == CreateInGameIcon || init == CreateInGameText) {
@@ -1097,7 +1097,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
             i32 i = 15;
             do {
                 CGrunt* c = *cell;
-                if (c != 0 && c->m_deathAnimStarted == 0) {
+                if (c != NULL && c->m_deathAnimStarted == 0) {
                     (static_cast<CGrunt*>(c))->StartBombGruntRun();
                 }
                 cell++;
@@ -1119,7 +1119,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
 
 RVA(0x0007a5e0, 0x121)
 i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId, i32) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
 
@@ -1144,11 +1144,11 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId, i32) 
 // @early-stop
 RVA(0x0007a760, 0x373)
 i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* lvl = m_world;
-    if (lvl == 0) {
+    if (lvl == NULL) {
         return 0;
     }
     CGrunt** cell = m_grid;
@@ -1158,7 +1158,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         do {
             CGrunt* g = *cell;
             i32 id = 0;
-            if (g != 0) {
+            if (g != NULL) {
                 id = g->m_object->m_objectId;
                 void* found = 0;
                 MapLookupById(lvl->m_childGroup->m_map48, id, found);
@@ -1182,7 +1182,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     i32 flag24c = m_recList.GetCount();
     ar->Write(&flag24c, 4);
     POSITION pos = m_recList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         ar->Write(m_recList.GetNext(pos), 8);
     }
     CPtrList* list = m_selLists;
@@ -1191,7 +1191,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         i32 cnt2 = list->GetCount();
         ar->Write(&cnt2, 4);
         POSITION selPos = list->GetHeadPosition();
-        while (selPos != 0) {
+        while (selPos != NULL) {
             ar->Write(list->GetNext(selPos), 8);
         }
         list++;
@@ -1199,13 +1199,13 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     } while (k != 0);
     CWwdGameObjectA* goal = m_goal;
     i32 goalId = 0;
-    if (goal != 0) {
+    if (goal != NULL) {
         goalId = goal->m_objectId;
     }
     ar->Write(&goalId, 4);
     CWarlord* ov = m_pendingFx;
     i32 ovId = 0;
-    if (ov != 0 && ov->m_object != 0) {
+    if (ov != NULL && ov->m_object != NULL) {
         ovId = ov->m_object->m_objectId;
     }
     ar->Write(&ovId, 4);
@@ -1213,9 +1213,9 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     i32 cntC = m_baseList.GetCount();
     ar->Write(&cntC, 4);
     pos = m_baseList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGruntPuddle* obj = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-        if (obj == 0) {
+        if (obj == NULL) {
             return 0;
         }
         i32 oid = obj->m_object->m_objectId;
@@ -1223,9 +1223,9 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         MapLookupById(lvl->m_childGroup->m_map48, oid, found);
         ar->Write(&oid, 4);
     }
-    i32 hasOv = (m_overlay != 0) ? 1 : 0;
+    i32 hasOv = (m_overlay != NULL) ? 1 : 0;
     ar->Write(&hasOv, 4);
-    if (m_overlay != 0) {
+    if (m_overlay != NULL) {
         if (m_overlay->Serialize(ar) == 0) {
             return 0;
         }
@@ -1249,14 +1249,14 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
 // @early-stop
 RVA(0x0007abc0, 0x4b6)
 i32 CTriggerMgr::Load(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
-    m_rollingballLoop = 0;
-    m_teleportLoop = 0;
+    m_rollingballLoop = NULL;
+    m_teleportLoop = NULL;
     m_rollingballWanted = 0;
     m_teleportWanted = 0;
 
@@ -1270,11 +1270,11 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             if (key != 0) {
                 void* found = 0;
                 void* looked = MapLookupById(*map, key, found) ? found : 0;
-                if (looked == 0) {
+                if (looked == NULL) {
                     return 0;
                 }
                 cell = (static_cast<CGameObject*>(looked))->m_animWorker->m_logic;
-                if (cell == 0) {
+                if (cell == NULL) {
                     return 0;
                 }
             }
@@ -1304,7 +1304,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         CoordPoolNode* fl = g_coordPool.m_freeHead;
         void* node = 0;
-        if (fl->m_next != 0) {
+        if (fl->m_next != NULL) {
             node = &fl->m_coord;
             g_coordPool.m_freeHead = fl->m_next;
         }
@@ -1319,7 +1319,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             void* node = 0;
-            if (fl->m_next != 0) {
+            if (fl->m_next != NULL) {
                 node = &fl->m_coord;
                 g_coordPool.m_freeHead = fl->m_next;
             }
@@ -1335,12 +1335,12 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             void* found = 0;
             void* looked = MapLookupById(*map, key, found) ? found : 0;
-            void* obj = (looked != 0
+            void* obj = (looked != NULL
                          && (static_cast<CGameObject*>(looked))->GetClassId() == CLASSID_SERIALREF)
                             ? looked
                             : 0;
             m_goal = static_cast<CWwdGameObjectA*>(obj);
-            if (obj == 0) {
+            if (obj == NULL) {
                 return 0;
             }
         }
@@ -1352,17 +1352,17 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             void* found = 0;
             void* looked = MapLookupById(*map, key, found) ? found : 0;
-            if (looked == 0) {
+            if (looked == NULL) {
                 return 0;
             }
             CWarlord* obj =
                 static_cast<CWarlord*>((static_cast<CGameObject*>(looked))->m_animWorker->m_logic);
             m_pendingFx = obj;
-            if (obj == 0) {
+            if (obj == NULL) {
                 return 0;
             }
         } else {
-            m_pendingFx = 0;
+            m_pendingFx = NULL;
         }
     }
 
@@ -1377,21 +1377,21 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
         void* found = 0;
         void* looked = MapLookupById(*map, key, found) ? found : 0;
-        if (looked == 0) {
+        if (looked == NULL) {
             return 0;
         }
         void* obj = (static_cast<CGameObject*>(looked))->m_animWorker->m_logic;
-        if (obj == 0) {
+        if (obj == NULL) {
             return 0;
         }
         m_baseList.AddTail(obj);
     }
 
     CActionOptionsMenuBar* old = m_overlay;
-    if (old != 0) {
+    if (old != NULL) {
         old->Clear();
         ::operator delete(old);
-        m_overlay = 0;
+        m_overlay = NULL;
     }
     i32 hasOverlay;
     ar->Read(&hasOverlay, 4);
@@ -1422,12 +1422,12 @@ RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
     m_pendingFxKind = 0;
-    if (ov == 0 || ov->m_active == 0) {
+    if (ov == NULL || ov->m_active == 0) {
         return 0;
     }
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
-        cell = 0;
+        cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
@@ -1476,7 +1476,7 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
         spr->m_smarts = id;
         spr->m_score = 1;
     }
-    return spr != 0;
+    return spr != NULL;
 }
 
 // @early-stop
@@ -1523,7 +1523,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {
                     CGiantRockLogic* gr = root->m_beginMarker->ScanNeighborhood(tx, ty);
-                    if (gr == 0) {
+                    if (gr == NULL) {
                         CString msg;
                         msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
                         g_gameReg->EnterModalUI(msg);
@@ -1550,7 +1550,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 
             CTileTriggerLogic* lo =
                 root->m_beginMarker->FindInLists12(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
-            if (lo != 0) {
+            if (lo != NULL) {
                 lo->ApplyMove(type);
                 root->m_beginMarker->DelFromList1(lo);
             } else {
@@ -1573,7 +1573,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             }
             CWwdGameObjectA* spr =
                 m_world->m_childGroup->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
-            if (spr == 0) {
+            if (spr == NULL) {
                 continue;
             }
             spr->ApplyName("LEVEL_ROCKBREAK");
@@ -1585,7 +1585,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 void* e_ob = 0;
                 set->m_cues.Lookup("LEVEL_ROCKBREAK", e_ob);
                 LeafCue* e = static_cast<LeafCue*>(e_ob);
-                if (e != 0 && g_sndEnabled != 0) {
+                if (e != NULL && g_sndEnabled != 0) {
                     u32 now = g_killCueClock;
                     if (now - e->m_lastPlayTime >= e->m_replayDelay) {
                         e->m_lastPlayTime = now;
@@ -1613,7 +1613,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
     for (i32 i = 0; i < 4; i++) {
         for (i32 j = 0; j < 15; j++, p++) {
             CGrunt* g = *p;
-            if (g == 0) {
+            if (g == NULL) {
                 continue;
             }
             if (g->m_entranceCommitted == 0) {
@@ -1748,7 +1748,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     rect.bottom = hy + r;
 
     POSITION pos = m_baseList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         POSITION cur = pos;
         CGruntPuddle* g = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (g->m_pending != 0) {
@@ -1823,9 +1823,9 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     CGrunt* src = m_grid[col * TM_GRID_COLS + a1c];
     i32 free = 0;
     CGrunt** rowBase = &m_grid[row * TM_GRID_COLS];
-    if (*rowBase != 0) {
+    if (*rowBase != NULL) {
         CGrunt** p = rowBase;
-        while (free < 15 && *p != 0) {
+        while (free < 15 && *p != NULL) {
             p++;
             free++;
         }
@@ -1844,7 +1844,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     this->CellDispatch(col, row, DEATH_DROP, a18);
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
-    if (sprite == 0) {
+    if (sprite == NULL) {
         return 0;
     }
     sprite->m_animWorker->m_notify(sprite);
@@ -1871,7 +1871,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
             i32 i = 15;
             do {
                 CGrunt* g = *cell;
-                if (g != 0) {
+                if (g != NULL) {
                     if (enable != 0) {
                         i32 t = rand() % 0x11;
                         if (g->m_savedMoveIcon == -1) {
@@ -1904,9 +1904,9 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
                 m_timerBase = g_frameTime;
                 CDDrawSubMgrLeafScan* h28 = m_world->m_soundRegistry;
                 if (h28->m_emitGate == 0) {
-                    p = 0;
+                    p = NULL;
                     MapLookup(h28->m_cues, "GAME\\FINISHLEVEL", p);
-                    if (p != 0 && g_sndEnabled != 0
+                    if (p != NULL && g_sndEnabled != 0
                         && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
                                >= static_cast<u32>(p->m_replayDelay)) {
                         p->m_lastPlayTime = g_killCueClock;
@@ -1925,7 +1925,7 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
         case 3:
             if (m_phase == 0) {
                 m_phase = 2;
-                if (m_pendingFx != 0) {
+                if (m_pendingFx != NULL) {
                     m_pendingFx->ResolveDeathAnimation();
                 }
             }
@@ -2133,7 +2133,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             if (tb) {
                 tb->m_damage = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
-            return tb != 0;
+            return tb != NULL;
         }
         default:
             return 0;
@@ -2161,25 +2161,25 @@ RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     CPtrList* sel = &m_selLists[idx];
     POSITION pos = m_selLists[idx].GetHeadPosition();
-    if (pos != 0) {
+    if (pos != NULL) {
         void* head = g_coordPool.m_freeHead;
         do {
             i32* payload = static_cast<i32*>(m_selLists[idx].GetNext(pos));
-            if (payload != 0) {
+            if (payload != NULL) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(payload);
                 slot->m_next = static_cast<CoordPoolNode*>(head);
                 head = slot;
                 g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     sel->RemoveAll();
     pos = m_recList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         Coord* src = static_cast<Coord*>(m_recList.GetNext(pos));
         CoordPoolNode* fhNode = g_coordPool.m_freeHead;
         Coord* dst = 0;
-        if (fhNode->m_next != 0) {
+        if (fhNode->m_next != NULL) {
             dst = &fhNode->m_coord;
             g_coordPool.m_freeHead = fhNode->m_next;
         }
@@ -2195,11 +2195,11 @@ RVA(0x0007cd40, 0x18f)
 i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     ResetAll();
     CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != 0 && ov->m_active != 0) {
+    if (ov != NULL && ov->m_active != 0) {
         OverlayTick();
     }
     POSITION pos = m_selLists[slot].GetHeadPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         m_selSentinel = -1;
         return 0;
     }
@@ -2215,7 +2215,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         i32* payload = static_cast<i32*>(m_selLists[slot].GetNext(pos));
         i32 idx = payload[1] + TM_GRID_COLS * payload[0];
         CGrunt* cell = m_grid[idx];
-        if (cell != 0) {
+        if (cell != NULL) {
             ResetCell(payload[0], payload[1], 1, 0);
             if (m_selSentinel == slot) {
                 CGameObject* disp = cell->m_object;
@@ -2240,7 +2240,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
             g_coordPool.m_freeHead = node;
             m_selLists[slot].RemoveAt(cur);
         }
-    } while (pos != 0);
+    } while (pos != NULL);
     if (m_selSentinel == slot) {
         (static_cast<CPlay*>(g_gameReg->m_curState))
             ->ResetGoals(
@@ -2258,7 +2258,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 RVA(0x0007cf40, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     POSITION pos = m_recList.GetHeadPosition();
-    if (pos == 0) {
+    if (pos == NULL) {
         return 0;
     }
     RECT bbox;
@@ -2271,7 +2271,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     do {
         i32* k = static_cast<i32*>(m_recList.GetNext(pos));
         CGrunt* cell = m_grid[k[0] * TM_GRID_COLS + k[1]];
-        if (cell != 0) {
+        if (cell != NULL) {
             count++;
             CGameObject* g = cell->m_object;
             i32 gx = g->m_screenX;
@@ -2289,19 +2289,19 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
                 bbox.bottom = gy;
             }
         }
-    } while (pos != 0);
+    } while (pos != NULL);
     i32 cy = bbox.top + (bbox.bottom - bbox.top) / 2;
     i32 cx = bbox.left + (bbox.right - bbox.left) / 2;
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
     if (doSelect != 0 && count == 1) {
         CGrunt* cell2;
         if (m_recList.GetCount() != 1) {
-            cell2 = 0;
+            cell2 = NULL;
         } else {
             i32* head = static_cast<i32*>(m_recList.GetHead());
             cell2 = m_grid[head[0] * TM_GRID_COLS + head[1]];
         }
-        if (cell2 != 0) {
+        if (cell2 != NULL) {
             i32 recX = cell2->m_tileOwnerHi;
             i32 recY = cell2->m_tileOwnerLo;
             if (RecordListHas(recX, recY)) {
@@ -2321,15 +2321,15 @@ void CTriggerMgr::ClearSelections() {
     i32 k = 10;
     do {
         POSITION pos = list->GetHeadPosition();
-        if (pos != 0) {
+        if (pos != NULL) {
             do {
                 i32* payload = static_cast<i32*>(list->GetNext(pos));
-                if (payload != 0) {
+                if (payload != NULL) {
                     CoordPoolNode* slot = g_coordPool.NodeOf(payload);
                     slot->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = slot;
                 }
-            } while (pos != 0);
+            } while (pos != NULL);
         }
         list->RemoveAll();
         list++;
@@ -2344,7 +2344,7 @@ i32 CTriggerMgr::ClearRow(i32 row) {
     i32 i = 15;
     do {
         CGrunt* c = *cell;
-        if (c != 0 && c->m_deathAnimStarted == 0) {
+        if (c != NULL && c->m_deathAnimStarted == 0) {
             (static_cast<CGrunt*>(c))->BuildGruntExitAnimation();
         }
         cell++;
@@ -2370,7 +2370,7 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
             CGrunt** cell = row;
             do {
                 CGrunt* g = *cell;
-                if (g != 0 && g->m_entranceCommitted != 0) {
+                if (g != NULL && g->m_entranceCommitted != 0) {
                     CGameObject* o = g->m_object;
                     i32 dx = (o->m_screenX >> 5) - tx;
                     i32 dy = (o->m_screenY >> 5) - ty;
@@ -2400,7 +2400,7 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
     CPtrList* list = m_selLists;
     do {
         POSITION pos = list->GetHeadPosition();
-        while (pos != 0) {
+        while (pos != NULL) {
             i32* payload = static_cast<i32*>(list->GetNext(pos));
             if (payload[0] == key && payload[1] == y) {
                 if (result != 0) {
@@ -2424,7 +2424,7 @@ void CTriggerMgr::DestroyAllAnims() {
         i32 i = 15;
         do {
             CGrunt* g = *cell;
-            if (g != 0) {
+            if (g != NULL) {
                 (static_cast<CGrunt*>(g))->DestroyAnims();
             }
             cell++;
@@ -2435,9 +2435,9 @@ void CTriggerMgr::DestroyAllAnims() {
 
     CObList& chain = m_world->m_childGroup->m_list;
     POSITION pos = chain.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
-        if (obj != 0) {
+        if (obj != NULL) {
             AnimWorkerObj* desc = obj->m_animWorker;
 
             NotifyWord slot;
@@ -2451,23 +2451,23 @@ void CTriggerMgr::DestroyAllAnims() {
     }
 
     DirectSoundMgr* ch0 = m_rollingballLoop;
-    if (ch0 != 0) {
+    if (ch0 != NULL) {
         ch0->StopAndRewind();
-        m_rollingballLoop = 0;
+        m_rollingballLoop = NULL;
     }
     DirectSoundMgr* ch1 = m_teleportLoop;
-    if (ch1 != 0) {
+    if (ch1 != NULL) {
         ch1->StopAndRewind();
-        m_teleportLoop = 0;
+        m_teleportLoop = NULL;
     }
     CState* state = g_gameReg->PickPausedThenPlayState();
-    if (state != 0) {
+    if (state != NULL) {
         CStatusBarMgr* sub = (static_cast<CPlay*>(state))->m_guts;
-        if (sub != 0) {
+        if (sub != NULL) {
             DirectSoundMgr* ch2 = sub->m_destructButton;
-            if (ch2 != 0) {
+            if (ch2 != NULL) {
                 ch2->StopAndRewind();
-                sub->m_destructButton = 0;
+                sub->m_destructButton = NULL;
             }
         }
     }
@@ -2485,12 +2485,12 @@ i32 CTriggerMgr::ToggleRegionA() {
 
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
-        cell = 0;
+        cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
-    if (cell == 0) {
+    if (cell == NULL) {
         return 1;
     }
     if (cell->m_tileOwnerHi != g_curPlayer) {
@@ -2529,12 +2529,12 @@ i32 CTriggerMgr::ToggleRegionB() {
     m_pendingFxKind = 0;
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
-        cell = 0;
+        cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
-    if (cell == 0) {
+    if (cell == NULL) {
         return 1;
     }
     if (cell->m_tileOwnerHi != g_curPlayer) {
@@ -2573,7 +2573,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     u8 count = 0;
     char x;
     POSITION pos = m_recList.GetHeadPosition();
-    if (pos != 0) {
+    if (pos != NULL) {
         i32 magic = g_curPlayer;
         do {
             Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
@@ -2584,7 +2584,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
                 buf[count] = static_cast<u8>(p->m_y);
                 count++;
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     if (count == 1) {
         g_gameReg->m_cmdSubMgr->EnqueueSingle(1, x, static_cast<char>(buf[0]), 5, 0, 0, 0, 0);

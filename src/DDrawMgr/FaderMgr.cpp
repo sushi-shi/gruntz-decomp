@@ -42,7 +42,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
 
     switch (nFaderType) {
         case 0: {
-            if (pInit != 0 && pInit->m_type != 1) {
+            if (pInit != NULL && pInit->m_type != 1) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -53,7 +53,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (pInit == 0) {
+            if (pInit == NULL) {
                 CFxModeT1 init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
@@ -70,7 +70,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case 1: {
-            if (pInit != 0 && pInit->m_type != 2) {
+            if (pInit != NULL && pInit->m_type != 2) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -81,7 +81,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (pInit == 0) {
+            if (pInit == NULL) {
                 CFxModeT2 init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
@@ -98,7 +98,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case 2: {
-            if (pInit != 0 && pInit->m_type != 3) {
+            if (pInit != NULL && pInit->m_type != 3) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -109,7 +109,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (pInit == 0) {
+            if (pInit == NULL) {
                 CFxModeT3 init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
@@ -126,7 +126,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case 3: {
-            if (pInit != 0 && pInit->m_type != 4) {
+            if (pInit != NULL && pInit->m_type != 4) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -137,7 +137,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (pInit == 0) {
+            if (pInit == NULL) {
                 CFxModeT4 init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
@@ -154,7 +154,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case 4: {
-            if (pInit != 0 && pInit->m_type != 5) {
+            if (pInit != NULL && pInit->m_type != 5) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -165,7 +165,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (pInit == 0) {
+            if (pInit == NULL) {
                 CFxModeT5 init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
@@ -182,7 +182,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case 5: {
-            if (pInit != 0 && pInit->m_type != 6) {
+            if (pInit != NULL && pInit->m_type != 6) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -193,7 +193,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (pInit == 0) {
+            if (pInit == NULL) {
                 CFxModeT6 init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
@@ -214,7 +214,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             break;
     }
 
-    if (fader != 0) {
+    if (fader != NULL) {
         m_arr.Add(fader);
     }
     return fader;
@@ -260,7 +260,7 @@ void CFaderMgr::DeleteAll() {
     }
     if (m_arr.m_pData) {
         operator delete(m_arr.m_pData);
-        m_arr.m_pData = 0;
+        m_arr.m_pData = NULL;
     }
     m_arr.m_nMaxSize = 0;
     m_arr.m_nSize = 0;
@@ -282,13 +282,13 @@ void CFaderArray::Serialize(CArchive& ar) {
     } else {
         i32 n = ar.ReadCount();
         if (n == 0) {
-            if (m_pData != 0) {
+            if (m_pData != NULL) {
                 ::operator delete(m_pData);
-                m_pData = 0;
+                m_pData = NULL;
             }
             m_nMaxSize = 0;
             m_nSize = 0;
-        } else if (m_pData == 0) {
+        } else if (m_pData == NULL) {
             m_pData = static_cast<CFader**>(::operator new(n * 4));
             memset(m_pData, 0, n * 4);
             m_nMaxSize = n;

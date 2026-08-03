@@ -8,6 +8,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CWwdGameObjectA;
 class CAniRecordView;
 class CAniElement;
@@ -55,9 +57,9 @@ SIZE_UNKNOWN();
 #ifndef ANIADVANCECURSOR_OOL_CTOR
 inline CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(owner, field04, field08) {
-    m_boundObject = 0;
-    m_animation = 0;
-    m_element = 0;
+    m_boundObject = NULL;
+    m_animation = NULL;
+    m_element = NULL;
 }
 #endif
 

@@ -8,14 +8,16 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawWorker;
 
 class CSBI_ImageSet : public CSBI_Image {
 public:
     CSBI_ImageSet() {
-        m_frame = 0;
+        m_frame = NULL;
         m_kind = 4;
-        m_frameSet = 0;
+        m_frameSet = NULL;
     }
     virtual ~CSBI_ImageSet() OVERRIDE;
 

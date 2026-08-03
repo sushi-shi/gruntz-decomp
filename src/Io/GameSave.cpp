@@ -15,10 +15,10 @@ i32 g_saveBuf[0x24];
 
 RVA(0x0000d170, 0x74)
 i32 SaveGame(CGruntzMgr* host, char* name) {
-    if (host == 0) {
+    if (host == NULL) {
         return 0;
     }
-    if (name == 0) {
+    if (name == NULL) {
         return 0;
     }
     if (strlen(name) == 0) {
@@ -28,7 +28,7 @@ i32 SaveGame(CGruntzMgr* host, char* name) {
     memset(g_saveBuf, 0, 0x90);
     g_saveBuf[0] = 1;
     CDDrawSurfaceMgr* mgr = host->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
     return mgr->SnapshotChildren(&SerialObjectFactory, name, "Gruntz Save Game", LOGIC_NONE) != 0;

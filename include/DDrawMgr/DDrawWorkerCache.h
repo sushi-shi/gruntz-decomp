@@ -8,6 +8,8 @@
 #include <Gruntz/MapStringToOb.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawWorker;
 
 class CDDrawWorkerCache : public CLoadable {
@@ -17,7 +19,7 @@ public:
 
     RVA(0x001576d0, 0x16)
     virtual i32 IsLoaded() OVERRIDE {
-        if (m_ownerCtx == 0) {
+        if (m_ownerCtx == NULL) {
             goto fail;
         }
         if (m_id != -1) {

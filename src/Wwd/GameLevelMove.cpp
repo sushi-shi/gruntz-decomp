@@ -463,7 +463,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     }
     CObList& chain = OwnerMgr()->m_childGroup->m_list;
     POSITION pos = chain.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_objectType)
             && t->m_extent.left != AXIS_UNSET && obj->m_extent.left != AXIS_UNSET) {
@@ -482,7 +482,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                 i32 cTop = t->m_extent.bottom + candY;
                 if (cLeft <= oRight && cRight >= oLeft && cBot <= oTop && cTop >= oBot) {
                     i32 fire;
-                    if (t->m_collideWorker != 0) {
+                    if (t->m_collideWorker != NULL) {
                         t->m_hitOther = obj;
                         fire = t->m_collideWorker->m_notify(t);
                     } else {
@@ -490,7 +490,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                     }
                     if (fire != 0) {
                         if (t->m_collMask & obj->m_objectType) {
-                            if (obj->m_collideWorker != 0) {
+                            if (obj->m_collideWorker != NULL) {
                                 obj->m_hitOther = t;
                                 obj->m_collideWorker->m_notify(obj);
                             }

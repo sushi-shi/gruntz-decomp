@@ -65,10 +65,10 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CImage* aux = m_object->m_layer;
-    if (aux != 0) {
+    if (aux != NULL) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != 0) {
+            if (m_object->m_animWorker != NULL) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
                 m_wwdObject->m_flags &= ~0x1000002;

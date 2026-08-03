@@ -4,9 +4,11 @@
 
 #include <DinMgr2/DirectInputMgr2.h>
 
+#include <stddef.h>
+
 RVA(0x000382c0, 0x52)
 i32 StateMgrBZ::Init(DirectInputMgr2* src, i32 mode) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     m_currentKeys = 0;
@@ -35,13 +37,13 @@ void StateMgrBZ::Setup() {
 
 RVA(0x000383b0, 0x1c0)
 i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
-    m_keyboard = 0;
-    m_joystick = 0;
-    m_deviceList = 0;
-    m_device = 0;
+    m_keyboard = NULL;
+    m_joystick = NULL;
+    m_deviceList = NULL;
+    m_device = NULL;
     m_mode = 0;
     switch (static_cast<u32>(mode)) {
         case 1: {
@@ -112,11 +114,11 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             );
             break;
         case 0:
-            m_keyboard = 0;
-            m_joystick = 0;
-            m_deviceList = 0;
-            m_joystick2 = 0;
-            m_device = 0;
+            m_keyboard = NULL;
+            m_joystick = NULL;
+            m_deviceList = NULL;
+            m_joystick2 = NULL;
+            m_device = NULL;
             break;
     }
     m_mode = mode;

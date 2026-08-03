@@ -20,17 +20,17 @@ VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
 
 RVA(0x000ea470, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {
-    m_statusGlyphLatched = 0;
-    m_abilityGlyphLatched = 0;
-    m_overrideGlyphLatched = 0;
-    m_selectGlyph = 0;
-    m_statusGlyph = 0;
-    m_abilityGlyph = 0;
-    m_overrideGlyph = 0;
-    m_selectKey = 0;
-    m_glyphMap = 0;
-    m_timerGlyphMap = 0;
-    m_timerGlyph = 0;
+    m_statusGlyphLatched = NULL;
+    m_abilityGlyphLatched = NULL;
+    m_overrideGlyphLatched = NULL;
+    m_selectGlyph = NULL;
+    m_statusGlyph = NULL;
+    m_abilityGlyph = NULL;
+    m_overrideGlyph = NULL;
+    m_selectKey = NULL;
+    m_glyphMap = NULL;
+    m_timerGlyphMap = NULL;
+    m_timerGlyph = NULL;
 }
 
 RVA(0x000ea4b0, 0x1c)
@@ -64,7 +64,7 @@ i32 CSBI_StatzTabGruntBar::Render() {
             m_rect14.top + m_overrideGlyph->m_anchorY,
             0
         );
-        if (m_selectKey != 0) {
+        if (m_selectKey != NULL) {
             m_selectKey->RenderFrame(
                 ctx,
                 m_rect14.left + m_selectKey->m_anchorX + 0x3c,
@@ -72,7 +72,7 @@ i32 CSBI_StatzTabGruntBar::Render() {
                 0
             );
         }
-        if (m_statusGlyphLatched != 0) {
+        if (m_statusGlyphLatched != NULL) {
             m_statusGlyphLatched->RenderFrame(
                 ctx,
                 m_rect14.left + m_statusGlyph->m_anchorX + 1,
@@ -80,7 +80,7 @@ i32 CSBI_StatzTabGruntBar::Render() {
                 0
             );
         }
-        if (m_abilityGlyphLatched != 0) {
+        if (m_abilityGlyphLatched != NULL) {
             m_abilityGlyphLatched->RenderFrame(
                 ctx,
                 m_rect14.left + m_abilityGlyph->m_anchorX + 0x14,
@@ -89,10 +89,10 @@ i32 CSBI_StatzTabGruntBar::Render() {
             );
         }
         i32 adj = -1;
-        if (m_selectKey != 0) {
+        if (m_selectKey != NULL) {
             adj = 0;
         }
-        if (m_overrideGlyphLatched != 0) {
+        if (m_overrideGlyphLatched != NULL) {
             m_overrideGlyphLatched->RenderFrame(
                 ctx,
                 m_rect14.left + m_overrideGlyph->m_anchorX + 0x28 + adj,
@@ -100,7 +100,7 @@ i32 CSBI_StatzTabGruntBar::Render() {
                 0
             );
         }
-        if (m_selectGlyph != 0) {
+        if (m_selectGlyph != NULL) {
             m_selectGlyph->RenderFrame(
                 ctx,
                 m_rect14.left + m_selectKey->m_anchorX + 0x3b,
@@ -109,7 +109,7 @@ i32 CSBI_StatzTabGruntBar::Render() {
             );
         }
     }
-    if (m_timerGlyph != 0) {
+    if (m_timerGlyph != NULL) {
         m_timerGlyph->RenderFrame(
             ctx,
             m_rect14.left + m_timerGlyph->m_anchorX,
@@ -132,7 +132,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     i32 selectVal;
     i32 timerVal;
 
-    if (unit == 0) {
+    if (unit == NULL) {
         statusVal = -1;
         abilityVal = -1;
         overrideVal = -1;
@@ -172,7 +172,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
             overrideVal = badge;
         }
 
-        if (m_selectKey != 0) {
+        if (m_selectKey != NULL) {
             selectVal = table->SelectionListFind(m_unitCol, m_unitRow);
         }
 

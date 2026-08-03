@@ -16,7 +16,7 @@ i32 CSBI_RectOnly::Setup(
     const char* key,
     i32 a10
 ) {
-    if (host == 0 || owner == 0) {
+    if (host == NULL || owner == NULL) {
         return 0;
     }
     m_owner = owner;

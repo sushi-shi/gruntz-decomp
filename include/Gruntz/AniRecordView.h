@@ -22,7 +22,7 @@ struct CAniRecordView : public CObject {
 
     inline CAniRecordView() {
         m_cueCount = 0;
-        m_cues = 0;
+        m_cues = NULL;
         m_loopMode = 0xffff;
     }
 

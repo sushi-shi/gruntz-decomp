@@ -19,6 +19,8 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CGruntCreationPoint, 0x001e81d4);
 
 RVA_COMPGEN(0x00010700, 0x1e, ??_GCGruntCreationPoint@@UAEPAXI@Z)
@@ -87,7 +89,7 @@ i32 CGruntCreationPoint::SerializeMove(
             idx = m_object->m_smarts;
         }
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
-        if (sel == 0) {
+        if (sel == NULL) {
             sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
         CWwdGameObjectA* obj = m_object;
@@ -117,7 +119,7 @@ void CGruntCreationPoint::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

@@ -7,6 +7,8 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
+#include <stddef.h>
+
 GZ_ENUM_BEGIN(LoadableClassId)
     CLASSID_NONE = 0,
     CLASSID_SUBWORKER = 1,
@@ -83,7 +85,7 @@ public:
     virtual ~CLoadable() OVERRIDE {
         m_id = -1;
         m_flags = 0;
-        m_ownerCtx = 0;
+        m_ownerCtx = NULL;
     }
 };
 SIZE(0x10);

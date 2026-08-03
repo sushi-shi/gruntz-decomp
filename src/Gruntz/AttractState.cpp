@@ -21,6 +21,7 @@
 #include <Rez/FrameClock.h>
 
 #include <ddraw.h>
+#include <stddef.h>
 
 VTBL(CAttract, 0x001ea194);
 VTBL(CState, 0x001ea21c);
@@ -43,12 +44,12 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
 
     CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
     m_stateBank = (state);
-    if (state == 0) {
+    if (state == NULL) {
         return 0;
     }
 
     void* sound = state->FindSub("SOUNDZ");
-    if (sound == 0) {
+    if (sound == NULL) {
         return 0;
     }
 
@@ -61,10 +62,10 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
 
     if (mode == 3) {
         m_activeFlag = 0;
-        m_host = 0;
+        m_host = NULL;
     } else {
         m_activeFlag = 1;
-        m_host = 0;
+        m_host = NULL;
     }
     return 1;
 }
@@ -112,7 +113,7 @@ i32 CAttract::EnterState(GameStateId arg) {
     void* found = 0;
     menuRoot()->m_soundRegistry->m_cues.Lookup(buf, found);
     m_host = static_cast<LeafCue*>(found);
-    if (found != 0 && m_activeFlag != 0) {
+    if (found != NULL && m_activeFlag != 0) {
         if (g_sndEnabled) {
             m_host->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
         }
@@ -130,7 +131,7 @@ i32 CAttract::EnterState(GameStateId arg) {
 
 RVA(0x00014340, 0x71)
 i32 CAttract::LeaveState(GameStateId arg) {
-    if (m_host == 0) {
+    if (m_host == NULL) {
         return 1;
     }
     if (!m_host->m_sound->IsPlaying()) {
@@ -152,7 +153,7 @@ i32 CAttract::LeaveState(GameStateId arg) {
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
-    if (busy == 0 || busy->IsLost() != 0) {
+    if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             owner()->ReportError(IDX(CMD_RETURN_TO_MENU), 0x3e8);
             return 0;

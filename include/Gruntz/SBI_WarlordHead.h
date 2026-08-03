@@ -9,15 +9,17 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 struct CShadeTable;
 GZ_ENUM_FORWARD(ShadeMode);
 
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
     CSBI_WarlordHead() {
-        m_frame = 0;
+        m_frame = NULL;
         m_kind = 0xb;
-        m_frameSet = 0;
+        m_frameSet = NULL;
     }
 
     virtual ~CSBI_WarlordHead() OVERRIDE;

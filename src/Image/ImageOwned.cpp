@@ -14,13 +14,13 @@
 
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
-    m_rleData = 0;
+    m_rleData = NULL;
     m_rleLen = 0;
-    m_palDescr = 0;
+    m_palDescr = NULL;
     m_drawType = SHADE_COPY;
     m_light = 0x80;
     m_doubleScanlines = 0;
-    m_palette = 0;
+    m_palette = NULL;
     m_srcBpp = 1;
     m_dstBpp = 1;
     m_colorKey = -1;
@@ -47,7 +47,7 @@ i32 CDDrawShadeBlit::BuildRle(
     void* palette
 ) {
     u8* src = static_cast<u8*>(pixels);
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     m_colorKey = keyVal;
@@ -94,7 +94,7 @@ i32 CDDrawShadeBlit::BuildRle(
         } while (row < m_height);
     }
 
-    if (m_rleData != 0) {
+    if (m_rleData != NULL) {
         ::operator delete(m_rleData);
     }
     m_rleLen = ba.GetSize();
@@ -104,8 +104,8 @@ i32 CDDrawShadeBlit::BuildRle(
         m_rleData[k] = ba.GetData()[k];
     }
 
-    if (palette != 0) {
-        if (m_palette != 0) {
+    if (palette != NULL) {
+        if (m_palette != NULL) {
             ::operator delete(m_palette);
         }
         m_palette = static_cast<PALETTEENTRY*>(::operator new(0x400));
@@ -116,12 +116,12 @@ i32 CDDrawShadeBlit::BuildRle(
 
 RVA(0x00148f50, 0x61)
 i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette) {
-    if (surf == 0) {
+    if (surf == NULL) {
         return 0;
     }
     m_colorKey = keyVal;
     void* bits = surf->Lock(0);
-    if (bits == 0) {
+    if (bits == NULL) {
         return 0;
     }
     i32 r = BuildRle(bits, surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
@@ -180,7 +180,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
         stride -= 0x300;
         m_rleLen = stride;
         if (static_cast<u8>(fmt) == 0x10) {
-            if (m_palette != 0) {
+            if (m_palette != NULL) {
                 ::operator delete(m_palette);
             }
             m_palette = static_cast<PALETTEENTRY*>(::operator new(0x400));
@@ -201,7 +201,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
 
     m_width = src->width;
     m_height = src->height;
-    if (m_rleData != 0) {
+    if (m_rleData != NULL) {
         ::operator delete(m_rleData);
     }
     m_rleData = static_cast<u8*>(::operator new(m_rleLen));
@@ -213,7 +213,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
         ::operator delete(m_rleData);
         m_rleData = static_cast<u8*>(remapped);
         ::operator delete(m_palette);
-        m_palette = 0;
+        m_palette = NULL;
     }
     return 1;
 }
@@ -232,7 +232,7 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
     file.Write(&desc, 0x20);
     file.Write(m_rleData, m_rleLen);
     if (desc.f1 & 0x80) {
-        if (m_palette == 0) {
+        if (m_palette == NULL) {
             return 0;
         }
         for (i32 i = 0; i < 0x100; i++) {
@@ -253,7 +253,7 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
     }
     CImageFrameRebuildDesc desc;
     i32 flags = 0x3d;
-    if (m_palette != 0) {
+    if (m_palette != NULL) {
         flags = 0xbd;
     }
     desc.f0 = 0;
@@ -267,7 +267,7 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
         flags |= 0x100;
         desc.f6 = static_cast<u8>(m_colorKey);
     }
-    if (m_palette != 0) {
+    if (m_palette != NULL) {
         flags |= 0x80;
     }
     desc.f1 = flags;
@@ -279,7 +279,7 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
     if (m_srcBpp != 1) {
         return 0;
     }
-    if (dest == 0) {
+    if (dest == NULL) {
         return 0;
     }
     i32 fill = m_colorKey;

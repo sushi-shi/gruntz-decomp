@@ -9,7 +9,7 @@ void CImageSet3::FreePixels() {
     if (m_pixels) {
         ::operator delete(m_pixels);
     }
-    m_pixels = 0;
+    m_pixels = NULL;
 }
 
 RVA(0x001614d0, 0x6)
@@ -46,7 +46,7 @@ i32 CImageSet3::Parse(void* record) {
 
     u8* dst = static_cast<u8*>(::operator new(m_byteSize));
     m_pixels = dst;
-    if (dst == 0) {
+    if (dst == NULL) {
         return 0;
     }
     memcpy(dst, p, m_byteSize);

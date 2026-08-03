@@ -9,6 +9,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
+#include <stddef.h>
+
 DATA(0x001eab40)
 float g_zeroF = 0.0f;
 
@@ -391,7 +393,7 @@ i32 CBattlezData::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, 
     i32 i;
     i32 r;
     i32 c;
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     if (op != SERIAL_SAVE) {

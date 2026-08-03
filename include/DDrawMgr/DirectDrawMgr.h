@@ -22,14 +22,14 @@ SIZE_UNKNOWN();
 struct CDDPalette {
 public:
     CDDPalette() {
-        m_palette = 0;
-        m_pos = 0;
+        m_palette = NULL;
+        m_pos = NULL;
         m_8 = 0;
-        m_cacheA = 0;
-        m_cacheB = 0;
+        m_cacheA = NULL;
+        m_cacheB = NULL;
         m_active = 0;
-        m_sourcePalette = 0;
-        m_targetPalette = 0;
+        m_sourcePalette = NULL;
+        m_targetPalette = NULL;
         m_firstColorIndex = 0;
         m_colorCount = 0;
     }

@@ -188,7 +188,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
-    if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
+    if (occ != NULL && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
             CGameObject* oh = occ->m_object;
             if (TileSwitch(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
@@ -289,7 +289,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
-    if (g != 0) {
+    if (g != NULL) {
         i32 x = g->m_object->m_screenX;
         if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
             && RectContains(x, g->m_object->m_screenY) != 0) {
@@ -306,10 +306,10 @@ i32 CGrunt::StepBrickLayerBehavior() {
             return 1;
         }
         if (m_stamina >= 100) {
-            if (FindGridNeighbor(1) != 0) {
+            if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
-            if (atTarget && g == 0) {
+            if (atTarget && g == NULL) {
                 return 1;
             }
             if (m_poweredUp == 0) {
@@ -334,7 +334,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         return 1;
     }
 
-    if (g == 0) {
+    if (g == NULL) {
         m_blockedVoicePending = 0;
         goto L_ed006;
     }
@@ -360,7 +360,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
 
 L_ed006:
-    if (g == 0 || static_cast<u32>(m_dwell) <= 0x1f4
+    if (g == NULL || static_cast<u32>(m_dwell) <= 0x1f4
         || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
         m_blockedVoicePending = 0;
         goto L_ed153;
@@ -509,7 +509,7 @@ i32 CGrunt::WanderStep() {
 
     i32 flag = 0;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-    if (g != 0) {
+    if (g != NULL) {
         i32 gx = g->m_object->m_screenX;
         if (gx == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
             && RectContains(gx, g->m_object->m_screenY) != 0) {
@@ -523,11 +523,11 @@ i32 CGrunt::WanderStep() {
         } else if (m_combatActive == 0) {
             bool reset;
             if (m_stamina >= 0x64) {
-                if (FindGridNeighbor(1) != 0) {
+                if (FindGridNeighbor(1) != NULL) {
                     m_defenderState = AISTATE_RETREAT;
                     return 1;
                 }
-                reset = !(flag != 0 && g == 0);
+                reset = !(flag != 0 && g == NULL);
             } else {
                 reset = (flag == 0);
             }
@@ -544,7 +544,7 @@ i32 CGrunt::WanderStep() {
 
     switch (m_defenderState) {
         case AISTATE_SEEK:
-            if (g != 0) {
+            if (g != NULL) {
                 if (m_poweredUp == 0 && m_stamina >= 0x64
                     && g->m_object->m_screenX == g->m_lastTilePx.m_x
                     && g->m_object->m_screenY == g->m_lastTilePx.m_y
@@ -558,15 +558,15 @@ i32 CGrunt::WanderStep() {
                     m_neighborScanEnabled = 0;
                     if (CoordCount() != 0) {
                         void* node = m_coordList.GetHeadPosition();
-                        if (node != 0) {
+                        if (node != NULL) {
                             do {
                                 CoordNode* cur = static_cast<CoordNode*>(node);
                                 node = *static_cast<void**>(node);
                                 Coord* data = cur->m_coord;
-                                if (data != 0) {
+                                if (data != NULL) {
                                     g_coordPool.Push(data);
                                 }
-                            } while (node != 0);
+                            } while (node != NULL);
                         }
                         m_coordList.RemoveAll();
                     }
@@ -602,13 +602,13 @@ i32 CGrunt::WanderStep() {
         case AISTATE_CHASE: {
             CGrunt* slot = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* active = m_tileMgr->FindNearestEnemy(this);
-            if (active != 0 && active != slot) {
+            if (active != NULL && active != slot) {
                 m_arrivalCell.m_x = -1;
                 m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
-            if (slot == 0 || slot->m_entranceCommitted == 0
+            if (slot == NULL || slot->m_entranceCommitted == 0
                 || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -649,9 +649,9 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
 
                 POSITION pos = m_coordList.GetHeadPosition();
-                while (pos != 0) {
+                while (pos != NULL) {
                     void* data = m_coordList.GetNext(pos);
-                    if (data != 0) {
+                    if (data != NULL) {
                         g_coordPool.Push(data);
                     }
                 }
@@ -667,7 +667,7 @@ i32 CGrunt::WanderStep() {
                 return 1;
             }
             CGrunt* slot = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (slot == 0 || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
+            if (slot == NULL || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
                 || slot->m_entranceCommitted == 0) {
                 goto ph1;
             }
@@ -698,9 +698,9 @@ i32 CGrunt::WanderStep() {
             m_neighborScanEnabled = 0;
             if (CoordCount() != 0) {
                 POSITION pos = m_coordList.GetHeadPosition();
-                while (pos != 0) {
+                while (pos != NULL) {
                     void* data = m_coordList.GetNext(pos);
-                    if (data != 0) {
+                    if (data != NULL) {
 
                         CoordPoolNode* fslot = g_coordPool.NodeOf(data);
                         fslot->m_next = g_coordPool.m_freeHead;
@@ -737,7 +737,7 @@ i32 CGrunt::WanderStep() {
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry = g_gameReg->m_cmdGrid
                                     ->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-                if (entry != 0) {
+                if (entry != NULL) {
                     CGameObject* e10 = entry->m_object;
                     RECT rc;
                     rc.left = (e10->m_screenX >> 5) - 2;
@@ -868,7 +868,7 @@ i32 CGrunt::ArrivalReticleScan() {
             if (FindGridNeighbor(1)) {
                 return 1;
             }
-            if (occOnTile && occ == 0) {
+            if (occOnTile && occ == NULL) {
                 return 1;
             }
         } else {
@@ -887,7 +887,7 @@ i32 CGrunt::ArrivalReticleScan() {
         return 1;
     }
 
-    if (occ == 0) {
+    if (occ == NULL) {
         m_blockedVoicePending = 0;
     } else {
         if (m_neighborValid) {
@@ -924,7 +924,7 @@ i32 CGrunt::ArrivalReticleScan() {
     }
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    if (occ != 0 && static_cast<u32>(m_dwell) > 0x1f4) {
+    if (occ != NULL && static_cast<u32>(m_dwell) > 0x1f4) {
         i32 occTX = occ->m_object->m_screenX >> 5;
         i32 occTY = occ->m_object->m_screenY >> 5;
         i32 dx = abs(occTX - defTX);
@@ -1007,7 +1007,7 @@ i32 CGrunt::ArrivalReticleScan() {
                 POSITION trimPos = 0;
                 Coord* trimCoord = 0;
                 i32 foundOutside = 0;
-                while (pos != 0) {
+                while (pos != NULL) {
                     trimPos = pos;
                     trimCoord = static_cast<Coord*>(m_coordList.GetNext(pos));
                     i32 pathDx = abs(trimCoord->m_x - defTX);
@@ -1021,7 +1021,7 @@ i32 CGrunt::ArrivalReticleScan() {
                 }
 
                 if (foundOutside != 0) {
-                    if (previous == 0) {
+                    if (previous == NULL) {
                         SetEntrancePos(1, 1);
                         DRAIN_COORDS();
                     } else {
@@ -1031,10 +1031,10 @@ i32 CGrunt::ArrivalReticleScan() {
                         if (pathDist <= m_reachRect.right) {
                             g_coordPool.Push(trimCoord);
                             m_coordList.RemoveAt(trimPos);
-                            while (pos != 0) {
+                            while (pos != NULL) {
                                 POSITION nextPos = pos;
                                 Coord* coord = static_cast<Coord*>(m_coordList.GetNext(pos));
-                                if (coord != 0) {
+                                if (coord != NULL) {
                                     g_coordPool.Push(coord);
                                 }
                                 m_coordList.RemoveAt(nextPos);
@@ -1050,7 +1050,7 @@ i32 CGrunt::ArrivalReticleScan() {
             TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
         }
         m_dwell = 0;
-    } else if (occ == 0 && static_cast<u32>(m_dwell) > 0x1f4
+    } else if (occ == NULL && static_cast<u32>(m_dwell) > 0x1f4
                && ((m_object->m_screenX >> 5) != defTX || (m_object->m_screenY >> 5) != defTY)) {
         TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
@@ -1068,7 +1068,7 @@ i32 CGrunt::ChargeStep() {
     m_defenderPx.m_y = m_lastTilePx.m_y;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
-    if (g != 0) {
+    if (g != NULL) {
         CGameObject* gp = g->m_object;
         if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
             && RectContains(gp->m_screenX, gp->m_screenY)) {
@@ -1085,10 +1085,10 @@ i32 CGrunt::ChargeStep() {
             return 1;
         }
         if (m_stamina >= 100) {
-            if (FindGridNeighbor(1) != 0) {
+            if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
-            if (hitGate != 0 && g == 0) {
+            if (hitGate != 0 && g == NULL) {
                 return 1;
             }
             if (m_poweredUp == 0) {
@@ -1124,7 +1124,7 @@ i32 CGrunt::ChargeStep() {
     switch (m_defenderState) {
         case 0: {
 
-            if (g != 0) {
+            if (g != NULL) {
                 if (hitGate != 0 && m_stamina >= 100) {
                     CGameObject* gp = g->m_object;
                     if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
@@ -1206,13 +1206,13 @@ i32 CGrunt::ChargeStep() {
 
             CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
             CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
-            if (cur != 0 && cur != t) {
+            if (cur != NULL && cur != t) {
                 m_arrivalCell.m_x = -1;
                 m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
-            if (t == 0 || t->m_entranceCommitted == 0
+            if (t == NULL || t->m_entranceCommitted == 0
                 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -1240,7 +1240,7 @@ i32 CGrunt::ChargeStep() {
 
             if (m_poweredUp != 0) {
                 CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
-                if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
+                if (t == NULL || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = 0x1f4;
@@ -1282,7 +1282,7 @@ i32 CGrunt::UpdateArrival() {
     this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     bool atTarget = false;
-    if (g != 0) {
+    if (g != NULL) {
         i32 x = g->m_object->m_screenX;
         if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
             && g->RectContains(x, g->m_object->m_screenY) != 0) {
@@ -1312,10 +1312,10 @@ i32 CGrunt::UpdateArrival() {
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        if (FindGridNeighbor(1) != 0) {
+        if (FindGridNeighbor(1) != NULL) {
             return 1;
         }
-        if (atTarget && g == 0) {
+        if (atTarget && g == NULL) {
             return 1;
         }
         if (this->m_poweredUp == 0) {
@@ -1334,7 +1334,7 @@ i32 CGrunt::UpdateArrival() {
 
     switch (this->m_defenderState) {
         case AISTATE_SEEK:
-            if (g != 0) {
+            if (g != NULL) {
                 if (this->m_stamina > 99) {
                     i32 x = g->m_object->m_screenX;
                     if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
@@ -1348,7 +1348,7 @@ i32 CGrunt::UpdateArrival() {
                         break;
                     }
                 }
-                if (g != 0 && static_cast<u32>(this->m_dwell) > 1000) {
+                if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
                     if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
                         GetScreenPos(c);
@@ -1442,8 +1442,8 @@ i32 CGrunt::UpdateArrival() {
             i32 cur = m_tileMgr->FindNearestEnemy(this) ? 1 : 0;
             CGrunt* found = m_tileMgr->FindNearestEnemy(this);
             static_cast<void>(cur);
-            if (found == 0 || found == slot) {
-                if (slot == 0 || slot->m_entranceCommitted == 0
+            if (found == NULL || found == slot) {
+                if (slot == NULL || slot->m_entranceCommitted == 0
                     || slot->GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
                     this->m_defenderState = AISTATE_SEEK;
                 } else {
@@ -1490,11 +1490,11 @@ i32 CGrunt::UpdateArrival() {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
                 CoordNode* p = this->CoordHead();
-                while (p != 0) {
+                while (p != NULL) {
                     CoordNode* next = p->m_next;
                     Coord** link = &p->m_coord;
                     p = next;
-                    if (*link != 0) {
+                    if (*link != NULL) {
                         CoordPoolNode* n2 = g_coordPool.NodeOf(*link);
                         n2->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = n2;
@@ -1515,7 +1515,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
     CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
     POSITION pos = list.GetHeadPosition();
 
-    if (pos != 0) {
+    if (pos != NULL) {
         do {
             CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
             if (p->m_pending == 0) {
@@ -1525,7 +1525,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
                     return 1;
                 }
             }
-        } while (pos != 0);
+        } while (pos != NULL);
     }
     return 0;
 }
@@ -1549,7 +1549,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
-    if (g != 0) {
+    if (g != NULL) {
         i32 x = g->m_object->m_screenX;
         if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
             && RectContains(x, g->m_object->m_screenY) != 0) {
@@ -1566,10 +1566,10 @@ i32 CGrunt::StepGooSuckerBehavior() {
             return 1;
         }
         if (m_stamina >= 100) {
-            if (FindGridNeighbor(1) != 0) {
+            if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
-            if (atTarget && g == 0) {
+            if (atTarget && g == NULL) {
                 return 1;
             }
             if (m_poweredUp == 0) {
@@ -1594,7 +1594,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
         return 1;
     }
 
-    if (g == 0) {
+    if (g == NULL) {
         m_blockedVoicePending = 0;
         goto L_ed006b;
     }
@@ -1620,7 +1620,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
     }
 
 L_ed006b:
-    if (g == 0 || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+    if (g == NULL || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
         m_blockedVoicePending = 0;
         goto L_scanb;
     }
@@ -1719,7 +1719,7 @@ L_scanb:
     i32 bestY = 0;
 
     POSITION pos = m_tileMgr->m_baseList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_tileMgr->m_baseList.GetNext(pos));
         if (gg->m_pending == 0) {
             i32 gx = gg->m_tileX;
@@ -1778,7 +1778,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     i32 inRange = 0;
-    if (occ != 0 && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
+    if (occ != NULL && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
         && occ->m_object->m_screenY == occ->m_lastTilePx.m_y
         && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
         inRange = 1;
@@ -1793,10 +1793,10 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             goto tail;
         }
         if (m_stamina >= 0x64) {
-            if (FindGridNeighbor(1) != 0) {
+            if (FindGridNeighbor(1) != NULL) {
                 goto tail;
             }
-            if (inRange != 0 && occ == 0) {
+            if (inRange != 0 && occ == NULL) {
                 goto tail;
             }
             if (m_poweredUp == 0) {
@@ -1827,7 +1827,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
     switch (m_defenderState) {
         case AISTATE_SEEK: {
             CGrunt* o = m_tileMgr->FindNearestEnemy(this);
-            if (o != 0) {
+            if (o != NULL) {
                 if (m_poweredUp != 0) {
                     goto tail;
                 }
@@ -1910,13 +1910,13 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         case AISTATE_CHASE: {
             CGrunt* o = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-            if (g != 0 && g != o) {
+            if (g != NULL && g != o) {
                 m_arrivalCell.m_x = -1;
                 m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
-            if (o == 0) {
+            if (o == NULL) {
                 goto resetState;
             }
             if (o->m_entranceCommitted == 0) {
@@ -1973,7 +1973,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 return 1;
             }
             CGrunt* o = m_tileMgr->FindNearestEnemy(this);
-            if (o == 0) {
+            if (o == NULL) {
                 goto tail;
             }
             if (m_poweredUp == 0 && m_stamina >= 0x64
@@ -2046,7 +2046,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
 
     m_defenderState = AISTATE_SEEK;
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
-    if (occ == 0) {
+    if (occ == NULL) {
         return 1;
     }
     if (m_poweredUp != 0) {
@@ -2086,7 +2086,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (occ == 0) {
+            if (occ == NULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -2131,7 +2131,7 @@ i32 CGrunt::StepArrivalDefense() {
             );
             return 1;
         c2_occcheck:
-            if (occ == 0) {
+            if (occ == NULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -2151,13 +2151,13 @@ i32 CGrunt::StepArrivalDefense() {
         case AISTATE_CHASE: {
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-            if (g != 0 && g != occ) {
+            if (g != NULL && g != occ) {
                 m_arrivalCell.m_x = -1;
                 m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
-            if (occ == 0) {
+            if (occ == NULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -2214,7 +2214,7 @@ i32 CGrunt::StepArrivalDefense() {
 
         case AISTATE_SEEK:
             occ = m_tileMgr->FindNearestEnemy(this);
-            if (occ == 0) {
+            if (occ == NULL) {
                 goto L_f308a;
             }
             if (m_poweredUp == 0 && m_stamina >= 0x64
@@ -2244,7 +2244,7 @@ i32 CGrunt::StepArrivalDefense() {
                 );
                 return 1;
             }
-            if (occ == 0) {
+            if (occ == NULL) {
                 goto L_f308a;
             }
             if (static_cast<u32>(m_dwell) <= 0x3e8) {
@@ -2349,7 +2349,7 @@ i32 CGrunt::StepDiggerBehavior() {
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
-    if (g != 0) {
+    if (g != NULL) {
         i32 x = g->m_object->m_screenX;
         if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
             && RectContains(x, g->m_object->m_screenY) != 0) {
@@ -2369,10 +2369,10 @@ i32 CGrunt::StepDiggerBehavior() {
             return 1;
         }
         if (m_stamina >= 100) {
-            if (FindGridNeighbor(1) != 0) {
+            if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
-            if (atTarget && g == 0) {
+            if (atTarget && g == NULL) {
                 return 1;
             }
             if (m_poweredUp == 0) {
@@ -2405,7 +2405,7 @@ i32 CGrunt::StepDiggerBehavior() {
         return 1;
     }
 
-    if (g == 0 || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+    if (g == NULL || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
         m_blockedVoicePending = 0;
         goto L_tailc;
     }
@@ -2560,7 +2560,8 @@ i32 CGrunt::ScanNearestTarget() {
         CTriggerMgr* board = g_gameReg->m_cmdGrid;
         for (i32 col = 0; col < 15; col++) {
             CGrunt* cand = board->m_grid[row * TM_GRID_COLS + col];
-            if (cand != 0 && cand->m_entranceCommitted != 0 && cand->m_gruntKind != GRUNT_GHOST) {
+            if (cand != NULL && cand->m_entranceCommitted != 0
+                && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
                 i32 pb;
@@ -2593,17 +2594,17 @@ i32 CGrunt::ScanNearestTarget() {
     box.top = t3y - halfBox;
     box.right = bx + halfBox + 1;
     box.bottom = by + halfBox + 1;
-    if (best != 0) {
+    if (best != NULL) {
         POINT pt;
         pt.x = best->m_lastTilePx.m_x >> 5;
         pt.y = best->m_lastTilePx.m_y >> 5;
         if (!PtInRect(&box, pt)) {
-            best = 0;
+            best = NULL;
         }
     }
 
     i32 atTarget = 0;
-    if (best != 0) {
+    if (best != NULL) {
         i32 x = best->m_object->m_screenX;
         if (x == best->m_lastTilePx.m_x && best->m_object->m_screenY == best->m_lastTilePx.m_y
             && this->RectContains(x, best->m_object->m_screenY) != 0) {
@@ -2620,10 +2621,10 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
         }
         if (m_stamina >= 100) {
-            if (FindGridNeighbor(1) != 0) {
+            if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
-            if (atTarget && best == 0) {
+            if (atTarget && best == NULL) {
                 return 1;
             }
             if (m_poweredUp == 0) {
@@ -2651,7 +2652,7 @@ i32 CGrunt::ScanNearestTarget() {
     switch (m_defenderState) {
         case AISTATE_SEEK: {
 
-            if (best == 0) {
+            if (best == NULL) {
                 goto L_wander;
             }
             if (m_poweredUp == 0 && m_stamina >= 100
@@ -2674,7 +2675,7 @@ i32 CGrunt::ScanNearestTarget() {
                 }
             }
 
-            if (best == 0) {
+            if (best == NULL) {
                 goto L_wander;
             }
             {
@@ -2790,13 +2791,13 @@ i32 CGrunt::ScanNearestTarget() {
         }
         case AISTATE_CHASE: {
             CGrunt* sg = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (best != 0 && best != sg) {
+            if (best != NULL && best != sg) {
                 m_arrivalCell.m_x = -1;
                 m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
-            if (sg == 0) {
+            if (sg == NULL) {
                 goto L_clearMode;
             }
             i32 pa;
@@ -2849,7 +2850,7 @@ i32 CGrunt::ScanNearestTarget() {
             if (m_poweredUp != 0) {
                 CGrunt* sg =
                     m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-                if (sg == 0) {
+                if (sg == NULL) {
                     goto L_setLock;
                 }
                 i32 pa;
@@ -3024,7 +3025,7 @@ build_tail: {
 
 state0: {
     CGrunt* nb = m_tileMgr->FindNearestEnemy(this);
-    if (nb == 0) {
+    if (nb == NULL) {
         goto common;
     }
     if (nb->m_entranceCommitted == 0) {
@@ -3156,13 +3157,13 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
     this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
     if (this->CoordCount() != 0
-        && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x] == 0) {
+        && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x] == NULL) {
         CoordNode* p = this->CoordHead();
-        while (p != 0) {
+        while (p != NULL) {
             CoordNode* next = p->m_next;
             Coord** link = &p->m_coord;
             p = next;
-            if (*link != 0) {
+            if (*link != NULL) {
                 g_coordPool.Push(*link);
             }
         }
@@ -3179,14 +3180,14 @@ i32 CGrunt::SeekTarget() {
     }
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
-        if (slot == 0 || slot->m_entranceCommitted == 0) {
+        if (slot == NULL || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
                 CoordNode* p = this->CoordHead();
-                while (p != 0) {
+                while (p != NULL) {
                     CoordNode* next = p->m_next;
                     Coord** link = &p->m_coord;
                     p = next;
-                    if (*link != 0) {
+                    if (*link != NULL) {
                         g_coordPool.Push(*link);
                     }
                 }
@@ -3227,11 +3228,11 @@ i32 CGrunt::SeekTarget() {
                     return 1;
                 }
                 CoordNode* p = this->CoordHead();
-                while (p != 0) {
+                while (p != NULL) {
                     CoordNode* next = p->m_next;
                     Coord** link = &p->m_coord;
                     p = next;
-                    if (*link != 0) {
+                    if (*link != NULL) {
                         g_coordPool.Push(*link);
                     }
                 }
@@ -3256,7 +3257,7 @@ i32 CGrunt::SeekTarget() {
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
-                if (sv != 0 && sv->m_entranceCommitted != 0) {
+                if (sv != NULL && sv->m_entranceCommitted != 0) {
                     PickupType k = sv->m_entranceReason;
                     PickupType kk = k;
                     if (k > PICKUP_EQUIPPABLE_LAST) {
@@ -3316,7 +3317,7 @@ i32 CGrunt::SeekTarget() {
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);
         bool atTarget = false;
-        if (g != 0) {
+        if (g != NULL) {
             i32 x = g->m_object->m_screenX;
             if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
 
@@ -3346,10 +3347,10 @@ i32 CGrunt::SeekTarget() {
                 ResetEntranceAnimation(1, 0, 0);
                 return 1;
             }
-            if (FindGridNeighbor(1) != 0) {
+            if (FindGridNeighbor(1) != NULL) {
                 return 1;
             }
-            if (atTarget && g == 0) {
+            if (atTarget && g == NULL) {
                 return 1;
             }
             if (this->m_poweredUp == 0) {
@@ -3367,7 +3368,7 @@ i32 CGrunt::SeekTarget() {
         }
         this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
         this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
-        if (g == 0 || g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+        if (g == NULL || g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
             this->m_blockedVoicePending = 0;
             return 1;
         }
@@ -3428,7 +3429,7 @@ i32 CGrunt::StepPeerTracking() {
         return 1;
     }
     CGrunt* p = m_tileMgr->FindNearestEnemy(this);
-    if (p == 0) {
+    if (p == NULL) {
         return 1;
     }
     if (p->m_entranceCommitted == 0) {
@@ -3481,7 +3482,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (occ == 0) {
+            if (occ == NULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -3526,7 +3527,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             m_dwell = 0x1f4;
             return 1;
         c2_occcheck:
-            if (occ == 0) {
+            if (occ == NULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -3546,13 +3547,13 @@ i32 CGrunt::StepArrivalDefenseLean() {
         case AISTATE_CHASE: {
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-            if (g != 0 && g != occ) {
+            if (g != NULL && g != occ) {
                 m_arrivalCell.m_x = -1;
                 m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
-            if (occ == 0) {
+            if (occ == NULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -3602,7 +3603,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
 
         case AISTATE_SEEK:
             occ = m_tileMgr->FindNearestEnemy(this);
-            if (rand() % 0x64 == 0 && m_health > 0x1a && occ != 0 && m_stamina >= 0x64
+            if (rand() % 0x64 == 0 && m_health > 0x1a && occ != NULL && m_stamina >= 0x64
                 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
                 m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,

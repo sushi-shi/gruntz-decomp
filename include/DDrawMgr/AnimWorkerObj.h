@@ -8,6 +8,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CUserLogic;
 class CFileMemBase;
 class CAmbientPosSound;
@@ -33,10 +35,10 @@ struct AnimWorkerObj : public CLoadable {
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
 
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id) {
-        m_notify = 0;
-        m_payload = 0;
-        m_logic = 0;
-        m_target = 0;
+        m_notify = NULL;
+        m_payload = NULL;
+        m_logic = NULL;
+        m_target = NULL;
         m_actKey = 0;
         m_targetId = 0;
         m_payloadSize = 0;
@@ -140,10 +142,10 @@ SIZE(0x17c);
 #ifndef ANIMWORKEROBJ_OOL_CTOR
 inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CLoadable(id, stateFlags, owner) {
-    m_notify = 0;
-    m_payload = 0;
-    m_logic = 0;
-    m_target = 0;
+    m_notify = NULL;
+    m_payload = NULL;
+    m_logic = NULL;
+    m_target = NULL;
     m_actKey = 0;
     m_targetId = 0;
     m_payloadSize = 0;

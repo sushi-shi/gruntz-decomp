@@ -1861,7 +1861,7 @@ void SetShadeDescr(CShadeTable* v, ShadeMode mode) {
 RVA(0x0014dd90, 0xa0)
 void CDDrawShadeBlit::Select(ShadeMode mode, CShadeTable* descr) {
     m_drawType = mode;
-    if (descr == 0) {
+    if (descr == NULL) {
         switch (mode) {
             case SHADE_DST_BY_SRC:
                 m_palDescr = g_shadeDescr208;

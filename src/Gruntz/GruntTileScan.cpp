@@ -51,9 +51,9 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             if ((flags & 0x4000)
                 && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
                 POSITION pos = g->m_coordList.GetHeadPosition();
-                while (pos != 0) {
+                while (pos != NULL) {
                     void* coord = g->m_coordList.GetNext(pos);
-                    if (coord != 0) {
+                    if (coord != NULL) {
                         g_coordPool.Push(coord);
                     }
                 }

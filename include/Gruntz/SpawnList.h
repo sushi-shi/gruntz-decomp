@@ -33,7 +33,7 @@ SIZE(0xc);
 class CSpawnList {
 public:
     CSpawnList() {
-        m_cursor = 0;
+        m_cursor = NULL;
         m_lastPicked = -1;
     }
     ~CSpawnList();

@@ -33,7 +33,7 @@ RVA_COMPGEN(0x0013c500, 0x1e, ??_GCRezItmBase@@UAEPAXI@Z)
 
 RVA(0x0013c520, 0xe)
 CRezItmBase::~CRezItmBase() {
-    m_parent = 0;
+    m_parent = NULL;
 }
 
 RVA(0x0013c530, 0x1)
@@ -41,8 +41,8 @@ void CRezItmBase::Noop() {}
 
 RVA(0x0013c540, 0x28)
 CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
-    m_fp = 0;
-    m_readBuf = 0;
+    m_fp = NULL;
+    m_readBuf = NULL;
     m_pos = -1;
 }
 
@@ -50,10 +50,10 @@ RVA_COMPGEN(0x0013c570, 0x1e, ??_GCRezItm@@UAEPAXI@Z)
 
 RVA(0x0013c590, 0x66)
 CRezItm::~CRezItm() {
-    if (m_fp != 0) {
+    if (m_fp != NULL) {
         Close();
     }
-    if (m_readBuf != 0) {
+    if (m_readBuf != NULL) {
         ::operator delete(m_readBuf);
     }
 }
@@ -126,23 +126,23 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
         } else {
             m_fp = fopen(filename, s_rPlusB);
         }
-        if (m_fp != 0) {
+        if (m_fp != NULL) {
             break;
         }
         if (m_parent->Retry() == 0) {
             return 0;
         }
-        if (m_fp != 0) {
+        if (m_fp != NULL) {
             break;
         }
     }
 
     m_readonly = readonly;
-    if (m_readBuf != 0) {
+    if (m_readBuf != NULL) {
         ::operator delete(m_readBuf);
     }
     m_readBuf = static_cast<char*>(::operator new(strlen(filename) + 1));
-    if (m_readBuf != 0) {
+    if (m_readBuf != NULL) {
         strcpy(m_readBuf, filename);
     }
     m_pos = -1;
@@ -152,7 +152,7 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 // @early-stop
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
-    if (m_fp != 0) {
+    if (m_fp != NULL) {
         i32 ok = 0;
         while (ok == 0) {
             if (fclose(m_fp) == 0) {
@@ -162,11 +162,11 @@ i32 CRezItm::Close() {
             }
         }
 
-        m_fp = 0;
-        if (m_readBuf != 0) {
+        m_fp = NULL;
+        if (m_readBuf != NULL) {
             ::operator delete(m_readBuf);
         }
-        m_readBuf = 0;
+        m_readBuf = NULL;
         m_pos = -1;
         return ok;
     }
@@ -219,10 +219,10 @@ RVA_COMPGEN(0x0013c990, 0x1e, ??_GCRezDir@@UAEPAXI@Z)
 RVA(0x0013c9b0, 0x7f)
 CRezDir::~CRezDir() {
 
-    while (m_openList.m_head != 0) {
+    while (m_openList.m_head != NULL) {
         delete m_openList.m_head;
     }
-    while (m_closedList.m_head != 0) {
+    while (m_closedList.m_head != NULL) {
         delete m_closedList.m_head;
     }
 }
@@ -248,7 +248,7 @@ i32 CRezDir::Open(char* name, i32 readonly, i32 write) {
 RVA(0x0013ca80, 0x1d)
 i32 CRezDir::Close() {
 
-    while (m_openList.m_head != 0) {
+    while (m_openList.m_head != NULL) {
         (static_cast<CRezFile*>(m_openList.m_head))->CloseFile();
     }
     return 1;
@@ -266,7 +266,7 @@ i32 CRezDir::Check() {
 RVA(0x0013cac0, 0x9b)
 CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
     m_dir = dir;
-    m_handle = 0;
+    m_handle = NULL;
 
     char* buf = static_cast<char*>(::operator new(strlen(nameSrc) + 1));
     m_name = buf;
@@ -294,7 +294,7 @@ i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
     if (count <= 0) {
         return 0;
     }
-    if (m_handle == 0) {
+    if (m_handle == NULL) {
         OpenFile();
     }
     while (fseek(m_handle, pos, 0) != 0) {
@@ -318,7 +318,7 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
     if (count <= 0) {
         return 0;
     }
-    if (m_handle == 0) {
+    if (m_handle == NULL) {
         OpenFile();
     }
     while (fseek(m_handle, pos, 0) != 0) {
@@ -347,7 +347,7 @@ i32 CRezFile::Close() {
 
 RVA(0x0013cd60, 0x49)
 i32 CRezFile::Flush() {
-    if (m_handle != 0) {
+    if (m_handle != NULL) {
         i32 ok = (fflush(m_handle) == 0);
         while (!ok) {
             if (m_dir->m_parent->Retry() == 0) {
@@ -367,13 +367,13 @@ i32 CRezFile::Check() {
 
 RVA(0x0013cdc0, 0xad)
 i32 CRezFile::OpenFile() {
-    if (m_handle != 0) {
+    if (m_handle != NULL) {
         return 1;
     }
     if (m_dir->m_openCount > m_dir->m_maxOpen) {
 
         CRezFile* lru = static_cast<CRezFile*>(m_dir->m_openList.m_tail);
-        if (lru != 0) {
+        if (lru != NULL) {
             lru->CloseFile();
         }
     }
@@ -388,13 +388,13 @@ i32 CRezFile::OpenFile() {
         } else {
             m_handle = fopen(m_name, s_rPlusB);
         }
-        if (m_handle != 0) {
+        if (m_handle != NULL) {
             break;
         }
         if (m_dir->m_parent->Retry() == 0) {
             return 0;
         }
-        if (m_handle != 0) {
+        if (m_handle != NULL) {
             break;
         }
     }
@@ -406,7 +406,7 @@ i32 CRezFile::OpenFile() {
 
 RVA(0x0013ce70, 0x7c)
 i32 CRezFile::CloseFile() {
-    if (m_handle == 0) {
+    if (m_handle == NULL) {
         return 1;
     }
     i32 ok = (fclose(m_handle) == 0);
@@ -419,7 +419,7 @@ i32 CRezFile::CloseFile() {
     m_dir->m_openCount--;
     m_dir->m_openList.Remove(this);
     m_dir->m_closedList.AddHead(this);
-    m_handle = 0;
+    m_handle = NULL;
     return ok;
 }
 

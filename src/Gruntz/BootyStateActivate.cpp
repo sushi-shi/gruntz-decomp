@@ -169,7 +169,7 @@ i32 CBootyState::EnterState(GameStateId) {
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
         MapLookup(set->m_cues, "BOOTY_LOOP", res);
-        if (res != 0 && g_sndEnabled != 0) {
+        if (res != NULL && g_sndEnabled != 0) {
             u32 now = g_killCueClock;
             if (now - static_cast<u32>(res->m_lastPlayTime)
                 >= static_cast<u32>(res->m_replayDelay)) {
@@ -190,7 +190,7 @@ i32 CBootyState::LeaveState(GameStateId) {
     if (found && (static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_sound))->CloneAndPlay(0, 0x1f4, 1);
         while ((static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
-            if (m_world->m_soundRegistry->m_soundStream != 0) {
+            if (m_world->m_soundRegistry->m_soundStream != NULL) {
                 m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }
         }
@@ -290,7 +290,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
             g_gameReg->m_world->m_childGroup
                 ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
-        if (a == 0) {
+        if (a == NULL) {
             return 0;
         }
         a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
@@ -302,7 +302,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CWwdGameObjectA* g =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
     m_cursorLetter = g;
-    if (g == 0) {
+    if (g == NULL) {
         return 0;
     }
     g->ApplyName("GAME_GLITTERGOLD");
@@ -395,7 +395,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
     for (i32 i = 1; i <= 8; i++) {
         m_sprintSprites[i - 1] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
-        if (m_sprintSprites[i - 1] == 0) {
+        if (m_sprintSprites[i - 1] == NULL) {
             return 0;
         }
 
@@ -609,14 +609,14 @@ i32 CBootyState::CheckPerfectBonus() {
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
-    if (frameSurf == 0 || frameSurf->IsLost() != 0) {
+    if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x459);
             return 0;
         }
     }
     SoundStream* snd = m_world->m_soundStream;
-    if (snd != 0) {
+    if (snd != NULL) {
         i32 now = static_cast<i32>(timeGetTime());
         snd->PurgeVoiceList(now);
         snd->TickSubManagers(now);
@@ -638,7 +638,7 @@ i32 CBootyState::Render() {
             if (set->m_emitGate == 0) {
                 LeafCue* cue = 0;
                 MapLookup(set->m_cues, "BOOTY_WARP", cue);
-                if (cue != 0) {
+                if (cue != NULL) {
                     cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
@@ -654,7 +654,7 @@ i32 CBootyState::Render() {
             if (set->m_emitGate == 0) {
                 LeafCue* cue = 0;
                 MapLookup(set->m_cues, "BOOTY_BOOM", cue);
-                if (cue != 0) {
+                if (cue != NULL) {
                     cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
@@ -743,7 +743,7 @@ i32 CBootyState::Render() {
     dt->m_frontPair->m_surface->Flip(0);
     dt->m_backPair->m_surface
         ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
-    if (m_world->m_soundRegistry->m_soundStream != 0) {
+    if (m_world->m_soundRegistry->m_soundStream != NULL) {
         m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
     }
     return 1;
@@ -760,14 +760,14 @@ i32 CBootyState::InputVirtual() {
         r = sc(0);
     }
     void* booty = SymTab2c()->ResolvePath("IMAGEZ");
-    if (booty == 0) {
+    if (booty == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
     void* gruntz = m_gruntzBank->ResolvePath("IMAGEZ");
-    if (gruntz == 0) {
+    if (gruntz == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
@@ -881,7 +881,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (ss->m_emitGate == 0) {
                 LeafCue* res = 0;
                 MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
-                if (res != 0) {
+                if (res != NULL) {
                     res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
@@ -960,7 +960,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     CBattlezData* rec2 = g_gameReg->m_scoreHud;
     if (rec2->m_count == 0x20) {
         SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
-        if (sub != 0) {
+        if (sub != NULL) {
             sub->Stop();
         }
         g_gameReg->ChangeState(3);
@@ -1036,14 +1036,14 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         CShadeTable* tint =
             g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[i].m_colorIndex, 0);
-        if (tint == 0) {
+        if (tint == NULL) {
             return 0;
         }
         CString key;
 
         m_puddleSprites[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-        if (m_puddleSprites[i] == 0) {
+        if (m_puddleSprites[i] == NULL) {
             return 0;
         }
         m_puddleSprites[i]->ApplyName("GRUNTZ_GRUNTPUDDLE");
@@ -1059,7 +1059,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (i == QueryGruntSlots()) {
             m_gruntSprites[i] =
                 g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-            if (m_gruntSprites[i] == 0) {
+            if (m_gruntSprites[i] == NULL) {
                 return 0;
             }
             m_gruntSprites[i]->ApplyName("GRUNTZ_EXITZ");
@@ -1072,7 +1072,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
             m_gruntSprites[i] =
                 g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-            if (m_gruntSprites[i] == 0) {
+            if (m_gruntSprites[i] == NULL) {
                 return 0;
             }
             m_gruntSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
@@ -1098,7 +1098,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_weaponIcons[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-        if (m_weaponIcons[i] == 0) {
+        if (m_weaponIcons[i] == NULL) {
             return 0;
         }
         m_weaponIcons[i]->ApplyName(key);
@@ -1113,7 +1113,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
         {
             CShadeTable* iconTint = g_gameReg->m_spriteFactory->GetSel(0x10, 0);
-            if (iconTint == 0) {
+            if (iconTint == NULL) {
                 return 0;
             }
             {
@@ -1130,7 +1130,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_toyIcons[i] =
                 g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-            if (m_toyIcons[i] == 0) {
+            if (m_toyIcons[i] == NULL) {
                 return 0;
             }
             m_toyIcons[i]->ApplyName(key);
@@ -1157,7 +1157,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_powerupIcons[i] =
                 g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-            if (m_powerupIcons[i] == 0) {
+            if (m_powerupIcons[i] == NULL) {
                 return 0;
             }
             m_powerupIcons[i]->ApplyName(key);
@@ -1184,7 +1184,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_miscIcons[i] =
                 g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-            if (m_miscIcons[i] == 0) {
+            if (m_miscIcons[i] == NULL) {
                 return 0;
             }
             m_miscIcons[i]->ApplyName(key);
@@ -1223,7 +1223,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         CString flagKey;
         GruntzPlayer* pl = &g_gameReg->m_options[t];
         CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(pl->m_colorIndex, 0);
-        if (tint == 0) {
+        if (tint == NULL) {
             return 0;
         }
         tabKey.Format("GAME_STATUSBAR_TABZ_MULTIPLAYERT%d", t + 1);
@@ -1231,7 +1231,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
         m_tabSprites[t] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "DoNothing", 3);
-        if (m_tabSprites[t] == 0) {
+        if (m_tabSprites[t] == NULL) {
             return 0;
         }
         m_tabSprites[t]->ApplyName(tabKey);
@@ -1246,7 +1246,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
         m_flagSprites[t] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "DoNothing", 3);
-        if (m_flagSprites[t] == 0) {
+        if (m_flagSprites[t] == NULL) {
             return 0;
         }
         m_flagSprites[t]->ApplyName(flagKey);
@@ -1266,12 +1266,12 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             i32 frame = (pl->m_joined != 0) ? 1 : 2;
             CWwdGameObjectA* o = m_tabSprites[t];
             CDDrawWorker* set = o->m_frameSet;
-            if (set != 0) {
+            if (set != NULL) {
                 CImage* mapped;
                 if (frame >= set->m_minIndex && frame <= set->m_maxIndex) {
                     mapped = static_cast<CImage*>(set->m_items.GetAt(frame));
                 } else {
-                    mapped = 0;
+                    mapped = NULL;
                 }
                 o->m_layer = mapped;
                 o->m_frameIndex = frame;
@@ -1285,12 +1285,12 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             g_gameReg->m_options[QueryGruntSlots()].m_colorIndex,
             0
         );
-        if (tint == 0) {
+        if (tint == NULL) {
             return 0;
         }
         m_fortSprite =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-        if (m_fortSprite == 0) {
+        if (m_fortSprite == NULL) {
             return 0;
         }
         m_fortSprite->ApplyName("LEVEL_FORT");
@@ -1318,7 +1318,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         );
         m_warlordBooty =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-        if (m_warlordBooty == 0) {
+        if (m_warlordBooty == NULL) {
             return 0;
         }
         m_warlordBooty->ApplyName(joyKey);
@@ -1414,7 +1414,7 @@ i32 CMultiBootyState::LeaveState(GameStateId) {
     if (found && (static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_sound))->CloneAndPlay(0, 0x1f4, 1);
         while ((static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
-            if (m_world->m_soundRegistry->m_soundStream != 0) {
+            if (m_world->m_soundRegistry->m_soundStream != NULL) {
                 m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }
         }
@@ -1594,7 +1594,7 @@ void CMultiBootyState::DrawBattleStats() {
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
-    if (frameSurf == 0 || frameSurf->IsLost() != 0) {
+    if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x459);
             return 0;
@@ -1622,7 +1622,7 @@ i32 CMultiBootyState::Render() {
     dt->m_frontPair->m_surface->Flip(0);
     dt->m_backPair->m_surface
         ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
-    if (m_world->m_soundRegistry->m_soundStream != 0) {
+    if (m_world->m_soundRegistry->m_soundStream != NULL) {
         m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
     }
     return 1;

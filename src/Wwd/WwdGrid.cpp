@@ -92,7 +92,7 @@ i32 CWwdGrid::Add(WwdRegion* r) {
 RVA(0x00191890, 0x24)
 void CWwdGrid::Remove(WwdRegion* r) {
     r->m_bucket->Unlink(r);
-    r->m_bucket = 0;
+    r->m_bucket = NULL;
     --m_count;
 }
 
@@ -146,7 +146,7 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
                             && r->m_y <= q.m_maxY) {
                             if (doRemove) {
                                 m_buckets[idx].Unlink(r);
-                                r->m_bucket = 0;
+                                r->m_bucket = NULL;
                                 --m_count;
                             }
                             OnFound(r);
@@ -170,7 +170,7 @@ i32 CWwdGrid::Clear() {
         WwdRegion* r = static_cast<WwdRegion*>(m_buckets[i].m_head);
         while (r) {
             m_buckets[i].Unlink(r);
-            r->m_bucket = 0;
+            r->m_bucket = NULL;
             ++nonEmpty;
             r = static_cast<WwdRegion*>(m_buckets[i].m_head);
         }
@@ -234,7 +234,7 @@ RVA(0x00191c30, 0xcc)
 WwdRegion* CWwdGridIter::GetNext() {
     for (;;) {
         m_cur = m_next;
-        while (m_cur == 0) {
+        while (m_cur == NULL) {
             if (m_row < m_rowEnd) {
                 ++m_cell;
                 ++m_row;
@@ -249,7 +249,7 @@ WwdRegion* CWwdGridIter::GetNext() {
             }
             m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].m_head);
         }
-        while (m_cur != 0) {
+        while (m_cur != NULL) {
             m_next = static_cast<WwdRegion*>(m_cur->m_next);
             if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY
                 || m_cur->m_x > m_rect.m_maxX || m_cur->m_y > m_rect.m_maxY) {
@@ -258,7 +258,7 @@ WwdRegion* CWwdGridIter::GetNext() {
             }
             if (m_remove) {
                 m_grid->m_buckets[m_cell].Unlink(m_cur);
-                m_cur->m_bucket = 0;
+                m_cur->m_bucket = NULL;
                 --m_grid->m_count;
             }
             return m_cur;

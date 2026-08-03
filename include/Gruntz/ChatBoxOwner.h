@@ -15,8 +15,8 @@ class CFontConfig;
 class CChatBoxOwner {
 public:
     CChatBoxOwner() {
-        m_world = 0;
-        m_fontConfig = 0;
+        m_world = NULL;
+        m_fontConfig = NULL;
         m_attached = 0;
         m_inputActive = 0;
         m_originX = 0;

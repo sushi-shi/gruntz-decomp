@@ -30,17 +30,17 @@ SIZE_UNKNOWN();
 class CRezImage {
 public:
     CRezImage() {
-        m_dibSection = 0;
-        m_pixels = 0;
-        m_rowOffsets = 0;
+        m_dibSection = NULL;
+        m_pixels = NULL;
+        m_rowOffsets = NULL;
         m_reserved434 = 0;
         m_width = 0;
         m_height = 0;
         m_stride = 0;
         m_rowPad = 0;
-        m_listPosition = 0;
+        m_listPosition = NULL;
         m_paletteScalar = 0;
-        m_paletteNode = 0;
+        m_paletteNode = NULL;
     }
 
     i32 LoadFromRez(char* name, HDC dc, i32 ctrl);

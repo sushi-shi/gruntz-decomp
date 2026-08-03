@@ -101,7 +101,7 @@ public:
     virtual void ReleaseDevices();
     RVA(0x001332b0, 0xb)
     virtual i32 IsValid() {
-        return m_device2 != 0;
+        return m_device2 != NULL;
     }
 
     i32 Acquire();
@@ -204,10 +204,10 @@ union DinDeviceEnumFn {
 };
 
 inline CInputDevRoot::CInputDevRoot() {
-    m_device = 0;
-    m_device2 = 0;
-    m_hwnd = 0;
-    m_stateBuffer = 0;
+    m_device = NULL;
+    m_device2 = NULL;
+    m_hwnd = NULL;
+    m_stateBuffer = NULL;
     m_latchedKeys = -1;
     m_currentKeys = 0;
     m_edgeKeys = 0;

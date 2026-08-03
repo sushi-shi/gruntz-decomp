@@ -62,10 +62,10 @@ i32 CAniPlayer::RenderCel() {
     if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
         cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
     } else {
-        cel = 0;
+        cel = NULL;
     }
     m_frame = cel;
-    if (cel != 0) {
+    if (cel != NULL) {
         CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
         cel->RenderFrame(
             surfaceCtx,
@@ -80,7 +80,7 @@ i32 CAniPlayer::RenderCel() {
 // @early-stop
 RVA(0x000e5c90, 0x87)
 i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
-    if (arc == 0) {
+    if (arc == NULL) {
         return 0;
     }
 

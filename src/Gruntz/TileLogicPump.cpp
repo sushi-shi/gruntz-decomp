@@ -347,7 +347,7 @@ void CWarpStonePad::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -393,7 +393,7 @@ void CTileTriggerSwitch::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -445,7 +445,7 @@ void CTileTrigger::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -493,7 +493,7 @@ void CBrickz::RegisterActs() {
         i32 cnt = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (cnt-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -589,7 +589,7 @@ void CCheckpointTrigger::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -608,7 +608,7 @@ void CCheckpointTrigger::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -631,7 +631,7 @@ i32 CCheckpointTrigger::Act() {
         }
         CTileTriggerSwitchLogic* child =
             play->m_beginMarker->FindChild(key, TRIGID_CHECKPOINT_SWITCH_8);
-        if (child == 0) {
+        if (child == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
             return 0;
         }
@@ -646,7 +646,7 @@ i32 CCheckpointTrigger::Act() {
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CHECKPOINTFLAGSET", 0);
 
-    if (play->m_frameMarker != 0) {
+    if (play->m_frameMarker != NULL) {
         i32 a = m_object->m_score;
         i32 b = m_object->m_points;
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
@@ -661,7 +661,7 @@ i32 CCheckpointTrigger::Act() {
     }
 
     CObject* cue = m_wwdObject->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");
-    if (cue != 0) {
+    if (cue != NULL) {
         static_cast<LeafCue*>(cue)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
     }
     g_gameReg->OnCheckpointReached();
@@ -691,7 +691,7 @@ i32 CCheckpointTrigger::Act() {
 
     CTileTriggerSwitchLogic* pad =
         play->m_beginMarker->FindChild(m_state[pick], TRIGID_CHECKPOINT_SWITCH_8);
-    if (pad == 0) {
+    if (pad == NULL) {
         g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
         return 0;
     }
@@ -712,7 +712,7 @@ i32 CCheckpointTrigger::Act() {
     i32 ownerCol = (owner >> 8) & 0xff;
     owner &= 0xff;
     CGrunt* g = g_gameReg->m_cmdGrid->m_grid[ownerCol * TM_GRID_COLS + owner];
-    if (g == 0) {
+    if (g == NULL) {
         return 0;
     }
 
@@ -802,7 +802,7 @@ void CTileTriggerTransition::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

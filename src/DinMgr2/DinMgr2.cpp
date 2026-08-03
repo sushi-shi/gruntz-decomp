@@ -49,10 +49,10 @@ DirectInputMgr2::~DirectInputMgr2() {
 
 RVA(0x00132ce0, 0xae)
 i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
-    if (hinst == 0) {
+    if (hinst == NULL) {
         return 0;
     }
     i32 hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
@@ -83,45 +83,45 @@ i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
 
 RVA(0x00132d90, 0x82)
 void DirectInputMgr2::Shutdown() {
-    if (m_directInput == 0) {
+    if (m_directInput == NULL) {
         return;
     }
-    if (m_deviceB != 0) {
+    if (m_deviceB != NULL) {
         delete m_deviceB;
-        m_deviceB = 0;
+        m_deviceB = NULL;
     }
-    if (m_deviceA != 0) {
+    if (m_deviceA != NULL) {
         delete m_deviceA;
-        m_deviceA = 0;
+        m_deviceA = NULL;
     }
     i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
         CInputDevBase* d = (i >= 0 && i < m_devices.GetSize())
                                ? static_cast<CInputDevBase*>(m_devices.GetAt(i))
                                : 0;
-        if (d != 0) {
+        if (d != NULL) {
             delete d;
         }
     }
     m_devices.SetSize(0, -1);
     FreeDeviceList();
     m_directInput->Release();
-    m_directInput = 0;
+    m_directInput = NULL;
 }
 
 RVA(0x00132e20, 0xb1)
 i32 DirectInputMgr2::InitA(u32 flags) {
     IDirectInputA* di = m_directInput;
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
     CInputDevice* dev = new CInputDevice;
     m_deviceA = dev;
     if (dev->CreateDev(m_directInput, &GUID_SysKeyboard, m_owner, flags) == 0) {
-        if (m_deviceA != 0) {
+        if (m_deviceA != NULL) {
             delete m_deviceA;
         }
-        m_deviceA = 0;
+        m_deviceA = NULL;
         return 0;
     }
     return 1;
@@ -130,16 +130,16 @@ i32 DirectInputMgr2::InitA(u32 flags) {
 RVA(0x00132ee0, 0x9a)
 i32 DirectInputMgr2::InitB(u32 flags) {
     IDirectInputA* di = m_directInput;
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
     CDeviceConfigB* dev = new CDeviceConfigB;
     m_deviceB = dev;
     if (dev->CreateDev(m_directInput, &GUID_SysMouse, m_owner, flags) == 0) {
-        if (m_deviceB != 0) {
+        if (m_deviceB != NULL) {
             delete m_deviceB;
         }
-        m_deviceB = 0;
+        m_deviceB = NULL;
         return 0;
     }
     return 1;
@@ -148,7 +148,7 @@ i32 DirectInputMgr2::InitB(u32 flags) {
 RVA(0x00132f80, 0x3d)
 i32 DirectInputMgr2::EnumGameControllers(u32) {
     IDirectInputA* di = m_directInput;
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
     DinDeviceEnumFn cb;
@@ -163,11 +163,11 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
 
 RVA(0x00132fc0, 0xb8)
 i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
-    if (instance == 0) {
+    if (instance == NULL) {
         return 1;
     }
     DirectInputMgr2* mgr = static_cast<DirectInputMgr2*>(ref);
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 1;
     }
     CDeviceConfigC* dev = new CDeviceConfigC;
@@ -178,12 +178,12 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
             mgr->m_flags
         )
         == 0) {
-        if (dev != 0) {
+        if (dev != NULL) {
             delete dev;
         }
         return 1;
     }
-    if (dev != 0) {
+    if (dev != NULL) {
         mgr->m_devices.Add(dev);
     }
     return 1;
@@ -192,10 +192,10 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
 RVA(0x00133080, 0x4a)
 i32 DirectInputMgr2::PollAll() {
     i32 failed = 0;
-    if (m_deviceA != 0 && m_deviceA->Poll() == 0) {
+    if (m_deviceA != NULL && m_deviceA->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != 0 && m_deviceB->Poll() == 0) {
+    if (m_deviceB != NULL && m_deviceB->Poll() == 0) {
         failed = 1;
     }
     if (PollArrayA() == 0) {
@@ -210,7 +210,7 @@ i32 DirectInputMgr2::PollArrayA() {
     i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
         CInputDevBase* d = static_cast<CInputDevBase*>(m_devices.GetAt(i));
-        if (d != 0 && d->Poll() == 0) {
+        if (d != NULL && d->Poll() == 0) {
             failed = 1;
         }
     }
@@ -220,10 +220,10 @@ i32 DirectInputMgr2::PollArrayA() {
 RVA(0x00133110, 0x4a)
 i32 DirectInputMgr2::ReadAll() {
     i32 failed = 0;
-    if (m_deviceA != 0 && m_deviceA->Poll() == 0) {
+    if (m_deviceA != NULL && m_deviceA->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != 0 && m_deviceB->Poll() == 0) {
+    if (m_deviceB != NULL && m_deviceB->Poll() == 0) {
         failed = 1;
     }
     if (PollArrayB() == 0) {
@@ -238,7 +238,7 @@ i32 DirectInputMgr2::PollArrayB() {
     i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
         CInputDevBase* d = static_cast<CInputDevBase*>(m_devices.GetAt(i));
-        if (d != 0 && d->ResetState() == 0) {
+        if (d != NULL && d->ResetState() == 0) {
             failed = 1;
         }
     }
@@ -248,9 +248,9 @@ i32 DirectInputMgr2::PollArrayB() {
 RVA(0x001331a0, 0x37)
 void DirectInputMgr2::FreeDeviceList() {
     POSITION pos = m_deviceList.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CDeviceListNode* payload = static_cast<CDeviceListNode*>(m_deviceList.GetNext(pos));
-        if (payload != 0) {
+        if (payload != NULL) {
             payload->Clear();
             operator delete(payload);
         }
@@ -260,12 +260,12 @@ void DirectInputMgr2::FreeDeviceList() {
 
 RVA(0x001331e0, 0x7c)
 void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused) {
-    if (devices == 0) {
+    if (devices == NULL) {
         return 0;
     }
     CDeviceListNode* node = new CDeviceListNode;
     if (node->FillFrom(devices, n, unused) == 0) {
-        if (node != 0) {
+        if (node != NULL) {
             node->Clear();
             operator delete(node);
         }
@@ -438,14 +438,14 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
     }
 
     if (g_dinputLogEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
         } else {
             sprintf(szLine, "%s, line %i: %s (%i) - %s\n", file, line, szCode, code, szMsg);
         }
     }
     if (g_dinputMsgBoxEnabled) {
-        if (file == 0 || line <= 0) {
+        if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
@@ -456,10 +456,10 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
 
 RVA(0x00133b50, 0x97)
 i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     if (CInputDevBase::Create(di, cfg, owner) == 0) {
@@ -474,7 +474,7 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
         return 0;
     }
     void* buf = operator new(STATE_BUFFER_SIZE);
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     m_stateBuffer = static_cast<DeviceState*>(buf);
@@ -484,9 +484,9 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
 
 RVA(0x00133bf0, 0x33)
 void CInputDevice::ReleaseDevices() {
-    if (m_stateBuffer != 0) {
+    if (m_stateBuffer != NULL) {
         operator delete(m_stateBuffer);
-        m_stateBuffer = 0;
+        m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
     CInputDevRoot::ReleaseDevices();
@@ -530,7 +530,7 @@ i32 CInputDevice::Poll() {
     m_currentKeys = 0;
     m_edgeKeys = 0;
     if ((m_modeFlags & MODE_ASYNC) == 0) {
-        if (ReadState() == 0) {
+        if (ReadState() == NULL) {
             return 0;
         }
     }
@@ -741,10 +741,10 @@ i32 CInputDevice::Poll() {
 
 RVA(0x00134260, 0x43)
 i32 CInputDevBase::Create(IDirectInputA* di, const void* guid, HWND hwnd) {
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
-    if (hwnd == 0) {
+    if (hwnd == NULL) {
         return 0;
     }
     if (CInputDevRoot::Create(di, guid, hwnd) == 0) {
@@ -761,10 +761,10 @@ void CInputDevBase::ReleaseDevices() {
 
 RVA(0x001342c0, 0x95)
 i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     if (CInputDevBase::Create(di, cfg, owner) == 0) {
@@ -775,7 +775,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u3
         return 0;
     }
     void* buf = operator new(0x10);
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     m_stateBuffer = static_cast<DeviceState*>(buf);
@@ -789,7 +789,7 @@ RVA(0x00134360, 0x33)
 void CDeviceConfigB::ReleaseDevices() {
     if (m_stateBuffer) {
         operator delete(m_stateBuffer);
-        m_stateBuffer = 0;
+        m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
     CInputDevRoot::ReleaseDevices();
@@ -797,7 +797,7 @@ void CDeviceConfigB::ReleaseDevices() {
 
 RVA(0x001343a0, 0xb)
 i32 CDeviceConfigB::IsReady() {
-    return m_device2 != 0;
+    return m_device2 != NULL;
 }
 
 typedef enum MouseKeyFlags {
@@ -828,11 +828,11 @@ RVA(0x001343b0, 0x27e)
 i32 CDeviceConfigB::Poll() {
     m_currentKeys = 0;
     m_edgeKeys = 0;
-    if (ReadState() == 0) {
+    if (ReadState() == NULL) {
         return 0;
     }
     DIMouseStateZ* ms = &m_stateBuffer->mouse;
-    if (ms == 0) {
+    if (ms == NULL) {
         return 0;
     }
     if (ms->lX < 0) {
@@ -873,10 +873,10 @@ i32 CDeviceConfigB::Poll() {
 
 RVA(0x00134630, 0x98)
 i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
-    if (di == 0) {
+    if (di == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     if (CInputDevBase::Create(di, cfg, owner) == 0) {
@@ -887,7 +887,7 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND o
         return 0;
     }
     void* buf = operator new(0x110);
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     m_stateBuffer = static_cast<DeviceState*>(buf);
@@ -901,7 +901,7 @@ RVA(0x001346d0, 0x33)
 void CDeviceConfigC::ReleaseDevices() {
     if (m_stateBuffer) {
         operator delete(m_stateBuffer);
-        m_stateBuffer = 0;
+        m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
     CInputDevRoot::ReleaseDevices();
@@ -909,7 +909,7 @@ void CDeviceConfigC::ReleaseDevices() {
 
 RVA(0x00134710, 0xb2)
 i32 CDeviceConfigC::SetupAxes() {
-    if (m_device2 == 0) {
+    if (m_device2 == NULL) {
         return 0;
     }
     DIPROPRANGE range;
@@ -939,11 +939,11 @@ i32 CDeviceConfigC::Poll() {
     if (PollDevice() == 0) {
         return 0;
     }
-    if (ReadState() == 0) {
+    if (ReadState() == NULL) {
         return 0;
     }
     DIJoyState2Z* js = &m_stateBuffer->joy;
-    if (js == 0) {
+    if (js == NULL) {
         return 0;
     }
     if (js->lX < 0) {
@@ -1017,7 +1017,7 @@ i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     m_reserved00 = 0;
     m_count = 0;
     for (i32 j = 0; j < 32; j++) {
-        m_items[j] = 0;
+        m_items[j] = NULL;
     }
     for (i32 i = 0; i < n; i++) {
         if (src[i]) {
@@ -1032,7 +1032,7 @@ i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
 RVA(0x00134c60, 0x14)
 void CFixedPtrArray32::Clear() {
     for (i32 j = 0; j < 32; j++) {
-        m_items[j] = 0;
+        m_items[j] = NULL;
     }
     m_count = 0;
 }

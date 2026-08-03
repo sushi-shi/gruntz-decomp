@@ -133,7 +133,7 @@ void CCreditsState::ReleaseResources() {
     if (vh) {
 
         delete vh;
-        m_videoHandle = 0;
+        m_videoHandle = NULL;
     }
     CState::ReleaseResources();
 }
@@ -298,7 +298,7 @@ i32 CCreditsState::InitAttractTitle() {
     CSymTab* saved = m_stateBank;
     CSymTab* state = static_cast<CSymTab*>(m_symParser->ResolvePath(stateName));
     m_stateBank = state;
-    if (state == 0) {
+    if (state == NULL) {
         return 0;
     }
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
@@ -316,7 +316,7 @@ i32 CCreditsState::InitAttractTitle() {
 // @early-stop
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
-    if (m_world == 0) {
+    if (m_world == NULL) {
         return 0;
     }
 
@@ -353,7 +353,7 @@ i32 CCreditsState::DrawScrollingCredits() {
 
     HDC hdc = 0;
     prov->m_ddSurface->GetDC(&hdc);
-    if (hdc != 0) {
+    if (hdc != NULL) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
         if (g_clipRegionEnabled != 0) {
             SelectClipRgn(hdc, m_clipRegion);

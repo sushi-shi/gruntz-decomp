@@ -21,12 +21,12 @@
 // @early-stop
 RVA(0x00009090, 0x32)
 CActionOptionsMenuBar::CActionOptionsMenuBar() {
-    m_frame = 0;
-    m_normChipSprite = 0;
-    m_highChipSprite = 0;
-    m_greyChipSprite = 0;
-    m_buttonFrame[0] = 0;
-    m_buttonFrame[1] = 0;
+    m_frame = NULL;
+    m_normChipSprite = NULL;
+    m_highChipSprite = NULL;
+    m_greyChipSprite = NULL;
+    m_buttonFrame[0] = NULL;
+    m_buttonFrame[1] = NULL;
     m_buttonIcon[0] = PICKUP_NONE;
     m_buttonIcon[1] = PICKUP_NONE;
     m_buttonState[0] = 0;
@@ -49,7 +49,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr_ob = 0;
+    spr_ob = NULL;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", spr_ob);
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_normChipSprite = spr;
@@ -57,7 +57,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr_ob = 0;
+    spr_ob = NULL;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", spr_ob);
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_highChipSprite = spr;
@@ -65,7 +65,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr_ob = 0;
+    spr_ob = NULL;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", spr_ob);
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_greyChipSprite = spr;
@@ -127,7 +127,7 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 RVA(0x00009330, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
     CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];
-    if (grunt == 0) {
+    if (grunt == NULL) {
         m_buttonIcon[1] = PICKUP_NONE;
         m_buttonIcon[0] = PICKUP_NONE;
     } else {
@@ -172,7 +172,7 @@ i32 CActionOptionsMenuBar::Refresh() {
                 m_buttonFrame[i] = m_greyChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
             default:
-                m_buttonFrame[i] = 0;
+                m_buttonFrame[i] = NULL;
                 break;
         }
     }
@@ -212,7 +212,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     }
     i32 cell = m_gridY + m_gridX * TM_GRID_COLS;
     CGrunt* unit = g_gameReg->m_cmdGrid->m_grid[cell];
-    if (unit == 0) {
+    if (unit == NULL) {
         return 1;
     }
 
@@ -274,15 +274,15 @@ void CActionOptionsMenuBar::Deactivate() {
 // @early-stop
 RVA(0x00009810, 0x2df)
 i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     CGruntzMgr* reg = g_gameReg;
-    if (reg == 0) {
+    if (reg == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* mgr = reg->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
 
@@ -356,15 +356,15 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
 // @early-stop
 RVA(0x00009bb0, 0x367)
 i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     CGruntzMgr* gr = g_gameReg;
-    if (gr == 0) {
+    if (gr == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* mgr = gr->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
 
@@ -383,31 +383,31 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
-        out = 0;
+        out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         m_normChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
-        m_normChipSprite = 0;
+        m_normChipSprite = NULL;
     }
 
     g_serialCounter++;
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
-        out = 0;
+        out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         m_highChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
-        m_highChipSprite = 0;
+        m_highChipSprite = NULL;
     }
 
     g_serialCounter++;
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
-        out = 0;
+        out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         m_greyChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
-        m_greyChipSprite = 0;
+        m_greyChipSprite = NULL;
     }
 
     g_serialCounter++;
@@ -415,18 +415,18 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_frame = r;
     } else {
-        m_frame = 0;
+        m_frame = NULL;
     }
 
     g_serialCounter++;
@@ -434,18 +434,18 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_buttonFrame[0] = r;
     } else {
-        m_buttonFrame[0] = 0;
+        m_buttonFrame[0] = NULL;
     }
 
     g_serialCounter++;
@@ -453,18 +453,18 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, 4);
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = 0;
+        out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
-        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
-            r = 0;
+            r = NULL;
         }
         m_buttonFrame[1] = r;
     } else {
-        m_buttonFrame[1] = 0;
+        m_buttonFrame[1] = NULL;
     }
 
     return 1;

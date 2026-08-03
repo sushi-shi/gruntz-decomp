@@ -6,6 +6,8 @@
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawSurfaceMgr;
 
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.
@@ -16,7 +18,7 @@ struct CAniRecordBase2 : public CLoadable {
     CAniRecordBase2() {}
 
     CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner) : CLoadable(field04, owner) {
-        m_buf = 0;
+        m_buf = NULL;
     }
 
     virtual ~CAniRecordBase2() OVERRIDE;

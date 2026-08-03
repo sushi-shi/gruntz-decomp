@@ -48,7 +48,7 @@ static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     CString* list = ActNameSlots();
     while (n-- != 0) {
-        if (list != 0) {
+        if (list != NULL) {
             list->CString::~CString();
         }
         list++;
@@ -108,7 +108,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     m_object->m_drawFillArg = looked;
-    m_focus = 0;
+    m_focus = NULL;
     m_object->m_area.left = 0;
     m_object->m_area.right = 0;
     m_object->m_area.top = 0;
@@ -169,7 +169,7 @@ i32 CSpotLight::Tick() {
         CGrunt* tgt =
             reg->m_cmdGrid
                 ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &m_cellRow, &m_cellCol, 0);
-        if (tgt != 0 && tgt->m_gruntKind != GRUNT_INVULNERABLE
+        if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
             && !(m_storyMode != 0 && m_cellRow != 0)) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("B");
@@ -194,7 +194,7 @@ i32 CSpotLight::Tick() {
 
                     LeafCue* cue = 0;
                     MapLookup(obj->m_cues, name, cue);
-                    if (cue != 0 && g_sndEnabled != 0) {
+                    if (cue != NULL && g_sndEnabled != 0) {
                         u32 clk = g_killCueClock;
                         if (clk - cue->m_lastPlayTime >= static_cast<u32>(cue->m_replayDelay)) {
                             cue->m_lastPlayTime = clk;
@@ -216,7 +216,7 @@ i32 CSpotLight::Tick() {
     CWwdGameObjectA* mv = m_focus;
     double rx = m_offset.x * c - m_offset.y * s;
     double ry = m_offset.x * s + m_offset.y * c;
-    if (mv != 0) {
+    if (mv != NULL) {
         m_center.x = static_cast<double>(mv->m_screenX);
         m_center.y = static_cast<double>(mv->m_screenY);
     }
@@ -246,7 +246,7 @@ int CSpotLight::Update() {
         m_position.y = m_center.y + m_position.y;
         m_angle = newAngle;
     }
-    if (g_gameReg->m_cmdGrid->m_grid[m_cellCol + m_cellRow * 15] == 0) {
+    if (g_gameReg->m_cmdGrid->m_grid[m_cellCol + m_cellRow * 15] == NULL) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
     }
@@ -277,7 +277,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
             g_serialCounter++;
             {
                 i32 id = 0;
-                if (m_focus != 0) {
+                if (m_focus != NULL) {
                     id = m_focus->m_objectId;
                 }
                 s->Write(&id, 4);
@@ -302,14 +302,14 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
                 CGameObject* out = 0;
                 CGameObject* resolved;
                 if (MapLookupById(reg->m_world->m_childGroup->m_map48, id, out) == 0) {
-                    resolved = 0;
-                } else if (out == 0) {
-                    resolved = 0;
+                    resolved = NULL;
+                } else if (out == NULL) {
+                    resolved = NULL;
                 } else {
                     resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
                 }
                 m_focus = static_cast<CWwdGameObjectA*>(resolved);
-                if (m_focus == 0 && id != 0) {
+                if (m_focus == NULL && id != 0) {
                     return 0;
                 }
             }

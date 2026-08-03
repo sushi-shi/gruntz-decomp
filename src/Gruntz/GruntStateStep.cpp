@@ -71,7 +71,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             m_defenderSearchRadiusX,
             m_defenderSearchRadiusY
         );
-        if (nb != 0) {
+        if (nb != NULL) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
@@ -123,7 +123,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         i32 col = g->m_arrivalCell.m_x;
         i32 row = g->m_arrivalCell.m_y;
         CGrunt* cur = m_triggerMgr->m_grid[15 * col + row];
-        if (cur == 0) {
+        if (cur == NULL) {
 
             g->m_arrivalCell.m_x = -1;
             g->m_arrivalCell.m_y = -1;
@@ -139,7 +139,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             }
             g->m_arrivalCell.m_x = -1;
             g->m_arrivalCell.m_y = -1;
-            if (g != 0 && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
+            if (g != NULL && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm = *g_typeColl.GetNameRecord(g->m_objAux->ActKey());
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0

@@ -30,17 +30,17 @@ RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
 RVA(0x001657a0, 0x66)
 CAniRecordView::~CAniRecordView() {
     CAniRecordView* r = this;
-    if (r->m_cues != 0) {
+    if (r->m_cues != NULL) {
         ::operator delete(r->m_cues);
     }
     r->m_loopMode = 0xffff;
     r->m_cueCount = 0;
-    r->m_cues = 0;
+    r->m_cues = NULL;
 }
 
 RVA(0x00165d90, 0xb)
 i32 CAniRecordBase2::IsLoaded() {
-    return m_buf != 0;
+    return m_buf != NULL;
 }
 
 RVA(0x00165da0, 0x6)
@@ -68,7 +68,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     m_positionDeltaX = *p++;
     m_positionDeltaY = *p++;
     m_reserved28 = static_cast<u16>(*p++);
-    m_cues = 0;
+    m_cues = NULL;
     m_cueCount = 0;
     g_aniParsedNameLen = 0;
     if (m_flags & 0x2) {
@@ -85,7 +85,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
 // @early-stop
 RVA(0x00168d00, 0x14c)
 void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str) {
-    if (owner == 0 || str == 0) {
+    if (owner == NULL || str == NULL) {
         return;
     }
     CStringArray tokens;
@@ -143,7 +143,7 @@ RVA(0x00168ea0, 0x40)
 i32 CAniRecordBase2::LoadPaletteFromFile(char* path, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->LoadPaletteFromFile(path, 0x44);
     m_buf = buf;
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     if (flag & 0x1) {
@@ -157,7 +157,7 @@ RVA(0x00168ee0, 0x40)
 i32 CAniRecordBase2::CreatePaletteFromRgb(void* data, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->CreateRgbPalette(data, 0x44);
     m_buf = buf;
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     if (flag & 0x1) {
@@ -171,7 +171,7 @@ RVA(0x00168f20, 0x40)
 i32 CAniRecordBase2::CreatePaletteFromEntries(i32 handle, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromEntries(handle, 0x44);
     m_buf = buf;
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     if (flag & 0x1) {
@@ -185,7 +185,7 @@ RVA(0x00168f60, 0x45)
 i32 CAniRecordBase2::CreatePaletteFromTrailingData(void* data, i32 size, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromTrailingData(data, size, 0x44);
     m_buf = buf;
-    if (buf == 0) {
+    if (buf == NULL) {
         return 0;
     }
     if (flag & 0x1) {
@@ -198,9 +198,9 @@ i32 CAniRecordBase2::CreatePaletteFromTrailingData(void* data, i32 size, i32 fla
 RVA(0x00168fb0, 0x1f)
 void CAniRecordBase2::Unload() {
     CDDPalette* buf = m_buf;
-    if (buf != 0) {
+    if (buf != NULL) {
         OwnerMgr()->m_ptrColl->RemoveItemB(buf);
-        m_buf = 0;
+        m_buf = NULL;
     }
 }
 

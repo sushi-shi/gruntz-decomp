@@ -9,6 +9,8 @@
 #include <Gruntz/StatusBarItem.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawSurfaceMgr;
 class CStatusBarMgr;
 class CImage;
@@ -42,7 +44,7 @@ class CSBI_Image : public CSBI_RectOnly {
 public:
     CSBI_Image() {
         m_kind = 3;
-        m_frame = 0;
+        m_frame = NULL;
     }
     virtual ~CSBI_Image() OVERRIDE;
 

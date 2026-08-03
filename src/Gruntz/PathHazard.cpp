@@ -24,6 +24,7 @@
 #include <Wap32/ZVec.h>
 
 #include <math.h>
+#include <stddef.h>
 
 template<> DATA(0x00246250)
 CActReg CActRegPool<CPathHazard>::s_table(2000, 2010);
@@ -31,7 +32,7 @@ static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     CString* list = ActNameSlots();
     while (n-- != 0) {
-        if (list != 0) {
+        if (list != NULL) {
             list->CString::~CString();
         }
         list++;
@@ -180,7 +181,7 @@ i32 CPathHazard::Tick() {
         CGrunt* ent =
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
-        if (ent != 0 && ent->m_gruntKind != GRUNT_INVULNERABLE) {
+        if (ent != NULL && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
@@ -302,7 +303,7 @@ i32 CPathHazard::SiblingTick() {
         CGrunt* ent =
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
-        if (ent != 0 && ent->m_gruntKind != GRUNT_INVULNERABLE) {
+        if (ent != NULL && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {

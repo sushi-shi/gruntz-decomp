@@ -26,6 +26,8 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CStaticHazard, 0x001e7824);
 template<> DATA(0x0024e3d0)
 CActReg CActRegPool<CStaticHazard>::s_table(2000, 2010);
@@ -45,7 +47,7 @@ static inline CString* ActNameLookup(i32 id) {
         return g_typeColl.Elem(id);
     }
 
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
         return g_typeColl.Elem(id);
     }
     char* msg = g_errOutOfMem;
@@ -63,7 +65,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return g_typeColl.Elem(id);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
         return g_typeColl.Elem(id);
     }
     g_typeColl.Report(g_errOutOfMem, 0xc);
@@ -117,7 +119,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     void* entry_ob = 0;
     g_gameReg->m_world->m_animRegistry->m_animations.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
     CAniElement* entry = static_cast<CAniElement*>(entry_ob);
-    if (entry != 0) {
+    if (entry != NULL) {
 
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
     } else {
@@ -147,7 +149,7 @@ void CStaticHazard::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -166,7 +168,7 @@ void CStaticHazard::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -290,7 +292,7 @@ dispatch:
     if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 2) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
-            != 0) {
+            != NULL) {
             g_gameReg->m_cmdGrid
                 ->CellDispatch(a, b, static_cast<GruntDeathType>(m_object->m_smarts), -1);
         }

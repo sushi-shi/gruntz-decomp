@@ -2,6 +2,8 @@
 
 #include <Net/LatencyList.h>
 
+#include <stddef.h>
+
 RVA(0x00037b40, 0xb3)
 i32 CLatencyList::PopulateIpxOptions() {
     if (!AddNode("Automatic", 0, 0)) {
@@ -25,7 +27,7 @@ i32 CLatencyList::PopulateIpxOptions() {
     if (!AddNode("Very High Latency [ping < 550]", 16, 10)) {
         return 0;
     }
-    return AddNode("Last Resort", 24, 10) != 0;
+    return AddNode("Last Resort", 24, 10) != NULL;
 }
 
 RVA(0x00037c30, 0xb3)
@@ -51,7 +53,7 @@ i32 CLatencyList::PopulateTcpIpOptions() {
     if (!AddNode("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
     }
-    return AddNode("Last Resort", 24, 30) != 0;
+    return AddNode("Last Resort", 24, 30) != NULL;
 }
 
 RVA(0x00037d20, 0xb3)
@@ -77,7 +79,7 @@ i32 CLatencyList::PopulateModemOptions() {
     if (!AddNode("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
     }
-    return AddNode("Last Resort", 24, 30) != 0;
+    return AddNode("Last Resort", 24, 30) != NULL;
 }
 RVA(0x00037e10, 0xb3)
 i32 CLatencyList::PopulateSerialOptions() {
@@ -102,7 +104,7 @@ i32 CLatencyList::PopulateSerialOptions() {
     if (!AddNode("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
     }
-    return AddNode("Last Resort", 24, 30) != 0;
+    return AddNode("Last Resort", 24, 30) != NULL;
 }
 
 RVA(0x00037f00, 0xb3)
@@ -128,5 +130,5 @@ i32 CLatencyList::PopulateGenericOptions() {
     if (!AddNode("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
     }
-    return AddNode("Last Resort", 24, 30) != 0;
+    return AddNode("Last Resort", 24, 30) != NULL;
 }

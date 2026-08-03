@@ -9,6 +9,8 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CAniCycle, 0x001e86a4);
 template<> DATA(0x00246088)
 CActReg CActRegPool<CAniCycle>::s_table(2000, 2010);
@@ -29,7 +31,7 @@ RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 1;
-    if (m_wwdObject->m_animCursor.m_animation == 0) {
+    if (m_wwdObject->m_animCursor.m_animation == NULL) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
@@ -55,7 +57,7 @@ void CAniCycle::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

@@ -42,10 +42,10 @@ i32 CSBI_WellGoo::Setup(
     CDDrawWorker* set;
 
     CImage* f;
-    if (host == 0) {
+    if (host == NULL) {
         goto fail;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         goto fail;
     }
     m_owner = owner;
@@ -59,65 +59,65 @@ i32 CSBI_WellGoo::Setup(
     m_dstRect.left = m_rect14.left;
     m_dstRect.right = m_rect14.right + 1;
     m_dstRect.bottom = m_rect14.bottom + 1;
-    if (key == 0) {
+    if (key == NULL) {
         goto fail;
     }
     m_gooSrc = g_gameReg->m_world->m_ptrColl->MakeAndAddB(0x14, 5, 0x10, 0, -1);
-    if (m_gooSrc == 0) {
+    if (m_gooSrc == NULL) {
         goto fail;
     }
     sel = g_gameReg->m_options[g_curPlayer].m_colorIndex;
     node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
-    if (node == 0) {
+    if (node == NULL) {
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
 
-    found = 0;
+    found = NULL;
     m_host->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
-    m_frame = (set != 0) ? set->GetAt(4) : 0;
-    if (m_frame == 0) {
+    m_frame = (set != NULL) ? set->GetAt(4) : 0;
+    if (m_frame == NULL) {
         goto fail;
     }
-    if (m_frame->m_owned != 0) {
+    if (m_frame->m_owned != NULL) {
         m_frame->m_owned->Select(SHADE_PAL_16, 0);
     }
     f = m_frame;
-    if (node != 0 && f->m_owned != 0) {
+    if (node != NULL && f->m_owned != NULL) {
         f->m_owned->m_palDescr = node;
     }
     m_blitter = m_frame->m_owned;
-    if (m_blitter == 0) {
+    if (m_blitter == NULL) {
         goto fail;
     }
 
-    found = 0;
+    found = NULL;
     m_host->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
-    m_baseFrame = (set != 0) ? set->GetAt(2) : 0;
-    if (m_baseFrame == 0) {
+    m_baseFrame = (set != NULL) ? set->GetAt(2) : 0;
+    if (m_baseFrame == NULL) {
         goto fail;
     }
-    if (m_baseFrame->m_owned != 0) {
+    if (m_baseFrame->m_owned != NULL) {
         m_baseFrame->m_owned->Select(SHADE_PAL_16, 0);
     }
     f = m_baseFrame;
-    if (node != 0 && f->m_owned != 0) {
+    if (node != NULL && f->m_owned != NULL) {
         f->m_owned->m_palDescr = node;
     }
 
-    found = 0;
+    found = NULL;
     m_host->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
-    m_fgFrame = (set != 0) ? set->GetAt(3) : 0;
-    if (m_fgFrame == 0) {
+    m_fgFrame = (set != NULL) ? set->GetAt(3) : 0;
+    if (m_fgFrame == NULL) {
         goto fail;
     }
-    if (m_fgFrame->m_owned != 0) {
+    if (m_fgFrame->m_owned != NULL) {
         m_fgFrame->m_owned->Select(SHADE_PAL_16, 0);
     }
     f = m_fgFrame;
-    if (node != 0 && f->m_owned != 0) {
+    if (node != NULL && f->m_owned != NULL) {
         f->m_owned->m_palDescr = node;
     }
 
@@ -174,11 +174,11 @@ i32 CSBI_WellGoo::SerializeFields(
     LogicTypeId typeId,
     i32 pObj
 ) {
-    if (arc == 0) {
+    if (arc == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
-    if (mgr == 0) {
+    if (mgr == NULL) {
         return 0;
     }
 
@@ -197,7 +197,7 @@ i32 CSBI_WellGoo::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, 0x80);
             idx = 0;
-            if (m_fgFrame != 0) {
+            if (m_fgFrame != NULL) {
                 mgr->m_imageRegistry->AnyValueMatches(m_fgFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
@@ -205,7 +205,7 @@ i32 CSBI_WellGoo::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, 0x80);
             idx = 0;
-            if (m_baseFrame != 0) {
+            if (m_baseFrame != NULL) {
                 mgr->m_imageRegistry->AnyValueMatches(m_baseFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
@@ -227,13 +227,13 @@ i32 CSBI_WellGoo::SerializeFields(
                 CObject* found = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
-                if (set != 0) {
+                if (set != NULL) {
                     m_fgFrame = set->GetAt(idx);
                 } else {
-                    m_fgFrame = 0;
+                    m_fgFrame = NULL;
                 }
             } else {
-                m_fgFrame = 0;
+                m_fgFrame = NULL;
             }
             g_serialCounter++;
             arc->Read(buf, 0x80);
@@ -242,46 +242,46 @@ i32 CSBI_WellGoo::SerializeFields(
                 CObject* found = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
-                if (set != 0) {
+                if (set != NULL) {
                     m_baseFrame = set->GetAt(idx);
                 } else {
-                    m_baseFrame = 0;
+                    m_baseFrame = NULL;
                 }
             } else {
-                m_baseFrame = 0;
+                m_baseFrame = NULL;
             }
             return 1;
         }
         case SERIAL_POSTLOAD: {
 
             m_gooSrc = mgr->m_ptrColl->MakeAndAddB(0x14, 5, 0x10, 0, -1);
-            if (m_gooSrc == 0) {
+            if (m_gooSrc == NULL) {
                 return 0;
             }
             i32 sel = g_gameReg->m_options[g_curPlayer].m_colorIndex;
             CShadeTable* node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
-            if (node == 0) {
+            if (node == NULL) {
                 node = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
             CImage* fr = m_frame;
-            if (fr->m_owned != 0) {
+            if (fr->m_owned != NULL) {
                 fr->m_owned->Select(SHADE_PAL_16, 0);
             }
-            if (node != 0 && m_frame->m_owned != 0) {
+            if (node != NULL && m_frame->m_owned != NULL) {
                 m_frame->m_owned->m_palDescr = node;
             }
             fr = m_baseFrame;
-            if (fr->m_owned != 0) {
+            if (fr->m_owned != NULL) {
                 fr->m_owned->Select(SHADE_PAL_16, 0);
             }
-            if (node != 0 && m_baseFrame->m_owned != 0) {
+            if (node != NULL && m_baseFrame->m_owned != NULL) {
                 m_baseFrame->m_owned->m_palDescr = node;
             }
             fr = m_fgFrame;
-            if (fr->m_owned != 0) {
+            if (fr->m_owned != NULL) {
                 fr->m_owned->Select(SHADE_PAL_16, 0);
             }
-            if (node != 0 && m_fgFrame->m_owned != 0) {
+            if (node != NULL && m_fgFrame->m_owned != NULL) {
                 m_fgFrame->m_owned->m_palDescr = node;
             }
             break;
@@ -293,9 +293,9 @@ i32 CSBI_WellGoo::SerializeFields(
 RVA_COMPGEN(0x00104b80, 0x1e, ??_GCSBI_WellGoo@@UAEPAXI@Z)
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
-    if (m_gooSrc != 0) {
+    if (m_gooSrc != NULL) {
         m_host->m_ptrColl->RemoveItemA(m_gooSrc);
-        m_gooSrc = 0;
+        m_gooSrc = NULL;
     }
 }
 
@@ -303,8 +303,8 @@ CSBI_WellGoo::~CSBI_WellGoo() {
 // 0x104c80 rather than in the TU's own .text block.
 RVA(0x00104c80, 0x1f)
 void CSBI_WellGoo::Reset() {
-    if (m_gooSrc != 0) {
+    if (m_gooSrc != NULL) {
         m_host->m_ptrColl->RemoveItemA(m_gooSrc);
-        m_gooSrc = 0;
+        m_gooSrc = NULL;
     }
 }

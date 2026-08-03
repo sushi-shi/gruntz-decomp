@@ -152,12 +152,12 @@ SIZE_UNKNOWN();
 inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CResolveNode(owner, id, stateFlags) {
     m_screenX = static_cast<i32>(0x80000000);
-    m_posCache = 0;
+    m_posCache = NULL;
     m_animWorker = new AnimWorkerObj(owner, id, 0);
-    m_carrier = 0;
-    m_hitWorker = 0;
-    m_attackWorker = 0;
-    m_collideWorker = 0;
+    m_carrier = NULL;
+    m_hitWorker = NULL;
+    m_attackWorker = NULL;
+    m_collideWorker = NULL;
     m_objectId = g_wwdObjIdCounter;
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
@@ -169,9 +169,9 @@ public:
         : CGameObject(owner, id, stateFlags), m_animCursor(owner, id, stateFlags) {
         m_reserved18c = -1;
         m_frameIndex = -1;
-        m_layer = 0;
-        m_frameSet = 0;
-        m_soundCue = 0;
+        m_layer = NULL;
+        m_frameSet = NULL;
+        m_soundCue = NULL;
     }
     virtual ~CWwdGameObjectA() OVERRIDE;
 
@@ -179,8 +179,8 @@ public:
     virtual void Unload() OVERRIDE {
         m_reserved18c = -1;
         m_frameIndex = -1;
-        m_layer = 0;
-        m_frameSet = 0;
+        m_layer = NULL;
+        m_frameSet = NULL;
         CGameObject::Unload();
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
@@ -229,8 +229,8 @@ public:
         m_reserved1f8 = 0;
         m_reserved18c = -1;
         m_frameIndex = -1;
-        m_layer = 0;
-        m_frameSet = 0;
+        m_layer = NULL;
+        m_frameSet = NULL;
         CGameObject::Unload();
     }
     virtual LoadableClassId GetClassId() OVERRIDE;

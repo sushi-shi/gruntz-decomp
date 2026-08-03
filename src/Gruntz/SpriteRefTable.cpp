@@ -29,12 +29,12 @@ i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
 RVA(0x000e2290, 0x2a)
 void CSpriteRefTable::Reset() {
     Clear();
-    m_factory = 0;
-    m_spriteMgrHolder = 0;
+    m_factory = NULL;
+    m_spriteMgrHolder = NULL;
     m_built = 0;
     for (i32 i = 0; i < 0x11; i++) {
-        m_toolRefs[i] = 0;
-        m_toyRefs[i] = 0;
+        m_toolRefs[i] = NULL;
+        m_toyRefs[i] = NULL;
     }
 }
 
@@ -54,8 +54,8 @@ void CSpriteRefTable::Clear() {
             }
         }
         for (i32 j = 0; j < 0x11; j++) {
-            m_toolRefs[j] = 0;
-            m_toyRefs[j] = 0;
+            m_toolRefs[j] = NULL;
+            m_toyRefs[j] = NULL;
         }
         m_built = 0;
     }
@@ -294,11 +294,11 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     CSpriteRef* node;
     CSpriteRef* tmp = static_cast<CSpriteRef*>(::operator new(0x10));
     if (tmp) {
-        tmp->m_cache = 0;
-        tmp->m_alphaKey = 0;
+        tmp->m_cache = NULL;
+        tmp->m_alphaKey = NULL;
         node = tmp;
     } else {
-        node = 0;
+        node = NULL;
     }
     if (node->Build(m_factory, alpha, kind) == 0) {
         if (node) {
@@ -354,5 +354,5 @@ i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
     if (!pal) {
         return 0;
     }
-    return m_spriteMgrHolder->m_workerMap->LoadPaletteFromSource(pal, 0, 0) != 0;
+    return m_spriteMgrHolder->m_workerMap->LoadPaletteFromSource(pal, 0, 0) != NULL;
 }

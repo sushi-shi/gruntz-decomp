@@ -18,10 +18,10 @@ class CChatBox;
 class CMenuPage {
 public:
     CMenuPage() {
-        m_owner = 0;
-        m_host = 0;
-        m_subPage = 0;
-        m_focus = 0;
+        m_owner = NULL;
+        m_host = NULL;
+        m_subPage = NULL;
+        m_focus = NULL;
         m_flags = 0;
     }
 

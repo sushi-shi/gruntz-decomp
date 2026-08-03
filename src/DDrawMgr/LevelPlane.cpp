@@ -37,9 +37,9 @@ RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)
     : CLoadable(field04, flags, mapData) {
 
-    m_tileGrid = 0;
-    m_colOffsets = 0;
-    m_scroll = 0;
+    m_tileGrid = NULL;
+    m_colOffsets = NULL;
+    m_scroll = NULL;
     m_scaleX = 1.0f;
     m_scaleY = 1.0f;
     m_bounds50.left = -1;
@@ -75,7 +75,7 @@ i32 CDDrawWorkerHost::Read(
         if (len > 0) {
 
             CObject* val;
-            val = 0;
+            val = NULL;
             OwnerMgr()->m_imageRegistry->m_10map.Lookup(nameBuf, val);
             m_frameSets.SetAtGrow(static_cast<char>(n), val);
         }
@@ -107,7 +107,7 @@ i32 CDDrawWorkerHost::Read(
 
         CDDrawWorker* set = (m_frameSets.GetSize() > 0) ? FrameSetAt(0) : 0;
         for (i32 f = 0; f < set->m_items.GetSize(); f++) {
-            if (set->GetAt(f) != 0) {
+            if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
                 SetTileSize(first->m_width, first->m_height);
                 break;
@@ -217,7 +217,7 @@ i32 CDDrawWorkerHost::InitGeometry(
             m_shiftY = m_shiftY + 1;
         } while (v > 1);
     }
-    if (name != 0) {
+    if (name != NULL) {
         strcpy(m_name, name);
     }
     if (bounds->left != static_cast<i32>(0x80000000)) {
@@ -245,18 +245,18 @@ i32 CDDrawWorkerHost::InitGeometry(
 
 RVA(0x00161bf0, 0x5e)
 void CDDrawWorkerHost::Unload() {
-    if (m_scroll != 0) {
+    if (m_scroll != NULL) {
         m_scroll->PruneCount();
     }
     CWwdSpatialMgr* g = m_scroll;
     delete g;
-    if (m_tileGrid != 0) {
+    if (m_tileGrid != NULL) {
         ::operator delete(m_tileGrid);
-        m_tileGrid = 0;
+        m_tileGrid = NULL;
     }
-    if (m_colOffsets != 0) {
+    if (m_colOffsets != NULL) {
         ::operator delete(m_colOffsets);
-        m_colOffsets = 0;
+        m_colOffsets = NULL;
     }
 }
 
@@ -264,7 +264,7 @@ void CDDrawWorkerHost::Unload() {
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val;
-    val = 0;
+    val = NULL;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(key, val);
     m_frameSets.SetAtGrow(index, val);
 }
@@ -398,7 +398,7 @@ void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
 RVA(0x00161fa0, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
-        if (set->GetAt(i) != 0) {
+        if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
             SetTileSize(f->m_width, f->m_height);
             break;
@@ -539,7 +539,7 @@ inline void* operator new(u32, void* p) {
 
 RVA(0x001628d0, 0x12)
 i32 CDDrawWorkerHost::Prune() {
-    if (m_scroll == 0) {
+    if (m_scroll == NULL) {
         return 0;
     }
     return m_scroll->PruneCount();
@@ -548,7 +548,7 @@ i32 CDDrawWorkerHost::Prune() {
 // @early-stop
 RVA(0x001628f0, 0x1fc)
 i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
-    if (base == 0) {
+    if (base == NULL) {
         return 0;
     }
 
@@ -557,7 +557,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         worker->FreeGrids();
         worker->m_iter.~CWwdGridIter();
         ::operator delete(worker);
-        worker = 0;
+        worker = NULL;
     }
 
     RECT rc;
@@ -568,11 +568,11 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 
     CDDrawSurfaceMgr* reg = OwnerMgr();
     CDDrawChildGroup* src = reg->m_childGroup;
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
     CGameLevel* hdr = reg->m_level;
-    if (hdr == 0) {
+    if (hdr == NULL) {
         return 0;
     }
 
@@ -586,13 +586,13 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     CWwdSpatialMgr* nw = static_cast<CWwdSpatialMgr*>(::operator new(0xb8));
     if (nw) {
 
-        nw->m_iter.m_grid = 0;
-        nw->m_iter.m_cur = 0;
-        nw->m_mgr = 0;
-        nw->m_grid0 = 0;
-        nw->m_grid1 = 0;
-        nw->m_grid2 = 0;
-        nw->m_curGrid = 0;
+        nw->m_iter.m_grid = NULL;
+        nw->m_iter.m_cur = NULL;
+        nw->m_mgr = NULL;
+        nw->m_grid0 = NULL;
+        nw->m_grid1 = NULL;
+        nw->m_grid2 = NULL;
+        nw->m_curGrid = NULL;
     }
     worker = nw;
     if (nw->Init(src, &rc, cellA, cellB, cellC, sizeA, sizeB, sizeC) == 0) {
@@ -602,7 +602,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 
             ::operator delete(w);
         }
-        worker = 0;
+        worker = NULL;
         return 0;
     }
 
@@ -622,7 +622,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
-    if (src == 0) {
+    if (src == NULL) {
         return 0;
     }
 
@@ -638,7 +638,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     i32 id = src->m_id;
 
     CWwdGameObjectA* obj = new CWwdGameObjectA(OwnerMgr(), id, 0);
-    if (obj == 0) {
+    if (obj == NULL) {
         return 0;
     }
 
@@ -692,7 +692,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         OwnerMgr()->m_workerCache->m_workers.Lookup(static_cast<const char*>(logic), foundOb);
         tmpl = static_cast<AnimWorkerObj*>(foundOb);
     }
-    if (tmpl == 0) {
+    if (tmpl == NULL) {
         delete obj;
         return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
     }
@@ -705,7 +705,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     obj->m_flags |= 0x40000;
 
     AnimWorkerObj* anim = obj->m_animWorker;
-    if (anim == 0) {
+    if (anim == NULL) {
         delete obj;
         return 0;
     }
@@ -823,7 +823,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 RVA(0x00163300, 0x70)
 i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
-    if (scroll == 0) {
+    if (scroll == NULL) {
         return 0;
     }
 
@@ -849,7 +849,7 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
 RVA(0x00163370, 0x70)
 i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
-    if (scroll == 0) {
+    if (scroll == NULL) {
         return 0;
     }
 
@@ -876,7 +876,7 @@ i32 CDDrawWorkerHost::DeactivateDistantObjects() {
 
 RVA(0x001633e0, 0x12)
 i32 CDDrawWorkerHost::GetSize() {
-    if (m_scroll == 0) {
+    if (m_scroll == NULL) {
         return 0;
     }
     return m_scroll->GetSize();
@@ -884,11 +884,11 @@ i32 CDDrawWorkerHost::GetSize() {
 
 RVA(0x00163420, 0xf0)
 void CDDrawWorkerHost::InitScrollRects() {
-    if (m_scroll == 0) {
+    if (m_scroll == NULL) {
         return;
     }
     CGameLevel* g = OwnerMgr()->m_level;
-    if (g == 0) {
+    if (g == NULL) {
         return;
     }
 
@@ -948,9 +948,9 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
             }
             u32 setIdx = static_cast<u32>(handle) >> 16;
             CDDrawWorker* frame = FrameSetAt(setIdx);
-            if (frame == 0) {
+            if (frame == NULL) {
                 result = 0;
-                if (errOut != 0) {
+                if (errOut != NULL) {
                     sprintf(
                         msg,
                         "Plane %s: Bad map image set value (%i) at %i,%i\n",
@@ -965,9 +965,9 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
             }
             i32 tile = handle & 0xffff;
             CImage* resolved = frame->GetAt(tile);
-            if (resolved == 0) {
+            if (resolved == NULL) {
                 result = 0;
-                if (errOut != 0) {
+                if (errOut != NULL) {
                     sprintf(
                         msg,
                         "Plane %s: Bad map tile value (%i) at %i,%i\n",
@@ -1004,11 +1004,11 @@ void CDDrawWorkerHost::ResolveColorKey() {
     }
 
     CAniRecordBase2* owner = OwnerMgr()->m_workerMap->m_cachedWorker;
-    if (owner == 0) {
+    if (owner == NULL) {
         return;
     }
     PALETTEENTRY* pal = owner->m_buf->m_cacheA;
-    if (pal == 0) {
+    if (pal == NULL) {
         return;
     }
 
@@ -1050,7 +1050,7 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicT
 
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
 
@@ -1078,7 +1078,7 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
 
 RVA(0x001638c0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
 

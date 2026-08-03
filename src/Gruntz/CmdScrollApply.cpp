@@ -14,6 +14,8 @@
 #include <Rez/FrameClock.h>
 #include <Wwd/WwdFile.h>
 
+#include <stddef.h>
+
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;
     if (range == 0) {
@@ -91,7 +93,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     v3->RecomputePlaneCoords();
 
     CDDrawWorkerHost* gm = g_backView;
-    if (gm != 0) {
+    if (gm != NULL) {
         i32 nx = gm->m_snappedX;
         i32 ny = gm->m_snappedY;
         if (deltaX != 0 || deltaY != 0) {

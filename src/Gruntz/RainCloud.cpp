@@ -12,6 +12,8 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Rez/FrameClock.h>
 
+#include <stddef.h>
+
 VTBL(CRainCloud, 0x001e7324);
 
 RVA_COMPGEN(0x00013310, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
@@ -37,7 +39,7 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
             void* out_ob = 0;
             host->m_cues.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);
             LeafCue* out = static_cast<LeafCue*>(out_ob);
-            if (out != 0) {
+            if (out != NULL) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;
                 if (enabled != 0) {

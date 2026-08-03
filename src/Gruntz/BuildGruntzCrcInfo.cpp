@@ -25,7 +25,7 @@ void CNetSession::BuildGruntzCrcInfo() {
         for (i32 g = 0; g < 0xf; g++) {
 
             CGrunt* grunt = m_session->Mgr()->m_cmdGrid->m_grid[player * 0xf + g];
-            if (grunt == 0) {
+            if (grunt == NULL) {
                 continue;
             }
             i32 rnd = rand();

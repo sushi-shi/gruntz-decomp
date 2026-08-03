@@ -26,6 +26,8 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
+#include <stddef.h>
+
 VTBL(CFortressFlag, 0x001e725c);
 VTBL(CParticlez, 0x001e7614);
 VTBL(CExplosion, 0x001e766c);
@@ -50,7 +52,7 @@ static inline i32 RegisterActionName() {
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
-            if (nodes != 0) {
+            if (nodes != NULL) {
                 nodes->CString::~CString();
             }
             nodes++;
@@ -152,7 +154,7 @@ void CFortressFlag::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -320,7 +322,7 @@ void CParticlez::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;

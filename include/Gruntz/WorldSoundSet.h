@@ -85,7 +85,7 @@ public:
 SIZE_UNKNOWN();
 
 inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
-    m_world = 0;
+    m_world = NULL;
     m_volume = kSoundVolumeMax;
 }
 

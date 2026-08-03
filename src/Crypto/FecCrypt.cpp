@@ -50,7 +50,7 @@ i32 CFecFile::OnFail() {
 // @early-stop
 RVA(0x0017b5f0, 0x249)
 i32 CFecFile::ReadArchive(const char* name) {
-    if (name == 0) {
+    if (name == NULL) {
         return 0;
     }
     if (m_readOpen != 0) {
@@ -130,7 +130,8 @@ i32 CFecFile::Lookup(u32 idx) {
 
 RVA(0x0017b8a0, 0xa2)
 i32 CFecFile::CreateArchive(const char* name) {
-    if (name != 0 && m_writeOpen == 0 && m_openGate != 0 && m_stream.Open(name, 0x1002, 0) != 0) {
+    if (name != NULL && m_writeOpen == 0 && m_openGate != 0
+        && m_stream.Open(name, 0x1002, 0) != 0) {
         m_writeOpen = 1;
 
         char magic[3];
@@ -209,7 +210,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     u32 copied = 0;
     i32 done = 0;
     while (done == 0) {
-        if (pProgress != 0) {
+        if (pProgress != NULL) {
             MSG msg;
             if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg);
@@ -249,7 +250,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     }
 
     char cwd[0x104];
-    if (_getcwd(cwd, 0x104) == 0) {
+    if (_getcwd(cwd, 0x104) == NULL) {
         return 0;
     }
     if (_chdir(dir) != 0) {
@@ -277,7 +278,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
         }
         i32 done = 0;
         while (done == 0) {
-            if (pProgress != 0) {
+            if (pProgress != NULL) {
                 MSG msg;
                 if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
                     TranslateMessage(&msg);

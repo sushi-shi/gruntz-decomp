@@ -11,10 +11,10 @@ RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     if (m_list.GetCount() > 0) {
         HWND combo = GetDlgItem(hDlg, ctrlId);
-        if (combo != 0) {
+        if (combo != NULL) {
             SendMessageA(combo, CB_RESETCONTENT, 0, 0);
             POSITION pos = m_list.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
                 i32 data = ((rec->m_drainReload & 0xffff) << 16) | (rec->m_commandDelay & 0xffff);
                 i32 idx;

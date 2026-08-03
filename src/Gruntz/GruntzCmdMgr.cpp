@@ -94,7 +94,7 @@ i32 CGruntzCmdMgr::SetMgr(CGruntzMgr* mgr) {
 
 RVA(0x000239f0, 0xc)
 void CGruntzCmdMgr::ClearAndReset() {
-    m_manager = 0;
+    m_manager = NULL;
     Clear();
 }
 
@@ -105,10 +105,10 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
 
     i32 isPlay = (sp->Update() == GAMESTATE_MULTI);
     CGruntzCommand* table[4];
-    table[0] = 0;
-    table[1] = 0;
-    table[2] = 0;
-    table[3] = 0;
+    table[0] = NULL;
+    table[1] = NULL;
+    table[2] = NULL;
+    table[3] = NULL;
     i32 i;
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
@@ -655,7 +655,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
     stream->Write(&count, 4);
 
     POSITION pos = m_base.GetHeadPosition();
-    while (pos != 0) {
+    while (pos != NULL) {
         CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));
         i32 tag = cmd->GetTag() & 0xff;
         stream->Write(&tag, 4);
@@ -671,15 +671,15 @@ i32 CGruntzCmdMgr::IsActive(CFileMemBase* enable) {
     if (!enable) {
         return 0;
     }
-    return g_gameReg->m_world != 0;
+    return g_gameReg->m_world != NULL;
 }
 
 RVA(0x00024ac0, 0x20)
 i32 __stdcall IsActive2(void* enable) {
-    if (enable == 0) {
+    if (enable == NULL) {
         return 0;
     }
-    return g_gameReg->m_world != 0;
+    return g_gameReg->m_world != NULL;
 }
 
 RVA(0x00085bd0, 0x56)

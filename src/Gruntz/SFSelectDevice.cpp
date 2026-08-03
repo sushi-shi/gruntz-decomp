@@ -70,7 +70,7 @@ u8 g_ratings_64e0c0[344] = {0};
 RVA(0x000f8970, 0x3b4)
 i32 SFManager_SelectBestDevice() {
     g_sfDll = LoadLibraryA("SFMAN32.DLL");
-    if (g_sfDll == 0) {
+    if (g_sfDll == NULL) {
         return 0;
     }
 
@@ -78,7 +78,7 @@ i32 SFManager_SelectBestDevice() {
     mgrProc.m_raw = GetProcAddress(g_sfDll, "SFManager");
     SfManagerFactory* fn = mgrProc.m_fn;
     g_factory_64e0ac = fn;
-    if (fn == 0) {
+    if (fn == NULL) {
         FreeLibrary(g_sfDll);
         return 0;
     }

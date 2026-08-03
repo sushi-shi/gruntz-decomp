@@ -35,7 +35,7 @@ i32 CSBI_ImageSet::SetupImage(
 ) {
     static_cast<void>(extra);
 
-    if (host == 0 || owner == 0) {
+    if (host == NULL || owner == NULL) {
         return 0;
     }
     m_owner = owner;
@@ -46,14 +46,14 @@ i32 CSBI_ImageSet::SetupImage(
 
     m_rect14 = rect;
     m_cmd = cmd;
-    if (key == 0) {
+    if (key == NULL) {
         return 0;
     }
     CObject* found = 0;
     host->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
     m_frameSet = rec;
-    if (rec == 0) {
+    if (rec == NULL) {
         return 0;
     }
     i32 f = frame;
@@ -66,7 +66,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
         cel = static_cast<CImage*>(rec->m_items.GetAt(f));
     } else {
-        cel = 0;
+        cel = NULL;
     }
     m_frame = cel;
     return 1;
@@ -74,8 +74,8 @@ i32 CSBI_ImageSet::SetupImage(
 
 RVA(0x000e7400, 0x9)
 void CSBI_ImageSet::Reset() {
-    m_frameSet = 0;
-    m_frame = 0;
+    m_frameSet = NULL;
+    m_frame = NULL;
 }
 
 RVA(0x000e7420, 0x8)
@@ -92,10 +92,10 @@ i32 CSBI_ImageSet::Render() {
         if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
             cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
         } else {
-            cel = 0;
+            cel = NULL;
         }
         m_frame = cel;
-        if (cel != 0) {
+        if (cel != NULL) {
             cel->RenderFrame(
                 g_gameReg->m_world->m_drawTarget->m_backPair,
                 cel->m_anchorX + m_rect14.left,
@@ -117,11 +117,11 @@ void CSBI_ImageSet::Notify(i32 id) {
 
 RVA(0x000e74f0, 0x152)
 i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
-    if (reg == 0) {
+    if (reg == NULL) {
         return 0;
     }
     char buf[0x80];
@@ -138,7 +138,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
                 out = static_cast<CDDrawWorker*>(outOb);
                 m_frameSet = out;
             } else {
-                m_frameSet = 0;
+                m_frameSet = NULL;
             }
             break;
         case SERIAL_SAVE:

@@ -304,7 +304,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
         pt.x = best->m_object->m_screenX >> 5;
         pt.y = best->m_object->m_screenY >> 5;
         if (!PtInRect(&rc, pt)) {
-            best = 0;
+            best = NULL;
         }
     }
     return best;

@@ -9,7 +9,7 @@
 
 RVA(0x00056da0, 0xc7)
 i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
 
@@ -30,7 +30,7 @@ i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
 
 RVA(0x00056eb0, 0x94)
 i32 CGruntCellRec::DeserializeStrings(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
 

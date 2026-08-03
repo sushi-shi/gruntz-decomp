@@ -49,7 +49,7 @@ static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     CString* list = ActNameSlots();
     while (n-- != 0) {
-        if (list != 0) {
+        if (list != NULL) {
             list->CString::~CString();
         }
         list++;
@@ -175,7 +175,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0xdbba1;
         m_object->m_flags |= 0x20000;
     }
-    m_sample = 0;
+    m_sample = NULL;
     m_startStampLo = 0;
     m_durationMs = 0;
     m_startStampHi = 0;
@@ -264,7 +264,7 @@ void CVoiceTrigger::RegisterActs() {
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
-            if (list != 0) {
+            if (list != NULL) {
                 list->CString::~CString();
             }
             list++;
@@ -306,7 +306,7 @@ i32 CVoiceTrigger::Tick() {
 RVA(0x0011a7e0, 0x6e)
 
 i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner) {
-    if (sample == 0) {
+    if (sample == NULL) {
         return 0;
     }
     m_source = source;
@@ -324,7 +324,7 @@ i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner
 
 RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
-    m_sample = 0;
+    m_sample = NULL;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_playFlags = 0;
@@ -339,8 +339,8 @@ i32 CGruntVoice::IdleHidden() {
 
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
-    if (m_sample == 0 || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
-        m_sample = 0;
+    if (m_sample == NULL || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
+        m_sample = NULL;
         m_source = 0;
         m_object->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_actKey;
@@ -353,17 +353,17 @@ i32 CGruntVoice::Update() {
         i32 src = m_source;
         CGameObject* resolved;
         if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, src, out) == 0) {
-            resolved = 0;
-        } else if (out == 0) {
-            resolved = 0;
+            resolved = NULL;
+        } else if (out == NULL) {
+            resolved = NULL;
         } else {
             resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
         }
-        if (resolved == 0) {
+        if (resolved == NULL) {
             goto stopped;
         }
         CUserLogic* logic = resolved->m_animWorker->m_logic;
-        if (logic == 0) {
+        if (logic == NULL) {
             goto stopped;
         }
         m_object->m_stateFlags &= ~1;
@@ -374,18 +374,18 @@ i32 CGruntVoice::Update() {
         i32 src = m_source;
         CGameObject* resolved;
         if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, src, out) == 0) {
-            resolved = 0;
-        } else if (out == 0) {
-            resolved = 0;
+            resolved = NULL;
+        } else if (out == NULL) {
+            resolved = NULL;
         } else {
             resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
         }
 
-        if (resolved != 0) {
+        if (resolved != NULL) {
             m_object->m_stateFlags &= ~1;
             i32 dx = 0, dy = 0;
             CImage* layer = static_cast<CWwdGameObjectA*>(resolved)->m_layer;
-            if (layer != 0) {
+            if (layer != NULL) {
                 dx = layer->m_originX;
                 dy = layer->m_originY;
             }

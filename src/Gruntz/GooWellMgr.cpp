@@ -21,6 +21,8 @@
 #include <Utils/MapTyped.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
+#include <stddef.h>
+
 // @early-stop
 RVA(0x0006eb80, 0x5ef)
 i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
@@ -40,7 +42,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             }
         } else if (m_rollingballLoop) {
             m_rollingballLoop->StopAndRewind();
-            m_rollingballLoop = 0;
+            m_rollingballLoop = NULL;
         }
 
         if (m_teleportWanted) {
@@ -57,7 +59,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             }
         } else if (m_teleportLoop) {
             m_teleportLoop->StopAndRewind();
-            m_teleportLoop = 0;
+            m_teleportLoop = NULL;
         }
     }
     m_rollingballWanted = 0;
@@ -74,7 +76,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     if (count <= 1 && m_phase == 2
         && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleActive == 0
         && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleHandle == 0
-        && m_pendingFx == 0) {
+        && m_pendingFx == NULL) {
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
             (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
         }
@@ -85,7 +87,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     }
 
     if (m_phase == 2) {
-        if (m_pendingFx != 0) {
+        if (m_pendingFx != NULL) {
             goto done;
         }
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
@@ -104,7 +106,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (static_cast<i64>(g_frameTime) - m_timerBase < m_timerWindow) {
             goto done;
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_pendingFx != 0) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_pendingFx != NULL) {
             goto done;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);

@@ -42,10 +42,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     i32 idxB
 ) {
 
-    if (host == 0) {
+    if (host == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
@@ -62,56 +62,56 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", found);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
     CImage* spr;
-    if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
-        spr = 0;
+    if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
+        spr = NULL;
     } else {
         spr = static_cast<CImage*>(rec->m_items.GetAt(1));
     }
     m_standaloneFrame = spr;
-    if (spr == 0) {
+    if (spr == NULL) {
         return 0;
     }
-    found = 0;
+    found = NULL;
     m_host->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
     m_config = cfg;
-    if (cfg == 0) {
+    if (cfg == NULL) {
         return 0;
     }
     m_frameIdxA = idxA;
     m_frameIdxB = idxB;
     CImage* s;
     if (idxA < m_config->m_minIndex || idxA > m_config->m_maxIndex) {
-        s = 0;
+        s = NULL;
     } else {
         s = static_cast<CImage*>(m_config->m_items.GetAt(idxA));
     }
     m_frameA = s;
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     CShadeTable* sel =
         g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[g_curPlayer].m_colorIndex, 0);
-    if (sel == 0) {
+    if (sel == NULL) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     m_config->SetAllTypes(SHADE_PAL_16);
     m_config->SetAllFormats(sel);
     CImage* val;
     if (m_frameIdxB < m_config->m_minIndex || m_frameIdxB > m_config->m_maxIndex) {
-        val = 0;
+        val = NULL;
     } else {
         val = static_cast<CImage*>(m_config->m_items.GetAt(m_frameIdxB));
     }
     m_frameB = val;
-    return val != 0;
+    return val != NULL;
 }
 
 RVA(0x000e8c70, 0xc)
 void CSBI_GruntMachine::Reset() {
-    m_frameA = 0;
-    m_frameB = 0;
-    m_config = 0;
+    m_frameA = NULL;
+    m_frameB = NULL;
+    m_config = NULL;
 }
 
 RVA(0x000e8c90, 0x8)
@@ -176,11 +176,11 @@ i32 CSBI_GruntMachine::SerializeFields(
     LogicTypeId typeId,
     i32 pObj
 ) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
-    if (reg == 0) {
+    if (reg == NULL) {
         return 0;
     }
 
@@ -192,7 +192,7 @@ i32 CSBI_GruntMachine::SerializeFields(
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
-            if (m_config != 0) {
+            if (m_config != NULL) {
                 strcpy(buf, m_config->m_name);
             }
             s->Write(buf, 0x80);
@@ -201,7 +201,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_frameA != 0) {
+            if (m_frameA != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_frameA, buf, &v);
             }
             s->Write(buf, 0x80);
@@ -211,7 +211,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_frameB != 0) {
+            if (m_frameB != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_frameB, buf, &v);
             }
             s->Write(buf, 0x80);
@@ -220,7 +220,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_standaloneFrame != 0) {
+            if (m_standaloneFrame != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_standaloneFrame, buf, &v);
             }
             s->Write(buf, 0x80);
@@ -235,11 +235,11 @@ i32 CSBI_GruntMachine::SerializeFields(
             g_serialCounter++;
             s->Read(buf, 0x80);
             if (strlen(buf) != 0) {
-                out = 0;
+                out = NULL;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
                 m_config = static_cast<CDDrawWorker*>(out);
             } else {
-                m_config = 0;
+                m_config = NULL;
             }
             s->Read(&m_frameIdxA, 4);
 
@@ -248,18 +248,18 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 i32 i = idx;
-                out = 0;
+                out = NULL;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
                     r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
-                    r = 0;
+                    r = NULL;
                 }
                 m_frameA = r;
             } else {
-                m_frameA = 0;
+                m_frameA = NULL;
             }
             s->Read(&m_frameIdxB, 4);
 
@@ -268,18 +268,18 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 i32 i = idx;
-                out = 0;
+                out = NULL;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
                     r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
-                    r = 0;
+                    r = NULL;
                 }
                 m_frameB = r;
             } else {
-                m_frameB = 0;
+                m_frameB = NULL;
             }
 
             g_serialCounter++;
@@ -287,18 +287,18 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 i32 i = idx;
-                out = 0;
+                out = NULL;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
                     r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
-                    r = 0;
+                    r = NULL;
                 }
                 m_standaloneFrame = r;
             } else {
-                m_standaloneFrame = 0;
+                m_standaloneFrame = NULL;
             }
             break;
         }
@@ -325,7 +325,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     i32 onLeft
 ) {
     static_cast<void>(unused);
-    if (host == 0 || parent == 0) {
+    if (host == NULL || parent == NULL) {
         return 0;
     }
     m_host = host;
@@ -356,10 +356,10 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         );
         n = static_cast<CDDrawWorker*>(nOb);
         CImage* v;
-        if (n == 0) {
-            v = 0;
+        if (n == NULL) {
+            v = NULL;
         } else if (n->m_minIndex > 1 || n->m_maxIndex < 1) {
-            v = 0;
+            v = NULL;
         } else {
             v = static_cast<CImage*>(n->m_items.GetAt(1));
         }
@@ -375,10 +375,10 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         );
         n = static_cast<CDDrawWorker*>(nOb);
         CImage* v;
-        if (n == 0) {
-            v = 0;
+        if (n == NULL) {
+            v = NULL;
         } else if (n->m_minIndex > 1 || n->m_maxIndex < 1) {
-            v = 0;
+            v = NULL;
         } else {
             v = static_cast<CImage*>(n->m_items.GetAt(1));
         }
@@ -387,7 +387,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         m_drawPosition.m_x = (right - left) / 2 + parent->m_rect10.right;
     }
     m_drawPosition.m_y = colIndex * 0x12 + 0xd1;
-    if (m_topFrame == 0) {
+    if (m_topFrame == NULL) {
         return 0;
     }
     m_sampleMode = enabled;
@@ -398,8 +398,8 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
 
 RVA(0x000e9800, 0x9)
 void CSBI_SideTab::Reset() {
-    m_topFrame = 0;
-    m_bottomFrame = 0;
+    m_topFrame = NULL;
+    m_bottomFrame = NULL;
 }
 
 RVA(0x000e9820, 0x11)
@@ -416,7 +416,7 @@ i32 CSBI_SideTab::BuildHandle() {
         return 0;
     }
     CGrunt* unit = g_gameReg->m_cmdGrid->m_grid[m_colIndex + 15 * m_rowIndex];
-    if (unit == 0) {
+    if (unit == NULL) {
         m_owner->ClearStat(m_colIndex);
         return 0;
     }
@@ -460,8 +460,8 @@ i32 CSBI_SideTab::BuildHandle() {
     );
     CDDrawWorker* gm = static_cast<CDDrawWorker*>(gm_ob);
     CImage* glyph;
-    if (gm == 0 || val < gm->m_minIndex || val > gm->m_maxIndex) {
-        glyph = 0;
+    if (gm == NULL || val < gm->m_minIndex || val > gm->m_maxIndex) {
+        glyph = NULL;
     } else {
         glyph = static_cast<CImage*>(gm->m_items.GetAt(val));
     }
@@ -483,11 +483,11 @@ i32 CSBI_SideTab::Render() {
 
 RVA(0x000e9a30, 0x31e)
 i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
-    if (reg == 0) {
+    if (reg == NULL) {
         return 0;
     }
 
@@ -500,7 +500,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_topFrame != 0) {
+            if (m_topFrame != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_topFrame, buf, &v);
             }
             s->Write(buf, 0x80);
@@ -509,7 +509,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_bottomFrame != 0) {
+            if (m_bottomFrame != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_bottomFrame, buf, &v);
             }
             s->Write(buf, 0x80);
@@ -535,18 +535,18 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             s->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 i32 i = idx;
-                out = 0;
+                out = NULL;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
                     r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
-                    r = 0;
+                    r = NULL;
                 }
                 m_topFrame = r;
             } else {
-                m_topFrame = 0;
+                m_topFrame = NULL;
             }
 
             g_serialCounter++;
@@ -554,18 +554,18 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             s->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 i32 i = idx;
-                out = 0;
+                out = NULL;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
                     r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
-                    r = 0;
+                    r = NULL;
                 }
                 m_bottomFrame = r;
             } else {
-                m_bottomFrame = 0;
+                m_bottomFrame = NULL;
             }
 
             s->Read(&m_sampledValue, 4);
@@ -631,10 +631,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     i32 selMode
 ) {
 
-    if (host == 0) {
+    if (host == NULL) {
         return 0;
     }
-    if (owner == 0) {
+    if (owner == NULL) {
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
@@ -651,73 +651,73 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     h->m_imageRegistry->m_10map.Lookup(key, found);
     CDDrawWorker* head = static_cast<CDDrawWorker*>(found);
     m_glyphMap = head;
-    if (head == 0) {
+    if (head == NULL) {
         return 0;
     }
     CImage* v;
     if (head->m_minIndex > 0x21 || head->m_maxIndex < 0x21) {
-        v = 0;
+        v = NULL;
     } else {
         v = static_cast<CImage*>(head->m_items.GetAt(0x21));
     }
     m_statusGlyph = v;
-    if (v == 0) {
+    if (v == NULL) {
         return 0;
     }
     CImage* w;
     if (head->m_minIndex > 0x22 || head->m_maxIndex < 0x22) {
-        w = 0;
+        w = NULL;
     } else {
         w = static_cast<CImage*>(head->m_items.GetAt(0x22));
     }
     m_abilityGlyph = w;
-    if (w == 0) {
+    if (w == NULL) {
         return 0;
     }
 
     CImage* val;
     if (selMode != 0) {
-        found = 0;
+        found = NULL;
         m_host->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", found);
         CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
         m_timerGlyphMap = sel;
-        if (sel == 0) {
+        if (sel == NULL) {
             return 0;
         }
         CImage* x;
         if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
-            x = 0;
+            x = NULL;
         } else {
             x = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x23));
         }
         m_selectKey = x;
-        if (x == 0) {
+        if (x == NULL) {
             return 0;
         }
         if (m_glyphMap->m_minIndex > 0x22 || m_glyphMap->m_maxIndex < 0x22) {
-            val = 0;
+            val = NULL;
         } else {
             val = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x22));
         }
     } else {
-        found = 0;
+        found = NULL;
         m_host->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
             found
         );
         CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
         m_timerGlyphMap = sel;
-        if (sel == 0) {
+        if (sel == NULL) {
             return 0;
         }
         if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
-            val = 0;
+            val = NULL;
         } else {
             val = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x23));
         }
     }
     m_overrideGlyph = val;
-    if (val == 0) {
+    if (val == NULL) {
         return 0;
     }
     m_unitRow = unitRow;

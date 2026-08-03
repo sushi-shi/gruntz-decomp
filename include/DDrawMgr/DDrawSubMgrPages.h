@@ -8,6 +8,8 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
+#include <stddef.h>
+
 class CDDrawSurfaceMgr;
 class CDDSurface;
 class CDDrawSurfacePair;
@@ -16,9 +18,9 @@ class CDDrawSurfaceChildA;
 class CDDrawSubMgrPages : public CLoadable {
 public:
     CDDrawSubMgrPages(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
-        m_frontPair = 0;
-        m_backPair = 0;
-        m_overlayPair = 0;
+        m_frontPair = NULL;
+        m_backPair = NULL;
+        m_overlayPair = NULL;
     }
     virtual ~CDDrawSubMgrPages() OVERRIDE;
 
@@ -91,7 +93,7 @@ class CDDrawSurfaceChildA : public CDrawSubWorker {
 public:
     CDDrawSurfaceChildA(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
         : CDrawSubWorker(owner, id, flags) {
-        m_surface = 0;
+        m_surface = NULL;
     }
 
     virtual ~CDDrawSurfaceChildA() OVERRIDE;

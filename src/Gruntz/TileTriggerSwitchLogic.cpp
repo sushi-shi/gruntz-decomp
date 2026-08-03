@@ -265,7 +265,7 @@ i32 CTileTriggerLogic::Tick() {
             && srcId != TILEKIND_REDPYRAMID_DOWN) {
             CGameObject* trig =
                 world->m_childGroup->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
-            if (trig == 0) {
+            if (trig == NULL) {
                 return 0;
             }
             trig->m_animWorker->m_notify(trig);
@@ -278,9 +278,9 @@ i32 CTileTriggerLogic::Tick() {
 
     switch (srcId) {
         case TILEKIND_ARROW_UP_B: {
-            if (trans != 0) {
+            if (trans != NULL) {
                 trans->m_wwdObject->m_flags |= 0x10000;
-                trans = 0;
+                trans = NULL;
             }
             i32 ty = m_tileY;
             i32 tx = m_tileX;
@@ -291,9 +291,9 @@ i32 CTileTriggerLogic::Tick() {
             break;
         }
         case TILEKIND_ARROW_DOWN_B: {
-            if (trans != 0) {
+            if (trans != NULL) {
                 trans->m_wwdObject->m_flags |= 0x10000;
-                trans = 0;
+                trans = NULL;
             }
             i32 ty = m_tileY;
             i32 tx = m_tileX;
@@ -304,9 +304,9 @@ i32 CTileTriggerLogic::Tick() {
             break;
         }
         case TILEKIND_ARROW_LEFT_B: {
-            if (trans != 0) {
+            if (trans != NULL) {
                 trans->m_wwdObject->m_flags |= 0x10000;
-                trans = 0;
+                trans = NULL;
             }
             i32 ty = m_tileY;
             i32 tx = m_tileX;
@@ -317,9 +317,9 @@ i32 CTileTriggerLogic::Tick() {
             break;
         }
         case TILEKIND_ARROW_RIGHT_B: {
-            if (trans != 0) {
+            if (trans != NULL) {
                 trans->m_wwdObject->m_flags |= 0x10000;
-                trans = 0;
+                trans = NULL;
             }
             i32 ty = m_tileY;
             i32 tx = m_tileX;
@@ -365,7 +365,7 @@ i32 CTileTriggerLogic::Tick() {
                                 "TileTriggerTransition",
                                 0x40003
                             );
-                            if (o == 0) {
+                            if (o == NULL) {
                                 return 0;
                             }
                             o->m_animWorker->m_notify(o);
@@ -604,7 +604,7 @@ i32 CTileTriggerLogic::Tick() {
         }
     }
 
-    if (trans != 0) {
+    if (trans != NULL) {
         if (trans->ApplyAnimation(PbStr(key), PbStr(anim)) == 0) {
             trans->m_wwdObject->m_flags |= 0x10000;
         }
@@ -637,12 +637,12 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     i32 found = 0;
 
     CTileTriggerLogic* child;
-    while (pos != 0) {
+    while (pos != NULL) {
         if (found != 0) {
             break;
         }
         child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
-        if (child != 0 && child->FindIndexByKey(m_cellKey) != 0) {
+        if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = 1;
         }
     }
@@ -657,7 +657,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
             return 1;
         }
         CTileTriggerSwitchLogic* c = m_owner->FindChild(key, TRIGID_MULTI_SWITCH_3);
-        if (c == 0) {
+        if (c == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKSB_KEY_MISS));
             return 0;
         }
@@ -685,7 +685,7 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
         }
         i32 key = m_block[i];
         CTileTriggerSwitchLogic* node = m_owner->FindChild(key, TRIGID_EXCLUSIVE_SWITCH_4);
-        if (node == 0) {
+        if (node == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
         }
@@ -693,10 +693,10 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             node->SwitchUp();
             i32 any = 0;
             POSITION pos = m_owner->m_list1.GetHeadPosition();
-            while (pos != 0) {
+            while (pos != NULL) {
                 CTileTriggerLogic* o =
                     static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
-                if (o != 0 && o->FindIndexByKey(node->m_cellKey)) {
+                if (o != NULL && o->FindIndexByKey(node->m_cellKey)) {
                     o->Tick();
                     counter++;
                     any = 1;
@@ -755,7 +755,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
                     "Particlez",
                     0x40003
                 );
-                if (spr != 0) {
+                if (spr != NULL) {
                     spr->ApplyName("LEVEL_ROCKBREAK");
                     spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
                 }
@@ -777,7 +777,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     if (m_textId != 0) {
         CGameObject* txt = g_gameReg->m_world->m_childGroup
                                ->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
-        if (txt == 0) {
+        if (txt == NULL) {
             return;
         }
         txt->m_smarts = m_textId;
@@ -796,7 +796,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     void* out_ob = 0;
     sreg->m_cues.Lookup("LEVEL_ROCKBREAK", out_ob);
     LeafCue* out = static_cast<LeafCue*>(out_ob);
-    if (out == 0) {
+    if (out == NULL) {
         return;
     }
     if (g_sndEnabled == 0) {
@@ -863,7 +863,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     if (m_leadInSpan != 0) {
         CGameObject* rec =
             reg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
-        if (rec != 0) {
+        if (rec != NULL) {
             rec->m_smarts = m_leadInSpan;
         }
     }
@@ -1011,7 +1011,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     }
     spr->m_animWorker->m_notify(spr);
     spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
-    if (spr->m_layer == 0) {
+    if (spr->m_layer == NULL) {
         goto fail;
     }
     return 1;
@@ -1054,12 +1054,12 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     i32 found = 0;
 
     CTileTriggerLogic* child;
-    while (pos != 0) {
+    while (pos != NULL) {
         if (found != 0) {
             break;
         }
         child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
-        if (child != 0 && child->FindIndexByKey(m_cellKey) != 0) {
+        if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = 1;
         }
     }
@@ -1074,7 +1074,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
             return 1;
         }
         CTileTriggerSwitchLogic* c = m_owner->FindChild(key, TRIGID_CHECKPOINT_SWITCH_8);
-        if (c == 0) {
+        if (c == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKS_KEY_MISS));
             return 0;
         }
@@ -1203,7 +1203,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
         case BRICKTILE_GOLD_1:
             effect = BRICKTILE_GOLD_1;
-            if (brick != 0) {
+            if (brick != NULL) {
                 break;
             }
             newCode = BRICKTILE_CLEARED;
@@ -1213,7 +1213,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
         case BRICKTILE_GOLD_2_TOP:
             effect = BRICKTILE_GOLD_1;
-            if (brick != 0) {
+            if (brick != NULL) {
                 break;
             }
             newCode = BRICKTILE_BROWN_1;
@@ -1226,7 +1226,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
         case BRICKTILE_GOLD_3_TOP:
             effect = BRICKTILE_GOLD_1;
-            if (brick != 0) {
+            if (brick != NULL) {
                 break;
             }
             newCode = BRICKTILE_BROWN_2;
@@ -1254,7 +1254,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
     }
 
-    if (effect != 0 && brick != 0) {
+    if (effect != 0 && brick != NULL) {
         if (effect == BRICKTILE_RED_1) {
             brick->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
             brick->m_entranceActive = 0;
@@ -1269,7 +1269,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                 LeafCue* snd = static_cast<LeafCue*>(
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
                 );
-                if (snd != 0) {
+                if (snd != NULL) {
                     snd->PlayIfElapsed(static_cast<i32>(g_sndCueTag), 0, 0, 0);
                 }
             }
@@ -1296,7 +1296,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
         && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
                                    ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
-        if (spr != 0) {
+        if (spr != NULL) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
 
             switch (effect) {
@@ -1314,7 +1314,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                     break;
                 default:
                     spr->ApplyName("GAME_BRICKBREAK");
-                    if (spr->m_layer == 0) {
+                    if (spr->m_layer == NULL) {
                         spr->m_flags |= 0x10000;
                     }
                     break;
@@ -1500,7 +1500,7 @@ i32 CTileTriggerSwitchLogic::ValidateByType(
     LogicTypeId typeId,
     i32 pObj
 ) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
     switch (mode) {
@@ -1520,10 +1520,10 @@ i32 CTileTriggerSwitchLogic::ValidateByType(
 
 RVA(0x001138b0, 0xb4)
 i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     ar->Write(&m_tileX, 4);
@@ -1545,10 +1545,10 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
 
 RVA(0x001139a0, 0xb4)
 i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     s->Read(&m_tileX, 4);
@@ -1574,7 +1574,7 @@ i32 CTileTriggerLogic::ValidateByType(
     LogicTypeId typeId,
     i32 pObj
 ) {
-    if (archive == 0) {
+    if (archive == NULL) {
         return 0;
     }
     switch (mode) {
@@ -1594,10 +1594,10 @@ i32 CTileTriggerLogic::ValidateByType(
 
 RVA(0x00113ae0, 0xe8)
 i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     s->Write(&m_tileX, 4);
@@ -1622,10 +1622,10 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
 
 RVA(0x00113c10, 0xe8)
 i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     s->Read(&m_tileX, 4);
@@ -1650,7 +1650,7 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
 
 RVA(0x00113d40, 0x6f)
 i32 CGiantRockLogic::ApplyByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj) {
-    if (archive == 0) {
+    if (archive == NULL) {
         return 0;
     }
     if (ValidateByType(archive, mode, typeId, pObj) == 0) {
@@ -1673,10 +1673,10 @@ i32 CGiantRockLogic::ApplyByType(void* archive, SerialMode mode, LogicTypeId typ
 
 RVA(0x00113dd0, 0x7b)
 i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     s->Write(&m_powerupType, 4);
@@ -1692,10 +1692,10 @@ i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
 
 RVA(0x00113e70, 0x7b)
 i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
-    if (s == 0) {
+    if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     s->Read(&m_powerupType, 4);
@@ -1711,7 +1711,7 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
 
 RVA(0x00113f10, 0x3b)
 i32 CTileActionEvent::Serialize(void* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
-    if (ar == 0) {
+    if (ar == NULL) {
         return 0;
     }
     switch (mode) {
@@ -1732,10 +1732,10 @@ i32 CTileActionEvent::Serialize(void* ar, SerialMode mode, LogicTypeId typeId, i
 RVA(0x00113f60, 0xa2)
 i32 CTileActionEvent::SerializeFields(void* ar) {
     CFileMemBase* a = static_cast<CFileMemBase*>(ar);
-    if (a == 0) {
+    if (a == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     a->Write(&m_actionCode, 4);
@@ -1753,10 +1753,10 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
 RVA(0x00114040, 0xa2)
 i32 CTileActionEvent::DeserializeFields(void* ar) {
     CFileMemBase* a = static_cast<CFileMemBase*>(ar);
-    if (a == 0) {
+    if (a == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == 0) {
+    if (g_gameReg->m_world == NULL) {
         return 0;
     }
     a->Read(&m_actionCode, 4);

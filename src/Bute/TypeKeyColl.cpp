@@ -33,7 +33,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
     : _zdvec(sizeof(CString), 0x7d0, 0x7da, ZVecNoScratch()) {
     CString* item = Slots();
     i32 count = m_grown;
-    if (item != 0 && count != 0) {
+    if (item != NULL && count != 0) {
         do {
             item->CString::CString();
             ++item;
@@ -44,7 +44,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
 CTypeCollRuntime::~CTypeCollRuntime() {
     CString* item = Elem(m_lo);
     i32 count = m_hi - m_lo + 1;
-    if (item != 0 && count != 0) {
+    if (item != NULL && count != 0) {
         do {
             item->CString::~CString();
             ++item;
@@ -107,7 +107,7 @@ CVariantSlot g_symTabErrorSlot("zSymTab: ");
 // @early-stop
 RVA(0x0016d190, 0x101)
 void* zPTree::Find(const char* key) {
-    if (key == 0) {
+    if (key == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0x16);
@@ -115,11 +115,11 @@ void* zPTree::Find(const char* key) {
     }
     CButeTreeNode* root = m_root;
     m_descentCursor = root;
-    m_candidateLeaf = 0;
+    m_candidateLeaf = NULL;
     m_lookupPending = 1;
     i32 bitmax = static_cast<i32>(strlen(key)) * 8 + 7;
     m_keyBitLength = bitmax;
-    if (root == 0) {
+    if (root == NULL) {
         return 0;
     }
     i32 b = root->m_bit;
@@ -130,7 +130,7 @@ void* zPTree::Find(const char* key) {
         }
         CButeTreeNode* child = *slot;
         m_candidateLeaf = child;
-        if (child == 0) {
+        if (child == NULL) {
             return 0;
         }
         if (child->m_bit <= b) {
@@ -188,7 +188,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
     i32 maxv = 0;
     const char* start;
     const char* q;
-    if (tokens == 0) {
+    if (tokens == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0x16);
@@ -232,7 +232,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             if (sawSep && *p != ' ') {
                 goto badchar;
             }
-            if (strchr(" ,-", *p) == 0) {
+            if (strchr(" ,-", *p) == NULL) {
                 goto badchar;
             }
             if (*p != ' ') {
@@ -396,7 +396,7 @@ zErrHandling::zErrHandling(CVariantSlot* errSink)
 
     : m_errSink(errSink ? errSink : &g_globalErrorSlot) {
 
-    if (g_errOutOfMem == 0) {
+    if (g_errOutOfMem == NULL) {
         g_errOutOfMem = "Out of memory";
         g_errDataInvalid = "Data structure is invalid";
         g_errOverflow = "Overflow";
@@ -463,7 +463,7 @@ void* zPTree::Insert(const char* key, void* value) {
     i32 newbit = m_keyBitLength - 7;
     m_lookupPending = 0;
     m_keyBitLength = newbit;
-    if (key == 0 || value == 0) {
+    if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0x16);
@@ -471,19 +471,19 @@ void* zPTree::Insert(const char* key, void* value) {
     }
 
     i32 critbit;
-    if (m_candidateLeaf != 0) {
+    if (m_candidateLeaf != NULL) {
         critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
     } else {
         critbit = newbit - 1;
     }
 
     CButeTreeNode* node = static_cast<CButeTreeNode*>(::operator new(0x14));
-    if (node != 0) {
+    if (node != NULL) {
         node->m_value = static_cast<char*>(value);
         node->m_bit = critbit;
         char* keybuf = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
         node->m_key = keybuf;
-        if (keybuf != 0) {
+        if (keybuf != NULL) {
             strcpy(keybuf, key);
 
             i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
@@ -495,12 +495,12 @@ void* zPTree::Insert(const char* key, void* value) {
 
             CButeTreeNode* cursor = m_descentCursor;
             i32 d2 = dir;
-            if (cursor == 0) {
+            if (cursor == NULL) {
                 m_root = node;
             } else if (critbit < cursor->m_bit) {
 
                 CButeTreeNode* p = m_root;
-                m_descentCursor = 0;
+                m_descentCursor = NULL;
                 m_candidateLeaf = p;
                 if (p->m_bit <= critbit) {
                     CButeTreeNode* c;
@@ -517,7 +517,7 @@ void* zPTree::Insert(const char* key, void* value) {
                     } while (c->m_bit <= critbit);
                 }
                 CButeTreeNode* cur2 = m_descentCursor;
-                if (cur2 == 0) {
+                if (cur2 == NULL) {
                     m_root = node;
                 } else {
                     CButeTreeNode** s2 = cur2->m_child;
@@ -566,7 +566,7 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch) : zErrHandling(&g_dynami
     m_spare = static_cast<char*>(scratch);
     m_lo = lo;
     m_hi = hi;
-    m_base = 0;
+    m_base = NULL;
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -576,13 +576,13 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch) : zErrHandling(&g_dynami
     i32 total = (hi - lo + 1) * stride;
     void* buf = malloc(total);
     m_base = static_cast<char*>(buf);
-    if (buf != 0) {
+    if (buf != NULL) {
         memset(buf, 0, total);
-        if (m_spare != 0) {
+        if (m_spare != NULL) {
             return;
         }
         m_spare = static_cast<char*>(malloc(m_stride));
-        if (m_spare != 0) {
+        if (m_spare != NULL) {
             return;
         }
     }
@@ -617,16 +617,16 @@ zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
 RVA(0x0016e070, 0x7b)
 void zPTree::ClearRecursive(CButeTreeNode* node) {
     CButeTreeNode* n = node;
-    if (n == 0) {
+    if (n == NULL) {
         n = m_root;
-        if (n == 0) {
+        if (n == NULL) {
             return;
         }
     }
-    if (n->m_child[0] != 0 && n->m_child[0]->m_bit > n->m_bit) {
+    if (n->m_child[0] != NULL && n->m_child[0]->m_bit > n->m_bit) {
         ClearRecursive(n->m_child[0]);
     }
-    if (n->m_child[1] != 0 && n->m_child[1]->m_bit > n->m_bit) {
+    if (n->m_child[1] != NULL && n->m_child[1]->m_bit > n->m_bit) {
         ClearRecursive(n->m_child[1]);
     }
     ::operator delete(n->m_key);
@@ -660,7 +660,7 @@ i32 zBitVec::SetSize(i32 nbits) {
         m_capacity = m_capacity << 5;
         return 1;
     }
-    m_words = 0;
+    m_words = NULL;
     m_capacity = 0x20;
     return 1;
 }
@@ -771,7 +771,7 @@ void* CVariantSlot::Add(void* key, void* val) {
         VariantCallback callback;
     } callbackWord;
     int count = g_recCount23;
-    if (val != 0 && count >= 0x20) {
+    if (val != NULL && count >= 0x20) {
         return 0;
     }
     int idx;
@@ -784,7 +784,7 @@ void* CVariantSlot::Add(void* key, void* val) {
         idx = -1;
     }
     if (idx == -1) {
-        if (val == 0) {
+        if (val == NULL) {
             return 0;
         }
         if (g_recCount23 != 0) {
@@ -805,7 +805,7 @@ void* CVariantSlot::Add(void* key, void* val) {
     }
     callbackWord.callback = g_recs23[idx].m_callback;
     void* old = callbackWord.generic;
-    if (val != 0) {
+    if (val != NULL) {
         callbackWord.generic = val;
         g_recs23[idx].m_callback = callbackWord.callback;
         return old;
@@ -857,7 +857,7 @@ static inline CString* TypeResolve(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return g_typeColl.Elem(key);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
         return g_typeColl.Elem(key);
     }
     char* msg = g_errOutOfMem;
@@ -870,7 +870,7 @@ static inline void FreeNodes() {
     CString* nodes = g_typeColl.Slots();
     i32 cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
-        if (nodes != 0) {
+        if (nodes != NULL) {
             nodes->~CString();
         }
         ++nodes;

@@ -7,6 +7,8 @@
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 class CDDrawSurfaceMgr;
 
 struct WwdDirtyRect {
@@ -93,7 +95,7 @@ inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 fiel
 
     m_screenX = static_cast<i32>(0x80000000);
     m_clip.left = static_cast<i32>(0x80000000);
-    m_level = 0;
+    m_level = NULL;
     m_stateFlags = 0;
 }
 #endif
