@@ -7,6 +7,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <EmptyString.h>
+#include <Gruntz/FaderMode.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/FxModeDesc.h>
@@ -16,6 +17,7 @@
 #include <ddraw.h>
 #include <math.h>
 #include <string.h>
+#include <Utils/RecordFill.h>
 
 VTBL(CFader, 0x001f07a8);
 VTBL(CFaderMesh, 0x001f07c0);
@@ -100,7 +102,7 @@ CFxModeT1::CFxModeT1() {
     m_sourceSurface = 0;
     m_warpSourceSurface = 0;
     m_halfWidth = 0x32;
-    m_mode = 1;
+    m_mode = FADER_SWEEP_FORWARD;
     m_stripCopy = 1;
     m_useLut = 0;
     m_shadeTable = 0;
@@ -236,6 +238,11 @@ i32 CFaderMesh::GetFrameCount() {
 }
 
 RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
+RVA(0x0017f500, 0x23)
+void __stdcall ZeroRecords(void* dst, int count) {
+    memset(dst, 0, count * 0x28);
+}
+
 RVA_COMPGEN(0x0017f550, 0x1e, ??_GCFaderFlat@@UAEPAXI@Z)
 RVA_COMPGEN(0x0017f9d0, 0x1e, ??_GCFaderRadial@@UAEPAXI@Z)
 RVA(0x0017fda0, 0x8)
@@ -685,6 +692,162 @@ void CFaderLight::RenderFrame(i32 frame) {
 }
 
 // @early-stop
+RVA(0x00180fb0, 0x534)
+
+void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
+    i32 R = m_spanCount;
+    if (R <= 0) {
+        return;
+    }
+    i32 cx = m_centerY;
+    i32 dx = row0 - cx;
+    i32 dx2 = dx * dx;
+    i32 cy = m_centerX;
+    i32 row = cy - static_cast<i32>(sqrt(static_cast<double>((radiusSq - dx2)))) + 1;
+    i32 len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
+
+    i32 srcpitch = m_surface->m_pitch;
+    i32 srcCol = row0 * srcpitch;
+    u8* rowLsrc = srcBits + row + srcCol;
+    i32 dstpitch = m_dstSurface->m_pitch;
+    i32 dstCol = row0 * dstpitch;
+    u8* rowLdst = dstBits + row + dstCol;
+    u8* rowRsrc = (srcBits - row) + srcCol + 2 * cy;
+    u8* rowRdst = (dstBits - row) + dstCol + 2 * cy;
+
+    i32 mid = m_surfHeight / 2;
+    i32 mirSrc;
+    i32 mirDst;
+    if (cx >= mid && row0 <= cx) {
+        i32 mirCol = 2 * (cx - row0);
+        if (mirCol + row0 < m_surfHeight) {
+
+            mirSrc = mirCol * srcpitch;
+            mirDst = mirCol * dstpitch;
+            if (len < radius - R) {
+                return;
+            }
+            do {
+                if (row > cy) {
+                    return;
+                }
+                i32 cl = len - radius + R;
+                if (row >= 0) {
+                    i32 p = *rowLdst;
+                    *rowLsrc = *(lut + p * R + cl);
+                    i32 q = *(rowLdst + mirDst);
+                    *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                }
+                rowLsrc++;
+                rowLdst++;
+                if (2 * cy - row < m_surfWidth) {
+                    i32 p = *rowRdst;
+                    *rowRsrc = *(lut + p * m_spanCount + cl);
+                    i32 q = *(rowRdst + mirDst);
+                    *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                }
+                rowRsrc--;
+                rowRdst--;
+                row++;
+                len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
+            } while (len >= radius - m_spanCount);
+            return;
+        }
+
+        if (len < radius - R) {
+            return;
+        }
+        do {
+            if (row > cy) {
+                return;
+            }
+            i32 cl = len - radius + R;
+            if (row >= 0) {
+                i32 p = *rowLdst;
+                *rowLsrc = *(lut + p * R + cl);
+            }
+            rowLsrc++;
+            rowLdst++;
+            if (2 * cy - row < m_surfWidth) {
+                i32 p = *rowRdst;
+                *rowRsrc = *(lut + p * m_spanCount + cl);
+            }
+            rowRsrc--;
+            rowRdst--;
+            row++;
+            len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
+        } while (len >= radius - m_spanCount);
+        return;
+    }
+
+    if (cx >= mid) {
+        if (row0 >= mid) {
+            return;
+        }
+    }
+    {
+        i32 mirCol = 2 * dx;
+        i32 right = len - mirCol;
+        if (right < 0) {
+
+            if (len < radius - R) {
+                return;
+            }
+            do {
+                if (row > cy) {
+                    return;
+                }
+                i32 cl = len - radius + R;
+                if (row >= 0) {
+                    i32 p = *rowLdst;
+                    *rowLsrc = *(lut + p * R + cl);
+                }
+                rowLsrc++;
+                rowLdst++;
+                if (2 * cy - row < m_surfWidth) {
+                    i32 p = *rowRdst;
+                    *rowRsrc = *(lut + p * m_spanCount + cl);
+                }
+                rowRsrc--;
+                rowRdst--;
+                row++;
+                len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
+            } while (len >= radius - m_spanCount);
+            return;
+        }
+
+        mirSrc = mirCol * srcpitch;
+        mirDst = mirCol * dstpitch;
+        if (len < radius - R) {
+            return;
+        }
+        do {
+            if (row > cy) {
+                return;
+            }
+            i32 cl = len - radius + R;
+            if (row >= 0) {
+                i32 p = *rowLdst;
+                *rowLsrc = *(lut + p * R + cl);
+                i32 q = *(rowLdst - mirDst);
+                *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+            }
+            rowLsrc++;
+            rowLdst++;
+            if (2 * cy - row < m_surfWidth) {
+                i32 p = *rowRdst;
+                *rowRsrc = *(lut + p * m_spanCount + cl);
+                i32 q = *(rowRdst - mirDst);
+                *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+            }
+            rowRsrc--;
+            rowRdst--;
+            row++;
+            len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
+        } while (len >= radius - m_spanCount);
+    }
+}
+
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
     i32 cx = m_centerX;
@@ -1221,17 +1384,17 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    if (static_cast<u32>(pInit->m_mode) <= 0) {
+    if (pInit->m_mode <= FADER_INVALID) {
         goto fail;
     }
-    if (static_cast<u32>(pInit->m_mode) >= 4) {
+    if (pInit->m_mode >= FADER_COUNT) {
         goto fail;
     }
     m_mode = pInit->m_mode;
     m_stripCopy = pInit->m_stripCopy;
     m_halfWidth = pInit->m_halfWidth;
 
-    if (m_mode == 1 || m_mode == 2) {
+    if (m_mode == FADER_SWEEP_FORWARD || m_mode == FADER_SWEEP_REVERSE) {
         if (m_span < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.141592653589793))) {
             goto fail;
         }
@@ -1307,11 +1470,11 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
     i32 x0;
     u8* src2base;
     u8* destBase;
-    if (m_mode == 1) {
+    if (m_mode == FADER_SWEEP_FORWARD) {
         src2base = m_lineBuf;
         x0 = stripWidth;
         destBase = m_straightBase + (col - stripWidth) * bpp;
-    } else if (m_mode == 2) {
+    } else if (m_mode == FADER_SWEEP_REVERSE) {
         src2base = m_lineBuf + bpp * stride;
         x0 = 0;
         destBase = m_straightBase + (col + stride) * bpp;
@@ -1386,7 +1549,8 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 bpp = m_surfA->m_bytesPerPixel;
 
     i32 colBase;
-    if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {
+    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != 0)
+        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == 0)) {
         colBase = stride
                   - static_cast<i32>(
                       (static_cast<double>(stride) / (arc - m_halfWidth) * (m_span - col - stride))
@@ -1394,11 +1558,13 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     } else {
         colBase = col;
     }
-    if ((m_mode == 1 && m_stripCopy == 0) || (m_mode == 2 && m_stripCopy != 0)) {
+    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == 0)
+        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != 0)) {
         colBase = static_cast<i32>((static_cast<double>(stride) / (arc - m_halfWidth) * col));
     }
 
-    if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {
+    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != 0)
+        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == 0)) {
         i32 col = 0;
         if (m_rowCount > 0) {
             i32 base = bpp * col;
@@ -1508,7 +1674,8 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 col++;
             } while (col < m_rowCount);
         }
-    } else if (((m_mode == 1 && m_stripCopy == 0) || (m_mode == 2 && m_stripCopy != 0))
+    } else if (((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == 0)
+                || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != 0))
                && m_rowCount > 0) {
         i32 col = 0;
         i32 base = bpp * col;
@@ -1857,7 +2024,7 @@ void CFaderShape::RenderFrame(i32 frame) {
     u32 seam = 0;
     i32 stride = m_halfWidth * 2;
     i32 arc = static_cast<i32>(static_cast<double>(m_halfWidth) * 3.14159);
-    if (m_mode == 3 && m_stripCopy != 0) {
+    if (m_mode == FADER_SPLIT_FROM_CENTER && m_stripCopy != 0) {
         seam = m_span / 2;
     }
     if (m_stripCopy == 0 && frame == 0) {
@@ -1887,11 +2054,11 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
-                    m_mode = 1;
+                    m_mode = FADER_SWEEP_FORWARD;
                     RenderTile(m_span / 2 + frame, frame - m_previousFrame);
-                    m_mode = 2;
+                    m_mode = FADER_SWEEP_REVERSE;
                     RenderTile(m_span / 2 - frame - stride, frame - m_previousFrame);
-                    m_mode = 3;
+                    m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
         } else {
@@ -1903,11 +2070,11 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
-                    m_mode = 1;
+                    m_mode = FADER_SWEEP_FORWARD;
                     RenderWarpTile(m_span / 2 + frame, frame - m_previousFrame);
-                    m_mode = 2;
+                    m_mode = FADER_SWEEP_REVERSE;
                     RenderWarpTile(m_span - m_span / 2 - frame - stride, frame - m_previousFrame);
-                    m_mode = 3;
+                    m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
         }
@@ -1921,11 +2088,11 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
-                    m_mode = 1;
+                    m_mode = FADER_SWEEP_FORWARD;
                     RenderTile(frame, frame - m_previousFrame);
-                    m_mode = 2;
+                    m_mode = FADER_SWEEP_REVERSE;
                     RenderTile(m_span - frame - stride, frame - m_previousFrame);
-                    m_mode = 3;
+                    m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
         } else {
@@ -1937,11 +2104,11 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
                 case 3:
-                    m_mode = 1;
+                    m_mode = FADER_SWEEP_FORWARD;
                     RenderWarpTile(frame, frame - m_previousFrame);
-                    m_mode = 2;
+                    m_mode = FADER_SWEEP_REVERSE;
                     RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
-                    m_mode = 3;
+                    m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
         }

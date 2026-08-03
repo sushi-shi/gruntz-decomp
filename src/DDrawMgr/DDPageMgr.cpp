@@ -459,6 +459,28 @@ afterLock:
     return 1;
 }
 
+RVA(0x0017cbe0, 0x97)
+i32 CMoviePlayer::CheckGrid() {
+    memset(&m_srcDesc, 0, 0x6c);
+    m_srcDesc.dwSize = 0x6c;
+    m_srcDesc.dwFlags = 7;
+    m_srcDesc.ddsCaps.dwCaps = 0x840;
+    m_srcDesc.dwHeight = m_smackHandle->Height;
+    m_srcDesc.dwWidth = m_smackHandle->Width;
+    if (m_directDraw2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {
+        return 0;
+    }
+    ComOutRef<IDirectDrawSurface> srcOut;
+    srcOut.m_asTyped = &m_srcSurf;
+    if (m_srcSurfRaw->QueryInterface(IID_IDirectDrawSurface3, srcOut.m_asVoid) != 0) {
+        return 0;
+    }
+    if (m_bpp == 8) {
+        m_srcSurf->SetPalette(m_palette);
+    }
+    return 1;
+}
+
 RVA(0x0017cc80, 0x109)
 void CMoviePlayer::HandleError() {
     if (m_srcSurf) {
@@ -508,6 +530,19 @@ void CMoviePlayer::HandleError() {
             m_directDraw = 0;
         }
     }
+}
+
+RVA(0x0017cd90, 0x58)
+void CMoviePlayer::Snapshot(HWND hWnd) {
+    HDC hdc = GetDC(hWnd);
+    GetSystemPaletteEntries(hdc, 0, 0x100, m_palEntries);
+    for (i32 i = 0; i < 0x100; i++) {
+        m_palEntries[i].peRed = 0;
+        m_palEntries[i].peBlue = 0;
+        m_palEntries[i].peGreen = 0;
+        m_palEntries[i].peFlags = 4;
+    }
+    ReleaseDC(hWnd, hdc);
 }
 
 RVA(0x0017cdf0, 0x1c6)

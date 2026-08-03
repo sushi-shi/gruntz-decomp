@@ -17,6 +17,15 @@
 
 #include <string.h>
 
+DATA(0x0024bdb0)
+CString g_gruntNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
+
+DATA(0x0024bdc0)
+i32 g_savedMultiWndProc = 0;
+
+DATA(0x0024bd5c)
+CMulti* g_multiState;
+
 DATA(0x0024bdc4)
 i32 g_watchBusy;
 DATA(0x0024bdc8)
@@ -27,6 +36,7 @@ i32 g_watchBlinkB;
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Net/KeyedList.h>
+#include <Ints.h>
 
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
@@ -842,6 +852,22 @@ i32 CMultiStartDlg::GetSlotIndex() {
 }
 
 // @early-stop
+RVA(0x000c4b60, 0x77)
+i32 CMultiStartDlg::SelectColor(i32 colorIndex, i32 playerId) {
+    GruntzPlayer* colorSlot = &m_host->m_options[colorIndex];
+    if (g_multiState->m_isHost != 0) {
+        i32 r = ChannelSlots_Get(playerId);
+        if (r == 0) {
+            g_multiState->ReportVersionMsg("Someone has already selected that color.", r);
+            return 0;
+        }
+        ChannelSlots_Set(colorSlot->m_colorIndex, 1);
+        ChannelSlots_Set(playerId, 0);
+    }
+    colorSlot->m_colorIndex = playerId;
+    return 1;
+}
+
 RVA(0x000c4c00, 0x190)
 void CMultiStartDlg::OnOK() {
     CMulti* mgr = g_multiState;

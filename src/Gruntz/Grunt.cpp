@@ -53,8 +53,51 @@
 #include <new>
 #include <stdlib.h>
 #include <string.h>
+#include <Gruntz/DirectionClassify.h>
+#include <Gruntz/GruntEntranceArrival.h>
+#include <AddrWord.h>
+#include <Bute/SymTab.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/Projectile.h>
+#include <Gruntz/Random.h>
+#include <Gruntz/State.h>
+#include <Gruntz/UserLogic.h>
+#include <Pix16.h>
+#include <Rez/RezTypeTag.h>
+#include <Wap32/Wap32.h>
 
 VTBL(CGrunt, 0x001e8754);
+
+DATA(0x001e9a68)
+double s_fpZero = 0.0;
+
+static void GruntPosScratchTeardown() {
+    CString* slot = (g_typeColl.Slots());
+    i32 cnt = g_typeColl.m_grown;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->~CString();
+        }
+        slot++;
+        cnt--;
+    }
+}
+
+DATA(0x001e9750)
+const double g_slopeNegHalf = -0.5;
+
+DATA(0x001e9758)
+const double g_slopePosHalf = 0.5;
+
+DATA(0x001e9760)
+const double g_slopePosTwo = 2.0;
+
+DATA(0x001e9768)
+const double g_slopeNegTwo = -2.0;
+
+// @early-stop
 
 DATA(0x0020a930)
 static const char s_GruntHealthSprite[] = "GruntHealthSprite";
@@ -710,6 +753,81 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 }
 
 #undef LOAD_POSE
+
+RVA(0x0004a780, 0x1ec)
+GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
+    if (other == 0) {
+        return &g_gruntMoveDirCenter;
+    }
+    i32 dy = static_cast<i32>((other->m_positionX - m_positionX));
+    i32 dx = static_cast<i32>((m_positionY - other->m_positionY));
+    if (dy == 0) {
+        if (dx > 0) {
+            return &g_gruntMoveDirNorth;
+        }
+        if (dx < 0) {
+            return &g_gruntMoveDirSouth;
+        }
+        return &g_gruntMoveDirCenter;
+    }
+
+    char onCell = exact;
+    if (onCell) {
+        onCell =
+            (static_cast<i32>(m_positionX) == m_gridX && static_cast<i32>(m_positionY) == m_gridY)
+                ? 1
+                : 0;
+    }
+    double ratio = static_cast<double>(dx) / static_cast<double>(dy);
+
+    if (dx >= 0 && dy > 0) {
+        if (onCell) {
+            return &g_gruntMoveDirNorthEast;
+        }
+        if (ratio <= g_slopePosHalf) {
+            return &g_gruntMoveDirEast;
+        }
+        if (ratio <= g_slopePosTwo) {
+            return &g_gruntMoveDirNorthEast;
+        }
+        return &g_gruntMoveDirNorth;
+    }
+    if (dx >= 0) {
+        if (onCell) {
+            return &g_gruntMoveDirNorthWest;
+        }
+        if (ratio <= g_slopeNegTwo) {
+            return &g_gruntMoveDirNorth;
+        }
+        if (ratio <= g_slopeNegHalf) {
+            return &g_gruntMoveDirNorthWest;
+        }
+        return &g_gruntMoveDirWest;
+    }
+    if (dy > 0) {
+        if (onCell) {
+            return &g_gruntMoveDirSouthEast;
+        }
+        if (ratio <= g_slopeNegTwo) {
+            return &g_gruntMoveDirSouth;
+        }
+        if (ratio <= g_slopeNegHalf) {
+            return &g_gruntMoveDirSouthEast;
+        }
+        return &g_gruntMoveDirEast;
+    }
+
+    if (onCell) {
+        return &g_gruntMoveDirSouthWest;
+    }
+    if (ratio <= g_slopePosHalf) {
+        return &g_gruntMoveDirWest;
+    }
+    if (ratio <= g_slopePosTwo) {
+        return &g_gruntMoveDirSouthWest;
+    }
+    return &g_gruntMoveDirSouth;
+}
 
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::IntersectsTileObjectAxes() {
@@ -2063,7 +2181,7 @@ i32 CGrunt::Place(
     } else {
         m_hasExtent = 1;
     }
-    if (m_moveIcon < PICKUP_NONE || m_moveIcon >= PICKUP_TIMEBOMB) {
+    if (m_moveIcon < PICKUP_NONE || m_moveIcon >= PICKUP_MOVEICON_END) {
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, 0);
@@ -2195,7 +2313,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     }
     fresh = 0;
     defer = 0;
-    if (m_entranceReason < PICKUP_BABYWALKER) {
+    if (m_entranceReason < PICKUP_EQUIPPABLE_END) {
         m_toolId = m_entranceReason;
     }
     switch (kind) {
@@ -3693,7 +3811,7 @@ void CGrunt::XferName(char*) {
         if (flags & 0x400) {
             PickupType reason = m_entranceReason;
             PickupType pose = reason;
-            if (reason > PICKUP_WINGZ) {
+            if (reason > PICKUP_EQUIPPABLE_LAST) {
                 pose = m_toolId;
             }
             if (pose == PICKUP_GRAVITYBOOTZ) {
@@ -4061,7 +4179,7 @@ kindDispatch:
                     pick = 0x10;
                 }
                 CShadeTable* sel =
-                    g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_BABYWALKER);
+                    g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_BEGIN);
                 CWwdGameObjectA* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
                 obj->m_drawActive = 1;
@@ -4134,7 +4252,7 @@ kindDispatch:
                 m_object->m_stateFlags &= ~8;
                 ReadConfigFromButeMgr();
                 PickupType reason = m_entranceReason;
-                i32 vehicle = (reason >= PICKUP_BABYWALKER) ? 1 : 0;
+                i32 vehicle = (reason >= PICKUP_TOYZ_BEGIN) ? 1 : 0;
                 i32 variant = 0;
                 if (vehicle != 0) {
                     switch (reason) {
@@ -4162,6 +4280,105 @@ kindDispatch:
         m_pendingTrigger = 0;
     }
 }
+
+RVA(0x0005ecd0, 0x4f3)
+void CGrunt::FinalizeStep(char* name) {
+    CUserLogic::FinalizeStep(name);
+    AdvanceMotion();
+    if (m_struckSlotSound != 0) {
+        bool neL = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") != 0);
+        if (neL && strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") != 0) {
+            StopStruckSlotSound();
+        }
+    }
+    if (m_struckVoiceSound != 0) {
+        if (m_gruntKind == GRUNT_NORMAL) {
+            StopStruckVoiceSound();
+        } else {
+            CGruntzMgr* g = g_gameReg;
+            i32 y = m_object->m_screenY;
+            i32 x = m_object->m_screenX;
+            if (!(x < g->m_viewBounds.right && x >= g->m_viewBounds.left
+                  && y < g->m_viewBounds.bottom && y >= g->m_viewBounds.top)) {
+                StopStruckVoiceSound();
+            }
+        }
+    }
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0) {
+
+        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
+            return;
+        }
+        GruntDirectionCell c = m_entranceCell;
+        i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
+        i32 column = (c.column == 0) ? 2 : (c.column == 2 ? 0 : c.column);
+        i32 base = 3 * row + column;
+        CGruntCellRec* cell = &m_cells[base];
+        double d48 = cell->m_motion.m_direction.x;
+        double d50 = cell->m_motion.m_direction.y;
+        m_movePosX =
+            static_cast<double>(static_cast<i64>(g_frameDelta)) * d48 * m_moveSpeed + m_movePosX;
+        m_movePosY =
+            static_cast<double>(static_cast<i64>(g_frameDelta)) * d50 * m_moveSpeed + m_movePosY;
+        i32 nx = static_cast<i32>((cell->m_motion.m_step.x + m_movePosX));
+        i32 ny = static_cast<i32>((cell->m_motion.m_step.y + m_movePosY));
+        if ((d48 > s_fpZero && nx > m_lastTilePx.m_x)
+            || (d48 < s_fpZero && nx < m_lastTilePx.m_x)) {
+            nx = m_lastTilePx.m_x;
+        }
+        if ((d50 > s_fpZero && ny > m_lastTilePx.m_y)
+            || (d50 < s_fpZero && ny < m_lastTilePx.m_y)) {
+            ny = m_lastTilePx.m_y;
+        }
+        m_object->m_screenX = nx;
+        m_object->m_screenY = ny;
+        CWwdGameObjectA* h = m_object;
+        i32 v = h->m_screenY + 0x186a0;
+        if (h->m_sortKey != v) {
+            h->m_sortKey = v;
+            h->m_flags |= 0x20000;
+        }
+        return;
+    }
+
+    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+    GruntPosScratchTeardown();
+    if (strcmp(*rec, k_60df94) == 0) {
+        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
+            return;
+        }
+        GruntDirectionCell c = m_entranceCell;
+        i32 base = 3 * c.row + c.column;
+        CGruntCellRec* cell = &m_cells[base];
+        double d48 = cell->m_motion.m_direction.x;
+        double d50 = cell->m_motion.m_direction.y;
+        m_movePosX =
+            static_cast<double>(static_cast<i64>(g_frameDelta)) * d48 * m_moveSpeed + m_movePosX;
+        m_movePosY =
+            static_cast<double>(static_cast<i64>(g_frameDelta)) * d50 * m_moveSpeed + m_movePosY;
+        i32 nx = static_cast<i32>((cell->m_motion.m_step.x + m_movePosX));
+        i32 ny = static_cast<i32>((cell->m_motion.m_step.y + m_movePosY));
+        if ((d48 > s_fpZero && nx > m_lastTilePx.m_x)
+            || (d48 < s_fpZero && nx < m_lastTilePx.m_x)) {
+            nx = m_lastTilePx.m_x;
+        }
+        if ((d50 > s_fpZero && ny > m_lastTilePx.m_y)
+            || (d50 < s_fpZero && ny < m_lastTilePx.m_y)) {
+            ny = m_lastTilePx.m_y;
+        }
+        m_object->m_screenX = nx;
+        m_object->m_screenY = ny;
+        CWwdGameObjectA* h = m_object;
+        i32 v = h->m_screenY + 0x186a0;
+        if (h->m_sortKey != v) {
+            h->m_sortKey = v;
+            h->m_flags |= 0x20000;
+        }
+    }
+    return;
+}
+
+// @early-stop
 
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {

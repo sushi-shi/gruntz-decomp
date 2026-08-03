@@ -34,6 +34,10 @@
 #include <Wap32/ZVec.h>
 
 #include <string.h>
+#include <Bute/ButeTree.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
@@ -89,6 +93,12 @@ static inline CString* ResolveNameSlotCallReport(CTypeCollRuntime* v, i32 idx) {
     }
     return r;
 }
+
+RVA_COMPGEN(0x00011c10, 0x1e, ??_GCToyPeek@@UAEPAXI@Z)
+
+RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
+
+// @early-stop
 
 RVA_COMPGEN(0x00011cd0, 0x1e, ??_GCInGameIcon@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
@@ -519,6 +529,25 @@ void RegisterIconState() {
     *dslot = static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
 
+RVA(0x00098140, 0x18e)
+CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+    m_startClock.m_v = 0;
+    m_countdown.m_v = 0;
+    m_object->m_screenY -= 0x18;
+    if (m_object->m_sortKey != 0xdbba0) {
+        m_object->m_sortKey = 0xdbba0;
+        m_object->m_flags |= 0x20000;
+    }
+    m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
+    m_countdown.m_v = 0x1388;
+    m_startClock.m_v = static_cast<u32>(g_frameTime);
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
+}
+
+// @interleaver SerializeMove - 152 B lone body at 0x983e0, between RefreshCell
+// (ingameicon) and PeekCycle (ingameicon): a first-use placement.
+
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;
@@ -545,6 +574,35 @@ i32 CInGameIcon::RefreshCell() {
 }
 
 // @early-stop
+RVA(0x000983e0, 0x98)
+i32 CToyPeek::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
+        return 0;
+    }
+    if (Chain(ar, mode, typeId, pObj) == 0) {
+        return 0;
+    }
+
+    switch (mode) {
+        case SERIAL_SAVE:
+            ar->Write(&m_startClock, sizeof(m_startClock));
+            ar->Write(&m_countdown, sizeof(m_countdown));
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_startClock, sizeof(m_startClock));
+            ar->Read(&m_countdown, sizeof(m_countdown));
+            break;
+    }
+    return 1;
+}
+
+VTBL(CToyPeek, 0x001e7204);
+
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -967,6 +1025,78 @@ void RegisterTextLogic() {
     *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }
 
+RVA(0x000997c0, 0x1e7)
+i32 CInGameText::Update() {
+    m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
+
+    i32 areaId;
+    i32 subId;
+    CGrunt* found = g_gameReg->m_cmdGrid
+                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
+
+    if (found != 0) {
+        if (areaId != g_curPlayer) {
+            return 0;
+        }
+        if (m_cachedSubId != -1 && areaId == m_cachedAreaId && subId == m_cachedSubId) {
+            return 0;
+        }
+
+        CString* node = g_typeColl.ScratchResolve(found->m_objAux->ActKey());
+
+        CString* p = g_typeColl.Slots();
+        i32 n = g_typeColl.m_grown;
+        while (n-- != 0) {
+            if (p != 0) {
+                p->CString::CString();
+            }
+            p++;
+        }
+        bool eq = (strcmp(*node, s_codeK) == 0);
+        if (eq) {
+            return 0;
+        }
+
+        if (!found->LoadPickupSprites(PICKUP_HELPBOX, 0, m_object->m_smarts, 0, 1)) {
+            return 0;
+        }
+
+        CWwdGameObjectA* o = m_object;
+        i32 y = o->m_screenY;
+        i32 x = o->m_screenX;
+        CGruntzMgr* reg = g_gameReg;
+        if (x < reg->m_viewBounds.right && x >= reg->m_viewBounds.left
+            && y < reg->m_viewBounds.bottom && y >= reg->m_viewBounds.top) {
+            CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
+            if (set->m_emitGate == 0) {
+                void* res_ob = 0;
+                set->m_cues.Lookup("GAME_HELPBOOK", res_ob);
+                LeafCue* res = static_cast<LeafCue*>(res_ob);
+                if (res != 0) {
+                    i32 enable = g_sndEnabled;
+                    i32 token = g_sndCueTag;
+                    if (enable != 0) {
+                        u32 now = g_killCueClock;
+                        if (static_cast<u32>((now - res->m_lastPlayTime))
+                            >= static_cast<u32>(res->m_replayDelay)) {
+                            res->m_lastPlayTime = now;
+                            res->m_sound->ConfigureItem(token, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+        }
+
+        m_cachedAreaId = areaId;
+        m_cachedSubId = subId;
+        m_wwdObject->m_stateFlags |= 1;
+        return 0;
+    }
+    m_cachedSubId = -1;
+    m_wwdObject->m_stateFlags &= ~1;
+    return 0;
+}
+
 RVA(0x00099a30, 0xaa)
 i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, CGameObject* b) {
     if (ar == 0) {
@@ -1004,3 +1134,7 @@ void CInGameIcon::SetupSprite(const char* category) {
     }
     m_cue = cue;
 }
+DATA(0x0020d7f8)
+char s_codeK[] = "K";
+
+// @early-stop

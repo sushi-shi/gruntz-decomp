@@ -111,11 +111,6 @@ source = "src/Gruntz/SaveScreenshot.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "portalpath"
-source = "src/Gruntz/PortalPath.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "buildgruntzcrcinfo"
 source = "src/Gruntz/BuildGruntzCrcInfo.cpp"
 flags = "cpp-rtti"
@@ -246,11 +241,6 @@ source = "src/DDrawMgr/DataBuffer.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "gamekeyhandler"
-source = "src/Gruntz/GameKeyHandler.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "terraintileloader"
 source = "src/Gruntz/TerrainTileLoader.cpp"
 flags = "cpp-rtti"
@@ -258,11 +248,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "rollingball"
 source = "src/Gruntz/RollingBall.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "drawdebugstats"
-source = "src/Gruntz/DrawDebugStats.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -296,11 +281,6 @@ source = "src/Gruntz/GruntTileScan.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "worldlevelpath"
-source = "src/Gruntz/WorldLevelPath.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "bootywalkanim"
 source = "src/Gruntz/BootyWalkAnim.cpp"
 flags = "cpp-rtti"
@@ -313,16 +293,6 @@ flags = "cpp" # REHOME M2: merged the arrival-band over-split files; Reticle/Pha
 [[unit]]
 unit = "playplanescan"
 source = "src/Gruntz/PlayPlaneScan.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "gruntchargestep"
-source = "src/Gruntz/GruntChargeStep.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "voicesoundlist"
-source = "src/Gruntz/VoiceSoundList.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -358,11 +328,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "statusbartabbuilders"
 source = "src/Gruntz/StatusBarTabBuilders.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "statusbargamemenu"
-source = "src/Gruntz/StatusBarGameMenu.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -408,11 +373,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "zvec"
 source = "src/Wap32/ZVec.cpp"
-flags = "cpp"
-
-[[unit]]
-unit = "engstr"
-source = "src/Wap32/EngStr.cpp"
 flags = "cpp"
 
 [[unit]]
@@ -521,11 +481,6 @@ source = "src/Gruntz/GruntzMgr.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "gruntzmgr2"
-source = "src/Gruntz/GruntzMgr2.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "serializesyncmarker"
 source = "src/Gruntz/SerializeSyncMarker.cpp"
 flags = "cpp-rtti"
@@ -631,16 +586,6 @@ source = "src/Gruntz/GruntPickupLoad.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "gruntzrandom"
-source = "src/Gruntz/Random.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "palettesnapshot"
-source = "src/DDrawMgr/PaletteSnapshot.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "gruntzmgrcmd"
 source = "src/Gruntz/GruntzMgrCmd.cpp"
 flags = "cpp-rtti"
@@ -653,11 +598,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "savefrontbuffershot"
 source = "src/Gruntz/SaveFrontBufferShot.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "grunttargetscan"
-source = "src/Gruntz/GruntTargetScan.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -686,33 +626,13 @@ source = "src/Gruntz/BootyStateActivate.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "checkpointswitchbuild"
-source = "src/Gruntz/CheckpointSwitchBuild.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "loadgamemenu"
 source = "src/Gruntz/LoadGameMenu.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "ingametextupdate"
-source = "src/Gruntz/InGameTextUpdate.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "gameinfostring"
 source = "src/Gruntz/GameInfoString.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "cspawnentry"
-source = "src/Gruntz/SpawnEntry.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "objecttracker"
-source = "src/Gruntz/ObjectTracker.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -771,11 +691,6 @@ source = "src/Gruntz/Play.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "playmessageimage"
-source = "src/Gruntz/PlayMessageImage.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "demo"
 source = "src/Gruntz/Demo.cpp"
 flags = "cpp-rtti"
@@ -783,11 +698,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "rockbreakeffectupdate"
 source = "src/Gruntz/RockBreakEffectUpdate.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "directionclassify"
-source = "src/Gruntz/DirectionClassify.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -853,21 +763,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "gameobjectfactory"
 source = "src/Gruntz/GameObjectFactory.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "gruntsprintanim"
-source = "src/Gruntz/GruntSprintAnim.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "playstateactivate"
-source = "src/Gruntz/PlayStateActivate.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "bootymessages"
-source = "src/Gruntz/BootyMessages.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1021,11 +916,6 @@ source = "src/DDrawMgr/DDrawShadeBlit.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "mgrautoscroll"
-source = "src/Gruntz/MgrAutoScroll.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "ddrawsurfacemgr"
 source = "src/DDrawMgr/DDrawSurfaceMgr.cpp"
 flags = "cpp"
@@ -1156,11 +1046,6 @@ source = "src/Dsndmgr/SoundVoiceList.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "soundbankload"
-source = "src/Dsndmgr/SoundBankLoad.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "soundstream"
 source = "src/Dsndmgr/SoundStream.cpp"
 flags = "cpp"
@@ -1221,11 +1106,6 @@ source = "src/Gruntz/WayPoint.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "toypeek"
-source = "src/Gruntz/ToyPeek.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "actionarea"
 source = "src/Gruntz/ActionArea.cpp"
 flags = "cpp-rtti"
@@ -1268,11 +1148,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "logicworkerhandlersb"
 source = "src/Gruntz/LogicWorkerHandlersB.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "bridgemovesprites"
-source = "src/Gruntz/BridgeMoveSprites.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1436,11 +1311,6 @@ source = "src/Rez/RezColl.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "ddrawblterrthunk"
-source = "src/DDrawMgr/DDrawBltErrThunk.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "typekeycoll"
 source = "src/Bute/TypeKeyColl.cpp"
 flags = "cpp"
@@ -1506,40 +1376,19 @@ source = "src/Bute/ButeTail.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "pathhazardactreg"
-source = "src/Gruntz/PathHazardActReg.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "gruntvoiceactreg"
-source = "src/Gruntz/GruntVoiceActReg.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "cursorsnapactreg"
 source = "src/Gruntz/CursorSnapActReg.cpp"
 flags = "cpp-rtti"
-
-[[unit]]
-unit = "colorhsv"
-source = "src/DDrawMgr/ColorHsv.cpp"
-flags = "cpp"
 [[unit]]
 unit = "arrayserialize"
 source = "src/Gruntz/ArraySerialize.cpp"
 flags = "cpp-rtti"
-[[unit]]
-unit = "circleshadeblit"
-source = "src/DDrawMgr/CircleShadeBlit.cpp"
-flags = "cpp"
+
 [[unit]]
 unit = "palettebmp"
 source = "src/Image/PaletteBmp.cpp"
 flags = "cpp"
-[[unit]]
-unit = "imagesavebmp"
-source = "src/Image/ImageSaveBmp.cpp"
-flags = "cpp"
+
 
 [[unit]]
 unit = "imagepolyclip"
@@ -1578,11 +1427,6 @@ flags = "cpp-rtti"
 unit = "playercommandstep"
 source = "src/Gruntz/PlayerCommandStep.cpp"
 flags = "cpp-rtti"
-
-[[unit]]
-unit = "connslotlist"
-source = "src/Net/ConnSlotList.cpp"
-flags = "cpp"
 [[unit]]
 unit = "namerecord"
 source = "src/Gruntz/NameRecord.cpp"
@@ -1596,10 +1440,7 @@ flags = "cpp"
 unit = "latencylist"
 source = "src/Net/LatencyList.cpp"
 flags = "cpp"
-[[unit]]
-unit = "menusparkleserial"
-source = "src/Gruntz/MenuSparkleSerial.cpp"
-flags = "cpp-rtti"
+
 [[unit]]
 unit = "projactcache"
 source = "src/Gruntz/ProjActCache.cpp"
@@ -1629,19 +1470,11 @@ flags = "cpp-rtti"
 unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"
 flags = "cpp"
-
-[[unit]]
-unit = "recordfill"
-source = "src/Utils/RecordFill.cpp"
-flags = "cpp"
 [[unit]]
 unit = "stringstaticpool"
 source = "src/Net/StringStaticPool.cpp"
 flags = "cpp"
-[[unit]]
-unit = "mgrlistfind"
-source = "src/Gruntz/MgrListFind.cpp"
-flags = "cpp-rtti"
+
 [[unit]]
 unit = "moviepaletteupload"
 source = "src/Image/MoviePaletteUpload.cpp"
@@ -1672,14 +1505,7 @@ flags = "cpp"
 unit = "surfacepalette"
 source = "src/Image/PaletteReset.cpp"
 flags = "cpp"
-[[unit]]
-unit = "netcmdmgr"
-source = "src/Net/NetCmdMgr.cpp"
-flags = "cpp"
-[[unit]]
-unit = "gamechecksum"
-source = "src/Gruntz/GameChecksum.cpp"
-flags = "cpp-rtti"
+
 
 [[unit]]
 unit = "glyphstr"
@@ -1689,11 +1515,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "destructbutton"
 source = "src/Gruntz/DestructButton.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "stateimages"
-source = "src/Gruntz/StateImages.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1707,11 +1528,6 @@ source = "src/Rez/DebugPrintf.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "battlezdlgrow"
-source = "src/Gruntz/BattlezDlgRow.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "levelpreview"
 source = "src/Gruntz/LevelPreview.cpp"
 flags = "cpp-rtti"
@@ -1720,11 +1536,6 @@ flags = "cpp-rtti"
 unit = "timestring"
 source = "src/Gruntz/TimeString.cpp"
 flags = "cpp-rtti"
-
-[[unit]]
-unit = "imageprobe"
-source = "src/Image/ImageProbe.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "gameassetnamespaces"
@@ -1760,16 +1571,6 @@ flags = "cpp-rtti"
 unit = "modeobjinit"
 source = "src/Gruntz/ModeObjInit.cpp"
 flags = "cpp-rtti"
-
-[[unit]]
-unit = "gruntzmgrrand"
-source = "src/Gruntz/GruntzMgrRand.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "butedtorpool"
-source = "src/Bute/ButeDtorPool.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "ddrawsurfacepairblt"

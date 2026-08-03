@@ -8,6 +8,8 @@
 
 #include <ddraw.h>
 #include <string.h>
+#include <Mfc.h>
+#include <Ints.h>
 
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
@@ -216,6 +218,32 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
 }
 
 // @early-stop
+RVA(0x00149250, 0x158)
+i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
+    if (m_srcBpp != 1) {
+        return 0;
+    }
+
+    CFile file;
+    if (file.Open(name, 0x9001, 0) == 0) {
+        return 0;
+    }
+    file.Write(&desc, 0x20);
+    file.Write(m_rleData, m_rleLen);
+    if (desc.f1 & 0x80) {
+        if (m_palette == 0) {
+            return 0;
+        }
+        for (i32 i = 0; i < 0x100; i++) {
+            file.Write(&m_palette[i].peRed, 1);
+            file.Write(&m_palette[i].peGreen, 1);
+            file.Write(&m_palette[i].peBlue, 1);
+        }
+    }
+    file.Close();
+    return 1;
+}
+
 RVA(0x001493b0, 0xfd)
 
 i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {

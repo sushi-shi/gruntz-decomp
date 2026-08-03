@@ -29,6 +29,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
+#include <Gruntz/ActNameRegistry.h>
 
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
@@ -44,22 +45,15 @@ static inline CActHandler* VActLookup(i32 coord) {
     return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
 }
 
-static inline CString* ActNameSlots() {
-    return g_typeColl.Slots();
-}
-
-static inline CString* ActNameLookup(i32 id) {
-    g_typeColl.m_grown = 0;
-    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(id);
+static inline void FreeNameSlotNodes() {
+    i32 n = g_typeColl.m_grown;
+    CString* list = ActNameSlots();
+    while (n-- != 0) {
+        if (list != 0) {
+            list->CString::~CString();
+        }
+        list++;
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
-        return g_typeColl.Elem(id);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
 }
 
 RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
@@ -220,6 +214,35 @@ void CGruntVoice::FireActivation(i32 coord) {
         CActHandler* e2 = VActLookup(coord);
         (this->*((*e2)))();
     }
+}
+
+RVA(0x00119fa0, 0x2ac)
+void RegisterGruntVoiceActions() {
+    i32 id = ActFindId("A");
+    if (id == 0) {
+        ActInsertId("A", g_typeCounter);
+        id = g_typeCounter;
+        CString* slot = ActNameLookupCallReport(g_typeCounter);
+        FreeNameSlotNodes();
+        *slot = "A";
+        g_typeCounter++;
+    }
+
+    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
+        static_cast<CActHandler>(&CGruntVoice::IdleHidden);
+
+    i32 id2 = ActFindId("B");
+    if (id2 == 0) {
+        ActInsertId("B", g_typeCounter);
+        id2 = g_typeCounter;
+        CString* slot = ActNameLookup(g_typeCounter);
+        FreeNameSlotNodes();
+        *slot = "B";
+        g_typeCounter++;
+    }
+
+    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2) =
+        static_cast<CActHandler>(&CGruntVoice::Update);
 }
 
 RVA(0x0011a3a0, 0x102)

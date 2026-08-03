@@ -7,12 +7,14 @@
 
 #include <Gruntz/FxModeDesc.h>
 
+GZ_ENUM_FORWARD(FaderMode);
+
 class CFxModeT1 : public CFxModeDesc {
 public:
     CFxModeT1();
     class CDDSurface* m_warpSourceSurface;
     i32 m_halfWidth;
-    i32 m_mode;
+    FaderMode m_mode;
     i32 m_stripCopy;
     i32 m_useLut;
     class CShadeTable* m_shadeTable;

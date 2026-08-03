@@ -89,8 +89,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <Gruntz/PortalPath.h>
+#include <Gruntz/HeapDiag.h>
+#include <Rez/RezMgr.h>
 
 // owner-TU unproven: bss sits in the pre-gruntzmgr window (before g_buteMgr)
+DATA(0x0020c674)
+static const char s_rezName[] = "Gruntz.REZ";
+
+DATA(0x0020c66c)
+static const char s_join[] = "%s\\%s";
+
+DATA(0x00211054)
+static const char s_dataPath[] = "%c:\\DATA\\%s";
+
+DATA(0x00211044)
+static const char s_fecName[] = "Gruntz.FEC";
+
+DATA(0x00211034)
+static const char s_fecLoName[] = "GruntzLo.FEC";
+
+DATA(0x00211024)
+static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
+
+DATA(0x0020c5b8)
+char g_nameFmt[] = "%s";
+
 DATA(0x002452d8)
 char g_msgScratch[256];
 
@@ -414,6 +438,19 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
 }
 
 // @early-stop
+RVA(0x0008dd80, 0x31)
+i32 CDDrawPtrCollections::GetCapsChecked() {
+    i32 hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);
+    if (hr != 0) {
+        CDDrawPtrCollections::GetErrorString(
+            const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"),
+            0x135,
+            hr
+        );
+    }
+    return hr;
+}
+
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(i32 save) {
     i32 w = m_modeW;
@@ -431,6 +468,21 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
     ReportError(IDX(CMD_QUIT), 0x438);
     return 0;
 }
+
+RVA(0x0008e470, 0x50)
+i32 CGruntzMgr::HandleDebugPosition() {
+    i32 r = 0;
+    if (m_curState->Update() == GAMESTATE_PLAY) {
+        r = RunModalDialog("DEBUG_POSITION", WarpDialogProc, 1);
+        if (r == 1) {
+            HWND hwnd = m_gameWnd->m_hwnd;
+            PostMessageA(hwnd, 0x111, 0x805c, 0);
+        }
+    }
+    return r != 0;
+}
+
+// @early-stop
 
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
@@ -933,6 +985,60 @@ i32 CGruntzMgr::RunFromState() {
     return ChangeState(1);
 }
 
+RVA(0x00090550, 0x1e6)
+i32 __stdcall LaunchPortalExe(char* outPath) {
+    DWORD bufSize;
+    char regBuf[0x100];
+    Utils::RegistryHelper reg;
+
+    if (!reg.Open("Monolith Productions", "Portal", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
+        return 0;
+    }
+    regBuf[0] = 0;
+    bufSize = 0xde;
+    if (!reg.GetValueString("filedir", regBuf, &bufSize, 0)) {
+        return 0;
+    }
+    i32 len = strlen(regBuf);
+    if (len < 1) {
+        return 0;
+    }
+    if (regBuf[len - 1] != '\\') {
+        strcat(regBuf, "\\");
+    }
+    strcat(regBuf, "portal.exe");
+    if (!FileExists(regBuf)) {
+        return 0;
+    }
+    if (outPath != 0) {
+        strcpy(outPath, regBuf);
+    }
+    return 1;
+}
+
+RVA(0x00090860, 0xd3)
+i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
+    char cmdline[256];
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+    memset(&si, 0, sizeof(si));
+    si.cb = sizeof(si);
+    if (dir && *dir) {
+        i32 len = strlen(dir);
+        if (len > 0 && dir[len - 1] == '\\') {
+            wsprintfA(cmdline, "%s%s", dir, exe);
+        } else {
+            wsprintfA(cmdline, "%s\\%s", dir, exe);
+        }
+    } else {
+        wsprintfA(cmdline, "%s", exe);
+    }
+    if (dir && *dir == 0) {
+        dir = 0;
+    }
+    return CreateProcessA(0, cmdline, 0, 0, 0, 0, 0, dir, &si, &pi);
+}
+
 RVA(0x00090980, 0x18)
 CState* CGruntzMgr::TopState() {
     CPtrArray* st = &m_stateStack;
@@ -1296,6 +1402,61 @@ void CGruntzMgr::CheatEclipseToggle() {
         }
     }
     // Deliberately leave the return register unchanged.
+}
+
+RVA(0x00091670, 0x2ac)
+i32 CGruntzMgr::MakeRezPath() {
+    char cwd[0x100];
+    if (!GetCurrentDirectoryA(0xff, cwd)) {
+        return 0;
+    }
+
+    char drive = GetGruntzDriveLetter();
+    m_inGameDir = (drive == cwd[0]);
+
+    i32 found = 1;
+
+    CString rez(s_rezName);
+    m_haveRez = 0;
+    m_strRezPath.Format(s_join, cwd, static_cast<LPCTSTR>(rez));
+    if (!FileExists(m_strRezPath)) {
+        if (drive) {
+            m_strRezPath.Format(s_dataPath, drive, static_cast<LPCTSTR>(rez));
+            if (FileExists(m_strRezPath)) {
+                m_haveRez = 1;
+            } else {
+                found = 0;
+            }
+        } else {
+            found = 0;
+        }
+    }
+
+    CString fecHi(s_fecName);
+    CString fecLo(s_fecLoName);
+    CString fec(g_disableHqMovie ? fecLo : fecHi);
+
+    m_haveMoviez = 0;
+    i32 movFound = 0;
+    m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fec));
+    if (!m_inGameDir && !FileExists(m_strMoviePath) && !g_disableHqMovie) {
+        m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fecHi));
+        if (FileExists(m_strMoviePath)) {
+            movFound = 1;
+        }
+    }
+    if (!movFound && drive) {
+        m_strMoviePath.Format(s_moviezPath, drive, static_cast<LPCTSTR>(fec));
+        if (FileExists(m_strMoviePath)) {
+            m_haveMoviez = 1;
+        }
+    }
+
+    if (!found) {
+        ReportError(static_cast<GruntzCommandId>(0x800b), 0x43e);
+        return 0;
+    }
+    return 1;
 }
 
 RVA(0x00092180, 0x98)

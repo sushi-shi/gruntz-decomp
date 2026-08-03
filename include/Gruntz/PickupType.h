@@ -45,6 +45,8 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_SPY = 15,
     PICKUP_SWORD = 16,
     PICKUP_TIMEBOMB = 17,
+    // Half-open end of the range CGrunt::m_moveIcon accepts.
+    PICKUP_MOVEICON_END = PICKUP_TIMEBOMB,
     PICKUP_TOOB = 18,
     PICKUP_WAND = 19,
     PICKUP_WARPSTONE = 20,
@@ -87,6 +89,8 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_BROWNBRICK = 0x22,
     PICKUP_BRICKZ_BEGIN = PICKUP_BROWNBRICK,
     PICKUP_REDBRICK = 0x23,
+    // The four COLOURED bricks; brown (0x22) is the plain one and is excluded.
+    PICKUP_COLORBRICK_BEGIN = PICKUP_REDBRICK,
     PICKUP_BLUEBRICK = 0x24,
     PICKUP_GOLDBRICK = 0x25,
     PICKUP_BLACKBRICK = 0x26,
@@ -99,19 +103,26 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_HEALTH2 = 0x34,
     PICKUP_HEALTH3 = 0x35,
     PICKUP_GHOST = 0x36,
+    // The seven TIMED powerups. Megaphone (a call) and the three Zap Colas
+    // (instant heal) sit below and are excluded, which is why the scoreboard's
+    // powerup row is 7 wide: m_powerupPickupz[type - GHOST + 7 * owner].
+    PICKUP_TIMEDPOWERUP_BEGIN = PICKUP_GHOST,
     PICKUP_SUPERSPEED = 0x37,
     PICKUP_INVULNERABILITY = 0x38,
     PICKUP_CONVERSION = 0x39,
     PICKUP_DEATHTOUCH = 0x3a,
     PICKUP_ROIDZ = 0x3b,
     PICKUP_REACTIVEARMOR = 0x3c,
+    PICKUP_TIMEDPOWERUP_LAST = PICKUP_REACTIVEARMOR,
+    PICKUP_POWERUPZ_LAST = PICKUP_REACTIVEARMOR,
 
     // --- Cursez (61-64) -----------------------------------------------------
     PICKUP_RANDOMCOLORZ = 0x3d,
+    PICKUP_CURSEZ_BEGIN = PICKUP_RANDOMCOLORZ,
     PICKUP_SCREENSHAKE = 0x3e,
     PICKUP_BLACKSCREEN = 0x3f,
     PICKUP_MINICAM = 0x40,
-    PICKUP_POWERUPZ_LAST = PICKUP_MINICAM,
+    PICKUP_CURSEZ_LAST = PICKUP_MINICAM,
 
     // --- Miscellaneous (75-99) ----------------------------------------------
     PICKUP_STOPWATCH = 0x4b,

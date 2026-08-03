@@ -28,6 +28,8 @@
 #define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31))
 
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/TriggerMgrRecords.h>
 
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
@@ -110,6 +112,76 @@
     }
 
 // @early-stop
+#define PRIO(dst, r)                                                                               \
+    switch (r) {                                                                                   \
+        case PICKUP_BOMB:                                                                          \
+            dst = 2;                                                                               \
+            break;                                                                                 \
+        case PICKUP_WELDER:                                                                        \
+            dst = 3;                                                                               \
+            break;                                                                                 \
+        case PICKUP_SWORD:                                                                         \
+            dst = 4;                                                                               \
+            break;                                                                                 \
+        case PICKUP_GUNHAT:                                                                        \
+            dst = 5;                                                                               \
+            break;                                                                                 \
+        case PICKUP_CLUB:                                                                          \
+            dst = 6;                                                                               \
+            break;                                                                                 \
+        case PICKUP_ROCK:                                                                          \
+            dst = 7;                                                                               \
+            break;                                                                                 \
+        case PICKUP_SHOVEL:                                                                        \
+            dst = 8;                                                                               \
+            break;                                                                                 \
+        case PICKUP_BOOMERANG:                                                                     \
+            dst = 9;                                                                               \
+            break;                                                                                 \
+        case PICKUP_SPRING:                                                                        \
+            dst = 10;                                                                              \
+            break;                                                                                 \
+        case PICKUP_GAUNTLETZ:                                                                     \
+            dst = 11;                                                                              \
+            break;                                                                                 \
+        case PICKUP_WINGZ:                                                                         \
+            dst = 12;                                                                              \
+            break;                                                                                 \
+        case PICKUP_SPY:                                                                           \
+            dst = 13;                                                                              \
+            break;                                                                                 \
+        case PICKUP_BRICK:                                                                         \
+            dst = 14;                                                                              \
+            break;                                                                                 \
+        case PICKUP_GRAVITYBOOTZ:                                                                  \
+            dst = 15;                                                                              \
+            break;                                                                                 \
+        case PICKUP_SHIELD:                                                                        \
+            dst = 16;                                                                              \
+            break;                                                                                 \
+        case PICKUP_GOOBER:                                                                        \
+            dst = 17;                                                                              \
+            break;                                                                                 \
+        case PICKUP_TOOB:                                                                          \
+            dst = 18;                                                                              \
+            break;                                                                                 \
+        case PICKUP_GLOVEZ:                                                                        \
+            dst = 19;                                                                              \
+            break;                                                                                 \
+        case PICKUP_TIMEBOMB:                                                                      \
+            dst = 20;                                                                              \
+            break;                                                                                 \
+        case PICKUP_NERFGUN:                                                                       \
+            dst = 21;                                                                              \
+            break;                                                                                 \
+        case PICKUP_WAND:                                                                          \
+            dst = 22;                                                                              \
+            break;                                                                                 \
+        default:                                                                                   \
+            dst = 23;                                                                              \
+            break;                                                                                 \
+    }
+
 RVA(0x000ec670, 0x298)
 i32 CGrunt::ResolveArrivalReposition() {
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
@@ -988,6 +1060,216 @@ i32 CGrunt::ArrivalReticleScan() {
 }
 
 // @early-stop
+RVA(0x000ef6b0, 0x61d)
+i32 CGrunt::ChargeStep() {
+    m_defenderPx.m_x = m_lastTilePx.m_x;
+    m_defenderPx.m_y = m_lastTilePx.m_y;
+    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
+    i32 hitGate = 0;
+    if (g != 0) {
+        CGameObject* gp = g->m_object;
+        if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
+            && RectContains(gp->m_screenX, gp->m_screenY)) {
+            hitGate = 1;
+        }
+    }
+
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
+            return 1;
+        }
+        if (m_combatActive != 0) {
+            return 1;
+        }
+        if (m_stamina >= 100) {
+            if (FindGridNeighbor(1) != 0) {
+                return 1;
+            }
+            if (hitGate != 0 && g == 0) {
+                return 1;
+            }
+            if (m_poweredUp == 0) {
+                return 1;
+            }
+            if (m_neighborValid != 0) {
+                return 1;
+            }
+            m_entranceActive = 0;
+            m_combatActive = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
+            return 1;
+        }
+        if (hitGate != 0) {
+            return 1;
+        }
+        if (m_poweredUp == 0) {
+            return 1;
+        }
+        if (m_neighborValid != 0) {
+            return 1;
+        }
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        ResetEntranceAnimation(1, 0, 0);
+        return 1;
+    }
+
+    switch (m_defenderState) {
+        case 0: {
+
+            if (g != 0) {
+                if (hitGate != 0 && m_stamina >= 100) {
+                    CGameObject* gp = g->m_object;
+                    if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
+                        && RectContains(gp->m_screenX, gp->m_screenY)) {
+                        CommitNeighbor(
+                            g->m_tileOwnerHi,
+                            g->m_tileOwnerLo,
+                            g->m_lastTilePx.m_x,
+                            g->m_lastTilePx.m_y
+                        );
+                        return 1;
+                    }
+                }
+                if (m_dwell > 500) {
+                    if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+                        return 1;
+                    }
+                    if (TileSwitch(
+                            g->m_object->m_screenX >> 5,
+                            g->m_object->m_screenY >> 5,
+                            0,
+                            m_arrivalFlags,
+                            1,
+                            0
+                        )
+                        != 0) {
+                        SetEntrancePos(1, 1);
+                        m_arrivalCell.m_x = g->m_tileOwnerHi;
+                        m_arrivalCell.m_y = g->m_tileOwnerLo;
+                        m_defenderState = 1;
+                        CWwdGameObjectA* mp = m_object;
+                        CGruntzMgr* mgr = g_gameReg;
+
+                        i32 los = CGameLevel::PointInBounds(
+                            &mgr->m_world->m_level->m_mainPlane->m_viewRect,
+                            mp->m_screenX,
+                            mp->m_screenY
+                        );
+                        if (los != 0) {
+                            mgr->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                        }
+                    }
+                    m_dwell = 0;
+                    return 1;
+                }
+            }
+            if (m_resetApplied == 0 && m_hasExtent != 0 && m_dwell > 3000) {
+                CWwdGameObjectA* mp = m_object;
+                i32 baseX = mp->m_extent.left;
+                i32 spanX = mp->m_extent.right - baseX;
+                spanX = spanX < 0 ? -spanX : spanX;
+                i32 baseY = mp->m_extent.top;
+                i32 spanY = mp->m_extent.bottom - baseY;
+                spanY = spanY < 0 ? -spanY : spanY;
+                if (spanX != 0) {
+                    baseX += rand() % spanX;
+                }
+                if (spanY != 0) {
+                    baseY += rand() % spanY;
+                }
+                CGruntzMgr* mgr = g_gameReg;
+                if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_width)
+                    && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_height)) {
+                    TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
+                }
+                if (m_coordList.GetCount() != 0) {
+                    if (spanX <= spanY) {
+                        spanX = spanY;
+                    }
+                    if (spanX < m_coordList.GetCount()) {
+                        SetEntrancePos(1, 1);
+                    }
+                }
+                m_dwell = 0;
+            }
+            break;
+        }
+        case 1: {
+
+            CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
+            CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
+            if (cur != 0 && cur != t) {
+                m_arrivalCell.m_x = -1;
+                m_defenderState = 0;
+                m_arrivalCell.m_y = -1;
+                return 1;
+            }
+            if (t == 0 || t->m_entranceCommitted == 0
+                || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
+                m_defenderState = 0;
+                return 1;
+            }
+            if (static_cast<u32>(m_dwell) > 500) {
+                StepArrivalDrop(t->m_lastTilePx.m_x, t->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
+                m_dwell = 0;
+            }
+            if (m_poweredUp == 0 && m_stamina >= 100
+                && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
+                && t->m_object->m_screenX == t->m_lastTilePx.m_x
+                && t->m_object->m_screenY == t->m_lastTilePx.m_y) {
+                CommitNeighbor(
+                    t->m_tileOwnerHi,
+                    t->m_tileOwnerLo,
+                    t->m_lastTilePx.m_x,
+                    t->m_lastTilePx.m_y
+                );
+                m_defenderState = 2;
+                return 1;
+            }
+            break;
+        }
+        case 2: {
+
+            if (m_poweredUp != 0) {
+                CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
+                if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
+                    || t->m_entranceCommitted == 0) {
+                    m_defenderState = 1;
+                    m_dwell = 0x1f4;
+                    return 1;
+                }
+                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
+                    return 1;
+                }
+                if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
+                    || t->m_object->m_screenX != t->m_lastTilePx.m_x
+                    || t->m_object->m_screenY != t->m_lastTilePx.m_y) {
+                    m_defenderState = 1;
+                    m_dwell = 0x1f4;
+                    return 1;
+                }
+                CommitNeighbor(
+                    t->m_tileOwnerHi,
+                    t->m_tileOwnerLo,
+                    t->m_lastTilePx.m_x,
+                    t->m_lastTilePx.m_y
+                );
+                return 1;
+            }
+            m_defenderState = 1;
+            m_dwell = 0x1f4;
+            return 1;
+        }
+    }
+    return 1;
+}
+
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
@@ -1225,6 +1507,27 @@ i32 CGrunt::UpdateArrival() {
 }
 
 // @early-stop
+RVA(0x000f0db0, 0x48)
+
+i32 CellTargetable(i32 tileX, i32 tileY) {
+    CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
+    POSITION pos = list.GetHeadPosition();
+
+    if (pos != 0) {
+        do {
+            CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
+            if (p->m_pending == 0) {
+                i32 v54 = p->m_tileX;
+                i32 v58 = p->m_tileY;
+                if (v54 == tileX && v58 == tileY) {
+                    return 1;
+                }
+            }
+        } while (pos != 0);
+    }
+    return 0;
+}
+
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
@@ -2238,6 +2541,359 @@ L_tailc:
 }
 
 // @early-stop
+RVA(0x000f42f0, 0x15c0)
+i32 CGrunt::ScanNearestTarget() {
+    i32 ownerHi = m_tileOwnerHi;
+    m_defenderPx.m_x = m_lastTilePx.m_x;
+    m_defenderPx.m_y = m_lastTilePx.m_y;
+    i32 cx = m_lastTilePx.m_x >> 5;
+    i32 cy = m_lastTilePx.m_y >> 5;
+
+    CGrunt* best = 0;
+    i32 bestDist = 0x7fffffff;
+    for (i32 row = 0; row < 4; row++) {
+        if (row == ownerHi) {
+            continue;
+        }
+        CTriggerMgr* board = g_gameReg->m_cmdGrid;
+        for (i32 col = 0; col < 15; col++) {
+            CGrunt* cand = board->m_grid[row * TM_GRID_COLS + col];
+            if (cand != 0 && cand->m_entranceCommitted != 0 && cand->m_gruntKind != GRUNT_GHOST) {
+                i32 pa;
+                PRIO(pa, m_entranceReason);
+                i32 pb;
+                PRIO(pb, cand->m_entranceReason);
+                if (pa <= pb) {
+                    i32 dx = (cand->m_object->m_screenX >> 5) - cx;
+                    i32 dy = (cand->m_object->m_screenY >> 5) - cy;
+                    i32 d = dx * dx + dy * dy;
+                    if (d < bestDist) {
+                        best = cand;
+                        bestDist = d;
+                    }
+                }
+            }
+        }
+    }
+
+    i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
+    Coord pt;
+    GetScreenPos(&pt);
+    i32 by = pt.m_y >> 5;
+    GetScreenPos(&pt);
+    i32 bx = pt.m_x >> 5;
+    GetScreenPos(&pt);
+    i32 t3y = pt.m_y >> 5;
+    GetScreenPos(&pt);
+    i32 t4x = pt.m_x >> 5;
+    RECT box;
+    box.left = t4x - halfBox;
+    box.top = t3y - halfBox;
+    box.right = bx + halfBox + 1;
+    box.bottom = by + halfBox + 1;
+    if (best != 0) {
+        POINT pt;
+        pt.x = best->m_lastTilePx.m_x >> 5;
+        pt.y = best->m_lastTilePx.m_y >> 5;
+        if (!PtInRect(&box, pt)) {
+            best = 0;
+        }
+    }
+
+    i32 atTarget = 0;
+    if (best != 0) {
+        i32 x = best->m_object->m_screenX;
+        if (x == best->m_lastTilePx.m_x && best->m_object->m_screenY == best->m_lastTilePx.m_y
+            && this->RectContains(x, best->m_object->m_screenY) != 0) {
+            atTarget = 1;
+        }
+    }
+
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
+            return 1;
+        }
+        if (m_combatActive != 0) {
+            return 1;
+        }
+        if (m_stamina >= 100) {
+            if (FindGridNeighbor(1) != 0) {
+                return 1;
+            }
+            if (atTarget && best == 0) {
+                return 1;
+            }
+            if (m_poweredUp == 0) {
+                return 1;
+            }
+        } else {
+            if (atTarget) {
+                return 1;
+            }
+            if (m_poweredUp == 0) {
+                return 1;
+            }
+        }
+        if (m_neighborValid != 0) {
+            return 1;
+        }
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        ResetEntranceAnimation(1, 0, 0);
+        return 1;
+    }
+
+    switch (m_defenderState) {
+        case AISTATE_SEEK: {
+
+            if (best == 0) {
+                goto L_wander;
+            }
+            if (m_poweredUp == 0 && m_stamina >= 100
+                && best->m_object->m_screenX == best->m_lastTilePx.m_x
+                && best->m_object->m_screenY == best->m_lastTilePx.m_y) {
+                i32 pa;
+                PRIO(pa, m_entranceReason);
+                i32 pb;
+                PRIO(pb, best->m_entranceReason);
+                if (pa <= pb
+                    && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
+                           != 0) {
+                    CommitNeighbor(
+                        best->m_tileOwnerHi,
+                        best->m_tileOwnerLo,
+                        best->m_lastTilePx.m_x,
+                        best->m_lastTilePx.m_y
+                    );
+                    return 1;
+                }
+            }
+
+            if (best == 0) {
+                goto L_wander;
+            }
+            {
+                i32 pa;
+                PRIO(pa, m_entranceReason);
+                i32 pb;
+                PRIO(pb, best->m_entranceReason);
+                if (pa > pb) {
+                    goto L_wander;
+                }
+            }
+            if (static_cast<u32>(m_dwell) <= 0x3e8) {
+                goto L_wander;
+            }
+            m_defenderPx.m_x = m_lastTilePx.m_x;
+            m_defenderPx.m_y = m_lastTilePx.m_y;
+            {
+                i32 pa;
+                PRIO(pa, m_entranceReason);
+                i32 pb;
+                PRIO(pb, best->m_entranceReason);
+                if (pa > pb) {
+                    goto L_scanDone;
+                }
+            }
+            if (this->GruntInRadius(best->m_tileOwnerHi, best->m_tileOwnerLo) == 0) {
+                goto L_scanDone;
+            }
+            {
+                Coord cc[2];
+                best->GetScreenPos(cc);
+                if (this->TileSwitch(cc[0].m_x >> 5, cc[0].m_y >> 5, 0, m_arrivalFlags, 1, 0)
+                    == 0) {
+                    goto L_scanDone;
+                }
+            }
+            SetEntrancePos(1, 1);
+            m_arrivalCell.m_x = best->m_tileOwnerHi;
+            m_arrivalCell.m_y = best->m_tileOwnerLo;
+            m_defenderState = AISTATE_CHASE;
+            {
+                if (CGameLevel::PointInBounds(
+                        &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                        m_object->m_screenX,
+                        m_object->m_screenY
+                    )
+                    != 0) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                }
+            }
+        L_scanDone:
+            m_dwell = 0;
+            return 1;
+
+        L_wander:
+            if (m_resetApplied != 0 || m_hasExtent == 0 || static_cast<u32>(m_dwell) <= 0xbb8) {
+                return 1;
+            }
+
+            {
+                i32 lo = static_cast<i32>(g_frameTime) - m_arrivalRerollLo;
+                i32 hi = 0 - m_arrivalRerollHi
+                         - (static_cast<u32>(static_cast<i32>(g_frameTime))
+                                    < static_cast<u32>(m_arrivalRerollLo)
+                                ? 1
+                                : 0);
+                i32 winHi = m_arrivalRerollWindowHi;
+                if (hi > winHi
+                    || (hi == winHi
+                        && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
+
+                    ResetEntranceAnimation(1, 1, 0);
+                    m_arrivalRerollLo = 0;
+                    m_arrivalRerollWindowLo = 0;
+                    m_arrivalRerollHi = 0;
+                    m_arrivalRerollWindowHi = 0;
+                    m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
+                    m_arrivalRerollWindowHi = 0;
+                    m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+                    m_arrivalRerollHi = 0;
+                } else {
+
+                    CWwdGameObjectA* hud = m_object;
+                    i32 baseCol = hud->m_extent.left;
+                    i32 spanX = hud->m_extent.right - baseCol;
+                    i32 baseRow = hud->m_extent.top;
+                    spanX = (spanX ^ (spanX >> 31)) - (spanX >> 31);
+                    i32 spanY = hud->m_extent.bottom - baseRow;
+                    spanY = (spanY ^ (spanY >> 31)) - (spanY >> 31);
+                    if (spanX != 0) {
+                        baseCol += rand() % spanX;
+                    }
+                    if (spanY != 0) {
+                        baseRow += rand() % spanY;
+                    }
+                    CMapMgr* grid = g_gameReg->m_tileGrid;
+                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)
+                        && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
+                        this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
+                    }
+                    if (CoordCount() != 0) {
+                        if (spanX > spanY) {
+                            spanX = spanY;
+                        }
+                        if (CoordCount() > spanX) {
+                            SetEntrancePos(1, 1);
+                        }
+                    }
+                }
+            }
+            m_dwell = 0;
+            return 1;
+        }
+        case AISTATE_CHASE: {
+            CGrunt* sg = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            if (best != 0 && best != sg) {
+                m_arrivalCell.m_x = -1;
+                m_defenderState = AISTATE_SEEK;
+                m_arrivalCell.m_y = -1;
+                return 1;
+            }
+            if (sg == 0) {
+                goto L_clearMode;
+            }
+            i32 pa;
+            PRIO(pa, m_entranceReason);
+            i32 pb;
+            PRIO(pb, sg->m_entranceReason);
+            if (pa > pb) {
+                goto L_clearMode;
+            }
+            if (sg->m_entranceCommitted == 0) {
+                goto L_clearMode;
+            }
+            if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
+                goto L_clearMode;
+            }
+            if (static_cast<u32>(m_dwell) > 0x1f4) {
+                StepArrivalDrop(
+                    sg->m_lastTilePx.m_x,
+                    sg->m_lastTilePx.m_y,
+                    m_arrivalFlags,
+                    0,
+                    1,
+                    0
+                );
+                m_dwell = 0;
+            }
+            if (m_poweredUp != 0 || m_stamina < 100) {
+                return 1;
+            }
+            if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
+                return 1;
+            }
+            if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
+                || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
+                return 1;
+            }
+            CommitNeighbor(
+                sg->m_tileOwnerHi,
+                sg->m_tileOwnerLo,
+                sg->m_lastTilePx.m_x,
+                sg->m_lastTilePx.m_y
+            );
+            m_defenderState = AISTATE_ATTACK;
+            return 1;
+        L_clearMode:
+            m_defenderState = AISTATE_SEEK;
+            return 1;
+        }
+        case AISTATE_ATTACK: {
+            if (m_poweredUp != 0) {
+                CGrunt* sg =
+                    m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                if (sg == 0) {
+                    goto L_setLock;
+                }
+                i32 pa;
+                PRIO(pa, m_entranceReason);
+                i32 pb;
+                PRIO(pb, sg->m_entranceReason);
+                if (pa > pb) {
+                    goto L_setLock;
+                }
+                if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
+                    goto L_setLock;
+                }
+                if (sg->m_entranceCommitted == 0) {
+                    goto L_setLock;
+                }
+                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
+                    return 1;
+                }
+                if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
+                    goto L_setLock;
+                }
+                if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
+                    || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
+                    goto L_setLock;
+                }
+                CommitNeighbor(
+                    sg->m_tileOwnerHi,
+                    sg->m_tileOwnerLo,
+                    sg->m_lastTilePx.m_x,
+                    sg->m_lastTilePx.m_y
+                );
+                m_defenderState = AISTATE_ATTACK;
+                return 1;
+            L_setLock:
+                m_defenderState = AISTATE_CHASE;
+                m_dwell = 0x1f4;
+                return 1;
+            }
+            m_defenderState = AISTATE_CHASE;
+            m_dwell = 0x1f4;
+            return 1;
+        }
+    }
+    return 1;
+}
+
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
     CDWordArray acc;
@@ -2558,7 +3214,7 @@ i32 CGrunt::SeekTarget() {
         i32 dy = selfTileB.m_y - slotTileB.m_y;
         if (((dx ^ (dx >> 31)) - (dx >> 31)) < 2 && ((dy ^ (dy >> 31)) - (dy >> 31)) < 2) {
             PickupType r2 = slot->m_entranceReason;
-            if (r2 > PICKUP_WINGZ) {
+            if (r2 > PICKUP_EQUIPPABLE_LAST) {
                 r2 = slot->m_toolId;
             }
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
@@ -2601,11 +3257,13 @@ i32 CGrunt::SeekTarget() {
                 if (sv != 0 && sv->m_entranceCommitted != 0) {
                     PickupType k = sv->m_entranceReason;
                     PickupType kk = k;
-                    if (k > PICKUP_WINGZ) {
+                    if (k > PICKUP_EQUIPPABLE_LAST) {
                         kk = sv->m_toolId;
                     }
                     if (kk != PICKUP_NONE && kk != PICKUP_WARPSTONE && kk != PICKUP_BOMB
-                        && !(k > PICKUP_WINGZ ? (sv->m_toolId == PICKUP_WARPSTONE) : false)
+                        && !(
+                            k > PICKUP_EQUIPPABLE_LAST ? (sv->m_toolId == PICKUP_WARPSTONE) : false
+                        )
                         && sv->m_gruntKind != GRUNT_GHOST) {
                         i32 ex = sv->m_object->m_screenX >> 5;
                         i32 ddx = ex - (this->m_object->m_screenX >> 5);
@@ -2757,6 +3415,55 @@ i32 CGrunt::SeekTarget() {
 }
 
 // @early-stop
+RVA(0x000f7d90, 0x171)
+i32 CGrunt::StepPeerTracking() {
+    m_defenderPx.m_x = m_lastTilePx.m_x;
+    m_defenderPx.m_y = m_lastTilePx.m_y;
+    if (m_vehiclePickupType == PICKUP_NONE) {
+        m_arrivalState = 5;
+        m_defenderState = 0;
+        m_dwell = 0;
+        return 1;
+    }
+    CGrunt* p = m_tileMgr->FindNearestEnemy(this);
+    if (p == 0) {
+        return 1;
+    }
+    if (p->m_entranceCommitted == 0) {
+        return 1;
+    }
+    CGameObject* a = p->m_object;
+    if (a->m_screenX == p->m_lastTilePx.m_x && a->m_screenY == p->m_lastTilePx.m_y
+        && RectContainsGated(a->m_screenX, a->m_screenY)) {
+        CGameObject* b = p->m_object;
+        g_gameReg->m_cmdGrid
+            ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);
+        return 1;
+    }
+    if (static_cast<u32>(m_dwell) <= 0x3e8) {
+        return 1;
+    }
+    if (GruntInRadius(p->m_tileOwnerHi, p->m_tileOwnerLo)) {
+        CGameObject* b = p->m_object;
+        TileSwitch(b->m_screenX >> 5, b->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
+        m_dwell = 0;
+        if (m_blockedVoicePending == 0) {
+            return 1;
+        }
+        CWwdGameObjectA* c = m_object;
+        CGruntzMgr* g = g_gameReg;
+        i32 y = c->m_screenY;
+        i32 x = c->m_screenX;
+        CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
+        if (x < r->m_viewRect.right && x >= r->m_viewRect.left && y < r->m_viewRect.bottom
+            && y >= r->m_viewRect.top) {
+            g->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+        }
+    }
+    m_blockedVoicePending = 0;
+    return 1;
+}
+
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderPx.m_x = m_lastTilePx.m_x;

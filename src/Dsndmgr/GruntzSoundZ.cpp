@@ -9,6 +9,9 @@
 #include <string.h>
 
 VTBL(CGruntzSoundInnerZ, 0x001ef700);
+DATA(0x001ee8ec)
+char g_dot[] = ".";
+
 DATA(0x00253c5c)
 HMDIDRIVER g_ailMidiDriver = 0;
 DATA(0x00253c60)
@@ -279,6 +282,29 @@ RVA_COMPGEN(0x00138a30, 0x1e, ??_GCGruntzSoundInnerZ@@UAEPAXI@Z)
 RVA(0x00138a50, 0x46)
 CGruntzSoundInnerZ::~CGruntzSoundInnerZ() {
     ReleaseHandle();
+}
+
+RVA(0x00138aa0, 0x175)
+i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
+    if (strstr(path, g_dot) == 0) {
+        return LoadSpecial(path, name);
+    }
+    CFile file;
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    u32 length = file.GetLength();
+    if (length < 4) {
+        return 0;
+    }
+    m_loadBuffer = static_cast<char*>(operator new(length));
+    if (m_loadBuffer == 0) {
+        return 0;
+    }
+    if (file.Read(m_loadBuffer, length) != length) {
+        return 0;
+    }
+    return DecodeBuf(m_loadBuffer, length, name);
 }
 
 RVA(0x00138c20, 0x122)

@@ -23,13 +23,6 @@ const char g_fmtPathJoin[] = "%s%s%s";
 // @identity-TODO LookupValue@CDDrawSubMgrLeaf - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (12 fns) came from the static library. It belongs to another compiland.
-RVA(0x0006b2a0, 0x23)
-CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
-    void* val = 0;
-    m_animations.Lookup(key, val);
-    return static_cast<CObject*>(val);
-}
-
 RVA(0x00152640, 0x6)
 i32 CDDrawSubMgrLeaf::IsReady() {
     return 1;

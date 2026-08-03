@@ -391,24 +391,3 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
     ar->Write(&m_currentMs, 4);
     return 1;
 }
-RVA(0x000d7440, 0xad)
-i32 CPlay::LoadLoadingBarSprite() {
-    CObject* spr_ob = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
-    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
-    if (!spr) {
-        return 0;
-    }
-
-    m_revealCapStart = (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
-                           ? static_cast<CImage*>(spr->m_items.GetAt(1))
-                           : 0;
-    m_revealCapMid = (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(2))
-                         : 0;
-    m_revealCapEnd = (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(3))
-                         : 0;
-    m_revealFrame = 1;
-    return 1;
-}

@@ -767,6 +767,32 @@ static const char s_strRBrack[] = "]";
 // @identity-TODO ?_GzPTree - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (50 fns) came from the static library. It belongs to another compiland.
+RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
+// @identity-TODO ?1zPTree - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (50 fns) came from the static library. It belongs to another compiland.
+
+RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
+
+// @identity-TODO ?1CButeMgr - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (50 fns) came from the static library. It belongs to another compiland.
+
+RVA(0x000213c0, 0x14c)
+CButeMgr::~CButeMgr() {}
+
+// @identity-TODO ?1CBSecStream - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (50 fns) came from the static library. It belongs to another compiland.
+
+RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
+
+// @identity-TODO ?_EzPTree - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (50 fns) came from the static library. It belongs to another compiland.
+
+RVA_COMPGEN(0x00021600, 0x8, ??_EzPTree@@W7AEPAXI@Z)
+
 RVA(0x00170330, 0x34)
 void CButeMgr::Init() {
     m_pos = 0;

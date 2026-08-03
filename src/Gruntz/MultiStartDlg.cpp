@@ -27,10 +27,6 @@ enum {
 DATA(0x001ea578)
 const i32 g_msgmap_CMultiStartDlg = 6205544;
 VTBL(CMultiStartDlg, 0x001ea8ec);
-DATA(0x0024bdb0)
-CString g_gruntNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
-DATA(0x0024bdc0)
-i32 g_savedMultiWndProc = 0;
 
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent)

@@ -46,9 +46,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x001e9a68)
-double s_fpZero = 0.0;
-
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
@@ -96,18 +93,6 @@ static i32 s_entrancePreset0[3];
 static i32 s_entrancePreset1[3];
 static i32 s_entrancePreset2[3];
 
-static void GruntPosScratchTeardown() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
-        if (slot != 0) {
-            slot->~CString();
-        }
-        slot++;
-        cnt--;
-    }
-}
-
 static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -126,104 +111,6 @@ static void GruntScratchTeardown() {
         slot++;
         cnt--;
     }
-}
-
-// @early-stop
-RVA(0x0005ecd0, 0x4f3)
-void CGrunt::FinalizeStep(char* name) {
-    CUserLogic::FinalizeStep(name);
-    AdvanceMotion();
-    if (m_struckSlotSound != 0) {
-        bool neL = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") != 0);
-        if (neL && strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") != 0) {
-            StopStruckSlotSound();
-        }
-    }
-    if (m_struckVoiceSound != 0) {
-        if (m_gruntKind == GRUNT_NORMAL) {
-            StopStruckVoiceSound();
-        } else {
-            CGruntzMgr* g = g_gameReg;
-            i32 y = m_object->m_screenY;
-            i32 x = m_object->m_screenX;
-            if (!(x < g->m_viewBounds.right && x >= g->m_viewBounds.left
-                  && y < g->m_viewBounds.bottom && y >= g->m_viewBounds.top)) {
-                StopStruckVoiceSound();
-            }
-        }
-    }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0) {
-
-        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
-            return;
-        }
-        GruntDirectionCell c = m_entranceCell;
-        i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
-        i32 column = (c.column == 0) ? 2 : (c.column == 2 ? 0 : c.column);
-        i32 base = 3 * row + column;
-        CGruntCellRec* cell = &m_cells[base];
-        double d48 = cell->m_motion.m_direction.x;
-        double d50 = cell->m_motion.m_direction.y;
-        m_movePosX =
-            static_cast<double>(static_cast<i64>(g_frameDelta)) * d48 * m_moveSpeed + m_movePosX;
-        m_movePosY =
-            static_cast<double>(static_cast<i64>(g_frameDelta)) * d50 * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((cell->m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((cell->m_motion.m_step.y + m_movePosY));
-        if ((d48 > s_fpZero && nx > m_lastTilePx.m_x)
-            || (d48 < s_fpZero && nx < m_lastTilePx.m_x)) {
-            nx = m_lastTilePx.m_x;
-        }
-        if ((d50 > s_fpZero && ny > m_lastTilePx.m_y)
-            || (d50 < s_fpZero && ny < m_lastTilePx.m_y)) {
-            ny = m_lastTilePx.m_y;
-        }
-        m_object->m_screenX = nx;
-        m_object->m_screenY = ny;
-        CWwdGameObjectA* h = m_object;
-        i32 v = h->m_screenY + 0x186a0;
-        if (h->m_sortKey != v) {
-            h->m_sortKey = v;
-            h->m_flags |= 0x20000;
-        }
-        return;
-    }
-
-    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-    GruntPosScratchTeardown();
-    if (strcmp(*rec, k_60df94) == 0) {
-        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
-            return;
-        }
-        GruntDirectionCell c = m_entranceCell;
-        i32 base = 3 * c.row + c.column;
-        CGruntCellRec* cell = &m_cells[base];
-        double d48 = cell->m_motion.m_direction.x;
-        double d50 = cell->m_motion.m_direction.y;
-        m_movePosX =
-            static_cast<double>(static_cast<i64>(g_frameDelta)) * d48 * m_moveSpeed + m_movePosX;
-        m_movePosY =
-            static_cast<double>(static_cast<i64>(g_frameDelta)) * d50 * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((cell->m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((cell->m_motion.m_step.y + m_movePosY));
-        if ((d48 > s_fpZero && nx > m_lastTilePx.m_x)
-            || (d48 < s_fpZero && nx < m_lastTilePx.m_x)) {
-            nx = m_lastTilePx.m_x;
-        }
-        if ((d50 > s_fpZero && ny > m_lastTilePx.m_y)
-            || (d50 < s_fpZero && ny < m_lastTilePx.m_y)) {
-            ny = m_lastTilePx.m_y;
-        }
-        m_object->m_screenX = nx;
-        m_object->m_screenY = ny;
-        CWwdGameObjectA* h = m_object;
-        i32 v = h->m_screenY + 0x186a0;
-        if (h->m_sortKey != v) {
-            h->m_sortKey = v;
-            h->m_flags |= 0x20000;
-        }
-    }
-    return;
 }
 
 // @early-stop
@@ -301,7 +188,7 @@ i32 CGrunt::UpdateGruntStatus() {
 // @early-stop
 RVA(0x00061940, 0x200)
 i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
-    if (m_entranceReason >= PICKUP_BABYWALKER) {
+    if (m_entranceReason >= PICKUP_TOYZ_BEGIN) {
         return 0;
     }
 
@@ -518,7 +405,7 @@ i32 CGrunt::StepAttackFire() {
                     m_gruntKind
                 );
                 PickupType t = tgt->m_entranceReason;
-                if (t > PICKUP_WINGZ) {
+                if (t > PICKUP_EQUIPPABLE_LAST) {
                     t = tgt->m_toolId;
                 }
                 if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
@@ -1598,14 +1485,14 @@ i32 CGrunt::StepCombatReaction(
             ResetEntranceAnimation(1, 0, 0);
         }
         PickupType mode = m_entrancePickup;
-        if (mode >= PICKUP_MEGAPHONE) {
+        if (mode >= PICKUP_POWERUPZ_BEGIN) {
             LoadGruntTypeTable(mode, 1, 0, 1);
             m_entrancePickup = PICKUP_INVALID;
             m_helpCueId = 0;
-        } else if (mode >= PICKUP_BROWNBRICK) {
+        } else if (mode >= PICKUP_BRICKZ_BEGIN) {
             m_brickPickupType = mode;
             m_entrancePickup = PICKUP_INVALID;
-        } else if (mode >= PICKUP_BABYWALKER) {
+        } else if (mode >= PICKUP_TOYZ_BEGIN) {
             LoadVehicleGruntSprites(mode);
         } else {
             LoadGruntTypeTable(mode, 1, 0, 1);

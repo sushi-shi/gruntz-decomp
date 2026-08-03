@@ -19,6 +19,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyMessages.h>
 #include <Gruntz/BootyWalkAnim.h>
+#include <Gruntz/BzState.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameMode.h>
@@ -37,6 +38,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
+#include <Ints.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 
@@ -44,42 +46,13 @@
 #include <math.h>
 #include <stdio.h>
 
-RVA(0x0001c8a0, 0xec)
-i32 CBootyState::InputVirtual() {
-    if (CState::InputVirtual() == 0) {
-        return 0;
-    }
-    int(WINAPI * sc)(BOOL) = ShowCursor;
-    i32 r = sc(0);
-    while (r >= 0) {
-        r = sc(0);
-    }
-    void* booty = SymTab2c()->ResolvePath("IMAGEZ");
-    if (booty == 0) {
-        return 0;
-    }
-    if (m_world->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
-        return 0;
-    }
-    void* gruntz = m_gruntzBank->ResolvePath("IMAGEZ");
-    if (gruntz == 0) {
-        return 0;
-    }
-    if (m_world->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
-        return 0;
-    }
-    if (m_activation != 200) {
-        if (FadeInTitle("bg", 0, 0, 0, 0, 1) == 0) {
-            return 0;
-        }
-        ShowLevelCompleteMessage();
-    } else {
-        ShowSecretBonusMessage();
-    }
-    m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1);
-    return 1;
-}
+DATA(0x001e8fe4)
+BzGeomPair g_idleGeom[4] = {
+    {0, 472},
+    {101, 525},
+    {98, 474},
+    {146, 525},
+};
 
 DATA(0x001e8fe8)
 
@@ -126,6 +99,43 @@ RECT g_labelRects[7] = {
 };
 VTBL(CMultiBootyState, 0x001e9bdc);
 VTBL(CBootyState, 0x001e9cec);
+
+DATA(0x001e93b0)
+float g_secretRatioScale = 100.0f;
+
+DATA(0x0020b838)
+RECT g_levelMsgRectsA[8] = {
+    {105, 106, 190, 155},
+    {26, 149, 182, 199},
+    {72, 192, 187, 240},
+    {87, 238, 185, 288},
+    {94, 281, 185, 332},
+    {31, 324, 182, 374},
+    {89, 360, 181, 411},
+    {59, 400, 180, 449}
+};
+
+DATA(0x0020b8f8)
+RECT g_levelMsgRectsB[8] = {
+    {245, 92, 417, 162},
+    {245, 135, 417, 205},
+    {245, 180, 417, 250},
+    {245, 227, 417, 297},
+    {245, 266, 417, 340},
+    {245, 310, 417, 380},
+    {245, 351, 417, 421},
+    {245, 392, 417, 462}
+};
+
+DATA(0x00229ef8)
+CString g_levelMsgStrings[8];
+
+DATA(0x00229f30)
+SecretMsgRow g_secretMsgRows[24];
+char g_secretMsgA[0x20];
+char g_secretMsgB[0x80];
+
+// @early-stop
 
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
@@ -187,6 +197,82 @@ i32 CBootyState::LeaveState(GameStateId) {
 }
 
 // @early-stop
+RVA(0x00018f00, 0x4fb)
+i32 CBootyState::ShowSecretBonusMessage() {
+    if (m_secretBannerOnce != 0 && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {
+        CString s;
+        if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
+            return 0;
+        }
+        RECT r1, r2, r3;
+        SetRect(&r1, 0, -15, 0x280, 0x1d1);
+        SetRect(&r2, 0, 0x19, 0x280, 0x1f9);
+        SetRect(&r3, 0, 0x38, 0x280, 0x78);
+        s.Format("The Secret of Secretz:");
+        ShowHudMessage(m_world, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
+
+        CString s2(g_secretMsgA);
+        CString s3(g_secretMsgB);
+        for (i32 k = 0; k < s2.GetLength(); k++) {
+            s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
+        }
+        ShowHudMessage(m_world, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
+        return 1;
+    }
+
+    i32 count = static_cast<i32>(((g_gameReg->m_scoreHud)->GroupRatio() * g_secretRatioScale));
+    i32 rowBase = (g_gameReg->m_scoreHud->m_count - 1) / 4;
+    i32 category = (count >= 0x64) ? 3 : ((count >= 0x32) ? 2 : 1);
+
+    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
+        return 0;
+    }
+    CString title;
+    RECT rTitle;
+    SetRect(&rTitle, 0, 0x38, 0x280, 0x78);
+    title.Format("Secret Bonus Acquired:");
+    ShowHudMessage(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+
+    for (i32 j = 0; j < category; j++) {
+        RECT rA, rB;
+        if (category == 1) {
+            SetRect(&rA, 0, -15, 0x280, 0x1d1);
+            SetRect(&rB, 0, 0x19, 0x280, 0x1f9);
+        } else if (category == 2) {
+            if (j == 0) {
+                SetRect(&rA, 0, -20, 0x280, 0x1cc);
+                SetRect(&rB, 0, 0x14, 0x280, 0x1f4);
+            } else {
+                SetRect(&rA, 0, 0x46, 0x280, 0x226);
+                SetRect(&rB, 0, 0x6e, 0x280, 0x24e);
+            }
+        } else {
+            if (j == 0) {
+                SetRect(&rA, 0, -60, 0x280, 0x1a4);
+                SetRect(&rB, 0, -20, 0x280, 0x1cc);
+            } else if (j == 1) {
+                SetRect(&rA, 0, 0x1e, 0x280, 0x1fe);
+                SetRect(&rB, 0, 0x46, 0x280, 0x226);
+            } else {
+                SetRect(&rA, 0, 0x78, 0x280, 0x24e);
+                SetRect(&rB, 0, 0xa0, 0x280, 0x276);
+            }
+        }
+        i32 idx = rowBase * 3 + j;
+        CString s5(g_secretMsgRows[idx].strA);
+        CString s6(g_secretMsgRows[idx].strB);
+        for (i32 k = 0; k < s5.GetLength(); k++) {
+            s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
+        }
+        ShowHudMessage(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+    }
+    return 1;
+}
+
+// @early-stop
+
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CGruntzMgr* reg = g_gameReg;
@@ -297,6 +383,62 @@ i32 CBootyState::StepGlitterAnim() {
 }
 
 // @early-stop
+RVA(0x00019920, 0x1f0)
+i32 CBootyState::BuildGruntSprintAnimation() {
+    CShadeTable* h = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    if (!h) {
+        return 0;
+    }
+
+    for (i32 i = 1; i <= 8; i++) {
+        m_sprintSprites[i - 1] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        if (m_sprintSprites[i - 1] == 0) {
+            return 0;
+        }
+
+        CString dir;
+        switch (i - 1) {
+            case 0:
+                dir = "NORTH";
+                break;
+            case 1:
+                dir = "NORTHEAST";
+                break;
+            case 2:
+                dir = "EAST";
+                break;
+            case 3:
+                dir = "SOUTHEAST";
+                break;
+            case 4:
+                dir = "SOUTH";
+                break;
+            case 5:
+                dir = "SOUTHWEST";
+                break;
+            case 6:
+                dir = "WEST";
+                break;
+            case 7:
+                dir = "NORTHWEST";
+                break;
+        }
+
+        m_sprintSprites[i - 1]->ApplyName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
+        m_sprintSprites[i - 1]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
+        m_sprintSprites[i - 1]->m_drawActive = 1;
+        m_sprintSprites[i - 1]->m_drawFillCmd = SHADE_PAL_16;
+        m_sprintSprites[i - 1]->m_drawFillArg = h;
+
+        i32 outX, outY;
+        GenMenuRandPos(i, &outX, &outY);
+        m_sprintSprites[i - 1]->m_screenX = outX;
+        m_sprintSprites[i - 1]->m_screenY = outY;
+    }
+    return 1;
+}
+
 RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
@@ -605,6 +747,106 @@ i32 CBootyState::Render() {
     return 1;
 }
 
+RVA(0x0001c8a0, 0xec)
+i32 CBootyState::InputVirtual() {
+    if (CState::InputVirtual() == 0) {
+        return 0;
+    }
+    int(WINAPI * sc)(BOOL) = ShowCursor;
+    i32 r = sc(0);
+    while (r >= 0) {
+        r = sc(0);
+    }
+    void* booty = SymTab2c()->ResolvePath("IMAGEZ");
+    if (booty == 0) {
+        return 0;
+    }
+    if (m_world->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
+        return 0;
+    }
+    void* gruntz = m_gruntzBank->ResolvePath("IMAGEZ");
+    if (gruntz == 0) {
+        return 0;
+    }
+    if (m_world->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+        return 0;
+    }
+    if (m_activation != 200) {
+        if (FadeInTitle("bg", 0, 0, 0, 0, 1) == 0) {
+            return 0;
+        }
+        ShowLevelCompleteMessage();
+    } else {
+        ShowSecretBonusMessage();
+    }
+    m_world->m_drawTarget->TransExit();
+    RetireScene(0x50, 0x3e8, 0, 1);
+    return 1;
+}
+
+RVA(0x0001c9d0, 0x351)
+void CBootyState::ShowLevelCompleteMessage() {
+    for (i32 i = 0; i < 8; i++) {
+        if (m_templateFlags[i]) {
+            RECT r1;
+            CopyRect(&r1, &g_levelMsgRectsA[i]);
+            CString t(g_levelMsgStrings[i]);
+            ShowHudMessage(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+        if (m_readyFlags[i]) {
+            RECT r2;
+            CopyRect(&r2, &g_levelMsgRectsB[i]);
+            CString t2;
+            FormatHudText(&t2, i);
+            ShowHudMessage(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+    }
+
+    if (m_levelCompleteGate) {
+        if (g_gameReg->m_scoreHud->m_allDone != 0) {
+            RECT r = {0, 0x24, 0x1ea, 0x64};
+            CString s("World Completed!");
+            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+        } else {
+            RECT r = {0, 0x24, 0x1ea, 0x64};
+            CString s("Level Completed!");
+            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+        }
+    }
+
+    CBattlezData* rec = g_gameReg->m_scoreHud;
+    if (rec->m_isCustomLevel == 0 && m_secretGate != 0) {
+        CString s;
+        RECT r;
+        if (rec->m_count > 0x24) {
+            if (rec->m_allDone != 0) {
+                s = "You have completed training! Now go and conquer the Battlez!";
+            } else {
+                s = "You are closer to achieving masterz status!";
+            }
+            SetRect(&r, 0x194, 0xaa, 0x263, 0x1e0);
+        } else {
+            if (rec->m_allDone != 0) {
+                if ((rec)->GroupAllScored()) {
+                    s.Format("WARP letterz recovered! Prepare to warp!");
+                } else {
+                    s = "WARP letterz not recovered! No checkpoint this time.";
+                }
+            } else {
+                if (rec->m_scoreValue != 0) {
+                    s = "Keep finding those WARP letterz!";
+                } else {
+                    s = "Collect all four WARP letterz to reach the checkpoint!";
+                }
+            }
+            SetRect(&r, 0x194, 0xe6, 0x263, 0x1e0);
+        }
+        ShowHudMessage(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
+    }
+}
+
+// @early-stop
+
 RVA(0x0001ce10, 0xc)
 i32 CBootyState::RestoreDisplay() {
     return IsActive() != 0;
@@ -616,6 +858,116 @@ i32 CBootyState::OnPaint() {
         return 0;
     }
     return CState::OnPaint() != 0;
+}
+
+RVA(0x0001ce60, 0x460)
+i32 CBootyState::BuildBootyGruntIdleAnimation() {
+    i32 state = m_activation;
+    if (state != 0xc7 && state != 0xc8) {
+        m_initGate = 1;
+        return 1;
+    }
+    CBattlezData* rec = g_gameReg->m_scoreHud;
+    if (rec->m_isCustomLevel != 0) {
+        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        return 1;
+    }
+    if (m_initOnce == 0) {
+        if (rec->m_allDone != 0) {
+            m_initOnce = 1;
+            CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+            if (ss->m_emitGate == 0) {
+                LeafCue* res = 0;
+                MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
+                if (res != 0) {
+                    res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                }
+            }
+            if (g_gameReg->m_scoreHud->m_count < 0x24) {
+                for (i32 p = 0; p < 4; p++) {
+                    m_visSprites[p]->m_stateFlags |= 1;
+                    m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
+                    m_animSprites[p]->m_screenY = 0xdc;
+                    m_animSprites[p]->m_stateFlags &= ~1;
+                    if ((g_gameReg->m_scoreHud)->GetRecordValue(p) != 0) {
+                        CString letter;
+                        switch (p) {
+                            case 0:
+                                letter = "W";
+                                break;
+                            case 1:
+                                letter = "A";
+                                break;
+                            case 2:
+                                letter = "R";
+                                break;
+                            case 3:
+                                letter = "P";
+                                break;
+                        }
+                        m_animSprites[p]->ApplyName("GRUNTZ_PICKUPS");
+                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
+                    } else {
+                        m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                    }
+                }
+            }
+            for (i32 k = 0; k < 4; k++) {
+                m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
+                m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
+                m_trailSprites[k]->m_stateFlags &= ~1;
+            }
+            if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+                return 0;
+            }
+            ShowLevelCompleteMessage();
+            m_world->m_drawTarget->TransExit();
+            m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+            m_world->m_drawTarget->TransTitle();
+            RetireScene(0x50, 0x3e8, 0, 1);
+            if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+                return 0;
+            }
+            ShowLevelCompleteMessage();
+            return 1;
+        }
+    } else if (rec->m_allDone != 0 && rec->m_count < 0x24 && state == 0xc7) {
+        if ((rec)->GroupAllScored()) {
+            if (!ShowSecretBonusMessage()) {
+                return 0;
+            }
+            m_world->m_drawTarget->TransExit();
+            RetireScene(0x50, 0x3e8, 0, 1);
+            m_activation = 0xfffffffe;
+            return 1;
+        }
+    }
+
+    if (m_activation == 0xfffffffe && (g_gameReg->m_scoreHud)->AllRecordsInBounds()
+        && m_secretBannerOnce == 0) {
+        m_secretBannerOnce = 1;
+        if (!ShowSecretBonusMessage()) {
+            return 0;
+        }
+        m_world->m_drawTarget->TransExit();
+        RetireScene(0x50, 0x3e8, 0, 1);
+        return 1;
+    }
+
+    CBattlezData* rec2 = g_gameReg->m_scoreHud;
+    if (rec2->m_count == 0x20) {
+        SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
+        if (sub != 0) {
+            sub->Stop();
+        }
+        g_gameReg->ChangeState(3);
+        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8021, 0);
+    } else {
+
+        g_gameReg->PassClickToPlayState((rec2->m_count % 0x28) + 1, 0, 1);
+    }
+    return 1;
 }
 
 RVA(0x0001d3e0, 0x8)

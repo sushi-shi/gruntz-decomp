@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
@@ -18,16 +19,28 @@
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
+#include <Gruntz/Fader.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelPreview.h>
 #include <Gruntz/ParseSource.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundFxEmitter.h>
+#include <Gruntz/SplashParams.h>
+#include <Gruntz/String.h>
+#include <Io/FileMem.h>
 #include <Io/MoviePlayer.h>
 #include <Rez/RezMgr.h>
+#include <Rez/RezTypeTag.h>
+#include <Wap32/EngStr.h>
 
 #include <ddraw.h>
 #include <stdio.h>
+#include <string.h>
 
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
@@ -132,6 +145,15 @@ i32 CCreditsState::EnterState(GameStateId) {
         } while (ShowCursor(0) >= 0);
     }
     return InitAttractTitle() != 0;
+}
+
+RVA(0x00039160, 0x46)
+i32 CCreditsState::LeaveState(GameStateId unused) {
+    owner()->m_sound->IsPlaying();
+    owner()->m_sound->StopAndFlush();
+    m_stateBank = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
+    RunTitleSeq("TITLE", 0, 0, 1, 0);
+    return 1;
 }
 
 RVA(0x000391d0, 0x17c)

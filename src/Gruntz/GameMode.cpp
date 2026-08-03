@@ -44,6 +44,8 @@ i32 g_levelMsgIconPos[16] = {
 
 // @early-stop
 #include <Gruntz/GlyphStringDraw.h>
+#include <Mfc.h>
+#include <Gruntz/Random.h>
 RVA(0x00019cd0, 0x200)
 void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
@@ -109,6 +111,36 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 }
 
 // @early-stop
+RVA(0x00019f50, 0xb2)
+i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
+    i32 span = hi - lo + 1;
+    i32 seed;
+    if (span == 0) {
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            seed = timeGetTime();
+        } else {
+            seed = g_randSeed;
+        }
+        g_randSeed = seed * 214013 + 2531011;
+        if (g_randSeed & 0x10000) {
+            return lo;
+        }
+        return hi;
+    }
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        seed = timeGetTime();
+    } else {
+        seed = g_randSeed;
+    }
+    g_randSeed = seed * 214013 + 2531011;
+    return lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
+}
+
+// @interleaver Rng2Next - 70 B lone body at 0x15cbe0, between Deserialize
+// (wwdfactoryobject) and GetFrame (wwdfactoryobject): a first-use placement.
+
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
     CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);

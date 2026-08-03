@@ -8,8 +8,11 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FxModeDesc.h>
+#include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezBufferObject.h>
+
+GZ_ENUM_FORWARD(FaderMode);
 
 class CDDSurface;
 struct CDDPalette;
@@ -175,7 +178,7 @@ public:
     i32* m_rowOfsA;
     i32* m_rowOfsB;
     i32* m_rowOfsC;
-    i32 m_mode;
+    FaderMode m_mode;
     i32 m_stripCopy;
     i32 m_halfWidth;
     i32 m_useLut;

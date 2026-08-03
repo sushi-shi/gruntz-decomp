@@ -27,6 +27,9 @@
 #include <Wwd/WwdFile.h>
 
 #include <string.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameLevel.h>
 
 RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
@@ -152,6 +155,99 @@ static __inline char* PbStr(const CString& s) {
 }
 
 // @early-stop
+RVA(0x00110860, 0x2a0)
+void CTileTriggerLogic::LoadBridgeMove(i32 type) {
+    i32 px, py;
+    CGruntzMgr* r;
+    CDDrawSubMgrLeafScan* set;
+    switch (type) {
+        case 93:
+        case 94:
+        case 95:
+        case 96:
+        case 97:
+        case 98:
+        case 99:
+        case 100:
+        case 101:
+        case 102:
+        case 103:
+        case 104:
+        case 105:
+        case 106:
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
+            r = g_gameReg;
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+                set = r->m_world->m_soundRegistry;
+                if (set->m_emitGate == 0) {
+                    LeafCue* e = static_cast<LeafCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
+                    if (e) {
+                        e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    }
+                }
+            }
+            return;
+        case 107:
+        case 108:
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
+            r = g_gameReg;
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+                set = r->m_world->m_soundRegistry;
+                if (set->m_emitGate == 0) {
+                    LeafCue* e = static_cast<LeafCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
+                    if (e) {
+                        e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    }
+                }
+            }
+            return;
+        case 113:
+        case 114:
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
+            r = g_gameReg;
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_WATERBRIDGEMOVE");
+            }
+            return;
+        case 109:
+        case 110:
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
+            r = g_gameReg;
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
+            }
+            return;
+        case 115:
+        case 116:
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
+            r = g_gameReg;
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
+            }
+            return;
+        case 111:
+        case 112:
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
+            r = g_gameReg;
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_CRUMBLE");
+            }
+            return;
+    }
+}
+
 RVA(0x00110c10, 0xe3f)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
@@ -517,6 +613,15 @@ i32 CTileTriggerLogic::Tick() {
     return 1;
 }
 
+RVA(0x00111ec0, 0x37)
+void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
+    CDDrawWorkerHost* grid = m_world->m_level->m_mainPlane;
+    i32 idx = grid->m_colOffsets[col] + row;
+    grid->m_tileGrid[idx] = value;
+
+    m_tileGrid->ComputeCellFlags(row, col, value);
+}
+
 RVA(0x00111f10, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
@@ -868,6 +973,52 @@ ret1:
 }
 
 // @early-stop
+RVA(0x00112a50, 0xdd)
+
+i32 CCheckpointTriggerSwitchLogic::BuildSmall(
+    CTileTriggerContainer* owner,
+    TrigLogicId typeId,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    const RECT* rect,
+    i32 linkGate,
+    i32 damageParam,
+    i32 checkpointType
+) {
+    i32 px;
+    i32 py;
+    CWwdGameObjectA* spr;
+
+    if (m_initGate != 0) {
+        goto fail;
+    }
+    if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
+        goto fail;
+    }
+    memcpy(m_block, rect, sizeof(m_block));
+    if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType)) {
+        goto fail;
+    }
+    px = (tileX << 5) + 0x10;
+    py = (tileY << 5) + 0x10;
+    if (checkpointType == 0) {
+        return 1;
+    }
+    spr = g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
+    if (!spr) {
+        goto fail;
+    }
+    spr->m_animWorker->m_notify(spr);
+    spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
+    if (spr->m_layer == 0) {
+        goto fail;
+    }
+    return 1;
+fail:
+    return 0;
+}
+
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;

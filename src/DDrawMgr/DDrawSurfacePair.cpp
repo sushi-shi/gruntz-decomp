@@ -37,14 +37,6 @@
 // @identity-TODO BltSelf@CDDrawSurfacePair - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (43 fns) came from the static library. It belongs to another compiland.
-RVA(0x0006b270, 0x1b)
-CObject* CAniElement::AtChecked(i32 i) const {
-    if (i >= 0 && i < m_records.GetSize()) {
-        return m_records.GetAt(i);
-    }
-    return 0;
-}
-
 RVA(0x00163bc0, 0x2c)
 void CDDrawWorkerList::Unload() {
     POSITION pos = m_workers.GetHeadPosition();

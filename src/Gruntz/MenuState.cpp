@@ -2,7 +2,11 @@
 
 #include <Gruntz/MenuState.h>
 
+#include <Mfc.h>
+
+#include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
+#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -12,20 +16,39 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Enums.h>
+#include <Gruntz/Attract.h>
+#include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/ChatBox.h>
+#include <Gruntz/Fader.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
 #include <Gruntz/MenuVersion.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/SplashParams.h>
+#include <Gruntz/String.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
+#include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/EngStr.h>
+
+#include <ddraw.h>
+#include <stdio.h>
+#include <string.h>
 
 DATA(0x00245574)
 CFixedPtrArray32* g_actorList = 0;
@@ -164,6 +187,58 @@ void CMenuState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
+RVA(0x000a03f0, 0x14b)
+i32 CMenuState::EnterState(GameStateId mode) {
+    char stateName[0x20];
+    char titleName[0x20];
+
+    if (mode != GAMESTATE_ATTRACT) {
+        i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
+        sprintf(stateName, "STATEZ_ATTRACT");
+        sprintf(titleName, "TITLE%d", idx);
+
+        CSymTab* saved = attractState();
+        CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
+        m_stateBank = (state);
+        if (state == 0) {
+            return 0;
+        }
+
+        i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+        if (faded == 0) {
+            m_stateBank = (saved);
+            return 0;
+        }
+        m_stateBank = (saved);
+
+        CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
+        (static_cast<CDDSurface*>(tgt))
+            ->ShadeRect(
+                g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+                static_cast<tagRECT*>(0)
+            );
+        menuRoot()->m_drawTarget->TransTitle();
+    } else {
+        menuRoot()->m_drawTarget->TransEnter();
+        CDDSurface* tgt = menuRoot()->m_drawTarget->m_overlayPair->m_surface;
+        (static_cast<CDDSurface*>(tgt))
+            ->ShadeRect(
+                g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+                static_cast<tagRECT*>(0)
+            );
+        menuRoot()->m_drawTarget->TransExit();
+    }
+
+    RetireScene(0x50, 0x3e8, 0, 1);
+
+    if (ShowCursor(1) < 0) {
+        do {
+        } while (ShowCursor(1) < 0);
+    }
+    StartMusic();
+    return 1;
+}
+
 RVA(0x000a05a0, 0x74)
 void CMenuState::StartMusic() {
     if (m_menuMusicCue == 0) {
@@ -281,6 +356,77 @@ tail:
     m_menuTree->Post();
     return 1;
 }
+
+RVA(0x000a09a0, 0x6a)
+i32 CMenuState::InputVirtual() {
+    if (CState::InputVirtual() == 0) {
+        return 0;
+    }
+    void* tree = SymTab2c()->ResolvePath("IMAGEZ");
+    if (tree == 0) {
+        return 0;
+    }
+    if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
+        return 0;
+    }
+    if (RestoreDisplay() == 0) {
+        return 0;
+    }
+    int(WINAPI * sc)(BOOL) = ShowCursor;
+    i32 r = sc(1);
+    while (r < 0) {
+        r = sc(1);
+    }
+    return 1;
+}
+
+RVA(0x000a0a30, 0x110)
+i32 CMenuState::RestoreDisplay() {
+    char stateName[0x20];
+    char titleName[0x20];
+
+    i32 gate = IsActive();
+    if (gate == 0) {
+        return gate;
+    }
+
+    menuRoot()->m_drawTarget->m_backPair->m_surface->Fill(0);
+
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
+    sprintf(stateName, "STATEZ_ATTRACT");
+    sprintf(titleName, "TITLE%d", idx);
+
+    CSymTab* saved = attractState();
+    CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
+    m_stateBank = (state);
+    if (state == 0) {
+        return 0;
+    }
+
+    i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    if (faded == 0) {
+        m_stateBank = (saved);
+        return 0;
+    }
+    m_stateBank = (saved);
+
+    CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
+    tgt->ShadeRect(
+        g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+        static_cast<tagRECT*>(0)
+    );
+    menuRoot()->m_drawTarget->TransTitle();
+
+    RetireScene(0x50, 0x3e8, 0, 1);
+
+    if (ShowCursor(1) < 0) {
+        do {
+        } while (ShowCursor(1) < 0);
+    }
+    return 1;
+}
+
+// @early-stop
 
 RVA(0x000a0b90, 0xc7)
 i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
