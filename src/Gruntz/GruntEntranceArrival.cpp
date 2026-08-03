@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntEntranceArrival.h>
 
 #include <AddrWord.h>
@@ -544,7 +545,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 }
             } else {
                 if (m_moveKind == 0) {
-                    i32 md = (g->m_gameMode == 1) ? 3 : 6;
+                    i32 md = (g->m_gameMode == GAMEMODE_SINGLE) ? 3 : 6;
                     m_moveKind = rand() % md + 1;
                 }
                 i32 tier = cueTier + m_moveKind - 1;
@@ -1774,7 +1775,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         i32 variant = m_moveVariantOverride;
         m_moveVariant = variant;
         if (variant == 0) {
-            i32 n = (g_gameReg->m_gameMode == 1) ? 3 : 6;
+            i32 n = (g_gameReg->m_gameMode == GAMEMODE_SINGLE) ? 3 : 6;
             m_moveVariant = rand() % n + 1;
         }
 

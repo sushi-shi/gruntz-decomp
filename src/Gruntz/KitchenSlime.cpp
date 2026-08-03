@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/KitchenSlime.h>
 
 #include <Mfc.h>
@@ -172,7 +173,7 @@ i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_gameMode != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
         CGameObject* lvl = Level();
         i32 outX, outY;
         CGrunt* ent = static_cast<CGrunt*>(reg->m_cmdGrid->FindGruntAt(

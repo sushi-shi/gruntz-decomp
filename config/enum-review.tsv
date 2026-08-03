@@ -148,6 +148,7 @@ include/Gruntz/GameInfoString.h	pending
 include/Gruntz/GameLevel.h	pending	
 include/Gruntz/GameMenuMgrBuilders.h	pending	
 include/Gruntz/GameMode.h	pending	
+include/Gruntz/GameModeId.h	pending	
 include/Gruntz/GameObjectFactory.h	pending	
 include/Gruntz/GameRand.h	pending	
 include/Gruntz/GameRegMfcPtr.h	pending	

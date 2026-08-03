@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntCreationPoint.h>
 
 #include <AddrWord.h>
@@ -36,7 +37,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
 
     i32 key = m_object->m_smarts;
     i32 idx;
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         idx = key;
     } else if (g_gameReg->m_options[key].m_liveGate != 0) {
         idx = g_gameReg->m_options[key].m_colorIndex;
@@ -76,7 +77,7 @@ i32 CGruntCreationPoint::SerializeMove(
     }
     if (tag != SERIAL_SAVE && tag == SERIAL_POSTLOAD) {
         i32 idx;
-        if (g_gameReg->m_gameMode != 1) {
+        if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             if (g_gameReg->m_options[m_object->m_smarts].m_liveGate != 0) {
                 idx = g_gameReg->m_options[m_object->m_smarts].m_colorIndex;
             } else {

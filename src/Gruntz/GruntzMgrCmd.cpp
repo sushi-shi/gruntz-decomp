@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntzMgrCmd.h>
 
 #include <Mfc.h>
@@ -57,7 +58,7 @@
     }
 #define WARP(N, ERR)                                                                               \
     {                                                                                              \
-        m_gameMode = 1;                                                                            \
+        m_gameMode = GAMEMODE_SINGLE;                                                              \
         m_strWorldFile.Empty();                                                                    \
         if (!PassClickToPlayState((N), 0, 1))                                                      \
             ReportError(0x8005, (ERR));                                                            \
@@ -142,28 +143,28 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
     switch (nID) {
         case CMD_NEW_GAME:
         case CMD_NEW_GAME_ALT:
-            m_gameMode = 1;
+            m_gameMode = GAMEMODE_SINGLE;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x41e);
             }
             return 1;
         case CMD_LOAD_WORLD:
             m_strWorldFile.Empty();
-            m_gameMode = 1;
+            m_gameMode = GAMEMODE_SINGLE;
             if (!PassClickToPlayState(lParam, 0, 1)) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
             m_strWorldFile.Empty();
-            m_gameMode = 1;
+            m_gameMode = GAMEMODE_SINGLE;
 
             if (!PassClickToPlayState(m_saveSink->m_maxLevel, 0, 1)) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
         case CMD_NEW_GAME_REPLAY:
-            m_gameMode = 3;
+            m_gameMode = GAMEMODE_REPLAY;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x420);
             }
@@ -580,18 +581,18 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     if (si->m_isCustom) {
                         m_isBattlezLevel = 0;
                         m_isCustomLevel = 1;
-                        m_gameMode = 3;
+                        m_gameMode = GAMEMODE_REPLAY;
                     } else {
                         m_isBattlezLevel = 1;
                         m_isCustomLevel = 0;
-                        m_gameMode = 3;
+                        m_gameMode = GAMEMODE_REPLAY;
                     }
                 } else {
-                    m_gameMode = 1;
+                    m_gameMode = GAMEMODE_SINGLE;
                     m_isCustomLevel = 1;
                 }
             } else {
-                m_gameMode = 1;
+                m_gameMode = GAMEMODE_SINGLE;
                 m_isCustomLevel = 0;
             }
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
@@ -796,7 +797,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_MULTI_JOIN:
-            m_gameMode = 2;
+            m_gameMode = GAMEMODE_MULTIPLAYER;
             g_hostServicesMode = 0;
             if (TransitionState(GAMESTATE_MULTI, 1, 0, 0)) {
                 return 1;
@@ -807,7 +808,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             ReportError(IDX(CMD_NEW_GAME), 0x424);
             return 1;
         case CMD_MULTI_HOST:
-            m_gameMode = 2;
+            m_gameMode = GAMEMODE_MULTIPLAYER;
             g_hostServicesMode = 1;
             if (TransitionState(GAMESTATE_MULTI, 1, 0, 0)) {
                 return 1;

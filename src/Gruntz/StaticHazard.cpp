@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/StaticHazard.h>
 
 #include <Bute/ButeMgr.h>
@@ -181,7 +182,7 @@ void CStaticHazard::RegisterActs() {
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::LoadAttributes2() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_gameMode == 1) {
+    if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_SINGLE) {
         return 0;
     }
     u32 phase = g_frameTime - m_pulseEpoch;

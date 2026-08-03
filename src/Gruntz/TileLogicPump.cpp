@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/TileLogicPump.h>
 
 #include <DDrawMgr/AniAdvance.h>
@@ -319,7 +320,7 @@ RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_wwdObject->m_stateFlags |= 1;
         m_wwdObject->m_flags |= 0x10000;
     }
@@ -648,7 +649,7 @@ i32 CCheckpointTrigger::Act() {
     if (play->m_frameMarker != 0) {
         i32 a = m_object->m_score;
         i32 b = m_object->m_points;
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             b += b;
             a += a;
             if (b > 0x3b) {

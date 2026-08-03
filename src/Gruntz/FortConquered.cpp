@@ -6,6 +6,7 @@
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -24,7 +25,7 @@
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CWwdGameObjectA* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;

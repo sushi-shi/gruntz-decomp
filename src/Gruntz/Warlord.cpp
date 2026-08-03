@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/Warlord.h>
 
 #include <Bute/ButeTree.h>
@@ -564,7 +565,7 @@ i32 CWarlord::LoadAttributes() {
     }
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_gameMode != 1) {
+    if (reg->m_gameMode != GAMEMODE_SINGLE) {
         CWwdGameObjectA* o = m_object;
         i32 dist = reg->m_cmdGrid->NearestCellDist(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -589,7 +590,7 @@ i32 CWarlord::LoadAttributes2() {
         return 0;
     }
 
-    if (g_gameReg->m_gameMode != 1) {
+    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         CWwdGameObjectA* o = m_object;
         i32 dist = g_gameReg->m_cmdGrid->NearestCellDist(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -702,7 +703,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
         bool alreadyPanicking =
             (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
         if (!alreadyPanicking) {
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
                 m_cooldownWindow = 0x7530;
                 m_cooldownStamp = static_cast<u32>(g_frameTime);
@@ -749,7 +750,7 @@ i32 CWarlord::ResolveDeathAnimation() {
     m_deathStarted = 1;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == 1) {
+    if (g->m_gameMode == GAMEMODE_SINGLE) {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -779,7 +780,7 @@ i32 CWarlord::RaiseBattleAlert() {
     }
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == 1) {
+    if (g->m_gameMode == GAMEMODE_SINGLE) {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -811,7 +812,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     i32 idx = rand() % 3 + 1;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == 1) {
+    if (g->m_gameMode == GAMEMODE_SINGLE) {
         CWwdGameObjectA* h = m_object;
 
         i32 cue = idx + 0x431;
@@ -850,7 +851,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     i32 idx = rand() % 3;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == 1) {
+    if (g->m_gameMode == GAMEMODE_SINGLE) {
         CWwdGameObjectA* h = m_object;
         i32 cue = idx + 0x42e;
         i32 x = h->m_screenX;

@@ -7,6 +7,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
@@ -143,7 +144,7 @@ i32 CTriggerMgr::PlaceObject(
         // but the player-slot path below overwrites it with m_colorIndex, so it
         // carries two domains. Converted explicitly where it enters Place().
         i32 kindId;
-        if (g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             switch (aiType) {
                 case 1:
                     kindId = IDX(PICKUP_BOMB);
@@ -797,7 +798,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         }
 
         case TILEKIND_CHECKPOINT:
-            if (g_gameReg->m_gameMode != 1 || g == 0 || g->m_tileOwnerHi != g_curPlayer) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || g == 0
+                || g->m_tileOwnerHi != g_curPlayer) {
                 return 0;
             }
             sw = state->m_beginMarker->FindChild(
@@ -1013,7 +1015,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         }
         case TILEKIND_CHECKPOINT_UP: {
 
-            if (g_gameReg->m_gameMode != 1) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 return 0;
             }
             if (g == 0) {
@@ -1188,7 +1190,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         case PICKUP_WINGZ:
             return cell->BeginAttack(bx, by) != 0;
         case PICKUP_WARPSTONE: {
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 return 0;
             }
             i32 flags = 1;

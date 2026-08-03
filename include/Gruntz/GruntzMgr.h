@@ -10,6 +10,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileTriggerLogic.h>
 
+GZ_ENUM_FORWARD(GameModeId);
+
 class CDialog;
 
 #include <Dsndmgr/GruntzSoundZ.h>
@@ -328,7 +330,7 @@ public:
     i32 m_isBattlezLevel;
     i32 m_isMultiLevel;
     i32 m_isCustomLevel;
-    i32 m_gameMode;
+    GameModeId m_gameMode;
     i32 m_optionsCount;
     RECT m_viewBounds;
     char m_pad14c[0x150 - 0x14c];

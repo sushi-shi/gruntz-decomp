@@ -2,6 +2,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -425,7 +426,7 @@ i32 CPlay::ExecCommand(
                 g->SetEntrancePos(1, 1);
             }
             i32 sel = 0;
-            i32 live = (g_gameReg->m_gameMode != 1);
+            i32 live = (g_gameReg->m_gameMode != GAMEMODE_SINGLE);
             CGrunt* g2 = m_mgr->m_cmdGrid->m_grid[idx];
             i32 r;
             if (g2 == 0 || g2->m_entranceCommitted == 0) {

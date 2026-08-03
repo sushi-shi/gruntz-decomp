@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/SpotLight.h>
 
 #include <Mfc.h>
@@ -115,7 +116,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_cellRow = -1;
     m_cellCol = -1;
     m_storyMode = 0;
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_storyMode = 1;
     }
 }
@@ -163,7 +164,7 @@ void RegisterSpotLightActions() {
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_gameMode != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
         CWwdGameObjectA* o = m_object;
         CGrunt* tgt =
             reg->m_cmdGrid

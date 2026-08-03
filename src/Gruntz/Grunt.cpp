@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/Grunt.h>
 
 #include <AddrWord.h>
@@ -983,7 +984,7 @@ i32 CGrunt::CommitArrival() {
         return 1;
     }
 
-    if (m_tileClaimed != 0 && g_gameReg->m_gameMode == 2) {
+    if (m_tileClaimed != 0 && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
         m_tileMgr->GridAction7(m_tileOwnerHi, m_tileOwnerLo);
     } else if (m_tileClaimed != 0) {
         m_arrivalRerollLo = 0;
@@ -2114,7 +2115,7 @@ i32 CGrunt::Place(
         }
     } else {
         m_arrivalFlags = 0x4000901;
-        if (g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             m_arrivalFlags = 0x4000911;
         }
     }
@@ -2336,7 +2337,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2361,7 +2362,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2389,7 +2390,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2414,7 +2415,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2439,7 +2440,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2464,7 +2465,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2489,7 +2490,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2514,7 +2515,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2574,7 +2575,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x400;
@@ -2599,7 +2600,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2627,7 +2628,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2655,7 +2656,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2683,7 +2684,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2708,7 +2709,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2733,7 +2734,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x1000;
@@ -2758,7 +2759,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2783,7 +2784,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2808,7 +2809,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2834,7 +2835,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x100;
@@ -2859,7 +2860,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2884,7 +2885,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2909,7 +2910,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2937,7 +2938,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2957,7 +2958,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -2980,7 +2981,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3002,7 +3003,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3025,7 +3026,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3047,7 +3048,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3069,7 +3070,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3092,7 +3093,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3115,7 +3116,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_moveVariant = variant;
@@ -3138,7 +3139,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3160,7 +3161,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 1;
@@ -3217,7 +3218,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -3249,7 +3250,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -3420,7 +3421,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
             i32 secs = g_buteMgr.GetIntDef("Powerupz", "StopwatchSeconds", 0);
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 secs += secs;
                 mins += mins;
                 if (secs > 0x3b) {
@@ -3842,7 +3843,7 @@ void CGrunt::XferName(char*) {
                 CGruntzMgr* reg3 = g_gameReg;
                 i32 hp;
 
-                if (reg3->m_isEasyMode != 0 && reg3->m_gameMode == 1) {
+                if (reg3->m_isEasyMode != 0 && reg3->m_gameMode == GAMEMODE_SINGLE) {
                     i32 bite = m_health - 5;
                     hp = (bite < 0) ? 0 : bite;
                 } else {

@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/RollingBall.h>
 
 #include <Bute/ButeMgr.h>
@@ -91,7 +92,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CGruntzMgr* reg = g_gameReg;
-    if (0 != reg->m_isEasyMode && reg->m_gameMode == 1 && o->m_smarts != 1) {
+    if (0 != reg->m_isEasyMode && reg->m_gameMode == GAMEMODE_SINGLE && o->m_smarts != 1) {
         time += 1000;
     }
     m_explodeWindow = static_cast<u32>(o->m_points);

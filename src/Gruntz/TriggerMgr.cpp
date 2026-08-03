@@ -1,3 +1,4 @@
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <AddrWord.h>
@@ -609,7 +610,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
 
         case PICKUP_WARPSTONE:
-            if (g_gameReg->m_gameMode != 1) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
                 return 1;
             }
@@ -821,7 +822,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (m_groupInitialized != 0) {
         return 0;
     }
-    if (g_gameReg->m_gameMode != 1) {
+    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         return 0;
     }
     CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -860,7 +861,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
 
 RVA(0x00079d90, 0xc5)
 void CTriggerMgr::ResetSpawnState() {
-    if (g_gameReg->m_gameMode != 1) {
+    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         return;
     }
     if (m_groupInitialized == 0) {
@@ -881,7 +882,7 @@ void CTriggerMgr::ResetSpawnState() {
             world->m_guts->TryActivate();
         }
     }
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CWarlord* fx = m_pendingFx;
         if (fx != 0) {
             fx->ResolveDeathAnimation();
@@ -893,7 +894,7 @@ void CTriggerMgr::ResetSpawnState() {
 // @early-stop
 RVA(0x00079ea0, 0xc2)
 i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
-    if (g_gameReg->m_gameMode != 1) {
+    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         return 0;
     }
     CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
@@ -963,7 +964,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         if (k != PICKUP_WARPSTONE) {
             goto mark;
         }
-        if (g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             CWarlord* fx = m_pendingFx;
             if (fx != 0) {
                 fx->ResolveDeathAnimation();
@@ -1765,7 +1766,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         i32 px = (g->m_tileX << 5) + 0x10;
         i32 py = (g->m_tileY << 5) + 0x10;
 
-        if (g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             i32 radius = 0;
             if (cfg->m_humanControlled == 0) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
@@ -2024,7 +2025,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
         case PICKUP_WARPSTONE:
-            if (g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
 
                 CState* st = g_gameReg->m_curState;
                 CString lvl;

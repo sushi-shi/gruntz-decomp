@@ -7,6 +7,7 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -68,7 +69,7 @@ i32 CPlay::PlaceStartGruntz() {
     i32 result = 1;
     i32 counter = 0;
     i32 flag14 = 0;
-    if (reg->m_gameMode == 1) {
+    if (reg->m_gameMode == GAMEMODE_SINGLE) {
         flag14 = 1;
     }
     if (pos == 0) {
@@ -111,7 +112,7 @@ i32 CPlay::PlaceStartGruntz() {
                     return 0;
                 }
                 obj->m_flags |= 0x10000;
-            } else if (g_gameReg->m_gameMode != 1 && who == CreateGruntCreationPoint
+            } else if (g_gameReg->m_gameMode != GAMEMODE_SINGLE && who == CreateGruntCreationPoint
                        && obj->m_smarts == g_curPlayer) {
 
                 GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
@@ -437,8 +438,8 @@ i32 CPlay::ValidateLevelTiles() {
             obj->m_flags |= 0x10000;
         } else if (who == CreateLevelTime) {
 
-            if (m_frameMarker != 0 && m_mgr->m_gameMode != 2 && g_gameReg->m_isEasyMode != 0
-                && g_gameReg->m_gameMode == ok) {
+            if (m_frameMarker != 0 && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
+                && g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == ok) {
                 i32 a = obj->m_points;
                 i32 b = obj->m_score;
                 a += a;

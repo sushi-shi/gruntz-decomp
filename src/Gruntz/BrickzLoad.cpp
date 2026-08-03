@@ -8,6 +8,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -109,7 +110,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             cell->m_objectId = 0;
             cell->m_tileId = -1;
 
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 if (tileId == 0x105) {
                     tileId = 0x101;
                     grid->m_tileGrid[grid->m_colOffsets[col] + row] = 0x101;
@@ -119,7 +120,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 }
             }
 
-            if (g_gameReg->m_gameMode != 1) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 switch (tileId) {
                     case BRICKTILE_BROWN_1:
                     case BRICKTILE_RED_1:

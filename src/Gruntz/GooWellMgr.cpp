@@ -5,6 +5,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -88,7 +89,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             goto done;
         }
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
-            if (g_gameReg->m_gameMode == 2) {
+            if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
 
                 (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = 1;
             }
@@ -103,7 +104,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (static_cast<i64>(g_frameTime) - m_timerBase < m_timerWindow) {
             goto done;
         }
-        if (g_gameReg->m_gameMode == 1 && m_pendingFx != 0) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_pendingFx != 0) {
             goto done;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
@@ -113,7 +114,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
 
     {
         CPlay* obj = static_cast<CPlay*>(g_gameReg->m_curState);
-        if (g_gameReg->m_gameMode != 1) {
+        if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
                 GruntzPlayer* lastSlot = pslot;
@@ -170,13 +171,13 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_overlay) {
             m_overlay->Activate(off);
         }
-        if (g_gameReg->m_gameMode == 3) {
+        if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
             if (obj->m_winLoseBanner != 0 && m_rowCount[g_curPlayer] == 0) {
                 LoadFinishLevelSprite(4);
                 return 0;
             }
         }
-        if (g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             if (m_rowCount[g_curPlayer] != 0) {
                 goto done;
             }

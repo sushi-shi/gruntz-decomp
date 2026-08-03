@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h>
@@ -2208,7 +2209,7 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
 
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::UpdateScoreHud() {
-    if (g_gameReg->m_gameMode != 1) {
+    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         return;
     }
     CState* sub = g_gameReg->m_curState;
@@ -2338,7 +2339,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
     }
 
     strcpy(dst->m_levelName, GetWorldFileName());
-    dst->m_isWon = (m_gameMode == 3);
+    dst->m_isWon = (m_gameMode == GAMEMODE_REPLAY);
     dst->m_isCustom = m_isCustomLevel;
 
     m_saveSink->CopySlot(dst, &src->m_saveSlot);
@@ -2810,7 +2811,7 @@ void CGruntzMgr::Close() {
 RVA(0x000861e0, 0xc5)
 void CGruntzMgr::AccrueScoreTime() {
     CState* st = m_curState;
-    if (m_gameMode == 1) {
+    if (m_gameMode == GAMEMODE_SINGLE) {
         if (m_cmdGrid->m_phase == 1) {
             UpdateScoreHud();
         }
@@ -2818,7 +2819,7 @@ void CGruntzMgr::AccrueScoreTime() {
         return;
     }
     g_gameReg->m_scoreHud->SetCount(st->m_levelIndex);
-    if (m_gameMode == 3) {
+    if (m_gameMode == GAMEMODE_REPLAY) {
 
         CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
         i64 d = static_cast<i64>(g_frameTime) - clk->m_startStamp.m_v;
@@ -3041,7 +3042,7 @@ CGruntzMgr::CGruntzMgr() {
     m_isCustomLevel = 0;
     m_isBattlezLevel = 0;
     m_isMultiLevel = 0;
-    m_gameMode = 0;
+    m_gameMode = GAMEMODE_NONE;
     m_isHighDetail = 1;
     m_isEffectsEnabled = 1;
     m_optionsCount = 3;

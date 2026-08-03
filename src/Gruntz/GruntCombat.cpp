@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntCombat.h>
 
 #include <Mfc.h>
@@ -350,7 +351,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     SpellzEffect idx = static_cast<SpellzEffect>(forced);
     if (forced == 0) {
         i32 m = 3;
-        if (g_gameReg->m_gameMode != 1) {
+        if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             m = 6;
         }
         if (m == 0) {
@@ -1186,7 +1187,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     i32 hit = AT(AT(g_hitTable, this->m_entranceReason), attackKind);
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_gameMode == 1 && this->m_tileOwnerHi == g_curPlayer) {
+    if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_SINGLE
+        && this->m_tileOwnerHi == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
     }

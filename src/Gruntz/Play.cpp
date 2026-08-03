@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/Play.h>
 
 #include <Mfc.h>
@@ -390,7 +391,8 @@ i32 CPlay::Render() {
         return 1;
     }
 
-    if (m_mgr->m_frameGate == 0 && (g_gameReg->m_gameMode == 2 || m_overlayDrag == 0)) {
+    if (m_mgr->m_frameGate == 0
+        && (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER || m_overlayDrag == 0)) {
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));
         m_mgr->m_cmdSubMgr->ScanTargets(0);
 
@@ -714,7 +716,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_mgr->RestoreVideoMode(0);
 
     gameReg = g_gameReg;
-    if (gameReg->m_gameMode != 2) {
+    if (gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
         if (gameReg->m_frameGate != 0) {
             i32 v = gameReg->m_frameGate ^ 1;
@@ -740,7 +742,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CGruntzMgr* hostBase = self->m_mgr;
         gameReg = g_gameReg;
         GruntzPlayer* team = &hostBase->m_options[t];
-        if (gameReg->m_gameMode == 1) {
+        if (gameReg->m_gameMode == GAMEMODE_SINGLE) {
             team->SeedForSlot(0);
             if (t == 0) {
                 team->m_liveGate = 1;
@@ -764,7 +766,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     gameReg = g_gameReg;
     g_frameTime = 0;
-    if (gameReg->m_gameMode == 3) {
+    if (gameReg->m_gameMode == GAMEMODE_REPLAY) {
         srand(timeGetTime());
     }
     g_resourceInstallActive = 0;
@@ -973,7 +975,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (modeFlag != 0 && (g_gameReg)->m_gameMode == 1) {
+    if (modeFlag != 0 && (g_gameReg)->m_gameMode == GAMEMODE_SINGLE) {
         BuildWarlordNameTable(savedThis);
     }
     BuildHelpReveal(0);
@@ -1101,7 +1103,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     gameReg = g_gameReg;
-    if (gameReg->m_gameMode != 1) {
+    if (gameReg->m_gameMode != GAMEMODE_SINGLE) {
         CString warp;
         i32 same = 0;
         if (warp.LoadString(0x81ab)) {
@@ -1125,7 +1127,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    if (self->m_mgr->m_gameMode == 3) {
+    if (self->m_mgr->m_gameMode == GAMEMODE_REPLAY) {
         self->m_mgr->SyncOptionsState();
     }
     self->m_mgr->m_saveSink->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, 0);
@@ -1211,7 +1213,7 @@ okContinue:
         gameReg = g_gameReg;
     }
 
-    if (gameReg->m_gameMode != 2 && gameReg->m_loadingSaveGame == 0) {
+    if (gameReg->m_gameMode != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == 0) {
         CString scr;
         self->m_inGame = 1;
         self->m_hudSuppressed = 0;
@@ -1248,7 +1250,7 @@ okContinue:
     self->m_renderDisabled = 1;
     g_playActive = 0;
     ResetViewport();
-    if ((g_gameReg)->m_gameMode == 2) {
+    if ((g_gameReg)->m_gameMode == GAMEMODE_MULTIPLAYER) {
         g_playActive = 1;
         self->m_renderDisabled = 0;
         self->m_mgr->CheckSavedMode();
@@ -1273,8 +1275,8 @@ void CPlay::OnExit() {
         m_world->m_childGroup->ClearChildren();
     }
     g_gameReg->m_isBattlezLevel = 0;
-    if (g_gameReg->m_gameMode == 3) {
-        g_gameReg->m_gameMode = 0;
+    if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
+        g_gameReg->m_gameMode = GAMEMODE_NONE;
     }
     g_gameReg->m_tileGrid->Reset();
 }
@@ -1454,7 +1456,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (level->m_toggleHandle != 0) {
 
             if (key == 'Y' || key == VK_RETURN) {
-                if (g_gameReg->m_gameMode == 1) {
+                if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
@@ -1475,7 +1477,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         } else {
 
             if (key == 'Q') {
-                if (g_gameReg->m_gameMode == 1) {
+                if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
@@ -1485,12 +1487,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
 
-            if (key == 'S' && g_gameReg->m_gameMode == 1) {
+            if (key == 'S' && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
             }
             if (key == 'R') {
-                if (host->m_gameMode == 1 && g_gameReg->m_cmdGrid->m_phase != 1) {
+                if (host->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_cmdGrid->m_phase != 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, 0x111, 0x806b, 0);
@@ -1498,14 +1500,15 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
             if (key == 'N') {
-                if (host->m_gameMode == 1 && g_gameReg->m_cmdGrid->m_phase == 1) {
+                if (host->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_cmdGrid->m_phase == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
                 }
                 return 1;
             }
             if (key == 'O') {
-                if (host->m_gameMode != 1 && self->m_guts->m_observerTabAvailable != 0) {
+                if (host->m_gameMode != GAMEMODE_SINGLE
+                    && self->m_guts->m_observerTabAvailable != 0) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     this->ReleaseLevelOverlay(0);
                 }
@@ -1818,7 +1821,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        if (g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
@@ -1914,7 +1917,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gooPuddlez == 0) {
             return 1;
         }
-        if (g_gameReg->m_gameMode == 2) {
+        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             return 1;
         }
         CGruntzMgr* h = self->m_mgr;
@@ -3096,7 +3099,7 @@ void CPlay::DrawWorldFrame() {
     g_engineFrameDelta = g_frameDelta;
     m_world->m_childGroup->TickKillCues(0);
     m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
-    if (g_gameReg->m_gameMode == 3) {
+    if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
 
         (g_gameReg)->AdvanceOptionsCycle();
     }
@@ -3147,7 +3150,7 @@ i32 CPlay::DrawWorldFrames() {
             }
             m_world->m_childGroup->TickKillCues(0);
             m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
-            if (g_gameReg->m_gameMode == 3) {
+            if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
                 (g_gameReg)->AdvanceOptionsCycle();
             }
             m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
@@ -3705,7 +3708,7 @@ i32 CPlay::ClearPlacedObjects() {
 RVA(0x000da200, 0x9b)
 i32 CPlay::GetAmbientId() {
     CGruntzMgr* gr = g_gameReg;
-    if (gr->m_gameMode == 1 && gr->m_isCustomLevel == 0) {
+    if (gr->m_gameMode == GAMEMODE_SINGLE && gr->m_isCustomLevel == 0) {
         return (m_levelIndex + 1) % 2;
     }
     if (!(g_coinRolled & 1)) {
@@ -5018,7 +5021,7 @@ i32 CPlay::ReleaseLevelOverlay(i32) {
         CStatusBarMgr* worker = m_guts;
         m_overlayDrag = 0;
         worker->ExitMode();
-        if (g_gameReg->m_gameMode != 2) {
+        if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
             g_frameTime = m_savedClock;
         }
     }
@@ -6311,7 +6314,7 @@ i32 CPlay::EnterState(GameStateId mode) {
             return 0;
         }
         m_stepCountdown = 2;
-    } else if (m_renderDisabled == 0 || m_mgr->m_gameMode == 2) {
+    } else if (m_renderDisabled == 0 || m_mgr->m_gameMode == GAMEMODE_MULTIPLAYER) {
         if (!EnterMode(mode)) {
             return 0;
         }
@@ -6366,7 +6369,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char buf[0x40];
-    if (m_mgr->m_musicEnabled != 0 && g_gameReg->m_gameMode == 1) {
+    if (m_mgr->m_musicEnabled != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_ambientInterval = AMBIENT_INTRO_INTERVAL_MS;
         m_ambientIntervalHi = 0;
         m_ambientTimerLo = g_frameTime;
@@ -6387,7 +6390,7 @@ i32 CPlay::ResetPlayState() {
             m_mgr->m_sound->m_pCurrent->SetLoop(1);
         }
         CGruntzMgr* reg = g_gameReg;
-        if (reg->m_musicEnabled != 0 && reg->m_gameMode == 3) {
+        if (reg->m_musicEnabled != 0 && reg->m_gameMode == GAMEMODE_REPLAY) {
             m_mgr->m_sound->PlayByName(buf, 1);
         }
         m_ambientTimerLo = 0;
@@ -6396,7 +6399,7 @@ i32 CPlay::ResetPlayState() {
         m_ambientIntervalHi = 0;
         m_ambientInitDone = 1;
     }
-    if (m_mgr->m_gameMode == 1) {
+    if (m_mgr->m_gameMode == GAMEMODE_SINGLE) {
         CGruntzMgr* reg = g_gameReg;
 
         if (reg->m_strWorldFile.GetLength() == 0) {
@@ -6820,7 +6823,7 @@ i32 CPlay::BuildWarlordNameTable(CMulti* arg) {
 
 RVA(0x000d65d0, 0x7cc)
 i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
-    if (g_gameReg->m_gameMode != 1) {
+    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
             if (loaded[id] == 0) {
                 BuildHelpReveal(0);

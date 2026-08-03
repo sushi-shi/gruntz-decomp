@@ -15,6 +15,7 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -540,7 +541,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     SetTab(5, 0);
                     return 1;
                 case 0x1fc:
-                    if (g_gameReg->m_gameMode != 1) {
+                    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                         return 1;
                     }
                     if (m_modeArmed != 0) {
@@ -583,7 +584,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         HiCueLookup();
                         g_gameReg->AccrueScoreTime();
-                    } else if (g_gameReg->m_gameMode == 1) {
+                    } else if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         HiCueLookup();
                         HiPost(0x806b);
                     } else {
@@ -591,7 +592,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     }
                     return 1;
                 case 0x325:
-                    if (g_gameReg->m_gameMode == 1) {
+                    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
@@ -603,7 +604,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     }
                     return 1;
                 case 0x327:
-                    if (g_gameReg->m_gameMode == 1) {
+                    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
@@ -946,7 +947,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(it);
     m_tabSprite3 = static_cast<CSBI_MenuItem*>(it);
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CSBI_MenuItem* mp = static_cast<CSBI_MenuItem*>(it);
         mp->m_state = 4;
         CDDrawWorker* f = mp->m_record;
@@ -1498,7 +1499,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite6 = static_cast<CSBI_MenuItem*>(it);
-        if (g_gameReg->m_gameMode == 2) {
+        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             it->m_enabled = 0;
         }
 
@@ -1515,7 +1516,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite7 = static_cast<CSBI_MenuItem*>(it);
-        if (g_gameReg->m_gameMode == 2) {
+        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             it->m_enabled = 0;
         }
 
@@ -1555,7 +1556,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite9 = static_cast<CSBI_MenuItem*>(it);
-        if (g_gameReg->m_gameMode == 2) {
+        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             it->m_enabled = 0;
         }
 
@@ -1595,7 +1596,7 @@ void CStatusBarMgr::BuildGameMenu() {
         }
         m_tabLists[5].AddTail(it);
         m_modeNotify = static_cast<CSBI_ImageSet*>(it);
-        if (g_gameReg->m_gameMode != 1) {
+        if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             it->m_enabled = 0;
             m_modeState = 7;
             m_destructWarnActive = 0;
@@ -1920,7 +1921,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != kSlotArmed) {
         return 0;
     }
-    if (g_gameReg->m_gameMode == 1 && m_hlBusy == 0) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_hlBusy == 0) {
         if (m_position == kSubtypeTag) {
             RefreshState();
         }
@@ -2888,7 +2889,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     i32 result;
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         if (m_ptrPool.GetSize() > 0) {
             void* p = m_ptrPool.GetData()[0];
             result = *static_cast<i32*>(p);
@@ -3604,7 +3605,7 @@ void CStatusBarMgr::ExitMode() {
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
     m_hlBusy = 0;
-    if (handle == 0 && g_gameReg->m_gameMode != 1) {
+    if (handle == 0 && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         if (m_position == 2) {
             RefreshState();
         }
@@ -3670,7 +3671,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_hlBusy != 0) {
         return;
     }
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         return;
     }
     if (m_position == kSubtypeTag) {

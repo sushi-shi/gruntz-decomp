@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
 
 #include <Bute/ButeTree.h>
@@ -69,7 +70,7 @@ RVA_COMPGEN(0x00010c50, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
-    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_wwdObject->m_flags |= 0x10000;
     } else {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -123,7 +124,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
 
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (g_gameReg->m_gameMode == 1 && g_gameReg->m_isCustomLevel == 0) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_isCustomLevel == 0) {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
         m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
         if (m_object->m_sortKey != 0) {

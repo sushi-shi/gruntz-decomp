@@ -11,6 +11,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -267,7 +268,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_lastDropTileX = -1;
     m_lastDropTileY = -1;
     m_speed = g_objDropDiv / static_cast<double>(static_cast<i64>(static_cast<u32>(time)));
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_scrollMode = 1;
     }
     CShadeTable* sel = g_gameReg->m_logicPump->m_tables[5];
@@ -314,7 +315,7 @@ void CObjectDropper::RegisterActs() {
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
-        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != 1) {
+        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             CWwdGameObjectA* o = m_object;
             RECT box;
             box.left = o->m_screenX - o->m_layer->m_anchorX + 7;

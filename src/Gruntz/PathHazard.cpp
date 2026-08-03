@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/PathHazard.h>
 
 #include <Gruntz/ActNameRegistry.h>
@@ -174,14 +175,14 @@ i32 CPathHazard::Tick() {
     rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_gameMode != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
         i32 outA, outB;
         CGrunt* ent =
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
-            if (g_gameReg->m_gameMode != 1 || outA == 0) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }
@@ -294,7 +295,7 @@ i32 CPathHazard::SiblingTick() {
     rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_gameMode == 1) {
+    if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_SINGLE) {
 
     } else {
         i32 outA, outB;
@@ -303,7 +304,7 @@ i32 CPathHazard::SiblingTick() {
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
-            if (g_gameReg->m_gameMode != 1 || outA == 0) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }

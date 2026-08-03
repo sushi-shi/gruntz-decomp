@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/InGameIcon.h>
 
 #include <Mfc.h>
@@ -310,28 +311,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_smarts = 0x5a;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_smarts = 0x5b;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
             m_object->m_smarts = 0x5c;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_wwdObject->m_flags |= 0x10000;
                 return;
             }
@@ -365,7 +366,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 
-    if (m_object->m_smarts == 0x14 && g_gameReg->m_gameMode == 1) {
+    if (m_object->m_smarts == 0x14 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
         CString levelStr;
         levelStr.Format("Level%i", lvl->m_levelIndex);
@@ -683,7 +684,8 @@ RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_gameMode == 1 && tileOwnerHi != g_curPlayer && m_object->m_smarts != 0x55) {
+    if (reg->m_gameMode == GAMEMODE_SINGLE && tileOwnerHi != g_curPlayer
+        && m_object->m_smarts != 0x55) {
         return 0;
     }
     CWwdGameObjectA* obj = m_object;
@@ -968,7 +970,7 @@ i32 CInGameIcon::SerializeMove(
 // @early-stop
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (g_gameReg->m_gameMode == 2) {
+    if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
         m_wwdObject->m_flags |= 0x10000;
         return;
     }
@@ -982,12 +984,12 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 vis = m_object->m_health;
     if (vis == 1) {
 
-        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != 1) {
+        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             m_wwdObject->m_flags |= 0x10000;
             return;
         }
     } else if (vis == 2) {
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             m_wwdObject->m_flags |= 0x10000;
             return;
         }

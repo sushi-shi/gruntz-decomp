@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/Multi.h>
 
 #include <Bute/ButeMgr.h>
@@ -161,7 +162,7 @@ char g_recvBuffer[0x800];
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
-    g_gameReg->m_gameMode = 2;
+    g_gameReg->m_gameMode = GAMEMODE_MULTIPLAYER;
     if (mgr == 0) {
         return 0;
     }

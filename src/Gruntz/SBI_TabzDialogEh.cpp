@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SbGeom.h>
@@ -137,7 +138,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         m_tabLists[6].AddTail(rsn);
 
-        if (g_gameReg->m_gameMode == 1) {
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             CSBI_MenuItem* next = new CSBI_MenuItem;
             if (!next->SetupImage(
                     this,
@@ -224,7 +225,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
     m_tabLists[6].AddTail(rsn);
 
-    if (g_gameReg->m_gameMode == 1) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CSBI_MenuItem* replay = new CSBI_MenuItem;
         if (!replay->SetupImage(
                 this,
