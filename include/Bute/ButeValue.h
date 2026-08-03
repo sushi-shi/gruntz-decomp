@@ -9,15 +9,15 @@
 #include <Ints.h>
 
 GZ_ENUM_BEGIN(ButeType)
-    kButeInt = 0,
-    kButeDword = 1,
-    kButeDouble = 2,
-    kButeFloat = 3,
-    kButeString = 4,
-    kButeRect = 5,
-    kButePoint = 6,
-    kButeVector = 7,
-    kButeRange = 8
+    BUTE_INT = 0,
+    BUTE_DWORD = 1,
+    BUTE_DOUBLE = 2,
+    BUTE_FLOAT = 3,
+    BUTE_STRING = 4,
+    BUTE_RECT = 5,
+    BUTE_POINT = 6,
+    BUTE_VECTOR = 7,
+    BUTE_RANGE = 8
 GZ_ENUM_END(ButeType)
 
 struct CButeValue {

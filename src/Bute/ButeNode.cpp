@@ -13,21 +13,21 @@ RVA(0x00174df0, 0x7c)
 void __cdecl ButeValueTeardown(void* pValue) {
     CButeValue* v = static_cast<CButeValue*>(pValue);
     switch (v->type) {
-        case kButeString:
+        case BUTE_STRING:
             delete static_cast<CString*>(v->pValue);
             break;
-        case kButeDouble:
-        case kButePoint:
+        case BUTE_DOUBLE:
+        case BUTE_POINT:
             delete static_cast<double*>(v->pValue);
             break;
-        case kButeInt:
-        case kButeFloat:
-        case kButeVector:
+        case BUTE_INT:
+        case BUTE_FLOAT:
+        case BUTE_VECTOR:
             delete static_cast<i32*>(v->pValue);
             break;
-        case kButeDword:
-        case kButeRect:
-        case kButeRange:
+        case BUTE_DWORD:
+        case BUTE_RECT:
+        case BUTE_RANGE:
             delete static_cast<u32*>(v->pValue);
             break;
     }

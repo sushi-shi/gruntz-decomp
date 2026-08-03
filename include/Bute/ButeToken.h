@@ -13,9 +13,9 @@
 //   3  closes a tag line: the last thing ParseTagLine requires
 //   4  the tag/key name: ParseTagLine takes m_token as m_tagName right after it
 //   5  the separator before a value
-//   6/7 -> atoi()  -> kButeInt     8 -> atof() -> kButeDouble
-//   9  -> kButeString   10 -> kButeRect   11 -> kButePoint
-//   12 -> kButeVector   13 -> kButeRange
+//   6/7 -> atoi()  -> BUTE_INT     8 -> atof() -> BUTE_DOUBLE
+//   9  -> BUTE_STRING   10 -> BUTE_RECT   11 -> BUTE_POINT
+//   12 -> BUTE_VECTOR   13 -> BUTE_RANGE
 //   14 the `Dword` keyword (then demands 6)   15 the `Float` keyword (then 8)
 //
 // INFERRED, not proven: 6 vs 7. Both feed atoi, but only 6 is accepted after the

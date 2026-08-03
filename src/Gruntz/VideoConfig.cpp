@@ -26,7 +26,7 @@ typedef enum VideoConfigDlgId {
 } VideoConfigDlgId;
 
 DATA(0x0020ccc4)
-Resolution g_videoResolutionMode = RES_640x480;
+Resolution g_videoResolutionMode = RES_640X480;
 
 DATA(0x0022bd64)
 i32 g_opt_22bd64 = 0;
@@ -71,12 +71,12 @@ Resolution GetResolutionCode() {
     i32 w = g_gameReg->m_savedModeW;
     i32 h = g_gameReg->m_savedModeH;
     if (w == 0x400 && h == 0x300) {
-        return RES_1024x768;
+        return RES_1024X768;
     }
     if (w == 0x320 && h == 0x258) {
-        return RES_800x600;
+        return RES_800X600;
     }
-    return RES_640x480;
+    return RES_640X480;
 }
 
 RVA(0x00036410, 0x366)
@@ -115,10 +115,10 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
                     i32 w, h;
-                    if (g_videoResolutionMode == RES_1024x768) {
+                    if (g_videoResolutionMode == RES_1024X768) {
                         w = 0x400;
                         h = 0x300;
-                    } else if (g_videoResolutionMode == RES_800x600) {
+                    } else if (g_videoResolutionMode == RES_800X600) {
                         w = 0x320;
                         h = 0x258;
                     } else {
@@ -383,13 +383,13 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
 
     char szCaption[64] = "Video Resolution ";
     switch (g_videoResolutionMode) {
-        case RES_640x480:
+        case RES_640X480:
             strcat(szCaption, "(640x480)");
             break;
-        case RES_800x600:
+        case RES_800X600:
             strcat(szCaption, "(800x600)");
             break;
-        case RES_1024x768:
+        case RES_1024X768:
             strcat(szCaption, "(1024x768)");
             break;
         default:
@@ -415,13 +415,13 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
 
     char szCaption[64] = "Video Resolution ";
     switch (g_videoResolutionMode) {
-        case RES_640x480:
+        case RES_640X480:
             strcat(szCaption, "(640x480)");
             break;
-        case RES_800x600:
+        case RES_800X600:
             strcat(szCaption, "(800x600)");
             break;
-        case RES_1024x768:
+        case RES_1024X768:
             strcat(szCaption, "(1024x768)");
             break;
         default:

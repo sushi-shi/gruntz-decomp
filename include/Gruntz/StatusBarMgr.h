@@ -25,11 +25,11 @@ class CSBI_MenuItem;
 class CSBI_GruntMachine;
 class DirectSoundMgr;
 GZ_ENUM_BEGIN(SbiSlotState)
-    kSlotArmed = 0,
+    SLOT_ARMED = 0,
     // Entered when the slot is activated; the progress animation runs from
-    // here until its frame reaches kSlotCommitLevel, which sets kSlotReady.
-    kSlotFilling = 1,
-    kSlotReady = 2
+    // here until its frame reaches kSlotCommitLevel, which sets SLOT_READY.
+    SLOT_FILLING = 1,
+    SLOT_READY = 2
 GZ_ENUM_END(SbiSlotState)
 
 struct CSbiSlot {

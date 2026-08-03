@@ -2680,11 +2680,11 @@ void CGruntzMgr::Close() {
         }
         m_settings->SetValueDword("Scroll_Speed", m_scrollSpeed);
         m_settings->SetValueDword("Easy_Mode", m_isEasyMode);
-        Resolution res = RES_640x480;
+        Resolution res = RES_640X480;
         if (m_savedModeW == 0x400 && m_savedModeH == 0x300) {
-            res = RES_1024x768;
+            res = RES_1024X768;
         } else if (m_savedModeW == 0x320 && m_savedModeH == 0x258) {
-            res = RES_800x600;
+            res = RES_800X600;
         }
         m_settings->SetValueDword("Resolution", res);
         m_settings->SetValueDword("Checkpoint_Prompts", m_isCheckpointPrompts);

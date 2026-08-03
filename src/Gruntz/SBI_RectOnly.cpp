@@ -1828,14 +1828,14 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     CSbiSlot* tab = m_slots;
     i32 n = 5;
     do {
-        if (tab->m_state == kSlotFilling) {
+        if (tab->m_state == SLOT_FILLING) {
             i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - tab->m_startTime;
 
             i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
             if (frame >= 0x1a) {
-                tab->m_state = kSlotReady;
+                tab->m_state = SLOT_READY;
                 frame = 0x1a;
                 CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
                 if (h->m_emitGate == 0) {
@@ -1910,7 +1910,7 @@ void CStatusBarMgr::ResetSlots() {
 
 RVA(0x00105560, 0x33)
 void CStatusBarMgr::ArmSlot(i32 idx) {
-    m_slots[idx].m_state = kSlotArmed;
+    m_slots[idx].m_state = SLOT_ARMED;
     m_slots[idx].m_value = 1;
     if (m_slotNotify[idx]) {
         m_slotNotify[idx]->Notify(1);
@@ -1920,7 +1920,7 @@ void CStatusBarMgr::ArmSlot(i32 idx) {
 RVA(0x001055b0, 0x109)
 i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* sp = &m_slots[idx];
-    if (sp->m_state != kSlotArmed) {
+    if (sp->m_state != SLOT_ARMED) {
         return 0;
     }
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_hlBusy == 0) {
@@ -1932,7 +1932,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
         }
         Deactivate();
     }
-    sp->m_state = kSlotFilling;
+    sp->m_state = SLOT_FILLING;
 
     CSbiSlot* s = &m_slots[idx];
     s->m_interval = 0x7fffffff;
@@ -2341,7 +2341,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
 RVA(0x00106610, 0x3b)
 void CStatusBarMgr::ResetGroupA() {
     for (i32 i = 0; i < 3; i++) {
-        m_groupSlots[i].m_state = kSlotArmed;
+        m_groupSlots[i].m_state = SLOT_ARMED;
         m_groupSlots[i].m_value = 1;
         if (m_groupNotify[i]) {
             m_groupNotify[i]->Notify(-1);
@@ -2856,12 +2856,12 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     if (mode == 2) {
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Multiplayer", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = kSlotCommitLevel;
-            m_slots[i].m_state = kSlotReady;
+            m_slots[i].m_state = SLOT_READY;
         }
     } else if (mode == 3) {
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Battlez", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = kSlotCommitLevel;
-            m_slots[i].m_state = kSlotReady;
+            m_slots[i].m_state = SLOT_READY;
         }
     }
 
@@ -3491,7 +3491,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
 RVA(0x00109a90, 0x25)
 i32 CStatusBarMgr::FindReadySlot() {
     for (i32 i = 0; i < 5; i++) {
-        if (m_slots[i].m_state == kSlotReady) {
+        if (m_slots[i].m_state == SLOT_READY) {
             ArmSlot(i);
             return 1;
         }
@@ -3809,7 +3809,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if (idx == -1) {
         i32 slot = 0;
         for (;;) {
-            if (m_slots[slot].m_state == kSlotReady) {
+            if (m_slots[slot].m_state == SLOT_READY) {
                 break;
             }
             slot++;
@@ -3846,7 +3846,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         return 1;
     }
     {
-        if (m_slots[idx].m_state != kSlotReady) {
+        if (m_slots[idx].m_state != SLOT_READY) {
             goto notActivated;
         }
         if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {

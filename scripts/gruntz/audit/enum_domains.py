@@ -216,6 +216,19 @@ def audit():
                          f"{dom} - declare a _FIRST/_LAST (inclusive) or _BEGIN/_END (half-open) marker AT THAT VALUE and "
                          f"compare against it (rename only; changing the operator moves bytes)")
 
+    # (7) enumerator NAMING. SCREAMING_SNAKE with a domain prefix is the campaign's
+    # rule (docs/enum-modeling-plan.md); the retail branch keeps every domain
+    # unscoped, so the prefix carries all the disambiguation and a camelCase
+    # `kButeInt` reads as an ordinary variable at its use sites.
+    for f in files:
+        rel = str(f.relative_to(REPO))
+        t = strip(f.read_text(errors="replace"))
+        for dom, _kind, _st, body in domain_blocks(t):
+            for em in re.finditer(r'^[ \t]*([A-Za-z_]\w*)[ \t]*=', body, re.M):
+                name = em.group(1)
+                if not re.fullmatch(r'[A-Z][A-Z0-9_]*', name):
+                    fatal.append(f"{rel}: {dom}::{name} is not SCREAMING_SNAKE")
+
     return fatal, warn, declared
 
 
