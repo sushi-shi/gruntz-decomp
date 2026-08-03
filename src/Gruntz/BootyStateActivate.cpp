@@ -436,7 +436,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         m_sprintSprites[i - 1]->m_drawFillArg = h;
 
         i32 outX, outY;
-        GenMenuRandPos(i, &outX, &outY);
+        GenMenuRandPos(static_cast<GruntDirection>(i), &outX, &outY);
         m_sprintSprites[i - 1]->m_screenX = outX;
         m_sprintSprites[i - 1]->m_screenY = outY;
     }

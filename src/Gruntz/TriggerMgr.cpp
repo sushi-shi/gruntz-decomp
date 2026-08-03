@@ -27,6 +27,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -2588,7 +2589,8 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         } while (pos != NULL);
     }
     if (count == 1) {
-        g_gameReg->m_cmdSubMgr->EnqueueSingle(1, x, static_cast<char>(buf[0]), 5, 0, 0, 0, 0);
+        g_gameReg->m_cmdSubMgr
+            ->EnqueueSingle(1, x, static_cast<char>(buf[0]), PLAYERCMD_STOP, 0, 0, 0, 0);
     } else {
         g_gameReg->m_cmdSubMgr->EnqueueMulti(1, x, count, buf, 5, 0, 0, 0);
     }

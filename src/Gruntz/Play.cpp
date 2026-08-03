@@ -60,6 +60,7 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SBI_Image.h>
@@ -4186,7 +4187,7 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
             char ab = static_cast<char>(g_curPlayer);
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
-            m_mgr->m_cmdSubMgr->EnqueueSingle(1, ab, 0, 0, px, py, 0, 0);
+            m_mgr->m_cmdSubMgr->EnqueueSingle(1, ab, 0, PLAYERCMD_PLACE_GRUNT, px, py, 0, 0);
             return 1;
         }
     }
@@ -4507,7 +4508,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
                         1,
                         tok,
                         0,
-                        0,
+                        PLAYERCMD_PLACE_GRUNT,
                         static_cast<i16>(x),
                         static_cast<i16>(y),
                         0,
@@ -4562,7 +4563,7 @@ mode_36c:
                 1,
                 static_cast<char>(a),
                 static_cast<char>(y),
-                8,
+                PLAYERCMD_GIVE_TOOL,
                 0,
                 0,
                 static_cast<char>(tok),
@@ -4588,7 +4589,7 @@ mode_36c:
             1,
             static_cast<char>(a),
             static_cast<char>(y),
-            8,
+            PLAYERCMD_GIVE_TOOL,
             0,
             0,
             static_cast<char>(tok),

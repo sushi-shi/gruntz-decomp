@@ -46,6 +46,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/HeapDiag.h>
 #include <Gruntz/HelpState.h>
+#include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LoadGameMenu.h>
@@ -2726,9 +2727,9 @@ void CGruntzMgr::Close() {
         v->m_device = NULL;
         v->m_keyboard = NULL;
         v->m_joystick = NULL;
-        v->m_joystick2 = NULL;
+        v->m_mouse = NULL;
         v->m_deviceList = NULL;
-        v->m_mode = 0;
+        v->m_mode = INPUTDEV_NONE;
         operator delete(v);
         g_spawnConfig = NULL;
     }

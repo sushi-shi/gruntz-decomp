@@ -3,11 +3,12 @@
 #include <Gruntz/StateMgrBZ.h>
 
 #include <DinMgr2/DirectInputMgr2.h>
+#include <Gruntz/InputDeviceSel.h>
 
 #include <stddef.h>
 
 RVA(0x000382c0, 0x52)
-i32 StateMgrBZ::Init(DirectInputMgr2* src, i32 mode) {
+i32 StateMgrBZ::Init(DirectInputMgr2* src, InputDeviceSel mode) {
     if (src == NULL) {
         return 0;
     }
@@ -36,7 +37,7 @@ void StateMgrBZ::Setup() {
 }
 
 RVA(0x000383b0, 0x1c0)
-i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
+i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
     if (src == NULL) {
         return 0;
     }
@@ -44,15 +45,15 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     m_joystick = NULL;
     m_deviceList = NULL;
     m_device = NULL;
-    m_mode = 0;
+    m_mode = INPUTDEV_NONE;
     switch (static_cast<u32>(mode)) {
-        case 1: {
+        case INPUTDEV_KEYBOARD: {
             CInputDevice* d = static_cast<CInputDevice*>(src->m_deviceA);
             m_keyboard = d;
             m_device = d;
             break;
         }
-        case 2: {
+        case INPUTDEV_JOYSTICK1: {
             CInputDevice* d = (src->m_devices.GetSize() > 0)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(0))
                                   : 0;
@@ -60,7 +61,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_device = d;
             break;
         }
-        case 3: {
+        case INPUTDEV_JOYSTICK2: {
             CInputDevice* d = (src->m_devices.GetSize() > 1)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(1))
                                   : 0;
@@ -68,7 +69,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_device = d;
             break;
         }
-        case 4: {
+        case INPUTDEV_JOYSTICK3: {
             CInputDevice* d = (src->m_devices.GetSize() > 2)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(2))
                                   : 0;
@@ -76,7 +77,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_device = d;
             break;
         }
-        case 5: {
+        case INPUTDEV_JOYSTICK4: {
             CInputDevice* d = (src->m_devices.GetSize() > 3)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(3))
                                   : 0;
@@ -84,7 +85,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_device = d;
             break;
         }
-        case 6: {
+        case INPUTDEV_KEYBOARD_JOYSTICK1: {
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             CInputDevice* d = (src->m_devices.GetSize() > 0)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(0))
@@ -94,30 +95,30 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
                 static_cast<SbzDeviceList*>(src->AddControllerArr(m_keyboard, d, 0, 0, 0, 0, 0));
             break;
         }
-        case 8: {
+        case INPUTDEV_KEYBOARD_JOYSTICK1_MOUSE: {
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             CInputDevice* d = (src->m_devices.GetSize() > 0)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(0))
                                   : 0;
             m_joystick = d;
-            m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
+            m_mouse = static_cast<CInputDevice*>(src->m_deviceB);
             m_deviceList = static_cast<SbzDeviceList*>(
-                src->AddControllerArr(m_keyboard, d, m_joystick2, 0, 0, 0, 0)
+                src->AddControllerArr(m_keyboard, d, m_mouse, 0, 0, 0, 0)
             );
             break;
         }
-        case 7:
+        case INPUTDEV_KEYBOARD_MOUSE:
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
-            m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
+            m_mouse = static_cast<CInputDevice*>(src->m_deviceB);
             m_deviceList = static_cast<SbzDeviceList*>(
-                src->AddControllerArr(m_keyboard, m_joystick2, 0, 0, 0, 0, 0)
+                src->AddControllerArr(m_keyboard, m_mouse, 0, 0, 0, 0, 0)
             );
             break;
-        case 0:
+        case INPUTDEV_NONE:
             m_keyboard = NULL;
             m_joystick = NULL;
             m_deviceList = NULL;
-            m_joystick2 = NULL;
+            m_mouse = NULL;
             m_device = NULL;
             break;
     }
@@ -138,9 +139,9 @@ i32 StateMgrBZ::Flush() {
             m_edgeKeys |= m_joystick->m_edgeKeys;
             m_currentKeys |= m_joystick->m_currentKeys;
         }
-        if (m_joystick2) {
-            m_edgeKeys |= m_joystick2->m_edgeKeys;
-            m_currentKeys |= m_joystick2->m_currentKeys;
+        if (m_mouse) {
+            m_edgeKeys |= m_mouse->m_edgeKeys;
+            m_currentKeys |= m_mouse->m_currentKeys;
         }
     }
     if (m_suppress) {

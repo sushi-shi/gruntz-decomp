@@ -4,6 +4,7 @@
 #include <DinMgr2/InputMgrPtr.h>
 #include <Enums.h>
 #include <Gruntz/InputConfig.h>
+#include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/String.h>
 #include <MsgParam.h>
 
@@ -11,19 +12,19 @@ RVA(0x000387c0, 0xd4)
 CString CInputConfig::LoadInputDeviceConfig(i32 unused) {
     CString name("None");
     switch (m_deviceId) {
-        case 1:
+        case INPUTDEV_KEYBOARD:
             name = "Keyboard";
             break;
-        case 2:
+        case INPUTDEV_JOYSTICK1:
             name = "Joystick 1";
             break;
-        case 3:
+        case INPUTDEV_JOYSTICK2:
             name = "Joystick 2";
             break;
-        case 4:
+        case INPUTDEV_JOYSTICK3:
             name = "Joystick 3";
             break;
-        case 5:
+        case INPUTDEV_JOYSTICK4:
             name = "Joystick 4";
             break;
     }

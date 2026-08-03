@@ -15,6 +15,7 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -122,7 +123,7 @@ i32 CPlay::PlaceStartGruntz() {
                         result,
                         static_cast<char>(obj->m_smarts),
                         0,
-                        0,
+                        PLAYERCMD_PLACE_GRUNT,
                         (obj->m_screenX & ~0x1f) + 0x10,
                         (obj->m_screenY & ~0x1f) + 0x10,
                         0,

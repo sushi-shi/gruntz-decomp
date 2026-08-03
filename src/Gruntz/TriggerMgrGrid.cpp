@@ -21,6 +21,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -1051,12 +1052,12 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
 
 RVA(0x0006da60, 0x27)
 void CTriggerMgr::GridAction6(i32 a, i32 b) {
-    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
+    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, PLAYERCMD_GUARD_BEGIN, 0, 0, 0, 0);
 }
 
 RVA(0x0006daa0, 0x27)
 void CTriggerMgr::GridAction7(i32 a, i32 b) {
-    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
+    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, PLAYERCMD_GUARD_END, 0, 0, 0, 0);
 }
 
 // @early-stop

@@ -11,6 +11,8 @@
 
 #include <afxtempl.h>
 
+GZ_ENUM_FORWARD(FaderKind);
+
 struct CFaderArray : public CObject {
     virtual ~CFaderArray() OVERRIDE;
     virtual void Serialize(CArchive& ar) OVERRIDE;
@@ -97,7 +99,7 @@ public:
     ~CFaderMgr();
     i32 SetConfig(class CDDSurface* src, class CDDSurface* dst, class CDDrawPtrCollections* pool);
     void FreeAll();
-    CFader* Add(i32 nFaderType, class CFxModeDesc* pInit);
+    CFader* Add(FaderKind nFaderType, class CFxModeDesc* pInit);
 
     void Remove(CFader* pFader);
     void DeleteAll();

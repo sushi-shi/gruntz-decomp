@@ -11,6 +11,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h>
@@ -40,7 +41,7 @@ i32 CPlay::ExecCommand(
     i32 res;
 
     switch (static_cast<u8>(cmdKind)) {
-        case 0: {
+        case PLAYERCMD_PLACE_GRUNT: {
 
             i32 r = mgr->m_cmdGrid->PlaceObject(
                 static_cast<u8>(targetIndex),
@@ -101,7 +102,7 @@ i32 CPlay::ExecCommand(
             return 1;
         }
 
-        case 6: {
+        case PLAYERCMD_GUARD_BEGIN: {
             CGrunt* g =
                 mgr->m_cmdGrid
                     ->m_grid[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
@@ -149,7 +150,7 @@ i32 CPlay::ExecCommand(
             return 1;
         }
 
-        case 7: {
+        case PLAYERCMD_GUARD_END: {
 
             CGrunt* g =
                 mgr->m_cmdGrid
@@ -411,7 +412,7 @@ i32 CPlay::ExecCommand(
             return 0;
         }
 
-        case 8: {
+        case PLAYERCMD_GIVE_TOOL: {
             u32 player = static_cast<u8>(targetIndex);
             if (player == static_cast<u32>(g_curPlayer)) {
                 m_playerCommandPending = 0;
@@ -458,7 +459,7 @@ i32 CPlay::ExecCommand(
             return r;
         }
 
-        case 5: {
+        case PLAYERCMD_STOP: {
             CGrunt* g =
                 mgr->m_cmdGrid
                     ->m_grid[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];

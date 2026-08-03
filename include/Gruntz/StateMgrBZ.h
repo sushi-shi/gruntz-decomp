@@ -3,7 +3,10 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
+
+GZ_ENUM_FORWARD(InputDeviceSel);
 
 class DirectInputMgr2;
 class CInputDevice;
@@ -24,9 +27,9 @@ SIZE_UNKNOWN();
 
 class StateMgrBZ {
 public:
-    i32 Init(DirectInputMgr2* src, i32 mode);
+    i32 Init(DirectInputMgr2* src, InputDeviceSel mode);
 
-    i32 Build(DirectInputMgr2* src, i32 mode);
+    i32 Build(DirectInputMgr2* src, InputDeviceSel mode);
 
     void Setup();
 
@@ -40,9 +43,9 @@ public:
     CInputDevice* m_device;
     CInputDevice* m_keyboard;
     CInputDevice* m_joystick;
-    CInputDevice* m_joystick2;
+    CInputDevice* m_mouse;
     SbzDeviceList* m_deviceList;
-    i32 m_mode;
+    InputDeviceSel m_mode;
     u32 m_edgeKeys;
     u32 m_currentKeys;
     u32 m_latchedKeys;

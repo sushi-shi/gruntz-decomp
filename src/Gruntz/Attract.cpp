@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Gruntz/Fader.h>
+#include <Gruntz/FaderKind.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -128,7 +129,7 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     t.m_centerY = centerY;
     t.m_targetSurface = chan;
     t.m_sourceSurface = NULL;
-    CFader* f = mgr->Add(1, &t);
+    CFader* f = mgr->Add(FADERKIND_LIGHT, &t);
     if (f == NULL) {
         return 0;
     }
@@ -170,7 +171,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     t.m_centerY = centerY;
     t.m_targetSurface = chanA;
     t.m_sourceSurface = chanB;
-    CFader* f = mgr->Add(1, &t);
+    CFader* f = mgr->Add(FADERKIND_LIGHT, &t);
     if (f == NULL) {
         return 0;
     }
@@ -232,7 +233,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     t.m_intensityPercent = pct;
     t.m_targetSurface = chanA;
     t.m_sourceSurface = chanB;
-    CFader* f = mgr->Add(2, &t);
+    CFader* f = mgr->Add(FADERKIND_SINE, &t);
     if (f == NULL) {
         return 0;
     }
@@ -279,7 +280,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     t.m_intensityPercent = pct;
     t.m_targetSurface = chanA;
     t.m_sourceSurface = chanB;
-    CFader* f = mgr->Add(2, &t);
+    CFader* f = mgr->Add(FADERKIND_SINE, &t);
     if (f == NULL) {
         return 0;
     }
@@ -313,7 +314,7 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     t.m_intensityPercent = pct;
     t.m_targetSurface = chan;
     t.m_sourceSurface = NULL;
-    CFader* f = mgr->Add(2, &t);
+    CFader* f = mgr->Add(FADERKIND_SINE, &t);
     if (f == NULL) {
         return 0;
     }

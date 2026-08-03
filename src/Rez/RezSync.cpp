@@ -33,6 +33,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/Resolution.h>
@@ -405,18 +406,18 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_spawnConfig->m_device = NULL;
         g_spawnConfig->m_keyboard = NULL;
         g_spawnConfig->m_joystick = NULL;
-        g_spawnConfig->m_joystick2 = NULL;
+        g_spawnConfig->m_mouse = NULL;
         g_spawnConfig->m_deviceList = NULL;
-        g_spawnConfig->m_mode = 0;
+        g_spawnConfig->m_mode = INPUTDEV_NONE;
     }
-    if (!g_spawnConfig->Init(g_inputMgr, 6)) {
+    if (!g_spawnConfig->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
         if (g_spawnConfig) {
             g_spawnConfig->m_device = NULL;
             g_spawnConfig->m_keyboard = NULL;
             g_spawnConfig->m_joystick = NULL;
-            g_spawnConfig->m_joystick2 = NULL;
+            g_spawnConfig->m_mouse = NULL;
             g_spawnConfig->m_deviceList = NULL;
-            g_spawnConfig->m_mode = 0;
+            g_spawnConfig->m_mode = INPUTDEV_NONE;
             ::operator delete(g_spawnConfig);
             g_spawnConfig = NULL;
         }

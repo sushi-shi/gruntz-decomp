@@ -21,6 +21,8 @@ extern "C" tagRECT g_versionRect;
 
 #include <Rez/FrameClock.h>
 
+GZ_ENUM_FORWARD(GruntDirection);
+
 struct BzGeomPair {
     i32 m_y;
     i32 m_x;
@@ -210,7 +212,7 @@ public:
 
     i32 CheckPerfectBonus();
 
-    void GenMenuRandPos(i32 sel, i32* outX, i32* outY);
+    void GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY);
 
     i32 m_initGate;
     i32 m_secretHudHandled;

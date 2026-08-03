@@ -46,30 +46,31 @@ i32 g_levelMsgIconPos[16] = {
 #include <Gruntz/GlyphStringDraw.h>
 #include <Mfc.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/GruntDirection.h>
 RVA(0x00019cd0, 0x200)
-void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
+void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;
     }
     switch (sel) {
-        case 1:
+        case DIR_NORTH:
             *outX = g_gameReg->Rand() % 0x281;
             *outY = 0x1e0;
             return;
-        case 5:
+        case DIR_SOUTH:
             *outX = g_gameReg->Rand() % 0x281;
             *outY = 0;
             return;
-        case 3:
+        case DIR_EAST:
             *outX = 0;
             goto y_1e1;
-        case 7:
+        case DIR_WEST:
             *outX = 0x280;
             goto y_1e1;
         y_1e1:
             *outY = g_gameReg->Rand() % 0x1e1;
             return;
-        case 2:
+        case DIR_NORTHEAST:
             if (g_gameReg->Rand() % 2) {
                 *outX = 0;
                 goto y_f1;
@@ -77,7 +78,7 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
             *outX = g_gameReg->Rand() % 0x141;
             *outY = 0x1e0;
             return;
-        case 8:
+        case DIR_NORTHWEST:
             if (g_gameReg->Rand() % 2) {
                 *outX = 0x280;
                 goto y_f1;
@@ -88,7 +89,7 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
         y_f1:
             *outY = g_gameReg->Rand() % 0xf1 + 0xf0;
             return;
-        case 4:
+        case DIR_SOUTHEAST:
             if (g_gameReg->Rand() % 2) {
                 *outX = g_gameReg->RandRange(0, 0x140);
                 *outY = 0;
@@ -96,7 +97,7 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
             }
             *outX = 0;
             goto y_f0;
-        case 6:
+        case DIR_SOUTHWEST:
             if (g_gameReg->RandRange(0, 1)) {
                 *outX = g_gameReg->RandRange(0, 0x140) + 0x140;
                 *outY = 0;

@@ -32,11 +32,11 @@ src/Gruntz/InGameIcon.cpp	434	pending
 src/Image/FileImage.cpp	427	pending
 src/Gruntz/GruntzMgrCmd.cpp	415	pending
 src/Gruntz/StatusBarMgr.cpp	408	pending
-src/Gruntz/PlayerCommandStep.cpp	342	pending
+src/Gruntz/PlayerCommandStep.cpp	342	partial
 src/Bute/SymTab.cpp	323	pending
 src/DDrawMgr/DDPageMgr.cpp	322	pending
 src/Io/SaveGame.cpp	320	pending
-src/Gruntz/GameMode.cpp	314	pending
+src/Gruntz/GameMode.cpp	314	done
 src/Net/NetCmdSlot.cpp	311	pending
 src/DDrawMgr/ShadeTableCache.cpp	310	pending
 src/Gruntz/GruntSpawnConfig.cpp	304	pending
@@ -107,14 +107,14 @@ src/Image/ImageOwned.cpp	97	pending
 src/Gruntz/GruntVoice.cpp	97	done (AnimWorkerAct dispatch named)
 src/Gruntz/CheatMgr.cpp	96	pending
 src/Gruntz/KitchenSlime.cpp	94	pending
-src/Gruntz/StateMgrBZ.cpp	91	pending
+src/Gruntz/StateMgrBZ.cpp	91	done
 src/Wwd/WwdGameObjectRender.cpp	85	pending
 src/Gruntz/ChatBox.cpp	84	pending
 src/Gruntz/LevelPreview.cpp	81	pending
 src/Gruntz/ChatBoxOwner.cpp	80	pending
 src/Gruntz/SBI_WellGoo.cpp	78	pending
 src/Crypto/Blowfish.cpp	78	pending
-src/DDrawMgr/FaderMgr.cpp	76	pending
+src/DDrawMgr/FaderMgr.cpp	76	done
 src/DDrawMgr/DDrawPtrCollections.cpp	74	pending
 src/Gruntz/GameObjectFactory.cpp	73	pending
 src/Gruntz/Brickz.cpp	73	pending
@@ -197,7 +197,7 @@ src/Gruntz/StatusBarSpriteActs.cpp	22	done (AnimWorkerAct dispatch named)
 src/Gruntz/GlyphStringDraw.cpp	22	pending
 src/Wap32/EngStrRenderText.cpp	21	pending
 src/Gruntz/RainCloud.cpp	21	pending
-src/Gruntz/InputDeviceConfig.cpp	21	pending
+src/Gruntz/InputDeviceConfig.cpp	21	done
 src/Gruntz/GruntPowerupSprite.cpp	21	pending
 src/Gruntz/GruntHealthSprite.cpp	20	pending
 src/Gruntz/CheckpointDlg.cpp	20	pending

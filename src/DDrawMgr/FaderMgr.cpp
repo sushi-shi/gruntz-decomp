@@ -2,8 +2,10 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/FaderKind.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSubtypes.h>
+#include <Gruntz/FxModeKind.h>
 #include <Gruntz/FxModeT1.h>
 
 #include <string.h>
@@ -37,12 +39,12 @@ void CFaderMgr::FreeAll() {
 }
 
 RVA(0x0017d9c0, 0x7a0)
-CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
+CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
     CFader* fader = 0;
 
     switch (nFaderType) {
-        case 0: {
-            if (pInit != NULL && pInit->m_type != 1) {
+        case FADERKIND_SHAPE: {
+            if (pInit != NULL && pInit->m_type != FXMODE_SHAPE) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -69,8 +71,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             }
             break;
         }
-        case 1: {
-            if (pInit != NULL && pInit->m_type != 2) {
+        case FADERKIND_LIGHT: {
+            if (pInit != NULL && pInit->m_type != FXMODE_LIGHT) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -97,8 +99,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             }
             break;
         }
-        case 2: {
-            if (pInit != NULL && pInit->m_type != 3) {
+        case FADERKIND_SINE: {
+            if (pInit != NULL && pInit->m_type != FXMODE_SINE) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -125,8 +127,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             }
             break;
         }
-        case 3: {
-            if (pInit != NULL && pInit->m_type != 4) {
+        case FADERKIND_RADIAL: {
+            if (pInit != NULL && pInit->m_type != FXMODE_RADIAL) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -153,8 +155,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             }
             break;
         }
-        case 4: {
-            if (pInit != NULL && pInit->m_type != 5) {
+        case FADERKIND_FLAT: {
+            if (pInit != NULL && pInit->m_type != FXMODE_FLAT) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -181,8 +183,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             }
             break;
         }
-        case 5: {
-            if (pInit != NULL && pInit->m_type != 6) {
+        case FADERKIND_MESH: {
+            if (pInit != NULL && pInit->m_type != FXMODE_MESH) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
