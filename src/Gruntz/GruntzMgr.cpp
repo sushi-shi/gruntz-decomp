@@ -1420,13 +1420,13 @@ i32 CGruntzMgr::MakeRezPath() {
     i32 found = 1;
 
     CString rez(s_rezName);
-    m_haveRez = 0;
+    m_haveRez = false;
     m_strRezPath.Format(s_join, cwd, static_cast<LPCTSTR>(rez));
     if (!FileExists(m_strRezPath)) {
         if (drive) {
             m_strRezPath.Format(s_dataPath, drive, static_cast<LPCTSTR>(rez));
             if (FileExists(m_strRezPath)) {
-                m_haveRez = 1;
+                m_haveRez = true;
             } else {
                 found = 0;
             }
@@ -1439,7 +1439,7 @@ i32 CGruntzMgr::MakeRezPath() {
     CString fecLo(s_fecLoName);
     CString fec(g_disableHqMovie ? fecLo : fecHi);
 
-    m_haveMoviez = 0;
+    m_haveMoviez = false;
     i32 movFound = 0;
     m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fec));
     if (!m_inGameDir && !FileExists(m_strMoviePath) && !g_disableHqMovie) {
@@ -1451,7 +1451,7 @@ i32 CGruntzMgr::MakeRezPath() {
     if (!movFound && drive) {
         m_strMoviePath.Format(s_moviezPath, drive, static_cast<LPCTSTR>(fec));
         if (FileExists(m_strMoviePath)) {
-            m_haveMoviez = 1;
+            m_haveMoviez = true;
         }
     }
 
@@ -3033,8 +3033,8 @@ CGruntzMgr::CGruntzMgr() {
     m_modeH = 0;
     m_colorDepth = 0x10;
     m_inGameDir = 1;
-    m_haveRez = 0;
-    m_haveMoviez = 0;
+    m_haveRez = false;
+    m_haveMoviez = false;
     m_musicEnabled = 1;
     m_soundEnabled = 1;
     m_isVoiceEnabled = 1;

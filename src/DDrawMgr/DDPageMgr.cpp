@@ -435,7 +435,7 @@ i32 CMoviePlayer::Frame() {
             m_smackBufMode
         );
         SmackDoFrame(m_smackHandle);
-        m_frameDecoded = 1;
+        m_frameDecoded = true;
         m_srcSurf->Unlock(m_srcDesc.lpSurface);
     }
 afterLock:
@@ -725,7 +725,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* re
     if (m_forceSingleRow != 0) {
         m_tilesDown = 1;
     }
-    m_frameDecoded = 0;
+    m_frameDecoded = false;
     m_loopCount = 0;
     return 1;
 }

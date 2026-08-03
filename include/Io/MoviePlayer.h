@@ -70,7 +70,7 @@ public:
         m_srcSurfRaw = NULL;
         m_borrowedDisplayResources = 0;
         m_palette = NULL;
-        m_frameDecoded = 0;
+        m_frameDecoded = false;
         m_blitMode = MOVIE_TILE;
         m_tilesAcross = 0;
         m_tilesDown = 0;

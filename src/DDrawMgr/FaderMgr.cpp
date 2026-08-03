@@ -12,7 +12,7 @@ VTBL(CFaderArray, 0x001f0790);
 
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
-    m_active = 0;
+    m_active = false;
     m_reserved0c = 0;
 }
 
@@ -26,14 +26,14 @@ i32 CFaderMgr::SetConfig(CDDSurface* a, CDDSurface* b, CDDrawPtrCollections* poo
     m_timerArgA = a;
     m_timerArgB = b;
     m_sharedPtrColl = pool;
-    m_active = 1;
+    m_active = true;
     return 1;
 }
 
 RVA(0x0017d9a0, 0x11)
 void CFaderMgr::FreeAll() {
     DeleteAll();
-    m_active = 0;
+    m_active = false;
 }
 
 RVA(0x0017d9c0, 0x7a0)

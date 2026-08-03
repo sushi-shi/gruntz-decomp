@@ -4,3 +4,4 @@
 pointer-vs-0	0
 enum-vs-int	0
 sizeof-literal	0
+bool-vs-int	0

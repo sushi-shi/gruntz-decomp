@@ -23,12 +23,22 @@ Classes counted:
                  is 4 bytes. sizeof(m_thing) is the same constant and cannot
                  drift when the field's type changes.
 
-NOT counted, deliberately:
+  bool-vs-int    0 or 1 against a field PROVEN boolean by its own use. MSVC 5.0
+                 does have bool/true/false (measured), so the value spellings
+                 cost nothing; only the STORAGE has to stay 4 bytes, since
+                 sizeof(bool) == 1 would move every member after it.
 
-  - bool-vs-int. There is no `bool` in this tree: retail modelled every flag as
-    i32, so `x == 1` on a flag is faithful and `== true` would be an invention.
-    A real bool has to be PROVEN per field before its comparisons become a
-    defect, so counting them here would be counting the wrong thing.
+                 The proof is deliberately strict, because the loose version is
+                 wrong: "only ever compared against 0" also describes a COUNT
+                 tested for emptiness and the HIGH DWORD of an i64 pair, and a
+                 first attempt at this duly reported m_nodeCount and half the
+                 timer fields as booleans. A field qualifies only if every use is
+                 a condition, a `!`, or a compare/assign against 0 or 1, AND it
+                 is set to 1 somewhere - a field only ever zeroed is a handle or
+                 a counter - AND it is not inside an anonymous struct, which is
+                 how the i64 pairs are spelled.
+
+NOT counted, deliberately:
   - arithmetic literals (`x * 32`, `>> 5`, masks). A shift or a stride is a
     number, not a name waiting to happen.
   - 0 and 1 against plain integers - those are overwhelmingly counts and
@@ -57,10 +67,29 @@ CDB = REPO / "build" / "clangd" / "compile_commands.json"
 BASELINE = REPO / "config" / "bare-constants-baseline.tsv"
 DETAIL = REPO / "build" / "gen" / "bare_constants.tsv"
 
-CLASSES = ("pointer-vs-0", "enum-vs-int", "sizeof-literal")
+CLASSES = ("pointer-vs-0", "enum-vs-int", "sizeof-literal", "bool-vs-int")
 
 # size-taking calls whose second argument is a byte count beside a pointer
 _SIZED_CALLS = {"Read": 1, "Write": 1, "memset": 2, "memcpy": 2}
+
+# fields whose every use proves them boolean (see the bool-vs-int note above).
+# Membership is EVIDENCE, not preference: gruntz ships no PDB, so unlike
+# homm2-decomp there is no `gb` symbol prefix to read a flag off, and the recovered
+# names only corroborate what the uses already showed.
+PROVEN_BOOL = {
+    "CChatBoxOwner::m_attached", "CMoviePlayer::m_frameDecoded",
+    "CRezImage::m_transparent", "CGruntzMgr::m_haveMoviez",
+    "CGruntzMgr::m_haveRez", "CSymParser::m_newArchive",
+    "CFaderMgr::m_active", "CImagePaletteNode::m_systemTuned",
+}
+
+
+def _field_owner(n):
+    d = n.referenced
+    if d is None or d.kind != cidx.CursorKind.FIELD_DECL:
+        return None
+    p = d.semantic_parent
+    return "%s::%s" % (p.spelling, d.spelling) if p is not None and p.spelling else None
 
 
 def _flags_for(entry):
@@ -146,7 +175,13 @@ def _scan_tu(tu, hits):
                 rel = _rel(n)
                 if rel is None:
                     break
-                if at.kind == cidx.TypeKind.POINTER and v == 0:
+                if (v in (0, 1) and a.kind == cidx.CursorKind.MEMBER_REF_EXPR
+                        and _field_owner(a) in PROVEN_BOOL):
+                    lit = b.location
+                    hits["bool-vs-int"].append(
+                        (rel, lit.line, lit.column, str(v),
+                         "true" if v == 1 else "false"))
+                elif at.kind == cidx.TypeKind.POINTER and v == 0:
                     lit = b.location
                     hits["pointer-vs-0"].append((rel, lit.line, lit.column, "0", "NULL"))
                 else:

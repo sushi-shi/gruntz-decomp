@@ -32,12 +32,12 @@ RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
     m_world = world;
     m_fontConfig = host;
-    return m_attached = 1;
+    return m_attached = true;
 }
 
 RVA(0x00020510, 0x8)
 void CChatBoxOwner::Deactivate() {
-    m_attached = 0;
+    m_attached = false;
 }
 
 // @early-stop

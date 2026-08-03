@@ -203,7 +203,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
             ctl->m_world = NULL;
             ctl->m_fontConfig = NULL;
-            ctl->m_attached = 0;
+            ctl->m_attached = false;
             ctl->m_inputActive = 0;
             ctl->m_originX = 0;
             ctl->m_originY = 0;

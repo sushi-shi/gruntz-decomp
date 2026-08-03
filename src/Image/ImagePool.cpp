@@ -323,7 +323,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
     m_rowPad = m_stride - width;
     m_paletteScalar = 0;
     m_paletteNode = NULL;
-    m_transparent = 1;
+    m_transparent = true;
     memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
     m_bih.biWidth = m_width;
     m_bih.biBitCount = static_cast<WORD>(m_bitCount);
@@ -615,7 +615,7 @@ i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
 
     i32 ok = DecodeBlit(hdr->pixels, dc, width, height, 8, ctrl);
     if (!(ctrl & 1)) {
-        m_transparent = 0;
+        m_transparent = false;
     }
     return ok;
 }
@@ -656,7 +656,7 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
         return 0;
     }
     if (!(ctrl & 1)) {
-        m_transparent = 0;
+        m_transparent = false;
     }
 
     if (HAS(flags, PID_FILL_IS_WORD)) {
@@ -666,7 +666,7 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     }
 
     if (HAS(flags, PID_GRAMMAR_SKIPRUN)) {
-        m_transparent = 1;
+        m_transparent = true;
         u8* dstRow = m_pixels + m_rowOffsets[0];
         i32 x = 0;
         i32 y = 0;
@@ -894,7 +894,7 @@ i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
     } while (--i);
     if (DisplayUsesPalette() && !(flags & 1)) {
         Tune();
-        m_systemTuned = 1;
+        m_systemTuned = true;
     }
     m_palette = CreatePalette(&m_pal);
     return m_palette != NULL;

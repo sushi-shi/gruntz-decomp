@@ -30,6 +30,11 @@ TD = re.compile(r'^[ \t]*typedef[ \t]+([A-Za-z_]\w*)[ \t]+([A-Za-z_]\w*)[ \t]*;'
 DEFINE = re.compile(r'^[ \t]*#[ \t]*define\b(?:[^\n]*\\\n)*[^\n]*\n', re.M)
 # aliases (RHS) that are standard names, not view relics
 KEEP_RHS = {"GUID", "RECT", "i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64",
+            # b32/b8 are the project's boolean STORAGE aliases (<Ints.h>), the same
+            # kind of thing as i32/u32: a name for an integer width, not a second
+            # name for a class. MSVC 5.0 has a real bool but sizeof(bool) == 1, so
+            # a 4-byte retail flag has to keep an int footprint and say so.
+            "b32", "b8",
             "uLong", "uLongf", "Bytef", "gz_size_t", "size_t", "BOOL", "DWORD",
             "WORD", "BYTE", "UINT", "HANDLE"}
 BUILTIN_LHS = {"int", "char", "short", "long", "unsigned", "signed", "float",

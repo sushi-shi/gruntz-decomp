@@ -17,7 +17,7 @@ public:
     CChatBoxOwner() {
         m_world = NULL;
         m_fontConfig = NULL;
-        m_attached = 0;
+        m_attached = false;
         m_inputActive = 0;
         m_originX = 0;
         m_originY = 0;

@@ -776,7 +776,7 @@ CSymParser::CSymParser() {
     m_nextWritePos = 0;
     m_root = NULL;
     m_archiveTime = 0;
-    m_newArchive = 0;
+    m_newArchive = false;
     m_version = 0;
     m_largestKeyArraySize = 0;
     m_longestScopeNameLen = 0;
@@ -848,7 +848,7 @@ CSymParser::~CSymParser() {
     m_readOnly = 1;
     m_root = NULL;
     m_archiveTime = 0;
-    m_newArchive = 0;
+    m_newArchive = false;
     m_version = 1;
     m_largestKeyArraySize = 0;
     m_longestScopeNameLen = 0;
@@ -928,7 +928,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_parseArmed = 1;
     if (b != 0) {
         m_nextWritePos = sizeof(SymTabFileHeader);
-        m_newArchive = 1;
+        m_newArchive = true;
         CSymTab* node = new CSymTab(
             this,
             0,

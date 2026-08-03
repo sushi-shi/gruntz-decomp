@@ -17,7 +17,7 @@ struct CImagePaletteNode {
 
     CImagePaletteNode() {
         m_palette = NULL;
-        m_systemTuned = 0;
+        m_systemTuned = false;
         m_listPosition = NULL;
     }
     i32 Build(PALETTEENTRY* entries, i32 flags);
