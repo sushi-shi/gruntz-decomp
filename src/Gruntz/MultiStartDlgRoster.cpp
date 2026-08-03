@@ -2,6 +2,7 @@
 
 #include <EmptyString.h>
 #include <Enums.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -207,55 +208,55 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
                 switch (m_host->m_options[0].m_colorIndex) {
-                    case 8:
+                    case TINT_DKBLUE:
                         color = 0x800000;
                         break;
-                    case 9:
+                    case TINT_DKGREEN:
                         color = 0x008000;
                         break;
-                    case 10:
+                    case TINT_TURQ:
                         color = 0x808000;
                         break;
-                    case 11:
+                    case TINT_DKRED:
                         color = 0x000080;
                         break;
-                    case 4:
+                    case TINT_PURPLE:
                         color = 0x800080;
                         break;
-                    case 13:
+                    case TINT_DKYELLOW:
                         color = 0x008080;
                         break;
-                    case 14:
+                    case TINT_GREY:
                         color = 0x808080;
                         break;
-                    case 2:
+                    case TINT_BLUE:
                         color = 0xff0000;
                         break;
-                    case 1:
+                    case TINT_GREEN:
                         color = 0x00ff00;
                         break;
-                    case 15:
+                    case TINT_CYAN:
                         color = 0xffff00;
                         break;
-                    case 3:
+                    case TINT_RED:
                         color = 0x0000ff;
                         break;
-                    case 12:
+                    case TINT_PINK:
                         color = 0xff00ff;
                         break;
-                    case 5:
+                    case TINT_YELLOW:
                         color = 0x00ffff;
                         break;
-                    case 16:
+                    case TINT_WHITE:
                         color = 0xffffff;
                         break;
-                    case 0:
+                    case TINT_ORANGE:
                         color = 0x0080ff;
                         break;
-                    case 6:
+                    case TINT_HOTPINK:
                         color = 0x8000ff;
                         break;
-                    case 7:
+                    case TINT_BLACK:
                     default:
                         color = 0;
                         break;
@@ -268,55 +269,55 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
                 switch (m_host->m_options[1].m_colorIndex) {
-                    case 8:
+                    case TINT_DKBLUE:
                         color = 0x800000;
                         break;
-                    case 9:
+                    case TINT_DKGREEN:
                         color = 0x008000;
                         break;
-                    case 10:
+                    case TINT_TURQ:
                         color = 0x808000;
                         break;
-                    case 11:
+                    case TINT_DKRED:
                         color = 0x000080;
                         break;
-                    case 4:
+                    case TINT_PURPLE:
                         color = 0x800080;
                         break;
-                    case 13:
+                    case TINT_DKYELLOW:
                         color = 0x008080;
                         break;
-                    case 14:
+                    case TINT_GREY:
                         color = 0x808080;
                         break;
-                    case 2:
+                    case TINT_BLUE:
                         color = 0xff0000;
                         break;
-                    case 1:
+                    case TINT_GREEN:
                         color = 0x00ff00;
                         break;
-                    case 15:
+                    case TINT_CYAN:
                         color = 0xffff00;
                         break;
-                    case 3:
+                    case TINT_RED:
                         color = 0x0000ff;
                         break;
-                    case 12:
+                    case TINT_PINK:
                         color = 0xff00ff;
                         break;
-                    case 5:
+                    case TINT_YELLOW:
                         color = 0x00ffff;
                         break;
-                    case 16:
+                    case TINT_WHITE:
                         color = 0xffffff;
                         break;
-                    case 0:
+                    case TINT_ORANGE:
                         color = 0x0080ff;
                         break;
-                    case 6:
+                    case TINT_HOTPINK:
                         color = 0x8000ff;
                         break;
-                    case 7:
+                    case TINT_BLACK:
                     default:
                         color = 0;
                         break;
@@ -329,55 +330,55 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
                 switch (m_host->m_options[2].m_colorIndex) {
-                    case 8:
+                    case TINT_DKBLUE:
                         color = 0x800000;
                         break;
-                    case 9:
+                    case TINT_DKGREEN:
                         color = 0x008000;
                         break;
-                    case 10:
+                    case TINT_TURQ:
                         color = 0x808000;
                         break;
-                    case 11:
+                    case TINT_DKRED:
                         color = 0x000080;
                         break;
-                    case 4:
+                    case TINT_PURPLE:
                         color = 0x800080;
                         break;
-                    case 13:
+                    case TINT_DKYELLOW:
                         color = 0x008080;
                         break;
-                    case 14:
+                    case TINT_GREY:
                         color = 0x808080;
                         break;
-                    case 2:
+                    case TINT_BLUE:
                         color = 0xff0000;
                         break;
-                    case 1:
+                    case TINT_GREEN:
                         color = 0x00ff00;
                         break;
-                    case 15:
+                    case TINT_CYAN:
                         color = 0xffff00;
                         break;
-                    case 3:
+                    case TINT_RED:
                         color = 0x0000ff;
                         break;
-                    case 12:
+                    case TINT_PINK:
                         color = 0xff00ff;
                         break;
-                    case 5:
+                    case TINT_YELLOW:
                         color = 0x00ffff;
                         break;
-                    case 16:
+                    case TINT_WHITE:
                         color = 0xffffff;
                         break;
-                    case 0:
+                    case TINT_ORANGE:
                         color = 0x0080ff;
                         break;
-                    case 6:
+                    case TINT_HOTPINK:
                         color = 0x8000ff;
                         break;
-                    case 7:
+                    case TINT_BLACK:
                     default:
                         color = 0;
                         break;
@@ -390,55 +391,55 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
                 switch (m_host->m_options[3].m_colorIndex) {
-                    case 8:
+                    case TINT_DKBLUE:
                         color = 0x800000;
                         break;
-                    case 9:
+                    case TINT_DKGREEN:
                         color = 0x008000;
                         break;
-                    case 10:
+                    case TINT_TURQ:
                         color = 0x808000;
                         break;
-                    case 11:
+                    case TINT_DKRED:
                         color = 0x000080;
                         break;
-                    case 4:
+                    case TINT_PURPLE:
                         color = 0x800080;
                         break;
-                    case 13:
+                    case TINT_DKYELLOW:
                         color = 0x008080;
                         break;
-                    case 14:
+                    case TINT_GREY:
                         color = 0x808080;
                         break;
-                    case 2:
+                    case TINT_BLUE:
                         color = 0xff0000;
                         break;
-                    case 1:
+                    case TINT_GREEN:
                         color = 0x00ff00;
                         break;
-                    case 15:
+                    case TINT_CYAN:
                         color = 0xffff00;
                         break;
-                    case 3:
+                    case TINT_RED:
                         color = 0x0000ff;
                         break;
-                    case 12:
+                    case TINT_PINK:
                         color = 0xff00ff;
                         break;
-                    case 5:
+                    case TINT_YELLOW:
                         color = 0x00ffff;
                         break;
-                    case 16:
+                    case TINT_WHITE:
                         color = 0xffffff;
                         break;
-                    case 0:
+                    case TINT_ORANGE:
                         color = 0x0080ff;
                         break;
-                    case 6:
+                    case TINT_HOTPINK:
                         color = 0x8000ff;
                         break;
-                    case 7:
+                    case TINT_BLACK:
                     default:
                         color = 0;
                         break;

@@ -19,6 +19,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyMessages.h>
 #include <Gruntz/BootyWalkAnim.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
@@ -1122,52 +1123,52 @@ void CMultiBootyState::DrawBattleStats() {
         if (g_gameReg->m_options[i].m_joined != 0) {
             i32 color;
             switch (g_gameReg->m_options[i].m_colorIndex) {
-                case 0:
+                case TINT_ORANGE:
                     color = 0x80ff;
                     break;
-                case 1:
+                case TINT_GREEN:
                     color = 0xff00;
                     break;
-                case 2:
+                case TINT_BLUE:
                     color = 0xff0000;
                     break;
-                case 3:
+                case TINT_RED:
                     color = 0xff;
                     break;
-                case 4:
+                case TINT_PURPLE:
                     color = 0x800080;
                     break;
-                case 5:
+                case TINT_YELLOW:
                     color = 0xffff;
                     break;
-                case 6:
+                case TINT_HOTPINK:
                     color = 0x8000ff;
                     break;
-                case 8:
+                case TINT_DKBLUE:
                     color = 0x800000;
                     break;
-                case 9:
+                case TINT_DKGREEN:
                     color = 0x8000;
                     break;
-                case 10:
+                case TINT_TURQ:
                     color = 0x808000;
                     break;
-                case 11:
+                case TINT_DKRED:
                     color = 0x80;
                     break;
-                case 12:
+                case TINT_PINK:
                     color = 0xff00ff;
                     break;
-                case 13:
+                case TINT_DKYELLOW:
                     color = 0x8080;
                     break;
-                case 14:
+                case TINT_GREY:
                     color = 0x808080;
                     break;
-                case 15:
+                case TINT_CYAN:
                     color = 0xffff00;
                     break;
-                case 16:
+                case TINT_WHITE:
                     color = 0xffffff;
                     break;
                 default:

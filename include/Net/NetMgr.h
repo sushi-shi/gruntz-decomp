@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ObList.h>
 #include <Gruntz/String.h>
@@ -85,7 +86,7 @@ struct CNetChannelPacket {
     u8 m_slot;
     u8 m_flagsB;
     u8 m_configId;
-    u8 m_colorIndex;
+    GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
     u8 m_humanControlled;
     char m_pad0f[1];
     i32 m_hostIndex;
@@ -99,7 +100,7 @@ struct CNetOneChannelPacket {
     i32 m_statId;
     i32 m_playerIndex;
     u8 m_present;
-    u8 m_colorIndex;
+    GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
     u8 m_humanControlled;
     u8 m_configId;
     char m_pad10[1];
@@ -113,7 +114,7 @@ SIZE(0x2c);
 
 struct CNetChannelRow {
     u8 m_liveGate;
-    u8 m_colorIndex;
+    GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
     u8 m_humanControlled;
     u8 m_configId;
     u8 m_pad04;
