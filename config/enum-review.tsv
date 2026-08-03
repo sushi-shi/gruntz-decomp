@@ -86,6 +86,7 @@ include/Gruntz/AreaMgr.h	pending
 include/Gruntz/AssetRoot.h	pending	
 include/Gruntz/Attract.h	pending	
 include/Gruntz/BankMgr.h	pending	
+include/Gruntz/BattleStatRow.h	pending	
 include/Gruntz/BattlezData.h	pending	
 include/Gruntz/BattlezMapConfig.h	pending	
 include/Gruntz/BattlezUnitKind.h	pending	

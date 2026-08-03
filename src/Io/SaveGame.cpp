@@ -316,34 +316,34 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 
     i32 info = -1;
     switch (c) {
-        case 0x49a:
+        case CTRL_SAVESLOT_INFO0:
             info = 0;
             break;
-        case 0x49b:
+        case CTRL_SAVESLOT_INFO1:
             info = 1;
             break;
-        case 0x49c:
+        case CTRL_SAVESLOT_INFO2:
             info = 2;
             break;
-        case 0x49d:
+        case CTRL_SAVESLOT_INFO3:
             info = 3;
             break;
-        case 0x49e:
+        case CTRL_SAVESLOT_INFO4:
             info = 4;
             break;
-        case 0x49f:
+        case CTRL_SAVESLOT_INFO5:
             info = 5;
             break;
-        case 0x4a0:
+        case CTRL_SAVESLOT_INFO6:
             info = 6;
             break;
-        case 0x4a1:
+        case CTRL_SAVESLOT_INFO7:
             info = 7;
             break;
-        case 0x4a2:
+        case CTRL_SAVESLOT_INFO8:
             info = 8;
             break;
-        case 0x4a3:
+        case CTRL_SAVESLOT_INFO9:
             info = 9;
             break;
     }
@@ -360,34 +360,34 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 
     i32 del = -1;
     switch (c) {
-        case 0x4a4:
+        case CTRL_SAVESLOT_DELETE0:
             del = 0;
             break;
-        case 0x4a5:
+        case CTRL_SAVESLOT_DELETE1:
             del = 1;
             break;
-        case 0x4a6:
+        case CTRL_SAVESLOT_DELETE2:
             del = 2;
             break;
-        case 0x4a7:
+        case CTRL_SAVESLOT_DELETE3:
             del = 3;
             break;
-        case 0x4a8:
+        case CTRL_SAVESLOT_DELETE4:
             del = 4;
             break;
-        case 0x4a9:
+        case CTRL_SAVESLOT_DELETE5:
             del = 5;
             break;
-        case 0x4aa:
+        case CTRL_SAVESLOT_DELETE6:
             del = 6;
             break;
-        case 0x4ab:
+        case CTRL_SAVESLOT_DELETE7:
             del = 7;
             break;
-        case 0x4ac:
+        case CTRL_SAVESLOT_DELETE8:
             del = 8;
             break;
-        case 0x4ad:
+        case CTRL_SAVESLOT_DELETE9:
             del = 9;
             break;
     }
@@ -409,45 +409,45 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     i32 slot = -1;
     i32 nameId;
     switch (c) {
-        case 0x490:
+        case CTRL_SAVESLOT_LOAD0:
             slot = 0;
-            nameId = 0x435;
+            nameId = CTRL_SAVEDLG_SLOT0;
             break;
-        case 0x491:
+        case CTRL_SAVESLOT_LOAD1:
             slot = 1;
-            nameId = 0x436;
+            nameId = CTRL_SAVEDLG_SLOT1;
             break;
-        case 0x492:
+        case CTRL_SAVESLOT_LOAD2:
             slot = 2;
-            nameId = 0x437;
+            nameId = CTRL_SAVEDLG_SLOT2;
             break;
-        case 0x493:
+        case CTRL_SAVESLOT_LOAD3:
             slot = 3;
-            nameId = 0x438;
+            nameId = CTRL_SAVEDLG_SLOT3;
             break;
-        case 0x494:
+        case CTRL_SAVESLOT_LOAD4:
             slot = 4;
-            nameId = 0x439;
+            nameId = CTRL_SAVEDLG_SLOT4;
             break;
-        case 0x495:
+        case CTRL_SAVESLOT_LOAD5:
             slot = 5;
-            nameId = 0x43a;
+            nameId = CTRL_SAVEDLG_SLOT5;
             break;
-        case 0x496:
+        case CTRL_SAVESLOT_LOAD6:
             slot = 6;
-            nameId = 0x43b;
+            nameId = CTRL_SAVEDLG_SLOT6;
             break;
-        case 0x497:
+        case CTRL_SAVESLOT_LOAD7:
             slot = 7;
-            nameId = 0x43c;
+            nameId = CTRL_SAVEDLG_SLOT7;
             break;
-        case 0x498:
+        case CTRL_SAVESLOT_LOAD8:
             slot = 8;
-            nameId = 0x43d;
+            nameId = CTRL_SAVEDLG_SLOT8;
             break;
-        case 0x499:
+        case CTRL_SAVESLOT_LOAD9:
             slot = 9;
-            nameId = 0x43e;
+            nameId = CTRL_SAVEDLG_SLOT9;
             break;
     }
 

@@ -16,6 +16,7 @@
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/BankMgr.h>
+#include <Gruntz/BattleStatRow.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyMessages.h>
 #include <Gruntz/BootyStatRow.h>
@@ -1482,27 +1483,27 @@ void CMultiBootyState::DrawBattleStats() {
         }
     }
 
-    for (c = 0; c <= 6; c++) {
+    for (c = 0; c <= BATTLEROW_LAST; c++) {
         switch (c) {
-            case 0:
+            case BATTLEROW_FORTZ:
                 s = "Fortz:";
                 break;
-            case 1:
+            case BATTLEROW_KILLZ:
                 s = "Killz:";
                 break;
-            case 2:
+            case BATTLEROW_GRUNTZ:
                 s = "Gruntz:";
                 break;
-            case 3:
+            case BATTLEROW_TOOLZ:
                 s = "Toolz:";
                 break;
-            case 4:
+            case BATTLEROW_TOYZ:
                 s = "Toyz:";
                 break;
-            case 5:
+            case BATTLEROW_POWERUPZ:
                 s = "Powerupz:";
                 break;
-            case 6:
+            case BATTLEROW_CURSEZ:
                 s = "Cursez:";
                 break;
         }
