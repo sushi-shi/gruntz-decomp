@@ -1811,8 +1811,8 @@ RVA(0x0005baf0, 0xf4)
 i32 CreateGrunt(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CGrunt(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -1836,7 +1836,7 @@ i32 CreateGrunt(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);

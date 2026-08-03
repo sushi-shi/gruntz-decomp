@@ -64,7 +64,7 @@ i32 CreateLightFx(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(aux->m_logic);

@@ -353,8 +353,8 @@ RVA(0x0003d2b0, 0xf1)
 i32 CreateGruntStartingPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CGruntStartingPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -378,7 +378,7 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -391,8 +391,8 @@ RVA(0x0003d3f0, 0xf1)
 i32 CreateExitTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CExitTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -416,7 +416,7 @@ i32 CreateExitTrigger(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -429,8 +429,8 @@ RVA(0x0003d530, 0xf1)
 i32 CreateGruntCreationPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CGruntCreationPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -454,7 +454,7 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -467,8 +467,8 @@ RVA(0x0003d670, 0xf1)
 i32 CreateWormhole(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CWormhole(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -492,7 +492,7 @@ i32 CreateWormhole(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -505,8 +505,8 @@ RVA(0x0003d7b0, 0xf1)
 i32 CreateGruntPuddle(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CGruntPuddle(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -530,7 +530,7 @@ i32 CreateGruntPuddle(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -543,8 +543,8 @@ RVA(0x0003d8f0, 0xf1)
 i32 CreateTeleporter(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CTeleporter(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -568,7 +568,7 @@ i32 CreateTeleporter(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -581,8 +581,8 @@ RVA(0x0003da30, 0xf1)
 i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CSecretTeleporterTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -606,7 +606,7 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -619,8 +619,8 @@ RVA(0x0003db70, 0xf4)
 i32 CreateWarlord(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CWarlord(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -644,7 +644,7 @@ i32 CreateWarlord(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -657,8 +657,8 @@ RVA(0x0003dcb0, 0xf1)
 i32 CreateFortressFlag(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CFortressFlag(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -682,7 +682,7 @@ i32 CreateFortressFlag(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -695,8 +695,8 @@ RVA(0x0003ddf0, 0xf1)
 i32 CreateSecretLevelTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CSecretLevelTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -720,7 +720,7 @@ i32 CreateSecretLevelTrigger(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);

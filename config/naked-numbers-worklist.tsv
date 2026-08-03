@@ -16,8 +16,8 @@ src/Gruntz/GruntzMgr.cpp	955	partial (m_lastError is a cross-file banked error d
 src/DDrawMgr/DDrawShadeBlit.cpp	862	pending
 src/Gruntz/TriggerMgr.cpp	860	pending
 src/Gruntz/GruntEntranceArrival.cpp	767	pending
-src/DDrawMgr/DDSurface.cpp	664	pending
-src/Gruntz/GruntEntranceMove.cpp	599	pending
+src/DDrawMgr/DDSurface.cpp	664	none (bits/bitcount are a bits-per-pixel count; each arm divides by 8)
+src/Gruntz/GruntEntranceMove.cpp	599	none (56 tileId cases are per-tileset WWD image indices - no engine names exist)
 src/Gruntz/TriggerMgrGrid.cpp	558	pending
 src/Gruntz/GruntSteps.cpp	490	pending
 src/DDrawMgr/Fader.cpp	490	pending
@@ -86,7 +86,7 @@ src/DDrawMgr/DDrawSurfaceMgr.cpp	145	pending
 src/Gruntz/SpriteLoaders.cpp	143	pending
 src/Dsndmgr/GruntzSoundZ.cpp	143	pending
 src/Gruntz/PathHazard.cpp	142	pending
-src/Gruntz/AreaMgr.cpp	142	pending
+src/Gruntz/AreaMgr.cpp	142	none (case value IS the level ordinal; every arm is InitializeLevel<that number>)
 src/Font/Font.cpp	141	pending
 src/Gruntz/MenuState.cpp	138	pending
 src/Gruntz/Attract.cpp	133	pending

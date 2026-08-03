@@ -40,7 +40,7 @@
         case ACT_AFTER_SAVE:                                                                       \
             rec->m_logic->AfterSave();                                                             \
             break;                                                                                 \
-        case 0x3e8:                                                                                \
+        case ACT_LIVE:                                                                             \
             break;                                                                                 \
         default:                                                                                   \
             Worker_DefaultPump(rec->m_logic);                                                      \
@@ -52,8 +52,8 @@ RVA(0x0007db20, 0xf1)
 i32 CreateGruntSelectedSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CGruntSelectedSprite(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -77,7 +77,7 @@ i32 CreateGruntSelectedSprite(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -93,8 +93,8 @@ RVA(0x0007dda0, 0xf1)
 i32 CreateGruntToySprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CGruntToySprite(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -118,7 +118,7 @@ i32 CreateGruntToySprite(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);

@@ -27,8 +27,8 @@ i32 CreateLevelTime(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
 
     switch (static_cast<u32>(aux->ActKey())) {
-        case 0: {
-            aux->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            aux->SetActKey(ACT_LIVE);
             CLevelTime* h = new CLevelTime(obj);
             h->Activate();
             aux->m_logic = h;
@@ -52,7 +52,7 @@ i32 CreateLevelTime(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(aux->m_logic);

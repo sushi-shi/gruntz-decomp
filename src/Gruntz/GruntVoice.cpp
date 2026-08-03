@@ -92,8 +92,8 @@ RVA(0x00119620, 0xf1)
 i32 CreateGruntVoice(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
     switch (static_cast<u32>(ctl->ActKey())) {
-        case 0: {
-            ctl->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            ctl->SetActKey(ACT_LIVE);
             CGruntVoice* t = new CGruntVoice(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -117,7 +117,7 @@ i32 CreateGruntVoice(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             ctl->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(ctl->m_logic);
@@ -130,8 +130,8 @@ RVA(0x00119760, 0xf1)
 i32 CreateVoiceTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
     switch (static_cast<u32>(ctl->ActKey())) {
-        case 0: {
-            ctl->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            ctl->SetActKey(ACT_LIVE);
             CVoiceTrigger* t = new CVoiceTrigger(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -155,7 +155,7 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             ctl->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(ctl->m_logic);

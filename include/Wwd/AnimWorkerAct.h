@@ -17,6 +17,12 @@
 // prepare, save, load, then fix up references once every object exists - which
 // is the same shape as SerialMode's PRESAVE/SAVE/POSTSAVE ladder.
 GZ_ENUM_BEGIN(AnimWorkerAct)
+// The worker has no logic yet. Its arm is the same in all thirteen files:
+// construct the CUserLogic subclass, Activate() it, hang it on m_logic, and
+// set the act key to ACT_LIVE.
+    ACT_UNINITIALISED = 0,
+    // The logic exists and is running; the arm is empty everywhere.
+    ACT_LIVE = 0x3e8,
     ACT_OBJECT_REMOVED = 0x1d,
     ACT_LEAVE_ACTIVE_REGION = 0x1e,
     ACT_PREPARE_SAVE = 0x50,

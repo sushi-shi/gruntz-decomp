@@ -33,8 +33,8 @@ RVA(0x0003a200, 0xf1)
 i32 CreateCursorSnapSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CCursorSnapSprite(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -58,7 +58,7 @@ i32 CreateCursorSnapSprite(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);

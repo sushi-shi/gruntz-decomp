@@ -97,7 +97,7 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
         case ACT_AFTER_LOAD_REFERENCES:                                                            \
             ctl->m_logic->AfterLoadReferences();                                                   \
             break;                                                                                 \
-        case 0x3e8:                                                                                \
+        case ACT_LIVE:                                                                             \
             break;                                                                                 \
         default:                                                                                   \
             ProjTypeXfer(ctl->m_logic);                                                            \
@@ -276,8 +276,8 @@ RVA(0x0010d290, 0xf4)
 i32 CreateCheckpointTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
     switch (static_cast<u32>(ctl->ActKey())) {
-        case 0: {
-            ctl->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            ctl->SetActKey(ACT_LIVE);
             CCheckpointTrigger* t = new CCheckpointTrigger(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -301,7 +301,7 @@ i32 CreateCheckpointTrigger(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             ctl->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(ctl->m_logic);

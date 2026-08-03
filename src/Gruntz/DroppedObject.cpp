@@ -107,8 +107,8 @@ RVA(0x000c5630, 0xf4)
 i32 CreateObjectDropper(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(aux->ActKey())) {
-        case 0: {
-            aux->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            aux->SetActKey(ACT_LIVE);
             CObjectDropper* h = new CObjectDropper(obj);
             h->Activate();
             aux->m_logic = h;
@@ -132,7 +132,7 @@ i32 CreateObjectDropper(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(aux->m_logic);
@@ -145,8 +145,8 @@ RVA(0x000c5770, 0xf1)
 i32 CreateDroppedObject(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(aux->ActKey())) {
-        case 0: {
-            aux->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            aux->SetActKey(ACT_LIVE);
             CDroppedObject* h = new CDroppedObject(obj);
             h->Activate();
             aux->m_logic = h;
@@ -170,7 +170,7 @@ i32 CreateDroppedObject(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(aux->m_logic);
@@ -183,8 +183,8 @@ RVA(0x000c58b0, 0xf1)
 i32 CreateDroppedObjectShadow(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(aux->ActKey())) {
-        case 0: {
-            aux->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            aux->SetActKey(ACT_LIVE);
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
             h->Activate();
             aux->m_logic = h;
@@ -208,7 +208,7 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(aux->m_logic);

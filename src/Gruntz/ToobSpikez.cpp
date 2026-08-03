@@ -22,8 +22,8 @@ RVA(0x00114480, 0xf1)
 i32 CreateToobSpikez(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CToobSpikez* inst = new CToobSpikez(obj);
             inst->Activate();
             rec->m_logic = inst;
@@ -47,7 +47,7 @@ i32 CreateToobSpikez(CGameObject* obj) {
         case ACT_AFTER_LOAD_REFERENCES:
             rec->m_logic->AfterLoadReferences();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             ProjTypeXfer(rec->m_logic);

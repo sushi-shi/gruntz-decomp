@@ -220,8 +220,8 @@ RVA(0x00046850, 0xf1)
 i32 CreateParticlez(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CParticlez(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -245,7 +245,7 @@ i32 CreateParticlez(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
@@ -258,8 +258,8 @@ RVA(0x00046990, 0xf1)
 i32 CreateExplosion(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
     switch (static_cast<u32>(rec->ActKey())) {
-        case 0: {
-            rec->SetActKey(0x3e8);
+        case ACT_UNINITIALISED: {
+            rec->SetActKey(ACT_LIVE);
             CUserLogic* sub = new CExplosion(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -283,7 +283,7 @@ i32 CreateExplosion(CGameObject* owner) {
         case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
-        case 0x3e8:
+        case ACT_LIVE:
             break;
         default:
             Worker_DefaultPump(rec->m_logic);
