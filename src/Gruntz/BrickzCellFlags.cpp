@@ -45,7 +45,10 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // wrote it biased (`switch (typeCode - 1)`), which cl 5.0 normalises: the
     // unbiased form below compiles to byte-identical .text (verified with
     // llvm-objdump -s --section=.text on this very obj).
-    // 0x20, 0x24 and 0x9a stay literals: nothing in the tree names them. 0x24
+    // 0x20, 0x24 and 0x9a stay literals: nothing in the tree names them. 0x9a
+    // sits right after GAUNTLET_BRICK_A/B/C in this very switch, but it sets
+    // m_flags = 0x2001 where all three of those set 0x6021, so it is NOT a fourth
+    // of that band and must not be named as one. 0x24
     // does sink a rolling ball like water (CRollingBall::Update groups it with
     // TILEKIND_WATER) but it gets its own cell bit 0x800, not water's 0x100, so
     // calling it water would be a guess.

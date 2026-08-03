@@ -7,6 +7,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 #include <Wap32/Rect.h>
 
@@ -47,7 +48,8 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             } else {
                 flags = 1;
             }
-            if ((flags & 0x4000) && grid->m_rows[row][col].m_typeCode == 0x99) {
+            if ((flags & 0x4000)
+                && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
                 POSITION pos = g->m_coordList.GetHeadPosition();
                 while (pos != 0) {
                     void* coord = g->m_coordList.GetNext(pos);
@@ -92,7 +94,8 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                                     return 1;
                                 }
                                 hits++;
-                            } else if ((flags & 0x4000) && cell->m_typeCode != 0x99) {
+                            } else if ((flags & 0x4000)
+                                       && cell->m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
                                     SCAN_RECT_BOUNDS(grid);
                                     return 1;

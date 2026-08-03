@@ -4,6 +4,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -3267,7 +3268,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if ((maskFlags & 0x4000) && type == PICKUP_BRICK && g->m_battleState == 0xa) {
-        if (m_board->m_rows[fcy][fcx].m_typeCode != 0x99) {
+        if (m_board->m_rows[fcy][fcx].m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
             m_triggerMgr->ApplyTriggerA(
                 g->m_tileOwnerHi,
                 g->m_tileOwnerLo,
@@ -4852,7 +4853,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
     CTileTriggerLogic* cell;
 
-    if (tile->m_typeCode == 0x67) {
+    if (tile->m_typeCode == TILEKIND_PYRAMID_LATCH_A) {
         cell = m_cellQuery->m_latchedLeaf;
     } else {
         cell = m_cellQuery->FindInLists12((col << 8) + row, TRIGID_ANY);

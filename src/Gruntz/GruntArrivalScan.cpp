@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntPuddle.h>
@@ -410,7 +411,8 @@ L_ed153:
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
-        if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == 0x97 || cell->m_typeCode == 0x98) {
+        if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
+            || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
             m_tileMgr
                 ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
             SetEntrancePos(1, 1);
@@ -461,8 +463,8 @@ L_ed153:
     for (i32 row = isect.top; row < isect.bottom; row++) {
         BrickzCell* cell = &grid->m_rows[row][isect.left];
         for (i32 col = isect.left; col < isect.right; col++) {
-            if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == 0x97
-                || cell->m_typeCode == 0x98) {
+            if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
+                || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
                 i32 dr = row - cy;
                 IABS(dr);
                 i32 dc = col - cx;
