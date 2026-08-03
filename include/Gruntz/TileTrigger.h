@@ -8,10 +8,7 @@
 
 class CTileSecretTrigger : public CTileTrigger {
 public:
-    RVA(0x000114f0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE {
-        return LOGIC_TILESECRETTRIGGER;
-    }
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     CTileSecretTrigger() {}
     CTileSecretTrigger(CGameObject* obj);
 };
@@ -19,10 +16,7 @@ SIZE_UNKNOWN();
 
 class CGiantRock : public CTileTrigger {
 public:
-    RVA(0x000115b0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE {
-        return LOGIC_GIANTROCK;
-    }
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     CGiantRock() {}
     CGiantRock(CGameObject* obj);
 };
@@ -30,10 +24,7 @@ SIZE_UNKNOWN();
 
 class CCoveredPowerup : public CTileTrigger {
 public:
-    RVA(0x00011670, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE {
-        return LOGIC_COVEREDPOWERUP;
-    }
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     CCoveredPowerup() {}
     CCoveredPowerup(CGameObject* obj);
 };

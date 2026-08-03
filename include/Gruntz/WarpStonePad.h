@@ -8,15 +8,7 @@
 #include <Gruntz/UserLogic.h>
 
 class CWarpStonePad : public CUserLogic, public CWapX {
-    RVA(0x00010f20, 0x47)
-    virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-            return 0;
-        }
-        return Chain(ar, mode, typeId, pObj) != 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
     RVA(0x00010f00, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

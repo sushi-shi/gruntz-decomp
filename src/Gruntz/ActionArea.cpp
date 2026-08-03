@@ -143,6 +143,37 @@ i32 CActionArea::ApplyColor(i32 owner) {
     return 1;
 }
 
+RVA(0x00008600, 0xcd)
+i32 CActionArea::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (ar == 0) {
+        return 0;
+    }
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    if (!Chain(ar, tag, c, d)) {
+        return 0;
+    }
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_timestamp, 8);
+            ar->Write(&m_duration, 8);
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_timestamp, 8);
+            ar->Read(&m_duration, 8);
+            break;
+    }
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_phase, 4);
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_phase, 4);
+            break;
+    }
+    return 1;
+}
 RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
 
 RVA_COMPGEN(0x00008810, 0x20, ??_GCUserBase@@UAEPAXI@Z)

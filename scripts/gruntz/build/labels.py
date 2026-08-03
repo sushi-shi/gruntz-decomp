@@ -115,7 +115,11 @@ RVA_COMPGEN_RE = re.compile(
 VOLATILE_ORDINAL_FN_RE = re.compile(r"^_?\$E[0-9]+$")
 
 # Annotation strings carried in @llvm.global.annotations (emitted by include/rva.h).
-ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
+# `comdat:1` (from COMDAT() in rva.h) marks a LINKER-placed body: same address
+# shape as RVA(), different storage class, so it must not count toward the
+# owning compiland's .text extent. It rides the same annotation and reaches
+# symbol_names.csv as kind=comdat instead of func.
+ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?(?:\s+comdat:(1))?$")
 # Macro annotation markers (presence of any -> a migrated TU; functions come
 # from IR for these). A TU with none is a vendored C TU (config-table path).
 # A TU "carries labels" if it invokes ANY rva.h label macro - a pin-only TU (e.g.
@@ -234,9 +238,11 @@ def func_labels_from_ir(ir):
             size = int(s, 16) if s.lower().startswith("0x") else int(s)
         rows.setdefault(sym, {})["rva"] = int(ma.group(1), 16)
         rows[sym].setdefault("size", None)
+        rows[sym]["comdat"] = rows[sym].get("comdat") or bool(ma.group(3))
         if size is not None:
             rows[sym]["size"] = size
-    return [(d["rva"], sym, d.get("size")) for sym, d in rows.items()]
+    return [(d["rva"], sym, d.get("size"), d.get("comdat", False))
+            for sym, d in rows.items()]
 
 
 # --- DATA via AST (extern annotations are dropped from IR) ------------------
@@ -1159,7 +1165,10 @@ def main():
         # which equals the IR-paired symbol (`ir_sym`), so the join is by rva below.
         ast = clang_ast(args.clang, tu, args.flag, cl_flags)
         ast_param_names = param_names_from_ast(ast, tu) if ast is not None else {}
-        for rva, ir_sym, size in func_labels_from_ir(ir):
+        for rva, ir_sym, size, is_comdat in func_labels_from_ir(ir):
+            # COMDAT() bodies are linker-placed: same row shape, different
+            # kind, so extent consumers can skip them (see rva.h).
+            kind = "comdat" if is_comdat else "func"
             addr_sites.setdefault(rva, []).append((tu, ir_sym))
             # The IR pairs the annotation with the function's own mangled symbol.
             name = ir_sym
@@ -1168,21 +1177,21 @@ def main():
             func_meta[rva] = {"ir_sym": ir_sym,
                               "names": ast_param_names.get(ir_sym)}
             if obj_syms is None:                  # no authority check (inspection)
-                rows.append((rva, name, unit, size, "func"))
+                rows.append((rva, name, unit, size, kind))
                 continue
             if name in obj_syms:                  # candidate confirmed in base obj
-                rows.append((rva, name, unit, size, "func"))
+                rows.append((rva, name, unit, size, kind))
                 continue
             c_sym = ms_c_symbol(name, obj_syms)   # extern "C": clang drops the x86 `_`/`@n`
             if c_sym:
-                rows.append((rva, c_sym, unit, size, "func"))
+                rows.append((rva, c_sym, unit, size, kind))
                 continue
             # clang's mangledName misses the destructor (it emits the `??_D vbase
             # dtor` variant, not the real `??1`). Resolve the canonical
             # `??1<class>@@...@XZ` directly from the obj's code symbols.
             resolved = plain_dtor_symbol(name, obj_syms)
             if resolved:
-                rows.append((rva, resolved, unit, size, "func"))
+                rows.append((rva, resolved, unit, size, kind))
             else:
                 misses.append((rva, name, unit, "candidate not in base obj"))
 

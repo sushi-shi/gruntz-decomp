@@ -16,6 +16,19 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
+RVA(0x0000f930, 0x47)
+i32 CSimpleAnimation::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
+
 RVA_COMPGEN(0x0000f9a0, 0x1e, ??_GCSimpleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 

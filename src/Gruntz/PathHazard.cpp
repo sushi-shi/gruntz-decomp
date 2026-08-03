@@ -2,7 +2,6 @@
 
 #include <Gruntz/PathHazard.h>
 
-#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
@@ -17,12 +16,13 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TypeKeyColl.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/ZVec.h>
 
 #include <math.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Wap32/ZVec.h>
 
 template<> DATA(0x00246250)
 CActReg CActRegPool<CPathHazard>::s_table(2000, 2010);
@@ -45,6 +45,11 @@ RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x000132f0, 0x6)
+LogicTypeId CRainCloud::GetTypeTag() {
+    return LOGIC_RAINCLOUD;
+}
+
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 

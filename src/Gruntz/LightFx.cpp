@@ -147,6 +147,38 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     return 0;
 }
 
+RVA(0x0009d660, 0xc8)
+i32 CLightFx::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
+        return 0;
+    }
+    if (Chain(ar, mode, typeId, pObj) == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_SAVE:
+            (ar)->Write(&m_anchorA, 4);
+            (ar)->Write(&m_anchorB, 4);
+            break;
+        case SERIAL_LOAD:
+            (ar)->Read(&m_anchorA, 4);
+            (ar)->Read(&m_anchorB, 4);
+            break;
+        case SERIAL_POSTLOAD:
+            g_gameReg
+                ->m_logicPump
+
+                ->Push(m_wwdObject->m_frameSet, m_anchorA, SHADE_DST_BY_SRC_16);
+            break;
+    }
+    return 1;
+}
+
 RVA(0x0009d770, 0x25)
 i32 CLightFx::RebindNode() {
     m_prevAnimSetNode = m_objAux->m_actKey;

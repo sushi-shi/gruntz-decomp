@@ -5,13 +5,10 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Enums.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CurPlayer.h>
-#include <Gruntz/GameLevel.h>
-#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzCommandId.h>
@@ -30,6 +27,9 @@
 #include <Wwd/WwdFile.h>
 
 #include <string.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameLevel.h>
 
 RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {

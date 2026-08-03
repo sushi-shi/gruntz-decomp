@@ -14,14 +14,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WAYPOINT;
     }
-    RVA(0x00010240, 0x47)
-    virtual i32 SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(a, b, c, d)) {
-            return 0;
-        }
-        return Chain(a, b, c, d) != 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     CWayPoint() {}
     CWayPoint(CGameObject* obj);
 };

@@ -8,21 +8,10 @@
 #include <Gruntz/UserLogic.h>
 
 class CTileTriggerSwitch : public CUserLogic, public CWapX {
-    RVA(0x00011030, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE {
-        return LOGIC_TILETRIGGERSWITCH;
-    }
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
 
 public:
-    RVA(0x00011050, 0x47)
-    virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-            return 0;
-        }
-        return Chain(ar, mode, typeId, pObj) != 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
 public:
     CTileTriggerSwitch() {}

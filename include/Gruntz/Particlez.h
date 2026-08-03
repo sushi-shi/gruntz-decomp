@@ -17,14 +17,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PARTICLEZ;
     }
-    RVA(0x00012cf0, 0x47)
-    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-            return 0;
-        }
-        return Chain(ar, tag, c, d) != 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual void FireActivation(i32 id) OVERRIDE;
 
     static void RegisterActs();

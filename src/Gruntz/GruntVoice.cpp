@@ -8,7 +8,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/ActName.h>
-#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameObjectFactory.h>
@@ -30,6 +29,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
+#include <Gruntz/ActNameRegistry.h>
 
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
@@ -67,6 +67,14 @@ CVoiceTrigger::CVoiceTrigger() {}
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x000134e0, 0x47)
+i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
+
 RVA_COMPGEN(0x00013570, 0x1e, ??_GCVoiceTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 

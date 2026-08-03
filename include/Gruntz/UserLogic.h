@@ -33,14 +33,9 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {}
-    RVA(0x000087d0, 0x8)
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
-        return 1;
-    }
-    RVA(0x000087f0, 0x3)
-    virtual LogicTypeId GetTypeTag() {
-        return static_cast<LogicTypeId>(0);
-    }
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj);
+    virtual LogicTypeId GetTypeTag();
 };
 SIZE_UNKNOWN();
 
@@ -49,58 +44,8 @@ public:
     CUserLogic() {}
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {}
-    RVA(0x0016e7f0, 0x1cf)
-    virtual i32
-    SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        if (arc == 0) {
-            return 0;
-        }
-        switch (mode) {
-            case SERIAL_LOAD: {
-
-                i32 len;
-                arc->Read(&len, 4);
-                void* buf = ::operator new(len);
-                arc->Read(buf, len);
-                istrstream accum(static_cast<char*>(buf), len);
-                accum >> m_link.m_str;
-                ::operator delete(buf);
-                arc->Read(&m_gatedActKey, 4);
-                arc->Read(&m_reserved2c, 4);
-                arc->Read(&g_logicTypesRegistered, 4);
-                arc->Read(&m_prevAnimSetNode, 4);
-                m_logicObject = pObj;
-                m_object = static_cast<CWwdGameObjectA*>(pObj);
-                m_objAux = (pObj)->m_animWorker;
-                m_deferredCallback = 0;
-                m_gatedCallback = 0;
-                m_gatedActKey = 0x3e9;
-
-                break;
-            }
-            case SERIAL_SAVE: {
-
-                char buf[0x100];
-                ostrstream accum(buf, 0x100);
-                accum << m_link.m_str;
-                i32 len = accum.pcount();
-                arc->Write(&len, 4);
-                arc->Write(accum.str(), len);
-                arc->Write(&m_gatedActKey, 4);
-                arc->Write(&m_reserved2c, 4);
-                arc->Write(&g_logicTypesRegistered, 4);
-                arc->Write(&m_prevAnimSetNode, 4);
-
-                break;
-            }
-        }
-        return 1;
-    }
-    RVA(0x00008840, 0x4)
-    virtual LogicTypeId GetTypeTag() OVERRIDE {
-        return LOGIC_NONE;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
 
     virtual void XferName(char* name);
 
@@ -199,19 +144,8 @@ SIZE(0x20);
 
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
-    RVA(0x000111f0, 0x47)
-    virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-            return 0;
-        }
-        return Chain(ar, mode, typeId, pObj) != 0;
-    }
-    RVA(0x000111d0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE {
-        return LOGIC_TILETRIGGER;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
 
 public:
     CTileTrigger();

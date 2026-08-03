@@ -13,7 +13,6 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/GameMenuMgrBuilders.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -22,11 +21,9 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Random.h>
-#include <Gruntz/SbGeom.h>
 #include <Gruntz/SBI_GruntMachine.h>
 #include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/SBI_ImageSetAni.h>
-#include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_WarlordHead.h>
 #include <Gruntz/SBI_WellGoo.h>
@@ -49,6 +46,9 @@
 
 #include <math.h>
 #include <string.h>
+#include <Gruntz/GameMenuMgrBuilders.h>
+#include <Gruntz/SbGeom.h>
+#include <Gruntz/SBI_MenuItem.h>
 
 DATA(0x00244c54)
 i32 g_curPlayer = 0;

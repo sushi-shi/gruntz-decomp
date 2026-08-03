@@ -14,27 +14,7 @@ class CGrunt;
 class CGruntHealthSprite : public CUserLogic, public CWapX {
 public:
 public:
-    RVA(0x0007f270, 0xa3)
-    virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        switch (mode) {
-            case SERIAL_SAVE:
-                ar->Write(&m_cell, 8);
-                ar->Write(&m_health, 4);
-                ar->Write(&m_yOffset, 4);
-                break;
-            case SERIAL_LOAD:
-                ar->Read(&m_cell, 8);
-                ar->Read(&m_health, 4);
-                ar->Read(&m_yOffset, 4);
-                break;
-        }
-        if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-            return 0;
-        }
-        return Chain(ar, mode, typeId, pObj) != 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00011f60, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTHEALTHSPRITE;

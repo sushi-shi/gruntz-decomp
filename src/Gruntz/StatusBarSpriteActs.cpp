@@ -20,6 +20,25 @@ VTBL(CStatusBarSprite, 0x001e7fc4);
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011ac0, 0x6)
+LogicTypeId CStatusBarSprite::GetTypeTag() {
+    return LOGIC_STATUSBARSPRITE;
+}
+
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011ae0, 0x47)
+i32 CStatusBarSprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+        return 0;
+    }
+    return Chain(ar, mode, typeId, pObj) != 0;
+}
 RVA_COMPGEN(0x00011b50, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 

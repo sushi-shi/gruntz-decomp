@@ -14,6 +14,19 @@ VTBL(CSingleAnimation, 0x001e745c);
 template<> DATA(0x00245f70)
 CActReg CActRegPool<CSingleAnimation>::s_table(2000, 2010);
 
+RVA(0x000104a0, 0x47)
+i32 CSingleAnimation::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
+
 RVA_COMPGEN(0x00010510, 0x1e, ??_GCSingleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 

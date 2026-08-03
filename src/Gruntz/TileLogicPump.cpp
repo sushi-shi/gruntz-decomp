@@ -105,11 +105,44 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00010f20, 0x47)
+i32 CWarpStonePad::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+        return 0;
+    }
+    return Chain(ar, mode, typeId, pObj) != 0;
+}
+
 RVA_COMPGEN(0x00010f90, 0x1e, ??_GCWarpStonePad@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010fc0, 0x44, ??1CWarpStonePad@@UAE@XZ)
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011030, 0x6)
+LogicTypeId CTileTriggerSwitch::GetTypeTag() {
+    return LOGIC_TILETRIGGERSWITCH;
+}
+
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011050, 0x47)
+i32 CTileTriggerSwitch::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+        return 0;
+    }
+    return Chain(ar, mode, typeId, pObj) != 0;
+}
+
 RVA_COMPGEN(0x000110c0, 0x1e, ??_GCTileTriggerSwitch@@UAEPAXI@Z)
 RVA_COMPGEN(0x000110f0, 0x44, ??1CTileTriggerSwitch@@UAE@XZ)
 
@@ -118,36 +151,104 @@ CTileTrigger::CTileTrigger() {}
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x000111d0, 0x6)
+LogicTypeId CTileTrigger::GetTypeTag() {
+    return LOGIC_TILETRIGGER;
+}
+
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x000111f0, 0x47)
+i32 CTileTrigger::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+        return 0;
+    }
+    return Chain(ar, mode, typeId, pObj) != 0;
+}
+
 RVA_COMPGEN(0x00011260, 0x1e, ??_GCTileTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011290, 0x44, ??1CTileTrigger@@UAE@XZ)
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011320, 0x47)
+i32 CBrickz::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(a, b, c, d)) {
+        return 0;
+    }
+    return Chain(a, b, c, d) != 0;
+}
+
 RVA_COMPGEN(0x00011390, 0x1e, ??_GCBrickz@@UAEPAXI@Z)
 RVA_COMPGEN(0x000113c0, 0x44, ??1CBrickz@@UAE@XZ)
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011430, 0x6)
+LogicTypeId CCheckpointTrigger::GetTypeTag() {
+    return LOGIC_CHECKPOINTTRIGGER;
+}
+
 RVA_COMPGEN(0x00011450, 0x1e, ??_GCCheckpointTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011480, 0x44, ??1CCheckpointTrigger@@UAE@XZ)
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x000114f0, 0x6)
+LogicTypeId CTileSecretTrigger::GetTypeTag() {
+    return LOGIC_TILESECRETTRIGGER;
+}
+
 RVA_COMPGEN(0x00011510, 0x1e, ??_GCTileSecretTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011540, 0x44, ??1CTileSecretTrigger@@UAE@XZ)
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x000115b0, 0x6)
+LogicTypeId CGiantRock::GetTypeTag() {
+    return LOGIC_GIANTROCK;
+}
+
 RVA_COMPGEN(0x000115d0, 0x1e, ??_GCGiantRock@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011600, 0x44, ??1CGiantRock@@UAE@XZ)
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011670, 0x6)
+LogicTypeId CCoveredPowerup::GetTypeTag() {
+    return LOGIC_COVEREDPOWERUP;
+}
+
 RVA_COMPGEN(0x00011690, 0x1e, ??_GCCoveredPowerup@@UAEPAXI@Z)
 RVA_COMPGEN(0x000116c0, 0x44, ??1CCoveredPowerup@@UAE@XZ)
 
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011730, 0x6)
+LogicTypeId CTileTriggerTransition::GetTypeTag() {
+    return LOGIC_TILETRIGGERTRANSITION;
+}
+
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00011750, 0x47)
+i32 CTileTriggerTransition::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+        return 0;
+    }
+    return Chain(ar, mode, typeId, pObj) != 0;
+}
+
 RVA_COMPGEN(0x000117c0, 0x1e, ??_GCTileTriggerTransition@@UAEPAXI@Z)
 RVA_COMPGEN(0x000117f0, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
 
@@ -637,6 +738,30 @@ RVA(0x0010f970, 0x17)
 i32 CCheckpointTrigger::AdvanceCheckpointAnimation() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
+}
+
+RVA(0x0010f9a0, 0x8f)
+i32 CCheckpointTrigger::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
+    switch (mode) {
+        case SERIAL_LOAD:
+            sa->Read(m_state, 0x3c);
+            sa->Read(&m_firstEmpty, 4);
+            break;
+        case SERIAL_SAVE:
+            sa->Write(m_state, 0x3c);
+            sa->Write(&m_firstEmpty, 4);
+            break;
+    }
+    if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
+        return 0;
+    }
+    return Chain(sa, mode, typeId, pObj) ? 1 : 0;
 }
 
 RVA(0x0010fa60, 0x19)

@@ -30,7 +30,6 @@
 #include <Gruntz/CBrickz.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CheatMgr.h>
-#include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
@@ -46,7 +45,6 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/ImageSets.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
@@ -54,9 +52,7 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
-#include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/Random.h>
-#include <Gruntz/SBI_Image.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
@@ -65,7 +61,6 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/String.h>
 #include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -83,13 +78,18 @@
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/EngStr.h>
-#include <Wap32/Object.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
+#include <Gruntz/CurPlayer.h>
+#include <Wap32/Object.h>
+#include <Gruntz/PlayPlaneScan.h>
+#include <Gruntz/ImageSets.h>
+#include <Gruntz/SBI_Image.h>
+#include <Gruntz/TileTriggerLogic.h>
 
 inline void* operator new(u32, void* p) {
     return p;

@@ -9,6 +9,19 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
+RVA(0x00011880, 0x47)
+i32 CCursorSnapSprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
+
 RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 

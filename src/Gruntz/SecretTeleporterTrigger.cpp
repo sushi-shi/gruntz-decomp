@@ -31,11 +31,37 @@ static inline CActHandler* ActLookup(i32 coord) {
     return (CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord));
 }
 
+RVA(0x00010a10, 0x47)
+i32 CSecretTeleporterTrigger::SerializeMove(
+    CFileMemBase* a,
+    SerialMode b,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    if (!CUserLogic::SerializeMove(a, b, c, d)) {
+        return 0;
+    }
+    return Chain(a, b, c, d) != 0;
+}
+
 RVA_COMPGEN(0x00010a80, 0x1e, ??_GCSecretTeleporterTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010ab0, 0x44, ??1CSecretTeleporterTrigger@@UAE@XZ)
 
 RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
+
+RVA(0x00010bb0, 0x47)
+i32 CSecretLevelTrigger::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
 
 RVA_COMPGEN(0x00010c20, 0x1e, ??_GCSecretLevelTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010c50, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)

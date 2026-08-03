@@ -9,19 +9,8 @@
 
 class CStatusBarSprite : public CUserLogic, public CWapX {
 public:
-    RVA(0x00011ae0, 0x47)
-    virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-            return 0;
-        }
-        return Chain(ar, mode, typeId, pObj) != 0;
-    }
-    RVA(0x00011ac0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE {
-        return LOGIC_STATUSBARSPRITE;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
 
 public:
     CStatusBarSprite() {}

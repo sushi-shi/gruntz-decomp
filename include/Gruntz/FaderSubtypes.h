@@ -6,9 +6,9 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDSurface.h>
-#include <Enums.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FxModeDesc.h>
+#include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezBufferObject.h>
 

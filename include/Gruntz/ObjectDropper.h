@@ -17,59 +17,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_OBJECTDROPPER;
     }
-    RVA(0x000c6680, 0x1b4)
-    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-            return 0;
-        }
-        if (!Chain(ar, tag, c, d)) {
-            return 0;
-        }
-
-        switch (tag) {
-            case SERIAL_SAVE:
-                ar->Write(&m_lastDropTime, 8);
-                ar->Write(&m_dropInterval, 8);
-                break;
-            case SERIAL_LOAD:
-                ar->Read(&m_lastDropTime, 8);
-                ar->Read(&m_dropInterval, 8);
-                break;
-        }
-
-        switch (tag) {
-            case SERIAL_SAVE:
-                ar->Write(&m_speed, 8);
-                ar->Write(&m_posX, 8);
-                ar->Write(&m_posY, 8);
-                ar->Write(&m_travelDx, 4);
-                ar->Write(&m_travelDy, 4);
-                ar->Write(&m_lastDropTileX, 4);
-                ar->Write(&m_lastDropTileY, 4);
-                ar->Write(&m_scrollMode, 4);
-                break;
-            case SERIAL_LOAD:
-                ar->Read(&m_speed, 8);
-                ar->Read(&m_posX, 8);
-                ar->Read(&m_posY, 8);
-                ar->Read(&m_travelDx, 4);
-                ar->Read(&m_travelDy, 4);
-                ar->Read(&m_lastDropTileX, 4);
-                ar->Read(&m_lastDropTileY, 4);
-                ar->Read(&m_scrollMode, 4);
-                break;
-            case SERIAL_POSTLOAD: {
-                CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
-                CWwdGameObjectA* o = m_object;
-                o->m_drawActive = 1;
-                o->m_drawFillArg = fill;
-                o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-                break;
-            }
-        }
-        return 1;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     CObjectDropper() {}
     CObjectDropper(CGameObject* obj);
 

@@ -7,17 +7,17 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <EmptyString.h>
-#include <Gruntz/Fader.h>
 #include <Gruntz/FaderMode.h>
+#include <Gruntz/Fader.h>
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/FxModeDesc.h>
 #include <Gruntz/FxModeT1.h>
 #include <Ints.h>
-#include <Utils/RecordFill.h>
 
 #include <ddraw.h>
 #include <math.h>
 #include <string.h>
+#include <Utils/RecordFill.h>
 
 VTBL(CFader, 0x001f07a8);
 VTBL(CFaderMesh, 0x001f07c0);

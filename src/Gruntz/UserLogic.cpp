@@ -17,6 +17,21 @@
 
 #include <string.h>
 
+RVA(0x000087d0, 0x8)
+i32 CUserBase::SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
+    return 1;
+}
+
+RVA(0x000087f0, 0x3)
+LogicTypeId CUserBase::GetTypeTag() {
+    return static_cast<LogicTypeId>(0);
+}
+
+RVA(0x00008840, 0x4)
+LogicTypeId CUserLogic::GetTypeTag() {
+    return LOGIC_NONE;
+}
+
 RVA(0x000088d0, 0x1)
 void CUserLogic::Activate() {}
 

@@ -10,14 +10,7 @@
 
 class CFrontCandyAni : public CUserLogic, public CWapX {
 public:
-    RVA(0x0000fdf0, 0x47)
-    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-            return 0;
-        }
-        return Chain(ar, tag, c, d) != 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x0000fdd0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_FRONTCANDYANI;

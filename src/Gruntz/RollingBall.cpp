@@ -571,3 +571,50 @@ i32 CRollingBall::Update() {
     }
     return 0;
 }
+
+RVA(0x000b0fe0, 0x1ab)
+i32 CRollingBall::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    if (!Chain(ar, tag, c, d)) {
+        return 0;
+    }
+
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_explodeStart, sizeof(m_explodeStart));
+            ar->Write(&m_explodeWindow, sizeof(m_explodeWindow));
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_explodeStart, sizeof(m_explodeStart));
+            ar->Read(&m_explodeWindow, sizeof(m_explodeWindow));
+            break;
+    }
+
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_moveSpeed, 8);
+            ar->Write(&m_subX, 8);
+            ar->Write(&m_subY, 8);
+            ar->Write(&m_stepDirX, 4);
+            ar->Write(&m_stepDirY, 4);
+            ar->Write(&m_target, 8);
+            ar->Write(&m_explodeLatch, 4);
+            ar->Write(&m_fallLatch, 4);
+            ar->Write(&m_moveDelta, sizeof(m_moveDelta));
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_moveSpeed, 8);
+            ar->Read(&m_subX, 8);
+            ar->Read(&m_subY, 8);
+            ar->Read(&m_stepDirX, 4);
+            ar->Read(&m_stepDirY, 4);
+            ar->Read(&m_target, 8);
+            ar->Read(&m_explodeLatch, 4);
+            ar->Read(&m_fallLatch, 4);
+            ar->Read(&m_moveDelta, sizeof(m_moveDelta));
+            break;
+    }
+    return 1;
+}

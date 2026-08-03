@@ -66,11 +66,27 @@ RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00012cf0, 0x47)
+i32 CParticlez::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
+
 RVA_COMPGEN(0x00012d60, 0x1e, ??_GCParticlez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.
+RVA(0x00012e20, 0x47)
+i32 CExplosion::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
+
 RVA_COMPGEN(0x00012e90, 0x1e, ??_GCExplosion@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
 
@@ -152,6 +168,49 @@ RVA(0x000463e0, 0x17)
 i32 CFortressFlag::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     return 0;
+}
+
+RVA(0x00046410, 0x92)
+i32 CFortressFlag::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    if (!Chain(ar, tag, c, d)) {
+        return 0;
+    }
+    if (tag == SERIAL_POSTLOAD) {
+        CWwdGameObjectA* spr = m_object;
+        i32 idx = g_gameReg->m_options[spr->m_smarts].m_colorIndex;
+        CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
+        spr = m_object;
+        spr->m_drawActive = 1;
+        spr->m_drawFillCmd = SHADE_PAL_16;
+        spr->m_drawFillArg = sel;
+    }
+    return 1;
+}
+
+template<> RVA(0x000464e0, 0x74)
+CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
+    char* r;
+    m_grown = 0;
+    if (id >= m_lo && id <= m_hi) {
+        r = m_base + (id - m_lo) * m_stride;
+    } else if (GrowTo(id, 0)) {
+        r = m_base + (id - m_lo) * m_stride;
+    } else {
+        char* msg = g_errOutOfMem;
+        g_retAddrBreadcrumb = GetRetAddr();
+        m_errSink->Set(this, msg, 0xc);
+        r = m_spare;
+    }
+
+    union {
+        char* m_bytes;
+        CActHandler* m_slot;
+    } band;
+    band.m_bytes = r;
+    return band.m_slot;
 }
 
 RVA(0x00046850, 0xf1)

@@ -11,24 +11,7 @@
 class CGruntSelectedSprite : public CUserLogic, public CWapX {
 public:
 public:
-    RVA(0x0007ea70, 0x6f)
-    virtual i32
-    SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-
-        if (mode != SERIAL_SAVE) {
-            if (mode == SERIAL_LOAD) {
-                sa->Read(&m_cell, 8);
-            }
-        } else {
-            sa->Write(&m_cell, 8);
-        }
-        if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
-            return 0;
-        }
-        return Chain(sa, mode, typeId, pObj) ? 1 : 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00011e30, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSELECTEDSPRITE;

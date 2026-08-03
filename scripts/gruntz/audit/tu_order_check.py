@@ -31,10 +31,18 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
-from gruntz.audit.tu_layout import RVA_RE, SIG_RE, _parse_size, pooled
+from gruntz.audit.tu_layout import (RVA_RE, RVA_COMPGEN_RE, SIG_RE, _parse_size,
+                                    pooled)
+
+# A COMDAT() pin (rva.h) is a LINKER-placed body: it has an address but is not
+# part of this compiland's .text contribution, so it must not define the TU's
+# extent. RVA_COMPGEN() is the same species with no source body.
+COMDAT_RE = re.compile(r"\bCOMDAT\s*\(\s*(0x[0-9a-fA-F]+)\s*,"
+                       r"\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -42,10 +50,13 @@ SRC = REPO / "src"
 
 
 class Entry:
-    __slots__ = ("rva", "size", "line", "name", "tu")
+    __slots__ = ("rva", "size", "line", "name", "tu", "placed")
 
-    def __init__(self, rva, size, line, name, tu):
+    def __init__(self, rva, size, line, name, tu, placed=False):
         self.rva, self.size, self.line, self.name, self.tu = rva, size, line, name, tu
+        # placed = the LINKER chose this address (COMDAT/RVA_COMPGEN), so it says
+        # nothing about where this compiland's contribution begins or ends.
+        self.placed = placed
 
     @property
     def end(self) -> int:
@@ -69,6 +80,10 @@ def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
         seq: list[Entry] = []
         for i, ln in enumerate(lines):
             m = RVA_RE.search(ln)
+            placed = False
+            if not m:
+                m = COMDAT_RE.search(ln) or RVA_COMPGEN_RE.search(ln)
+                placed = bool(m)
             if not m:
                 continue
             rva, size = int(m.group(1), 16), _parse_size(m.group(2))
@@ -80,7 +95,7 @@ def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
                 if sm:
                     name = f"{sm.group(1)}::{sm.group(2)}"
                     break
-            seq.append(Entry(rva, size, i + 1, name or "?", f"{rel}"))
+            seq.append(Entry(rva, size, i + 1, name or "?", f"{rel}", placed))
         if seq:
             tus[tu] = seq
     return tus
@@ -107,8 +122,9 @@ def tu_spans(tus):
     """tu -> (min_start, max_end); sized entries define the block extent."""
     spans = {}
     for tu, seq in tus.items():
-        starts = [e.rva for e in seq]
-        ends = [e.end for e in seq if e.size]
+        own = [e for e in seq if not e.placed] or seq   # linker-placed bodies do not
+        starts = [e.rva for e in own]                   # define a compiland's extent
+        ends = [e.end for e in own if e.size]
         spans[tu] = (min(starts), max(ends) if ends else max(starts))
     return spans
 

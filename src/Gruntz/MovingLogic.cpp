@@ -88,6 +88,59 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 }
 
 // @early-stop
+RVA(0x0016e7f0, 0x1cf)
+i32 CUserLogic::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (arc == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_LOAD: {
+
+            i32 len;
+            arc->Read(&len, 4);
+            void* buf = ::operator new(len);
+            arc->Read(buf, len);
+            istrstream accum(static_cast<char*>(buf), len);
+            accum >> m_link.m_str;
+            ::operator delete(buf);
+            arc->Read(&m_gatedActKey, 4);
+            arc->Read(&m_reserved2c, 4);
+            arc->Read(&g_logicTypesRegistered, 4);
+            arc->Read(&m_prevAnimSetNode, 4);
+            m_logicObject = pObj;
+            m_object = static_cast<CWwdGameObjectA*>(pObj);
+            m_objAux = (pObj)->m_animWorker;
+            m_deferredCallback = 0;
+            m_gatedCallback = 0;
+            m_gatedActKey = 0x3e9;
+
+            break;
+        }
+        case SERIAL_SAVE: {
+
+            char buf[0x100];
+            ostrstream accum(buf, 0x100);
+            accum << m_link.m_str;
+            i32 len = accum.pcount();
+            arc->Write(&len, 4);
+            arc->Write(accum.str(), len);
+            arc->Write(&m_gatedActKey, 4);
+            arc->Write(&m_reserved2c, 4);
+            arc->Write(&g_logicTypesRegistered, 4);
+            arc->Write(&m_prevAnimSetNode, 4);
+
+            break;
+        }
+    }
+    return 1;
+}
+
+// @early-stop
 RVA(0x0016ea90, 0x234)
 void CMovingLogic::AdvanceMotion() {
 
@@ -158,3 +211,48 @@ void CMovingLogic::AdvanceMotion() {
 }
 
 // @early-stop
+RVA(0x0016f4a0, 0x1da)
+i32 CMovingLogic::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (arc == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_LOAD: {
+
+            i32 len;
+            arc->Read(&len, 4);
+            void* buf = ::operator new(len);
+            arc->Read(buf, len);
+            istrstream accum(static_cast<char*>(buf), len);
+            ReadCurve(accum, *Motion());
+            ::operator delete(buf);
+            arc->Read(&m_previousScreenPosition.m_x, 4);
+            arc->Read(&m_previousScreenPosition.m_y, 4);
+            arc->Read(&m_collisionFlags, 4);
+            arc->Read(&m_moveFlags, 4);
+
+            break;
+        }
+        case SERIAL_SAVE: {
+
+            char buf[0x100];
+            ostrstream accum(buf, 0x100);
+            WriteCurve(accum, *Motion());
+            i32 len = accum.pcount();
+            arc->Write(&len, 4);
+            arc->Write(accum.str(), len);
+            arc->Write(&m_previousScreenPosition.m_x, 4);
+            arc->Write(&m_previousScreenPosition.m_y, 4);
+            arc->Write(&m_collisionFlags, 4);
+            arc->Write(&m_moveFlags, 4);
+
+            break;
+        }
+    }
+    return CUserLogic::SerializeMove(arc, mode, typeId, pObj) != 0;
+}

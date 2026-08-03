@@ -43,7 +43,6 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/HeapDiag.h>
 #include <Gruntz/HelpState.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
@@ -53,7 +52,6 @@
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
-#include <Gruntz/PortalPath.h>
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -77,7 +75,6 @@
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Rez/FrameClock.h>
-#include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegistryHelper.h>
@@ -92,6 +89,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <Gruntz/PortalPath.h>
+#include <Gruntz/HeapDiag.h>
+#include <Rez/RezMgr.h>
 
 // owner-TU unproven: bss sits in the pre-gruntzmgr window (before g_buteMgr)
 DATA(0x0020c674)

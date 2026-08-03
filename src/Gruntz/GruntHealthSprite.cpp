@@ -120,3 +120,28 @@ i32 CGruntHealthSprite::HealthUpdate() {
     m_object->m_screenY = m_yOffset + e->m_object->m_screenY;
     return 0;
 }
+
+RVA(0x0007f270, 0xa3)
+i32 CGruntHealthSprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    switch (mode) {
+        case SERIAL_SAVE:
+            ar->Write(&m_cell, 8);
+            ar->Write(&m_health, 4);
+            ar->Write(&m_yOffset, 4);
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_cell, 8);
+            ar->Read(&m_health, 4);
+            ar->Read(&m_yOffset, 4);
+            break;
+    }
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
+        return 0;
+    }
+    return Chain(ar, mode, typeId, pObj) != 0;
+}

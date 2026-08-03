@@ -397,6 +397,60 @@ i32 CObjectDropper::Update() {
     return 0;
 }
 
+RVA(0x000c6680, 0x1b4)
+i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    if (!Chain(ar, tag, c, d)) {
+        return 0;
+    }
+
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_lastDropTime, 8);
+            ar->Write(&m_dropInterval, 8);
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_lastDropTime, 8);
+            ar->Read(&m_dropInterval, 8);
+            break;
+    }
+
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_speed, 8);
+            ar->Write(&m_posX, 8);
+            ar->Write(&m_posY, 8);
+            ar->Write(&m_travelDx, 4);
+            ar->Write(&m_travelDy, 4);
+            ar->Write(&m_lastDropTileX, 4);
+            ar->Write(&m_lastDropTileY, 4);
+            ar->Write(&m_scrollMode, 4);
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_speed, 8);
+            ar->Read(&m_posX, 8);
+            ar->Read(&m_posY, 8);
+            ar->Read(&m_travelDx, 4);
+            ar->Read(&m_travelDy, 4);
+            ar->Read(&m_lastDropTileX, 4);
+            ar->Read(&m_lastDropTileY, 4);
+            ar->Read(&m_scrollMode, 4);
+            break;
+        case SERIAL_POSTLOAD: {
+            CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
+            CWwdGameObjectA* o = m_object;
+            o->m_drawActive = 1;
+            o->m_drawFillArg = fill;
+            o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+            break;
+        }
+    }
+    return 1;
+}
+
+// @early-stop
 RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -562,6 +616,30 @@ i32 CDroppedObject::AdvanceAnimation() {
     return 0;
 }
 
+RVA(0x000c73a0, 0xb5)
+i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    if (!Chain(ar, tag, c, d)) {
+        return 0;
+    }
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_timePerTile, 8);
+            ar->Write(&m_fallY, 8);
+            ar->Write(&m_landY, 4);
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_timePerTile, 8);
+            ar->Read(&m_fallY, 8);
+            ar->Read(&m_landY, 4);
+            break;
+    }
+    return 1;
+}
+
+// @early-stop
 RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -621,6 +699,29 @@ i32 CDroppedObjectShadow::Advance() {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
+}
+
+RVA(0x000c7b40, 0x76)
+i32 CDroppedObjectShadow::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    if (!CUserLogic::SerializeMove(ar, mode, c, d)) {
+        return 0;
+    }
+    if (!Chain(ar, mode, c, d)) {
+        return 0;
+    }
+    if (mode == SERIAL_POSTLOAD) {
+        CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
+        CWwdGameObjectA* o = m_object;
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+        o->m_drawFillArg = fill;
+    }
+    return 1;
 }
 
 RVA(0x000c7be0, 0x5)

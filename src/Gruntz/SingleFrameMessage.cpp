@@ -16,6 +16,19 @@
 template<> DATA(0x00245ef0)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(2000, 2010);
 
+RVA(0x0000f5a0, 0x47)
+i32 CSingleFrameMessage::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+        return 0;
+    }
+    return Chain(ar, tag, c, d) != 0;
+}
+
 RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 

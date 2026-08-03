@@ -10,14 +10,7 @@
 
 class CSecretTeleporterTrigger : public CUserLogic, public CWapX {
 public:
-    RVA(0x00010a10, 0x47)
-    virtual i32 SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(a, b, c, d)) {
-            return 0;
-        }
-        return Chain(a, b, c, d) != 0;
-    }
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x000109f0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SECRETTELEPORTERTRIGGER;

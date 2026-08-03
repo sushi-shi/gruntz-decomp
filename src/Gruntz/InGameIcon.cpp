@@ -5,7 +5,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -14,8 +13,6 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameText.h>
@@ -32,12 +29,15 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Io/FileMem.h>
-#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
 #include <string.h>
+#include <Bute/ButeTree.h>
+#include <Rez/FrameClock.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
@@ -574,6 +574,35 @@ i32 CInGameIcon::RefreshCell() {
 }
 
 // @early-stop
+RVA(0x000983e0, 0x98)
+i32 CToyPeek::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
+        return 0;
+    }
+    if (Chain(ar, mode, typeId, pObj) == 0) {
+        return 0;
+    }
+
+    switch (mode) {
+        case SERIAL_SAVE:
+            ar->Write(&m_startClock, sizeof(m_startClock));
+            ar->Write(&m_countdown, sizeof(m_countdown));
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_startClock, sizeof(m_startClock));
+            ar->Read(&m_countdown, sizeof(m_countdown));
+            break;
+    }
+    return 1;
+}
+
+VTBL(CToyPeek, 0x001e7204);
+
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -808,6 +837,135 @@ i32 CInGameIcon::Reposition() {
 }
 
 // @early-stop
+RVA(0x00098c90, 0x382)
+i32 CInGameIcon::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* obj
+) {
+
+    char chainName[0x80];
+
+    if (ar == 0) {
+        return 0;
+    }
+    if (CUserLogic::SerializeMove(ar, mode, typeId, obj) == 0) {
+        return 0;
+    }
+
+    switch (mode) {
+        case SERIAL_LOAD: {
+            ar->Read(chainName, 0x80);
+            ar->Read(m_blob, 0x10);
+            m_gameObject = obj;
+            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_animWorker = obj->m_animWorker;
+            if (strlen(chainName) == 0) {
+                m_value = 0;
+            } else {
+                void* val = 0;
+                m_animWorker->m_ownerCtx->m_animRegistry->m_animations.Lookup(chainName, val);
+                m_value = static_cast<CAniElement*>(val);
+            }
+            break;
+        }
+        case SERIAL_SAVE: {
+            memset(chainName, 0, sizeof(chainName));
+            if (m_value != 0) {
+                CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
+                strcpy(chainName, static_cast<const char*>(nm));
+            }
+            ar->Write(chainName, 0x80);
+            ar->Write(m_blob, 0x10);
+            break;
+        }
+    }
+
+    Clock64* drift = &m_driftPos;
+    switch (mode) {
+        case SERIAL_LOAD:
+            ar->Read(drift, 8);
+            drift++;
+            ar->Read(drift, 8);
+            break;
+        case SERIAL_SAVE:
+            ar->Write(drift, 8);
+            drift++;
+            ar->Write(drift, 8);
+            break;
+    }
+    Clock64* idle = &m_peekTimer;
+    switch (mode) {
+        case SERIAL_LOAD:
+            ar->Read(idle, 8);
+            idle++;
+            ar->Read(idle, 8);
+            break;
+        case SERIAL_SAVE:
+            ar->Write(idle, 8);
+            idle++;
+            ar->Write(idle, 8);
+            break;
+    }
+
+    char tailName[0x80];
+    switch (mode) {
+        case SERIAL_SAVE: {
+            memset(tailName, 0, sizeof(tailName));
+            if (m_cue != 0) {
+                CString nm = m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
+                strcpy(tailName, static_cast<const char*>(nm));
+            }
+            ar->Write(tailName, 0x80);
+            g_serialCounter++;
+            i32 id = 0;
+            if (m_glitterSprite != 0) {
+                id = m_glitterSprite->m_objectId;
+            }
+            ar->Write(&id, 4);
+            break;
+        }
+        case SERIAL_LOAD: {
+            ar->Read(tailName, 0x80);
+
+            if (strlen(tailName) == 0) {
+                m_cue = 0;
+            } else {
+                void* val = 0;
+                m_animWorker->m_ownerCtx->m_soundRegistry->m_cues.Lookup(tailName, val);
+                m_cue = static_cast<LeafCue*>(val);
+            }
+            g_serialCounter++;
+            i32 id = 0;
+            ar->Read(&id, 4);
+            void* found = 0;
+            CWwdGameObjectA* sprite = 0;
+            if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0
+                && found != 0
+                && static_cast<CGameObject*>(found)->GetClassId() == CLASSID_SERIALREF) {
+                sprite = static_cast<CWwdGameObjectA*>(found);
+            }
+            m_glitterSprite = sprite;
+            if (sprite != 0) {
+                break;
+            }
+
+            if (id != 0) {
+                return 0;
+            }
+            break;
+        }
+        case SERIAL_POSTLOAD:
+            if (HandleInput() == 0) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
+}
+
+// @early-stop
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_gameMode == 2) {
@@ -939,6 +1097,31 @@ i32 CInGameText::Update() {
     return 0;
 }
 
+RVA(0x00099a30, 0xaa)
+i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, CGameObject* b) {
+    if (ar == 0) {
+        return 0;
+    }
+    if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
+        return 0;
+    }
+    if (Chain(ar, tag, a, b) == 0) {
+        return 0;
+    }
+    switch (tag) {
+        case SERIAL_SAVE:
+            ar->Write(&m_cachedAreaId, 4);
+            ar->Write(&m_cachedSubId, 4);
+            break;
+        case SERIAL_LOAD:
+            ar->Read(&m_cachedAreaId, 4);
+            ar->Read(&m_cachedSubId, 4);
+            break;
+    }
+    return 1;
+}
+
+// @early-stop
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
     LeafCue* cue = 0;

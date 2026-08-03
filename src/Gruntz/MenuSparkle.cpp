@@ -6,13 +6,13 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/LogicTypeId.h>
-#include <Gruntz/MenuSparkleSerial.h>
-#include <Gruntz/SerialArchive.h>
-#include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 
 #include <stdlib.h>
+#include <Gruntz/MenuSparkleSerial.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Io/FileMem.h>
 
 template<> DATA(0x00246010)
 CActReg CActRegPool<CMenuSparkle>::s_table(2000, 2010);
@@ -72,6 +72,36 @@ void RegisterMenuSparkleActions() {
 }
 
 // @early-stop
+RVA(0x000ae1c0, 0xae)
+i32 CMenuSparkle::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
+    if (arc == 0) {
+        return 0;
+    }
+
+    if (!CUserLogic::SerializeMove(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
+        return 0;
+    }
+    if (!Chain(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
+        return 0;
+    }
+    if (mode != SERIAL_SAVE) {
+        if (mode != SERIAL_LOAD) {
+            return 1;
+        }
+        arc->Read(&g_menuSparkleLo, 4);
+        arc->Read(&g_menuSparkleHi, 4);
+        return 1;
+    }
+    arc->Write(&g_menuSparkleLo, 4);
+    arc->Write(&g_menuSparkleHi, 4);
+    return 1;
+}
+
 RVA(0x000ae2a0, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
     u32 delta = g_frameDelta;
