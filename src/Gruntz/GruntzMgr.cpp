@@ -52,6 +52,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapLogic.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/MovieId.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PortalPath.h>
@@ -805,38 +806,38 @@ CFecFile::CFecFile() {
 }
 // @early-stop
 RVA(0x0008ff30, 0x20c)
-CString CGruntzMgr::BuildMoviePath(i32 movie) {
+CString CGruntzMgr::BuildMoviePath(MovieId movie) {
     CString name;
 
     switch (movie) {
-        case -1:
+        case MOVIE_LOGO:
             name = "Logo.vob";
             break;
-        case 0:
+        case MOVIE_GRUNTZ0:
             name = "Gruntz0.vob";
             break;
-        case 2:
+        case MOVIE_GRUNTZ1:
             name = "Gruntz1.vob";
             break;
-        case 4:
+        case MOVIE_GRUNTZ2:
             name = "Gruntz2.vob";
             break;
-        case 6:
+        case MOVIE_GRUNTZ3:
             name = "Gruntz3.vob";
             break;
-        case 8:
+        case MOVIE_GRUNTZ4:
             name = "Gruntz4.vob";
             break;
-        case 10:
+        case MOVIE_GRUNTZ5:
             name = "Gruntz5.vob";
             break;
-        case 12:
+        case MOVIE_GRUNTZ6:
             name = "Gruntz6.vob";
             break;
-        case 13:
+        case MOVIE_GRUNTZ7:
             name = "Gruntz7.vob";
             break;
-        case 14:
+        case MOVIE_GRUNTZ8:
             name = "Gruntz8.vob";
             break;
     }
@@ -1137,19 +1138,19 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
         case 0xbba:
             ReportError(static_cast<GruntzCommandId>(0x8016), status);
             return;
-        case 0x80e9:
+        case CHEAT_GIVE_GAUNTLET:
             ReportError(static_cast<GruntzCommandId>(0x801e), 0x80e9);
             return;
-        case 0x80ea:
+        case CHEAT_GIVE_GLOVE:
             ReportError(static_cast<GruntzCommandId>(0x801a), status);
             return;
-        case 0x80eb:
+        case CHEAT_GIVE_GOOBER:
             ReportError(static_cast<GruntzCommandId>(0x801b), status);
             return;
-        case 0x80ec:
+        case CHEAT_GIVE_GRAVITY_BOOT:
             ReportError(static_cast<GruntzCommandId>(0x801c), status);
             return;
-        case 0x80ed:
+        case CHEAT_GIVE_GUN_HAT:
             ReportError(static_cast<GruntzCommandId>(0x801d), status);
             return;
         default:

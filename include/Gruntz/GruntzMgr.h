@@ -12,6 +12,8 @@
 
 GZ_ENUM_FORWARD(GameModeId);
 
+GZ_ENUM_FORWARD(MovieId);
+
 class CDialog;
 
 #include <Dsndmgr/GruntzSoundZ.h>
@@ -92,7 +94,7 @@ public:
 
     i32 ClearWorldFile();
     i32 InitializeLobbyConnectionSettings();
-    CString BuildMoviePath(i32 movie);
+    CString BuildMoviePath(MovieId movie);
 
     virtual i32 PerFrameTick() OVERRIDE;
 

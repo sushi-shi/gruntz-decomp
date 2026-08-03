@@ -225,6 +225,7 @@ include/Gruntz/MenuState.h	pending
 include/Gruntz/MenuVersion.h	pending	
 include/Gruntz/MgrAutoScroll.h	pending	
 include/Gruntz/MotionState.h	pending	
+include/Gruntz/MovieId.h	pending	
 include/Gruntz/MovingLogic.h	pending	
 include/Gruntz/MovingLogicSerial.h	pending	
 include/Gruntz/MpSymItem.h	pending	

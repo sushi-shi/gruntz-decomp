@@ -17,6 +17,21 @@
 // (WM_COMMAND's wParam, GetDlgItem), same as DialogCtrlId in <Gruntz/Dialogs.h>,
 // which holds the other half of this 0x4xx-0x5xx dialog space.
 GZ_ENUM_CONST_BEGIN(SaveSlotCtrlId)
+// The SAVE dialog's own per-slot buttons. CSaveGame translates each one to the
+// load dialog's slot control of the same index (0x435 + n -> 0x490 + n), which
+// is what pins the band: the mapping is linear across all ten and the target is
+// already CTRL_SAVESLOT_LOAD0..9.
+    CTRL_SAVEDLG_SLOT0 = 0x435,
+    CTRL_SAVEDLG_SLOT1 = 0x436,
+    CTRL_SAVEDLG_SLOT2 = 0x437,
+    CTRL_SAVEDLG_SLOT3 = 0x438,
+    CTRL_SAVEDLG_SLOT4 = 0x439,
+    CTRL_SAVEDLG_SLOT5 = 0x43a,
+    CTRL_SAVEDLG_SLOT6 = 0x43b,
+    CTRL_SAVEDLG_SLOT7 = 0x43c,
+    CTRL_SAVEDLG_SLOT8 = 0x43d,
+    CTRL_SAVEDLG_SLOT9 = 0x43e,
+
     CTRL_SAVESLOT_LOAD0 = 0x490,
     CTRL_SAVESLOT_LOAD1 = 0x491,
     CTRL_SAVESLOT_LOAD2 = 0x492,

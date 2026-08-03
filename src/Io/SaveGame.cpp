@@ -12,6 +12,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SaveSlotCtrlId.h>
 #include <Image/Image.h>
 #include <Image/ImagePool.h>
 #include <Io/GameSave.h>
@@ -280,35 +281,35 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 
     if (HIWORD(c) == 0x100) {
         switch (LOWORD(c)) {
-            case 0x435:
-                g_savedMenuCmd = 0x490;
+            case CTRL_SAVEDLG_SLOT0:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD0;
                 break;
-            case 0x436:
-                g_savedMenuCmd = 0x491;
+            case CTRL_SAVEDLG_SLOT1:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD1;
                 break;
-            case 0x437:
-                g_savedMenuCmd = 0x492;
+            case CTRL_SAVEDLG_SLOT2:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD2;
                 break;
-            case 0x438:
-                g_savedMenuCmd = 0x493;
+            case CTRL_SAVEDLG_SLOT3:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD3;
                 break;
-            case 0x439:
-                g_savedMenuCmd = 0x494;
+            case CTRL_SAVEDLG_SLOT4:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD4;
                 break;
-            case 0x43a:
-                g_savedMenuCmd = 0x495;
+            case CTRL_SAVEDLG_SLOT5:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD5;
                 break;
-            case 0x43b:
-                g_savedMenuCmd = 0x496;
+            case CTRL_SAVEDLG_SLOT6:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD6;
                 break;
-            case 0x43c:
-                g_savedMenuCmd = 0x497;
+            case CTRL_SAVEDLG_SLOT7:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD7;
                 break;
-            case 0x43d:
-                g_savedMenuCmd = 0x498;
+            case CTRL_SAVEDLG_SLOT8:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD8;
                 break;
-            case 0x43e:
-                g_savedMenuCmd = 0x499;
+            case CTRL_SAVEDLG_SLOT9:
+                g_savedMenuCmd = CTRL_SAVESLOT_LOAD9;
                 break;
         }
     }
