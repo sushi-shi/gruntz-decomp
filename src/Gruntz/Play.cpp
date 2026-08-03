@@ -60,6 +60,7 @@
 #include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SBI_Image.h>
+#include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
@@ -1765,7 +1766,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_GRUNTZ) {
-            lv->SetTabState(TAB_GRUNTZ, 3);
+            lv->SetTabState(TAB_GRUNTZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1790,7 +1791,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_RESOURCE) {
-            lv->SetTabState(TAB_RESOURCE, 3);
+            lv->SetTabState(TAB_RESOURCE, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1811,7 +1812,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_STATZ) {
-            lv->SetTabState(TAB_STATZ, 3);
+            lv->SetTabState(TAB_STATZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1844,7 +1845,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_GAME) {
-            lv->SetTabState(TAB_GAME, 3);
+            lv->SetTabState(TAB_GAME, MENUITEM_SELECTED);
         }
         lv->SetTab(5, 1);
         lv->Deactivate();
@@ -5004,7 +5005,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
             g->RefreshState();
         }
         if (g->m_activeTab != TAB_GAME) {
-            g->SetTabState(TAB_GAME, 3);
+            g->SetTabState(TAB_GAME, MENUITEM_SELECTED);
         }
         g->SetTab(0x1fb, 1);
         g->Deactivate();

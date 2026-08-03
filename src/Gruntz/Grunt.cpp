@@ -44,6 +44,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/State.h>
@@ -3363,7 +3364,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                     sb->RefreshState();
                 }
                 if (sb->m_activeTab != TAB_RESOURCE) {
-                    sb->SetTabState(TAB_RESOURCE, 3);
+                    sb->SetTabState(TAB_RESOURCE, MENUITEM_SELECTED);
                 }
                 sb->Deactivate();
                 play->m_guts->UpdateRezMachineWakeStatusBar();

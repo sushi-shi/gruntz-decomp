@@ -14,6 +14,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundState.h>
@@ -54,7 +55,7 @@ i32 CSBI_MenuItem::SetupImage(
     m_rect14 = rc;
     m_redrawFrames = 0;
     m_cmd = cmd;
-    m_state = 1;
+    m_state = MENUITEM_NORMAL;
     m_enabled = 1;
     return ResolveFrame(key, frame) != 0;
 }
@@ -114,15 +115,15 @@ i32 CSBI_MenuItem::Render() {
 }
 
 RVA(0x000e8310, 0x112)
-i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
+i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
     if (m_state == state || m_record == 0) {
         return 0;
     }
-    if (state == 2 && m_state == 3) {
+    if (state == MENUITEM_HIGHLIGHT && m_state == MENUITEM_SELECTED) {
         return 1;
     }
 
-    if (state == 3) {
+    if (state == MENUITEM_SELECTED) {
         m_owner->ClearTabGroup();
         // The domain ingest: CSBI_MenuItem::m_cmd is a general command id, but a
         // TAB menu item's command IS its tab - CStatusBarMgr bounds it at
@@ -130,7 +131,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         m_owner->m_activeTab = static_cast<StatusBarTab>(m_cmd);
         m_owner->LoadTabSprites();
         m_owner->Deactivate();
-    } else if (state == 2 && a) {
+    } else if (state == MENUITEM_HIGHLIGHT && a) {
 
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_emitGate == 0) {
@@ -167,25 +168,25 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
 }
 
 RVA(0x000e8480, 0x4a)
-i32 CSBI_MenuItem::ProbeState(i32 state) {
-    if (state == 1 || m_record == 0) {
+i32 CSBI_MenuItem::ProbeState(SbiMenuItemState state) {
+    if (state == MENUITEM_NORMAL || m_record == 0) {
         return 0;
     }
-    if (state == 2 && m_state == state) {
-        return SetState(1, 1);
+    if (state == MENUITEM_HIGHLIGHT && m_state == state) {
+        return SetState(MENUITEM_NORMAL, 1);
     }
-    if (state == 3 && m_state == 3) {
-        return SetState(1, 1);
+    if (state == MENUITEM_SELECTED && m_state == MENUITEM_SELECTED) {
+        return SetState(MENUITEM_NORMAL, 1);
     }
     return 1;
 }
 
 RVA(0x000e84f0, 0x16)
 i32 CSBI_MenuItem::Blit() {
-    if (m_state != 2) {
+    if (m_state != MENUITEM_HIGHLIGHT) {
         return 1;
     }
-    return SetState(1, 1);
+    return SetState(MENUITEM_NORMAL, 1);
 }
 
 RVA(0x000e8520, 0x152)

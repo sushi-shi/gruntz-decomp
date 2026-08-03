@@ -3,8 +3,10 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_Image.h>
+#include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
@@ -16,7 +18,7 @@ class CSBI_MenuItem : public CSBI_Image {
 public:
     CSBI_MenuItem() {
         m_kind = 2;
-        m_state = 0;
+        m_state = MENUITEM_UNSET;
         m_frame = 0;
         m_record = 0;
     }
@@ -40,11 +42,11 @@ public:
     ) OVERRIDE;
 
     i32 ResolveFrame(const char* key, i32 a);
-    i32 SetState(i32 state, i32 a);
-    i32 ProbeState(i32 state);
+    i32 SetState(SbiMenuItemState state, i32 a);
+    i32 ProbeState(SbiMenuItemState state);
     i32 Blit();
 
-    i32 m_state;
+    SbiMenuItemState m_state;
 
     CDDrawWorker* m_record;
 };

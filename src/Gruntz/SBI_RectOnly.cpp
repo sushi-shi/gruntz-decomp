@@ -32,6 +32,7 @@
 #include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_WarlordHead.h>
 #include <Gruntz/SBI_WellGoo.h>
+#include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundCue.h>
@@ -143,7 +144,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_battlezPct[35] = m_battlezPct[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
     m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
     m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
-    SetTabState(TAB_GAME, 3);
+    SetTabState(TAB_GAME, MENUITEM_SELECTED);
     if ((static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
             ->GetValueDword("StatusBar Position", 0)
         == 1) {
@@ -204,7 +205,7 @@ i32 CStatusBarMgr::RefreshA() {
             g_gameReg->ReportError(static_cast<GruntzCommandId>(kActivateErrId), 0x448);
             return 0;
         }
-        SetTabState(m_activeTab, 3);
+        SetTabState(m_activeTab, MENUITEM_SELECTED);
     }
     return 1;
 }
@@ -229,7 +230,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
         g_gameReg->ReportError(static_cast<GruntzCommandId>(kActivateErrId), 0x449);
         return 0;
     }
-    SetTabState(m_activeTab, 3);
+    SetTabState(m_activeTab, MENUITEM_SELECTED);
     return 1;
 }
 
@@ -433,7 +434,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 return 0;
             }
             HiCueFind();
-            SetTabState(cmd, 3);
+            SetTabState(static_cast<StatusBarTab>(cmd), MENUITEM_SELECTED);
             return 1;
 
         case TAB_STATZ:
@@ -684,21 +685,21 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
     i32 cmd = r->m_cmd;
     if (m_hitTestDisabled == 0) {
         if (cmd >= 1 && cmd <= 5) {
-            SetTabState(cmd, 2);
+            SetTabState(static_cast<StatusBarTab>(cmd), MENUITEM_HIGHLIGHT);
         } else {
             ClearTabSprites(0);
         }
     }
     if (m_activeTab == TAB_GAME) {
         if (r->m_tab == TAB_GAME) {
-            SetTabState(cmd, 2);
+            SetTabState(static_cast<StatusBarTab>(cmd), MENUITEM_HIGHLIGHT);
         } else {
             ClearTabSprites(TAB_GAME);
         }
     }
     if (m_toggleActive) {
         if (r->m_tab == 6) {
-            SetTabState(cmd, 2);
+            SetTabState(static_cast<StatusBarTab>(cmd), MENUITEM_HIGHLIGHT);
             return 1;
         }
         ClearTabSprites(TAB_GAME);
@@ -950,7 +951,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabSprite3 = static_cast<CSBI_MenuItem*>(it);
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CSBI_MenuItem* mp = static_cast<CSBI_MenuItem*>(it);
-        mp->m_state = 4;
+        mp->m_state = MENUITEM_DISABLED;
         CDDrawWorker* f = mp->m_record;
         CImage* v;
         if (f != 0 && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
@@ -1222,7 +1223,7 @@ i32 CStatusBarMgr::Deactivate() {
 }
 
 RVA(0x00100d70, 0x548)
-i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
+i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
     if (m_tabSprite0 == 0 || m_tabSprite1 == 0 || m_tabSprite2 == 0 || m_tabSprite3 == 0
         || m_tabSprite4 == 0) {
         return 0;
@@ -1676,7 +1677,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
         RefreshState();
     }
     if (show && m_activeTab != TAB_GAME) {
-        SetTabState(TAB_GAME, 3);
+        SetTabState(TAB_GAME, MENUITEM_SELECTED);
     }
     if (m_tabSprite5) {
         m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
@@ -1707,7 +1708,7 @@ i32 CStatusBarMgr::TryActivate() {
         g_gameReg->ReportError(static_cast<GruntzCommandId>(kActivateErrId), kActivateErrTag);
         return 0;
     }
-    SetTabState(m_activeTab, 3);
+    SetTabState(m_activeTab, MENUITEM_SELECTED);
     return 1;
 }
 
@@ -1927,7 +1928,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
             RefreshState();
         }
         if (m_activeTab != TAB_GRUNTZ) {
-            SetTabState(TAB_GRUNTZ, 3);
+            SetTabState(TAB_GRUNTZ, MENUITEM_SELECTED);
         }
         Deactivate();
     }
@@ -3611,7 +3612,7 @@ void CStatusBarMgr::ExitMode() {
             RefreshState();
         }
         if (m_activeTab != TAB_GAME) {
-            SetTabState(TAB_GAME, 3);
+            SetTabState(TAB_GAME, MENUITEM_SELECTED);
         }
         SetTab(5, 1);
         Deactivate();
@@ -3679,7 +3680,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
         RefreshState();
     }
     if (m_activeTab != TAB_MULTIPLAYER) {
-        SetTabState(TAB_MULTIPLAYER, 3);
+        SetTabState(TAB_MULTIPLAYER, MENUITEM_SELECTED);
         Deactivate();
         return;
     }

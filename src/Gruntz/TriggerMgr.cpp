@@ -26,6 +26,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SoundCue.h>
@@ -846,7 +847,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
             sbi->Reset();
         }
         if (sbi->m_activeTab != TAB_GAME) {
-            sbi->SetTabState(TAB_GAME, 3);
+            sbi->SetTabState(TAB_GAME, MENUITEM_SELECTED);
         }
         sbi->SetTab(5, 1);
         sbi->Deactivate();

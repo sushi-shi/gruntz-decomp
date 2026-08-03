@@ -11,6 +11,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarItem.h>
@@ -154,7 +155,7 @@ public:
     void NotifyAllSlots();
     void UpdateDestructButtonStatusBar();
     i32 Activate();
-    i32 SetTabState(i32 tab, i32 state);
+    i32 SetTabState(StatusBarTab tab, SbiMenuItemState state);
 
     void Teardown();
     i32 TryActivate();
