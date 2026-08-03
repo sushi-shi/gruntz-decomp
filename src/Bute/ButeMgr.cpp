@@ -3,6 +3,7 @@
 #include <Bute/ButeMgr.h>
 
 #include <AddrWord.h>
+#include <Bute/ButeLexAction.h>
 #include <Bute/ButeToken.h>
 #include <Bute/ButeValue.h>
 #include <Crypto/BitStreamBlowfish.h>
@@ -831,18 +832,18 @@ i16 CButeMgr::CharClass(char c) {
 
 RVA(0x00170400, 0x2f)
 i16 CButeMgr::PeekState(i16 state, char c) {
-    return g_transTable[state][CharClass(c)][0];
+    return g_transTable[state][CharClass(c)][LEXSLOT_ACTION];
 }
 
 RVA(0x00170430, 0x2f)
 i16 CButeMgr::PeekState2(i16 state, char c) {
-    return g_transTable[state][CharClass(c)][1];
+    return g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
 }
 
 RVA(0x00170460, 0x58)
 void CButeMgr::ScanState(i16 state, char c) {
-    m_tokType = g_transTable[state][CharClass(c)][1];
-    m_lexState = g_transTable[state][CharClass(c)][2];
+    m_tokType = g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
+    m_lexState = g_transTable[state][CharClass(c)][LEXSLOT_STATE];
 }
 
 // @early-stop
@@ -855,11 +856,11 @@ bool CButeMgr::Parse() {
     for (;;) {
         i16 cls = PeekState(static_cast<i16>(kind), m_curChar);
         switch (cls) {
-            case 0:
+            case LEXACT_ERROR:
                 ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;
 
-            case 1:
+            case LEXACT_TAKE:
                 kind = PeekState2(static_cast<i16>(kind), m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
@@ -868,7 +869,7 @@ bool CButeMgr::Parse() {
                 NextChar();
                 break;
 
-            case 2:
+            case LEXACT_SKIP:
                 kind = PeekState2(static_cast<i16>(kind), m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
@@ -876,7 +877,7 @@ bool CButeMgr::Parse() {
                 NextChar();
                 break;
 
-            case 3:
+            case LEXACT_ACCEPT_TAKE:
                 ScanState(static_cast<i16>(kind), m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
@@ -889,7 +890,7 @@ bool CButeMgr::Parse() {
                 m_token[g_tokenLen] = 0;
                 return true;
 
-            case 4:
+            case LEXACT_ACCEPT_SKIP:
                 ScanState(static_cast<i16>(kind), m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
@@ -901,7 +902,7 @@ bool CButeMgr::Parse() {
                 m_token[g_tokenLen] = 0;
                 return true;
 
-            case 5:
+            case LEXACT_ACCEPT_PUSHBACK:
                 ScanState(static_cast<i16>(kind), m_curChar);
                 if (m_tokType == BUTETOK_NONE) {
                     Parse();
@@ -1089,9 +1090,9 @@ bool ButeMgr::ParseAttributeFile() {
         case BUTETOK_STRING: {
             if (m_writeMode) {
                 CString tmp(GetString(m_tagName, m_str104));
-                (*m_pText) << static_cast<unsigned char>(0x22);
+                (*m_pText) << static_cast<unsigned char>('"');
                 (*m_pText) << tmp.GetBuffer(0);
-                (*m_pText) << static_cast<unsigned char>(0x22);
+                (*m_pText) << static_cast<unsigned char>('"');
             } else if (!bDup) {
                 m_pNode->Insert(m_str104, new CButeValue(BUTE_STRING, m_token));
             }

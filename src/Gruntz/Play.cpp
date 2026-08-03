@@ -34,6 +34,7 @@
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -51,6 +52,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MgrAutoScroll.h>
@@ -3333,17 +3335,6 @@ i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
 }
 
 // @early-stop
-enum World {
-    WORLD_ROCKY_ROADZ = 1,
-    WORLD_GRUNTZICLEZ = 2,
-    WORLD_TROPICZ = 3,
-    WORLD_HIGH_ON_SWEETZ = 4,
-    WORLD_HIGH_ROLLERZ = 5,
-    WORLD_HONEY_I_SHRUNK = 6,
-    WORLD_MINIATURE_MASTERZ = 7,
-    WORLD_GRUNTZ_IN_SPACE = 8,
-};
-
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
@@ -3418,28 +3409,28 @@ i32 CPlay::DrawLevelInfoText() {
     CString s3;
 
     switch (m_levelType) {
-        case WORLD_ROCKY_ROADZ:
+        case AREA_ROCKY_ROADZ:
             s0.LoadString(0x81ae);
             break;
-        case WORLD_GRUNTZICLEZ:
+        case AREA_GRUNTZICLEZ:
             s0.LoadString(0x81af);
             break;
-        case WORLD_TROPICZ:
+        case AREA_TROUBLE_IN_THE_TROPICZ:
             s0.LoadString(0x81b0);
             break;
-        case WORLD_HIGH_ON_SWEETZ:
+        case AREA_HIGH_ON_SWEETZ:
             s0.LoadString(0x81b1);
             break;
-        case WORLD_HIGH_ROLLERZ:
+        case AREA_HIGH_ROLLERZ:
             s0.LoadString(0x81b2);
             break;
-        case WORLD_HONEY_I_SHRUNK:
+        case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
             s0.LoadString(0x81b3);
             break;
-        case WORLD_MINIATURE_MASTERZ:
+        case AREA_MINIATURE_MASTERZ:
             s0.LoadString(0x81b4);
             break;
-        case WORLD_GRUNTZ_IN_SPACE:
+        case AREA_GRUNTZ_IN_SPACE:
             s0.LoadString(0x81b5);
             break;
         default:
@@ -6913,7 +6904,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     }
                 }
                 switch (obj->m_points) {
-                    case 0x7:
+                    case AI_BOMBER:
                         if (!BuildGruntTypeNameTable(PICKUP_BOMB, 1, 0, ctx)) {
                             return 0;
                         }
@@ -6922,7 +6913,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             loaded[1] = 1;
                         }
                         break;
-                    case 0x8:
+                    case AI_BRICKLAYER:
                         if (!BuildGruntTypeNameTable(PICKUP_BRICK, 1, 0, ctx)) {
                             return 0;
                         }
@@ -6931,7 +6922,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             loaded[3] = 1;
                         }
                         break;
-                    case 0x9:
+                    case AI_GAUNTLETZGRUNT:
                         if (!BuildGruntTypeNameTable(PICKUP_GAUNTLETZ, 1, 0, ctx)) {
                             return 0;
                         }
@@ -6940,7 +6931,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             loaded[5] = 1;
                         }
                         break;
-                    case 0xa:
+                    case AI_GOOSUCKER:
                         if (!BuildGruntTypeNameTable(PICKUP_GOOBER, 1, 0, ctx)) {
                             return 0;
                         }
@@ -6949,7 +6940,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             loaded[7] = 1;
                         }
                         break;
-                    case 0xb:
+                    case AI_DIGGER:
                         if (!BuildGruntTypeNameTable(PICKUP_SHOVEL, 1, 0, ctx)) {
                             return 0;
                         }
@@ -6958,7 +6949,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             loaded[0xd] = 1;
                         }
                         break;
-                    case 0xc:
+                    case AI_TIMEBOMBER:
                         if (!BuildGruntTypeNameTable(PICKUP_TIMEBOMB, 1, 0, ctx)) {
                             return 0;
                         }
@@ -6967,7 +6958,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             loaded[0x11] = 1;
                         }
                         break;
-                    case 0xf:
+                    case AI_MAGICWANDGRUNT:
                         if (!BuildGruntTypeNameTable(PICKUP_WAND, 1, 0, ctx)) {
                             return 0;
                         }
@@ -6976,7 +6967,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             loaded[0x13] = 1;
                         }
                         break;
-                    case 0x10:
+                    case AI_SCROLLGRUNT:
                         if (!BuildGruntTypeNameTable(PICKUP_SCROLL, 1, 0, ctx)) {
                             return 0;
                         }

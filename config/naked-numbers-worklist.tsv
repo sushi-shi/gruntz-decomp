@@ -2,8 +2,8 @@
 # status: pending | done | none   (none = nothing left to model)
 # count is integer literals outside comments/strings/label macros.
 file	count	status
-src/Bute/ButeMgr.cpp	14615	pending
-src/Gruntz/Play.cpp	2740	pending
+src/Bute/ButeMgr.cpp	14615	done (14615 are a generated DFA table; lexer actions+slots and one char modelled)
+src/Gruntz/Play.cpp	2740	done (enum World merged into LevelArea; help switch is EnemyAiType; rest are tick counts and data)
 src/Gruntz/BattlezMapConfig.cpp	1944	pending
 src/Gruntz/Grunt.cpp	1698	pending
 src/Gruntz/GruntArrivalScan.cpp	1611	pending
