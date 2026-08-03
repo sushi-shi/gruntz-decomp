@@ -35,6 +35,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFactoryObject.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -475,9 +476,9 @@ void CDDrawChildGroup::CollideBroadcast() {
                     i32 mask2 = static_cast<i32>(oi->m_objectType) & oj->m_attackTypeMask;
                     if (mask1 || mask2) {
                         i32 overlap;
-                        if (oj->m_switchRect.left == static_cast<i32>(0x80000000)) {
+                        if (oj->m_switchRect.left == COORD_UNSET) {
                             overlap = 0;
-                        } else if (oi->m_area.left == static_cast<i32>(0x80000000)) {
+                        } else if (oi->m_area.left == COORD_UNSET) {
                             overlap = 0;
                         } else {
                             CDDrawRect ra, rb;
@@ -552,10 +553,10 @@ void CDDrawChildGroup::CollideBroadcast() {
 // @early-stop
 RVA(0x0015a130, 0xdc)
 i32 __stdcall BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
-    if (switchObj->m_switchRect.left == static_cast<i32>(0x80000000)) {
+    if (switchObj->m_switchRect.left == COORD_UNSET) {
         return 0;
     }
-    if (areaObj->m_area.left == static_cast<i32>(0x80000000)) {
+    if (areaObj->m_area.left == COORD_UNSET) {
         return 0;
     }
 
@@ -603,7 +604,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-                if (obj->m_area.left != static_cast<i32>(0x80000000)) {
+                if (obj->m_area.left != COORD_UNSET) {
                     i32 ox = obj->m_screenX;
                     RECT rc;
                     rc.left = obj->m_area.left + ox;
@@ -625,7 +626,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-                if (obj->m_switchRect.left != static_cast<i32>(0x80000000)) {
+                if (obj->m_switchRect.left != COORD_UNSET) {
                     i32 ox = obj->m_screenX;
                     RECT rc;
                     rc.left = obj->m_switchRect.left + ox;
@@ -647,7 +648,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-                if (obj->m_extent.left != static_cast<i32>(0x80000000)) {
+                if (obj->m_extent.left != COORD_UNSET) {
                     i32 ox = obj->m_screenX;
                     RECT rc;
                     rc.left = obj->m_extent.left + ox;
@@ -670,7 +671,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
                 i32 x = obj->m_screenX;
-                if (x != static_cast<i32>(0x80000000)) {
+                if (x != COORD_UNSET) {
 
                     i32 fl = view->m_flags;
                     i32 y = obj->m_screenY;
@@ -713,7 +714,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-                if (obj->m_screenX == static_cast<i32>(0x80000000)) {
+                if (obj->m_screenX == COORD_UNSET) {
                     continue;
                 }
                 if (obj->GetClassId() != CLASSID_SERIALREF) {
@@ -1301,7 +1302,7 @@ i32 CDDrawChildGroup::PruneOrphans() {
 
 RVA(0x0015b270, 0x11)
 WwdDirtyRect::WwdDirtyRect() {
-    m_rect.left = static_cast<i32>(0x80000000);
+    m_rect.left = COORD_UNSET;
     m_armed = -1;
 }
 

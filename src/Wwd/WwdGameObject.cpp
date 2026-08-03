@@ -32,6 +32,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
@@ -376,9 +377,9 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_hitTypeFlags = 0;
     m_attackTypeMask = 0;
     m_collMask = 0;
-    m_extent.left = static_cast<i32>(0x80000000);
-    m_area.left = static_cast<i32>(0x80000000);
-    m_switchRect.left = static_cast<i32>(0x80000000);
+    m_extent.left = COORD_UNSET;
+    m_area.left = COORD_UNSET;
+    m_switchRect.left = COORD_UNSET;
     m_region.m_object = this;
     m_region.m_x = m_screenX;
     m_region.m_y = m_screenY;

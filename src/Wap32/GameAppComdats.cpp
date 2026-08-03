@@ -2,6 +2,7 @@
 
 #include <EmptyString.h>
 #include <Gruntz/GruntzCommandId.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/Wap32.h>
 
@@ -16,15 +17,7 @@ RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)
 // (23 fns) came from the static library. It belongs to another compiland.
 RVA(0x00080d20, 0x24)
 i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
-    return Init(
-        hInstance,
-        szName,
-        szName,
-        g_emptyString,
-        0,
-        static_cast<i32>(0x80000000),
-        static_cast<i32>(0x80000000)
-    );
+    return Init(hInstance, szName, szName, g_emptyString, 0, COORD_UNSET, COORD_UNSET);
 }
 
 // @identity-TODO HasWindowAndManager@CGameApp - thunk oracle: retail gave this an incremental

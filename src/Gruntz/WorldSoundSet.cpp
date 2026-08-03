@@ -11,6 +11,7 @@
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/RezMgr.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <math.h>
@@ -308,12 +309,12 @@ i32 CAmbientSound::InitFromSound(
     if (box != NULL) {
         *p = *box;
     } else {
-        p->left = static_cast<i32>(0x80000000);
+        p->left = COORD_UNSET;
     }
     if (p->left == 0 && m_box1.top == 0 && m_box1.right == 0 && m_box1.bottom == 0) {
-        p->left = static_cast<i32>(0x80000000);
+        p->left = COORD_UNSET;
     }
-    m_box2.left = static_cast<i32>(0x80000000);
+    m_box2.left = COORD_UNSET;
     return 1;
 }
 
@@ -379,7 +380,7 @@ void CAmbientSound::Restart() {
 RVA(0x0000c090, 0x118)
 void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     i32 inRange;
-    if (m_box1.left == AMBIENT_BOX_UNBOUNDED) {
+    if (m_box1.left == COORD_UNSET) {
 
         if (m_isPlaying != 0) {
             return;
@@ -407,8 +408,8 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
 
     if (x > m_box1.left && x < m_box1.right && y > m_box1.top && y < m_box1.bottom) {
         inRange = 1;
-    } else if (m_box2.left != AMBIENT_BOX_UNBOUNDED && x > m_box2.left && x < m_box2.right
-               && y > m_box2.top && y < m_box2.bottom) {
+    } else if (m_box2.left != COORD_UNSET && x > m_box2.left && x < m_box2.right && y > m_box2.top
+               && y < m_box2.bottom) {
         inRange = 1;
     } else {
         inRange = 0;
@@ -788,13 +789,13 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
 
     i32 b1 = m_box1.left;
     i32 inBox = 0;
-    if (b1 == static_cast<i32>(0x80000000)) {
+    if (b1 == COORD_UNSET) {
         inBox = 1;
     } else if (x > b1 && x < m_box1.right && y > m_box1.top && y < m_box1.bottom) {
         inBox = 1;
     } else {
         i32 b2 = m_box2.left;
-        if (b2 != static_cast<i32>(0x80000000) && x > b2 && x < m_box2.right && y > m_box2.top
+        if (b2 != COORD_UNSET && x > b2 && x < m_box2.right && y > m_box2.top
             && y < m_box2.bottom) {
             inBox = 1;
         }

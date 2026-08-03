@@ -42,10 +42,10 @@ src/DDrawMgr/ShadeTableCache.cpp	310	none (literals are palette-index arithmetic
 src/Gruntz/GruntSpawnConfig.cpp	304	pending
 src/Net/NetMgr.cpp	303	partial (kind is NOT NetConnectionType - retail transposes 1/2 there, verified in disasm; recorded at the site)
 src/DDrawMgr/DDrawSurfacePair.cpp	296	partial (the 0x3e9->0x80e9 arms re-bank a pool error; no name table for either bank)
-src/DDrawMgr/DDrawSubMgr.cpp	293	pending
-src/Gruntz/WorldSoundSet.cpp	291	pending
+src/DDrawMgr/DDrawSubMgr.cpp	293	done (COORD_UNSET; rest is layer/extent arithmetic)
+src/Gruntz/WorldSoundSet.cpp	291	done (COORD_UNSET; 0x64 is a volume percent clamp, 0x3e8 a millisecond period)
 src/Image/ImagePool.cpp	290	done
-src/DDrawMgr/LevelPlane.cpp	285	pending
+src/DDrawMgr/LevelPlane.cpp	285	done (COORD_UNSET x4; 0x80 is a WWD type bit, rest is plane arithmetic)
 src/DDrawMgr/DirectDrawMgr.cpp	284	done (44 DDERR_* named by their own strings; 3 corrected against the SDK, incl. retail mislabelling NOTLOCKED as LOCKEDSURFACES)
 src/Wwd/WwdGameObject.cpp	277	pending
 src/Image/CImage.cpp	268	pending
@@ -95,7 +95,7 @@ src/Gruntz/BrickzCellFlags.cpp	128	pending
 src/Gruntz/GruntAssetLoaders.cpp	120	pending
 src/Gruntz/CustomWorldDialog.cpp	120	pending
 src/Net/LatencyList.cpp	115	pending
-src/Wwd/GameLevelMove.cpp	113	pending
+src/Wwd/GameLevelMove.cpp	113	done (COORD_UNSET; the duplicated file-local AXIS_UNSET is gone)
 src/Gruntz/SpriteRefTable.cpp	109	pending
 src/Gruntz/LoadGameMenu.cpp	108	pending
 src/Wap32/GameApp.cpp	107	done (WM_QUIT/WM_CLOSE named)
@@ -165,7 +165,7 @@ src/Gruntz/InGameWorkerHandlers.cpp	30	done (AnimWorkerAct dispatch named)
 src/Gruntz/GruntIndicatorWorkerHandlers.cpp	30	done (AnimWorkerAct dispatch named)
 src/Gruntz/GameInfoString.cpp	30	pending
 src/Gruntz/LightFx.cpp	29	done (AnimWorkerAct dispatch named)
-src/Gruntz/GameLevelLookupTile.cpp	29	pending
+src/Gruntz/GameLevelLookupTile.cpp	29	done (COORD_UNSET; the duplicated file-local AXIS_UNSET is gone)
 src/Gruntz/ExitTrigger.cpp	29	pending
 src/Gruntz/UserLogic.cpp	28	pending
 src/Gruntz/TileScan.cpp	28	pending
@@ -242,7 +242,7 @@ src/Gruntz/BracketValueParse.cpp	9	pending
 src/Gruntz/BehindCandy.cpp	9	pending
 src/Wap32/ZVec.cpp	8	pending
 src/Utils/WinAPIModule.cpp	8	pending
-src/Image/ResolveNode.cpp	8	pending
+src/Image/ResolveNode.cpp	8	done (COORD_UNSET)
 src/Image/PaletteReset.cpp	8	pending
 src/Gruntz/UserLogicCtorEmit.cpp	8	pending
 src/Gruntz/SerializeSyncMarker.cpp	8	pending

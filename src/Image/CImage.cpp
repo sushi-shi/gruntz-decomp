@@ -21,6 +21,7 @@
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
 #include <ddraw.h>
@@ -403,7 +404,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > destClip.bottom) {
             dbottom = destClip.bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             dleft = 0;
         }
@@ -512,7 +513,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             d.left = 0;
         }
@@ -595,7 +596,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             d.left = 0;
         }
@@ -678,7 +679,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             d.left = 0;
         }
@@ -761,7 +762,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             d.left = 0;
         }
@@ -842,7 +843,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             d.left = 0;
         }
@@ -923,7 +924,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1004,7 +1005,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
             d.left = 0;
         }

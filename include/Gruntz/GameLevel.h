@@ -20,8 +20,6 @@ class CDDrawSurfacePair;
 static const i32 TILE_UNINIT = static_cast<i32>(0xeeeeeeee);
 static const i32 TILE_CLEAR = -1;
 
-static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
-
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
         i32 py_ = (Y);                                                                             \

@@ -10,6 +10,7 @@
 #include <Crypto/BlowfishApi.h>
 #include <EmptyString.h>
 #include <strstrea.h>
+#include <Wap32/CoordUnset.h>
 
 #include <float.h>
 #include <fstream.h>
@@ -1385,13 +1386,13 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
                 return *static_cast<i32*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
-            return static_cast<i32>(0x80000000);
+            return COORD_UNSET;
         }
         ReportError(s_fmtNotFound, tag, key);
-        return static_cast<i32>(0x80000000);
+        return COORD_UNSET;
     }
     ReportError(s_fmtInvalidTag, tag);
-    return static_cast<i32>(0x80000000);
+    return COORD_UNSET;
 }
 
 // @early-stop

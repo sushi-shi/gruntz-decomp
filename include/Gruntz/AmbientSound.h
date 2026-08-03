@@ -12,10 +12,6 @@
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 
-GZ_ENUM_CONST_BEGIN(AmbientBoxSentinel)
-    AMBIENT_BOX_UNBOUNDED = 0x80000000
-GZ_ENUM_CONST_END(AmbientBoxSentinel)
-
 struct AmbientPoint {
     i32 x;
     i32 y;

@@ -40,6 +40,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
 
@@ -207,7 +208,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     *pLo = -1;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
-    m_screenX = static_cast<i32>(0x80000000);
+    m_screenX = COORD_UNSET;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_id = -1;
@@ -265,7 +266,7 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     *pLo = -1;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
-    m_screenX = static_cast<i32>(0x80000000);
+    m_screenX = COORD_UNSET;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_id = -1;
@@ -304,7 +305,7 @@ i32 CDDrawWorkerB::PlaceFrameValue(i32 x, i32 y, i32 frame) {
 RVA(0x00157310, 0x1a)
 void CDDrawWorkerBase::Unload() {
 
-    i32 v = static_cast<i32>(0x80000000);
+    i32 v = COORD_UNSET;
     m_frameValue = 0;
     m_screenX = v;
     m_dirty.m_rect.left = v;

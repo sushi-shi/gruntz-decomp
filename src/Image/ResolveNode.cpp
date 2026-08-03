@@ -2,16 +2,17 @@
 
 #include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
+#include <Wap32/CoordUnset.h>
 
 #include <stddef.h>
 
 RVA(0x001549d0, 0x29)
 CResolveNode::CResolveNode() {
     m_ownerCtx = NULL;
-    m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+    m_dirty.m_rect.left = COORD_UNSET;
     m_dirty.m_armed = -1;
-    m_screenX = static_cast<i32>(0x80000000);
-    m_clip.left = static_cast<i32>(0x80000000);
+    m_screenX = COORD_UNSET;
+    m_clip.left = COORD_UNSET;
     m_level = NULL;
     m_stateFlags = 0;
 }

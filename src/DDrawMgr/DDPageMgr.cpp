@@ -21,6 +21,7 @@
 #include <DDrawMgr/DDScreen.h>
 #include <stdio.h>
 #include <string.h>
+#include <Wap32/CoordUnset.h>
 
 // @early-stop
 RVA(0x0017c040, 0x25d)
@@ -769,7 +770,7 @@ i32 CMoviePlayer::CheckMode16() {
     }
 
     if (r == 5 && g == 5 && b == 5) {
-        m_smackBufMode = static_cast<i32>(0x80000000);
+        m_smackBufMode = COORD_UNSET;
         return 1;
     }
     if (r == 5 && g == 6 && b == 5) {

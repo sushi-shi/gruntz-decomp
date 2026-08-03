@@ -15,14 +15,13 @@
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Io/FileStream.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
 
 #include <stdlib.h>
 #include <string.h>
-
-static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 static inline void StampParamBlock(CGameLevel* o) {
     o->m_pairA[0] = 500;
@@ -50,7 +49,7 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags) : CLoadable(i
     m_pairB[0] = 1000;
     m_pairB[1] = 1000;
 
-    m_planeCtx.left = LEVEL_COORD_UNSET;
+    m_planeCtx.left = COORD_UNSET;
     m_mainPlane = NULL;
     m_mainIndex = -1;
     m_checksum = 0;
@@ -195,7 +194,7 @@ fail:
 
 RVA(0x00161190, 0x1f)
 i32 CGameLevel::IsLoaded() {
-    if (m_planeCtx.left == LEVEL_COORD_UNSET) {
+    if (m_planeCtx.left == COORD_UNSET) {
         goto fail;
     }
     if (m_ownerCtx == NULL) {
@@ -282,7 +281,7 @@ void CGameLevel::Unload() {
         }
     }
     m_imageSets.SetSize(0, -1);
-    m_planeCtx.left = LEVEL_COORD_UNSET;
+    m_planeCtx.left = COORD_UNSET;
     m_mainPlane = NULL;
     m_mainIndex = -1;
     memset(&m_header, 0, 1524);
@@ -1591,7 +1590,7 @@ TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
 // @early-stop
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
-    if (t->m_extent.left == AXIS_UNSET) {
+    if (t->m_extent.left == COORD_UNSET) {
         return 0;
     }
     if (m_mainPlane == NULL) {

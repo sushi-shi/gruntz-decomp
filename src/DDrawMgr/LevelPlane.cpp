@@ -28,6 +28,7 @@
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdSpatialMgr.h>
 
 #include <stdio.h>
@@ -121,7 +122,7 @@ i32 CDDrawWorkerHost::Read(
     m_bltFx.dwFillColor = pd->fillColor;
     m_flags = pd->flags;
 
-    if (bounds->left != LEVEL_COORD_UNSET) {
+    if (bounds->left != COORD_UNSET) {
         LevelCoordRect local;
         CopyRect((&local), (bounds));
         m_bounds50 = local;
@@ -220,7 +221,7 @@ i32 CDDrawWorkerHost::InitGeometry(
     if (name != NULL) {
         strcpy(m_name, name);
     }
-    if (bounds->left != static_cast<i32>(0x80000000)) {
+    if (bounds->left != COORD_UNSET) {
         LevelCoordRect local;
         CopyRect((&local), (bounds));
         m_bounds50 = local;
@@ -362,7 +363,7 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
 
 RVA(0x00161e80, 0x79)
 void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
-    if (coords->left != static_cast<i32>(0x80000000)) {
+    if (coords->left != COORD_UNSET) {
         LevelCoordRect local;
         CopyRect((&local), (coords));
         m_bounds50 = local;
@@ -758,16 +759,16 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     obj->m_clip.bottom = *p++;
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
-        obj->m_area.left = static_cast<i32>(0x80000000);
+        obj->m_area.left = COORD_UNSET;
     }
     if (obj->m_extent.left == 0 && obj->m_extent.right == 0) {
-        obj->m_extent.left = static_cast<i32>(0x80000000);
+        obj->m_extent.left = COORD_UNSET;
     }
     if (obj->m_clip.left == 0 && obj->m_clip.right == 0) {
-        obj->m_clip.left = static_cast<i32>(0x80000000);
+        obj->m_clip.left = COORD_UNSET;
     }
     if (obj->m_switchRect.left == 0 && obj->m_switchRect.right == 0) {
-        obj->m_switchRect.left = static_cast<i32>(0x80000000);
+        obj->m_switchRect.left = COORD_UNSET;
     }
 
     anim->m_userRect1.left = *p++;

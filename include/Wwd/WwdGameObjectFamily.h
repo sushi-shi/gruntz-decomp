@@ -15,6 +15,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdObjMgr.h>
 
 GZ_ENUM_FORWARD(MoveMode);
@@ -50,10 +51,10 @@ public:
         WORKER_FREE(m_hitWorker);
         WORKER_FREE(m_attackWorker);
         WORKER_FREE(m_collideWorker);
-        m_shadow.m_rect.left = static_cast<i32>(0x80000000);
+        m_shadow.m_rect.left = COORD_UNSET;
         m_shadow.m_armed = -1;
-        m_screenX = static_cast<i32>(0x80000000);
-        m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+        m_screenX = COORD_UNSET;
+        m_dirty.m_rect.left = COORD_UNSET;
         m_dirty.m_armed = -1;
     }
 
@@ -151,7 +152,7 @@ SIZE_UNKNOWN();
 #ifndef CGAMEOBJECT_OOL_CTOR
 inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CResolveNode(owner, id, stateFlags) {
-    m_screenX = static_cast<i32>(0x80000000);
+    m_screenX = COORD_UNSET;
     m_posCache = NULL;
     m_animWorker = new AnimWorkerObj(owner, id, 0);
     m_carrier = NULL;

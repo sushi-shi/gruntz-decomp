@@ -31,6 +31,7 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdAnimStepMode.h>
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdObjMgr.h>
@@ -90,7 +91,7 @@ i32 CGameObject::IsLoaded() {
 RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CResolveNode(owner, id, stateFlags) {
-    m_screenX = static_cast<i32>(0x80000000);
+    m_screenX = COORD_UNSET;
     m_posCache = NULL;
     m_animWorker = new AnimWorkerObj(owner, id, 0);
     m_carrier = NULL;
@@ -104,8 +105,8 @@ CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
 // @early-stop
 RVA(0x00154a80, 0x13)
 void CResolveNode::Unload() {
-    m_screenX = static_cast<i32>(0x80000000);
-    m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+    m_screenX = COORD_UNSET;
+    m_dirty.m_rect.left = COORD_UNSET;
     m_dirty.m_armed = -1;
 }
 

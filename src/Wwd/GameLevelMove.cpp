@@ -7,12 +7,12 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGrid.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wwd/WwdGridShell.h>
 #include <Wwd/WwdSpatialMgr.h>
 
 VTBL(CWwdGridShell, 0x001f0310);
-static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 // @early-stop
 RVA(0x00167130, 0x83)
@@ -466,7 +466,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_objectType)
-            && t->m_extent.left != AXIS_UNSET && obj->m_extent.left != AXIS_UNSET) {
+            && t->m_extent.left != COORD_UNSET && obj->m_extent.left != COORD_UNSET) {
             i32 tLeft = t->m_extent.left + t->m_screenX;
             i32 tBot = t->m_extent.top + t->m_screenY;
             i32 tRight = t->m_screenX + t->m_extent.right;

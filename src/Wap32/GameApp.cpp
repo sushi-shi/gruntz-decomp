@@ -4,6 +4,7 @@
 
 #include <EmptyString.h>
 #include <Gruntz/GruntzCommandId.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/Wap32.h>
 
 #include <stdio.h>
@@ -236,8 +237,8 @@ void CGameApp::InitializeDefaultCreateStruct() {
 
     i32 x, y;
     if (m_gameInfo.windowClassFlags & 1) {
-        x = static_cast<i32>(0x80000000);
-        y = static_cast<i32>(0x80000000);
+        x = COORD_UNSET;
+        y = COORD_UNSET;
     } else {
         x = 0;
         y = 0;

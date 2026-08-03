@@ -20,8 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
-
 static inline void StampParamBlock(CGameLevel* o) {
     o->m_pairA[0] = 500;
     o->m_pairA[1] = 250;

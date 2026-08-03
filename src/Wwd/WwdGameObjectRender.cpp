@@ -15,6 +15,7 @@
 #include <Enums.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
@@ -29,7 +30,7 @@ inline void* operator new(u32, void* p) {
 RVA(0x001660f0, 0xd1)
 void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
     i32 m64 = m_clip.left;
-    if (m64 == static_cast<i32>(0x80000000)) {
+    if (m64 == COORD_UNSET) {
         if (m_screenX < 0 || m_screenY < 0 || m_screenX >= a->m_width || m_screenY >= a->m_height) {
             m_dirty.m_armed = -1;
             return;

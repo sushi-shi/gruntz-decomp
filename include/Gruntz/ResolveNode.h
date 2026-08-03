@@ -6,6 +6,7 @@
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
+#include <Wap32/CoordUnset.h>
 
 #include <stddef.h>
 
@@ -31,7 +32,7 @@ SIZE(0x24);
 
 #ifndef WWDDIRTYRECT_OOL_CTOR
 inline WwdDirtyRect::WwdDirtyRect() {
-    m_rect.left = static_cast<i32>(0x80000000);
+    m_rect.left = COORD_UNSET;
     m_armed = -1;
 }
 #endif
@@ -61,8 +62,8 @@ public:
     );
 
     virtual ~CResolveNode() OVERRIDE {
-        m_screenX = static_cast<i32>(0x80000000);
-        m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+        m_screenX = COORD_UNSET;
+        m_dirty.m_rect.left = COORD_UNSET;
         m_dirty.m_armed = -1;
     }
 
@@ -93,8 +94,8 @@ VTBL(CResolveNode, 0x001efbc0);
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(field04, field08, owner) {
 
-    m_screenX = static_cast<i32>(0x80000000);
-    m_clip.left = static_cast<i32>(0x80000000);
+    m_screenX = COORD_UNSET;
+    m_clip.left = COORD_UNSET;
     m_level = NULL;
     m_stateFlags = 0;
 }

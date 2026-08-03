@@ -16,6 +16,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
+#include <Wap32/CoordUnset.h>
 
 #include <stddef.h>
 
@@ -34,16 +35,16 @@ i32 CPlay::ScanBuildTiles() {
         if (p == NULL) {
             continue;
         }
-        if (p->m_extent.left == static_cast<i32>(0x80000000)) {
+        if (p->m_extent.left == COORD_UNSET) {
             p->m_extent.left = 0;
         }
-        if (p->m_area.left == static_cast<i32>(0x80000000)) {
+        if (p->m_area.left == COORD_UNSET) {
             p->m_area.left = 0;
         }
-        if (p->m_switchRect.left == static_cast<i32>(0x80000000)) {
+        if (p->m_switchRect.left == COORD_UNSET) {
             p->m_switchRect.left = 0;
         }
-        if (p->m_clip.left == static_cast<i32>(0x80000000)) {
+        if (p->m_clip.left == COORD_UNSET) {
             p->m_clip.left = 0;
         }
         GameObjNotifyFn vf = p->m_animWorker->m_notify;
