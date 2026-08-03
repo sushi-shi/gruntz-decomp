@@ -24,6 +24,7 @@ include/DDrawMgr/AniAdvance.h	pending
 include/DDrawMgr/AniRecord.h	pending	
 include/DDrawMgr/AniRecordBase2.h	pending	
 include/DDrawMgr/AnimWorkerObj.h	pending	
+include/DDrawMgr/ColorDepth.h	pending	
 include/DDrawMgr/ColorHsv.h	pending	
 include/DDrawMgr/DDPageMgr.h	pending	
 include/DDrawMgr/DDScreen.h	pending	

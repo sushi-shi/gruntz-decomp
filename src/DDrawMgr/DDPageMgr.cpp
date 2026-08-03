@@ -23,6 +23,7 @@
 #include <string.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/ScreenGeometry.h>
+#include <DDrawMgr/ColorDepth.h>
 
 // @early-stop
 RVA(0x0017c040, 0x25d)
@@ -40,7 +41,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     } else {
         info.width = SCREEN_W_PX;
         info.height = SCREEN_H_PX;
-        info.bpp = 8;
+        info.bpp = BPP_PALETTED_8;
     }
 
     m_borrowedDisplayResources = 0;
@@ -78,7 +79,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 
     Snapshot(static_cast<HWND>(window));
 
-    if (mode->bpp == 8) {
+    if (mode->bpp == BPP_PALETTED_8) {
         if (m_directDraw2
                 ->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0)
             != 0) {
@@ -89,11 +90,11 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         m_smackBufMode = 0;
     }
 
-    if (mode->bpp == 0x18) {
+    if (mode->bpp == BPP_RGB_24) {
         HandleError();
         return 0;
     }
-    if (mode->bpp == 0x10) {
+    if (mode->bpp == BPP_RGB_16) {
         if (CheckMode16() == 0) {
             HandleError();
             return 0;
@@ -158,7 +159,7 @@ i32 CMoviePlayer::InitMode(
     m_primary = primary;
     Snapshot(wnd);
     i32 bpp = static_cast<i32>(desc.ddpfPixelFormat.dwRGBBitCount);
-    if (bpp == 8) {
+    if (bpp == BPP_PALETTED_8) {
         if (m_directDraw2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, 0)) {
             HandleError();
             return 0;
@@ -166,11 +167,11 @@ i32 CMoviePlayer::InitMode(
         m_primary->SetPalette(m_palette);
         m_smackBufMode = 0;
     }
-    if (bpp == 24) {
+    if (bpp == BPP_RGB_24) {
         HandleError();
         return 0;
     }
-    if (bpp == 16) {
+    if (bpp == BPP_RGB_16) {
         if (!CheckMode16()) {
             HandleError();
             return 0;

@@ -4,6 +4,7 @@
 
 #include <MfcWin.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Enums.h>
 #include <Gruntz/ChainForward.h>
@@ -96,7 +97,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             BeginPaint(hDlg, &ps);
             SetStretchBltMode(ps.hdc, 3);
             CRezImage* img = static_cast<CRezImage*>(g_previewImage);
-            if (img->m_bitCount == 8) {
+            if (img->m_bitCount == BPP_PALETTED_8) {
                 StretchDIBits(
                     ps.hdc,
                     dx,

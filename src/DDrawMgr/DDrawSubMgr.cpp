@@ -7,6 +7,7 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
@@ -1249,7 +1250,7 @@ i32 CDrawSubWorker::SetGeom(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
-    if (bpp != 8 && bpp != 16 && bpp != 24 && bpp != 32) {
+    if (bpp != BPP_PALETTED_8 && bpp != BPP_RGB_16 && bpp != BPP_RGB_24 && bpp != BPP_RGB_32) {
         return 0;
     }
     m_height = h;

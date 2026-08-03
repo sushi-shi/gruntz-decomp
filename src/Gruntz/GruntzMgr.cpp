@@ -7,6 +7,7 @@
 
 #include <Bute/SymParser.h>
 #include <Crypto/FecCrypt.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -57,6 +58,7 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PortalPath.h>
+#include <Gruntz/QuestLevel.h>
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -360,10 +362,10 @@ i32 CGruntzMgr::GoToNextLevel() {
     m_strWorldFile.Empty();
     CState* st = m_curState;
     i32 next = st->m_levelIndex + 1;
-    if (next > 0x28) {
-        next = 1;
+    if (next > QUESTLEVEL_TRAINING_LAST) {
+        next = QUESTLEVEL_FIRST;
     }
-    if (next <= 0x20 || next >= 0x25) {
+    if (next <= QUESTLEVEL_CAMPAIGN_LAST || next >= QUESTLEVEL_TRAINING_FIRST) {
         st->LeaveState(st->Update());
         if ((static_cast<CPlay*>(st))->LoadByMode(next, 1)) {
             st->EnterState(st->Update());
@@ -383,9 +385,9 @@ i32 CGruntzMgr::GoToPrevLevel() {
     CState* st = m_curState;
     i32 prev = st->m_levelIndex - 1;
     if (prev <= 0) {
-        prev = 0x28;
+        prev = QUESTLEVEL_TRAINING_LAST;
     }
-    if (prev <= 0x20 || prev >= 0x25) {
+    if (prev <= QUESTLEVEL_CAMPAIGN_LAST || prev >= QUESTLEVEL_TRAINING_FIRST) {
         st->LeaveState(st->Update());
         if ((static_cast<CPlay*>(st))->LoadByMode(prev, 1)) {
             st->EnterState(st->Update());
@@ -1099,8 +1101,8 @@ i32 CGruntzMgr::IsMoviePathValid() {
 
 RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
-    if (code > 0 && code <= 0x29) {
-        i32 v = (code == 0x29) ? 1 : code;
+    if (code > 0 && code <= QUESTLEVEL_POST_LAST) {
+        i32 v = (code == QUESTLEVEL_RESTART) ? QUESTLEVEL_FIRST : code;
         PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), v);
     }
 }
@@ -1527,17 +1529,17 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
 // @early-stop
 RVA(0x00091170, 0xad)
 i32 CGruntzMgr::SetColorDepth(i32 depth) {
-    if (depth != 8 && depth != 0x10 && depth != 0x18) {
+    if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16 && depth != BPP_RGB_24) {
         return 0;
     }
     if (m_world == NULL) {
         return 0;
     }
-    if (depth == 8) {
+    if (depth == BPP_PALETTED_8) {
         g_surfaceColorKey = 0;
         return 1;
     }
-    if (depth == 0x10) {
+    if (depth == BPP_RGB_16) {
 
         i32 packed = static_cast<u16>(((0xff >> g_rDown) << g_rUp));
         packed |= static_cast<u16>(((0 >> g_gDown) << g_gUp));
@@ -1545,7 +1547,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
         g_surfaceColorKey = packed;
         return 1;
     }
-    if (depth == 0x18) {
+    if (depth == BPP_RGB_24) {
         g_surfaceColorKey = 0xff0084;
         return 1;
     }
@@ -1582,7 +1584,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     m_colorDepth = mode;
     g_enableTrueColor = 0;
     g_enableHiColor = 0;
-    if (m_colorDepth == 0x10) {
+    if (m_colorDepth == BPP_RGB_16) {
         g_enableHiColor = 1;
     }
 
@@ -1674,7 +1676,7 @@ i32 CGruntzMgr::ResetWorldState() {
 
     CWaitCursor waitCursor;
 
-    if (m_colorDepth == 8) {
+    if (m_colorDepth == BPP_PALETTED_8) {
         if (LoadWorldMode(0x10) == 0) {
             ReportError(static_cast<GruntzCommandId>(0x801f), 0x443);
             return 0;
@@ -2691,7 +2693,7 @@ void CGruntzMgr::Close() {
         }
         m_settings->SetValueDword("Resolution", res);
         m_settings->SetValueDword("Checkpoint_Prompts", m_isCheckpointPrompts);
-        m_settings->SetValueDword("Enable_HiColor", m_colorDepth == 0x10 ? 1 : 0);
+        m_settings->SetValueDword("Enable_HiColor", m_colorDepth == BPP_RGB_16 ? 1 : 0);
         m_settings->SetValueDword("Enable_TrueColor", 0);
     }
     ClearStateStack();
@@ -3033,7 +3035,7 @@ CGruntzMgr::CGruntzMgr() {
     m_reservedcc = 0x1e;
     m_modeW = 0;
     m_modeH = 0;
-    m_colorDepth = 0x10;
+    m_colorDepth = BPP_RGB_16;
     m_inGameDir = 1;
     m_haveRez = false;
     m_haveMoviez = false;

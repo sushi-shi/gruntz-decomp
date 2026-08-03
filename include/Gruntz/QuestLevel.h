@@ -20,18 +20,31 @@
 //   * Every one of the 38 guards also rejects `progress > 0x24`, which is what
 //     puts the campaign's ceiling at 0x24 rather than at 0x20 or 0x28.
 //
-// The four ordinals between 0x20 and 0x25 are not enumerated by any menu page,
-// so nothing here names them.
+// The four ordinals between 0x20 and 0x25 are a real HOLE, not just menu
+// omission. CGruntzMgr's level navigator says so outright: after wrapping, both
+// GoToNextLevel and GoToPrevLevel will only load a level that satisfies
+// `n <= QUESTLEVEL_CAMPAIGN_LAST || n >= QUESTLEVEL_TRAINING_FIRST`, so 0x21 to
+// 0x24 are skipped by construction. That also separates two marks the menu
+// alone could not: 0x20 is the last PLAYABLE campaign level (8 areas x 4), while
+// 0x24 is the highest value the menu still treats as progress.
 GZ_ENUM_BEGIN(QuestLevel)
     QUESTLEVEL_NONE = 0,
     QUESTLEVEL_FIRST = 1,
+    // Last playable campaign level: QUESTLEVEL_PER_AREA * AREA_COUNT.
+    QUESTLEVEL_CAMPAIGN_LAST = 0x20,
     // The highest ordinal the menu will still treat as in-campaign progress.
     // Every stage guard pairs its own lower bound with `> QUESTLEVEL_LAST`.
     QUESTLEVEL_LAST = 0x24,
     QUESTLEVEL_TRAINING_FIRST = 0x25,
     QUESTLEVEL_TRAINING_LAST = 0x28,
     // Stages per area, the step between one area's first level and the next's.
-    QUESTLEVEL_PER_AREA = 4
+    QUESTLEVEL_PER_AREA = 4,
+    // Not a level: CGruntzMgr::Post accepts it as the top of its range and then
+    // rewrites it to QUESTLEVEL_FIRST, so it is the "start over" request.
+    QUESTLEVEL_RESTART = 0x29,
+    // The top of the range CGruntzMgr::Post will accept, which is that sentinel
+    // rather than a level - so the bound gets its own name at the same value.
+    QUESTLEVEL_POST_LAST = QUESTLEVEL_RESTART
 GZ_ENUM_END(QuestLevel)
 
 #endif // GRUNTZ_GRUNTZ_QUESTLEVEL_H

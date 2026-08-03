@@ -1057,7 +1057,10 @@ void CMulti::ReportStatusId(u32 strId, i32 level) {
 RVA(0x000b7f60, 0x52)
 void CMulti::ReportNetError(i32 level) {
     char buf[512];
-    if (Mgr() && g_code != 0x118) {
+    // g_code is the HRESULT's LOW WORD (NetMgrReportError sets it with
+    // `hr & 0xffff`), so the comparison masks the SDK constant the same way.
+    // The guard reads: report the failure unless the user cancelled it.
+    if (Mgr() && g_code != (DPERR_USERCANCEL & 0xffff)) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
         ReportVersionMsg(buf, level);
     }

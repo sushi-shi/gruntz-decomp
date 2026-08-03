@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDSurface.h>
 
 #include <ComOutRef.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WallProject.h>
@@ -1428,13 +1429,13 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
         i32 depth = 0;
         switch (desc->ddpfPixelFormat.dwRGBBitCount) {
             case DDBD_32:
-                depth = 32;
+                depth = BPP_RGB_32;
                 break;
             case DDBD_16:
-                depth = 16;
+                depth = BPP_RGB_16;
                 break;
             case DDBD_8:
-                depth = 8;
+                depth = BPP_PALETTED_8;
                 break;
             case DDBD_4:
                 depth = 4;
@@ -1461,13 +1462,13 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 depth = 0;
     switch (desc->ddpfPixelFormat.dwRGBBitCount) {
         case DDBD_32:
-            depth = 32;
+            depth = BPP_RGB_32;
             break;
         case DDBD_16:
-            depth = 16;
+            depth = BPP_RGB_16;
             break;
         case DDBD_8:
-            depth = 8;
+            depth = BPP_PALETTED_8;
             break;
         case DDBD_4:
             depth = 4;
@@ -1487,7 +1488,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
         depth,
         m_pitch
     );
-    if (depth == 16) {
+    if (depth == BPP_RGB_16) {
         DDrawLogLine(
             "16-bit color bitmasks are: R = %04X, G = %04X, B = %04X\n",
             desc->ddpfPixelFormat.dwRBitMask,

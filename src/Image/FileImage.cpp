@@ -2,6 +2,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
@@ -129,7 +130,8 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
-    if (width == m_width && m_height == height && (bitcount == 8 || bitcount == 0x18)) {
+    if (width == m_width && m_height == height
+        && (bitcount == BPP_PALETTED_8 || bitcount == BPP_RGB_24)) {
         i32 remap = 0;
         i32 palBpp = pal->m_palBpp;
         if (palBpp != bitcount) {
@@ -137,7 +139,7 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
         }
         if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
             void* palette = 0;
-            if (remap && bitcount == 8) {
+            if (remap && bitcount == BPP_PALETTED_8) {
                 u8* src =
                     static_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
                 i32 i = 0;
@@ -263,7 +265,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (*path == 0) {
         return 0;
     }
-    if (m_bitDepth != 8) {
+    if (m_bitDepth != BPP_PALETTED_8) {
         return 0;
     }
     CFileImagePal* src = static_cast<CFileImagePal*>(pal);
@@ -352,7 +354,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     if (*static_cast<char*>(path) == 0) {
         return 0;
     }
-    if (this->m_bitDepth != 0x10) {
+    if (this->m_bitDepth != BPP_RGB_16) {
         return 0;
     }
 
@@ -445,7 +447,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     if (*path == 0) {
         return 0;
     }
-    if (m_bitDepth != 0x18) {
+    if (m_bitDepth != BPP_RGB_24) {
         return 0;
     }
 
@@ -640,9 +642,9 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
 
         i32 bitcount = 0;
         if (planes == 1) {
-            bitcount = 8;
+            bitcount = BPP_PALETTED_8;
         } else if (planes == 3) {
-            bitcount = 0x18;
+            bitcount = BPP_RGB_24;
         }
         if (bitcount != 0 && m_width == width && m_height == height) {
             i32 remap = 0;
@@ -652,7 +654,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
             }
             if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
                 void* palette = 0;
-                if (remap && bitcount == 8) {
+                if (remap && bitcount == BPP_PALETTED_8) {
                     u8* src = hdr->m_pixels + size - 0x380;
                     i32 i = 0;
                     do {
@@ -675,7 +677,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
                 i32 ok;
                 void* decoded = 0;
                 if (!remap) {
-                    if (bitcount == 8) {
+                    if (bitcount == BPP_PALETTED_8) {
                         if (!DecodeRun8(pixels)) {
                             return 0;
                         }
@@ -685,7 +687,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
                         }
                     }
                 } else {
-                    if (bitcount == 8) {
+                    if (bitcount == BPP_PALETTED_8) {
                         decoded = operator new(width * height);
                         if (decoded == NULL) {
                             return 0;

@@ -4,6 +4,7 @@
 
 #include <Bute/SymTab.h>
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
@@ -1090,10 +1091,10 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
         CImage* frame = GetAt(i);
         if (frame) {
             i32 size = frame->m_height * frame->m_width;
-            if (frame->m_surface && frame->m_surface->m_bitDepth == 0x10) {
+            if (frame->m_surface && frame->m_surface->m_bitDepth == BPP_RGB_16) {
                 size += size;
             }
-            if (frame->m_surface && frame->m_surface->m_bitDepth == 0x18) {
+            if (frame->m_surface && frame->m_surface->m_bitDepth == BPP_RGB_24) {
                 size = size * 3;
             }
             if (frame->m_owned) {

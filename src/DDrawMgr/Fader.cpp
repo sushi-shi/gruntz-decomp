@@ -2,6 +2,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
@@ -1413,7 +1414,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
 
     m_useLut = pInit->m_useLut;
-    if (m_surfA->m_bitDepth != 8) {
+    if (m_surfA->m_bitDepth != BPP_PALETTED_8) {
         m_useLut = 0;
     }
 

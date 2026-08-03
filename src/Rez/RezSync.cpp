@@ -10,6 +10,7 @@
 #include <Bute/SymParser.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -267,7 +268,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (g_enableEmulation) {
         flags |= 0x10;
     }
-    m_colorDepth = 0x10;
+    m_colorDepth = BPP_RGB_16;
     if (!world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, 0x10, flags)) {
         ReportWorldStatus(0x407);
         return 0;

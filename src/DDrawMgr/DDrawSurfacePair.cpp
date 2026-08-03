@@ -7,6 +7,7 @@
 #include <AddrWord.h>
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/AniRecord.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -374,7 +375,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
                 return 0;
             }
         }
-        if (w > 0 && h > 0 && (8 == bpp || bpp == 16 || bpp == 24 || 32 == bpp)) {
+        if (w > 0 && h > 0 && (8 == bpp || bpp == BPP_RGB_16 || bpp == BPP_RGB_24 || 32 == bpp)) {
             m_srcRect[0] = 0;
             m_srcRect[1] = 0;
             m_width = w;
@@ -569,7 +570,8 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     if (!m_surface->IsValid()) {
         return 0;
     }
-    if (w > 0 && h > 0 && (bpp == 8 || bpp == 16 || bpp == 24 || bpp == 32)) {
+    if (w > 0 && h > 0
+        && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24 || bpp == BPP_RGB_32)) {
         m_bpp = bpp;
         m_width = w;
         m_height = h;

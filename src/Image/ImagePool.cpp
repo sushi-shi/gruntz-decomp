@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirPal.h>
 #include <Enums.h>
@@ -317,7 +318,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
     m_width = width;
     m_height = (height < 0) ? -height : height;
     m_bitCount = bitcount;
-    if (bitcount == 8) {
+    if (bitcount == BPP_PALETTED_8) {
         m_stride = ((width + 3) / 4) * 4;
     } else {
         m_stride = width;
@@ -339,7 +340,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
 
     u16* pal = m_pal;
     void* pixels;
-    if (m_bitCount == 8) {
+    if (m_bitCount == BPP_PALETTED_8) {
         for (i32 i = 0; i < 256; i++) {
             *pal++ = static_cast<u16>(i);
         }
@@ -492,7 +493,7 @@ i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     i32 height = ih->biHeight;
     i32 bitcount = ih->biBitCount;
     void* src = static_cast<u8*>(buf) + sizeof(BITMAPINFOHEADER) + 4;
-    if (bitcount == 8) {
+    if (bitcount == BPP_PALETTED_8) {
         src = static_cast<u8*>(buf) + ih->biSize + 0x400;
     }
     i32 r = DecodeBlit(src, dc, width, height, bitcount, ctrl);
