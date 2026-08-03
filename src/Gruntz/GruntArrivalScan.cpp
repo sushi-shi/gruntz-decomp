@@ -9,6 +9,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GameLevel.h>
 #include <Wap32/ZVec.h>
@@ -449,7 +450,7 @@ i32 CGrunt::WanderStep() {
             bool reset;
             if (m_stamina >= 0x64) {
                 if (FindGridNeighbor(1) != 0) {
-                    m_defenderState = 5;
+                    m_defenderState = AISTATE_RETREAT;
                     return 1;
                 }
                 reset = !(flag != 0 && g == 0);
@@ -464,11 +465,11 @@ i32 CGrunt::WanderStep() {
                 ResetEntranceAnimation(1, 0, 0);
             }
         }
-        m_defenderState = 5;
+        m_defenderState = AISTATE_RETREAT;
     }
 
     switch (m_defenderState) {
-        case 0:
+        case AISTATE_SEEK:
             if (g != 0) {
                 if (m_poweredUp == 0 && m_stamina >= 0x64
                     && g->m_object->m_screenX == g->m_lastTilePx.m_x
@@ -495,7 +496,7 @@ i32 CGrunt::WanderStep() {
                         }
                         m_coordList.RemoveAll();
                     }
-                    m_defenderState = 5;
+                    m_defenderState = AISTATE_RETREAT;
                     return 1;
                 }
                 if (static_cast<u32>(m_dwell) > 0x3e8) {
@@ -507,7 +508,7 @@ i32 CGrunt::WanderStep() {
                             SetEntrancePos(1, 1);
                             m_arrivalCell.m_x = g->m_tileOwnerHi;
                             m_arrivalCell.m_y = g->m_tileOwnerLo;
-                            m_defenderState = 1;
+                            m_defenderState = AISTATE_CHASE;
                             if (CGameLevel::PointInBounds(
                                     &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                                     m_object->m_screenX,
@@ -524,18 +525,18 @@ i32 CGrunt::WanderStep() {
             }
             goto timeout;
 
-        case 1: {
+        case AISTATE_CHASE: {
             CGrunt* slot = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* active = m_tileMgr->FindNearestEnemy(this);
             if (active != 0 && active != slot) {
                 m_arrivalCell.m_x = -1;
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (slot == 0 || slot->m_entranceCommitted == 0
                 || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (static_cast<u32>(m_dwell) > 0x1f4) {
@@ -582,13 +583,13 @@ i32 CGrunt::WanderStep() {
                 }
                 m_coordList.RemoveAll();
             }
-            m_defenderState = 5;
+            m_defenderState = AISTATE_RETREAT;
             return 1;
         }
 
-        case 2: {
+        case AISTATE_ATTACK: {
             if (m_poweredUp == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             CGrunt* slot = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
@@ -634,21 +635,21 @@ i32 CGrunt::WanderStep() {
                 }
                 m_coordList.RemoveAll();
             }
-            m_defenderState = 5;
+            m_defenderState = AISTATE_RETREAT;
             m_dwell = 0x1f4;
             return 1;
         ph1:
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             m_dwell = 0x1f4;
             return 1;
         }
 
-        case 5: {
+        case AISTATE_RETREAT: {
             if (m_combatActive != 0) {
                 return 1;
             }
             if (m_stamina >= 0x64) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (CoordCount() != 0) {
@@ -1048,7 +1049,7 @@ i32 CGrunt::UpdateArrival() {
     }
 
     switch (this->m_defenderState) {
-        case 0:
+        case AISTATE_SEEK:
             if (g != 0) {
                 if (this->m_stamina > 99) {
                     i32 x = g->m_object->m_screenX;
@@ -1079,7 +1080,7 @@ i32 CGrunt::UpdateArrival() {
                             SetEntrancePos(1, 1);
                             this->m_arrivalCell.m_x = g->m_tileOwnerHi;
                             this->m_arrivalCell.m_y = g->m_tileOwnerLo;
-                            this->m_defenderState = 1;
+                            this->m_defenderState = AISTATE_CHASE;
                             i32 r = CGameLevel::PointInBounds(
                                 &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                                 this->m_object->m_screenX,
@@ -1151,7 +1152,7 @@ i32 CGrunt::UpdateArrival() {
                 this->m_dwell = 0;
             }
             break;
-        case 1: {
+        case AISTATE_CHASE: {
             CGrunt* slot =
                 m_tileMgr->m_grid[this->m_arrivalCell.m_x * TM_GRID_COLS + this->m_arrivalCell.m_y];
             i32 cur = m_tileMgr->FindNearestEnemy(this) ? 1 : 0;
@@ -1160,7 +1161,7 @@ i32 CGrunt::UpdateArrival() {
             if (found == 0 || found == slot) {
                 if (slot == 0 || slot->m_entranceCommitted == 0
                     || slot->GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
-                    this->m_defenderState = 0;
+                    this->m_defenderState = AISTATE_SEEK;
                 } else {
                     StepArrivalDrop(
                         slot->m_lastTilePx.m_x,
@@ -1181,18 +1182,18 @@ i32 CGrunt::UpdateArrival() {
                             slot->m_lastTilePx.m_x,
                             slot->m_lastTilePx.m_y
                         );
-                        this->m_defenderState = 2;
+                        this->m_defenderState = AISTATE_ATTACK;
                     }
                 }
             } else {
                 this->m_arrivalCell.m_x = -1;
-                this->m_defenderState = 0;
+                this->m_defenderState = AISTATE_SEEK;
                 this->m_arrivalCell.m_y = -1;
             }
             break;
         }
-        case 2:
-            this->m_defenderState = 1;
+        case AISTATE_ATTACK:
+            this->m_defenderState = AISTATE_CHASE;
             break;
     }
 
@@ -1519,7 +1520,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
     }
 
     switch (m_defenderState) {
-        case 0: {
+        case AISTATE_SEEK: {
             CGrunt* o = m_tileMgr->FindNearestEnemy(this);
             if (o != 0) {
                 if (m_poweredUp != 0) {
@@ -1601,12 +1602,12 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             }
         }
 
-        case 1: {
+        case AISTATE_CHASE: {
             CGrunt* o = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != 0 && g != o) {
                 m_arrivalCell.m_x = -1;
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
@@ -1644,15 +1645,15 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 o->m_lastTilePx.m_x,
                 o->m_lastTilePx.m_y
             );
-            m_defenderState = 2;
+            m_defenderState = AISTATE_ATTACK;
             return 1;
         }
 
-        case 2:
-            m_defenderState = 0;
+        case AISTATE_ATTACK:
+            m_defenderState = AISTATE_SEEK;
             return 1;
 
-        case 3: {
+        case AISTATE_RETURN: {
             StepArrivalDrop(
                 m_defenderPx.m_x - 0x20,
                 m_defenderPx.m_y - 0x20,
@@ -1663,7 +1664,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             );
             if (m_object->m_screenX == m_defenderPx.m_x - 0x20
                 && m_object->m_screenY == m_defenderPx.m_y - 0x20) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             CGrunt* o = m_tileMgr->FindNearestEnemy(this);
@@ -1680,14 +1681,14 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                     o->m_lastTilePx.m_x,
                     o->m_lastTilePx.m_y
                 );
-                m_defenderState = 2;
+                m_defenderState = AISTATE_ATTACK;
             }
             if (GruntInRadius(o->m_tileOwnerHi, o->m_tileOwnerLo) == 0) {
                 goto tail;
             }
             m_arrivalCell.m_x = o->m_tileOwnerHi;
             m_arrivalCell.m_y = o->m_tileOwnerLo;
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             {
                 CWwdGameObjectA* h = m_object;
                 i32 x = h->m_screenX;
@@ -1705,7 +1706,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
     }
 
 resetState:
-    m_defenderState = 3;
+    m_defenderState = AISTATE_RETURN;
     return 1;
 
 tail:
@@ -1716,9 +1717,9 @@ tail:
 RVA(0x000f26f0, 0x106)
 i32 CGrunt::ResolveArrivalNeighbor() {
     switch (m_defenderState) {
-        case 0:
+        case AISTATE_SEEK:
             return 1;
-        case 2:
+        case AISTATE_ATTACK:
             break;
         default:
             return 1;
@@ -1738,7 +1739,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
         return 1;
     }
 
-    m_defenderState = 0;
+    m_defenderState = AISTATE_SEEK;
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     if (occ == 0) {
         return 1;
@@ -1774,14 +1775,14 @@ i32 CGrunt::StepArrivalDefense() {
     m_defenderPx.m_y = m_lastTilePx.m_y;
     CGrunt* occ;
     switch (m_defenderState) {
-        case 2:
+        case AISTATE_ATTACK:
             if (m_poweredUp == 0) {
-                m_defenderState = 1;
+                m_defenderState = AISTATE_CHASE;
                 return 1;
             }
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
@@ -1826,11 +1827,11 @@ i32 CGrunt::StepArrivalDefense() {
             return 1;
         c2_occcheck:
             if (occ == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
         c2_miss:
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             {
                 CWwdGameObjectA* h = m_object;
                 i32 vx = h->m_screenX;
@@ -1842,25 +1843,25 @@ i32 CGrunt::StepArrivalDefense() {
             }
             return 1;
 
-        case 1: {
+        case AISTATE_CHASE: {
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != 0 && g != occ) {
                 m_arrivalCell.m_x = -1;
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (occ == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (occ->m_entranceCommitted == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (static_cast<u32>(m_dwell) > 0x1f4) {
@@ -1890,7 +1891,7 @@ i32 CGrunt::StepArrivalDefense() {
                     occ->m_object->m_screenX,
                     occ->m_object->m_screenY
                 );
-                m_defenderState = 2;
+                m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
             if (occ->m_object->m_screenX == occ->m_lastTilePx.m_x
@@ -1902,11 +1903,11 @@ i32 CGrunt::StepArrivalDefense() {
                     occ->m_lastTilePx.m_y
                 );
             }
-            m_defenderState = 2;
+            m_defenderState = AISTATE_ATTACK;
             return 1;
         }
 
-        case 0:
+        case AISTATE_SEEK:
             occ = m_tileMgr->FindNearestEnemy(this);
             if (occ == 0) {
                 goto L_f308a;
@@ -1956,7 +1957,7 @@ i32 CGrunt::StepArrivalDefense() {
                 SetEntrancePos(1, 1);
                 m_arrivalCell.m_x = occ->m_tileOwnerHi;
                 m_arrivalCell.m_y = occ->m_tileOwnerLo;
-                m_defenderState = 1;
+                m_defenderState = AISTATE_CHASE;
                 CWwdGameObjectA* h = m_object;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(rect, h->m_screenX, h->m_screenY) == 0) {
@@ -2261,7 +2262,7 @@ i32 CGrunt::PhaseStep() {
         i32 gy = (pb.m_y >> 5) - m_arrivalCell.m_y + ay;
         TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
-        m_defenderState = 4;
+        m_defenderState = AISTATE_COOLDOWN;
     }
     if (m_defenderState == 0x1a) {
         GetScreenPos(&pa);
@@ -2273,23 +2274,23 @@ i32 CGrunt::PhaseStep() {
         GetScreenPos(&pb);
         i32 gy = (pb.m_y >> 5) - m_arrivalCell.m_y + ay;
         TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
-        m_defenderState = 0;
+        m_defenderState = AISTATE_SEEK;
         return 1;
     }
 
-    if (m_defenderState == 0) {
+    if (m_defenderState == AISTATE_SEEK) {
         goto state0;
     }
-    if (m_defenderState == 2) {
+    if (m_defenderState == AISTATE_ATTACK) {
         goto state2;
     }
-    if (m_defenderState != 4) {
+    if (m_defenderState != AISTATE_COOLDOWN) {
         goto common;
     }
     if (m_dwell <= 0x1f40) {
         return 1;
     }
-    m_defenderState = 0;
+    m_defenderState = AISTATE_SEEK;
     return 1;
 
 state2: {
@@ -2348,7 +2349,7 @@ state2: {
         }
         if ((flag & 0x939) == 0) {
             if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
-                m_defenderState = 4;
+                m_defenderState = AISTATE_COOLDOWN;
                 m_dwell = 0;
                 goto build_tail;
             }
@@ -2382,7 +2383,7 @@ state0: {
         );
         m_arrivalCell.m_x = nb->m_object->m_screenX >> 5;
         m_arrivalCell.m_y = nb->m_object->m_screenY >> 5;
-        m_defenderState = 2;
+        m_defenderState = AISTATE_ATTACK;
         goto common;
     }
     if (m_dwell <= 0x1f4) {
@@ -2430,8 +2431,12 @@ s0_reset:
 }
 
 common: {
+    // 0x19 / 0x1a are PhaseStep-local: set here when a coord on the path lands on
+    // a cell carrying flag 0x20, consumed at the top of the next tick, which
+    // mirrors the grunt to the far side of that cell. No other function reads
+    // them, so they have no cross-checkable meaning and stay literals.
     i32 st = m_defenderState;
-    if (st != 4 && st != 0x19 && CoordCount() >= 2) {
+    if (st != AISTATE_COOLDOWN && st != 0x19 && CoordCount() >= 2) {
         CoordNode* head = CoordHead();
         i32 bx = head->m_coord->m_x;
         i32 by = head->m_coord->m_y;
@@ -2559,7 +2564,7 @@ i32 CGrunt::SeekTarget() {
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
                 slot->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
-                this->m_defenderState = 4;
+                this->m_defenderState = AISTATE_COOLDOWN;
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
@@ -2584,7 +2589,7 @@ i32 CGrunt::SeekTarget() {
     }
     if (reason == 0) {
         if (this->CoordCount() == 0) {
-            if (this->m_defenderState != 0) {
+            if (this->m_defenderState != AISTATE_SEEK) {
                 return 1;
             }
             i32 best = 0x7fffffff;
@@ -2639,7 +2644,7 @@ i32 CGrunt::SeekTarget() {
             this->m_dwell = 0;
             return 1;
         }
-        if (this->m_defenderState != 0) {
+        if (this->m_defenderState != AISTATE_SEEK) {
             return 1;
         }
         if (static_cast<u32>(this->m_dwell) < 0x3e9) {
@@ -2761,14 +2766,14 @@ i32 CGrunt::StepArrivalDefenseLean() {
     }
     CGrunt* occ;
     switch (m_defenderState) {
-        case 2:
+        case AISTATE_ATTACK:
             if (m_poweredUp == 0) {
-                m_defenderState = 1;
+                m_defenderState = AISTATE_CHASE;
                 return 1;
             }
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
@@ -2808,15 +2813,15 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
         }
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             m_dwell = 0x1f4;
             return 1;
         c2_occcheck:
             if (occ == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             m_dwell = 0x1f4;
             {
                 CWwdGameObjectA* h = m_object;
@@ -2829,25 +2834,25 @@ i32 CGrunt::StepArrivalDefenseLean() {
             }
             return 1;
 
-        case 1: {
+        case AISTATE_CHASE: {
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != 0 && g != occ) {
                 m_arrivalCell.m_x = -1;
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (occ == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (occ->m_entranceCommitted == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (static_cast<u32>(m_dwell) > 0x1f4) {
@@ -2882,11 +2887,11 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 occ->m_lastTilePx.m_x,
                 occ->m_lastTilePx.m_y
             );
-            m_defenderState = 2;
+            m_defenderState = AISTATE_ATTACK;
             return 1;
         }
 
-        case 0:
+        case AISTATE_SEEK:
             occ = m_tileMgr->FindNearestEnemy(this);
             if (rand() % 0x64 == 0 && m_health > 0x1a && occ != 0 && m_stamina >= 0x64
                 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {

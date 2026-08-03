@@ -7,6 +7,8 @@
 #include <Net/NetLobby.h>
 #include <Wap32/Wap32.h>
 
+#include <mmsystem.h>
+
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
 
@@ -26,15 +28,15 @@ i32 CGruntzWnd::HandleWindowCommand(i32, i32, i32) {
 RVA(0x00094790, 0xcd)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case 0x14:
+        case WM_ERASEBKGND:
             return 1;
-        case 0x112: {
-            if (wParam == 0xf100) {
+        case WM_SYSCOMMAND: {
+            if (wParam == SC_KEYMENU) {
                 return 1;
             }
             BOOL(WINAPI * isIconic)(HWND) = IsIconic;
             i32 mm = wParam & 0xfff0;
-            if (mm == 0xf140 || mm == 0xf170) {
+            if (mm == SC_SCREENSAVE || mm == SC_MONITORPOWER) {
                 if (!isIconic(m_hwnd)) {
                     return 1;
                 }
@@ -45,10 +47,10 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (NetLobby::g_curDlg == 0) {
                 break;
             }
-            SendMessageA(NetLobby::g_curDlg, 0x112, wParam, lParam);
+            SendMessageA(NetLobby::g_curDlg, WM_SYSCOMMAND, wParam, lParam);
             break;
         }
-        case 0x3b9: {
+        case MM_MCINOTIFY: {
             CGruntzMgr* mgr = GameMgr();
             if (mgr == 0) {
                 return 1;
@@ -57,7 +59,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 return 1;
             }
             EmptyMsgHook(wParam, lParam);
-            if (wParam != 1) {
+            if (wParam != MCI_NOTIFY_SUCCESSFUL) {
                 return 1;
             }
             GameMgr()->RefreshGameClock();

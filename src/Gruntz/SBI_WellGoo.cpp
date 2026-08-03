@@ -80,7 +80,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
     if (m_frame->m_owned != 0) {
-        m_frame->m_owned->Select(0xa, 0);
+        m_frame->m_owned->Select(SHADE_PAL_16, 0);
     }
     f = m_frame;
     if (node != 0 && f->m_owned != 0) {
@@ -99,7 +99,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
     if (m_baseFrame->m_owned != 0) {
-        m_baseFrame->m_owned->Select(0xa, 0);
+        m_baseFrame->m_owned->Select(SHADE_PAL_16, 0);
     }
     f = m_baseFrame;
     if (node != 0 && f->m_owned != 0) {
@@ -114,7 +114,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
     if (m_fgFrame->m_owned != 0) {
-        m_fgFrame->m_owned->Select(0xa, 0);
+        m_fgFrame->m_owned->Select(SHADE_PAL_16, 0);
     }
     f = m_fgFrame;
     if (node != 0 && f->m_owned != 0) {
@@ -265,21 +265,21 @@ i32 CSBI_WellGoo::SerializeFields(
             }
             CImage* fr = m_frame;
             if (fr->m_owned != 0) {
-                fr->m_owned->Select(0xa, 0);
+                fr->m_owned->Select(SHADE_PAL_16, 0);
             }
             if (node != 0 && m_frame->m_owned != 0) {
                 m_frame->m_owned->m_palDescr = node;
             }
             fr = m_baseFrame;
             if (fr->m_owned != 0) {
-                fr->m_owned->Select(0xa, 0);
+                fr->m_owned->Select(SHADE_PAL_16, 0);
             }
             if (node != 0 && m_baseFrame->m_owned != 0) {
                 m_baseFrame->m_owned->m_palDescr = node;
             }
             fr = m_fgFrame;
             if (fr->m_owned != 0) {
-                fr->m_owned->Select(0xa, 0);
+                fr->m_owned->Select(SHADE_PAL_16, 0);
             }
             if (node != 0 && m_fgFrame->m_owned != 0) {
                 m_fgFrame->m_owned->m_palDescr = node;

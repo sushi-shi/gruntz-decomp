@@ -48,11 +48,11 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
      0,
      AfxSig_vOWNER,
      reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)}, // API-forced MFC seam.
-    ON_BN_CLICKED(0x501, CBattlezDlg::ApplyColorSlot0) ON_BN_CLICKED(
-        0x503,
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CBattlezDlg::ApplyColorSlot0) ON_BN_CLICKED(
+        CTRL_PLAYER_COLOR1,
         CBattlezDlg::ApplyColorSlot1
-    ) ON_BN_CLICKED(0x505, CBattlezDlg::ApplyColorSlot2)
-        ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3) ON_BN_CLICKED(
+    ) ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CBattlezDlg::ApplyColorSlot2)
+        ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CBattlezDlg::ApplyColorSlot3) ON_BN_CLICKED(
             0x42b,
             CBattlezDlg::ShowCustomDlg
         ) ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild)
@@ -527,16 +527,16 @@ CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
     switch (index) {
         case 0:
-            result = GetDlgItem(0x501);
+            result = GetDlgItem(CTRL_PLAYER_COLOR0);
             break;
         case 1:
-            result = GetDlgItem(0x503);
+            result = GetDlgItem(CTRL_PLAYER_COLOR1);
             break;
         case 2:
-            result = GetDlgItem(0x505);
+            result = GetDlgItem(CTRL_PLAYER_COLOR2);
             break;
         case 3:
-            result = GetDlgItem(0x507);
+            result = GetDlgItem(CTRL_PLAYER_COLOR3);
             break;
     }
     return result;
@@ -659,7 +659,7 @@ void CBattlezDlg::ApplyColorSlot0() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(0, dlg.m_pickedColor)) {
             RefreshOptionState();
-            GetDlgItem(0x501)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(0, 1);
         }
     }
 }
@@ -670,7 +670,7 @@ void CBattlezDlg::ApplyColorSlot1() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(1, dlg.m_pickedColor)) {
             RefreshOptionState();
-            GetDlgItem(0x503)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(0, 1);
         }
     }
 }
@@ -681,7 +681,7 @@ void CBattlezDlg::ApplyColorSlot2() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(2, dlg.m_pickedColor)) {
             RefreshOptionState();
-            GetDlgItem(0x505)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(0, 1);
         }
     }
 }
@@ -692,7 +692,7 @@ void CBattlezDlg::ApplyColorSlot3() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(3, dlg.m_pickedColor)) {
             RefreshOptionState();
-            GetDlgItem(0x507)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(0, 1);
         }
     }
 }
@@ -779,7 +779,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
     i32 bDraw = 0;
     switch (nIDCtl) {
-        case 0x501:
+        case CTRL_PLAYER_COLOR0:
             if (GetCtrlD(0)->IsWindowEnabled()) {
                 switch (m_slots->m_options[0].m_colorIndex) {
                     case TINT_DKBLUE:
@@ -840,7 +840,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             }
             bDraw = 1;
             break;
-        case 0x503:
+        case CTRL_PLAYER_COLOR1:
             if (GetCtrlD(1)->IsWindowEnabled()) {
                 switch (m_slots->m_options[1].m_colorIndex) {
                     case TINT_DKBLUE:
@@ -901,7 +901,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             }
             bDraw = 1;
             break;
-        case 0x505:
+        case CTRL_PLAYER_COLOR2:
             if (GetCtrlD(2)->IsWindowEnabled()) {
                 switch (m_slots->m_options[2].m_colorIndex) {
                     case TINT_DKBLUE:
@@ -962,7 +962,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             }
             bDraw = 1;
             break;
-        case 0x507:
+        case CTRL_PLAYER_COLOR3:
             if (GetCtrlD(3)->IsWindowEnabled()) {
                 switch (m_slots->m_options[3].m_colorIndex) {
                     case TINT_DKBLUE:

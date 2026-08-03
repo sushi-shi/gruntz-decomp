@@ -46,7 +46,7 @@ public:
     i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);
     i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip);
 
-    void Select(i32 mode, CShadeTable* descr);
+    void Select(ShadeMode mode, CShadeTable* descr);
 
     void BlitCopyForward(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
     void BlitCopyMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
@@ -66,7 +66,7 @@ public:
     i32 m_height;
     u8* m_rleData;
     u32 m_rleLen;
-    i32 m_drawType;
+    ShadeMode m_drawType;
     i32 m_light;
     CShadeTable* m_palDescr;
 

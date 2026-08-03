@@ -1217,12 +1217,12 @@ void CGruntzMgr::CheatSkeletonToggle() {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
                     switch (fmt->m_drawType) {
-                        case 2:
-                            set->SetAllTypes(1);
+                        case SHADE_DST_BY_SRC:
+                            set->SetAllTypes(SHADE_COPY);
                             AppendChatMessage(const_cast<char*>("Back from the dead?"));
                             break;
                         default:
-                            set->SetAllTypes(2);
+                            set->SetAllTypes(SHADE_DST_BY_SRC);
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
@@ -1265,13 +1265,13 @@ void CGruntzMgr::CheatEclipseToggle() {
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
-                    i32 st = fmt->m_drawType;
-                    if (st != 3) {
-                        set->SetAllTypes(3);
+                    ShadeMode st = fmt->m_drawType;
+                    if (st != SHADE_DST_BY_LEVEL) {
+                        set->SetAllTypes(SHADE_DST_BY_LEVEL);
                         set->SetAllLightLevels(rand() % 256);
                         AppendChatMessage(const_cast<char*>("Me and my..."));
                     } else {
-                        set->SetAllTypes(1);
+                        set->SetAllTypes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
                     CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
@@ -1927,7 +1927,7 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
 
     IDirectSound* dsound = m_world->m_soundStream ? m_world->m_soundStream->m_device : 0;
     if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
-        if (player.Open(m_strMoviePath, arg, 0, m_isInterlaced != 0, 0, 0)) {
+        if (player.Open(m_strMoviePath, arg, MOVIE_TILE, m_isInterlaced != 0, 0, 0)) {
             m_modalBusy = 1;
             player.Pump(1, 1);
             m_modalBusy = 0;

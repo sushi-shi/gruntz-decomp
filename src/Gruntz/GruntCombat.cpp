@@ -554,7 +554,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
         g_gameReg->m_spriteFactory->GetSel(m_moveIcon, m_entranceReason >= PICKUP_BABYWALKER);
     CWwdGameObjectA* h = m_object;
     h->m_drawActive = 1;
-    h->m_drawFillCmd = 0xa;
+    h->m_drawFillCmd = SHADE_PAL_16;
     h->m_drawFillArg = sel;
 }
 

@@ -271,7 +271,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     CShadeTable* sel = g_gameReg->m_logicPump->m_tables[5];
     o->m_drawActive = 1;
-    o->m_drawFillCmd = 7;
+    o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     o->m_drawFillArg = sel;
     m_lastDropTime = 0;
     m_dropInterval = 0;
@@ -442,7 +442,7 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
             CWwdGameObjectA* o = m_object;
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
-            o->m_drawFillCmd = 7;
+            o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
             break;
         }
     }
@@ -649,7 +649,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     m_wwdObject->m_flags |= 0x2000002;
     m_object->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
     m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 7;
+    m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     if (m_object->m_sortKey != 0xcf84f) {
         m_object->m_sortKey = 0xcf84f;
         m_object->m_flags |= 0x20000;
@@ -717,7 +717,7 @@ i32 CDroppedObjectShadow::SerializeMove(
         CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
-        o->m_drawFillCmd = 7;
+        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
         o->m_drawFillArg = fill;
     }
     return 1;

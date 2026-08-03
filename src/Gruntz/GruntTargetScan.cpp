@@ -6,6 +6,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -192,7 +193,7 @@ i32 CGrunt::ScanNearestTarget() {
     }
 
     switch (m_defenderState) {
-        case 0: {
+        case AISTATE_SEEK: {
 
             if (best == 0) {
                 goto L_wander;
@@ -257,7 +258,7 @@ i32 CGrunt::ScanNearestTarget() {
             SetEntrancePos(1, 1);
             m_arrivalCell.m_x = best->m_tileOwnerHi;
             m_arrivalCell.m_y = best->m_tileOwnerLo;
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             {
                 if (CGameLevel::PointInBounds(
                         &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
@@ -331,11 +332,11 @@ i32 CGrunt::ScanNearestTarget() {
             m_dwell = 0;
             return 1;
         }
-        case 1: {
+        case AISTATE_CHASE: {
             CGrunt* sg = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (best != 0 && best != sg) {
                 m_arrivalCell.m_x = -1;
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
@@ -382,13 +383,13 @@ i32 CGrunt::ScanNearestTarget() {
                 sg->m_lastTilePx.m_x,
                 sg->m_lastTilePx.m_y
             );
-            m_defenderState = 2;
+            m_defenderState = AISTATE_ATTACK;
             return 1;
         L_clearMode:
-            m_defenderState = 0;
+            m_defenderState = AISTATE_SEEK;
             return 1;
         }
-        case 2: {
+        case AISTATE_ATTACK: {
             if (m_poweredUp != 0) {
                 CGrunt* sg =
                     m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
@@ -424,14 +425,14 @@ i32 CGrunt::ScanNearestTarget() {
                     sg->m_lastTilePx.m_x,
                     sg->m_lastTilePx.m_y
                 );
-                m_defenderState = 2;
+                m_defenderState = AISTATE_ATTACK;
                 return 1;
             L_setLock:
-                m_defenderState = 1;
+                m_defenderState = AISTATE_CHASE;
                 m_dwell = 0x1f4;
                 return 1;
             }
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             m_dwell = 0x1f4;
             return 1;
         }

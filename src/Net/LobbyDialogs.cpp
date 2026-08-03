@@ -49,13 +49,13 @@ namespace NetLobby {
             return 1;
         }
         switch (msg) {
-            case 0x110:
+            case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeHostWaitDialog(hWnd, g_curMulti);
                 GetAsyncKeyState(0x13);
                 return 1;
-            case 0x111:
+            case WM_COMMAND:
                 if (wParam == 0x4d2 || wParam == 2) {
                     KillTimer(hWnd, 1);
                     g_curMulti->SendNetStat(0x402, 0x4d2, 1);
@@ -67,7 +67,7 @@ namespace NetLobby {
                     return 1;
                 }
                 break;
-            case 0x113:
+            case WM_TIMER:
                 if (GetAsyncKeyState(0x13) & 0x80000001) {
                     PostMessageA(hWnd, 0x111, 0x4d2, 0);
                     return 1;
@@ -98,18 +98,18 @@ namespace NetLobby {
             return 1;
         }
         switch (msg) {
-            case 0x110:
+            case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeJoinWaitDialog(hWnd, g_curMulti);
                 return 1;
-            case 0x111:
+            case WM_COMMAND:
                 if (wParam == 0x4c6) {
                     NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
-            case 0x113:
+            case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateJoinWaitDialog(hWnd, g_curMulti);
                 if (g_activePlayerCount) {
@@ -141,12 +141,12 @@ namespace NetLobby {
             return 1;
         }
         switch (msg) {
-            case 0x110:
+            case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeLobbyDialog(hWnd, g_curMulti);
                 return 1;
-            case 0x111:
+            case WM_COMMAND:
                 if (wParam == 0x4f7) {
                     KillTimer(hWnd, 1);
                     EndDialog(hWnd, wParam);
@@ -162,7 +162,7 @@ namespace NetLobby {
                     return 1;
                 }
                 break;
-            case 0x113:
+            case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateLobbyDialog(hWnd, g_curMulti);
                 return 1;
@@ -189,12 +189,12 @@ namespace NetLobby {
             return 1;
         }
         switch (msg) {
-            case 0x110:
+            case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeSessionWaitDialog(hWnd, g_curMulti);
                 return 1;
-            case 0x111:
+            case WM_COMMAND:
                 if (wParam == 0x4cc) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
@@ -224,7 +224,7 @@ namespace NetLobby {
                     return 1;
                 }
                 break;
-            case 0x113:
+            case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateSessionWaitDialog(hWnd, g_curMulti);
                 return 1;
@@ -256,12 +256,12 @@ namespace NetLobby {
             return 1;
         }
         switch (msg) {
-            case 0x110:
+            case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeDropWaitDialog(hWnd, g_curMulti);
                 return 1;
-            case 0x111:
+            case WM_COMMAND:
                 if (wParam == 0x4ea) {
                     KillTimer(hWnd, 1);
                     g_curMulti->SendNetStat(0x402, wParam, 1);
@@ -285,7 +285,7 @@ namespace NetLobby {
                     return 1;
                 }
                 break;
-            case 0x113:
+            case WM_TIMER:
                 if (g_curMulti->m_pollAbort) {
                     KillTimer(hWnd, 1);
                     EndDialog(hWnd, 0x4cd);
@@ -360,12 +360,12 @@ namespace NetLobby {
             return 1;
         }
         switch (msg) {
-            case 0x110:
+            case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeDropInDialog(hWnd, g_curMulti);
                 return 1;
-            case 0x111:
+            case WM_COMMAND:
                 if (wParam == 0x4d0) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
@@ -395,7 +395,7 @@ namespace NetLobby {
                     return 1;
                 }
                 break;
-            case 0x113:
+            case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateDropInDialog(hWnd, g_curMulti);
                 return 1;

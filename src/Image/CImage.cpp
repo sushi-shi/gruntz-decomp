@@ -115,7 +115,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         }
 
         if (m_owned != 0 && (HAS(desc->flags, PID_SRC_8BPP_SHADE))) {
-            m_owned->Select(2, 0);
+            m_owned->Select(SHADE_DST_BY_SRC, 0);
             return 1;
         }
         return 1;

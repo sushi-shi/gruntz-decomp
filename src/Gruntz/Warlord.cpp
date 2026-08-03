@@ -160,7 +160,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     CWwdGameObjectA* d = m_object;
     d->m_drawActive = 1;
-    d->m_drawFillCmd = 0xa;
+    d->m_drawFillCmd = SHADE_PAL_16;
     d->m_drawFillArg = sel;
 
     switch (owner) {
@@ -489,7 +489,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
 
             CWwdGameObjectA* sprite = m_object;
             sprite->m_drawActive = 1;
-            sprite->m_drawFillCmd = 0xa;
+            sprite->m_drawFillCmd = SHADE_PAL_16;
             sprite->m_drawFillArg = sel;
             break;
         }

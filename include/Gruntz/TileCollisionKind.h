@@ -23,6 +23,13 @@ GZ_ENUM_BEGIN(TileCollisionKind)
     TILEKIND_HARD = 3,
     TILEKIND_SPECIAL = 4,
 
+    // Open water. CMapMgr::ComputeCellFlags gives it cell bit 0x100 on its own,
+    // and 0x100 is the bit CTriggerMgr::PlaceObject requires before it will drop
+    // a Toob grunt (typeKind 0x12) on a cell. CRollingBall::Update groups it with
+    // TILEKIND_WATERBRIDGE_UP (0x6c) and TILEKIND_TOGGLEWATERBRIDGE_UP (0x72),
+    // whose arm plays "LEVEL_ROLLINGBALLSINKWATER" + a "GAME_WATER" splash.
+    TILEKIND_WATER = 0x0a,
+
     TILEKIND_ARROW_UP_A = 0x0b,
     TILEKIND_ARROW_DOWN_A = 0x0c,
     TILEKIND_ARROW_LEFT_A = 0x0d,
@@ -43,8 +50,9 @@ GZ_ENUM_BEGIN(TileCollisionKind)
     // dispatches the odd value to SwitchDown() and CTriggerMgr::TileUp the even
     // one to SwitchUp(), both resolving the switch through the SAME TrigLogicId
     // (0x3f/0x40 -> TRIGID_TIME_SWITCH_7, 0x37/0x38 -> TRIGID_MULTI_SWITCH_3,
-    // 0x41/0x42 -> TRIGID_CHECKPOINT_SWITCH_8). Only the four UP values retail
-    // actually dispatches are named; 0x3a/0x3c/0x3e are never referenced.
+    // 0x41/0x42 -> TRIGID_CHECKPOINT_SWITCH_8). CMapMgr::ComputeCellFlags proves
+    // 0x33-0x42 is ONE contiguous band: all sixteen arms store the same cell bit
+    // 0x4, which is what fixes the three UP partners nothing else dispatches.
     TILEKIND_SWITCH_A = 0x33,
     TILEKIND_SWITCH_A_UP = 0x34,
     TILEKIND_SWITCH_B = 0x35,
@@ -52,8 +60,11 @@ GZ_ENUM_BEGIN(TileCollisionKind)
     TILEKIND_MULTI_SWITCH = 0x37,
     TILEKIND_MULTI_SWITCH_UP = 0x38,
     TILEKIND_SWITCH_C = 0x39,
+    TILEKIND_SWITCH_C_UP = 0x3a,
     TILEKIND_EXCLUSIVE_SWITCH = 0x3b,
+    TILEKIND_EXCLUSIVE_SWITCH_UP = 0x3c,
     TILEKIND_SECRET_SWITCH = 0x3d,
+    TILEKIND_SECRET_SWITCH_UP = 0x3e,
     TILEKIND_TIME_SWITCH = 0x3f,
     TILEKIND_TIME_SWITCH_UP = 0x40,
     TILEKIND_CHECKPOINT = 0x41,

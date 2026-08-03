@@ -1273,7 +1273,7 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
                 if (spr == 0) {
                     spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
                 }
-                m_grid->SetAllTypes(0xa);
+                m_grid->SetAllTypes(SHADE_PAL_16);
                 m_grid->SetAllFormats(spr);
             }
             char buf[0x40];
@@ -3078,7 +3078,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
         if (spr == 0) {
             spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
-        m_grid->SetAllTypes(0xa);
+        m_grid->SetAllTypes(SHADE_PAL_16);
         m_grid->SetAllFormats(spr);
     }
     CDDrawWorker* g = m_grid;

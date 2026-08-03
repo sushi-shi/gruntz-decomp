@@ -39,7 +39,7 @@ i32 CSBI_WarlordHead::SetupImage(
 
 // @early-stop
 RVA(0x000eb740, 0xb3)
-i32 CSBI_WarlordHead::ShowFrames(i32 show, CShadeTable* palDescr) {
+i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
     CDDrawWorker* cfg = m_frameSet;
     if (cfg == 0) {
         return 0;

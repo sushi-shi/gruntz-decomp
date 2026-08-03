@@ -126,14 +126,14 @@ i32 CActionArea::ApplyColor(i32 owner) {
             m_wwdObject->ApplyName("GAME_ACTIONAREA_BLUE");
 
             CDDrawWorker* rec = m_wwdObject->m_frameSet;
-            rec->SetAllTypes(8);
+            rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }
         case 2: {
             m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
 
             CDDrawWorker* rec = m_wwdObject->m_frameSet;
-            rec->SetAllTypes(8);
+            rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }
         default:

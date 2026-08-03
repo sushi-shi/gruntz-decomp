@@ -103,6 +103,8 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_hasColorKey = 0;
     m_bitDepth = bits;
 
+    // `bits` is not a domain - it IS the bits-per-pixel count, and each arm just
+    // divides it by 8 (16 -> width*2). A symbolic name would say nothing extra.
     switch (bits) {
         case 8:
             m_bytesPerRow = m_width;
@@ -975,8 +977,11 @@ void BuildColorChannelTables() {
     }
 }
 
+// `type` is Resolve's FileImageFormat: only FMT_BMP is implemented (the one
+// caller, SaveScreenshot, writes "Gruntz%04i.BMP"), and SaveDispatch then picks
+// the container by bit depth - .BMP at 8bpp, RLE16 at 16, .TGA at 24.
 RVA(0x0013f910, 0x4a)
-i32 CDDSurface::SaveFile(char* buf, i32 type, void* pal, i32 flag) {
+i32 CDDSurface::SaveFile(char* buf, FileImageFormat type, void* pal, i32 flag) {
     if (this->IsValid() == 0) {
         return 0;
     }
@@ -987,7 +992,7 @@ i32 CDDSurface::SaveFile(char* buf, i32 type, void* pal, i32 flag) {
         return 0;
     }
     switch (type) {
-        case 1:
+        case FMT_BMP:
             return SaveDispatch(buf, pal, flag);
         default:
             return 0;

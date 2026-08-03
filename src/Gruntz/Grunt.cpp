@@ -19,6 +19,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
@@ -659,10 +660,10 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, kind);
     CWwdGameObjectA* h = m_object;
-    i32 keep50 = h->m_drawFillCmd;
+    ShadeMode fillCmd = h->m_drawFillCmd;
 
     m_object->m_drawActive = 1;
-    h->m_drawFillCmd = keep50;
+    h->m_drawFillCmd = fillCmd;
     h->m_drawFillArg = sel;
 }
 
@@ -870,7 +871,7 @@ i32 CGrunt::CommitArrival() {
         m_arrivalRerollHi = 0;
         m_arrivalRerollWindowHi = 0;
         m_tileClaimed = 0;
-        m_arrivalState = 0;
+        m_arrivalState = AI_NONE;
         m_arrivalFlags &= 0xe7fbfbfd;
         SetEntrancePos(1, 1);
     }
@@ -1176,7 +1177,7 @@ nudgeDone:
     if (nudged != 0) {
         goto pathGate;
     }
-    if (m_arrivalState != 0) {
+    if (m_arrivalState != AI_NONE) {
         SetEntrancePos(1, 1);
         return 0;
     }
@@ -1354,7 +1355,7 @@ i32 CGrunt::StepGruntMovement() {
 
     {
         i32 blockMove = 1;
-        if (m_arrivalState == 6) {
+        if (m_arrivalState == AI_OBJECTGUARD) {
             if (((m_defenderPx.m_x ^ tgtPxX) & 0xffffffe0) == 0
                 && ((m_defenderPx.m_y ^ tgtPxY) & 0xffffffe0) == 0) {
                 blockMove = 0;
@@ -2012,9 +2013,7 @@ i32 CGrunt::Place(
     m_moveVariant = 0;
     m_helpCueId = 0;
     m_arrivalState = kind;
-    // 0x22 is one below the documented Brickz range (0x23-0x27,
-    // docs/domain/powerupz.md) - an undocumented sentinel, not a brick id.
-    m_brickPickupType = static_cast<PickupType>(0x22);
+    m_brickPickupType = PICKUP_BROWNBRICK;
     m_tileOwnerHi = col;
     m_defenderQueuePosition = a9;
     m_tileOwnerLo = row;
@@ -2072,7 +2071,7 @@ i32 CGrunt::Place(
     }
     m_object->m_drawFillArg = shade;
     m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 0xa;
+    m_object->m_drawFillCmd = SHADE_PAL_16;
     if (entranceMode != 0) {
         BuildEntranceAnimation(entranceMode);
         return 1;
@@ -2088,16 +2087,20 @@ i32 CGrunt::Place(
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
     ResetEntranceAnimation(1, 0, 0);
+    // `kind` is the EnemyAiType. These four are the types that own a post: the
+    // guards keep theirs where they spawned, and the Object Guard reads its
+    // guarded address out of the WWD X Min / Y Min pair (a9, a10), degenerating
+    // to a Post Guard when the level gives it none.
     switch (kind) {
-        case 5:
+        case AI_POSTGUARD:
             m_defenderPx.m_x = m_lastTilePx.m_x;
             m_defenderPx.m_y = m_lastTilePx.m_y;
             break;
-        case 6:
+        case AI_OBJECTGUARD:
             if (a9 == 0 && a10 == 0) {
                 m_defenderPx.m_x = m_lastTilePx.m_x;
                 m_defenderPx.m_y = m_lastTilePx.m_y;
-                m_arrivalState = 5;
+                m_arrivalState = AI_POSTGUARD;
             } else {
                 i32 px = (a9 << 5) + 0x10;
                 i32 py = (a10 << 5) + 0x10;
@@ -2106,8 +2109,8 @@ i32 CGrunt::Place(
                 StepArrivalDrop(px, py - 0x20, 0, -1, 1, 0);
             }
             break;
-        case 4:
-        case 7:
+        case AI_DEFENDER:
+        case AI_BOMBER:
             m_defenderPx.m_x = m_lastTilePx.m_x;
             m_defenderPx.m_y = m_lastTilePx.m_y;
             break;
@@ -2206,7 +2209,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2231,7 +2234,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2256,14 +2259,14 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
             }
-            if (m_arrivalState == 4) {
+            if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             if (g_gameReg->m_gameMode == 1) {
@@ -2284,7 +2287,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2309,7 +2312,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2334,7 +2337,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2359,7 +2362,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2384,7 +2387,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2444,7 +2447,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2469,7 +2472,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2479,7 +2482,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            if (m_arrivalState == 4) {
+            if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
@@ -2497,7 +2500,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2507,7 +2510,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            if (m_arrivalState == 4) {
+            if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
@@ -2525,7 +2528,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2535,7 +2538,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            if (m_arrivalState == 4) {
+            if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
@@ -2553,7 +2556,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2578,7 +2581,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2603,7 +2606,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2628,7 +2631,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2653,7 +2656,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2678,7 +2681,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2704,7 +2707,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2729,7 +2732,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2754,7 +2757,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2779,7 +2782,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2789,7 +2792,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            if (m_arrivalState == 4) {
+            if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
@@ -2807,7 +2810,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.top = 0;
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -2817,7 +2820,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == 1) {
                 m_arrivalFlags |= 0x10;
             }
-            if (m_arrivalState == 4) {
+            if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0xd02;
@@ -3087,7 +3090,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             fresh = 0;
             m_animSetName = "HAREKRISHNAGRUNT";
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -3119,7 +3122,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             fresh = 0;
             m_animSetName = "REAPERGRUNT";
-            if (m_arrivalState == 0) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
                 m_arrivalFlags = 0x4000983;
@@ -3148,7 +3151,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_GHOST;
             i32 t = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
             m_object->m_drawActive = 1;
-            m_object->m_drawFillCmd = 0xb;
+            m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
             m_object->m_fillFraction = t;
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
@@ -3458,21 +3461,21 @@ void CGrunt::XferName(char*) {
             CWwdGameObjectA* obj = m_object;
             m_entranceDropActive = 0;
             obj->m_drawActive = 1;
-            obj->m_drawFillCmd = 0xa;
+            obj->m_drawFillCmd = SHADE_PAL_16;
         }
             m_entranceSafeTimeLo = 0;
             m_entranceSafeTimeHi = 0;
         } else if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_flashClock64
                    >= m_flashWindow64) {
             CWwdGameObjectA* obj = m_object;
-            if (obj->m_drawFillCmd == 0xb) {
+            if (obj->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
                 obj->m_drawActive = 1;
-                obj->m_drawFillCmd = 0xa;
+                obj->m_drawFillCmd = SHADE_PAL_16;
             } else {
                 i32 fade = g_buteMgr.GetIntDef(s_Grunt, s_FadeTransparency, 0xc0);
                 CWwdGameObjectA* o2 = m_object;
                 o2->m_drawActive = 1;
-                o2->m_drawFillCmd = 0xb;
+                o2->m_drawFillCmd = SHADE_PAL_ALPHA_16;
                 o2->m_fillFraction = fade;
             }
             i32 flash = g_buteMgr.GetIntDef(s_Grunt, s_SafeFlashTime, 0x32);
@@ -3826,56 +3829,56 @@ afterTile:
             grid->m_gridW = bounds->right - bounds->left;
             grid->m_gridH = bounds->bottom - bounds->top;
         }
-        if (m_arrivalState != 0) {
+        if (m_arrivalState != AI_NONE) {
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_holdAnchor64
                 >= m_holdWindow64) {
                 switch (m_arrivalState) {
-                    case 1:
+                    case AI_DUMBCHASER:
                         ChargeStep();
                         break;
-                    case 2:
+                    case AI_SMARTCHASER:
                         ScanNearestTarget();
                         break;
-                    case 3:
+                    case AI_HITANDRUNNER:
                         WanderStep();
                         break;
-                    case 4:
+                    case AI_DEFENDER:
                         ArrivalReticleScan();
                         break;
-                    case 5:
+                    case AI_POSTGUARD:
                         ResolveArrivalNeighbor();
                         break;
-                    case 6:
+                    case AI_OBJECTGUARD:
                         StepArrivalDefenseAlt();
                         break;
-                    case 7:
+                    case AI_BOMBER:
                         ResolveArrivalReposition();
                         break;
-                    case 8:
+                    case AI_BRICKLAYER:
                         StepBrickLayerBehavior();
                         break;
-                    case 10:
+                    case AI_GOOSUCKER:
                         StepGooSuckerBehavior();
                         break;
-                    case 11:
+                    case AI_DIGGER:
                         StepDiggerBehavior();
                         break;
-                    case 9:
+                    case AI_GAUNTLETZGRUNT:
                         UpdateArrival();
                         break;
-                    case 12:
+                    case AI_TIMEBOMBER:
                         PhaseStep();
                         break;
-                    case 13:
+                    case AI_TOOLTHIEF:
                         SeekTarget();
                         break;
-                    case 14:
+                    case AI_TOYER:
                         StepPeerTracking();
                         break;
-                    case 15:
+                    case AI_MAGICWANDGRUNT:
                         StepArrivalDefenseLean();
                         break;
-                    case 16:
+                    case AI_SCROLLGRUNT:
                         StepArrivalDefense();
                         break;
                 }
@@ -4059,7 +4062,7 @@ kindDispatch:
                 CShadeTable* sel =
                     g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_BABYWALKER);
                 CWwdGameObjectA* obj = m_object;
-                i32 cmd = obj->m_drawFillCmd;
+                ShadeMode cmd = obj->m_drawFillCmd;
                 obj->m_drawActive = 1;
                 obj->m_drawFillCmd = cmd;
                 obj->m_drawFillArg = sel;
@@ -4081,7 +4084,7 @@ kindDispatch:
                     static_cast<i32>(topaque * static_cast<double>(remMs) * 0.0003333333333333333);
                 CWwdGameObjectA* obj = m_object;
                 obj->m_drawActive = 1;
-                obj->m_drawFillCmd = 0xb;
+                obj->m_drawFillCmd = SHADE_PAL_ALPHA_16;
                 obj->m_fillFraction = frac;
             } else {
                 CWwdGameObjectA* obj = m_object;
@@ -4097,7 +4100,7 @@ kindDispatch:
                         CWwdGameObjectA* obj = m_object;
                         m_gruntKind = GRUNT_NORMAL;
                         obj->m_drawActive = 1;
-                        obj->m_drawFillCmd = 0xa;
+                        obj->m_drawFillCmd = SHADE_PAL_16;
                         break;
                     }
                     case PICKUP_INVULNERABILITY:

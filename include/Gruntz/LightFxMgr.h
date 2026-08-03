@@ -3,7 +3,10 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
+
+GZ_ENUM_FORWARD(ShadeMode);
 
 struct CShadeTable;
 
@@ -19,7 +22,7 @@ public:
 
     void Reset();
 
-    i32 Push(CDDrawWorker* imgSet, i32 anchor, i32 slot);
+    i32 Push(CDDrawWorker* imgSet, i32 anchor, ShadeMode slot);
 
     class CGruntzMgr* m_owner;
     class CGruntzMgr* m_reg;
@@ -31,6 +34,6 @@ public:
 };
 SIZE(0x3c);
 
-void SetShadeDescr(CShadeTable* v, int mode);
+void SetShadeDescr(CShadeTable* v, ShadeMode mode);
 
 #endif // GRUNTZ_GRUNTZ_LIGHTFXMGR_H

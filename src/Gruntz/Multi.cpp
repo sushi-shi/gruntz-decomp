@@ -950,7 +950,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
 
     switch (msg) {
-        case 0x110: {
+        case WM_INITDIALOG: {
             HWND combo = GetDlgItem(hDlg, 0x3fc);
             g_groupEnumMgr->m_groupSel = 0;
             g_groupEnumMgr->PopulateGroupList(combo, 0);
@@ -983,7 +983,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             SetDlgItemTextA(hDlg, 0x51c, gameBuf);
             return 1;
         }
-        case 0x111:
+        case WM_COMMAND:
             break;
         default:
             goto ret_false;
@@ -1074,7 +1074,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
         goto ret_true;
     }
     switch (msg) {
-        case 0x110:
+        case WM_INITDIALOG:
             g_netPlayerListHwnd = GetDlgItem(hDlg, 0x3fc);
             if (g_netPlayerListHwnd == 0) {
                 goto close;
@@ -1087,7 +1087,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 return 1;
             }
             goto close;
-        case 0x111:
+        case WM_COMMAND:
             if (wParam == 2) {
                 KillTimer(hDlg, 1);
                 EndDialog(hDlg, 0);
@@ -1111,7 +1111,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 return 1;
             }
             break;
-        case 0x113:
+        case WM_TIMER:
             KillTimer(hDlg, 1);
             {
                 i32 sel = static_cast<i32>(SendMessageA(g_netPlayerListHwnd, 0x188, 0, 0));

@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Crypto/FecCrypt.h>
+#include <Enums.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
 
@@ -19,10 +20,31 @@ struct SmackTag;
 class CWnd;
 struct DDModeInfo;
 
+// How CMoviePlayer::Configure places the decoded Smacker frame on the screen.
+// Recovered from Configure's own arms (src/DDrawMgr/DDPageMgr.cpp): each value
+// picks a different m_tilesAcross/m_tilesDown/m_destRect setup. Advance() then
+// reads it back: only MOVIE_SINGLE skips the per-dirty-rect BlitRegion loop.
+GZ_ENUM_BEGIN(MovieLayout)
+// A full grid of copies, screenW/frameW by screenH/frameH, centred - or at
+// `origin` when the caller passes flags & 0x10.
+    MOVIE_TILE = 0,
+
+    // Exactly one copy, centred (or at `origin`).
+    MOVIE_SINGLE = 1,
+
+    // MOVIE_TILE when the frame size divides the screen exactly; otherwise one
+    // copy stretched through a whole-screen m_destRect, and m_blitMode is
+    // rewritten to MOVIE_SINGLE because that is what the layout has become.
+    MOVIE_TILE_OR_STRETCH = 2,
+
+    // One copy blitted into the caller's explicit `rect`.
+    MOVIE_DEST_RECT = 3
+GZ_ENUM_END(MovieLayout)
+
 struct PLAYLISTINFOSTRUCT {
     char* m_src;
     i32 m_openArg;
-    i32 m_blitMode;
+    MovieLayout m_blitMode;
     i32 m_useDS;
     POINT* m_origin;
     RECT* m_rect;
@@ -48,7 +70,7 @@ public:
         m_borrowedDisplayResources = 0;
         m_palette = 0;
         m_frameDecoded = 0;
-        m_blitMode = 0;
+        m_blitMode = MOVIE_TILE;
         m_tilesAcross = 0;
         m_tilesDown = 0;
         m_destRect = 0;
@@ -69,7 +91,7 @@ public:
     void ResetPalette();
     void Snapshot(HWND hWnd);
     i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);
-    i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect);
+    i32 Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* rect);
     i32 CheckGrid();
     void UploadPalette();
 
@@ -81,13 +103,13 @@ public:
         struct IDirectSound* dsound
     );
 
-    i32 Open(const char* path, i32 entryId, i32 mode, i32 useDS, POINT* origin, RECT* rect);
+    i32 Open(const char* path, i32 entryId, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
     ~CMoviePlayer();
 
     int CreateVideoWindow(DDModeInfo* mode, u32 coopFlags);
     void Teardown();
-    i32 OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RECT* rect);
-    i32 OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT* rect);
+    i32 OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
+    i32 OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
     i32 Pump(i32 flags, i32 count);
 
     i32 Advance(IDirectDrawSurface* target, i32 loops);
@@ -121,7 +143,7 @@ public:
     i32 m_frameDecoded;
     u32 m_smackBufMode;
 
-    i32 m_blitMode;
+    MovieLayout m_blitMode;
     u32 m_screenWidth;
     u32 m_screenHeight;
 

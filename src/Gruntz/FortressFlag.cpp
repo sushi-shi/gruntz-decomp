@@ -129,7 +129,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
-    spr->m_drawFillCmd = 0xa;
+    spr->m_drawFillCmd = SHADE_PAL_16;
     spr->m_drawFillArg = sel;
 }
 
@@ -184,7 +184,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
-        spr->m_drawFillCmd = 0xa;
+        spr->m_drawFillCmd = SHADE_PAL_16;
         spr->m_drawFillArg = sel;
     }
     return 1;

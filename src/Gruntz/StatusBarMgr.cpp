@@ -91,7 +91,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllTypes(10);
+                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllTypes(SHADE_PAL_16);
                     (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
@@ -694,7 +694,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         (*slot)->SetState(2);
                     }
 
-                    (*slot)->ShowFrames(0xa, sel);
+                    (*slot)->ShowFrames(SHADE_PAL_16, sel);
                     slot++;
                     pi++;
                     p++;

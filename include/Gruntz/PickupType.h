@@ -62,7 +62,13 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_SQUEAKTOY = 31,
     PICKUP_YOYO = 32,
 
-    // --- Brickz (35-39): Brick-Layer construction materials -----------------
+    // --- Brickz (34-38): Brick-Layer construction materials -----------------
+    // The plain brick. CTileActionEvent::MorphByTool dispatches the five brick
+    // tools 0x22-0x26 side by side, and 0x22's arm is the one that adds a BROWN
+    // layer (BRICKTILE_RED_1 -> BRICKTILE_RED_2_LOW, keeping the red brick on the
+    // bottom), so the range starts here - which is also what CGrunt::Place's
+    // m_brickPickupType seed uses.
+    PICKUP_BROWNBRICK = 0x22,
     PICKUP_REDBRICK = 0x23,
     PICKUP_BLUEBRICK = 0x24,
     PICKUP_GOLDBRICK = 0x25,

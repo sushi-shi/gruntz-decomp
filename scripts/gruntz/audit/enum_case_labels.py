@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+"""gruntz.audit.enum_case_labels - name the case labels of ALREADY-typed switches.
+
+The `magic case labels` metric counts `case 0x36:` / `case 4:`. A large share of
+those sit in switches whose KEY IS ALREADY AN ENUM - the domain was modelled, the
+key retyped, and only the labels were left spelled numerically. For those there is
+nothing to infer: the compiler knows the key's type, so each integer label has
+exactly ONE correct enumerator. This tool finds them via libclang and rewrites
+them.
+
+It NEVER invents a name and NEVER guesses a domain:
+
+  - the switch key's type must resolve to an enum declaration (after stripping
+    typedefs/refs/parens and the integral promotion the key is wrapped in);
+  - the label must be an integer constant that the enum actually declares;
+  - if a value has SEVERAL enumerators (aliases - e.g. PickupType's GRUNT_*
+    spellings, NetMsgId's send-side STAT_* names), the file is REPORTED and left
+    alone, because picking one would be a guess about which reading the developer
+    meant.
+
+Being AST-real, it cannot be fooled by a literal in a comment or a string, and it
+skips the retail-vs-strict macro question entirely: it reads whatever the clangd
+compdb says the TU really compiles as.
+
+Matching-neutral by construction - an enumerator and its value are the same
+integer constant to the compiler - but verify with a build anyway; that is the
+house rule.
+
+  python3 -m gruntz.audit.enum_case_labels [--apply] [--gate] [paths...]
+
+    (default)   report what could be named, write nothing
+    --apply     rewrite the labels
+    --gate      exit 1 if any nameable label remains (for cli.py)
+    paths       limit to these files/dirs (default: every TU in the compdb)
+"""
+from __future__ import annotations
+
+import argparse
+import collections
+import json
+import re
+import sys
+from pathlib import Path
+
+import clang.cindex as cidx
+
+REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+            Path(__file__).resolve().parents[3])
+CDB = REPO / "build" / "clangd" / "compile_commands.json"
+
+
+def _enum_decl(t):
+    """The EnumDecl behind a switch-key type, or None. Strips typedefs, refs,
+    const/volatile and the elaborated spelling; an integral promotion of an enum
+    key still reports the enum as the sub-expression type, which is why the caller
+    passes the *condition expression's* type rather than the promoted one."""
+    seen = 0
+    while t is not None and seen < 16:
+        seen += 1
+        d = t.get_declaration()
+        if d is not None and d.kind == cidx.CursorKind.ENUM_DECL:
+            return d
+        if t.kind == cidx.TypeKind.TYPEDEF and d is not None:
+            t = d.underlying_typedef_type
+            continue
+        canon = t.get_canonical()
+        if canon is not None and canon.kind != t.kind:
+            t = canon
+            continue
+        return None
+    return None
+
+
+def _enum_table(decl):
+    """value -> [enumerator names], in declaration order."""
+    out = collections.OrderedDict()
+    for c in decl.get_children():
+        if c.kind == cidx.CursorKind.ENUM_CONSTANT_DECL:
+            out.setdefault(c.enum_value, []).append(c.spelling)
+    return out
+
+
+def _key_type(switch_cursor):
+    """Type of the switch condition, seeing THROUGH the implicit integral
+    promotion that wraps an enum key."""
+    kids = list(switch_cursor.get_children())
+    if not kids:
+        return None
+    cond = kids[0]
+    # descend through implicit casts / parens to the underlying enum-typed expr
+    node, depth = cond, 0
+    while depth < 12:
+        depth += 1
+        t = _enum_decl(node.type)
+        if t is not None:
+            return t
+        sub = [k for k in node.get_children()]
+        if node.kind in (cidx.CursorKind.UNEXPOSED_EXPR, cidx.CursorKind.PAREN_EXPR) and sub:
+            node = sub[0]
+            continue
+        break
+    return None
+
+
+def _case_labels(switch_cursor):
+    """(line, col, value, spelling) for every numeric case label directly under
+    this switch. Nested switches are skipped - they carry their own key."""
+    out = []
+    body = list(switch_cursor.get_children())
+    if len(body) < 2:
+        return out
+    stack = [body[1]]
+    while stack:
+        n = stack.pop()
+        if n.kind == cidx.CursorKind.SWITCH_STMT:
+            continue                      # a nested switch owns its own labels
+        if n.kind == cidx.CursorKind.CASE_STMT:
+            kids = list(n.get_children())
+            if kids:
+                lit = kids[0]
+                toks = [t.spelling for t in lit.get_tokens()]
+                # a single integer token: `case 0x36:` / `case 4:` (NOT `case A|B:`
+                # and NOT an already-named enumerator)
+                if len(toks) == 1 and re.fullmatch(r'0[xX][0-9a-fA-F]+|\d+', toks[0]):
+                    loc = lit.location
+                    out.append((loc.line, loc.column, int(toks[0], 0), toks[0]))
+        stack.extend(n.get_children())
+    return out
+
+
+def _flags_for(entry):
+    """The TU's real flags. The compdb is MSVC-style (`/I`, `/imsvc`, `/D`), so the
+    driver mode MUST be set or clang silently discards every one of them as a
+    'linker input' and the parse fails on the first #include."""
+    args = list(entry.get("arguments") or entry["command"].split())
+    src = entry["file"]
+    out = ["--driver-mode=cl"]
+    for a in args[1:]:
+        if a == "/c" or a == src or a.endswith(src):
+            continue
+        out.append(a)
+    return out
+
+
+def scan(limit=None):
+    """-> {path: [(line, col, value, spelling, enum_name, enumerator)]},
+        plus a list of ambiguous (value has aliases) sites."""
+    db = json.loads(CDB.read_text())
+    index = cidx.Index.create()
+    found = collections.defaultdict(list)
+    ambiguous = []
+    seen_files = set()
+    for entry in db:
+        # compdb paths are REPO-relative; resolve before comparing against the
+        # absolute --paths, or the filter silently matches nothing and the tool
+        # reports a false zero.
+        src = Path(entry["file"])
+        absolute = src if src.is_absolute() else (REPO / src)
+        if limit and not any(str(absolute).startswith(str(l)) for l in limit):
+            continue
+        try:
+            tu = index.parse(str(src), args=_flags_for(entry),
+                             options=cidx.TranslationUnit.PARSE_SKIP_FUNCTION_BODIES == 0)
+        except cidx.TranslationUnitLoadError:
+            continue
+        stack = [tu.cursor]
+        while stack:
+            n = stack.pop()
+            stack.extend(n.get_children())
+            if n.kind != cidx.CursorKind.SWITCH_STMT:
+                continue
+            decl = _key_type(n)
+            if decl is None:
+                continue
+            table = _enum_table(decl)
+            if not table:
+                continue
+            ename = decl.spelling or "<anonymous>"
+            for line, col, val, spelling in _case_labels(n):
+                f = n.location.file
+                if f is None:
+                    continue
+                path = Path(f.name).resolve()
+                try:
+                    rel = path.relative_to(REPO)
+                except ValueError:
+                    continue
+                if not str(rel).startswith(("src/", "include/")):
+                    continue
+                names = table.get(val)
+                if not names:
+                    continue                       # value the domain does not declare
+                key = (str(rel), line, col)
+                if key in seen_files:
+                    continue
+                seen_files.add(key)
+                if len(names) > 1:
+                    ambiguous.append((str(rel), line, val, ename, names))
+                    continue
+                found[str(rel)].append((line, col, val, spelling, ename, names[0]))
+    return found, ambiguous
+
+
+def apply(found):
+    total = 0
+    for rel, hits in sorted(found.items()):
+        p = REPO / rel
+        lines = p.read_text().splitlines(keepends=True)
+        # right-to-left within a line so columns stay valid
+        for line, col, val, spelling, ename, name in sorted(hits, key=lambda h: (-h[0], -h[1])):
+            if line > len(lines):
+                continue
+            s = lines[line - 1]
+            i = col - 1
+            if s[i:i + len(spelling)] != spelling:
+                continue                            # moved under us - skip, never guess
+            lines[line - 1] = s[:i] + name + s[i + len(spelling):]
+            total += 1
+        p.write_text("".join(lines))
+    return total
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="gruntz.audit.enum_case_labels")
+    ap.add_argument("--apply", action="store_true", help="rewrite the labels")
+    ap.add_argument("--gate", action="store_true", help="exit 1 if any remain")
+    ap.add_argument("paths", nargs="*")
+    a = ap.parse_args(argv)
+
+    if not CDB.exists():
+        sys.exit("[enum-case-labels] build/clangd/compile_commands.json not found - run gruntz init")
+
+    limit = [Path(p).resolve() for p in a.paths] or None
+    found, ambiguous = scan(limit)
+    n = sum(len(v) for v in found.values())
+
+    by_enum = collections.Counter()
+    for hits in found.values():
+        for h in hits:
+            by_enum[h[4]] += 1
+    for ename, c in by_enum.most_common():
+        print("  %-24s %4d label(s)" % (ename, c))
+    if ambiguous:
+        print("  -- %d label(s) SKIPPED: value has alias enumerators --" % len(ambiguous))
+        for rel, line, val, ename, names in ambiguous[:8]:
+            print("     %s:%d  %s 0x%x -> %s" % (rel, line, ename, val, "/".join(names)))
+
+    if a.apply:
+        done = apply(found)
+        print("[enum-case-labels] named %d case label(s) across %d file(s)" % (done, len(found)))
+        return 0
+
+    print("[enum-case-labels] %d nameable case label(s) across %d file(s)" % (n, len(found)))
+    if a.gate and n:
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

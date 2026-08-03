@@ -47,7 +47,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
         i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
-        if (m_object->m_drawFillCmd == 0xb) {
+        if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
             m_idleWindowLo = dt;
             m_idleTimerLo = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
             m_idleWindowHi = 0;
@@ -64,7 +64,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
              / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
         );
         m_object->m_drawActive = 1;
-        m_object->m_drawFillCmd = 0xb;
+        m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
         m_object->m_fillFraction = r;
         return 0;
     }
@@ -80,7 +80,7 @@ RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
         m_wwdObject->m_stateFlags |= 1;
-        m_wwdObject->m_frameSet->SetAllTypes(1);
+        m_wwdObject->m_frameSet->SetAllTypes(SHADE_COPY);
         if (m_cellRemovalNotified == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
@@ -94,7 +94,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
          / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
     );
     m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 0xb;
+    m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
     m_object->m_fillFraction = r;
     return 0;
 }

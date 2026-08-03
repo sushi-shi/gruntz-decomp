@@ -60,7 +60,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_WALK", 0);
         m_animSprites[i]->m_stateFlags |= 1;
         m_animSprites[i]->m_drawActive = 1;
-        m_animSprites[i]->m_drawFillCmd = 0xa;
+        m_animSprites[i]->m_drawFillCmd = SHADE_PAL_16;
         m_animSprites[i]->m_drawFillArg = sel;
         m_visSprites[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
@@ -212,7 +212,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
                     CWwdGameObjectA* g = m_animSprites[m_stepIndex];
                     g->m_drawActive = 1;
-                    g->m_drawFillCmd = 0xa;
+                    g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     u32 x;
@@ -237,7 +237,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     CWwdGameObjectA* g = m_animSprites[m_stepIndex];
                     g->m_drawActive = 1;
-                    g->m_drawFillCmd = 0xa;
+                    g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     m_stepIndex++;

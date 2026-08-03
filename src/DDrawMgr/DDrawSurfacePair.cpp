@@ -602,7 +602,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_drawActive = 0;
     m_screenY = y;
     m_flashInterval = 0x32;
-    m_drawFillCmd = 1;
+    m_drawFillCmd = SHADE_COPY;
     m_level = OwnerMgr()->m_level;
     return 1;
 }
@@ -621,7 +621,7 @@ i32 CResolveNode::Init(
     m_flags = field08;
     m_drawFillArg = 0;
     m_drawActive = 0;
-    m_drawFillCmd = 1;
+    m_drawFillCmd = SHADE_COPY;
     SetPosition(resolveX, resolveY);
     m_stateFlags = field40;
     return 1;

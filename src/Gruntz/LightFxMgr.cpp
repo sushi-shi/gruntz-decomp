@@ -68,7 +68,7 @@ i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
     if (!m_tables[9]) {
         return 0;
     }
-    SetShadeDescr(m_greyTable, 9);
+    SetShadeDescr(m_greyTable, SHADE_GREY_TABLE);
     return 1;
 }
 
@@ -82,7 +82,7 @@ void CLightFxMgr::Reset() {
 }
 
 RVA(0x0009dcb0, 0x41)
-i32 CLightFxMgr::Push(CDDrawWorker* imgSet, i32 anchor, i32 slot) {
+i32 CLightFxMgr::Push(CDDrawWorker* imgSet, i32 anchor, ShadeMode slot) {
     if (!imgSet) {
         return 0;
     }

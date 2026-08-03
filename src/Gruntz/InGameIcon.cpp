@@ -461,7 +461,7 @@ i32 CInGameIcon::HandleInput() {
     }
     CWwdGameObjectA* o = m_object;
     o->m_drawActive = 1;
-    o->m_drawFillCmd = 0xa;
+    o->m_drawFillCmd = SHADE_PAL_16;
     o->m_drawFillArg = rec;
     return 1;
 }
@@ -595,7 +595,7 @@ i32 CInGameIcon::PeekCycle() {
         );
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
-        o->m_drawFillCmd = 0xa;
+        o->m_drawFillCmd = SHADE_PAL_16;
         o->m_drawFillArg = rec;
         m_peekWindow.m_lo = 0xfa;
         m_peekWindow.m_hi = 0;

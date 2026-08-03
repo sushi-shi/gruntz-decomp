@@ -57,7 +57,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         m_sprintSprites[i - 1]->ApplyName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
         m_sprintSprites[i - 1]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
         m_sprintSprites[i - 1]->m_drawActive = 1;
-        m_sprintSprites[i - 1]->m_drawFillCmd = 0xa;
+        m_sprintSprites[i - 1]->m_drawFillCmd = SHADE_PAL_16;
         m_sprintSprites[i - 1]->m_drawFillArg = h;
 
         i32 outX, outY;

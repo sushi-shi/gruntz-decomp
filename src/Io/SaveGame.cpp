@@ -41,7 +41,7 @@ CSaveGame::~CSaveGame() {
 RVA(0x000e35f0, 0x77)
 i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case 0x111:
+        case WM_COMMAND:
             if (wParam == 2) {
                 EndDialog(hDlg, 0);
                 return 1;
@@ -52,7 +52,7 @@ i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
         default:
             return 0;
-        case 0x110: {
+        case WM_INITDIALOG: {
             CSaveGame* v = g_gameReg->m_saveSink;
             g_savedMenuCmd = -1;
             g_saveDlgSink = v;
@@ -163,7 +163,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 RVA(0x000e3a40, 0xb0)
 i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case 0x110:
+        case WM_INITDIALOG:
             if (g_slotState == 0) {
                 // API-forced INT_PTR boundary.
 
@@ -172,7 +172,7 @@ i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);
             return 1;
-        case 0x111:
+        case WM_COMMAND:
             if (wParam == 2) {
                 EndDialog(hDlg, 0);
                 return 1;
@@ -191,7 +191,7 @@ i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 RVA(0x000e3b20, 0x86)
 i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case 0x110:
+        case WM_INITDIALOG:
             if (g_slotState == 0) {
                 // API-forced INT_PTR boundary.
 
@@ -200,7 +200,7 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);
             return 1;
-        case 0x111:
+        case WM_COMMAND:
             if (wParam == 2) {
                 EndDialog(hDlg, 0);
                 return 1;
@@ -217,9 +217,9 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 RVA(0x000e3be0, 0x52)
 i32 CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case 0x110:
+        case WM_INITDIALOG:
             return 1;
-        case 0x111:
+        case WM_COMMAND:
             if (wParam == 2) {
                 EndDialog(hDlg, 0);
                 return 1;

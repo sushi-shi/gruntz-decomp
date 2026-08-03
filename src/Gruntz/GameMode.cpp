@@ -146,7 +146,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CWwdGameObjectA* icon7 = m_icons[7];
     icon7->m_drawActive = 1;
-    icon7->m_drawFillCmd = 7;
+    icon7->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     icon7->m_drawFillArg = tint;
 
     CWwdGameObjectA* ex =
@@ -159,7 +159,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[1]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
     CWwdGameObjectA* icon1 = m_icons[1];
     icon1->m_drawActive = 1;
-    icon1->m_drawFillCmd = 0xa;
+    icon1->m_drawFillCmd = SHADE_PAL_16;
     icon1->m_drawFillArg = handleA;
     m_icons[1]->m_stateFlags |= 1;
 
@@ -173,7 +173,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[2]->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
     CWwdGameObjectA* icon2 = m_icons[2];
     icon2->m_drawActive = 1;
-    icon2->m_drawFillCmd = 0xa;
+    icon2->m_drawFillCmd = SHADE_PAL_16;
     icon2->m_drawFillArg = handleA;
     m_icons[2]->m_stateFlags |= 1;
 
@@ -187,7 +187,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[3]->ApplyLookupGeometry("GAME_CYCLE100", 0);
     CWwdGameObjectA* icon3 = m_icons[3];
     icon3->m_drawActive = 1;
-    icon3->m_drawFillCmd = 0xa;
+    icon3->m_drawFillCmd = SHADE_PAL_16;
     icon3->m_drawFillArg = handleA;
     m_icons[3]->m_stateFlags |= 1;
 
@@ -201,7 +201,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[4]->ApplyLookupGeometry("GAME_CYCLE100", 0);
     CWwdGameObjectA* p30c = m_icons[4];
     p30c->m_drawActive = 1;
-    p30c->m_drawFillCmd = 0xa;
+    p30c->m_drawFillCmd = SHADE_PAL_16;
     p30c->m_drawFillArg = handleA;
     m_icons[4]->m_stateFlags |= 1;
 
@@ -215,7 +215,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[5]->ApplyLookupGeometry("GAME_CYCLE100", 0);
     CWwdGameObjectA* icon5 = m_icons[5];
     icon5->m_drawActive = 1;
-    icon5->m_drawFillCmd = 0xa;
+    icon5->m_drawFillCmd = SHADE_PAL_16;
     icon5->m_drawFillArg = handleA;
     m_icons[5]->m_stateFlags |= 1;
 
@@ -229,7 +229,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[6]->ApplyLookupGeometry("GAME_CYCLE100", 0);
     CWwdGameObjectA* icon6 = m_icons[6];
     icon6->m_drawActive = 1;
-    icon6->m_drawFillCmd = 0xa;
+    icon6->m_drawFillCmd = SHADE_PAL_16;
     icon6->m_drawFillArg = handleA;
     m_icons[6]->m_stateFlags |= 1;
 
@@ -244,7 +244,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         m_bomb[i]->ApplyLookupGeometry("GAME_GRUNTBOMBSPRINT", 0);
         CWwdGameObjectA* bp = m_bomb[i];
         bp->m_drawActive = 1;
-        bp->m_drawFillCmd = 0xa;
+        bp->m_drawFillCmd = SHADE_PAL_16;
         bp->m_drawFillArg = handleA;
         m_bomb[i]->m_screenX = 0x2c6;
         m_bomb[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
@@ -269,7 +269,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         m_gokart[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
         CWwdGameObjectA* gp = m_gokart[i];
         gp->m_drawActive = 1;
-        gp->m_drawFillCmd = 0xa;
+        gp->m_drawFillCmd = SHADE_PAL_16;
         gp->m_drawFillArg = handleB;
         m_gokart[i]->m_screenX = -70;
         m_gokart[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;

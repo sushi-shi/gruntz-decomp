@@ -692,7 +692,7 @@ CGruntzCmdMgr::~CGruntzCmdMgr() {
 RVA(0x00092ab0, 0x20d)
 i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case 0x110:
+        case WM_INITDIALOG:
             SetDlgItemInt(hDlg, 0x4db, g_dlgVal_64526c, 0);
             SetDlgItemInt(hDlg, 0x4da, g_dlgVal_6452d0, 0);
             SetDlgItemInt(hDlg, 0x4dc, g_dlgVal_645268, 0);
@@ -706,7 +706,7 @@ i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM
             SetDlgItemInt(hDlg, 0x4e5, g_dlgVal_64555c, 0);
             SetDlgItemInt(hDlg, 0x4e6, g_dlgVal_645564, 0);
             return 1;
-        case 0x111:
+        case WM_COMMAND:
             if (wParam == 2) {
                 EndDialog(hDlg, 0);
                 return 1;

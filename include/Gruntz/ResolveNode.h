@@ -74,7 +74,7 @@ public:
     i32 m_flashCountdown;
     i32 m_flashInterval;
     CShadeTable* m_drawFillArg;
-    i32 m_drawFillCmd;
+    ShadeMode m_drawFillCmd;
     i32 m_fillFraction;
     i32 m_drawActive;
     i32 m_screenX;

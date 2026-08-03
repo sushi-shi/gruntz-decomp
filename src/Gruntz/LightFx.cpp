@@ -115,7 +115,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     m_animWorker->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
     node = nodeOb;
     void* found = node;
-    g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, 7);
+    g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, SHADE_DST_BY_SRC_16);
     if (found != 0) {
 
         CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
@@ -173,7 +173,7 @@ i32 CLightFx::SerializeMove(
             g_gameReg
                 ->m_logicPump
 
-                ->Push(m_wwdObject->m_frameSet, m_anchorA, 7);
+                ->Push(m_wwdObject->m_frameSet, m_anchorA, SHADE_DST_BY_SRC_16);
             break;
     }
     return 1;

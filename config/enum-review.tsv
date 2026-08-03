@@ -96,6 +96,7 @@ include/Gruntz/BootyMessages.h	pending
 include/Gruntz/BootyStateActivate.h	pending	
 include/Gruntz/BootyWalkAnim.h	pending	
 include/Gruntz/BracketValueParse.h	pending	
+include/Gruntz/BrickTileId.h	pending	
 include/Gruntz/Brickz.h	pending	
 include/Gruntz/BzState.h	pending	
 include/Gruntz/CBrickz.h	pending	
@@ -155,6 +156,7 @@ include/Gruntz/GameStateRecordLoad.h	pending
 include/Gruntz/GameText.h	pending	
 include/Gruntz/GlyphStringDraw.h	pending	
 include/Gruntz/Grunt.h	pending	
+include/Gruntz/GruntAiState.h	pending	
 include/Gruntz/GruntCombat.h	pending	
 include/Gruntz/GruntCreationPoint.h	pending	
 include/Gruntz/GruntDeathType.h	pending	

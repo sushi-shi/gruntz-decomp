@@ -213,7 +213,7 @@ i32 CRainCloud::Tick() {
         CWwdGameObjectA* spr = m_object;
         spr->m_drawActive = 1;
         spr->m_drawFillArg = frame;
-        spr->m_drawFillCmd = 7;
+        spr->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     }
     CPathHazard::Tick();
     return 0;
@@ -235,7 +235,7 @@ i32 CPathHazard::SiblingTick() {
         }
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
-        o->m_drawFillCmd = 7;
+        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
         o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[sel];
     }
 
@@ -270,7 +270,7 @@ i32 CPathHazard::SiblingTick() {
     if (legElapsed >= m_leg.m_window) {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
-        o->m_drawFillCmd = 7;
+        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
         o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
         this->BeginLeg();
         m_prevAnimSetNode = m_objAux->m_actKey;

@@ -1073,15 +1073,22 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     i32 xbound = b->m_width;
     i32 tileY = h->m_screenY >> 5;
     i32 tileX = h->m_screenX >> 5;
-    i32 dir;
+    // NOT a direction and NOT a TileCollisionKind: BrickzCell int 3 is m_tileId,
+    // the raw WWD tile-image index. That is why the same numbers are dispatched
+    // twice below - CState::m_levelType is the AREA number (levelIndex / 4 + 1,
+    // "AREA%i"), so areas 1-4 and 5-8 ship different tilesets and the id space is
+    // per-tileset with no engine-side names. The DIRECTION lives in the arms: each
+    // shoreline image nudges the dying grunt half a tile toward its own edge. The
+    // area-1-4 half agrees value-for-value with CRollingBall::Update's sink table.
+    i32 tileId;
     if (static_cast<u32>(tileX) >= static_cast<u32>(xbound)
         || static_cast<u32>(tileY) >= static_cast<u32>(b->m_height)) {
-        dir = 0;
+        tileId = 0;
     } else {
-        dir = b->m_rowInts[tileY][tileX * 7 + 3];
+        tileId = b->m_rowInts[tileY][tileX * 7 + 3];
     }
 
-    i32 sel = state->m_levelType;
+    i32 area = state->m_levelType;
 
 #define MV_VEC(V) m_entranceCell = g_gruntDir##V
 #define MV_N                                                                                       \
@@ -1113,8 +1120,8 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_lastTilePx.m_x -= 0x10;                                                                      \
     m_lastTilePx.m_y += 0x10
 
-    if (sel < 5) {
-        switch (dir) {
+    if (area < 5) {
+        switch (tileId) {
             case 0x69:
             case 0x6a:
                 MV_S;
@@ -1167,7 +1174,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
                 return 0;
         }
     } else {
-        switch (dir) {
+        switch (tileId) {
             case 0x86:
             case 0x87:
             case 0x88:

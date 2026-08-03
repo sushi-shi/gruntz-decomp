@@ -95,7 +95,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (sel == 0) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    m_config->SetAllTypes(10);
+    m_config->SetAllTypes(SHADE_PAL_16);
     m_config->SetAllFormats(sel);
     CImage* val;
     if (m_frameIdxB < m_config->m_minIndex || m_frameIdxB > m_config->m_maxIndex) {

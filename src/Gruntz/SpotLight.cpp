@@ -105,7 +105,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     CShadeTable* looked = g_gameReg->m_logicPump->m_tables[m_object->m_powerup];
     m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 7;
+    m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     m_object->m_drawFillArg = looked;
     m_focus = 0;
     m_object->m_area.left = 0;
@@ -321,7 +321,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
             CShadeTable* fill = reg->m_logicPump->m_tables[o->m_powerup];
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
-            o->m_drawFillCmd = 7;
+            o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
             break;
         }
     }

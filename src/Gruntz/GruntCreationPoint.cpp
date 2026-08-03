@@ -50,7 +50,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
     m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 0xa;
+    m_object->m_drawFillCmd = SHADE_PAL_16;
     m_object->m_drawFillArg = sel;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -91,7 +91,7 @@ i32 CGruntCreationPoint::SerializeMove(
         }
         CWwdGameObjectA* obj = m_object;
         obj->m_drawActive = 1;
-        obj->m_drawFillCmd = 0xa;
+        obj->m_drawFillCmd = SHADE_PAL_16;
         obj->m_drawFillArg = sel;
     }
     return 1;

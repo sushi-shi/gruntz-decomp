@@ -28,6 +28,7 @@
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundState.h>
@@ -42,6 +43,43 @@
 #include <ddraw.h>
 #include <math.h>
 #include <stdio.h>
+
+RVA(0x0001c8a0, 0xec)
+i32 CBootyState::InputVirtual() {
+    if (CState::InputVirtual() == 0) {
+        return 0;
+    }
+    int(WINAPI * sc)(BOOL) = ShowCursor;
+    i32 r = sc(0);
+    while (r >= 0) {
+        r = sc(0);
+    }
+    void* booty = SymTab2c()->ResolvePath("IMAGEZ");
+    if (booty == 0) {
+        return 0;
+    }
+    if (m_world->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
+        return 0;
+    }
+    void* gruntz = m_gruntzBank->ResolvePath("IMAGEZ");
+    if (gruntz == 0) {
+        return 0;
+    }
+    if (m_world->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+        return 0;
+    }
+    if (m_activation != 200) {
+        if (FadeInTitle("bg", 0, 0, 0, 0, 1) == 0) {
+            return 0;
+        }
+        ShowLevelCompleteMessage();
+    } else {
+        ShowSecretBonusMessage();
+    }
+    m_world->m_drawTarget->TransExit();
+    RetireScene(0x50, 0x3e8, 0, 1);
+    return 1;
+}
 
 DATA(0x001e8fe8)
 
@@ -659,7 +697,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         {
             CWwdGameObjectA* o = m_puddleSprites[i];
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
         m_puddleSprites[i]->m_stateFlags |= 1;
@@ -674,7 +712,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_gruntSprites[i]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
             CWwdGameObjectA* o = m_gruntSprites[i];
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         } else {
             key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
@@ -687,7 +725,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_gruntSprites[i]->ApplyLookupGeometry(key, 0);
             CWwdGameObjectA* o = m_gruntSprites[i];
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
         m_gruntSprites[i]->m_stateFlags |= 1;
@@ -714,7 +752,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         {
             CWwdGameObjectA* o = m_weaponIcons[i];
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
         m_weaponIcons[i]->m_stateFlags |= 1;
@@ -746,7 +784,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             {
                 CWwdGameObjectA* o = m_toyIcons[i];
                 o->m_drawActive = 1;
-                o->m_drawFillCmd = 0xa;
+                o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
             m_toyIcons[i]->m_stateFlags |= 1;
@@ -773,7 +811,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             {
                 CWwdGameObjectA* o = m_powerupIcons[i];
                 o->m_drawActive = 1;
-                o->m_drawFillCmd = 0xa;
+                o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
             m_powerupIcons[i]->m_stateFlags |= 1;
@@ -800,7 +838,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             {
                 CWwdGameObjectA* o = m_miscIcons[i];
                 o->m_drawActive = 1;
-                o->m_drawFillCmd = 0xa;
+                o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
             m_miscIcons[i]->m_stateFlags |= 1;
@@ -847,7 +885,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         {
             CWwdGameObjectA* o = m_tabSprites[t];
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
         m_tabSprites[t]->m_stateFlags |= 1;
@@ -862,7 +900,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         {
             CWwdGameObjectA* o = m_flagSprites[t];
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
         m_flagSprites[t]->m_stateFlags |= 1;
@@ -906,7 +944,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         {
             CWwdGameObjectA* o = m_fortSprite;
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
         m_fortSprite->m_stateFlags |= 1;
@@ -934,7 +972,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         {
             CWwdGameObjectA* o = m_warlordBooty;
             o->m_drawActive = 1;
-            o->m_drawFillCmd = 0xa;
+            o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
         m_warlordBooty->m_stateFlags |= 1;

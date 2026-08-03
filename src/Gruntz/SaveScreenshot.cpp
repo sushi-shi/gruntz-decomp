@@ -72,7 +72,7 @@ i32 SaveScreenshot(
         surf->RemoveItemA(img);
         return 0;
     }
-    i32 r = img->SaveFile(name, 1, 0, saveFlag);
+    i32 r = img->SaveFile(name, FMT_BMP, 0, saveFlag);
     surf->RemoveItemA(img);
     return r;
 }

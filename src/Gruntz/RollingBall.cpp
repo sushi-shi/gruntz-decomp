@@ -229,15 +229,16 @@ i32 CRollingBall::Update() {
             }
             CDDrawWorkerHost* pl = lvl->m_mainPlane;
             i32 raw = pl->m_tileGrid[pl->m_colOffsets[col] + row];
+            // A TileCollisionKind: the devirtualised CTileImageSet::GetCollisionAt(0, 0).
             i32 act = 0;
             if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
                 act = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
             }
 
             switch (act) {
-                case 4:
-                case 110:
-                case 116: {
+                case TILEKIND_SPECIAL:
+                case TILEKIND_DEATHBRIDGE_UP:
+                case TILEKIND_TOGGLEDEATHBRIDGE_UP: {
 
                     switch (g_gameReg->m_curState->m_levelType) {
                         case 4:
@@ -275,7 +276,7 @@ i32 CRollingBall::Update() {
                     m_wwdObject->ApplyName(fall);
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->ApplyLookupGeometry(explosion, 0);
-                    if (act != 4) {
+                    if (act != TILEKIND_SPECIAL) {
                         m_explodeLatch = 1;
                         return 0;
                     }
@@ -294,6 +295,12 @@ i32 CRollingBall::Update() {
                     } else {
                         sink = 0;
                     }
+                    // NOT a TileCollisionKind and NOT a direction: BrickzCell int 3
+                    // is m_tileId, the raw WWD tile-image index, so this value space
+                    // is per-tileset (AREA1-4 vs AREA5-8) and has no engine-side
+                    // names. The DIRECTION is what the arms carry - each shoreline
+                    // image sinks the ball toward its own edge. The same ids with
+                    // the same offsets drive CGrunt::LoadGruntMovingDeathConfig.
                     switch (sink) {
                         case 0x68:
                             m_target.m_x += 0x10;
@@ -354,10 +361,12 @@ i32 CRollingBall::Update() {
                     break;
                 }
 
-                case 10:
+                case TILEKIND_WATER:
+                // 0x24: sinks like water but carries cell bit 0x800 rather than
+                // water's 0x100, and nothing names it - left a literal.
                 case 36:
-                case 108:
-                case 114: {
+                case TILEKIND_WATERBRIDGE_UP:
+                case TILEKIND_TOGGLEWATERBRIDGE_UP: {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLSINKWATER", 0);
@@ -379,7 +388,7 @@ i32 CRollingBall::Update() {
                     return 0;
                 }
 
-                case 35: {
+                case TILEKIND_REVEALED_POWERUP: {
                     i32 kind = g_gameReg->m_curState->m_levelType;
                     if (kind >= 4 && (kind <= 5 || kind == 8)) {
                         m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_FALL");
@@ -433,20 +442,20 @@ i32 CRollingBall::Update() {
                 act2 = VtblResolve(lvl2->m_imageSets[raw2 & 0xffff]);
             }
             switch (act2) {
-                case 11:
-                case 15:
+                case TILEKIND_ARROW_UP_A:
+                case TILEKIND_ARROW_UP_B:
                     m_object->m_direction = 1;
                     break;
-                case 14:
-                case 18:
+                case TILEKIND_ARROW_RIGHT_A:
+                case TILEKIND_ARROW_RIGHT_B:
                     m_object->m_direction = 2;
                     break;
-                case 12:
-                case 16:
+                case TILEKIND_ARROW_DOWN_A:
+                case TILEKIND_ARROW_DOWN_B:
                     m_object->m_direction = 3;
                     break;
-                case 13:
-                case 17:
+                case TILEKIND_ARROW_LEFT_A:
+                case TILEKIND_ARROW_LEFT_B:
                     m_object->m_direction = 4;
                     break;
             }

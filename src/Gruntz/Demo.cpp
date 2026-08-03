@@ -240,7 +240,7 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
     static_cast<void>(lParam);
 
     switch (msg) {
-        case 0x110: {
+        case WM_INITDIALOG: {
             ifstream in("attributez.txt", ios::nocreate | ios::binary);
             if (in.fail()) {
                 EndDialog(hDlg, 1);
@@ -253,9 +253,9 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
             }
             return 1;
         }
-        case 0x111:
+        case WM_COMMAND:
             switch (wParam) {
-                case 1: {
+                case IDOK: {
                     GetDlgItemTextA(hDlg, 0x435, g_buteEditBuf, 0xffff);
                     ofstream out("Attributez.txt", ios::binary);
                     g_buteEditLen = strlen(g_buteEditBuf);
@@ -265,7 +265,7 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
                     EndDialog(hDlg, 1);
                     return 1;
                 }
-                case 2:
+                case IDCANCEL:
                     EndDialog(hDlg, 0);
                     return 1;
             }
@@ -315,7 +315,7 @@ RVA(0x0003cdd0, 0x19f)
 INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
     switch (msg) {
-        case 0x110: {
+        case WM_INITDIALOG: {
             ifstream in("dwrects.txt", ios::nocreate | ios::binary);
             if (in.fail()) {
                 EndDialog(hDlg, 1);
@@ -328,9 +328,9 @@ INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
             }
             return 1;
         }
-        case 0x111:
+        case WM_COMMAND:
             switch (wParam) {
-                case 1: {
+                case IDOK: {
                     GetDlgItemTextA(hDlg, 0x435, g_dwRectsEditBuf, 0x4000);
                     ofstream out("dwrects.txt", ios::binary);
                     g_dwRectsEditLen = strlen(g_dwRectsEditBuf);
@@ -339,7 +339,7 @@ INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                     EndDialog(hDlg, 1);
                     return 1;
                 }
-                case 2:
+                case IDCANCEL:
                     EndDialog(hDlg, 0);
                     return 1;
             }

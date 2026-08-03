@@ -77,8 +77,8 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
         }
     }
 
-    i32 drawType = m_drawType;
-    if (drawType == 1) {
+    ShadeMode drawType = m_drawType;
+    if (drawType == SHADE_COPY) {
         if (sel) {
             BlitCopyMirrored(dst, src, clip, vflip);
         } else {
@@ -87,17 +87,17 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
         return 1;
     }
 
-    if (drawType == 7) {
+    if (drawType == SHADE_DST_BY_SRC_16) {
         if (m_srcBpp != 1 || static_cast<u8>(mode) != 2) {
             return 0;
         }
     }
-    if (drawType == 0xa || drawType == 0xb) {
+    if (drawType == SHADE_PAL_16 || drawType == SHADE_PAL_ALPHA_16) {
         if (m_srcBpp != 1 || static_cast<u8>(mode) != 2) {
             return 0;
         }
     }
-    if (drawType == 8 || drawType == 0xb) {
+    if (drawType == SHADE_ALPHA_16 || drawType == SHADE_PAL_ALPHA_16) {
         i32 bank = (m_light >> 3) * 0x800;
         m_lutBank0 = Pix16(g_clut + 0x20002 + bank);
         m_lutBank1 = Pix16(g_clut + 0x2 + bank);
@@ -495,7 +495,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                         u8* d = dst0;
                         u8* s = src0;
                         switch (m_drawType) {
-                            case 2: {
+                            case SHADE_DST_BY_SRC: {
                                 u8* pal = m_palDescr->m_data;
                                 memcpy(g_scratch, d, count);
                                 u8* sc = g_scratch;
@@ -508,7 +508,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                 }
                                 break;
                             }
-                            case 3: {
+                            case SHADE_DST_BY_LEVEL: {
                                 u8* pal = m_palDescr->m_data;
                                 memcpy(g_scratch, d, count);
                                 u8* sc = g_scratch;
@@ -520,7 +520,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                 }
                                 break;
                             }
-                            case 7: {
+                            case SHADE_DST_BY_SRC_16: {
                                 u16* pal1 = m_palDescr->Lut16();
                                 u16* pal2 = g_blendDescr->Lut16();
                                 memcpy(g_scratch, d, count * 2);
@@ -536,7 +536,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                 }
                                 break;
                             }
-                            case 8: {
+                            case SHADE_ALPHA_16: {
                                 memcpy(g_scratch, d, count * 2);
                                 u16* sc = Scratch16();
                                 u16* ss2 = Pix16(s);
@@ -575,7 +575,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                     u8* d = dst0;
                     u8* s = src0;
                     switch (m_drawType) {
-                        case 2: {
+                        case SHADE_DST_BY_SRC: {
                             u8* pal = m_palDescr->m_data;
                             u8* sc = g_scratch;
                             memcpy(g_scratch, d, count);
@@ -584,7 +584,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             }
                             break;
                         }
-                        case 7: {
+                        case SHADE_DST_BY_SRC_16: {
                             u16* pal1 = m_palDescr->Lut16();
                             u16* pal2 = g_blendDescr->Lut16();
                             u16* sc = Scratch16();
@@ -597,7 +597,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             }
                             break;
                         }
-                        case 10: {
+                        case SHADE_PAL_16: {
                             u16* pal = m_palDescr->Lut16();
                             for (i = count; i > 0; i--) {
                                 Store16(d, static_cast<u16>(pal[*s++]));
@@ -605,7 +605,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             }
                             break;
                         }
-                        case 8: {
+                        case SHADE_ALPHA_16: {
                             memcpy(g_scratch, d, count * 2);
                             if (m_blendVariant) {
                                 u16* sd = Scratch16();
@@ -636,7 +636,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             }
                             break;
                         }
-                        case 11: {
+                        case SHADE_PAL_ALPHA_16: {
                             u16* pal = m_palDescr->Lut16();
                             memcpy(g_scratch, d, count * 2);
                             if (m_blendVariant) {
@@ -666,7 +666,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             }
                             break;
                         }
-                        case 3: {
+                        case SHADE_DST_BY_LEVEL: {
                             u8* pbase = m_palDescr->m_data;
                             u8* sc = g_scratch;
                             memcpy(g_scratch, d, count);
@@ -675,20 +675,20 @@ void CDDrawShadeBlit::BlitShadedForward(
                             }
                             break;
                         }
-                        case 4: {
+                        case SHADE_SRC_BY_LEVEL: {
                             u8* pbase = m_palDescr->m_data;
                             for (i = count; i > 0; i--) {
                                 *d++ = pbase[(*s++ << 8) + m_light];
                             }
                             break;
                         }
-                        case 5: {
+                        case SHADE_FILL_LEVEL: {
                             for (i = count; i > 0; i--) {
                                 *d++ = static_cast<u8>(m_light);
                             }
                             break;
                         }
-                        case 6: {
+                        case SHADE_LERP_LEVEL: {
                             u8* pal = m_palDescr->m_data;
                             u8* sc = g_scratch;
                             memcpy(g_scratch, d, count);
@@ -743,7 +743,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             u8* d = dd;
                             u8* s = ss;
                             switch (m_drawType) {
-                                case 2: {
+                                case SHADE_DST_BY_SRC: {
                                     u8* pal = m_palDescr->m_data;
                                     memcpy(g_scratch, d, vis);
                                     u8* sc = g_scratch;
@@ -756,7 +756,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     }
                                     break;
                                 }
-                                case 3: {
+                                case SHADE_DST_BY_LEVEL: {
                                     u8* pal = m_palDescr->m_data;
                                     memcpy(g_scratch, d, vis);
                                     u8* sc = g_scratch;
@@ -768,7 +768,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     }
                                     break;
                                 }
-                                case 7: {
+                                case SHADE_DST_BY_SRC_16: {
                                     u16* pal1 = m_palDescr->Lut16();
                                     u16* pal2 = g_blendDescr->Lut16();
                                     memcpy(g_scratch, d, vis * 2);
@@ -784,7 +784,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     }
                                     break;
                                 }
-                                case 8: {
+                                case SHADE_ALPHA_16: {
                                     memcpy(g_scratch, d, vis * 2);
                                     u16* sc = Scratch16();
                                     u16* ss2 = Pix16(s);
@@ -843,7 +843,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             u8* d = dd;
                             u8* s = ss;
                             switch (m_drawType) {
-                                case 2: {
+                                case SHADE_DST_BY_SRC: {
                                     u8* pal = m_palDescr->m_data;
                                     memcpy(g_scratch, d, count);
                                     u8* sc = g_scratch;
@@ -856,7 +856,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     }
                                     break;
                                 }
-                                case 3: {
+                                case SHADE_DST_BY_LEVEL: {
                                     u8* pal = m_palDescr->m_data;
                                     memcpy(g_scratch, d, count);
                                     u8* sc = g_scratch;
@@ -868,7 +868,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     }
                                     break;
                                 }
-                                case 7: {
+                                case SHADE_DST_BY_SRC_16: {
                                     u16* pal1 = m_palDescr->Lut16();
                                     u16* pal2 = g_blendDescr->Lut16();
                                     memcpy(g_scratch, d, count * 2);
@@ -884,7 +884,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     }
                                     break;
                                 }
-                                case 8: {
+                                case SHADE_ALPHA_16: {
                                     memcpy(g_scratch, d, count * 2);
                                     u16* sc = Scratch16();
                                     u16* ss2 = Pix16(s);
@@ -1027,7 +1027,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                         u8* d = dst0;
                         u8* s = src0;
                         switch (m_drawType) {
-                            case 2: {
+                            case SHADE_DST_BY_SRC: {
                                 u8* pbase = m_palDescr->m_data;
                                 memcpy(g_scratch, d - count + 1, count);
                                 u8* sc = &g_scratch[count - 1];
@@ -1040,7 +1040,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 }
                                 break;
                             }
-                            case 3: {
+                            case SHADE_DST_BY_LEVEL: {
                                 u8* pbase = m_palDescr->m_data;
                                 memcpy(g_scratch, d - count + 1, count);
                                 u8* sc = &g_scratch[count - 1];
@@ -1052,7 +1052,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 }
                                 break;
                             }
-                            case 7: {
+                            case SHADE_DST_BY_SRC_16: {
                                 u16* pal1 = m_palDescr->Lut16();
                                 u16* pal2 = g_blendDescr->Lut16();
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
@@ -1068,7 +1068,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 }
                                 break;
                             }
-                            case 8: {
+                            case SHADE_ALPHA_16: {
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
                                 u16* sc = (Scratch16() + count - 1);
                                 u16* ss2 = Pix16(s);
@@ -1110,7 +1110,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                     u8* s = src0;
                     u8* cbase = m_palDescr ? m_palDescr->m_data : s;
                     switch (m_drawType) {
-                        case 2: {
+                        case SHADE_DST_BY_SRC: {
                             memcpy(g_scratch, d - count + 1, count);
                             u8* sc = &g_scratch[count - 1];
                             for (i = count; i > 0; i--) {
@@ -1118,7 +1118,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             }
                             break;
                         }
-                        case 7: {
+                        case SHADE_DST_BY_SRC_16: {
                             u16* pal1 = m_palDescr->Lut16();
                             u16* pal2 = g_blendDescr->Lut16();
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
@@ -1131,7 +1131,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             }
                             break;
                         }
-                        case 10: {
+                        case SHADE_PAL_16: {
                             u16* pal = m_palDescr->Lut16();
                             for (i = count; i > 0; i--) {
                                 Store16(d, static_cast<u16>(pal[*s++]));
@@ -1139,7 +1139,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             }
                             break;
                         }
-                        case 8: {
+                        case SHADE_ALPHA_16: {
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
                             u16* sc = (Scratch16() + count - 1);
                             u16* ss2 = Pix16(s);
@@ -1168,7 +1168,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             }
                             break;
                         }
-                        case 11: {
+                        case SHADE_PAL_ALPHA_16: {
                             u16* pal = m_palDescr->Lut16();
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
                             u16* sc = (Scratch16() + count - 1);
@@ -1197,7 +1197,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             }
                             break;
                         }
-                        case 3: {
+                        case SHADE_DST_BY_LEVEL: {
                             memcpy(g_scratch, d - count + 1, count);
                             u8* sc = &g_scratch[count - 1];
                             for (i = count; i > 0; i--) {
@@ -1205,19 +1205,19 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             }
                             break;
                         }
-                        case 4: {
+                        case SHADE_SRC_BY_LEVEL: {
                             for (i = count; i > 0; i--) {
                                 *d-- = cbase[(*s++ << 8) + m_light];
                             }
                             break;
                         }
-                        case 5: {
+                        case SHADE_FILL_LEVEL: {
                             for (i = count; i > 0; i--) {
                                 *d-- = static_cast<u8>(m_light);
                             }
                             break;
                         }
-                        case 6: {
+                        case SHADE_LERP_LEVEL: {
                             memcpy(g_scratch, d - count - 1, count);
                             u8* sc = &g_scratch[count + 1];
                             for (i = count; i > 0; i--) {
@@ -1268,7 +1268,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                         u8* d = dd;
                         u8* s = ss;
                         switch (m_drawType) {
-                            case 2: {
+                            case SHADE_DST_BY_SRC: {
                                 u8* pbase = m_palDescr->m_data;
                                 memcpy(g_scratch, d - vis + 1, vis);
                                 u8* sc = &g_scratch[vis - 1];
@@ -1281,7 +1281,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 }
                                 break;
                             }
-                            case 3: {
+                            case SHADE_DST_BY_LEVEL: {
                                 u8* pbase = m_palDescr->m_data;
                                 memcpy(g_scratch, d - vis + 1, vis);
                                 u8* sc = &g_scratch[vis - 1];
@@ -1293,7 +1293,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 }
                                 break;
                             }
-                            case 7: {
+                            case SHADE_DST_BY_SRC_16: {
                                 u16* pal1 = m_palDescr->Lut16();
                                 u16* pal2 = g_blendDescr->Lut16();
                                 memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
@@ -1309,7 +1309,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 }
                                 break;
                             }
-                            case 8: {
+                            case SHADE_ALPHA_16: {
                                 memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
                                 u16* sc = (Scratch16() + vis - 1);
                                 u16* ss2 = Pix16(s);
@@ -1424,7 +1424,7 @@ RVA(0x0014c9f0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     i32 i;
     switch (m_drawType) {
-        case 2: {
+        case SHADE_DST_BY_SRC: {
             u8* pal = m_palDescr->m_data;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
@@ -1433,7 +1433,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 7: {
+        case SHADE_DST_BY_SRC_16: {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_blendDescr->Lut16();
             u16* sc = Scratch16();
@@ -1446,7 +1446,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 10: {
+        case SHADE_PAL_16: {
             u16* pal = m_palDescr->Lut16();
             for (i = count; i > 0; i--) {
                 Store16(dst, static_cast<u16>(pal[*src++]));
@@ -1454,7 +1454,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 8: {
+        case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst, count * 2);
             if (m_blendVariant) {
                 u16* sd = Scratch16();
@@ -1483,7 +1483,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 11: {
+        case SHADE_PAL_ALPHA_16: {
             u16* pal = m_palDescr->Lut16();
             memcpy(g_scratch, dst, count * 2);
             if (m_blendVariant) {
@@ -1511,7 +1511,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 3: {
+        case SHADE_DST_BY_LEVEL: {
             u8* base = m_palDescr->m_data;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
@@ -1520,20 +1520,20 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 4: {
+        case SHADE_SRC_BY_LEVEL: {
             u8* base = m_palDescr->m_data;
             for (i = count; i > 0; i--) {
                 *dst++ = base[(*src++ << 8) + m_light];
             }
             break;
         }
-        case 5: {
+        case SHADE_FILL_LEVEL: {
             for (i = count; i > 0; i--) {
                 *dst++ = static_cast<u8>(m_light);
             }
             break;
         }
-        case 6: {
+        case SHADE_LERP_LEVEL: {
             u8* pal = m_palDescr->m_data;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
@@ -1554,7 +1554,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     u8* base = m_palDescr ? m_palDescr->m_data : src;
     i32 i;
     switch (m_drawType) {
-        case 2: {
+        case SHADE_DST_BY_SRC: {
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {
@@ -1562,7 +1562,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 7: {
+        case SHADE_DST_BY_SRC_16: {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
@@ -1575,7 +1575,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 10: {
+        case SHADE_PAL_16: {
             u16* pal = m_palDescr->Lut16();
             for (i = count; i > 0; i--) {
                 Store16(dst, static_cast<u16>(pal[*src++]));
@@ -1583,7 +1583,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 8: {
+        case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (Scratch16() + count - 1);
             u16* ss = Pix16(src);
@@ -1610,7 +1610,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 11: {
+        case SHADE_PAL_ALPHA_16: {
             u16* pal = m_palDescr->Lut16();
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (Scratch16() + count - 1);
@@ -1637,7 +1637,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 3: {
+        case SHADE_DST_BY_LEVEL: {
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {
@@ -1645,19 +1645,19 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             }
             break;
         }
-        case 4: {
+        case SHADE_SRC_BY_LEVEL: {
             for (i = count; i > 0; i--) {
                 *dst-- = base[(*src++ << 8) + m_light];
             }
             break;
         }
-        case 5: {
+        case SHADE_FILL_LEVEL: {
             for (i = count; i > 0; i--) {
                 *dst-- = static_cast<u8>(m_light);
             }
             break;
         }
-        case 6: {
+        case SHADE_LERP_LEVEL: {
             memcpy(g_scratch, dst - count - 1, count);
             u8* sc = &g_scratch[count + 1];
             for (i = count; i > 0; i--) {
@@ -1676,7 +1676,7 @@ RVA(0x0014d5e0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
     switch (m_drawType) {
-        case 2: {
+        case SHADE_DST_BY_SRC: {
             u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
@@ -1689,7 +1689,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             }
             break;
         }
-        case 3: {
+        case SHADE_DST_BY_LEVEL: {
             u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
@@ -1701,7 +1701,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             }
             break;
         }
-        case 7: {
+        case SHADE_DST_BY_SRC_16: {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst, count * 2);
@@ -1717,7 +1717,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             }
             break;
         }
-        case 8: {
+        case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst, count * 2);
             u16* sc = Scratch16();
             u16* ss = Pix16(src);
@@ -1754,7 +1754,7 @@ RVA(0x0014d950, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
     switch (m_drawType) {
-        case 2: {
+        case SHADE_DST_BY_SRC: {
             u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
@@ -1767,7 +1767,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             }
             break;
         }
-        case 3: {
+        case SHADE_DST_BY_LEVEL: {
             u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
@@ -1779,7 +1779,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             }
             break;
         }
-        case 7: {
+        case SHADE_DST_BY_SRC_16: {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
@@ -1795,7 +1795,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             }
             break;
         }
-        case 8: {
+        case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (Scratch16() + count - 1);
             u16* ss = Pix16(src);
@@ -1829,59 +1829,59 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
 }
 
 RVA(0x0014dcf0, 0xa0)
-void SetShadeDescr(CShadeTable* v, int mode) {
+void SetShadeDescr(CShadeTable* v, ShadeMode mode) {
     switch (mode) {
-        case 2:
+        case SHADE_DST_BY_SRC:
             g_shadeDescr208 = v;
             break;
-        case 3:
+        case SHADE_DST_BY_LEVEL:
             g_shadeDescr20c = v;
             break;
-        case 4:
+        case SHADE_SRC_BY_LEVEL:
             g_shadeDescr210 = v;
             break;
-        case 6:
+        case SHADE_LERP_LEVEL:
             g_shadeDescr214 = v;
             break;
-        case 7:
+        case SHADE_DST_BY_SRC_16:
             g_shadeDescr21c = v;
             break;
-        case 10:
+        case SHADE_PAL_16:
             g_shadeDescr220 = v;
             break;
-        case 11:
+        case SHADE_PAL_ALPHA_16:
             g_shadeDescr220 = v;
             break;
-        case 9:
+        case SHADE_GREY_TABLE:
             g_blendDescr = v;
             break;
     }
 }
 
 RVA(0x0014dd90, 0xa0)
-void CDDrawShadeBlit::Select(i32 mode, CShadeTable* descr) {
+void CDDrawShadeBlit::Select(ShadeMode mode, CShadeTable* descr) {
     m_drawType = mode;
     if (descr == 0) {
         switch (mode) {
-            case 2:
+            case SHADE_DST_BY_SRC:
                 m_palDescr = g_shadeDescr208;
                 break;
-            case 3:
+            case SHADE_DST_BY_LEVEL:
                 m_palDescr = g_shadeDescr20c;
                 break;
-            case 4:
+            case SHADE_SRC_BY_LEVEL:
                 m_palDescr = g_shadeDescr210;
                 break;
-            case 6:
+            case SHADE_LERP_LEVEL:
                 m_palDescr = g_shadeDescr214;
                 break;
-            case 7:
+            case SHADE_DST_BY_SRC_16:
                 m_palDescr = g_shadeDescr21c;
                 break;
-            case 10:
+            case SHADE_PAL_16:
                 m_palDescr = g_shadeDescr220;
                 break;
-            case 11:
+            case SHADE_PAL_ALPHA_16:
                 m_palDescr = g_shadeDescr220;
                 break;
         }

@@ -101,14 +101,14 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_COMMAND:
             switch (wParam) {
-                case 2:
+                case IDCANCEL:
                     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
-                case 1: {
+                case IDOK: {
                     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }

@@ -1108,7 +1108,7 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
 }
 
 RVA(0x00152480, 0x4e)
-i32 CDDrawWorker::SetAllTypes(i32 type) {
+i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
@@ -1150,14 +1150,14 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
 }
 
 RVA(0x00152570, 0x24)
-i32 CDDrawWorker::GetFirstFrameState() {
+ShadeMode CDDrawWorker::GetFirstFrameState() {
     CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
     if (frame == 0) {
-        return 1;
+        return SHADE_COPY;
     }
     CDDrawShadeBlit* fmt = frame->m_owned;
     if (fmt == 0) {
-        return 1;
+        return SHADE_COPY;
     }
     return fmt->m_drawType;
 }

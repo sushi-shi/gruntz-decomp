@@ -123,7 +123,7 @@ public:
     i32 Scale(i32 n);
     void UnlockThunk();
 
-    i32 SaveFile(char* buf, i32 type, void* pal, i32 flag);
+    i32 SaveFile(char* buf, FileImageFormat type, void* pal, i32 flag);
     i32 SaveDispatch(char* path, void* pal, i32 flag);
     void Clear(i32 white);
 

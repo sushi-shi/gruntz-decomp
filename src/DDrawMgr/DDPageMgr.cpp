@@ -208,7 +208,7 @@ void CMoviePlayer::Teardown() {
 
 // @early-stop
 RVA(0x0017c570, 0xc0)
-i32 CMoviePlayer::OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
@@ -246,7 +246,7 @@ i32 CMoviePlayer::OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RE
 }
 
 RVA(0x0017c630, 0xc0)
-i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
@@ -290,7 +290,7 @@ RVA(0x0017c6f0, 0x9c)
 i32 CMoviePlayer::Open(
     const char* path,
     i32 entryId,
-    i32 mode,
+    MovieLayout mode,
     i32 useDS,
     POINT* origin,
     RECT* rect
@@ -439,7 +439,7 @@ i32 CMoviePlayer::Frame() {
         m_srcSurf->Unlock(m_srcDesc.lpSurface);
     }
 afterLock:
-    if (m_blitMode != 1) {
+    if (m_blitMode != MOVIE_SINGLE) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
             BlitRegion(
                 m_smackHandle->LastRectx,
@@ -577,7 +577,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 
 // @early-stop
 RVA(0x0017cfc0, 0x2f0)
-i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* rect) {
     if (origin) {
         if (origin->x > m_screenWidth) {
             return 0;
@@ -611,7 +611,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     }
 
     switch (mode) {
-        case 0:
+        case MOVIE_TILE:
             m_tilesAcross = m_screenWidth / m_smackHandle->Width;
             m_tilesDown = m_screenHeight / m_smackHandle->Height;
             if (flags & 0x10) {
@@ -625,7 +625,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_originY = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
             }
             break;
-        case 1:
+        case MOVIE_SINGLE:
             m_tilesAcross = 1;
             m_tilesDown = 1;
             if (flags & 0x10) {
@@ -639,7 +639,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_originY = (m_screenHeight - m_smackHandle->Height) >> 1;
             }
             break;
-        case 2:
+        case MOVIE_TILE_OR_STRETCH:
             if (m_screenWidth % m_smackHandle->Width == 0
                 && m_screenHeight % m_smackHandle->Height == 0) {
                 m_tilesAcross = m_screenWidth / m_smackHandle->Width;
@@ -664,10 +664,10 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
                 m_destRect->right = m_screenWidth;
-                m_blitMode = 1;
+                m_blitMode = MOVIE_SINGLE;
             }
             break;
-        case 3: {
+        case MOVIE_DEST_RECT: {
             m_tilesAcross = 1;
             m_tilesDown = 1;
             m_originX = 0;

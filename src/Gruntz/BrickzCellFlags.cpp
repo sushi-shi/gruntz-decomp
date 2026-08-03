@@ -40,158 +40,167 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     i32 keep = oldFlags & 0x1bf40000;
     i32 edgeBit = oldFlags & 0x20000000;
 
-    switch (typeCode - 1) {
-        case 0:
+    // The switch key is a TileCollisionKind - CTileImageSet::GetCollisionAt(0, 0)
+    // for the cell's tile - so each arm is one tile kind's cell-flag word. Retail
+    // wrote it biased (`switch (typeCode - 1)`), which cl 5.0 normalises: the
+    // unbiased form below compiles to byte-identical .text (verified with
+    // llvm-objdump -s --section=.text on this very obj).
+    // 0x20, 0x24 and 0x9a stay literals: nothing in the tree names them. 0x24
+    // does sink a rolling ball like water (CRollingBall::Update groups it with
+    // TILEKIND_WATER) but it gets its own cell bit 0x800, not water's 0x100, so
+    // calling it water would be a guess.
+    switch (typeCode) {
+        case TILEKIND_SOFT:
             cell->m_flags = 0x1;
             break;
-        case 3:
+        case TILEKIND_SPECIAL:
             cell->m_flags = 0x2;
             break;
-        case 9:
+        case TILEKIND_WATER:
             cell->m_flags = 0x100;
             break;
-        case 10:
+        case TILEKIND_ARROW_UP_A:
             cell->m_flags = 0x80;
             break;
-        case 11:
+        case TILEKIND_ARROW_DOWN_A:
             cell->m_flags = 0x80;
             break;
-        case 12:
+        case TILEKIND_ARROW_LEFT_A:
             cell->m_flags = 0x80;
             break;
-        case 13:
+        case TILEKIND_ARROW_RIGHT_A:
             cell->m_flags = 0x80;
             break;
-        case 14:
+        case TILEKIND_ARROW_UP_B:
             cell->m_flags = 0x80;
             break;
-        case 15:
+        case TILEKIND_ARROW_DOWN_B:
             cell->m_flags = 0x80;
             break;
-        case 16:
+        case TILEKIND_ARROW_LEFT_B:
             cell->m_flags = 0x80;
             break;
-        case 17:
+        case TILEKIND_ARROW_RIGHT_B:
             cell->m_flags = 0x80;
             break;
-        case 18:
+        case TILEKIND_ARROW_CURRENT:
             cell->m_flags = 0x80;
             break;
-        case 29:
+        case TILEKIND_GAUNTLET_ROCK_A:
             cell->m_flags = 0x2021;
             break;
-        case 30:
+        case TILEKIND_GAUNTLET_ROCK_B:
             cell->m_flags = 0x2021;
             break;
-        case 31:
+        case 0x20:
             cell->m_flags = 0x400;
             break;
-        case 32:
+        case TILEKIND_GIANT_ROCK:
             cell->m_flags = 0x2021;
             break;
-        case 33:
+        case TILEKIND_COVERED_POWERUP:
             cell->m_flags = 0x10000;
             break;
-        case 34:
+        case TILEKIND_REVEALED_POWERUP:
             cell->m_flags = 0x42;
             break;
-        case 35:
+        case 0x24:
             cell->m_flags = 0x800;
             break;
-        case 50:
+        case TILEKIND_SWITCH_A:
             cell->m_flags = 0x4;
             break;
-        case 51:
+        case TILEKIND_SWITCH_A_UP:
             cell->m_flags = 0x4;
             break;
-        case 52:
+        case TILEKIND_SWITCH_B:
             cell->m_flags = 0x4;
             break;
-        case 53:
+        case TILEKIND_SWITCH_B_UP:
             cell->m_flags = 0x4;
             break;
-        case 54:
+        case TILEKIND_MULTI_SWITCH:
             cell->m_flags = 0x4;
             break;
-        case 55:
+        case TILEKIND_MULTI_SWITCH_UP:
             cell->m_flags = 0x4;
             break;
-        case 56:
+        case TILEKIND_SWITCH_C:
             cell->m_flags = 0x4;
             break;
-        case 57:
+        case TILEKIND_SWITCH_C_UP:
             cell->m_flags = 0x4;
             break;
-        case 58:
+        case TILEKIND_EXCLUSIVE_SWITCH:
             cell->m_flags = 0x4;
             break;
-        case 59:
+        case TILEKIND_EXCLUSIVE_SWITCH_UP:
             cell->m_flags = 0x4;
             break;
-        case 60:
+        case TILEKIND_SECRET_SWITCH:
             cell->m_flags = 0x4;
             break;
-        case 61:
+        case TILEKIND_SECRET_SWITCH_UP:
             cell->m_flags = 0x4;
             break;
-        case 62:
+        case TILEKIND_TIME_SWITCH:
             cell->m_flags = 0x4;
             break;
-        case 63:
+        case TILEKIND_TIME_SWITCH_UP:
             cell->m_flags = 0x4;
             break;
-        case 64:
+        case TILEKIND_CHECKPOINT:
             cell->m_flags = 0x4;
             break;
-        case 65:
+        case TILEKIND_CHECKPOINT_UP:
             cell->m_flags = 0x4;
             break;
-        case 92:
+        case TILEKIND_CHECKPOINTPYRAMID_DOWN:
             cell->m_flags = 0x4002008;
             break;
-        case 94:
+        case TILEKIND_WHITEPYRAMID_DOWN:
             cell->m_flags = 0x4002008;
             break;
-        case 96:
+        case TILEKIND_ORANGEPYRAMID_DOWN:
             cell->m_flags = 0x4002008;
             break;
-        case 98:
+        case TILEKIND_BLACKPYRAMID_DOWN:
             cell->m_flags = 0x4002008;
             break;
-        case 100:
+        case TILEKIND_GREENPYRAMID_DOWN:
             cell->m_flags = 0x4002008;
             break;
-        case 102:
+        case TILEKIND_REDPYRAMID_DOWN:
             cell->m_flags = 0x4002008;
             break;
-        case 104:
+        case TILEKIND_PURPLEPYRAMID_DOWN:
             cell->m_flags = 0x4002008;
             break;
-        case 107:
+        case TILEKIND_WATERBRIDGE_UP:
             cell->m_flags = 0x108;
             break;
-        case 109:
+        case TILEKIND_DEATHBRIDGE_UP:
             cell->m_flags = 0xa;
             break;
-        case 113:
+        case TILEKIND_TOGGLEWATERBRIDGE_UP:
             cell->m_flags = 0x300;
             break;
-        case 115:
+        case TILEKIND_TOGGLEDEATHBRIDGE_UP:
             cell->m_flags = 0x202;
             break;
-        case 149:
+        case TILEKIND_HIDDEN_POWERUP:
             cell->m_flags = 0x8000;
             break;
-        case 150:
+        case TILEKIND_GAUNTLET_BRICK_A:
             cell->m_flags = 0x6021;
             break;
-        case 151:
+        case TILEKIND_GAUNTLET_BRICK_B:
             cell->m_flags = 0x6021;
             break;
-        case 152:
+        case TILEKIND_GAUNTLET_BRICK_C:
             cell->m_flags = 0x6021;
             break;
-        case 153:
+        case 0x9a:
             cell->m_flags = 0x2001;
             break;
         default:

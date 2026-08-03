@@ -58,7 +58,7 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
     CShadeTable* n = g_gameReg->m_logicPump->m_tables[5];
     o->m_drawActive = 1;
-    o->m_drawFillCmd = 0x7;
+    o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     o->m_drawFillArg = n;
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
@@ -77,7 +77,7 @@ i32 CRainCloud::SerializeMove(CFileMemBase* stream, SerialMode tag, LogicTypeId 
         CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
-        o->m_drawFillCmd = 7;
+        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
         o->m_drawFillArg = x;
     }
     return 1;

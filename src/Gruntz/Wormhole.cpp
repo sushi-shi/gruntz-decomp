@@ -110,7 +110,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     CWwdGameObjectA* s = m_object;
     s->m_drawActive = 1;
-    s->m_drawFillCmd = 7;
+    s->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     s->m_drawFillArg = color;
 }
 
@@ -136,7 +136,7 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CG
 
         CWwdGameObjectA* s = m_object;
         s->m_drawActive = 1;
-        s->m_drawFillCmd = 7;
+        s->m_drawFillCmd = SHADE_DST_BY_SRC_16;
         s->m_drawFillArg = color;
     }
     return 1;
@@ -277,7 +277,7 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(placeIndex, 0);
     CWwdGameObjectA* obj = m_object;
     obj->m_drawActive = 1;
-    obj->m_drawFillCmd = 0xa;
+    obj->m_drawFillCmd = SHADE_PAL_16;
     obj->m_drawFillArg = rec;
     m_wwdObject->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -369,7 +369,7 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
             CGameObject* obj = m_object;
             obj->m_drawFillArg = sel;
             obj->m_drawActive = 1;
-            obj->m_drawFillCmd = 0xa;
+            obj->m_drawFillCmd = SHADE_PAL_16;
             break;
         }
     }
@@ -414,7 +414,7 @@ void CTeleporter::LoadColors() {
     CWwdGameObjectA* s = m_object;
     CShadeTable* colorEntry = g_gameReg->m_logicPump->m_tables[s->m_health];
     s->m_drawActive = 1;
-    s->m_drawFillCmd = 7;
+    s->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     s->m_drawFillArg = colorEntry;
 }
 

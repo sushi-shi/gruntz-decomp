@@ -70,7 +70,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     CShadeTable* rec = g_gameReg->m_logicPump->m_tables[powerup];
     CWwdGameObjectA* r = m_object;
     r->m_drawActive = 1;
-    r->m_drawFillCmd = 7;
+    r->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     r->m_drawFillArg = rec;
     m_wwdObject->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -115,7 +115,7 @@ i32 CGruntPowerupSprite::SerializeMove(
             CShadeTable* v = g_gameReg->m_logicPump->m_tables[id];
             r->m_drawActive = 1;
             r->m_drawFillArg = v;
-            r->m_drawFillCmd = 7;
+            r->m_drawFillCmd = SHADE_DST_BY_SRC_16;
             break;
         }
     }

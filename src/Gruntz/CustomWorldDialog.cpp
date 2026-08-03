@@ -74,14 +74,14 @@ RVA(0x0003ae60, 0xec)
 INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
     switch (msg) {
-        case 0x110:
+        case WM_INITDIALOG:
             g_customLevelList = GetDlgItem(hDlg, 0x3fc);
             if (g_customLevelList) {
                 FillCustomLevelList(hDlg);
             }
             return 1;
-        case 0x111:
-            if (wParam == 2) {
+        case WM_COMMAND:
+            if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
                 return 1;
             }
@@ -89,7 +89,7 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                 LoadCustomWorldInfo(hDlg);
                 return 1;
             }
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 LoadCustomWorldSelection(hDlg);
                 EndDialog(hDlg, 1);
                 return 1;
@@ -97,12 +97,12 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
             MsgParam listWnd;
             listWnd.m_hwnd = g_customLevelList;
             if (g_customLevelList != 0 && lParam == listWnd.m_lparam) {
-                if (HIWORD(wParam) == 1) {
+                if (HIWORD(wParam) == LBN_SELCHANGE) {
                     FillLevelInfoDialog(hDlg);
                     return 1;
                 }
-                if (HIWORD(wParam) == 2) {
-                    PostMessageA(hDlg, 0x111, 1, 0);
+                if (HIWORD(wParam) == LBN_DBLCLK) {
+                    PostMessageA(hDlg, WM_COMMAND, IDOK, 0);
                     return 1;
                 }
             }
@@ -238,7 +238,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
 RVA(0x0003b600, 0x15f)
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case 0x110: {
+        case WM_INITDIALOG: {
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
@@ -263,8 +263,8 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             }
             return 1;
         }
-        case 0x111:
-            if (wParam == 1) {
+        case WM_COMMAND:
+            if (wParam == IDOK) {
                 EndDialog(hDlg, 1);
                 return 1;
             }

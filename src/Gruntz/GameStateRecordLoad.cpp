@@ -276,14 +276,14 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, flag);
     CWwdGameObjectA* cb = m_object;
     cb->m_drawActive = 1;
-    cb->m_drawFillCmd = 0xa;
+    cb->m_drawFillCmd = SHADE_PAL_16;
     cb->m_drawFillArg = r;
 
     if (m_gruntKind == GRUNT_GHOST) {
         CWwdGameObjectA* cb2 = m_object;
         i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
         cb2->m_drawActive = 1;
-        cb2->m_drawFillCmd = 0xb;
+        cb2->m_drawFillCmd = SHADE_PAL_ALPHA_16;
         cb2->m_fillFraction = v;
     }
     return 1;

@@ -89,7 +89,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         0
                     );
                     cur->m_drawActive = 1;
-                    cur->m_drawFillCmd = 0xa;
+                    cur->m_drawFillCmd = SHADE_PAL_16;
                     cur->m_drawFillArg = tbl;
                     if (hitPlayer == g_curPlayer) {
                         CoordPoolNode* head = g_coordPool.m_freeHead;
@@ -114,7 +114,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         0
                     );
                     cur->m_drawActive = 1;
-                    cur->m_drawFillCmd = 0xa;
+                    cur->m_drawFillCmd = SHADE_PAL_16;
                     cur->m_drawFillArg = tbl;
                 }
             }

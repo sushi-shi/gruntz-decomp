@@ -5,6 +5,7 @@
 
 #include <MfcWin.h>
 
+#include <Enums.h>
 #include <Gruntz/ObList.h>
 #include <Gruntz/String.h>
 #include <Ints.h>
@@ -15,6 +16,23 @@ class CString;
 struct HWND__;
 struct tagMEASUREITEMSTRUCT;
 struct tagDRAWITEMSTRUCT;
+
+// Resource control ids of the player-slot dialog template, shared by the
+// Battlez setup dialog (CBattlezDlg) and the multiplayer start dialog
+// (CMultiStartDlg). A constant BAG, never a variable's type - every carrier is
+// an MFC `int nID` (GetDlgItem, OnDrawItem, the ON_* message-map entries).
+//
+// Only the four owner-draw colour swatches are named: each is wired by
+// ON_BN_CLICKED to that slot's ApplyColorSlotN, returned by GetCtrlD(N),
+// invalidated after SetSlotValue(N, ...), and painted by OnDrawItem from
+// m_options[N].m_colorIndex. The rest of the 0x4xx-0x5xx space is the same
+// domain but has no per-value evidence, so it stays literal.
+GZ_ENUM_CONST_BEGIN(DialogCtrlId)
+    CTRL_PLAYER_COLOR0 = 0x501,
+    CTRL_PLAYER_COLOR1 = 0x503,
+    CTRL_PLAYER_COLOR2 = 0x505,
+    CTRL_PLAYER_COLOR3 = 0x507
+GZ_ENUM_CONST_END(DialogCtrlId)
 
 extern "C" HWND g_sharedFlag;
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);

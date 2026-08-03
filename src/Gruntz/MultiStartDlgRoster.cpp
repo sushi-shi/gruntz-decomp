@@ -205,7 +205,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
     i32 bDraw = 0;
     switch (nIDCtl) {
-        case 0x501:
+        case CTRL_PLAYER_COLOR0:
             if (GetCtrlD(0)->IsWindowEnabled()) {
                 switch (m_host->m_options[0].m_colorIndex) {
                     case TINT_DKBLUE:
@@ -266,7 +266,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             }
             bDraw = 1;
             break;
-        case 0x503:
+        case CTRL_PLAYER_COLOR1:
             if (GetCtrlD(1)->IsWindowEnabled()) {
                 switch (m_host->m_options[1].m_colorIndex) {
                     case TINT_DKBLUE:
@@ -327,7 +327,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             }
             bDraw = 1;
             break;
-        case 0x505:
+        case CTRL_PLAYER_COLOR2:
             if (GetCtrlD(2)->IsWindowEnabled()) {
                 switch (m_host->m_options[2].m_colorIndex) {
                     case TINT_DKBLUE:
@@ -388,7 +388,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             }
             bDraw = 1;
             break;
-        case 0x507:
+        case CTRL_PLAYER_COLOR3:
             if (GetCtrlD(3)->IsWindowEnabled()) {
                 switch (m_host->m_options[3].m_colorIndex) {
                     case TINT_DKBLUE:
@@ -472,7 +472,7 @@ void CMultiStartDlg::OnColorSlot0() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(0, dlg.m_pickedColor)) {
             Drive();
-            GetDlgItem(0x501)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(0, 1);
         }
     }
 }
@@ -489,7 +489,7 @@ void CMultiStartDlg::OnColorSlot1() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(1, dlg.m_pickedColor)) {
             Drive();
-            GetDlgItem(0x503)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(0, 1);
         }
     }
 }
@@ -506,7 +506,7 @@ void CMultiStartDlg::OnColorSlot2() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(2, dlg.m_pickedColor)) {
             Drive();
-            GetDlgItem(0x505)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(0, 1);
         }
     }
 }
@@ -523,7 +523,7 @@ void CMultiStartDlg::OnColorSlot3() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(3, dlg.m_pickedColor)) {
             Drive();
-            GetDlgItem(0x507)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(0, 1);
         }
     }
 }
@@ -699,10 +699,10 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
         }
         ok->EnableWindow(f18 & f1c);
     }
-    ::InvalidateRect(this->GetDlgItem(0x501)->m_hWnd, 0, 1);
-    ::InvalidateRect(this->GetDlgItem(0x503)->m_hWnd, 0, 1);
-    ::InvalidateRect(this->GetDlgItem(0x505)->m_hWnd, 0, 1);
-    ::InvalidateRect(this->GetDlgItem(0x507)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR2)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR3)->m_hWnd, 0, 1);
     return 1;
 }
 

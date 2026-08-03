@@ -44,7 +44,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
         }
     }
     m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 0x8;
+    m_object->m_drawFillCmd = SHADE_ALPHA_16;
     m_object->m_fillFraction = 0x80;
     m_object->m_area.left = 0;
     m_object->m_area.right = 0;
@@ -60,7 +60,11 @@ i32 CUFO::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameO
     if (mode == SERIAL_POSTLOAD) {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
-        o->m_drawFillCmd = mode;
+        // Two domains, one slot, and the SHAPE is byte-evidenced: retail stores
+        // the register holding `mode` (`mov [eax+0x50],edi`), not an immediate.
+        // SERIAL_POSTLOAD and SHADE_ALPHA_16 are both 8, and CUFO's ctor sets
+        // that same SHADE_ALPHA_16 / 0x80 pair on this object.
+        o->m_drawFillCmd = static_cast<ShadeMode>(mode);
         o->m_fillFraction = 0x80;
     }
     return 1;

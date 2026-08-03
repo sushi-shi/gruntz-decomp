@@ -42,10 +42,10 @@ public:
 
     virtual i32 ReloadFrame(CParseSource* rec, i32 n, i32 flag);
 
-    i32 SetAllTypes(i32 type);
+    i32 SetAllTypes(ShadeMode type);
     i32 SetAllFormats(CShadeTable* shade);
     i32 SetAllLightLevels(i32 value);
-    i32 GetFirstFrameState();
+    ShadeMode GetFirstFrameState();
     i32 GetMemoryUsage(i32 raw);
     i32 FindFrame(CImage* frame, char* outName, i32* outIndex);
 

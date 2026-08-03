@@ -10,6 +10,7 @@
 #include <Ints.h>
 
 struct CShadeTable;
+GZ_ENUM_FORWARD(ShadeMode);
 
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
@@ -36,7 +37,7 @@ public:
         i32 extra
     ) OVERRIDE;
 
-    i32 ShowFrames(i32 show, CShadeTable* palDescr);
+    i32 ShowFrames(ShadeMode show, CShadeTable* palDescr);
 
     i32 SetState(i32 dir);
 

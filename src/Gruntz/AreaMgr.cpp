@@ -57,6 +57,8 @@ i32 CAreaMgr::InitializeLevel(i32 index) {
     }
     Reset();
     m_currentLevelIndex = index;
+    // `index` is not a domain - it is the level ORDINAL, and every arm is that
+    // same number's InitializeLevelNN.
     switch (index) {
         case 1:
             return InitializeLevel01();

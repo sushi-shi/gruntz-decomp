@@ -431,16 +431,16 @@ CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
     switch (index) {
         case 0:
-            result = GetDlgItem(0x501);
+            result = GetDlgItem(CTRL_PLAYER_COLOR0);
             break;
         case 1:
-            result = GetDlgItem(0x503);
+            result = GetDlgItem(CTRL_PLAYER_COLOR1);
             break;
         case 2:
-            result = GetDlgItem(0x505);
+            result = GetDlgItem(CTRL_PLAYER_COLOR2);
             break;
         case 3:
-            result = GetDlgItem(0x507);
+            result = GetDlgItem(CTRL_PLAYER_COLOR3);
             break;
     }
     return result;

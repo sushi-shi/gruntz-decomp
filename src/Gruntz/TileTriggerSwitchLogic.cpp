@@ -6,6 +6,7 @@
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
+#include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -942,40 +943,40 @@ CTileActionEvent::CTileActionEvent() {
 RVA(0x00112da0, 0xf0)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
-    if (m_playerFlags[g_curPlayer] == 0 && static_cast<u32>((code - 0x12f)) <= 0x1a) {
+    if (m_playerFlags[g_curPlayer] == 0 && static_cast<u32>((code - BRICKTILE_BROWN_1)) <= 0x1a) {
         switch (code) {
-            case 0x12f:
-            case 0x132:
-            case 0x138:
-            case 0x13e:
-            case 0x144:
-                code = 0x12f;
+            case BRICKTILE_BROWN_1:
+            case BRICKTILE_RED_1:
+            case BRICKTILE_BLUE_1:
+            case BRICKTILE_GOLD_1:
+            case BRICKTILE_BLACK_1:
+                code = BRICKTILE_BROWN_1;
                 break;
-            case 0x130:
-            case 0x133:
-            case 0x134:
-            case 0x139:
-            case 0x13a:
-            case 0x13f:
-            case 0x140:
-            case 0x145:
-            case 0x146:
-                code = 0x130;
+            case BRICKTILE_BROWN_2:
+            case BRICKTILE_RED_2_LOW:
+            case BRICKTILE_RED_2_TOP:
+            case BRICKTILE_BLUE_2_LOW:
+            case BRICKTILE_BLUE_2_TOP:
+            case BRICKTILE_GOLD_2_LOW:
+            case BRICKTILE_GOLD_2_TOP:
+            case BRICKTILE_BLACK_2_LOW:
+            case BRICKTILE_BLACK_2_TOP:
+                code = BRICKTILE_BROWN_2;
                 break;
-            case 0x131:
-            case 0x135:
-            case 0x136:
-            case 0x137:
-            case 0x13b:
-            case 0x13c:
-            case 0x13d:
-            case 0x141:
-            case 0x142:
-            case 0x143:
-            case 0x147:
-            case 0x148:
-            case 0x149:
-                code = 0x131;
+            case BRICKTILE_BROWN_3:
+            case BRICKTILE_RED_3_LOW:
+            case BRICKTILE_RED_3_MID:
+            case BRICKTILE_RED_3_TOP:
+            case BRICKTILE_BLUE_3_LOW:
+            case BRICKTILE_BLUE_3_MID:
+            case BRICKTILE_BLUE_3_TOP:
+            case BRICKTILE_GOLD_3_LOW:
+            case BRICKTILE_GOLD_3_MID:
+            case BRICKTILE_GOLD_3_TOP:
+            case BRICKTILE_BLACK_3_LOW:
+            case BRICKTILE_BLACK_3_MID:
+            case BRICKTILE_BLACK_3_TOP:
+                code = BRICKTILE_BROWN_3;
                 break;
         }
     }
@@ -998,117 +999,117 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 newCode = m_actionCode;
     i32 effect = 0;
     switch (m_actionCode) {
-        case 0x12f:
-            newCode = 0x12d;
+        case BRICKTILE_BROWN_1:
+            newCode = BRICKTILE_CLEARED;
             break;
-        case 0x130:
-            newCode = 0x12f;
+        case BRICKTILE_BROWN_2:
+            newCode = BRICKTILE_BROWN_1;
             break;
-        case 0x131:
-            newCode = 0x130;
+        case BRICKTILE_BROWN_3:
+            newCode = BRICKTILE_BROWN_2;
             break;
-        case 0x132:
-            effect = 0x132;
-            newCode = 0x12d;
+        case BRICKTILE_RED_1:
+            effect = BRICKTILE_RED_1;
+            newCode = BRICKTILE_CLEARED;
             break;
-        case 0x133:
-            newCode = 0x132;
+        case BRICKTILE_RED_2_LOW:
+            newCode = BRICKTILE_RED_1;
             break;
-        case 0x134:
-            effect = 0x132;
-            newCode = 0x12f;
+        case BRICKTILE_RED_2_TOP:
+            effect = BRICKTILE_RED_1;
+            newCode = BRICKTILE_BROWN_1;
             break;
-        case 0x135:
-            newCode = 0x133;
+        case BRICKTILE_RED_3_LOW:
+            newCode = BRICKTILE_RED_2_LOW;
             break;
-        case 0x136:
-            newCode = 0x134;
+        case BRICKTILE_RED_3_MID:
+            newCode = BRICKTILE_RED_2_TOP;
             break;
-        case 0x137:
-            effect = 0x132;
-            newCode = 0x130;
+        case BRICKTILE_RED_3_TOP:
+            effect = BRICKTILE_RED_1;
+            newCode = BRICKTILE_BROWN_2;
             break;
-        case 0x138:
-            effect = 0x138;
-            newCode = 0x12d;
+        case BRICKTILE_BLUE_1:
+            effect = BRICKTILE_BLUE_1;
+            newCode = BRICKTILE_CLEARED;
             break;
-        case 0x139:
-            newCode = 0x138;
+        case BRICKTILE_BLUE_2_LOW:
+            newCode = BRICKTILE_BLUE_1;
             break;
-        case 0x13a:
-            effect = 0x138;
-            newCode = 0x12f;
+        case BRICKTILE_BLUE_2_TOP:
+            effect = BRICKTILE_BLUE_1;
+            newCode = BRICKTILE_BROWN_1;
             break;
-        case 0x13b:
-            newCode = 0x139;
+        case BRICKTILE_BLUE_3_LOW:
+            newCode = BRICKTILE_BLUE_2_LOW;
             break;
-        case 0x13c:
-            newCode = 0x13a;
+        case BRICKTILE_BLUE_3_MID:
+            newCode = BRICKTILE_BLUE_2_TOP;
             break;
-        case 0x13d:
-            effect = 0x138;
-            newCode = 0x130;
+        case BRICKTILE_BLUE_3_TOP:
+            effect = BRICKTILE_BLUE_1;
+            newCode = BRICKTILE_BROWN_2;
             break;
-        case 0x13e:
-            effect = 0x13e;
+        case BRICKTILE_GOLD_1:
+            effect = BRICKTILE_GOLD_1;
             if (brick != 0) {
                 break;
             }
-            newCode = 0x12d;
+            newCode = BRICKTILE_CLEARED;
             break;
-        case 0x13f:
-            newCode = 0x13e;
+        case BRICKTILE_GOLD_2_LOW:
+            newCode = BRICKTILE_GOLD_1;
             break;
-        case 0x140:
-            effect = 0x13e;
+        case BRICKTILE_GOLD_2_TOP:
+            effect = BRICKTILE_GOLD_1;
             if (brick != 0) {
                 break;
             }
-            newCode = 0x12f;
+            newCode = BRICKTILE_BROWN_1;
             break;
-        case 0x141:
-            newCode = 0x13f;
+        case BRICKTILE_GOLD_3_LOW:
+            newCode = BRICKTILE_GOLD_2_LOW;
             break;
-        case 0x142:
-            newCode = 0x140;
+        case BRICKTILE_GOLD_3_MID:
+            newCode = BRICKTILE_GOLD_2_TOP;
             break;
-        case 0x143:
-            effect = 0x13e;
+        case BRICKTILE_GOLD_3_TOP:
+            effect = BRICKTILE_GOLD_1;
             if (brick != 0) {
                 break;
             }
-            newCode = 0x130;
+            newCode = BRICKTILE_BROWN_2;
             break;
-        case 0x144:
-            effect = 0x144;
-            newCode = 0x12d;
+        case BRICKTILE_BLACK_1:
+            effect = BRICKTILE_BLACK_1;
+            newCode = BRICKTILE_CLEARED;
             break;
-        case 0x145:
-            newCode = 0x144;
+        case BRICKTILE_BLACK_2_LOW:
+            newCode = BRICKTILE_BLACK_1;
             break;
-        case 0x146:
-            effect = 0x144;
-            newCode = 0x12f;
+        case BRICKTILE_BLACK_2_TOP:
+            effect = BRICKTILE_BLACK_1;
+            newCode = BRICKTILE_BROWN_1;
             break;
-        case 0x147:
-            newCode = 0x145;
+        case BRICKTILE_BLACK_3_LOW:
+            newCode = BRICKTILE_BLACK_2_LOW;
             break;
-        case 0x148:
-            newCode = 0x146;
+        case BRICKTILE_BLACK_3_MID:
+            newCode = BRICKTILE_BLACK_2_TOP;
             break;
-        case 0x149:
-            effect = 0x144;
-            newCode = 0x130;
+        case BRICKTILE_BLACK_3_TOP:
+            effect = BRICKTILE_BLACK_1;
+            newCode = BRICKTILE_BROWN_2;
             break;
     }
 
     if (effect != 0 && brick != 0) {
-        if (effect == 0x132) {
+        if (effect == BRICKTILE_RED_1) {
             brick->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
             brick->m_entranceActive = 0;
-        } else if (effect == 0x138) {
+        } else if (effect == BRICKTILE_BLUE_1) {
             g_gameReg->m_cmdGrid->CombatCue((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
-        } else if (effect == 0x13e) {
+        } else if (effect == BRICKTILE_GOLD_1) {
             i32 px = (m_tileX << 5) + 0x10;
             i32 py = (m_tileY << 5) + 0x10;
             if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
@@ -1132,7 +1133,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             m_playerFlags[brick->m_tileOwnerHi] = 1;
             SetActionCode(m_actionCode);
             return 0;
-        } else if (effect == 0x144) {
+        } else if (effect == BRICKTILE_BLACK_1) {
             g_gameReg->m_cmdGrid
                 ->LoadExplosionSprites((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
         }
@@ -1148,16 +1149,16 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
 
             switch (effect) {
-                case 0x132:
+                case BRICKTILE_RED_1:
                     spr->ApplyName("GAME_REDBRICKBREAK");
                     break;
-                case 0x138:
+                case BRICKTILE_BLUE_1:
                     spr->ApplyName("GAME_BLUEBRICKBREAK");
                     break;
-                case 0x13e:
+                case BRICKTILE_GOLD_1:
                     spr->ApplyName("GAME_GOLDBRICKBREAK");
                     break;
-                case 0x144:
+                case BRICKTILE_BLACK_1:
                     spr->ApplyName("GAME_BLACKBRICKBREAK");
                     break;
                 default:
@@ -1173,15 +1174,15 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     if (newCode != m_actionCode) {
         SetActionCode(newCode);
     }
-    return newCode == 0x12d;
+    return newCode == BRICKTILE_CLEARED;
 }
 
 RVA(0x00113420, 0x350)
 i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
-    if (toolId == 0x22) {
+    if (toolId == PICKUP_BROWNBRICK) {
         switch (m_actionCode) {
-            case 0x12f:
-                m_actionCode = 0x130;
+            case BRICKTILE_BROWN_1:
+                m_actionCode = BRICKTILE_BROWN_2;
 
             commit: {
 
@@ -1202,136 +1203,136 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
                 SetActionCode(m_actionCode);
                 return 1;
             }
-            case 0x132:
-                m_actionCode = 0x133;
+            case BRICKTILE_RED_1:
+                m_actionCode = BRICKTILE_RED_2_LOW;
                 goto commit;
-            case 0x138:
-                m_actionCode = 0x139;
+            case BRICKTILE_BLUE_1:
+                m_actionCode = BRICKTILE_BLUE_2_LOW;
                 goto commit;
-            case 0x13e:
-                m_actionCode = 0x13f;
+            case BRICKTILE_GOLD_1:
+                m_actionCode = BRICKTILE_GOLD_2_LOW;
                 goto commit;
-            case 0x144:
-                m_actionCode = 0x145;
+            case BRICKTILE_BLACK_1:
+                m_actionCode = BRICKTILE_BLACK_2_LOW;
                 goto commit;
-            case 0x130:
-                m_actionCode = 0x131;
+            case BRICKTILE_BROWN_2:
+                m_actionCode = BRICKTILE_BROWN_3;
                 goto commit;
-            case 0x133:
-                m_actionCode = 0x135;
+            case BRICKTILE_RED_2_LOW:
+                m_actionCode = BRICKTILE_RED_3_LOW;
                 goto commit;
-            case 0x134:
-                m_actionCode = 0x136;
+            case BRICKTILE_RED_2_TOP:
+                m_actionCode = BRICKTILE_RED_3_MID;
                 goto commit;
-            case 0x139:
-                m_actionCode = 0x13b;
+            case BRICKTILE_BLUE_2_LOW:
+                m_actionCode = BRICKTILE_BLUE_3_LOW;
                 goto commit;
-            case 0x13a:
-                m_actionCode = 0x13c;
+            case BRICKTILE_BLUE_2_TOP:
+                m_actionCode = BRICKTILE_BLUE_3_MID;
                 goto commit;
-            case 0x13f:
-                m_actionCode = 0x141;
+            case BRICKTILE_GOLD_2_LOW:
+                m_actionCode = BRICKTILE_GOLD_3_LOW;
                 goto commit;
-            case 0x140:
-                m_actionCode = 0x142;
+            case BRICKTILE_GOLD_2_TOP:
+                m_actionCode = BRICKTILE_GOLD_3_MID;
                 goto commit;
-            case 0x145:
-                m_actionCode = 0x147;
+            case BRICKTILE_BLACK_2_LOW:
+                m_actionCode = BRICKTILE_BLACK_3_LOW;
                 goto commit;
-            case 0x146:
-                m_actionCode = 0x148;
-                goto commit;
-            default:
-                return 0;
-        }
-    } else if (toolId == 0x23) {
-        switch (m_actionCode) {
-            case 0x12f:
-            case 0x132:
-            case 0x138:
-            case 0x13e:
-            case 0x144:
-                m_actionCode = 0x134;
-                goto commit;
-            case 0x130:
-            case 0x133:
-            case 0x134:
-            case 0x139:
-            case 0x13a:
-            case 0x13f:
-            case 0x140:
-            case 0x145:
-            case 0x146:
-                m_actionCode = 0x137;
+            case BRICKTILE_BLACK_2_TOP:
+                m_actionCode = BRICKTILE_BLACK_3_MID;
                 goto commit;
             default:
                 return 0;
         }
-    } else if (toolId == 0x24) {
+    } else if (toolId == PICKUP_REDBRICK) {
         switch (m_actionCode) {
-            case 0x12f:
-            case 0x132:
-            case 0x138:
-            case 0x13e:
-            case 0x144:
-                m_actionCode = 0x13a;
+            case BRICKTILE_BROWN_1:
+            case BRICKTILE_RED_1:
+            case BRICKTILE_BLUE_1:
+            case BRICKTILE_GOLD_1:
+            case BRICKTILE_BLACK_1:
+                m_actionCode = BRICKTILE_RED_2_TOP;
                 goto commit;
-            case 0x130:
-            case 0x133:
-            case 0x134:
-            case 0x139:
-            case 0x13a:
-            case 0x13f:
-            case 0x140:
-            case 0x145:
-            case 0x146:
-                m_actionCode = 0x13d;
+            case BRICKTILE_BROWN_2:
+            case BRICKTILE_RED_2_LOW:
+            case BRICKTILE_RED_2_TOP:
+            case BRICKTILE_BLUE_2_LOW:
+            case BRICKTILE_BLUE_2_TOP:
+            case BRICKTILE_GOLD_2_LOW:
+            case BRICKTILE_GOLD_2_TOP:
+            case BRICKTILE_BLACK_2_LOW:
+            case BRICKTILE_BLACK_2_TOP:
+                m_actionCode = BRICKTILE_RED_3_TOP;
                 goto commit;
             default:
                 return 0;
         }
-    } else if (toolId == 0x26) {
+    } else if (toolId == PICKUP_BLUEBRICK) {
         switch (m_actionCode) {
-            case 0x12f:
-            case 0x132:
-            case 0x138:
-            case 0x13e:
-            case 0x144:
-                m_actionCode = 0x146;
+            case BRICKTILE_BROWN_1:
+            case BRICKTILE_RED_1:
+            case BRICKTILE_BLUE_1:
+            case BRICKTILE_GOLD_1:
+            case BRICKTILE_BLACK_1:
+                m_actionCode = BRICKTILE_BLUE_2_TOP;
                 goto commit;
-            case 0x130:
-            case 0x133:
-            case 0x134:
-            case 0x139:
-            case 0x13a:
-            case 0x13f:
-            case 0x140:
-            case 0x145:
-            case 0x146:
-                m_actionCode = 0x149;
+            case BRICKTILE_BROWN_2:
+            case BRICKTILE_RED_2_LOW:
+            case BRICKTILE_RED_2_TOP:
+            case BRICKTILE_BLUE_2_LOW:
+            case BRICKTILE_BLUE_2_TOP:
+            case BRICKTILE_GOLD_2_LOW:
+            case BRICKTILE_GOLD_2_TOP:
+            case BRICKTILE_BLACK_2_LOW:
+            case BRICKTILE_BLACK_2_TOP:
+                m_actionCode = BRICKTILE_BLUE_3_TOP;
                 goto commit;
             default:
                 return 0;
         }
-    } else if (toolId == 0x25) {
+    } else if (toolId == PICKUP_BLACKBRICK) {
         switch (m_actionCode) {
-            case 0x12f:
-            case 0x132:
-            case 0x138:
-            case 0x13e:
-            case 0x144:
-                m_actionCode = 0x140;
+            case BRICKTILE_BROWN_1:
+            case BRICKTILE_RED_1:
+            case BRICKTILE_BLUE_1:
+            case BRICKTILE_GOLD_1:
+            case BRICKTILE_BLACK_1:
+                m_actionCode = BRICKTILE_BLACK_2_TOP;
                 goto commit;
-            case 0x130:
-            case 0x133:
-            case 0x134:
-            case 0x139:
-            case 0x13a:
-            case 0x13f:
-            case 0x140:
-            case 0x145:
-            case 0x146:
-                m_actionCode = 0x143;
+            case BRICKTILE_BROWN_2:
+            case BRICKTILE_RED_2_LOW:
+            case BRICKTILE_RED_2_TOP:
+            case BRICKTILE_BLUE_2_LOW:
+            case BRICKTILE_BLUE_2_TOP:
+            case BRICKTILE_GOLD_2_LOW:
+            case BRICKTILE_GOLD_2_TOP:
+            case BRICKTILE_BLACK_2_LOW:
+            case BRICKTILE_BLACK_2_TOP:
+                m_actionCode = BRICKTILE_BLACK_3_TOP;
+                goto commit;
+            default:
+                return 0;
+        }
+    } else if (toolId == PICKUP_GOLDBRICK) {
+        switch (m_actionCode) {
+            case BRICKTILE_BROWN_1:
+            case BRICKTILE_RED_1:
+            case BRICKTILE_BLUE_1:
+            case BRICKTILE_GOLD_1:
+            case BRICKTILE_BLACK_1:
+                m_actionCode = BRICKTILE_GOLD_2_TOP;
+                goto commit;
+            case BRICKTILE_BROWN_2:
+            case BRICKTILE_RED_2_LOW:
+            case BRICKTILE_RED_2_TOP:
+            case BRICKTILE_BLUE_2_LOW:
+            case BRICKTILE_BLUE_2_TOP:
+            case BRICKTILE_GOLD_2_LOW:
+            case BRICKTILE_GOLD_2_TOP:
+            case BRICKTILE_BLACK_2_LOW:
+            case BRICKTILE_BLACK_2_TOP:
+                m_actionCode = BRICKTILE_GOLD_3_TOP;
                 goto commit;
             default:
                 return 0;
