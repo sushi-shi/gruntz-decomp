@@ -1,4 +1,3 @@
-#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <AddrWord.h>
@@ -31,6 +30,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/String.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileGrid.h>

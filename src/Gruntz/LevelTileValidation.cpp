@@ -268,8 +268,8 @@ i32 CPlay::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 0xa:
-                case 0xb:
+                case TILEKIND_SECRET_SWITCH:
+                case TILEKIND_SECRET_SWITCH_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SECRET_SWITCH_6,
                             obj->m_speedX,
@@ -293,8 +293,8 @@ i32 CPlay::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 0xc:
-                case 0xd:
+                case TILEKIND_TIME_SWITCH:
+                case TILEKIND_TIME_SWITCH_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_TIME_SWITCH_7,
                             obj->m_speedX,
@@ -318,8 +318,8 @@ i32 CPlay::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 0xe:
-                case 0xf:
+                case TILEKIND_CHECKPOINT:
+                case TILEKIND_CHECKPOINT_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_CHECKPOINT_SWITCH_8,
                             obj->m_speedX,
