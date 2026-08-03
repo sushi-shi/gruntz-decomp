@@ -21,12 +21,15 @@ HINSTANCE g_resModule;
 
 DATA(0x00283ef0)
 PALETTEENTRY g_paletteRampBuf[0x100];
+DATA(0x002842f0)
 static PALETTEENTRY s_palBmp[0x100];
 DATA(0x002846f0)
 static PALETTEENTRY s_palPcx[0x100];
 DATA(0x00284af0)
 u8 g_grayRamp[0x401];
+DATA(0x00284ef0)
 static u8 s_palPidData[0x400];
+DATA(0x002852f0)
 static PALETTEENTRY s_palPcxData[0x100];
 
 // @early-stop

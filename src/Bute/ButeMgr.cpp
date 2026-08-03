@@ -726,7 +726,9 @@ static const char s_fmtInvalidTag[] = "ButeMgr:  Invalid tag specified - [%s]";
 DATA(0x00224250)
 static const char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s";
 
+DATA(0x001f0520)
 static const float s_floatErr = FLT_MIN;
+DATA(0x001f0528)
 static const double s_doubleErr = DBL_MIN;
 
 DATA(0x00224118)
