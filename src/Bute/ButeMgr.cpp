@@ -735,21 +735,29 @@ DATA(0x002241a0)
 static const char s_strDword[] = "(DWORD)";
 DATA(0x00224198)
 static const char s_strFloat[] = "(FLOAT)";
+DATA(0x00224194)
 static const char s_strFloatSuffix[] = "f";
 DATA(0x00224180)
 static const char s_fmtPoint4[] = "(%d, %d, %d, %d)";
+DATA(0x00224174)
 static const char s_strOpen[] = "(";
+DATA(0x0022417c)
 static const char s_strClose[] = ")";
+DATA(0x00224178)
 static const char s_strComma[] = ", ";
 DATA(0x00224168)
 static const char s_fmtPoint2[] = "(%d, %d)";
 DATA(0x00224158)
 static const char s_fmtRect3[] = "<%lf, %lf, %lf>";
+DATA(0x00224150)
 static const char s_strLt[] = "<";
+DATA(0x00224154)
 static const char s_strGt[] = ">";
 DATA(0x00224144)
 static const char s_fmtRect2[] = "[%lf, %lf]";
+DATA(0x00213efc)
 static const char s_strLBrack[] = "[";
+DATA(0x00213eec)
 static const char s_strRBrack[] = "]";
 
 RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)

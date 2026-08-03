@@ -79,11 +79,13 @@ static const char s_keyC[] = "C";
 static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 
+DATA(0x0020cc98)
 static char s_codeL[] = "L";
 static const char s_keyF[] = "F";
 
 i32 g_movingSeed;
 
+DATA(0x0020d414)
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
