@@ -1152,7 +1152,7 @@ i32 CGrunt::ChargeStep() {
                         SetEntrancePos(1, 1);
                         m_arrivalCell.m_x = g->m_tileOwnerHi;
                         m_arrivalCell.m_y = g->m_tileOwnerLo;
-                        m_defenderState = 1;
+                        m_defenderState = AISTATE_CHASE;
                         CWwdGameObjectA* mp = m_object;
                         CGruntzMgr* mgr = g_gameReg;
 
@@ -1206,13 +1206,13 @@ i32 CGrunt::ChargeStep() {
             CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != 0 && cur != t) {
                 m_arrivalCell.m_x = -1;
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (t == 0 || t->m_entranceCommitted == 0
                 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
-                m_defenderState = 0;
+                m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             if (static_cast<u32>(m_dwell) > 500) {
@@ -1229,7 +1229,7 @@ i32 CGrunt::ChargeStep() {
                     t->m_lastTilePx.m_x,
                     t->m_lastTilePx.m_y
                 );
-                m_defenderState = 2;
+                m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
             break;
@@ -1240,7 +1240,7 @@ i32 CGrunt::ChargeStep() {
                 CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
                 if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
-                    m_defenderState = 1;
+                    m_defenderState = AISTATE_CHASE;
                     m_dwell = 0x1f4;
                     return 1;
                 }
@@ -1250,7 +1250,7 @@ i32 CGrunt::ChargeStep() {
                 if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
                     || t->m_object->m_screenX != t->m_lastTilePx.m_x
                     || t->m_object->m_screenY != t->m_lastTilePx.m_y) {
-                    m_defenderState = 1;
+                    m_defenderState = AISTATE_CHASE;
                     m_dwell = 0x1f4;
                     return 1;
                 }
@@ -1262,7 +1262,7 @@ i32 CGrunt::ChargeStep() {
                 );
                 return 1;
             }
-            m_defenderState = 1;
+            m_defenderState = AISTATE_CHASE;
             m_dwell = 0x1f4;
             return 1;
         }
@@ -3421,7 +3421,7 @@ i32 CGrunt::StepPeerTracking() {
     m_defenderPx.m_y = m_lastTilePx.m_y;
     if (m_vehiclePickupType == PICKUP_NONE) {
         m_arrivalState = 5;
-        m_defenderState = 0;
+        m_defenderState = AISTATE_SEEK;
         m_dwell = 0;
         return 1;
     }

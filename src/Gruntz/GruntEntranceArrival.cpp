@@ -20,6 +20,7 @@
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCommandId.h>
@@ -977,7 +978,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                     m_arrivalCell.m_x = -1;
                     m_arrivalCell.m_y = -1;
                     m_arrivalState = 4;
-                    m_defenderState = 0;
+                    m_defenderState = AISTATE_SEEK;
                     m_arrivalActive = 0;
                     m_arrivalFlags |= 0x18040402;
                     m_object->m_extent.left = 0;

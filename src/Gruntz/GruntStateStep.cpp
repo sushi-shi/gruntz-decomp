@@ -6,6 +6,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -106,7 +107,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             Coord p;
             nb->GetScreenPos(&p);
             if (g->TileSwitch(p.m_x >> 5, p.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
-                g->m_defenderState = 2;
+                g->m_defenderState = AISTATE_ATTACK;
                 g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
                 g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
                 g->m_dwell = 0;
@@ -126,7 +127,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
 
             g->m_arrivalCell.m_x = -1;
             g->m_arrivalCell.m_y = -1;
-            g->m_defenderState = 0;
+            g->m_defenderState = AISTATE_SEEK;
             GruntRecycleCoords(g);
             goto tail;
         }
@@ -147,7 +148,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     HandleUnitContact(g, cur);
                 }
             }
-            g->m_defenderState = 0;
+            g->m_defenderState = AISTATE_SEEK;
             goto tail;
         }
 
@@ -167,7 +168,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->m_arrivalCell.m_x = -1;
             g->m_dwell = 0;
             g->m_arrivalCell.m_y = -1;
-            g->m_defenderState = 0;
+            g->m_defenderState = AISTATE_SEEK;
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
@@ -209,7 +210,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         if (!g->TileSwitch(cp.m_x >> 5, cp.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
             g->m_arrivalCell.m_x = -1;
             g->m_arrivalCell.m_y = -1;
-            g->m_defenderState = 0;
+            g->m_defenderState = AISTATE_SEEK;
         }
         if (dist2 <= 0xa) {
             m_board->Clip(0);

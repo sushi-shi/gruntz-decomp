@@ -52,4 +52,12 @@ GZ_ENUM_BEGIN(GruntAiState)
     AISTATE_RETREAT = 5
 GZ_ENUM_END(GruntAiState)
 
+// The field this domain was recovered from, CGrunt::m_defenderState, also
+// carries values OUTSIDE it, which is why it stays i32 and only its 0..5 sites
+// are named. 6 and 7 are Battlez-only path states set by CBattlezMapConfig -
+// 7 when the unit has a coord, 6 from the attack-waypoint and distance tests -
+// and they gate m_dwell against m_moveBudget rather than the SEEK/CHASE/ATTACK
+// ladder. 0x19 and 0x1a have one read each in GruntArrivalScan. None of the
+// four has enough evidence to name, so all four stay literal.
+
 #endif // GRUNTZ_GRUNTAISTATE_H

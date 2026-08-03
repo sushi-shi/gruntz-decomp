@@ -26,6 +26,7 @@
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
@@ -484,7 +485,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_unusedBattleCell.m_x = -1;
     m_unusedBattleCell.m_y = -1;
     m_arrivalNotified = 0;
-    m_defenderState = 0;
+    m_defenderState = AISTATE_SEEK;
     m_battleState = 0;
     {
         CWwdGameObjectA* h = m_object;

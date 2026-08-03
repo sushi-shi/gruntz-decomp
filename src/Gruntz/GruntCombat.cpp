@@ -23,6 +23,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -1032,18 +1033,18 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             case 4:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
-                m_defenderState = 2;
+                m_defenderState = AISTATE_ATTACK;
                 break;
             case 5:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
-                m_defenderState = 2;
+                m_defenderState = AISTATE_ATTACK;
                 break;
             case 3:
             case 6:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
-                m_defenderState = 2;
+                m_defenderState = AISTATE_ATTACK;
                 break;
             case 0x11:
                 m_arrivalCell.m_x = d;

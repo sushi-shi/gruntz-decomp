@@ -5,6 +5,7 @@
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
@@ -131,7 +132,7 @@ i32 CPlay::ExecCommand(
                     g->m_arrivalFlags |= 0x18040402;
                     g->m_arrivalCell.m_x = -1;
                     g->m_arrivalState = 4;
-                    g->m_defenderState = 0;
+                    g->m_defenderState = AISTATE_SEEK;
                     g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = 0;
                     g->m_object->m_extent.left = 0;
