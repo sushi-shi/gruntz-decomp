@@ -749,14 +749,14 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Write(&m_index, 4);
-    ar->Write(&m_frameTicksLeft, 4);
-    ar->Write(&m_useElapsedTime, 4);
-    ar->Write(&m_finished, 4);
-    ar->Write(&m_consumeDraw, 4);
-    ar->Write(&m_pendingDraw, 4);
-    ar->Write(&m_curDraw, 4);
-    ar->Write(&m_scale, 4);
+    ar->Write(&m_index, sizeof(m_index));
+    ar->Write(&m_frameTicksLeft, sizeof(m_frameTicksLeft));
+    ar->Write(&m_useElapsedTime, sizeof(m_useElapsedTime));
+    ar->Write(&m_finished, sizeof(m_finished));
+    ar->Write(&m_consumeDraw, sizeof(m_consumeDraw));
+    ar->Write(&m_pendingDraw, sizeof(m_pendingDraw));
+    ar->Write(&m_curDraw, sizeof(m_curDraw));
+    ar->Write(&m_scale, sizeof(m_scale));
     char buf[0x80];
     memset(buf, 0, sizeof(buf));
     if (m_animation != NULL) {
@@ -773,14 +773,14 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Read(&m_index, 4);
-    ar->Read(&m_frameTicksLeft, 4);
-    ar->Read(&m_useElapsedTime, 4);
-    ar->Read(&m_finished, 4);
-    ar->Read(&m_consumeDraw, 4);
-    ar->Read(&m_pendingDraw, 4);
-    ar->Read(&m_curDraw, 4);
-    ar->Read(&m_scale, 4);
+    ar->Read(&m_index, sizeof(m_index));
+    ar->Read(&m_frameTicksLeft, sizeof(m_frameTicksLeft));
+    ar->Read(&m_useElapsedTime, sizeof(m_useElapsedTime));
+    ar->Read(&m_finished, sizeof(m_finished));
+    ar->Read(&m_consumeDraw, sizeof(m_consumeDraw));
+    ar->Read(&m_pendingDraw, sizeof(m_pendingDraw));
+    ar->Read(&m_curDraw, sizeof(m_curDraw));
+    ar->Read(&m_scale, sizeof(m_scale));
     char buf[0x80];
     ar->Read(buf, 0x80);
     if (strlen(buf) == 0) {

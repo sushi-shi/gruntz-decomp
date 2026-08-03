@@ -1499,7 +1499,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, void* nameOut) {
         return 0;
     }
 
-    if (stream.Read(&header, 0x5f4) != 0x5f4) {
+    if (stream.Read(&header, sizeof(header)) != 0x5f4) {
         return 0;
     }
 

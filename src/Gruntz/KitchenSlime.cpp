@@ -263,22 +263,22 @@ i32 CKitchenSlime::SerializeMove(
 
     if (tag != SERIAL_SAVE) {
         if (tag == SERIAL_LOAD) {
-            s->Read(&m_speed, 8);
-            s->Read(&m_posX, 8);
-            s->Read(&m_posY, 8);
-            s->Read(&m_dirX, 8);
-            s->Read(&m_dirY, 8);
-            s->Read(&m_tilePosition, 8);
-            s->Read(&m_stepMag, 8);
+            s->Read(&m_speed, sizeof(m_speed));
+            s->Read(&m_posX, sizeof(m_posX));
+            s->Read(&m_posY, sizeof(m_posY));
+            s->Read(&m_dirX, sizeof(m_dirX));
+            s->Read(&m_dirY, sizeof(m_dirY));
+            s->Read(&m_tilePosition, sizeof(m_tilePosition));
+            s->Read(&m_stepMag, sizeof(m_stepMag));
         }
     } else {
-        s->Write(&m_speed, 8);
-        s->Write(&m_posX, 8);
-        s->Write(&m_posY, 8);
-        s->Write(&m_dirX, 8);
-        s->Write(&m_dirY, 8);
-        s->Write(&m_tilePosition, 8);
-        s->Write(&m_stepMag, 8);
+        s->Write(&m_speed, sizeof(m_speed));
+        s->Write(&m_posX, sizeof(m_posX));
+        s->Write(&m_posY, sizeof(m_posY));
+        s->Write(&m_dirX, sizeof(m_dirX));
+        s->Write(&m_dirY, sizeof(m_dirY));
+        s->Write(&m_tilePosition, sizeof(m_tilePosition));
+        s->Write(&m_stepMag, sizeof(m_stepMag));
     }
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;

@@ -54,7 +54,7 @@ i32 zBitVec::EnsureSize(i32 nbits) {
             goto fail;
         }
         memset(nbuf, 0, ndwords * 4);
-        memcpy(nbuf, &m_words, 4);
+        memcpy(nbuf, &m_words, sizeof(m_words));
     }
     m_words = static_cast<u32*>(nbuf);
     m_capacity = ndwords * 32;

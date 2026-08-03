@@ -222,14 +222,14 @@ RVA(0x0003c8f0, 0x76)
 i32 CTriRecord::Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&row, 4);
-            ar->Write(&column, 4);
-            ar->Write(&direction, 4);
+            ar->Write(&row, sizeof(row));
+            ar->Write(&column, sizeof(column));
+            ar->Write(&direction, sizeof(direction));
             break;
         case SERIAL_LOAD:
-            ar->Read(&row, 4);
-            ar->Read(&column, 4);
-            ar->Read(&direction, 4);
+            ar->Read(&row, sizeof(row));
+            ar->Read(&column, sizeof(column));
+            ar->Read(&direction, sizeof(direction));
             break;
     }
     return 1;

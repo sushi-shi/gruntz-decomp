@@ -132,14 +132,14 @@ i32 CGruntHealthSprite::SerializeMove(
 ) {
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cell, 8);
-            ar->Write(&m_health, 4);
-            ar->Write(&m_yOffset, 4);
+            ar->Write(&m_cell, sizeof(m_cell));
+            ar->Write(&m_health, sizeof(m_health));
+            ar->Write(&m_yOffset, sizeof(m_yOffset));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cell, 8);
-            ar->Read(&m_health, 4);
-            ar->Read(&m_yOffset, 4);
+            ar->Read(&m_cell, sizeof(m_cell));
+            ar->Read(&m_health, sizeof(m_health));
+            ar->Read(&m_yOffset, sizeof(m_yOffset));
             break;
     }
     if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {

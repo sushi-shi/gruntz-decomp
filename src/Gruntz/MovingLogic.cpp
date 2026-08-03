@@ -104,16 +104,16 @@ i32 CUserLogic::SerializeMove(
         case SERIAL_LOAD: {
 
             i32 len;
-            arc->Read(&len, 4);
+            arc->Read(&len, sizeof(len));
             void* buf = ::operator new(len);
             arc->Read(buf, len);
             istrstream accum(static_cast<char*>(buf), len);
             accum >> m_link.m_str;
             ::operator delete(buf);
-            arc->Read(&m_gatedActKey, 4);
-            arc->Read(&m_reserved2c, 4);
-            arc->Read(&g_logicTypesRegistered, 4);
-            arc->Read(&m_prevAnimSetNode, 4);
+            arc->Read(&m_gatedActKey, sizeof(m_gatedActKey));
+            arc->Read(&m_reserved2c, sizeof(m_reserved2c));
+            arc->Read(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
+            arc->Read(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
             m_logicObject = pObj;
             m_object = static_cast<CWwdGameObjectA*>(pObj);
             m_objAux = (pObj)->m_animWorker;
@@ -129,12 +129,12 @@ i32 CUserLogic::SerializeMove(
             ostrstream accum(buf, 0x100);
             accum << m_link.m_str;
             i32 len = accum.pcount();
-            arc->Write(&len, 4);
+            arc->Write(&len, sizeof(len));
             arc->Write(accum.str(), len);
-            arc->Write(&m_gatedActKey, 4);
-            arc->Write(&m_reserved2c, 4);
-            arc->Write(&g_logicTypesRegistered, 4);
-            arc->Write(&m_prevAnimSetNode, 4);
+            arc->Write(&m_gatedActKey, sizeof(m_gatedActKey));
+            arc->Write(&m_reserved2c, sizeof(m_reserved2c));
+            arc->Write(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
+            arc->Write(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
 
             break;
         }
@@ -227,16 +227,16 @@ i32 CMovingLogic::SerializeMove(
         case SERIAL_LOAD: {
 
             i32 len;
-            arc->Read(&len, 4);
+            arc->Read(&len, sizeof(len));
             void* buf = ::operator new(len);
             arc->Read(buf, len);
             istrstream accum(static_cast<char*>(buf), len);
             ReadCurve(accum, *Motion());
             ::operator delete(buf);
-            arc->Read(&m_previousScreenPosition.m_x, 4);
-            arc->Read(&m_previousScreenPosition.m_y, 4);
-            arc->Read(&m_collisionFlags, 4);
-            arc->Read(&m_moveFlags, 4);
+            arc->Read(&m_previousScreenPosition.m_x, sizeof(m_previousScreenPosition.m_x));
+            arc->Read(&m_previousScreenPosition.m_y, sizeof(m_previousScreenPosition.m_y));
+            arc->Read(&m_collisionFlags, sizeof(m_collisionFlags));
+            arc->Read(&m_moveFlags, sizeof(m_moveFlags));
 
             break;
         }
@@ -246,12 +246,12 @@ i32 CMovingLogic::SerializeMove(
             ostrstream accum(buf, 0x100);
             WriteCurve(accum, *Motion());
             i32 len = accum.pcount();
-            arc->Write(&len, 4);
+            arc->Write(&len, sizeof(len));
             arc->Write(accum.str(), len);
-            arc->Write(&m_previousScreenPosition.m_x, 4);
-            arc->Write(&m_previousScreenPosition.m_y, 4);
-            arc->Write(&m_collisionFlags, 4);
-            arc->Write(&m_moveFlags, 4);
+            arc->Write(&m_previousScreenPosition.m_x, sizeof(m_previousScreenPosition.m_x));
+            arc->Write(&m_previousScreenPosition.m_y, sizeof(m_previousScreenPosition.m_y));
+            arc->Write(&m_collisionFlags, sizeof(m_collisionFlags));
+            arc->Write(&m_moveFlags, sizeof(m_moveFlags));
 
             break;
         }

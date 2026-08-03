@@ -49,21 +49,21 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
 
             GS_SUBREC(m_statusGlyph);
             GS_SUBREC(m_statusGlyphLatched);
-            s->Write(&m_statusValue, 4);
+            s->Write(&m_statusValue, sizeof(m_statusValue));
 
             GS_SUBREC(m_abilityGlyph);
             GS_SUBREC(m_abilityGlyphLatched);
-            s->Write(&m_abilityValue, 4);
+            s->Write(&m_abilityValue, sizeof(m_abilityValue));
             GS_SUBREC(m_overrideGlyph);
             GS_SUBREC(m_overrideGlyphLatched);
-            s->Write(&m_overrideValue, 4);
+            s->Write(&m_overrideValue, sizeof(m_overrideValue));
             GS_SUBREC(m_selectKey);
             GS_SUBREC(m_selectGlyph);
-            s->Write(&m_selectValue, 4);
+            s->Write(&m_selectValue, sizeof(m_selectValue));
             GS_SUBREC(m_timerGlyph);
-            s->Write(&m_timerValue, 4);
-            s->Write(&m_unitRow, 4);
-            s->Write(&m_unitCol, 4);
+            s->Write(&m_timerValue, sizeof(m_timerValue));
+            s->Write(&m_unitRow, sizeof(m_unitRow));
+            s->Write(&m_unitCol, sizeof(m_unitCol));
 #undef GS_SUBREC
 
             g_serialCounter++;
@@ -115,19 +115,19 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
 
             GS_IDXREF(m_statusGlyph);
             GS_IDXREF(m_statusGlyphLatched);
-            s->Read(&m_statusValue, 4);
+            s->Read(&m_statusValue, sizeof(m_statusValue));
             GS_IDXREF(m_abilityGlyphLatched);
-            s->Read(&m_abilityValue, 4);
+            s->Read(&m_abilityValue, sizeof(m_abilityValue));
             GS_IDXREF(m_overrideGlyph);
             GS_IDXREF(m_overrideGlyphLatched);
-            s->Read(&m_overrideValue, 4);
+            s->Read(&m_overrideValue, sizeof(m_overrideValue));
             GS_IDXREF(m_selectKey);
             GS_IDXREF(m_selectGlyph);
-            s->Read(&m_selectValue, 4);
+            s->Read(&m_selectValue, sizeof(m_selectValue));
             GS_IDXREF(m_timerGlyph);
-            s->Read(&m_timerValue, 4);
-            s->Read(&m_unitRow, 4);
-            s->Read(&m_unitCol, 4);
+            s->Read(&m_timerValue, sizeof(m_timerValue));
+            s->Read(&m_unitRow, sizeof(m_unitRow));
+            s->Read(&m_unitCol, sizeof(m_unitCol));
             GS_NAMEREF(m_glyphMap);
             GS_NAMEREF(m_timerGlyphMap);
 #undef GS_IDXREF

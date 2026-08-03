@@ -93,12 +93,12 @@ i32 CMenuSparkle::SerializeMove(
         if (mode != SERIAL_LOAD) {
             return 1;
         }
-        arc->Read(&g_menuSparkleLo, 4);
-        arc->Read(&g_menuSparkleHi, 4);
+        arc->Read(&g_menuSparkleLo, sizeof(g_menuSparkleLo));
+        arc->Read(&g_menuSparkleHi, sizeof(g_menuSparkleHi));
         return 1;
     }
-    arc->Write(&g_menuSparkleLo, 4);
-    arc->Write(&g_menuSparkleHi, 4);
+    arc->Write(&g_menuSparkleLo, sizeof(g_menuSparkleLo));
+    arc->Write(&g_menuSparkleHi, sizeof(g_menuSparkleHi));
     return 1;
 }
 

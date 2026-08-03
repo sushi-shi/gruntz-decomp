@@ -91,9 +91,9 @@ i32 CExitTrigger::SerializeMove(
     CDDrawSurfaceMgr* holder = g_gameReg->m_world;
     switch (mode) {
         case SERIAL_LOAD: {
-            arc->Read(&m_resolved, 4);
+            arc->Read(&m_resolved, sizeof(m_resolved));
             i32 key = 0;
-            arc->Read(&key, 4);
+            arc->Read(&key, sizeof(key));
             if (key != 0) {
                 CGameObject* found = 0;
 
@@ -112,18 +112,18 @@ i32 CExitTrigger::SerializeMove(
             break;
         }
         case SERIAL_SAVE: {
-            arc->Write(&m_resolved, 4);
+            arc->Write(&m_resolved, sizeof(m_resolved));
             if (m_warlordLogic == NULL) {
                 g_serialCounter++;
                 i32 id = 0;
-                arc->Write(&id, 4);
+                arc->Write(&id, sizeof(id));
             } else {
                 g_serialCounter++;
                 i32 id = 0;
                 if (m_warlordLogic->m_object != NULL) {
                     id = m_warlordLogic->m_object->m_objectId;
                 }
-                arc->Write(&id, 4);
+                arc->Write(&id, sizeof(id));
             }
             break;
         }

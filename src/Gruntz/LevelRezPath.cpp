@@ -29,7 +29,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         }
         if (file.Open(path, 0, 0)) {
             if (file.GetLength() >= 0x5f4) {
-                file.Read(&buf, 0x5f4);
+                file.Read(&buf, sizeof(buf));
                 file.Close();
                 return buf.checksum;
             }

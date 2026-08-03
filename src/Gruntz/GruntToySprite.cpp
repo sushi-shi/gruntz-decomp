@@ -111,12 +111,12 @@ i32 CGruntToySprite::SerializeMove(
 ) {
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cell, 8);
-            ar->Write(&m_lastLayer, 4);
+            ar->Write(&m_cell, sizeof(m_cell));
+            ar->Write(&m_lastLayer, sizeof(m_lastLayer));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cell, 8);
-            ar->Read(&m_lastLayer, 4);
+            ar->Read(&m_cell, sizeof(m_cell));
+            ar->Read(&m_lastLayer, sizeof(m_lastLayer));
             break;
     }
     if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {

@@ -29,8 +29,8 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     CObject* out;
     i32 idx;
 
-    s->Read(&m_baseX, 4);
-    s->Read(&m_baseY, 4);
+    s->Read(&m_baseX, sizeof(m_baseX));
+    s->Read(&m_baseY, sizeof(m_baseY));
 
     g_serialCounter++;
     s->Read(buf, 0x80);
@@ -42,11 +42,11 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         m_sprite = NULL;
     }
 
-    s->Read(&m_active, 4);
+    s->Read(&m_active, sizeof(m_active));
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
@@ -65,7 +65,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
@@ -84,7 +84,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
@@ -103,7 +103,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
@@ -122,7 +122,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
@@ -139,8 +139,8 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         m_frameColon = NULL;
     }
 
-    s->Read(&m_running, 4);
-    s->Read(&m_currentMs, 4);
+    s->Read(&m_running, sizeof(m_running));
+    s->Read(&m_currentMs, sizeof(m_currentMs));
 
     return 1;
 }

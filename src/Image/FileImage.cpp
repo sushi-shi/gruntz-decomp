@@ -328,8 +328,8 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Write(&fh.m_hdr, 0xe);
-    file.Write(&info, 0x428);
+    file.Write(&fh.m_hdr, sizeof(fh.m_hdr));
+    file.Write(&info, sizeof(info));
 
     i32 row = m_height;
     while (--row >= 0) {
@@ -408,7 +408,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     }
 
     file.Seek(0, 2);
-    file.Write(&bfh.m_hdr, 0xe);
+    file.Write(&bfh.m_hdr, sizeof(bfh.m_hdr));
     file.Write(&bih.m_ih, 0x2c);
 
     for (i32 row = height - 1; row >= 0; row--) {
@@ -485,7 +485,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Write(&fh.m_hdr, 0xe);
+    file.Write(&fh.m_hdr, sizeof(fh.m_hdr));
     file.Write(&bi, sizeof(bi));
 
     for (i32 row = m_height - 1; row >= 0; row--) {

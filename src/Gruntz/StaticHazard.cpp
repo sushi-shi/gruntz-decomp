@@ -348,20 +348,20 @@ i32 CStaticHazard::SerializeMove(
     CFileMemBase* arc = ar;
     switch (mode) {
         case SERIAL_SAVE:
-            arc->Write(&m_pulseEpoch, 4);
-            arc->Write(&m_activeWindow, 4);
-            arc->Write(&m_idleWindow, 4);
-            arc->Write(&m_fired, 4);
-            arc->Write(&m_tileCol, 4);
-            arc->Write(&m_tileRow, 4);
+            arc->Write(&m_pulseEpoch, sizeof(m_pulseEpoch));
+            arc->Write(&m_activeWindow, sizeof(m_activeWindow));
+            arc->Write(&m_idleWindow, sizeof(m_idleWindow));
+            arc->Write(&m_fired, sizeof(m_fired));
+            arc->Write(&m_tileCol, sizeof(m_tileCol));
+            arc->Write(&m_tileRow, sizeof(m_tileRow));
             break;
         case SERIAL_LOAD:
-            arc->Read(&m_pulseEpoch, 4);
-            arc->Read(&m_activeWindow, 4);
-            arc->Read(&m_idleWindow, 4);
-            arc->Read(&m_fired, 4);
-            arc->Read(&m_tileCol, 4);
-            arc->Read(&m_tileRow, 4);
+            arc->Read(&m_pulseEpoch, sizeof(m_pulseEpoch));
+            arc->Read(&m_activeWindow, sizeof(m_activeWindow));
+            arc->Read(&m_idleWindow, sizeof(m_idleWindow));
+            arc->Read(&m_fired, sizeof(m_fired));
+            arc->Read(&m_tileCol, sizeof(m_tileCol));
+            arc->Read(&m_tileRow, sizeof(m_tileRow));
             break;
     }
     if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {

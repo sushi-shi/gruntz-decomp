@@ -362,8 +362,8 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 );
             }
             ar->Write(buf, 0x80);
-            ar->Write(&m_deathStarted, 4);
-            ar->Write(&m_ownerTag, 4);
+            ar->Write(&m_deathStarted, sizeof(m_deathStarted));
+            ar->Write(&m_ownerTag, sizeof(m_ownerTag));
             break;
         }
         case SERIAL_LOAD: {
@@ -474,8 +474,8 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
             } else {
                 m_animPanic = NULL;
             }
-            ar->Read(&m_deathStarted, 4);
-            ar->Read(&m_ownerTag, 4);
+            ar->Read(&m_deathStarted, sizeof(m_deathStarted));
+            ar->Read(&m_ownerTag, sizeof(m_ownerTag));
             break;
         }
         case SERIAL_POSTLOAD: {

@@ -164,12 +164,12 @@ i32 CLightFx::SerializeMove(
     }
     switch (mode) {
         case SERIAL_SAVE:
-            (ar)->Write(&m_anchorA, 4);
-            (ar)->Write(&m_anchorB, 4);
+            (ar)->Write(&m_anchorA, sizeof(m_anchorA));
+            (ar)->Write(&m_anchorB, sizeof(m_anchorB));
             break;
         case SERIAL_LOAD:
-            (ar)->Read(&m_anchorA, 4);
-            (ar)->Read(&m_anchorB, 4);
+            (ar)->Read(&m_anchorA, sizeof(m_anchorA));
+            (ar)->Read(&m_anchorB, sizeof(m_anchorB));
             break;
         case SERIAL_POSTLOAD:
             g_gameReg

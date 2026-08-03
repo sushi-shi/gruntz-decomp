@@ -1082,7 +1082,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         if (sp) {
             tmp = sp->m_objectId;
         }
-        ar->Write(&tmp, 4);
+        ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
     {
@@ -1091,7 +1091,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         if (sp) {
             tmp = sp->m_objectId;
         }
-        ar->Write(&tmp, 4);
+        ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
     {
@@ -1100,7 +1100,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         if (sp) {
             tmp = sp->m_objectId;
         }
-        ar->Write(&tmp, 4);
+        ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
     {
@@ -1109,7 +1109,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         if (sp) {
             tmp = sp->m_objectId;
         }
-        ar->Write(&tmp, 4);
+        ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
     {
@@ -1118,7 +1118,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         if (sp) {
             tmp = sp->m_objectId;
         }
-        ar->Write(&tmp, 4);
+        ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
     {
@@ -1127,7 +1127,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         if (sp) {
             tmp = sp->m_objectId;
         }
-        ar->Write(&tmp, 4);
+        ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
     {
@@ -1136,7 +1136,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         if (sp) {
             tmp = sp->m_objectId;
         }
-        ar->Write(&tmp, 4);
+        ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
     memset(buf, 0, 0x80);
@@ -1312,106 +1312,106 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         }
     }
     ar->Write(buf, 0x80);
-    ar->Write(&m_reserved18c, 4);
-    ar->Write(&m_toyBlendPct, 4);
-    ar->Write(&m_brickPickupType, 4);
-    ar->Write(&m_entranceReason, 4);
-    ar->Write(&m_vehiclePickupType, 4);
-    ar->Write(&m_toolId, 4);
-    ar->Write(&m_entrancePickup, 4);
-    ar->Write(&m_helpCueId, 4);
-    ar->Write(&m_reserved1a8, 4);
-    ar->Write(&m_reserved1ac, 4);
-    ar->Write(&m_reserved1b0, 4);
-    ar->Write(&m_reserved1b4, 4);
-    ar->Write(&m_arrived, 4);
-    ar->Write(&m_entrancePx, 8);
-    ar->Write(&m_lastTilePx, 8);
-    ar->Write(&m_commitPx, 8);
-    ar->Write(&m_reserved1dc, 8);
-    ar->Write(&m_entranceActive, 4);
-    ar->Write(&m_arrivalPending, 4);
-    ar->Write(&m_tileOwnerHi, 4);
-    ar->Write(&m_tileOwnerLo, 4);
-    ar->Write(&m_moveIcon, 4);
-    ar->Write(&m_savedMoveIcon, 4);
-    ar->Write(&m_entranceCommitted, 4);
-    ar->Write(&m_neighborCell, 8);
-    ar->Write(&m_attackTargetPx, 8);
-    ar->Write(&m_reserved210, 4);
-    ar->Write(&m_struckPose, 4);
-    ar->Write(&m_combatActive, 4);
-    ar->Write(&m_neighborValid, 4);
-    ar->Write(&m_poweredUp, 4);
-    ar->Write(&m_daFlag, 4);
-    ar->Write(&m_entranceStamped, 4);
-    ar->Write(&m_bombRunActive, 4);
-    ar->Write(&m_arrivalActive, 4);
-    ar->Write(&m_reachRect, 16);
-    ar->Write(&m_reachExclusionRect, 16);
-    ar->Write(&m_toyRectA, 16);
-    ar->Write(&m_toyRectB, 16);
-    ar->Write(&m_health, 4);
-    ar->Write(&m_stamina, 4);
-    ar->Write(&m_toyTime, 4);
-    ar->Write(&m_wingzTime, 4);
-    ar->Write(&m_moveSpeed, 8);
-    ar->Write(&m_reserved418, 4);
-    ar->Write(&m_reserved42c, 4);
-    ar->Write(&m_reserved430, 4);
-    ar->Write(&m_startingItemId, 4);
-    ar->Write(&m_recordedFrameTick, 4);
-    ar->Write(&m_arrivalState, 4);
-    ar->Write(&m_defenderState, 4);
-    ar->Write(&m_battleState, 4);
-    ar->Write(&m_defenderRadius, 4);
-    ar->Write(&m_defenderQueuePosition, 4);
-    ar->Write(&m_defenderPickupType, 4);
-    ar->Write(&m_dwell, 4);
-    ar->Write(&m_arrivalCell, 8);
-    ar->Write(&m_defenderPx, 8);
-    ar->Write(&m_toolConfigured, 4);
-    ar->Write(&m_neighborScanEnabled, 4);
-    ar->Write(&m_tileMoveCommitted, 4);
-    ar->Write(&m_reserved3dc, 8);
-    ar->Write(&m_moveTile, 8);
-    ar->Write(&m_arrivalPhase, 4);
-    ar->Write(&m_timePerTile, 4);
-    ar->Write(&m_movePosX, 8);
-    ar->Write(&m_movePosY, 8);
-    ar->Write(&m_reserved8d0, 4);
-    ar->Write(&m_coordToggle, 4);
-    ar->Write(&m_wingzEnabled, 4);
-    ar->Write(&m_freezeDelayDone, 4);
-    ar->Write(&m_freezeUnfrozen, 4);
-    ar->Write(&m_resetApplied, 4);
-    ar->Write(&m_arrivalFlags, 4);
-    ar->Write(&m_passableMask, 4);
-    ar->Write(&m_gruntKind, 4);
-    ar->Write(&m_entranceArmed, 4);
-    ar->Write(&m_deathType, 4);
-    ar->Write(&m_entranceDropActive, 4);
-    ar->Write(&m_hasExtent, 4);
-    ar->Write(&m_unusedBattleCell, 8);
-    ar->Write(&m_cellRemovalNotified, 4);
-    ar->Write(&m_pendingTrigger, 4);
-    ar->Write(&m_killerSlot, 4);
-    ar->Write(&m_tileClaimed, 4);
-    ar->Write(&m_deathAnimStarted, 4);
-    ar->Write(&m_pendingTriggerPx, 8);
-    ar->Write(&m_routeMaskA, 4);
-    ar->Write(&m_routeMaskC, 4);
-    ar->Write(&m_moveVariantOverride, 4);
-    ar->Write(&m_moveKind, 4);
-    ar->Write(&m_moveVariant, 4);
-    ar->Write(&m_coordRetryCount, 4);
-    ar->Write(&m_toyTileIndex, 4);
-    ar->Write(&m_blockedVoicePending, 4);
-    ar->Write(&m_powerupDuration, 4);
-    ar->Write(&m_warpstoneAnchorIndex, 4);
-    ar->Write(&m_lowStaminaCued, 4);
-    ar->Write(&m_targetTeam, 4);
-    ar->Write(&m_arrivalTargetPx, 8);
+    ar->Write(&m_reserved18c, sizeof(m_reserved18c));
+    ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
+    ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
+    ar->Write(&m_entranceReason, sizeof(m_entranceReason));
+    ar->Write(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
+    ar->Write(&m_toolId, sizeof(m_toolId));
+    ar->Write(&m_entrancePickup, sizeof(m_entrancePickup));
+    ar->Write(&m_helpCueId, sizeof(m_helpCueId));
+    ar->Write(&m_reserved1a8, sizeof(m_reserved1a8));
+    ar->Write(&m_reserved1ac, sizeof(m_reserved1ac));
+    ar->Write(&m_reserved1b0, sizeof(m_reserved1b0));
+    ar->Write(&m_reserved1b4, sizeof(m_reserved1b4));
+    ar->Write(&m_arrived, sizeof(m_arrived));
+    ar->Write(&m_entrancePx, sizeof(m_entrancePx));
+    ar->Write(&m_lastTilePx, sizeof(m_lastTilePx));
+    ar->Write(&m_commitPx, sizeof(m_commitPx));
+    ar->Write(&m_reserved1dc, sizeof(m_reserved1dc));
+    ar->Write(&m_entranceActive, sizeof(m_entranceActive));
+    ar->Write(&m_arrivalPending, sizeof(m_arrivalPending));
+    ar->Write(&m_tileOwnerHi, sizeof(m_tileOwnerHi));
+    ar->Write(&m_tileOwnerLo, sizeof(m_tileOwnerLo));
+    ar->Write(&m_moveIcon, sizeof(m_moveIcon));
+    ar->Write(&m_savedMoveIcon, sizeof(m_savedMoveIcon));
+    ar->Write(&m_entranceCommitted, sizeof(m_entranceCommitted));
+    ar->Write(&m_neighborCell, sizeof(m_neighborCell));
+    ar->Write(&m_attackTargetPx, sizeof(m_attackTargetPx));
+    ar->Write(&m_reserved210, sizeof(m_reserved210));
+    ar->Write(&m_struckPose, sizeof(m_struckPose));
+    ar->Write(&m_combatActive, sizeof(m_combatActive));
+    ar->Write(&m_neighborValid, sizeof(m_neighborValid));
+    ar->Write(&m_poweredUp, sizeof(m_poweredUp));
+    ar->Write(&m_daFlag, sizeof(m_daFlag));
+    ar->Write(&m_entranceStamped, sizeof(m_entranceStamped));
+    ar->Write(&m_bombRunActive, sizeof(m_bombRunActive));
+    ar->Write(&m_arrivalActive, sizeof(m_arrivalActive));
+    ar->Write(&m_reachRect, sizeof(m_reachRect));
+    ar->Write(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
+    ar->Write(&m_toyRectA, sizeof(m_toyRectA));
+    ar->Write(&m_toyRectB, sizeof(m_toyRectB));
+    ar->Write(&m_health, sizeof(m_health));
+    ar->Write(&m_stamina, sizeof(m_stamina));
+    ar->Write(&m_toyTime, sizeof(m_toyTime));
+    ar->Write(&m_wingzTime, sizeof(m_wingzTime));
+    ar->Write(&m_moveSpeed, sizeof(m_moveSpeed));
+    ar->Write(&m_reserved418, sizeof(m_reserved418));
+    ar->Write(&m_reserved42c, sizeof(m_reserved42c));
+    ar->Write(&m_reserved430, sizeof(m_reserved430));
+    ar->Write(&m_startingItemId, sizeof(m_startingItemId));
+    ar->Write(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
+    ar->Write(&m_arrivalState, sizeof(m_arrivalState));
+    ar->Write(&m_defenderState, sizeof(m_defenderState));
+    ar->Write(&m_battleState, sizeof(m_battleState));
+    ar->Write(&m_defenderRadius, sizeof(m_defenderRadius));
+    ar->Write(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));
+    ar->Write(&m_defenderPickupType, sizeof(m_defenderPickupType));
+    ar->Write(&m_dwell, sizeof(m_dwell));
+    ar->Write(&m_arrivalCell, sizeof(m_arrivalCell));
+    ar->Write(&m_defenderPx, sizeof(m_defenderPx));
+    ar->Write(&m_toolConfigured, sizeof(m_toolConfigured));
+    ar->Write(&m_neighborScanEnabled, sizeof(m_neighborScanEnabled));
+    ar->Write(&m_tileMoveCommitted, sizeof(m_tileMoveCommitted));
+    ar->Write(&m_reserved3dc, sizeof(m_reserved3dc));
+    ar->Write(&m_moveTile, sizeof(m_moveTile));
+    ar->Write(&m_arrivalPhase, sizeof(m_arrivalPhase));
+    ar->Write(&m_timePerTile, sizeof(m_timePerTile));
+    ar->Write(&m_movePosX, sizeof(m_movePosX));
+    ar->Write(&m_movePosY, sizeof(m_movePosY));
+    ar->Write(&m_reserved8d0, sizeof(m_reserved8d0));
+    ar->Write(&m_coordToggle, sizeof(m_coordToggle));
+    ar->Write(&m_wingzEnabled, sizeof(m_wingzEnabled));
+    ar->Write(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
+    ar->Write(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));
+    ar->Write(&m_resetApplied, sizeof(m_resetApplied));
+    ar->Write(&m_arrivalFlags, sizeof(m_arrivalFlags));
+    ar->Write(&m_passableMask, sizeof(m_passableMask));
+    ar->Write(&m_gruntKind, sizeof(m_gruntKind));
+    ar->Write(&m_entranceArmed, sizeof(m_entranceArmed));
+    ar->Write(&m_deathType, sizeof(m_deathType));
+    ar->Write(&m_entranceDropActive, sizeof(m_entranceDropActive));
+    ar->Write(&m_hasExtent, sizeof(m_hasExtent));
+    ar->Write(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
+    ar->Write(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
+    ar->Write(&m_pendingTrigger, sizeof(m_pendingTrigger));
+    ar->Write(&m_killerSlot, sizeof(m_killerSlot));
+    ar->Write(&m_tileClaimed, sizeof(m_tileClaimed));
+    ar->Write(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
+    ar->Write(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
+    ar->Write(&m_routeMaskA, sizeof(m_routeMaskA));
+    ar->Write(&m_routeMaskC, sizeof(m_routeMaskC));
+    ar->Write(&m_moveVariantOverride, sizeof(m_moveVariantOverride));
+    ar->Write(&m_moveKind, sizeof(m_moveKind));
+    ar->Write(&m_moveVariant, sizeof(m_moveVariant));
+    ar->Write(&m_coordRetryCount, sizeof(m_coordRetryCount));
+    ar->Write(&m_toyTileIndex, sizeof(m_toyTileIndex));
+    ar->Write(&m_blockedVoicePending, sizeof(m_blockedVoicePending));
+    ar->Write(&m_powerupDuration, sizeof(m_powerupDuration));
+    ar->Write(&m_warpstoneAnchorIndex, sizeof(m_warpstoneAnchorIndex));
+    ar->Write(&m_lowStaminaCued, sizeof(m_lowStaminaCued));
+    ar->Write(&m_targetTeam, sizeof(m_targetTeam));
+    ar->Write(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
 
     {
         i32 row, col;
@@ -1426,7 +1426,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
 
     {
         n = m_coordList.GetCount();
-        ar->Write(&n, 4);
+        ar->Write(&n, sizeof(n));
         POSITION cpos = m_coordList.GetHeadPosition();
         while (cpos != NULL) {
             ar->Write(m_coordList.GetNext(cpos), 8);
@@ -1434,7 +1434,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     }
     {
         n = m_payloads.GetCount();
-        ar->Write(&n, 4);
+        ar->Write(&n, sizeof(n));
         POSITION pos = m_payloads.GetHeadPosition();
         while (pos != NULL) {
             ar->Write(m_payloads.GetNext(pos), 0x2c);

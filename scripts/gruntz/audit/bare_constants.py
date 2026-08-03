@@ -188,7 +188,15 @@ def _scan_tu(tu, hits):
                 # `&thing` -> sizeof(thing): the operand's own tokens are the
                 # expression to size, so the rewrite never invents a name.
                 inner = [x.spelling for x in ptr_node.get_tokens()]
-                expr = "".join(inner[1:]) if inner and inner[0] == "&" else ""
+                if inner and inner[0] == "&":
+                    expr = "".join(inner[1:])          # &thing  -> sizeof(thing)
+                elif inner and inner[0].isidentifier() and (
+                        len(inner) == 1 or (inner[1] in "([" and inner[-1] in ")]")):
+                    # p -> sizeof(*p), and f(i) -> sizeof(*f(i)). sizeof does not
+                    # evaluate its operand, so the call is not made twice.
+                    expr = "*" + "".join(inner)
+                else:
+                    expr = ""
                 lit = size_node.location
                 old = [x.spelling for x in size_node.get_tokens()]
                 hits["sizeof-literal"].append(

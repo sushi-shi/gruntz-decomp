@@ -88,10 +88,10 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     if (file.Open(filename, 0, 0) == 0) {
         return 0;
     }
-    if (file.Read(&hdr, 0xe) != 0xe) {
+    if (file.Read(&hdr, sizeof(hdr)) != 0xe) {
         return 0;
     }
-    if (file.Read(&info, 0x428) != 0x428) {
+    if (file.Read(&info, sizeof(info)) != 0x428) {
         return 0;
     }
 

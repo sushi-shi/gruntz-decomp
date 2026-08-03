@@ -318,8 +318,8 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
         return 0;
     }
 
-    ar->Write(&m_baseX, 4);
-    ar->Write(&m_baseY, 4);
+    ar->Write(&m_baseX, sizeof(m_baseX));
+    ar->Write(&m_baseY, sizeof(m_baseY));
 
     char tmp[0x80];
 
@@ -330,7 +330,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
     }
     ar->Write(tmp, 0x80);
 
-    ar->Write(&m_active, 4);
+    ar->Write(&m_active, sizeof(m_active));
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
@@ -340,7 +340,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameMinTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
 
     g_serialCounter++;
@@ -351,7 +351,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameMinOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
 
     g_serialCounter++;
@@ -362,7 +362,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameSecTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
 
     g_serialCounter++;
@@ -373,7 +373,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameSecOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
 
     g_serialCounter++;
@@ -384,10 +384,10 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameColon, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
 
-    ar->Write(&m_running, 4);
-    ar->Write(&m_currentMs, 4);
+    ar->Write(&m_running, sizeof(m_running));
+    ar->Write(&m_currentMs, sizeof(m_currentMs));
     return 1;
 }

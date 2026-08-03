@@ -134,10 +134,10 @@ i32 CSBI_WarlordHead::SerializeFields(
     }
     switch (mode) {
         case SERIAL_LOAD:
-            s->Read(&m_direction, 4);
+            s->Read(&m_direction, sizeof(m_direction));
             break;
         case SERIAL_SAVE:
-            s->Write(&m_direction, 4);
+            s->Write(&m_direction, sizeof(m_direction));
             break;
     }
     return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj) != 0;

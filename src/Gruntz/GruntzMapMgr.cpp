@@ -18,9 +18,9 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
     switch (mode) {
         case SERIAL_LOAD: {
 
-            ar->Read(&m_reserved90, 4);
+            ar->Read(&m_reserved90, sizeof(m_reserved90));
             i32 count;
-            ar->Read(&count, 4);
+            ar->Read(&count, sizeof(count));
             for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
                 void* elem = m_arr.GetData()[fi];
                 if (elem != NULL) {
@@ -45,9 +45,9 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
         }
         case SERIAL_SAVE: {
 
-            ar->Write(&m_reserved90, 4);
+            ar->Write(&m_reserved90, sizeof(m_reserved90));
             i32 wn = m_arr.GetSize();
-            ar->Write(&wn, 4);
+            ar->Write(&wn, sizeof(wn));
             for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {
                 void* elem = m_arr.GetData()[wi];
                 if (elem == NULL) {

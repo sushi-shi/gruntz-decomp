@@ -744,26 +744,26 @@ i32 CProjectile::SerializeMove(
     switch (mode) {
         case SERIAL_LOAD: {
             m_sound = NULL;
-            s->Read(&m_kind, 4);
-            s->Read(&m_srcRow, 4);
-            s->Read(&m_srcCol, 4);
-            s->Read(&m_targetX, 4);
-            s->Read(&m_targetY, 4);
-            s->Read(&m_flightDist, 8);
-            s->Read(&m_timePerTile, 4);
-            s->Read(&m_velScale, 8);
-            s->Read(&m_posX, 8);
-            s->Read(&m_posY, 8);
-            s->Read(&m_velX, 8);
-            s->Read(&m_velY, 8);
-            s->Read(&m_roundX, 8);
-            s->Read(&m_roundY, 8);
-            s->Read(&m_curX, 4);
-            s->Read(&m_curY, 4);
-            s->Read(&m_isArcing, 4);
-            s->Read(&m_arrived, 4);
-            s->Read(&m_targetId, 4);
-            s->Read(&m_ownerId, 4);
+            s->Read(&m_kind, sizeof(m_kind));
+            s->Read(&m_srcRow, sizeof(m_srcRow));
+            s->Read(&m_srcCol, sizeof(m_srcCol));
+            s->Read(&m_targetX, sizeof(m_targetX));
+            s->Read(&m_targetY, sizeof(m_targetY));
+            s->Read(&m_flightDist, sizeof(m_flightDist));
+            s->Read(&m_timePerTile, sizeof(m_timePerTile));
+            s->Read(&m_velScale, sizeof(m_velScale));
+            s->Read(&m_posX, sizeof(m_posX));
+            s->Read(&m_posY, sizeof(m_posY));
+            s->Read(&m_velX, sizeof(m_velX));
+            s->Read(&m_velY, sizeof(m_velY));
+            s->Read(&m_roundX, sizeof(m_roundX));
+            s->Read(&m_roundY, sizeof(m_roundY));
+            s->Read(&m_curX, sizeof(m_curX));
+            s->Read(&m_curY, sizeof(m_curY));
+            s->Read(&m_isArcing, sizeof(m_isArcing));
+            s->Read(&m_arrived, sizeof(m_arrived));
+            s->Read(&m_targetId, sizeof(m_targetId));
+            s->Read(&m_ownerId, sizeof(m_ownerId));
 
             void* out;
             for (i32 ni = 0; ni < 7; ni++) {
@@ -780,7 +780,7 @@ i32 CProjectile::SerializeMove(
 
             g_serialCounter++;
             i32 key;
-            s->Read(&key, 4);
+            s->Read(&key, sizeof(key));
             out = NULL;
             CGameObject* r;
             if (MapLookupById(reg->m_childGroup->m_map48, key, out) == 0) {
@@ -799,7 +799,7 @@ i32 CProjectile::SerializeMove(
             }
 
             i32 cnt;
-            s->Read(&cnt, 4);
+            s->Read(&cnt, sizeof(cnt));
             for (i32 ci = 0; ci < cnt; ci++) {
                 CoordPoolNode* node = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 void* payload = 0;
@@ -814,26 +814,26 @@ i32 CProjectile::SerializeMove(
         }
 
         case SERIAL_SAVE: {
-            s->Write(&m_kind, 4);
-            s->Write(&m_srcRow, 4);
-            s->Write(&m_srcCol, 4);
-            s->Write(&m_targetX, 4);
-            s->Write(&m_targetY, 4);
-            s->Write(&m_flightDist, 8);
-            s->Write(&m_timePerTile, 4);
-            s->Write(&m_velScale, 8);
-            s->Write(&m_posX, 8);
-            s->Write(&m_posY, 8);
-            s->Write(&m_velX, 8);
-            s->Write(&m_velY, 8);
-            s->Write(&m_roundX, 8);
-            s->Write(&m_roundY, 8);
-            s->Write(&m_curX, 4);
-            s->Write(&m_curY, 4);
-            s->Write(&m_isArcing, 4);
-            s->Write(&m_arrived, 4);
-            s->Write(&m_targetId, 4);
-            s->Write(&m_ownerId, 4);
+            s->Write(&m_kind, sizeof(m_kind));
+            s->Write(&m_srcRow, sizeof(m_srcRow));
+            s->Write(&m_srcCol, sizeof(m_srcCol));
+            s->Write(&m_targetX, sizeof(m_targetX));
+            s->Write(&m_targetY, sizeof(m_targetY));
+            s->Write(&m_flightDist, sizeof(m_flightDist));
+            s->Write(&m_timePerTile, sizeof(m_timePerTile));
+            s->Write(&m_velScale, sizeof(m_velScale));
+            s->Write(&m_posX, sizeof(m_posX));
+            s->Write(&m_posY, sizeof(m_posY));
+            s->Write(&m_velX, sizeof(m_velX));
+            s->Write(&m_velY, sizeof(m_velY));
+            s->Write(&m_roundX, sizeof(m_roundX));
+            s->Write(&m_roundY, sizeof(m_roundY));
+            s->Write(&m_curX, sizeof(m_curX));
+            s->Write(&m_curY, sizeof(m_curY));
+            s->Write(&m_isArcing, sizeof(m_isArcing));
+            s->Write(&m_arrived, sizeof(m_arrived));
+            s->Write(&m_targetId, sizeof(m_targetId));
+            s->Write(&m_ownerId, sizeof(m_ownerId));
 
             CAniElement** fp = m_frames;
             for (i32 fi = 0; fi < 7; fi++) {
@@ -851,10 +851,10 @@ i32 CProjectile::SerializeMove(
             if (m_shadow != NULL) {
                 n = m_shadow->m_objectId;
             }
-            s->Write(&n, 4);
+            s->Write(&n, sizeof(n));
 
             i32 v2 = m_hitList.GetCount();
-            s->Write(&v2, 4);
+            s->Write(&v2, sizeof(v2));
 
             POSITION pos = m_hitList.GetHeadPosition();
             while (pos != NULL) {
@@ -1061,20 +1061,20 @@ i32 CTimeBomb::SerializeMove(
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     switch (mode) {
         case SERIAL_LOAD:
-            sa->Read(&m_startTime, 8);
-            sa->Read(&m_duration, 8);
+            sa->Read(&m_startTime, sizeof(m_startTime));
+            sa->Read(&m_duration, sizeof(m_duration));
             break;
         case SERIAL_SAVE:
-            sa->Write(&m_startTime, 8);
-            sa->Write(&m_duration, 8);
+            sa->Write(&m_startTime, sizeof(m_startTime));
+            sa->Write(&m_duration, sizeof(m_duration));
             break;
     }
     switch (mode) {
         case SERIAL_LOAD:
-            sa->Read(&m_fastPhase, 4);
+            sa->Read(&m_fastPhase, sizeof(m_fastPhase));
             break;
         case SERIAL_SAVE:
-            sa->Write(&m_fastPhase, 4);
+            sa->Write(&m_fastPhase, sizeof(m_fastPhase));
             break;
     }
     if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {

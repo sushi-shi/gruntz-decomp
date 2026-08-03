@@ -2404,40 +2404,40 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 
     i32 count;
 
-    s->Write(&m_returnToMenuOnComplete, 4);
-    s->Write(&m_completedFinalLevel, 4);
-    s->Write(&m_savedClock, 4);
-    s->Write(&m_rngSeed, 4);
-    s->Write(&m_dragInProgress, 4);
-    s->Write(&m_reserved2f0, 4);
-    s->Write(&m_cursorFrame, 4);
-    s->Write(&m_levelId, 4);
+    s->Write(&m_returnToMenuOnComplete, sizeof(m_returnToMenuOnComplete));
+    s->Write(&m_completedFinalLevel, sizeof(m_completedFinalLevel));
+    s->Write(&m_savedClock, sizeof(m_savedClock));
+    s->Write(&m_rngSeed, sizeof(m_rngSeed));
+    s->Write(&m_dragInProgress, sizeof(m_dragInProgress));
+    s->Write(&m_reserved2f0, sizeof(m_reserved2f0));
+    s->Write(&m_cursorFrame, sizeof(m_cursorFrame));
+    s->Write(&m_levelId, sizeof(m_levelId));
     s->Write(&m_cursorOffset, sizeof(m_cursorOffset));
     s->Write(&m_tileClick, sizeof(m_tileClick));
-    s->Write(&m_dragInhibit1, 4);
-    s->Write(&m_dragInhibit2, 4);
+    s->Write(&m_dragInhibit1, sizeof(m_dragInhibit1));
+    s->Write(&m_dragInhibit2, sizeof(m_dragInhibit2));
 
     count = StartMarkerCount();
-    s->Write(&count, 4);
+    s->Write(&count, sizeof(count));
     for (u32 i0 = 0; i0 < static_cast<u32>(count); i0++) {
-        s->Write(StartMarkerAt(i0), 8);
+        s->Write(StartMarkerAt(i0), sizeof(*StartMarkerAt(i0)));
     }
 
     Anchor* p = m_anchors;
     for (i32 k0 = 4; k0 != 0; k0--) {
-        s->Write(p, 8);
+        s->Write(p, sizeof(*p));
         p++;
     }
 
     for (i32 k1 = 0; k1 < 4; k1++) {
         count = PlacedObjectCellCount(k1);
-        s->Write(&count, 4);
+        s->Write(&count, sizeof(count));
         for (u32 i1 = 0; i1 < static_cast<u32>(count); i1++) {
-            s->Write(PlacedObjectCellAt(k1, i1), 8);
+            s->Write(PlacedObjectCellAt(k1, i1), sizeof(*PlacedObjectCellAt(k1, i1)));
         }
     }
 
-    s->Write(&m_cueToggle, 4);
+    s->Write(&m_cueToggle, sizeof(m_cueToggle));
 
     g_serialCounter++;
     {
@@ -2447,8 +2447,8 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         s->Write(buf, 0x200);
     }
 
-    s->Write(&m_lastCueId, 4);
-    s->Write(&g_lastLevelNum, 4);
+    s->Write(&m_lastCueId, sizeof(m_lastCueId));
+    s->Write(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
     g_serialCounter++;
     {
@@ -2461,7 +2461,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
             mc->m_imageRegistry->AnyValueMatches(frame, buf, &v);
         }
         s->Write(buf, 0x80);
-        s->Write(&v, 4);
+        s->Write(&v, sizeof(v));
     }
 
     g_serialCounter++;
@@ -2474,9 +2474,9 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         s->Write(buf, 0x80);
     }
 
-    s->Write(&m_gridDelayBase, 4);
-    s->Write(&m_gridDelayCount, 4);
-    s->Write(&m_gridRow, 4);
+    s->Write(&m_gridDelayBase, sizeof(m_gridDelayBase));
+    s->Write(&m_gridDelayCount, sizeof(m_gridDelayCount));
+    s->Write(&m_gridRow, sizeof(m_gridRow));
 
     g_serialCounter++;
     {
@@ -2484,37 +2484,37 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         if (m_scrollSink != NULL) {
             v = m_scrollSink->m_objectId;
         }
-        s->Write(&v, 4);
+        s->Write(&v, sizeof(v));
     }
 
-    s->Write(&m_gridWalkActive, 4);
-    s->Write(&m_renderDisabled, 4);
-    s->Write(&m_winLoseBanner, 4);
-    s->Write(&m_initialFramePending, 4);
-    s->Write(&m_hudSuppressed, 4);
-    s->Write(&m_inGame, 4);
-    s->Write(&m_overlayDrag, 4);
-    s->Write(&m_paused, 4);
-    s->Write(&m_playerCommandPending, 4);
-    s->Write(&m_dragEndNotify, 4);
-    s->Write(&m_drewThisFrame, 4);
-    s->Write(&m_pathPreviewSource.x, 4);
-    s->Write(&m_pathPreviewSource.y, 4);
-    s->Write(&m_pathPreviewDestination.x, 4);
-    s->Write(&m_pathPreviewDestination.y, 4);
-    s->Write(&m_pathPreviewColor, 2);
-    s->Write(&m_region0Gate, 4);
-    s->Write(&m_region1Gate, 4);
-    s->Write(&m_region2Gate, 4);
-    s->Write(&m_region3Gate, 4);
-    s->Write(&m_viewMode, 4);
-    s->Write(&m_snapshotActive, 4);
-    s->Write(&m_gridHasSprite, 4);
-    s->Write(&m_cameraBookmarkIndex, 4);
-    s->Write(&m_focusPlayerIndex, 4);
+    s->Write(&m_gridWalkActive, sizeof(m_gridWalkActive));
+    s->Write(&m_renderDisabled, sizeof(m_renderDisabled));
+    s->Write(&m_winLoseBanner, sizeof(m_winLoseBanner));
+    s->Write(&m_initialFramePending, sizeof(m_initialFramePending));
+    s->Write(&m_hudSuppressed, sizeof(m_hudSuppressed));
+    s->Write(&m_inGame, sizeof(m_inGame));
+    s->Write(&m_overlayDrag, sizeof(m_overlayDrag));
+    s->Write(&m_paused, sizeof(m_paused));
+    s->Write(&m_playerCommandPending, sizeof(m_playerCommandPending));
+    s->Write(&m_dragEndNotify, sizeof(m_dragEndNotify));
+    s->Write(&m_drewThisFrame, sizeof(m_drewThisFrame));
+    s->Write(&m_pathPreviewSource.x, sizeof(m_pathPreviewSource.x));
+    s->Write(&m_pathPreviewSource.y, sizeof(m_pathPreviewSource.y));
+    s->Write(&m_pathPreviewDestination.x, sizeof(m_pathPreviewDestination.x));
+    s->Write(&m_pathPreviewDestination.y, sizeof(m_pathPreviewDestination.y));
+    s->Write(&m_pathPreviewColor, sizeof(m_pathPreviewColor));
+    s->Write(&m_region0Gate, sizeof(m_region0Gate));
+    s->Write(&m_region1Gate, sizeof(m_region1Gate));
+    s->Write(&m_region2Gate, sizeof(m_region2Gate));
+    s->Write(&m_region3Gate, sizeof(m_region3Gate));
+    s->Write(&m_viewMode, sizeof(m_viewMode));
+    s->Write(&m_snapshotActive, sizeof(m_snapshotActive));
+    s->Write(&m_gridHasSprite, sizeof(m_gridHasSprite));
+    s->Write(&m_cameraBookmarkIndex, sizeof(m_cameraBookmarkIndex));
+    s->Write(&m_focusPlayerIndex, sizeof(m_focusPlayerIndex));
 
     count = CameraBookmarkCount();
-    s->Write(&count, 4);
+    s->Write(&count, sizeof(count));
     for (i32 fi = 0; fi < CameraBookmarkCount(); fi++) {
         void* el = CameraBookmarkData()[fi];
         if (el != NULL) {
@@ -2536,18 +2536,18 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         return 0;
     }
 
-    ar->Read(&m_returnToMenuOnComplete, 4);
-    ar->Read(&m_completedFinalLevel, 4);
-    ar->Read(&m_savedClock, 4);
-    ar->Read(&m_rngSeed, 4);
-    ar->Read(&m_dragInProgress, 4);
-    ar->Read(&m_reserved2f0, 4);
-    ar->Read(&m_cursorFrame, 4);
-    ar->Read(&m_levelId, 4);
+    ar->Read(&m_returnToMenuOnComplete, sizeof(m_returnToMenuOnComplete));
+    ar->Read(&m_completedFinalLevel, sizeof(m_completedFinalLevel));
+    ar->Read(&m_savedClock, sizeof(m_savedClock));
+    ar->Read(&m_rngSeed, sizeof(m_rngSeed));
+    ar->Read(&m_dragInProgress, sizeof(m_dragInProgress));
+    ar->Read(&m_reserved2f0, sizeof(m_reserved2f0));
+    ar->Read(&m_cursorFrame, sizeof(m_cursorFrame));
+    ar->Read(&m_levelId, sizeof(m_levelId));
     ar->Read(&m_cursorOffset, sizeof(m_cursorOffset));
     ar->Read(&m_tileClick, sizeof(m_tileClick));
-    ar->Read(&m_dragInhibit1, 4);
-    ar->Read(&m_dragInhibit2, 4);
+    ar->Read(&m_dragInhibit1, sizeof(m_dragInhibit1));
+    ar->Read(&m_dragInhibit2, sizeof(m_dragInhibit2));
 
     {
 
@@ -2561,7 +2561,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         }
         m_startMarkers.SetSize(0, -1);
         i32 n;
-        ar->Read(&n, 4);
+        ar->Read(&n, sizeof(n));
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
             Coord* node = 0;
             CoordPoolNode* head = g_coordPool.m_freeHead;
@@ -2570,7 +2570,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 node = &head->m_coord;
                 g_coordPool.m_freeHead = next;
             }
-            ar->Read(node, 8);
+            ar->Read(node, sizeof(*node));
             m_startMarkers.SetAtGrow(StartMarkerCount(), node);
         }
     }
@@ -2579,7 +2579,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
         Anchor* q = m_anchors;
         for (i32 k = 4; k != 0; k--) {
-            ar->Read(q, 8);
+            ar->Read(q, sizeof(*q));
             q++;
         }
     }
@@ -2598,7 +2598,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             }
             coll->SetSize(0, -1);
             i32 n;
-            ar->Read(&n, 4);
+            ar->Read(&n, sizeof(n));
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
                 Coord* node = 0;
                 CoordPoolNode* head = g_coordPool.m_freeHead;
@@ -2607,27 +2607,27 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                     node = &head->m_coord;
                     g_coordPool.m_freeHead = next;
                 }
-                ar->Read(node, 8);
+                ar->Read(node, sizeof(*node));
                 coll->SetAtGrow(PlacedObjectCellCount(k), node);
             }
         }
     }
 
-    ar->Read(&m_cueToggle, 4);
+    ar->Read(&m_cueToggle, sizeof(m_cueToggle));
     g_serialCounter++;
     {
         char buf512[0x200];
         ar->Read(buf512, 0x200);
         m_cueText = buf512;
     }
-    ar->Read(&m_lastCueId, 4);
-    ar->Read(&g_lastLevelNum, 4);
+    ar->Read(&m_lastCueId, sizeof(m_lastCueId));
+    ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
     g_serialCounter++;
     char buf80a[0x80];
     ar->Read(buf80a, 0x80);
     i32 idx;
-    ar->Read(&idx, 4);
+    ar->Read(&idx, sizeof(idx));
     if (strlen(buf80a) == 0) {
         m_gridCurFrame = NULL;
     } else {
@@ -2652,12 +2652,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         m_grid = static_cast<CDDrawWorker*>(gridObj);
     }
 
-    ar->Read(&m_gridDelayBase, 4);
-    ar->Read(&m_gridDelayCount, 4);
-    ar->Read(&m_gridRow, 4);
+    ar->Read(&m_gridDelayBase, sizeof(m_gridDelayBase));
+    ar->Read(&m_gridDelayCount, sizeof(m_gridDelayCount));
+    ar->Read(&m_gridRow, sizeof(m_gridRow));
     g_serialCounter++;
     i32 v;
-    ar->Read(&v, 4);
+    ar->Read(&v, sizeof(v));
 
     CGameObject* oe = 0;
     MapLookup(res->m_childGroup->m_map48, gridObj, oe);
@@ -2673,35 +2673,35 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         return 0;
     }
 
-    ar->Read(&m_gridWalkActive, 4);
-    ar->Read(&m_renderDisabled, 4);
-    ar->Read(&m_winLoseBanner, 4);
-    ar->Read(&m_initialFramePending, 4);
-    ar->Read(&m_hudSuppressed, 4);
-    ar->Read(&m_inGame, 4);
-    ar->Read(&m_overlayDrag, 4);
-    ar->Read(&m_paused, 4);
-    ar->Read(&m_playerCommandPending, 4);
-    ar->Read(&m_dragEndNotify, 4);
-    ar->Read(&m_drewThisFrame, 4);
-    ar->Read(&m_pathPreviewSource.x, 4);
-    ar->Read(&m_pathPreviewSource.y, 4);
-    ar->Read(&m_pathPreviewDestination.x, 4);
-    ar->Read(&m_pathPreviewDestination.y, 4);
-    ar->Read(&m_pathPreviewColor, 2);
-    ar->Read(&m_region0Gate, 4);
-    ar->Read(&m_region1Gate, 4);
-    ar->Read(&m_region2Gate, 4);
-    ar->Read(&m_region3Gate, 4);
-    ar->Read(&m_viewMode, 4);
-    ar->Read(&m_snapshotActive, 4);
-    ar->Read(&m_gridHasSprite, 4);
-    ar->Read(&m_cameraBookmarkIndex, 4);
+    ar->Read(&m_gridWalkActive, sizeof(m_gridWalkActive));
+    ar->Read(&m_renderDisabled, sizeof(m_renderDisabled));
+    ar->Read(&m_winLoseBanner, sizeof(m_winLoseBanner));
+    ar->Read(&m_initialFramePending, sizeof(m_initialFramePending));
+    ar->Read(&m_hudSuppressed, sizeof(m_hudSuppressed));
+    ar->Read(&m_inGame, sizeof(m_inGame));
+    ar->Read(&m_overlayDrag, sizeof(m_overlayDrag));
+    ar->Read(&m_paused, sizeof(m_paused));
+    ar->Read(&m_playerCommandPending, sizeof(m_playerCommandPending));
+    ar->Read(&m_dragEndNotify, sizeof(m_dragEndNotify));
+    ar->Read(&m_drewThisFrame, sizeof(m_drewThisFrame));
+    ar->Read(&m_pathPreviewSource.x, sizeof(m_pathPreviewSource.x));
+    ar->Read(&m_pathPreviewSource.y, sizeof(m_pathPreviewSource.y));
+    ar->Read(&m_pathPreviewDestination.x, sizeof(m_pathPreviewDestination.x));
+    ar->Read(&m_pathPreviewDestination.y, sizeof(m_pathPreviewDestination.y));
+    ar->Read(&m_pathPreviewColor, sizeof(m_pathPreviewColor));
+    ar->Read(&m_region0Gate, sizeof(m_region0Gate));
+    ar->Read(&m_region1Gate, sizeof(m_region1Gate));
+    ar->Read(&m_region2Gate, sizeof(m_region2Gate));
+    ar->Read(&m_region3Gate, sizeof(m_region3Gate));
+    ar->Read(&m_viewMode, sizeof(m_viewMode));
+    ar->Read(&m_snapshotActive, sizeof(m_snapshotActive));
+    ar->Read(&m_gridHasSprite, sizeof(m_gridHasSprite));
+    ar->Read(&m_cameraBookmarkIndex, sizeof(m_cameraBookmarkIndex));
     m_stepCountdown = 2;
-    ar->Read(&m_focusPlayerIndex, 4);
+    ar->Read(&m_focusPlayerIndex, sizeof(m_focusPlayerIndex));
 
     i32 n488;
-    ar->Read(&n488, 4);
+    ar->Read(&n488, sizeof(n488));
     {
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             void* node = CameraBookmarkData()[i];
@@ -3920,42 +3920,42 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeI
     if (kind != SERIAL_SAVE) {
         if (kind == SERIAL_LOAD) {
 
-            ar->Read(&m_playerIndex, 4);
-            ar->Read(&m_colorIndex, 4);
-            ar->Read(&m_warlordObjectId, 4);
-            ar->Read(&m_configId, 4);
-            ar->Read(&m_humanControlled, 4);
-            ar->Read(&m_slotKey, 4);
-            ar->Read(&m_readyFlag, 4);
-            ar->Read(&m_liveGate, 4);
-            ar->Read(&m_joined, 4);
-            ar->Read(&m_clearedRound, 4);
+            ar->Read(&m_playerIndex, sizeof(m_playerIndex));
+            ar->Read(&m_colorIndex, sizeof(m_colorIndex));
+            ar->Read(&m_warlordObjectId, sizeof(m_warlordObjectId));
+            ar->Read(&m_configId, sizeof(m_configId));
+            ar->Read(&m_humanControlled, sizeof(m_humanControlled));
+            ar->Read(&m_slotKey, sizeof(m_slotKey));
+            ar->Read(&m_readyFlag, sizeof(m_readyFlag));
+            ar->Read(&m_liveGate, sizeof(m_liveGate));
+            ar->Read(&m_joined, sizeof(m_joined));
+            ar->Read(&m_clearedRound, sizeof(m_clearedRound));
             g_serialCounter++;
             ar->Read(tmp, 0x80);
             m_name = tmp;
-            ar->Read(&m_focusX, 4);
-            ar->Read(&m_focusY, 4);
-            ar->Read(&m_comboSel, 4);
+            ar->Read(&m_focusX, sizeof(m_focusX));
+            ar->Read(&m_focusY, sizeof(m_focusY));
+            ar->Read(&m_comboSel, sizeof(m_comboSel));
         }
     } else {
 
-        ar->Write(&m_playerIndex, 4);
-        ar->Write(&m_colorIndex, 4);
-        ar->Write(&m_warlordObjectId, 4);
-        ar->Write(&m_configId, 4);
-        ar->Write(&m_humanControlled, 4);
-        ar->Write(&m_slotKey, 4);
-        ar->Write(&m_readyFlag, 4);
-        ar->Write(&m_liveGate, 4);
-        ar->Write(&m_joined, 4);
-        ar->Write(&m_clearedRound, 4);
+        ar->Write(&m_playerIndex, sizeof(m_playerIndex));
+        ar->Write(&m_colorIndex, sizeof(m_colorIndex));
+        ar->Write(&m_warlordObjectId, sizeof(m_warlordObjectId));
+        ar->Write(&m_configId, sizeof(m_configId));
+        ar->Write(&m_humanControlled, sizeof(m_humanControlled));
+        ar->Write(&m_slotKey, sizeof(m_slotKey));
+        ar->Write(&m_readyFlag, sizeof(m_readyFlag));
+        ar->Write(&m_liveGate, sizeof(m_liveGate));
+        ar->Write(&m_joined, sizeof(m_joined));
+        ar->Write(&m_clearedRound, sizeof(m_clearedRound));
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
         strcpy(tmp, static_cast<const char*>(m_name));
         ar->Write(tmp, 0x80);
-        ar->Write(&m_focusX, 4);
-        ar->Write(&m_focusY, 4);
-        ar->Write(&m_comboSel, 4);
+        ar->Write(&m_focusX, sizeof(m_focusX));
+        ar->Write(&m_focusY, sizeof(m_focusY));
+        ar->Write(&m_comboSel, sizeof(m_comboSel));
     }
     return (static_cast<CBattlezMapConfig*>(&m_battlezConfig))
                ->SerializeState(ar, kind, typeId, pObj)

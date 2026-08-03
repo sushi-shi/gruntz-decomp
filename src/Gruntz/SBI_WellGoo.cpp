@@ -188,10 +188,10 @@ i32 CSBI_WellGoo::SerializeFields(
     switch (mode) {
         case SERIAL_SAVE: {
 
-            arc->Write(&m_fillScale, 4);
-            arc->Write(&m_drawX, 4);
-            arc->Write(&m_srcRect, 0x10);
-            arc->Write(&m_dstRect, 0x10);
+            arc->Write(&m_fillScale, sizeof(m_fillScale));
+            arc->Write(&m_drawX, sizeof(m_drawX));
+            arc->Write(&m_srcRect, sizeof(m_srcRect));
+            arc->Write(&m_dstRect, sizeof(m_dstRect));
             char buf[0x80];
             i32 idx;
             g_serialCounter++;
@@ -201,7 +201,7 @@ i32 CSBI_WellGoo::SerializeFields(
                 mgr->m_imageRegistry->AnyValueMatches(m_fgFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
-            arc->Write(&idx, 4);
+            arc->Write(&idx, sizeof(idx));
             g_serialCounter++;
             memset(buf, 0, 0x80);
             idx = 0;
@@ -209,20 +209,20 @@ i32 CSBI_WellGoo::SerializeFields(
                 mgr->m_imageRegistry->AnyValueMatches(m_baseFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
-            arc->Write(&idx, 4);
+            arc->Write(&idx, sizeof(idx));
             return 1;
         }
         case SERIAL_LOAD: {
 
-            arc->Read(&m_fillScale, 4);
-            arc->Read(&m_drawX, 4);
-            arc->Read(&m_srcRect, 0x10);
-            arc->Read(&m_dstRect, 0x10);
+            arc->Read(&m_fillScale, sizeof(m_fillScale));
+            arc->Read(&m_drawX, sizeof(m_drawX));
+            arc->Read(&m_srcRect, sizeof(m_srcRect));
+            arc->Read(&m_dstRect, sizeof(m_dstRect));
             char buf[0x80];
             i32 idx;
             g_serialCounter++;
             arc->Read(buf, 0x80);
-            arc->Read(&idx, 4);
+            arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 CObject* found = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(buf, found);
@@ -237,7 +237,7 @@ i32 CSBI_WellGoo::SerializeFields(
             }
             g_serialCounter++;
             arc->Read(buf, 0x80);
-            arc->Read(&idx, 4);
+            arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 CObject* found = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(buf, found);

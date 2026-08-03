@@ -202,7 +202,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
     char tmp[0x80];
     switch (kind) {
         case SERIAL_LOAD:
-            ar->Read(&m_state, 4);
+            ar->Read(&m_state, sizeof(m_state));
             g_serialCounter++;
             ar->Read(tmp, 0x80);
             if (strlen(tmp) != 0) {
@@ -214,7 +214,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
             }
             break;
         case SERIAL_SAVE:
-            ar->Write(&m_state, 4);
+            ar->Write(&m_state, sizeof(m_state));
             g_serialCounter++;
             memset(tmp, 0, sizeof(tmp));
             if (m_record) {
@@ -241,20 +241,20 @@ i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicType
     }
     switch (kind) {
         case SERIAL_LOAD:
-            ar->Read(&m_enabled, 4);
-            ar->Read(&m_kind, 4);
-            ar->Read(&m_cmd, 4);
-            ar->Read(&m_tab, 4);
-            ar->Read(&m_rect14, 0x10);
-            ar->Read(&m_redrawFrames, 4);
+            ar->Read(&m_enabled, sizeof(m_enabled));
+            ar->Read(&m_kind, sizeof(m_kind));
+            ar->Read(&m_cmd, sizeof(m_cmd));
+            ar->Read(&m_tab, sizeof(m_tab));
+            ar->Read(&m_rect14, sizeof(m_rect14));
+            ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
             break;
         case SERIAL_SAVE:
-            ar->Write(&m_enabled, 4);
-            ar->Write(&m_kind, 4);
-            ar->Write(&m_cmd, 4);
-            ar->Write(&m_tab, 4);
-            ar->Write(&m_rect14, 0x10);
-            ar->Write(&m_redrawFrames, 4);
+            ar->Write(&m_enabled, sizeof(m_enabled));
+            ar->Write(&m_kind, sizeof(m_kind));
+            ar->Write(&m_cmd, sizeof(m_cmd));
+            ar->Write(&m_tab, sizeof(m_tab));
+            ar->Write(&m_rect14, sizeof(m_rect14));
+            ar->Write(&m_redrawFrames, sizeof(m_redrawFrames));
             break;
     }
     return 1;

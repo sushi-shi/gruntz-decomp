@@ -95,10 +95,10 @@ i32 CGruntSelectedSprite::SerializeMove(
 
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
-            sa->Read(&m_cell, 8);
+            sa->Read(&m_cell, sizeof(m_cell));
         }
     } else {
-        sa->Write(&m_cell, 8);
+        sa->Write(&m_cell, sizeof(m_cell));
     }
     if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
         return 0;

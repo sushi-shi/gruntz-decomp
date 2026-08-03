@@ -1099,7 +1099,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
     }
     for (u32 i = 0; i < count; i++) {
         WwdSnapshot desc;
-        reader->Read(&desc, 0xa0);
+        reader->Read(&desc, sizeof(desc));
 
         void* found;
         if (MapLookupById(m_map48, desc.m_objectId, found) && found != NULL) {
@@ -1237,7 +1237,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
         MapGetNext(m_map48, pos, key, val);
         if (val != NULL && !(val->m_flags & 0x4000000)) {
             void* k = WwdKey(val);
-            ar->Write(&k, 4);
+            ar->Write(&k, sizeof(k));
             if (val->Play(ar, SERIAL_SAVE, typeId, val) == 0) {
                 return 0;
             }
@@ -1254,7 +1254,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
     }
     for (u32 i = 0; i < count; i++) {
         void* key = 0;
-        ar->Read(&key, 4);
+        ar->Read(&key, sizeof(key));
         if (key == NULL) {
             return 0;
         }

@@ -595,25 +595,25 @@ i32 CRollingBall::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
 
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_moveSpeed, 8);
-            ar->Write(&m_subX, 8);
-            ar->Write(&m_subY, 8);
-            ar->Write(&m_stepDirX, 4);
-            ar->Write(&m_stepDirY, 4);
-            ar->Write(&m_target, 8);
-            ar->Write(&m_explodeLatch, 4);
-            ar->Write(&m_fallLatch, 4);
+            ar->Write(&m_moveSpeed, sizeof(m_moveSpeed));
+            ar->Write(&m_subX, sizeof(m_subX));
+            ar->Write(&m_subY, sizeof(m_subY));
+            ar->Write(&m_stepDirX, sizeof(m_stepDirX));
+            ar->Write(&m_stepDirY, sizeof(m_stepDirY));
+            ar->Write(&m_target, sizeof(m_target));
+            ar->Write(&m_explodeLatch, sizeof(m_explodeLatch));
+            ar->Write(&m_fallLatch, sizeof(m_fallLatch));
             ar->Write(&m_moveDelta, sizeof(m_moveDelta));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_moveSpeed, 8);
-            ar->Read(&m_subX, 8);
-            ar->Read(&m_subY, 8);
-            ar->Read(&m_stepDirX, 4);
-            ar->Read(&m_stepDirY, 4);
-            ar->Read(&m_target, 8);
-            ar->Read(&m_explodeLatch, 4);
-            ar->Read(&m_fallLatch, 4);
+            ar->Read(&m_moveSpeed, sizeof(m_moveSpeed));
+            ar->Read(&m_subX, sizeof(m_subX));
+            ar->Read(&m_subY, sizeof(m_subY));
+            ar->Read(&m_stepDirX, sizeof(m_stepDirX));
+            ar->Read(&m_stepDirY, sizeof(m_stepDirY));
+            ar->Read(&m_target, sizeof(m_target));
+            ar->Read(&m_explodeLatch, sizeof(m_explodeLatch));
+            ar->Read(&m_fallLatch, sizeof(m_fallLatch));
             ar->Read(&m_moveDelta, sizeof(m_moveDelta));
             break;
     }

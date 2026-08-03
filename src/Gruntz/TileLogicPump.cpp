@@ -752,11 +752,11 @@ i32 CCheckpointTrigger::SerializeMove(
     switch (mode) {
         case SERIAL_LOAD:
             sa->Read(m_state, 0x3c);
-            sa->Read(&m_firstEmpty, 4);
+            sa->Read(&m_firstEmpty, sizeof(m_firstEmpty));
             break;
         case SERIAL_SAVE:
             sa->Write(m_state, 0x3c);
-            sa->Write(&m_firstEmpty, 4);
+            sa->Write(&m_firstEmpty, sizeof(m_firstEmpty));
             break;
     }
     if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {

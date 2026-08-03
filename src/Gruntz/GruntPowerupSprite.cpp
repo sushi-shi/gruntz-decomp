@@ -106,12 +106,12 @@ i32 CGruntPowerupSprite::SerializeMove(
     }
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cell, 8);
-            ar->Write(&m_powerupId, 4);
+            ar->Write(&m_cell, sizeof(m_cell));
+            ar->Write(&m_powerupId, sizeof(m_powerupId));
             break;
         case SERIAL_LOAD: {
-            ar->Read(&m_cell, 8);
-            ar->Read(&m_powerupId, 4);
+            ar->Read(&m_cell, sizeof(m_cell));
+            ar->Read(&m_powerupId, sizeof(m_powerupId));
             i32 id = m_powerupId;
             CWwdGameObjectA* r = m_object;
             CShadeTable* v = g_gameReg->m_logicPump->m_tables[id];

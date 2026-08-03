@@ -127,7 +127,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
     char buf[0x80];
     switch (mode) {
         case SERIAL_LOAD:
-            s->Read(&m_frameIndex, 4);
+            s->Read(&m_frameIndex, sizeof(m_frameIndex));
             g_serialCounter++;
             s->Read(buf, 0x80);
             if (strlen(buf)) {
@@ -142,7 +142,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
             }
             break;
         case SERIAL_SAVE:
-            s->Write(&m_frameIndex, 4);
+            s->Write(&m_frameIndex, sizeof(m_frameIndex));
             g_serialCounter++;
             memset(buf, 0, 0x80);
             if (m_frameSet) {

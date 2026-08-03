@@ -266,39 +266,39 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
     CFileMemBase* s = static_cast<CFileMemBase*>(arc);
     switch (mode) {
         case SERIAL_SAVE:
-            s->Write(&m_angularVelocity, 8);
-            s->Write(&m_position.x, 8);
-            s->Write(&m_position.y, 8);
-            s->Write(&m_center.x, 8);
-            s->Write(&m_center.y, 8);
-            s->Write(&m_offset.x, 8);
-            s->Write(&m_offset.y, 8);
-            s->Write(&m_angle, 8);
+            s->Write(&m_angularVelocity, sizeof(m_angularVelocity));
+            s->Write(&m_position.x, sizeof(m_position.x));
+            s->Write(&m_position.y, sizeof(m_position.y));
+            s->Write(&m_center.x, sizeof(m_center.x));
+            s->Write(&m_center.y, sizeof(m_center.y));
+            s->Write(&m_offset.x, sizeof(m_offset.x));
+            s->Write(&m_offset.y, sizeof(m_offset.y));
+            s->Write(&m_angle, sizeof(m_angle));
             g_serialCounter++;
             {
                 i32 id = 0;
                 if (m_focus != NULL) {
                     id = m_focus->m_objectId;
                 }
-                s->Write(&id, 4);
+                s->Write(&id, sizeof(id));
             }
-            s->Write(&m_cellRow, 4);
-            s->Write(&m_cellCol, 4);
-            s->Write(&m_storyMode, 4);
+            s->Write(&m_cellRow, sizeof(m_cellRow));
+            s->Write(&m_cellCol, sizeof(m_cellCol));
+            s->Write(&m_storyMode, sizeof(m_storyMode));
             break;
         case SERIAL_LOAD:
-            s->Read(&m_angularVelocity, 8);
-            s->Read(&m_position.x, 8);
-            s->Read(&m_position.y, 8);
-            s->Read(&m_center.x, 8);
-            s->Read(&m_center.y, 8);
-            s->Read(&m_offset.x, 8);
-            s->Read(&m_offset.y, 8);
-            s->Read(&m_angle, 8);
+            s->Read(&m_angularVelocity, sizeof(m_angularVelocity));
+            s->Read(&m_position.x, sizeof(m_position.x));
+            s->Read(&m_position.y, sizeof(m_position.y));
+            s->Read(&m_center.x, sizeof(m_center.x));
+            s->Read(&m_center.y, sizeof(m_center.y));
+            s->Read(&m_offset.x, sizeof(m_offset.x));
+            s->Read(&m_offset.y, sizeof(m_offset.y));
+            s->Read(&m_angle, sizeof(m_angle));
             g_serialCounter++;
             {
                 i32 id;
-                s->Read(&id, 4);
+                s->Read(&id, sizeof(id));
                 CGameObject* out = 0;
                 CGameObject* resolved;
                 if (MapLookupById(reg->m_world->m_childGroup->m_map48, id, out) == 0) {
@@ -313,9 +313,9 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
                     return 0;
                 }
             }
-            s->Read(&m_cellRow, 4);
-            s->Read(&m_cellCol, 4);
-            s->Read(&m_storyMode, 4);
+            s->Read(&m_cellRow, sizeof(m_cellRow));
+            s->Read(&m_cellCol, sizeof(m_cellCol));
+            s->Read(&m_storyMode, sizeof(m_storyMode));
             break;
         case SERIAL_POSTLOAD: {
             CWwdGameObjectA* o = m_object;

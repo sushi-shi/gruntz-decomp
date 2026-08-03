@@ -344,22 +344,22 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
     }
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_tileX, 4);
-            ar->Write(&m_tileY, 4);
-            ar->Write(&m_pending, 4);
-            ar->Write(&m_placed, 4);
-            ar->Write(&m_placeArg3, 4);
-            ar->Write(&m_gruntType, 4);
-            ar->Write(&m_placeIndex, 4);
+            ar->Write(&m_tileX, sizeof(m_tileX));
+            ar->Write(&m_tileY, sizeof(m_tileY));
+            ar->Write(&m_pending, sizeof(m_pending));
+            ar->Write(&m_placed, sizeof(m_placed));
+            ar->Write(&m_placeArg3, sizeof(m_placeArg3));
+            ar->Write(&m_gruntType, sizeof(m_gruntType));
+            ar->Write(&m_placeIndex, sizeof(m_placeIndex));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_tileX, 4);
-            ar->Read(&m_tileY, 4);
-            ar->Read(&m_pending, 4);
-            ar->Read(&m_placed, 4);
-            ar->Read(&m_placeArg3, 4);
-            ar->Read(&m_gruntType, 4);
-            ar->Read(&m_placeIndex, 4);
+            ar->Read(&m_tileX, sizeof(m_tileX));
+            ar->Read(&m_tileY, sizeof(m_tileY));
+            ar->Read(&m_pending, sizeof(m_pending));
+            ar->Read(&m_placed, sizeof(m_placed));
+            ar->Read(&m_placeArg3, sizeof(m_placeArg3));
+            ar->Read(&m_gruntType, sizeof(m_gruntType));
+            ar->Read(&m_placeIndex, sizeof(m_placeIndex));
             break;
         case SERIAL_POSTLOAD: {
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_placeIndex, 0);
@@ -441,21 +441,21 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, 
     }
     if (tag != SERIAL_SAVE) {
         if (tag == SERIAL_LOAD) {
-            ar->Read(&m_armClock, 8);
-            ar->Read(&m_interval, 8);
+            ar->Read(&m_armClock, sizeof(m_armClock));
+            ar->Read(&m_interval, sizeof(m_interval));
         }
     } else {
-        ar->Write(&m_armClock, 8);
-        ar->Write(&m_interval, 8);
+        ar->Write(&m_armClock, sizeof(m_armClock));
+        ar->Write(&m_interval, sizeof(m_interval));
     }
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_armed, 4);
-            ar->Write(&m_tickHandled, 4);
+            ar->Write(&m_armed, sizeof(m_armed));
+            ar->Write(&m_tickHandled, sizeof(m_tickHandled));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_armed, 4);
-            ar->Read(&m_tickHandled, 4);
+            ar->Read(&m_armed, sizeof(m_armed));
+            ar->Read(&m_tickHandled, sizeof(m_tickHandled));
             break;
         case SERIAL_POSTLOAD:
             LoadColors();

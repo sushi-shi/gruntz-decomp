@@ -35,7 +35,7 @@ i32 CShadeTable::Set(u32 size, i32 id) {
 
 RVA(0x001501f0, 0x54)
 i32 CShadeTable::ReadFrom(CFile* file, i32 id) {
-    file->Read(&m_size, 4);
+    file->Read(&m_size, sizeof(m_size));
     if (Set(m_size, id) == 0) {
         return 0;
     }
@@ -81,7 +81,7 @@ i32 CShadeTable::SaveToFile(CString path) {
     if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, 0)) {
         return 0;
     }
-    file.Write(&m_size, 4);
+    file.Write(&m_size, sizeof(m_size));
     file.Write(m_data, m_size);
     file.Close();
     return 1;

@@ -524,14 +524,14 @@ i32 CGruntzSingleCommand::Save(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Write(&m_targetIndex, 1);
-    s->Write(&m_commandKind, 1);
-    s->Write(&m_targetType, 1);
-    s->Write(&m_posX, 2);
-    s->Write(&m_posY, 2);
-    s->Write(&m_submitted, 4);
-    s->Write(&m_gruntIndex, 1);
-    s->Write(&m_extraByte, 1);
+    s->Write(&m_targetIndex, sizeof(m_targetIndex));
+    s->Write(&m_commandKind, sizeof(m_commandKind));
+    s->Write(&m_targetType, sizeof(m_targetType));
+    s->Write(&m_posX, sizeof(m_posX));
+    s->Write(&m_posY, sizeof(m_posY));
+    s->Write(&m_submitted, sizeof(m_submitted));
+    s->Write(&m_gruntIndex, sizeof(m_gruntIndex));
+    s->Write(&m_extraByte, sizeof(m_extraByte));
     return 1;
 }
 
@@ -543,14 +543,14 @@ i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Read(&m_targetIndex, 1);
-    s->Read(&m_commandKind, 1);
-    s->Read(&m_targetType, 1);
-    s->Read(&m_posX, 2);
-    s->Read(&m_posY, 2);
-    s->Read(&m_submitted, 4);
-    s->Read(&m_gruntIndex, 1);
-    s->Read(&m_extraByte, 1);
+    s->Read(&m_targetIndex, sizeof(m_targetIndex));
+    s->Read(&m_commandKind, sizeof(m_commandKind));
+    s->Read(&m_targetType, sizeof(m_targetType));
+    s->Read(&m_posX, sizeof(m_posX));
+    s->Read(&m_posY, sizeof(m_posY));
+    s->Read(&m_submitted, sizeof(m_submitted));
+    s->Read(&m_gruntIndex, sizeof(m_gruntIndex));
+    s->Read(&m_extraByte, sizeof(m_extraByte));
     return 1;
 }
 
@@ -582,13 +582,13 @@ i32 CGruntzMultiCommand::Save(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Write(&m_targetIndex, 1);
-    s->Write(&m_commandKind, 1);
-    s->Write(&m_targetType, 1);
-    s->Write(&m_posX, 2);
-    s->Write(&m_posY, 2);
-    s->Write(&m_submitted, 4);
-    s->Write(&m_gruntMask, 2);
+    s->Write(&m_targetIndex, sizeof(m_targetIndex));
+    s->Write(&m_commandKind, sizeof(m_commandKind));
+    s->Write(&m_targetType, sizeof(m_targetType));
+    s->Write(&m_posX, sizeof(m_posX));
+    s->Write(&m_posY, sizeof(m_posY));
+    s->Write(&m_submitted, sizeof(m_submitted));
+    s->Write(&m_gruntMask, sizeof(m_gruntMask));
     return 1;
 }
 
@@ -600,13 +600,13 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Read(&m_targetIndex, 1);
-    s->Read(&m_commandKind, 1);
-    s->Read(&m_targetType, 1);
-    s->Read(&m_posX, 2);
-    s->Read(&m_posY, 2);
-    s->Read(&m_submitted, 4);
-    s->Read(&m_gruntMask, 2);
+    s->Read(&m_targetIndex, sizeof(m_targetIndex));
+    s->Read(&m_commandKind, sizeof(m_commandKind));
+    s->Read(&m_targetType, sizeof(m_targetType));
+    s->Read(&m_posX, sizeof(m_posX));
+    s->Read(&m_posY, sizeof(m_posY));
+    s->Read(&m_submitted, sizeof(m_submitted));
+    s->Read(&m_gruntMask, sizeof(m_gruntMask));
     return 1;
 }
 
@@ -626,11 +626,11 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
         }
         Clear();
         i32 count;
-        stream->Read(&count, 4);
+        stream->Read(&count, sizeof(count));
         u32 idx = 0;
         while (idx < static_cast<u32>(count)) {
             i32 tag;
-            stream->Read(&tag, 4);
+            stream->Read(&tag, sizeof(tag));
             CGruntzCommand* cmd;
             if (tag == 1) {
                 cmd = CGruntzSingleCommand::Allocate();
@@ -652,13 +652,13 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
         return 0;
     }
     i32 count = m_base.GetCount();
-    stream->Write(&count, 4);
+    stream->Write(&count, sizeof(count));
 
     POSITION pos = m_base.GetHeadPosition();
     while (pos != NULL) {
         CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));
         i32 tag = cmd->GetTag() & 0xff;
-        stream->Write(&tag, 4);
+        stream->Write(&tag, sizeof(tag));
         if (!cmd->Serialize(stream, SERIAL_SAVE, typeId, pObj)) {
             return 0;
         }

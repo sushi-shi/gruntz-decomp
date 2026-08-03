@@ -189,20 +189,20 @@ i32 CSBI_ImageSetAni::SerializeFields(
     switch (mode) {
 
         case SERIAL_LOAD:
-            s->Read(&m_interval, 4);
-            s->Read(&m_lastTime, 4);
-            s->Read(&m_loop, 4);
-            s->Read(&m_step, 4);
-            s->Read(&m_frameEnd, 4);
-            s->Read(&m_frameStart, 4);
+            s->Read(&m_interval, sizeof(m_interval));
+            s->Read(&m_lastTime, sizeof(m_lastTime));
+            s->Read(&m_loop, sizeof(m_loop));
+            s->Read(&m_step, sizeof(m_step));
+            s->Read(&m_frameEnd, sizeof(m_frameEnd));
+            s->Read(&m_frameStart, sizeof(m_frameStart));
             break;
         case SERIAL_SAVE:
-            s->Write(&m_interval, 4);
-            s->Write(&m_lastTime, 4);
-            s->Write(&m_loop, 4);
-            s->Write(&m_step, 4);
-            s->Write(&m_frameEnd, 4);
-            s->Write(&m_frameStart, 4);
+            s->Write(&m_interval, sizeof(m_interval));
+            s->Write(&m_lastTime, sizeof(m_lastTime));
+            s->Write(&m_loop, sizeof(m_loop));
+            s->Write(&m_step, sizeof(m_step));
+            s->Write(&m_frameEnd, sizeof(m_frameEnd));
+            s->Write(&m_frameStart, sizeof(m_frameStart));
             break;
     }
     return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj) != 0;

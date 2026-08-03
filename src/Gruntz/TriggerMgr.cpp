@@ -1163,7 +1163,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
                 void* found = 0;
                 MapLookupById(lvl->m_childGroup->m_map48, id, found);
             }
-            ar->Write(&id, 4);
+            ar->Write(&id, sizeof(id));
             cell++;
             c--;
         } while (c != 0);
@@ -1174,13 +1174,13 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_gruntzExitedByPlayer, 0x10);
     ar->Write(m_gruntzLostByPlayer, 0x10);
     i32 cnt = m_byteArr.GetSize();
-    ar->Write(&cnt, 4);
+    ar->Write(&cnt, sizeof(cnt));
     for (i32 i = 0; i < cnt; i++) {
         u8 b = m_byteArr.GetData()[i];
-        ar->Write(&b, 1);
+        ar->Write(&b, sizeof(b));
     }
     i32 flag24c = m_recList.GetCount();
-    ar->Write(&flag24c, 4);
+    ar->Write(&flag24c, sizeof(flag24c));
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         ar->Write(m_recList.GetNext(pos), 8);
@@ -1189,7 +1189,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     i32 k = 10;
     do {
         i32 cnt2 = list->GetCount();
-        ar->Write(&cnt2, 4);
+        ar->Write(&cnt2, sizeof(cnt2));
         POSITION selPos = list->GetHeadPosition();
         while (selPos != NULL) {
             ar->Write(list->GetNext(selPos), 8);
@@ -1202,16 +1202,16 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     if (goal != NULL) {
         goalId = goal->m_objectId;
     }
-    ar->Write(&goalId, 4);
+    ar->Write(&goalId, sizeof(goalId));
     CWarlord* ov = m_pendingFx;
     i32 ovId = 0;
     if (ov != NULL && ov->m_object != NULL) {
         ovId = ov->m_object->m_objectId;
     }
-    ar->Write(&ovId, 4);
+    ar->Write(&ovId, sizeof(ovId));
     ar->Write(m_reserved274, 0x10);
     i32 cntC = m_baseList.GetCount();
-    ar->Write(&cntC, 4);
+    ar->Write(&cntC, sizeof(cntC));
     pos = m_baseList.GetHeadPosition();
     while (pos != NULL) {
         CGruntPuddle* obj = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
@@ -1221,10 +1221,10 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         i32 oid = obj->m_object->m_objectId;
         void* found = 0;
         MapLookupById(lvl->m_childGroup->m_map48, oid, found);
-        ar->Write(&oid, 4);
+        ar->Write(&oid, sizeof(oid));
     }
     i32 hasOv = (m_overlay != NULL) ? 1 : 0;
-    ar->Write(&hasOv, 4);
+    ar->Write(&hasOv, sizeof(hasOv));
     if (m_overlay != NULL) {
         if (m_overlay->Serialize(ar) == 0) {
             return 0;
@@ -1232,17 +1232,17 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     } else {
         return 0;
     }
-    ar->Write(&m_armed, 4);
-    ar->Write(&m_groupInitialized, 4);
-    ar->Write(&m_phase, 4);
-    ar->Write(&m_recordPosition, 8);
-    ar->Write(&m_countdownActive, 4);
-    ar->Write(&m_finishReasonFrame, 4);
-    ar->Write(&m_groupFlag, 4);
-    ar->Write(&g_curPlayer, 4);
-    ar->Write(&g_groupSentinel, 4);
-    ar->Write(&m_pendingFxKind, 4);
-    ar->Write(&m_selSentinel, 4);
+    ar->Write(&m_armed, sizeof(m_armed));
+    ar->Write(&m_groupInitialized, sizeof(m_groupInitialized));
+    ar->Write(&m_phase, sizeof(m_phase));
+    ar->Write(&m_recordPosition, sizeof(m_recordPosition));
+    ar->Write(&m_countdownActive, sizeof(m_countdownActive));
+    ar->Write(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
+    ar->Write(&m_groupFlag, sizeof(m_groupFlag));
+    ar->Write(&g_curPlayer, sizeof(g_curPlayer));
+    ar->Write(&g_groupSentinel, sizeof(g_groupSentinel));
+    ar->Write(&m_pendingFxKind, sizeof(m_pendingFxKind));
+    ar->Write(&m_selSentinel, sizeof(m_selSentinel));
     return 1;
 }
 
@@ -1265,7 +1265,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     for (i32 base = 7; base < 0x43; base += 0xf) {
         for (i32 i = 0; i < 0xf; i++) {
             i32 key;
-            ar->Read(&key, 4);
+            ar->Read(&key, sizeof(key));
             void* cell = 0;
             if (key != 0) {
                 void* found = 0;
@@ -1289,7 +1289,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
     i32 count;
     u32 ci;
-    ar->Read(&count, 4);
+    ar->Read(&count, sizeof(count));
     CByteArray* arr = &m_byteArr;
     arr->SetSize(0, -1);
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
@@ -1299,7 +1299,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     }
     ClearRecords();
 
-    ar->Read(&count, 4);
+    ar->Read(&count, sizeof(count));
     CPtrList* rec = &m_recList;
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         CoordPoolNode* fl = g_coordPool.m_freeHead;
@@ -1315,7 +1315,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     CPtrList* sel = m_selLists;
     i32 slot = 0xa;
     do {
-        ar->Read(&count, 4);
+        ar->Read(&count, sizeof(count));
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             void* node = 0;
@@ -1331,7 +1331,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
     {
         i32 key;
-        ar->Read(&key, 4);
+        ar->Read(&key, sizeof(key));
         if (key != 0) {
             void* found = 0;
             void* looked = MapLookupById(*map, key, found) ? found : 0;
@@ -1348,7 +1348,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
     {
         i32 key;
-        ar->Read(&key, 4);
+        ar->Read(&key, sizeof(key));
         if (key != 0) {
             void* found = 0;
             void* looked = MapLookupById(*map, key, found) ? found : 0;
@@ -1368,10 +1368,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
     ar->Read(m_reserved274, 0x10);
     m_baseList.RemoveAll();
-    ar->Read(&count, 4);
+    ar->Read(&count, sizeof(count));
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 key;
-        ar->Read(&key, 4);
+        ar->Read(&key, sizeof(key));
         if (key == 0) {
             return 0;
         }
@@ -1394,7 +1394,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         m_overlay = NULL;
     }
     i32 hasOverlay;
-    ar->Read(&hasOverlay, 4);
+    ar->Read(&hasOverlay, sizeof(hasOverlay));
     if (hasOverlay != 0) {
         CActionOptionsMenuBar* ov = new CActionOptionsMenuBar;
         m_overlay = ov;
@@ -1403,17 +1403,17 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
     }
 
-    ar->Read(&m_armed, 4);
-    ar->Read(&m_groupInitialized, 4);
-    ar->Read(&m_phase, 4);
-    ar->Read(&m_recordPosition, 8);
-    ar->Read(&m_countdownActive, 4);
-    ar->Read(&m_finishReasonFrame, 4);
-    ar->Read(&m_groupFlag, 4);
-    ar->Read(&g_curPlayer, 4);
-    ar->Read(&g_groupSentinel, 4);
-    ar->Read(&m_pendingFxKind, 4);
-    ar->Read(&m_selSentinel, 4);
+    ar->Read(&m_armed, sizeof(m_armed));
+    ar->Read(&m_groupInitialized, sizeof(m_groupInitialized));
+    ar->Read(&m_phase, sizeof(m_phase));
+    ar->Read(&m_recordPosition, sizeof(m_recordPosition));
+    ar->Read(&m_countdownActive, sizeof(m_countdownActive));
+    ar->Read(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
+    ar->Read(&m_groupFlag, sizeof(m_groupFlag));
+    ar->Read(&g_curPlayer, sizeof(g_curPlayer));
+    ar->Read(&g_groupSentinel, sizeof(g_groupSentinel));
+    ar->Read(&m_pendingFxKind, sizeof(m_pendingFxKind));
+    ar->Read(&m_selSentinel, sizeof(m_selSentinel));
     return 1;
 }
 

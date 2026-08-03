@@ -90,12 +90,12 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId
     }
     switch (mode) {
         case SERIAL_LOAD:
-            arc->Read(&m_start64, 8);
-            arc->Read(&m_window64, 8);
+            arc->Read(&m_start64, sizeof(m_start64));
+            arc->Read(&m_window64, sizeof(m_window64));
             break;
         case SERIAL_SAVE:
-            arc->Write(&m_start64, 8);
-            arc->Write(&m_window64, 8);
+            arc->Write(&m_start64, sizeof(m_start64));
+            arc->Write(&m_window64, sizeof(m_window64));
             break;
     }
     return 1;

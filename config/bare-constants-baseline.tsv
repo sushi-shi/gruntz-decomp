@@ -3,4 +3,4 @@
 # a regression and fails the gate.
 pointer-vs-0	0
 enum-vs-int	0
-sizeof-literal	1638
+sizeof-literal	0

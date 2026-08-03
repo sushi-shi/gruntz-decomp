@@ -31,20 +31,20 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
     switch (mode) {
         case SERIAL_LOAD: {
 
-            arc->Read(&m_arrivalMode, 4);
-            arc->Read(&m_targetX, 4);
-            arc->Read(&m_targetY, 4);
-            arc->Read(&m_currentX, 8);
-            arc->Read(&m_currentY, 8);
-            arc->Read(&m_velocityScale, 8);
-            arc->Read(&m_xDirection, 8);
-            arc->Read(&m_yDirection, 8);
+            arc->Read(&m_arrivalMode, sizeof(m_arrivalMode));
+            arc->Read(&m_targetX, sizeof(m_targetX));
+            arc->Read(&m_targetY, sizeof(m_targetY));
+            arc->Read(&m_currentX, sizeof(m_currentX));
+            arc->Read(&m_currentY, sizeof(m_currentY));
+            arc->Read(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Read(&m_xDirection, sizeof(m_xDirection));
+            arc->Read(&m_yDirection, sizeof(m_yDirection));
             g_serialCounter++;
 
             char name[0x80];
             i32 index;
             arc->Read(name, 0x80);
-            arc->Read(&index, 4);
+            arc->Read(&index, sizeof(index));
             if (strlen(name) != 0) {
                 i32 i = index;
                 CObject* out = 0;
@@ -64,14 +64,14 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
         }
         case SERIAL_SAVE: {
 
-            arc->Write(&m_arrivalMode, 4);
-            arc->Write(&m_targetX, 4);
-            arc->Write(&m_targetY, 4);
-            arc->Write(&m_currentX, 8);
-            arc->Write(&m_currentY, 8);
-            arc->Write(&m_velocityScale, 8);
-            arc->Write(&m_xDirection, 8);
-            arc->Write(&m_yDirection, 8);
+            arc->Write(&m_arrivalMode, sizeof(m_arrivalMode));
+            arc->Write(&m_targetX, sizeof(m_targetX));
+            arc->Write(&m_targetY, sizeof(m_targetY));
+            arc->Write(&m_currentX, sizeof(m_currentX));
+            arc->Write(&m_currentY, sizeof(m_currentY));
+            arc->Write(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Write(&m_xDirection, sizeof(m_xDirection));
+            arc->Write(&m_yDirection, sizeof(m_yDirection));
             g_serialCounter++;
 
             CImage* obj = m_sprite;
@@ -82,7 +82,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
                 lvl->m_imageRegistry->AnyValueMatches(obj, name, &index);
             }
             arc->Write(name, 0x80);
-            arc->Write(&index, 4);
+            arc->Write(&index, sizeof(index));
             break;
         }
     }

@@ -196,7 +196,7 @@ i32 CSBI_GruntMachine::SerializeFields(
                 strcpy(buf, m_config->m_name);
             }
             s->Write(buf, 0x80);
-            s->Write(&m_frameIdxA, 4);
+            s->Write(&m_frameIdxA, sizeof(m_frameIdxA));
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
@@ -205,8 +205,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                 reg->m_imageRegistry->AnyValueMatches(m_frameA, buf, &v);
             }
             s->Write(buf, 0x80);
-            s->Write(&v, 4);
-            s->Write(&m_frameIdxB, 4);
+            s->Write(&v, sizeof(v));
+            s->Write(&m_frameIdxB, sizeof(m_frameIdxB));
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
@@ -215,7 +215,7 @@ i32 CSBI_GruntMachine::SerializeFields(
                 reg->m_imageRegistry->AnyValueMatches(m_frameB, buf, &v);
             }
             s->Write(buf, 0x80);
-            s->Write(&v, 4);
+            s->Write(&v, sizeof(v));
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
@@ -224,7 +224,7 @@ i32 CSBI_GruntMachine::SerializeFields(
                 reg->m_imageRegistry->AnyValueMatches(m_standaloneFrame, buf, &v);
             }
             s->Write(buf, 0x80);
-            s->Write(&v, 4);
+            s->Write(&v, sizeof(v));
             break;
         }
 
@@ -241,11 +241,11 @@ i32 CSBI_GruntMachine::SerializeFields(
             } else {
                 m_config = NULL;
             }
-            s->Read(&m_frameIdxA, 4);
+            s->Read(&m_frameIdxA, sizeof(m_frameIdxA));
 
             g_serialCounter++;
             s->Read(buf, 0x80);
-            s->Read(&idx, 4);
+            s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
@@ -261,11 +261,11 @@ i32 CSBI_GruntMachine::SerializeFields(
             } else {
                 m_frameA = NULL;
             }
-            s->Read(&m_frameIdxB, 4);
+            s->Read(&m_frameIdxB, sizeof(m_frameIdxB));
 
             g_serialCounter++;
             s->Read(buf, 0x80);
-            s->Read(&idx, 4);
+            s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
@@ -284,7 +284,7 @@ i32 CSBI_GruntMachine::SerializeFields(
 
             g_serialCounter++;
             s->Read(buf, 0x80);
-            s->Read(&idx, 4);
+            s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
@@ -504,7 +504,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
                 reg->m_imageRegistry->AnyValueMatches(m_topFrame, buf, &v);
             }
             s->Write(buf, 0x80);
-            s->Write(&v, 4);
+            s->Write(&v, sizeof(v));
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
@@ -513,16 +513,16 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
                 reg->m_imageRegistry->AnyValueMatches(m_bottomFrame, buf, &v);
             }
             s->Write(buf, 0x80);
-            s->Write(&v, 4);
+            s->Write(&v, sizeof(v));
 
-            s->Write(&m_sampledValue, 4);
-            s->Write(&m_rowIndex, 4);
-            s->Write(&m_colIndex, 4);
-            s->Write(&m_sampleMode, 4);
-            s->Write(&m_drawPosition, 8);
-            s->Write(&m_bottomFrameDy, 4);
-            s->Write(&m_onLeft, 4);
-            s->Write(&m_drawGate, 4);
+            s->Write(&m_sampledValue, sizeof(m_sampledValue));
+            s->Write(&m_rowIndex, sizeof(m_rowIndex));
+            s->Write(&m_colIndex, sizeof(m_colIndex));
+            s->Write(&m_sampleMode, sizeof(m_sampleMode));
+            s->Write(&m_drawPosition, sizeof(m_drawPosition));
+            s->Write(&m_bottomFrameDy, sizeof(m_bottomFrameDy));
+            s->Write(&m_onLeft, sizeof(m_onLeft));
+            s->Write(&m_drawGate, sizeof(m_drawGate));
             break;
         }
 
@@ -532,7 +532,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
 
             g_serialCounter++;
             s->Read(buf, 0x80);
-            s->Read(&idx, 4);
+            s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
@@ -551,7 +551,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
 
             g_serialCounter++;
             s->Read(buf, 0x80);
-            s->Read(&idx, 4);
+            s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
@@ -568,14 +568,14 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
                 m_bottomFrame = NULL;
             }
 
-            s->Read(&m_sampledValue, 4);
-            s->Read(&m_rowIndex, 4);
-            s->Read(&m_colIndex, 4);
-            s->Read(&m_sampleMode, 4);
-            s->Read(&m_drawPosition, 8);
-            s->Read(&m_bottomFrameDy, 4);
-            s->Read(&m_onLeft, 4);
-            s->Read(&m_drawGate, 4);
+            s->Read(&m_sampledValue, sizeof(m_sampledValue));
+            s->Read(&m_rowIndex, sizeof(m_rowIndex));
+            s->Read(&m_colIndex, sizeof(m_colIndex));
+            s->Read(&m_sampleMode, sizeof(m_sampleMode));
+            s->Read(&m_drawPosition, sizeof(m_drawPosition));
+            s->Read(&m_bottomFrameDy, sizeof(m_bottomFrameDy));
+            s->Read(&m_onLeft, sizeof(m_onLeft));
+            s->Read(&m_drawGate, sizeof(m_drawGate));
             break;
         }
     }

@@ -431,27 +431,27 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     if (!m_world) {
         return 0;
     }
-    ar->Write(&m_levelIndex, 4);
-    ar->Write(&m_levelType, 4);
-    ar->Write(&m_previousStateId, 4);
-    ar->Write(&m_reserved38, 4);
-    ar->Write(&m_ready, 4);
-    ar->Write(&m_notifyLatch, 4);
-    ar->Write(&m_reserved44, 4);
-    ar->Write(&m_reserved48, 4);
+    ar->Write(&m_levelIndex, sizeof(m_levelIndex));
+    ar->Write(&m_levelType, sizeof(m_levelType));
+    ar->Write(&m_previousStateId, sizeof(m_previousStateId));
+    ar->Write(&m_reserved38, sizeof(m_reserved38));
+    ar->Write(&m_ready, sizeof(m_ready));
+    ar->Write(&m_notifyLatch, sizeof(m_notifyLatch));
+    ar->Write(&m_reserved44, sizeof(m_reserved44));
+    ar->Write(&m_reserved48, sizeof(m_reserved48));
     ar->Write(m_versionString, 0x100);
-    ar->Write(&m_reserved14c, 4);
-    ar->Write(&m_cursorX, 4);
-    ar->Write(&m_cursorY, 4);
-    ar->Write(&m_snapOriginX, 4);
-    ar->Write(&m_snapOriginY, 4);
-    ar->Write(&m_cursorSaveSrc0, 0x10);
-    ar->Write(&m_cursorSaveSrc1, 0x10);
-    ar->Write(&m_cursorSaveDst0, 0x10);
-    ar->Write(&m_cursorSaveDst1, 0x10);
-    ar->Write(&m_inputWarmup1, 4);
-    ar->Write(&m_inputWarmup2, 4);
-    ar->Write(&m_inputHalfSel, 4);
+    ar->Write(&m_reserved14c, sizeof(m_reserved14c));
+    ar->Write(&m_cursorX, sizeof(m_cursorX));
+    ar->Write(&m_cursorY, sizeof(m_cursorY));
+    ar->Write(&m_snapOriginX, sizeof(m_snapOriginX));
+    ar->Write(&m_snapOriginY, sizeof(m_snapOriginY));
+    ar->Write(&m_cursorSaveSrc0, sizeof(m_cursorSaveSrc0));
+    ar->Write(&m_cursorSaveSrc1, sizeof(m_cursorSaveSrc1));
+    ar->Write(&m_cursorSaveDst0, sizeof(m_cursorSaveDst0));
+    ar->Write(&m_cursorSaveDst1, sizeof(m_cursorSaveDst1));
+    ar->Write(&m_inputWarmup1, sizeof(m_inputWarmup1));
+    ar->Write(&m_inputWarmup2, sizeof(m_inputWarmup2));
+    ar->Write(&m_inputHalfSel, sizeof(m_inputHalfSel));
     return 1;
 }
 
@@ -463,26 +463,26 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    ar->Read(&m_levelIndex, 4);
-    ar->Read(&m_levelType, 4);
-    ar->Read(&m_previousStateId, 4);
-    ar->Read(&m_reserved38, 4);
-    ar->Read(&m_ready, 4);
-    ar->Read(&m_notifyLatch, 4);
-    ar->Read(&m_reserved44, 4);
-    ar->Read(&m_reserved48, 4);
+    ar->Read(&m_levelIndex, sizeof(m_levelIndex));
+    ar->Read(&m_levelType, sizeof(m_levelType));
+    ar->Read(&m_previousStateId, sizeof(m_previousStateId));
+    ar->Read(&m_reserved38, sizeof(m_reserved38));
+    ar->Read(&m_ready, sizeof(m_ready));
+    ar->Read(&m_notifyLatch, sizeof(m_notifyLatch));
+    ar->Read(&m_reserved44, sizeof(m_reserved44));
+    ar->Read(&m_reserved48, sizeof(m_reserved48));
     ar->Read(m_versionString, 0x100);
-    ar->Read(&m_reserved14c, 4);
-    ar->Read(&m_cursorX, 4);
-    ar->Read(&m_cursorY, 4);
-    ar->Read(&m_snapOriginX, 4);
-    ar->Read(&m_snapOriginY, 4);
-    ar->Read(&m_cursorSaveSrc0, 0x10);
-    ar->Read(&m_cursorSaveSrc1, 0x10);
-    ar->Read(&m_cursorSaveDst0, 0x10);
-    ar->Read(&m_cursorSaveDst1, 0x10);
-    ar->Read(&m_inputWarmup1, 4);
-    ar->Read(&m_inputWarmup2, 4);
-    ar->Read(&m_inputHalfSel, 4);
+    ar->Read(&m_reserved14c, sizeof(m_reserved14c));
+    ar->Read(&m_cursorX, sizeof(m_cursorX));
+    ar->Read(&m_cursorY, sizeof(m_cursorY));
+    ar->Read(&m_snapOriginX, sizeof(m_snapOriginX));
+    ar->Read(&m_snapOriginY, sizeof(m_snapOriginY));
+    ar->Read(&m_cursorSaveSrc0, sizeof(m_cursorSaveSrc0));
+    ar->Read(&m_cursorSaveSrc1, sizeof(m_cursorSaveSrc1));
+    ar->Read(&m_cursorSaveDst0, sizeof(m_cursorSaveDst0));
+    ar->Read(&m_cursorSaveDst1, sizeof(m_cursorSaveDst1));
+    ar->Read(&m_inputWarmup1, sizeof(m_inputWarmup1));
+    ar->Read(&m_inputWarmup2, sizeof(m_inputWarmup2));
+    ar->Read(&m_inputHalfSel, sizeof(m_inputHalfSel));
     return 1;
 }

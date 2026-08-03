@@ -599,7 +599,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
 
         POSITION pos;
         i32 cnt = m_base.GetCount();
-        s->Write(&cnt, 4);
+        s->Write(&cnt, sizeof(cnt));
         pos = m_base.GetHeadPosition();
         while (pos != NULL) {
             CTileTriggerSwitchLogic* e0 =
@@ -609,7 +609,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             }
         }
         cnt = m_list1.GetCount();
-        s->Write(&cnt, 4);
+        s->Write(&cnt, sizeof(cnt));
         pos = m_list1.GetHeadPosition();
         while (pos != NULL) {
             CTileTriggerLogic* e1 = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
@@ -618,7 +618,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             }
         }
         cnt = m_list2.GetCount();
-        s->Write(&cnt, 4);
+        s->Write(&cnt, sizeof(cnt));
         pos = m_list2.GetHeadPosition();
         while (pos != NULL) {
             CTileTriggerLogic* e2 = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
@@ -627,7 +627,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             }
         }
         cnt = m_list3.GetCount();
-        s->Write(&cnt, 4);
+        s->Write(&cnt, sizeof(cnt));
         pos = m_list3.GetHeadPosition();
         while (pos != NULL) {
             CTileActionEvent* e3 = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
@@ -648,7 +648,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
     i32 n;
     i32 i;
     void* e;
-    s->Read(&n, 4);
+    s->Read(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
         if (e == NULL) {
@@ -656,7 +656,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         }
         m_base.AddTail(e);
     }
-    s->Read(&n, 4);
+    s->Read(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
         if (e == NULL) {
@@ -664,7 +664,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         }
         m_list1.AddTail(e);
     }
-    s->Read(&n, 4);
+    s->Read(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
         if (e == NULL) {
@@ -672,7 +672,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         }
         m_list2.AddTail(e);
     }
-    s->Read(&n, 4);
+    s->Read(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         CTileActionEvent* m = new CTileActionEvent;
         if (m->Serialize(s, SERIAL_LOAD, typeId, pObj) == 0) {
@@ -699,7 +699,7 @@ i32 __stdcall SerializeApplyA(
         return 0;
     }
     TrigLogicId tag = o->m_typeId;
-    s->Write(&tag, 4);
+    s->Write(&tag, sizeof(tag));
 
     switch (tag) {
         case TRIGID_SWITCH_1:
@@ -762,7 +762,7 @@ i32 __stdcall SerializeApplyB(
         return 0;
     }
     TrigLogicId tag = o->m_typeTag;
-    s->Write(&tag, 4);
+    s->Write(&tag, sizeof(tag));
 
     switch (tag) {
         case TRIGID_GIANT_ROCK_22:
@@ -849,7 +849,7 @@ void* CTileTriggerContainer::LoadElement(
     }
     // Ingest: the archive stores the logic tag as a raw dword.
     TrigLogicId id;
-    reader->Read(&id, 4);
+    reader->Read(&id, sizeof(id));
     switch (id) {
         case TRIGID_SWITCH_1:
         case TRIGID_SWITCH_2:
@@ -954,7 +954,7 @@ i32 CTileTriggerContainer::TransferFlag74(CFileMemBase* s) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    s->Write(&m_built, 4);
+    s->Write(&m_built, sizeof(m_built));
     return 1;
 }
 
@@ -966,7 +966,7 @@ i32 CTileTriggerContainer::LoadFlag74(CFileMemBase* s) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    s->Read(&m_built, 4);
+    s->Read(&m_built, sizeof(m_built));
     return 1;
 }
 

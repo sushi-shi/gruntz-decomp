@@ -3066,9 +3066,9 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     if (m_retabNotify == NULL) {
         i32 tmp = 0;
         if (op == SERIAL_SAVE) {
-            s->Write(&tmp, 4);
+            s->Write(&tmp, sizeof(tmp));
         } else if (op == SERIAL_LOAD) {
-            s->Read(&tmp, 4);
+            s->Read(&tmp, sizeof(tmp));
             if (tmp != 0) {
                 CWarpStoneFly* c = new CWarpStoneFly();
                 m_retabNotify = c;
@@ -3078,7 +3078,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     } else {
         i32 tmp = 1;
         if (op == SERIAL_SAVE) {
-            s->Write(&tmp, 4);
+            s->Write(&tmp, sizeof(tmp));
         }
     }
 
@@ -3089,50 +3089,50 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     }
 
     if (op == SERIAL_SAVE) {
-        s->Write(&m_beltLast, 8);
-        s->Write(&m_beltInterval, 8);
+        s->Write(&m_beltLast, sizeof(m_beltLast));
+        s->Write(&m_beltInterval, sizeof(m_beltInterval));
     } else if (op == SERIAL_LOAD) {
-        s->Read(&m_beltLast, 8);
-        s->Read(&m_beltInterval, 8);
+        s->Read(&m_beltLast, sizeof(m_beltLast));
+        s->Read(&m_beltInterval, sizeof(m_beltInterval));
     }
     if (op == SERIAL_SAVE) {
-        s->Write(&m_fallLast, 8);
-        s->Write(&m_fallDelay, 8);
+        s->Write(&m_fallLast, sizeof(m_fallLast));
+        s->Write(&m_fallDelay, sizeof(m_fallDelay));
     } else if (op == SERIAL_LOAD) {
-        s->Read(&m_fallLast, 8);
-        s->Read(&m_fallDelay, 8);
+        s->Read(&m_fallLast, sizeof(m_fallLast));
+        s->Read(&m_fallDelay, sizeof(m_fallDelay));
     }
     if (op == SERIAL_SAVE) {
-        s->Write(&m_machineB.m_last, 8);
-        s->Write(&m_machineB.m_interval, 8);
+        s->Write(&m_machineB.m_last, sizeof(m_machineB.m_last));
+        s->Write(&m_machineB.m_interval, sizeof(m_machineB.m_interval));
     } else if (op == SERIAL_LOAD) {
-        s->Read(&m_machineB.m_last, 8);
-        s->Read(&m_machineB.m_interval, 8);
+        s->Read(&m_machineB.m_last, sizeof(m_machineB.m_last));
+        s->Read(&m_machineB.m_interval, sizeof(m_machineB.m_interval));
     }
     if (op == SERIAL_SAVE) {
-        s->Write(&m_machineA.m_last, 8);
-        s->Write(&m_machineA.m_interval, 8);
+        s->Write(&m_machineA.m_last, sizeof(m_machineA.m_last));
+        s->Write(&m_machineA.m_interval, sizeof(m_machineA.m_interval));
     } else if (op == SERIAL_LOAD) {
-        s->Read(&m_machineA.m_last, 8);
-        s->Read(&m_machineA.m_interval, 8);
+        s->Read(&m_machineA.m_last, sizeof(m_machineA.m_last));
+        s->Read(&m_machineA.m_interval, sizeof(m_machineA.m_interval));
     }
     if (op == SERIAL_SAVE) {
-        s->Write(&m_destructWarnLast, 8);
-        s->Write(&m_destructWarnDelay, 8);
+        s->Write(&m_destructWarnLast, sizeof(m_destructWarnLast));
+        s->Write(&m_destructWarnDelay, sizeof(m_destructWarnDelay));
     } else if (op == SERIAL_LOAD) {
-        s->Read(&m_destructWarnLast, 8);
-        s->Read(&m_destructWarnDelay, 8);
+        s->Read(&m_destructWarnLast, sizeof(m_destructWarnLast));
+        s->Read(&m_destructWarnDelay, sizeof(m_destructWarnDelay));
     }
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
     do {
         if (op == SERIAL_SAVE) {
-            s->Write(&p->m_startTime, 8);
-            s->Write(&p->m_interval, 8);
+            s->Write(&p->m_startTime, sizeof(p->m_startTime));
+            s->Write(&p->m_interval, sizeof(p->m_interval));
         } else if (op == SERIAL_LOAD) {
-            s->Read(&p->m_startTime, 8);
-            s->Read(&p->m_interval, 8);
+            s->Read(&p->m_startTime, sizeof(p->m_startTime));
+            s->Read(&p->m_interval, sizeof(p->m_interval));
         }
         p++;
         n--;
@@ -3142,11 +3142,11 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     CSbiHlRow* r = m_groupSlots;
     do {
         if (op == SERIAL_SAVE) {
-            s->Write(&r->m_last, 8);
-            s->Write(&r->m_interval, 8);
+            s->Write(&r->m_last, sizeof(r->m_last));
+            s->Write(&r->m_interval, sizeof(r->m_interval));
         } else if (op == SERIAL_LOAD) {
-            s->Read(&r->m_last, 8);
-            s->Read(&r->m_interval, 8);
+            s->Read(&r->m_last, sizeof(r->m_last));
+            s->Read(&r->m_interval, sizeof(r->m_interval));
         }
         r++;
         n--;
@@ -3158,11 +3158,11 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
         n = 4;
         do {
             if (op == SERIAL_SAVE) {
-                s->Write(&r->m_last, 8);
-                s->Write(&r->m_interval, 8);
+                s->Write(&r->m_last, sizeof(r->m_last));
+                s->Write(&r->m_interval, sizeof(r->m_interval));
             } else if (op == SERIAL_LOAD) {
-                s->Read(&r->m_last, 8);
-                s->Read(&r->m_interval, 8);
+                s->Read(&r->m_last, sizeof(r->m_last));
+                s->Read(&r->m_interval, sizeof(r->m_interval));
             }
             r++;
             n--;
@@ -3171,11 +3171,11 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     } while (outer != 0);
 
     if (op == SERIAL_SAVE) {
-        s->Write(&m_reserved2a0, 8);
-        s->Write(&m_reserved2a8, 8);
+        s->Write(&m_reserved2a0, sizeof(m_reserved2a0));
+        s->Write(&m_reserved2a8, sizeof(m_reserved2a8));
     } else if (op == SERIAL_LOAD) {
-        s->Read(&m_reserved2a0, 8);
-        s->Read(&m_reserved2a8, 8);
+        s->Read(&m_reserved2a0, sizeof(m_reserved2a0));
+        s->Read(&m_reserved2a8, sizeof(m_reserved2a8));
     }
     if (op == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
@@ -3283,7 +3283,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     }
 
     s->Write(this, 4);
-    s->Write(&m_restorePosition, 4);
+    s->Write(&m_restorePosition, sizeof(m_restorePosition));
 
     g_serialCounter++;
 
@@ -3292,72 +3292,72 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (m_barSprite) {
         tmp = m_barSprite->m_objectId;
     }
-    s->Write(&tmp, 4);
+    s->Write(&tmp, sizeof(tmp));
 
     s->Write(&m_rect10.left, 0x10);
-    s->Write(&m_redrawFrames, 4);
-    s->Write(&m_barX, 4);
-    s->Write(&m_barY, 4);
-    s->Write(&m_itemKind, 4);
-    s->Write(&m_tabCycle, 4);
+    s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
+    s->Write(&m_barX, sizeof(m_barX));
+    s->Write(&m_barY, sizeof(m_barY));
+    s->Write(&m_itemKind, sizeof(m_itemKind));
+    s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
     i32* p = m_statFlags;
     for (i32 i = 0; i < 15; i++) {
-        s->Write(p, 4);
+        s->Write(p, sizeof(*p));
         p += 1;
     }
 
-    s->Write(&m_reserved34c, 4);
-    s->Write(&m_reserved350, 4);
-    s->Write(&m_hitTestDisabled, 4);
-    s->Write(&m_activeSlot, 4);
-    s->Write(&m_pendingHlRow, 4);
-    s->Write(&m_activeTab, 4);
-    s->Write(&m_gauge, 4);
-    s->Write(&m_gaugeTarget, 4);
-    s->Write(&m_itemBaseX, 4);
-    s->Write(&m_rezTick, 4);
-    s->Write(&m_rezActive, 4);
-    s->Write(&m_reserved544, 4);
-    s->Write(&m_fallRect, 0x10);
-    s->Write(&m_itemRect, 0x10);
-    s->Write(&m_hlBusy, 4);
-    s->Write(&m_toggleActive, 4);
-    s->Write(&m_toggleHandle, 4);
-    s->Write(&m_machinePhase, 4);
-    s->Write(&m_extraNotifyArg0, 4);
-    s->Write(&m_fallActive, 4);
-    s->Write(&m_extraNotifyArg1, 4);
+    s->Write(&m_reserved34c, sizeof(m_reserved34c));
+    s->Write(&m_reserved350, sizeof(m_reserved350));
+    s->Write(&m_hitTestDisabled, sizeof(m_hitTestDisabled));
+    s->Write(&m_activeSlot, sizeof(m_activeSlot));
+    s->Write(&m_pendingHlRow, sizeof(m_pendingHlRow));
+    s->Write(&m_activeTab, sizeof(m_activeTab));
+    s->Write(&m_gauge, sizeof(m_gauge));
+    s->Write(&m_gaugeTarget, sizeof(m_gaugeTarget));
+    s->Write(&m_itemBaseX, sizeof(m_itemBaseX));
+    s->Write(&m_rezTick, sizeof(m_rezTick));
+    s->Write(&m_rezActive, sizeof(m_rezActive));
+    s->Write(&m_reserved544, sizeof(m_reserved544));
+    s->Write(&m_fallRect, sizeof(m_fallRect));
+    s->Write(&m_itemRect, sizeof(m_itemRect));
+    s->Write(&m_hlBusy, sizeof(m_hlBusy));
+    s->Write(&m_toggleActive, sizeof(m_toggleActive));
+    s->Write(&m_toggleHandle, sizeof(m_toggleHandle));
+    s->Write(&m_machinePhase, sizeof(m_machinePhase));
+    s->Write(&m_extraNotifyArg0, sizeof(m_extraNotifyArg0));
+    s->Write(&m_fallActive, sizeof(m_fallActive));
+    s->Write(&m_extraNotifyArg1, sizeof(m_extraNotifyArg1));
     s->Write(&m_machineB, 4);
-    s->Write(&m_machineB.m_value, 4);
+    s->Write(&m_machineB.m_value, sizeof(m_machineB.m_value));
     s->Write(&m_machineA, 4);
-    s->Write(&m_machineA.m_value, 4);
-    s->Write(&m_destructWarnActive, 4);
-    s->Write(&m_modeState, 4);
-    s->Write(&m_modeArmed, 4);
-    s->Write(&m_observerTabAvailable, 4);
+    s->Write(&m_machineA.m_value, sizeof(m_machineA.m_value));
+    s->Write(&m_destructWarnActive, sizeof(m_destructWarnActive));
+    s->Write(&m_modeState, sizeof(m_modeState));
+    s->Write(&m_modeArmed, sizeof(m_modeArmed));
+    s->Write(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
-        s->Write(&m_slots[j].m_state, 4);
-        s->Write(&m_slots[j].m_value, 4);
+        s->Write(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
+        s->Write(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
     }
     for (i32 k = 0; k < 3; k++) {
-        s->Write(&m_groupSlots[k].m_state, 4);
-        s->Write(&m_groupSlots[k].m_value, 4);
+        s->Write(&m_groupSlots[k].m_state, sizeof(m_groupSlots[k].m_state));
+        s->Write(&m_groupSlots[k].m_value, sizeof(m_groupSlots[k].m_value));
     }
     CSbiHlRow* nb = m_hlGrid;
 
     i32 cnt = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Write(&nb[m].m_state, 4);
-            s->Write(&nb[m].m_value, 4);
+            s->Write(&nb[m].m_state, sizeof(nb[m].m_state));
+            s->Write(&nb[m].m_value, sizeof(nb[m].m_value));
         }
         nb += 4;
     } while (--cnt);
 
     cnt = m_ptrPool.GetSize();
-    s->Write(&cnt, 4);
+    s->Write(&cnt, sizeof(cnt));
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         s->Write(m_ptrPool.GetData()[n], 8);
     }
@@ -3378,14 +3378,14 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     ResetWidgets(0);
 
     s->Read(this, 4);
-    s->Read(&m_restorePosition, 4);
+    s->Read(&m_restorePosition, sizeof(m_restorePosition));
 
     g_serialCounter++;
 
     CGameObject* obj = 0;
 
     i32 seq;
-    s->Read(&seq, 4);
+    s->Read(&seq, sizeof(seq));
 
     i32 kind = 0;
     if (MapLookupById(gm->m_childGroup->m_map48, seq, obj)) {
@@ -3403,62 +3403,62 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     }
 
     s->Read(&m_rect10.left, 0x10);
-    s->Read(&m_redrawFrames, 4);
-    s->Read(&m_barX, 4);
-    s->Read(&m_barY, 4);
-    s->Read(&m_itemKind, 4);
-    s->Read(&m_tabCycle, 4);
+    s->Read(&m_redrawFrames, sizeof(m_redrawFrames));
+    s->Read(&m_barX, sizeof(m_barX));
+    s->Read(&m_barY, sizeof(m_barY));
+    s->Read(&m_itemKind, sizeof(m_itemKind));
+    s->Read(&m_tabCycle, sizeof(m_tabCycle));
 
     i32* p = m_statFlags;
     for (i32 i = 0; i < 15; i++) {
-        s->Read(p, 4);
+        s->Read(p, sizeof(*p));
         p += 1;
     }
 
-    s->Read(&m_reserved34c, 4);
-    s->Read(&m_reserved350, 4);
-    s->Read(&m_hitTestDisabled, 4);
-    s->Read(&m_activeSlot, 4);
-    s->Read(&m_pendingHlRow, 4);
-    s->Read(&m_activeTab, 4);
-    s->Read(&m_gauge, 4);
-    s->Read(&m_gaugeTarget, 4);
-    s->Read(&m_itemBaseX, 4);
-    s->Read(&m_rezTick, 4);
-    s->Read(&m_rezActive, 4);
-    s->Read(&m_reserved544, 4);
-    s->Read(&m_fallRect, 0x10);
-    s->Read(&m_itemRect, 0x10);
-    s->Read(&m_hlBusy, 4);
-    s->Read(&m_toggleActive, 4);
-    s->Read(&m_toggleHandle, 4);
-    s->Read(&m_machinePhase, 4);
-    s->Read(&m_extraNotifyArg0, 4);
-    s->Read(&m_fallActive, 4);
-    s->Read(&m_extraNotifyArg1, 4);
+    s->Read(&m_reserved34c, sizeof(m_reserved34c));
+    s->Read(&m_reserved350, sizeof(m_reserved350));
+    s->Read(&m_hitTestDisabled, sizeof(m_hitTestDisabled));
+    s->Read(&m_activeSlot, sizeof(m_activeSlot));
+    s->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
+    s->Read(&m_activeTab, sizeof(m_activeTab));
+    s->Read(&m_gauge, sizeof(m_gauge));
+    s->Read(&m_gaugeTarget, sizeof(m_gaugeTarget));
+    s->Read(&m_itemBaseX, sizeof(m_itemBaseX));
+    s->Read(&m_rezTick, sizeof(m_rezTick));
+    s->Read(&m_rezActive, sizeof(m_rezActive));
+    s->Read(&m_reserved544, sizeof(m_reserved544));
+    s->Read(&m_fallRect, sizeof(m_fallRect));
+    s->Read(&m_itemRect, sizeof(m_itemRect));
+    s->Read(&m_hlBusy, sizeof(m_hlBusy));
+    s->Read(&m_toggleActive, sizeof(m_toggleActive));
+    s->Read(&m_toggleHandle, sizeof(m_toggleHandle));
+    s->Read(&m_machinePhase, sizeof(m_machinePhase));
+    s->Read(&m_extraNotifyArg0, sizeof(m_extraNotifyArg0));
+    s->Read(&m_fallActive, sizeof(m_fallActive));
+    s->Read(&m_extraNotifyArg1, sizeof(m_extraNotifyArg1));
     s->Read(&m_machineB, 4);
-    s->Read(&m_machineB.m_value, 4);
+    s->Read(&m_machineB.m_value, sizeof(m_machineB.m_value));
     s->Read(&m_machineA, 4);
-    s->Read(&m_machineA.m_value, 4);
-    s->Read(&m_destructWarnActive, 4);
-    s->Read(&m_modeState, 4);
-    s->Read(&m_modeArmed, 4);
-    s->Read(&m_observerTabAvailable, 4);
+    s->Read(&m_machineA.m_value, sizeof(m_machineA.m_value));
+    s->Read(&m_destructWarnActive, sizeof(m_destructWarnActive));
+    s->Read(&m_modeState, sizeof(m_modeState));
+    s->Read(&m_modeArmed, sizeof(m_modeArmed));
+    s->Read(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
-        s->Read(&m_slots[j].m_state, 4);
-        s->Read(&m_slots[j].m_value, 4);
+        s->Read(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
+        s->Read(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
     }
     for (i32 k = 0; k < 3; k++) {
-        s->Read(&m_groupSlots[k].m_state, 4);
-        s->Read(&m_groupSlots[k].m_value, 4);
+        s->Read(&m_groupSlots[k].m_state, sizeof(m_groupSlots[k].m_state));
+        s->Read(&m_groupSlots[k].m_value, sizeof(m_groupSlots[k].m_value));
     }
     CSbiHlRow* nb = m_hlGrid;
     seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Read(&nb[m].m_state, 4);
-            s->Read(&nb[m].m_value, 4);
+            s->Read(&nb[m].m_state, sizeof(nb[m].m_state));
+            s->Read(&nb[m].m_value, sizeof(nb[m].m_value));
         }
         nb += 4;
     } while (--seq);
@@ -3474,7 +3474,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     m_ptrPool.SetSize(0, -1);
 
     i32 cnt;
-    s->Read(&cnt, 4);
+    s->Read(&cnt, sizeof(cnt));
     m_ptrPool.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         CoordPoolNode* head = g_coordPool.m_freeHead;

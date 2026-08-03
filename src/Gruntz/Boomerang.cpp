@@ -102,24 +102,24 @@ i32 CBoomerang::SerializeMove(
     }
     switch (mode) {
         case SERIAL_LOAD:
-            ar->Read(&m_launchX, 4);
-            ar->Read(&m_launchY, 4);
-            ar->Read(&m_dirX, 8);
-            ar->Read(&m_dirY, 8);
-            ar->Read(&m_originX, 8);
-            ar->Read(&m_originY, 8);
-            ar->Read(&m_phase, 8);
-            ar->Read(&m_launched, 4);
+            ar->Read(&m_launchX, sizeof(m_launchX));
+            ar->Read(&m_launchY, sizeof(m_launchY));
+            ar->Read(&m_dirX, sizeof(m_dirX));
+            ar->Read(&m_dirY, sizeof(m_dirY));
+            ar->Read(&m_originX, sizeof(m_originX));
+            ar->Read(&m_originY, sizeof(m_originY));
+            ar->Read(&m_phase, sizeof(m_phase));
+            ar->Read(&m_launched, sizeof(m_launched));
             break;
         case SERIAL_SAVE:
-            ar->Write(&m_launchX, 4);
-            ar->Write(&m_launchY, 4);
-            ar->Write(&m_dirX, 8);
-            ar->Write(&m_dirY, 8);
-            ar->Write(&m_originX, 8);
-            ar->Write(&m_originY, 8);
-            ar->Write(&m_phase, 8);
-            ar->Write(&m_launched, 4);
+            ar->Write(&m_launchX, sizeof(m_launchX));
+            ar->Write(&m_launchY, sizeof(m_launchY));
+            ar->Write(&m_dirX, sizeof(m_dirX));
+            ar->Write(&m_dirY, sizeof(m_dirY));
+            ar->Write(&m_originX, sizeof(m_originX));
+            ar->Write(&m_originY, sizeof(m_originY));
+            ar->Write(&m_phase, sizeof(m_phase));
+            ar->Write(&m_launched, sizeof(m_launched));
             break;
     }
     return CProjectile::SerializeMove(ar, mode, typeId, pObj) ? 1 : 0;

@@ -398,119 +398,119 @@ i32 CBattlezData::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, 
     }
     if (op != SERIAL_SAVE) {
         if (op == SERIAL_LOAD) {
-            s->Read(&m_count, 4);
-            s->Read(&m_isCustomLevel, 4);
-            s->Read(&m_allDone, 4);
-            s->Read(&m_elapsedTimeMs, 4);
-            s->Read(&m_toyzCount, 4);
-            s->Read(&m_toolzCount, 4);
-            s->Read(&m_gruntzExited, 4);
-            s->Read(&m_gruntzLost, 4);
-            s->Read(&m_powerupCount, 4);
-            s->Read(&m_secretsFound, 4);
-            s->Read(&m_coinsCollected, 4);
-            s->Read(&m_toyzAvailable, 4);
-            s->Read(&m_toolzAvailable, 4);
-            s->Read(&m_powerupzAvailable, 4);
-            s->Read(&m_secretsAvailable, 4);
-            s->Read(&m_coinsAvailable, 4);
-            s->Read(&m_scoreValue, 4);
+            s->Read(&m_count, sizeof(m_count));
+            s->Read(&m_isCustomLevel, sizeof(m_isCustomLevel));
+            s->Read(&m_allDone, sizeof(m_allDone));
+            s->Read(&m_elapsedTimeMs, sizeof(m_elapsedTimeMs));
+            s->Read(&m_toyzCount, sizeof(m_toyzCount));
+            s->Read(&m_toolzCount, sizeof(m_toolzCount));
+            s->Read(&m_gruntzExited, sizeof(m_gruntzExited));
+            s->Read(&m_gruntzLost, sizeof(m_gruntzLost));
+            s->Read(&m_powerupCount, sizeof(m_powerupCount));
+            s->Read(&m_secretsFound, sizeof(m_secretsFound));
+            s->Read(&m_coinsCollected, sizeof(m_coinsCollected));
+            s->Read(&m_toyzAvailable, sizeof(m_toyzAvailable));
+            s->Read(&m_toolzAvailable, sizeof(m_toolzAvailable));
+            s->Read(&m_powerupzAvailable, sizeof(m_powerupzAvailable));
+            s->Read(&m_secretsAvailable, sizeof(m_secretsAvailable));
+            s->Read(&m_coinsAvailable, sizeof(m_coinsAvailable));
+            s->Read(&m_scoreValue, sizeof(m_scoreValue));
             for (p = m_counts, i = 0; i < 4; i++, p++) {
-                s->Read(p, 4);
+                s->Read(p, sizeof(*p));
             }
             p = &m_wins[0][0];
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++, p++) {
-                    s->Read(p, 4);
+                    s->Read(p, sizeof(*p));
                 }
             }
             p = &m_flags[0][0];
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++, p++) {
-                    s->Read(p, 4);
+                    s->Read(p, sizeof(*p));
                 }
             }
             p = m_weaponPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 22; c++, p++) {
-                    s->Read(p, 4);
+                    s->Read(p, sizeof(*p));
                 }
             }
             p = m_toyPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 10; c++, p++) {
-                    s->Read(p, 4);
+                    s->Read(p, sizeof(*p));
                 }
             }
             p = m_powerupPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 7; c++, p++) {
-                    s->Read(p, 4);
+                    s->Read(p, sizeof(*p));
                 }
             }
             p = m_miscPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++, p++) {
-                    s->Read(p, 4);
+                    s->Read(p, sizeof(*p));
                 }
             }
         }
         return 1;
     }
-    s->Write(&m_count, 4);
-    s->Write(&m_isCustomLevel, 4);
-    s->Write(&m_allDone, 4);
-    s->Write(&m_elapsedTimeMs, 4);
-    s->Write(&m_toyzCount, 4);
-    s->Write(&m_toolzCount, 4);
-    s->Write(&m_gruntzExited, 4);
-    s->Write(&m_gruntzLost, 4);
-    s->Write(&m_powerupCount, 4);
-    s->Write(&m_secretsFound, 4);
-    s->Write(&m_coinsCollected, 4);
-    s->Write(&m_toyzAvailable, 4);
-    s->Write(&m_toolzAvailable, 4);
-    s->Write(&m_powerupzAvailable, 4);
-    s->Write(&m_secretsAvailable, 4);
-    s->Write(&m_coinsAvailable, 4);
-    s->Write(&m_scoreValue, 4);
+    s->Write(&m_count, sizeof(m_count));
+    s->Write(&m_isCustomLevel, sizeof(m_isCustomLevel));
+    s->Write(&m_allDone, sizeof(m_allDone));
+    s->Write(&m_elapsedTimeMs, sizeof(m_elapsedTimeMs));
+    s->Write(&m_toyzCount, sizeof(m_toyzCount));
+    s->Write(&m_toolzCount, sizeof(m_toolzCount));
+    s->Write(&m_gruntzExited, sizeof(m_gruntzExited));
+    s->Write(&m_gruntzLost, sizeof(m_gruntzLost));
+    s->Write(&m_powerupCount, sizeof(m_powerupCount));
+    s->Write(&m_secretsFound, sizeof(m_secretsFound));
+    s->Write(&m_coinsCollected, sizeof(m_coinsCollected));
+    s->Write(&m_toyzAvailable, sizeof(m_toyzAvailable));
+    s->Write(&m_toolzAvailable, sizeof(m_toolzAvailable));
+    s->Write(&m_powerupzAvailable, sizeof(m_powerupzAvailable));
+    s->Write(&m_secretsAvailable, sizeof(m_secretsAvailable));
+    s->Write(&m_coinsAvailable, sizeof(m_coinsAvailable));
+    s->Write(&m_scoreValue, sizeof(m_scoreValue));
     for (p = m_counts, i = 0; i < 4; i++, p++) {
-        s->Write(p, 4);
+        s->Write(p, sizeof(*p));
     }
     p = &m_wins[0][0];
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 4; c++, p++) {
-            s->Write(p, 4);
+            s->Write(p, sizeof(*p));
         }
     }
     p = &m_flags[0][0];
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 4; c++, p++) {
-            s->Write(p, 4);
+            s->Write(p, sizeof(*p));
         }
     }
     p = m_weaponPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 22; c++, p++) {
-            s->Write(p, 4);
+            s->Write(p, sizeof(*p));
         }
     }
     p = m_toyPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 10; c++, p++) {
-            s->Write(p, 4);
+            s->Write(p, sizeof(*p));
         }
     }
     p = m_powerupPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 7; c++, p++) {
-            s->Write(p, 4);
+            s->Write(p, sizeof(*p));
         }
     }
     p = m_miscPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 4; c++, p++) {
-            s->Write(p, 4);
+            s->Write(p, sizeof(*p));
         }
     }
     return 1;

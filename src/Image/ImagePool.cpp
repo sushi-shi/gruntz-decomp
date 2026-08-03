@@ -852,8 +852,8 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     if (file.Open(filename, 0x1001, 0) == 0) {
         return 0;
     }
-    file.Write(&fileHdr.m_hdr, 0xe);
-    file.Write(&info, 0x428);
+    file.Write(&fileHdr.m_hdr, sizeof(fileHdr.m_hdr));
+    file.Write(&info, sizeof(info));
     for (i32 row = m_height - 1; row >= 0; row--) {
         file.Write(m_pixels + m_rowOffsets[row], m_width);
     }

@@ -15,30 +15,30 @@ i32 MapSerializeCurve(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     }
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&g_scrollAccum, 8);
-            ar->Write(&g_scrollLimit, 8);
+            ar->Write(&g_scrollAccum, sizeof(g_scrollAccum));
+            ar->Write(&g_scrollLimit, sizeof(g_scrollLimit));
             break;
         case SERIAL_LOAD:
-            ar->Read(&g_scrollAccum, 8);
-            ar->Read(&g_scrollLimit, 8);
+            ar->Read(&g_scrollAccum, sizeof(g_scrollAccum));
+            ar->Read(&g_scrollLimit, sizeof(g_scrollLimit));
             break;
     }
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&g_scrollClock, 4);
-            ar->Write(&g_scrollTimer, 4);
-            ar->Write(&g_scrollSave18, 4);
-            ar->Write(&g_scrollSave1c, 4);
-            ar->Write(&g_lastScrollX, 4);
-            ar->Write(&g_lastScrollY, 4);
+            ar->Write(&g_scrollClock, sizeof(g_scrollClock));
+            ar->Write(&g_scrollTimer, sizeof(g_scrollTimer));
+            ar->Write(&g_scrollSave18, sizeof(g_scrollSave18));
+            ar->Write(&g_scrollSave1c, sizeof(g_scrollSave1c));
+            ar->Write(&g_lastScrollX, sizeof(g_lastScrollX));
+            ar->Write(&g_lastScrollY, sizeof(g_lastScrollY));
             break;
         case SERIAL_LOAD:
-            ar->Read(&g_scrollClock, 4);
-            ar->Read(&g_scrollTimer, 4);
-            ar->Read(&g_scrollSave18, 4);
-            ar->Read(&g_scrollSave1c, 4);
-            ar->Read(&g_lastScrollX, 4);
-            ar->Read(&g_lastScrollY, 4);
+            ar->Read(&g_scrollClock, sizeof(g_scrollClock));
+            ar->Read(&g_scrollTimer, sizeof(g_scrollTimer));
+            ar->Read(&g_scrollSave18, sizeof(g_scrollSave18));
+            ar->Read(&g_scrollSave1c, sizeof(g_scrollSave1c));
+            ar->Read(&g_lastScrollX, sizeof(g_lastScrollX));
+            ar->Read(&g_lastScrollY, sizeof(g_lastScrollY));
             break;
     }
     return 1;

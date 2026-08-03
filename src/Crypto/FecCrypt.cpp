@@ -85,7 +85,7 @@ i32 CFecFile::ReadArchive(const char* name) {
         m_header.m_fileCount
     );
 
-    if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
+    if (m_stream.Read(&m_entry, sizeof(m_entry)) != 0x10c) {
         goto fail;
     }
     {
@@ -100,7 +100,7 @@ i32 CFecFile::ReadArchive(const char* name) {
                 goto fail;
             }
             memset(&m_entry, 0, 0x10c);
-            if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
+            if (m_stream.Read(&m_entry, sizeof(m_entry)) != 0x10c) {
                 goto fail;
             }
             if (m_stream.Seek(m_entry.m_scramble - 0x2b8, 1)
@@ -197,7 +197,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     m_stream.Seek(0, 2);
-    m_stream.Write(&m_entry, 0x10c);
+    m_stream.Write(&m_entry, sizeof(m_entry));
 
     char* pad = static_cast<char*>(operator new(m_entry.m_scramble - 0x2b8));
     for (i32 i = 0; i < m_entry.m_scramble - 0x2b8; i++) {
@@ -234,7 +234,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     m_stream.Seek(0xb, 0);
-    m_stream.Write(&m_nextIndex, 4);
+    m_stream.Write(&m_nextIndex, sizeof(m_nextIndex));
     m_stream.Flush();
     return 1;
 }
@@ -262,7 +262,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
 
     for (u16 i = 0; i < static_cast<u32>(m_header.m_fileCount); i++) {
         u32 copied = 0;
-        if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
+        if (m_stream.Read(&m_entry, sizeof(m_entry)) != 0x10c) {
             _chdir(cwd);
             return 0;
         }

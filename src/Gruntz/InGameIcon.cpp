@@ -888,27 +888,27 @@ i32 CInGameIcon::SerializeMove(
     Clock64* drift = &m_driftPos;
     switch (mode) {
         case SERIAL_LOAD:
-            ar->Read(drift, 8);
+            ar->Read(drift, sizeof(*drift));
             drift++;
-            ar->Read(drift, 8);
+            ar->Read(drift, sizeof(*drift));
             break;
         case SERIAL_SAVE:
-            ar->Write(drift, 8);
+            ar->Write(drift, sizeof(*drift));
             drift++;
-            ar->Write(drift, 8);
+            ar->Write(drift, sizeof(*drift));
             break;
     }
     Clock64* idle = &m_peekTimer;
     switch (mode) {
         case SERIAL_LOAD:
-            ar->Read(idle, 8);
+            ar->Read(idle, sizeof(*idle));
             idle++;
-            ar->Read(idle, 8);
+            ar->Read(idle, sizeof(*idle));
             break;
         case SERIAL_SAVE:
-            ar->Write(idle, 8);
+            ar->Write(idle, sizeof(*idle));
             idle++;
-            ar->Write(idle, 8);
+            ar->Write(idle, sizeof(*idle));
             break;
     }
 
@@ -926,7 +926,7 @@ i32 CInGameIcon::SerializeMove(
             if (m_glitterSprite != NULL) {
                 id = m_glitterSprite->m_objectId;
             }
-            ar->Write(&id, 4);
+            ar->Write(&id, sizeof(id));
             break;
         }
         case SERIAL_LOAD: {
@@ -941,7 +941,7 @@ i32 CInGameIcon::SerializeMove(
             }
             g_serialCounter++;
             i32 id = 0;
-            ar->Read(&id, 4);
+            ar->Read(&id, sizeof(id));
             void* found = 0;
             CWwdGameObjectA* sprite = 0;
             if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0
@@ -1113,12 +1113,12 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, 
     }
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_cachedAreaId, 4);
-            ar->Write(&m_cachedSubId, 4);
+            ar->Write(&m_cachedAreaId, sizeof(m_cachedAreaId));
+            ar->Write(&m_cachedSubId, sizeof(m_cachedSubId));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cachedAreaId, 4);
-            ar->Read(&m_cachedSubId, 4);
+            ar->Read(&m_cachedAreaId, sizeof(m_cachedAreaId));
+            ar->Read(&m_cachedSubId, sizeof(m_cachedSubId));
             break;
     }
     return 1;

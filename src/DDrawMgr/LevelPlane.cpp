@@ -1054,19 +1054,19 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
         return 0;
     }
 
-    s->Write(&m_scaledX, 4);
-    s->Write(&m_scaledY, 4);
-    s->Write(&m_scaleX, 4);
-    s->Write(&m_scaleY, 4);
+    s->Write(&m_scaledX, sizeof(m_scaledX));
+    s->Write(&m_scaledY, sizeof(m_scaledY));
+    s->Write(&m_scaleX, sizeof(m_scaleX));
+    s->Write(&m_scaleY, sizeof(m_scaleY));
     s->Write(&m_viewRect.left, 0x10);
-    s->Write(&m_zBound, 4);
-    s->Write(&m_snappedX, 4);
-    s->Write(&m_snappedY, 4);
-    s->Write(&m_movementXPercent, 4);
-    s->Write(&m_movementYPercent, 4);
+    s->Write(&m_zBound, sizeof(m_zBound));
+    s->Write(&m_snappedX, sizeof(m_snappedX));
+    s->Write(&m_snappedY, sizeof(m_snappedY));
+    s->Write(&m_movementXPercent, sizeof(m_movementXPercent));
+    s->Write(&m_movementYPercent, sizeof(m_movementYPercent));
 
     i32 gridSize = m_gridW * m_gridH * 4;
-    s->Write(&gridSize, 4);
+    s->Write(&gridSize, sizeof(gridSize));
     s->Write(m_tileGrid, gridSize);
 
     char buf[0x80];
@@ -1082,19 +1082,19 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
         return 0;
     }
 
-    s->Read(&m_scaledX, 4);
-    s->Read(&m_scaledY, 4);
-    s->Read(&m_scaleX, 4);
-    s->Read(&m_scaleY, 4);
+    s->Read(&m_scaledX, sizeof(m_scaledX));
+    s->Read(&m_scaledY, sizeof(m_scaledY));
+    s->Read(&m_scaleX, sizeof(m_scaleX));
+    s->Read(&m_scaleY, sizeof(m_scaleY));
     s->Read(&m_viewRect.left, 0x10);
-    s->Read(&m_zBound, 4);
-    s->Read(&m_snappedX, 4);
-    s->Read(&m_snappedY, 4);
-    s->Read(&m_movementXPercent, 4);
-    s->Read(&m_movementYPercent, 4);
+    s->Read(&m_zBound, sizeof(m_zBound));
+    s->Read(&m_snappedX, sizeof(m_snappedX));
+    s->Read(&m_snappedY, sizeof(m_snappedY));
+    s->Read(&m_movementXPercent, sizeof(m_movementXPercent));
+    s->Read(&m_movementYPercent, sizeof(m_movementYPercent));
 
     i32 gridSize = 0;
-    s->Read(&gridSize, 4);
+    s->Read(&gridSize, sizeof(gridSize));
     if (gridSize != m_gridH * m_gridW * 4) {
         return 0;
     }

@@ -268,13 +268,13 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Write(&m_reserved18c, 4);
-    ar->Write(&m_frameIndex, 4);
+    ar->Write(&m_reserved18c, sizeof(m_reserved18c));
+    ar->Write(&m_frameIndex, sizeof(m_frameIndex));
     i32 flag = 0;
     if (m_layer != NULL) {
         flag = 1;
     }
-    ar->Write(&flag, 4);
+    ar->Write(&flag, sizeof(flag));
 
     char tmp[0x100];
     memset(tmp, 0, 0x80);
@@ -297,10 +297,10 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Read(&m_reserved18c, 4);
-    ar->Read(&m_frameIndex, 4);
+    ar->Read(&m_reserved18c, sizeof(m_reserved18c));
+    ar->Read(&m_frameIndex, sizeof(m_frameIndex));
     i32 flag;
-    ar->Read(&flag, 4);
+    ar->Read(&flag, sizeof(flag));
     m_frameSet = NULL;
 
     char name[0x100];
@@ -577,50 +577,50 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     strcpy(tmp, m_name);
     ar->Write(tmp, 0x80);
 
-    ar->Write(&m_moveMode, 4);
-    ar->Write(&m_objectType, 4);
-    ar->Write(&m_hitTypeFlags, 4);
-    ar->Write(&m_attackTypeMask, 4);
-    ar->Write(&m_collMask, 4);
-    ar->Write(&m_strideX, 4);
-    ar->Write(&m_strideY, 4);
-    ar->Write(&m_reserved100, 4);
-    ar->Write(&m_spawnX, 4);
-    ar->Write(&m_spawnY, 4);
-    ar->Write(&m_spawnSortKey, 4);
-    ar->Write(&m_reserved110, 4);
-    ar->Write(&m_score, 4);
-    ar->Write(&m_points, 4);
-    ar->Write(&m_powerup, 4);
-    ar->Write(&m_damage, 4);
-    ar->Write(&m_smarts, 4);
-    ar->Write(&m_health, 4);
-    ar->Write(&m_direction, 4);
-    ar->Write(&m_faceDirection, 4);
+    ar->Write(&m_moveMode, sizeof(m_moveMode));
+    ar->Write(&m_objectType, sizeof(m_objectType));
+    ar->Write(&m_hitTypeFlags, sizeof(m_hitTypeFlags));
+    ar->Write(&m_attackTypeMask, sizeof(m_attackTypeMask));
+    ar->Write(&m_collMask, sizeof(m_collMask));
+    ar->Write(&m_strideX, sizeof(m_strideX));
+    ar->Write(&m_strideY, sizeof(m_strideY));
+    ar->Write(&m_reserved100, sizeof(m_reserved100));
+    ar->Write(&m_spawnX, sizeof(m_spawnX));
+    ar->Write(&m_spawnY, sizeof(m_spawnY));
+    ar->Write(&m_spawnSortKey, sizeof(m_spawnSortKey));
+    ar->Write(&m_reserved110, sizeof(m_reserved110));
+    ar->Write(&m_score, sizeof(m_score));
+    ar->Write(&m_points, sizeof(m_points));
+    ar->Write(&m_powerup, sizeof(m_powerup));
+    ar->Write(&m_damage, sizeof(m_damage));
+    ar->Write(&m_smarts, sizeof(m_smarts));
+    ar->Write(&m_health, sizeof(m_health));
+    ar->Write(&m_direction, sizeof(m_direction));
+    ar->Write(&m_faceDirection, sizeof(m_faceDirection));
     ar->Write(&m_extent.left, 0x10);
     ar->Write(&m_area.left, 0x10);
     ar->Write(&m_switchRect.left, 0x10);
-    ar->Write(&m_speedX, 4);
-    ar->Write(&m_speedY, 4);
-    ar->Write(&m_reserved16c, 4);
-    ar->Write(&m_reserved170, 4);
-    ar->Write(&m_deltaX, 4);
-    ar->Write(&m_deltaY, 4);
-    ar->Write(&m_reserved17c, 4);
-    ar->Write(&m_reserved180, 4);
-    ar->Write(&m_plotDX, 4);
-    ar->Write(&m_plotDY, 4);
+    ar->Write(&m_speedX, sizeof(m_speedX));
+    ar->Write(&m_speedY, sizeof(m_speedY));
+    ar->Write(&m_reserved16c, sizeof(m_reserved16c));
+    ar->Write(&m_reserved170, sizeof(m_reserved170));
+    ar->Write(&m_deltaX, sizeof(m_deltaX));
+    ar->Write(&m_deltaY, sizeof(m_deltaY));
+    ar->Write(&m_reserved17c, sizeof(m_reserved17c));
+    ar->Write(&m_reserved180, sizeof(m_reserved180));
+    ar->Write(&m_plotDX, sizeof(m_plotDX));
+    ar->Write(&m_plotDY, sizeof(m_plotDY));
     ar->Write(&m_dirty, sizeof(m_dirty));
-    ar->Write(&m_stateFlags, 4);
-    ar->Write(&m_flashCountdown, 4);
-    ar->Write(&m_flashInterval, 4);
-    ar->Write(&m_drawFillCmd, 4);
-    ar->Write(&m_fillFraction, 4);
-    ar->Write(&m_drawActive, 4);
+    ar->Write(&m_stateFlags, sizeof(m_stateFlags));
+    ar->Write(&m_flashCountdown, sizeof(m_flashCountdown));
+    ar->Write(&m_flashInterval, sizeof(m_flashInterval));
+    ar->Write(&m_drawFillCmd, sizeof(m_drawFillCmd));
+    ar->Write(&m_fillFraction, sizeof(m_fillFraction));
+    ar->Write(&m_drawActive, sizeof(m_drawActive));
     ar->Write(&m_clip.left, 0x10);
-    ar->Write(&m_id, 4);
-    ar->Write(&m_flags, 4);
-    ar->Write(&m_carrierId, 4);
+    ar->Write(&m_id, sizeof(m_id));
+    ar->Write(&m_flags, sizeof(m_flags));
+    ar->Write(&m_carrierId, sizeof(m_carrierId));
 
     memset(tmp, 0, sizeof(tmp));
     if (m_hitWorker != NULL) {
@@ -655,50 +655,50 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, 0x80);
     m_name = name;
 
-    ar->Read(&m_moveMode, 4);
-    ar->Read(&m_objectType, 4);
-    ar->Read(&m_hitTypeFlags, 4);
-    ar->Read(&m_attackTypeMask, 4);
-    ar->Read(&m_collMask, 4);
-    ar->Read(&m_strideX, 4);
-    ar->Read(&m_strideY, 4);
-    ar->Read(&m_reserved100, 4);
-    ar->Read(&m_spawnX, 4);
-    ar->Read(&m_spawnY, 4);
-    ar->Read(&m_spawnSortKey, 4);
-    ar->Read(&m_reserved110, 4);
-    ar->Read(&m_score, 4);
-    ar->Read(&m_points, 4);
-    ar->Read(&m_powerup, 4);
-    ar->Read(&m_damage, 4);
-    ar->Read(&m_smarts, 4);
-    ar->Read(&m_health, 4);
-    ar->Read(&m_direction, 4);
-    ar->Read(&m_faceDirection, 4);
+    ar->Read(&m_moveMode, sizeof(m_moveMode));
+    ar->Read(&m_objectType, sizeof(m_objectType));
+    ar->Read(&m_hitTypeFlags, sizeof(m_hitTypeFlags));
+    ar->Read(&m_attackTypeMask, sizeof(m_attackTypeMask));
+    ar->Read(&m_collMask, sizeof(m_collMask));
+    ar->Read(&m_strideX, sizeof(m_strideX));
+    ar->Read(&m_strideY, sizeof(m_strideY));
+    ar->Read(&m_reserved100, sizeof(m_reserved100));
+    ar->Read(&m_spawnX, sizeof(m_spawnX));
+    ar->Read(&m_spawnY, sizeof(m_spawnY));
+    ar->Read(&m_spawnSortKey, sizeof(m_spawnSortKey));
+    ar->Read(&m_reserved110, sizeof(m_reserved110));
+    ar->Read(&m_score, sizeof(m_score));
+    ar->Read(&m_points, sizeof(m_points));
+    ar->Read(&m_powerup, sizeof(m_powerup));
+    ar->Read(&m_damage, sizeof(m_damage));
+    ar->Read(&m_smarts, sizeof(m_smarts));
+    ar->Read(&m_health, sizeof(m_health));
+    ar->Read(&m_direction, sizeof(m_direction));
+    ar->Read(&m_faceDirection, sizeof(m_faceDirection));
     ar->Read(&m_extent.left, 0x10);
     ar->Read(&m_area.left, 0x10);
     ar->Read(&m_switchRect.left, 0x10);
-    ar->Read(&m_speedX, 4);
-    ar->Read(&m_speedY, 4);
-    ar->Read(&m_reserved16c, 4);
-    ar->Read(&m_reserved170, 4);
-    ar->Read(&m_deltaX, 4);
-    ar->Read(&m_deltaY, 4);
-    ar->Read(&m_reserved17c, 4);
-    ar->Read(&m_reserved180, 4);
-    ar->Read(&m_plotDX, 4);
-    ar->Read(&m_plotDY, 4);
+    ar->Read(&m_speedX, sizeof(m_speedX));
+    ar->Read(&m_speedY, sizeof(m_speedY));
+    ar->Read(&m_reserved16c, sizeof(m_reserved16c));
+    ar->Read(&m_reserved170, sizeof(m_reserved170));
+    ar->Read(&m_deltaX, sizeof(m_deltaX));
+    ar->Read(&m_deltaY, sizeof(m_deltaY));
+    ar->Read(&m_reserved17c, sizeof(m_reserved17c));
+    ar->Read(&m_reserved180, sizeof(m_reserved180));
+    ar->Read(&m_plotDX, sizeof(m_plotDX));
+    ar->Read(&m_plotDY, sizeof(m_plotDY));
     ar->Read(&m_dirty, sizeof(m_dirty));
-    ar->Read(&m_stateFlags, 4);
-    ar->Read(&m_flashCountdown, 4);
-    ar->Read(&m_flashInterval, 4);
-    ar->Read(&m_drawFillCmd, 4);
-    ar->Read(&m_fillFraction, 4);
-    ar->Read(&m_drawActive, 4);
+    ar->Read(&m_stateFlags, sizeof(m_stateFlags));
+    ar->Read(&m_flashCountdown, sizeof(m_flashCountdown));
+    ar->Read(&m_flashInterval, sizeof(m_flashInterval));
+    ar->Read(&m_drawFillCmd, sizeof(m_drawFillCmd));
+    ar->Read(&m_fillFraction, sizeof(m_fillFraction));
+    ar->Read(&m_drawActive, sizeof(m_drawActive));
     ar->Read(&m_clip.left, 0x10);
-    ar->Read(&m_id, 4);
-    ar->Read(&m_flags, 4);
-    ar->Read(&m_carrierId, 4);
+    ar->Read(&m_id, sizeof(m_id));
+    ar->Read(&m_flags, sizeof(m_flags));
+    ar->Read(&m_carrierId, sizeof(m_carrierId));
 
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
@@ -790,7 +790,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     {
         strcpy(rec.m_workerName, OwnerMgr()->m_workerCache->FindKeyOfValue(m_animWorker));
     }
-    ar->Write(&rec, 0xa0);
+    ar->Write(&rec, sizeof(rec));
     return 1;
 }
 

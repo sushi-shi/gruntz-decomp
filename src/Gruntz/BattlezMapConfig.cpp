@@ -2694,70 +2694,70 @@ i32 CBattlezMapConfig::Serialize(void* arArg) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Write(&m_active, 4);
-    ar->Write(&m_ownerId, 4);
-    ar->Write(&m_reserved01c, 4);
-    ar->Write(&m_reserved020, 4);
-    ar->Write(&m_reserved024, 4);
-    ar->Write(&m_reserved028, 4);
-    ar->Write(&m_reserved02c, 4);
-    ar->Write(&m_defenderChance, 4);
-    ar->Write(&m_reserved034, 4);
-    ar->Write(&m_reserved038, 4);
-    ar->Write(&m_reserved03c, 4);
-    ar->Write(&m_reserved040, 4);
-    ar->Write(&m_reserved044, 4);
-    ar->Write(&m_gruntCreationTime, 4);
-    ar->Write(&m_resourceCreationTime, 4);
-    ar->Write(&m_spawnLastFire, 4);
-    ar->Write(&m_repickLastFire, 4);
-    ar->Write(&m_spawnTimer, 4);
-    ar->Write(&m_repickTimer, 4);
-    ar->Write(&m_gauntletzChance, 4);
-    ar->Write(&m_shovelzChance, 4);
-    ar->Write(&m_spyzChance, 4);
-    ar->Write(&m_brickzChance, 4);
-    ar->Write(&m_gooberzChance, 4);
-    ar->Write(&m_gruntRatio, 4);
-    ar->Write(&m_reserved088, 4);
-    ar->Write(&m_defenderSearchRadiusX, 4);
-    ar->Write(&m_defenderSearchRadiusY, 4);
-    ar->Write(&m_idleRouteLimitX, 4);
-    ar->Write(&m_idleRouteLimitY, 4);
-    ar->Write(&m_reserved09c, 4);
-    ar->Write(&m_idleAttackWaypointDelay, 4);
-    ar->Write(&m_defenderTargetMaxDistance, 4);
-    ar->Write(&m_reserved0a8, 4);
-    ar->Write(&m_idleBurnRandX, 4);
-    ar->Write(&m_idleBurnRandY, 4);
-    ar->Write(&m_reserveBudget, 4);
-    ar->Write(&m_idleRerouteDelay, 4);
-    ar->Write(&m_moveBudget, 4);
-    ar->Write(&m_assignedTargetMaxDistance, 4);
-    ar->Write(&m_repathBudget, 4);
-    ar->Write(&m_inactiveTargetRerouteDelay, 4);
-    ar->Write(&m_nearbyRouteSearchDelay, 4);
-    ar->Write(&m_marker, 8);
-    ar->Write(&m_reserved0d8, 4);
-    ar->Write(&m_reserved13c, 4);
-    ar->Write(&m_roundRobinTick, 4);
-    ar->Write(&m_reserved144, 4);
-    ar->Write(&m_claimTimer, 4);
-    ar->Write(&m_reserved14c, 4);
+    ar->Write(&m_active, sizeof(m_active));
+    ar->Write(&m_ownerId, sizeof(m_ownerId));
+    ar->Write(&m_reserved01c, sizeof(m_reserved01c));
+    ar->Write(&m_reserved020, sizeof(m_reserved020));
+    ar->Write(&m_reserved024, sizeof(m_reserved024));
+    ar->Write(&m_reserved028, sizeof(m_reserved028));
+    ar->Write(&m_reserved02c, sizeof(m_reserved02c));
+    ar->Write(&m_defenderChance, sizeof(m_defenderChance));
+    ar->Write(&m_reserved034, sizeof(m_reserved034));
+    ar->Write(&m_reserved038, sizeof(m_reserved038));
+    ar->Write(&m_reserved03c, sizeof(m_reserved03c));
+    ar->Write(&m_reserved040, sizeof(m_reserved040));
+    ar->Write(&m_reserved044, sizeof(m_reserved044));
+    ar->Write(&m_gruntCreationTime, sizeof(m_gruntCreationTime));
+    ar->Write(&m_resourceCreationTime, sizeof(m_resourceCreationTime));
+    ar->Write(&m_spawnLastFire, sizeof(m_spawnLastFire));
+    ar->Write(&m_repickLastFire, sizeof(m_repickLastFire));
+    ar->Write(&m_spawnTimer, sizeof(m_spawnTimer));
+    ar->Write(&m_repickTimer, sizeof(m_repickTimer));
+    ar->Write(&m_gauntletzChance, sizeof(m_gauntletzChance));
+    ar->Write(&m_shovelzChance, sizeof(m_shovelzChance));
+    ar->Write(&m_spyzChance, sizeof(m_spyzChance));
+    ar->Write(&m_brickzChance, sizeof(m_brickzChance));
+    ar->Write(&m_gooberzChance, sizeof(m_gooberzChance));
+    ar->Write(&m_gruntRatio, sizeof(m_gruntRatio));
+    ar->Write(&m_reserved088, sizeof(m_reserved088));
+    ar->Write(&m_defenderSearchRadiusX, sizeof(m_defenderSearchRadiusX));
+    ar->Write(&m_defenderSearchRadiusY, sizeof(m_defenderSearchRadiusY));
+    ar->Write(&m_idleRouteLimitX, sizeof(m_idleRouteLimitX));
+    ar->Write(&m_idleRouteLimitY, sizeof(m_idleRouteLimitY));
+    ar->Write(&m_reserved09c, sizeof(m_reserved09c));
+    ar->Write(&m_idleAttackWaypointDelay, sizeof(m_idleAttackWaypointDelay));
+    ar->Write(&m_defenderTargetMaxDistance, sizeof(m_defenderTargetMaxDistance));
+    ar->Write(&m_reserved0a8, sizeof(m_reserved0a8));
+    ar->Write(&m_idleBurnRandX, sizeof(m_idleBurnRandX));
+    ar->Write(&m_idleBurnRandY, sizeof(m_idleBurnRandY));
+    ar->Write(&m_reserveBudget, sizeof(m_reserveBudget));
+    ar->Write(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
+    ar->Write(&m_moveBudget, sizeof(m_moveBudget));
+    ar->Write(&m_assignedTargetMaxDistance, sizeof(m_assignedTargetMaxDistance));
+    ar->Write(&m_repathBudget, sizeof(m_repathBudget));
+    ar->Write(&m_inactiveTargetRerouteDelay, sizeof(m_inactiveTargetRerouteDelay));
+    ar->Write(&m_nearbyRouteSearchDelay, sizeof(m_nearbyRouteSearchDelay));
+    ar->Write(&m_marker, sizeof(m_marker));
+    ar->Write(&m_reserved0d8, sizeof(m_reserved0d8));
+    ar->Write(&m_reserved13c, sizeof(m_reserved13c));
+    ar->Write(&m_roundRobinTick, sizeof(m_roundRobinTick));
+    ar->Write(&m_reserved144, sizeof(m_reserved144));
+    ar->Write(&m_claimTimer, sizeof(m_claimTimer));
+    ar->Write(&m_reserved14c, sizeof(m_reserved14c));
 
     u32 i;
     u32 n = m_reserved104.GetSize();
-    ar->Write(&n, 4);
+    ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         DWORD v = m_reserved104[i];
-        ar->Write(&v, 4);
+        ar->Write(&v, sizeof(v));
     }
 
     n = m_reserved118.GetSize();
-    ar->Write(&n, 4);
+    ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         DWORD v = m_reserved118[i];
-        ar->Write(&v, 4);
+        ar->Write(&v, sizeof(v));
     }
 
     for (i32 k = 0; k < 4; k++) {
@@ -2765,13 +2765,13 @@ i32 CBattlezMapConfig::Serialize(void* arArg) {
     }
 
     n = m_attackWaypoints.GetSize();
-    ar->Write(&n, 4);
+    ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         ar->Write(m_attackWaypoints[i], 8);
     }
 
     n = m_candArray.GetSize();
-    ar->Write(&n, 4);
+    ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         ar->Write(m_candArray[i], 8);
     }
@@ -2785,75 +2785,75 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Read(&m_active, 4);
-    ar->Read(&m_ownerId, 4);
-    ar->Read(&m_reserved01c, 4);
-    ar->Read(&m_reserved020, 4);
-    ar->Read(&m_reserved024, 4);
-    ar->Read(&m_reserved028, 4);
-    ar->Read(&m_reserved02c, 4);
-    ar->Read(&m_defenderChance, 4);
-    ar->Read(&m_reserved034, 4);
-    ar->Read(&m_reserved038, 4);
-    ar->Read(&m_reserved03c, 4);
-    ar->Read(&m_reserved040, 4);
-    ar->Read(&m_reserved044, 4);
-    ar->Read(&m_gruntCreationTime, 4);
-    ar->Read(&m_resourceCreationTime, 4);
-    ar->Read(&m_spawnLastFire, 4);
-    ar->Read(&m_repickLastFire, 4);
-    ar->Read(&m_spawnTimer, 4);
-    ar->Read(&m_repickTimer, 4);
-    ar->Read(&m_gauntletzChance, 4);
-    ar->Read(&m_shovelzChance, 4);
-    ar->Read(&m_spyzChance, 4);
-    ar->Read(&m_brickzChance, 4);
-    ar->Read(&m_gooberzChance, 4);
-    ar->Read(&m_gruntRatio, 4);
-    ar->Read(&m_reserved088, 4);
-    ar->Read(&m_defenderSearchRadiusX, 4);
-    ar->Read(&m_defenderSearchRadiusY, 4);
-    ar->Read(&m_idleRouteLimitX, 4);
-    ar->Read(&m_idleRouteLimitY, 4);
-    ar->Read(&m_reserved09c, 4);
-    ar->Read(&m_idleAttackWaypointDelay, 4);
-    ar->Read(&m_defenderTargetMaxDistance, 4);
-    ar->Read(&m_reserved0a8, 4);
-    ar->Read(&m_idleBurnRandX, 4);
-    ar->Read(&m_idleBurnRandY, 4);
-    ar->Read(&m_reserveBudget, 4);
-    ar->Read(&m_idleRerouteDelay, 4);
-    ar->Read(&m_moveBudget, 4);
-    ar->Read(&m_assignedTargetMaxDistance, 4);
-    ar->Read(&m_repathBudget, 4);
-    ar->Read(&m_inactiveTargetRerouteDelay, 4);
-    ar->Read(&m_nearbyRouteSearchDelay, 4);
-    ar->Read(&m_marker, 8);
-    ar->Read(&m_reserved0d8, 4);
-    ar->Read(&m_reserved13c, 4);
-    ar->Read(&m_roundRobinTick, 4);
-    ar->Read(&m_reserved144, 4);
-    ar->Read(&m_claimTimer, 4);
-    ar->Read(&m_reserved14c, 4);
+    ar->Read(&m_active, sizeof(m_active));
+    ar->Read(&m_ownerId, sizeof(m_ownerId));
+    ar->Read(&m_reserved01c, sizeof(m_reserved01c));
+    ar->Read(&m_reserved020, sizeof(m_reserved020));
+    ar->Read(&m_reserved024, sizeof(m_reserved024));
+    ar->Read(&m_reserved028, sizeof(m_reserved028));
+    ar->Read(&m_reserved02c, sizeof(m_reserved02c));
+    ar->Read(&m_defenderChance, sizeof(m_defenderChance));
+    ar->Read(&m_reserved034, sizeof(m_reserved034));
+    ar->Read(&m_reserved038, sizeof(m_reserved038));
+    ar->Read(&m_reserved03c, sizeof(m_reserved03c));
+    ar->Read(&m_reserved040, sizeof(m_reserved040));
+    ar->Read(&m_reserved044, sizeof(m_reserved044));
+    ar->Read(&m_gruntCreationTime, sizeof(m_gruntCreationTime));
+    ar->Read(&m_resourceCreationTime, sizeof(m_resourceCreationTime));
+    ar->Read(&m_spawnLastFire, sizeof(m_spawnLastFire));
+    ar->Read(&m_repickLastFire, sizeof(m_repickLastFire));
+    ar->Read(&m_spawnTimer, sizeof(m_spawnTimer));
+    ar->Read(&m_repickTimer, sizeof(m_repickTimer));
+    ar->Read(&m_gauntletzChance, sizeof(m_gauntletzChance));
+    ar->Read(&m_shovelzChance, sizeof(m_shovelzChance));
+    ar->Read(&m_spyzChance, sizeof(m_spyzChance));
+    ar->Read(&m_brickzChance, sizeof(m_brickzChance));
+    ar->Read(&m_gooberzChance, sizeof(m_gooberzChance));
+    ar->Read(&m_gruntRatio, sizeof(m_gruntRatio));
+    ar->Read(&m_reserved088, sizeof(m_reserved088));
+    ar->Read(&m_defenderSearchRadiusX, sizeof(m_defenderSearchRadiusX));
+    ar->Read(&m_defenderSearchRadiusY, sizeof(m_defenderSearchRadiusY));
+    ar->Read(&m_idleRouteLimitX, sizeof(m_idleRouteLimitX));
+    ar->Read(&m_idleRouteLimitY, sizeof(m_idleRouteLimitY));
+    ar->Read(&m_reserved09c, sizeof(m_reserved09c));
+    ar->Read(&m_idleAttackWaypointDelay, sizeof(m_idleAttackWaypointDelay));
+    ar->Read(&m_defenderTargetMaxDistance, sizeof(m_defenderTargetMaxDistance));
+    ar->Read(&m_reserved0a8, sizeof(m_reserved0a8));
+    ar->Read(&m_idleBurnRandX, sizeof(m_idleBurnRandX));
+    ar->Read(&m_idleBurnRandY, sizeof(m_idleBurnRandY));
+    ar->Read(&m_reserveBudget, sizeof(m_reserveBudget));
+    ar->Read(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
+    ar->Read(&m_moveBudget, sizeof(m_moveBudget));
+    ar->Read(&m_assignedTargetMaxDistance, sizeof(m_assignedTargetMaxDistance));
+    ar->Read(&m_repathBudget, sizeof(m_repathBudget));
+    ar->Read(&m_inactiveTargetRerouteDelay, sizeof(m_inactiveTargetRerouteDelay));
+    ar->Read(&m_nearbyRouteSearchDelay, sizeof(m_nearbyRouteSearchDelay));
+    ar->Read(&m_marker, sizeof(m_marker));
+    ar->Read(&m_reserved0d8, sizeof(m_reserved0d8));
+    ar->Read(&m_reserved13c, sizeof(m_reserved13c));
+    ar->Read(&m_roundRobinTick, sizeof(m_roundRobinTick));
+    ar->Read(&m_reserved144, sizeof(m_reserved144));
+    ar->Read(&m_claimTimer, sizeof(m_claimTimer));
+    ar->Read(&m_reserved14c, sizeof(m_reserved14c));
 
     u32 i;
     i32 j;
     int count;
     DWORD tmp;
 
-    ar->Read(&count, 4);
+    ar->Read(&count, sizeof(count));
     m_reserved104.SetSize(0, -1);
     m_reserved104.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        ar->Read(&tmp, 4);
+        ar->Read(&tmp, sizeof(tmp));
         m_reserved104[i] = tmp;
     }
 
-    ar->Read(&count, 4);
+    ar->Read(&count, sizeof(count));
     m_reserved118.SetSize(0, -1);
     m_reserved118.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        ar->Read(&tmp, 4);
+        ar->Read(&tmp, sizeof(tmp));
         m_reserved118[i] = tmp;
     }
 
@@ -2870,7 +2870,7 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
         }
     }
     m_attackWaypoints.SetSize(0, -1);
-    ar->Read(&count, 4);
+    ar->Read(&count, sizeof(count));
     m_attackWaypoints.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         CoordPoolNode* node = g_coordPool.m_freeHead;
@@ -2892,7 +2892,7 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
         }
     }
     m_candArray.SetSize(0, -1);
-    ar->Read(&count, 4);
+    ar->Read(&count, sizeof(count));
     m_candArray.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         CoordPoolNode* node = g_coordPool.m_freeHead;
@@ -2926,12 +2926,12 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, SerialMode kindArg, 
 
     switch (kind) {
         case SERIAL_SAVE:
-            obj->Write(&m_routeClock, 8);
-            obj->Write(&m_routeWindow, 8);
+            obj->Write(&m_routeClock, sizeof(m_routeClock));
+            obj->Write(&m_routeWindow, sizeof(m_routeWindow));
             break;
         case SERIAL_LOAD:
-            obj->Read(&m_routeClock, 8);
-            obj->Read(&m_routeWindow, 8);
+            obj->Read(&m_routeClock, sizeof(m_routeClock));
+            obj->Read(&m_routeWindow, sizeof(m_routeWindow));
             break;
     }
     return 1;

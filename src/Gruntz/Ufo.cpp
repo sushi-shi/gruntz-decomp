@@ -75,12 +75,12 @@ i32 CUFO::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameO
 static inline void SerQuadPair(CFileMemBase* s, i32 tag, CHazardTimer* p) {
     if (tag != 4) {
         if (tag == 7) {
-            s->Read(&p->m_deadline, 8);
-            s->Read(&p->m_window, 8);
+            s->Read(&p->m_deadline, sizeof(p->m_deadline));
+            s->Read(&p->m_window, sizeof(p->m_window));
         }
     } else {
-        s->Write(&p->m_deadline, 8);
-        s->Write(&p->m_window, 8);
+        s->Write(&p->m_deadline, sizeof(p->m_deadline));
+        s->Write(&p->m_window, sizeof(p->m_window));
     }
 }
 
@@ -102,44 +102,44 @@ i32 CPathHazard::SerializeMove(
     SerQuadPair(s, tag, &m_strike);
     if (tag != SERIAL_SAVE) {
         if (tag == SERIAL_LOAD) {
-            s->Read(&m_speed, 8);
-            s->Read(&m_posX, 8);
-            s->Read(&m_posY, 8);
-            s->Read(&m_unitX, 8);
-            s->Read(&m_unitY, 8);
-            s->Read(&m_roundBiasX, 8);
-            s->Read(&m_roundBiasY, 8);
+            s->Read(&m_speed, sizeof(m_speed));
+            s->Read(&m_posX, sizeof(m_posX));
+            s->Read(&m_posY, sizeof(m_posY));
+            s->Read(&m_unitX, sizeof(m_unitX));
+            s->Read(&m_unitY, sizeof(m_unitY));
+            s->Read(&m_roundBiasX, sizeof(m_roundBiasX));
+            s->Read(&m_roundBiasY, sizeof(m_roundBiasY));
             CPathWaypoint* p = m_wp;
             i32 n = 13;
             do {
-                s->Read(p, 8);
+                s->Read(p, sizeof(*p));
                 p += 1;
             } while (--n != 0);
-            s->Read(&m_wpIndex, 4);
-            s->Read(&m_wpX, 4);
-            s->Read(&m_wpY, 4);
-            s->Read(&m_wpCount, 4);
-            s->Read(&m_strikeArmed, 4);
+            s->Read(&m_wpIndex, sizeof(m_wpIndex));
+            s->Read(&m_wpX, sizeof(m_wpX));
+            s->Read(&m_wpY, sizeof(m_wpY));
+            s->Read(&m_wpCount, sizeof(m_wpCount));
+            s->Read(&m_strikeArmed, sizeof(m_strikeArmed));
         }
     } else {
-        s->Write(&m_speed, 8);
-        s->Write(&m_posX, 8);
-        s->Write(&m_posY, 8);
-        s->Write(&m_unitX, 8);
-        s->Write(&m_unitY, 8);
-        s->Write(&m_roundBiasX, 8);
-        s->Write(&m_roundBiasY, 8);
+        s->Write(&m_speed, sizeof(m_speed));
+        s->Write(&m_posX, sizeof(m_posX));
+        s->Write(&m_posY, sizeof(m_posY));
+        s->Write(&m_unitX, sizeof(m_unitX));
+        s->Write(&m_unitY, sizeof(m_unitY));
+        s->Write(&m_roundBiasX, sizeof(m_roundBiasX));
+        s->Write(&m_roundBiasY, sizeof(m_roundBiasY));
         CPathWaypoint* p = m_wp;
         i32 n = 13;
         do {
-            s->Write(p, 8);
+            s->Write(p, sizeof(*p));
             p += 1;
         } while (--n != 0);
-        s->Write(&m_wpIndex, 4);
-        s->Write(&m_wpX, 4);
-        s->Write(&m_wpY, 4);
-        s->Write(&m_wpCount, 4);
-        s->Write(&m_strikeArmed, 4);
+        s->Write(&m_wpIndex, sizeof(m_wpIndex));
+        s->Write(&m_wpX, sizeof(m_wpX));
+        s->Write(&m_wpY, sizeof(m_wpY));
+        s->Write(&m_wpCount, sizeof(m_wpCount));
+        s->Write(&m_strikeArmed, sizeof(m_strikeArmed));
     }
     return 1;
 }

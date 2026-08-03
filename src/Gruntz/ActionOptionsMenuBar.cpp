@@ -287,10 +287,10 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     }
 
     ar->Write(this, 8);
-    ar->Write(&m_screenX, 4);
-    ar->Write(&m_screenY, 4);
-    ar->Write(&m_loaded, 4);
-    ar->Write(&m_active, 4);
+    ar->Write(&m_screenX, sizeof(m_screenX));
+    ar->Write(&m_screenY, sizeof(m_screenY));
+    ar->Write(&m_loaded, sizeof(m_loaded));
+    ar->Write(&m_active, sizeof(m_active));
     ar->Write(m_buttonState, 8);
     ar->Write(m_buttonIcon, 8);
 
@@ -325,7 +325,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(m_frame, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
 
     g_serialCounter++;
@@ -336,7 +336,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(m_buttonFrame[0], tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
 
     g_serialCounter++;
@@ -348,7 +348,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
             mgr->m_imageRegistry->AnyValueMatches(v20, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
-        ar->Write(&zero, 4);
+        ar->Write(&zero, sizeof(zero));
     }
     return 1;
 }
@@ -373,10 +373,10 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     i32 idx;
 
     s->Read(this, 8);
-    s->Read(&m_screenX, 4);
-    s->Read(&m_screenY, 4);
-    s->Read(&m_loaded, 4);
-    s->Read(&m_active, 4);
+    s->Read(&m_screenX, sizeof(m_screenX));
+    s->Read(&m_screenY, sizeof(m_screenY));
+    s->Read(&m_loaded, sizeof(m_loaded));
+    s->Read(&m_active, sizeof(m_active));
     s->Read(&m_buttonState[0], 8);
     s->Read(&m_buttonIcon[0], 8);
 
@@ -412,7 +412,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
@@ -431,7 +431,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
@@ -450,7 +450,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
     s->Read(buf, 0x80);
-    s->Read(&idx, 4);
+    s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;

@@ -1526,18 +1526,18 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    ar->Write(&m_tileX, 4);
-    ar->Write(&m_tileY, 4);
-    ar->Write(&m_cellKey, 4);
-    ar->Write(&m_linkGate, 4);
-    ar->Write(&m_damageParam, 4);
-    ar->Write(&m_reserved1c, 4);
-    ar->Write(&m_initGate, 4);
-    ar->Write(&m_checkpointType, 4);
+    ar->Write(&m_tileX, sizeof(m_tileX));
+    ar->Write(&m_tileY, sizeof(m_tileY));
+    ar->Write(&m_cellKey, sizeof(m_cellKey));
+    ar->Write(&m_linkGate, sizeof(m_linkGate));
+    ar->Write(&m_damageParam, sizeof(m_damageParam));
+    ar->Write(&m_reserved1c, sizeof(m_reserved1c));
+    ar->Write(&m_initGate, sizeof(m_initGate));
+    ar->Write(&m_checkpointType, sizeof(m_checkpointType));
     i32* p = m_block;
     i32 n = 24;
     do {
-        ar->Write(p, 4);
+        ar->Write(p, sizeof(*p));
         p++;
     } while (--n);
     return 1;
@@ -1551,17 +1551,17 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    s->Read(&m_tileX, 4);
-    s->Read(&m_tileY, 4);
-    s->Read(&m_cellKey, 4);
-    s->Read(&m_linkGate, 4);
-    s->Read(&m_damageParam, 4);
-    s->Read(&m_reserved1c, 4);
-    s->Read(&m_initGate, 4);
-    s->Read(&m_checkpointType, 4);
+    s->Read(&m_tileX, sizeof(m_tileX));
+    s->Read(&m_tileY, sizeof(m_tileY));
+    s->Read(&m_cellKey, sizeof(m_cellKey));
+    s->Read(&m_linkGate, sizeof(m_linkGate));
+    s->Read(&m_damageParam, sizeof(m_damageParam));
+    s->Read(&m_reserved1c, sizeof(m_reserved1c));
+    s->Read(&m_initGate, sizeof(m_initGate));
+    s->Read(&m_checkpointType, sizeof(m_checkpointType));
     i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
-        s->Read(p, 4);
+        s->Read(p, sizeof(*p));
         p++;
     }
     return 1;
@@ -1600,21 +1600,21 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    s->Write(&m_tileX, 4);
-    s->Write(&m_tileY, 4);
-    s->Write(&m_cellKey, 4);
-    s->Write(&m_reserved14, 4);
-    s->Write(&m_reserved18, 4);
-    s->Write(&m_initGate, 4);
-    s->Write(&m_dutyOnSpan, 4);
-    s->Write(&m_leadInSpan, 4);
-    s->Write(&m_dutyOffSpan, 4);
-    s->Write(&m_tileToken, 4);
-    s->Write(&m_dutyOn, 4);
-    s->Write(&m_startClock, 4);
+    s->Write(&m_tileX, sizeof(m_tileX));
+    s->Write(&m_tileY, sizeof(m_tileY));
+    s->Write(&m_cellKey, sizeof(m_cellKey));
+    s->Write(&m_reserved14, sizeof(m_reserved14));
+    s->Write(&m_reserved18, sizeof(m_reserved18));
+    s->Write(&m_initGate, sizeof(m_initGate));
+    s->Write(&m_dutyOnSpan, sizeof(m_dutyOnSpan));
+    s->Write(&m_leadInSpan, sizeof(m_leadInSpan));
+    s->Write(&m_dutyOffSpan, sizeof(m_dutyOffSpan));
+    s->Write(&m_tileToken, sizeof(m_tileToken));
+    s->Write(&m_dutyOn, sizeof(m_dutyOn));
+    s->Write(&m_startClock, sizeof(m_startClock));
     i32* p = m_linkKeys;
     for (i32 i = 0; i < 24; i++) {
-        s->Write(p, 4);
+        s->Write(p, sizeof(*p));
         p++;
     }
     return 1;
@@ -1628,21 +1628,21 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    s->Read(&m_tileX, 4);
-    s->Read(&m_tileY, 4);
-    s->Read(&m_cellKey, 4);
-    s->Read(&m_reserved14, 4);
-    s->Read(&m_reserved18, 4);
-    s->Read(&m_initGate, 4);
-    s->Read(&m_dutyOnSpan, 4);
-    s->Read(&m_leadInSpan, 4);
-    s->Read(&m_dutyOffSpan, 4);
-    s->Read(&m_tileToken, 4);
-    s->Read(&m_dutyOn, 4);
-    s->Read(&m_startClock, 4);
+    s->Read(&m_tileX, sizeof(m_tileX));
+    s->Read(&m_tileY, sizeof(m_tileY));
+    s->Read(&m_cellKey, sizeof(m_cellKey));
+    s->Read(&m_reserved14, sizeof(m_reserved14));
+    s->Read(&m_reserved18, sizeof(m_reserved18));
+    s->Read(&m_initGate, sizeof(m_initGate));
+    s->Read(&m_dutyOnSpan, sizeof(m_dutyOnSpan));
+    s->Read(&m_leadInSpan, sizeof(m_leadInSpan));
+    s->Read(&m_dutyOffSpan, sizeof(m_dutyOffSpan));
+    s->Read(&m_tileToken, sizeof(m_tileToken));
+    s->Read(&m_dutyOn, sizeof(m_dutyOn));
+    s->Read(&m_startClock, sizeof(m_startClock));
     i32* p = m_linkKeys;
     for (i32 i = 0; i < 24; i++) {
-        s->Read(p, 4);
+        s->Read(p, sizeof(*p));
         p++;
     }
     return 1;
@@ -1679,12 +1679,12 @@ i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    s->Write(&m_powerupType, 4);
-    s->Write(&m_textId, 4);
+    s->Write(&m_powerupType, sizeof(m_powerupType));
+    s->Write(&m_textId, sizeof(m_textId));
 
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Write(&m_matrix[r * 3 + c], 4);
+            s->Write(&m_matrix[r * 3 + c], sizeof(m_matrix[r * 3 + c]));
         }
     }
     return 1;
@@ -1698,12 +1698,12 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    s->Read(&m_powerupType, 4);
-    s->Read(&m_textId, 4);
+    s->Read(&m_powerupType, sizeof(m_powerupType));
+    s->Read(&m_textId, sizeof(m_textId));
 
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Read(&m_matrix[r * 3 + c], 4);
+            s->Read(&m_matrix[r * 3 + c], sizeof(m_matrix[r * 3 + c]));
         }
     }
     return 1;
@@ -1738,15 +1738,15 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    a->Write(&m_actionCode, 4);
-    a->Write(&m_tileX, 4);
-    a->Write(&m_tileY, 4);
-    a->Write(&m_cellKey, 4);
-    a->Write(&m_live, 4);
-    a->Write(&m_playerFlags[0], 4);
-    a->Write(&m_playerFlags[1], 4);
-    a->Write(&m_playerFlags[2], 4);
-    a->Write(&m_playerFlags[3], 4);
+    a->Write(&m_actionCode, sizeof(m_actionCode));
+    a->Write(&m_tileX, sizeof(m_tileX));
+    a->Write(&m_tileY, sizeof(m_tileY));
+    a->Write(&m_cellKey, sizeof(m_cellKey));
+    a->Write(&m_live, sizeof(m_live));
+    a->Write(&m_playerFlags[0], sizeof(m_playerFlags[0]));
+    a->Write(&m_playerFlags[1], sizeof(m_playerFlags[1]));
+    a->Write(&m_playerFlags[2], sizeof(m_playerFlags[2]));
+    a->Write(&m_playerFlags[3], sizeof(m_playerFlags[3]));
     return 1;
 }
 
@@ -1759,14 +1759,14 @@ i32 CTileActionEvent::DeserializeFields(void* ar) {
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    a->Read(&m_actionCode, 4);
-    a->Read(&m_tileX, 4);
-    a->Read(&m_tileY, 4);
-    a->Read(&m_cellKey, 4);
-    a->Read(&m_live, 4);
-    a->Read(&m_playerFlags[0], 4);
-    a->Read(&m_playerFlags[1], 4);
-    a->Read(&m_playerFlags[2], 4);
-    a->Read(&m_playerFlags[3], 4);
+    a->Read(&m_actionCode, sizeof(m_actionCode));
+    a->Read(&m_tileX, sizeof(m_tileX));
+    a->Read(&m_tileY, sizeof(m_tileY));
+    a->Read(&m_cellKey, sizeof(m_cellKey));
+    a->Read(&m_live, sizeof(m_live));
+    a->Read(&m_playerFlags[0], sizeof(m_playerFlags[0]));
+    a->Read(&m_playerFlags[1], sizeof(m_playerFlags[1]));
+    a->Read(&m_playerFlags[2], sizeof(m_playerFlags[2]));
+    a->Read(&m_playerFlags[3], sizeof(m_playerFlags[3]));
     return 1;
 }

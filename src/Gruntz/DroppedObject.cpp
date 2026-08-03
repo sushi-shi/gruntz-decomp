@@ -409,35 +409,35 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
 
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_lastDropTime, 8);
-            ar->Write(&m_dropInterval, 8);
+            ar->Write(&m_lastDropTime, sizeof(m_lastDropTime));
+            ar->Write(&m_dropInterval, sizeof(m_dropInterval));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_lastDropTime, 8);
-            ar->Read(&m_dropInterval, 8);
+            ar->Read(&m_lastDropTime, sizeof(m_lastDropTime));
+            ar->Read(&m_dropInterval, sizeof(m_dropInterval));
             break;
     }
 
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_speed, 8);
-            ar->Write(&m_posX, 8);
-            ar->Write(&m_posY, 8);
-            ar->Write(&m_travelDx, 4);
-            ar->Write(&m_travelDy, 4);
-            ar->Write(&m_lastDropTileX, 4);
-            ar->Write(&m_lastDropTileY, 4);
-            ar->Write(&m_scrollMode, 4);
+            ar->Write(&m_speed, sizeof(m_speed));
+            ar->Write(&m_posX, sizeof(m_posX));
+            ar->Write(&m_posY, sizeof(m_posY));
+            ar->Write(&m_travelDx, sizeof(m_travelDx));
+            ar->Write(&m_travelDy, sizeof(m_travelDy));
+            ar->Write(&m_lastDropTileX, sizeof(m_lastDropTileX));
+            ar->Write(&m_lastDropTileY, sizeof(m_lastDropTileY));
+            ar->Write(&m_scrollMode, sizeof(m_scrollMode));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_speed, 8);
-            ar->Read(&m_posX, 8);
-            ar->Read(&m_posY, 8);
-            ar->Read(&m_travelDx, 4);
-            ar->Read(&m_travelDy, 4);
-            ar->Read(&m_lastDropTileX, 4);
-            ar->Read(&m_lastDropTileY, 4);
-            ar->Read(&m_scrollMode, 4);
+            ar->Read(&m_speed, sizeof(m_speed));
+            ar->Read(&m_posX, sizeof(m_posX));
+            ar->Read(&m_posY, sizeof(m_posY));
+            ar->Read(&m_travelDx, sizeof(m_travelDx));
+            ar->Read(&m_travelDy, sizeof(m_travelDy));
+            ar->Read(&m_lastDropTileX, sizeof(m_lastDropTileX));
+            ar->Read(&m_lastDropTileY, sizeof(m_lastDropTileY));
+            ar->Read(&m_scrollMode, sizeof(m_scrollMode));
             break;
         case SERIAL_POSTLOAD: {
             CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
@@ -627,14 +627,14 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
     }
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_timePerTile, 8);
-            ar->Write(&m_fallY, 8);
-            ar->Write(&m_landY, 4);
+            ar->Write(&m_timePerTile, sizeof(m_timePerTile));
+            ar->Write(&m_fallY, sizeof(m_fallY));
+            ar->Write(&m_landY, sizeof(m_landY));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_timePerTile, 8);
-            ar->Read(&m_fallY, 8);
-            ar->Read(&m_landY, 4);
+            ar->Read(&m_timePerTile, sizeof(m_timePerTile));
+            ar->Read(&m_fallY, sizeof(m_fallY));
+            ar->Read(&m_landY, sizeof(m_landY));
             break;
     }
     return 1;

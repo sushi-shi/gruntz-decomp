@@ -229,16 +229,16 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
     if (file.Open(name, 0x9001, 0) == 0) {
         return 0;
     }
-    file.Write(&desc, 0x20);
+    file.Write(&desc, sizeof(desc));
     file.Write(m_rleData, m_rleLen);
     if (desc.f1 & 0x80) {
         if (m_palette == NULL) {
             return 0;
         }
         for (i32 i = 0; i < 0x100; i++) {
-            file.Write(&m_palette[i].peRed, 1);
-            file.Write(&m_palette[i].peGreen, 1);
-            file.Write(&m_palette[i].peBlue, 1);
+            file.Write(&m_palette[i].peRed, sizeof(m_palette[i].peRed));
+            file.Write(&m_palette[i].peGreen, sizeof(m_palette[i].peGreen));
+            file.Write(&m_palette[i].peBlue, sizeof(m_palette[i].peBlue));
         }
     }
     file.Close();

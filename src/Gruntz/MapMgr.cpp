@@ -664,21 +664,21 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Write(&m_width, 4);
-    ar->Write(&m_height, 4);
-    ar->Write(&m_cellCount, 4);
+    ar->Write(&m_width, sizeof(m_width));
+    ar->Write(&m_height, sizeof(m_height));
+    ar->Write(&m_cellCount, sizeof(m_cellCount));
     ar->Write(&m_start, sizeof(m_start));
     ar->Write(&m_goal, sizeof(m_goal));
-    ar->Write(&m_maskA, 4);
-    ar->Write(&m_maskC, 4);
-    ar->Write(&m_maskB, 4);
-    ar->Write(&m_dirty, 4);
+    ar->Write(&m_maskA, sizeof(m_maskA));
+    ar->Write(&m_maskC, sizeof(m_maskC));
+    ar->Write(&m_maskB, sizeof(m_maskB));
+    ar->Write(&m_dirty, sizeof(m_dirty));
     ar->Write(&m_bounds.left, 0x10);
-    ar->Write(&m_gridW, 4);
-    ar->Write(&m_gridH, 4);
+    ar->Write(&m_gridW, sizeof(m_gridW));
+    ar->Write(&m_gridH, sizeof(m_gridH));
     for (u32 i = 0; i < m_width; i++) {
         for (u32 j = 0; j < m_height; j++) {
-            ar->Write(&m_cellPool[j * m_width + i], 0x1c);
+            ar->Write(&m_cellPool[j * m_width + i], sizeof(m_cellPool[j * m_width + i]));
         }
     }
     return 1;
@@ -689,21 +689,21 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Read(&m_width, 4);
-    ar->Read(&m_height, 4);
-    ar->Read(&m_cellCount, 4);
+    ar->Read(&m_width, sizeof(m_width));
+    ar->Read(&m_height, sizeof(m_height));
+    ar->Read(&m_cellCount, sizeof(m_cellCount));
     ar->Read(&m_start, sizeof(m_start));
     ar->Read(&m_goal, sizeof(m_goal));
-    ar->Read(&m_maskA, 4);
-    ar->Read(&m_maskC, 4);
-    ar->Read(&m_maskB, 4);
-    ar->Read(&m_dirty, 4);
+    ar->Read(&m_maskA, sizeof(m_maskA));
+    ar->Read(&m_maskC, sizeof(m_maskC));
+    ar->Read(&m_maskB, sizeof(m_maskB));
+    ar->Read(&m_dirty, sizeof(m_dirty));
     ar->Read(&m_bounds.left, 0x10);
-    ar->Read(&m_gridW, 4);
-    ar->Read(&m_gridH, 4);
+    ar->Read(&m_gridW, sizeof(m_gridW));
+    ar->Read(&m_gridH, sizeof(m_gridH));
     for (u32 i = 0; i < m_width; i++) {
         for (u32 j = 0; j < m_height; j++) {
-            ar->Read(&m_cellPool[j * m_width + i], 0x1c);
+            ar->Read(&m_cellPool[j * m_width + i], sizeof(m_cellPool[j * m_width + i]));
             m_cellPool[j * m_width + i].m_head = NULL;
         }
     }

@@ -156,20 +156,20 @@ i32 CActionArea::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, 
     }
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_timestamp, 8);
-            ar->Write(&m_duration, 8);
+            ar->Write(&m_timestamp, sizeof(m_timestamp));
+            ar->Write(&m_duration, sizeof(m_duration));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_timestamp, 8);
-            ar->Read(&m_duration, 8);
+            ar->Read(&m_timestamp, sizeof(m_timestamp));
+            ar->Read(&m_duration, sizeof(m_duration));
             break;
     }
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_phase, 4);
+            ar->Write(&m_phase, sizeof(m_phase));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_phase, 4);
+            ar->Read(&m_phase, sizeof(m_phase));
             break;
     }
     return 1;
