@@ -28,7 +28,7 @@ src/Gruntz/GameLevel.cpp	447	pending
 src/DinMgr2/DinMgr2.cpp	446	pending
 src/Dsndmgr/DirectSoundMgr.cpp	445	pending
 src/Gruntz/MultiStartDlgRoster.cpp	437	pending
-src/Gruntz/InGameIcon.cpp	434	pending
+src/Gruntz/InGameIcon.cpp	434	done
 src/Image/FileImage.cpp	427	pending
 src/Gruntz/GruntzMgrCmd.cpp	415	pending
 src/Gruntz/StatusBarMgr.cpp	408	pending
@@ -54,16 +54,16 @@ src/Gruntz/Demo.cpp	251	done (AnimWorkerAct dispatch named)
 src/Gruntz/BattlezData.cpp	249	pending
 src/Rez/RezSync.cpp	244	pending
 src/Gruntz/Projectile.cpp	240	pending
-src/Gruntz/BootyWalkAnim.cpp	219	pending
+src/Gruntz/BootyWalkAnim.cpp	219	done
 src/Gruntz/FontConfig.cpp	214	pending
 src/Bute/TypeKeyColl.cpp	211	pending
-src/Gruntz/RollingBall.cpp	205	done (GruntDirection named; sink is the per-tileset tile id - no names)
+src/Gruntz/RollingBall.cpp	205	done
 src/Gruntz/StatusBarTabBuilders.cpp	204	pending
 src/Gruntz/TileTriggerContainer.cpp	203	pending
 src/Wwd/WwdObjMgr.cpp	196	pending
 src/Gruntz/TerrainTileLoader.cpp	193	pending
 src/Image/ImagePolyClip.cpp	192	pending
-src/Gruntz/DroppedObject.cpp	190	done (AnimWorkerAct dispatch named)
+src/Gruntz/DroppedObject.cpp	190	done
 src/Gruntz/GruntzCmdMgr.cpp	189	pending
 src/Gruntz/TileLogicPump.cpp	182	done (AnimWorkerAct dispatch named)
 src/DDrawMgr/DirPal.cpp	178	pending
@@ -80,7 +80,7 @@ src/Gruntz/SpriteRef.cpp	155	pending
 src/Gruntz/MultiStartDlg.cpp	154	none (index is the same 0..3 slot ordinal)
 src/Gruntz/CreditsState.cpp	152	pending
 src/Gruntz/GruntPickupLoad.cpp	151	pending
-src/Gruntz/VideoConfig.cpp	148	pending
+src/Gruntz/VideoConfig.cpp	148	done
 src/Gruntz/LevelTileValidation.cpp	147	pending
 src/DDrawMgr/DDrawSurfaceMgr.cpp	145	pending
 src/Gruntz/SpriteLoaders.cpp	143	pending
@@ -106,7 +106,7 @@ src/Rez/RezFile.cpp	99	pending
 src/Image/ImageOwned.cpp	97	pending
 src/Gruntz/GruntVoice.cpp	97	done (AnimWorkerAct dispatch named)
 src/Gruntz/CheatMgr.cpp	96	pending
-src/Gruntz/KitchenSlime.cpp	94	pending
+src/Gruntz/KitchenSlime.cpp	94	done
 src/Gruntz/StateMgrBZ.cpp	91	done
 src/Wwd/WwdGameObjectRender.cpp	85	pending
 src/Gruntz/ChatBox.cpp	84	pending

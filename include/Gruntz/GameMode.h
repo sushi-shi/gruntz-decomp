@@ -20,6 +20,7 @@
 extern "C" tagRECT g_versionRect;
 
 #include <Rez/FrameClock.h>
+#include <Gruntz/WarpLetter.h>
 
 GZ_ENUM_FORWARD(GruntDirection);
 
@@ -255,7 +256,7 @@ public:
     i32 m_templateFlags[8];
     i32 m_slot;
     CWwdGameObjectA* m_visSprites[4];
-    CWwdGameObjectA* m_animSprites[4];
+    CWwdGameObjectA* m_animSprites[WARPLETTER_COUNT];
     i32 m_stepIndex;
     i32 m_walkStarted;
     i32 m_soundStarted;

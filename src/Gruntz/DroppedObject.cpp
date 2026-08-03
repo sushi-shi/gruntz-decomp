@@ -9,6 +9,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CardinalDir.h>
 #include <Gruntz/CombatCueKind.h>
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/GameLevel.h>
@@ -87,13 +88,6 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     g_typeColl.Report(g_errOutOfMem, 0xc);
     return g_typeColl.Scratch();
 }
-
-typedef enum DropperDir {
-    DROPDIR_NORTH = 1,
-    DROPDIR_EAST = 2,
-    DROPDIR_SOUTH = 3,
-    DROPDIR_WEST = 4
-} DropperDir;
 
 RVA_COMPGEN(0x000124c0, 0x1e, ??_GCObjectDropper@@UAEPAXI@Z)
 RVA_COMPGEN(0x000124f0, 0x44, ??1CObjectDropper@@UAE@XZ)
@@ -247,19 +241,19 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         name = obj38->m_frameSet->m_name;
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
-            o->m_direction = DROPDIR_NORTH;
+            o->m_direction = CARDINAL_NORTH;
             m_travelDx = 0;
             m_travelDy = -1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
-            o->m_direction = DROPDIR_EAST;
+            o->m_direction = CARDINAL_EAST;
             m_travelDx = 1;
             m_travelDy = 0;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
-            o->m_direction = DROPDIR_SOUTH;
+            o->m_direction = CARDINAL_SOUTH;
             m_travelDx = 0;
             m_travelDy = 1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
-            o->m_direction = DROPDIR_WEST;
+            o->m_direction = CARDINAL_WEST;
             m_travelDx = -1;
             m_travelDy = 0;
         }

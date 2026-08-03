@@ -14,6 +14,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -28,6 +29,7 @@
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/SpellId.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/ToyPeek.h>
 #include <Gruntz/TriggerMgr.h>
@@ -424,48 +426,48 @@ i32 CInGameIcon::HandleInput() {
     CWwdGameObjectA* obj = m_object;
     i32 cmd = obj->m_smarts;
     CShadeTable* rec;
-    if (cmd == 0x55) {
+    if (cmd == PICKUP_TOYBOX) {
         i32 key = obj->m_score;
         i32 sub = obj->m_points;
-        if (sub < 0x17 || sub > 0x20) {
+        if (sub < PICKUP_TOYZ_FIRST || sub > PICKUP_TOYZ_LAST) {
             return 0;
         }
         i32 icon = g_gameReg->m_options[key].m_colorIndex;
-        if (icon < 0 || icon >= 0x11) {
-            icon = 0;
+        if (icon < 0 || icon >= TINT_COUNT) {
+            icon = TINT_ORANGE;
         }
         rec = g_gameReg->m_spriteFactory->GetSel(icon, 0);
         if (rec == NULL) {
-            rec = g_gameReg->m_spriteFactory->GetSel(1, 0);
+            rec = g_gameReg->m_spriteFactory->GetSel(TINT_GREEN, 0);
         }
-    } else if (cmd == 0x1e || cmd == 0x13) {
+    } else if (cmd == PICKUP_SCROLL || cmd == PICKUP_WAND) {
         i32 icon;
         switch (obj->m_faceDirection) {
-            case 1:
-                icon = 0x10;
+            case SPELL_FREEZE:
+                icon = TINT_WHITE;
                 break;
-            case 2:
-                icon = 1;
+            case SPELL_HEALTH:
+                icon = TINT_GREEN;
                 break;
-            case 3:
-                icon = 0;
+            case SPELL_RESURRECTION:
+                icon = TINT_ORANGE;
                 break;
-            case 4:
-                icon = 0xc;
+            case SPELL_RANDOM_TOYZ:
+                icon = TINT_PINK;
                 break;
-            case 5:
-                icon = 2;
+            case SPELL_TELEPORT:
+                icon = TINT_BLUE;
                 break;
-            case 6:
-                icon = 3;
+            case SPELL_ROLLING_BALLZ:
+                icon = TINT_RED;
                 break;
             default:
-                icon = 7;
+                icon = TINT_BLACK;
                 break;
         }
         rec = g_gameReg->m_spriteFactory->GetSel(icon, 0);
         if (rec == NULL) {
-            rec = g_gameReg->m_spriteFactory->GetSel(1, 0);
+            rec = g_gameReg->m_spriteFactory->GetSel(TINT_GREEN, 0);
         }
     } else {
         return 1;

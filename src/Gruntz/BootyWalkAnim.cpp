@@ -15,6 +15,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/WarpLetter.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
@@ -50,7 +51,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (sel == NULL) {
         return 0;
     }
-    for (i32 i = 0; i < 4; i++) {
+    for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
         m_animSprites[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_animSprites[i] == NULL) {
@@ -90,14 +91,14 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (n > 0x24) {
         return 1;
     }
-    if (m_stepIndex >= 4) {
+    if (m_stepIndex >= WARPLETTER_COUNT) {
         return 1;
     }
 
     if (m_initGate != 0) {
 
         if (n < 0x24) {
-            for (i32 i = 0; i < 4; i++) {
+            for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
                 if (i <= (g_gameReg->m_scoreHud->m_count - 1) % 4) {
                     m_visSprites[i]->m_stateFlags |= 1;
                     m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
@@ -109,16 +110,16 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     } else {
                         CString letter;
                         switch (i) {
-                            case 0:
+                            case WARPLETTER_W:
                                 letter = "W";
                                 break;
-                            case 1:
+                            case WARPLETTER_A:
                                 letter = "A";
                                 break;
-                            case 2:
+                            case WARPLETTER_R:
                                 letter = "R";
                                 break;
-                            case 3:
+                            case WARPLETTER_P:
                                 letter = "P";
                                 break;
                         }
@@ -180,16 +181,16 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         {
             CString letter;
             switch (m_stepIndex) {
-                case 0:
+                case WARPLETTER_W:
                     letter = "W";
                     break;
-                case 1:
+                case WARPLETTER_A:
                     letter = "A";
                     break;
-                case 2:
+                case WARPLETTER_R:
                     letter = "R";
                     break;
-                case 3:
+                case WARPLETTER_P:
                     letter = "P";
                     break;
             }

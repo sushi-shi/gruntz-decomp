@@ -460,26 +460,26 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         newpos = pos;
     } else {
         newpos = si.nPos;
-        if (code == 4) {
+        if (code == SB_THUMBPOSITION) {
             newpos = pos;
         }
     }
     switch (code) {
-        case 0:
+        case SB_LINEUP:
             newpos--;
             break;
-        case 1:
+        case SB_LINEDOWN:
             newpos++;
             break;
-        case 2:
+        case SB_PAGEUP:
             newpos -= 10;
             break;
-        case 3:
+        case SB_PAGEDOWN:
             newpos += 10;
             break;
-        case 4:
+        case SB_THUMBPOSITION:
             break;
-        case 5:
+        case SB_THUMBTRACK:
             break;
         default:
             return;

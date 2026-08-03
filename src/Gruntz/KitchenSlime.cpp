@@ -9,6 +9,7 @@
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CardinalDir.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -98,13 +99,13 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         name = frameSet->m_name;
         const char* s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
-            m_object->m_smarts = 1;
+            m_object->m_smarts = CARDINAL_NORTH;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
-            m_object->m_smarts = 2;
+            m_object->m_smarts = CARDINAL_EAST;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_SOUTH") == 0) {
-            m_object->m_smarts = 3;
+            m_object->m_smarts = CARDINAL_SOUTH;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_WEST") == 0) {
-            m_object->m_smarts = 4;
+            m_object->m_smarts = CARDINAL_WEST;
         }
     }
 
@@ -295,21 +296,21 @@ i32 CKitchenSlime::LoadSprites() {
     i32 found = 0;
     for (i32 i = 0; i <= 4;) {
         CGameObject* lvl = Level();
-        i32 sw = lvl->m_smarts - 1;
+        i32 sw = lvl->m_smarts;
         switch (sw) {
-            case 0:
+            case CARDINAL_NORTH:
                 tileX = m_tilePosition.m_x;
                 tileY = m_tilePosition.m_y - 0x20;
                 break;
-            case 1:
+            case CARDINAL_EAST:
                 tileX = m_tilePosition.m_x + 0x20;
                 tileY = m_tilePosition.m_y;
                 break;
-            case 2:
+            case CARDINAL_SOUTH:
                 tileX = m_tilePosition.m_x;
                 tileY = m_tilePosition.m_y + 0x20;
                 break;
-            case 3:
+            case CARDINAL_WEST:
                 tileX = m_tilePosition.m_x - 0x20;
                 tileY = m_tilePosition.m_y;
                 break;
@@ -356,8 +357,8 @@ i32 CKitchenSlime::LoadSprites() {
     m_posX = 0;
     m_posY = 0;
     i32 changed = (Level()->m_smarts != savedDir);
-    switch (Level()->m_smarts - 1) {
-        case 0:
+    switch (Level()->m_smarts) {
+        case CARDINAL_NORTH:
             m_posY = -m_stepMag;
             m_dirX = 0.0;
             m_dirY = -1.0;
@@ -365,7 +366,7 @@ i32 CKitchenSlime::LoadSprites() {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
-        case 1:
+        case CARDINAL_EAST:
             m_posX = m_stepMag;
             m_dirX = 1.0;
             m_dirY = 0.0;
@@ -373,7 +374,7 @@ i32 CKitchenSlime::LoadSprites() {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
-        case 2:
+        case CARDINAL_SOUTH:
             m_posY = m_stepMag;
             m_dirY = 1.0;
             m_dirX = 0.0;
@@ -381,7 +382,7 @@ i32 CKitchenSlime::LoadSprites() {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
-        case 3:
+        case CARDINAL_WEST:
             m_posX = -m_stepMag;
             m_dirX = -1.0;
             m_dirY = 0.0;

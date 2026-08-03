@@ -7,6 +7,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CardinalDir.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -70,19 +71,19 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         const char* s;
         s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
-            o->m_direction = 1;
+            o->m_direction = CARDINAL_NORTH;
             m_stepDirX = 0;
             m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
-            o->m_direction = 2;
+            o->m_direction = CARDINAL_EAST;
             m_stepDirY = 0;
             m_stepDirX = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
-            o->m_direction = 3;
+            o->m_direction = CARDINAL_SOUTH;
             m_stepDirY = 1;
             m_stepDirX = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
-            o->m_direction = 4;
+            o->m_direction = CARDINAL_WEST;
             m_stepDirY = 0;
             m_stepDirX = -1;
         }
@@ -447,19 +448,19 @@ i32 CRollingBall::Update() {
             switch (act2) {
                 case TILEKIND_ARROW_UP_A:
                 case TILEKIND_ARROW_UP_B:
-                    m_object->m_direction = 1;
+                    m_object->m_direction = CARDINAL_NORTH;
                     break;
                 case TILEKIND_ARROW_RIGHT_A:
                 case TILEKIND_ARROW_RIGHT_B:
-                    m_object->m_direction = 2;
+                    m_object->m_direction = CARDINAL_EAST;
                     break;
                 case TILEKIND_ARROW_DOWN_A:
                 case TILEKIND_ARROW_DOWN_B:
-                    m_object->m_direction = 3;
+                    m_object->m_direction = CARDINAL_SOUTH;
                     break;
                 case TILEKIND_ARROW_LEFT_A:
                 case TILEKIND_ARROW_LEFT_B:
-                    m_object->m_direction = 4;
+                    m_object->m_direction = CARDINAL_WEST;
                     break;
             }
         }
@@ -468,7 +469,7 @@ i32 CRollingBall::Update() {
         m_subX = 0.0;
         m_subY = 0.0;
         switch (dirObj2->m_direction) {
-            case DIR_NORTH:
+            case CARDINAL_NORTH:
                 m_subY = -m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = -1;
@@ -477,7 +478,7 @@ i32 CRollingBall::Update() {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_NORTH");
                 }
                 break;
-            case DIR_NORTHEAST:
+            case CARDINAL_EAST:
                 m_subX = m_moveDelta;
                 m_stepDirX = 1;
                 m_stepDirY = 0;
@@ -486,7 +487,7 @@ i32 CRollingBall::Update() {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EAST");
                 }
                 break;
-            case DIR_SOUTHEAST:
+            case CARDINAL_WEST:
                 m_subX = -m_moveDelta;
                 m_stepDirX = -1;
                 m_stepDirY = 0;
