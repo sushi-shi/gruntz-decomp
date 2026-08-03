@@ -218,6 +218,24 @@ def collect_objs(args) -> list:
         return [Path(o) for o in args.obj]
     if not objs_dir.is_dir():
         die(f"--objs-dir not found: {objs_dir}")
+    # Only objs the MANIFEST still owns. Deleting a [[unit]] does not delete its
+    # stale build/objdiff/base/<unit>.obj, and a bare glob then links the orphan -
+    # which shows up as a phantom LNK2005 against the TU that legitimately owns
+    # the symbol now. Since there is no /FORCE any more, that FAILS the link and
+    # looks like a real identity defect. Filter instead of trusting the directory.
+    import tomllib
+    manifest = REPO / "config" / "units.toml"
+    objs, orphans = [], []
+    if manifest.exists():
+        with manifest.open("rb") as fh:
+            owned = {u["unit"] for u in tomllib.load(fh).get("unit", []) if "unit" in u}
+        for p in sorted(objs_dir.glob("*.obj")):
+            (objs if p.stem in owned else orphans).append(p)
+        if orphans:
+            print(f"[link] skipping {len(orphans)} orphaned obj(s) with no [[unit]]: "
+                  + ", ".join(p.name for p in orphans[:6])
+                  + (" ..." if len(orphans) > 6 else ""))
+        return objs
     return sorted(objs_dir.glob("*.obj"))
 
 
