@@ -551,7 +551,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* sel =
-        g_gameReg->m_spriteFactory->GetSel(m_moveIcon, m_entranceReason >= PICKUP_TOYZ_BEGIN);
+        g_gameReg->m_spriteFactory->GetSel(m_moveIcon, m_entranceReason >= PICKUP_TOYZ_FIRST);
     CWwdGameObjectA* h = m_object;
     h->m_drawActive = 1;
     h->m_drawFillCmd = SHADE_PAL_16;
@@ -594,7 +594,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
     PickupType reason = m_entranceReason;
-    if (reason <= PICKUP_NONE || reason >= PICKUP_TOYZ_BEGIN) {
+    if (reason <= PICKUP_NONE || reason >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
     CWwdGameObjectA* h = m_object;

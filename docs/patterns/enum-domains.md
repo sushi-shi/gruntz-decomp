@@ -136,12 +136,20 @@ A bound written against whichever member happens to sit at the edge —
 when it is a fact about the band. Every domain that gets range-tested declares
 markers instead, and the test names the marker:
 
-| suffix | meaning | use |
-|---|---|---|
-| `_BEGIN` | first value of a band, INCLUSIVE | `x >= B_BEGIN` |
-| `_END` | one PAST the last, exclusive | `x < B_END`, `x >= B_END` |
-| `_LAST` | the last value, INCLUSIVE | `x > B_LAST` — only where retail's compare needs the inclusive value |
-| `_COUNT` | how many values the domain has | bounds, iteration, table sizes |
+Two pairs, with the same meanings they have for C++ iterators — pick the pair
+that matches the test the site actually performs, and never mix them:
+
+| pair | suffixes | range | use |
+|---|---|---|---|
+| **inclusive** | `_FIRST` … `_LAST` | `[first, last]` | `x >= B_FIRST && x <= B_LAST`, `x > B_LAST` |
+| **half-open** | `_BEGIN` … `_END` | `[begin, end)` | `x >= B_BEGIN && x < B_END`, `x >= B_END` |
+
+plus `_COUNT` for how many values the domain has (bounds, iteration, table sizes).
+
+Most of the tree is the inclusive pair, because that is what retail's compares
+are: `>= X && <= Y`. Reach for `_BEGIN`/`_END` only where the site really is
+half-open — `PICKUP_MOVEICON_END` is, because its test is `>= END` meaning "past
+the end".
 
 `_LAST` exists only because **the compare form is load-bearing**. `> 22` and
 `>= 23` are the same predicate but not the same instruction:

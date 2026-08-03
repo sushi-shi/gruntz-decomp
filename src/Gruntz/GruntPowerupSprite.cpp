@@ -88,36 +88,3 @@ i32 CGruntPowerupSprite::Update() {
     }
     return 0;
 }
-
-RVA(0x00080490, 0xbe)
-i32 CGruntPowerupSprite::SerializeMove(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* pObj
-) {
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    if (Chain(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(&m_cell, 8);
-            ar->Write(&m_powerupId, 4);
-            break;
-        case SERIAL_LOAD: {
-            ar->Read(&m_cell, 8);
-            ar->Read(&m_powerupId, 4);
-            i32 id = m_powerupId;
-            CWwdGameObjectA* r = m_object;
-            CShadeTable* v = g_gameReg->m_logicPump->m_tables[id];
-            r->m_drawActive = 1;
-            r->m_drawFillArg = v;
-            r->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-            break;
-        }
-    }
-    return 1;
-}

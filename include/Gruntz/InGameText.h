@@ -15,7 +15,30 @@ class CFileMemBase;
 
 class CInGameText : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x00099a30, 0xaa)
+    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, CGameObject* b)
+        OVERRIDE {
+        if (ar == 0) {
+            return 0;
+        }
+        if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
+            return 0;
+        }
+        if (Chain(ar, tag, a, b) == 0) {
+            return 0;
+        }
+        switch (tag) {
+            case SERIAL_SAVE:
+                ar->Write(&m_cachedAreaId, 4);
+                ar->Write(&m_cachedSubId, 4);
+                break;
+            case SERIAL_LOAD:
+                ar->Read(&m_cachedAreaId, 4);
+                ar->Read(&m_cachedSubId, 4);
+                break;
+        }
+        return 1;
+    }
     RVA(0x00011d70, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMETEXT;

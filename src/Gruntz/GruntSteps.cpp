@@ -989,18 +989,18 @@ applyTail:
 
 modeDispatch: {
     PickupType mode = m_entrancePickup;
-    if (mode >= PICKUP_POWERUPZ_BEGIN) {
+    if (mode >= PICKUP_POWERUPZ_FIRST) {
         LoadGruntTypeTable(mode, 1, 0, 1);
         m_entrancePickup = PICKUP_INVALID;
         m_helpCueId = 0;
         return 1;
     }
-    if (mode >= PICKUP_BRICKZ_BEGIN) {
+    if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
         m_entrancePickup = PICKUP_INVALID;
         return 1;
     }
-    if (mode >= PICKUP_TOYZ_BEGIN) {
+    if (mode >= PICKUP_TOYZ_FIRST) {
         LoadVehicleGruntSprites(mode);
         return 1;
     }
@@ -1008,59 +1008,6 @@ modeDispatch: {
     m_entrancePickup = PICKUP_INVALID;
     return 1;
 }
-}
-
-RVA(0x00053b80, 0x340)
-i32 CGrunt::SerializeMove(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* pObj
-) {
-    if (ar == 0) {
-        return 0;
-    }
-
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-
-    if (CWapX::Chain(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case SERIAL_SAVE:
-
-            if (Save(ar) == 0) {
-                return 0;
-            }
-            break;
-        case SERIAL_LOAD:
-
-            if (LoadStateRecord(ar) == 0) {
-                return 0;
-            }
-            break;
-        case SERIAL_POSTLOAD:
-            m_tileMgr = g_gameReg->m_cmdGrid;
-            break;
-    }
-    m_entranceCell.Serialize(ar, mode, typeId, pObj);
-    SerRecord(ar, mode, &m_toyClock);
-    SerRecord(ar, mode, &m_idleAnchor);
-    SerRecord(ar, mode, &m_idleTimer);
-    SerRecord(ar, mode, &m_entranceClockLo);
-    SerRecord(ar, mode, &m_flashClockLo);
-    SerRecord(ar, mode, &m_attackClockLo);
-    SerRecord(ar, mode, &m_combatClockLo);
-    SerRecord(ar, mode, &m_hudRetireClockLo);
-    m_wingzTiming.Serialize(ar, mode, typeId, pObj);
-    m_conversionTiming.Serialize(ar, mode, typeId, pObj);
-    m_shimmerTiming.Serialize(ar, mode, typeId, pObj);
-    m_arrivalVoiceTiming.Serialize(ar, mode, typeId, pObj);
-    m_arrivalRerollTiming.Serialize(ar, mode, typeId, pObj);
-    m_holdTiming.Serialize(ar, mode, typeId, pObj);
-    return 1;
 }
 
 RVA(0x00053f90, 0x11d0)

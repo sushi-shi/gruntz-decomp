@@ -31,6 +31,16 @@ Checks the invariants the numeric-domain campaign depends on
   5. REVIEW-MANIFEST CONSISTENCY (fatal). config/enum-review.tsv must list every
      source file exactly once with a known state.
 
+  6. RANGE TESTS NAME A BOUNDARY, NOT A MEMBER (fatal). `n > PICKUP_WINGZ` for
+     "not an equippable tool" states a fact about Wingz when it means one about
+     the band edge. Declare a marker instead: `_FIRST`/`_LAST` for an inclusive
+     range, `_BEGIN`/`_END` for a half-open one (same meanings as C++ iterators),
+     `_COUNT` for a size. Sentinels (_NONE/_INVALID/_UNSET) are legitimate
+     targets - comparing against one is what a sentinel is for.
+     The fix is ALWAYS a rename: declare the marker at the value retail already
+     compares against, because the compare FORM is load-bearing (`> 22` and
+     `>= 23` are one predicate but two instructions).
+
     python -m gruntz.audit.enum_domains            # report
     python -m gruntz.audit.enum_domains --gate     # exit 1 on any fatal finding
     python -m gruntz.audit.enum_domains --sync-review   # add missing review rows
@@ -60,7 +70,7 @@ RANGE_TEST = re.compile(r"([<>]=?)[ \t]*([A-Z][A-Z0-9_]{2,})\b")
 # names a range test may legitimately target: a band/count marker, or a sentinel
 # (comparing against _NONE/_INVALID/_UNSET is what a sentinel is for), or a grid
 # extent, which is a dimension rather than a member of the domain.
-MARKER_OK = re.compile(r"(_BEGIN|_END|_LAST|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS)$")
+MARKER_OK = re.compile(r"(_FIRST|_LAST|_BEGIN|_END|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS)$")
 
 
 def is_tag_type(body: str) -> bool:
@@ -203,7 +213,7 @@ def audit():
                 continue
             line = t[:m.start()].count("\n") + 1
             fatal.append(f"{rel}:{line}: range test `{m.group(1)} {name}` names a MEMBER of "
-                         f"{dom} - declare a _BEGIN/_END/_LAST/_COUNT marker AT THAT VALUE and "
+                         f"{dom} - declare a _FIRST/_LAST (inclusive) or _BEGIN/_END (half-open) marker AT THAT VALUE and "
                          f"compare against it (rename only; changing the operator moves bytes)")
 
     return fatal, warn, declared

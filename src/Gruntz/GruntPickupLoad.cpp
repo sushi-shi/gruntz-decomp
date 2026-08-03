@@ -52,7 +52,7 @@ i32 CGrunt::LoadPickupSprites(
     if (m_entranceActive != 0) {
         return 0;
     }
-    if (type >= PICKUP_COLORBRICK_BEGIN && type <= PICKUP_BRICKZ_LAST) {
+    if (type >= PICKUP_COLORBRICK_FIRST && type <= PICKUP_BRICKZ_LAST) {
         PickupType st = m_entranceReason;
         if (st > PICKUP_EQUIPPABLE_LAST) {
             st = m_toolId;
@@ -75,28 +75,28 @@ i32 CGrunt::LoadPickupSprites(
         ResetEntranceAnimation(1, 0, 0);
     }
     if (m_entranceReason == PICKUP_WARPSTONE) {
-        if (type >= PICKUP_EQUIPPABLE_BEGIN && type <= PICKUP_EQUIPPABLE_LAST) {
+        if (type >= PICKUP_EQUIPPABLE_FIRST && type <= PICKUP_EQUIPPABLE_LAST) {
             return 0;
         }
-        if (type >= PICKUP_TIMEDPOWERUP_BEGIN && type <= PICKUP_TIMEDPOWERUP_LAST) {
+        if (type >= PICKUP_TIMEDPOWERUP_FIRST && type <= PICKUP_TIMEDPOWERUP_LAST) {
             return 0;
         }
     }
     if (countStats != 0) {
-        if (type >= PICKUP_EQUIPPABLE_BEGIN && type <= PICKUP_EQUIPPABLE_LAST
+        if (type >= PICKUP_EQUIPPABLE_FIRST && type <= PICKUP_EQUIPPABLE_LAST
             && type != PICKUP_WARPSTONE) {
             g_gameReg->m_scoreHud->m_toolzCount++;
             g_gameReg->m_scoreHud
                 ->m_weaponPickupz[IDX(type) - IDX(PICKUP_BOMB) + 22 * m_tileOwnerHi]++;
-        } else if (type >= PICKUP_TOYZ_BEGIN && type <= PICKUP_TOYZ_LAST) {
+        } else if (type >= PICKUP_TOYZ_FIRST && type <= PICKUP_TOYZ_LAST) {
             g_gameReg->m_scoreHud->m_toyzCount++;
             g_gameReg->m_scoreHud
                 ->m_toyPickupz[IDX(type) - IDX(PICKUP_BABYWALKER) + 10 * m_tileOwnerHi]++;
-        } else if (type >= PICKUP_TIMEDPOWERUP_BEGIN && type <= PICKUP_TIMEDPOWERUP_LAST) {
+        } else if (type >= PICKUP_TIMEDPOWERUP_FIRST && type <= PICKUP_TIMEDPOWERUP_LAST) {
             g_gameReg->m_scoreHud->m_powerupCount++;
             g_gameReg->m_scoreHud
                 ->m_powerupPickupz[IDX(type) - IDX(PICKUP_GHOST) + 7 * m_tileOwnerHi]++;
-        } else if (type >= PICKUP_CURSEZ_BEGIN && type <= PICKUP_CURSEZ_LAST) {
+        } else if (type >= PICKUP_CURSEZ_FIRST && type <= PICKUP_CURSEZ_LAST) {
             g_gameReg->m_scoreHud
                 ->m_miscPickupz[IDX(type) - IDX(PICKUP_RANDOMCOLORZ) + 4 * m_tileOwnerHi]++;
         }
@@ -229,12 +229,12 @@ i32 CGrunt::LoadPickupSprites(
             m_pickupGeoSrc = geo;
             PickupType n = static_cast<PickupType>(play->m_guts->GetActiveValue());
             if (countStats != 0) {
-                if (n >= PICKUP_EQUIPPABLE_BEGIN && n <= PICKUP_EQUIPPABLE_LAST
+                if (n >= PICKUP_EQUIPPABLE_FIRST && n <= PICKUP_EQUIPPABLE_LAST
                     && n != PICKUP_WARPSTONE) {
                     g_gameReg->m_scoreHud->m_toolzCount++;
                     g_gameReg->m_scoreHud
                         ->m_weaponPickupz[IDX(n) - IDX(PICKUP_BOMB) + 22 * m_tileOwnerHi]++;
-                } else if (n >= PICKUP_TOYZ_BEGIN && n <= PICKUP_TOYZ_LAST) {
+                } else if (n >= PICKUP_TOYZ_FIRST && n <= PICKUP_TOYZ_LAST) {
                     g_gameReg->m_scoreHud->m_toyzCount++;
                     g_gameReg->m_scoreHud
                         ->m_toyPickupz[IDX(n) - IDX(PICKUP_BABYWALKER) + 10 * m_tileOwnerHi]++;

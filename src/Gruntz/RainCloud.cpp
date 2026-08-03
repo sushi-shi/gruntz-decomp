@@ -67,18 +67,3 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     m_object->m_area.top = 1;
     m_object->m_area.bottom = 1;
 }
-
-RVA(0x000b4cb0, 0x56)
-i32 CRainCloud::SerializeMove(CFileMemBase* stream, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CPathHazard::SerializeMove(stream, tag, c, d)) {
-        return 0;
-    }
-    if (tag == SERIAL_POSTLOAD) {
-        CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
-        CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-        o->m_drawFillArg = x;
-    }
-    return 1;
-}

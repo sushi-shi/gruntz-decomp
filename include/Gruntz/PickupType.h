@@ -28,7 +28,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
 
     // --- Toolz (0-22): what a Grunt equips; 0 is bare-handed ----------------
     PICKUP_BOMB = 1,
-    PICKUP_EQUIPPABLE_BEGIN = PICKUP_BOMB,
+    PICKUP_EQUIPPABLE_FIRST = PICKUP_BOMB,
     PICKUP_BOOMERANG = 2,
     PICKUP_BRICK = 3,
     PICKUP_CLUB = 4,
@@ -63,9 +63,9 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
 
     // --- Toyz (23-32): give-away distractions -------------------------------
     PICKUP_BABYWALKER = 23,
-    PICKUP_TOYZ_BEGIN = PICKUP_BABYWALKER,
+    PICKUP_TOYZ_FIRST = PICKUP_BABYWALKER,
     // The half-open end of the Toolz band - the same boundary as
-    // PICKUP_TOYZ_BEGIN, seen from below. Retail spells "not equippable" BOTH
+    // PICKUP_TOYZ_FIRST, seen from below. Retail spells "not equippable" BOTH
     // ways, `> 22` and `>= 23`, and those are different instructions, so each
     // site keeps the marker at the value it actually compares against.
     PICKUP_EQUIPPABLE_END = PICKUP_BABYWALKER,
@@ -87,10 +87,10 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     // bottom), so the range starts here - which is also what CGrunt::Place's
     // m_brickPickupType seed uses.
     PICKUP_BROWNBRICK = 0x22,
-    PICKUP_BRICKZ_BEGIN = PICKUP_BROWNBRICK,
+    PICKUP_BRICKZ_FIRST = PICKUP_BROWNBRICK,
     PICKUP_REDBRICK = 0x23,
     // The four COLOURED bricks; brown (0x22) is the plain one and is excluded.
-    PICKUP_COLORBRICK_BEGIN = PICKUP_REDBRICK,
+    PICKUP_COLORBRICK_FIRST = PICKUP_REDBRICK,
     PICKUP_BLUEBRICK = 0x24,
     PICKUP_GOLDBRICK = 0x25,
     PICKUP_BLACKBRICK = 0x26,
@@ -98,7 +98,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
 
     // --- PowerUpz (50-60) ---------------------------------------------------
     PICKUP_MEGAPHONE = 0x32,
-    PICKUP_POWERUPZ_BEGIN = PICKUP_MEGAPHONE,
+    PICKUP_POWERUPZ_FIRST = PICKUP_MEGAPHONE,
     PICKUP_HEALTH1 = 0x33,
     PICKUP_HEALTH2 = 0x34,
     PICKUP_HEALTH3 = 0x35,
@@ -106,7 +106,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     // The seven TIMED powerups. Megaphone (a call) and the three Zap Colas
     // (instant heal) sit below and are excluded, which is why the scoreboard's
     // powerup row is 7 wide: m_powerupPickupz[type - GHOST + 7 * owner].
-    PICKUP_TIMEDPOWERUP_BEGIN = PICKUP_GHOST,
+    PICKUP_TIMEDPOWERUP_FIRST = PICKUP_GHOST,
     PICKUP_SUPERSPEED = 0x37,
     PICKUP_INVULNERABILITY = 0x38,
     PICKUP_CONVERSION = 0x39,
@@ -118,7 +118,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
 
     // --- Cursez (61-64) -----------------------------------------------------
     PICKUP_RANDOMCOLORZ = 0x3d,
-    PICKUP_CURSEZ_BEGIN = PICKUP_RANDOMCOLORZ,
+    PICKUP_CURSEZ_FIRST = PICKUP_RANDOMCOLORZ,
     PICKUP_SCREENSHAKE = 0x3e,
     PICKUP_BLACKSCREEN = 0x3f,
     PICKUP_MINICAM = 0x40,

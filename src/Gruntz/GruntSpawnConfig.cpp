@@ -2,10 +2,13 @@
 
 #include <Gruntz/GruntSpawnConfig.h>
 
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/StreamVoice.h>
+#include <Enums.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
@@ -13,10 +16,8 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Random.h>
-#include <Rez/RezTypeTag.h>
-#include <Mfc.h>
-#include <Enums.h>
 #include <Gruntz/SpawnList.h>
+#include <Rez/RezTypeTag.h>
 
 RVA(0x00085df0, 0x4a)
 CGruntSpawnConfig::~CGruntSpawnConfig() {

@@ -11,7 +11,24 @@ class CFileMemBase;
 
 class CDroppedObjectShadow : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x000c7b40, 0x76)
+    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameObject* d)
+        OVERRIDE {
+        if (!CUserLogic::SerializeMove(ar, mode, c, d)) {
+            return 0;
+        }
+        if (!Chain(ar, mode, c, d)) {
+            return 0;
+        }
+        if (mode == SERIAL_POSTLOAD) {
+            CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
+            CWwdGameObjectA* o = m_object;
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+            o->m_drawFillArg = fill;
+        }
+        return 1;
+    }
     RVA(0x00012620, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECTSHADOW;

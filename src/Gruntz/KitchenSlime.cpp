@@ -251,41 +251,6 @@ i32 CKitchenSlime::Tick() {
     return 0;
 }
 
-RVA(0x000b2ff0, 0x11b)
-i32 CKitchenSlime::SerializeMove(
-    CFileMemBase* stream,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
-) {
-    CFileMemBase* s = stream;
-
-    if (tag != SERIAL_SAVE) {
-        if (tag == SERIAL_LOAD) {
-            s->Read(&m_speed, 8);
-            s->Read(&m_posX, 8);
-            s->Read(&m_posY, 8);
-            s->Read(&m_dirX, 8);
-            s->Read(&m_dirY, 8);
-            s->Read(&m_tilePosition, 8);
-            s->Read(&m_stepMag, 8);
-        }
-    } else {
-        s->Write(&m_speed, 8);
-        s->Write(&m_posX, 8);
-        s->Write(&m_posY, 8);
-        s->Write(&m_dirX, 8);
-        s->Write(&m_dirY, 8);
-        s->Write(&m_tilePosition, 8);
-        s->Write(&m_stepMag, 8);
-    }
-    if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
-        return 0;
-    }
-    return Chain(stream, tag, c, d) != 0;
-}
-
-// @early-stop
 RVA(0x000b3160, 0x35c)
 i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_smarts;

@@ -9,8 +9,30 @@
 
 class CCheckpointTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x0010f9a0, 0x8f)
+    virtual i32
+    SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+        OVERRIDE {
+        CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
+        switch (mode) {
+            case SERIAL_LOAD:
+                sa->Read(m_state, 0x3c);
+                sa->Read(&m_firstEmpty, 4);
+                break;
+            case SERIAL_SAVE:
+                sa->Write(m_state, 0x3c);
+                sa->Write(&m_firstEmpty, 4);
+                break;
+        }
+        if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
+            return 0;
+        }
+        return Chain(sa, mode, typeId, pObj) ? 1 : 0;
+    }
+    RVA(0x00011430, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_CHECKPOINTTRIGGER;
+    }
 
 public:
     CCheckpointTrigger() {}

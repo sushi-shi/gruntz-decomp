@@ -334,35 +334,3 @@ dispatch:
     }
     return 0;
 }
-
-RVA(0x000fc5b0, 0xf5)
-i32 CStaticHazard::SerializeMove(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* pObj
-) {
-    CFileMemBase* arc = ar;
-    switch (mode) {
-        case SERIAL_SAVE:
-            arc->Write(&m_pulseEpoch, 4);
-            arc->Write(&m_activeWindow, 4);
-            arc->Write(&m_idleWindow, 4);
-            arc->Write(&m_fired, 4);
-            arc->Write(&m_tileCol, 4);
-            arc->Write(&m_tileRow, 4);
-            break;
-        case SERIAL_LOAD:
-            arc->Read(&m_pulseEpoch, 4);
-            arc->Read(&m_activeWindow, 4);
-            arc->Read(&m_idleWindow, 4);
-            arc->Read(&m_fired, 4);
-            arc->Read(&m_tileCol, 4);
-            arc->Read(&m_tileRow, 4);
-            break;
-    }
-    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(arc, mode, typeId, pObj) != 0;
-}

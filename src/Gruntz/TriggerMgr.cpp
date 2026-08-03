@@ -2536,7 +2536,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     if (cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
-    if (cell->m_entranceReason >= PICKUP_TOYZ_BEGIN) {
+    if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {
         OverlayTick();
         return 1;
     }

@@ -99,26 +99,3 @@ i32 CGruntToySprite::Update() {
     m_object->m_screenY = e->m_object->m_screenY - 0x20;
     return 0;
 }
-
-RVA(0x0007fa20, 0x89)
-i32 CGruntToySprite::SerializeMove(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* pObj
-) {
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(&m_cell, 8);
-            ar->Write(&m_lastLayer, 4);
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&m_cell, 8);
-            ar->Read(&m_lastLayer, 4);
-            break;
-    }
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    return Chain(ar, mode, typeId, pObj) != 0;
-}

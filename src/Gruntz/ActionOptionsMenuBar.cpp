@@ -132,7 +132,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         m_buttonIcon[0] = PICKUP_NONE;
     } else {
         m_buttonIcon[1] = grunt->m_vehiclePickupType;
-        if (grunt->m_entranceReason >= PICKUP_TOYZ_BEGIN) {
+        if (grunt->m_entranceReason >= PICKUP_TOYZ_FIRST) {
             m_buttonState[1] = 3;
         } else if (m_buttonState[1] == 3) {
             m_buttonState[1] = 1;

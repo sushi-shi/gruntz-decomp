@@ -17,8 +17,12 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/Random.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
@@ -31,10 +35,6 @@
 #include <Wwd/WwdObjMgr.h>
 
 #include <string.h>
-#include <Gruntz/Random.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
 
 DATA(0x002c278c)
 char g_rng2Seeded;

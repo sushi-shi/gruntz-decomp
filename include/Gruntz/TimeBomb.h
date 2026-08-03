@@ -10,7 +10,37 @@
 
 class CTimeBomb : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x000e2080, 0xc1)
+    virtual i32
+    SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+        OVERRIDE {
+        if (g_gameReg->m_world == 0) {
+            return 0;
+        }
+        CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
+        switch (mode) {
+            case SERIAL_LOAD:
+                sa->Read(&m_startTime, 8);
+                sa->Read(&m_duration, 8);
+                break;
+            case SERIAL_SAVE:
+                sa->Write(&m_startTime, 8);
+                sa->Write(&m_duration, 8);
+                break;
+        }
+        switch (mode) {
+            case SERIAL_LOAD:
+                sa->Read(&m_fastPhase, 4);
+                break;
+            case SERIAL_SAVE:
+                sa->Write(&m_fastPhase, 4);
+                break;
+        }
+        if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
+            return 0;
+        }
+        return Chain(sa, mode, typeId, pObj) ? 1 : 0;
+    }
     RVA(0x00012a20, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TIMEBOMB;

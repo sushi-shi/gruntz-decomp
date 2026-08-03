@@ -10,29 +10,8 @@
 
 VTBL(CDoNothingNormal, 0x001e859c);
 VTBL(CDoNothing, 0x001e85f4);
-RVA(0x0000f6d0, 0x47)
-i32 CDoNothing::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
-}
-
 RVA_COMPGEN(0x0000f740, 0x1e, ??_GCDoNothing@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f770, 0x44, ??1CDoNothing@@UAE@XZ)
-
-RVA(0x0000f800, 0x47)
-i32 CDoNothingNormal::SerializeMove(
-    CFileMemBase* ar,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
-) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
-}
 
 RVA_COMPGEN(0x0000f870, 0x1e, ??_GCDoNothingNormal@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f8a0, 0x44, ??1CDoNothingNormal@@UAE@XZ)

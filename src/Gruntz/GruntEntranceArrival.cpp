@@ -188,7 +188,7 @@ i32 CGrunt::UpdateGruntStatus() {
 // @early-stop
 RVA(0x00061940, 0x200)
 i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
-    if (m_entranceReason >= PICKUP_TOYZ_BEGIN) {
+    if (m_entranceReason >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
 
@@ -1485,14 +1485,14 @@ i32 CGrunt::StepCombatReaction(
             ResetEntranceAnimation(1, 0, 0);
         }
         PickupType mode = m_entrancePickup;
-        if (mode >= PICKUP_POWERUPZ_BEGIN) {
+        if (mode >= PICKUP_POWERUPZ_FIRST) {
             LoadGruntTypeTable(mode, 1, 0, 1);
             m_entrancePickup = PICKUP_INVALID;
             m_helpCueId = 0;
-        } else if (mode >= PICKUP_BRICKZ_BEGIN) {
+        } else if (mode >= PICKUP_BRICKZ_FIRST) {
             m_brickPickupType = mode;
             m_entrancePickup = PICKUP_INVALID;
-        } else if (mode >= PICKUP_TOYZ_BEGIN) {
+        } else if (mode >= PICKUP_TOYZ_FIRST) {
             LoadVehicleGruntSprites(mode);
         } else {
             LoadGruntTypeTable(mode, 1, 0, 1);

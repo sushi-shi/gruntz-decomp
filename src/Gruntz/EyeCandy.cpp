@@ -6,14 +6,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
 
-RVA(0x0000fcc0, 0x47)
-i32 CEyeCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
-}
-
 RVA_COMPGEN(0x0000fd30, 0x1e, ??_GCEyeCandy@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fd60, 0x44, ??1CEyeCandy@@UAE@XZ)
 

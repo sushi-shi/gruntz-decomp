@@ -81,25 +81,3 @@ i32 CGruntSelectedSprite::Update() {
     }
     return 0;
 }
-
-RVA(0x0007ea70, 0x6f)
-i32 CGruntSelectedSprite::SerializeMove(
-    CFileMemBase* arc,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* pObj
-) {
-    CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-
-    if (mode != SERIAL_SAVE) {
-        if (mode == SERIAL_LOAD) {
-            sa->Read(&m_cell, 8);
-        }
-    } else {
-        sa->Write(&m_cell, 8);
-    }
-    if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(sa, mode, typeId, pObj) ? 1 : 0;
-}

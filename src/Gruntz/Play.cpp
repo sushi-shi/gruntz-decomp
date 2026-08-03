@@ -30,6 +30,7 @@
 #include <Gruntz/CBrickz.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CheatMgr.h>
+#include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
@@ -45,6 +46,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/ImageSets.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
@@ -52,7 +54,9 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/SBI_Image.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
@@ -61,6 +65,7 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/String.h>
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -78,18 +83,13 @@
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/EngStr.h>
+#include <Wap32/Object.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
-#include <Gruntz/CurPlayer.h>
-#include <Wap32/Object.h>
-#include <Gruntz/PlayPlaneScan.h>
-#include <Gruntz/ImageSets.h>
-#include <Gruntz/SBI_Image.h>
-#include <Gruntz/TileTriggerLogic.h>
 
 inline void* operator new(u32, void* p) {
     return p;
@@ -113,7 +113,7 @@ GZ_ENUM_END(PlayViewMode)
 
 GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_POINTER = 0,
-    CURSOR_CHIP_BEGIN = 1,
+    CURSOR_CHIP_FIRST = 1,
     CURSOR_CHIP_LAST = 0x26,
     CURSOR_FLAILINGGRUNT = 0x66,
     CURSOR_TOOL_HANDZ = 0xc8,
@@ -5050,7 +5050,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     if (this->m_levelId == frame && flag == this->m_dragEndNotify) {
         return 1;
     }
-    if (cursor >= CURSOR_CHIP_BEGIN && cursor <= CURSOR_CHIP_LAST) {
+    if (cursor >= CURSOR_CHIP_FIRST && cursor <= CURSOR_CHIP_LAST) {
         if (this->BeginGridWalk("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
             return 0;
         }

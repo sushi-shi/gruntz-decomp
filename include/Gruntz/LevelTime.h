@@ -9,7 +9,15 @@
 
 class CLevelTime : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x000119b0, 0x47)
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+        OVERRIDE {
+        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+            return 0;
+        }
+        return Chain(ar, mode, typeId, pObj) != 0;
+    }
     RVA(0x00011990, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_LEVELTIME;

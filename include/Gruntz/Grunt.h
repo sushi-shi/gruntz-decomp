@@ -191,9 +191,55 @@ GZ_ENUM_END(GruntItemPose)
 class CGrunt : public CMovingLogic, public CWapX {
 public:
     virtual ~CGrunt() OVERRIDE;
+    RVA(0x00053b80, 0x340)
     virtual i32
     SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE;
+        OVERRIDE {
+        if (ar == 0) {
+            return 0;
+        }
+
+        if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
+            return 0;
+        }
+
+        if (CWapX::Chain(ar, mode, typeId, pObj) == 0) {
+            return 0;
+        }
+        switch (mode) {
+            case SERIAL_SAVE:
+
+                if (Save(ar) == 0) {
+                    return 0;
+                }
+                break;
+            case SERIAL_LOAD:
+
+                if (LoadStateRecord(ar) == 0) {
+                    return 0;
+                }
+                break;
+            case SERIAL_POSTLOAD:
+                m_tileMgr = g_gameReg->m_cmdGrid;
+                break;
+        }
+        m_entranceCell.Serialize(ar, mode, typeId, pObj);
+        SerRecord(ar, mode, &m_toyClock);
+        SerRecord(ar, mode, &m_idleAnchor);
+        SerRecord(ar, mode, &m_idleTimer);
+        SerRecord(ar, mode, &m_entranceClockLo);
+        SerRecord(ar, mode, &m_flashClockLo);
+        SerRecord(ar, mode, &m_attackClockLo);
+        SerRecord(ar, mode, &m_combatClockLo);
+        SerRecord(ar, mode, &m_hudRetireClockLo);
+        m_wingzTiming.Serialize(ar, mode, typeId, pObj);
+        m_conversionTiming.Serialize(ar, mode, typeId, pObj);
+        m_shimmerTiming.Serialize(ar, mode, typeId, pObj);
+        m_arrivalVoiceTiming.Serialize(ar, mode, typeId, pObj);
+        m_arrivalRerollTiming.Serialize(ar, mode, typeId, pObj);
+        m_holdTiming.Serialize(ar, mode, typeId, pObj);
+        return 1;
+    }
     RVA(0x0000f2a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNT;

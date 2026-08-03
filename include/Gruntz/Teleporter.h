@@ -33,7 +33,39 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TELEPORTER;
     }
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x00041350, 0xee)
+    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d)
+        OVERRIDE {
+        if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
+            return 0;
+        }
+        if (!Chain(ar, tag, c, d)) {
+            return 0;
+        }
+        if (tag != SERIAL_SAVE) {
+            if (tag == SERIAL_LOAD) {
+                ar->Read(&m_armClock, 8);
+                ar->Read(&m_interval, 8);
+            }
+        } else {
+            ar->Write(&m_armClock, 8);
+            ar->Write(&m_interval, 8);
+        }
+        switch (tag) {
+            case SERIAL_SAVE:
+                ar->Write(&m_armed, 4);
+                ar->Write(&m_tickHandled, 4);
+                break;
+            case SERIAL_LOAD:
+                ar->Read(&m_armed, 4);
+                ar->Read(&m_tickHandled, 4);
+                break;
+            case SERIAL_POSTLOAD:
+                LoadColors();
+                break;
+        }
+        return 1;
+    }
 
     i32 m_armed;
 

@@ -87,38 +87,3 @@ i32 CBoomerang::LoadProjectileSprites(
     m_launched = 0;
     return 1;
 }
-
-RVA(0x000e15d0, 0x155)
-i32 CBoomerang::SerializeMove(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* pObj
-) {
-    if (g_gameReg->m_world == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case SERIAL_LOAD:
-            ar->Read(&m_launchX, 4);
-            ar->Read(&m_launchY, 4);
-            ar->Read(&m_dirX, 8);
-            ar->Read(&m_dirY, 8);
-            ar->Read(&m_originX, 8);
-            ar->Read(&m_originY, 8);
-            ar->Read(&m_phase, 8);
-            ar->Read(&m_launched, 4);
-            break;
-        case SERIAL_SAVE:
-            ar->Write(&m_launchX, 4);
-            ar->Write(&m_launchY, 4);
-            ar->Write(&m_dirX, 8);
-            ar->Write(&m_dirY, 8);
-            ar->Write(&m_originX, 8);
-            ar->Write(&m_originY, 8);
-            ar->Write(&m_phase, 8);
-            ar->Write(&m_launched, 4);
-            break;
-    }
-    return CProjectile::SerializeMove(ar, mode, typeId, pObj) ? 1 : 0;
-}

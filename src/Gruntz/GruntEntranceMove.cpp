@@ -223,15 +223,15 @@ i32 CGrunt::RunEntranceMove() {
     if (mode == PICKUP_INVALID) {
         return 0;
     }
-    if (mode >= PICKUP_POWERUPZ_BEGIN) {
+    if (mode >= PICKUP_POWERUPZ_FIRST) {
         return LoadVehicleGruntSprites(mode);
     }
-    if (mode >= PICKUP_BRICKZ_BEGIN) {
+    if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
         m_entrancePickup = PICKUP_INVALID;
         return 1;
     }
-    if (mode >= PICKUP_TOYZ_BEGIN) {
+    if (mode >= PICKUP_TOYZ_FIRST) {
         LoadVehicleGruntSprites(mode);
         return 0;
     }
@@ -923,18 +923,18 @@ idleReseed:
 
 modeDispatch: {
     PickupType mode = m_entrancePickup;
-    if (mode >= PICKUP_POWERUPZ_BEGIN) {
+    if (mode >= PICKUP_POWERUPZ_FIRST) {
         LoadGruntTypeTable(mode, 1, 0, 1);
         m_entrancePickup = PICKUP_INVALID;
         m_helpCueId = 0;
         goto finalize;
     }
-    if (mode >= PICKUP_BRICKZ_BEGIN) {
+    if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
         m_entrancePickup = PICKUP_INVALID;
         goto finalize;
     }
-    if (mode >= PICKUP_TOYZ_BEGIN) {
+    if (mode >= PICKUP_TOYZ_FIRST) {
         LoadVehicleGruntSprites(mode);
         goto finalize;
     }
@@ -1466,18 +1466,18 @@ idleReseed:
 
 modeDispatch: {
     PickupType mode = m_entrancePickup;
-    if (mode >= PICKUP_POWERUPZ_BEGIN) {
+    if (mode >= PICKUP_POWERUPZ_FIRST) {
         LoadGruntTypeTable(mode, 1, 0, 1);
         m_entrancePickup = PICKUP_INVALID;
         m_helpCueId = 0;
         return 1;
     }
-    if (mode >= PICKUP_BRICKZ_BEGIN) {
+    if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
         m_entrancePickup = PICKUP_INVALID;
         return 1;
     }
-    if (mode >= PICKUP_TOYZ_BEGIN) {
+    if (mode >= PICKUP_TOYZ_FIRST) {
         LoadVehicleGruntSprites(mode);
         return 1;
     }

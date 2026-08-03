@@ -12,7 +12,25 @@
 class CGruntToySprite : public CUserLogic, public CWapX {
 public:
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x0007fa20, 0x89)
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+        OVERRIDE {
+        switch (mode) {
+            case SERIAL_SAVE:
+                ar->Write(&m_cell, 8);
+                ar->Write(&m_lastLayer, 4);
+                break;
+            case SERIAL_LOAD:
+                ar->Read(&m_cell, 8);
+                ar->Read(&m_lastLayer, 4);
+                break;
+        }
+        if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
+            return 0;
+        }
+        return Chain(ar, mode, typeId, pObj) != 0;
+    }
     RVA(0x00012260, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTTOYSPRITE;

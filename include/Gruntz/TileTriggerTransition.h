@@ -11,13 +11,24 @@
 
 class CTileTriggerTransition : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x00011750, 0x47)
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+        OVERRIDE {
+        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+            return 0;
+        }
+        return Chain(ar, mode, typeId, pObj) != 0;
+    }
 
 public:
     CTileTriggerTransition() {}
     CTileTriggerTransition(CGameObject* obj);
 
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x00011730, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_TILETRIGGERTRANSITION;
+    }
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
     i32 ApplyAnimation(char* sprite, char* geom);
