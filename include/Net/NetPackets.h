@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Net/NetMsgId.h>
 
 struct CNetConfigBlob {
     u8 m_flags;
@@ -22,7 +23,7 @@ SIZE(0x11c);
 struct CNetMsg {
     u8 m_flags;
     char m_pad1[3];
-    i32 m_msgId;
+    NetMsgId m_msgId;
     i32 m_value;
     char m_payload[4];
 };

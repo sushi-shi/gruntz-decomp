@@ -104,6 +104,7 @@ include/Gruntz/ChatBox.h	pending
 include/Gruntz/ChatBoxOwner.h	pending	
 include/Gruntz/CheatMgr.h	pending	
 include/Gruntz/CheckpointTrigger.h	pending	
+include/Gruntz/ColorTint.h	pending	
 include/Gruntz/CoordNode.h	pending	
 include/Gruntz/CreditsState.h	pending	
 include/Gruntz/CurPlayer.h	pending	
@@ -371,6 +372,7 @@ include/Net/NetGuids.h	pending
 include/Net/NetLobby.h	pending	
 include/Net/NetMgr.h	pending	
 include/Net/NetMgrReportError.h	pending	
+include/Net/NetMsgId.h	pending	
 include/Net/NetPackets.h	pending	
 include/Net/NetSession.h	pending	
 include/Net/StringStaticPool.h	pending	

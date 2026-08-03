@@ -848,7 +848,7 @@ void CMultiStartDlg::OnOK() {
     if (mgr->m_isHost == 0) {
         return;
     }
-    mgr->SendStatFlag(0x3fc, 1);
+    mgr->SendStatFlag(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
     i32 token;
     if (g_multiState->m_customLevel != 0) {
         CString b = mgr->GetConfigNameB();

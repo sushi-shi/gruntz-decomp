@@ -11,6 +11,7 @@
 #include <Gruntz/ObList.h>
 #include <Gruntz/String.h>
 #include <Ints.h>
+#include <Net/NetMsgId.h>
 #include <Rez/RezMgr.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/Object.h>
@@ -618,7 +619,7 @@ public:
     i32 SaveConfig(CNetSessionNode* recipient);
 
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
-    void SendStatFlag(i32 id, i32 flag);
+    void SendStatFlag(NetMsgId id, i32 flag);
     void SendNetStat(i32 id, u32 value, i32 flag);
     i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);
     i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);
@@ -627,7 +628,7 @@ public:
 
     i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
     i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c);
-    i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);
+    i32 SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag);
 
     i32 PollSessionGated(i32 a1, i32 a2);
 

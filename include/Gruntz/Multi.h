@@ -9,6 +9,7 @@
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
+#include <Net/NetMsgId.h>
 
 class CGameApp;
 class CTileTriggerContainer;
@@ -139,7 +140,7 @@ public:
         i32 unused8
     );
 
-    void SendStatFlag(i32 code, i32 flag);
+    void SendStatFlag(NetMsgId code, i32 flag);
 
     void SendNetStat(i32 id, u32 value, i32 flag);
 
@@ -181,7 +182,7 @@ public:
     i32 SendStat3(i32 id, u32 value, i32 flag);
     i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
     i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c);
-    i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);
+    i32 SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag);
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused);
     i32 OnPlayerLeft(i32 playerId);
