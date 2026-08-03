@@ -14,6 +14,7 @@
 #include <Gruntz/FxModeT1.h>
 #include <Ints.h>
 #include <Utils/RecordFill.h>
+#include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
 #include <math.h>
@@ -118,8 +119,8 @@ CFxModeT2::CFxModeT2() {
     m_sourceSurface = NULL;
     m_clearMode = 1;
     m_spanCount = 0;
-    m_centerX = 0x140;
-    m_centerY = 0xf0;
+    m_centerX = SCREEN_HALF_W_PX;
+    m_centerY = SCREEN_HALF_H_PX;
     m_shadeTable = NULL;
 }
 

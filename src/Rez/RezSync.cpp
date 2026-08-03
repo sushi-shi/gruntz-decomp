@@ -51,6 +51,7 @@
 #include <strstrea.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/GameApp.h>
+#include <Wap32/ScreenGeometry.h>
 #include <Wap32/Wap32.h>
 
 #include <stdlib.h>
@@ -128,8 +129,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(CMD_TOGGLE_MUSIC), 0x406);
         return 0;
     }
-    m_savedModeW = 0x280;
-    m_savedModeH = 0x1e0;
+    m_savedModeW = SCREEN_W_PX;
+    m_savedModeH = SCREEN_H_PX;
     m_numRuns = m_settings->GetValueDword("Num Runs", 0);
     m_numMovies = m_settings->GetValueDword("Num Movies", 0);
     g_disableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
@@ -176,8 +177,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_savedModeW = 0x320;
         m_savedModeH = 0x258;
     } else {
-        m_savedModeW = 0x280;
-        m_savedModeH = 0x1e0;
+        m_savedModeW = SCREEN_W_PX;
+        m_savedModeH = SCREEN_H_PX;
     }
     i32 vMusVol = m_settings->GetValueDword("Music Volume", 0x64);
     i32 vSndVol = m_settings->GetValueDword("Sound Volume", 0x3c);
@@ -267,7 +268,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         flags |= 0x10;
     }
     m_colorDepth = 0x10;
-    if (!world->Init(m_gameWnd->m_hwnd, 0x280, 0x1e0, 0x10, flags)) {
+    if (!world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, 0x10, flags)) {
         ReportWorldStatus(0x407);
         return 0;
     }
@@ -277,8 +278,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         rect.top = 0;
         rect.right = 0x1df;
         rect.bottom = 0x1df;
-        m_modeW = 0x280;
-        m_modeH = 0x1e0;
+        m_modeW = SCREEN_W_PX;
+        m_modeH = SCREEN_H_PX;
         world->m_level->BuildAllPlanes(&rect);
     }
     world->SetRestoreHandler(&PumpIdleFrame);

@@ -71,9 +71,12 @@ BARE_ENUM = re.compile(r"^[ \t]*(?:typedef[ \t]+)?enum[ \t]+(\w+)[ \t]*\{(?P<bod
 # `[<>]` that is half of `<<`/`>>` matched all 645 of them before this.
 RANGE_TEST = re.compile(r"(?<![<>])([<>]=?)(?![<>])[ \t]*([A-Z][A-Z0-9_]{2,})\b")
 # names a range test may legitimately target: a band/count marker, or a sentinel
-# (comparing against _NONE/_INVALID/_UNSET is what a sentinel is for), or a grid
-# extent, which is a dimension rather than a member of the domain.
-MARKER_OK = re.compile(r"(_FIRST|_LAST|_BEGIN|_END|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS)$")
+# (comparing against _NONE/_INVALID/_UNSET is what a sentinel is for), or an
+# EXTENT - a grid dimension (_COLS/_ROWS) or a pixel dimension (_PX). An extent
+# is not a member of a value set, it is the size of one, so `x > SCREEN_W_PX`
+# ("off the right edge") is the extent being used for the only thing it is for.
+MARKER_OK = re.compile(
+    r"(_FIRST|_LAST|_BEGIN|_END|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS|_PX)$")
 
 
 def is_tag_type(body: str) -> bool:

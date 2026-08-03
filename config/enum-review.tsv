@@ -434,6 +434,7 @@ include/Wap32/EngStr.h	pending
 include/Wap32/GameApp.h	pending	
 include/Wap32/Object.h	pending	
 include/Wap32/Rect.h	pending	
+include/Wap32/ScreenGeometry.h	pending	
 include/Wap32/TileGeometry.h	pending	
 include/Wap32/Wap32.h	pending	
 include/Wap32/WapObj.h	pending	

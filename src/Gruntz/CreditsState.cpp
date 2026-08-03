@@ -38,6 +38,7 @@
 #include <Rez/RezMgr.h>
 #include <Rez/RezTypeTag.h>
 #include <Wap32/EngStr.h>
+#include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -364,7 +365,7 @@ i32 CCreditsState::DrawScrollingCredits() {
         SetTextColor(hdc, oldColor);
         if (m_fxEnabled != 0 && m_fadeCountdown != 0) {
             CString s("Now is the time at Monolith when we dance");
-            RECT r = {0, 0, 0x280, 0x1e0};
+            RECT r = {0, 0, SCREEN_W_PX, SCREEN_H_PX};
             i32 oldColor2 = SetTextColor(hdc, 0xffffff);
             DrawTextA(hdc, s, -1, &r, 0x75);
             SetTextColor(hdc, oldColor2);
@@ -399,13 +400,13 @@ i32 CCreditsState::SetupTitle() {
         sect->EndParse();
         operator delete(buf);
     }
-    m_clipRegion.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
+    m_clipRegion.Attach(CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX));
     CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
     HDC hdc = 0;
     prov->m_ddSurface->GetDC(&hdc);
     if (hdc) {
         i32 h = DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x450);
-        SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
+        SetRect(&m_scrollRect, 0x32, SCREEN_H_PX, 0x24e, h + SCREEN_H_PX);
         prov->m_ddSurface->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;

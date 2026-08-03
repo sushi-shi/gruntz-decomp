@@ -87,6 +87,7 @@
 #include <Utils/RegistryHelper.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/Object.h>
+#include <Wap32/ScreenGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <ddraw.h>
@@ -459,14 +460,14 @@ RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(i32 save) {
     i32 w = m_modeW;
     i32 h = m_modeH;
-    if (w == 0x280 && h == 0x1e0) {
+    if (w == SCREEN_W_PX && h == SCREEN_H_PX) {
         if (save) {
             m_savedModeW = w;
             m_savedModeH = h;
         }
         return 1;
     }
-    if (SetVideoMode(0x280, 0x1e0, save)) {
+    if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, save)) {
         return 1;
     }
     ReportError(IDX(CMD_QUIT), 0x438);
@@ -490,7 +491,7 @@ i32 CGruntzMgr::HandleDebugPosition() {
 
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
-    if (m_modeW == 0x280 && m_modeH == 0x1e0) {
+    if (m_modeW == SCREEN_W_PX && m_modeH == SCREEN_H_PX) {
         return 1;
     }
     return 0;
@@ -1587,7 +1588,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
 
     m_world->Cleanup();
     i32 kind = (g_disableAudio == 0) ? 1 : 5;
-    if (m_world->Init(m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind) == 0) {
+    if (m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, m_colorDepth, kind) == 0) {
         ReportWorldStatus(0x43f);
         return 0;
     }
@@ -3066,7 +3067,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
     if (SetVideoMode(x, y, 1)) {
         return 1;
     }
-    if (SetVideoMode(0x280, 0x1e0, 1)) {
+    if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, 1)) {
         return 1;
     }
     ReportError(IDX(CMD_QUIT), 0x439);
@@ -3082,13 +3083,13 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
     pt = m_world->m_ptrColl->FindBack(m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
-    if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {
+    if (x == -1 || y == -1 || x < SCREEN_HALF_W_PX || y < 0xc8) {
         return 1;
     }
     if (SetVideoMode(x, y, 1)) {
         return 1;
     }
-    if (SetVideoMode(0x280, 0x1e0, 1)) {
+    if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, 1)) {
         return 1;
     }
     ReportError(IDX(CMD_QUIT), 0x43a);

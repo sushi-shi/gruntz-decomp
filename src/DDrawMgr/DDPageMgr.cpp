@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/ScreenGeometry.h>
 
 // @early-stop
 RVA(0x0017c040, 0x25d)
@@ -37,8 +38,8 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (mode != NULL) {
         info = *mode;
     } else {
-        info.width = 0x280;
-        info.height = 0x1e0;
+        info.width = SCREEN_W_PX;
+        info.height = SCREEN_H_PX;
         info.bpp = 8;
     }
 

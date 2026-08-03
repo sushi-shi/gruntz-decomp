@@ -59,6 +59,7 @@
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegistryHelper.h>
+#include <Wap32/ScreenGeometry.h>
 
 #include <math.h>
 #include <new>
@@ -94,7 +95,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_position = STATUSBAR_DOCK_RIGHT;
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
-    SetRect(&m_rect10, vx - 0xa0, 0, vx, 0x1e0);
+    SetRect(&m_rect10, vx - 0xa0, 0, vx, SCREEN_H_PX);
     m_redrawFrames = 0;
     m_barX = vx - 0x45;
     m_barY = vy - 0x30;
@@ -202,7 +203,7 @@ RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::RefreshA() {
     if (m_hlBusy == 0 && m_position != STATUSBAR_DOCK_LEFT) {
         ResetWidgets(1);
-        SetRect(&m_rect10, 0, 0, 0xa0, 0x1e0);
+        SetRect(&m_rect10, 0, 0, 0xa0, SCREEN_H_PX);
         SetState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
@@ -227,7 +228,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     i32 w = g_gameReg->m_modeW;
     volatile POINT pt;
     pt.y = g_gameReg->m_modeH;
-    SetRect(&m_rect10, w - 0xa0, 0, w, 0x1e0);
+    SetRect(&m_rect10, w - 0xa0, 0, w, SCREEN_H_PX);
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
@@ -270,7 +271,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
         if (m_redrawFrames > 0) {
             m_redrawFrames--;
             i32 v = m_barFrameGate;
-            if (v > 0x1e0) {
+            if (v > SCREEN_H_PX) {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
 
                 RECT below;

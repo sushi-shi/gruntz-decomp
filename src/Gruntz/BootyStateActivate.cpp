@@ -46,6 +46,7 @@
 #include <Ints.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
 #include <math.h>
@@ -210,9 +211,9 @@ i32 CBootyState::ShowSecretBonusMessage() {
             return 0;
         }
         RECT r1, r2, r3;
-        SetRect(&r1, 0, -15, 0x280, 0x1d1);
-        SetRect(&r2, 0, 0x19, 0x280, 0x1f9);
-        SetRect(&r3, 0, 0x38, 0x280, 0x78);
+        SetRect(&r1, 0, -15, SCREEN_W_PX, 0x1d1);
+        SetRect(&r2, 0, 0x19, SCREEN_W_PX, 0x1f9);
+        SetRect(&r3, 0, 0x38, SCREEN_W_PX, 0x78);
         s.Format("The Secret of Secretz:");
         ShowHudMessage(m_world, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
 
@@ -235,33 +236,33 @@ i32 CBootyState::ShowSecretBonusMessage() {
     }
     CString title;
     RECT rTitle;
-    SetRect(&rTitle, 0, 0x38, 0x280, 0x78);
+    SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
     title.Format("Secret Bonus Acquired:");
     ShowHudMessage(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
     for (i32 j = 0; j < category; j++) {
         RECT rA, rB;
         if (category == 1) {
-            SetRect(&rA, 0, -15, 0x280, 0x1d1);
-            SetRect(&rB, 0, 0x19, 0x280, 0x1f9);
+            SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
+            SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
         } else if (category == 2) {
             if (j == 0) {
-                SetRect(&rA, 0, -20, 0x280, 0x1cc);
-                SetRect(&rB, 0, 0x14, 0x280, 0x1f4);
+                SetRect(&rA, 0, -20, SCREEN_W_PX, 0x1cc);
+                SetRect(&rB, 0, 0x14, SCREEN_W_PX, 0x1f4);
             } else {
-                SetRect(&rA, 0, 0x46, 0x280, 0x226);
-                SetRect(&rB, 0, 0x6e, 0x280, 0x24e);
+                SetRect(&rA, 0, 0x46, SCREEN_W_PX, 0x226);
+                SetRect(&rB, 0, 0x6e, SCREEN_W_PX, 0x24e);
             }
         } else {
             if (j == 0) {
-                SetRect(&rA, 0, -60, 0x280, 0x1a4);
-                SetRect(&rB, 0, -20, 0x280, 0x1cc);
+                SetRect(&rA, 0, -60, SCREEN_W_PX, 0x1a4);
+                SetRect(&rB, 0, -20, SCREEN_W_PX, 0x1cc);
             } else if (j == 1) {
-                SetRect(&rA, 0, 0x1e, 0x280, 0x1fe);
-                SetRect(&rB, 0, 0x46, 0x280, 0x226);
+                SetRect(&rA, 0, 0x1e, SCREEN_W_PX, 0x1fe);
+                SetRect(&rB, 0, 0x46, SCREEN_W_PX, 0x226);
             } else {
-                SetRect(&rA, 0, 0x78, 0x280, 0x24e);
-                SetRect(&rB, 0, 0xa0, 0x280, 0x276);
+                SetRect(&rA, 0, 0x78, SCREEN_W_PX, 0x24e);
+                SetRect(&rB, 0, 0xa0, SCREEN_W_PX, 0x276);
             }
         }
         i32 idx = rowBase * 3 + j;
@@ -461,7 +462,7 @@ void CBootyState::MoveLettersByDir() {
         CGameObject* e = *p;
         i32 x = e->m_screenX;
         i32 y = e->m_screenY;
-        if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
+        if (x < 0 || x > SCREEN_W_PX || y < 0 || y > SCREEN_H_PX) {
             e->m_stateFlags |= 1;
         } else {
             // The same eight-direction ring as the dir-name switch above, but
@@ -715,7 +716,7 @@ i32 CBootyState::Render() {
                     } else {
                         s = "You are closer to achieving mastery! Keep training!";
                     }
-                    SetRect(&rc, 0x194, 0xaa, 0x263, 0x1e0);
+                    SetRect(&rc, 0x194, 0xaa, 0x263, SCREEN_H_PX);
                 } else {
                     if (hud->m_allDone != 0) {
                         if (hud->GroupAllScored()) {
@@ -730,7 +731,7 @@ i32 CBootyState::Render() {
                     } else {
                         s = "Collect all four WARP letterz to receive secret bonus!";
                     }
-                    SetRect(&rc, 0x194, 0xe6, 0x263, 0x1e0);
+                    SetRect(&rc, 0x194, 0xe6, 0x263, SCREEN_H_PX);
                 }
                 m_secretGate = 1;
                 ShowHudMessage(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
@@ -833,7 +834,7 @@ void CBootyState::ShowLevelCompleteMessage() {
             } else {
                 s = "You are closer to achieving masterz status!";
             }
-            SetRect(&r, 0x194, 0xaa, 0x263, 0x1e0);
+            SetRect(&r, 0x194, 0xaa, 0x263, SCREEN_H_PX);
         } else {
             if (rec->m_allDone != 0) {
                 if ((rec)->GroupAllScored()) {
@@ -848,7 +849,7 @@ void CBootyState::ShowLevelCompleteMessage() {
                     s = "Collect all four WARP letterz to reach the checkpoint!";
                 }
             }
-            SetRect(&r, 0x194, 0xe6, 0x263, 0x1e0);
+            SetRect(&r, 0x194, 0xe6, 0x263, SCREEN_H_PX);
         }
         ShowHudMessage(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
@@ -1593,7 +1594,7 @@ void CMultiBootyState::DrawBattleStats() {
     s.Format("BATTLE STATZ");
     rc.left = 0x96;
     rc.top = 0xf;
-    rc.right = 0x280;
+    rc.right = SCREEN_W_PX;
     rc.bottom = 0x73;
     ShowHudMessage(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }

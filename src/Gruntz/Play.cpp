@@ -98,6 +98,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/EngStr.h>
 #include <Wap32/Object.h>
+#include <Wap32/ScreenGeometry.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -1231,8 +1232,8 @@ okContinue:
         RECT rect;
         rect.left = 0;
         rect.top = 0;
-        rect.right = 0x280;
-        rect.bottom = 0x1e0;
+        rect.right = SCREEN_W_PX;
+        rect.bottom = SCREEN_H_PX;
         if (scr.LoadString(0x8128)) {
             EngStr_DrawText(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
         }
@@ -3626,10 +3627,10 @@ i32 CPlay::DrawLevelInfoText() {
     RECT r2;
     RECT r3;
     RECT r4;
-    SetRect(&r1, 0, 0, 0x280, 0x38);
-    SetRect(&r2, 0, 0x2b, 0x280, 0x59);
-    SetRect(&r3, 0, 0x176, 0x280, 0x1a2);
-    SetRect(&r4, 0, 0x1b8, 0x280, 0x1e0);
+    SetRect(&r1, 0, 0, SCREEN_W_PX, 0x38);
+    SetRect(&r2, 0, 0x2b, SCREEN_W_PX, 0x59);
+    SetRect(&r3, 0, 0x176, SCREEN_W_PX, 0x1a2);
+    SetRect(&r4, 0, 0x1b8, SCREEN_W_PX, SCREEN_H_PX);
     EngStr_DrawText(m_world, &s0, &r1, 0x78, 0, 0, 0, 0, 1);
     EngStr_DrawText(m_world, &s1, &r2, 0x6e, 0, 0, 0, 0, 1);
     EngStr_DrawText(m_world, &s2, &r3, 0x6e, 0, 0, 0, 0, 1);
@@ -4394,7 +4395,14 @@ i32 CPlay::BuildHelpReveal(i32 final) {
         return 0;
     }
     if (m_revealFrame == 1) {
-        LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapStart), 0x140, 0x1a6, 1, 0);
+        LayerBlitFrame(
+            m_world,
+            static_cast<CImage*>(m_revealCapStart),
+            SCREEN_HALF_W_PX,
+            0x1a6,
+            1,
+            0
+        );
         LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), 0xe0, 0x1a6, 1, 0);
     }
 

@@ -17,6 +17,7 @@
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Rez/RezSync.h>
+#include <Wap32/ScreenGeometry.h>
 
 #include <afxcmn.h>
 #include <string.h>
@@ -122,8 +123,8 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                         w = 0x320;
                         h = 0x258;
                     } else {
-                        w = 0x280;
-                        h = 0x1e0;
+                        w = SCREEN_W_PX;
+                        h = SCREEN_H_PX;
                     }
                     CGruntzMgr* reg = g_gameReg;
                     reg->m_savedModeW = w;

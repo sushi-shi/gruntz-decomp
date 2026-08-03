@@ -18,6 +18,7 @@
 #include <Image/RezDecodeKind.h>
 #include <Io/GameSave.h>
 #include <Utils/RegistryHelper.h>
+#include <Wap32/ScreenGeometry.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,13 +84,13 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             i32 h = wr.bottom - wr.top - 1;
             i32 dx = pt.x;
             i32 dy = pt.y;
-            if (w >= 0x140) {
-                dx += (w - 0x140) / 2;
-                w = 0x140;
+            if (w >= SCREEN_HALF_W_PX) {
+                dx += (w - SCREEN_HALF_W_PX) / 2;
+                w = SCREEN_HALF_W_PX;
             }
-            if (h >= 0xf0) {
-                dy += (h - 0xf0) / 2;
-                h = 0xf0;
+            if (h >= SCREEN_HALF_H_PX) {
+                dy += (h - SCREEN_HALF_H_PX) / 2;
+                h = SCREEN_HALF_H_PX;
             }
             PAINTSTRUCT ps;
             BeginPaint(hDlg, &ps);
@@ -632,7 +633,14 @@ i32 CSaveGame::Save(char* path, i32 msgId) {
         if (!SaveGame(g_gameReg, path)) {
             return 0;
         }
-        if (!ChainForward(g_gameReg->m_settings, g_gameReg, 0x140, 0xf0, path, 1)) {
+        if (!ChainForward(
+                g_gameReg->m_settings,
+                g_gameReg,
+                SCREEN_HALF_W_PX,
+                SCREEN_HALF_H_PX,
+                path,
+                1
+            )) {
             return 0;
         }
     }

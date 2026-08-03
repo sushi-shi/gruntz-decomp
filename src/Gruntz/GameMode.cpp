@@ -47,6 +47,7 @@ i32 g_levelMsgIconPos[16] = {
 #include <Mfc.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/GruntDirection.h>
+#include <Wap32/ScreenGeometry.h>
 RVA(0x00019cd0, 0x200)
 void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
@@ -55,7 +56,7 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     switch (sel) {
         case DIR_NORTH:
             *outX = g_gameReg->Rand() % 0x281;
-            *outY = 0x1e0;
+            *outY = SCREEN_H_PX;
             return;
         case DIR_SOUTH:
             *outX = g_gameReg->Rand() % 0x281;
@@ -65,7 +66,7 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
             *outX = 0;
             goto y_1e1;
         case DIR_WEST:
-            *outX = 0x280;
+            *outX = SCREEN_W_PX;
             goto y_1e1;
         y_1e1:
             *outY = g_gameReg->Rand() % 0x1e1;
@@ -76,22 +77,22 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
                 goto y_f1;
             }
             *outX = g_gameReg->Rand() % 0x141;
-            *outY = 0x1e0;
+            *outY = SCREEN_H_PX;
             return;
         case DIR_NORTHWEST:
             if (g_gameReg->Rand() % 2) {
-                *outX = 0x280;
+                *outX = SCREEN_W_PX;
                 goto y_f1;
             }
-            *outX = g_gameReg->Rand() % 0x141 + 0x140;
-            *outY = 0x1e0;
+            *outX = g_gameReg->Rand() % 0x141 + SCREEN_HALF_W_PX;
+            *outY = SCREEN_H_PX;
             return;
         y_f1:
-            *outY = g_gameReg->Rand() % 0xf1 + 0xf0;
+            *outY = g_gameReg->Rand() % 0xf1 + SCREEN_HALF_H_PX;
             return;
         case DIR_SOUTHEAST:
             if (g_gameReg->Rand() % 2) {
-                *outX = g_gameReg->RandRange(0, 0x140);
+                *outX = g_gameReg->RandRange(0, SCREEN_HALF_W_PX);
                 *outY = 0;
                 return;
             }
@@ -99,14 +100,14 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
             goto y_f0;
         case DIR_SOUTHWEST:
             if (g_gameReg->RandRange(0, 1)) {
-                *outX = g_gameReg->RandRange(0, 0x140) + 0x140;
+                *outX = g_gameReg->RandRange(0, SCREEN_HALF_W_PX) + SCREEN_HALF_W_PX;
                 *outY = 0;
                 return;
             }
-            *outX = 0x280;
+            *outX = SCREEN_W_PX;
             goto y_f0;
         y_f0:
-            *outY = g_gameReg->RandRange(0, 0xf0);
+            *outY = g_gameReg->RandRange(0, SCREEN_HALF_H_PX);
             return;
     }
 }
