@@ -61,6 +61,7 @@
 #include <Wwd/WwdFile.h>
 
 #include <ddraw.h>
+#include <dplay.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1973,21 +1974,30 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 unused) {
         return 0;
     }
 
+    // DirectPlay system message ids, from the SDK's dplay.h.
+    //
+    // NOTE a contradiction this naming makes visible rather than hides: the SDK
+    // has DPSYS_SESSIONLOST = 0x31 and DPSYS_HOST = 0x101, but the arms below
+    // set m_isHost on the former and m_sessionTerminated on the latter. The ids
+    // are the SDK's and are not in doubt; m_isHost and m_sessionTerminated are
+    // THIS reconstruction's guesses, and they look transposed. Not renamed here
+    // because HandleControlMsg does not match yet - its body is still truncated
+    // against retail - so there is nothing to check a rename against.
     switch (msg->m_code) {
-        case 3:
+        case DPSYS_CREATEPLAYERORGROUP:
             LoadMenuSelectSprite(msg);
             return 1;
-        case 5:
+        case DPSYS_DESTROYPLAYERORGROUP:
             if (msg->m_subCode != 1) {
                 return 1;
             }
             OnPlayerLeft(msg->m_playerId);
             g_playerLeftFlag = 1;
             return 1;
-        case 0x31:
+        case DPSYS_SESSIONLOST:
             m_isHost = 1;
             return 1;
-        case 0x101:
+        case DPSYS_HOST:
             m_sessionTerminated = 1;
             return 1;
         default:
