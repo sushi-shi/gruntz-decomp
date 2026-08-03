@@ -687,7 +687,7 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
             ClearTabSprites(0);
         }
     }
-    if (m_activeTab == 5) {
+    if (m_activeTab == TAB_GAME) {
         if (r->m_tab == TAB_GAME) {
             SetTabState(cmd, 2);
         } else {
@@ -1119,7 +1119,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
 
 RVA(0x00100b00, 0x150)
 void CStatusBarMgr::ClearTabGroup() {
-    if (m_activeTab == 0) {
+    if (m_activeTab == TAB_NONE) {
         return;
     }
     CPtrList& tab = m_tabLists[m_activeTab];
@@ -1673,7 +1673,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
     if (m_position == kSubtypeTag) {
         RefreshState();
     }
-    if (show && m_activeTab != 5) {
+    if (show && m_activeTab != TAB_GAME) {
         SetTabState(TAB_GAME, 3);
     }
     if (m_tabSprite5) {
@@ -1774,7 +1774,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
     if (r != 0) {
         r->m_sampleMode = 0;
         r->m_enabled = 0;
-        if (m_activeTab == 1) {
+        if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetDirection(m_position, 1);
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
@@ -1924,7 +1924,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
         if (m_position == kSubtypeTag) {
             RefreshState();
         }
-        if (m_activeTab != 2) {
+        if (m_activeTab != TAB_GRUNTZ) {
             SetTabState(TAB_GRUNTZ, 3);
         }
         Deactivate();
@@ -1935,7 +1935,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     s->m_interval = 0x7fffffff;
     s->m_startTimeLo = g_frameTime;
     s->m_startTimeHi = 0;
-    if (m_activeTab == 2 && m_position != 2) {
+    if (m_activeTab == TAB_GRUNTZ && m_position != 2) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* found = 0;
@@ -2098,7 +2098,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 6:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
-                    if (m_activeTab == 3 && m_position != 2) {
+                    if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
@@ -2120,7 +2120,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 7:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
-                    if (m_activeTab == 3 && m_position != 2) {
+                    if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
@@ -2218,7 +2218,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     m_machinePhase = 2;
                     m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = static_cast<u32>(g_frameTime);
-                    if (m_activeTab == 3 && m_position != 2) {
+                    if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
@@ -2276,7 +2276,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     if (found) {
                         g[col].m_state = 4;
                         g[col].m_counter = 0x13;
-                        if (m_activeTab == 3 && m_position != 2) {
+                        if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
@@ -2295,7 +2295,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     } else {
                         g[col].m_state = 2;
                         g[col].m_counter = 0xa;
-                        if (m_activeTab == 3 && m_position != 2) {
+                        if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
@@ -2544,7 +2544,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
         case 4:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
-                if (m_activeTab == 3 && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
@@ -2575,7 +2575,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRect.bottom = 0x11c;
                 m_itemRect.top = 0x104;
                 rectFlag = 1;
-                if (m_activeTab == 3 && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
@@ -2645,7 +2645,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 }
             }
             if (m_itemRect.top >= row * 0x20 + 0x13e) {
-                if (m_activeTab == 3 && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
@@ -2729,7 +2729,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_extraNotifyArg1 = 0;
         } else if (m_fallRect.bottom >= 0x1bf) {
             if (m_fallActive != 2) {
-                if (m_activeTab == 3 && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
                     CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
                     if (h->m_emitGate == 0) {
                         void* spr_ob = 0;
@@ -2841,7 +2841,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     if (m_position == kSubtypeTag) {
         RefreshState();
     }
-    if (m_activeTab != 5) {
+    if (m_activeTab != TAB_GAME) {
         ClearTabGroup();
         m_activeTab = TAB_GAME;
     }
@@ -3608,7 +3608,7 @@ void CStatusBarMgr::ExitMode() {
         if (m_position == 2) {
             RefreshState();
         }
-        if (m_activeTab != 5) {
+        if (m_activeTab != TAB_GAME) {
             SetTabState(TAB_GAME, 3);
         }
         SetTab(5, 1);
@@ -3676,7 +3676,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_position == kSubtypeTag) {
         RefreshState();
     }
-    if (m_activeTab != 4) {
+    if (m_activeTab != TAB_MULTIPLAYER) {
         SetTabState(TAB_MULTIPLAYER, 3);
         Deactivate();
         return;

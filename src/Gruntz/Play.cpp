@@ -474,7 +474,7 @@ i32 CPlay::Render() {
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
 
-        if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
+        if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
             RECT rc;
             if (m_guts->m_position == 1) {
                 SetRect(&rc, 20, 5, 140, 125);
@@ -1759,7 +1759,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_position == 2) {
             lv->RefreshState();
         }
-        if (lv->m_activeTab != 2) {
+        if (lv->m_activeTab != TAB_GRUNTZ) {
             lv->SetTabState(TAB_GRUNTZ, 3);
             lv->Deactivate();
         } else {
@@ -1784,7 +1784,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_position == 2) {
             lv->RefreshState();
         }
-        if (lv->m_activeTab != 3) {
+        if (lv->m_activeTab != TAB_RESOURCE) {
             lv->SetTabState(TAB_RESOURCE, 3);
             lv->Deactivate();
         } else {
@@ -1805,7 +1805,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_position == 2) {
             lv->RefreshState();
         }
-        if (lv->m_activeTab != 1) {
+        if (lv->m_activeTab != TAB_STATZ) {
             lv->SetTabState(TAB_STATZ, 3);
             lv->Deactivate();
         } else {
@@ -1838,7 +1838,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_position == 2) {
             lv->RefreshState();
         }
-        if (lv->m_activeTab != 5) {
+        if (lv->m_activeTab != TAB_GAME) {
             lv->SetTabState(TAB_GAME, 3);
         }
         lv->SetTab(5, 1);
@@ -4079,7 +4079,7 @@ i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
-    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
+    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
         m_lightFx->EndMinimapPan(a, x, y);
     }
     if (m_worldReady != 0) {
@@ -4243,7 +4243,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     if (m_paused != 0) {
         return 1;
     }
-    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
+    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
         m_lightFx->ContinueMinimapPan(a, x, y);
     }
 
@@ -4471,7 +4471,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
             goto drag_path;
         }
 
-        if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
+        if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
             if (m_lightFx->BeginMinimapPan(a, xr, y)) {
                 return 1;
             }
@@ -4764,7 +4764,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     if (m_mgr->m_frameGate != 0) {
         return 1;
     }
-    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
+    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
         if (m_lightFx->IssueMinimapCommand(a, x, y)) {
             return 1;
         }
@@ -4994,7 +4994,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
         if (g->m_position == 2) {
             g->RefreshState();
         }
-        if (g->m_activeTab != 5) {
+        if (g->m_activeTab != TAB_GAME) {
             g->SetTabState(TAB_GAME, 3);
         }
         g->SetTab(0x1fb, 1);

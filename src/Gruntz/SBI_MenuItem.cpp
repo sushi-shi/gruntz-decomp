@@ -19,6 +19,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -123,7 +124,10 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
 
     if (state == 3) {
         m_owner->ClearTabGroup();
-        m_owner->m_activeTab = m_cmd;
+        // The domain ingest: CSBI_MenuItem::m_cmd is a general command id, but a
+        // TAB menu item's command IS its tab - CStatusBarMgr bounds it at
+        // `cmd <= 0 || cmd > TAB_LAST` before dispatching. Converted once, here.
+        m_owner->m_activeTab = static_cast<StatusBarTab>(m_cmd);
         m_owner->LoadTabSprites();
         m_owner->Deactivate();
     } else if (state == 2 && a) {

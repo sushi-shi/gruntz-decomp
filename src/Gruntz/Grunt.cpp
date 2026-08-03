@@ -3360,7 +3360,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 if (sb->m_position == 2) {
                     sb->RefreshState();
                 }
-                if (sb->m_activeTab != 3) {
+                if (sb->m_activeTab != TAB_RESOURCE) {
                     sb->SetTabState(TAB_RESOURCE, 3);
                 }
                 sb->Deactivate();

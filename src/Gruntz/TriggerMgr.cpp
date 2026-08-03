@@ -843,7 +843,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         if (sbi->m_position == 2) {
             sbi->Reset();
         }
-        if (sbi->m_activeTab != 5) {
+        if (sbi->m_activeTab != TAB_GAME) {
             sbi->SetTabState(TAB_GAME, 3);
         }
         sbi->SetTab(5, 1);
@@ -876,7 +876,7 @@ void CTriggerMgr::ResetSpawnState() {
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
         CStatusBarMgr* ctx = world->m_guts;
-        if (ctx->m_position != kSubtypeTag && ctx->m_activeTab == 5) {
+        if (ctx->m_position != kSubtypeTag && ctx->m_activeTab == TAB_GAME) {
             ctx->ResetWidgets(0);
             world->m_guts->TryActivate();
         }

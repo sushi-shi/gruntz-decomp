@@ -9,6 +9,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
 #include <Ints.h>
@@ -26,7 +27,7 @@ i32 CWarpStoneFly::Tick(i32 dt) {
         CByteArray* arr = &g_gameReg->m_cmdGrid->m_byteArr;
         arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(m_arrivalMode));
         m_owner->m_hlBusy = 0;
-        if (m_owner->m_position != 2 && m_owner->m_activeTab == 5) {
+        if (m_owner->m_position != 2 && m_owner->m_activeTab == TAB_GAME) {
             m_owner->ResetWidgets(0);
             m_owner->TryActivate();
         }

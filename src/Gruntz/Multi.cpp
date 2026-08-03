@@ -37,6 +37,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TriggerMgr.h>
@@ -744,7 +745,7 @@ void CMulti::PumpB() {
     m_guts->LoadMainStatusBarSprite();
     if (m_lightFx != 0) {
         CStatusBarMgr* fx = m_guts;
-        if (fx->m_position != 2 && fx->m_activeTab != 5) {
+        if (fx->m_position != 2 && fx->m_activeTab != TAB_GAME) {
             RECT rc;
             if (fx->m_position == 1) {
                 SetRect(&rc, 20, 5, 140, 125);

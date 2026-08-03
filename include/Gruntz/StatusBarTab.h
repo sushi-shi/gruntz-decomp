@@ -20,6 +20,9 @@
 // sprite 1), which is why the mapping has to be read off the code rather than
 // assumed from the field names.
 GZ_ENUM_BEGIN(StatusBarTab)
+// No tab active. CStatusBarMgr::ClearTabGroup returns early on it before it
+// would index m_tabLists, and the constructor seeds m_activeTab with it.
+    TAB_NONE = 0,
     TAB_STATZ = 1,
     TAB_GRUNTZ = 2,
     TAB_RESOURCE = 3,

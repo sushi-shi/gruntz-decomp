@@ -13,6 +13,7 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarItem.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Ints.h>
 
 class CSBI_ImageSet;
@@ -221,7 +222,7 @@ public:
     i32 m_barY;
 
     CPtrList m_tabLists[8];
-    i32 m_activeTab;
+    StatusBarTab m_activeTab;
     i32 m_itemKind;
     i32 m_statFlags[15];
     CSBI_SideTab* m_hitRects[15];
@@ -363,7 +364,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_barSprite = 0;
     m_world = 0;
     m_redrawFrames = 0;
-    m_activeTab = 0;
+    m_activeTab = TAB_NONE;
     m_hitTestDisabled = 0;
     m_tabsBuilt = 0;
     m_toggleActive = 0;
