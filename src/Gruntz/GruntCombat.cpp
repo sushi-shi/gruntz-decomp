@@ -1653,7 +1653,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 
     i32 flag = 0;
     PickupType v = m_entranceReason;
-    if (v > PICKUP_WINGZ) {
+    if (v > PICKUP_TOOLZ_LAST) {
         v = m_toolId;
     }
     if (v == PICKUP_BOMB) {

@@ -34,7 +34,13 @@ GZ_ENUM_BEGIN(GruntDirection)
     DIR_SOUTH = 5,
     DIR_SOUTHWEST = 6,
     DIR_WEST = 7,
-    DIR_NORTHWEST = 8
+    DIR_NORTHWEST = 8,
+    // The ring length, which is the modulus RotateClockwise steps by. DIR_CENTER
+    // is outside the ring, so this is 8 and not 9.
+    DIR_RING_COUNT = 8,
+    // One past the last direction, for a bound that must not name whichever
+    // direction happens to be last.
+    DIR_COUNT = 9
 GZ_ENUM_END(GruntDirection)
 
 #endif // GRUNTZ_GRUNTZ_GRUNTDIRECTION_H

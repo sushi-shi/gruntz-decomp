@@ -54,7 +54,7 @@ i32 CGrunt::LoadPickupSprites(
     }
     if (type >= PICKUP_REDBRICK && type <= PICKUP_BLACKBRICK) {
         PickupType st = m_entranceReason;
-        if (st > PICKUP_WINGZ) {
+        if (st > PICKUP_TOOLZ_LAST) {
             st = m_toolId;
         }
         if (st != PICKUP_BRICK) {

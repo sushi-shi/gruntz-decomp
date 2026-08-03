@@ -155,12 +155,12 @@ i32 CSBI_StatzTabGruntBar::Update() {
         selectVal = 0;
 
         PickupType cap = level;
-        if (level > PICKUP_WINGZ) {
+        if (level > PICKUP_TOOLZ_LAST) {
             cap = unit->m_toolId;
         }
         if (cap != PICKUP_NONE) {
             abilityVal = level;
-            if (level > PICKUP_WINGZ) {
+            if (level > PICKUP_TOOLZ_LAST) {
                 abilityVal = unit->m_toolId;
             }
             if (abilityVal == 3) {

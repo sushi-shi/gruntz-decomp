@@ -17,7 +17,9 @@ GZ_ENUM_BEGIN(NetConnectionType)
     NETCONN_SERIAL = 4,
     // The catch-all provider: whatever DirectPlay enumerated that is none of the
     // four named above.
-    NETCONN_GENERIC = 5
+    NETCONN_GENERIC = 5,
+    // One past the last provider, so a bound never names NETCONN_GENERIC.
+    NETCONN_COUNT = 6
 GZ_ENUM_END(NetConnectionType)
 
 #endif // GRUNTZ_NET_NETCONNECTIONTYPE_H

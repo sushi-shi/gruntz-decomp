@@ -815,7 +815,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 sw->SwitchDown();
             } else {
                 PickupType gruntKind = g->m_entranceReason;
-                if (gruntKind > PICKUP_WINGZ) {
+                if (gruntKind > PICKUP_TOOLZ_LAST) {
                     gruntKind = g->m_toolId;
                 }
                 // m_checkpointType is a PickupType stored as i32 (declared in
@@ -1072,7 +1072,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         return -1;
     }
     PickupType k = cell->m_entranceReason;
-    if (k > PICKUP_WINGZ) {
+    if (k > PICKUP_TOOLZ_LAST) {
         k = cell->m_toolId;
     }
     if (k == PICKUP_WAND && cell->CanShowStamina() != 0) {
@@ -1084,7 +1084,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     }
     if (cellTileX == argTileX && cellTileY == argTileY) {
         PickupType kSame = cell->m_entranceReason;
-        if (kSame > PICKUP_WINGZ) {
+        if (kSame > PICKUP_TOOLZ_LAST) {
             kSame = cell->m_toolId;
         }
         if (kSame != PICKUP_SPY) {
@@ -1097,7 +1097,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 1;
     }
     PickupType kDiag = cell->m_entranceReason;
-    if (kDiag > PICKUP_WINGZ) {
+    if (kDiag > PICKUP_TOOLZ_LAST) {
         kDiag = cell->m_toolId;
     }
     if (kDiag == PICKUP_BOMB) {
@@ -1134,7 +1134,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGruntzMapMgr* map = g_gameReg->m_tileGrid;
     i32 bute = map->m_rows[by >> 5][bx >> 5].m_typeCode;
     PickupType kind = cell->m_entranceReason;
-    if (kind > PICKUP_WINGZ) {
+    if (kind > PICKUP_TOOLZ_LAST) {
         kind = cell->m_toolId;
     }
 
@@ -1393,7 +1393,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
         return;
     }
     PickupType k = cell->m_entranceReason;
-    if (k > PICKUP_WINGZ) {
+    if (k > PICKUP_TOOLZ_LAST) {
         k = cell->m_toolId;
     }
     if (k != PICKUP_WARPSTONE) {

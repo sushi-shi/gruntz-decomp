@@ -137,8 +137,8 @@ i32 CActionOptionsMenuBar::Refresh() {
         } else if (m_buttonState[1] == 3) {
             m_buttonState[1] = 1;
         }
-        PickupType prim =
-            (grunt->m_entranceReason > PICKUP_WINGZ) ? grunt->m_toolId : grunt->m_entranceReason;
+        PickupType prim = (grunt->m_entranceReason > PICKUP_TOOLZ_LAST) ? grunt->m_toolId
+                                                                        : grunt->m_entranceReason;
         m_buttonIcon[0] = prim;
         if (prim == PICKUP_NONE) {
             // 0x21 sits just below the engine's Brickz boundary (0x22) and is

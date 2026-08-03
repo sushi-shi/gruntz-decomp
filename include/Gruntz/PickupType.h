@@ -50,6 +50,14 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_WELDER = 21,
     PICKUP_WINGZ = 22,
 
+    // Band boundary, NOT a fifth spelling of Wingz. 73 sites test `> this` to mean
+    // "beyond the Toolz band", i.e. a Toy/Brick/PowerUp rather than an equippable
+    // tool. Retail compares against 22 with `jle`; the equivalent
+    // `>= PICKUP_BABYWALKER` is a DIFFERENT instruction (`cmpl $0x17; jl` vs
+    // `cmpl $0x16; jle`, measured), so the boundary has to be named at the value
+    // retail actually uses rather than restated as the next band's first member.
+    PICKUP_TOOLZ_LAST = PICKUP_WINGZ,
+
     // --- Toyz (23-32): give-away distractions -------------------------------
     PICKUP_BABYWALKER = 23,
     PICKUP_BEACHBALL = 24,
