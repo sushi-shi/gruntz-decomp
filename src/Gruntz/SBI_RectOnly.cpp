@@ -1149,7 +1149,7 @@ void CStatusBarMgr::ClearTabGroup() {
 
             memset(m_statObj, 0, sizeof(m_statObj));
             break;
-        case 3: {
+        case TAB_RESOURCE: {
             CSBI_WarlordHead** p = m_warlordHead;
             p[0] = 0;
             p[1] = 0;
@@ -1157,7 +1157,7 @@ void CStatusBarMgr::ClearTabGroup() {
             p[3] = 0;
             break;
         }
-        case 4: {
+        case TAB_MULTIPLAYER: {
 
             CSBI_ImageSet** q = m_slotNotify;
             q[0] = 0;
@@ -1169,7 +1169,7 @@ void CStatusBarMgr::ClearTabGroup() {
             m_gaugeSink = 0;
             break;
         }
-        case 5: {
+        case TAB_GAME: {
 
             CSBI_ImageSet** g = m_groupNotify;
             g[0] = 0;

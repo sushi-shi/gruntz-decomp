@@ -215,8 +215,17 @@ def scan(limit=None):
                     continue
                 seen_files.add(key)
                 if len(names) > 1:
-                    ambiguous.append((str(rel), line, val, ename, names))
-                    continue
+                    # A case label names a VALUE, never a boundary: if the only
+                    # thing making the value ambiguous is a band marker sharing
+                    # it (TAB_GAME vs TAB_LAST), the item spelling is the right
+                    # one and there is nothing to arbitrate.
+                    items = [x for x in names
+                             if not re.search(r'_(FIRST|LAST|BEGIN|END|COUNT)$', x)]
+                    if len(items) == 1:
+                        names = items
+                    else:
+                        ambiguous.append((str(rel), line, val, ename, names))
+                        continue
                 bucket = via_cast_hits if via_cast else found
                 bucket[str(rel)].append((line, col, val, spelling, ename, names[0]))
     return found, ambiguous, via_cast_hits

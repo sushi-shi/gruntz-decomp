@@ -35,7 +35,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
     i32 i;
 
     switch (m_activeTab) {
-        case 2:
+        case TAB_GRUNTZ:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -187,7 +187,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_gaugeSink = static_cast<CSBI_WellGoo*>(it);
             return 1;
 
-        case 3:
+        case TAB_RESOURCE:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -567,7 +567,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_tabLists[3].AddTail(ani);
             return 1;
 
-        case 4:
+        case TAB_MULTIPLAYER:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -734,7 +734,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             return 1;
 
-        case 1:
+        case TAB_STATZ:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
@@ -827,7 +827,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             return 1;
 
-        case 5:
+        case TAB_GAME:
             it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;

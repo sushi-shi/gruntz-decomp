@@ -447,6 +447,14 @@ def cmd_build(args) -> None:
           "enum-domain gate violated - a split domain's storage width disagrees, a "
           "header declares a bare enum, or config/enum-review.tsv is out of sync "
           "(python -m gruntz.audit.enum_domains)", "normal")
+    # Once a switch KEY is enum-typed, every integer label under it has exactly one
+    # correct enumerator, so a raw one is an oversight rather than a judgement. This
+    # is libclang over the real compdb, which is why it catches what the campaign's
+    # own regex rewriters kept missing (`case 0xa:` when the pattern wanted decimal,
+    # `case 0: {` when it wanted end-of-line). FULL tier: it reparses every TU.
+    _gate("gruntz.audit.enum_case_labels", ["--gate"],
+          "a switch with an enum-typed key still has numeric case labels - "
+          "python -m gruntz.audit.enum_case_labels --apply", "full")
     # The #include block is canonical: no duplicates, and one order tree-wide
     # (rva -> platform preludes -> own header -> project -> library). See
     # docs/patterns/include-order.md; the fixer is mechanical and line-conserving.
