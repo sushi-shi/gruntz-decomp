@@ -423,7 +423,7 @@ i32 CSBI_SideTab::BuildHandle() {
     i32 val;
     if (mode == 2) {
         PickupType level = unit->m_entranceReason;
-        if (level > PICKUP_TOOLZ_LAST) {
+        if (level > PICKUP_EQUIPPABLE_LAST) {
             val = unit->m_toolId;
             if (val == 0) {
                 m_sampleMode = 1;

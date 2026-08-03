@@ -100,7 +100,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                     break;
             }
             PickupType tool = type;
-            if (type > PICKUP_TOOLZ_LAST) {
+            if (type > PICKUP_EQUIPPABLE_LAST) {
                 tool = grunt->m_toolId;
             }
             wsprintfA(

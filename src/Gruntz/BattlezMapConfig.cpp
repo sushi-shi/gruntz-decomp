@@ -678,7 +678,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_TOOLZ_LAST) {
+                            if (st > PICKUP_EQUIPPABLE_LAST) {
                                 st = unit->m_toolId;
                             }
                             if (st == PICKUP_BRICK && unit->m_battleState == 0) {
@@ -755,7 +755,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                          == 0);
                                                     if (!eq) {
                                                         PickupType st2 = unit->m_entranceReason;
-                                                        if (st2 > PICKUP_TOOLZ_LAST) {
+                                                        if (st2 > PICKUP_EQUIPPABLE_LAST) {
                                                             st2 = unit->m_toolId;
                                                         }
                                                         if (st2 == PICKUP_BRICK
@@ -817,7 +817,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_TOOLZ_LAST) {
+                            if (st > PICKUP_EQUIPPABLE_LAST) {
                                 st = unit->m_toolId;
                             }
                             if (st != PICKUP_SPY && unit->m_battleState == 9) {
@@ -842,7 +842,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_TOOLZ_LAST) {
+                            if (st > PICKUP_EQUIPPABLE_LAST) {
                                 st = unit->m_toolId;
                             }
                             if (st == PICKUP_GOOBER) {
@@ -868,7 +868,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_TOOLZ_LAST) {
+                            if (st > PICKUP_EQUIPPABLE_LAST) {
                                 st = unit->m_toolId;
                             }
                             if (st != PICKUP_GOOBER && unit->m_battleState == 6) {
@@ -1387,7 +1387,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 == static_cast<u32>(i)) {
                                                 {
                                                     PickupType st3 = unit->m_entranceReason;
-                                                    if (st3 > PICKUP_TOOLZ_LAST) {
+                                                    if (st3 > PICKUP_EQUIPPABLE_LAST) {
                                                         st3 = unit->m_toolId;
                                                     }
                                                     if (st3 == PICKUP_WAND
@@ -1640,7 +1640,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         goto flagsArm;
                     }
                 LA:
-                    if (unit->m_entranceReason <= PICKUP_WINGZ) {
+                    if (unit->m_entranceReason <= PICKUP_EQUIPPABLE_LAST) {
                         if (unit->m_entranceReason == PICKUP_WINGZ) {
                             goto nexti;
                         }
@@ -1864,19 +1864,21 @@ spellHit: {
 flagsArm: {
     i32 ok = 1;
     if (cell & 8) {
-        if ((unit->m_entranceReason > PICKUP_TOOLZ_LAST ? unit->m_toolId : unit->m_entranceReason)
+        if ((unit->m_entranceReason > PICKUP_EQUIPPABLE_LAST ? unit->m_toolId
+                                                             : unit->m_entranceReason)
                 != PICKUP_TOOB
-            && (unit->m_entranceReason > PICKUP_TOOLZ_LAST ? unit->m_toolId
-                                                           : unit->m_entranceReason)
+            && (unit->m_entranceReason > PICKUP_EQUIPPABLE_LAST ? unit->m_toolId
+                                                                : unit->m_entranceReason)
                    != PICKUP_WINGZ) {
             ok = 0;
         }
     }
     if (cell & 0x200) {
-        if ((unit->m_entranceReason > PICKUP_TOOLZ_LAST ? unit->m_toolId : unit->m_entranceReason)
+        if ((unit->m_entranceReason > PICKUP_EQUIPPABLE_LAST ? unit->m_toolId
+                                                             : unit->m_entranceReason)
                 != PICKUP_TOOB
-            && (unit->m_entranceReason > PICKUP_TOOLZ_LAST ? unit->m_toolId
-                                                           : unit->m_entranceReason)
+            && (unit->m_entranceReason > PICKUP_EQUIPPABLE_LAST ? unit->m_toolId
+                                                                : unit->m_entranceReason)
                    != PICKUP_WINGZ) {
             ok = 0;
         }
@@ -2048,7 +2050,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         scratchA = *srcA;
         PickupType prim = unit->m_entranceReason;
-        if (prim > PICKUP_TOOLZ_LAST) {
+        if (prim > PICKUP_EQUIPPABLE_LAST) {
             prim = unit->m_toolId;
         }
 
@@ -2094,7 +2096,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
 
         PickupType entranceMode = unit->m_entranceReason;
-        if (entranceMode > PICKUP_TOOLZ_LAST) {
+        if (entranceMode > PICKUP_EQUIPPABLE_LAST) {
             entranceMode = unit->m_toolId;
         }
         if (entranceMode == PICKUP_TIMEBOMB && unit->CoordCount() >= 2) {
@@ -2184,7 +2186,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         if (sA & 0x200) {
             PickupType p = unit->m_entranceReason;
-            if (p > PICKUP_TOOLZ_LAST) {
+            if (p > PICKUP_EQUIPPABLE_LAST) {
                 p = unit->m_toolId;
             }
             if (p != PICKUP_WINGZ) {
@@ -2195,14 +2197,14 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 hi = sA & 0x100;
             if (hi) {
                 PickupType p = unit->m_entranceReason;
-                if (p > PICKUP_TOOLZ_LAST) {
+                if (p > PICKUP_EQUIPPABLE_LAST) {
                     p = unit->m_toolId;
                 }
                 if (p == PICKUP_WINGZ) {
                     return 1;
                 }
                 PickupType entranceMode2 = unit->m_entranceReason;
-                if (entranceMode2 > PICKUP_TOOLZ_LAST) {
+                if (entranceMode2 > PICKUP_EQUIPPABLE_LAST) {
                     entranceMode2 = unit->m_toolId;
                 }
                 if (entranceMode2 == PICKUP_TOOB) {
@@ -2212,7 +2214,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 lo2 = sA & 0x2;
             if (lo2) {
                 PickupType p = unit->m_entranceReason;
-                if (p > PICKUP_TOOLZ_LAST) {
+                if (p > PICKUP_EQUIPPABLE_LAST) {
                     p = unit->m_toolId;
                 }
                 if (p == PICKUP_WINGZ) {
@@ -2249,7 +2251,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         if (sA & 0x40) {
             PickupType p = unit->m_entranceReason;
-            if (p > PICKUP_TOOLZ_LAST) {
+            if (p > PICKUP_EQUIPPABLE_LAST) {
                 p = unit->m_toolId;
             }
             if (p != PICKUP_WINGZ) {
@@ -2265,7 +2267,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         if (sA & 0x2) {
             PickupType p = unit->m_entranceReason;
-            if (p > PICKUP_TOOLZ_LAST) {
+            if (p > PICKUP_EQUIPPABLE_LAST) {
                 p = unit->m_toolId;
             }
             if (p == PICKUP_WINGZ) {
@@ -2277,7 +2279,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return 0;
         }
         PickupType pk = unit->m_entranceReason;
-        if (pk > PICKUP_TOOLZ_LAST) {
+        if (pk > PICKUP_EQUIPPABLE_LAST) {
             pk = unit->m_toolId;
         }
         if (pk != PICKUP_GOOBER) {
@@ -2387,21 +2389,21 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         CPtrList list(10);
         i32 flags = 0;
         PickupType prim = unit->m_entranceReason;
-        if (prim > PICKUP_TOOLZ_LAST) {
+        if (prim > PICKUP_EQUIPPABLE_LAST) {
             prim = unit->m_toolId;
         }
         if (prim == PICKUP_TOOB) {
             flags = 0x100;
         }
         prim = unit->m_entranceReason;
-        if (prim > PICKUP_TOOLZ_LAST) {
+        if (prim > PICKUP_EQUIPPABLE_LAST) {
             prim = unit->m_toolId;
         }
         if (prim == PICKUP_WINGZ) {
             flags = 0x942;
         }
         prim = unit->m_entranceReason;
-        if (prim > PICKUP_TOOLZ_LAST) {
+        if (prim > PICKUP_EQUIPPABLE_LAST) {
             prim = unit->m_toolId;
         }
         if (prim == PICKUP_SPRING) {
@@ -2621,7 +2623,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     (static_cast<CGrunt*>(tgt))
         ->CommitNeighbor(unit->m_tileOwnerHi, unit->m_tileOwnerLo, ul3->m_screenX, ul3->m_screenY);
     PickupType prim = tgt->m_entranceReason;
-    if (prim > PICKUP_TOOLZ_LAST) {
+    if (prim > PICKUP_EQUIPPABLE_LAST) {
         prim = tgt->m_toolId;
     }
     if (prim != PICKUP_TIMEBOMB) {
@@ -2964,7 +2966,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         return 0;
     }
     PickupType prim = unit->m_entranceReason;
-    if (prim > PICKUP_TOOLZ_LAST) {
+    if (prim > PICKUP_EQUIPPABLE_LAST) {
         prim = unit->m_toolId;
     }
     if (prim != PICKUP_NONE) {
@@ -3080,7 +3082,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                     }
                 } else {
                     PickupType entranceMode = unit->m_entranceReason;
-                    if (entranceMode > PICKUP_TOOLZ_LAST) {
+                    if (entranceMode > PICKUP_EQUIPPABLE_LAST) {
                         entranceMode = unit->m_toolId;
                     }
                     if (entranceMode == PICKUP_NONE) {
@@ -3193,7 +3195,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     own = *osrc;
 
     i32 maskFlags = own.m_flags & 0xdfffffff;
-    PickupType type = (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+    PickupType type =
+        (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
 
     if ((dest.m_flags & 0x400) && g->m_defenderState == 3 && type != PICKUP_GRAVITYBOOTZ) {
         if (own.m_flags & 0x4000) {
@@ -3286,7 +3289,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if (maskFlags & 0x20) {
         PickupType t =
-            (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
         if (t == PICKUP_BOMB || t == PICKUP_TIMEBOMB) {
             if (t == PICKUP_BOMB) {
                 m_triggerMgr->ApplyTriggerA(
@@ -3323,7 +3326,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if (maskFlags & 0x4000) {
         PickupType t =
-            (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
         if (t == PICKUP_SPY) {
             CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
             if (r != 0) {
@@ -3345,7 +3348,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if (maskFlags & 0x8000) {
         PickupType t =
-            (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
         if (t == PICKUP_SPY) {
             ARR_RECYCLE(g);
             ResolveTileClaim(g, fcx, fcy, 1);
@@ -3355,7 +3358,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if (maskFlags & 0x20) {
         PickupType t =
-            (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
         if (t == PICKUP_GAUNTLETZ) {
             if (maskFlags & 0x4000) {
                 CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
@@ -3399,10 +3402,10 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if (maskFlags & 0x40) {
         PickupType t =
-            (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
         if (t != PICKUP_WINGZ) {
             PickupType t2 =
-                (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+                (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
             if (t2 == PICKUP_SHOVEL) {
                 m_triggerMgr->ApplyTriggerA(
                     g->m_tileOwnerHi,
@@ -3423,7 +3426,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
     {
         PickupType t =
-            (g->m_entranceReason > PICKUP_TOOLZ_LAST) ? g->m_toolId : g->m_entranceReason;
+            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
         if (t == PICKUP_WINGZ) {
             return 1;
         }
@@ -3884,20 +3887,20 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     i32 flags = 0;
     PickupType prim = unit->m_entranceReason;
     PickupType t = prim;
-    if (prim > PICKUP_TOOLZ_LAST) {
+    if (prim > PICKUP_EQUIPPABLE_LAST) {
         t = unit->m_toolId;
     }
     if (t == PICKUP_TOOB) {
         flags = 0x100;
     }
     t = prim;
-    if (prim > PICKUP_TOOLZ_LAST) {
+    if (prim > PICKUP_EQUIPPABLE_LAST) {
         t = unit->m_toolId;
     }
     if (t == PICKUP_WINGZ) {
         flags = 0x942;
     }
-    if (prim > PICKUP_TOOLZ_LAST) {
+    if (prim > PICKUP_EQUIPPABLE_LAST) {
         prim = unit->m_toolId;
     }
     if (prim == PICKUP_SPRING) {
@@ -4097,14 +4100,14 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
 
                         i32 flags = 0x4020;
                         PickupType sec = unit->m_entranceReason;
-                        if (sec > PICKUP_TOOLZ_LAST) {
+                        if (sec > PICKUP_EQUIPPABLE_LAST) {
                             sec = unit->m_toolId;
                         }
                         if (sec == PICKUP_WINGZ) {
                             flags = 0x4962;
                         }
                         PickupType prim = unit->m_entranceReason;
-                        if (prim > PICKUP_TOOLZ_LAST) {
+                        if (prim > PICKUP_EQUIPPABLE_LAST) {
                             prim = unit->m_toolId;
                         }
                         if (prim == PICKUP_TOOB) {
@@ -4296,7 +4299,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (band <= m_toolzPct) {
 
         PickupType cur = unit->m_entranceReason;
-        if (cur > PICKUP_TOOLZ_LAST) {
+        if (cur > PICKUP_EQUIPPABLE_LAST) {
             cur = unit->m_toolId;
         }
         if (cur != PICKUP_NONE) {
@@ -4400,7 +4403,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         }
 
         PickupType cur2 = unit->m_entranceReason;
-        if (cur2 > PICKUP_TOOLZ_LAST) {
+        if (cur2 > PICKUP_EQUIPPABLE_LAST) {
             cur2 = unit->m_toolId;
         }
         if (cur2 == PICKUP_NONE) {
@@ -4902,14 +4905,14 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
     i32 flags = 0x60;
     PickupType sec = unit->m_entranceReason;
-    if (sec > PICKUP_TOOLZ_LAST) {
+    if (sec > PICKUP_EQUIPPABLE_LAST) {
         sec = unit->m_toolId;
     }
     if (sec == PICKUP_WINGZ) {
         flags = 0x962;
     }
     PickupType prim = unit->m_entranceReason;
-    if (prim > PICKUP_TOOLZ_LAST) {
+    if (prim > PICKUP_EQUIPPABLE_LAST) {
         prim = unit->m_toolId;
     }
     if (prim == PICKUP_TOOB) {
@@ -5485,20 +5488,20 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         i32 cfg = unit->m_routeMaskA;
         i32 flags = unit->m_routeMaskC;
         PickupType t = prim;
-        if (prim > PICKUP_TOOLZ_LAST) {
+        if (prim > PICKUP_EQUIPPABLE_LAST) {
             t = unit->m_toolId;
         }
         if (t == PICKUP_TOOB) {
             flags |= 0x100;
         } else {
             t = prim;
-            if (prim > PICKUP_TOOLZ_LAST) {
+            if (prim > PICKUP_EQUIPPABLE_LAST) {
                 t = unit->m_toolId;
             }
             if (t == PICKUP_SPRING) {
                 flags |= 0x1000;
             } else {
-                if (prim > PICKUP_TOOLZ_LAST) {
+                if (prim > PICKUP_EQUIPPABLE_LAST) {
                     prim = unit->m_toolId;
                 }
                 if (prim == PICKUP_WINGZ) {
@@ -5553,20 +5556,20 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     PickupType prim = unit->m_entranceReason;
     i32 flags = unit->m_routeMaskC;
     PickupType t = prim;
-    if (prim > PICKUP_TOOLZ_LAST) {
+    if (prim > PICKUP_EQUIPPABLE_LAST) {
         t = unit->m_toolId;
     }
     if (t == PICKUP_TOOB) {
         flags |= 0x100;
     } else {
         t = prim;
-        if (prim > PICKUP_TOOLZ_LAST) {
+        if (prim > PICKUP_EQUIPPABLE_LAST) {
             t = unit->m_toolId;
         }
         if (t == PICKUP_SPRING) {
             flags |= 0x1000;
         } else {
-            if (prim > PICKUP_TOOLZ_LAST) {
+            if (prim > PICKUP_EQUIPPABLE_LAST) {
                 prim = unit->m_toolId;
             }
             if (prim == PICKUP_WINGZ) {

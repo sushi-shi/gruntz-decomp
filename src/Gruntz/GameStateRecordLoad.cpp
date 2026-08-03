@@ -272,7 +272,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_payloads)->AddTail(item);
     }
 
-    i32 flag = (m_entranceReason >= PICKUP_BABYWALKER);
+    i32 flag = (m_entranceReason >= PICKUP_TOYZ_BEGIN);
     CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, flag);
     CWwdGameObjectA* cb = m_object;
     cb->m_drawActive = 1;

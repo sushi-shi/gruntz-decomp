@@ -490,7 +490,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     PickupType gruntKind = cell->m_entranceReason;
-    if (gruntKind > PICKUP_TOOLZ_LAST) {
+    if (gruntKind > PICKUP_EQUIPPABLE_LAST) {
         gruntKind = cell->m_toolId;
     }
 
@@ -687,10 +687,11 @@ i32 CTriggerMgr::ResetGroup(
                     if (hit != cell) {
                         goto reportError;
                     }
-                    PickupType v = (hit->m_entranceReason <= PICKUP_WINGZ) ? hit->m_entranceReason
-                                                                           : hit->m_toolId;
+                    PickupType v = (hit->m_entranceReason <= PICKUP_EQUIPPABLE_LAST)
+                                       ? hit->m_entranceReason
+                                       : hit->m_toolId;
                     if (v != PICKUP_SPY) {
-                        PickupType v2 = (hit->m_entranceReason <= PICKUP_WINGZ)
+                        PickupType v2 = (hit->m_entranceReason <= PICKUP_EQUIPPABLE_LAST)
                                             ? hit->m_entranceReason
                                             : hit->m_toolId;
                         if (v2 != PICKUP_WAND) {
@@ -955,7 +956,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         m_cellFlag[idx] = 1;
         m_gruntzExitedByPlayer[col] += 1;
         k = cell->m_entranceReason;
-        if (k > PICKUP_TOOLZ_LAST) {
+        if (k > PICKUP_EQUIPPABLE_LAST) {
             k = cell->m_toolId;
         }
         if (k != PICKUP_WARPSTONE) {
@@ -972,7 +973,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         return;
     }
     k = cell->m_entranceReason;
-    if (k > PICKUP_TOOLZ_LAST) {
+    if (k > PICKUP_EQUIPPABLE_LAST) {
         k = cell->m_toolId;
     }
     if (k == PICKUP_WARPSTONE) {
@@ -1431,7 +1432,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     i32 kind = ov->HitHover(x, y);
     if (kind == 2) {
         PickupType alt = cell->m_entranceReason;
-        if (alt > PICKUP_TOOLZ_LAST) {
+        if (alt > PICKUP_EQUIPPABLE_LAST) {
             alt = cell->m_toolId;
         }
         if (alt == PICKUP_WAND) {
@@ -1832,7 +1833,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     i32 sx = (o->m_screenX & ~0x1f) + 0x10;
     i32 sy = (o->m_screenY & ~0x1f) + 0x10;
     PickupType k = src->m_entranceReason;
-    if (k > PICKUP_TOOLZ_LAST) {
+    if (k > PICKUP_EQUIPPABLE_LAST) {
         k = src->m_toolId;
     }
     PickupType vis = src->m_vehiclePickupType;
@@ -2496,7 +2497,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         return 1;
     }
     PickupType v = cell->m_entranceReason;
-    if (v > PICKUP_TOOLZ_LAST) {
+    if (v > PICKUP_EQUIPPABLE_LAST) {
         v = cell->m_toolId;
     }
     if (v == PICKUP_WAND) {
@@ -2535,7 +2536,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     if (cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
-    if (cell->m_entranceReason >= PICKUP_BABYWALKER) {
+    if (cell->m_entranceReason >= PICKUP_TOYZ_BEGIN) {
         OverlayTick();
         return 1;
     }

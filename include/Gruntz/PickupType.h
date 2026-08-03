@@ -28,6 +28,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
 
     // --- Toolz (0-22): what a Grunt equips; 0 is bare-handed ----------------
     PICKUP_BOMB = 1,
+    PICKUP_EQUIPPABLE_BEGIN = PICKUP_BOMB,
     PICKUP_BOOMERANG = 2,
     PICKUP_BRICK = 3,
     PICKUP_CLUB = 4,
@@ -56,10 +57,16 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     // `>= PICKUP_BABYWALKER` is a DIFFERENT instruction (`cmpl $0x17; jl` vs
     // `cmpl $0x16; jle`, measured), so the boundary has to be named at the value
     // retail actually uses rather than restated as the next band's first member.
-    PICKUP_TOOLZ_LAST = PICKUP_WINGZ,
+    PICKUP_EQUIPPABLE_LAST = PICKUP_WINGZ,
 
     // --- Toyz (23-32): give-away distractions -------------------------------
     PICKUP_BABYWALKER = 23,
+    PICKUP_TOYZ_BEGIN = PICKUP_BABYWALKER,
+    // The half-open end of the Toolz band - the same boundary as
+    // PICKUP_TOYZ_BEGIN, seen from below. Retail spells "not equippable" BOTH
+    // ways, `> 22` and `>= 23`, and those are different instructions, so each
+    // site keeps the marker at the value it actually compares against.
+    PICKUP_EQUIPPABLE_END = PICKUP_BABYWALKER,
     PICKUP_BEACHBALL = 24,
     PICKUP_BIGWHEEL = 25,
     PICKUP_GOKART = 26,
@@ -69,6 +76,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_SCROLL = 30,
     PICKUP_SQUEAKTOY = 31,
     PICKUP_YOYO = 32,
+    PICKUP_TOYZ_LAST = PICKUP_YOYO,
 
     // --- Brickz (34-38): Brick-Layer construction materials -----------------
     // The plain brick. CTileActionEvent::MorphByTool dispatches the five brick
@@ -77,13 +85,16 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     // bottom), so the range starts here - which is also what CGrunt::Place's
     // m_brickPickupType seed uses.
     PICKUP_BROWNBRICK = 0x22,
+    PICKUP_BRICKZ_BEGIN = PICKUP_BROWNBRICK,
     PICKUP_REDBRICK = 0x23,
     PICKUP_BLUEBRICK = 0x24,
     PICKUP_GOLDBRICK = 0x25,
     PICKUP_BLACKBRICK = 0x26,
+    PICKUP_BRICKZ_LAST = PICKUP_BLACKBRICK,
 
     // --- PowerUpz (50-60) ---------------------------------------------------
     PICKUP_MEGAPHONE = 0x32,
+    PICKUP_POWERUPZ_BEGIN = PICKUP_MEGAPHONE,
     PICKUP_HEALTH1 = 0x33,
     PICKUP_HEALTH2 = 0x34,
     PICKUP_HEALTH3 = 0x35,
@@ -100,6 +111,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_SCREENSHAKE = 0x3e,
     PICKUP_BLACKSCREEN = 0x3f,
     PICKUP_MINICAM = 0x40,
+    PICKUP_POWERUPZ_LAST = PICKUP_MINICAM,
 
     // --- Miscellaneous (75-99) ----------------------------------------------
     PICKUP_STOPWATCH = 0x4b,

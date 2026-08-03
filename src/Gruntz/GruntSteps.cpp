@@ -989,18 +989,18 @@ applyTail:
 
 modeDispatch: {
     PickupType mode = m_entrancePickup;
-    if (mode >= PICKUP_MEGAPHONE) {
+    if (mode >= PICKUP_POWERUPZ_BEGIN) {
         LoadGruntTypeTable(mode, 1, 0, 1);
         m_entrancePickup = PICKUP_INVALID;
         m_helpCueId = 0;
         return 1;
     }
-    if (mode >= PICKUP_BROWNBRICK) {
+    if (mode >= PICKUP_BRICKZ_BEGIN) {
         m_brickPickupType = mode;
         m_entrancePickup = PICKUP_INVALID;
         return 1;
     }
-    if (mode >= PICKUP_BABYWALKER) {
+    if (mode >= PICKUP_TOYZ_BEGIN) {
         LoadVehicleGruntSprites(mode);
         return 1;
     }

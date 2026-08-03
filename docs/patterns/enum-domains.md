@@ -129,6 +129,44 @@ as a claim, not a result — the tool was verified by injecting a known positive
 0 only because libclang silently discarded the MSVC-style compdb flags
 (`--driver-mode=cl` is mandatory).
 
+## Band and count markers: never compare against a member
+
+A bound written against whichever member happens to sit at the edge —
+`n > PICKUP_WINGZ` for "not an equippable tool" — reads as a fact about Wingz
+when it is a fact about the band. Every domain that gets range-tested declares
+markers instead, and the test names the marker:
+
+| suffix | meaning | use |
+|---|---|---|
+| `_BEGIN` | first value of a band, INCLUSIVE | `x >= B_BEGIN` |
+| `_END` | one PAST the last, exclusive | `x < B_END`, `x >= B_END` |
+| `_LAST` | the last value, INCLUSIVE | `x > B_LAST` — only where retail's compare needs the inclusive value |
+| `_COUNT` | how many values the domain has | bounds, iteration, table sizes |
+
+`_LAST` exists only because **the compare form is load-bearing**. `> 22` and
+`>= 23` are the same predicate but not the same instruction:
+
+```
+n > K_WINGZ        83 7c 24 04 16   cmpl $0x16, 0x4(%esp) / 7e  jle
+n >= K_BABYWALKER  83 7c 24 04 17   cmpl $0x17, 0x4(%esp) / 7c  jl
+```
+
+So a marker must be declared **at the value retail actually compares against**,
+and rewriting `> LAST` into `>= END` to tidy it up moves bytes. PickupType
+carries both (`PICKUP_EQUIPPABLE_LAST` = 22, `PICKUP_EQUIPPABLE_END` = 23)
+because retail spells the same test both ways in different functions. Naming them
+is free; normalising them is not.
+
+`_COUNT` is the count, which for a 0-based domain also happens to be one past the
+last (`TINT_COUNT = 17` over 0..16) and for a 1-based one does not
+(`AREA_COUNT = 8` over 1..8, so its bound is `<= AREA_COUNT`). When a domain has
+a ring plus an off-ring value, say so with two markers rather than one ambiguous
+number — `DIR_RING_COUNT = 8` is the rotate modulus, `DIR_COUNT = 9` counts
+`DIR_CENTER` too.
+
+Declare a marker when a site range-tests the domain. A marker with no use site is
+an invention like any other.
+
 ## Traps
 
 - **Retyping a VIRTUAL's parameter must update every override in the family, and
