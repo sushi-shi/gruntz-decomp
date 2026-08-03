@@ -49,6 +49,7 @@ include/DDrawMgr/DirPal.h	pending
 include/DDrawMgr/DirectDrawMgr.h	pending	
 include/DDrawMgr/LogicRecord.h	pending	
 include/DDrawMgr/PixelShift.h	pending	
+include/DDrawMgr/ShadeMode.h	pending	
 include/DDrawMgr/ShadeTableCache.h	pending	
 include/DDrawMgr/WallProject.h	pending	
 include/DinMgr2/DirectInputMgr2.h	pending	
@@ -160,6 +161,7 @@ include/Gruntz/GruntAiState.h	pending
 include/Gruntz/GruntCombat.h	pending	
 include/Gruntz/GruntCreationPoint.h	pending	
 include/Gruntz/GruntDeathType.h	pending	
+include/Gruntz/GruntDirection.h	pending	
 include/Gruntz/GruntEntranceArrival.h	pending	
 include/Gruntz/GruntEntranceMove.h	pending	
 include/Gruntz/GruntHealthSprite.h	pending	
@@ -195,6 +197,7 @@ include/Gruntz/InGameText.h	pending
 include/Gruntz/InputConfig.h	pending	
 include/Gruntz/KitchenSlime.h	pending	
 include/Gruntz/LeafCue.h	pending	
+include/Gruntz/LevelArea.h	pending	
 include/Gruntz/LevelPreview.h	pending	
 include/Gruntz/LevelTime.h	pending	
 include/Gruntz/LightFx.h	pending	
@@ -258,6 +261,7 @@ include/Gruntz/SBI_WellGoo.h	pending
 include/Gruntz/SFSelectDevice.h	pending	
 include/Gruntz/SaveFrontBufferShot.h	pending	
 include/Gruntz/SaveScreenshot.h	pending	
+include/Gruntz/SaveSlotCtrlId.h	pending	
 include/Gruntz/SbGeom.h	pending	
 include/Gruntz/SbiConfig.h	pending	
 include/Gruntz/ScrollState.h	pending	
@@ -370,6 +374,7 @@ include/Net/KeyedList.h	pending
 include/Net/LatencyList.h	pending	
 include/Net/LobbyDialogs.h	pending	
 include/Net/NetCmdSlot.h	pending	
+include/Net/NetConnectionType.h	pending	
 include/Net/NetGuids.h	pending	
 include/Net/NetLobby.h	pending	
 include/Net/NetMgr.h	pending	
@@ -413,7 +418,6 @@ include/Wwd/WwdSpatialMgr.h	pending
 include/rva.h	pending	
 include/strstrea.h	pending	
 src/Bute/BSecStream.cpp	pending	
-src/Bute/ButeDtorPool.cpp	pending	
 src/Bute/ButeMgr.cpp	pending	
 src/Bute/ButeNode.cpp	pending	
 src/Bute/ButeStoreClear.cpp	pending	
@@ -446,6 +450,7 @@ src/DDrawMgr/DDrawWorkerRegistry.cpp	pending
 src/DDrawMgr/DataBuffer.cpp	pending	
 src/DDrawMgr/DirPal.cpp	pending	
 src/DDrawMgr/DirectDrawMgr.cpp	pending	
+src/DDrawMgr/EngineHelperPocket.cpp	pending	
 src/DDrawMgr/Fader.cpp	pending	
 src/DDrawMgr/FaderMgr.cpp	pending	
 src/DDrawMgr/LevelPlane.cpp	pending	
@@ -522,6 +527,7 @@ src/Gruntz/GameIconFlashEffect.cpp	pending
 src/Gruntz/GameInfoString.cpp	pending	
 src/Gruntz/GameKeyHandler.cpp	pending	
 src/Gruntz/GameLevel.cpp	pending	
+src/Gruntz/GameLevelLookupTile.cpp	pending	
 src/Gruntz/GameMode.cpp	pending	
 src/Gruntz/GameObjectFactory.cpp	pending	
 src/Gruntz/GameStateRecordLoad.cpp	pending	
@@ -662,7 +668,6 @@ src/Gruntz/SpriteRef.cpp	pending
 src/Gruntz/SpriteRefTable.cpp	pending	
 src/Gruntz/StartUpPrompt.cpp	pending	
 src/Gruntz/StateDispatch.cpp	pending	
-src/Gruntz/StateImages.cpp	pending	
 src/Gruntz/StateMgrBZ.cpp	pending	
 src/Gruntz/StateReleaseResources.cpp	pending	
 src/Gruntz/StaticHazard.cpp	pending	
@@ -748,6 +753,7 @@ src/Utils/WinAPIModule.cpp	pending
 src/Wap32/EngStr.cpp	pending	
 src/Wap32/EngStrRenderText.cpp	pending	
 src/Wap32/GameApp.cpp	pending	
+src/Wap32/GameAppComdats.cpp	pending	
 src/Wap32/GameWnd.cpp	pending	
 src/Wap32/GameWndComdats.cpp	pending	
 src/Wap32/Rect.cpp	pending	
