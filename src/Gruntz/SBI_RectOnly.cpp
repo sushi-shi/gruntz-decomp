@@ -32,6 +32,7 @@
 #include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_WarlordHead.h>
 #include <Gruntz/SBI_WellGoo.h>
+#include <Gruntz/SbiCommandId.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -412,20 +413,20 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
-            if (cmd > 0x259) {
-                if (cmd == 0x25a) {
+            if (cmd > SBICMD_DOCK_FIRST) {
+                if (cmd == SBICMD_DOCK_RIGHT) {
                     HiCueFind();
                     DockStatusBarRight();
                     return 1;
                 }
-                if (cmd == 0x25b) {
+                if (cmd == SBICMD_HIDE) {
                     HiCueFind();
                     HideRect();
                     return 1;
                 }
                 return 0;
             }
-            if (cmd == 0x259) {
+            if (cmd == SBICMD_DOCK_LEFT) {
                 HiCueFind();
                 RefreshA();
                 return 1;
@@ -510,23 +511,23 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 return 1;
             }
             switch (cmd) {
-                case 0x1f4:
+                case SBICMD_PAUSE:
                     HiCueFind();
                     HiPost(0x8007);
                     return 1;
-                case 0x1f5:
+                case SBICMD_LOAD_GAME:
                     HiCueFind();
                     HiPost(0x80ce);
                     return 1;
-                case 0x1f6:
+                case SBICMD_SAVE_GAME:
                     HiCueFind();
                     HiPost(0x80cf);
                     return 1;
-                case 0x1f8:
+                case SBICMD_BOOTY_STATE:
                     HiCueFind();
                     HiPost(0x8035);
                     return 1;
-                case 0x1f7:
+                case SBICMD_SETTINGS:
                     HiCueLookup();
                     HiPost(0x80e2);
                     return 1;
@@ -538,11 +539,11 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(1);
                     return 1;
-                case 0x1fa:
+                case SBICMD_GAME_TAB:
                     HiCueLookup();
                     SetTab(5, 0);
                     return 1;
-                case 0x1fc:
+                case SBICMD_DESTRUCT:
                     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                         return 1;
                     }
@@ -582,7 +583,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
 
         case 6:
             switch (cmd) {
-                case 0x324:
+                case SBICMD_RELOAD_LEVEL:
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         HiCueLookup();
                         g_gameReg->AccrueScoreTime();
@@ -593,7 +594,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         HiCueLookup();
                     }
                     return 1;
-                case 0x325:
+                case SBICMD_MAIN_MENU_A:
                     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
@@ -605,7 +606,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         g_gameReg->AccrueScoreTime();
                     }
                     return 1;
-                case 0x327:
+                case SBICMD_MAIN_MENU_B:
                     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
@@ -1279,7 +1280,7 @@ i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->SetState(state, 1);
             return 1;
-        case 0x1f4:
+        case SBICMD_PAUSE:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1290,7 +1291,7 @@ i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
             return 1;
-        case 0x1f5:
+        case SBICMD_LOAD_GAME:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1301,7 +1302,7 @@ i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
             return 1;
-        case 0x1f6:
+        case SBICMD_SAVE_GAME:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1312,7 +1313,7 @@ i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
             return 1;
-        case 0x1f7:
+        case SBICMD_SETTINGS:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1323,7 +1324,7 @@ i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
             return 1;
-        case 0x1f8:
+        case SBICMD_BOOTY_STATE:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1345,25 +1346,25 @@ i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->SetState(state, 1);
             return 1;
-        case 0x1fa:
+        case SBICMD_GAME_TAB:
             if (m_hlBusy) {
                 return 1;
             }
             m_tabSprite10->SetState(state, 1);
             return 1;
-        case 0x324:
+        case SBICMD_RELOAD_LEVEL:
             if (m_tabSprite11) {
                 m_tabSprite11->SetState(state, 1);
             }
             m_tabSprite12->ProbeState(state);
             return 1;
-        case 0x325:
+        case SBICMD_MAIN_MENU_A:
             if (m_tabSprite11) {
                 m_tabSprite11->ProbeState(state);
             }
             m_tabSprite12->SetState(state, 1);
             return 1;
-        case 0x327:
+        case SBICMD_MAIN_MENU_B:
             m_tabSprite13->SetState(state, 1);
             m_tabSprite14->ProbeState(state);
             return 1;

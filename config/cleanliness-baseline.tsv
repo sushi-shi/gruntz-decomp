@@ -11,8 +11,8 @@ placeholder vtable slots	0
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
-magic case labels	941
-unnamed domain compares	679
+magic case labels	922
+unnamed domain compares	676
 .cpp-local enums	23
 C-style casts	0
 reinterpret_casts	37
