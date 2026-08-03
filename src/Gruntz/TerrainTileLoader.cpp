@@ -16,6 +16,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -297,7 +298,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == 0x55) {
+                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
@@ -362,7 +363,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == 0x55) {
+                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
@@ -432,7 +433,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == 0x55) {
+                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
@@ -497,7 +498,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == 0x55) {
+                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {

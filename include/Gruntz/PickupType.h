@@ -127,6 +127,10 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     // --- Miscellaneous (75-99) ----------------------------------------------
     PICKUP_STOPWATCH = 0x4b,
     PICKUP_COIN = 0x50,
+    // The editor's table lists 85 as the Toy Box, opened to reveal its contents
+    // and unable to sit inside a CoveredPowerup. CInGameIcon reads obj->m_points
+    // beside it, which is where those contents are named.
+    PICKUP_TOYBOX = 0x55,
     PICKUP_W = 0x5a,
     PICKUP_A = 0x5b,
     PICKUP_R = 0x5c,

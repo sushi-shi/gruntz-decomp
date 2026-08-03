@@ -13,6 +13,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageSets.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -452,7 +453,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
             obj->m_flags |= 0x10000;
         } else if (who == CreateInGameIcon) {
-            if (obj->m_smarts == 0x32) {
+            if (obj->m_smarts == PICKUP_MEGAPHONE) {
 
                 m_guts->InsertPtr(obj->m_points, obj->m_score);
             }

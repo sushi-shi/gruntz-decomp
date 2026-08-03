@@ -3009,46 +3009,46 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             i32 special = 0;
 
             switch (g->m_smarts) {
-                case 0x33:
+                case PICKUP_HEALTH1:
                     special = 1;
                     break;
-                case 0x34:
+                case PICKUP_HEALTH2:
                     special = 1;
                     break;
-                case 0x35:
+                case PICKUP_HEALTH3:
                     special = 1;
                     break;
-                case 0x36:
+                case PICKUP_GHOST:
                     special = 1;
                     break;
-                case 0x37:
+                case PICKUP_SUPERSPEED:
                     special = 1;
                     break;
-                case 0x38:
+                case PICKUP_INVULNERABILITY:
                     special = 1;
                     break;
-                case 0x39:
+                case PICKUP_CONVERSION:
                     special = 1;
                     break;
-                case 0x3a:
+                case PICKUP_DEATHTOUCH:
                     special = 1;
                     break;
-                case 0x3b:
+                case PICKUP_ROIDZ:
                     special = 1;
                     break;
-                case 0x3c:
+                case PICKUP_REACTIVEARMOR:
                     special = 1;
                     break;
-                case 0x3d:
+                case PICKUP_RANDOMCOLORZ:
                     special = 1;
                     break;
-                case 0x3e:
+                case PICKUP_SCREENSHAKE:
                     special = 1;
                     break;
-                case 0x3f:
+                case PICKUP_BLACKSCREEN:
                     special = 1;
                     break;
-                case 0x40:
+                case PICKUP_MINICAM:
                     special = 1;
                     break;
             }

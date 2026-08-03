@@ -366,7 +366,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 
-    if (m_object->m_smarts == 0x14 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (m_object->m_smarts == PICKUP_WARPSTONE && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
         CString levelStr;
         levelStr.Format("Level%i", lvl->m_levelIndex);
@@ -689,7 +689,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         return 0;
     }
     CWwdGameObjectA* obj = m_object;
-    if (obj->m_smarts == 0x55) {
+    if (obj->m_smarts == PICKUP_TOYBOX) {
 
         i32 param = obj->m_points;
         i32 matchActive = 0;

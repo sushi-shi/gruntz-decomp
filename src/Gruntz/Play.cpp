@@ -3686,7 +3686,7 @@ i32 CPlay::ClearPlacedObjects() {
                     g_coordPool.m_freeHead = node;
                     return -1;
                 }
-                stillPlaced = (result->m_smarts == 0x14);
+                stillPlaced = (result->m_smarts == PICKUP_WARPSTONE);
             }
 
             if (!stillPlaced) {
@@ -6987,7 +6987,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         break;
                 }
             } else if (marker == static_cast<void*>(CreateInGameIcon)) {
-                i32 cv = obj->m_smarts == 0x32 ? obj->m_points : obj->m_smarts;
+                i32 cv = obj->m_smarts == PICKUP_MEGAPHONE ? obj->m_points : obj->m_smarts;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
                 } else if (cv >= 0x17 && cv <= 0x20) {
