@@ -62,7 +62,9 @@ static char s_Spellz[] = "Spellz";
 DATA(0x0020ee38)
 static char s_FreezeDelay[] = "FreezeDelay";
 
+DATA(0x0020dbd0)
 static char s_BOMBGRUNT[] = "BOMBGRUNT";
+DATA(0x0020e264)
 static char s_RunningTimePerTile[] = "RunningTimePerTile";
 
 static const char s_animKeyA[] = "A";
