@@ -68,7 +68,6 @@ static char s_BOMBGRUNT[] = "BOMBGRUNT";
 DATA(0x0020e264)
 static char s_RunningTimePerTile[] = "RunningTimePerTile";
 
-static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
 DATA(0x0020edf4)

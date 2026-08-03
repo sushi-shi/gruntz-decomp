@@ -54,11 +54,6 @@ DATA(0x0020dd40)
 static const char s__LOSEITEM[] = "_LOSEITEM";
 DATA(0x0020a680)
 static const char s_SingleAnimation[] = "SingleAnimation";
-static const char s_keyB[] = "B";
-static const char s_keyC[] = "C";
-static const char s_keyE[] = "E";
-static const char s_keyA[] = "A";
-static const char s_keyF[] = "F";
 
 // damage% by [entrance reason][attack kind]; retail .rdata 23x23 matrix
 DATA(0x001e9788)

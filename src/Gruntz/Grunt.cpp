@@ -67,13 +67,9 @@ DATA(0x0020a948)
 static const char s_GruntSelectedSprite[] = "GruntSelectedSprite";
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
-static const char s__DEATH[] = "_DEATH";
-static const char s_keyE[] = "E";
-static const char s_keyA[] = "A";
 
 DATA(0x0020cc98)
 static char s_codeL[] = "L";
-static const char s_keyF[] = "F";
 
 i32 g_movingSeed;
 
@@ -114,9 +110,6 @@ static char s_codeI[] = "I";
 VTBL(CMovingLogic, 0x001e87ac);
 DATA(0x002455b0)
 i32 g_traitorMode;
-
-static const char s_animKeyA[] = "A";
-static const char s_animKeyK[] = "K";
 
 DATA(0x0020bb64)
 static const char s_pose_WALK[] = "_WALK";
