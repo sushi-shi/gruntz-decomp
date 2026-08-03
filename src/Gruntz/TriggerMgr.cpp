@@ -1,4 +1,3 @@
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <AddrWord.h>
@@ -11,6 +10,7 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>

@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntEntranceArrival.h>
 
 #include <AddrWord.h>
@@ -18,6 +17,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>

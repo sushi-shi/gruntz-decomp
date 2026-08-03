@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/Multi.h>
 
 #include <Bute/ButeMgr.h>
@@ -25,6 +24,7 @@
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>

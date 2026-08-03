@@ -1,11 +1,11 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/PathHazard.h>
 
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>

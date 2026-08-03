@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/InGameIcon.h>
 
 #include <Mfc.h>
@@ -15,6 +14,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>

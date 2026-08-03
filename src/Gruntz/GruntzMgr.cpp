@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h>
@@ -35,6 +34,7 @@
 #include <Gruntz/Fonts.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>

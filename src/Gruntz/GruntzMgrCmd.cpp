@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/GruntzMgrCmd.h>
 
 #include <Mfc.h>
@@ -10,6 +9,7 @@
 #include <Enums.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>

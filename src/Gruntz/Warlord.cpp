@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/Warlord.h>
 
 #include <Bute/ButeTree.h>
@@ -12,6 +11,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FontConfig.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>

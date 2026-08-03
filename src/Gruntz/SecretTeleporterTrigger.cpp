@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GameModeId.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
 
 #include <Bute/ButeTree.h>
@@ -9,6 +8,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
