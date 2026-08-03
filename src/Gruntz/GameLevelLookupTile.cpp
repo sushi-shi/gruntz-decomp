@@ -14,6 +14,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Io/FileStream.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wwd/WwdFile.h>
 
@@ -57,7 +58,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     }
     mp = m_mainPlane;
     i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
-    if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return 0;
     }
     CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);

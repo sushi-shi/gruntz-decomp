@@ -107,7 +107,7 @@ i32 CPlay::ScanBuildTiles() {
             i32 subY = y - (tileY << shY);
             i32 cell = g->m_tileGrid[g->m_colOffsets[tileY] + tileX];
             TileCollisionKind tile;
-            if (cell == static_cast<i32>(0xeeeeeeee) || cell == static_cast<i32>(0xffffffff)) {
+            if (cell == UNINIT_FILL || cell == static_cast<i32>(0xffffffff)) {
                 tile = TILEKIND_PASSABLE;
             } else {
 

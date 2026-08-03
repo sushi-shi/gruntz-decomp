@@ -106,7 +106,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 idx = pl->m_colOffsets[qy] + col;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
@@ -188,7 +188,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 idx = pl->m_colOffsets[qy] + col;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
@@ -270,7 +270,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 idx = pl->m_colOffsets[qy] + c;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
@@ -352,7 +352,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 idx = pl->m_colOffsets[qy] + c;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);

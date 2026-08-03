@@ -23,6 +23,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
 RVA(0x00075e90, 0x1329)
@@ -59,7 +60,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     TileCollisionKind cellType;
     i32 cell = plane->m_tileGrid[plane->m_colOffsets[cy] + cx];
-    if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
+    if (cell == UNINIT_FILL || cell == -1) {
         cellType = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* tc = static_cast<CTileImageSet*>(grid->m_imageSets.GetAt(cell & 0xffff));

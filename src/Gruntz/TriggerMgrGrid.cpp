@@ -35,6 +35,7 @@
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
 #include <stddef.h>
@@ -476,7 +477,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     i32 subY = cy - (ty << level->m_mainPlane->m_shiftY);
     i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[ty] + tx];
     TileCollisionKind tag;
-    if (raw == static_cast<i32>(0xeeeeeeee) || raw == -1) {
+    if (raw == UNINIT_FILL || raw == -1) {
         tag = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
@@ -903,7 +904,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     i32 subY = y - (ty << sw);
     i32 attr = scroll->m_tileGrid[scroll->m_colOffsets[ty] + tx];
     TileCollisionKind kind;
-    if (attr == static_cast<i32>(0xeeeeeeee) || attr == -1) {
+    if (attr == UNINIT_FILL || attr == -1) {
         kind = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));

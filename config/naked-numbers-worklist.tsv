@@ -23,7 +23,7 @@ src/Gruntz/GruntSteps.cpp	490	done (toy-ordinal bias is byte-evidenced and kept;
 src/DDrawMgr/Fader.cpp	490	none (fade step counts, frame spans and palette indices)
 src/Gruntz/Dialogs.cpp	463	none (index is a 0..3 player-slot ordinal mapping to control ids)
 src/Gruntz/MainMenuBuilder.cpp	459	partial (LevelArea + QuestLevel + CMD_LOAD_WORLD applied; 0x8149 has no handler in-tree)
-src/Gruntz/TileTriggerSwitchLogic.cpp	458	none (<<5 / +0x10 is tile-to-pixel-centre geometry)
+src/Gruntz/TileTriggerSwitchLogic.cpp	458	none (UNINIT_FILL applied; rest is tile-to-pixel geometry)
 src/Gruntz/GameLevel.cpp	447	partial (MOVE_DIRECT named; m_objectType 0x80 is a WWD type bit with no recovered table)
 src/DinMgr2/DinMgr2.cpp	446	done (16 DIERR_* HRESULTs - each arm printed its own name; SDK macros substituted)
 src/Dsndmgr/DirectSoundMgr.cpp	445	none (literals are buffer sizes, sample rates and volume magnitudes)
@@ -109,51 +109,51 @@ src/Gruntz/CheatMgr.cpp	96	done (18 cheat registrations bound to their GruntzCom
 src/Gruntz/KitchenSlime.cpp	94	done
 src/Gruntz/StateMgrBZ.cpp	91	done
 src/Wwd/WwdGameObjectRender.cpp	85	none (0x1000000 is a draw flag bit; rest is blit arithmetic)
-src/Gruntz/ChatBox.cpp	84	none (chat-box geometry and character codes)
+src/Gruntz/ChatBox.cpp	84	none (UNINIT_FILL applied; rest is chat-box geometry)
 src/Gruntz/LevelPreview.cpp	81	none (preview thumbnail geometry and a millisecond timeout)
 src/Gruntz/ChatBoxOwner.cpp	80	none (chat-box geometry)
-src/Gruntz/SBI_WellGoo.cpp	78	pending
-src/Crypto/Blowfish.cpp	78	pending
+src/Gruntz/SBI_WellGoo.cpp	78	none (0x80 is the serialized name field; rest is HUD geometry)
+src/Crypto/Blowfish.cpp	78	none (256-entry S-boxes and byte masks)
 src/DDrawMgr/FaderMgr.cpp	76	done
-src/DDrawMgr/DDrawPtrCollections.cpp	74	pending
-src/Gruntz/GameObjectFactory.cpp	73	pending
-src/Gruntz/Brickz.cpp	73	pending
-src/Gruntz/SpotLight.cpp	71	pending
+src/DDrawMgr/DDrawPtrCollections.cpp	74	none (collection growth sizes)
+src/Gruntz/GameObjectFactory.cpp	73	none (two one-off table ordinals)
+src/Gruntz/Brickz.cpp	73	none (0x939 is an anim id; 0x20000000 a WWD flag bit)
+src/Gruntz/SpotLight.cpp	71	none (0xcf850 is a fixed-point radius; 0x1f/0x10 tile arithmetic)
 src/Gruntz/FortressFlag.cpp	69	done (AnimWorkerAct dispatch named)
-src/Wap32/GameWnd.cpp	67	pending
-src/Gruntz/SFSelectDevice.cpp	66	pending
-src/Wwd/WwdSpatialMgr.cpp	65	pending
-src/Rez/DebugPrintf.cpp	64	pending
-src/Gruntz/HelpState.cpp	63	pending
-src/DDrawMgr/DDrawWorkerRegistry.cpp	62	pending
-src/Gruntz/SBI_StatzTabGruntBar.cpp	61	pending
-src/DinMgr2/InputDevice.cpp	61	pending
-src/Gruntz/SecretTeleporterTrigger.cpp	60	pending
-src/Gruntz/MenuItem.cpp	60	pending
-src/Gruntz/ImageSet2.cpp	59	pending
-src/Gruntz/TriggerMgrHitTest.cpp	56	pending
-src/Utils/RegistryHelper.cpp	54	pending
-src/Gruntz/GooWellMgr.cpp	54	pending
-src/Net/NetMgrReportError.cpp	49	pending
-src/Gruntz/LightFxMgr.cpp	49	pending
-src/Gruntz/GameStateRecordLoad.cpp	49	pending
-src/DDrawMgr/AniRecord.cpp	48	pending
-src/Utils/WinAPICdRom.cpp	44	pending
-src/Gruntz/SplashState.cpp	42	pending
-src/Gruntz/SBI_MenuItem.cpp	42	pending
-src/Gruntz/SBI_WarlordHead.cpp	41	pending
-src/Gruntz/SaveScreenshot.cpp	40	pending
-src/Gruntz/HeapDiag.cpp	40	pending
-src/Gruntz/WinMain.cpp	39	pending
-src/Gruntz/GruntTileScan.cpp	38	pending
-src/Gruntz/Ufo.cpp	35	pending
-src/Gruntz/PlayPlaneScan.cpp	35	pending
-src/Gruntz/FrontCandyAni.cpp	35	pending
-src/Gruntz/GruntTubeAnim.cpp	34	pending
-src/Gruntz/GruntDecay.cpp	34	pending
-src/Gruntz/GameAssetNamespaces.cpp	34	pending
-src/Gruntz/BuildGruntzCrcInfo.cpp	34	pending
-src/Gruntz/ProjActCache.cpp	33	pending
+src/Wap32/GameWnd.cpp	67	none (0xffff is the LOWORD mask on WM_COMMAND unpacking)
+src/Gruntz/SFSelectDevice.cpp	66	none (device-list buffer sizes)
+src/Wwd/WwdSpatialMgr.cpp	65	none (spatial-bucket strides)
+src/Rez/DebugPrintf.cpp	64	none (format buffer sizes)
+src/Gruntz/HelpState.cpp	63	none (help-page geometry)
+src/DDrawMgr/DDrawWorkerRegistry.cpp	62	none (hash-bucket masks)
+src/Gruntz/SBI_StatzTabGruntBar.cpp	61	none (HUD bar geometry)
+src/DinMgr2/InputDevice.cpp	61	none (DirectInput buffer sizes and key indices)
+src/Gruntz/SecretTeleporterTrigger.cpp	60	none (tile-centre arithmetic and fixed-point one)
+src/Gruntz/MenuItem.cpp	60	done (UNINIT_FILL for the unset hit box; rest is menu geometry)
+src/Gruntz/ImageSet2.cpp	59	none (tile-record field offsets)
+src/Gruntz/TriggerMgrHitTest.cpp	56	none (hit-box half extents)
+src/Utils/RegistryHelper.cpp	54	done (KEY_ALL_ACCESS from the SDK; rest are registry buffer sizes)
+src/Gruntz/GooWellMgr.cpp	54	none (millisecond timers)
+src/Net/NetMgrReportError.cpp	49	none (message buffer size and a LOWORD mask)
+src/Gruntz/LightFxMgr.cpp	49	none (0xff0000/0xff8080 are RGB tint colours, self-describing)
+src/Gruntz/GameStateRecordLoad.cpp	49	none (0x80 is the serialized name field)
+src/DDrawMgr/AniRecord.cpp	48	none (ANI record field offsets)
+src/Utils/WinAPICdRom.cpp	44	none (drive-string buffer sizes)
+src/Gruntz/SplashState.cpp	42	none (splash geometry, one use each)
+src/Gruntz/SBI_MenuItem.cpp	42	none (0x80 is the serialized name field)
+src/Gruntz/SBI_WarlordHead.cpp	41	none (HUD geometry, one use each)
+src/Gruntz/SaveScreenshot.cpp	40	none (BMP header sizes)
+src/Gruntz/HeapDiag.cpp	40	none (heap-walk buffer sizes)
+src/Gruntz/WinMain.cpp	39	none (0xFE is a path buffer size; 0x80000000 is GetAsyncKeyState key-down, not a coordinate)
+src/Gruntz/GruntTileScan.cpp	38	none (anim ids with no recovered table)
+src/Gruntz/Ufo.cpp	35	none (0x80 is the serialized name field; rest are pixel speeds)
+src/Gruntz/PlayPlaneScan.cpp	35	none (fixed-point one and plane arithmetic)
+src/Gruntz/FrontCandyAni.cpp	35	none (0xf4240 is a microsecond constant; rest are frame ids)
+src/Gruntz/GruntTubeAnim.cpp	34	none (two one-off anim ids)
+src/Gruntz/GruntDecay.cpp	34	none (0xbb8 is a millisecond lifetime; 0x10000 fixed-point one)
+src/Gruntz/GameAssetNamespaces.cpp	34	none (namespace-table sizes)
+src/Gruntz/BuildGruntzCrcInfo.cpp	34	none (CRC record field offsets)
+src/Gruntz/ProjActCache.cpp	33	none (cache-table sizes)
 src/Gruntz/FortConquered.cpp	33	pending
 src/Gruntz/ActionArea.cpp	33	none (1/2 pick GAME_ACTIONAREA_BLUE/_RED - the arm string already names it)
 src/Image/PaletteBmp.cpp	32	pending

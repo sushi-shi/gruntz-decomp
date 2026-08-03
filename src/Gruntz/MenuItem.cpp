@@ -14,6 +14,7 @@
 #include <Gruntz/MenuItemState.h>
 #include <Gruntz/MenuPage.h>
 #include <Image/CImage.h>
+#include <Wap32/CoordUnset.h>
 
 #include <stdio.h>
 
@@ -48,8 +49,8 @@ void CMenuItem::Reset() {
     m_sprite = NULL;
     m_owner = NULL;
     m_listPos = NULL;
-    m_hitLeft = static_cast<i32>(0xeeeeeeee);
-    m_fixedX = static_cast<i32>(0xeeeeeeee);
+    m_hitLeft = UNINIT_FILL;
+    m_fixedX = UNINIT_FILL;
     m_leftName.Empty();
     m_rightName.Empty();
     m_upName.Empty();
@@ -186,7 +187,7 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
         return 0;
     }
 
-    if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
+    if (m_fixedX != UNINIT_FILL) {
         x = m_fixedX;
         y = m_fixedY;
     }
@@ -230,7 +231,7 @@ i32 CMenuItem::Trigger() {
 }
 RVA(0x00185700, 0x4b)
 i32 CMenuItem::Hit(i32 x, i32 y) {
-    if (m_hitLeft == static_cast<i32>(0xeeeeeeee)) {
+    if (m_hitLeft == UNINIT_FILL) {
         return 0;
     }
     if (x < m_hitLeft) {
@@ -317,7 +318,7 @@ i32 CMenuItem2::Notify(u32 a) {
 RVA(0x001858d0, 0x72)
 i32 CMenuItem2::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
 
-    if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
+    if (m_fixedX != UNINIT_FILL) {
         x = m_fixedX;
         y = m_fixedY;
     }

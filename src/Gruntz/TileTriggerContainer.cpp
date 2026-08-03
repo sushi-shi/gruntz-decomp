@@ -18,6 +18,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Io/FileMem.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <new>
@@ -902,7 +903,7 @@ void* CTileTriggerContainer::LoadElement(
             i32 cell = geo->m_colOffsets[y] + x;
             i32 tile = geo->m_tileGrid[cell];
             TileCollisionKind tileKind;
-            if (tile == static_cast<i32>(0xeeeeeeee) || tile == -1) {
+            if (tile == UNINIT_FILL || tile == -1) {
                 tileKind = TILEKIND_PASSABLE;
             } else {
 

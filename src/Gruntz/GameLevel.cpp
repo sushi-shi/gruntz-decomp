@@ -457,7 +457,7 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     i32 idx = pl->m_colOffsets[qy] + col;
     i32 subY = py - (qy << pl->m_shiftY);
     i32 tile = pl->m_tileGrid[idx];
-    if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
     CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
@@ -500,7 +500,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     }
     mp = m_mainPlane;
     i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
-    if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return 0;
     }
     CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
@@ -1436,7 +1436,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     i32 qy = y >> pl->m_shiftY;
     i32 idx = pl->m_colOffsets[qy] + qx;
     i32 tile = pl->m_tileGrid[idx];
-    if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return 0;
     }
     CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);

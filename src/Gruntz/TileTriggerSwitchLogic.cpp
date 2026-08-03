@@ -28,6 +28,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
 #include <string.h>
@@ -122,7 +123,7 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
     }
     CDDrawWorkerHost* plane = level->m_mainPlane;
     i32 cell = plane->m_tileGrid[plane->m_colOffsets[y] + x];
-    if (cell == TILE_UNINIT || cell == TILE_CLEAR) {
+    if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
 
@@ -143,7 +144,7 @@ static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, 
         y = level->m_mainPlane->m_gridH - 1;
     }
     i32 cell = level->m_mainPlane->GetTileHandle(x, y);
-    if (cell == TILE_UNINIT || cell == TILE_CLEAR) {
+    if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
     // Ingest: the raw WWD attribute byte for this cell.

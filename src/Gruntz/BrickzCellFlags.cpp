@@ -8,6 +8,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Wap32/CoordUnset.h>
 
 // @early-stop
 RVA(0x00077790, 0x630)
@@ -30,7 +31,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     }
     i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
     i32 typeCode;
-    if (id == static_cast<i32>(0xeeeeeeee) || id == -1) {
+    if (id == UNINIT_FILL || id == -1) {
         typeCode = 0;
     } else {
         typeCode = (static_cast<CTileImageSet*>(level->m_imageSets.GetAt(id & 0xffff)))

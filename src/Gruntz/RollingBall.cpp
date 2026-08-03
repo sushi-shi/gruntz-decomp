@@ -22,6 +22,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/ZVec.h>
 
 #include <math.h>
@@ -235,7 +236,7 @@ i32 CRollingBall::Update() {
             i32 raw = pl->m_tileGrid[pl->m_colOffsets[col] + row];
             // A TileCollisionKind: the devirtualised CTileImageSet::GetCollisionAt(0, 0).
             i32 act = 0;
-            if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
+            if (raw != UNINIT_FILL && raw != -1) {
                 act = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
             }
 
@@ -442,7 +443,7 @@ i32 CRollingBall::Update() {
             CDDrawWorkerHost* pl2 = lvl2->m_mainPlane;
             i32 raw2 = pl2->m_tileGrid[pl2->m_colOffsets[col2] + row2];
             i32 act2 = 0;
-            if (raw2 != static_cast<i32>(0xeeeeeeee) && raw2 != -1) {
+            if (raw2 != UNINIT_FILL && raw2 != -1) {
                 act2 = VtblResolve(lvl2->m_imageSets[raw2 & 0xffff]);
             }
             switch (act2) {

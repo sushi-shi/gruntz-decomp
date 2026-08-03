@@ -22,6 +22,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";
@@ -50,7 +51,7 @@ static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
     i32 subX = x - (tx << g->m_shiftX);
     i32 subY = y - (ty << g->m_shiftY);
     i32 cell = g->GetTileHandle(tx, ty);
-    if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
+    if (cell == UNINIT_FILL || cell == -1) {
         return 0;
     }
 

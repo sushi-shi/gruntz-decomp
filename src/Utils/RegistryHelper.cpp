@@ -241,7 +241,7 @@ namespace Utils {
                    0,
                    g_emptyString,
                    0,
-                   0xf003f,
+                   KEY_ALL_ACCESS,
                    0,
                    phKeyResult,
                    &dwDisposition

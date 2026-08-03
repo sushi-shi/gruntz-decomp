@@ -62,6 +62,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wap32/Rect.h>
 #include <Wap32/Wap32.h>
@@ -3764,7 +3765,7 @@ void CGrunt::XferName(char*) {
             }
             i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
             i32 kind;
-            if (raw == static_cast<i32>(0xeeeeeeee) || raw == -1) {
+            if (raw == UNINIT_FILL || raw == -1) {
                 kind = 0;
             } else {
                 CTileImageSet* ts =

@@ -47,6 +47,7 @@
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
 #include <stdlib.h>
@@ -465,7 +466,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
     TileCollisionKind collision = TILEKIND_PASSABLE;
     i32 cval = grid->m_tileGrid[grid->m_colOffsets[cy] + cx];
-    if (cval != static_cast<i32>(0xeeeeeeee) && cval != -1) {
+    if (cval != UNINIT_FILL && cval != -1) {
 
         CTileImageSet* tc = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(cval & 0xffff));
         // Ingest: the raw WWD attribute byte for this cell.
@@ -1513,7 +1514,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             i32 row = (ty >= grid->m_gridH) ? grid->m_gridH - 1 : ty;
             i32 cell = grid->m_tileGrid[grid->m_colOffsets[row] + col];
             TileCollisionKind type;
-            if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
+            if (cell == UNINIT_FILL || cell == -1) {
                 type = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* o =

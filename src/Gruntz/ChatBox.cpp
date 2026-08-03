@@ -13,6 +13,7 @@
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/CoordUnset.h>
 
 #include <stddef.h>
 
@@ -266,7 +267,7 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0)
         return 0;
     }
     i32 anchorX, anchorY;
-    if (sprite->m_fixedX != static_cast<i32>(0xeeeeeeee)) {
+    if (sprite->m_fixedX != UNINIT_FILL) {
         anchorY = sprite->m_fixedY;
         anchorX = sprite->m_fixedX;
     } else {

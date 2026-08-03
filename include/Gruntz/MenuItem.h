@@ -7,6 +7,7 @@
 
 #include <Enums.h>
 #include <Ints.h>
+#include <Wap32/CoordUnset.h>
 
 GZ_ENUM_FORWARD(MenuItemState);
 
@@ -101,8 +102,8 @@ inline CMenuItem::CMenuItem() {
     m_sprite = NULL;
     m_owner = NULL;
     m_listPos = NULL;
-    m_hitLeft = static_cast<i32>(0xeeeeeeee);
-    m_fixedX = static_cast<i32>(0xeeeeeeee);
+    m_hitLeft = UNINIT_FILL;
+    m_fixedX = UNINIT_FILL;
     m_leftName.Empty();
     m_rightName.Empty();
     m_upName.Empty();

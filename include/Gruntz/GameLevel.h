@@ -17,7 +17,6 @@
 class CFileMemBase;
 class CDDrawSurfacePair;
 
-static const i32 TILE_UNINIT = static_cast<i32>(0xeeeeeeee);
 static const i32 TILE_CLEAR = -1;
 
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
@@ -46,7 +45,7 @@ static const i32 TILE_CLEAR = -1;
         i32 idx_ = pl_->m_colOffsets[qy_] + col_;                                                  \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
-        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
+        if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
             CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);        \
@@ -56,6 +55,7 @@ static const i32 TILE_CLEAR = -1;
     } while (0)
 
 #include <Gruntz/ImageSets.h>
+#include <Wap32/CoordUnset.h>
 
 struct CParseSource;
 
