@@ -67,15 +67,7 @@ DATA(0x0020a948)
 static const char s_GruntSelectedSprite[] = "GruntSelectedSprite";
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
-static const char s__MOVING[] = "_MOVING";
 static const char s__DEATH[] = "_DEATH";
-static const char s__JOY[] = "_JOY";
-static const char s__IDLE[] = "_IDLE";
-static const char s__BATTLECRY[] = "_BATTLECRY";
-static const char s__LOSEITEM[] = "_LOSEITEM";
-static const char s_SingleAnimation[] = "SingleAnimation";
-static const char s_keyB[] = "B";
-static const char s_keyC[] = "C";
 static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 
@@ -95,10 +87,6 @@ static char s_IdleDelay[] = "IdleDelay";
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
 static char s_CombatTimeout[] = "CombatTimeout";
 
-static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
-
-static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";
-static const char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE";
 static char s_Spellz[] = "Spellz";
 static char s_FreezeDelay[] = "FreezeDelay";
 

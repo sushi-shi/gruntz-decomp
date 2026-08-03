@@ -50,11 +50,6 @@
 #pragma intrinsic(strcmp, sqrt)
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
-static const char s__MOVING[] = "_MOVING";
-static const char s__DEATH[] = "_DEATH";
-static const char s__JOY[] = "_JOY";
-static const char s__IDLE[] = "_IDLE";
-static const char s__BATTLECRY[] = "_BATTLECRY";
 DATA(0x0020dd40)
 static const char s__LOSEITEM[] = "_LOSEITEM";
 DATA(0x0020a680)

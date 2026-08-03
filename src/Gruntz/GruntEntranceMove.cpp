@@ -148,14 +148,6 @@ DATA(0x0020e924)
 static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
 static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
-static const char s_exitKeyB[] = "B";
-static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";
-static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
-static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
-static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE";
-
-static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
-static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
 DATA(0x0020ee64)
 static char s_MovingDeathTime[] = "MovingDeathTime";
 static const char s_animKeyS[] = "S";

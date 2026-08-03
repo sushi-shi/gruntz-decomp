@@ -58,7 +58,6 @@ static char s_BOMBGRUNT[] = "BOMBGRUNT";
 static char s_RunningTimePerTile[] = "RunningTimePerTile";
 
 static const char s_animKeyA[] = "A";
-static const char s_animKeyK[] = "K";
 
 DATA(0x0020df94)
 char k_60df94[] = "S";
@@ -74,13 +73,6 @@ char s_codeQ[] = "Q";
 
 DATA(0x0020e194)
 static char s_ToyTime[] = "ToyTime";
-static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
-static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
-static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
-static const char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
-static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
-static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
-static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
 static const char s_exitKeyB[] = "B";
 static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";
