@@ -156,25 +156,25 @@ static __inline char* PbStr(const CString& s) {
 
 // @early-stop
 RVA(0x00110860, 0x2a0)
-void CTileTriggerLogic::LoadBridgeMove(i32 type) {
+void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     i32 px, py;
     CGruntzMgr* r;
     CDDrawSubMgrLeafScan* set;
     switch (type) {
-        case 93:
-        case 94:
-        case 95:
-        case 96:
-        case 97:
-        case 98:
-        case 99:
-        case 100:
-        case 101:
-        case 102:
-        case 103:
-        case 104:
-        case 105:
-        case 106:
+        case TILEKIND_CHECKPOINTPYRAMID_DOWN:
+        case TILEKIND_CHECKPOINTPYRAMID_UP:
+        case TILEKIND_WHITEPYRAMID_DOWN:
+        case TILEKIND_WHITEPYRAMID_UP:
+        case TILEKIND_ORANGEPYRAMID_DOWN:
+        case TILEKIND_ORANGEPYRAMID_UP:
+        case TILEKIND_BLACKPYRAMID_DOWN:
+        case TILEKIND_BLACKPYRAMID_UP:
+        case TILEKIND_GREENPYRAMID_DOWN:
+        case TILEKIND_GREENPYRAMID_UP:
+        case TILEKIND_REDPYRAMID_DOWN:
+        case TILEKIND_REDPYRAMID_UP:
+        case TILEKIND_PURPLEPYRAMID_DOWN:
+        case TILEKIND_PURPLEPYRAMID_UP:
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
@@ -189,8 +189,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 }
             }
             return;
-        case 107:
-        case 108:
+        case TILEKIND_WATERBRIDGE_DOWN:
+        case TILEKIND_WATERBRIDGE_UP:
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
@@ -205,8 +205,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 }
             }
             return;
-        case 113:
-        case 114:
+        case TILEKIND_TOGGLEWATERBRIDGE_DOWN:
+        case TILEKIND_TOGGLEWATERBRIDGE_UP:
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
@@ -215,8 +215,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_WATERBRIDGEMOVE");
             }
             return;
-        case 109:
-        case 110:
+        case TILEKIND_DEATHBRIDGE_DOWN:
+        case TILEKIND_DEATHBRIDGE_UP:
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
@@ -225,8 +225,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
-        case 115:
-        case 116:
+        case TILEKIND_TOGGLEDEATHBRIDGE_DOWN:
+        case TILEKIND_TOGGLEDEATHBRIDGE_UP:
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
@@ -235,8 +235,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
-        case 111:
-        case 112:
+        case TILEKIND_CRUMBLEWATERBRIDGE:
+        case TILEKIND_CRUMBLEDEATHBRIDGE:
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
@@ -378,7 +378,7 @@ i32 CTileTriggerLogic::Tick() {
                     }
                 }
             }
-            LoadBridgeMove(IDX(srcId));
+            LoadBridgeMove(srcId);
             return 0;
         }
 
@@ -609,7 +609,7 @@ i32 CTileTriggerLogic::Tick() {
             trans->m_wwdObject->m_flags |= 0x10000;
         }
     }
-    LoadBridgeMove(IDX(srcId));
+    LoadBridgeMove(srcId);
     return 1;
 }
 

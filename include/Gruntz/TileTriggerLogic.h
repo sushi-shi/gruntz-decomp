@@ -89,7 +89,7 @@ public:
 
     i32 FindIndexByKey(i32 key);
 
-    void LoadBridgeMove(i32 type);
+    void LoadBridgeMove(TileCollisionKind type);
 
     i32 ValidateByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 Serialize(CFileMemBase* s);
