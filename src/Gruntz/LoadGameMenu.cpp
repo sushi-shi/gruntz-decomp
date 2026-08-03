@@ -7,6 +7,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SaveSlotCtrlId.h>
 #include <Io/SaveGame.h>
 
 DATA(0x00245ca4)
@@ -77,34 +78,34 @@ RVA(0x0009e390, 0x2bc)
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     i32 idx = -1;
     switch (cmdId) {
-        case 0x49a:
+        case CTRL_SAVESLOT_INFO0:
             idx = 0;
             break;
-        case 0x49b:
+        case CTRL_SAVESLOT_INFO1:
             idx = 1;
             break;
-        case 0x49c:
+        case CTRL_SAVESLOT_INFO2:
             idx = 2;
             break;
-        case 0x49d:
+        case CTRL_SAVESLOT_INFO3:
             idx = 3;
             break;
-        case 0x49e:
+        case CTRL_SAVESLOT_INFO4:
             idx = 4;
             break;
-        case 0x49f:
+        case CTRL_SAVESLOT_INFO5:
             idx = 5;
             break;
-        case 0x4a0:
+        case CTRL_SAVESLOT_INFO6:
             idx = 6;
             break;
-        case 0x4a1:
+        case CTRL_SAVESLOT_INFO7:
             idx = 7;
             break;
-        case 0x4a2:
+        case CTRL_SAVESLOT_INFO8:
             idx = 8;
             break;
-        case 0x4a3:
+        case CTRL_SAVESLOT_INFO9:
             idx = 9;
             break;
     }
@@ -119,34 +120,34 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     }
     idx = -1;
     switch (cmdId) {
-        case 0x4a4:
+        case CTRL_SAVESLOT_DELETE0:
             idx = 0;
             break;
-        case 0x4a5:
+        case CTRL_SAVESLOT_DELETE1:
             idx = 1;
             break;
-        case 0x4a6:
+        case CTRL_SAVESLOT_DELETE2:
             idx = 2;
             break;
-        case 0x4a7:
+        case CTRL_SAVESLOT_DELETE3:
             idx = 3;
             break;
-        case 0x4a8:
+        case CTRL_SAVESLOT_DELETE4:
             idx = 4;
             break;
-        case 0x4a9:
+        case CTRL_SAVESLOT_DELETE5:
             idx = 5;
             break;
-        case 0x4aa:
+        case CTRL_SAVESLOT_DELETE6:
             idx = 6;
             break;
-        case 0x4ab:
+        case CTRL_SAVESLOT_DELETE7:
             idx = 7;
             break;
-        case 0x4ac:
+        case CTRL_SAVESLOT_DELETE8:
             idx = 8;
             break;
-        case 0x4ad:
+        case CTRL_SAVESLOT_DELETE9:
             idx = 9;
             break;
     }
@@ -164,34 +165,34 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     }
     idx = -1;
     switch (cmdId) {
-        case 0x490:
+        case CTRL_SAVESLOT_LOAD0:
             idx = 0;
             break;
-        case 0x491:
+        case CTRL_SAVESLOT_LOAD1:
             idx = 1;
             break;
-        case 0x492:
+        case CTRL_SAVESLOT_LOAD2:
             idx = 2;
             break;
-        case 0x493:
+        case CTRL_SAVESLOT_LOAD3:
             idx = 3;
             break;
-        case 0x494:
+        case CTRL_SAVESLOT_LOAD4:
             idx = 4;
             break;
-        case 0x495:
+        case CTRL_SAVESLOT_LOAD5:
             idx = 5;
             break;
-        case 0x496:
+        case CTRL_SAVESLOT_LOAD6:
             idx = 6;
             break;
-        case 0x497:
+        case CTRL_SAVESLOT_LOAD7:
             idx = 7;
             break;
-        case 0x498:
+        case CTRL_SAVESLOT_LOAD8:
             idx = 8;
             break;
-        case 0x499:
+        case CTRL_SAVESLOT_LOAD9:
             idx = 9;
             break;
     }

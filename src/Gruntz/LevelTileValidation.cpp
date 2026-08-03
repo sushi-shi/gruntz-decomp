@@ -14,6 +14,7 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TriggerMgr.h>
@@ -216,9 +217,9 @@ i32 CPlay::ValidateLevelTiles() {
                 type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
             }
-            switch (type - 0x33) {
-                case 4:
-                case 5:
+            switch (type) {
+                case TILEKIND_MULTI_SWITCH:
+                case TILEKIND_MULTI_SWITCH_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_MULTI_SWITCH_3,
                             obj->m_speedX,
@@ -230,7 +231,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x38,
+                            type == TILEKIND_MULTI_SWITCH_UP,
                             obj->m_damage,
                             0
                         )) {
@@ -242,8 +243,8 @@ i32 CPlay::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 8:
-                case 9:
+                case TILEKIND_EXCLUSIVE_SWITCH:
+                case TILEKIND_EXCLUSIVE_SWITCH_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_EXCLUSIVE_SWITCH_4,
                             obj->m_speedX,
@@ -255,7 +256,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x3c,
+                            type == TILEKIND_EXCLUSIVE_SWITCH_UP,
                             obj->m_damage,
                             0
                         )) {
@@ -280,7 +281,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x3e,
+                            type == TILEKIND_SECRET_SWITCH_UP,
                             obj->m_damage,
                             0
                         )) {
@@ -305,7 +306,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x40,
+                            type == TILEKIND_TIME_SWITCH_UP,
                             obj->m_damage,
                             0
                         )) {
@@ -330,7 +331,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x42,
+                            type == TILEKIND_CHECKPOINT_UP,
                             obj->m_damage,
                             obj->m_smarts
                         )) {
@@ -342,8 +343,8 @@ i32 CPlay::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 0:
-                case 1:
+                case TILEKIND_SWITCH_A:
+                case TILEKIND_SWITCH_A_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SWITCH_1,
                             obj->m_speedX,
@@ -355,7 +356,9 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
+                            type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
+                                || type == TILEKIND_SWITCH_C_UP
+                                || type == TILEKIND_SECRET_SWITCH_UP,
                             obj->m_damage,
                             0
                         )) {
@@ -367,8 +370,8 @@ i32 CPlay::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 2:
-                case 3:
+                case TILEKIND_SWITCH_B:
+                case TILEKIND_SWITCH_B_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SWITCH_2,
                             obj->m_speedX,
@@ -380,7 +383,9 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
+                            type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
+                                || type == TILEKIND_SWITCH_C_UP
+                                || type == TILEKIND_SECRET_SWITCH_UP,
                             obj->m_damage,
                             0
                         )) {
@@ -392,8 +397,8 @@ i32 CPlay::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 6:
-                case 7:
+                case TILEKIND_SWITCH_C:
+                case TILEKIND_SWITCH_C_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SWITCH_5,
                             obj->m_speedX,
@@ -405,7 +410,9 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_clip,
                             obj->m_animWorker->m_userRect1,
                             obj->m_animWorker->m_userRect2,
-                            type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
+                            type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
+                                || type == TILEKIND_SWITCH_C_UP
+                                || type == TILEKIND_SECRET_SWITCH_UP,
                             obj->m_damage,
                             0
                         )) {

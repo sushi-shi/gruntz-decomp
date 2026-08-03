@@ -2,6 +2,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/Projectile.h>
 
 #include <Mfc.h>
@@ -542,12 +543,12 @@ void CProjectile::AdvanceMotion() {
                 tier = 1;
             } else {
                 switch (reg->m_curState->m_levelType) {
-                    case 4:
-                    case 5:
-                    case 8:
+                    case AREA_HIGH_ON_SWEETZ:
+                    case AREA_HIGH_ROLLERZ:
+                    case AREA_GRUNTZ_IN_SPACE:
                         tier = 1;
                         break;
-                    case 6:
+                    case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
                         break;
                     default:
 

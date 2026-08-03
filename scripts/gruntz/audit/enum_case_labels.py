@@ -26,12 +26,16 @@ Matching-neutral by construction - an enumerator and its value are the same
 integer constant to the compiler - but verify with a build anyway; that is the
 house rule.
 
-  python3 -m gruntz.audit.enum_case_labels [--apply] [--gate] [paths...]
+  python3 -m gruntz.audit.enum_case_labels [--apply] [--gate] [--through-casts] [paths...]
 
-    (default)   report what could be named, write nothing
-    --apply     rewrite the labels
-    --gate      exit 1 if any nameable label remains (for cli.py)
-    paths       limit to these files/dirs (default: every TU in the compdb)
+    (default)       report what could be named, write nothing
+    --apply         rewrite the labels
+    --through-casts also treat `switch (static_cast<u32>(enumExpr))` sites as
+                    nameable. Reported separately by default because an explicit
+                    cast is how a two-domain reinterpretation is spelled too -
+                    review the site before applying.
+    --gate          exit 1 if any nameable label remains (for cli.py)
+    paths           limit to these files/dirs (default: every TU in the compdb)
 """
 from __future__ import annotations
 
@@ -80,26 +84,41 @@ def _enum_table(decl):
     return out
 
 
+_TRANSPARENT = (cidx.CursorKind.UNEXPOSED_EXPR, cidx.CursorKind.PAREN_EXPR)
+_CASTS = (cidx.CursorKind.CXX_STATIC_CAST_EXPR, cidx.CursorKind.CSTYLE_CAST_EXPR,
+          cidx.CursorKind.CXX_FUNCTIONAL_CAST_EXPR)
+
+
 def _key_type(switch_cursor):
-    """Type of the switch condition, seeing THROUGH the implicit integral
-    promotion that wraps an enum key."""
+    """(EnumDecl, via_cast) for the switch condition, or (None, False).
+
+    Sees THROUGH the implicit integral promotion that wraps an enum key. Also
+    sees through an EXPLICIT cast - `switch (static_cast<u32>(config->
+    m_entranceReason))` is the documented unsigned-`ja` codegen idiom
+    (switch-key-unsigned-ja-vs-jg.md), and the labels are still that domain's
+    values. But an explicit cast is ALSO how a deliberate two-domain
+    reinterpretation is spelled, so those hits are flagged `via_cast` and are
+    NOT auto-applied without --through-casts: which reading was meant is a
+    judgement about the site, not something the type system settles."""
     kids = list(switch_cursor.get_children())
     if not kids:
-        return None
-    cond = kids[0]
-    # descend through implicit casts / parens to the underlying enum-typed expr
-    node, depth = cond, 0
+        return None, False
+    node, depth, via_cast = kids[0], 0, False
     while depth < 12:
         depth += 1
         t = _enum_decl(node.type)
         if t is not None:
-            return t
-        sub = [k for k in node.get_children()]
-        if node.kind in (cidx.CursorKind.UNEXPOSED_EXPR, cidx.CursorKind.PAREN_EXPR) and sub:
+            return t, via_cast
+        sub = list(node.get_children())
+        if node.kind in _TRANSPARENT and sub:
             node = sub[0]
             continue
+        if node.kind in _CASTS and sub:
+            node = sub[-1]          # the cast's operand, past any type-ref child
+            via_cast = True
+            continue
         break
-    return None
+    return None, False
 
 
 def _case_labels(switch_cursor):
@@ -148,6 +167,7 @@ def scan(limit=None):
     db = json.loads(CDB.read_text())
     index = cidx.Index.create()
     found = collections.defaultdict(list)
+    via_cast_hits = collections.defaultdict(list)
     ambiguous = []
     seen_files = set()
     for entry in db:
@@ -169,7 +189,7 @@ def scan(limit=None):
             stack.extend(n.get_children())
             if n.kind != cidx.CursorKind.SWITCH_STMT:
                 continue
-            decl = _key_type(n)
+            decl, via_cast = _key_type(n)
             if decl is None:
                 continue
             table = _enum_table(decl)
@@ -197,8 +217,9 @@ def scan(limit=None):
                 if len(names) > 1:
                     ambiguous.append((str(rel), line, val, ename, names))
                     continue
-                found[str(rel)].append((line, col, val, spelling, ename, names[0]))
-    return found, ambiguous
+                bucket = via_cast_hits if via_cast else found
+                bucket[str(rel)].append((line, col, val, spelling, ename, names[0]))
+    return found, ambiguous, via_cast_hits
 
 
 def apply(found):
@@ -223,6 +244,8 @@ def apply(found):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gruntz.audit.enum_case_labels")
     ap.add_argument("--apply", action="store_true", help="rewrite the labels")
+    ap.add_argument("--through-casts", action="store_true",
+                    help="include switches whose key is an explicit cast of an enum")
     ap.add_argument("--gate", action="store_true", help="exit 1 if any remain")
     ap.add_argument("paths", nargs="*")
     a = ap.parse_args(argv)
@@ -231,7 +254,11 @@ def main(argv=None):
         sys.exit("[enum-case-labels] build/clangd/compile_commands.json not found - run gruntz init")
 
     limit = [Path(p).resolve() for p in a.paths] or None
-    found, ambiguous = scan(limit)
+    found, ambiguous, via_cast = scan(limit)
+    if a.through_casts:
+        for rel, hits in via_cast.items():
+            found[rel].extend(hits)
+        via_cast = {}
     n = sum(len(v) for v in found.values())
 
     by_enum = collections.Counter()
@@ -244,6 +271,11 @@ def main(argv=None):
         print("  -- %d label(s) SKIPPED: value has alias enumerators --" % len(ambiguous))
         for rel, line, val, ename, names in ambiguous[:8]:
             print("     %s:%d  %s 0x%x -> %s" % (rel, line, ename, val, "/".join(names)))
+    if via_cast:
+        m = sum(len(v) for v in via_cast.values())
+        print("  -- %d label(s) behind an explicit cast (review, then --through-casts) --" % m)
+        for rel, hits in sorted(via_cast.items())[:8]:
+            print("     %s:%d  %s x%d" % (rel, hits[0][0], hits[0][4], len(hits)))
 
     if a.apply:
         done = apply(found)

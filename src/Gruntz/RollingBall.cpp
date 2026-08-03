@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/RollingBall.h>
 
 #include <Bute/ButeMgr.h>
@@ -241,13 +242,13 @@ i32 CRollingBall::Update() {
                 case TILEKIND_TOGGLEDEATHBRIDGE_UP: {
 
                     switch (g_gameReg->m_curState->m_levelType) {
-                        case 4:
-                        case 5:
-                        case 8:
+                        case AREA_HIGH_ON_SWEETZ:
+                        case AREA_HIGH_ROLLERZ:
+                        case AREA_GRUNTZ_IN_SPACE:
                             fall = "LEVEL_ROLLINGBALL_FALL";
                             explosion = "LEVEL_ROLLINGBALLFALL";
                             break;
-                        case 6:
+                        case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
                             fall = "LEVEL_ROLLINGBALL_EXPLOSION";
                             explosion = "LEVEL_ROLLINGBALLEXPLOSION";
                             act = 1;

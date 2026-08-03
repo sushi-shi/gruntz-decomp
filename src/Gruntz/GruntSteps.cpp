@@ -15,6 +15,7 @@
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -23,6 +24,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -523,64 +525,64 @@ i32 CGrunt::StepCompassMove() {
     if (s_TileFlags(board, tx, ty) & 0x80) {
 
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
-        switch (cmd - 0xb) {
-            case 8:
-                switch (m_entranceCell.direction - 1) {
-                    case 0:
+        switch (cmd) {
+            case TILEKIND_ARROW_CURRENT:
+                switch (m_entranceCell.direction) {
+                    case DIR_NORTH:
                         moveY = y - 0x20;
                         voice = g_gruntMoveDirNorth;
                         break;
-                    case 1:
+                    case DIR_NORTHEAST:
                         moveX = x + 0x20;
                         moveY = y - 0x20;
                         voice = g_gruntMoveDirNorthEast;
                         break;
-                    case 2:
+                    case DIR_EAST:
                         moveX = x + 0x20;
                         voice = g_gruntMoveDirEast;
                         break;
-                    case 3:
+                    case DIR_SOUTHEAST:
                         moveY = y + 0x20;
                         moveX = x + 0x20;
                         voice = g_gruntMoveDirSouthEast;
                         break;
-                    case 4:
+                    case DIR_SOUTH:
                         moveY = y + 0x20;
                         voice = g_gruntMoveDirSouth;
                         break;
-                    case 5:
+                    case DIR_SOUTHWEST:
                         moveY = y + 0x20;
                         moveX = x - 0x20;
                         voice = g_gruntMoveDirSouthWest;
                         break;
-                    case 6:
+                    case DIR_WEST:
                         moveX = x - 0x20;
                         voice = g_gruntMoveDirWest;
                         break;
-                    case 7:
+                    case DIR_NORTHWEST:
                         moveX = x - 0x20;
                         moveY = y - 0x20;
                         voice = g_gruntMoveDirNorthWest;
                         break;
                 }
                 break;
-            case 0:
-            case 4:
+            case TILEKIND_ARROW_UP_A:
+            case TILEKIND_ARROW_UP_B:
                 moveY = y - 0x20;
                 voice = g_gruntMoveDirNorth;
                 break;
-            case 3:
-            case 7:
+            case TILEKIND_ARROW_RIGHT_A:
+            case TILEKIND_ARROW_RIGHT_B:
                 moveX = x + 0x20;
                 voice = g_gruntMoveDirEast;
                 break;
-            case 1:
-            case 5:
+            case TILEKIND_ARROW_DOWN_A:
+            case TILEKIND_ARROW_DOWN_B:
                 moveY = y + 0x20;
                 voice = g_gruntMoveDirSouth;
                 break;
-            case 2:
-            case 6:
+            case TILEKIND_ARROW_LEFT_A:
+            case TILEKIND_ARROW_LEFT_B:
                 moveX = x - 0x20;
                 voice = g_gruntMoveDirWest;
                 break;
@@ -626,39 +628,39 @@ i32 CGrunt::StepCompassMove() {
         i32 toyCount =
             g_buteMgr.GetIntDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
-            switch (m_entranceCell.direction - 1) {
-                case 0:
+            switch (m_entranceCell.direction) {
+                case DIR_NORTH:
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorth;
                     break;
-                case 1:
+                case DIR_NORTHEAST:
                     moveY = y - 0x20;
                     moveX = x + 0x20;
                     voice = g_gruntMoveDirNorthEast;
                     break;
-                case 2:
+                case DIR_EAST:
                     moveX = x + 0x20;
                     voice = g_gruntMoveDirEast;
                     break;
-                case 3:
+                case DIR_SOUTHEAST:
                     moveY = y + 0x20;
                     moveX = x + 0x20;
                     voice = g_gruntMoveDirSouthEast;
                     break;
-                case 4:
+                case DIR_SOUTH:
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouth;
                     break;
-                case 5:
+                case DIR_SOUTHWEST:
                     moveY = y + 0x20;
                     moveX = x - 0x20;
                     voice = g_gruntMoveDirSouthWest;
                     break;
-                case 6:
+                case DIR_WEST:
                     moveX = x - 0x20;
                     voice = g_gruntMoveDirWest;
                     break;
-                case 7:
+                case DIR_NORTHWEST:
                     moveX = x - 0x20;
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorthWest;
@@ -691,39 +693,39 @@ i32 CGrunt::StepCompassMove() {
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
-            switch (dir - 1) {
-                case 0:
+            switch (dir) {
+                case DIR_NORTH:
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorth;
                     break;
-                case 1:
+                case DIR_NORTHEAST:
                     moveX = x + 0x20;
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorthEast;
                     break;
-                case 2:
+                case DIR_EAST:
                     moveX = x + 0x20;
                     voice = g_gruntMoveDirEast;
                     break;
-                case 3:
+                case DIR_SOUTHEAST:
                     moveX = x + 0x20;
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouthEast;
                     break;
-                case 4:
+                case DIR_SOUTH:
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouth;
                     break;
-                case 5:
+                case DIR_SOUTHWEST:
                     moveX = x - 0x20;
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouthWest;
                     break;
-                case 6:
+                case DIR_WEST:
                     moveX = x - 0x20;
                     voice = g_gruntMoveDirWest;
                     break;
-                case 7:
+                case DIR_NORTHWEST:
                     moveY = y - 0x20;
                     moveX = x - 0x20;
                     voice = g_gruntMoveDirNorthWest;
@@ -773,32 +775,32 @@ RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
-    switch (m_entranceCell.direction - 1) {
-        case 0:
+    switch (m_entranceCell.direction) {
+        case DIR_NORTH:
             y -= 0x20;
             break;
-        case 1:
+        case DIR_NORTHEAST:
             x += 0x20;
             y -= 0x20;
             break;
-        case 2:
+        case DIR_EAST:
             x += 0x20;
             break;
-        case 3:
+        case DIR_SOUTHEAST:
             x += 0x20;
             y += 0x20;
             break;
-        case 4:
+        case DIR_SOUTH:
             y += 0x20;
             break;
-        case 5:
+        case DIR_SOUTHWEST:
             x -= 0x20;
             y += 0x20;
             break;
-        case 6:
+        case DIR_WEST:
             x -= 0x20;
             break;
-        case 7:
+        case DIR_NORTHWEST:
             x -= 0x20;
             y -= 0x20;
             break;

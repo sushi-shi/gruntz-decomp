@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/StaticHazard.h>
 
 #include <Bute/ButeMgr.h>
@@ -91,10 +92,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_tileRow = m_object->m_screenY >> 5;
     m_object->m_health = 0;
     switch (g_gameReg->m_curState->m_levelType) {
-        case 3:
-        case 4:
-        case 7:
-        case 8:
+        case AREA_TROUBLE_IN_THE_TROPICZ:
+        case AREA_HIGH_ON_SWEETZ:
+        case AREA_MINIATURE_MASTERZ:
+        case AREA_GRUNTZ_IN_SPACE:
             m_object->m_health = m_object->m_screenY + 0x186b0;
             break;
         default:

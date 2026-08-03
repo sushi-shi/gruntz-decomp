@@ -16,6 +16,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObjectDropper.h>
@@ -551,12 +552,12 @@ i32 CDroppedObject::AdvanceFall() {
                     m_wwdObject->m_flags |= 0x10000;
                 } else {
                     switch (g_gameReg->m_curState->m_levelType) {
-                        case 4:
-                        case 5:
-                        case 8:
+                        case AREA_HIGH_ON_SWEETZ:
+                        case AREA_HIGH_ROLLERZ:
+                        case AREA_GRUNTZ_IN_SPACE:
                             m_wwdObject->m_flags |= 0x10000;
                             // fall through
-                        case 7:
+                        case AREA_MINIATURE_MASTERZ:
                         default:
                             if (x < g_gameReg->m_viewBounds.right
                                 && x >= g_gameReg->m_viewBounds.left
@@ -576,7 +577,7 @@ i32 CDroppedObject::AdvanceFall() {
                                 }
                             }
                             break;
-                        case 6:
+                        case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
                             break;
                     }
                 }

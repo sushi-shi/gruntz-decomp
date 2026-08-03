@@ -393,74 +393,74 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     // cl emits the unsigned `ja` range check only for an unsigned switch key
     // (docs/patterns/switch-key-unsigned-ja-vs-jg.md).
     switch (static_cast<u32>(config->m_entranceReason)) {
-        case 0:
+        case PICKUP_NONE:
             return VOICE_CUES_PER_BAND * 17 + cue;
-        case 1:
+        case PICKUP_BOMB:
             return VOICE_CUES_PER_BAND * 3 + cue;
-        case 2:
+        case PICKUP_BOOMERANG:
             return VOICE_CUES_PER_BAND * 4 + cue;
-        case 3:
+        case PICKUP_BRICK:
             return VOICE_CUES_PER_BAND * 5 + cue;
-        case 4:
+        case PICKUP_CLUB:
             return VOICE_CUES_PER_BAND * 6 + cue;
-        case 5:
+        case PICKUP_GAUNTLETZ:
             return VOICE_CUES_PER_BAND * 7 + cue;
-        case 6:
+        case PICKUP_GLOVEZ:
             return VOICE_CUES_PER_BAND * 8 + cue;
-        case 7:
+        case PICKUP_GOOBER:
             return VOICE_CUES_PER_BAND * 10 + cue;
-        case 8:
+        case PICKUP_GRAVITYBOOTZ:
             return VOICE_CUES_PER_BAND * 11 + cue;
-        case 9:
+        case PICKUP_GUNHAT:
             return VOICE_CUES_PER_BAND * 12 + cue;
-        case 10:
+        case PICKUP_NERFGUN:
             return VOICE_CUES_PER_BAND * 16 + cue;
-        case 11:
+        case PICKUP_ROCK:
             return VOICE_CUES_PER_BAND * 20 + cue;
-        case 12:
+        case PICKUP_SHIELD:
             return VOICE_CUES_PER_BAND * 22 + cue;
-        case 13:
+        case PICKUP_SHOVEL:
             return VOICE_CUES_PER_BAND * 23 + cue;
-        case 14:
+        case PICKUP_SPRING:
             return VOICE_CUES_PER_BAND * 24 + cue;
-        case 15:
+        case PICKUP_SPY:
             return VOICE_CUES_PER_BAND * 25 + cue;
-        case 16:
+        case PICKUP_SWORD:
             return VOICE_CUES_PER_BAND * 27 + cue;
-        case 17:
+        case PICKUP_TIMEBOMB:
             return VOICE_CUES_PER_BAND * 28 + cue;
-        case 18:
+        case PICKUP_TOOB:
             if (config->m_coordToggle != 0) {
                 return VOICE_CUES_PER_BAND * 30 + cue;
             }
             return VOICE_CUES_PER_BAND * 29 + cue;
-        case 19:
+        case PICKUP_WAND:
             return VOICE_CUES_PER_BAND * 31 + cue;
-        case 20:
+        case PICKUP_WARPSTONE:
             return VOICE_CUES_PER_BAND * 32 + cue;
-        case 21:
+        case PICKUP_WELDER:
             return VOICE_CUES_PER_BAND * 33 + cue;
-        case 22:
+        case PICKUP_WINGZ:
             return VOICE_CUES_PER_BAND * 34 + cue;
-        case 23:
+        case PICKUP_BABYWALKER:
             return cue;
-        case 24:
+        case PICKUP_BEACHBALL:
             return VOICE_CUES_PER_BAND * 1 + cue;
-        case 25:
+        case PICKUP_BIGWHEEL:
             return VOICE_CUES_PER_BAND * 2 + cue;
-        case 26:
+        case PICKUP_GOKART:
             return VOICE_CUES_PER_BAND * 9 + cue;
-        case 27:
+        case PICKUP_JACKINTHEBOX:
             return VOICE_CUES_PER_BAND * 14 + cue;
-        case 28:
+        case PICKUP_JUMPROPE:
             return VOICE_CUES_PER_BAND * 15 + cue;
-        case 29:
+        case PICKUP_POGOSTICK:
             return VOICE_CUES_PER_BAND * 18 + cue;
-        case 30:
+        case PICKUP_SCROLL:
             return VOICE_CUES_PER_BAND * 21 + cue;
-        case 31:
+        case PICKUP_SQUEAKTOY:
             return VOICE_CUES_PER_BAND * 26 + cue;
-        case 32:
+        case PICKUP_YOYO:
             return VOICE_CUES_PER_BAND * 35 + cue;
         default:
             return 0;

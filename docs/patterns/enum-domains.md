@@ -85,6 +85,50 @@ must not be mistaken for safety: `enum == int` comparisons and `case 0x36:` on a
 enum key both promote, so the *reads* are unchecked. The strict build is what
 closes those.
 
+## A BIASED switch key can be un-biased for free — cl 5.0 normalises it
+
+`switch (typeCode - 1)` / `switch (type - 0x33)` is how a biased dispatch reads
+after transcription, and it forces every label to be spelled as an offset, which
+is exactly what keeps a domain unnamed. Rewriting to the natural
+
+```cpp
+switch (typeCode) { case TILEKIND_SWITCH_A: ... }     // unbiased labels
+```
+
+is **byte-identical** — measured on `BrickzCellFlags.cpp` (`llvm-objdump -s
+--section=.text`, both objs equal). cl 5.0 folds the constant bias into the
+jump-table base itself, so the subtraction never existed as an instruction. Do
+the rewrite; it is the difference between 100 magic labels and a named domain.
+
+This does NOT extend to a bias the target actually computes. `switch (IDX(x) -
+IDX(PICKUP_BABYWALKER))` was measured the other way — there the bias IS
+load-bearing and appears in the disasm. Measure, do not assume, and record the
+measurement at the site.
+
+## When the SDK already owns the domain, do not declare one
+
+`WM_*`, `VK_*`, `IDOK`/`IDCANCEL`, `SC_*`, `LBN_*`, `MM_MCINOTIFY` are Windows'
+domains, not ours: use the SDK spelling and add no header of our own. Letters and
+digits keep character literals (`'Y'`, `'1'`) because the SDK deliberately
+defines no `VK_A`. These are usually **free of the include butterfly** — the TU
+already reaches `<Mfc.h>`/`<Win32.h>` transitively, so nothing new is included.
+
+Such a switch is often self-verifying, which is why it needs no separate
+evidence hunt: `GameWindowProc`'s arms name their own ids (`0x000f` -> `OnPaint`,
+`0x001c` -> `OnActivateApp`), and `GameKeyHandler` dispatches the numpad twice,
+NumLock-off and on, so the two halves cross-check each other value for value.
+
+## Already-typed switches: let the compiler name the labels
+
+Once a switch key IS an enum, each integer label has exactly one correct
+enumerator and nothing needs inferring. `python -m gruntz.audit.enum_case_labels`
+finds those via libclang and `--apply` rewrites them; it refuses any value with
+alias enumerators rather than pick a reading. It reports 0 today. Treat a green 0
+as a claim, not a result — the tool was verified by injecting a known positive
+(`docs/gotchas.md`, "a green 0 is a claim to verify"); its first version reported
+0 only because libclang silently discarded the MSVC-style compdb flags
+(`--driver-mode=cl` is mandatory).
+
 ## Traps
 
 - **Retyping a VIRTUAL's parameter must update every override in the family, and
