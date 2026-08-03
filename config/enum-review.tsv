@@ -70,6 +70,7 @@ include/Dsndmgr/WaveFormatX.h	pending
 include/EmptyString.h	pending	
 include/Enums.h	pending	
 include/Font/Font.h	pending	
+include/Font/FontSel.h	pending	
 include/Gruntz/ActName.h	pending	
 include/Gruntz/ActNameRegistry.h	pending	
 include/Gruntz/ActReg.h	pending	
@@ -107,6 +108,7 @@ include/Gruntz/BrickTileId.h	pending
 include/Gruntz/Brickz.h	pending	
 include/Gruntz/BzState.h	pending	
 include/Gruntz/CBrickz.h	pending	
+include/Gruntz/CardinalDir.h	pending	
 include/Gruntz/ChainForward.h	pending	
 include/Gruntz/ChatBox.h	pending	
 include/Gruntz/ChatBoxOwner.h	pending	
@@ -137,6 +139,7 @@ include/Gruntz/Explosion.h	pending
 include/Gruntz/EyeCandy.h	pending	
 include/Gruntz/EyeCandyAni.h	pending	
 include/Gruntz/Fader.h	pending	
+include/Gruntz/FaderKind.h	pending	
 include/Gruntz/FaderMgr.h	pending	
 include/Gruntz/FaderMode.h	pending	
 include/Gruntz/FaderSubtypes.h	pending	
@@ -148,6 +151,7 @@ include/Gruntz/FreeNodePool.h	pending
 include/Gruntz/FrontCandy.h	pending	
 include/Gruntz/FrontCandyAni.h	pending	
 include/Gruntz/FxModeDesc.h	pending	
+include/Gruntz/FxModeKind.h	pending	
 include/Gruntz/FxModeT1.h	pending	
 include/Gruntz/GameAssetNamespaces.h	pending	
 include/Gruntz/GameInfo.h	pending	
@@ -204,6 +208,7 @@ include/Gruntz/ImageState.h	pending
 include/Gruntz/InGameIcon.h	pending	
 include/Gruntz/InGameText.h	pending	
 include/Gruntz/InputConfig.h	pending	
+include/Gruntz/InputDeviceSel.h	pending	
 include/Gruntz/KitchenSlime.h	pending	
 include/Gruntz/LeafCue.h	pending	
 include/Gruntz/LevelArea.h	pending	
@@ -247,10 +252,12 @@ include/Gruntz/PathHazardActReg.h	pending
 include/Gruntz/PickupType.h	pending	
 include/Gruntz/Play.h	pending	
 include/Gruntz/PlayPlaneScan.h	pending	
+include/Gruntz/PlayerCommandKind.h	pending	
 include/Gruntz/PortalPath.h	pending	
 include/Gruntz/PreviewState.h	pending	
 include/Gruntz/ProjActCache.h	pending	
 include/Gruntz/Projectile.h	pending	
+include/Gruntz/QuestLevel.h	pending	
 include/Gruntz/RainCloud.h	pending	
 include/Gruntz/Random.h	pending	
 include/Gruntz/RandomAmbientSound.h	pending	
@@ -296,6 +303,7 @@ include/Gruntz/SoundFontPath.h	pending
 include/Gruntz/SoundFxEmitter.h	pending	
 include/Gruntz/SoundState.h	pending	
 include/Gruntz/SpawnList.h	pending	
+include/Gruntz/SpellId.h	pending	
 include/Gruntz/SpellzEffect.h	pending	
 include/Gruntz/SplashParams.h	pending	
 include/Gruntz/SplashState.h	pending	
@@ -350,6 +358,7 @@ include/Gruntz/View.h	pending
 include/Gruntz/VoiceTrigger.h	pending	
 include/Gruntz/Warlord.h	pending	
 include/Gruntz/WarlordOwner.h	pending	
+include/Gruntz/WarpLetter.h	pending	
 include/Gruntz/WarpStoneFly.h	pending	
 include/Gruntz/WarpStonePad.h	pending	
 include/Gruntz/WayPoint.h	pending	
@@ -373,6 +382,7 @@ include/Image/ImagePool.h	pending
 include/Image/ImageRotate.h	pending	
 include/Image/ImageSet.h	pending	
 include/Image/RasterVtx.h	pending	
+include/Image/RezDecodeKind.h	pending	
 include/Image/WarpTextureBlit.h	pending	
 include/Ints.h	pending	
 include/Io/FileMem.h	pending	
@@ -394,6 +404,7 @@ include/Net/NetCmdSlot.h	pending
 include/Net/NetConnectionType.h	pending	
 include/Net/NetGuids.h	pending	
 include/Net/NetLobby.h	pending	
+include/Net/NetLobbyCtrlId.h	pending	
 include/Net/NetMgr.h	pending	
 include/Net/NetMgrReportError.h	pending	
 include/Net/NetMsgId.h	pending	
@@ -417,6 +428,7 @@ include/Utils/PtrListPool.h	pending
 include/Utils/RecordFill.h	pending	
 include/Utils/RegistryHelper.h	pending	
 include/Utils/WinAPICdRom.h	pending	
+include/Wap32/CoordUnset.h	pending	
 include/Wap32/EngStr.h	pending	
 include/Wap32/GameApp.h	pending	
 include/Wap32/Object.h	pending	

@@ -23,7 +23,15 @@ GZ_ENUM_BEGIN(LevelArea)
     AREA_HONEY_I_SHRUNK_THE_GRUNTZ = 6,
     AREA_MINIATURE_MASTERZ = 7,
     AREA_GRUNTZ_IN_SPACE = 8,
-    AREA_COUNT = 8
+    AREA_COUNT = 8,
+    // The eight areas split into two tile sets at this boundary, and two
+    // unrelated files agree on where: CGrunt's entrance-move switch takes the
+    // first set with `area < AREA_TILESET_B_FIRST`, and CTriggerMgr picks a
+    // different crumble-bridge token with `m_levelType > AREA_TILESET_A_LAST`.
+    // Each half's tile ids are that set's own image indices, which is why the
+    // ids themselves carry no engine names.
+    AREA_TILESET_A_LAST = AREA_HIGH_ON_SWEETZ,
+    AREA_TILESET_B_FIRST = AREA_HIGH_ROLLERZ
 GZ_ENUM_END(LevelArea)
 
 #endif // GRUNTZ_GRUNTZ_LEVELAREA_H

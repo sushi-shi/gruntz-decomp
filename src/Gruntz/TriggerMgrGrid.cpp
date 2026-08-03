@@ -20,6 +20,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayerCommandKind.h>
@@ -786,7 +787,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         }
 
         case TILEKIND_CRUMBLEDEATHBRIDGE: {
-            i32 token = state->m_levelType > 4 ? 0x72 : 0x75;
+            i32 token = state->m_levelType > AREA_TILESET_A_LAST ? 0x72 : 0x75;
             CTileTriggerLogic* logic = state->m_beginMarker->AddLogicDefaults(
                 tag,
                 TRIGID_TILE_TRIGGER_24,

@@ -22,6 +22,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
@@ -1115,7 +1116,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_lastTilePx.m_x -= 0x10;                                                                      \
     m_lastTilePx.m_y += 0x10
 
-    if (area < 5) {
+    if (area < AREA_TILESET_B_FIRST) {
         switch (tileId) {
             case 0x69:
             case 0x6a:

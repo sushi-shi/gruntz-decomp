@@ -63,6 +63,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/PlayPlaneScan.h>
+#include <Gruntz/QuestLevel.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
@@ -871,36 +872,36 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     {
-        i32 page = self->m_levelType - 1;
+        i32 page = self->m_levelType;
         switch (static_cast<u32>(page)) {
-            case 0:
+            case AREA_ROCKY_ROADZ:
                 g_areaPitDeath = DEATH_SINK;
                 break;
-            case 1:
+            case AREA_GRUNTZICLEZ:
                 g_areaHazardDeath = DEATH_DROP;
                 g_areaPitDeath = DEATH_DROP;
                 break;
-            case 2:
+            case AREA_TROUBLE_IN_THE_TROPICZ:
                 g_areaHazardDeath = DEATH_DROP;
                 g_areaPitDeath = DEATH_FALL;
                 break;
-            case 3:
+            case AREA_HIGH_ON_SWEETZ:
                 g_areaPitDeath = DEATH_FALL;
                 g_areaHazardDeath = DEATH_QUICKFALL;
                 break;
-            case 4:
+            case AREA_HIGH_ROLLERZ:
                 g_areaPitDeath = DEATH_MELT;
                 g_areaHazardDeath = DEATH_ELECTROCUTE;
                 break;
-            case 5:
+            case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
                 g_areaPitDeath = DEATH_SINK;
                 g_areaHazardDeath = DEATH_EXPLODE;
                 break;
-            case 6:
+            case AREA_MINIATURE_MASTERZ:
                 g_areaPitDeath = DEATH_FALL2;
                 g_areaHazardDeath = DEATH_EXPLODE;
                 break;
-            case 7:
+            case AREA_GRUNTZ_IN_SPACE:
                 g_areaPitDeath = DEATH_SINK;
                 g_areaHazardDeath = DEATH_DROP;
                 break;
@@ -3447,9 +3448,9 @@ i32 CPlay::DrawLevelInfoText() {
             s1.LoadString(0x81a0);
         } else {
             i32 stage = m_levelIndex;
-            if (stage > 0x24) {
+            if (stage > QUESTLEVEL_LAST) {
                 switch (stage) {
-                    case 0x25:
+                    case QUESTLEVEL_TRAINING_FIRST:
                         s1.LoadString(0x81a2);
                         break;
                     case 0x26:
@@ -3458,14 +3459,14 @@ i32 CPlay::DrawLevelInfoText() {
                     case 0x27:
                         s1.LoadString(0x81a4);
                         break;
-                    case 0x28:
+                    case QUESTLEVEL_TRAINING_LAST:
                         s1.LoadString(0x81a5);
                         break;
                     default:
                         s1 = g_emptyString;
                 }
             } else {
-                s1.Format("Stage %d", ((stage - 1) % 4) + 1);
+                s1.Format("Stage %d", ((stage - 1) % QUESTLEVEL_PER_AREA) + 1);
             }
             switch (m_levelIndex) {
                 case 1:

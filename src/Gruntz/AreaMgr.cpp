@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
+#include <Gruntz/QuestLevel.h>
 #include <Image/CImage.h>
 
 #include <stdio.h>
@@ -52,7 +53,7 @@ i32 InitializeLevelArea(i32 arg) {
 // @early-stop
 RVA(0x00099d40, 0x2c0)
 i32 CAreaMgr::InitializeLevel(i32 index) {
-    if (index <= 0 || index > 0x28) {
+    if (index < QUESTLEVEL_FIRST || index > QUESTLEVEL_TRAINING_LAST) {
         return 0;
     }
     Reset();

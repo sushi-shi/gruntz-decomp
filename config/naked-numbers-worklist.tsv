@@ -3,8 +3,8 @@
 # count is integer literals outside comments/strings/label macros.
 file	count	status
 src/Bute/ButeMgr.cpp	14615	done (14615 are a generated DFA table; lexer actions+slots and one char modelled)
-src/Gruntz/Play.cpp	2740	done (enum World merged into LevelArea; help switch is EnemyAiType; rest are tick counts and data)
-src/Gruntz/BattlezMapConfig.cpp	1944	done (BattlezDifficulty from the bute keys; rest are tuning magnitudes and grid data)
+src/Gruntz/Play.cpp	2740	done (per-area death switch un-biased onto LevelArea; QUESTLEVEL_LAST/TRAINING bounds; the 36 m_levelIndex arms are level ordinals, each loading that level's string id)
+src/Gruntz/BattlezMapConfig.cpp	1944	OPEN (61 compares - m_battleState is a real unnamed AI-task domain: 4=defend/0=other is readable from m_defenderChance, 3/6/0xa/0xb are task states still unread. Biggest single piece of remaining debt.)
 src/Gruntz/Grunt.cpp	1698	done (RockNeighborMask recovered; TILEKIND_GIANT_ROCK named; rest are pixel/tick magnitudes)
 src/Gruntz/GruntArrivalScan.cpp	1611	done (3 AISTATE cases named; the rest are >>5 tile shifts and priority magnitudes)
 src/Gruntz/LightFxRender.cpp	1423	done (shape switch un-biased onto LevelArea; rest are palette data)
@@ -17,7 +17,7 @@ src/DDrawMgr/DDrawShadeBlit.cpp	862	none (0x1f/0x80 are 5-bit RGB channel masks;
 src/Gruntz/TriggerMgr.cpp	860	done (CombatCueKind recovered + call sites; toy band named)
 src/Gruntz/GruntEntranceArrival.cpp	767	done (GruntDirection named; entranceReason bias is byte-evidenced and kept)
 src/DDrawMgr/DDSurface.cpp	664	none (bits/bitcount are a bits-per-pixel count; each arm divides by 8)
-src/Gruntz/GruntEntranceMove.cpp	599	none (56 tileId cases are per-tileset WWD image indices - no engine names exist)
+src/Gruntz/GruntEntranceMove.cpp	599	done (AREA_TILESET_B_FIRST named; the 56 tileId arms are that tile set's own image indices and carry no engine names - the arm macro names the direction)
 src/Gruntz/TriggerMgrGrid.cpp	558	done (GruntDirection arm named by its +-32 delta; TM_GRID_ROW_ALL sentinel + TM_GRID_COLS)
 src/Gruntz/GruntSteps.cpp	490	done (toy-ordinal bias is byte-evidenced and kept; each arm is named by its bute key; directions already DIR_*)
 src/DDrawMgr/Fader.cpp	490	none (fade step counts, frame spans and palette indices)
@@ -77,7 +77,7 @@ src/Gruntz/MapMgr.cpp	166	none (tile-grid stride arithmetic)
 src/Wwd/WwdFactoryObject.cpp	162	partial (WwdAnimStepMode recovered; modeWord/positionMode still open)
 src/Gruntz/ActionOptionsMenuBar.cpp	162	done (MenuItemState)
 src/Gruntz/SpriteRef.cpp	155	none (pixel byte values in the blitter)
-src/Gruntz/MultiStartDlg.cpp	154	none (index is the same 0..3 slot ordinal)
+src/Gruntz/MultiStartDlg.cpp	154	none (20 arms map a 0..3 player slot to a per-slot dialog control id; the ids are a bank with no resource script and the accessors GetCtrlA/E are themselves placeholders)
 src/Gruntz/CreditsState.cpp	152	done (CMD_MAIN_MENU/CMD_ATTRACT named; 0x1e0 is the screen height)
 src/Gruntz/GruntPickupLoad.cpp	151	none (0x10000 is fixed-point one; 0x3bf.. are sprite-table ordinals)
 src/Gruntz/VideoConfig.cpp	148	done (SB_* scroll codes and TBM_GETPOS/SETPOS named from the SDK)
@@ -86,7 +86,7 @@ src/DDrawMgr/DDrawSurfaceMgr.cpp	145	partial (m_lastError codes are a per-class 
 src/Gruntz/SpriteLoaders.cpp	143	none (0x80 is the serialized name field; 60000 a millisecond timeout)
 src/Dsndmgr/GruntzSoundZ.cpp	143	none (volume/pan percentages and channel counts)
 src/Gruntz/PathHazard.cpp	142	none (0x10 is the tile half-extent; 0xcf850 a fixed-point speed)
-src/Gruntz/AreaMgr.cpp	142	none (case value IS the level ordinal; every arm is InitializeLevel<that number>)
+src/Gruntz/AreaMgr.cpp	142	done (QUESTLEVEL_FIRST/TRAINING_LAST bound named; the 40 arms are level ordinals - each is that same number's InitializeLevelNN)
 src/Font/Font.cpp	141	none (256-entry glyph tables and byte masks)
 src/Gruntz/MenuState.cpp	138	none (menu geometry and fade percentages)
 src/Gruntz/Attract.cpp	133	done (FADERKIND_* named earlier; rest are palette bytes)
@@ -266,49 +266,49 @@ src/Gruntz/GruntToyTimeSprite.cpp	6	none (0xdbba0 is a 900000 ms timer; rest are
 src/Gruntz/GruntStaminaSprite.cpp	6	none (0xdbba0 is a 900000 ms timer; rest are HUD offsets)
 src/Gruntz/WormholeActs.cpp	5	none (act-registry id range CActRegPool(2000, 2010); rest are frame offsets)
 src/Gruntz/MgrSlotSwap.cpp	5	done (CMD_TOGGLE_SOUND named)
-src/Gruntz/KeyedList.cpp	5	pending
-src/Gruntz/DestructButton.cpp	5	pending
-src/Gruntz/CursorSnapActReg.cpp	5	pending
-src/DDrawMgr/EngineHelperPocket.cpp	5	pending
-src/Io/FileStream.cpp	4	pending
-src/Gruntz/StatusBarItem.cpp	4	pending
-src/Gruntz/SBI_RectOnlyBase.cpp	4	pending
-src/Gruntz/GruntMoveStep.cpp	4	pending
-src/Gruntz/ChainForward.cpp	4	pending
-src/Net/PacketPool.cpp	3	pending
-src/Gruntz/WayPoint.cpp	3	pending
-src/Gruntz/LeafCuePlay.cpp	3	pending
-src/Gruntz/GuardPoint.cpp	3	pending
-src/DDrawMgr/DDrawSurfacePairBlt.cpp	3	pending
-src/Bute/ButeTree.cpp	3	pending
-src/Gruntz/MotionStateStep.cpp	2	pending
-src/Gruntz/MapLogic.cpp	2	pending
-src/Gruntz/LogicDispatchInit.cpp	2	pending
-src/Gruntz/LevelTime.cpp	2	pending
-src/Gruntz/FxModeDesc.cpp	2	pending
-src/DDrawMgr/DDrawWorkerHost.cpp	2	pending
-src/Utils/DebugTiming.cpp	1	pending
-src/Net/NetSession.cpp	1	pending
-src/Gruntz/TriRecordSerialize.cpp	1	pending
-src/Gruntz/StateReleaseResources.cpp	1	pending
-src/Gruntz/QueueDrainHost.cpp	1	pending
-src/Gruntz/MotionState.cpp	1	pending
-src/Wwd/WwdGeometryApply.cpp	0	pending
-src/Wap32/Rect.cpp	0	pending
-src/Rez/RezList.cpp	0	pending
-src/Net/StringStaticPool.cpp	0	pending
-src/Net/InterfaceObject.cpp	0	pending
-src/Io/MoviePlayer.cpp	0	pending
-src/Gruntz/ZDArrayDerived.cpp	0	pending
-src/Gruntz/SaveFrontBufferShot.cpp	0	pending
-src/Gruntz/SBI_StatzTabArrowEh.cpp	0	pending
-src/Gruntz/LogicWorkerHandlersB.cpp	0	pending
-src/Gruntz/LogicWorkerHandlersA.cpp	0	pending
-src/Gruntz/GruntPuddle.cpp	0	pending
-src/Gruntz/FreeNodePool.cpp	0	pending
-src/Gruntz/ChatBoxEh.cpp	0	pending
-src/Gruntz/ArraySerialize.cpp	0	pending
-src/Dsndmgr/SoundVoiceList.cpp	0	pending
-src/Bute/ButeTail.cpp	0	pending
-src/Bute/ButeStoreClear.cpp	0	pending
-src/Bute/ButeNode.cpp	0	pending
+src/Gruntz/KeyedList.cpp	5	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/DestructButton.cpp	5	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/CursorSnapActReg.cpp	5	none (act-registry id range CActRegPool(2000, 2010))
+src/DDrawMgr/EngineHelperPocket.cpp	5	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Io/FileStream.cpp	4	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/StatusBarItem.cpp	4	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/SBI_RectOnlyBase.cpp	4	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/GruntMoveStep.cpp	4	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/ChainForward.cpp	4	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Net/PacketPool.cpp	3	none (0x410 is the packet allocation size, matched by its memset)
+src/Gruntz/WayPoint.cpp	3	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/LeafCuePlay.cpp	3	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/GuardPoint.cpp	3	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/DDrawMgr/DDrawSurfacePairBlt.cpp	3	none (the 43s are inside a comment; the rest is blit arithmetic)
+src/Bute/ButeTree.cpp	3	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/MotionStateStep.cpp	2	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/MapLogic.cpp	2	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/LogicDispatchInit.cpp	2	none (act-registry id range CActRegPool(2000, 2010))
+src/Gruntz/LevelTime.cpp	2	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/FxModeDesc.cpp	2	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/DDrawMgr/DDrawWorkerHost.cpp	2	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Utils/DebugTiming.cpp	1	none (256-byte format buffer)
+src/Net/NetSession.cpp	1	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/TriRecordSerialize.cpp	1	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/StateReleaseResources.cpp	1	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/QueueDrainHost.cpp	1	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/MotionState.cpp	1	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Wwd/WwdGeometryApply.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Wap32/Rect.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Rez/RezList.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Net/StringStaticPool.cpp	0	none (one DATA address, no code literals)
+src/Net/InterfaceObject.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Io/MoviePlayer.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/ZDArrayDerived.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/SaveFrontBufferShot.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/SBI_StatzTabArrowEh.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/LogicWorkerHandlersB.cpp	0	none (the repeated 0xf4 is an RVA size argument, not a code literal)
+src/Gruntz/LogicWorkerHandlersA.cpp	0	none (the repeated 0xf1 is an RVA size argument, not a code literal)
+src/Gruntz/GruntPuddle.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/FreeNodePool.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/ChatBoxEh.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Gruntz/ArraySerialize.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Dsndmgr/SoundVoiceList.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Bute/ButeTail.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Bute/ButeStoreClear.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
+src/Bute/ButeNode.cpp	0	none (RVA/DATA label size arguments plus one-off record field offsets)
