@@ -12,6 +12,7 @@
 #include <Gruntz/Multi.h>
 #include <Ints.h>
 #include <Net/NetLobby.h>
+#include <Net/NetLobbyCtrlId.h>
 #include <Net/NetMgr.h>
 #include <Wap32/Wap32.h>
 
@@ -53,22 +54,22 @@ namespace NetLobby {
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeHostWaitDialog(hWnd, g_curMulti);
-                GetAsyncKeyState(0x13);
+                GetAsyncKeyState(VK_PAUSE);
                 return 1;
             case WM_COMMAND:
-                if (wParam == 0x4d2 || wParam == 2) {
+                if (wParam == 0x4d2 || wParam == IDCANCEL) {
                     KillTimer(hWnd, 1);
                     g_curMulti->SendNetStat(0x402, 0x4d2, 1);
                     EndDialog(hWnd, 0x4d2);
                     return 1;
                 }
-                if (wParam == 0x4c6) {
+                if (wParam == IDC_NETCHAT_SEND) {
                     NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
             case WM_TIMER:
-                if (GetAsyncKeyState(0x13) & 0x80000001) {
+                if (GetAsyncKeyState(VK_PAUSE) & 0x80000001) {
                     PostMessageA(hWnd, WM_COMMAND, 0x4d2, 0);
                     return 1;
                 }
@@ -104,7 +105,7 @@ namespace NetLobby {
                 InitializeJoinWaitDialog(hWnd, g_curMulti);
                 return 1;
             case WM_COMMAND:
-                if (wParam == 0x4c6) {
+                if (wParam == IDC_NETCHAT_SEND) {
                     NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
@@ -157,7 +158,7 @@ namespace NetLobby {
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
-                if (wParam == 0x4c6) {
+                if (wParam == IDC_NETCHAT_SEND) {
                     NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
@@ -219,7 +220,7 @@ namespace NetLobby {
                     EndDialog(hWnd, 0x4ce);
                     return 1;
                 }
-                if (wParam == 0x4c6) {
+                if (wParam == IDC_NETCHAT_SEND) {
                     NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
@@ -280,7 +281,7 @@ namespace NetLobby {
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
-                if (wParam == 0x4c6) {
+                if (wParam == IDC_NETCHAT_SEND) {
                     NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
@@ -390,7 +391,7 @@ namespace NetLobby {
                     EndDialog(hWnd, 0x4ce);
                     return 1;
                 }
-                if (wParam == 0x4c6) {
+                if (wParam == IDC_NETCHAT_SEND) {
                     NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }

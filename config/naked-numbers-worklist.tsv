@@ -37,16 +37,16 @@ src/Bute/SymTab.cpp	323	done (_A_SUBDIR from the CRT; rest are string/hash arith
 src/DDrawMgr/DDPageMgr.cpp	322	done (WM_* message compares named; bpp values are bit counts)
 src/Io/SaveGame.cpp	320	partial
 src/Gruntz/GameMode.cpp	314	done
-src/Net/NetCmdSlot.cpp	311	pending
+src/Net/NetCmdSlot.cpp	311	done (DPSYS_* system-message ids from dplay.h)
 src/DDrawMgr/ShadeTableCache.cpp	310	none (literals are palette-index arithmetic)
 src/Gruntz/GruntSpawnConfig.cpp	304	pending
-src/Net/NetMgr.cpp	303	pending
-src/DDrawMgr/DDrawSurfacePair.cpp	296	pending
+src/Net/NetMgr.cpp	303	partial (kind is NOT NetConnectionType - retail transposes 1/2 there, verified in disasm; recorded at the site)
+src/DDrawMgr/DDrawSurfacePair.cpp	296	partial (the 0x3e9->0x80e9 arms re-bank a pool error; no name table for either bank)
 src/DDrawMgr/DDrawSubMgr.cpp	293	pending
 src/Gruntz/WorldSoundSet.cpp	291	pending
 src/Image/ImagePool.cpp	290	done
 src/DDrawMgr/LevelPlane.cpp	285	pending
-src/DDrawMgr/DirectDrawMgr.cpp	284	pending
+src/DDrawMgr/DirectDrawMgr.cpp	284	done (44 DDERR_* named by their own strings; 3 corrected against the SDK, incl. retail mislabelling NOTLOCKED as LOCKEDSURFACES)
 src/Wwd/WwdGameObject.cpp	277	pending
 src/Image/CImage.cpp	268	pending
 src/Gruntz/Warlord.cpp	266	pending
@@ -59,9 +59,9 @@ src/Gruntz/FontConfig.cpp	214	pending
 src/Bute/TypeKeyColl.cpp	211	pending
 src/Gruntz/RollingBall.cpp	205	done
 src/Gruntz/StatusBarTabBuilders.cpp	204	pending
-src/Gruntz/TileTriggerContainer.cpp	203	pending
-src/Wwd/WwdObjMgr.cpp	196	pending
-src/Gruntz/TerrainTileLoader.cpp	193	pending
+src/Gruntz/TileTriggerContainer.cpp	203	none (0..3 are m_playerFlags[4] indices; the ALL sentinel is already named)
+src/Wwd/WwdObjMgr.cpp	196	partial (classId 5/0x16/0x1b/0x1c are WWD object-class tags; no spec recovered)
+src/Gruntz/TerrainTileLoader.cpp	193	partial (four brick PickupTypes named; m_toyBlendPct holding a brick id looks like a wrong-member read)
 src/Image/ImagePolyClip.cpp	192	pending
 src/Gruntz/DroppedObject.cpp	190	done
 src/Gruntz/GruntzCmdMgr.cpp	189	pending
@@ -69,13 +69,13 @@ src/Gruntz/TileLogicPump.cpp	182	done (AnimWorkerAct dispatch named)
 src/DDrawMgr/DirPal.cpp	178	pending
 src/Gruntz/SBI_TabzDialogEh.cpp	174	pending
 src/Dsndmgr/SoundStream.cpp	172	pending
-src/Net/LobbyDialogs.cpp	170	pending
+src/Net/LobbyDialogs.cpp	170	done (IDC_NETCHAT_SEND by six-way unanimity, IDCANCEL, VK_PAUSE; per-dialog button ids are indistinguishable)
 src/Gruntz/Wormhole.cpp	170	pending
 src/Gruntz/BrickzLoad.cpp	168	pending
 src/Crypto/FecCrypt.cpp	167	pending
 src/Gruntz/MapMgr.cpp	166	pending
 src/Wwd/WwdFactoryObject.cpp	162	partial (WwdAnimStepMode recovered; modeWord/positionMode still open)
-src/Gruntz/ActionOptionsMenuBar.cpp	162	pending
+src/Gruntz/ActionOptionsMenuBar.cpp	162	done (MenuItemState)
 src/Gruntz/SpriteRef.cpp	155	pending
 src/Gruntz/MultiStartDlg.cpp	154	none (index is the same 0..3 slot ordinal)
 src/Gruntz/CreditsState.cpp	152	pending
@@ -155,7 +155,7 @@ src/Gruntz/GameAssetNamespaces.cpp	34	pending
 src/Gruntz/BuildGruntzCrcInfo.cpp	34	pending
 src/Gruntz/ProjActCache.cpp	33	pending
 src/Gruntz/FortConquered.cpp	33	pending
-src/Gruntz/ActionArea.cpp	33	pending
+src/Gruntz/ActionArea.cpp	33	none (1/2 pick GAME_ACTIONAREA_BLUE/_RED - the arm string already names it)
 src/Image/PaletteBmp.cpp	32	pending
 src/Image/ImageRle16Encode.cpp	32	pending
 src/Rez/RezMgr.cpp	31	pending

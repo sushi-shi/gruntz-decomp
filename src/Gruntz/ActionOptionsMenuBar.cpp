@@ -9,6 +9,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
@@ -162,13 +163,13 @@ i32 CActionOptionsMenuBar::Refresh() {
             m_buttonState[i] = 1;
         }
         switch (m_buttonState[i]) {
-            case 1:
+            case MENUSTATE_NORMAL:
                 m_buttonFrame[i] = m_normChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
-            case 2:
+            case MENUSTATE_SELECTED:
                 m_buttonFrame[i] = m_highChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
-            case 3:
+            case MENUSTATE_DISABLED:
                 m_buttonFrame[i] = m_greyChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
             default:

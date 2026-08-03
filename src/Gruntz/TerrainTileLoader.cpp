@@ -80,16 +80,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cellType == TILEKIND_HIDDEN_POWERUP) {
                 i32 actionCode;
                 switch (unit->m_toyBlendPct) {
-                    case 0x23:
+                    case PICKUP_REDBRICK:
                         actionCode = 0x132;
                         break;
-                    case 0x24:
+                    case PICKUP_BLUEBRICK:
                         actionCode = 0x138;
                         break;
-                    case 0x25:
+                    case PICKUP_GOLDBRICK:
                         actionCode = 0x13e;
                         break;
-                    case 0x26:
+                    case PICKUP_BLACKBRICK:
                         actionCode = 0x144;
                         break;
                     default:

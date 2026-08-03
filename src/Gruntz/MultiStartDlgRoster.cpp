@@ -37,6 +37,7 @@ i32 g_watchBlinkB;
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Net/KeyedList.h>
 #include <Ints.h>
+#include <Net/NetLobbyCtrlId.h>
 
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
@@ -615,8 +616,8 @@ void CMultiStartDlg::Drive() {
 // @early-stop
 RVA(0x000c4120, 0xc2)
 i32 CMultiStartDlg::EnableControls() {
-    GetDlgItem(2)->EnableWindow(1);
-    GetDlgItem(0x4c6)->EnableWindow(1);
+    GetDlgItem(IDCANCEL)->EnableWindow(1);
+    GetDlgItem(IDC_NETCHAT_SEND)->EnableWindow(1);
     GetDlgItem(0x42d)->EnableWindow(1);
     GetDlgItem(0x511)->EnableWindow(1);
     CString s1;

@@ -211,10 +211,10 @@ i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg) {
         return 0;
     }
     switch (m->m_code) {
-        case 3:
+        case DPSYS_CREATEPLAYERORGROUP:
             m_session->LoadMenuSelectSprite(static_cast<void*>(m));
             return 1;
-        case 5:
+        case DPSYS_DESTROYPLAYERORGROUP:
             if (m->m_subCode == 1) {
                 i32 playerId = m->m_playerId;
                 m_session->OnPlayerLeft(playerId);
@@ -222,9 +222,9 @@ i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg) {
                 return 1;
             }
             return 1;
-        case 49:
+        case DPSYS_SESSIONLOST:
             return m_session->HandleControlMsg(m, ctrlArg);
-        case 257:
+        case DPSYS_HOST:
             return m_session->HandleControlMsg(m, ctrlArg);
         default:
             return 1;
