@@ -37,6 +37,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/StatusBarTabWidgets.h>
@@ -84,8 +85,8 @@ RVA_COMPGEN(0x000c8980, 0x64, ??1CStatusBarMgr@@QAE@XZ)
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;
-    m_restorePosition = 0;
-    m_position = 0;
+    m_restorePosition = STATUSBAR_DOCK_RIGHT;
+    m_position = STATUSBAR_DOCK_RIGHT;
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
     SetRect(&m_rect10, vx - 0xa0, 0, vx, 0x1e0);
@@ -170,7 +171,7 @@ void CStatusBarMgr::Teardown() {
 }
 
 RVA(0x000fe3e0, 0x55)
-i32 CStatusBarMgr::SetState(i32 state) {
+i32 CStatusBarMgr::SetState(StatusBarDock state) {
     if (m_hlBusy != 0) {
         return 1;
     }
@@ -194,10 +195,10 @@ i32 CStatusBarMgr::SetState(i32 state) {
 
 RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::RefreshA() {
-    if (m_hlBusy == 0 && m_position != 1) {
+    if (m_hlBusy == 0 && m_position != STATUSBAR_DOCK_LEFT) {
         ResetWidgets(1);
         SetRect(&m_rect10, 0, 0, 0xa0, 0x1e0);
-        SetState(1);
+        SetState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
             g_gameReg->ReportError(static_cast<GruntzCommandId>(kActivateErrId), 0x448);
@@ -213,7 +214,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     if (m_hlBusy != 0) {
         return 1;
     }
-    if (m_position == 0) {
+    if (m_position == STATUSBAR_DOCK_RIGHT) {
         return 1;
     }
     ResetWidgets(1);
@@ -222,7 +223,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     volatile POINT pt;
     pt.y = g_gameReg->m_modeH;
     SetRect(&m_rect10, w - 0xa0, 0, w, 0x1e0);
-    SetState(0);
+    SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
         g_gameReg->ReportError(static_cast<GruntzCommandId>(kActivateErrId), 0x449);
@@ -234,10 +235,10 @@ i32 CStatusBarMgr::DockStatusBarRight() {
 
 RVA(0x000fe600, 0x49)
 i32 CStatusBarMgr::HideRect() {
-    if (m_hlBusy == 0 && m_position != 2) {
+    if (m_hlBusy == 0 && m_position != STATUSBAR_HIDDEN) {
         ResetWidgets(1);
         SetRect(&m_rect10, -1, -1, -1, -1);
-        SetState(2);
+        SetState(STATUSBAR_HIDDEN);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     }
     return 1;
@@ -248,10 +249,10 @@ i32 CStatusBarMgr::RefreshState() {
     if (m_hlBusy != 0) {
         return 1;
     }
-    if (m_position != 2) {
+    if (m_position != STATUSBAR_HIDDEN) {
         return 1;
     }
-    if (m_restorePosition == 1) {
+    if (m_restorePosition == STATUSBAR_DOCK_LEFT) {
         return RefreshA();
     }
     return DockStatusBarRight();
@@ -1936,7 +1937,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     s->m_interval = 0x7fffffff;
     s->m_startTimeLo = g_frameTime;
     s->m_startTimeHi = 0;
-    if (m_activeTab == TAB_GRUNTZ && m_position != 2) {
+    if (m_activeTab == TAB_GRUNTZ && m_position != STATUSBAR_HIDDEN) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* found = 0;
@@ -2099,7 +2100,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 6:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
-                    if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
@@ -2121,7 +2122,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 7:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
-                    if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
@@ -2219,7 +2220,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     m_machinePhase = 2;
                     m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = static_cast<u32>(g_frameTime);
-                    if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
@@ -2277,7 +2278,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     if (found) {
                         g[col].m_state = 4;
                         g[col].m_counter = 0x13;
-                        if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                        if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
@@ -2296,7 +2297,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     } else {
                         g[col].m_state = 2;
                         g[col].m_counter = 0xa;
-                        if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                        if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
@@ -2545,7 +2546,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
         case 4:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
-                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
@@ -2576,7 +2577,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRect.bottom = 0x11c;
                 m_itemRect.top = 0x104;
                 rectFlag = 1;
-                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
@@ -2646,7 +2647,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 }
             }
             if (m_itemRect.top >= row * 0x20 + 0x13e) {
-                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
@@ -2730,7 +2731,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_extraNotifyArg1 = 0;
         } else if (m_fallRect.bottom >= 0x1bf) {
             if (m_fallActive != 2) {
-                if (m_activeTab == TAB_RESOURCE && m_position != 2) {
+                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
                     if (h->m_emitGate == 0) {
                         void* spr_ob = 0;
@@ -3053,7 +3054,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
             break;
         case SERIAL_POSTLOAD:
             (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
-            if (m_position == 0) {
+            if (m_position == STATUSBAR_DOCK_RIGHT) {
                 RefreshA();
                 DockStatusBarRight();
             }
@@ -3174,7 +3175,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
         s->Read(&m_reserved2a0, 8);
         s->Read(&m_reserved2a8, 8);
     }
-    if (op == SERIAL_LOAD && m_position != 2) {
+    if (op == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
     }
 
@@ -3606,7 +3607,7 @@ void CStatusBarMgr::ExitMode() {
     m_tabSprite14 = 0;
     m_hlBusy = 0;
     if (handle == 0 && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-        if (m_position == 2) {
+        if (m_position == STATUSBAR_HIDDEN) {
             RefreshState();
         }
         if (m_activeTab != TAB_GAME) {

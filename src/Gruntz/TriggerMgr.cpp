@@ -30,6 +30,7 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/String.h>
@@ -841,7 +842,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     plane->m_mainPlane->WrapCoord(&outR, &outC);
     CStatusBarMgr* sbi = lvl->m_guts;
     if (sbi->m_hlBusy == 0) {
-        if (sbi->m_position == 2) {
+        if (sbi->m_position == STATUSBAR_HIDDEN) {
             sbi->Reset();
         }
         if (sbi->m_activeTab != TAB_GAME) {

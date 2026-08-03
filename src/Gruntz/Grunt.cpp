@@ -47,6 +47,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/State.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/Timer.h>
@@ -3358,7 +3359,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_guts;
             if (sb->m_hlBusy == 0) {
-                if (sb->m_position == 2) {
+                if (sb->m_position == STATUSBAR_HIDDEN) {
                     sb->RefreshState();
                 }
                 if (sb->m_activeTab != TAB_RESOURCE) {

@@ -294,6 +294,7 @@ include/Gruntz/StateDispatch.h	pending
 include/Gruntz/StateId.h	pending	
 include/Gruntz/StateMgrBZ.h	pending	
 include/Gruntz/StaticHazard.h	pending	
+include/Gruntz/StatusBarDock.h	pending	
 include/Gruntz/StatusBarItem.h	pending	
 include/Gruntz/StatusBarMgr.h	pending	
 include/Gruntz/StatusBarMgrBuilders.h	pending	

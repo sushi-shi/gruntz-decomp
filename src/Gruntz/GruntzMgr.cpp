@@ -63,6 +63,7 @@
 #include <Gruntz/SplashState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/StateMgrBZ.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>
@@ -3205,7 +3206,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                     st->ResetViewport();
                     if (st->m_guts != 0) {
                         st->m_guts->m_barFrameGate = m_modeH;
-                        if (st->m_guts->m_position == 0) {
+                        if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
                             st->m_guts->RefreshA();
                             st->m_guts->DockStatusBarRight();
                             EnterModalUI(
@@ -3215,7 +3216,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                             );
                             return 0;
                         }
-                        if (st->m_guts->m_position == 1) {
+                        if (st->m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                             st->m_guts->DockStatusBarRight();
                             st->m_guts->RefreshA();
                         }
@@ -3246,10 +3247,10 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         st->ResetViewport();
         if (st->m_guts != 0) {
             st->m_guts->m_barFrameGate = h;
-            if (st->m_guts->m_position == 0) {
+            if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
                 st->m_guts->RefreshA();
                 st->m_guts->DockStatusBarRight();
-            } else if (st->m_guts->m_position == 1) {
+            } else if (st->m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                 st->m_guts->DockStatusBarRight();
                 st->m_guts->RefreshA();
             }

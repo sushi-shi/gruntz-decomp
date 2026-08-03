@@ -9,6 +9,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgrBuilders.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/ImageSet.h>
@@ -758,7 +759,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
             {
                 i32 aOff, cOff;
-                if (m_position == 1) {
+                if (m_position == STATUSBAR_DOCK_LEFT) {
                     aOff = 0x7d;
                     cOff = 0x95;
                 } else {

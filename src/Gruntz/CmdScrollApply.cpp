@@ -8,6 +8,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/ScrollState.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
@@ -49,7 +50,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
 
     i32 cx = g_gameReg->m_modeW / 2;
     i32 cy = g_gameReg->m_modeH / 2;
-    if (bar->m_position != 2) {
+    if (bar->m_position != STATUSBAR_HIDDEN) {
         cx -= 0xa0;
     }
     if (snapFlag) {

@@ -6,6 +6,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SBI_SideTab.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
 
@@ -16,7 +17,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
     for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
         i32 geomBase;
         i32 geomVal;
-        if (m_position == 0) {
+        if (m_position == STATUSBAR_DOCK_RIGHT) {
             geomBase = m_rect10.left - 0x1c;
             geomVal = m_rect10.left;
         } else {
@@ -38,7 +39,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             g_curPlayer,
             i,
             m_statFlags[i],
-            m_position == 0
+            m_position == STATUSBAR_DOCK_RIGHT
         );
         if (ok == 0) {
             delete newobj;

@@ -12,6 +12,7 @@
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Ints.h>
@@ -195,7 +196,7 @@ public:
     i32 ActivateSlot(i32 idx);
     i32 PlaceCursorTarget(i32 row, i32 commit);
 
-    i32 SetState(i32 state);
+    i32 SetState(StatusBarDock state);
     i32 RefreshState();
     i32 SetSpritePos(i32 x, i32 y);
     i32 HitTestLayer(i32 x, i32 y);
@@ -209,8 +210,8 @@ public:
 
     i32 DockStatusBarRight();
 
-    i32 m_position;
-    i32 m_restorePosition;
+    StatusBarDock m_position;
+    StatusBarDock m_restorePosition;
 
     class CWwdGameObjectA* m_barSprite;
 

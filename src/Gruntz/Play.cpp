@@ -65,6 +65,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/StateMgrBZ.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/String.h>
@@ -476,9 +477,10 @@ i32 CPlay::Render() {
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
 
-        if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
+        if (m_lightFx != 0 && m_guts->m_position != STATUSBAR_HIDDEN
+            && m_guts->m_activeTab != TAB_GAME) {
             RECT rc;
-            if (m_guts->m_position == 1) {
+            if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
                 i32 cx = g_gameReg->m_modeH;
@@ -1154,7 +1156,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         if (savedThis == 0) {
 
             CStatusBarMgr* tiles = self->m_guts;
-            i32 id = (tiles->m_position == 0) ? 0x1a9 : 0x249;
+            i32 id = (tiles->m_position == STATUSBAR_DOCK_RIGHT) ? 0x1a9 : 0x249;
             if (!self->m_frameMarker->LoadTimerSprite(id, 0x1ca)) {
                 CTimer* spr = self->m_frameMarker;
                 if (spr != 0) {
@@ -1417,7 +1419,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
         if (key == '=' || key == '+') {
             m_guts->RefreshState();
 
-            if (m_guts->m_position == 1) {
+            if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                 m_hitTest->Configure(2);
             } else {
                 m_hitTest->Configure(1);
@@ -1759,7 +1761,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != 0) {
             return 1;
         }
-        if (lv->m_position == 2) {
+        if (lv->m_position == STATUSBAR_HIDDEN) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_GRUNTZ) {
@@ -1784,7 +1786,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != 0) {
             return 1;
         }
-        if (lv->m_position == 2) {
+        if (lv->m_position == STATUSBAR_HIDDEN) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_RESOURCE) {
@@ -1805,7 +1807,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != 0) {
             return 1;
         }
-        if (lv->m_position == 2) {
+        if (lv->m_position == STATUSBAR_HIDDEN) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_STATZ) {
@@ -1838,7 +1840,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != 0) {
             return 1;
         }
-        if (lv->m_position == 2) {
+        if (lv->m_position == STATUSBAR_HIDDEN) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_GAME) {
@@ -2811,7 +2813,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
     limit.cx = w->m_modeW;
     limit.cy = w->m_modeH;
 
-    if (r.right - r.left < (guts->m_position == 2 ? limit.cx : limit.cx - 0xa0)) {
+    if (r.right - r.left < (guts->m_position == STATUSBAR_HIDDEN ? limit.cx : limit.cx - 0xa0)) {
         r.left -= stride;
         r.right += stride;
         if (r.left < 0) {
@@ -4082,7 +4084,8 @@ i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
-    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
+    if (m_lightFx != 0 && m_guts->m_position != STATUSBAR_HIDDEN
+        && m_guts->m_activeTab != TAB_GAME) {
         m_lightFx->EndMinimapPan(a, x, y);
     }
     if (m_worldReady != 0) {
@@ -4090,7 +4093,7 @@ i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
-    if (m_guts->m_position == 2) {
+    if (m_guts->m_position == STATUSBAR_HIDDEN) {
         return 1;
     }
 
@@ -4115,7 +4118,7 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
         return this->OnLButtonDown(msg, x, y);
     }
 
-    if (m_guts->m_position == 2 && m_guts->HitTestLayer(x, y)) {
+    if (m_guts->m_position == STATUSBAR_HIDDEN && m_guts->HitTestLayer(x, y)) {
         CDDrawSubMgrLeafScan* set = m_mgr->m_world->m_soundRegistry;
         if (set->m_emitGate == 0) {
             LeafCue* e = 0;
@@ -4125,7 +4128,7 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
             }
         }
         m_guts->RefreshState();
-        if (m_guts->m_position == 1) {
+        if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
             m_hitTest->Configure(2);
         } else {
             m_hitTest->Configure(1);
@@ -4246,7 +4249,8 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     if (m_paused != 0) {
         return 1;
     }
-    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
+    if (m_lightFx != 0 && m_guts->m_position != STATUSBAR_HIDDEN
+        && m_guts->m_activeTab != TAB_GAME) {
         m_lightFx->ContinueMinimapPan(a, x, y);
     }
 
@@ -4474,7 +4478,8 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
             goto drag_path;
         }
 
-        if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
+        if (m_lightFx != 0 && m_guts->m_position != STATUSBAR_HIDDEN
+            && m_guts->m_activeTab != TAB_GAME) {
             if (m_lightFx->BeginMinimapPan(a, xr, y)) {
                 return 1;
             }
@@ -4605,7 +4610,7 @@ drag_path: {
     if (m_guts == 0) {
         return 1;
     }
-    if (m_guts->m_position == 2) {
+    if (m_guts->m_position == STATUSBAR_HIDDEN) {
         if (m_guts->HitTestLayer(xr, y)) {
             m_dragSnapActive = 1;
 
@@ -4767,7 +4772,8 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     if (m_mgr->m_frameGate != 0) {
         return 1;
     }
-    if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != TAB_GAME) {
+    if (m_lightFx != 0 && m_guts->m_position != STATUSBAR_HIDDEN
+        && m_guts->m_activeTab != TAB_GAME) {
         if (m_lightFx->IssueMinimapCommand(a, x, y)) {
             return 1;
         }
@@ -4994,7 +5000,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     FlushPendingOps();
     if (arg == 0) {
         CStatusBarMgr* g = m_guts;
-        if (g->m_position == 2) {
+        if (g->m_position == STATUSBAR_HIDDEN) {
             g->RefreshState();
         }
         if (g->m_activeTab != TAB_GAME) {
