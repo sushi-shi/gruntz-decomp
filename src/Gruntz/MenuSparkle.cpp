@@ -6,13 +6,13 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MenuSparkleSerial.h>
+#include <Gruntz/SerialArchive.h>
+#include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 
 #include <stdlib.h>
-#include <Gruntz/MenuSparkleSerial.h>
-#include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SerialArchive.h>
-#include <Io/FileMem.h>
 
 template<> DATA(0x00246010)
 CActReg CActRegPool<CMenuSparkle>::s_table(2000, 2010);

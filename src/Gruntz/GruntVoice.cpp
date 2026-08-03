@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/ActName.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameObjectFactory.h>
@@ -29,7 +30,6 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActNameRegistry.h>
 
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);

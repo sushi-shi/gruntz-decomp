@@ -2,6 +2,8 @@
 
 #include <Gruntz/Dialogs.h>
 
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
@@ -19,7 +21,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <Mfc.h>
 
 DATA(0x001e88b0)
 const AFX_MSGMAP CBattlezDlg::messageMap = {

@@ -2,8 +2,10 @@
 
 #include <Gruntz/Grunt.h>
 
+#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
+#include <Bute/SymTab.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
@@ -11,22 +13,27 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CurPlayer.h>
+#include <Gruntz/DirectionClassify.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntToySprite.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageSets.h>
@@ -34,17 +41,24 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/Projectile.h>
+#include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/State.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
 #include <Ints.h>
+#include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 #include <Wap32/Rect.h>
+#include <Wap32/Wap32.h>
 #include <Wap32/zBitVec.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
@@ -53,20 +67,6 @@
 #include <new>
 #include <stdlib.h>
 #include <string.h>
-#include <Gruntz/DirectionClassify.h>
-#include <Gruntz/GruntEntranceArrival.h>
-#include <AddrWord.h>
-#include <Bute/SymTab.h>
-#include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GruntzCommandId.h>
-#include <Gruntz/Projectile.h>
-#include <Gruntz/Random.h>
-#include <Gruntz/State.h>
-#include <Gruntz/UserLogic.h>
-#include <Pix16.h>
-#include <Rez/RezTypeTag.h>
-#include <Wap32/Wap32.h>
 
 VTBL(CGrunt, 0x001e8754);
 

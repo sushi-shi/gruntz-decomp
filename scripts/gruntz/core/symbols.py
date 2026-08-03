@@ -105,10 +105,7 @@ class SymbolDb:
                         continue
                     names[rva] = (r["name"], r.get("unit", ""))
                     kind[rva] = r.get("kind", "")
-                    # "comdat" is a code kind too (a linker-placed body):
-                    # test NOT-data, so a new code kind cannot silently
-                    # drop symbols out of the function table.
-                    if (r.get("kind") or "func") != "data":
+                    if (r.get("kind") or "func") == "func":
                         starts.add(rva)
                         sz = _psize(r.get("size", ""))
                         if sz:

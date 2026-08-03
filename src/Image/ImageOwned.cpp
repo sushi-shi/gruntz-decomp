@@ -1,15 +1,16 @@
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
+#include <Ints.h>
 #include <Io/FileStream.h>
 #include <Pix16.h>
 
 #include <ddraw.h>
 #include <string.h>
-#include <Mfc.h>
-#include <Ints.h>
 
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {

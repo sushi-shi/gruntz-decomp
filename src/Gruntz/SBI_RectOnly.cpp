@@ -12,7 +12,9 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
+#include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameMenuMgrBuilders.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -21,9 +23,11 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/SbGeom.h>
 #include <Gruntz/SBI_GruntMachine.h>
 #include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/SBI_ImageSetAni.h>
+#include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_WarlordHead.h>
 #include <Gruntz/SBI_WellGoo.h>
@@ -34,7 +38,11 @@
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTabWidgets.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/UserLogic.h>
 #include <Gruntz/WarpStoneFly.h>
 #include <Image/CImage.h>
 #include <Ints.h>
@@ -45,10 +53,8 @@
 #include <Utils/RegistryHelper.h>
 
 #include <math.h>
+#include <new>
 #include <string.h>
-#include <Gruntz/GameMenuMgrBuilders.h>
-#include <Gruntz/SbGeom.h>
-#include <Gruntz/SBI_MenuItem.h>
 
 DATA(0x00244c54)
 i32 g_curPlayer = 0;
@@ -59,6 +65,17 @@ void ForceEmitStatusBarMgrDtor() {
     g_forceStatusBarMgrDtor->~CStatusBarMgr();
 }
 #pragma inline_depth()
+
+RVA(0x000c86d0, 0x11)
+CSbiHlRow::CSbiHlRow() {
+
+    m_lastLo = 0;
+    m_intervalLo = 0;
+    m_lastHi = 0;
+    m_intervalHi = 0;
+}
+
+// @early-stop
 
 RVA_COMPGEN(0x000c8980, 0x64, ??1CStatusBarMgr@@QAE@XZ)
 

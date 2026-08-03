@@ -1,16 +1,16 @@
 #include <rva.h>
 
-#include <Gruntz/MgrAutoScroll.h>
-#include <Gruntz/ScrollState.h>
-#include <Ints.h>
-#include <Rez/FrameClock.h>
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/ScrollState.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Ints.h>
+#include <Rez/FrameClock.h>
 #include <Wwd/WwdFile.h>
 
 static i32 RandRange(i32 lo, i32 hi) {

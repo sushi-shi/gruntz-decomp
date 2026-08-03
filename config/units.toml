@@ -1567,10 +1567,6 @@ unit = "customleveldlg"
 source = "src/Gruntz/CustomLevelDlg.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "modeobjinit"
-source = "src/Gruntz/ModeObjInit.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "ddrawsurfacepairblt"

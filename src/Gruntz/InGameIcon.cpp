@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
+#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -13,6 +14,8 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameText.h>
@@ -29,15 +32,12 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
 #include <string.h>
-#include <Bute/ButeTree.h>
-#include <Rez/FrameClock.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GameRegMfcPtr.h>
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);

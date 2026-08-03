@@ -31,18 +31,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
-from gruntz.audit.tu_layout import (RVA_RE, RVA_COMPGEN_RE, SIG_RE, _parse_size,
-                                    pooled)
-
-# A COMDAT() pin (rva.h) is a LINKER-placed body: it has an address but is not
-# part of this compiland's .text contribution, so it must not define the TU's
-# extent. RVA_COMPGEN() is the same species with no source body.
-COMDAT_RE = re.compile(r"\bCOMDAT\s*\(\s*(0x[0-9a-fA-F]+)\s*,"
-                       r"\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
+from gruntz.audit.tu_layout import RVA_RE, SIG_RE, _parse_size, pooled
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -50,13 +42,10 @@ SRC = REPO / "src"
 
 
 class Entry:
-    __slots__ = ("rva", "size", "line", "name", "tu", "placed")
+    __slots__ = ("rva", "size", "line", "name", "tu")
 
-    def __init__(self, rva, size, line, name, tu, placed=False):
+    def __init__(self, rva, size, line, name, tu):
         self.rva, self.size, self.line, self.name, self.tu = rva, size, line, name, tu
-        # placed = the LINKER chose this address (COMDAT/RVA_COMPGEN), so it says
-        # nothing about where this compiland's contribution begins or ends.
-        self.placed = placed
 
     @property
     def end(self) -> int:
@@ -80,10 +69,6 @@ def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
         seq: list[Entry] = []
         for i, ln in enumerate(lines):
             m = RVA_RE.search(ln)
-            placed = False
-            if not m:
-                m = COMDAT_RE.search(ln) or RVA_COMPGEN_RE.search(ln)
-                placed = bool(m)
             if not m:
                 continue
             rva, size = int(m.group(1), 16), _parse_size(m.group(2))
@@ -95,7 +80,7 @@ def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
                 if sm:
                     name = f"{sm.group(1)}::{sm.group(2)}"
                     break
-            seq.append(Entry(rva, size, i + 1, name or "?", f"{rel}", placed))
+            seq.append(Entry(rva, size, i + 1, name or "?", f"{rel}"))
         if seq:
             tus[tu] = seq
     return tus
@@ -118,12 +103,58 @@ def check_intra(tus):
     return viol
 
 
+# A body sitting this far from the rest of its TU, in a group no bigger than
+# MAX_OUTLIERS, is not part of that compiland's contiguous run - it is one
+# misplaced function (usually a ctor/dtor the linker placed at first use).
+OUTLIER_GAP = 0x8000
+MAX_OUTLIERS = 3
+
+
+def tu_cluster(seq):
+    """(cluster, outliers) - the TU's dense run, and the bodies far from it.
+
+    THE CAUSE, not the consequence. One function stranded half an image away
+    stretches its TU's extent across everything in between, so it alone
+    manufactures a pair with every unit in that range - which is why a handful
+    of these read as >1000 interleave pairs. Peel the small remote groups off
+    and what is left is the compiland's real contribution."""
+    ent = sorted((e for e in seq if not pooled(e.rva)), key=lambda e: e.rva)
+    outliers = []
+    while len(ent) > 1:
+        rvas = [e.rva for e in ent]
+        gap, i = max((rvas[k + 1] - rvas[k], k) for k in range(len(rvas) - 1))
+        if gap < OUTLIER_GAP:
+            break
+        lo, hi = ent[:i + 1], ent[i + 1:]
+        drop = lo if len(lo) <= len(hi) else hi      # the minority side is the stray
+        if len(drop) > MAX_OUTLIERS:
+            break                                    # a genuine two-cluster TU
+        outliers += drop
+        ent = [e for e in ent if e not in drop]
+    return ent, outliers
+
+
+def tu_outliers(tus):
+    """[(tu, entry, distance_from_cluster)] over the whole tree."""
+    out = []
+    for tu, seq in sorted(tus.items()):
+        cluster, strays = tu_cluster(seq)
+        if not cluster:
+            continue
+        lo, hi = cluster[0].rva, cluster[-1].rva
+        for e in strays:
+            out.append((tu, e, lo - e.rva if e.rva < lo else e.rva - hi))
+    return out
+
+
 def tu_spans(tus):
-    """tu -> (min_start, max_end); sized entries define the block extent."""
+    """tu -> (min_start, max_end); the DENSE RUN defines the block extent."""
     spans = {}
     for tu, seq in tus.items():
-        own = [e for e in seq if not e.placed] or seq   # linker-placed bodies do not
-        starts = [e.rva for e in own]                   # define a compiland's extent
+        own, _strays = tu_cluster(seq)
+        if not own:
+            continue
+        starts = [e.rva for e in own]
         ends = [e.end for e in own if e.size]
         spans[tu] = (min(starts), max(ends) if ends else max(starts))
     return spans
@@ -207,6 +238,11 @@ def main():
     ap.add_argument("--inter-only", action="store_true")
     ap.add_argument("--intra-only", action="store_true")
     ap.add_argument("--csv", help="write per-TU span + violation counts")
+    ap.add_argument("--outliers", action="store_true",
+                    help="report the CAUSE: every body sitting far from its TU's "
+                         "dense run. These are what inflate the interleave-pair "
+                         "count - one stray spans every unit in between - so this "
+                         "is the actionable worklist, not the pair total.")
     ap.add_argument("--gate", action="store_true",
                     help="build-tail ratchet: compare per-TU intra violations + the "
                          "interleave-pair count vs config/tu-order-baseline.tsv; any "
@@ -218,6 +254,19 @@ def main():
 
     if args.gate:
         return _gate(check_intra(tus), check_inter(tus))
+
+    if args.outliers:
+        out = tu_outliers(tus)
+        by_tu = {}
+        for tu, e, dist in out:
+            by_tu.setdefault(tu, []).append((e, dist))
+        for tu in sorted(by_tu):
+            print(f"{tu}:")
+            for e, dist in sorted(by_tu[tu], key=lambda x: x[0].rva):
+                print(f"    {e.rva:#08x} +{e.size:#06x}  {dist:#9x} from cluster  {e.name}")
+        print(f"\n{len(out)} outlier bod(ies) across {len(by_tu)} TU(s) "
+              f"(>= {OUTLIER_GAP:#x} from the run, groups of <= {MAX_OUTLIERS})")
+        return 0
 
     if args.tu:
         seq = tus.get(args.tu)

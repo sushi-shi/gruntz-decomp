@@ -2,6 +2,7 @@
 
 #include <Gruntz/PathHazard.h>
 
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
@@ -16,13 +17,12 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/ZVec.h>
 
 #include <math.h>
-#include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Wap32/ZVec.h>
 
 template<> DATA(0x00246250)
 CActReg CActRegPool<CPathHazard>::s_table(2000, 2010);

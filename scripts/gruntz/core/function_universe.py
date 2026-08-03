@@ -55,8 +55,7 @@ def _source_functions(path: Path) -> dict[int, dict]:
         return out
     with path.open(newline="") as stream:
         for row in csv.DictReader(stream):
-            # not-data rather than ==func: "comdat" is code as well
-            if (row.get("kind") or "func").strip() == "data":
+            if (row.get("kind") or "func").strip() != "func":
                 continue
             try:
                 rva = _rint(row["rva"])

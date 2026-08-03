@@ -82,7 +82,11 @@ DEFAULT_GAP = 0x4000
 # "related" window: methods within this of a sibling are co-located in the TU block.
 DEFAULT_NEAR = 0x2000
 # the two empirical special-member pools (low COMDAT-dtor runs).
-POOLS = ((0x10000, 0x14000), (0x80000, 0x90000))
+# The COMDAT band: per-class inline/implicit members (SerializeMove, GetTypeTag,
+# dtors) that every TU emits and the linker gathers here. Measured from the
+# pinned bodies - 38 of them land in 0x0f470..0x134e0, so the window starts
+# below 0x10000, where it used to begin and miss the 0x0f4xx-0x0ffxx group.
+POOLS = ((0x0f400, 0x13600), (0x80000, 0x90000))
 # the Ghidra boundary export feeding --attribute (all .text starts + sizes + names).
 DEFAULT_FUNCTIONS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
 # subsystem keywords: an attribution that misses the exact class usually lands on a

@@ -2,6 +2,8 @@
 
 #include <Gruntz/Play.h>
 
+#include <Mfc.h>
+
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
@@ -30,6 +32,7 @@
 #include <Gruntz/CBrickz.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CheatMgr.h>
+#include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
@@ -45,6 +48,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/ImageSets.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
@@ -52,7 +56,9 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/SBI_Image.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
@@ -61,6 +67,8 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/String.h>
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -78,18 +86,13 @@
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/EngStr.h>
+#include <Wap32/Object.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
-#include <Gruntz/CurPlayer.h>
-#include <Wap32/Object.h>
-#include <Gruntz/PlayPlaneScan.h>
-#include <Gruntz/ImageSets.h>
-#include <Gruntz/SBI_Image.h>
-#include <Gruntz/TileTriggerLogic.h>
 
 inline void* operator new(u32, void* p) {
     return p;
@@ -162,6 +165,134 @@ GZ_ENUM_END(ToolCursorId)
                 static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                 \
         }                                                                                          \
     } while (0)
+
+RVA(0x000c7ec0, 0x5f5)
+i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+    {
+        if (mgr == 0) {
+            return 0;
+        }
+        GruntzPlayer* sub = mgr->m_options;
+        if (sub == 0) {
+            return 0;
+        }
+        sub->m_liveGate = 1;
+        sub->m_humanControlled = 1;
+        m_region0Gate = 0;
+        m_region1Gate = 0;
+        m_region2Gate = 0;
+        m_region3Gate = 0;
+        m_viewMode = 0;
+        m_hudSuppressed = 1;
+        m_cameraBookmarkIndex = -1;
+        m_snapshotActive = 0;
+        m_scrollEdgeActive = 0;
+        m_scrollEdgeLock = 0;
+        m_frameMarker = 0;
+
+        if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+            return 0;
+        }
+
+        CChatBoxOwner* ctl = static_cast<CChatBoxOwner*>(::operator new(0x1c));
+        if (ctl) {
+
+            ctl->m_world = 0;
+            ctl->m_fontConfig = 0;
+            ctl->m_attached = 0;
+            ctl->m_inputActive = 0;
+            ctl->m_originX = 0;
+            ctl->m_originY = 0;
+            ctl->m_mode = 1;
+        } else {
+            ctl = 0;
+        }
+        m_hitTest = ctl;
+        if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
+            if (m_hitTest) {
+                m_hitTest->Deactivate();
+                ::operator delete(m_hitTest);
+            }
+            m_hitTest = 0;
+            return 0;
+        }
+        m_hitTest->m_inputActive = 0;
+        m_hitTest->Configure(1);
+
+        m_guts = new CStatusBarMgr;
+        if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
+            CStatusBarMgr* w2 = m_guts;
+            if (w2 == 0) {
+                return 0;
+            }
+
+            delete w2;
+            m_guts = 0;
+            return 0;
+        }
+
+        CTileTriggerContainer* r78 = static_cast<CTileTriggerContainer*>(::operator new(0x78));
+        if (r78) {
+
+            new (&r78->m_base) CPtrList(0xa);
+            new (&r78->m_list1) CPtrList(0xa);
+            new (&r78->m_list2) CPtrList(0xa);
+            new (&r78->m_list3) CPtrList(0xa);
+            r78->m_built = 0;
+        } else {
+            r78 = 0;
+        }
+        m_beginMarker = r78;
+        if (m_beginMarker->GetFlag74() == 0) {
+
+            delete m_beginMarker;
+            m_beginMarker = 0;
+            return 0;
+        }
+
+        CTimer* r50 = static_cast<CTimer*>(::operator new(0x50));
+        if (r50) {
+            r50->Init();
+        } else {
+            r50 = 0;
+        }
+        m_frameMarker = r50;
+        if (r50 == 0) {
+            return 0;
+        }
+
+        if (ShowCursor(0) >= 0) {
+            while (ShowCursor(0) >= 0) {
+            }
+        }
+        m_initialFramePending = 1;
+        m_notifyLatch = 0;
+        m_completedFinalLevel = 0;
+        memset(&m_saveSlot, 0, sizeof(m_saveSlot));
+        mgr->ResetClockGlobals();
+        m_savedClock = 0;
+        m_rngSeed = timeGetTime();
+        m_lightFx = 0;
+        if (m_mgr->m_loadingSaveGame == 0) {
+            m_mgr->m_saveInfoRec = 0;
+        }
+        if (!LoadImageBanks()) {
+            return 0;
+        }
+        PostLoadImageBanks();
+        if (!LoadByMode(areaArg, 1)) {
+            return 0;
+        }
+        if (!LoadCursorSprites(0, 0)) {
+            return 0;
+        }
+        CWwdGameObjectA* peer = m_scrollSink;
+        if (peer) {
+            peer->m_stateFlags |= 1;
+        }
+        return 1;
+    }
+}
 
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::LeaveState(GameStateId arg) {
@@ -5286,23 +5417,6 @@ i32 g_scrollSpeedRange;
 DATA(0x0024c274)
 i32 g_scrollMinSpeed;
 
-// @early-stop
-RVA(0x000d1650, 0x90)
-void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
-    CObject* set_ob = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
-    CDDrawWorker* set = static_cast<CDDrawWorker*>(set_ob);
-    if (set != 0) {
-        CImage* frame = set->GetAt(index);
-        if (frame != 0) {
-            LevelCoordRect& vp = m_world->m_level->m_planeCtx;
-            i32 cx = vp.left + (vp.right - vp.left) / 2;
-            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
-            LayerBlitFrame(m_world, frame, cx, cy, useFront, 1);
-        }
-    }
-}
-
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
     if (!(g_scrollLoadFlags & 1)) {
@@ -5414,6 +5528,23 @@ i32 CPlay::LoadScrollSpeedOptions() {
         self->ResetGoals(sx, sy);
     }
     return 1;
+}
+
+// @early-stop
+RVA(0x000d1650, 0x90)
+void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
+    CObject* set_ob = 0;
+    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
+    CDDrawWorker* set = static_cast<CDDrawWorker*>(set_ob);
+    if (set != 0) {
+        CImage* frame = set->GetAt(index);
+        if (frame != 0) {
+            LevelCoordRect& vp = m_world->m_level->m_planeCtx;
+            i32 cx = vp.left + (vp.right - vp.left) / 2;
+            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
+            LayerBlitFrame(m_world, frame, cx, cy, useFront, 1);
+        }
+    }
 }
 
 RVA(0x000dc6d0, 0x2e0)

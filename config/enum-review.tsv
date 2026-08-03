@@ -589,7 +589,6 @@ src/Gruntz/MenuSparkle.cpp	pending
 src/Gruntz/MenuState.cpp	pending	
 src/Gruntz/MgrSettings.cpp	pending	
 src/Gruntz/MgrSlotSwap.cpp	pending	
-src/Gruntz/ModeObjInit.cpp	pending	
 src/Gruntz/MotionState.cpp	pending	
 src/Gruntz/MotionStateStep.cpp	pending	
 src/Gruntz/MovingLogic.cpp	pending	

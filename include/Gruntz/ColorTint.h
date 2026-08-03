@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_COLORTINT_H
 #define GRUNTZ_GRUNTZ_COLORTINT_H
 
+#include <Mfc.h>
+
 #include <Enums.h>
 
 // The 17 team/tool colour variants. Names are retail's own sprite-namespace
