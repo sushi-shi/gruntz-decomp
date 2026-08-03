@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <Font/Font.h>
+#include <Font/FontSel.h>
 #include <Ints.h>
 #include <Wap32/EngStr.h>
 
@@ -33,16 +34,16 @@ i32 EngStr_RenderText(
         return 0;
     }
     switch (fontSel) {
-        case 100:
+        case FONTSEL_TINY:
             g_textObj.SetFont(&g_tinyFont);
             break;
-        case 110:
+        case FONTSEL_SMALL:
             g_textObj.SetFont(&g_smallFont);
             break;
-        case 120:
+        case FONTSEL_MEDIUM:
             g_textObj.SetFont(&g_mediumFont);
             break;
-        case 130:
+        case FONTSEL_LARGE:
             g_textObj.SetFont(&g_largeFont);
             break;
     }

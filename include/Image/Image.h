@@ -55,7 +55,7 @@ public:
     i32 DecodePcxData(void* buf, HDC dc, i32 ctrl);
     i32 DecodeRidData(void* buf, HDC dc, i32 ctrl);
     i32 DecodePidData(void* buf, HDC dc, i32 ctrl);
-    i32 DecodeResData(void* buf, HDC dc, i32 ctrl);
+    i32 DecodeBmpData(void* buf, HDC dc, i32 ctrl);
 
     i32 DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl);
 

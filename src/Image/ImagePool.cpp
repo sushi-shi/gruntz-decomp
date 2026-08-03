@@ -10,6 +10,7 @@
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePaletteNode.h>
+#include <Image/RezDecodeKind.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
 
@@ -378,13 +379,13 @@ i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount
 RVA(0x00175a00, 0x90)
 i32 CRezImage::DispatchDecode(void* buf, i32 kind, HDC dc, i32 ctrl) {
     switch (kind) {
-        case 2:
+        case DECODE_BMP:
+            return DecodeBmpData(buf, dc, ctrl);
+        case DECODE_PCX:
             return DecodePcxData(buf, dc, ctrl);
-        case 3:
-            return DecodeResData(buf, dc, ctrl);
-        case 4:
+        case DECODE_RID:
             return DecodeRidData(buf, dc, ctrl);
-        case 5:
+        case DECODE_PID:
             return DecodePidData(buf, dc, ctrl);
     }
     return 0;
@@ -483,7 +484,7 @@ void CRezImage::Fill(i32 value) {
 
 // @early-stop
 RVA(0x00175e00, 0x3d)
-i32 CRezImage::DecodeResData(void* buf, HDC dc, i32 ctrl) {
+i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
     i32 width = ih->biWidth;
     i32 height = ih->biHeight;
@@ -756,7 +757,7 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
     if (!data) {
         return 0;
     }
-    return DecodeResData(data, dc, ctrl);
+    return DecodeBmpData(data, dc, ctrl);
 }
 
 // @early-stop

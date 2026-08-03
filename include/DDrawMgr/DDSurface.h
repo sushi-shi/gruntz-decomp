@@ -63,11 +63,11 @@ SIZE(0x20);
 
 // The format CDDSurface::Resolve decodes. CImage picks it from the REZ entry
 // tag: IMGTAG_PMB('BMP')->FMT_BMP, IMGTAG_XCP('PCX')->FMT_PCX,
-// IMGTAG_DIR->FMT_DIR, IMGTAG_DIP('PID')->FMT_PID.
+// IMGTAG_DIR('RID')->FMT_RID, IMGTAG_DIP('PID')->FMT_PID.
 GZ_ENUM_BEGIN(FileImageFormat)
     FMT_BMP = 1,
     FMT_PCX = 2,
-    FMT_DIR = 3,
+    FMT_RID = 3,
     FMT_PID = 4
 GZ_ENUM_END(FileImageFormat)
 

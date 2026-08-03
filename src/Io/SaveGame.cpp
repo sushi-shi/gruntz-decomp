@@ -15,6 +15,7 @@
 #include <Gruntz/SaveSlotCtrlId.h>
 #include <Image/Image.h>
 #include <Image/ImagePool.h>
+#include <Image/RezDecodeKind.h>
 #include <Io/GameSave.h>
 #include <Utils/RegistryHelper.h>
 
@@ -542,7 +543,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
             f.Close();
         } else {
             f.Close();
-            g_previewImage = g_previewMgr->AddSurfaceOp(&readBuf[0xe], 2, 0);
+            g_previewImage = g_previewMgr->AddSurfaceOp(&readBuf[0xe], DECODE_BMP, 0);
             SetDlgItemTextA(hDlg, 0x4b3, title);
         }
     }

@@ -182,7 +182,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
             type = FMT_PCX;
             break;
         case IMGTAG_DIR:
-            type = FMT_DIR;
+            type = FMT_RID;
             break;
         case IMGTAG_DIP:
             type = FMT_PID;

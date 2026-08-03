@@ -77,7 +77,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
             index = FMT_PCX;
             break;
         case IMGTAG_DIR:
-            index = FMT_DIR;
+            index = FMT_RID;
             break;
         case IMGTAG_DIP:
             index = FMT_PID;
@@ -105,7 +105,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
 
 RVA(0x00152fb0, 0x123)
 i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 keyed) {
-    if (mode != FMT_BMP && mode != FMT_PCX && mode != FMT_DIR && mode != FMT_PID) {
+    if (mode != FMT_BMP && mode != FMT_PCX && mode != FMT_RID && mode != FMT_PID) {
         return 0;
     }
 
@@ -121,7 +121,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         return 1;
     }
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
-    if (mode == FMT_PID || mode == FMT_DIR) {
+    if (mode == FMT_PID || mode == FMT_RID) {
         i32 g10 = desc->offsetX;
         i32 g14 = desc->offsetY;
         m_originX = g10;
@@ -298,7 +298,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
             index = FMT_PCX;
             break;
         case IMGTAG_DIR:
-            index = FMT_DIR;
+            index = FMT_RID;
             break;
         case IMGTAG_DIP:
             index = FMT_PID;

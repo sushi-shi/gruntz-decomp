@@ -12,6 +12,7 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/WarlordOwner.h>
 #include <Rez/RezSync.h>
 
 static CString g_worldName[8] = {
@@ -84,13 +85,13 @@ static CString g_statLabel[8] = {
 RVA(0x0001ec20, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {
     switch (id) {
-        case 0:
+        case WARLORDZ_KING:
             return CString("KING");
-        case 1:
+        case WARLORDZ_NAPOLEAN:
             return CString("NAPOLEAN");
-        case 2:
+        case WARLORDZ_PATTON:
             return CString("PATTON");
-        case 3:
+        case WARLORDZ_VIKING:
             return CString("VIKING");
         default:
             return CString("");

@@ -35,7 +35,7 @@ src/Gruntz/StatusBarMgr.cpp	408	pending
 src/Gruntz/PlayerCommandStep.cpp	342	partial
 src/Bute/SymTab.cpp	323	pending
 src/DDrawMgr/DDPageMgr.cpp	322	pending
-src/Io/SaveGame.cpp	320	pending
+src/Io/SaveGame.cpp	320	partial
 src/Gruntz/GameMode.cpp	314	done
 src/Net/NetCmdSlot.cpp	311	pending
 src/DDrawMgr/ShadeTableCache.cpp	310	pending
@@ -44,7 +44,7 @@ src/Net/NetMgr.cpp	303	pending
 src/DDrawMgr/DDrawSurfacePair.cpp	296	pending
 src/DDrawMgr/DDrawSubMgr.cpp	293	pending
 src/Gruntz/WorldSoundSet.cpp	291	pending
-src/Image/ImagePool.cpp	290	pending
+src/Image/ImagePool.cpp	290	done
 src/DDrawMgr/LevelPlane.cpp	285	pending
 src/DDrawMgr/DirectDrawMgr.cpp	284	pending
 src/Wwd/WwdGameObject.cpp	277	pending
@@ -195,7 +195,7 @@ src/Gruntz/GruntDataRecord.cpp	23	pending
 src/DDrawMgr/LogicRecord.cpp	23	pending
 src/Gruntz/StatusBarSpriteActs.cpp	22	done (AnimWorkerAct dispatch named)
 src/Gruntz/GlyphStringDraw.cpp	22	pending
-src/Wap32/EngStrRenderText.cpp	21	pending
+src/Wap32/EngStrRenderText.cpp	21	done
 src/Gruntz/RainCloud.cpp	21	pending
 src/Gruntz/InputDeviceConfig.cpp	21	done
 src/Gruntz/GruntPowerupSprite.cpp	21	pending
@@ -250,7 +250,7 @@ src/Gruntz/IconLoaders.cpp	8	pending
 src/Gruntz/Fonts.cpp	8	pending
 src/Gruntz/WarpStoneFly.cpp	7	pending
 src/Gruntz/RockBreakEffectUpdate.cpp	7	pending
-src/Gruntz/GameText.cpp	7	pending
+src/Gruntz/GameText.cpp	7	done
 src/Gruntz/BzKindDispatch.cpp	7	pending
 src/Crypto/ButeTailEncode.cpp	7	pending
 src/Bute/BSecStream.cpp	7	pending
