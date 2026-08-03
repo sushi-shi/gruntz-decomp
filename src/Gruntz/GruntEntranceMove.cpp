@@ -34,6 +34,7 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -244,10 +245,10 @@ RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     CGrunt* other = m_tileMgr->m_grid[col * TM_GRID_COLS + row];
     if (other != NULL && other->m_entranceCommitted != 0 && other->m_gruntKind != GRUNT_GHOST) {
-        i32 ox = other->m_lastTilePx.m_x >> 5;
-        i32 oy = other->m_lastTilePx.m_y >> 5;
-        i32 tx = m_defenderPx.m_x >> 5;
-        i32 ty = m_defenderPx.m_y >> 5;
+        i32 ox = other->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 oy = other->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 tx = m_defenderPx.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_defenderPx.m_y >> TILE_SHIFT_PX;
         i32 dx = oy - ty;
         i32 dy = ox - tx;
         i32 sum = m_defenderRadius + m_reachRect.right;
@@ -371,8 +372,8 @@ i32 CGrunt::LoadEntranceConfig() {
         CGruntzMgr* g = g_gameReg;
         CWwdGameObjectA* h = m_object;
         CMapMgr* grid = g->m_tileGrid;
-        i32 tx = h->m_screenX >> 5;
-        i32 ty = h->m_screenY >> 5;
+        i32 tx = h->m_screenX >> TILE_SHIFT_PX;
+        i32 ty = h->m_screenY >> TILE_SHIFT_PX;
 
         i32 flags;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
@@ -402,10 +403,10 @@ i32 CGrunt::LoadEntranceConfig() {
         m_entranceArmed = 0;
         i32 newPxX = h->m_screenX;
         i32 newPxY = h->m_screenY;
-        i32 oldTileX = oldX >> 5;
-        i32 oldTileY = m_lastTilePx.m_y >> 5;
-        i32 newTileX = newPxX >> 5;
-        i32 newTileY = newPxY >> 5;
+        i32 oldTileX = oldX >> TILE_SHIFT_PX;
+        i32 oldTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 newTileX = newPxX >> TILE_SHIFT_PX;
+        i32 newTileY = newPxY >> TILE_SHIFT_PX;
 
         if (oldX != -1 && m_lastTilePx.m_y != -1) {
             CMapMgr* og = g_gameReg->m_tileGrid;
@@ -560,8 +561,8 @@ i32 CGrunt::StartBombGruntRun() {
     }
     {
         CWwdGameObjectA* h = m_object;
-        dy += h->m_screenY >> 5;
-        dx += h->m_screenX >> 5;
+        dy += h->m_screenY >> TILE_SHIFT_PX;
+        dx += h->m_screenX >> TILE_SHIFT_PX;
     }
     PlayMoveSoundAtTile(dx, dy);
     m_moveTile.m_x = dx;
@@ -764,8 +765,8 @@ i32 CGrunt::UpdateEntranceAnim() {
     m_entranceActive = 0;
 
     CGruntzMgr* g = g_gameReg;
-    i32 tx = m_lastTilePx.m_x >> 5;
-    i32 ty = m_lastTilePx.m_y >> 5;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     CGruntzMapMgr* board = g->m_tileGrid;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(board->m_width)
@@ -875,8 +876,8 @@ i32 CGrunt::StepArrivalCommit() {
 
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
     if (eq) {
-        i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
-        i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
+        i32 px = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 py = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 redo = 1;
         if (px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) {
             if (IsDropReady(1)) {
@@ -1011,7 +1012,11 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
-            if (s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePx.m_x >> 5, m_lastTilePx.m_y >> 5)
+            if (s_TileFlags(
+                    g_gameReg->m_tileGrid,
+                    m_lastTilePx.m_x >> TILE_SHIFT_PX,
+                    m_lastTilePx.m_y >> TILE_SHIFT_PX
+                )
                 & 0x80) {
                 m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             }
@@ -1067,8 +1072,8 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     CGruntzMapMgr* b = g->m_tileGrid;
     CWwdGameObjectA* h = m_object;
     i32 xbound = b->m_width;
-    i32 tileY = h->m_screenY >> 5;
-    i32 tileX = h->m_screenX >> 5;
+    i32 tileY = h->m_screenY >> TILE_SHIFT_PX;
+    i32 tileX = h->m_screenX >> TILE_SHIFT_PX;
     // NOT a direction and NOT a TileCollisionKind: BrickzCell int 3 is m_tileId,
     // the raw WWD tile-image index. That is why the same numbers are dispatched
     // twice below - CState::m_levelType is the AREA number (levelIndex / 4 + 1,
@@ -1338,8 +1343,8 @@ i32 CGrunt::FinishActiveAction() {
 
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
     if (eq) {
-        i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
-        i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
+        i32 px = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 py = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 redo = 1;
         if ((px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) && IsDropReady(1)) {
             m_coordToggle = (m_coordToggle == 0);
@@ -1363,8 +1368,8 @@ i32 CGrunt::FinishActiveAction() {
         CGruntzMgr* game = g_gameReg;
         CWwdGameObjectA* object = m_object;
         CMapMgr* grid = game->m_tileGrid;
-        i32 tx = object->m_screenX >> 5;
-        i32 ty = object->m_screenY >> 5;
+        i32 tx = object->m_screenX >> TILE_SHIFT_PX;
+        i32 ty = object->m_screenY >> TILE_SHIFT_PX;
         i32 flags;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -1392,10 +1397,10 @@ i32 CGrunt::FinishActiveAction() {
         m_entranceArmed = 0;
         i32 newX = object->m_screenX;
         i32 newY = object->m_screenY;
-        i32 oldTx = oldX >> 5;
-        i32 oldTy = m_lastTilePx.m_y >> 5;
-        i32 newTx = newX >> 5;
-        i32 newTy = newY >> 5;
+        i32 oldTx = oldX >> TILE_SHIFT_PX;
+        i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 newTx = newX >> TILE_SHIFT_PX;
+        i32 newTy = newY >> TILE_SHIFT_PX;
         if (oldX != -1 && m_lastTilePx.m_y != -1) {
             CMapMgr* oldGrid = game->m_tileGrid;
             oldGrid->m_rows[oldTy][oldTx].m_flagBytes[3] &= ~0x20;

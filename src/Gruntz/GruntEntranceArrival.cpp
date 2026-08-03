@@ -43,6 +43,7 @@
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/Wap32.h>
 
 #include <math.h>
@@ -473,8 +474,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
-                i32 yMasked = (inner->m_screenY & ~0x1f) + 0x10;
-                i32 xMasked = (inner->m_screenX & ~0x1f) + 0x10;
+                i32 yMasked = (inner->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 xMasked = (inner->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
                     m_tileMgr->ApplyTriggerB(
                         m_tileOwnerHi,
@@ -675,8 +676,8 @@ i32 CGrunt::StepEntranceRelatchA() {
         m_entranceActive = 0;
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->m_tileGrid;
-        i32 tx = m_lastTilePx.m_x >> 5;
-        i32 ty = m_lastTilePx.m_y >> 5;
+        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 flags;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -923,8 +924,8 @@ i32 CGrunt::ResolveEntranceArrival() {
         && m_object->m_screenY == m_lastTilePx.m_y) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->m_tileGrid;
-        i32 tx = m_object->m_screenX >> 5;
-        i32 ty = m_object->m_screenY >> 5;
+        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
         i32 flags;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -1067,8 +1068,8 @@ i32 CGrunt::StepEntranceReinit() {
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
     } else {
 
-        i32 tx = m_object->m_screenX >> 5;
-        i32 ty = m_object->m_screenY >> 5;
+        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
         i32 flag2;
         if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -1185,8 +1186,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         m_entranceActive = 0;
 
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 tx = m_lastTilePx.m_x >> 5;
-        i32 ty = m_lastTilePx.m_y >> 5;
+        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 flags;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -1505,8 +1506,8 @@ i32 CGrunt::StepCombatReaction(
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0) {
         CWwdGameObjectA* h = m_object;
-        i32 hx = (h->m_screenX & ~0x1f) + 0x10;
-        i32 hy = (h->m_screenY & ~0x1f) + 0x10;
+        i32 hx = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 hy = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 flag = 1;
         if (hx != m_lastTilePx.m_x || hy != m_lastTilePx.m_y) {
             if (IsDropReady(1)) {
@@ -1590,8 +1591,8 @@ tail:
                     && RectContains(cx, cy)) {
                     if (!(s_TileFlags(
                               g_gameReg->m_tileGrid,
-                              m_lastTilePx.m_x >> 5,
-                              m_lastTilePx.m_y >> 5
+                              m_lastTilePx.m_x >> TILE_SHIFT_PX,
+                              m_lastTilePx.m_y >> TILE_SHIFT_PX
                           )
                           & 0x80)) {
                         CommitNeighbor(srcRow, srcCol, cx, cy);
@@ -1650,8 +1651,8 @@ i32 CGrunt::StepArrivalCommitA() {
     m_entranceActive = 0;
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    i32 tx = m_lastTilePx.m_x >> 5;
-    i32 ty = m_lastTilePx.m_y >> 5;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -1696,8 +1697,8 @@ i32 CGrunt::StepArrivalCommitB() {
     }
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->m_tileGrid;
-    i32 tx = m_lastTilePx.m_x >> 5;
-    i32 ty = m_lastTilePx.m_y >> 5;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -1886,8 +1887,8 @@ i32 CGrunt::StepEntranceRelatchB() {
     m_objAux->m_actKey = ActFindId(s_codeD);
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->m_tileGrid;
-    i32 tx = m_lastTilePx.m_x >> 5;
-    i32 ty = m_lastTilePx.m_y >> 5;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 f1;
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {

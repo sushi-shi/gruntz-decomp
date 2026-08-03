@@ -10,6 +10,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/XferArchive.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 #include <Wwd/AnimWorkerAct.h>
 
@@ -67,8 +68,8 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
-    m_object->m_speedX = m_object->m_screenX >> 5;
-    m_object->m_speedY = m_object->m_screenY >> 5;
+    m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
+    m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;
     if (m_object->m_sortKey != 0xc) {
         m_object->m_sortKey = 0xc;
         m_object->m_flags |= 0x20000;

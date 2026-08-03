@@ -65,8 +65,11 @@ FORWARD = re.compile(r"\bGZ_ENUM_FORWARD(?:_SPLIT)?\(\s*(\w+)\s*(?:,\s*(\w+)\s*)
 STORAGE = re.compile(r"\bGZ_ENUM_(?:STORAGE|STORAGE_STEPPED|PARAM|RETURN|BITFIELD)"
                      r"\(\s*(\w+)\s*,\s*(\w+)\s*\)")
 BARE_ENUM = re.compile(r"^[ \t]*(?:typedef[ \t]+)?enum[ \t]+(\w+)[ \t]*\{(?P<body>[^}]*)\}", re.M)
-# a relational test against a SCREAMING_SNAKE name
-RANGE_TEST = re.compile(r"([<>]=?)[ \t]*([A-Z][A-Z0-9_]{2,})\b")
+# A relational test against a SCREAMING_SNAKE name. The negative lookbehind and
+# lookahead are load-bearing: `x >> TILE_SHIFT_PX` and `x << TILE_SHIFT_PX` are
+# SHIFTS whose operand happens to be a domain member, not range tests, and a
+# `[<>]` that is half of `<<`/`>>` matched all 645 of them before this.
+RANGE_TEST = re.compile(r"(?<![<>])([<>]=?)(?![<>])[ \t]*([A-Z][A-Z0-9_]{2,})\b")
 # names a range test may legitimately target: a band/count marker, or a sentinel
 # (comparing against _NONE/_INVALID/_UNSET is what a sentinel is for), or a grid
 # extent, which is a dimension rather than a member of the domain.

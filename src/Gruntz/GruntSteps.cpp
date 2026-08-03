@@ -32,6 +32,7 @@
 #include <Io/FileMem.h>
 #include <Pix16.h>
 #include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -91,10 +92,10 @@ static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
 
 static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-    i32 tx = g->m_lastTilePx.m_x >> 5;
-    i32 ty = g->m_lastTilePx.m_y >> 5;
-    i32 mtx = moveX >> 5;
-    i32 mty = moveY >> 5;
+    i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 mtx = moveX >> TILE_SHIFT_PX;
+    i32 mty = moveY >> TILE_SHIFT_PX;
     i32 arr = g->m_arrivalFlags | 0x20000000;
     if (tx == mtx && ty == mty) {
         return 1;
@@ -255,8 +256,8 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    i32 code =
-        g_gameReg->m_tileGrid->m_rowInts[m_lastTilePx.m_y >> 5][(m_lastTilePx.m_x >> 5) * 7 + 4];
+    i32 code = g_gameReg->m_tileGrid->m_rowInts[m_lastTilePx.m_y >> TILE_SHIFT_PX]
+                                               [(m_lastTilePx.m_x >> TILE_SHIFT_PX) * 7 + 4];
     if (code == TILEKIND_CHECKPOINT || code == TILEKIND_CHECKPOINT_UP) {
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
 
@@ -334,8 +335,8 @@ RVA(0x00051510, 0x20f)
 i32 CGrunt::IsDropReady(i32 a) {
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        i32 x = m_commitPx.m_x >> 5;
-        i32 y = m_commitPx.m_y >> 5;
+        i32 x = m_commitPx.m_x >> TILE_SHIFT_PX;
+        i32 y = m_commitPx.m_y >> TILE_SHIFT_PX;
         i32 owner;
         if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
             && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
@@ -360,8 +361,8 @@ i32 CGrunt::IsDropReady(i32 a) {
     if (m_coordList.GetCount() != 0) {
         Coord* coord = 0;
         CoordPoolNode* node = g_coordPool.m_freeHead;
-        i32 coordX = m_lastTilePx.m_x >> 5;
-        i32 coordY = m_lastTilePx.m_y >> 5;
+        i32 coordX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 coordY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (node->m_next != NULL) {
             coord = &node->m_coord;
             coord->m_x = coordX;
@@ -380,10 +381,10 @@ i32 CGrunt::IsDropReady(i32 a) {
         object->m_flags = flags | 0x20000;
     }
 
-    i32 oldY = m_lastTilePx.m_y >> 5;
-    i32 oldX = m_lastTilePx.m_x >> 5;
-    i32 newX = m_commitPx.m_x >> 5;
-    i32 newY = m_commitPx.m_y >> 5;
+    i32 oldY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 oldX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 newX = m_commitPx.m_x >> TILE_SHIFT_PX;
+    i32 newY = m_commitPx.m_y >> TILE_SHIFT_PX;
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
         board->m_rows[oldY][oldX].m_flagBytes[3] &= 0xdf;
@@ -431,10 +432,10 @@ void CGrunt::SnapToLastTile(i32 a) {
 // @early-stop
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
-    i32 dx = m_lastTilePx.m_x >> 5;
-    i32 dy = m_lastTilePx.m_y >> 5;
-    i32 px = x >> 5;
-    i32 py = y >> 5;
+    i32 dx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 px = x >> TILE_SHIFT_PX;
+    i32 py = y >> TILE_SHIFT_PX;
 
     RECT r1;
     r1.left = m_reachRect.left + dx;
@@ -471,10 +472,10 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 // @early-stop
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
-    i32 px = x >> 5;
-    i32 py = y >> 5;
-    i32 dx = m_lastTilePx.m_x >> 5;
-    i32 dy = m_lastTilePx.m_y >> 5;
+    i32 px = x >> TILE_SHIFT_PX;
+    i32 py = y >> TILE_SHIFT_PX;
+    i32 dx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     RECT r1;
     r1.left = m_toyRectA.left + dx;
@@ -515,8 +516,8 @@ i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
-    i32 tx = x >> 5;
-    i32 ty = y >> 5;
+    i32 tx = x >> TILE_SHIFT_PX;
+    i32 ty = y >> TILE_SHIFT_PX;
     i32 result = 0;
     i32 moveX = x;
     i32 moveY = y;
@@ -587,8 +588,8 @@ i32 CGrunt::StepCompassMove() {
                 voice = g_gruntMoveDirWest;
                 break;
         }
-        i32 mtx = moveX >> 5;
-        i32 mty = moveY >> 5;
+        i32 mtx = moveX >> TILE_SHIFT_PX;
+        i32 mty = moveY >> TILE_SHIFT_PX;
         i32 tflags = s_TileFlags(board, mtx, mty);
         if ((tflags & 0x20000000) && !(tflags & 0x80)) {
 
@@ -749,15 +750,15 @@ commit:
     m_commitPx.m_y = m_lastTilePx.m_y;
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-        i32 ox = m_lastTilePx.m_x >> 5;
-        i32 oy = m_lastTilePx.m_y >> 5;
+        i32 ox = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 oy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         b->m_rowBytes[oy][ox * 7 * 4 + 3] &= 0xdf;
         b->m_rowInts[oy][ox * 7 + 1] = -1;
     }
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-        i32 nx = moveX >> 5;
-        i32 ny = moveY >> 5;
+        i32 nx = moveX >> TILE_SHIFT_PX;
+        i32 ny = moveY >> TILE_SHIFT_PX;
         i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         b->m_rowBytes[ny][nx * 7 * 4 + 3] |= 0x20;
         b->m_rowInts[ny][nx * 7 + 1] = owner;
@@ -809,8 +810,8 @@ i32 CGrunt::ClaimSwitchTile() {
     }
 
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    i32 tx = x >> 5;
-    i32 ty = y >> 5;
+    i32 tx = x >> TILE_SHIFT_PX;
+    i32 ty = y >> TILE_SHIFT_PX;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -827,8 +828,8 @@ i32 CGrunt::ClaimSwitchTile() {
     m_commitPx.m_x = m_lastTilePx.m_x;
     m_commitPx.m_y = m_lastTilePx.m_y;
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
-    i32 oldTx = m_lastTilePx.m_x >> 5;
-    i32 oldTy = m_lastTilePx.m_y >> 5;
+    i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     gb->m_rowInts[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
     *&gb->m_rowInts[oldTy][oldTx * 7 * 4 + 4] = -1;
 
@@ -849,16 +850,16 @@ void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
     m_arrivalCell.m_x = a;
     m_arrivalCell.m_y = b;
     m_arrivalActive = 1;
-    m_defenderPx.m_x = (c & ~0x1f) + 0x10;
-    m_defenderPx.m_y = (d & ~0x1f) + 0x10;
+    m_defenderPx.m_x = (c & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_defenderPx.m_y = (d & ~TILE_MASK_PX) + TILE_HALF_PX;
 }
 
 // @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
     CWwdGameObjectA* h = m_object;
-    i32 px = (h->m_screenX & ~0x1f) + 0x10;
-    i32 py = (h->m_screenY & ~0x1f) + 0x10;
+    i32 px = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 py = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) {
         if (IsDropReady(a)) {
             return;

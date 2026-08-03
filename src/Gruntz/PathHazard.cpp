@@ -21,6 +21,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
 #include <math.h>
@@ -57,8 +58,8 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_wwdObject->m_flags |= 0x2000002;
 
-    i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
-    i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
+    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenX = snapX;
     m_object->m_screenY = snapY;
     m_posX = static_cast<double>(snapX);
@@ -70,30 +71,30 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_wp[0].x = m_object->m_screenX;
     m_wp[0].y = m_object->m_screenY;
-    m_wp[1].x = (m_object->m_extent.left << 5) + 0x10;
-    m_wp[1].y = (m_object->m_extent.top << 5) + 0x10;
-    m_wp[2].x = (m_object->m_extent.right << 5) + 0x10;
-    m_wp[2].y = (m_object->m_extent.bottom << 5) + 0x10;
-    m_wp[3].x = (m_object->m_area.left << 5) + 0x10;
-    m_wp[3].y = (m_object->m_area.top << 5) + 0x10;
-    m_wp[4].x = (m_object->m_area.right << 5) + 0x10;
-    m_wp[4].y = (m_object->m_area.bottom << 5) + 0x10;
-    m_wp[5].x = (m_object->m_switchRect.left << 5) + 0x10;
-    m_wp[5].y = (m_object->m_switchRect.top << 5) + 0x10;
-    m_wp[6].x = (m_object->m_switchRect.right << 5) + 0x10;
-    m_wp[6].y = (m_object->m_switchRect.bottom << 5) + 0x10;
-    m_wp[7].x = (m_object->m_clip.left << 5) + 0x10;
-    m_wp[7].y = (m_object->m_clip.top << 5) + 0x10;
-    m_wp[8].x = (m_object->m_clip.right << 5) + 0x10;
-    m_wp[8].y = (m_object->m_clip.bottom << 5) + 0x10;
-    m_wp[9].x = (m_object->m_animWorker->m_userRect1.left << 5) + 0x10;
-    m_wp[9].y = (m_object->m_animWorker->m_userRect1.top << 5) + 0x10;
-    m_wp[10].x = (m_object->m_animWorker->m_userRect1.right << 5) + 0x10;
-    m_wp[10].y = (m_object->m_animWorker->m_userRect1.bottom << 5) + 0x10;
-    m_wp[11].x = (m_object->m_animWorker->m_userRect2.left << 5) + 0x10;
-    m_wp[11].y = (m_object->m_animWorker->m_userRect2.top << 5) + 0x10;
-    m_wp[12].x = (m_object->m_animWorker->m_userRect2.right << 5) + 0x10;
-    m_wp[12].y = (m_object->m_animWorker->m_userRect2.bottom << 5) + 0x10;
+    m_wp[1].x = (m_object->m_extent.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[1].y = (m_object->m_extent.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[2].x = (m_object->m_extent.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[2].y = (m_object->m_extent.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[3].x = (m_object->m_area.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[3].y = (m_object->m_area.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[4].x = (m_object->m_area.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[4].y = (m_object->m_area.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[5].x = (m_object->m_switchRect.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[5].y = (m_object->m_switchRect.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[6].x = (m_object->m_switchRect.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[6].y = (m_object->m_switchRect.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[7].x = (m_object->m_clip.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[7].y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[8].x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[8].y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].x = (m_object->m_animWorker->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].y = (m_object->m_animWorker->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].x = (m_object->m_animWorker->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].y = (m_object->m_animWorker->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].x = (m_object->m_animWorker->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].y = (m_object->m_animWorker->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].x = (m_object->m_animWorker->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].y = (m_object->m_animWorker->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
 
     i32 i = 1;
     i32 found = 0;

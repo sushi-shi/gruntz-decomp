@@ -31,6 +31,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
 #include <math.h>
@@ -68,8 +69,8 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
 
-    i32 ax = (m_object->m_screenX & ~0x1f) + 0x10;
-    i32 cx = (m_object->m_screenY & ~0x1f) + 0x10;
+    i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 cx = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_center.x = static_cast<double>(ax);
     m_center.y = static_cast<double>(cx);
     i32 nx;

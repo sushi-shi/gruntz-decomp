@@ -19,6 +19,7 @@
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
 #include <stddef.h>
@@ -75,8 +76,8 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
     if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_wwdObject->m_flags |= 0x10000;
     } else {
-        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+        m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
         if (m_object->m_sortKey != 0) {
             m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
@@ -127,8 +128,8 @@ void CSecretTeleporterTrigger::RegisterActs() {
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_isCustomLevel == 0) {
-        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+        m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
         if (m_object->m_sortKey != 0) {
             m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
@@ -217,8 +218,8 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         o = m_object;
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            (o->m_score << 5) + 0x10,
-            (o->m_points << 5) + 0x10,
+            (o->m_score << TILE_SHIFT_PX) + TILE_HALF_PX,
+            (o->m_points << TILE_SHIFT_PX) + TILE_HALF_PX,
             0,
             "Teleporter",
             0x40003

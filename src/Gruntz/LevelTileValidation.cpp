@@ -23,6 +23,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";
@@ -89,8 +90,8 @@ i32 CPlay::PlaceStartGruntz() {
                 extentArg.m_addr = &obj->m_extent.left;
                 i32 idx = reg->m_cmdGrid->PlaceObject(
                     obj->m_smarts,
-                    (obj->m_screenX & ~0x1f) + 0x10,
-                    (obj->m_screenY & ~0x1f) + 0x10,
+                    (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
+                    (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX,
                     100000,
                     flag14,
                     obj->m_score,
@@ -108,8 +109,8 @@ i32 CPlay::PlaceStartGruntz() {
                     s.Format(
                         s_CouldNotAdd,
                         obj->m_smarts,
-                        (obj->m_screenX & ~0x1f) + 0x10,
-                        (obj->m_screenY & ~0x1f) + 0x10
+                        (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
+                        (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX
                     );
                     g_gameReg->EnterModalUI(static_cast<const char*>(static_cast<LPCSTR>(s)));
                     return 0;
@@ -125,8 +126,8 @@ i32 CPlay::PlaceStartGruntz() {
                         static_cast<char>(obj->m_smarts),
                         0,
                         PLAYERCMD_PLACE_GRUNT,
-                        (obj->m_screenX & ~0x1f) + 0x10,
-                        (obj->m_screenY & ~0x1f) + 0x10,
+                        (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
+                        (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX,
                         0,
                         0
                     );
@@ -468,8 +469,8 @@ i32 CPlay::ValidateLevelTiles() {
                     g_coordPool.m_freeHead = cell->m_next;
                 }
                 if (slot != NULL) {
-                    (static_cast<i32*>(slot))[0] = (obj->m_screenX & ~0x1f) + 0x10;
-                    (static_cast<i32*>(slot))[1] = (obj->m_screenY & ~0x1f) + 0x10;
+                    (static_cast<i32*>(slot))[0] = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    (static_cast<i32*>(slot))[1] = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 }
             }
         } else if (who == CreateBrickz) {
@@ -497,8 +498,8 @@ i32 CPlay::ValidateLevelTiles() {
             m_mgr->m_cmdGrid->PlacePuddle(obj, 0);
         } else if (who == CreateGuardPoint) {
 
-            i32 col = obj->m_screenX >> 5;
-            i32 rowBase = obj->m_screenY >> 5;
+            i32 col = obj->m_screenX >> TILE_SHIFT_PX;
+            i32 rowBase = obj->m_screenY >> TILE_SHIFT_PX;
             i32 stride = (col << 3) - col;
 
             i32 ebp = stride - 7;
@@ -545,8 +546,8 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == CreateToobSpikez) {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-            i32 cy = obj->m_screenX >> 5;
-            i32 cx = obj->m_screenY >> 5;
+            i32 cy = obj->m_screenX >> TILE_SHIFT_PX;
+            i32 cx = obj->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(cy) < gg->m_width && static_cast<u32>(cx) < gg->m_height) {
             }
         } else if (who == CreateWarpStonePad) {

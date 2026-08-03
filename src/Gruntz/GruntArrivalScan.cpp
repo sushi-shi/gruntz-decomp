@@ -31,6 +31,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/TriggerMgrRecords.h>
+#include <Wap32/TileGeometry.h>
 
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
@@ -191,7 +192,15 @@ i32 CGrunt::ResolveArrivalReposition() {
     if (occ != NULL && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
             CGameObject* oh = occ->m_object;
-            if (TileSwitch(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+            if (TileSwitch(
+                    oh->m_screenX >> TILE_SHIFT_PX,
+                    oh->m_screenY >> TILE_SHIFT_PX,
+                    0,
+                    m_arrivalFlags,
+                    1,
+                    0
+                )
+                != 0) {
                 CGameObject* oh2 = occ->m_object;
                 if (m_tileMgr->ApplyTriggerA(
                         m_tileOwnerHi,
@@ -282,10 +291,10 @@ i32 CGrunt::StepBrickLayerBehavior() {
 
     Coord c1[2];
     GetScreenPos(c1);
-    i32 cx = c1[0].m_x >> 5;
+    i32 cx = c1[0].m_x >> TILE_SHIFT_PX;
     Coord c2[2];
     GetScreenPos(c2);
-    i32 cy = c2[0].m_y >> 5;
+    i32 cy = c2[0].m_y >> TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -384,8 +393,8 @@ L_ed006:
         goto L_ed153;
     }
     if (TileSwitch(
-            g->m_object->m_screenX >> 5,
-            g->m_object->m_screenY >> 5,
+            g->m_object->m_screenX >> TILE_SHIFT_PX,
+            g->m_object->m_screenY >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,
@@ -413,8 +422,12 @@ L_ed153:
         BrickzCell* cell = &grid->m_rows[row][col];
         if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
             || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
-            m_tileMgr
-                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
+            m_tileMgr->ApplyTriggerA(
+                m_tileOwnerHi,
+                m_tileOwnerLo,
+                (col << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (row << TILE_SHIFT_PX) + TILE_HALF_PX
+            );
             SetEntrancePos(1, 1);
             m_dwell = 0;
         }
@@ -488,8 +501,8 @@ L_ed153:
             m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
                 m_tileOwnerLo,
-                (bestCol << 5) + 0x10,
-                (bestRow << 5) + 0x10
+                (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (bestRow << TILE_SHIFT_PX) + TILE_HALF_PX
             );
             SetEntrancePos(1, 1);
         } else {
@@ -577,7 +590,14 @@ i32 CGrunt::WanderStep() {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
                         g->GetScreenPos(c);
-                        if (TileSwitch(c[0].m_x >> 5, c[0].m_y >> 5, 0, m_arrivalFlags, 1, 0)
+                        if (TileSwitch(
+                                c[0].m_x >> TILE_SHIFT_PX,
+                                c[0].m_y >> TILE_SHIFT_PX,
+                                0,
+                                m_arrivalFlags,
+                                1,
+                                0
+                            )
                             != 0) {
                             SetEntrancePos(1, 1);
                             m_arrivalCell.m_x = g->m_tileOwnerHi;
@@ -731,8 +751,8 @@ i32 CGrunt::WanderStep() {
             }
             CWwdGameObjectA* base = m_object;
             i32 clip = 1;
-            i32 py = GameRand() % 4 + (base->m_screenY >> 5) - 2;
-            i32 px = GameRand() % 4 + (base->m_screenX >> 5) - 2;
+            i32 py = GameRand() % 4 + (base->m_screenY >> TILE_SHIFT_PX) - 2;
+            i32 px = GameRand() % 4 + (base->m_screenX >> TILE_SHIFT_PX) - 2;
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry = g_gameReg->m_cmdGrid
@@ -740,10 +760,10 @@ i32 CGrunt::WanderStep() {
                 if (entry != NULL) {
                     CGameObject* e10 = entry->m_object;
                     RECT rc;
-                    rc.left = (e10->m_screenX >> 5) - 2;
-                    rc.top = (e10->m_screenY >> 5) - 2;
-                    rc.right = (e10->m_screenX >> 5) + 3;
-                    rc.bottom = (e10->m_screenY >> 5) + 3;
+                    rc.left = (e10->m_screenX >> TILE_SHIFT_PX) - 2;
+                    rc.top = (e10->m_screenY >> TILE_SHIFT_PX) - 2;
+                    rc.right = (e10->m_screenX >> TILE_SHIFT_PX) + 3;
+                    rc.bottom = (e10->m_screenY >> TILE_SHIFT_PX) + 3;
                     POINT pt;
                     pt.x = px;
                     pt.y = py;
@@ -823,8 +843,8 @@ timeout:
 
 RVA(0x000ee800, 0x971)
 i32 CGrunt::ArrivalReticleScan() {
-    i32 defTX = m_defenderPx.m_x >> 5;
-    i32 defTY = m_defenderPx.m_y >> 5;
+    i32 defTX = m_defenderPx.m_x >> TILE_SHIFT_PX;
+    i32 defTY = m_defenderPx.m_y >> TILE_SHIFT_PX;
 
     i32 scanRadius = m_defenderRadius + m_reachRect.right - 1;
     RECT scanBounds;
@@ -835,9 +855,9 @@ i32 CGrunt::ArrivalReticleScan() {
 
     Coord pt;
     GetScreenPos(&pt);
-    i32 dTX = abs((pt.m_x >> 5) - defTX);
+    i32 dTX = abs((pt.m_x >> TILE_SHIFT_PX) - defTX);
     GetScreenPos(&pt);
-    i32 dTY = abs((pt.m_y >> 5) - defTY);
+    i32 dTY = abs((pt.m_y >> TILE_SHIFT_PX) - defTY);
     i32 dist = dTX > dTY ? dTX : dTY;
     if (dist > m_defenderRadius) {
         m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -925,8 +945,8 @@ i32 CGrunt::ArrivalReticleScan() {
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
     if (occ != NULL && static_cast<u32>(m_dwell) > 0x1f4) {
-        i32 occTX = occ->m_object->m_screenX >> 5;
-        i32 occTY = occ->m_object->m_screenY >> 5;
+        i32 occTX = occ->m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 occTY = occ->m_object->m_screenY >> TILE_SHIFT_PX;
         i32 dx = abs(occTX - defTX);
         i32 dy = abs(occTY - defTY);
         i32 radius = dx > dy ? dx : dy;
@@ -1046,12 +1066,14 @@ i32 CGrunt::ArrivalReticleScan() {
                     }
                 }
             }
-        } else if ((m_object->m_screenX >> 5) != defTX || (m_object->m_screenY >> 5) != defTY) {
+        } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defTX
+                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defTY) {
             TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
         }
         m_dwell = 0;
     } else if (occ == NULL && static_cast<u32>(m_dwell) > 0x1f4
-               && ((m_object->m_screenX >> 5) != defTX || (m_object->m_screenY >> 5) != defTY)) {
+               && ((m_object->m_screenX >> TILE_SHIFT_PX) != defTX
+                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defTY)) {
         TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
     }
@@ -1143,8 +1165,8 @@ i32 CGrunt::ChargeStep() {
                         return 1;
                     }
                     if (TileSwitch(
-                            g->m_object->m_screenX >> 5,
-                            g->m_object->m_screenY >> 5,
+                            g->m_object->m_screenX >> TILE_SHIFT_PX,
+                            g->m_object->m_screenY >> TILE_SHIFT_PX,
                             0,
                             m_arrivalFlags,
                             1,
@@ -1353,8 +1375,8 @@ i32 CGrunt::UpdateArrival() {
                         Coord c[2];
                         GetScreenPos(c);
                         if (TileSwitch(
-                                c[0].m_y >> 5,
-                                c[0].m_x >> 5,
+                                c[0].m_y >> TILE_SHIFT_PX,
+                                c[0].m_x >> TILE_SHIFT_PX,
                                 0,
                                 this->m_arrivalFlags,
                                 0,
@@ -1542,10 +1564,10 @@ i32 CGrunt::StepGooSuckerBehavior() {
 
     Coord c1[2];
     GetScreenPos(c1);
-    i32 cx = c1[0].m_x >> 5;
+    i32 cx = c1[0].m_x >> TILE_SHIFT_PX;
     Coord c2[2];
     GetScreenPos(c2);
-    i32 cy = c2[0].m_y >> 5;
+    i32 cy = c2[0].m_y >> TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -1646,7 +1668,15 @@ L_ed006b:
     {
         Coord cc[2];
         g->GetScreenPos(cc);
-        if (TileSwitch(cc[0].m_x >> 5, cc[0].m_y >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+        if (TileSwitch(
+                cc[0].m_x >> TILE_SHIFT_PX,
+                cc[0].m_y >> TILE_SHIFT_PX,
+                0,
+                m_arrivalFlags,
+                1,
+                0
+            )
+            != 0) {
             if (m_blockedVoicePending != 0) {
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
@@ -1670,8 +1700,12 @@ L_scanb:
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
-            m_tileMgr
-                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
+            m_tileMgr->ApplyTriggerA(
+                m_tileOwnerHi,
+                m_tileOwnerLo,
+                (col << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (row << TILE_SHIFT_PX) + TILE_HALF_PX
+            );
             SetEntrancePos(1, 1);
             m_dwell = 0;
         }
@@ -1724,19 +1758,23 @@ L_scanb:
         if (gg->m_pending == 0) {
             i32 gx = gg->m_tileX;
             i32 gy = gg->m_tileY;
-            if (RectContains((gx << 5) + 0x10, (gy << 5) + 0x10) != 0) {
+            if (RectContains(
+                    (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (gy << TILE_SHIFT_PX) + TILE_HALF_PX
+                )
+                != 0) {
                 m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
-                    (gx << 5) + 0x10,
-                    (gy << 5) + 0x10
+                    (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
                 GRID_RECT_BOUNDS(grid);
                 return 1;
             }
-            i32 dx = gx - (m_object->m_screenX >> 5);
+            i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
             IABS(dx);
-            i32 dy = gy - (m_object->m_screenY >> 5);
+            i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
             i32 dist = ((dy ^ (dy >> 31)) - (dy >> 31)) + dx;
             if (dist < best) {
                 POINT pt;
@@ -1759,8 +1797,8 @@ L_scanb:
             m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
                 m_tileOwnerLo,
-                (bestX << 5) + 0x10,
-                (bestY << 5) + 0x10
+                (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (bestY << TILE_SHIFT_PX) + TILE_HALF_PX
             );
             SetEntrancePos(1, 1);
         } else {
@@ -1850,10 +1888,10 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 goto tail;
             }
             {
-                i32 tx = m_lastTilePx.m_x >> 5;
-                i32 ty = m_lastTilePx.m_y >> 5;
-                i32 gx = m_defenderPx.m_x >> 5;
-                i32 gy = m_defenderPx.m_y >> 5;
+                i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+                i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+                i32 gx = m_defenderPx.m_x >> TILE_SHIFT_PX;
+                i32 gy = m_defenderPx.m_y >> TILE_SHIFT_PX;
                 if (tx < gx) {
                     if (ty < gy) {
                         StepArrivalDrop(
@@ -2256,7 +2294,15 @@ i32 CGrunt::StepArrivalDefense() {
             {
                 Coord sp;
                 occ->GetScreenPos(&sp);
-                if (TileSwitch(sp.m_x >> 5, sp.m_y >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
+                if (TileSwitch(
+                        sp.m_x >> TILE_SHIFT_PX,
+                        sp.m_y >> TILE_SHIFT_PX,
+                        0,
+                        m_arrivalFlags,
+                        1,
+                        0
+                    )
+                    == 0) {
                     goto L_f318a;
                 }
                 SetEntrancePos(1, 1);
@@ -2342,10 +2388,10 @@ i32 CGrunt::StepDiggerBehavior() {
 
     Coord c1[2];
     GetScreenPos(c1);
-    i32 cx = c1[0].m_x >> 5;
+    i32 cx = c1[0].m_x >> TILE_SHIFT_PX;
     Coord c2[2];
     GetScreenPos(c2);
-    i32 cy = c2[0].m_y >> 5;
+    i32 cy = c2[0].m_y >> TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -2431,8 +2477,8 @@ i32 CGrunt::StepDiggerBehavior() {
         goto L_tailc;
     }
     if (TileSwitch(
-            g->m_object->m_screenX >> 5,
-            g->m_object->m_screenY >> 5,
+            g->m_object->m_screenX >> TILE_SHIFT_PX,
+            g->m_object->m_screenY >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,
@@ -2458,8 +2504,12 @@ L_tailc:
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
-            m_tileMgr
-                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
+            m_tileMgr->ApplyTriggerA(
+                m_tileOwnerHi,
+                m_tileOwnerLo,
+                (col << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (row << TILE_SHIFT_PX) + TILE_HALF_PX
+            );
             SetEntrancePos(1, 1);
             m_dwell = 0;
         }
@@ -2528,8 +2578,8 @@ L_tailc:
                 m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
-                    (bestCol << 5) + 0x10,
-                    (bestRow << 5) + 0x10
+                    (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (bestRow << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
                 SetEntrancePos(1, 1);
             } else {
@@ -2548,8 +2598,8 @@ i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
-    i32 cx = m_lastTilePx.m_x >> 5;
-    i32 cy = m_lastTilePx.m_y >> 5;
+    i32 cx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 cy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
@@ -2567,8 +2617,8 @@ i32 CGrunt::ScanNearestTarget() {
                 i32 pb;
                 PRIO(pb, cand->m_entranceReason);
                 if (pa <= pb) {
-                    i32 dx = (cand->m_object->m_screenX >> 5) - cx;
-                    i32 dy = (cand->m_object->m_screenY >> 5) - cy;
+                    i32 dx = (cand->m_object->m_screenX >> TILE_SHIFT_PX) - cx;
+                    i32 dy = (cand->m_object->m_screenY >> TILE_SHIFT_PX) - cy;
                     i32 d = dx * dx + dy * dy;
                     if (d < bestDist) {
                         best = cand;
@@ -2582,13 +2632,13 @@ i32 CGrunt::ScanNearestTarget() {
     i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
     Coord pt;
     GetScreenPos(&pt);
-    i32 by = pt.m_y >> 5;
+    i32 by = pt.m_y >> TILE_SHIFT_PX;
     GetScreenPos(&pt);
-    i32 bx = pt.m_x >> 5;
+    i32 bx = pt.m_x >> TILE_SHIFT_PX;
     GetScreenPos(&pt);
-    i32 t3y = pt.m_y >> 5;
+    i32 t3y = pt.m_y >> TILE_SHIFT_PX;
     GetScreenPos(&pt);
-    i32 t4x = pt.m_x >> 5;
+    i32 t4x = pt.m_x >> TILE_SHIFT_PX;
     RECT box;
     box.left = t4x - halfBox;
     box.top = t3y - halfBox;
@@ -2596,8 +2646,8 @@ i32 CGrunt::ScanNearestTarget() {
     box.bottom = by + halfBox + 1;
     if (best != NULL) {
         POINT pt;
-        pt.x = best->m_lastTilePx.m_x >> 5;
-        pt.y = best->m_lastTilePx.m_y >> 5;
+        pt.x = best->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        pt.y = best->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (!PtInRect(&box, pt)) {
             best = NULL;
         }
@@ -2707,7 +2757,14 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 Coord cc[2];
                 best->GetScreenPos(cc);
-                if (this->TileSwitch(cc[0].m_x >> 5, cc[0].m_y >> 5, 0, m_arrivalFlags, 1, 0)
+                if (this->TileSwitch(
+                        cc[0].m_x >> TILE_SHIFT_PX,
+                        cc[0].m_y >> TILE_SHIFT_PX,
+                        0,
+                        m_arrivalFlags,
+                        1,
+                        0
+                    )
                     == 0) {
                     goto L_scanDone;
                 }
@@ -2912,26 +2969,26 @@ i32 CGrunt::PhaseStep() {
 
     if (m_defenderState == 0x19) {
         GetScreenPos(&pa);
-        i32 ax = pa.m_x >> 5;
+        i32 ax = pa.m_x >> TILE_SHIFT_PX;
         GetScreenPos(&pb);
-        i32 gx = (pb.m_x >> 5) - m_arrivalCell.m_x + ax;
+        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + ax;
         GetScreenPos(&pa);
-        i32 ay = pa.m_y >> 5;
+        i32 ay = pa.m_y >> TILE_SHIFT_PX;
         GetScreenPos(&pb);
-        i32 gy = (pb.m_y >> 5) - m_arrivalCell.m_y + ay;
+        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + ay;
         TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
         m_defenderState = AISTATE_COOLDOWN;
     }
     if (m_defenderState == 0x1a) {
         GetScreenPos(&pa);
-        i32 ax = pa.m_x >> 5;
+        i32 ax = pa.m_x >> TILE_SHIFT_PX;
         GetScreenPos(&pb);
         GetScreenPos(&pa);
-        i32 gx = (pb.m_x >> 5) - m_arrivalCell.m_x + ax;
-        i32 ay = pa.m_x >> 5;
+        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + ax;
+        i32 ay = pa.m_x >> TILE_SHIFT_PX;
         GetScreenPos(&pb);
-        i32 gy = (pb.m_y >> 5) - m_arrivalCell.m_y + ay;
+        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + ay;
         TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
         m_defenderState = AISTATE_SEEK;
         return 1;
@@ -3040,8 +3097,8 @@ state0: {
             nb->m_lastTilePx.m_x,
             nb->m_lastTilePx.m_y
         );
-        m_arrivalCell.m_x = nb->m_object->m_screenX >> 5;
-        m_arrivalCell.m_y = nb->m_object->m_screenY >> 5;
+        m_arrivalCell.m_x = nb->m_object->m_screenX >> TILE_SHIFT_PX;
+        m_arrivalCell.m_y = nb->m_object->m_screenY >> TILE_SHIFT_PX;
         m_defenderState = AISTATE_ATTACK;
         goto common;
     }
@@ -3052,8 +3109,8 @@ state0: {
         goto s0_reset;
     }
     if (TileSwitch(
-            nb->m_object->m_screenX >> 5,
-            nb->m_object->m_screenY >> 5,
+            nb->m_object->m_screenX >> TILE_SHIFT_PX,
+            nb->m_object->m_screenY >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,
@@ -3062,8 +3119,8 @@ state0: {
         == 0) {
         m_passableMask |= 0x4020;
         TileSwitch(
-            nb->m_object->m_screenX >> 5,
-            nb->m_object->m_screenY >> 5,
+            nb->m_object->m_screenX >> TILE_SHIFT_PX,
+            nb->m_object->m_screenY >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,
@@ -3268,9 +3325,10 @@ i32 CGrunt::SeekTarget() {
                             k > PICKUP_EQUIPPABLE_LAST ? (sv->m_toolId == PICKUP_WARPSTONE) : false
                         )
                         && sv->m_gruntKind != GRUNT_GHOST) {
-                        i32 ex = sv->m_object->m_screenX >> 5;
-                        i32 ddx = ex - (this->m_object->m_screenX >> 5);
-                        i32 ey = (sv->m_object->m_screenY >> 5) - (this->m_object->m_screenY >> 5);
+                        i32 ex = sv->m_object->m_screenX >> TILE_SHIFT_PX;
+                        i32 ddx = ex - (this->m_object->m_screenX >> TILE_SHIFT_PX);
+                        i32 ey = (sv->m_object->m_screenY >> TILE_SHIFT_PX)
+                                 - (this->m_object->m_screenY >> TILE_SHIFT_PX);
                         i32 dist = ddx * ddx + ey * ey;
                         if (dist < best
                             && dist <= this->m_defenderRadius * this->m_defenderRadius) {
@@ -3285,8 +3343,8 @@ i32 CGrunt::SeekTarget() {
                 this->m_arrivalCell.m_x = bestIdx;
                 CGameObject* base = slots[bestIdx]->m_object;
                 if (TileSwitch(
-                        base->m_screenX >> 5,
-                        base->m_screenY >> 5,
+                        base->m_screenX >> TILE_SHIFT_PX,
+                        base->m_screenY >> TILE_SHIFT_PX,
                         0,
                         this->m_arrivalFlags,
                         1,
@@ -3313,7 +3371,14 @@ i32 CGrunt::SeekTarget() {
         }
         CGameObject* base =
             g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x]->m_object;
-        TileSwitch(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0);
+        TileSwitch(
+            base->m_screenX >> TILE_SHIFT_PX,
+            base->m_screenY >> TILE_SHIFT_PX,
+            0,
+            this->m_arrivalFlags,
+            1,
+            0
+        );
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);
         bool atTarget = false;
@@ -3389,8 +3454,8 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         if (TileSwitch(
-                g->m_object->m_screenX >> 5,
-                g->m_object->m_screenY >> 5,
+                g->m_object->m_screenX >> TILE_SHIFT_PX,
+                g->m_object->m_screenY >> TILE_SHIFT_PX,
                 0,
                 this->m_arrivalFlags,
                 1,
@@ -3448,7 +3513,14 @@ i32 CGrunt::StepPeerTracking() {
     }
     if (GruntInRadius(p->m_tileOwnerHi, p->m_tileOwnerLo)) {
         CGameObject* b = p->m_object;
-        TileSwitch(b->m_screenX >> 5, b->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
+        TileSwitch(
+            b->m_screenX >> TILE_SHIFT_PX,
+            b->m_screenY >> TILE_SHIFT_PX,
+            0,
+            m_arrivalFlags,
+            1,
+            0
+        );
         m_dwell = 0;
         if (m_blockedVoicePending == 0) {
             return 1;

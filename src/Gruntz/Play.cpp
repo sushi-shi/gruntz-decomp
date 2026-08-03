@@ -98,6 +98,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/EngStr.h>
 #include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
@@ -1955,8 +1956,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 my = self->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
-        i32 by = ((g->m_viewRect.top - q->m_planeCtx.top + my) & ~0x1f) + 0x10;
-        i32 bx = ((self->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~0x1f) + 0x10;
+        i32 by = ((g->m_viewRect.top - q->m_planeCtx.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 bx = ((self->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~TILE_MASK_PX)
+                 + TILE_HALF_PX;
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
@@ -2983,8 +2985,8 @@ void CPlay::StepScroll() {
     i32 y = m_cursorY + (vr->top - v->m_planeCtx.top);
     i32 x = vr->left + (m_cursorX - v->m_planeCtx.left);
 
-    y = (y & ~0x1f) + 0x10;
-    x = (x & ~0x1f) + 0x10;
+    y = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
+    x = (x & ~TILE_MASK_PX) + TILE_HALF_PX;
 
     m_scrollSink->m_screenX = x;
     m_scrollSink->m_screenY = y;
@@ -4663,8 +4665,8 @@ drag_box: {
     }
 
     if (m_dragEndNotify != 0) {
-        i32 ex = (y & ~0x1f) + 0x10;
-        i32 ey = (y & ~0x1f) + 0x10;
+        i32 ex = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 ey = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 lv = m_levelId - 0xc8;
         if (lv <= 0x16) {
             g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 2, 1);
@@ -4683,8 +4685,8 @@ drag_box: {
         return 1;
     }
     {
-        i32 ex = (y & ~0x1f) + 0x10;
-        i32 ey = (y & ~0x1f) + 0x10;
+        i32 ex = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 ey = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
         if (g_gameReg->m_cmdGrid->TriggerCell(ex, ey)) {
             return 1;
         }
@@ -4812,8 +4814,8 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         CDDrawWorkerHost* geom = ds->m_mainPlane;
         i32 rawX = geom->m_viewRect.left - ds->m_planeCtx.left + x;
         i32 rawY = geom->m_viewRect.top - ds->m_planeCtx.top + y;
-        i32 snapX = (rawX & ~0x1f) + 0x10;
-        i32 snapY = (rawY & ~0x1f) + 0x10;
+        i32 snapX = (rawX & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 snapY = (rawY & ~TILE_MASK_PX) + TILE_HALF_PX;
         m_tileClick.m_x = snapX;
         m_tileClick.m_y = snapY;
         CTriggerMgr* w = m_mgr->m_cmdGrid;
@@ -6739,8 +6741,8 @@ i32 CPlay::AddLevelGruntz() {
         if (g->m_smarts == g_curPlayer) {
             continue;
         }
-        i32 x = ((g->m_screenX & ~0x1f) + 0x10);
-        i32 y = ((g->m_screenY & ~0x1f) + 0x10);
+        i32 x = ((g->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX);
+        i32 y = ((g->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX);
 
         i32 r = m_mgr->m_cmdGrid->PlaceObject(
             g->m_smarts,

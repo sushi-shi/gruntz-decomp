@@ -23,6 +23,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
 #include <math.h>
@@ -54,8 +55,8 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 0x2000002;
 
     CWwdGameObjectA* o = m_object;
-    i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
-    i32 snapY = 0x10 + (o->m_screenY & ~0x1f);
+    i32 snapX = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = 0x10 + (o->m_screenY & ~TILE_MASK_PX);
     o->m_screenX = snapX;
     m_subX = static_cast<double>(snapX);
     o->m_screenY = snapY;
@@ -163,8 +164,8 @@ i32 CRollingBall::Update() {
             m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
             CWwdGameObjectA* lg = m_object;
-            i32 cx = lg->m_screenX >> 5;
-            i32 cy = lg->m_screenY >> 5;
+            i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
+            i32 cy = lg->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
                 map->m_rowInts[cy][cx * 7] &= 0xefffffff;
             }
@@ -195,8 +196,8 @@ i32 CRollingBall::Update() {
         g_gameReg->m_cmdGrid->WireTileSwitchLogic(0, m_target.m_x, m_target.m_y);
         g_gameReg->m_cmdGrid->ApplySwitch(0, m_target.m_x, m_target.m_y);
 
-        i32 tx = m_target.m_x >> 5;
-        i32 ty = m_target.m_y >> 5;
+        i32 tx = m_target.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_target.m_y >> TILE_SHIFT_PX;
         CMapMgr* map = g_gameReg->m_tileGrid;
         if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
             map->m_rowInts[ty][tx * 7] &= 0xefffffff;
@@ -214,8 +215,8 @@ i32 CRollingBall::Update() {
             CString explosion;
 
             CGameLevel* lvl = g_gameReg->m_world->m_level;
-            i32 col = m_target.m_y >> 5;
-            i32 row = m_target.m_x >> 5;
+            i32 col = m_target.m_y >> TILE_SHIFT_PX;
+            i32 row = m_target.m_x >> TILE_SHIFT_PX;
             if (row < 0) {
                 row = 0;
             } else {
@@ -291,8 +292,8 @@ i32 CRollingBall::Update() {
 
                     CMapMgr* board = g_gameReg->m_tileGrid;
                     CWwdGameObjectA* o2 = m_object;
-                    i32 bx = o2->m_screenX >> 5;
-                    i32 by = o2->m_screenY >> 5;
+                    i32 bx = o2->m_screenX >> TILE_SHIFT_PX;
+                    i32 by = o2->m_screenY >> TILE_SHIFT_PX;
                     i32 sink;
                     if (static_cast<u32>(bx) < board->m_width
                         && static_cast<u32>(by) < board->m_height) {
@@ -422,8 +423,8 @@ i32 CRollingBall::Update() {
         i32 oldDir = dirObj->m_direction;
         if ((terrain & 0x80) != 0) {
             CGameLevel* lvl2 = g_gameReg->m_world->m_level;
-            i32 col2 = m_target.m_y >> 5;
-            i32 row2 = m_target.m_x >> 5;
+            i32 col2 = m_target.m_y >> TILE_SHIFT_PX;
+            i32 row2 = m_target.m_x >> TILE_SHIFT_PX;
             if (row2 < 0) {
                 row2 = 0;
             } else {
@@ -513,8 +514,8 @@ i32 CRollingBall::Update() {
         m_moveDelta = 0.0;
         m_subY = static_cast<double>(out->m_screenY) + m_subY;
         CMapMgr* board2 = g_gameReg->m_tileGrid;
-        i32 mtx = m_target.m_x >> 5;
-        i32 mty = m_target.m_y >> 5;
+        i32 mtx = m_target.m_x >> TILE_SHIFT_PX;
+        i32 mty = m_target.m_y >> TILE_SHIFT_PX;
         if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {
             board2->m_rowInts[mty][mtx * 7] |= 0x10000000;
         }

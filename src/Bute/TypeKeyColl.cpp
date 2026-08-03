@@ -21,6 +21,7 @@
 #include <Gruntz/TypeKeyCollStr.h>
 #include <Gruntz/XferArchive.h>
 #include <Wap32/ZVec.h>
+#include <Utils/BitArrayWord.h>
 
 DATA(0x002bf428)
 void* g_retAddrBreadcrumb;
@@ -164,7 +165,9 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
                 ::operator delete(m_words);
             }
             if (static_cast<u32>(that.m_capacity) > 0x20) {
-                m_words = static_cast<u32*>(malloc((static_cast<u32>(that.m_capacity) >> 5) * 4));
+                m_words = static_cast<u32*>(
+                    malloc((static_cast<u32>(that.m_capacity) >> BITARRAY_WORD_SHIFT) * 4)
+                );
                 if (!m_words) {
                     char* msg = g_errOutOfMem;
                     g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -258,7 +261,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
         }
         {
             u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
-            band[static_cast<u32>(v) >> 5] |= 1u << (v & 0x1f);
+            band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
         }
         if (*q == 0) {
             break;
@@ -288,7 +291,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             }
             for (i32 b = v + 1; b <= v2; ++b) {
                 u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
-                band[static_cast<u32>(b) >> 5] |= 1u << (b & 0x1f);
+                band[static_cast<u32>(b) >> BITARRAY_WORD_SHIFT] |= 1u << (b & BITARRAY_BIT_MASK);
             }
             while (*q != 0 && !isdigit(*q)) {
                 ++q;
@@ -337,8 +340,8 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
         m_errSink->Set(this, msg, 0xc);
     } else {
         u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
-        u32* slot = base + (static_cast<u32>(idx) >> 5);
-        *slot |= 1u << (idx & 0x1f);
+        u32* slot = base + (static_cast<u32>(idx) >> BITARRAY_WORD_SHIFT);
+        *slot |= 1u << (idx & BITARRAY_BIT_MASK);
     }
 }
 
@@ -649,7 +652,8 @@ RVA(0x0016e100, 0x7f)
 i32 zBitVec::SetSize(i32 nbits) {
     u32 n = static_cast<u32>(nbits);
     if (n > 0x20) {
-        i32 nwords = static_cast<i32>((n >> 5) + ((n & 0x1f) != 0 ? 1u : 0u));
+        i32 nwords =
+            static_cast<i32>((n >> BITARRAY_WORD_SHIFT) + ((n & BITARRAY_BIT_MASK) != 0 ? 1u : 0u));
         m_capacity = nwords;
         u32* band = static_cast<u32*>(malloc(nwords * 4));
         m_words = band;

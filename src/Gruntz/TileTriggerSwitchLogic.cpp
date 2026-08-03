@@ -29,6 +29,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <string.h>
@@ -177,8 +178,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
         case TILEKIND_REDPYRAMID_UP:
         case TILEKIND_PURPLEPYRAMID_DOWN:
         case TILEKIND_PURPLEPYRAMID_UP:
-            py = (m_tileY << 5) + 0x10;
-            px = (m_tileX << 5) + 0x10;
+            py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
                 && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
@@ -193,8 +194,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             return;
         case TILEKIND_WATERBRIDGE_DOWN:
         case TILEKIND_WATERBRIDGE_UP:
-            py = (m_tileY << 5) + 0x10;
-            px = (m_tileX << 5) + 0x10;
+            py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
                 && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
@@ -209,8 +210,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             return;
         case TILEKIND_TOGGLEWATERBRIDGE_DOWN:
         case TILEKIND_TOGGLEWATERBRIDGE_UP:
-            py = (m_tileY << 5) + 0x10;
-            px = (m_tileX << 5) + 0x10;
+            py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
                 && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
@@ -219,8 +220,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             return;
         case TILEKIND_DEATHBRIDGE_DOWN:
         case TILEKIND_DEATHBRIDGE_UP:
-            py = (m_tileY << 5) + 0x10;
-            px = (m_tileX << 5) + 0x10;
+            py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
                 && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
@@ -229,8 +230,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             return;
         case TILEKIND_TOGGLEDEATHBRIDGE_DOWN:
         case TILEKIND_TOGGLEDEATHBRIDGE_UP:
-            py = (m_tileY << 5) + 0x10;
-            px = (m_tileX << 5) + 0x10;
+            py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
                 && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
@@ -239,8 +240,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             return;
         case TILEKIND_CRUMBLEWATERBRIDGE:
         case TILEKIND_CRUMBLEDEATHBRIDGE:
-            py = (m_tileY << 5) + 0x10;
-            px = (m_tileX << 5) + 0x10;
+            py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
                 && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
@@ -258,8 +259,8 @@ i32 CTileTriggerLogic::Tick() {
     TileCollisionKind srcId = PbResolveCell(world->m_level, m_tileX, m_tileY);
 
     {
-        i32 sy = (m_tileY << 5) + 0x10;
-        i32 sx = (m_tileX << 5) + 0x10;
+        i32 sy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+        i32 sx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
         POINT pt;
         pt.x = sx;
         pt.y = sy;
@@ -734,8 +735,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
 
     i32 inRect = 0;
     POINT pt;
-    pt.y = (m_tileY << 5) + 0x10;
-    pt.x = (m_tileX << 5) + 0x10;
+    pt.y = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    pt.x = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
         inRect = 1;
     }
@@ -751,8 +752,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
             if (inRect) {
                 CWwdGameObjectA* spr = gameMgr->m_childGroup->CreateSprite(
                     0,
-                    ((i + m_tileX) << 5) - 0x10,
-                    ((j + m_tileY) << 5) - 0x10,
+                    ((i + m_tileX) << TILE_SHIFT_PX) - 0x10,
+                    ((j + m_tileY) << TILE_SHIFT_PX) - 0x10,
                     0xcf84f,
                     "Particlez",
                     0x40003
@@ -765,8 +766,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         }
     }
 
-    i32 cx = (m_tileX << 5) + 0x10;
-    i32 cy = (m_tileY << 5) + 0x10;
+    i32 cx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 cy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     g_gameReg->m_cmdGrid->LoadPowerupIconSprites(
         static_cast<PickupType>(m_powerupType),
         cx,
@@ -785,10 +786,10 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         txt->m_smarts = m_textId;
     }
 
-    if ((m_tileX << 5) + 0x10 >= g_gameReg->m_viewBounds.right
-        || (m_tileX << 5) + 0x10 < g_gameReg->m_viewBounds.left
-        || (m_tileY << 5) + 0x10 >= g_gameReg->m_viewBounds.bottom
-        || (m_tileY << 5) + 0x10 < g_gameReg->m_viewBounds.top) {
+    if ((m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX >= g_gameReg->m_viewBounds.right
+        || (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX < g_gameReg->m_viewBounds.left
+        || (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX >= g_gameReg->m_viewBounds.bottom
+        || (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX < g_gameReg->m_viewBounds.top) {
         return;
     }
     CDDrawSubMgrLeafScan* sreg = gameMgr->m_soundRegistry;
@@ -852,8 +853,8 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         }
     }
     CGruntzMgr* reg = g_gameReg;
-    i32 py = (m_tileY << 5) + 0x10;
-    i32 px = (m_tileX << 5) + 0x10;
+    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     reg->m_cmdGrid->LoadPowerupIconSprites(
         static_cast<PickupType>(m_dutyOnSpan),
         px,
@@ -1002,8 +1003,8 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType)) {
         goto fail;
     }
-    px = (tileX << 5) + 0x10;
-    py = (tileY << 5) + 0x10;
+    px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    py = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (checkpointType == 0) {
         return 1;
     }
@@ -1261,11 +1262,16 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             brick->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
             brick->m_entranceActive = 0;
         } else if (effect == BRICKTILE_BLUE_1) {
-            g_gameReg->m_cmdGrid
-                ->CombatCue((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, CUE_TELEPORT, -1);
+            g_gameReg->m_cmdGrid->CombatCue(
+                (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
+                1,
+                CUE_TELEPORT,
+                -1
+            );
         } else if (effect == BRICKTILE_GOLD_1) {
-            i32 px = (m_tileX << 5) + 0x10;
-            i32 py = (m_tileY << 5) + 0x10;
+            i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+            i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
                 && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top
                 && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
@@ -1288,13 +1294,17 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (effect == BRICKTILE_BLACK_1) {
-            g_gameReg->m_cmdGrid
-                ->LoadExplosionSprites((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
+            g_gameReg->m_cmdGrid->LoadExplosionSprites(
+                (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
+                -1,
+                2
+            );
         }
     }
 
-    i32 px = (m_tileX << 5) + 0x10;
-    i32 py = (m_tileY << 5) + 0x10;
+    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
         && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup

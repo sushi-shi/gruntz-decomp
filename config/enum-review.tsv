@@ -422,6 +422,7 @@ include/Rez/RezList.h	pending
 include/Rez/RezMgr.h	pending	
 include/Rez/RezSync.h	pending	
 include/Rez/RezTypeTag.h	pending	
+include/Utils/BitArrayWord.h	pending	
 include/Utils/DebugTiming.h	pending	
 include/Utils/MapTyped.h	pending	
 include/Utils/PtrListPool.h	pending	
@@ -433,6 +434,7 @@ include/Wap32/EngStr.h	pending
 include/Wap32/GameApp.h	pending	
 include/Wap32/Object.h	pending	
 include/Wap32/Rect.h	pending	
+include/Wap32/TileGeometry.h	pending	
 include/Wap32/Wap32.h	pending	
 include/Wap32/WapObj.h	pending	
 include/Wap32/ZVec.h	pending	

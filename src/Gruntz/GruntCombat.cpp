@@ -49,6 +49,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 #include <Wap32/Rect.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/AnimWorkerAct.h>
 
 #include <math.h>
@@ -606,10 +607,10 @@ i32 CGrunt::TryPowerupAtTile() {
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    i32 px = (mx & ~0x1f) + 0x10;
-    i32 py = (my & ~0x1f) + 0x10;
-    i32 tx = px >> 5;
-    i32 ty = py >> 5;
+    i32 px = (mx & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 tx = px >> TILE_SHIFT_PX;
+    i32 ty = py >> TILE_SHIFT_PX;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -723,8 +724,8 @@ i32 CGrunt::PathScan() {
 
     POSITION node = coordz->GetHeadPosition();
 
-    i32 col5 = m_object->m_screenX >> 5;
-    i32 row5 = m_object->m_screenY >> 5;
+    i32 col5 = m_object->m_screenX >> TILE_SHIFT_PX;
+    i32 row5 = m_object->m_screenY >> TILE_SHIFT_PX;
 
     {
         RECT gb;
@@ -1062,8 +1063,8 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
-                i32 yMasked = (inner->m_screenY & ~0x1f) + 0x10;
-                i32 xMasked = (inner->m_screenX & ~0x1f) + 0x10;
+                i32 yMasked = (inner->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 xMasked = (inner->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 hit;
                 if (phase == 3) {
                     hit = RectContains(xMasked, yMasked);
@@ -1503,10 +1504,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
     {
         i32 flags = this->m_arrivalFlags | 0x20000000;
         CMapMgr* grid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
-        i32 nyt = newY >> 5;
-        i32 nxt = newX >> 5;
-        i32 oxt = this->m_lastTilePx.m_x >> 5;
-        i32 oyt = this->m_lastTilePx.m_y >> 5;
+        i32 nyt = newY >> TILE_SHIFT_PX;
+        i32 nxt = newX >> TILE_SHIFT_PX;
+        i32 oxt = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 oyt = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (!(oxt == nxt && oyt == nyt)) {
             if (static_cast<u32>(nxt) >= static_cast<u32>(grid->m_width)) {
                 return 1;
@@ -1559,8 +1560,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
             m_tileMgr->ApplySwitch(this, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y);
         }
         CMapMgr* g2 = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
-        i32 ox = this->m_lastTilePx.m_x >> 5;
-        i32 oy = this->m_lastTilePx.m_y >> 5;
+        i32 ox = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 oy = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         g2->m_rows[oy][ox].m_flagBytes[3] &= 0xdf;
         g2->m_rows[oy][ox].m_occupantId = -1;
         g2->m_rows[nyt][nxt].m_flagBytes[3] |= 0x20;
@@ -1568,8 +1569,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         if (m_coordList.GetCount() != 0) {
             Coord* node = 0;
-            i32 rx = this->m_lastTilePx.m_x >> 5;
-            i32 ry = this->m_lastTilePx.m_y >> 5;
+            i32 rx = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+            i32 ry = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
             if (g_coordPool.m_freeHead->m_next != NULL) {
                 node = &g_coordPool.m_freeHead->m_coord;
                 node->m_x = rx;
@@ -1625,8 +1626,8 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
     {
         CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-        i32 tx = m_lastTilePx.m_x >> 5;
-        i32 ty = m_lastTilePx.m_y >> 5;
+        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 flags;
         if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
@@ -1666,7 +1667,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         flag = IDX(v);
     }
     if (flag != 0) {
-        RunMoveConfig(c >> 5, d >> 5);
+        RunMoveConfig(c >> TILE_SHIFT_PX, d >> TILE_SHIFT_PX);
         return 1;
     }
 
@@ -1685,8 +1686,8 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         if (eq) {
             i32 lastX = m_lastTilePx.m_x;
             i32 lastY = m_lastTilePx.m_y;
-            i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
-            i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
+            i32 px = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+            i32 py = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
             i32 redo = 1;
             if (px != lastX || py != lastY) {
                 if (IsDropReady(1)) {

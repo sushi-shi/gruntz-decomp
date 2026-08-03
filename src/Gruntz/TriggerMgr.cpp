@@ -48,6 +48,7 @@
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <stdlib.h>
@@ -67,10 +68,10 @@ static char s_CombatTimeout[] = "CombatTimeout";
 // @early-stop
 RVA(0x00077f80, 0xab)
 CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
-    i32 tx = g->m_lastTilePx.m_x >> 5;
+    i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 rowIdx = g->m_tileOwnerHi;
     CGrunt** cell = &m_grid[rowIdx * TM_GRID_COLS];
-    i32 ty = g->m_lastTilePx.m_y >> 5;
+    i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
     CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
     i32 i = 15;
@@ -78,8 +79,8 @@ CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
         CGrunt* c = *cell;
         if (c != NULL) {
             CGameObject* o = c->m_object;
-            i32 dx = (o->m_screenX >> 5) - tx;
-            i32 dy = (o->m_screenY >> 5) - ty;
+            i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
+            i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
             i32 d = dx * dx + dy * dy;
             if (d < bestDist && d < g->m_defenderRadius * 2) {
                 best = c;
@@ -450,8 +451,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     CGameLevel* view = m_world->m_level;
     CDDrawWorkerHost* grid = view->m_mainPlane;
-    i32 tx = x >> 5;
-    i32 ty = y >> 5;
+    i32 tx = x >> TILE_SHIFT_PX;
+    i32 ty = y >> TILE_SHIFT_PX;
     i32 cx = tx;
     if (tx < 0) {
         cx = 0;
@@ -903,8 +904,8 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
         return 0;
     }
     CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
-    i32 tx = x >> 5;
-    i32 ty = y >> 5;
+    i32 tx = x >> TILE_SHIFT_PX;
+    i32 ty = y >> TILE_SHIFT_PX;
     i32 tile;
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -915,8 +916,8 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
         g_gameReg->m_cmdGrid->LoadPowerupIconSprites(
             PICKUP_WARPSTONE,
-            (tx << 5) + 0x10,
-            (ty << 5) + 0x10,
+            (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
+            (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
             0,
             anchorIndex,
             0
@@ -951,8 +952,8 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     pt.m_x = cell->m_lastTilePx.m_x;
     pt.m_y = cell->m_lastTilePx.m_y;
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
-    i32 rowIdx = pt.m_y >> 5;
-    i32 cellCol = pt.m_x >> 5;
+    i32 rowIdx = pt.m_y >> TILE_SHIFT_PX;
+    i32 cellCol = pt.m_x >> TILE_SHIFT_PX;
     tg->m_rows[rowIdx][cellCol].m_flagBytes[3] &= 0xdf;
     tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
     m_grid[idx] = NULL;
@@ -1054,16 +1055,16 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 RVA(0x0007a3f0, 0xd7)
 i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    i32 tx = x >> 5;
-    i32 ty = y >> 5;
+    i32 tx = x >> TILE_SHIFT_PX;
+    i32 ty = y >> TILE_SHIFT_PX;
 
     POSITION pos = fac->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(fac->m_list.GetNext(pos));
         GameObjNotifyFn init = obj->m_animWorker->m_notify;
         if (init == CreateInGameIcon || init == CreateInGameText) {
-            i32 ox = obj->m_screenX >> 5;
-            i32 oy = obj->m_screenY >> 5;
+            i32 ox = obj->m_screenX >> TILE_SHIFT_PX;
+            i32 oy = obj->m_screenY >> TILE_SHIFT_PX;
             if (tx == ox && ty == oy) {
                 return 0;
             }
@@ -1488,13 +1489,13 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
     CombatCue(cx, cy, r, CUE_EXPLODE, flag);
 
     CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
-    i32 tileCx = cx >> 5;
-    i32 tileCy = cy >> 5;
+    i32 tileCx = cx >> TILE_SHIFT_PX;
+    i32 tileCy = cy >> TILE_SHIFT_PX;
     i32 hiX = tileCx + r;
     for (i32 tx = tileCx - r; tx <= hiX; tx++) {
-        i32 pxX = (tx << 5) + 0x10;
+        i32 pxX = (tx << TILE_SHIFT_PX) + TILE_HALF_PX;
         for (i32 ty = tileCy - r; ty <= tileCy + r; ty++) {
-            i32 pxY = (ty << 5) + 0x10;
+            i32 pxY = (ty << TILE_SHIFT_PX) + TILE_HALF_PX;
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
@@ -1604,7 +1605,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 // @early-stop
 RVA(0x0007b930, 0x3e0)
 i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
-    i32 r = radius << 5;
+    i32 r = radius << TILE_SHIFT_PX;
     i32 xLo = x - r - 7;
     i32 yLo = y - r - 7;
     i32 xHi = x + r + 7;
@@ -1743,8 +1744,8 @@ void CTriggerMgr::StopPendingFx() {
 RVA(0x0007be60, 0x21e)
 i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     RECT rect;
-    i32 hx = cx >> 5;
-    i32 hy = cy >> 5;
+    i32 hx = cx >> TILE_SHIFT_PX;
+    i32 hy = cy >> TILE_SHIFT_PX;
     rect.left = hx - r;
     rect.right = hx + r;
     rect.top = hy - r;
@@ -1768,8 +1769,8 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         GruntzPlayer* cfg = &g_gameReg->m_options[type];
         i32 aiType = 0;
         i32 ok = 0;
-        i32 px = (g->m_tileX << 5) + 0x10;
-        i32 py = (g->m_tileY << 5) + 0x10;
+        i32 px = (g->m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+        i32 py = (g->m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
 
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             i32 radius = 0;
@@ -1837,8 +1838,8 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
         return 0;
     }
     CGameObject* o = src->m_object;
-    i32 sx = (o->m_screenX & ~0x1f) + 0x10;
-    i32 sy = (o->m_screenY & ~0x1f) + 0x10;
+    i32 sx = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 sy = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     PickupType k = src->m_entranceReason;
     if (k > PICKUP_EQUIPPABLE_LAST) {
         k = src->m_toolId;
@@ -2362,8 +2363,8 @@ i32 CTriggerMgr::ClearRow(i32 row) {
 
 RVA(0x0007d1d0, 0x9d)
 i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
-    i32 tx = px >> 5;
-    i32 ty = py >> 5;
+    i32 tx = px >> TILE_SHIFT_PX;
+    i32 ty = py >> TILE_SHIFT_PX;
     i32 best = 0x7fffffff;
     i32 r = 0;
     CGrunt** row = m_grid;
@@ -2375,8 +2376,8 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
                 CGrunt* g = *cell;
                 if (g != NULL && g->m_entranceCommitted != 0) {
                     CGameObject* o = g->m_object;
-                    i32 dx = (o->m_screenX >> 5) - tx;
-                    i32 dy = (o->m_screenY >> 5) - ty;
+                    i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
+                    i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
                     i32 d = abs(dx * dx + dy * dy);
                     if (d < best) {
                         best = d;

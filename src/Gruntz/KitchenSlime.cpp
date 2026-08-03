@@ -26,6 +26,7 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
@@ -55,8 +56,8 @@ RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 0x2000002;
 
-    i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
-    i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
+    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenX = snapX;
     m_posX = static_cast<double>(snapX);
     m_object->m_screenY = snapY;
@@ -68,8 +69,8 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_tilePosition.m_y = snapY;
     m_tilePosition.m_x = snapX;
 
-    m_object->m_speedX = (m_object->m_speedX << 5) + 0x10;
-    m_object->m_speedY = (m_object->m_speedY << 5) + 0x10;
+    m_object->m_speedX = (m_object->m_speedX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_object->m_speedY = (m_object->m_speedY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (m_object->m_screenX == m_object->m_speedX && m_object->m_screenY == m_object->m_speedY) {
         m_wwdObject->m_flags |= 0x10000;
         return;
@@ -316,8 +317,8 @@ i32 CKitchenSlime::LoadSprites() {
                 break;
         }
 
-        i32 gx = tileX >> 5;
-        i32 gy = tileY >> 5;
+        i32 gx = tileX >> TILE_SHIFT_PX;
+        i32 gy = tileY >> TILE_SHIFT_PX;
         i32 tileFlags;
         CMapMgr* map = g_gameReg->m_tileGrid;
         if (static_cast<u32>(gx) >= static_cast<u32>(map->m_width)

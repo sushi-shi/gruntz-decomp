@@ -15,6 +15,7 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Io/FileMem.h>
 #include <Rez/RezSync.h>
+#include <Wap32/TileGeometry.h>
 
 DATA(0x001e9608)
 const u16 g_cmdBitTable[16] = {
@@ -228,8 +229,10 @@ RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType) {
     CGameLevel* p = m_manager->m_world->m_level;
     CDDrawWorkerHost* r = p->m_mainPlane;
-    i32 sx = ((r->m_viewRect.left - p->m_planeCtx.left + (x & 0xffff)) & ~0x1f) + 0x10;
-    i32 sy = ((r->m_viewRect.top - p->m_planeCtx.top + (y & 0xffff)) & ~0x1f) + 0x10;
+    i32 sx =
+        ((r->m_viewRect.left - p->m_planeCtx.left + (x & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 sy =
+        ((r->m_viewRect.top - p->m_planeCtx.top + (y & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
     EnqueueSingle(
         enqueueFlag,
         static_cast<char>(targetIndex),

@@ -5,6 +5,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
+#include <Wap32/TileGeometry.h>
 
 static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
     if (static_cast<u32>(x) < static_cast<u32>(g->m_width)
@@ -37,11 +38,11 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
     CGameObject* p = arg->m_object;
     i32 v60 = p->m_screenY;
     i32 v5c = p->m_screenX;
-    i32 tileY = v60 >> 5;
-    i32 tileX = v5c >> 5;
+    i32 tileY = v60 >> TILE_SHIFT_PX;
+    i32 tileX = v5c >> TILE_SHIFT_PX;
     for (i32 a = tileY - 1; a < tileY + 2; a++) {
         for (i32 b = tileX - 1; b < tileX + 2; b++) {
-            if (b == (v5c >> 5) && a == (v60 >> 5)) {
+            if (b == (v5c >> TILE_SHIFT_PX) && a == (v60 >> TILE_SHIFT_PX)) {
                 continue;
             }
             CMapMgr* grid = m_board;

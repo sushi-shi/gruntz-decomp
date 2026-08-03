@@ -28,6 +28,7 @@
 #include <Image/CImage.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 #include <Wwd/AnimWorkerAct.h>
@@ -200,12 +201,13 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_stateFlags |= 1;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_object->m_area.left = m_object->m_screenX - (m_object->m_extent.left << 5) - 7;
-    m_object->m_area.right = m_object->m_screenX + (m_object->m_extent.right << 5) + 7;
-    m_object->m_area.top = m_object->m_screenY - (m_object->m_extent.top << 5) - 7;
-    m_object->m_area.bottom = m_object->m_screenY + (m_object->m_extent.bottom << 5) + 7;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_area.left = m_object->m_screenX - (m_object->m_extent.left << TILE_SHIFT_PX) - 7;
+    m_object->m_area.right = m_object->m_screenX + (m_object->m_extent.right << TILE_SHIFT_PX) + 7;
+    m_object->m_area.top = m_object->m_screenY - (m_object->m_extent.top << TILE_SHIFT_PX) - 7;
+    m_object->m_area.bottom =
+        m_object->m_screenY + (m_object->m_extent.bottom << TILE_SHIFT_PX) + 7;
 }
 
 RVA(0x00119e40, 0x102)

@@ -17,6 +17,7 @@
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
 
 #include <stddef.h>
 
@@ -31,8 +32,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (m_object->m_sortKey != 0x124f8) {
         m_object->m_sortKey = 0x124f8;
         m_object->m_flags |= 0x20000;

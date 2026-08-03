@@ -37,6 +37,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
@@ -122,8 +123,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_peekTimer.m_hi = 0;
     m_peekWindow.m_hi = 0;
 
-    obj->m_screenX = (obj->m_screenX & ~0x1f) + 0x10;
-    obj->m_screenY = (obj->m_screenY & ~0x1f) + 0x10;
+    obj->m_screenX = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    obj->m_screenY = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
 
     if (obj->m_sortKey != 0x17318) {
         obj->m_sortKey = 0x17318;
@@ -405,8 +406,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     i32 mv = m_object->m_objectId;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    i32 col = m_object->m_screenX >> 5;
-    i32 row = m_object->m_screenY >> 5;
+    i32 col = m_object->m_screenX >> TILE_SHIFT_PX;
+    i32 row = m_object->m_screenY >> TILE_SHIFT_PX;
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
         i32* cell = &grid->m_rowInts[row][col * 7];
@@ -554,8 +555,8 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;
-    i32 tileY = obj->m_screenX >> 5;
-    i32 tileX = (obj->m_screenY + 0x18) >> 5;
+    i32 tileY = obj->m_screenX >> TILE_SHIFT_PX;
+    i32 tileX = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
     i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos.m_v;
     if (delta < m_driftThresh.m_v) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -613,9 +614,9 @@ i32 CInGameIcon::PeekCycle() {
     i32 cmd = obj->m_smarts;
     if (cmd == 0x55) {
         CGruntzMgr* reg = g_gameReg;
-        i32 tileY = obj->m_screenY >> 5;
+        i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
-        i32 tileX = obj->m_screenX >> 5;
+        i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell;
         if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
@@ -668,8 +669,8 @@ i32 CInGameIcon::PeekCycle() {
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     CMapMgr* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_screenY >> 5;
-    i32 tileY = owner->m_screenX >> 5;
+    i32 tileX = owner->m_screenY >> TILE_SHIFT_PX;
+    i32 tileY = owner->m_screenX >> TILE_SHIFT_PX;
     if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
 
@@ -798,8 +799,8 @@ i32 CInGameIcon::Reposition() {
 
         CGruntzMgr* reg = g_gameReg;
         CWwdGameObjectA* obj = m_object;
-        i32 tileX = obj->m_screenX >> 5;
-        i32 tileY = obj->m_screenY >> 5;
+        i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
+        i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
         i32 cellVal;
         if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
@@ -825,8 +826,8 @@ i32 CInGameIcon::Reposition() {
         }
         obj = m_object;
         grid = g_gameReg->m_tileGrid;
-        i32 tileX2 = obj->m_screenX >> 5;
-        i32 tileY2 = obj->m_screenY >> 5;
+        i32 tileX2 = obj->m_screenX >> TILE_SHIFT_PX;
+        i32 tileY2 = obj->m_screenY >> TILE_SHIFT_PX;
         i32 mv = obj->m_objectId;
         if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_height)) {
@@ -998,8 +999,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (m_object->m_sortKey != 0x17318) {
         m_object->m_sortKey = 0x17318;
         m_object->m_flags |= 0x20000;

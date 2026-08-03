@@ -13,6 +13,7 @@
 #include <Image/RezDecodeKind.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
+#include <Wap32/TileGeometry.h>
 
 #include <string.h>
 
@@ -432,7 +433,8 @@ i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
             u32 r = c & 0xff;
             u32 g = (c >> 8) & 0xff;
             u32 b = (c >> 16) & 0xff;
-            *dp = static_cast<u16>((((((r & 0xf8) << 5) | (g & 0xf8)) << 2) | (b >> 3)));
+            *dp =
+                static_cast<u16>((((((r & 0xf8) << TILE_SHIFT_PX) | (g & 0xf8)) << 2) | (b >> 3)));
             dp++;
             sp++;
         }

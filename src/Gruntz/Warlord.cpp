@@ -26,6 +26,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WarlordOwner.h>
 #include <Io/FileMem.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
 #include <new>
@@ -139,8 +140,8 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_timer2Stamp = 0;
     m_timer2Window = 0;
 
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
 
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0xc3500) {

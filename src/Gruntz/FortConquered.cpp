@@ -19,6 +19,7 @@
 #include <Gruntz/Warlord.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <stddef.h>
@@ -102,8 +103,8 @@ i32 CExitTrigger::AdvanceAnim() {
                             head = head->m_next;
                             g_coordPool.m_freeHead = head;
                         }
-                        mark->m_x = (cur->m_screenX & ~0x1f) + 0x10;
-                        mark->m_y = (cur->m_screenY & ~0x1f) + 0x10;
+                        mark->m_x = (cur->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        mark->m_y = (cur->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                         CPtrArray& marks =
                             static_cast<CPlay*>(g_gameReg->m_curState)->m_startMarkers;
                         marks.SetAtGrow(marks.GetSize(), mark);

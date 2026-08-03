@@ -28,6 +28,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
@@ -216,8 +217,8 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_stateFlags |= 1;
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_pending = 1;
     m_placed = 0;
 }
@@ -269,8 +270,8 @@ RVA(0x00040c30, 0xb3)
 
 i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     CWwdGameObjectA* o = m_object;
-    m_tileX = o->m_screenX >> 5;
-    m_tileY = o->m_screenY >> 5;
+    m_tileX = o->m_screenX >> TILE_SHIFT_PX;
+    m_tileY = o->m_screenY >> TILE_SHIFT_PX;
     m_placeArg3 = a3;
     m_gruntType = gruntType;
     m_placeIndex = placeIndex;
@@ -385,8 +386,8 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0x1869f;
         m_object->m_flags |= 0x20000;
     }
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     LoadColors();
     ReapplyConfig();
 }

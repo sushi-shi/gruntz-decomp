@@ -5,6 +5,7 @@
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
+#include <Wap32/TileGeometry.h>
 
 #include <stddef.h>
 
@@ -47,8 +48,8 @@ i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
 RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
     CMapMgr* plane = g_gameReg->m_tileGrid;
-    i32 ix = x >> 5;
-    i32 iy = y >> 5;
+    i32 ix = x >> TILE_SHIFT_PX;
+    i32 iy = y >> TILE_SHIFT_PX;
     i32 attr;
     if (ix >= plane->m_width || iy >= plane->m_height) {
         attr = -1;
@@ -92,8 +93,8 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
 // @early-stop
 RVA(0x00075c60, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
-    i32 tcol = px >> 5;
-    i32 trow = py >> 5;
+    i32 tcol = px >> TILE_SHIFT_PX;
+    i32 trow = py >> TILE_SHIFT_PX;
     RECT rc;
     if (src) {
         CopyRect(&rc, src);

@@ -32,6 +32,7 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 #include <Wwd/AnimWorkerAct.h>
@@ -224,8 +225,8 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 0x2000002;
 
     CWwdGameObjectA* o = m_object;
-    i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
-    i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
+    i32 snapX = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     o->m_screenX = snapX;
     m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
@@ -330,8 +331,8 @@ i32 CObjectDropper::Update() {
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;
                         CMapMgr* plane = g_gameReg->m_tileGrid;
-                        i32 cx = fx >> 5;
-                        i32 cy = fy >> 5;
+                        i32 cx = fx >> TILE_SHIFT_PX;
+                        i32 cy = fy >> TILE_SHIFT_PX;
                         u32 flags;
                         if (static_cast<u32>(cx) >= static_cast<u32>(plane->m_width)
                             || static_cast<u32>(cy) >= static_cast<u32>(plane->m_height)) {
@@ -456,9 +457,9 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_wwdObject->m_flags |= 0x2000002;
-    i32 adjY = (m_object->m_screenY & ~0x1f) + 0x10;
+    i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
     m_fallY = static_cast<double>(m_object->m_screenY);
     if (m_object->m_sortKey != 0xcf851) {
@@ -534,8 +535,8 @@ i32 CDroppedObject::AdvanceFall() {
         CMapMgr* g = g_gameReg->m_tileGrid;
         i32 cell;
         {
-            i32 cx = x >> 5;
-            i32 cy = m_landY >> 5;
+            i32 cx = x >> TILE_SHIFT_PX;
+            i32 cy = m_landY >> TILE_SHIFT_PX;
             if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
                 && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
                 cell = g->m_rows[cy][cx].m_flags;

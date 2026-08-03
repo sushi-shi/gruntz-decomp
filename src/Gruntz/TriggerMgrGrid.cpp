@@ -37,6 +37,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <stddef.h>
@@ -95,8 +96,8 @@ i32 CTriggerMgr::PlaceObject(
             wantSlot = 1;
         }
         CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-        i32 tx = x >> 5;
-        i32 ty = y >> 5;
+        i32 tx = x >> TILE_SHIFT_PX;
+        i32 ty = y >> TILE_SHIFT_PX;
         i32 attr;
         if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
@@ -498,7 +499,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     switch (tag) {
         case TILEKIND_TIME_SWITCH:
             sw = state->m_beginMarker->FindChild(
-                ((x >> 5) * 0x100) + (y >> 5),
+                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
                 TRIGID_TIME_SWITCH_7
             );
             if (sw == NULL) {
@@ -538,7 +539,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_SECRET_SWITCH:
             sw = state->m_beginMarker->FindChild(
-                ((x >> 5) * 0x100) + (y >> 5),
+                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
                 TRIGID_SECRET_SWITCH_6
             );
             if (sw == NULL) {
@@ -597,7 +598,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         case TILEKIND_SWITCH_A:
         case TILEKIND_SWITCH_B:
         case TILEKIND_SWITCH_C:
-            sw = state->m_beginMarker->FindChild(((x >> 5) * 0x100) + (y >> 5), TRIGID_ANY);
+            sw = state->m_beginMarker->FindChild(
+                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
+                TRIGID_ANY
+            );
             if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
@@ -630,7 +634,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_MULTI_SWITCH:
             sw = state->m_beginMarker->FindChild(
-                ((x >> 5) * 0x100) + (y >> 5),
+                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
                 TRIGID_MULTI_SWITCH_3
             );
             if (sw == NULL) {
@@ -668,7 +672,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_EXCLUSIVE_SWITCH:
             sw = state->m_beginMarker->FindChild(
-                ((x >> 5) * 0x100) + (y >> 5),
+                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
                 TRIGID_EXCLUSIVE_SWITCH_4
             );
             if (sw == NULL) {
@@ -772,8 +776,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             CTileTriggerLogic* logic = state->m_beginMarker->AddLogicDefaults(
                 tag,
                 TRIGID_TILE_TRIGGER_24,
-                x >> 5,
-                y >> 5,
+                x >> TILE_SHIFT_PX,
+                y >> TILE_SHIFT_PX,
                 0,
                 0x9d,
                 0,
@@ -791,8 +795,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             CTileTriggerLogic* logic = state->m_beginMarker->AddLogicDefaults(
                 tag,
                 TRIGID_TILE_TRIGGER_24,
-                x >> 5,
-                y >> 5,
+                x >> TILE_SHIFT_PX,
+                y >> TILE_SHIFT_PX,
                 0,
                 token,
                 0,
@@ -811,7 +815,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 0;
             }
             sw = state->m_beginMarker->FindChild(
-                ((x >> 5) * 0x100) + (y >> 5),
+                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
                 TRIGID_CHECKPOINT_SWITCH_8
             );
             if (sw == NULL) {
@@ -915,7 +919,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
-                ((sx >> 5) * 0x100) + (sy >> 5),
+                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_TIME_SWITCH_7
             );
             if (obj == NULL) {
@@ -929,8 +933,10 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             return 1;
         }
         case TILEKIND_SWITCH_A_UP: {
-            CTileTriggerSwitchLogic* obj =
-                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), TRIGID_ANY);
+            CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
+                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
+                TRIGID_ANY
+            );
             if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
@@ -942,8 +948,10 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             return 1;
         }
         case TILEKIND_SWITCH_B_UP: {
-            CTileTriggerSwitchLogic* obj =
-                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), TRIGID_ANY);
+            CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
+                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
+                TRIGID_ANY
+            );
             if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
@@ -980,7 +988,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         }
         case TILEKIND_MULTI_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
-                ((sx >> 5) * 0x100) + (sy >> 5),
+                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_MULTI_SWITCH_3
             );
             if (obj == NULL) {
@@ -1033,7 +1041,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 return 0;
             }
             CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
-                ((sx >> 5) * 0x100) + (sy >> 5),
+                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_CHECKPOINT_SWITCH_8
             );
             if (obj == NULL) {
@@ -1070,10 +1078,10 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         return 0;
     }
-    i32 cellTileX = cell->m_lastTilePx.m_x >> 5;
-    i32 cellTileY = cell->m_lastTilePx.m_y >> 5;
-    i32 argTileX = worldX >> 5;
-    i32 argTileY = worldY >> 5;
+    i32 cellTileX = cell->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 cellTileY = cell->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 argTileX = worldX >> TILE_SHIFT_PX;
+    i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->m_lastTilePx.m_x) {
         return -1;
@@ -1123,8 +1131,8 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         cell->RunMoveConfig(argTileX, argTileY);
         return 1;
     }
-    i32 by = (worldY & ~0x1f) + 0x10;
-    i32 bx = (worldX & ~0x1f) + 0x10;
+    i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (cell->RectContains(bx, by) == 0) {
         return -1;
     }
@@ -1142,7 +1150,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
     CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-    i32 bute = map->m_rows[by >> 5][bx >> 5].m_typeCode;
+    i32 bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
     PickupType kind = cell->m_entranceReason;
     if (kind > PICKUP_EQUIPPABLE_LAST) {
         kind = cell->m_toolId;
@@ -1234,10 +1242,10 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (cell == NULL || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
-    i32 cellTileX = cell->m_lastTilePx.m_x >> 5;
-    i32 cellTileY = cell->m_lastTilePx.m_y >> 5;
-    i32 argTileX = worldX >> 5;
-    i32 argTileY = worldY >> 5;
+    i32 cellTileX = cell->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 cellTileY = cell->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 argTileX = worldX >> TILE_SHIFT_PX;
+    i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->m_lastTilePx.m_x) {
         return -1;
@@ -1250,8 +1258,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         && g_traitorMode == 0) {
         return 0;
     }
-    i32 by = (worldY & ~0x1f) + 0x10;
-    i32 bx = (worldX & ~0x1f) + 0x10;
+    i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (cell->RectContainsGated(bx, by) == 0) {
         return -1;
     }
@@ -1384,8 +1392,8 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 w
         // call sites - m_entranceReason lands in `tileY`, not in `reason`.
         this->LoadTileArrivalFx(px, py, py, IDX(cell->m_entranceReason), PICKUP_INVALID, py);
     }
-    i32 by = (worldY & ~0x1f) + 0x10;
-    i32 bx = (worldX & ~0x1f) + 0x10;
+    i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;
     i32 r = cell->StepArrivalDrop(bx, by, arrivalPhase, -1, 1, 0);
     return r != 0 ? 1 : 0;

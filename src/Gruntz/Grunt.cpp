@@ -65,6 +65,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wap32/Rect.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/Wap32.h>
 #include <Wap32/zBitVec.h>
 #include <Wwd/MoveMode.h>
@@ -1095,10 +1096,10 @@ i32 CGrunt::StepArrivalDrop(
         }
         m_coordList.RemoveAll();
     }
-    lastX = m_lastTilePx.m_x >> 5;
-    lastY = m_lastTilePx.m_y >> 5;
-    tileX = pxX >> 5;
-    tileY = pxY >> 5;
+    lastX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    lastY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    tileX = pxX >> TILE_SHIFT_PX;
+    tileY = pxY >> TILE_SHIFT_PX;
     if (maskA == -1) {
         maskA = m_arrivalFlags;
     }
@@ -1433,8 +1434,8 @@ i32 CGrunt::StepGruntMovement() {
         coordY = co->m_y;
     }
 
-    gtX = m_object->m_screenX >> 5;
-    gtY = m_object->m_screenY >> 5;
+    gtX = m_object->m_screenX >> TILE_SHIFT_PX;
+    gtY = m_object->m_screenY >> TILE_SHIFT_PX;
     if (coordX > gtX) {
         if (coordY > gtY) {
             rec.row = g_gruntMoveDirSouthEast.row;
@@ -1475,11 +1476,11 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
 
-    tgtPxX = (coordX << 5) + 0x10;
-    tgtPxY = (coordY << 5) + 0x10;
+    tgtPxX = (coordX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    tgtPxY = (coordY << TILE_SHIFT_PX) + TILE_HALF_PX;
     bd = g_gameReg->m_tileGrid;
-    tgtTileX = tgtPxX >> 5;
-    tgtTileY = tgtPxY >> 5;
+    tgtTileX = tgtPxX >> TILE_SHIFT_PX;
+    tgtTileY = tgtPxY >> TILE_SHIFT_PX;
     if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width)
         && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
         flagHead = bd->m_rowInts[tgtTileY][tgtTileX * 7];
@@ -1512,8 +1513,8 @@ i32 CGrunt::StepGruntMovement() {
     }
     {
         i32 lastFlag;
-        i32 ltx = m_lastTilePx.m_x >> 5;
-        i32 lty = m_lastTilePx.m_y >> 5;
+        i32 ltx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 lty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (static_cast<u32>(ltx) < static_cast<u32>(bd->m_width)
             && static_cast<u32>(lty) < static_cast<u32>(bd->m_height)) {
             lastFlag = bd->m_rowInts[lty][ltx * 7];
@@ -1566,10 +1567,10 @@ i32 CGrunt::StepGruntMovement() {
         Coord* co = CoordHead()->m_coord;
         i32 cx = co->m_x;
         i32 cy = co->m_y;
-        tgtPxX = (cx << 5) + 0x10;
-        tgtPxY = (cy << 5) + 0x10;
-        i32 gx = m_object->m_screenX >> 5;
-        i32 gy = m_object->m_screenY >> 5;
+        tgtPxX = (cx << TILE_SHIFT_PX) + TILE_HALF_PX;
+        tgtPxY = (cy << TILE_SHIFT_PX) + TILE_HALF_PX;
+        i32 gx = m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 gy = m_object->m_screenY >> TILE_SHIFT_PX;
         if (cx > gx) {
             if (cy > gy) {
                 rec.row = g_gruntMoveDirSouthEast.row;
@@ -1681,8 +1682,8 @@ label_4c6e4:
     {
         i32 beyondPxX = tgtPxX * 2 - m_lastTilePx.m_x;
         i32 beyondPxY = tgtPxY * 2 - m_lastTilePx.m_y;
-        i32 btx = beyondPxX >> 5;
-        i32 bty = beyondPxY >> 5;
+        i32 btx = beyondPxX >> TILE_SHIFT_PX;
+        i32 bty = beyondPxY >> TILE_SHIFT_PX;
         i32 beyondFlag;
         CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
         if (static_cast<u32>(btx) < static_cast<u32>(bd->m_width)
@@ -1715,10 +1716,10 @@ label_4c6e4:
     }
 
 label_4c92b: {
-    i32 lastTileX = m_lastTilePx.m_x >> 5;
-    tgtTileX = tgtPxX >> 5;
-    i32 lastTileY = m_lastTilePx.m_y >> 5;
-    tgtTileY = tgtPxY >> 5;
+    i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    tgtTileX = tgtPxX >> TILE_SHIFT_PX;
+    i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    tgtTileY = tgtPxY >> TILE_SHIFT_PX;
     CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
     if (lastTileX == tgtTileX && lastTileY == tgtTileY) {
         goto label_4cb4b;
@@ -1823,15 +1824,15 @@ label_4cb4b:
     {
         m_commitPx.m_x = m_lastTilePx.m_x;
         m_commitPx.m_y = m_lastTilePx.m_y;
-        i32 lastTileX = m_lastTilePx.m_x >> 5;
-        i32 lastTileY = m_lastTilePx.m_y >> 5;
+        i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
 
         bdl->m_rows[lastTileY][lastTileX].m_flagBytes[3] &= 0xdf;
         bdl->m_rows[lastTileY][lastTileX].m_occupantId = -1;
 
-        tgtTileX = tgtPxX >> 5;
-        tgtTileY = tgtPxY >> 5;
+        tgtTileX = tgtPxX >> TILE_SHIFT_PX;
+        tgtTileY = tgtPxY >> TILE_SHIFT_PX;
         CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
         bd2->m_rows[tgtTileY][tgtTileX].m_flags |= 0x20000000;
         bd2->m_rows[tgtTileY][tgtTileX].m_occupantId = (m_tileOwnerHi << 8) | m_tileOwnerLo;
@@ -2184,10 +2185,10 @@ i32 CGrunt::Place(
     LoadVehicleGruntSprites(static_cast<PickupType>(vehicleKind));
     LoadGruntTypeTable(typeKind, 1, 0, 0);
     if (span != NULL) {
-        m_object->m_extent.left = (m_lastTilePx.m_x >> 5) - span->left;
-        m_object->m_extent.right = span->right + (m_lastTilePx.m_x >> 5);
-        m_object->m_extent.top = (m_lastTilePx.m_y >> 5) - span->top;
-        m_object->m_extent.bottom = span->bottom + (m_lastTilePx.m_y >> 5);
+        m_object->m_extent.left = (m_lastTilePx.m_x >> TILE_SHIFT_PX) - span->left;
+        m_object->m_extent.right = span->right + (m_lastTilePx.m_x >> TILE_SHIFT_PX);
+        m_object->m_extent.top = (m_lastTilePx.m_y >> TILE_SHIFT_PX) - span->top;
+        m_object->m_extent.bottom = span->bottom + (m_lastTilePx.m_y >> TILE_SHIFT_PX);
     }
     RECT reach;
     CopyRect(&reach, &m_object->m_extent);
@@ -2212,8 +2213,8 @@ i32 CGrunt::Place(
     }
 
     CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-    i32 tx = m_lastTilePx.m_x >> 5;
-    i32 ty = m_lastTilePx.m_y >> 5;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     plane->m_rowInts[ty][tx * 7] |= 0x20000000;
     plane->m_rowInts[ty][tx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
     m_entranceActive = 0;
@@ -2236,8 +2237,8 @@ i32 CGrunt::Place(
                 m_defenderPx.m_y = m_lastTilePx.m_y;
                 m_arrivalState = AI_POSTGUARD;
             } else {
-                i32 px = (a9 << 5) + 0x10;
-                i32 py = (a10 << 5) + 0x10;
+                i32 px = (a9 << TILE_SHIFT_PX) + TILE_HALF_PX;
+                i32 py = (a10 << TILE_SHIFT_PX) + TILE_HALF_PX;
                 m_defenderPx.m_x = px;
                 m_defenderPx.m_y = py;
                 StepArrivalDrop(px, py - 0x20, 0, -1, 1, 0);
@@ -3542,8 +3543,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 ResetEntranceAnimation(1, 0, 0);
                 if (m_arrivalPending == 0) {
                     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-                    i32 col = m_lastTilePx.m_x >> 5;
-                    i32 row = m_lastTilePx.m_y >> 5;
+                    i32 col = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+                    i32 row = m_lastTilePx.m_y >> TILE_SHIFT_PX;
                     i32 tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
                     if (tk == 0x41) {
                         UpdateArrival(col, row);
@@ -3646,8 +3647,8 @@ void CGrunt::XferName(char*) {
     {
         CGruntzMgr* reg = g_gameReg;
         CMapMgr* grid = reg->m_tileGrid;
-        i32 tx = m_lastTilePx.m_x >> 5;
-        i32 ty = m_lastTilePx.m_y >> 5;
+        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 cellObj;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -3725,11 +3726,14 @@ void CGrunt::XferName(char*) {
         } else if (onMoveTile != 0) {
             if (flags & 0x100) {
                 if (m_coordToggle == 0) {
-                    RunMoveConfig(m_lastTilePx.m_x >> 5, m_lastTilePx.m_y >> 5);
+                    RunMoveConfig(
+                        m_lastTilePx.m_x >> TILE_SHIFT_PX,
+                        m_lastTilePx.m_y >> TILE_SHIFT_PX
+                    );
                     return;
                 }
             } else if (m_coordToggle != 0) {
-                RunMoveConfig(m_lastTilePx.m_x >> 5, m_lastTilePx.m_y >> 5);
+                RunMoveConfig(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
                 return;
             }
         }
@@ -3748,8 +3752,8 @@ void CGrunt::XferName(char*) {
 
         {
 
-            i32 ptx = m_lastTilePx.m_x >> 5;
-            i32 pty = m_lastTilePx.m_y >> 5;
+            i32 ptx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+            i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 cx = ptx;
             if (cx < 0) {
@@ -3919,8 +3923,8 @@ afterTile:
             if (hp <= 5 && hp > 0 && (m_arrivalState == 2 || m_arrivalState == 3)) {
                 if (static_cast<u32>(m_dwell) > 0x3e8) {
 
-                    i32 baseRow = sy >> 5;
-                    i32 baseCol = sx >> 5;
+                    i32 baseRow = sy >> TILE_SHIFT_PX;
+                    i32 baseCol = sx >> TILE_SHIFT_PX;
                     i32 wanderRow = rand() % 6 + baseRow - 3;
                     i32 wanderCol = rand() % 6 + baseCol - 3;
                     TileSwitch(wanderCol, wanderRow, 0, m_arrivalFlags, 0, 0);
@@ -3931,8 +3935,8 @@ afterTile:
         }
         {
 
-            i32 col5 = m_defenderPx.m_x >> 5;
-            i32 row5 = m_defenderPx.m_y >> 5;
+            i32 col5 = m_defenderPx.m_x >> TILE_SHIFT_PX;
+            i32 row5 = m_defenderPx.m_y >> TILE_SHIFT_PX;
             i32 reach = m_defenderRadius + m_reachRect.right;
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
@@ -4407,15 +4411,15 @@ void CGrunt::AdvanceMotion() {
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
                 && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
-                m_entrancePx.m_x = (co->m_x << 5) + 0x10;
-                m_entrancePx.m_y = (co->m_y << 5) + 0x10;
+                m_entrancePx.m_x = (co->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
+                m_entrancePx.m_y = (co->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
                 m_coordRetryCount = 0;
                 StepEntranceReinit();
             } else if (m_coordRetryCount <= 5) {
                 if (PathScan() != 0) {
                     Coord* h2 = (CoordHead())->m_coord;
-                    m_entrancePx.m_x = (h2->m_x << 5) + 0x10;
-                    m_entrancePx.m_y = (h2->m_y << 5) + 0x10;
+                    m_entrancePx.m_x = (h2->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
+                    m_entrancePx.m_y = (h2->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
                     if (CoordCount() != 0) {
                         Coord* h3 = (CoordHead())->m_coord;
                         i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
@@ -4478,8 +4482,8 @@ void CGrunt::AdvanceMotion() {
                         if (other == NULL) {
                             result = 0;
                         } else {
-                            i32 x = (other->m_object->m_screenX & ~0x1f) + 0x10;
-                            i32 y = (other->m_object->m_screenY & ~0x1f) + 0x10;
+                            i32 x = (other->m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                            i32 y = (other->m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;
@@ -4523,8 +4527,8 @@ void CGrunt::AdvanceMotion() {
                         if (other == NULL) {
                             result = 0;
                         } else {
-                            i32 x = (other->m_object->m_screenX & ~0x1f) + 0x10;
-                            i32 y = (other->m_object->m_screenY & ~0x1f) + 0x10;
+                            i32 x = (other->m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                            i32 y = (other->m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;

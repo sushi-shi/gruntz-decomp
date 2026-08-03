@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Wap32/TileGeometry.h>
 
 struct CVariantSlot;
 class istream;
@@ -63,7 +64,7 @@ public:
             return 0;
         }
         const u32* words = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
-        return (words[idx >> 5] & (1 << (idx & 0x1f))) != 0;
+        return (words[idx >> TILE_SHIFT_PX] & (1 << (idx & TILE_MASK_PX))) != 0;
     }
 
     zBitVec* Set(u32 idx) {
@@ -71,7 +72,7 @@ public:
             return SetBit(idx);
         }
         u32* words = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
-        words[idx >> 5] |= 1 << (idx & 0x1f);
+        words[idx >> TILE_SHIFT_PX] |= 1 << (idx & TILE_MASK_PX);
         return this;
     }
 };

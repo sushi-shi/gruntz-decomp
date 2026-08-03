@@ -12,6 +12,7 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 
 // @early-stop
 RVA(0x00110570, 0xfb)
@@ -22,8 +23,8 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     g2->m_tileGrid[g2->m_colOffsets[m_tileY] + m_tileX] = v;
     g_gameReg->m_tileGrid->ComputeCellFlags(m_tileX, m_tileY, v);
 
-    i32 px = (m_tileX << 5) + 0x10;
-    i32 py = (m_tileY << 5) + 0x10;
+    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
         && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
@@ -53,8 +54,8 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     g2->m_tileGrid[g2->m_colOffsets[m_tileY] + m_tileX] = v;
     g_gameReg->m_tileGrid->ComputeCellFlags(m_tileX, m_tileY, v);
 
-    i32 px = (m_tileX << 5) + 0x10;
-    i32 py = (m_tileY << 5) + 0x10;
+    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
         && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;

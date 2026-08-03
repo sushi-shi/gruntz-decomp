@@ -10,6 +10,7 @@
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 #include <Wap32/Rect.h>
+#include <Wap32/TileGeometry.h>
 
 #include <new>
 #include <stdlib.h>
@@ -65,8 +66,8 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             CMapMgr* grid = m_board;
             Coord tp;
             g->GetScreenPos(static_cast<Coord*>(&tp));
-            i32 cx = tp.m_x >> 5;
-            i32 cy = tp.m_y >> 5;
+            i32 cx = tp.m_x >> TILE_SHIFT_PX;
+            i32 cy = tp.m_y >> TILE_SHIFT_PX;
             RECT box;
             box.left = cx - 5;
             box.top = cy - 5;

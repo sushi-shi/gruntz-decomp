@@ -12,6 +12,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Ints.h>
 #include <Wap32/Rect.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
 #include <math.h>
@@ -66,8 +67,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         Coord tp;
         g->GetScreenPos(&tp);
         CGrunt* nb = FindIdleGruntInBox(
-            tp.m_x >> 5,
-            tp.m_y >> 5,
+            tp.m_x >> TILE_SHIFT_PX,
+            tp.m_y >> TILE_SHIFT_PX,
             m_defenderSearchRadiusX,
             m_defenderSearchRadiusY
         );
@@ -81,8 +82,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->GetScreenPos(&gp);
             nb->GetScreenPos(&np2);
             g->GetScreenPos(&gp2);
-            i32 dist =
-                iabs((np2.m_y >> 5) - (gp2.m_y >> 5)) + iabs((np2.m_x >> 5) - (gp2.m_x >> 5));
+            i32 dist = iabs((np2.m_y >> TILE_SHIFT_PX) - (gp2.m_y >> TILE_SHIFT_PX))
+                       + iabs((np2.m_x >> TILE_SHIFT_PX) - (gp2.m_x >> TILE_SHIFT_PX));
             if (dist <= 0xa) {
 
                 Coord b0, b1, b2, b3;
@@ -92,10 +93,10 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 g->GetScreenPos(&b3);
                 CMapMgr* grid = m_board;
                 RECT box;
-                box.left = (b0.m_x >> 5) - 5;
-                box.top = (b1.m_y >> 5) - 5;
-                box.right = (b2.m_x >> 5) + 5;
-                box.bottom = (b3.m_y >> 5) + 5;
+                box.left = (b0.m_x >> TILE_SHIFT_PX) - 5;
+                box.top = (b1.m_y >> TILE_SHIFT_PX) - 5;
+                box.right = (b2.m_x >> TILE_SHIFT_PX) + 5;
+                box.bottom = (b3.m_y >> TILE_SHIFT_PX) + 5;
                 RECT gb;
                 static_cast<RECT*>(new (&gb) CRect(0, 0, grid->m_width, grid->m_height));
                 if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
@@ -106,7 +107,14 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             }
             Coord p;
             nb->GetScreenPos(&p);
-            if (g->TileSwitch(p.m_x >> 5, p.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
+            if (g->TileSwitch(
+                    p.m_x >> TILE_SHIFT_PX,
+                    p.m_y >> TILE_SHIFT_PX,
+                    0,
+                    0x20000dc7,
+                    0,
+                    0
+                )) {
                 g->m_defenderState = AISTATE_ATTACK;
                 g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
                 g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
@@ -184,7 +192,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         g->GetScreenPos(&c1);
         cur->GetScreenPos(&c2);
         g->GetScreenPos(&c3);
-        i32 dist2 = iabs((c0.m_y >> 5) - (c1.m_y >> 5)) + iabs((c2.m_x >> 5) - (c3.m_x >> 5));
+        i32 dist2 = iabs((c0.m_y >> TILE_SHIFT_PX) - (c1.m_y >> TILE_SHIFT_PX))
+                    + iabs((c2.m_x >> TILE_SHIFT_PX) - (c3.m_x >> TILE_SHIFT_PX));
         if (dist2 <= 0xa) {
             Coord d0, d1, d2, d3;
             g->GetScreenPos(&d0);
@@ -193,10 +202,10 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->GetScreenPos(&d3);
             CMapMgr* grid = m_board;
             RECT box;
-            box.left = (d0.m_x >> 5) - 5;
-            box.top = (d1.m_y >> 5) - 5;
-            box.right = (d2.m_x >> 5) + 5;
-            box.bottom = (d3.m_y >> 5) + 5;
+            box.left = (d0.m_x >> TILE_SHIFT_PX) - 5;
+            box.top = (d1.m_y >> TILE_SHIFT_PX) - 5;
+            box.right = (d2.m_x >> TILE_SHIFT_PX) + 5;
+            box.bottom = (d3.m_y >> TILE_SHIFT_PX) + 5;
             RECT gb;
             static_cast<RECT*>(new (&gb) CRect(0, 0, grid->m_width, grid->m_height));
             if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
@@ -207,7 +216,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         }
         Coord cp;
         cur->GetScreenPos(&cp);
-        if (!g->TileSwitch(cp.m_x >> 5, cp.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
+        if (!g->TileSwitch(cp.m_x >> TILE_SHIFT_PX, cp.m_y >> TILE_SHIFT_PX, 0, 0x20000dc7, 0, 0)) {
             g->m_arrivalCell.m_x = -1;
             g->m_arrivalCell.m_y = -1;
             g->m_defenderState = AISTATE_SEEK;

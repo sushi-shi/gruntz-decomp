@@ -41,6 +41,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 #include <Wwd/MoveMode.h>
@@ -186,10 +187,10 @@ i32 CProjectile::LoadProjectileSprites(
 ) {
     CString key;
     m_srcRow = a;
-    m_targetX = (sx & ~0x1f) + 0x10;
+    m_targetX = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_srcCol = b;
     m_kind = kind;
-    m_targetY = (sy & ~0x1f) + 0x10;
+    m_targetY = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_targetId = t0;
     m_ownerId = t1;
 
@@ -234,11 +235,11 @@ i32 CProjectile::LoadProjectileSprites(
                 g_buteMgr.GetDwordDef("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = 0;
-            i32 ddx = (m_targetX >> 5) - (owner->m_screenX >> 5);
+            i32 ddx = (m_targetX >> TILE_SHIFT_PX) - (owner->m_screenX >> TILE_SHIFT_PX);
             if (ddx < 0) {
                 ddx = -ddx;
             }
-            i32 ddy = (m_targetY >> 5) - (owner->m_screenY >> 5);
+            i32 ddy = (m_targetY >> TILE_SHIFT_PX) - (owner->m_screenY >> TILE_SHIFT_PX);
             if (ddy < 0) {
                 ddy = -ddy;
             }
@@ -515,8 +516,8 @@ void CProjectile::AdvanceMotion() {
     if (m_kind != PICKUP_WINGZ) {
         CGruntzMgr* reg = g_gameReg;
         CMapMgr* plane = reg->m_tileGrid;
-        i32 tileX = m_targetX >> 5;
-        i32 tileY = m_targetY >> 5;
+        i32 tileX = m_targetX >> TILE_SHIFT_PX;
+        i32 tileY = m_targetY >> TILE_SHIFT_PX;
         u32 flags;
         if (static_cast<u32>(tileX) >= static_cast<u32>(plane->m_width)
             || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_height)) {
@@ -982,8 +983,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
         m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = 0;
     }
-    i32 cx = m_object->m_screenX >> 5;
-    i32 cy = m_object->m_screenY >> 5;
+    i32 cx = m_object->m_screenX >> TILE_SHIFT_PX;
+    i32 cy = m_object->m_screenY >> TILE_SHIFT_PX;
     CMapMgr* g = g_gameReg->m_tileGrid;
     if (cx < g->m_width && cy < g->m_height) {
         BrickzCell* row = g->m_rows[cy];
@@ -994,8 +995,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
 
 static inline i32 TBombGridCell(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> 5;
-    i32 cy = obj->m_screenY >> 5;
+    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
+    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
         BrickzCell* row = g->m_rows[cy];
@@ -1005,8 +1006,8 @@ static inline i32 TBombGridCell(CGameObject* obj) {
 }
 static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> 5;
-    i32 cy = obj->m_screenY >> 5;
+    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
+    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
         BrickzCell* row = g->m_rows[cy];

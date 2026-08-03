@@ -23,6 +23,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
@@ -85,14 +86,14 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
     }
 
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (m_object->m_sortKey != 0) {
         m_object->m_sortKey = 0;
         m_object->m_flags |= 0x20000;
     }
-    m_tileCol = m_object->m_screenX >> 5;
-    m_tileRow = m_object->m_screenY >> 5;
+    m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
+    m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
     m_object->m_health = 0;
     switch (g_gameReg->m_curState->m_levelType) {
         case AREA_TROUBLE_IN_THE_TROPICZ:

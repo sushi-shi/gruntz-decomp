@@ -40,6 +40,7 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 #include <Wwd/AnimWorkerAct.h>
 
@@ -420,8 +421,8 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_stateFlags |= 1;
 
     CWwdGameObjectA* o = m_object;
-    i32 tileX = o->m_screenX >> 5;
-    i32 tileY = o->m_screenY >> 5;
+    i32 tileX = o->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = o->m_screenY >> TILE_SHIFT_PX;
     o->m_speedX = tileX;
     o->m_speedY = tileY;
     o->m_id = (tileX << 8) + tileY;
@@ -468,8 +469,8 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_stateFlags |= 1;
 
     CWwdGameObjectA* o = m_object;
-    i32 tileX = o->m_screenX >> 5;
-    i32 tileY = o->m_screenY >> 5;
+    i32 tileX = o->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = o->m_screenY >> TILE_SHIFT_PX;
     o->m_speedX = tileX;
     o->m_speedY = tileY;
     o->m_id = (tileX << 8) + tileY;

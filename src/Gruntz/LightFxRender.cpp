@@ -20,6 +20,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 
 #include <ddraw.h>
 
@@ -263,10 +264,10 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 
     RECT* vr = &m_world->m_level->m_mainPlane->m_viewRect;
     RECT box;
-    box.left = vr->left >> 5;
-    box.top = vr->top >> 5;
-    box.right = vr->right >> 5;
-    box.bottom = vr->bottom >> 5;
+    box.left = vr->left >> TILE_SHIFT_PX;
+    box.top = vr->top >> TILE_SHIFT_PX;
+    box.right = vr->right >> TILE_SHIFT_PX;
+    box.bottom = vr->bottom >> TILE_SHIFT_PX;
     if (m_scale != 1) {
 
         box.left *= m_scale;

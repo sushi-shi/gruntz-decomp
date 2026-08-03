@@ -9,6 +9,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/TileGeometry.h>
 
 // @early-stop
 RVA(0x00077790, 0x630)
@@ -269,8 +270,8 @@ RVA(0x00077df0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
-    i32 tileX = w->m_lastTilePx.m_x >> 5;
-    i32 tileY = w->m_lastTilePx.m_y >> 5;
+    i32 tileX = w->m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 tileY = w->m_lastTilePx.m_y >> TILE_SHIFT_PX;
     CGrunt** rowPtr = m_grid;
     for (i32 i = 0; i < 4; i++) {
         if (i != w->m_tileOwnerHi) {
@@ -279,8 +280,8 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
             do {
                 CGrunt* cell = *colPtr;
                 if (cell && cell->m_entranceCommitted != 0 && cell->m_gruntKind != GRUNT_GHOST) {
-                    i32 dx = (cell->m_object->m_screenX >> 5) - tileX;
-                    i32 dy = (cell->m_object->m_screenY >> 5) - tileY;
+                    i32 dx = (cell->m_object->m_screenX >> TILE_SHIFT_PX) - tileX;
+                    i32 dy = (cell->m_object->m_screenY >> TILE_SHIFT_PX) - tileY;
                     i32 dist = dx * dx + dy * dy;
                     if (dist < bestDist) {
                         best = cell;
@@ -293,8 +294,8 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
         rowPtr += 15;
     }
     i32 k = w->m_reachRect.right + w->m_defenderRadius + 1;
-    i32 px = w->m_object->m_screenX >> 5;
-    i32 py = w->m_object->m_screenY >> 5;
+    i32 px = w->m_object->m_screenX >> TILE_SHIFT_PX;
+    i32 py = w->m_object->m_screenY >> TILE_SHIFT_PX;
     RECT rc;
     rc.left = px - k;
     rc.top = py - k;
@@ -302,8 +303,8 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     rc.bottom = py + k + 1;
     if (best) {
         POINT pt;
-        pt.x = best->m_object->m_screenX >> 5;
-        pt.y = best->m_object->m_screenY >> 5;
+        pt.x = best->m_object->m_screenX >> TILE_SHIFT_PX;
+        pt.y = best->m_object->m_screenY >> TILE_SHIFT_PX;
         if (!PtInRect(&rc, pt)) {
             best = NULL;
         }

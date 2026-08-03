@@ -14,6 +14,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Wap32/TileGeometry.h>
 
 #include <string.h>
 
@@ -216,8 +217,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             goto finalize;
 
         case DEATH_QUICKFALL:
-            m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-            m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+            m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+            m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
             );
@@ -233,8 +234,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
         case DEATH_FALL: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            i32 attr =
-                ((grid->m_rowInts[m_object->m_screenY >> 5]))[(m_object->m_screenX >> 5) * 7 + 4];
+            i32 attr = ((
+                grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX]
+            ))[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = static_cast<CAniElement*>(
@@ -245,8 +247,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                     m_object->m_sortKey = -1;
                     m_object->m_flags |= 0x20000;
                 }
-                m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-                m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+                m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
             } else {
                 m_poseDeath = static_cast<CAniElement*>(
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_FALL)
@@ -262,8 +264,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
         case DEATH_FALL2: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            i32 attr =
-                ((grid->m_rowInts[m_object->m_screenY >> 5]))[(m_object->m_screenX >> 5) * 7 + 4];
+            i32 attr = ((
+                grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX]
+            ))[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = static_cast<CAniElement*>(
@@ -274,8 +277,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                     m_object->m_sortKey = -1;
                     m_object->m_flags |= 0x20000;
                 }
-                m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-                m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+                m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
             } else {
                 void* out_ob = 0;
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(

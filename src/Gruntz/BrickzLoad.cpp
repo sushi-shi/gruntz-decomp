@@ -16,6 +16,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <stdlib.h>
@@ -398,8 +399,8 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     while (obj != NULL) {
 
         if (obj->m_animWorker->m_notify == &CreateExitTrigger) {
-            i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & 0x1f)) >> 5;
-            i32 tileY = (obj->m_screenY + (obj->m_screenY >> 31 & 0x1f)) >> 5;
+            i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & TILE_MASK_PX)) >> TILE_SHIFT_PX;
+            i32 tileY = (obj->m_screenY + (obj->m_screenY >> 31 & TILE_MASK_PX)) >> TILE_SHIFT_PX;
             for (i32 xo = -1; xo < 2; xo++) {
                 for (i32 yo = -1; yo < 2; yo++) {
 
