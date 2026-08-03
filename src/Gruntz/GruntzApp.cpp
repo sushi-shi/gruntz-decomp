@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzWnd.h>
 #include <Net/NetLobby.h>
@@ -14,7 +15,6 @@
 
 typedef enum GruntzAppResId {
     IDC_ERROR_TEXT = 0x40d,
-    IDS_DEFAULT_ERROR = 0x8009,
 } GruntzAppResId;
 
 VTBL(CGruntzApp, 0x001e9ab4);

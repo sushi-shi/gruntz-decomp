@@ -80,6 +80,10 @@ public:
 
     void Post(i32 code);
     i32 SaveGameAs();
+    // wParam is an ErrorStringId (a string-table resource id - ShowError feeds
+    // it to LoadStringA); lParam is a bare per-call-site tag that ShowError
+    // prints verbatim as "(%i)", so it has no domain. See ErrorStringId.h for
+    // the CMD_*/IDS_* conflation the call sites currently carry.
     void ReportError(WPARAM wParam, LPARAM lParam);
 
     void XorLiveObjectFlags(i32 mask);

@@ -135,6 +135,7 @@ include/Gruntz/DrawDebugStats.h	pending
 include/Gruntz/DroppedObject.h	pending	
 include/Gruntz/DroppedObjectShadow.h	pending	
 include/Gruntz/EnemyAiType.h	pending	
+include/Gruntz/ErrorStringId.h	pending	
 include/Gruntz/ExitTrigger.h	pending	
 include/Gruntz/Explosion.h	pending	
 include/Gruntz/EyeCandy.h	pending	
