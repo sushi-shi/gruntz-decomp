@@ -255,6 +255,7 @@ include/Gruntz/RandomAmbientSound.h	pending
 include/Gruntz/RangeSet.h	pending	
 include/Gruntz/Resolution.h	pending	
 include/Gruntz/ResolveNode.h	pending	
+include/Gruntz/RockNeighborMask.h	pending	
 include/Gruntz/RollingBall.h	pending	
 include/Gruntz/SBI_GruntMachine.h	pending	
 include/Gruntz/SBI_Image.h	pending	

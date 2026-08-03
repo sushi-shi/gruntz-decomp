@@ -45,6 +45,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Random.h>
+#include <Gruntz/RockNeighborMask.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -1218,37 +1219,45 @@ nudgeTarget:
     if (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 4] != 0x21) {
         goto nudgeDone;
     }
-    free4 = (g_gameReg->m_tileGrid->m_rowInts[tileY + 1][tileX * 7 + 4] == 0x21) ? 1 : 0;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY - 1][tileX * 7 + 4] == 0x21) ? 2 : 0;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 11] == 0x21) ? 4 : 0;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 - 3] == 0x21) ? 8 : 0;
+    free4 = (g_gameReg->m_tileGrid->m_rowInts[tileY + 1][tileX * 7 + 4] == TILEKIND_GIANT_ROCK)
+                ? ROCKADJ_BELOW
+                : 0;
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY - 1][tileX * 7 + 4] == TILEKIND_GIANT_ROCK)
+                 ? ROCKADJ_ABOVE
+                 : 0;
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 11] == TILEKIND_GIANT_ROCK)
+                 ? ROCKADJ_RIGHT
+                 : 0;
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 - 3] == TILEKIND_GIANT_ROCK)
+                 ? ROCKADJ_LEFT
+                 : 0;
     switch (free4) {
-        case 5:
+        case ROCKADJ_RIGHT | ROCKADJ_BELOW:
             tileX++;
             tileY++;
             break;
-        case 6:
+        case ROCKADJ_RIGHT | ROCKADJ_ABOVE:
             tileX++;
             tileY--;
             break;
-        case 7:
+        case ROCKADJ_RIGHT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
             tileX++;
             break;
-        case 9:
+        case ROCKADJ_LEFT | ROCKADJ_BELOW:
             tileX--;
             tileY++;
             break;
-        case 10:
+        case ROCKADJ_LEFT | ROCKADJ_ABOVE:
             tileX--;
             tileY--;
             break;
-        case 11:
+        case ROCKADJ_LEFT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
             tileX--;
             break;
-        case 13:
+        case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_BELOW:
             tileY++;
             break;
-        case 14:
+        case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_ABOVE:
             tileY--;
             break;
         default:
