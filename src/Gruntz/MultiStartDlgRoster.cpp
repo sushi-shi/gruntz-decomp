@@ -23,6 +23,8 @@ DATA(0x0024bdcc)
 i32 g_watchBlinkB;
 
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Net/KeyedList.h>
 
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
@@ -955,6 +957,10 @@ i32 CMultiStartDlg::DestroyWindow() {
     return CWnd::DestroyWindow();
 }
 
+RVA(0x000c5280, 0x49)
+CKeyedList::~CKeyedList() {
+    Clear();
+}
 RVA(0x000c52f0, 0x43)
 void CMultiStartDlg::EchoLatencySettings() {
     char buf[128];

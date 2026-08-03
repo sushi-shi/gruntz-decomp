@@ -160,3 +160,378 @@ documented it in place (`Grunt.h:881`, `Projectile.h:77`, `PathHazard.cpp:232`,
 `ActionArea.h:25`, `SpotLight.h`, `Teleporter.h`, ...). Fixing the base arity would let
 every one become a real `OVERRIDE` and delete its placeholder. The sites are almost all
 declared-only, so the blast radius is small; it needs one lane that owns UserLogic.h.
+
+---
+
+## Per-unit partition notes (migrated out of `config/units.toml`, 2026-08-03)
+
+These were inline comments in the manifest. They are **archaeology**, not build
+configuration: why a TU exists, was split out of a conflation, or absorbed another.
+They moved here because `config/units.toml` is machine-edited in bulk (profile
+renames, flag sweeps) and prose in its `[[unit]]` blocks both rots and sits in the
+blast radius - a comment-stripping pass ate the `[build]`/`[flags]` tables and four
+whole unit blocks the day this was written. The manifest is now pure data.
+
+**Stale-by-construction warning:** these predate the 2026-08-03 profile rename, so
+references to `flags="base"` / `"eh"` / `"mfc"` name profiles that no longer exist
+(the set is now `c` / `cpp` / `cpp-rtti`; see `docs/linker-flags.md` for why).
+
+### sbi_rectonlybase
+The thin RTTI CSBI_RectOnly intermediate's own obj (dossier #16): slot-2 Setup @0xe86e0.
+
+### sbi_tabzdialog_eh
+CTabzBuilder::BuildTabzDialog (0x10a340) - its own retail obj, un-merged back out of
+SBI_RectOnly.cpp. It needs the OUT-OF-LINE CStatusBarItem base ctor (retail emits
+`call ??0CStatusBarItem`) while SBI_RectOnly.cpp's builders need the INLINE one, and
+MSVC5 has exactly one base-ctor spelling per TU - so they cannot share a TU.
+
+### sbi_sidetab_build
+--- the rest of the wave1-E (c62cfaf8d) one-file merge, un-merged (2026-07-13) ---
+A TU is the unit of BOTH MSVC5's /O2 budget and its compiler flags. Two of these were
+flags="base" (no /GX) yet had been folded into the flags="eh" SBI_RectOnly.cpp, which
+cannot be right: one TU compiles with one flag set.
+
+### sbi_imagesetani
+CSBI_ImageSetAni::Serialize (0xe7cd0), the frameless slot-1 serialize re-attributed
+from SBI_WarlordHead.cpp (vtable proof: slot 1 = thunk 0x2829, shared w/ StatzTabArrow).
+
+### triggermgrgrid
+CTriggerMgr grid/placement obj [0x6b640..0x6eb25] - split off the triggermgr
+conflation (own init-frag run 10@0x6b370; original filename unknown).
+
+### triggermgrhittest
+CTriggerMgr hit-test/probe obj [0x759e0..0x75e1a] - split off the triggermgr
+conflation (tail of the unreconstructed FUN_6f2f0 megafn's TU).
+
+### menuitem
+ONE original TU (dossier 0x1832d0: MenuItem.cpp [0x185460..0x185a0e]): absorbed menuitem2.
+
+### ingameicon
+ONE original TU (wave3-J): the 0x095b10-0x099b46 text is an I-T-I sandwich +
+contiguous private-.data extents; absorbs the ex ingametext unit.
+
+### statusbartabbuilders
+ONE original /GX TU (dossier 0x0e8a70-0x0ea3ea): absorbed sbi_gruntmachine +
+sbi_sidetab + the SetDirection seam pair (ex statusbarmgr).
+
+### projectile
+ONE original TU (wave3-J): the 0x0dec60-0x0e2213 text is a P-T-P sandwich +
+contiguous private-.data extents; absorbs the ex timebomb unit.
+
+### gamelevelmove
+The movement/collision-resolution module (original TU at 0x167130-0x168276,
+bracketed by the ImageSet TU before and CWwdSpatialMgr after; filename unknown -
+candidates Move.cpp/Collide.cpp). CGameLevel's methods span several original
+files; these 12 movement fns are birth-positioned in their own obj (wave1-C).
+
+### levelplane
+The plane/render module (original TU at [0x161350..0x163a00], @identity-TODO;
+interval dossier 0x15ccd0, wave1-C): CLevelPlane + CPlaneRender + the WwdFile
+plane methods (RebuildPlanes/ReadPlaneObjects) + the CImageSet3-helper and
+CDDrawWorkerHost bodies woven into that range. The imageset1/2/3g TUs below
+carry the CImageSet variant records' out-of-line bodies; their vtables are
+still emitted (and VTBL-bound) in gamelevel via ReadImageSet's `new CImageSetN`.
+
+### imageset3g
+imageset3g: the small (size-0x18) CImageSet3 variant record's bodies. Named
+distinctly from the existing `imageset3` unit (src/Image/ImageSet3.cpp), which
+models a DIFFERENT grid-owning object under the same reconstruction name.
+
+### savegame
+ONE original TU (wave3-J): the 0x0e3690 interval's savegame+levelinfodlg text is
+an L-S-L-S sandwich + contiguous private-.data extents; absorbs the ex
+levelinfodlg + savegamemenu units (DrawSaveGameMenu 0xe3f40 is text-contained).
+
+### fileimage
+wave4-K: the 0x143cf0-0x145dff surface file-CODEC obj (dossier #14I; original
+name unknown - no __FILE__ anchor; a DIRFILE.CPP-like DDrawMgr sibling).
+
+### gruntzmgr
+ONE original TU: C:\Proj\Gruntz\GruntzMgr.cpp (__FILE__-anchored). wave3-J merged
+the ex playdtor+appdialogs units in (FLAGS group 0x08b8c0-0x093ce7, unified /GX).
+
+### gruntzmgr2
+CGruntzMgr::SetCellHeight (0x111ec0) - a lone CGruntzMgr retail-object contribution
+far from the GruntzMgr.cpp block (interleaved with tile-trigger-switch-logic .text).
+Same class, split into its own TU so each src file maps to one contiguous retail obj.
+
+### serializesyncmarker
+SerializeSyncMarker (0x13610) - the free WAP32 serialize round validator, a separate
+retail object far from GruntzMgr.cpp (among the CVoiceTrigger serialize .text).
+
+### butetree
+CButeTree::Find/Insert - the string-keyed crit-bit (PATRICIA) trie. No
+destructible locals -> /base (no /GX EH frame); strlen/strcmp/strcpy come from
+/O2's /Oi intrinsics.
+
+### butenode
+CButeNodeBase / CButeNodeEntry ctors (0x16df70 / 0x16dff0) - the .bute config-tree
+node base + its embedded keyed-store entry. Re-homed from src/Stub/CButeNodeBase.cpp
+into its own unit (its self-contained class model conflicts with ButeMgr.h's minimal
+CButeNodeBase decl). flags="eh" == the engine_label_stubs base+/GX it came from.
+
+### gruntassetloaders
+The mechanical CGrunt asset/sprite/tuning loaders (re-homed from ApiCallers).
+No destructible locals -> /base (no /GX EH frame).
+
+### gruntpickupload
+CGrunt::LoadPickupSprites (0x65e80) - the pickup/powerup entrance-sprite loader
+(re-homed from ApiCallers). No destructible locals -> /base.
+
+### gruntzrandom
+The MS-CRT-style LCG random helpers (0xcd00/0xcd70/0x19f50/0x15cbe0), reached
+through ILT jmp-thunks (re-homed from ApiCallers). No destructible locals -> /base.
+
+### palettesnapshot
+CDDScreen::Snapshot (0x17cd90) - system-palette capture, split out of the ex
+ResourceLoaders.cpp holding TU. Its obj-mate Apply (0x1775f0 = CImagePaletteNode)
+folded into PaletteBmp.cpp; this is a stray CDDScreen-palette method (sibling of
+PaletteReset/PaletteCopy, embedded in the DDPageMgr obj). No destructible locals -> /base.
+
+### gruntzmgrcmd
+CGruntzMgr::HandleCommand (0x862f0) - the WM_COMMAND / accelerator + cheat-code
+dispatcher (the binary's single largest function). Re-homed from the
+src/Stub/ApiCallers.cpp winapi grab-bag; a destructible /GX config-command
+local forces the EH frame -> "eh" (== engine_label_stubs' base+/GX).
+
+### serialobjectfactory
+SerialObjectFactory (0xd2a0) + its ParseSerial helper (0xd210) - the game's
+(de)serialize object dispatch, a separate obj (contiguous 0xd210-0xec24 block).
+Carved out of GruntzMgrCmd.cpp (REHOME D9); kept "eh" to preserve ParseSerial's
+exact build flags (byte-neutral - no destructible locals in either fn yet).
+
+### savefrontbuffershot
+SaveFrontBufferShot (0x114ec0) + ...Impl (0x114f00) - the front-buffer screenshot
+forwarder pair, a separate obj (0x114ec0-0x114f3e block). Carved out of
+GruntzMgrCmd.cpp (REHOME D9). No destructible locals; "eh" == its old base+/GX.
+
+### grunttargetscan
+CGrunt nearest-enemy / arrival-target scan (0xf42f0) - sibling of the three
+GruntArrivalScan steps (re-homed from ApiCallers). No destructible locals -> /base.
+
+### gruntdatarecord
+GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
+the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
+
+### boomerang
+--- src/Stub/ FULLY DRAINED + DELETED (2026-07-10): the labeled-but-unmatched
+backlog (engine_label_stubs / All.cpp) is empty; every stub was re-homed to its
+real class TU. The re-homed units below keep flags "eh" (== the old base+/GX). ---
+CBoomerang projectile ctor (0xe0650); no other CBoomerang method reconstructed
+yet, so this is the class's first/real TU.
+
+### splashstate
+CSplashState::LoadSounds (0xf9780); first/real CSplashState TU.
+
+### unknownfileioctor
+??0CFecFile emit TU: the retail copy at 0x8fea0 is gruntzmgr's COMDAT emission
+(ChangeState constructs CMoviePlayer whose m_decodeStore member is a CFecFile),
+but converting to a header inline makes our cl flatten the ctor into ChangeState
+and lose the label (inline-depth wall). Kept until that caller converges.
+
+### bootystateactivate
+CBootyState::vfunc_9 (slot 9) + CMultiBootyState::OnActivate2 (slot 8) - vtable-proven.
+
+### checkpointswitchbuild
+eh: CMultiBootyState::Render (0x1f480) has the /GX frame for its CString HUD temp.
+CCheckpointTriggerSwitchLogic slot-1 builder (0x112a50) - vtable-proven.
+
+### loadgamemenu
+GruntzLoadGameDlgProc (0x9dff0) + LoadGameCommand (0x9e390) - the "GAME_LOAD" dialog
+(load-side sibling of savegamemenu; opened by CGruntzMgr::RunLoadGameDialog).
+
+### ingametextupdate
+CInGameText::Update (0x997c0) per-frame tick - Ghidra cluster attribution.
+
+### gameinfostring
+CGameInfo::FormatGameInfoString (0x1183b0) save-game info query builder.
+
+### cspawnentry
+CSpawnEntry ctor (by-value CString name + data -> /GX); the named spawn/voice
+record (<Gruntz/SpawnList.h>, the CVoiceSound/CSpawnEntryN/CObjResNode/Obj09a260
+unification). GetName (ex-obj09a260 unit) re-homed to areamgr, its retail band.
+
+### objecttracker
+CObjectTracker per-tick game-object tracker (ex-"Obj0f7d90"); Update re-homed from Discovered.cpp.
+
+### bitstreamblowfish
+__stdcall Blowfish bit-decode loop (0x16f760), trace mis-attributed to
+ClassUnknown_4; re-homed from Discovered.cpp.
+
+### spotlight
+CSpotLight::Update (0x0b1ee0) x87 rotation re-homed from Discovered.cpp.
+
+### spotlightctor
+CSpotLight 1-arg ctor (0x0b1200); /GX EH frame (throwing CUserBaseLink base).
+
+### creditsstate
+CCreditsState (credits/attract CState leaf) + CCreditzOwner (SetupTitle), split out of
+the GameMode.cpp god-TU. eh: ~CCreditsState / DrawScrollingCredits (CString temp) /
+SetupTitle (operator new/delete + CString) carry the /GX SEH frame.
+
+### statereleaseresources
+CState::ReleaseResources (0x0fa150), the base game-state teardown (CState vtable
+slot 2's default body; ex "CGameModeBase::BaseCleanup" - that class was a this-view
+of CState, folded). Its own retail .obj (re-homed from Stub).
+
+### attract
+The attract state-services interval [0x0fa1f0..0x0fb328]: woven CAttract title/
+fade + CSoundFxEmitter + CState helpers + the CState header serialize (one obj).
+eh: CState::InputVirtual's CString splash + the draw temps carry the /GX frame.
+
+### attractstate
+CAttract state-machine CORE obj [0x013fb0..0x014819] + the COMDAT ??1 dtor
+(0x08cd90); split out of the conflated Attract.cpp (REHOME D5). The class-identity
+TU: 10 CState vtable-slot overrides + the vtable/??_G emission anchor. eh: Vslot09's
+CString format local + the ??1 EH frame.
+
+### play
+The 0x0d5960 interval is ONE original TU (dossier: one 20-frag init run; the
+channelslots frag INSIDE the play run): wave3-J folded the ex channelslots+
+gruntzplayer+gamemodeobjlifecycle units here, /GX unified.
+
+### demo
+The demo/attract feature obj [0x3bfa0..0x3dee1] (dossier #16): CDemo methods +
+demo setup/camera + bute debug editors + the anim-worker dispatch family. /GX.
+
+### rockbreakeffectupdate
+Ghidra-missed 0x476b0: per-frame rock-break effect Update (identity-TODO).
+
+### directionclassify
+Ghidra-missed 0x4a780: 8-way direction classifier (identity-TODO, FP).
+
+### bootymessages
+Booty/secret-state HUD message overlays (string-xref cluster): a destructible
+MFC CString temp per banner -> /GX exception frame.
+
+### startupprompt
+Launch CD-ROM / Spawn-Mode prompt (StartUpPrompt): two CString temps + the
+BeginWaitCursor/EndWaitCursor scope -> /GX exception frame.
+
+### gameiconflasheffect
+base -> eh (wave3-I: the 0x616e0 interval has 2 EH sites)
+
+### donothing
+eh: ~CMenuState / ReleaseResources (operator delete + ~CChatBox) / BuildVersionString
+(CString temp) carry the /GX SEH frame; the base dialog helpers are unwind-free (neutral).
+
+### secretteleportertrigger
+ONE original TU (wave3-J): the 0x041e90-0x042cd3 text is a T-L-T sandwich
+(adjacent frag run i40/i41); absorbs the ex secretleveltrigger unit.
+
+### leafcueplay
+Foreign lone methods carved out of ddrawsubmgr (operation REHOME D8): LeafCue and
+CQueueDrainHost sit ~1.2 MB before the DDraw submgr block - each its own obj.
+
+### ddrawptrcollections
+wave4-K: now the 0x148840-0x148cd8 surface-extras pocket obj only (dossier #14);
+the in-band 0x141cc0-0x143c20 pool/factory methods live in DirectDrawMgr.cpp
+(the DDRAWMGR.CPP obj). Unit name kept for delinker packing.
+
+### ddpalette
+ONE original TU: C:\Proj\DDrawMgr\DIRPAL.CPP (__FILE__-anchored; wave3-J merge of
+the ex ddpalette+dirpal+palettelerp units + the PalLoad_1479e0 stray). Unit name
+kept "ddpalette" (unit renames disturb delinker packing).
+
+### directinputmgr2
+TWO original files (__FILE__-anchored; wave1-E split at 0x134cb0): DinMgr2.cpp
+(absorbed fixedptrarray32) + InputDevice.cpp below.
+
+### directsoundmgr
+The two original Dsndmgr TUs (docs/exe-map/interval-dossiers.md, split @0x137330):
+directsoundmgr == C:\Proj\Dsndmgr\DSNDMGR.CPP (absorbed sounddevice, dsoundvoice,
+gruntcmdpercent, statusbarmgrgetitem + the DSoundList::RemoveMatching /
+WAVE-resource seam re-homes); soundstream == C:\Proj\Dsndmgr\DSndMgSR.cpp
+(absorbed streamfeeder, streamvoice, soundstreamfree, soundstreamteardown +
+TickSubManagers + the error-reporting tail).
+
+### soundvoicelist
+The five 0x1390e0+ list primitives - a separate retail obj PAST the DSndMgSR.cpp
+interval end (0x13848b), so it stays its own unit (RemoveMatching @0x136f60 moved
+to directsoundmgr, whose obj span owns it).
+
+### chatbox_eh
+eh: /GX is what makes Clear CALL the header-inline ~CMenuPage instead of
+folding it (the inliner declines to create an EH frame in a frameless fn) and
+what emits the standalone ??1 COMDAT this obj contributes at 0x183250 (retail
+link position: right after HitTest2 0x183230, before menupage's GetKey).
+Lone dissenter: Find (0x182be0) destructs a CString temp with NO fs:0 frame
+in retail (non-/GX shape) - see the @early-stop on Find (suspected retail TU
+split around it; /O1 disproven empirically - mass craters).
+
+### frontcandyani
+ONE original TU (wave3-J): the 0x0abfa0-0x0ad527 text is an F-E-F sandwich
+(frontcandyani frag @0xad110 in the tail); absorbs the ex eyecandyani unit.
+
+### ddrawblterrthunk
+/GX: retail's RemoveAll CALLS ??_M (the `eh vector destructor iterator') and Construct
+calls ??_P + carries the EH try-frame those throwing iterators need. cl only emits the
+??_M/??_P forms under /GX - without it, an array delete/new lowers to a plain inline
+loop (no EH frame), which is what this unit used to produce. So retail compiled this TU
+with exception handling on.
+
+### ddpagemgr
+/GX: AddFile/ExtractArchive have destructible CFile/CString locals (retail's SEH
+frame). Neutral for the frameless leaf methods (no destructible locals).
+
+### netlobbydialogs
+NetMgr lobby / in-game network DialogProcs + their init helpers, re-homed from
+src/Stub/ApiCallers.cpp. A destructible CString status-banner local (0xbe2f0)
+forces the /GX EH frame -> "eh" (== the engine_label_stubs base+/GX it came from).
+
+### imagepool
+ONE original TU (dossier 0x174e90-0x177476): absorbed rezimage/scanlinesurface/
+imagevflip/scanlinesurfacesave/imagerectfill. /GX (CFileIO/CFile stack dtors).
+
+### gruntstaterec
+Carved out of streamrecordloaders (operation REHOME D8): the grunt-state /
+projectile record loaders each sit at their own far-away .text block (separate objs).
+(The ex "triggerloadrec" unit is GONE: its one body 0x9bb0 was
+CActionOptionsMenuBar::Deserialize - re-homed into actionoptionsmenubar,
+whose obj it retail-contiguously ends.)
+
+### bsecobj10fctor
+The CButeSection ctor (0x170210) has 8 destructible embedded members (CString +
+CButeNode streams) -> /GX EH frame + 8-trylevel member-unwind state machine.
+
+### spotlightactreg
+CBSecObj10f::CBSecObj10f (0x16f680) - orphan 3-byte empty-ctor COMDAT (returns this);
+dedicated 1-fn TU so CButeSection's ctor CALL binds to the real RVA.
+LogicActRegistrars.cpp + LogicActReg.cpp DRAINED + DELETED (REHOME D1): each was a
+pure holding TU conflating unrelated per-class activation registrars. Each
+Construct+Register pair split into its own RVA-block .cpp, named by the CRACKED
+owner class where the xref pinned it (registry table -> the class that walks it):
+0x646188 -> CSpotLight       (SpotLightActReg.cpp)
+0x646250 -> CPathHazard      (PathHazardActReg.cpp)
+0x6514d8 -> CGruntVoice      (GruntVoiceActReg.cpp)
+0x62bfa0 -> CCursorSnapSprite (CursorSnapActReg.cpp)
+0x646010 -> uncracked (scattered leaf pool) -> LogicActReg646010.cpp
+
+### arrayserialize
+eh: the retail-kept ??1?$CArray@PAUPLAYLISTINFOSTRUCT... COMDAT (0x39f20) carries a
+/GX EH frame (push -1 / push 0x5d9b08 / fs:0), so the instantiation host compiles /GX.
+
+### titleappstart
+CTitleApp::OnStart (0xf9880) - title-sequence starter, split out of the ex
+AppHelpers.cpp holding TU. Its orphan-mates re-homed to their real objs: Handle
+(0xb4cb0) -> CUFO::Method_b4cb0 in Ufo.cpp; Unmatched_be030 (0xbe030) ->
+NetLobby::Init_2522 in LobbyDialogs.cpp. OnStart's CAttract owner is deferred
+(+0x1b8 layout conflict). No destructible locals -> /base.
+
+### wap32rect
+CRect - the WAP32 engine rectangle class (derives from tagRECT); its geometry
+methods route through the engine's Win32-API fn-pointer table (reloc-masked).
+SetRect @0x8c380 + operator= @0x115b30 re-homed from apimischelpers (were the
+RectHost_08c380/RectHost_115b30 per-fn views). No destructible locals -> /base.
+
+### debugprintf
+ONE original TU (dossier 0x1832d0 pocket, oracle-proven): absorbed rangeset.
+
+### grunttoytimesprite
+trace-discovered leaf dtors re-homed from src/Stub/Discovered.cpp (matcher-1):
+
+### customleveldlg
+matcher-3: custom-level dialog populate/select (thiscall, magic-static CString + walk).
+
+### modeobjinit
+matcher-3: game-mode/object initializer (four owned sub-objects + /GX teardown).

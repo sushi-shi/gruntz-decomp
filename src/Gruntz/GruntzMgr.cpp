@@ -6,6 +6,7 @@
 #include <MfcWin.h>
 
 #include <Bute/SymParser.h>
+#include <Crypto/FecCrypt.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -79,7 +80,9 @@
 #include <dplobby.h>
 #include <new>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 // owner-TU unproven: bss sits in the pre-gruntzmgr window (before g_buteMgr)
 DATA(0x002452d8)
@@ -724,6 +727,20 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32) {
     m_sound->StopAll();
 }
 
+// Emit TU, wall-blocked: retail's CGruntzMgr::ChangeState calls this ctor
+// out-of-line (via the inlined CMoviePlayer ctor, m_decodeStore member), and our
+// ChangeState already references it as extern - but converting the body to a
+// header inline makes our cl flatten it into ChangeState (caller-budget inline
+// divergence, docs/patterns/msvc5-variable-ctor-inline-depth.md), losing this
+// label. Dissolves into FecCrypt.h + a gruntzmgr pin when that wall breaks.
+RVA(0x0008fea0, 0x6d)
+CFecFile::CFecFile() {
+    m_openGate = 0;
+    m_readOpen = 0;
+    m_writeOpen = 0;
+    m_nextIndex = 0;
+    srand(time(0));
+}
 // @early-stop
 RVA(0x0008ff30, 0x20c)
 CString CGruntzMgr::BuildMoviePath(i32 movie) {
