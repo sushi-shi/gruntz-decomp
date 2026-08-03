@@ -4480,7 +4480,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         }
         if (mode >= 0x22) {
             unit->m_brickPickupType = static_cast<PickupType>(mode);
-            unit->m_moveMode = -1;
+            unit->m_entrancePickup = PICKUP_INVALID;
         }
         return 1;
     }

@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/LevelArea.h>
 #include <Gruntz/StaticHazard.h>
 
 #include <Bute/ButeMgr.h>
@@ -14,6 +13,7 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>

@@ -17,6 +17,8 @@
 #include <Ints.h>
 #include <Wwd/WwdObjMgr.h>
 
+GZ_ENUM_FORWARD(MoveMode);
+
 class CDDrawSurfacePair;
 class CWwdGameObject;
 class CDDrawWorker;
@@ -102,7 +104,7 @@ public:
 
     i32 m_reservede0;
 
-    i32 m_moveMode;
+    MoveMode m_moveMode;
     u32 m_objectType;
 
     i32 m_hitTypeFlags;

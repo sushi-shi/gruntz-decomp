@@ -1597,22 +1597,19 @@ i32 CGrunt::StepCombatReaction(
         } else {
             ResetEntranceAnimation(1, 0, 0);
         }
-        i32 mode = m_moveMode;
-        if (mode >= 0x32) {
-            LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
-            m_moveMode = -1;
+        PickupType mode = m_entrancePickup;
+        if (mode >= PICKUP_MEGAPHONE) {
+            LoadGruntTypeTable(mode, 1, 0, 1);
+            m_entrancePickup = PICKUP_INVALID;
             m_helpCueId = 0;
-        } else if (mode >= 0x22) {
-            // FINDING: m_moveMode is range-dispatched by PICKUP ranges here
-            // (>=0x17 Toyz, >=0x22 Brickz, >=0x32 PowerUpz), so it carries a
-            // PickupType under a movement name. Retyping it is follow-up work.
-            m_brickPickupType = static_cast<PickupType>(mode);
-            m_moveMode = -1;
-        } else if (mode >= 0x17) {
-            LoadVehicleGruntSprites(static_cast<PickupType>(mode));
+        } else if (mode >= PICKUP_BROWNBRICK) {
+            m_brickPickupType = mode;
+            m_entrancePickup = PICKUP_INVALID;
+        } else if (mode >= PICKUP_BABYWALKER) {
+            LoadVehicleGruntSprites(mode);
         } else {
-            LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
-            m_moveMode = -1;
+            LoadGruntTypeTable(mode, 1, 0, 1);
+            m_entrancePickup = PICKUP_INVALID;
         }
         goto tail;
     }

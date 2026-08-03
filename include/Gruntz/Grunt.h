@@ -287,7 +287,11 @@ public:
     PickupType m_brickPickupType;
     PickupType m_vehiclePickupType;
     PickupType m_toolId;
-    i32 m_moveMode;
+    // NOT a movement mode despite the name it was reconstructed under: every
+    // read range-dispatches it by PickupType band (>=0x17 Toyz, >=0x22 Brickz,
+    // >=0x32 PowerUpz) and casts it, and the only non-sentinel write is the
+    // PickupType handed to CGrunt::LoadPickup. -1 is PICKUP_INVALID.
+    PickupType m_entrancePickup;
     i32 m_helpCueId;
     i32 m_reserved1a8;
     i32 m_reserved1ac;

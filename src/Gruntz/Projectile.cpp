@@ -2,7 +2,6 @@
 
 #include <rva.h>
 
-#include <Gruntz/LevelArea.h>
 #include <Gruntz/Projectile.h>
 
 #include <Mfc.h>
@@ -26,6 +25,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
@@ -43,6 +43,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
+#include <Wwd/MoveMode.h>
 
 #include <math.h>
 #include <string.h>
@@ -135,7 +136,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m->m_maxStep.z = z;
     m_collisionFlags = 0;
     m_moveFlags = 0;
-    m_object->m_moveMode = 7;
+    m_object->m_moveMode = MOVE_DIRECT;
 
     CMovingLogic::AdvanceMotion();
 

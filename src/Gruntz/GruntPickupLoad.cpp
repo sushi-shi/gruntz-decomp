@@ -437,7 +437,7 @@ i32 CGrunt::LoadPickupSprites(
     }
     m_helpCueId = helpCueId;
     m_entranceActive = 1;
-    m_moveMode = IDX(type);
+    m_entrancePickup = type;
     if (m_healthSprite != 0) {
         m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;

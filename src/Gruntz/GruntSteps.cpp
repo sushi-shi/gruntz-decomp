@@ -180,7 +180,7 @@ RVA(0x00050ca0, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
 
     i32 r = LoadGruntTypeTable(static_cast<PickupType>(typeId), 0, 0, 0);
-    m_moveMode = -1;
+    m_entrancePickup = PICKUP_INVALID;
     m_helpCueId = 0;
     return r;
 }
@@ -189,7 +189,7 @@ i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
-    m_moveMode = -1;
+    m_entrancePickup = PICKUP_INVALID;
 
     CString name;
 
@@ -988,27 +988,24 @@ applyTail:
     return 1;
 
 modeDispatch: {
-    i32 mode = m_moveMode;
-    if (mode >= 0x32) {
-        LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
-        m_moveMode = -1;
+    PickupType mode = m_entrancePickup;
+    if (mode >= PICKUP_MEGAPHONE) {
+        LoadGruntTypeTable(mode, 1, 0, 1);
+        m_entrancePickup = PICKUP_INVALID;
         m_helpCueId = 0;
         return 1;
     }
-    if (mode >= 0x22) {
-        // FINDING: m_moveMode is range-dispatched by PICKUP ranges here
-        // (>=0x17 Toyz, >=0x22 Brickz, >=0x32 PowerUpz), so it carries a
-        // PickupType under a movement name. Retyping it is follow-up work.
-        m_brickPickupType = static_cast<PickupType>(mode);
-        m_moveMode = -1;
+    if (mode >= PICKUP_BROWNBRICK) {
+        m_brickPickupType = mode;
+        m_entrancePickup = PICKUP_INVALID;
         return 1;
     }
-    if (mode >= 0x17) {
-        LoadVehicleGruntSprites(static_cast<PickupType>(mode));
+    if (mode >= PICKUP_BABYWALKER) {
+        LoadVehicleGruntSprites(mode);
         return 1;
     }
-    LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
-    m_moveMode = -1;
+    LoadGruntTypeTable(mode, 1, 0, 1);
+    m_entrancePickup = PICKUP_INVALID;
     return 1;
 }
 }
@@ -1321,7 +1318,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_entranceReason, 4);
     ar->Write(&m_vehiclePickupType, 4);
     ar->Write(&m_toolId, 4);
-    ar->Write(&m_moveMode, 4);
+    ar->Write(&m_entrancePickup, 4);
     ar->Write(&m_helpCueId, 4);
     ar->Write(&m_reserved1a8, 4);
     ar->Write(&m_reserved1ac, 4);

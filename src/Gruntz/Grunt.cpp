@@ -16,10 +16,10 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CurPlayer.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
@@ -46,6 +46,7 @@
 #include <Wap32/Object.h>
 #include <Wap32/Rect.h>
 #include <Wap32/zBitVec.h>
+#include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
 
 #include <math.h>
@@ -244,7 +245,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
 
     m_collisionFlags = 0;
     m_moveFlags = 0;
-    m_object->m_moveMode = 7;
+    m_object->m_moveMode = MOVE_DIRECT;
 
     CMovingLogic::AdvanceMotion();
     CGameObject* obj = static_cast<CGameObject*>(owner);
@@ -318,7 +319,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_entranceCell.direction = g_gruntMoveDirSouth.direction;
     m_startingItemId = m_object->m_powerup;
     m_recordedFrameTick = g_frameTicks;
-    m_object->m_moveMode = 1;
+    m_object->m_moveMode = MOVE_GROUNDED;
     m_reserved430 = 0;
     m_reserved42c = 0;
 
@@ -2006,7 +2007,7 @@ i32 CGrunt::Place(
     m_blockedVoicePending = 1;
     m_struckCount = 0;
     m_toyTileIndex = 0;
-    m_moveMode = -1;
+    m_entrancePickup = PICKUP_INVALID;
     m_coordRetryCount = 0;
     m_moveKind = 0;
     m_moveVariantOverride = 0;
