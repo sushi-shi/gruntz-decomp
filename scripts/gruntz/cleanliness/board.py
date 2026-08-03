@@ -327,6 +327,27 @@ METRICS = (
     ("g_*Vtbl globals", re.compile(r"\bg_\w*[Vv]tbl\w*"), False),
     ("m_vtbl/m_vptr members", re.compile(r"\bm_v(?:tbl|ptr)\w*"), False),
     # --- casts: C-style is forbidden; reinterpret_cast debt may only decrease ---
+    # --- numeric-domain metrics (docs/enum-modeling-plan.md) ---------------------
+    # A `case` label that is a bare number is an un-named member of some domain: the
+    # reader has to re-derive what the number means every time, and nothing stops one
+    # domain's value being switched on another's key. Naming it is matching-neutral
+    # (docs/patterns/enum-domains.md: literal -> enumerator leaves .text identical),
+    # so this is pure debt. Drive to 0 by declaring the domain (GZ_ENUM_*) and using
+    # its enumerators. Deliberately NOT counted: `case 0:`/`case 1:` are excluded
+    # nowhere - a two-valued switch is still a domain, and the bool-ish ones are rare
+    # enough that exempting them would hide real cases.
+    ("magic case labels", re.compile(r"^[ \t]*case[ \t]+(?:0[xX][0-9a-fA-F]+|-?[0-9]+)[ \t]*:", re.M), False),
+    # The comparison twin: `x == 0x36` where 0x36 is a domain member. `== 0` and
+    # `== 1` are EXCLUDED - those are overwhelmingly null/bool tests, not domain
+    # membership, and counting them would swamp the signal with noise.
+    ("unnamed domain compares",
+     re.compile(r"[=!]=[ \t]*(?:0[xX](?!0\b|1\b)[0-9a-fA-F]+|(?!0\b|1\b)[0-9]+)\b"), False),
+    # An enum defined inside a .cpp is fine when the domain is genuinely TU-private,
+    # but the `.cpp-local views` metric only looks at struct/class, so enums were
+    # invisible to it. A cross-TU domain stranded in one .cpp gets re-declared in the
+    # next TU that needs it - which is how this tree ended up with three spellings of
+    # the grunt/pickup id space. Ratcheted so no NEW ones appear.
+    (".cpp-local enums", re.compile(r"\bGZ_ENUM_(?:BEGIN|BEGIN_SPLIT|CONST_BEGIN|FLAGS_BEGIN)\b|^[ \t]*(?:typedef[ \t]+)?enum[ \t]+\w*[ \t]*\{", re.M), True),
     ("C-style casts", _count_c_style_casts, False),
     ("reinterpret_casts", _REINTERPRET_CAST, False),
     # The count above is raw; THIS one is the campaign's real worklist - the casts
@@ -408,6 +429,12 @@ def _caller_callee_counts() -> dict[str, int]:
 # Ratchet set: metrics that only go DOWN. The view/vtable metrics + the caller_callee
 # fake-view edge + cast counts + .cpp external declarations (owner headers only).
 _RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
+    # Numeric-domain debt: every one of these is a name nobody wrote down yet, and
+    # naming it cannot move a byte. Ratcheted at the standing count so the backlog
+    # drains and no new magic number arrives.
+    "magic case labels",
+    "unnamed domain compares",
+    ".cpp-local enums",
     "C-style casts",
     "reinterpret_casts",
     "unexplained casts",

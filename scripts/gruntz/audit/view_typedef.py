@@ -10,6 +10,12 @@ Standard SDK / CRT / integer aliases (GUID, RECT, i32, uLong, ...) are NOT views
 and are whitelisted. Template-instantiation and `typedef struct TAG NAME;` forms
 are two-token-mismatched and never matched here.
 
+`#define` BODIES are not declarations and are stripped before matching: the
+enum-domain layer (include/Enums.h) writes `typedef i32 name;` inside
+`GZ_ENUM_FLAGS_END(name, storage)`, where `name` is a macro parameter, not an
+alias of anything. Whether the EXPANSION is a view alias is a question about the
+call site, which this audit sees separately.
+
     python -m gruntz.audit.view_typedef            # report
     python -m gruntz.audit.view_typedef --ratchet  # FATAL if any alias exists
 """
@@ -19,6 +25,9 @@ import os
 import re
 
 TD = re.compile(r'^[ \t]*typedef[ \t]+([A-Za-z_]\w*)[ \t]+([A-Za-z_]\w*)[ \t]*;', re.M)
+# A `#define` and every `\`-continued line of its body. Blanked (newlines kept, so
+# any line numbers stay true) before the typedef scan.
+DEFINE = re.compile(r'^[ \t]*#[ \t]*define\b(?:[^\n]*\\\n)*[^\n]*\n', re.M)
 # aliases (RHS) that are standard names, not view relics
 KEEP_RHS = {"GUID", "RECT", "i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64",
             "uLong", "uLongf", "Bytef", "gz_size_t", "size_t", "BOOL", "DWORD",
@@ -38,7 +47,9 @@ def relics(root):
     out = []
     for h in sorted(glob.glob(os.path.join(root, "include", "**", "*.h"), recursive=True)):
         rel = os.path.relpath(h, os.path.join(root, "include"))
-        for m in TD.finditer(open(h, errors="replace").read()):
+        text = open(h, errors="replace").read()
+        text = DEFINE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+        for m in TD.finditer(text):
             real, alias = m.group(1), m.group(2)
             if real in BUILTIN_LHS or alias in KEEP_RHS:
                 continue

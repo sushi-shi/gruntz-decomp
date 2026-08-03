@@ -5,10 +5,12 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Ints.h>
 #include <Wap32/GameApp.h>
 
-enum GruntzCommand;
+GZ_ENUM_FORWARD(GruntzCommandId);
 
 class CGameApp;
 
@@ -74,7 +76,7 @@ public:
     virtual i32 IsActive();
 
     virtual i32 PerFrameTick();
-    virtual i32 HandleCommand(i32, GruntzCommand, i32);
+    virtual i32 HandleCommand(i32, GruntzCommandId, i32);
 
     void InitTimeFields(i32 reset);
     void InitializeTimeGlobal();
@@ -144,7 +146,7 @@ public:
     virtual void OnIdle();
     virtual void FreeGameManager();
 
-    virtual i32 HandleCommand(i32 notifyCode, GruntzCommand cmdId, i32 lParam);
+    virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId cmdId, i32 lParam);
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);
     virtual void ShowError() {}
     virtual CGameWnd* InitializeGameWindow();

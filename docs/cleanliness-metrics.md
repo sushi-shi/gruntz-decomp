@@ -97,3 +97,35 @@ serialization boundaries before regrouping fields.
 For the other global form—multiple `DATA()` symbols pinned at interior offsets of one
 typed object—run `python -m gruntz.audit.shredded`. That audit uses compiler-derived
 object extents; mere RVA adjacency is not treated as proof that globals share an owner.
+
+
+## Numeric-domain metrics (the enum campaign)
+
+Added with `docs/enum-modeling-plan.md`. All three are **ratcheted** (down-only).
+
+| metric | baseline row | what it looks for | target |
+|---|---|---|---|
+| magic case labels | `magic case labels` | `case 0x3e8:` - a `case` whose label is a bare number, i.e. an un-named member of some domain | 0 |
+| unnamed domain compares | `unnamed domain compares` | `x == 0x36` - the comparison twin. `== 0` / `== 1` are EXCLUDED: those are null/bool tests, not domain membership | 0 |
+| .cpp-local enums | `.cpp-local enums` | a domain declared inside a `.cpp`. Fine when genuinely TU-private; ratcheted so a CROSS-TU domain is never stranded there (that is how this tree ended up with three spellings of the grunt/pickup id space) | ratchet only |
+
+Naming a value is matching-neutral - `docs/patterns/enum-domains.md` measures
+literal -> enumerator as leaving `.text` byte-identical - so all of this is pure
+debt, not a trade-off against the score.
+
+Two companion gates run beside them:
+
+- **`gruntz audit enum-domains`** (`--gate`, normal tier) - split-domain storage
+  widths must agree tree-wide, no bare `enum` in a header (single-enumerator tag
+  types exempt), `config/enum-review.tsv` in sync. Negative controls live in
+  `gruntz.match.gate_selftest`.
+- **`gruntz audit strict-enums`** - compiles the tree at `/std:c++20`, where the
+  domains become `enum class`, and reports what the MSVC build cannot see: a
+  domain used as a raw array index, a domain silently widened through an `i32`
+  parameter, two domains conflated behind one `i32`. Floor in
+  `config/strict-enums-baseline.tsv`. **Expect the count to RISE before it falls**
+  — it measures how much of the tree still treats domains as ints, so declaring a
+  new domain increases it until that domain's consumers are typed. It is NOT
+  drivable to zero mechanically: the residual sites each need a judgement about
+  which domain an integer carries, and some carry more than one. Ratcheted
+  down-only; drain with evidence, never by guessing a type.

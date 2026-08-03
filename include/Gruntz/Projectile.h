@@ -1,13 +1,16 @@
+#ifndef GRUNTZ_PROJECTILE_H
+#define GRUNTZ_PROJECTILE_H
+
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <Gruntz/ActReg.h>
 #include <Gruntz/HaznColl.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MovingLogic.h>
-
-#ifndef GRUNTZ_PROJECTILE_H
-#define GRUNTZ_PROJECTILE_H
+#include <Gruntz/PickupType.h>
+#include <Gruntz/SerialArchive.h>
 
 class CLightFx;
 
@@ -15,7 +18,7 @@ class DirectSoundMgr;
 
 class CProjectile : public CMovingLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00012960, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PROJECTILE;
@@ -24,7 +27,8 @@ public:
     CProjectile(CGameObject* owner);
     virtual ~CProjectile() OVERRIDE;
 
-    virtual i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1);
+    virtual i32
+    LoadProjectileSprites(PickupType kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1);
 
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterType();
@@ -34,7 +38,7 @@ public:
     i32 LaunchSound(const char* key);
     virtual void AdvanceMotion() OVERRIDE;
 
-    i32 m_kind;
+    PickupType m_kind;
     i32 m_srcRow, m_srcCol;
     i32 m_targetX, m_targetY;
     double m_flightDist;

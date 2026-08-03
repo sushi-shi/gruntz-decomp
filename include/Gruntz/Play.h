@@ -9,6 +9,11 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntDeathType.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/View.h>
@@ -60,8 +65,8 @@ public:
     virtual i32 RestoreDisplay() OVERRIDE;
 
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 EnterState(i32) OVERRIDE;
-    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 EnterState(GameStateId) OVERRIDE;
+    virtual i32 LeaveState(GameStateId) OVERRIDE;
     virtual i32 OnChar(i32, i32) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
     virtual i32 OnKeyUp(i32, i32) OVERRIDE;
@@ -227,9 +232,9 @@ public:
 
     i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
 
-    i32 SyncState(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj);
+    i32 SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
-    i32 HeaderSerialize(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj);
+    i32 HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 SavePlayState(CFileMemBase* ar);
     i32 LoadPlayState(CFileMemBase* ar);
 
@@ -414,7 +419,7 @@ public:
     i32 DrawCursorSaveUnder(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
-    i32 BuildGruntTypeNameTable(i32 typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
+    i32 BuildGruntTypeNameTable(PickupType typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
 
     i32 ScanBuildTiles();
     i32 ScanShuffleQuads();
@@ -429,7 +434,8 @@ void ChannelSlots_Set(i32 slot, i32 value);
 i32 ChannelSlots_Get(i32 slot);
 void ChannelSlots_InitAll();
 
-extern i32 g_areaPageSize;
+// Per-world death cause for pit/liquid tiles, set from the AREA%i bank.
+extern GruntDeathType g_areaPitDeath;
 
 extern "C" i32 g_playActive;
 extern "C" i32 g_profAccA;
@@ -442,7 +448,9 @@ extern "C" i32 g_scrollSpeedRange;
 extern "C" u32 g_killCueClock;
 
 extern i32 g_lastLevelNum;
-extern "C" i32 g_areaHazardParam;
+// Per-world death cause a StaticHazard inflicts; copied into the hazard
+// object's WWD `Smarts` slot at construction.
+extern "C" GruntDeathType g_areaHazardDeath;
 extern "C" i32 g_levelBias100;
 extern "C" i32 g_soundChannelInUse[17];
 extern char* g_colorNames[];

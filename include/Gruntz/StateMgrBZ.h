@@ -1,9 +1,9 @@
+#ifndef GRUNTZ_STATEMGRBZ_H
+#define GRUNTZ_STATEMGRBZ_H
+
 #include <rva.h>
 
 #include <Ints.h>
-
-#ifndef GRUNTZ_STATEMGRBZ_H
-#define GRUNTZ_STATEMGRBZ_H
 
 class DirectInputMgr2;
 class CInputDevice;

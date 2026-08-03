@@ -3,6 +3,13 @@
 
 #include <rva.h>
 
+#include <Enums.h>
+#include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileTriggerLogic.h>
+
 class CDialog;
 
 #include <Dsndmgr/GruntzSoundZ.h>
@@ -167,7 +174,7 @@ public:
     i32 PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unused);
     i32 SwitchToNextState();
 
-    i32 TransitionState(i32 stateId, i32 areaArg, i32 keepCurrent, i32 unused);
+    i32 TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused);
 
     void EnterModalUI(const char* msg);
 
@@ -182,7 +189,7 @@ public:
     i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name);
     void UpdateScoreHud();
 
-    i32 BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 typeId, i32 pObj);
+    i32 BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeId, i32 pObj);
     void RecomputeViewScale();
 
     i32 MakeRezPath();
@@ -204,7 +211,7 @@ public:
 
     i32 RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag);
 
-    virtual i32 HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) OVERRIDE;
+    virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) OVERRIDE;
 
     void SetSoundLevelState(i32 loaded);
     i32 RunLoadGameDialog();

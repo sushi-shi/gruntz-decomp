@@ -11,18 +11,21 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
-#include <Gruntz/Enums.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
@@ -34,6 +37,7 @@
 #include <Ints.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 #include <Wap32/Wap32.h>
@@ -136,7 +140,7 @@ void CGrunt::FinalizeStep(char* name) {
         }
     }
     if (m_struckVoiceSound != 0) {
-        if (m_gruntKind == 0) {
+        if (m_gruntKind == GRUNT_NORMAL) {
             StopStruckVoiceSound();
         } else {
             CGruntzMgr* g = g_gameReg;
@@ -297,7 +301,7 @@ i32 CGrunt::UpdateGruntStatus() {
 // @early-stop
 RVA(0x00061940, 0x200)
 i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
-    if (m_entranceReason >= 0x17) {
+    if (m_entranceReason >= PICKUP_BABYWALKER) {
         return 0;
     }
 
@@ -309,7 +313,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     m_combatActive = 1;
 
     i32 idx;
-    switch (m_entranceReason - 2) {
+    switch (IDX(m_entranceReason) - 2) {
         case 0:
             if (m_arrivalState != 0) {
                 m_entranceActive = 1;
@@ -384,7 +388,7 @@ i32 CGrunt::RearmAttackAnim2() {
 
     CWwdGameObjectA* p = m_wwdObject;
     m_value = p->m_animCursor.m_animation;
-    p->m_animCursor.Setup(m_poseAttack[GRUNT_ATTACK2]);
+    p->m_animCursor.Setup(AT(m_poseAttack, GRUNT_ATTACK2));
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
     CAniRecordView* el =
@@ -513,12 +517,17 @@ i32 CGrunt::StepAttackFire() {
                     0,
                     m_gruntKind
                 );
-                i32 t = tgt->m_entranceReason;
-                if (t > 0x16) {
+                PickupType t = tgt->m_entranceReason;
+                if (t > PICKUP_WINGZ) {
                     t = tgt->m_toolId;
                 }
-                if (t == 1 && m_gruntKind != GRUNT_INVULNERABLE) {
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCell.m_x);
+                if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
+                    m_tileMgr->CellDispatch(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        DEATH_EXPLODE,
+                        m_neighborCell.m_x
+                    );
                     return 0;
                 }
                 break;
@@ -547,7 +556,7 @@ i32 CGrunt::StepAttackFire() {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
-        LoadGruntTypeTable(0, 1, 0, 0);
+        LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
     }
     CWwdGameObjectA* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
@@ -621,7 +630,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             m_toySprite = 0;
         }
 
-        if (m_entranceReason == 0x1e) {
+        if (m_entranceReason == PICKUP_SCROLL) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("P");
             i32 toyIdx = rand() % 2;
@@ -704,8 +713,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         h->m_flags |= 0x20000;
     }
 
-    i32 t0 = m_poseToy[GRUNT_TOY1]->m_total;
-    i32 t1 = m_poseToy[GRUNT_TOY2]->m_total;
+    i32 t0 = AT(m_poseToy, GRUNT_TOY1)->m_total;
+    i32 t1 = AT(m_poseToy, GRUNT_TOY2)->m_total;
     i64 elapsed = m_toyClock - static_cast<i64>(static_cast<u32>(g_frameTime));
     i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
@@ -806,7 +815,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             m_toyTimeSprite = 0;
         }
         m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseToy[GRUNT_TOY_BREAK]);
+        m_wwdObject->m_animCursor.Setup(AT(m_poseToy, GRUNT_TOY_BREAK));
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
         CAniRecordView* elem = desc->m_records.GetSize() > 0
                                    ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
@@ -900,24 +909,24 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     if (notIdle && cycle == 0) {
 
         m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseIdle[GRUNT_IDLE1]);
+        m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = static_cast<u32>(static_cast<i32>(g_frameTime));
         i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
         m_idleDelay = static_cast<u32>(rand() % n + 0x7530);
         m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         applied = 1;
-    } else if (m_poseIdle[GRUNT_IDLE2] == 0) {
+    } else if (AT(m_poseIdle, GRUNT_IDLE2) == 0) {
 
         m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseIdle[GRUNT_IDLE1]);
+        m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
     } else if (cycle == 0) {
 
-        if (m_wwdObject->m_animCursor.m_animation == m_poseIdle[GRUNT_IDLE1]) {
+        if (m_wwdObject->m_animCursor.m_animation == AT(m_poseIdle, GRUNT_IDLE1)) {
             goto latch;
         }
         m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseIdle[GRUNT_IDLE1]);
+        m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
         {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
@@ -926,7 +935,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         }
     } else {
 
-        i32 count = (m_poseIdle[GRUNT_IDLE3] == 0) ? 1 : 2;
+        i32 count = (AT(m_poseIdle, GRUNT_IDLE3) == 0) ? 1 : 2;
         i32 idx = rand() % count + 1;
         if (cue != 0) {
             CGruntzMgr* g = g_gameReg;
@@ -943,7 +952,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                     src.m_addr = this;
                     g->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
                 }
-            } else if (focused || m_entranceReason != 0) {
+            } else if (focused || m_entranceReason != PICKUP_NONE) {
                 if (idx == 1) {
                     if (CGameLevel::PointInBounds(
                             &g->m_world->m_level->m_mainPlane->m_viewRect,
@@ -986,7 +995,7 @@ latch:
     i32 row = m_entranceCell.row;
     i32 column = m_entranceCell.column;
     i32 direction = m_entranceCell.direction;
-    if (m_wwdObject->m_animCursor.m_animation != m_poseIdle[GRUNT_IDLE1]) {
+    if (m_wwdObject->m_animCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
         switch (direction) {
             case 2:
             case 3:
@@ -1061,15 +1070,15 @@ i32 CGrunt::ResolveEntranceArrival() {
                     m_defenderPx.m_x = m_lastTilePx.m_x;
                     m_defenderPx.m_y = m_lastTilePx.m_y;
                     m_tileClaimed = 1;
-                    i32 kind = m_entranceReason;
+                    PickupType kind = m_entranceReason;
 
                     switch (kind) {
-                        case 2:
-                        case 9:
-                        case 10:
-                        case 11:
-                        case 21:
-                        case 22:
+                        case PICKUP_BOOMERANG:
+                        case PICKUP_GUNHAT:
+                        case PICKUP_NERFGUN:
+                        case PICKUP_ROCK:
+                        case PICKUP_WELDER:
+                        case PICKUP_WINGZ:
                             m_defenderRadius = 1;
                             break;
                         default:
@@ -1094,7 +1103,7 @@ i32 CGrunt::ResolveEntranceArrival() {
     }
 
 tail:
-    if (m_wwdObject->m_animCursor.m_animation != m_poseIdle[GRUNT_IDLE1]) {
+    if (m_wwdObject->m_animCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
 
         if (m_wwdObject->m_animCursor.m_finished != 0
             && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
@@ -1313,7 +1322,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
             m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->ApplyGeometryDirect(m_poseToy[GRUNT_TOY_BREAK], 0);
+            m_wwdObject->ApplyGeometryDirect(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
 
             CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
             CAniRecordView* elem = desc->m_records.GetSize() > 0
@@ -1357,11 +1366,11 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     i32 hx = h2->m_screenX;
     if (hx < g2->m_viewBounds.right && hx >= g2->m_viewBounds.left && hy < g2->m_viewBounds.bottom
         && hy >= g2->m_viewBounds.top) {
-        if (m_entranceReason == 0x1a) {
+        if (m_entranceReason == PICKUP_GOKART) {
             EnsureStruckSlot(s_GRUNTZ_GOKARTGRUNT);
             return 0;
         }
-        if (m_entranceReason == 0x19) {
+        if (m_entranceReason == PICKUP_BIGWHEEL) {
             EnsureStruckSlot(s_GRUNTZ_BIGWHEELGRUNT);
             return 0;
         }
@@ -1414,7 +1423,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         m_selectedSprite = 0;
     }
 
-    m_gruntKind = 0;
+    m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
         m_combatActive = 0;
@@ -1493,7 +1502,7 @@ i32 CGrunt::StepWarpExit() {
         CString s;
         s.Format("WORLDZ\\LEVEL%i", lvl);
         if (st->m_levelBank->ResolveQualified(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
-            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, GOTOLEVEL, lvl);
+            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
         }
     }
     if (m_cellRemovalNotified == 0) {
@@ -1506,14 +1515,14 @@ i32 CGrunt::StepWarpExit() {
 // @early-stop
 RVA(0x000646b0, 0x9c8)
 i32 CGrunt::StepCombatReaction(
-    i32 attackKind,
+    PickupType attackKind,
     i32 struckPose,
     i32 srcRow,
     i32 srcCol,
     i32 srcPxX,
     i32 srcPxY,
     i32 fromProjectile,
-    i32 attackerGruntKind
+    PickupType attackerGruntKind
 ) {
     if (m_entranceCommitted == 0 || m_entranceDropActive != 0) {
         return 0;
@@ -1534,7 +1543,7 @@ i32 CGrunt::StepCombatReaction(
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
-        if (m_entranceReason == 0x13) {
+        if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
@@ -1562,7 +1571,7 @@ i32 CGrunt::StepCombatReaction(
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeQ) == 0) {
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 6, srcRow);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_SHATTER, srcRow);
         return 0;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0) {
@@ -1590,16 +1599,19 @@ i32 CGrunt::StepCombatReaction(
         }
         i32 mode = m_moveMode;
         if (mode >= 0x32) {
-            LoadGruntTypeTable(mode, 1, 0, 1);
+            LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
             m_moveMode = -1;
             m_helpCueId = 0;
         } else if (mode >= 0x22) {
-            m_brickPickupType = mode;
+            // FINDING: m_moveMode is range-dispatched by PICKUP ranges here
+            // (>=0x17 Toyz, >=0x22 Brickz, >=0x32 PowerUpz), so it carries a
+            // PickupType under a movement name. Retyping it is follow-up work.
+            m_brickPickupType = static_cast<PickupType>(mode);
             m_moveMode = -1;
         } else if (mode >= 0x17) {
-            LoadVehicleGruntSprites(mode);
+            LoadVehicleGruntSprites(static_cast<PickupType>(mode));
         } else {
-            LoadGruntTypeTable(mode, 1, 0, 1);
+            LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
             m_moveMode = -1;
         }
         goto tail;
@@ -1624,7 +1636,7 @@ i32 CGrunt::StepCombatReaction(
     goto tail;
 
 reject:
-    if (m_entranceReason == 0x1e) {
+    if (m_entranceReason == PICKUP_SCROLL) {
         g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
@@ -1745,7 +1757,7 @@ i32 CGrunt::StepArrivalCommitA() {
     }
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_killerSlot);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, m_killerSlot);
         return 0;
     }
     m_entranceActive = 0;
@@ -1769,7 +1781,7 @@ i32 CGrunt::StepArrivalCommitA() {
         StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
         return 0;
     }
-    if (m_entranceReason == 0x14) {
+    if (m_entranceReason == PICKUP_WARPSTONE) {
         ResetEntranceAnimation(1, 0, 0);
         return 0;
     }
@@ -1792,7 +1804,7 @@ i32 CGrunt::StepArrivalCommitB() {
     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_killerSlot);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, m_killerSlot);
         return 0;
     }
     CGruntzMgr* g = g_gameReg;
@@ -1852,7 +1864,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         ResetEntranceAnimation(1, 0, 0);
     }
 
-    if (m_entranceReason == 1) {
+    if (m_entranceReason == PICKUP_BOMB) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId(s_codeM);
         m_object->m_stateFlags &= ~8;
@@ -1860,12 +1872,12 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         m_entranceActive = 1;
         m_bombRunActive = 1;
         SetEntrancePos(1, 1);
-    } else if (m_entranceReason == 0x12) {
+    } else if (m_entranceReason == PICKUP_TOOB) {
         m_entranceActive = 1;
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId(s_codeN);
         m_coordToggle = (m_coordToggle == 0);
-    } else if (m_entranceReason == 0x13) {
+    } else if (m_entranceReason == PICKUP_WAND) {
         i32 base;
         if (rand() % 0x64 < 0x50) {
             poseIdx = 1;
@@ -1933,12 +1945,12 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_healthSprite != 0) {
                 CreateStaminaSprite();
             }
-            if (m_entranceReason == 0x13) {
+            if (m_entranceReason == PICKUP_WAND) {
                 LoadGruntAbilityTuning(m_moveVariant);
                 i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = hp < 0 ? 0 : hp;
                 if (m_health <= 0) {
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
                 }
             }
         }

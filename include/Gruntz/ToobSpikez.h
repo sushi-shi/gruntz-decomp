@@ -5,6 +5,7 @@
 
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
 class CToobSpikez : public CUserLogic, public CWapX {
@@ -19,7 +20,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TOOBSPIKEZ;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
 };

@@ -22,6 +22,7 @@
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
+#include <Rez/RezTypeTag.h>
 #include <strstrea.h>
 
 #include <ddraw.h>
@@ -61,7 +62,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
         return;
     }
 
-    if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
+    if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
         CString input = m_fontConfig->GetInputText();
         static_cast<CMulti*>(g_gameReg->m_curState)
             ->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(input)), 1, 1, 0);
@@ -81,7 +82,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 
                 CParseSource* source = g_gameReg->m_symParser->ResolveQualified(
                     static_cast<const char*>(qualified),
-                    'TXT'
+                    REZ_TAG_TXT
                 );
                 CButeMgr bute;
                 bool parsed = false;

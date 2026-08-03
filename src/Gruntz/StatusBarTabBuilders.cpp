@@ -9,11 +9,14 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SBI_GruntMachine.h>
 #include <Gruntz/SBI_ImageSetAni.h>
 #include <Gruntz/SBI_SideTab.h>
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarItem.h>
@@ -167,7 +170,12 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 
 // @early-stop
 RVA(0x000e8e00, 0x41a)
-i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
+i32 CSBI_GruntMachine::SerializeFields(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj
+) {
     if (s == 0) {
         return 0;
     }
@@ -179,7 +187,7 @@ i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i3
     char buf[0x80];
 
     switch (mode) {
-        case 4: {
+        case SERIAL_SAVE: {
             i32 v;
 
             g_serialCounter++;
@@ -220,7 +228,7 @@ i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i3
             break;
         }
 
-        case 7: {
+        case SERIAL_LOAD: {
             CObject* out;
             i32 idx;
 
@@ -414,8 +422,8 @@ i32 CSBI_SideTab::BuildHandle() {
     }
     i32 val;
     if (mode == 2) {
-        i32 level = unit->m_entranceReason;
-        if (level > 0x16) {
+        PickupType level = unit->m_entranceReason;
+        if (level > PICKUP_WINGZ) {
             val = unit->m_toolId;
             if (val == 0) {
                 m_sampleMode = 1;
@@ -474,7 +482,7 @@ i32 CSBI_SideTab::Render() {
 }
 
 RVA(0x000e9a30, 0x31e)
-i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
+i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -486,7 +494,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pOb
     char buf[0x80];
 
     switch (mode) {
-        case 4: {
+        case SERIAL_SAVE: {
             i32 v;
 
             g_serialCounter++;
@@ -518,7 +526,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pOb
             break;
         }
 
-        case 7: {
+        case SERIAL_LOAD: {
             CObject* out;
             i32 idx;
 

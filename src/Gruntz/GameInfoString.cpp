@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/GameInfo.h>
 
 #include <stdio.h>

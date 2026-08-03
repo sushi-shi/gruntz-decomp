@@ -57,7 +57,7 @@ viable only while unresolved externals were tolerated (it leaves every CRT/MFC
 symbol unresolved by construction), and the real link's map supersedes it.
 
 Other defaults are tuned for layout study, not a shippable binary:
-  /SUBSYSTEM:WINDOWS /BASE:0x400000 /INCREMENTAL:NO /MAP
+  /SUBSYSTEM:WINDOWS /BASE:0x400000 /INCREMENTAL:YES /MAP
   /OPT:NOREF /OPT:NOICF   (keep EVERY function so the map is complete)
 
 Run inside `nix develop`.
@@ -192,6 +192,79 @@ def classify(sym: str) -> str:
     return "C (undefined free function/variable)"
 
 
+# The engine projects (`C:\Proj\{DDrawMgr,DinMgr2,Dsndmgr,NetMgr}` + the shared Bute/
+# Rez/Image/Wwd/Utils/Crypto code and vendored zlib) shipped as static LIBRARIES, not as
+# objects on the link line. Retail proves it: MSVC's incremental linker emits an `E9`
+# thunk for every cross-object call between OBJECTS but never for a `.lib` member, and
+# retail's thunk targets stop dead at 0x11c860 - below that line 2 cross-unit direct
+# calls, above it 4664. Sorting our units by that boundary lands 227 of 237 src/Gruntz
+# units below it and the engine modules above: a project boundary, exactly the leaked
+# layout. Archiving those modules takes our thunk count 4559 -> 2976 vs retail's 2695.
+# There were at least TWO archives, not one: inside the library region the vendored
+# zlib units form a PERFECTLY CONTIGUOUS run (0x185320..0x18b440, 12 units, no engine
+# unit interleaved) after the engine block (0x134cb0..0x1852e0, 73 units) - the
+# signature of a second library searched after the first. So we emit both.
+ENGINE_MODULES = {"DDrawMgr", "DinMgr2", "Dsndmgr", "Image", "Bute", "Rez",
+                  "Wwd", "Utils", "Crypto", "Font"}
+ZLIB_UNITS = {"uncompr", "wapuncompress", "inflate", "deflate", "infblock", "adler32",
+              "zutil", "trees", "inftrees", "infcodes", "infutil", "inffast"}
+# A third block sits AFTER the CRT/MFC code (0x193080..0x1936e0, past a ~31 KB gap).
+# Being pulled only once the CRT had been searched is what a LATER archive on the link
+# line looks like, so it is emitted as its own library rather than folded into engine.lib.
+TAIL_UNITS = {"bitarraystream", "butetree", "projactcache", "bitarray"}
+
+
+def engine_units() -> set:
+    """Unit names whose source lives in an engine module (or vendor/)."""
+    import tomllib
+    manifest = REPO / "config" / "units.toml"
+    if not manifest.exists():
+        return set()
+    with manifest.open("rb") as fh:
+        units = tomllib.load(fh).get("unit", [])
+    out = set()
+    for u in units:
+        src = u.get("source", "")
+        parts = Path(src).parts
+        mod = parts[1] if src.startswith("src/") and len(parts) > 1 else "vendor"
+        if mod in ENGINE_MODULES or not src.startswith("src/"):
+            out.add(u["unit"])
+    return out
+
+
+def archive_engine(objs: list, out_dir: Path) -> tuple:
+    """Split `objs` into (link-line objs, engine.lib) using the real VC5 LIB.EXE."""
+    eng_names = engine_units() - ZLIB_UNITS - TAIL_UNITS
+    eng = [o for o in objs if o.stem in eng_names]
+    zl = [o for o in objs if o.stem in ZLIB_UNITS]
+    tail = [o for o in objs if o.stem in TAIL_UNITS]
+    claimed = eng_names | ZLIB_UNITS | TAIL_UNITS
+    rest = [o for o in objs if o.stem not in claimed]
+    if not (eng or zl or tail):
+        return objs, []
+    msvc = Path(os.environ.get("MSVC_DIR", "/tmp/gtc/msvc"))
+    libexe = find_ci(msvc / "bin", "lib.exe")
+    if not libexe:
+        die("LIB.EXE not found - cannot archive the engine modules.")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    made = []
+    for name, members in (("engine.lib", eng), ("zlib.lib", zl), ("utils.lib", tail)):
+        if not members:
+            continue
+        lib = out_dir / name
+        lib.unlink(missing_ok=True)
+        rsp = out_dir / (name.replace(".lib", ".rsp"))
+        rsp.write_text(f"/OUT:{winepath_w(lib)}\n"
+                       + "\n".join(f'"{winepath_w(o)}"' for o in members) + "\n")
+        run_wine(["wine", str(libexe), "/NOLOGO", f"@{winepath_w(rsp)}"], out_dir, lib)
+        if not lib.exists():
+            die(f"LIB.EXE failed to build {name}.")
+        print(f"[link] archived {len(members)} obj(s) -> {name} ({lib.stat().st_size:,} B)")
+        made.append(lib)
+    print(f"[link] {len(rest)} obj(s) stay on the link line")
+    return rest, made
+
+
 def collect_objs(args) -> list:
     """Resolve the obj list + their link ORDER. Priority:
        --order FILE  (one obj stem or path per line; blank/`#` ignored) - the
@@ -249,6 +322,15 @@ def main() -> None:
     ap.add_argument("--order", help="file listing obj stems/paths in link order.")
     ap.add_argument("--lib", action="append", default=[],
                     help="extra import/static lib to pass to link (repeatable).")
+    ap.add_argument("--engine-lib", action="store_true",
+                    help="archive the engine modules into engine.lib and link THAT, as "
+                         "retail did (they were separate .LIB projects). Incremental "
+                         "thunks 4559 -> 2976 vs retail's 2695, because a .lib member "
+                         "never gets one.")
+    ap.add_argument("--no-incremental", action="store_true",
+                    help="/INCREMENTAL:NO - the flat layout. Default is YES because "
+                         "retail is an incremental link (thunk band, IAT slack, separate "
+                         ".idata); use this only to isolate that variable.")
     ap.add_argument("--base", default="0x400000", help="image base (/BASE).")
     ap.add_argument("--entry", default=None,
                     help=f"forced /ENTRY symbol (default: {ENTRY_LINKED}).")
@@ -278,6 +360,9 @@ def main() -> None:
             f.unlink()
 
     objs = collect_objs(args)
+    engine_libs = []
+    if args.engine_lib:
+        objs, engine_libs = archive_engine(objs, Path(args.out).resolve().parent)
     if not objs:
         die("no objects to link.")
 
@@ -287,11 +372,19 @@ def main() -> None:
     ensure_wineserver()
 
     entry = args.entry or ENTRY_LINKED
+    # Retail IS an incremental link - three independent witnesses: the E9 thunk band at
+    # the top of .text (retail has 2704 in the first 0x8000 of slots; /INCREMENTAL:NO
+    # gives 14), the zero-filled IAT slack after every DLL terminator, and the separate
+    # writable .idata section. Measured to cost nothing: per-object fragmentation is
+    # IDENTICAL either way (median 1, mean 1.07, 94.7% contiguous, zero objects worse)
+    # and gruntz.audit.link_order still reads the map. Only reachable once the tree
+    # linked /FORCE-free, since ANY /FORCE makes link ignore it (LNK4075).
+    incremental = "/INCREMENTAL:NO" if args.no_incremental else "/INCREMENTAL:YES"
     rsp_lines = [
         f"/OUT:{winepath_w(out)}",
         f"/MAP:{winepath_w(mapf)}",
         "/NOLOGO", "/SUBSYSTEM:WINDOWS",
-        f"/BASE:{args.base}", "/INCREMENTAL:NO", f"/ENTRY:{entry}",
+        f"/BASE:{args.base}", incremental, f"/ENTRY:{entry}",
         # Retail HAS a .reloc (it is why the EXE is delinkable at all), so it was
         # linked /FIXED:NO. Purely additive: .text/.rdata/.data come out byte-identical.
         "/FIXED:NO",
@@ -301,6 +394,7 @@ def main() -> None:
     extra = args.flags[1:] if args.flags and args.flags[0] == "--" else args.flags
     rsp_lines += list(extra)
     libs = list(args.lib)
+    libs += [str(x) for x in engine_libs]
     # Substitute the synthesised RAD libs IN PLACE so LINK_LIBS' order survives.
     synth = {p.name.lower(): str(p) for p in ensure_import_libs()}
     libs += [synth.get(n, n) for n in LINK_LIBS]

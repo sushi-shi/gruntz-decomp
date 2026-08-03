@@ -4,7 +4,10 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDrawWorker.h>
+#include <Enums.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 #include <ddraw.h>
@@ -36,7 +39,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 InitGeometry(
         i32 w,
@@ -71,7 +74,7 @@ public:
     i32 ValidateTiles(char* errOut);
     void ResolveColorKey();
 
-    i32 SerializeDispatch(CFileMemBase* s, i32 kind, i32 typeId, i32 pObj);
+    i32 SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicTypeId typeId, i32 pObj);
     i32 Save(CFileMemBase* s);
     i32 Load(CFileMemBase* s);
 

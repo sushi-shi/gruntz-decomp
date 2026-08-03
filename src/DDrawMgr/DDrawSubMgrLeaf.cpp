@@ -8,8 +8,8 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniElement.h>
-#include <Gruntz/Enums.h>
 #include <Gruntz/ParseSource.h>
+#include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 
 #include <stdio.h>
@@ -20,6 +20,9 @@ VTBL(CAniElement, 0x001efba8);
 DATA(0x0021ab18)
 const char g_fmtPathJoin[] = "%s%s%s";
 
+// @identity-TODO LookupValue@CDDrawSubMgrLeaf - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (12 fns) came from the static library. It belongs to another compiland.
 RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
     void* val = 0;

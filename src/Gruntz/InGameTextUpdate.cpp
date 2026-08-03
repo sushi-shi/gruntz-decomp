@@ -7,6 +7,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameText.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -51,7 +52,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        if (!found->LoadPickupSprites(0x5e, 0, m_object->m_smarts, 0, 1)) {
+        if (!found->LoadPickupSprites(PICKUP_HELPBOX, 0, m_object->m_smarts, 0, 1)) {
             return 0;
         }
 

@@ -5,6 +5,8 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Ints.h>
 
 #include <ddraw.h>
@@ -24,7 +26,7 @@ struct ClipRect16 {
 SIZE(0x10);
 SIZE(0x10);
 
-enum PidFlags {
+GZ_ENUM_FLAGS_BEGIN(PidFlags, u32)
 
     PID_TRANSPARENCY = 0x01,
 
@@ -40,8 +42,9 @@ enum PidFlags {
 
     PID_FILL_IS_WORD = 0x100,
 
-    PID_SRC_8BPP = 0x200,
-};
+    PID_SRC_8BPP = 0x200
+GZ_ENUM_FLAGS_END(PidFlags, u32)
+GZ_ENUM_FLAGS_OPS(PidFlags)
 
 struct PidHeader {
 
@@ -58,19 +61,23 @@ struct PidHeader {
 };
 SIZE(0x20);
 
-enum FileImageFormat {
+// The format CDDSurface::Resolve decodes. CImage picks it from the REZ entry
+// tag: IMGTAG_PMB('BMP')->FMT_BMP, IMGTAG_XCP('PCX')->FMT_PCX,
+// IMGTAG_DIR->FMT_DIR, IMGTAG_DIP('PID')->FMT_PID.
+GZ_ENUM_BEGIN(FileImageFormat)
     FMT_BMP = 1,
     FMT_PCX = 2,
-    FMT_PID = 4,
-};
+    FMT_DIR = 3,
+    FMT_PID = 4
+GZ_ENUM_END(FileImageFormat)
 
-typedef enum DDSurfacePoolKind {
+GZ_ENUM_BEGIN(DDSurfacePoolKind)
     POOLKIND_PLAIN = 0,
     POOLKIND_MODE = 1,
     POOLKIND_FILEIMAGE = 2,
     POOLKIND_BLIT7 = 3,
-    POOLKIND_BLIT47 = 4,
-} DDSurfacePoolKind;
+    POOLKIND_BLIT47 = 4
+GZ_ENUM_END(DDSurfacePoolKind)
 
 class CDDSurface {
 public:
@@ -84,7 +91,7 @@ public:
     virtual void FreeSurfaces();
     virtual i32 IsValid();
 
-    virtual i32 GetPoolKind();
+    virtual DDSurfacePoolKind GetPoolKind();
     virtual i32 RestoreLost();
     virtual i32 BlitIntoDesc(void* a);
 
@@ -124,7 +131,13 @@ public:
     i32 SaveRle16(void* file, void* pal, i32 flag);
     i32 SaveTga(const char* path, void* pal, i32 mode);
 
-    i32 Resolve(class CDDrawPtrCollections* pal, void* buf, i32 type, u32 size, u32 colorKey);
+    i32 Resolve(
+        class CDDrawPtrCollections* pal,
+        void* buf,
+        FileImageFormat type,
+        u32 size,
+        u32 colorKey
+    );
 
     i32 DecodeBmp(class CDDrawPtrCollections* pal, void* buf, u32 size);
     i32 DecodePcx(class CDDrawPtrCollections* pal, struct PcxHeader* hdr, u32 size);

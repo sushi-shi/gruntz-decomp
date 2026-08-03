@@ -7,6 +7,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -89,7 +90,12 @@ i32 CGruntPowerupSprite::Update() {
 }
 
 RVA(0x00080490, 0xbe)
-i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CGruntPowerupSprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
@@ -97,11 +103,11 @@ i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, C
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_cell, 8);
             ar->Write(&m_powerupId, 4);
             break;
-        case 7: {
+        case SERIAL_LOAD: {
             ar->Read(&m_cell, 8);
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;

@@ -10,7 +10,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
 #include <Ints.h>
@@ -172,7 +174,12 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
 }
 
 RVA(0x000e7cd0, 0xf8)
-i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
+i32 CSBI_ImageSetAni::SerializeFields(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj
+) {
     if (s == 0) {
         return 0;
     }
@@ -181,7 +188,7 @@ i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32
     }
     switch (mode) {
 
-        case 7:
+        case SERIAL_LOAD:
             s->Read(&m_interval, 4);
             s->Read(&m_lastTime, 4);
             s->Read(&m_loop, 4);
@@ -189,7 +196,7 @@ i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32
             s->Read(&m_frameEnd, 4);
             s->Read(&m_frameStart, 4);
             break;
-        case 4:
+        case SERIAL_SAVE:
             s->Write(&m_interval, 4);
             s->Write(&m_lastTime, 4);
             s->Write(&m_loop, 4);

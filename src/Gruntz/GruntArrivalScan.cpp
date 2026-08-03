@@ -1,3 +1,5 @@
+#include <Enums.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/GameRand.h>
 #include <Mfc.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -1806,7 +1808,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ->m_object->m_screenY != occ->m_lastTilePx.m_y) {
                 goto c2_miss;
             }
-            if (m_vehiclePickupType == 0x1e) {
+            if (m_vehiclePickupType == PICKUP_SCROLL) {
                 g_gameReg->m_cmdGrid->ApplyTriggerB(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
@@ -1881,7 +1883,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (m_vehiclePickupType == 0x1e) {
+            if (m_vehiclePickupType == PICKUP_SCROLL) {
                 g_gameReg->m_cmdGrid->ApplyTriggerB(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
@@ -1913,7 +1915,7 @@ i32 CGrunt::StepArrivalDefense() {
                 && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
                 && occ->m_object->m_screenY == occ->m_lastTilePx.m_y
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
-                if (m_vehiclePickupType == 0x1e) {
+                if (m_vehiclePickupType == PICKUP_SCROLL) {
                     g_gameReg->m_cmdGrid->ApplyTriggerB(
                         m_tileOwnerHi,
                         m_tileOwnerLo,
@@ -2505,9 +2507,12 @@ i32 CGrunt::SeekTarget() {
         this->m_arrivalCell.m_x = 0;
     }
 
-    i32 reason = this->m_entranceReason;
+    // NOT a PickupType local: it is seeded from m_entranceReason/m_toolId but
+    // then REUSED to hold a cell x-coordinate below, so it carries two
+    // domains. Left as i32 until the reuse is untangled.
+    i32 reason = IDX(this->m_entranceReason);
     if (reason > 0x16) {
-        reason = this->m_toolId;
+        reason = IDX(this->m_toolId);
     }
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
@@ -2547,13 +2552,13 @@ i32 CGrunt::SeekTarget() {
         i32 dx = selfTile.m_x - slotTile.m_x;
         i32 dy = selfTileB.m_y - slotTileB.m_y;
         if (((dx ^ (dx >> 31)) - (dx >> 31)) < 2 && ((dy ^ (dy >> 31)) - (dy >> 31)) < 2) {
-            i32 r2 = slot->m_entranceReason;
-            if (r2 > 0x16) {
+            PickupType r2 = slot->m_entranceReason;
+            if (r2 > PICKUP_WINGZ) {
                 r2 = slot->m_toolId;
             }
-            if (r2 != 0x14 && r2 != 1) {
+            if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
                 slot->LoadGruntTypeTable(r2, 1, 0, 0);
-                slot->LoadGruntTypeTable(0, 1, 0, 0);
+                slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
                 this->m_defenderState = 4;
                 if (this->CoordCount() == 0) {
                     return 1;
@@ -2573,9 +2578,9 @@ i32 CGrunt::SeekTarget() {
         }
     }
 
-    reason = this->m_entranceReason;
+    reason = IDX(this->m_entranceReason);
     if (reason > 0x16) {
-        reason = this->m_toolId;
+        reason = IDX(this->m_toolId);
     }
     if (reason == 0) {
         if (this->CoordCount() == 0) {
@@ -2589,14 +2594,14 @@ i32 CGrunt::SeekTarget() {
             do {
                 CGrunt* sv = slots[i];
                 if (sv != 0 && sv->m_entranceCommitted != 0) {
-                    i32 k = sv->m_entranceReason;
-                    i32 kk = k;
-                    if (k > 0x16) {
+                    PickupType k = sv->m_entranceReason;
+                    PickupType kk = k;
+                    if (k > PICKUP_WINGZ) {
                         kk = sv->m_toolId;
                     }
-                    if (kk != 0 && kk != 0x14 && kk != 1
-                        && !(k > 0x16 ? (sv->m_toolId == 0x14) : false)
-                        && sv->m_gruntKind != 0x36) {
+                    if (kk != PICKUP_NONE && kk != PICKUP_WARPSTONE && kk != PICKUP_BOMB
+                        && !(k > PICKUP_WINGZ ? (sv->m_toolId == PICKUP_WARPSTONE) : false)
+                        && sv->m_gruntKind != GRUNT_GHOST) {
                         i32 ex = sv->m_object->m_screenX >> 5;
                         i32 ddx = ex - (this->m_object->m_screenX >> 5);
                         i32 ey = (sv->m_object->m_screenY >> 5) - (this->m_object->m_screenY >> 5);

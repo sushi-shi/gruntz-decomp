@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezData.h>
@@ -18,6 +19,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntPowerupSprite.h>
@@ -29,6 +31,7 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -337,11 +340,11 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_tileOwnerLo = -1;
     m_neighborCell.m_x = -1;
     m_warpstoneAnchorIndex = 0;
-    m_entranceReason = 0;
-    m_vehiclePickupType = 0;
-    m_brickPickupType = 0;
-    m_gruntKind = 0;
-    m_toolId = 0;
+    m_entranceReason = PICKUP_NONE;
+    m_vehiclePickupType = PICKUP_NONE;
+    m_brickPickupType = PICKUP_NONE;
+    m_gruntKind = GRUNT_NORMAL;
+    m_toolId = PICKUP_NONE;
     m_animSetName = s_NORMALGRUNT;
     m_neighborCell.m_y = -1;
     m_entranceCommitted = 1;
@@ -486,7 +489,7 @@ void CGrunt::ReadConfigFromButeMgr() {
         1000
     );
 
-    if (m_gruntKind == 0x37) {
+    if (m_gruntKind == GRUNT_SUPERSPEED) {
         m_timePerTile >>= 1;
     }
 }
@@ -668,18 +671,18 @@ RVA(0x00049c60, 0x8d1)
 void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (kind == 0) {
         LOAD_POSE(m_poseWalk, s_pose_WALK);
-        LOAD_POSE(m_poseAttack[GRUNT_ATTACK1], s_pose_ATTACK1);
-        LOAD_POSE(m_poseAttack[GRUNT_ATTACK2], s_pose_ATTACK2);
+        LOAD_POSE(AT(m_poseAttack, GRUNT_ATTACK1), s_pose_ATTACK1);
+        LOAD_POSE(AT(m_poseAttack, GRUNT_ATTACK2), s_pose_ATTACK2);
         LOAD_POSE(m_poseAttackIdle, s_pose_ATTACKIDLE);
-        LOAD_POSE(m_poseStruck[GRUNT_STRUCK1], s_pose_STRUCK1);
-        LOAD_POSE(m_poseStruck[GRUNT_STRUCK2], s_pose_STRUCK2);
-        LOAD_POSE(m_poseIdle[GRUNT_IDLE1], s_pose_IDLE1);
-        LOAD_POSE(m_poseIdle[GRUNT_IDLE2], s_pose_IDLE2);
-        LOAD_POSE(m_poseIdle[GRUNT_IDLE3], s_pose_IDLE3);
-        LOAD_POSE(m_poseIdle[GRUNT_IDLE4], s_pose_IDLE4);
-        LOAD_POSE(m_poseIdle[GRUNT_IDLE5], s_pose_IDLE5);
-        LOAD_POSE(m_poseItem[GRUNT_ITEM1], s_pose_ITEM);
-        LOAD_POSE(m_poseItem[GRUNT_ITEM2], s_pose_ITEM2);
+        LOAD_POSE(AT(m_poseStruck, GRUNT_STRUCK1), s_pose_STRUCK1);
+        LOAD_POSE(AT(m_poseStruck, GRUNT_STRUCK2), s_pose_STRUCK2);
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE1), s_pose_IDLE1);
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE2), s_pose_IDLE2);
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE3), s_pose_IDLE3);
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE4), s_pose_IDLE4);
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE5), s_pose_IDLE5);
+        LOAD_POSE(AT(m_poseItem, GRUNT_ITEM1), s_pose_ITEM);
+        LOAD_POSE(AT(m_poseItem, GRUNT_ITEM2), s_pose_ITEM2);
         LOAD_POSE(m_poseDeath, s_pose_DEATH);
         return;
     }
@@ -687,11 +690,11 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (toyOnly != 0) {
         LOAD_POSE(m_poseWalk, s_pose_WALK);
     } else {
-        LOAD_POSE(m_poseToy[GRUNT_TOY1], s_pose_TOY1);
+        LOAD_POSE(AT(m_poseToy, GRUNT_TOY1), s_pose_TOY1);
 
-        i32 x = m_poseToy[GRUNT_TOY1]->m_records.GetSize();
-        LOAD_POSE(m_poseToy[GRUNT_TOY2], s_pose_TOY2);
-        i32 y = m_poseToy[GRUNT_TOY2]->m_records.GetSize();
+        i32 x = AT(m_poseToy, GRUNT_TOY1)->m_records.GetSize();
+        LOAD_POSE(AT(m_poseToy, GRUNT_TOY2), s_pose_TOY2);
+        i32 y = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
 
         if (x < y) {
             i32 pct = static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
@@ -701,7 +704,7 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         }
     }
 
-    LOAD_POSE(m_poseToy[GRUNT_TOY_BREAK], s_pose_TOYBREAK);
+    LOAD_POSE(AT(m_poseToy, GRUNT_TOY_BREAK), s_pose_TOYBREAK);
 }
 
 #undef LOAD_POSE
@@ -810,14 +813,14 @@ codeI:
     m_entranceCell.column = rec.column;
     m_entranceCell.direction = rec.direction;
     m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(m_poseIdle[GRUNT_IDLE2]);
+    m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE2));
     ResetEntranceAnimation(1, 0, 0);
     return;
 
 idle:
 
     m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyGeometryDirect(m_poseIdle[GRUNT_IDLE1], 0);
+    m_wwdObject->ApplyGeometryDirect(AT(m_poseIdle, GRUNT_IDLE1), 0);
     {
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
         CAniRecordView* elem = desc->m_records.GetSize() > 0
@@ -1160,7 +1163,8 @@ nudgeTarget:
         }
     }
     if (nudged != 0) {
-        if (CoordCount() == 1 && arrivalPhase == 2 && m_entranceReason == 5) {
+        if (CoordCount() == 1 && arrivalPhase == PICKUP_BOOMERANG
+            && m_entranceReason == PICKUP_GAUNTLETZ) {
             m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, pxX, pxY);
             SetEntrancePos(1, 1);
             return 1;
@@ -1492,7 +1496,7 @@ label_4c68b:
         } else {
             owner = -1;
         }
-        m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
+        m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_tileOwnerHi);
     }
 
 label_4c6e4:
@@ -1517,11 +1521,11 @@ label_4c6e4:
     reason12 = 0;
     reason16 = 0;
     reason0e = 0;
-    if (m_entranceReason == 0x12) {
+    if (m_entranceReason == PICKUP_TOOB) {
         reason12 = 1;
-    } else if (m_entranceReason == 0x16) {
+    } else if (m_entranceReason == PICKUP_WINGZ) {
         reason16 = 1;
-    } else if (m_entranceReason == 0xe) {
+    } else if (m_entranceReason == PICKUP_SPRING) {
         reason0e = 1;
     }
     if (reason0e == 0) {
@@ -1967,11 +1971,11 @@ i32 CGrunt::CreateSelectedSprite() {
 // @early-stop
 RVA(0x0004d800, 0x423)
 i32 CGrunt::Place(
-    CTriggerMgr* board,
+    class CTriggerMgr* board,
     i32 col,
     i32 row,
-    i32 moveIcon,
-    i32 typeKind,
+    PickupType moveIcon,
+    PickupType typeKind,
     i32 vehicleKind,
     i32 kind,
     i32 a8,
@@ -2008,13 +2012,15 @@ i32 CGrunt::Place(
     m_moveVariant = 0;
     m_helpCueId = 0;
     m_arrivalState = kind;
-    m_brickPickupType = 0x22;
+    // 0x22 is one below the documented Brickz range (0x23-0x27,
+    // docs/domain/powerupz.md) - an undocumented sentinel, not a brick id.
+    m_brickPickupType = static_cast<PickupType>(0x22);
     m_tileOwnerHi = col;
     m_defenderQueuePosition = a9;
     m_tileOwnerLo = row;
     m_arrivalCell.m_x = -1;
     m_arrivalCell.m_y = -1;
-    m_defenderPickupType = a10;
+    m_defenderPickupType = static_cast<PickupType>(a10);
     m_defenderRadius = a8 + 1;
     m_arrivalRerollLo = 0;
     m_arrivalRerollWindowLo = 0;
@@ -2034,7 +2040,7 @@ i32 CGrunt::Place(
     m_tileMoveCommitted = 0;
     m_entranceArmed = 0;
     m_entranceDropActive = 0;
-    m_deathType = -1;
+    m_deathType = DEATH_NONE;
     m_pendingTrigger = 0;
     m_cellRemovalNotified = 0;
     m_killerSlot = -1;
@@ -2042,7 +2048,7 @@ i32 CGrunt::Place(
     m_savedMoveIcon = -1;
     m_lowStaminaCued = 0;
     m_targetTeam = -1;
-    LoadVehicleGruntSprites(vehicleKind);
+    LoadVehicleGruntSprites(static_cast<PickupType>(vehicleKind));
     LoadGruntTypeTable(typeKind, 1, 0, 0);
     if (span != 0) {
         m_object->m_extent.left = (m_lastTilePx.m_x >> 5) - span->left;
@@ -2057,8 +2063,8 @@ i32 CGrunt::Place(
     } else {
         m_hasExtent = 1;
     }
-    if (m_moveIcon < 0 || m_moveIcon >= 0x11) {
-        m_moveIcon = 0;
+    if (m_moveIcon < PICKUP_NONE || m_moveIcon >= PICKUP_TIMEBOMB) {
+        m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, 0);
     if (shade == 0) {
@@ -2122,15 +2128,15 @@ static inline void ConstructGrownSlots() {
 
 // @early-stop
 RVA(0x0004dd50, 0x22c0)
-i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
+i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
     char eq;
-    if (kind == -1) {
+    if (kind == PICKUP_INVALID) {
         goto fail;
     }
-    if (m_gruntKind == 0x39) {
+    if (m_gruntKind == GRUNT_CONVERSION) {
         goto fail;
     }
-    if (m_gruntKind == 0x3a) {
+    if (m_gruntKind == GRUNT_DEATHTOUCH) {
         goto fail;
     }
     if (fresh == 0) {
@@ -2146,7 +2152,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         }
     }
     if (m_entranceReason == kind) {
-        if (kind != 0x16) {
+        if (kind != PICKUP_WINGZ) {
             return 1;
         }
         m_wingzTime = 0x64;
@@ -2155,14 +2161,14 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
     }
     if (defer == 0) {
         if (FinishActiveAction() != 0) {
-            if (m_gruntKind == 0x39) {
+            if (m_gruntKind == GRUNT_CONVERSION) {
                 goto fail;
             }
-            if (m_gruntKind == 0x3a) {
+            if (m_gruntKind == GRUNT_DEATHTOUCH) {
                 goto fail;
             }
             if (m_entranceReason == kind) {
-                if (kind != 0x16) {
+                if (kind != PICKUP_WINGZ) {
                     return 1;
                 }
                 m_wingzTime = 0x64;
@@ -2174,7 +2180,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
     if (m_coordToggle != 0) {
         goto fail;
     }
-    if (kind != 0x16) {
+    if (kind != PICKUP_WINGZ) {
         m_wingzEnabled = 0;
         m_wingzDurationLo = 0;
         m_wingzDurationHi = 0;
@@ -2185,11 +2191,11 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
     }
     fresh = 0;
     defer = 0;
-    if (m_entranceReason < 0x17) {
+    if (m_entranceReason < PICKUP_BABYWALKER) {
         m_toolId = m_entranceReason;
     }
     switch (kind) {
-        case 0: {
+        case PICKUP_NONE: {
             m_animSetName = "NORMALGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2214,7 +2220,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 1: {
+        case PICKUP_BOMB: {
             m_animSetName = "BOMBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2239,7 +2245,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 2: {
+        case PICKUP_BOOMERANG: {
             m_animSetName = "BOOMERANGGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2267,7 +2273,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 3: {
+        case PICKUP_BRICK: {
             m_animSetName = "BRICKGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2292,7 +2298,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 4: {
+        case PICKUP_CLUB: {
             m_animSetName = "CLUBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2317,7 +2323,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 5: {
+        case PICKUP_GAUNTLETZ: {
             m_animSetName = "GAUNTLETZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2342,7 +2348,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 6: {
+        case PICKUP_GLOVEZ: {
             m_animSetName = "GLOVEZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2367,7 +2373,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 7: {
+        case PICKUP_GOOBER: {
             m_animSetName = "GOOBERGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2427,7 +2433,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 8: {
+        case PICKUP_GRAVITYBOOTZ: {
             m_animSetName = "GRAVITYBOOTZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2452,7 +2458,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 9: {
+        case PICKUP_GUNHAT: {
             m_animSetName = "GUNHATGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2480,7 +2486,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0xa: {
+        case PICKUP_NERFGUN: {
             m_animSetName = "NERFGUNGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2508,7 +2514,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0xb: {
+        case PICKUP_ROCK: {
             m_animSetName = "ROCKGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2536,7 +2542,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0xc: {
+        case PICKUP_SHIELD: {
             m_animSetName = "SHIELDGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2561,7 +2567,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0xd: {
+        case PICKUP_SHOVEL: {
             m_animSetName = "SHOVELGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2586,7 +2592,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0xe: {
+        case PICKUP_SPRING: {
             m_animSetName = "SPRINGGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2611,7 +2617,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0xf: {
+        case PICKUP_SPY: {
             m_animSetName = "SPYGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2636,7 +2642,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0x10: {
+        case PICKUP_SWORD: {
             m_animSetName = "SWORDGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2661,7 +2667,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0x11: {
+        case PICKUP_TIMEBOMB: {
             m_animSetName = "TIMEBOMBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2686,7 +2692,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0x12: {
+        case PICKUP_TOOB: {
             m_animSetName = "TOOBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2712,7 +2718,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0x13: {
+        case PICKUP_WAND: {
             m_animSetName = "WANDGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2737,7 +2743,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0x14: {
+        case PICKUP_WARPSTONE: {
             m_animSetName = "WARPSTONEGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2762,7 +2768,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 0;
             break;
         }
-        case 0x15: {
+        case PICKUP_WELDER: {
             m_animSetName = "WELDERGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2790,7 +2796,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0x16: {
+        case PICKUP_WINGZ: {
             m_animSetName = "WINGZGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect.left = -r;
@@ -2820,7 +2826,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_toolConfigured = 1;
             break;
         }
-        case 0x17: {
+        case PICKUP_BABYWALKER: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2843,7 +2849,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x18: {
+        case PICKUP_BEACHBALL: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2865,7 +2871,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x19: {
+        case PICKUP_BIGWHEEL: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2888,7 +2894,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x1a: {
+        case PICKUP_GOKART: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2910,7 +2916,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x1b: {
+        case PICKUP_JACKINTHEBOX: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2932,7 +2938,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x1c: {
+        case PICKUP_JUMPROPE: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2955,7 +2961,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x1d: {
+        case PICKUP_POGOSTICK: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -2978,7 +2984,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x1e: {
+        case PICKUP_SCROLL: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -3001,7 +3007,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x1f: {
+        case PICKUP_SQUEAKTOY: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -3023,7 +3029,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x20: {
+        case PICKUP_YOYO: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
             } else if (m_arrivalState == 0x11) {
@@ -3045,7 +3051,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             break;
         }
-        case 0x33: {
+        case PICKUP_HEALTH1: {
             i32 h = g_buteMgr.GetIntDef("Powerupz", "Health1", 0x19) + m_health;
             if (h >= 0x64) {
                 h = 0x64;
@@ -3053,7 +3059,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_health = h;
             return 1;
         }
-        case 0x34: {
+        case PICKUP_HEALTH2: {
             i32 h = g_buteMgr.GetIntDef("Powerupz", "Health2", 0x19) + m_health;
             if (h >= 0x64) {
                 h = 0x64;
@@ -3061,7 +3067,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_health = h;
             return 1;
         }
-        case 0x35: {
+        case PICKUP_HEALTH3: {
             i32 h = g_buteMgr.GetIntDef("Powerupz", "Health3", 0x19) + m_health;
             if (h >= 0x64) {
                 h = 0x64;
@@ -3069,7 +3075,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_health = h;
             return 1;
         }
-        case 0x39: {
+        case PICKUP_CONVERSION: {
             m_toolId = m_entranceReason;
             m_reachRect.left = -1;
             m_reachRect.top = -1;
@@ -3092,7 +3098,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_gruntKind = 0x39;
+            m_gruntKind = GRUNT_CONVERSION;
             m_convertTimeLo = g_buteMgr.GetDwordDef("Powerupz", "ConversionTime", 0x1f4);
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
@@ -3101,7 +3107,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             EnsureStruckVoice("GAME_CONVERSIONLOOP");
             break;
         }
-        case 0x3a: {
+        case PICKUP_DEATHTOUCH: {
             m_toolId = m_entranceReason;
             m_reachRect.left = -1;
             m_reachRect.top = -1;
@@ -3124,7 +3130,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_gruntKind = 0x3a;
+            m_gruntKind = GRUNT_DEATHTOUCH;
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "DeathTouchTime", 0x4e20);
             }
@@ -3138,8 +3144,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             EnsureStruckVoice("GAME_DEATHTOUCHLOOP");
             break;
         }
-        case 0x36: {
-            m_gruntKind = 0x36;
+        case PICKUP_GHOST: {
+            m_gruntKind = GRUNT_GHOST;
             i32 t = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
             m_object->m_drawActive = 1;
             m_object->m_drawFillCmd = 0xb;
@@ -3157,8 +3163,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             EnsureStruckVoice("GAME_GHOSTLOOP");
             return 1;
         }
-        case 0x38: {
-            m_gruntKind = 0x38;
+        case PICKUP_INVULNERABILITY: {
+            m_gruntKind = GRUNT_INVULNERABLE;
             if (m_powerupDuration == 0) {
                 m_powerupDuration =
                     g_buteMgr.GetDwordDef("Powerupz", "InvulnerabilityTime", 0x4e20);
@@ -3173,8 +3179,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             EnsureStruckVoice("GAME_INVULNERABILITYLOOP");
             return 1;
         }
-        case 0x3c: {
-            m_gruntKind = 0x3c;
+        case PICKUP_REACTIVEARMOR: {
+            m_gruntKind = GRUNT_REACTIVEARMOR;
             CreatePowerupSprite(3);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "ReactiveArmorTime", 0x4e20);
@@ -3189,8 +3195,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             EnsureStruckVoice("GAME_REACTIVEARMORLOOP");
             return 1;
         }
-        case 0x3b: {
-            m_gruntKind = 0x3b;
+        case PICKUP_ROIDZ: {
+            m_gruntKind = GRUNT_ROIDZ;
             CreatePowerupSprite(1);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "RoidzTime", 0x4e20);
@@ -3205,8 +3211,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             EnsureStruckVoice("GAME_ROIDZLOOP");
             return 1;
         }
-        case 0x37: {
-            m_gruntKind = 0x37;
+        case PICKUP_SUPERSPEED: {
+            m_gruntKind = GRUNT_SUPERSPEED;
             CreatePowerupSprite(2);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "SuperSpeedTime", 0x4e20);
@@ -3224,7 +3230,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             EnsureStruckVoice("GAME_SUPERSPEEDLOOP");
             return 1;
         }
-        case 0x32: {
+        case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_guts;
             if (sb->m_hlBusy == 0) {
@@ -3241,50 +3247,50 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_tileMgr->CycleMoveIcons(m_tileOwnerHi, 1);
             return 1;
         }
-        case 0x3d: {
+        case PICKUP_RANDOMCOLORZ: {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->SetMonitorCurse(1);
             return 1;
         }
-        case 0x3e: {
+        case PICKUP_SCREENSHAKE: {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->SetDarknessCurse(1);
             return 1;
         }
-        case 0x3f: {
+        case PICKUP_BLACKSCREEN: {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->SetTinyViewportCurse(1);
             return 1;
         }
-        case 0x40: {
+        case PICKUP_MINICAM: {
             if (m_tileOwnerHi == g_curPlayer) {
                 return 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->SetTinyViewportCurse(1);
             return 1;
         }
-        case 0x5a:
-        case 0x5b:
-        case 0x5c:
-        case 0x5d: {
+        case PICKUP_W:
+        case PICKUP_A:
+        case PICKUP_R:
+        case PICKUP_P: {
             g_gameReg->m_scoreHud->m_scoreValue = 1;
             return 1;
         }
-        case 0x5e: {
+        case PICKUP_HELPBOX: {
             (static_cast<CPlay*>(g_gameReg->m_curState))->PostActionCue(m_helpCueId);
             return 1;
         }
-        case 0x50: {
+        case PICKUP_COIN: {
             g_gameReg->m_scoreHud->m_coinsCollected++;
             return 1;
         }
-        case 0x4b: {
+        case PICKUP_STOPWATCH: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             if (play->m_frameMarker == 0) {
                 return 1;
@@ -3319,13 +3325,13 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
 
     {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-        if (kind == 0x12) {
-            play->BuildGruntTypeNameTable(0x12, 1, 1, 0);
+        if (kind == PICKUP_TOOB) {
+            play->BuildGruntTypeNameTable(PICKUP_TOOB, 1, 1, 0);
         } else {
             play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
         }
     }
-    m_entranceReason = kind;
+    m_entranceReason = static_cast<PickupType>(kind);
     ReadConfigFromButeMgr();
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);
@@ -3421,7 +3427,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_tileMgr->StopPendingFx();
         }
     }
-    if (kind == 0x14) {
+    if (kind == PICKUP_WARPSTONE) {
         m_tileMgr->ReinitGroup(m_object->m_screenX, m_object->m_screenY);
     }
     return 1;
@@ -3536,10 +3542,10 @@ void CGrunt::XferName(char*) {
         i32 onMoveTile = 0;
         i32 onWingzTile = 0;
         {
-            i32 reason = m_entranceReason;
-            if (reason == 0x12) {
+            PickupType reason = m_entranceReason;
+            if (reason == PICKUP_TOOB) {
                 onMoveTile = 1;
-            } else if (reason == 0x16) {
+            } else if (reason == PICKUP_WINGZ) {
                 onWingzTile = 1;
             }
         }
@@ -3631,18 +3637,21 @@ void CGrunt::XferName(char*) {
             }
 
             i32 gate = 1;
-            i32 hazard;
+            GruntDeathType hazard;
             switch (kind) {
                 case 0x23:
-                    hazard = 3;
+                    hazard = DEATH_HOLE;
                     break;
                 case 0xa:
                 case 0x6c:
                 case 0x72:
-                    hazard = 4;
+                    hazard = DEATH_SINK;
                     break;
                 case 0x20:
-                    hazard = cx;
+                    // Unrecovered: a tile COLUMN into a death-cause slot is not a
+                    // real conversion, and gate=0 keeps it from CellDispatch - but
+                    // dropping the store changes .text, so the assignment is real.
+                    hazard = static_cast<GruntDeathType>(cx);
                     gate = 0;
                     break;
                 default: {
@@ -3655,9 +3664,9 @@ void CGrunt::XferName(char*) {
                         cellId = ((bd->m_rowInts[pty]))[ptx * 7 + 3];
                     }
                     if (cellId == -1) {
-                        hazard = g_areaPageSize;
+                        hazard = g_areaPitDeath;
                     } else {
-                        hazard = 0xb;
+                        hazard = DEATH_EXPLODE;
                         if ((flags & 0x80) != 0 || (flags & 0x939) == 0) {
                             gate = 0;
                         }
@@ -3667,7 +3676,7 @@ void CGrunt::XferName(char*) {
                 case 4:
                 case 0x6e:
                 case 0x74:
-                    hazard = g_areaPageSize;
+                    hazard = g_areaPitDeath;
                     break;
             }
             if (gate != 0) {
@@ -3678,24 +3687,24 @@ void CGrunt::XferName(char*) {
 
     tileKindDone:
         if (flags & 0x400) {
-            i32 reason = m_entranceReason;
-            i32 pose = reason;
-            if (reason > 0x16) {
+            PickupType reason = m_entranceReason;
+            PickupType pose = reason;
+            if (reason > PICKUP_WINGZ) {
                 pose = m_toolId;
             }
-            if (pose == 8) {
+            if (pose == PICKUP_GRAVITYBOOTZ) {
                 goto afterTile;
             }
-            if (reason == 0xe || reason == 0x12) {
+            if (reason == PICKUP_SPRING || reason == PICKUP_TOOB) {
                 BuildGruntLoseItemAnimation();
             }
             if (m_wingzEnabled != 0) {
                 goto afterTile;
             }
-            if (m_gruntKind == 0x38) {
+            if (m_gruntKind == GRUNT_INVULNERABLE) {
                 goto afterTile;
             }
-            if (m_entranceReason == 1) {
+            if (m_entranceReason == PICKUP_BOMB) {
                 bool nameDiffers =
                     (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) != 0);
                 if (!nameDiffers) {
@@ -3720,7 +3729,7 @@ void CGrunt::XferName(char*) {
                 m_health = hp;
                 if (hp <= 0) {
                     ConsiderArrival(1);
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
                     return;
                 }
             }
@@ -3739,7 +3748,7 @@ void CGrunt::XferName(char*) {
             m_entranceClockLo = static_cast<i32>(g_frameTime);
             m_entranceClockHi = 0;
         } else if (flags & 0x2000000) {
-            if (m_entranceReason == 0x12) {
+            if (m_entranceReason == PICKUP_TOOB) {
                 CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
@@ -4017,8 +4026,8 @@ afterArrival:
     }
 
 kindDispatch:
-    if (m_gruntKind != 0) {
-        if (m_gruntKind == 0x39) {
+    if (m_gruntKind != GRUNT_NORMAL) {
+        if (m_gruntKind == GRUNT_CONVERSION) {
 
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_convertClock64
                 < m_convertTime64) {
@@ -4029,7 +4038,7 @@ kindDispatch:
             m_health = hp;
             if (hp <= 0) {
                 ConsiderArrival(1);
-                m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+                m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
                 return;
             }
             m_convertTimeLo =
@@ -4039,7 +4048,7 @@ kindDispatch:
             m_convertClockHi = 0;
             return;
         }
-        if (m_gruntKind == 0x38) {
+        if (m_gruntKind == GRUNT_INVULNERABLE) {
 
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_shimmerClock64
                 >= m_shimmerWindow64) {
@@ -4048,7 +4057,7 @@ kindDispatch:
                     pick = 0x10;
                 }
                 CShadeTable* sel =
-                    g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= 0x17);
+                    g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_BABYWALKER);
                 CWwdGameObjectA* obj = m_object;
                 i32 cmd = obj->m_drawFillCmd;
                 obj->m_drawActive = 1;
@@ -4060,7 +4069,7 @@ kindDispatch:
             m_convertTime64 + m_convertClock64 - static_cast<i64>(static_cast<u32>(g_frameTime));
         i32 leftMs = (left < 0 ? 0 : static_cast<i32>(left));
         if (leftMs <= 0xbb8) {
-            if (m_gruntKind == 0x36) {
+            if (m_gruntKind == GRUNT_GHOST) {
 
                 i64 rem = m_convertTime64 + m_convertClock64
                           - static_cast<i64>(static_cast<u32>(g_frameTime));
@@ -4084,51 +4093,51 @@ kindDispatch:
             }
             if (leftMs == 0) {
                 switch (m_gruntKind) {
-                    case 0x36: {
+                    case PICKUP_GHOST: {
                         CWwdGameObjectA* obj = m_object;
-                        m_gruntKind = 0;
+                        m_gruntKind = GRUNT_NORMAL;
                         obj->m_drawActive = 1;
                         obj->m_drawFillCmd = 0xa;
                         break;
                     }
-                    case 0x38:
-                        m_gruntKind = 0;
+                    case PICKUP_INVULNERABILITY:
+                        m_gruntKind = GRUNT_NORMAL;
                         break;
-                    case 0x37:
-                    case 0x3b:
-                    case 0x3c: {
+                    case PICKUP_SUPERSPEED:
+                    case PICKUP_ROIDZ:
+                    case PICKUP_REACTIVEARMOR: {
                         CWwdGameObjectA* ps = m_powerupSprite;
-                        m_gruntKind = 0;
+                        m_gruntKind = GRUNT_NORMAL;
                         if (ps != 0) {
                             ps->m_flags |= 0x10000;
                             m_powerupSprite = 0;
                         }
                         break;
                     }
-                    case 0x3a: {
+                    case PICKUP_DEATHTOUCH: {
                         CWwdGameObjectA* ps = m_powerupSprite;
-                        m_gruntKind = 0;
+                        m_gruntKind = GRUNT_NORMAL;
                         if (ps != 0) {
                             ps->m_flags |= 0x10000;
                             m_powerupSprite = 0;
                         }
-                        i32 typeId = m_toolId;
-                        m_entranceReason = -1;
+                        PickupType typeId = m_toolId;
+                        m_entranceReason = PICKUP_INVALID;
                         LoadGruntTypeTable(typeId, 1, 0, 0);
                         break;
                     }
                 }
                 m_object->m_stateFlags &= ~8;
                 ReadConfigFromButeMgr();
-                i32 reason = m_entranceReason;
-                i32 vehicle = (reason >= 0x17) ? 1 : 0;
+                PickupType reason = m_entranceReason;
+                i32 vehicle = (reason >= PICKUP_BABYWALKER) ? 1 : 0;
                 i32 variant = 0;
                 if (vehicle != 0) {
                     switch (reason) {
-                        case 0x17:
-                        case 0x19:
-                        case 0x1a:
-                        case 0x1d:
+                        case PICKUP_BABYWALKER:
+                        case PICKUP_BIGWHEEL:
+                        case PICKUP_GOKART:
+                        case PICKUP_POGOSTICK:
                             variant = 1;
                             break;
                     }
@@ -4341,7 +4350,7 @@ void CGrunt::AdvanceMotion() {
             if (ClaimSwitchTile() != 0) {
                 return;
             }
-            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
             return;
         }
         if (m_lastTilePx.m_x == m_entrancePx.m_x && m_lastTilePx.m_y == m_entrancePx.m_y) {

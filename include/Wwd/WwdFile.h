@@ -1,12 +1,13 @@
+#ifndef SRC_WWD_WWDFILE_H
+#define SRC_WWD_WWDFILE_H
+
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <Enums.h>
 #include <Ints.h>
-
-#ifndef SRC_WWD_WWDFILE_H
-#define SRC_WWD_WWDFILE_H
 
 class CDDrawWorker;
 

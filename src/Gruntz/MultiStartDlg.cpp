@@ -4,6 +4,7 @@
 
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
+#include <Enums.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -81,6 +82,9 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     return 1;
 }
 
+// @identity-TODO _MultiMapComboEditProc@16 - thunk oracle: retail gave this NO incremental
+// thunk, so it came from the static LIBRARY, while the rest of this TU
+// (16 fns) was a link-line object. It belongs to another compiland.
 RVA(0x000c1a10, 0x70)
 i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {

@@ -12,9 +12,9 @@
 # Regenerate deliberately (after modeling a NEW MI class's secondary) with:
 #   python -m gruntz.cleanliness.vtable_secondary --write-baseline
 # Columns: rva<TAB>name
-0x1e949c	??_7zPTree@@6BCButeNodeEntry@@@
+0x1e949c	??_7zPTree@@6BzPtrColl@@@
 0x1e94ac	??_7zPTree@@6BzErrHandling@@@
 0x1f0510	??_7CBSecStream@@6BCContainerErr@@@
-0x1f0514	??_7CBSecStream@@6BCButeNodeEntry@@@
-0x1f0518	??_7CButeNode@@6BCButeNodeEntry@@@
+0x1f0514	??_7CBSecStream@@6BzPtrColl@@@
+0x1f0518	??_7CButeNode@@6BzPtrColl@@@
 0x1f051c	??_7CButeNode@@6BCContainerErr@@@

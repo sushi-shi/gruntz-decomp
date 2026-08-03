@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
@@ -58,7 +59,7 @@ public:
     i32 SumElapsedTimeForGroup();
     i32 GetRecordValue(i32 b);
     void FillRecord(i32 index, i32 phase);
-    i32 Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     BattlezRecord* m_records;
     i32 m_count;

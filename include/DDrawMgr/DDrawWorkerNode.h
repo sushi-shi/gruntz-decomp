@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
 #include <Ints.h>
 
@@ -17,7 +18,7 @@ class CDDrawWorkerBase : public CResolveNode {
 public:
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 SetPosition(i32 x, i32 y) OVERRIDE;
 

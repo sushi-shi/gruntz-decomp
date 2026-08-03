@@ -10,6 +10,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicFnTable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/UserLogic.h>
@@ -20,7 +22,7 @@ class LeafCue;
 
 class CInGameIcon : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00011cb0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMEICON;

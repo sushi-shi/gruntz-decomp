@@ -6,6 +6,7 @@
 
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/Loadable.h>
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/StateId.h>
@@ -22,8 +23,9 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-RVA_COMPGEN(0x000d5d70, 0x16, ??1CLoadable@@UAE@XZ)
-
+// @identity-TODO ?1CLoadable - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (26 fns) came from the static library. It belongs to another compiland.
 RVA(0x00154aa0, 0x20)
 i32 CDDrawWorkerRegistry::IsReady() {
     memset(&g_bltFx, 0, sizeof(g_bltFx));
@@ -76,7 +78,7 @@ CImage* CDDrawWorkerRegistry::LoadFrameByKey(char* path, const char* key, i32 in
 RVA(0x00154ce0, 0x101)
 CImage* CDDrawWorkerRegistry::CreateDescriptorFrameByKey(
     PidHeader* desc,
-    i32 mode,
+    FileImageFormat mode,
     const char* key,
     i32 index,
     u32 size
@@ -134,7 +136,7 @@ CDDrawWorkerRegistry::InsertFrameForWorker(void* rec, CDDrawWorker* worker, i32 
 RVA(0x00154f40, 0x20)
 CImage* CDDrawWorkerRegistry::CreateDescriptorFrameForWorker(
     PidHeader* desc,
-    i32 mode,
+    FileImageFormat mode,
     CDDrawWorker* worker,
     i32 index,
     u32 size
@@ -352,7 +354,7 @@ i32 CDDrawWorker::IsLoaded() {
 }
 
 RVA(0x00155770, 0x6)
-i32 CDDrawWorker::GetClassId() {
+LoadableClassId CDDrawWorker::GetClassId() {
     return CLASSID_WORKER;
 }
 

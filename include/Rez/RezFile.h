@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 

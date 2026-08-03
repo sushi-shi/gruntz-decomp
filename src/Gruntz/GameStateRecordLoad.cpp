@@ -10,6 +10,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Io/FileMem.h>
@@ -92,22 +93,22 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     READCSTR(m_deathFrameSetName);
 
     NAMEREF(m_poseWalk);
-    NAMEREF(m_poseAttack[GRUNT_ATTACK1]);
-    NAMEREF(m_poseAttack[GRUNT_ATTACK2]);
+    NAMEREF(AT(m_poseAttack, GRUNT_ATTACK1));
+    NAMEREF(AT(m_poseAttack, GRUNT_ATTACK2));
     NAMEREF(m_poseAttackIdle);
-    NAMEREF(m_poseStruck[GRUNT_STRUCK1]);
-    NAMEREF(m_poseStruck[GRUNT_STRUCK2]);
-    NAMEREF(m_poseIdle[GRUNT_IDLE1]);
-    NAMEREF(m_poseIdle[GRUNT_IDLE2]);
-    NAMEREF(m_poseIdle[GRUNT_IDLE3]);
-    NAMEREF(m_poseIdle[GRUNT_IDLE4]);
-    NAMEREF(m_poseIdle[GRUNT_IDLE5]);
+    NAMEREF(AT(m_poseStruck, GRUNT_STRUCK1));
+    NAMEREF(AT(m_poseStruck, GRUNT_STRUCK2));
+    NAMEREF(AT(m_poseIdle, GRUNT_IDLE1));
+    NAMEREF(AT(m_poseIdle, GRUNT_IDLE2));
+    NAMEREF(AT(m_poseIdle, GRUNT_IDLE3));
+    NAMEREF(AT(m_poseIdle, GRUNT_IDLE4));
+    NAMEREF(AT(m_poseIdle, GRUNT_IDLE5));
     NAMEREF(m_poseDeath);
-    NAMEREF(m_poseToy[GRUNT_TOY1]);
-    NAMEREF(m_poseToy[GRUNT_TOY2]);
-    NAMEREF(m_poseToy[GRUNT_TOY_BREAK]);
-    NAMEREF(m_poseItem[GRUNT_ITEM1]);
-    NAMEREF(m_poseItem[GRUNT_ITEM2]);
+    NAMEREF(AT(m_poseToy, GRUNT_TOY1));
+    NAMEREF(AT(m_poseToy, GRUNT_TOY2));
+    NAMEREF(AT(m_poseToy, GRUNT_TOY_BREAK));
+    NAMEREF(AT(m_poseItem, GRUNT_ITEM1));
+    NAMEREF(AT(m_poseItem, GRUNT_ITEM2));
     NAMEREF(m_pickupGeoSrc);
 
     ar->Read(&m_reserved18c, 4);
@@ -271,14 +272,14 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_payloads)->AddTail(item);
     }
 
-    i32 flag = (m_entranceReason >= 0x17);
+    i32 flag = (m_entranceReason >= PICKUP_BABYWALKER);
     CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, flag);
     CWwdGameObjectA* cb = m_object;
     cb->m_drawActive = 1;
     cb->m_drawFillCmd = 0xa;
     cb->m_drawFillArg = r;
 
-    if (m_gruntKind == 0x36) {
+    if (m_gruntKind == GRUNT_GHOST) {
         CWwdGameObjectA* cb2 = m_object;
         i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
         cb2->m_drawActive = 1;

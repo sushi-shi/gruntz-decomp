@@ -8,6 +8,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Wap32/ZVec.h>
@@ -16,7 +17,12 @@ template<> DATA(0x00245ef0)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(2000, 2010);
 
 RVA(0x0000f5a0, 0x47)
-i32 CSingleFrameMessage::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CSingleFrameMessage::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -40,6 +46,8 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
 
 VTBL(CSingleFrameMessage, 0x001e864c);
 
+// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
+// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id));
@@ -48,6 +56,8 @@ void CSingleFrameMessage::FireActivation(i32 id) {
     }
 }
 
+// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ab710, 0x18d)
 void CSingleFrameMessage::RegisterActs() {
     i32 id = ActFindId("A");
@@ -70,6 +80,8 @@ void CSingleFrameMessage::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
+// @interleaver AdvanceAnim - 18 B lone body at 0xab910, between RegisterActs
+// (singleframemessage) and ?0CSimpleAnimation (simpleanimation): a first-use placement.
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {
     m_wwdObject->m_flags |= 0x10000;

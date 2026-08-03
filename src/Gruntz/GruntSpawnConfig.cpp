@@ -6,13 +6,14 @@
 #include <Bute/SymParser.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/StreamVoice.h>
-#include <Gruntz/Enums.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntVoice.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Random.h>
+#include <Rez/RezTypeTag.h>
 
 RVA(0x00085df0, 0x4a)
 CGruntSpawnConfig::~CGruntSpawnConfig() {
@@ -382,12 +383,15 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     if (config == 0) {
         return 0;
     }
-    if (config->m_gruntKind == 0x3a) {
+    if (config->m_gruntKind == GRUNT_DEATHTOUCH) {
         return VOICE_CUES_PER_BAND * 19 + cue;
     }
-    if (config->m_gruntKind == 0x39) {
+    if (config->m_gruntKind == GRUNT_CONVERSION) {
         return VOICE_CUES_PER_BAND * 13 + cue;
     }
+    // The UNSIGNED key is codegen steering, not a widening for its own sake:
+    // cl emits the unsigned `ja` range check only for an unsigned switch key
+    // (docs/patterns/switch-key-unsigned-ja-vs-jg.md).
     switch (static_cast<u32>(config->m_entranceReason)) {
         case 0:
             return VOICE_CUES_PER_BAND * 17 + cue;

@@ -9,6 +9,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Play.h>
@@ -55,7 +56,7 @@ i32 CExitTrigger::AdvanceAnim() {
             }
             g_gameReg->m_scoreHud->MarkFlag(hitPlayer, owningPlayer);
             g_gameReg->m_cmdGrid->ClearRowAndRefresh(owningPlayer);
-            g_gameReg->m_cmdGrid->CellDispatch(hitPlayer, hitRow, 0xd, -1);
+            g_gameReg->m_cmdGrid->CellDispatch(hitPlayer, hitRow, DEATH_EXIT, -1);
             if (m_warlordLogic != 0) {
                 m_warlordLogic->ResolveDeathAnimation();
                 m_warlordLogic = 0;

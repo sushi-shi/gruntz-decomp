@@ -10,7 +10,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
@@ -114,7 +116,7 @@ void CSBI_ImageSet::Notify(i32 id) {
 }
 
 RVA(0x000e74f0, 0x152)
-i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
+i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -124,7 +126,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pO
     }
     char buf[0x80];
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             s->Read(&m_frameIndex, 4);
             g_serialCounter++;
             s->Read(buf, 0x80);
@@ -139,7 +141,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pO
                 m_frameSet = 0;
             }
             break;
-        case 4:
+        case SERIAL_SAVE:
             s->Write(&m_frameIndex, 4);
             g_serialCounter++;
             memset(buf, 0, 0x80);

@@ -9,6 +9,7 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Play.h>
 #include <Rez/RezSync.h>
@@ -64,7 +65,7 @@ i32 g_attractStateCount = 0;
 DATA(0x00245538)
 i32 g_dlgVal_645538;
 DATA(0x0024553c)
-i32 g_areaHazardParam = 0;
+GruntDeathType g_areaHazardDeath = DEATH_DROP;
 
 DATA(0x00245540)
 FreeNodePool g_coordPool;

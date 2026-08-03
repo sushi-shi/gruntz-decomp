@@ -4,9 +4,11 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
@@ -18,7 +20,7 @@
 #include <string.h>
 
 RVA(0x00109e00, 0x245)
-i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
+i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (arc == 0) {
         return 0;
     }
@@ -27,7 +29,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
         return 0;
     }
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
 
             arc->Read(&m_arrivalMode, 4);
             arc->Read(&m_targetX, 4);
@@ -60,7 +62,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
             }
             return 1;
         }
-        case 4: {
+        case SERIAL_SAVE: {
 
             arc->Write(&m_arrivalMode, 4);
             arc->Write(&m_targetX, 4);

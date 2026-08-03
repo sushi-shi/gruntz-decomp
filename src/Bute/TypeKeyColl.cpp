@@ -1,3 +1,4 @@
+#include <Enums.h>
 #include <Gruntz/ProjActCache.h>
 #include <Gruntz/UserLogic.h>
 #include <Mfc.h>
@@ -60,7 +61,7 @@ VTBL(_zdvec, 0x001f04d0);
 VTBL(_zvec, 0x001f04d4);
 VTBL(CTypeCollRuntime, 0x001f04e4);
 
-VTBL(CButeNodeEntry, 0x001f04d8);
+VTBL(zPtrColl, 0x001f04d8);
 // Interior fields of one CActReg; do not define overlapping globals.
 
 DATA(0x0021ad28)
@@ -600,21 +601,18 @@ _zvec::~_zvec() {
 }
 
 RVA(0x0016df70, 0x22)
-CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*))
+zPtrColl::zPtrColl(i32 n, void(__cdecl* teardown)(void*))
 
     : m_teardown(teardown), m_kind(static_cast<i16>(n)), m_nodeCount(0) {}
 
-RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GCButeNodeEntry@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GzPtrColl@@UAEPAXI@Z)
 RVA(0x0016dfc0, 0x7)
-CButeNodeEntry::~CButeNodeEntry() {}
+zPtrColl::~zPtrColl() {}
 
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
 
-    : zErrHandling(&g_symTabErrorSlot),
-      CButeNodeEntry(n, teardown),
-      m_root(0),
-      m_lookupPending(0) {}
+    : zErrHandling(&g_symTabErrorSlot), zPtrColl(n, teardown), m_root(0), m_lookupPending(0) {}
 
 RVA(0x0016e070, 0x7b)
 void zPTree::ClearRecursive(CButeTreeNode* node) {
@@ -892,12 +890,9 @@ i32 ProjTypeXfer(CUserLogic* ar) {
     return 1;
 }
 
-DATA_SYMBOL(0x002bf620, 0x2c, ?g_buteTree@@3VCButeTree@@A)
-
-void ButeTreeNopFree(void*);
-
 __inline CButeTree::CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 
+DATA(0x002bf620)
 CButeTree g_buteTree = CButeTree(&ButeTreeNopFree, 0);
 
 RVA_COMPGEN(0x0016e7a0, 0x48, ??__Fg_typeColl@@YAXXZ)

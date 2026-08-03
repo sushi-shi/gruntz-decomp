@@ -2,48 +2,16 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/GruntzCommandId.h>
 #include <Wap32/Wap32.h>
 
 DATA(0x00253c68)
 CGameWnd* g_activeGameWnd;
 VTBL(CGameWnd, 0x001ea344);
 
-RVA_COMPGEN(0x00094c10, 0x16, ??1CGameWnd@@UAE@XZ)
-
-RVA(0x00094c80, 0x5)
-i32 CGameWnd::OnKeyUp(WPARAM, LPARAM) {
-    return 0;
-}
-i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
-    return 0;
-}
-i32 CGameWnd::OnLButtonDown(WPARAM, i32, i32) {
-    return 0;
-}
-RVA(0x00094cc0, 0x5)
-i32 CGameWnd::OnRButtonDown(WPARAM, i32, i32) {
-    return 0;
-}
-RVA(0x00094ce0, 0x5)
-i32 CGameWnd::OnLButtonUp(WPARAM, i32, i32) {
-    return 0;
-}
-RVA(0x00094d00, 0x5)
-i32 CGameWnd::OnRButtonUp(WPARAM, i32, i32) {
-    return 0;
-}
-i32 CGameWnd::OnMouseMove(WPARAM, i32, i32) {
-    return 0;
-}
-RVA(0x00094d40, 0x5)
-i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
-    return 0;
-}
-i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
-    return 0;
-}
-RVA_COMPGEN(0x00094d80, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)
-
+// @identity-TODO ?1CGameWnd - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (10 fns) came from the static library. It belongs to another compiland.
 RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
     m_hwnd = 0;
@@ -286,13 +254,14 @@ i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     i32 notifyCode = static_cast<i32>((wParam >> 16));
     i32 cmdId = static_cast<i32>((wParam & 0xffff));
 
-    if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)) {
+    if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommandId>(cmdId), lParam)) {
         return 1;
     }
     if (HandleWindowCommand(notifyCode, cmdId, lParam)) {
         return 1;
     }
-    return m_owner->m_gameMgr->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)
+    return m_owner->m_gameMgr
+               ->HandleCommand(notifyCode, static_cast<GruntzCommandId>(cmdId), lParam)
            != 0;
 }
 

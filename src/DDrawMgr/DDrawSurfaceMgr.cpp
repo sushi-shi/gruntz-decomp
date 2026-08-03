@@ -15,8 +15,11 @@
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/Object.h>
@@ -276,7 +279,7 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 // @early-stop
 RVA(0x00156020, 0x505)
 
-i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i32 typeId) {
+i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
     if (path == 0) {
         return 0;
     }
@@ -305,37 +308,37 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
     header.m_activeCount = probe;
     S.Write(&header, sizeof(header));
 
-    if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
+    if (m_callback && cb(this, &S, SERIAL_SNAPSHOT_BEGIN, LOGIC_NONE, 0) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachProbe(&S, typeId) == 0) {
         return 0;
     }
-    if (m_callback && cb(this, &S, 3, 0, 0) == 0) {
+    if (m_callback && cb(this, &S, SERIAL_PRESAVE, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 3, typeId) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, SERIAL_PRESAVE, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, 3, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_PRESAVE, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
+    if (m_callback && cb(this, &S, SERIAL_SAVE, LOGIC_NONE, 0) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachSerialize(&S, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, 4, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_SAVE, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
+    if (m_callback && cb(this, &S, SERIAL_POSTSAVE, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 5, typeId) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTSAVE, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, 5, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_POSTSAVE, LOGIC_NONE, 0) == 0) {
         return 0;
     }
 
@@ -344,7 +347,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
 }
 
 RVA(0x00156530, 0x557)
-i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
+i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
     if (name == 0) {
         return 0;
     }
@@ -365,7 +368,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
 
     void* headerArg = &header;
 
-    if (m_callback == 0 || m_callback(this, &S, 2, typeId, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, SERIAL_RESTORE_BEGIN, typeId, headerArg) == 0) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
@@ -373,31 +376,31 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
     if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 6, typeId, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, SERIAL_PRELOAD, typeId, headerArg) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 6, typeId) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, SERIAL_PRELOAD, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, 6, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_PRELOAD, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 7, typeId, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, SERIAL_LOAD, typeId, headerArg) == 0) {
         return 0;
     }
     if (m_childGroup->Deserialize(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, 7, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_LOAD, LOGIC_NONE, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 8, typeId, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, SERIAL_POSTLOAD, typeId, headerArg) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 8, typeId) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTLOAD, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, 8, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_POSTLOAD, LOGIC_NONE, 0) == 0) {
         return 0;
     }
 
@@ -408,7 +411,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
 
 RVA(0x00156a90, 0x3a)
 
-i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, i32 mode, i32 typeId, void* payload) {
+i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
     if (!ar) {
         return 0;
     }

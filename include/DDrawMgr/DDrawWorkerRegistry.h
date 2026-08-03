@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/Loadable.h>
 #include <Gruntz/StateId.h>
 #include <Ints.h>
@@ -24,7 +25,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE;
     virtual i32 IsReady() OVERRIDE;
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual CImage*
     CreateBlankFrameByKey(i32 width, i32 height, const char* key, i32 index, i32 keyed);
@@ -33,14 +34,19 @@ public:
 
     virtual CImage* CreateDescriptorFrameForWorker(
         PidHeader* desc,
-        i32 mode,
+        FileImageFormat mode,
         CDDrawWorker* worker,
         i32 index,
         u32 size
     );
 
-    virtual CImage*
-    CreateDescriptorFrameByKey(PidHeader* desc, i32 mode, const char* key, i32 index, u32 size);
+    virtual CImage* CreateDescriptorFrameByKey(
+        PidHeader* desc,
+        FileImageFormat mode,
+        const char* key,
+        i32 index,
+        u32 size
+    );
 
     virtual CImage* InsertFrameForWorker(void* rec, CDDrawWorker* worker, i32 index, i32 mode);
 

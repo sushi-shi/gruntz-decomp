@@ -1,6 +1,7 @@
 #ifndef GRUNTZ_SAVESCREENSHOT_H
 #define GRUNTZ_SAVESCREENSHOT_H
 
+#include <Enums.h>
 #include <Ints.h>
 
 class CDDSurface;

@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -19,7 +20,7 @@ extern u32 g_defaultZ;
 
 class CMovingLogic : public CUserLogic {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_NONE;
     }

@@ -10,10 +10,10 @@ struct CVariantSlot;
 struct CButeTreeNode;
 extern CVariantSlot g_symTabErrorSlot;
 
-class CButeNodeEntry {
+class zPtrColl {
 public:
-    CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*));
-    virtual ~CButeNodeEntry();
+    zPtrColl(i32 n, void(__cdecl* teardown)(void*));
+    virtual ~zPtrColl();
 
     void(__cdecl* m_teardown)(void*);
     i16 m_kind;
@@ -22,7 +22,7 @@ public:
 };
 SIZE(0x10);
 
-class zPTree : public zErrHandling, public CButeNodeEntry {
+class zPTree : public zErrHandling, public zPtrColl {
 public:
     zPTree(void(__cdecl* teardown)(void*), i32 n);
 

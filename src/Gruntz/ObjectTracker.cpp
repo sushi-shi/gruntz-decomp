@@ -12,7 +12,7 @@ RVA(0x000f7d90, 0x171)
 i32 CGrunt::StepPeerTracking() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
-    if (m_vehiclePickupType == 0) {
+    if (m_vehiclePickupType == PICKUP_NONE) {
         m_arrivalState = 5;
         m_defenderState = 0;
         m_dwell = 0;

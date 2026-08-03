@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/SpawnList.h>
 
 RVA(0x0011c630, 0x6e)

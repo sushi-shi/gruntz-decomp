@@ -26,6 +26,8 @@
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundCue.h>
@@ -67,6 +69,8 @@ RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
 
+// @interleaver FinalizeStep - 71 B, sits in this class's destructor-COMDAT pool at
+// 0x13c70 rather than in the TU's own .text block.
 RVA(0x00013c70, 0x47)
 void CMovingLogic::FinalizeStep(char*) {
     if (m_deferredCallback != 0) {
@@ -167,18 +171,17 @@ CProjectile::~CProjectile() {
     m_hitList.RemoveAll();
 }
 
-enum ProjectileKind {
-    PROJ_BOOMERANG = 2,
-    PROJ_GUNHAT = 9,
-    PROJ_NERFGUN = 10,
-    PROJ_ROCK = 11,
-    PROJ_WELDER = 21,
-    PROJ_WINGZ = 22,
-};
-
 // @early-stop
 RVA(0x000df050, 0x6ed)
-i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
+i32 CProjectile::LoadProjectileSprites(
+    PickupType kind,
+    i32 a,
+    i32 b,
+    i32 sx,
+    i32 sy,
+    i32 t0,
+    i32 t1
+) {
     CString key;
     m_srcRow = a;
     m_targetX = (sx & ~0x1f) + 0x10;
@@ -194,36 +197,36 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     i32 count = 1;
 
     switch (kind) {
-        case PROJ_ROCK:
+        case PICKUP_ROCK:
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
             m_timePerTile = g_buteMgr.GetDwordDef("Projectile", "RockProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_GUNHAT:
+        case PICKUP_GUNHAT:
             key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "GunhatProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_BOOMERANG:
+        case PICKUP_BOOMERANG:
             key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "BoomerangProjectileTimePerTile", 0xbb8);
             m_isArcing = 0;
             break;
-        case PROJ_NERFGUN:
+        case PICKUP_NERFGUN:
             key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "NerfGunProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_WELDER:
+        case PICKUP_WELDER:
             key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "WelderProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
-        case PROJ_WINGZ: {
+        case PICKUP_WINGZ: {
             key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "WingzProjectileTimePerTile", 0xbb8);
@@ -383,7 +386,7 @@ void CProjectile::AdvanceMotion() {
         return;
     }
 
-    if (m_kind == 0x16) {
+    if (m_kind == PICKUP_WINGZ) {
         CWwdGameObjectA* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
         if (owner->m_screenX < reg->m_viewBounds.right && owner->m_screenX >= reg->m_viewBounds.left
@@ -398,7 +401,7 @@ void CProjectile::AdvanceMotion() {
 
     if (m_curX != m_targetX || m_curY != m_targetY) {
 
-        if (m_kind == 0x16) {
+        if (m_kind == PICKUP_WINGZ) {
             ScanTargets(0);
         }
         m_posX = m_posX + static_cast<double>(g_frameDelta) * m_velX * m_velScale;
@@ -507,7 +510,7 @@ void CProjectile::AdvanceMotion() {
     }
     m_arrived = 1;
     i32 tier = 0;
-    if (m_kind != 0x16) {
+    if (m_kind != PICKUP_WINGZ) {
         CGruntzMgr* reg = g_gameReg;
         CMapMgr* plane = reg->m_tileGrid;
         i32 tileX = m_targetX >> 5;
@@ -679,8 +682,9 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             if (m_srcRow == tileY && m_srcCol == col) {
 
-                if (impact != 0 && g->m_entranceCommitted != 0 && g->m_entranceReason == 0) {
-                    g->LoadGruntTypeTable(2, 1, 0, 0);
+                if (impact != 0 && g->m_entranceCommitted != 0
+                    && g->m_entranceReason == PICKUP_NONE) {
+                    g->LoadGruntTypeTable(PICKUP_BOOMERANG, 1, 0, 0);
                 }
                 return;
             }
@@ -704,7 +708,16 @@ void CProjectile::ScanTargets(i32 impact) {
                 g_coordPool.m_freeHead = p->m_next;
             }
             m_hitList.AddTail(slot);
-            g->StepCombatReaction(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
+            g->StepCombatReaction(
+                m_kind,
+                1,
+                m_srcRow,
+                m_srcCol,
+                m_targetId,
+                m_ownerId,
+                1,
+                PICKUP_NONE
+            );
         }
         rowBase += 15;
         tileY++;
@@ -713,7 +726,12 @@ void CProjectile::ScanTargets(i32 impact) {
 
 // @early-stop
 RVA(0x000e0d40, 0x6c2)
-i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CProjectile::SerializeMove(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
@@ -722,7 +740,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
     char buf[0x80];
 
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
             m_sound = 0;
             s->Read(&m_kind, 4);
             s->Read(&m_srcRow, 4);
@@ -793,7 +811,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             break;
         }
 
-        case 4: {
+        case SERIAL_SAVE: {
             s->Write(&m_kind, 4);
             s->Write(&m_srcRow, 4);
             s->Write(&m_srcCol, 4);
@@ -852,7 +870,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
     }
 
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
             s->Read(buf, 0x80);
             s->Read(m_blob, 0x10);
             CGameObject* obj = pObj;
@@ -868,7 +886,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             m_value = static_cast<CAniElement*>(out);
             return 1;
         }
-        case 4: {
+        case SERIAL_SAVE: {
             char blob[0x80];
             memset(blob, 0, sizeof(blob));
             if (m_value != 0) {
@@ -1029,26 +1047,31 @@ i32 CTimeBomb::LoadAttributes() {
 }
 
 RVA(0x000e2080, 0xc1)
-i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CTimeBomb::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             sa->Read(&m_startTime, 8);
             sa->Read(&m_duration, 8);
             break;
-        case 4:
+        case SERIAL_SAVE:
             sa->Write(&m_startTime, 8);
             sa->Write(&m_duration, 8);
             break;
     }
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             sa->Read(&m_fastPhase, 4);
             break;
-        case 4:
+        case SERIAL_SAVE:
             sa->Write(&m_fastPhase, 4);
             break;
     }

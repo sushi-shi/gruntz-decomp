@@ -6,6 +6,8 @@
 #include <Mfc.h>
 
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 struct BrickzCell;
@@ -46,7 +48,7 @@ public:
     ~CMapMgr();
 
     virtual void Reset();
-    virtual i32 Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj);
+    virtual i32 Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
     virtual i32 Save(CFileMemBase*);
     virtual i32 Load(CFileMemBase*);
 

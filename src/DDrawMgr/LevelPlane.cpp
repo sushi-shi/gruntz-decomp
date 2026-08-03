@@ -17,9 +17,12 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
+#include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Image/CImage.h>
@@ -1018,28 +1021,28 @@ void CDDrawWorkerHost::ResolveColorKey() {
 }
 
 RVA(0x00163710, 0x60)
-i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, i32 kind, i32, i32) {
+i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicTypeId, i32) {
     if (!s) {
         return 0;
     }
     switch (kind) {
-        case 3:
+        case SERIAL_PRESAVE:
             return 1;
-        case 4:
+        case SERIAL_SAVE:
             if (!Save(s)) {
                 return 0;
             }
             break;
-        case 5:
+        case SERIAL_POSTSAVE:
             return 1;
-        case 6:
+        case SERIAL_PRELOAD:
             return 1;
-        case 7:
+        case SERIAL_LOAD:
             if (!Load(s)) {
                 return 0;
             }
             break;
-        case 8:
+        case SERIAL_POSTLOAD:
             return 1;
     }
     return 1;

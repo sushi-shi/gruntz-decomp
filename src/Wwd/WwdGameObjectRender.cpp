@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
 #include <Wwd/WwdGameObjectFamily.h>

@@ -6,6 +6,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
@@ -15,8 +16,15 @@ VTBL(CBehindCandyAni, 0x001e838c);
 template<> DATA(0x00245f98)
 CActReg CActRegPool<CBehindCandyAni>::s_table(2000, 2010);
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00010050, 0x47)
-i32 CBehindCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CBehindCandyAni::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

@@ -19,6 +19,7 @@
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntStartingPoint.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
 #include <Gruntz/SerialArchive.h>
@@ -29,6 +30,7 @@
 #include <Gruntz/Wormhole.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Rez/RezTypeTag.h>
 
 #include <fstream.h>
 #include <stdlib.h>
@@ -83,7 +85,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
-    CParseSource* node = m_levelBank->ResolveQualified(key, 0x575744);
+    CParseSource* node = m_levelBank->ResolveQualified(key, REZ_TAG_WWD);
     if (node == 0) {
         return 0;
     }
@@ -217,14 +219,14 @@ void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
 }
 
 RVA(0x0003c8f0, 0x76)
-i32 CTriRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CTriRecord::Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&row, 4);
             ar->Write(&column, 4);
             ar->Write(&direction, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&row, 4);
             ar->Read(&column, 4);
             ar->Read(&direction, 4);

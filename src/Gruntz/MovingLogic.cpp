@@ -4,8 +4,10 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 #include <strstrea.h>
 
@@ -87,12 +89,17 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 
 // @early-stop
 RVA(0x0016e7f0, 0x1cf)
-i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CUserLogic::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (arc == 0) {
         return 0;
     }
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
 
             i32 len;
             arc->Read(&len, 4);
@@ -114,7 +121,7 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObje
 
             break;
         }
-        case 4: {
+        case SERIAL_SAVE: {
 
             char buf[0x100];
             ostrstream accum(buf, 0x100);
@@ -205,12 +212,17 @@ void CMovingLogic::AdvanceMotion() {
 
 // @early-stop
 RVA(0x0016f4a0, 0x1da)
-i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CMovingLogic::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (arc == 0) {
         return 0;
     }
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
 
             i32 len;
             arc->Read(&len, 4);
@@ -226,7 +238,7 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameOb
 
             break;
         }
-        case 4: {
+        case SERIAL_SAVE: {
 
             char buf[0x100];
             ostrstream accum(buf, 0x100);

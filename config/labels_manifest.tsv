@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 349  functions: 4477
+# units: 357  functions: 4474
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -35,7 +35,8 @@ brickzload	1
 bridgemovesprites	1
 bsecstream	2
 buildgruntzcrcinfo	1
-butemgr	55
+butedtorpool	5
+butemgr	50
 butenode	5
 butestoreclear	1
 butetail	2
@@ -49,7 +50,8 @@ chatboxowner	7
 cheatmgr	7
 checkpointdlg	6
 checkpointswitchbuild	1
-cimage	28
+cimage	20
+cimagecomdats	8
 circleshadeblit	1
 cmdscrollapply	2
 colorhsv	1
@@ -68,12 +70,14 @@ ddpalette	23
 ddrawblterrthunk	1
 ddrawptrcollections	10
 ddrawshadeblit	12
-ddrawsubmgr	124
+ddrawsubmgr	123
 ddrawsubmgrleaf	13
+ddrawsubmgrrefresh	1
 ddrawsurfacemgr	21
-ddrawsurfacepair	45
+ddrawsurfacepair	44
+ddrawsurfacepairblt	1
 ddrawworkerhost	5
-ddrawworkerregistry	27
+ddrawworkerregistry	26
 ddsurface	57
 debugprintf	14
 debugtiming	2
@@ -118,7 +122,8 @@ gameobjectfactory	1
 gamesave	1
 gamestaterecordload	1
 gametext	1
-gamewnd	17
+gamewnd	10
+gamewndcomdats	5
 glyphstr	4
 goowellmgr	1
 grunt	29
@@ -159,7 +164,8 @@ gruntzmapmgr	3
 gruntzmgr	170
 gruntzmgr2	1
 gruntzmgrcmd	1
-gruntzrandom	2
+gruntzmgrrand	1
+gruntzrandom	1
 gruntzsoundz	35
 gruntzwnd	18
 guardpoint	5
@@ -218,7 +224,8 @@ mgrautoscroll	1
 mgrlistfind	1
 mgrsettings	1
 modeobjinit	2
-motionstate	5
+motionstate	2
+motionstatestep	3
 moviepaletteupload	1
 movieplayer	2
 movinglogic	5
@@ -344,8 +351,9 @@ wormhole	29
 wormholeacts	2
 wwdfactoryobject	57
 wwdfile	3
-wwdgameobject	45
+wwdgameobject	44
 wwdgameobjectrender	17
+wwdgeometryapply	1
 wwdgrid	15
 wwdobjmgr	54
 wwdspatialmgr	15

@@ -5,6 +5,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
@@ -560,7 +561,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (r == 0) {
             return 1;
         }
-        host->m_cmdGrid->CellDispatch(outB, outA, 0, -1);
+        host->m_cmdGrid->CellDispatch(outB, outA, DEATH_DROP, -1);
         return 1;
     }
 

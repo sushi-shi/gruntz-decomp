@@ -2,6 +2,7 @@
 
 #include <Crypto/FecCrypt.h>
 
+#include <Enums.h>
 #include <Ints.h>
 
 #include <direct.h>

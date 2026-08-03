@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpotLight.h>
 #include <Io/FileMem.h>
@@ -52,11 +53,11 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 }
 
 RVA(0x000b4c40, 0x4b)
-i32 CUFO::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
+i32 CUFO::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameObject* d) {
     if (!CPathHazard::SerializeMove(ar, mode, c, d)) {
         return 0;
     }
-    if (mode == 8) {
+    if (mode == SERIAL_POSTLOAD) {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = mode;
@@ -78,7 +79,12 @@ static inline void SerQuadPair(CFileMemBase* s, i32 tag, CHazardTimer* p) {
 }
 
 RVA(0x000b4d30, 0x287)
-i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
+i32 CPathHazard::SerializeMove(
+    CFileMemBase* stream,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     CFileMemBase* s = stream;
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
@@ -88,8 +94,8 @@ i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject
     }
     SerQuadPair(s, tag, &m_leg);
     SerQuadPair(s, tag, &m_strike);
-    if (tag != 4) {
-        if (tag == 7) {
+    if (tag != SERIAL_SAVE) {
+        if (tag == SERIAL_LOAD) {
             s->Read(&m_speed, 8);
             s->Read(&m_posX, 8);
             s->Read(&m_posY, 8);

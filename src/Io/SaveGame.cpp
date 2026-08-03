@@ -5,6 +5,7 @@
 #include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Enums.h>
 #include <Gruntz/ChainForward.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>

@@ -1,5 +1,16 @@
 # WWD `Logic:` names → our `CUserLogic` / `CTileLogic` classes
 
+> **Status note (numeric-domain campaign).** The table below was written before
+> `include/Gruntz/LogicTypeId.h` was completed. **The header is authoritative** -
+> it now carries 66 enumerators and is exercised by `GetTypeTag()` across the
+> logic hierarchy, whereas this page lists ~20 and marks twelve as "not yet in
+> the header" that all exist. Two ids here are also wrong: `LOGIC_VOICETRIGGER`
+> is `0x42b` (not `0x426`, which is `LOGIC_UFO`), and `LOGIC_PATHHAZARD` is
+> `0x424` (not `0x425`, which is `LOGIC_RAINCLOUD`). Read the header for ids;
+> read this page for what each logic MEANS.
+
+
+
 Every WWD object carries a `Logic:` string (the `editor/*.html` "Logic pages"). At load
 the engine maps that string to a concrete `CUserLogic`-derived leaf. This is the
 game-object hierarchy our reconstruction already models; the table below ties the

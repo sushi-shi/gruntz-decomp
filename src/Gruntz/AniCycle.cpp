@@ -4,6 +4,7 @@
 
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
@@ -12,8 +13,10 @@ VTBL(CAniCycle, 0x001e86a4);
 template<> DATA(0x00246088)
 CActReg CActRegPool<CAniCycle>::s_table(2000, 2010);
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x0000f470, 0x47)
-i32 CAniCycle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CAniCycle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

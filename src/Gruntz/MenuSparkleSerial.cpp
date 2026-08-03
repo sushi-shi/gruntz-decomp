@@ -2,7 +2,9 @@
 
 #include <Gruntz/MenuSparkleSerial.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MenuSparkle.h>
+#include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
 DATA(0x001ea3d4)
@@ -11,7 +13,12 @@ DATA(0x001ea3d8)
 i32 g_menuSparkleHi = 5000;
 
 RVA(0x000ae1c0, 0xae)
-i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CMenuSparkle::SerializeMove(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (arc == 0) {
         return 0;
     }
@@ -22,8 +29,8 @@ i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameOb
     if (!Chain(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
         return 0;
     }
-    if (mode != 4) {
-        if (mode != 7) {
+    if (mode != SERIAL_SAVE) {
+        if (mode != SERIAL_LOAD) {
             return 1;
         }
         arc->Read(&g_menuSparkleLo, 4);

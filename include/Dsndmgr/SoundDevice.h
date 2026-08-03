@@ -6,6 +6,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/WaveFormatX.h>
+#include <Enums.h>
 
 class SoundDevice;
 

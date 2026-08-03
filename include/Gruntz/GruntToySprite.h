@@ -5,12 +5,14 @@
 
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GruntIndicatorSprite.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 
 class CGruntToySprite : public CUserLogic, public CWapX {
 public:
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00012260, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTTOYSPRITE;
@@ -25,7 +27,7 @@ public:
     i32 Update();
 
     Coord m_cell;
-    i32 m_lastLayer;
+    PickupType m_lastLayer;
 };
 SIZE(0x60);
 

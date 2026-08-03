@@ -8,6 +8,8 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
 extern "C" u32 g_engineFrameDelta;
@@ -16,7 +18,7 @@ extern "C" u32 g_frameTime;
 
 class CWarlord : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x000107a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARLORD;

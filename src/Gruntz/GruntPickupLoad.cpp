@@ -26,9 +26,15 @@
     } while (0)
 
 RVA(0x00065e80, 0x12b8)
-i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i32 countStats) {
+i32 CGrunt::LoadPickupSprites(
+    PickupType type,
+    i32 forced,
+    i32 helpCueId,
+    i32 unused,
+    i32 countStats
+) {
     CAniElement* geo;
-    if (m_gruntKind == 0x39 || m_gruntKind == 0x3a) {
+    if (m_gruntKind == GRUNT_CONVERSION || m_gruntKind == GRUNT_DEATHTOUCH) {
         return 0;
     }
     if (forced == 0) {
@@ -47,11 +53,11 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i
         return 0;
     }
     if (type >= PICKUP_REDBRICK && type <= PICKUP_BLACKBRICK) {
-        i32 st = m_entranceReason;
-        if (st > 0x16) {
+        PickupType st = m_entranceReason;
+        if (st > PICKUP_WINGZ) {
             st = m_toolId;
         }
-        if (st != 3) {
+        if (st != PICKUP_BRICK) {
             return 0;
         }
     }
@@ -68,7 +74,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i
         m_poweredUp = 0;
         ResetEntranceAnimation(1, 0, 0);
     }
-    if (m_entranceReason == 0x14) {
+    if (m_entranceReason == PICKUP_WARPSTONE) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ) {
             return 0;
         }
@@ -79,15 +85,19 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i
     if (countStats != 0) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ && type != PICKUP_WARPSTONE) {
             g_gameReg->m_scoreHud->m_toolzCount++;
-            g_gameReg->m_scoreHud->m_weaponPickupz[type - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud
+                ->m_weaponPickupz[IDX(type) - IDX(PICKUP_BOMB) + 22 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_BABYWALKER && type <= PICKUP_YOYO) {
             g_gameReg->m_scoreHud->m_toyzCount++;
-            g_gameReg->m_scoreHud->m_toyPickupz[type - PICKUP_BABYWALKER + 10 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud
+                ->m_toyPickupz[IDX(type) - IDX(PICKUP_BABYWALKER) + 10 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_GHOST && type <= PICKUP_REACTIVEARMOR) {
             g_gameReg->m_scoreHud->m_powerupCount++;
-            g_gameReg->m_scoreHud->m_powerupPickupz[type - PICKUP_GHOST + 7 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud
+                ->m_powerupPickupz[IDX(type) - IDX(PICKUP_GHOST) + 7 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_RANDOMCOLORZ && type <= PICKUP_MINICAM) {
-            g_gameReg->m_scoreHud->m_miscPickupz[type - PICKUP_RANDOMCOLORZ + 4 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud
+                ->m_miscPickupz[IDX(type) - IDX(PICKUP_RANDOMCOLORZ) + 4 * m_tileOwnerHi]++;
         }
     }
 
@@ -216,15 +226,16 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i
                 geo
             );
             m_pickupGeoSrc = geo;
-            i32 n = play->m_guts->GetActiveValue();
+            PickupType n = static_cast<PickupType>(play->m_guts->GetActiveValue());
             if (countStats != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
                     g_gameReg->m_scoreHud->m_toolzCount++;
-                    g_gameReg->m_scoreHud->m_weaponPickupz[n - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
+                    g_gameReg->m_scoreHud
+                        ->m_weaponPickupz[IDX(n) - IDX(PICKUP_BOMB) + 22 * m_tileOwnerHi]++;
                 } else if (n >= PICKUP_BABYWALKER && n <= PICKUP_YOYO) {
                     g_gameReg->m_scoreHud->m_toyzCount++;
                     g_gameReg->m_scoreHud
-                        ->m_toyPickupz[n - PICKUP_BABYWALKER + 10 * m_tileOwnerHi]++;
+                        ->m_toyPickupz[IDX(n) - IDX(PICKUP_BABYWALKER) + 10 * m_tileOwnerHi]++;
                 }
             }
             switch (n) {
@@ -426,7 +437,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i
     }
     m_helpCueId = helpCueId;
     m_entranceActive = 1;
-    m_moveMode = type;
+    m_moveMode = IDX(type);
     if (m_healthSprite != 0) {
         m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;

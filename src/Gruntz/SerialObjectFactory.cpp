@@ -42,6 +42,7 @@
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/LevelTime.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MenuSparkle.h>
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/Particlez.h>
@@ -51,6 +52,7 @@
 #include <Gruntz/RollingBall.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SimpleAnimation.h>
 #include <Gruntz/SingleAnimation.h>
@@ -93,11 +95,12 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     if (mgr->m_world == 0) {
         return 0;
     }
-    return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, 0) != 0;
+    return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, LOGIC_NONE) != 0;
 }
 
 RVA(0x0000d2a0, 0x1984)
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void* payload) {
+i32 __cdecl
+SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
     if (ctx == 0 || ar == 0) {
         return 0;
     }
@@ -107,15 +110,15 @@ i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void*
     CUserLogic** result = static_cast<CUserLogic**>(payload);
 
     switch (mode) {
-        case 1:
+        case SERIAL_SNAPSHOT_BEGIN:
             archive->Write(g_saveBuf, 0x90);
             break;
-        case 2:
+        case SERIAL_RESTORE_BEGIN:
             archive->Read(g_saveBuf, 0x90);
             break;
-        case 9:
+        case SERIAL_CREATE:
             switch (typeId) {
-                case 0x3e8:
+                case LOGIC_GRUNT:
                     *result = new CGrunt();
                     break;
                 case LOGIC_ROLLINGBALL:
@@ -320,7 +323,7 @@ i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void*
                     return 0;
             }
             return 1;
-        case 10:
+        case SERIAL_CREATE_BY_SERIAL_ID:
             return 0;
     }
 

@@ -12,6 +12,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
@@ -29,7 +30,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     i32 ownerLo,
     i32 tileX,
     i32 tileY,
-    i32 reason,
+    PickupType reason,
     i32 sel
 ) {
     CString diag;
@@ -55,13 +56,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
         cy = tileY;
     }
 
-    i32 cellType;
+    TileCollisionKind cellType;
     i32 cell = plane->m_tileGrid[plane->m_colOffsets[cy] + cx];
     if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
-        cellType = 0;
+        cellType = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* tc = static_cast<CTileImageSet*>(grid->m_imageSets.GetAt(cell & 0xffff));
-        cellType = tc->GetCollisionAt(0, 0);
+        // Ingest: the raw WWD attribute byte for this cell.
+        cellType = static_cast<TileCollisionKind>(tc->GetCollisionAt(0, 0));
     }
 
     i32 px = tileX * 32 + 0x10;
@@ -70,7 +72,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     i32 cellKey = (tileX << 8) + tileY;
 
     switch (reason) {
-        case 3:
+        case PICKUP_BRICK:
             if (sel != 0x63 || unit == 0) {
                 return 1;
             }
@@ -95,7 +97,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
                 if (triggers->AddToList3Switch(actionCode, tileX, tileY, cellKey, ownerHi) != 0) {
                     unit->m_pendingTriggerPx.m_x = px;
-                    unit->m_toyBlendPct = TILEKIND_COVERED_POWERUP;
+                    unit->m_toyBlendPct = 0x22;
                     unit->m_moveMode = -1;
                     unit->m_pendingTriggerPx.m_y = py;
                     unit->m_pendingTrigger = 1;
@@ -104,7 +106,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                        || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event = triggers->FindActionByCellKey(cellKey);
                 if (event != 0 && event->MorphByTool(unit->m_toyBlendPct, ownerHi) != 0) {
-                    unit->m_toyBlendPct = TILEKIND_COVERED_POWERUP;
+                    unit->m_toyBlendPct = 0x22;
                     unit->m_moveMode = -1;
                     if (cellType == TILEKIND_GAUNTLET_BRICK_A) {
                         unit->m_pendingTriggerPx.m_x = px;
@@ -115,7 +117,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             return 1;
 
-        case 5:
+        case PICKUP_GAUNTLETZ:
             if (sel == -1) {
                 return 1;
             }
@@ -155,7 +157,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (rock == 0) {
                     diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
                     g_gameReg->EnterModalUI(static_cast<const char*>(diag));
-                    g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_ARRIVAL_GIANT_ROCK);
+                    g_gameReg->ReportError(
+                        IDX(TRIGERR_LOOKUP_MISS),
+                        IDX(TRIGSITE_ARRIVAL_GIANT_ROCK)
+                    );
                     return 0;
                 }
                 rock->BuildRockBreakInGameText();
@@ -189,7 +194,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             return 1;
 
-        case 7: {
+        case PICKUP_GOOBER: {
             POSITION pos = m_baseList.GetHeadPosition();
             while (pos != 0) {
                 POSITION current = pos;
@@ -217,7 +222,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
         }
 
-        case 13:
+        case PICKUP_SHOVEL:
             if (sel == -1) {
                 return 1;
             }
@@ -243,7 +248,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 CTileTriggerLogic* found =
                     triggers->FindInLists12(cellKey, TRIGID_COVERED_POWERUP_26);
                 if (found != 0) {
-                    found->ApplyMove(0x22);
+                    found->ApplyMove(TILEKIND_COVERED_POWERUP);
                     triggers->DelFromList1(found);
                 } else {
                     i32 replacement = cell + 1;
@@ -257,7 +262,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             return 1;
 
-        case 15:
+        case PICKUP_SPY:
             if (sel == 0x63) {
                 CMapMgr* pathGrid = g_gameReg->m_tileGrid;
                 for (i32 radius = 1; radius <= 2; radius++) {
@@ -534,7 +539,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             return 1;
 
-        case 18:
+        case PICKUP_TOOB:
             if (sel == 0x63 && unit != 0) {
                 i32 waterX = unit->m_object->m_screenX;
                 i32 waterY = unit->m_object->m_screenY;

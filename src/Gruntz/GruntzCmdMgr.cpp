@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/State.h>
@@ -61,7 +62,7 @@ i32 g_dlgVal_645564;
 DATA(0x00245568)
 i32 g_dlgVal_645568;
 
-i32 CGruntzCommand::Serialize(CFileMemBase*, i32, i32, i32) {
+i32 CGruntzCommand::Serialize(CFileMemBase*, SerialMode, LogicTypeId, i32) {
     return 1;
 }
 i32 CGruntzCommand::Save(CFileMemBase*) {
@@ -102,7 +103,7 @@ RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     CState* sp = m_manager->m_curState;
 
-    i32 isPlay = (sp->Update() == GAMESTATE_NONE);
+    i32 isPlay = (sp->Update() == GAMESTATE_MULTI);
     CGruntzCommand* table[4];
     table[0] = 0;
     table[1] = 0;
@@ -214,7 +215,7 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
     if (flag) {
         if (m_manager->m_curState->Update() == GAMESTATE_PLAY) {
             (static_cast<CGruntzCommand*>(cmd))->m_submitted = 2;
-        } else if (m_manager->m_curState->Update() == GAMESTATE_NONE) {
+        } else if (m_manager->m_curState->Update() == GAMESTATE_MULTI) {
             (static_cast<CGruntzCommand*>(cmd))->m_submitted = 4;
         }
         m_pendingCommands.AddTail(cmd);
@@ -496,7 +497,7 @@ void CGruntzMultiCommand::FreeAll() {
 }
 
 RVA(0x000244d0, 0x3b)
-i32 CGruntzSingleCommand::Serialize(CFileMemBase* s, i32 mode, i32, i32) {
+i32 CGruntzSingleCommand::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId, i32) {
     if (!s) {
         return 0;
     }
@@ -554,7 +555,7 @@ i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
 }
 
 RVA(0x000246c0, 0x3b)
-i32 CGruntzMultiCommand::Serialize(CFileMemBase* s, i32 mode, i32, i32) {
+i32 CGruntzMultiCommand::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId, i32) {
     if (!s) {
         return 0;
     }
@@ -611,7 +612,7 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
 
 // @early-stop
 RVA(0x00024890, 0x18d)
-i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pObj) {
+i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (!stream) {
         return 0;
     }
@@ -686,6 +687,8 @@ CGruntzCmdMgr::~CGruntzCmdMgr() {
     ClearAndReset();
 }
 
+// @interleaver DebugGruntTypeDialogProc - 525 B, sits in this class's destructor-COMDAT pool at
+// 0x92ab0 rather than in the TU's own .text block.
 RVA(0x00092ab0, 0x20d)
 i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

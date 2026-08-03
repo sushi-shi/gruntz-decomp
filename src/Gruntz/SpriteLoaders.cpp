@@ -263,19 +263,19 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 
 // @early-stop
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
+i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
     switch (kind) {
-        case 4: {
+        case SERIAL_SAVE: {
             i32 r = Serialize(ar);
             if (!r) {
                 return r;
             }
             break;
         }
-        case 7: {
+        case SERIAL_LOAD: {
             i32 r = Deserialize(ar);
             if (!r) {
                 return r;
@@ -285,22 +285,22 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     }
 
     switch (kind) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_baseTime, sizeof(m_baseTime));
             ar->Write(&m_accum, sizeof(m_accum));
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_baseTime, sizeof(m_baseTime));
             ar->Read(&m_accum, sizeof(m_accum));
             break;
     }
 
     switch (kind) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_startStamp, sizeof(m_startStamp));
             ar->Write(&m_unusedStamp, sizeof(m_unusedStamp));
             return 1;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_startStamp, sizeof(m_startStamp));
             ar->Read(&m_unusedStamp, sizeof(m_unusedStamp));
             break;

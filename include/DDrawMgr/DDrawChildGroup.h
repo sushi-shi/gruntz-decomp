@@ -5,7 +5,10 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 struct AnimWorkerObj;
@@ -29,7 +32,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE;
     virtual i32 IsReady() OVERRIDE;
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual void TickKillCues(i32 advance);
     virtual void RenderChildren(class CDDrawSurfacePair* target);
@@ -85,7 +88,7 @@ public:
     i32
     AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
 
-    i32 LoadObjects(class CFileMemBase* reader, u32 count, i32 unused);
+    i32 LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused);
 
     void RemoveAll(POSITION pos, CGameObject* obj);
     void RemoveByPosition(POSITION pos, CGameObject* obj);
@@ -93,10 +96,10 @@ public:
     void PruneList();
     i32 CountActive();
 
-    i32 ForEachDispatch(CFileMemBase* ar, i32 mode, i32 typeId);
-    i32 ForEachProbe(CFileMemBase* ar, i32 typeId);
-    i32 ForEachSerialize(class CFileMemBase* ar, i32 typeId);
-    i32 Deserialize(class CFileMemBase* ar, u32 count, i32 flag);
+    i32 ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId);
+    i32 ForEachProbe(CFileMemBase* ar, LogicTypeId typeId);
+    i32 ForEachSerialize(class CFileMemBase* ar, LogicTypeId typeId);
+    i32 Deserialize(class CFileMemBase* ar, u32 count, LogicTypeId flag);
     i32 PruneOrphans();
     void RemoveAndDelete(CWwdGameObject* obj);
     void ReinsertUnflagged(CWwdGameObject* obj);

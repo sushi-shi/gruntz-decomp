@@ -1,6 +1,6 @@
 # A `.data` global's owner TU is the object whose COMDAT literals BRACKET it
 tags: data:layout data:attribution | topic:identity topic:tu-partition
-symptoms: `.data` interleave, data-tu-order pool exemption, global defined in the wrong .cpp, ILT thunk DATA_SYMBOL, `_MultiPauseCallback`, `??_C@` literal run, `??_R0` type descriptor
+symptoms: `.data` interleave, data-tu-order pool exemption, global defined in the wrong .cpp, ILT thunk labelled as data, `_MultiPauseCallback`, `??_C@` literal run, `??_R0` type descriptor
 confidence: 9/10
 
 Retail's `.data` is laid out **one contiguous run per contributing `.obj`**, in link
@@ -34,11 +34,13 @@ below and the CGameLevel area titles + `CGameMgr`/`CGruntzMgr` RTTI + every
 
 **The trap that hides this.** `gruntz.audit.data_tu_order` bands a `.cpp`'s `DATA()`
 rows per storage class and exempts a band that swallows ≥4 other files' defs as a
-"pool". A `DATA_SYMBOL()` naming an **ILT jmp-thunk** is a `.text` rva, not data — if
+"pool". A data label naming an **ILT jmp-thunk** is a `.text` rva, not data — if
 the band model counts it, the band starts near `0x1000`, becomes a pool, and the TU
 stops being checked at all. Four such rows in `Multi.cpp` masked the real interleave
 for a whole campaign. The audit now drops any row whose rva is in an executable
-section (`gruntz.core.pe.PE().exec_ranges`).
+section (`gruntz.core.pe.PE().exec_ranges`), and the storage-less pin those rows
+used (`DATA_SYMBOL`) is retired outright — ILT thunks are named by
+`synth_pdb.read_ilt_thunk_names`, with no annotation in `src` at all.
 
 ```
 0x0020fa4c STR  brickzload   'Black' 'Gold' 'Blue' 'Red' 'Brown'   <- prev obj's literals

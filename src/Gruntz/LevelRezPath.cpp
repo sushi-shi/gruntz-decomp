@@ -3,9 +3,11 @@
 #include <Mfc.h>
 
 #include <Bute/SymParser.h>
+#include <Enums.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ParseSource.h>
 #include <Io/FileStream.h>
+#include <Rez/RezTypeTag.h>
 #include <Wwd/WwdFile.h>
 
 #include <stdio.h>
@@ -47,7 +49,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         } else {
             sprintf(scratch, "LEVEL%i", id);
         }
-        CParseSource* sub = node->Insert(scratch, 0x575744);
+        CParseSource* sub = node->Insert(scratch, REZ_TAG_WWD);
         if (sub == 0) {
             return 0;
         }
@@ -64,7 +66,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         if (node == 0) {
             return 0;
         }
-        CParseSource* sub = node->Insert(name, 0x575744);
+        CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
         if (sub == 0) {
             return 0;
         }
@@ -80,7 +82,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
     if (node == 0) {
         return 0;
     }
-    CParseSource* sub = node->Insert(name, 0x575744);
+    CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
     if (sub == 0) {
         return 0;
     }

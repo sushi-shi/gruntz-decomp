@@ -1,5 +1,7 @@
 #include <rva.h>
 
+#include <Gruntz/PickupType.h>
+
 class CFileMemBase;
 
 class CImage;
@@ -29,7 +31,7 @@ public:
 
     i32 m_buttonState[2];
     CImage* m_buttonFrame[2];
-    i32 m_buttonIcon[2];
+    PickupType m_buttonIcon[2];
     i32 m_active;
     CDDrawWorker* m_normChipSprite;
     CDDrawWorker* m_highChipSprite;

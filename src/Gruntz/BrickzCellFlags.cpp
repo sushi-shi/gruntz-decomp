@@ -6,6 +6,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
 
 // @early-stop
@@ -264,7 +265,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
             i32 j = 15;
             do {
                 CGrunt* cell = *colPtr;
-                if (cell && cell->m_entranceCommitted != 0 && cell->m_gruntKind != 0x36) {
+                if (cell && cell->m_entranceCommitted != 0 && cell->m_gruntKind != GRUNT_GHOST) {
                     i32 dx = (cell->m_object->m_screenX >> 5) - tileX;
                     i32 dy = (cell->m_object->m_screenY >> 5) - tileY;
                     i32 dist = dx * dx + dy * dy;

@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -17,6 +18,8 @@
 #include <Gruntz/InGameText.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicFnTable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
@@ -642,9 +645,9 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         if (cell == 0 || cell->m_entranceCommitted == 0) {
             ok = 0;
         } else if (matchActive) {
-            ok = cell->LoadPickupSprites(param, flag, 0, sub, 0);
+            ok = cell->LoadPickupSprites(static_cast<PickupType>(param), flag, 0, sub, 0);
         } else {
-            ok = cell->LoadGruntTypeTable(param, flag, sub, 0);
+            ok = cell->LoadGruntTypeTable(static_cast<PickupType>(param), flag, sub, 0);
         }
         reg = g_gameReg;
         if (ok == 0) {
@@ -674,7 +677,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         ok = 0;
     } else {
-        ok = cell->LoadPickupSprites(cmd, 0, 0, sub, 1);
+        ok = cell->LoadPickupSprites(static_cast<PickupType>(cmd), 0, 0, sub, 1);
     }
     reg = g_gameReg;
     if (ok == 0) {
@@ -777,7 +780,12 @@ i32 CInGameIcon::Reposition() {
 
 // @early-stop
 RVA(0x00098c90, 0x382)
-i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* obj) {
+i32 CInGameIcon::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* obj
+) {
 
     char chainName[0x80];
 
@@ -789,7 +797,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
     }
 
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
             ar->Read(chainName, 0x80);
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
@@ -804,7 +812,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
             }
             break;
         }
-        case 4: {
+        case SERIAL_SAVE: {
             memset(chainName, 0, sizeof(chainName));
             if (m_value != 0) {
                 CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
@@ -818,12 +826,12 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
 
     Clock64* drift = &m_driftPos;
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(drift, 8);
             drift++;
             ar->Read(drift, 8);
             break;
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(drift, 8);
             drift++;
             ar->Write(drift, 8);
@@ -831,12 +839,12 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
     }
     Clock64* idle = &m_peekTimer;
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(idle, 8);
             idle++;
             ar->Read(idle, 8);
             break;
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(idle, 8);
             idle++;
             ar->Write(idle, 8);
@@ -845,7 +853,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
 
     char tailName[0x80];
     switch (mode) {
-        case 4: {
+        case SERIAL_SAVE: {
             memset(tailName, 0, sizeof(tailName));
             if (m_cue != 0) {
                 CString nm = m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
@@ -860,7 +868,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
             ar->Write(&id, 4);
             break;
         }
-        case 7: {
+        case SERIAL_LOAD: {
             ar->Read(tailName, 0x80);
 
             if (strlen(tailName) == 0) {
@@ -890,7 +898,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObje
             }
             break;
         }
-        case 8:
+        case SERIAL_POSTLOAD:
             if (HandleInput() == 0) {
                 return 0;
             }
@@ -960,7 +968,7 @@ void RegisterTextLogic() {
 }
 
 RVA(0x00099a30, 0xaa)
-i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, CGameObject* b) {
+i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, CGameObject* b) {
     if (ar == 0) {
         return 0;
     }
@@ -971,11 +979,11 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, CGameObject* b)
         return 0;
     }
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_cachedAreaId, 4);
             ar->Write(&m_cachedSubId, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_cachedAreaId, 4);
             ar->Read(&m_cachedSubId, 4);
             break;

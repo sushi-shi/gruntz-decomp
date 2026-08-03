@@ -5,6 +5,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/TileTriggerTransition.h>
@@ -17,13 +18,22 @@ CActReg CActRegPool<CStatusBarSprite>::s_table(2000, 2010);
 
 VTBL(CStatusBarSprite, 0x001e7fc4);
 
+// @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
+// 67 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00011ac0, 0x6)
 LogicTypeId CStatusBarSprite::GetTypeTag() {
     return LOGIC_STATUSBARSPRITE;
 }
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00011ae0, 0x47)
-i32 CStatusBarSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CStatusBarSprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
         return 0;
     }

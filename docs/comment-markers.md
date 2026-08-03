@@ -1,8 +1,8 @@
 # Comment markers — the blessed vocabulary
 
 Every ADDRESS/SYMBOL binding is a macro from `include/rva.h` (`RVA`, `DATA`,
-`VTBL`, `VTBL_ABSENT`, `SIZE`, `SIZE_UNKNOWN`, `RVA_COMPGEN`,
-`DATA_SYMBOL`) — no label ever lives in a comment. Comments carry exactly one
+`VTBL`, `VTBL2`, `VTBL_ABSENT`, `SIZE`, `SIZE_UNKNOWN`,
+`RVA_COMPGEN`) — no label ever lives in a comment. Comments carry exactly one
 other kind of machine-visible content: **state markers**, a `// @name` leading a
 comment line. The vocabulary is CLOSED and gated (`gruntz.audit.label_style`,
 FATAL in the build tail): a comment line leading with any other `@name` fails the

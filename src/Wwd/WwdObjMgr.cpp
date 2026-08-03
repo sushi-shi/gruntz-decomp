@@ -21,8 +21,11 @@
 #include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObList.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
@@ -903,8 +906,9 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(m_list.GetNext(pos));
-        i32 tag = obj->GetClassId();
-        if (tag == 5 && obj->m_id == id && obj->m_animWorker->m_notify == fp->m_notify) {
+        LoadableClassId tag = obj->GetClassId();
+        if (tag == CLASSID_WWDOBJA && obj->m_id == id
+            && obj->m_animWorker->m_notify == fp->m_notify) {
             return obj;
         }
     }
@@ -1048,7 +1052,7 @@ i32 CDDrawChildGroup::CountActive() {
 }
 
 RVA(0x0015ac20, 0x81)
-i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, i32 mode, i32 typeId) {
+i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId) {
     if (ar == 0) {
         return 0;
     }
@@ -1067,7 +1071,7 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, i32 mode, i32 typeId) {
 }
 
 RVA(0x0015acb0, 0x76)
-i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, i32 typeId) {
+i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == 0) {
         return 0;
     }
@@ -1088,7 +1092,7 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, i32 typeId) {
 
 // @early-stop
 RVA(0x0015ad30, 0x2ec)
-i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
+i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused) {
     i32 savedCounter = 0;
     if (reader == 0) {
         return 0;
@@ -1160,7 +1164,16 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             case 0x1c: {
 
                 void* out = 0;
-                if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_serialTypeId, &out) == 0) {
+                // m_serialTypeId is NOT a LogicTypeId: this phase keys off the
+                // record's own serial type id, so the callback's type-id parameter
+                // carries two domains depending on the phase. Recorded, not merged.
+                if (OwnerMgr()->InvokeCallback(
+                        reader,
+                        SERIAL_CREATE_BY_SERIAL_ID,
+                        static_cast<LogicTypeId>(desc.m_serialTypeId),
+                        &out
+                    )
+                    == 0) {
                     return 0;
                 }
                 CWwdGameObject* rec = static_cast<CWwdGameObject*>(out);
@@ -1197,7 +1210,8 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         if (desc.m_logicTypeId != 0) {
 
             void* childOut = 0;
-            if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_logicTypeId, &childOut) == 0) {
+            if (OwnerMgr()->InvokeCallback(reader, SERIAL_CREATE, desc.m_logicTypeId, &childOut)
+                == 0) {
                 return 0;
             }
             CUserLogic* child = static_cast<CUserLogic*>(childOut);
@@ -1212,7 +1226,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
 }
 
 RVA(0x0015b020, 0xc0)
-i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 typeId) {
+i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == 0) {
         return 0;
     }
@@ -1224,7 +1238,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 typeId) {
         if (val != 0 && !(val->m_flags & 0x4000000)) {
             void* k = WwdKey(val);
             ar->Write(&k, 4);
-            if (val->Play(ar, 4, typeId, val) == 0) {
+            if (val->Play(ar, SERIAL_SAVE, typeId, val) == 0) {
                 return 0;
             }
         }
@@ -1234,7 +1248,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 typeId) {
 
 // @early-stop
 RVA(0x0015b0e0, 0xec)
-i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
+i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag) {
     if (ar == 0) {
         return 0;
     }
@@ -1254,7 +1268,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
         if (obj->m_animWorker == 0) {
             return 0;
         }
-        if (obj->Play(ar, 7, flag, obj) == 0) {
+        if (obj->Play(ar, SERIAL_LOAD, flag, obj) == 0) {
             return 0;
         }
     }

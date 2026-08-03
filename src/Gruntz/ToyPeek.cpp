@@ -3,6 +3,7 @@
 #include <Gruntz/ToyPeek.h>
 
 #include <Bute/ButeTree.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -27,8 +28,15 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
 }
 
+// @interleaver SerializeMove - 152 B lone body at 0x983e0, between RefreshCell
+// (ingameicon) and PeekCycle (ingameicon): a first-use placement.
 RVA(0x000983e0, 0x98)
-i32 CToyPeek::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CToyPeek::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
@@ -37,11 +45,11 @@ i32 CToyPeek::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject*
     }
 
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_startClock, sizeof(m_startClock));
             ar->Write(&m_countdown, sizeof(m_countdown));
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_startClock, sizeof(m_startClock));
             ar->Read(&m_countdown, sizeof(m_countdown));
             break;

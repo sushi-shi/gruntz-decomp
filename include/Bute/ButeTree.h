@@ -45,6 +45,9 @@ public:
 SIZE_UNKNOWN();
 VTBL(CButeTree, 0x001f04e0);
 
+// g_buteTree's teardown callback; the tree owns no node payloads.
+void ButeTreeNopFree(void*);
+
 extern CButeTree g_buteTree;
 
 static inline i32 ActFindId(const char* key) {

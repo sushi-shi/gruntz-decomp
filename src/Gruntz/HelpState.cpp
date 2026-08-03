@@ -10,11 +10,13 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
+#include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/Demo.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SplashState.h>
 
@@ -71,7 +73,7 @@ void CHelpState::ReleaseResources() {
 }
 
 RVA(0x00095140, 0x6e)
-i32 CHelpState::EnterState(i32 arg) {
+i32 CHelpState::EnterState(GameStateId arg) {
     m_mgr->RestoreVideoMode(0);
 
     if (m_world->m_drawTarget->HasOverlay() == 0
@@ -86,7 +88,7 @@ i32 CHelpState::EnterState(i32 arg) {
 }
 
 RVA(0x000951d0, 0x8)
-i32 CHelpState::LeaveState(i32) {
+i32 CHelpState::LeaveState(GameStateId) {
     return 1;
 }
 
@@ -95,7 +97,7 @@ i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(0x8006, 0x445);
+            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x445);
             return 0;
         }
     }

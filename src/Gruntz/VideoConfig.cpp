@@ -4,12 +4,12 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/Resolution.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Wnd.h>
@@ -26,7 +26,7 @@ typedef enum VideoConfigDlgId {
 } VideoConfigDlgId;
 
 DATA(0x0020ccc4)
-i32 g_videoResolutionMode = 1;
+Resolution g_videoResolutionMode = RES_640x480;
 
 DATA(0x0022bd64)
 i32 g_opt_22bd64 = 0;
@@ -41,7 +41,7 @@ i32 g_opt_22bd84 = 0;
 DATA(0x0022bdc4)
 i32 g_opt_22bdc4 = 0;
 DATA(0x0022bdc8)
-i32 g_opt_22bdc8 = 0;
+Resolution g_opt_22bdc8 = RES_UNSET;
 DATA(0x0022bdcc)
 i32 g_opt_22bdcc = 0;
 DATA(0x0022bdd0)
@@ -67,7 +67,7 @@ DATA(0x0022bdf4)
 HWND g_optHwndCk8 = 0;
 
 RVA(0x000363a0, 0x41)
-i32 GetResolutionCode() {
+Resolution GetResolutionCode() {
     i32 w = g_gameReg->m_savedModeW;
     i32 h = g_gameReg->m_savedModeH;
     if (w == 0x400 && h == 0x300) {
@@ -102,14 +102,14 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_COMMAND:
             switch (wParam) {
                 case 2:
-                    if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
+                    if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case 1: {
-                    if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
+                    if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ReadMenuOptionsDialog(hDlg);
@@ -175,7 +175,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             g_optHwndCk8 = GetDlgItem(hDlg, 0x476);
 
             if (g_gameReg->m_curState->Update() != GAMESTATE_PLAY) {
-                if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
+                if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
                     (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat422();
                 } else {
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
@@ -240,8 +240,9 @@ void ReadMenuOptionsDialog(HWND hDlg) {
         return;
     }
     g_gameReg->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
-    i32 res = GetDialogScrollPosition(hDlg, 0x52c);
-    if (res >= 0 && res <= 100) {
+    // The slider position IS the mode index the dialog offers.
+    Resolution res = static_cast<Resolution>(GetDialogScrollPosition(hDlg, 0x52c));
+    if (res >= RES_UNSET && res <= 100) {
         g_videoResolutionMode = res;
     }
     if (g_disableAudio == 0) {
@@ -404,7 +405,8 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
         return;
     }
 
-    g_videoResolutionMode = SendMessageA(pCtrl->m_hWnd, 0x400, 0, 0);
+    // The combo-box selection arrives from Windows as a raw LRESULT.
+    g_videoResolutionMode = static_cast<Resolution>(SendMessageA(pCtrl->m_hWnd, 0x400, 0, 0));
 
     HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
     if (!hCaption) {

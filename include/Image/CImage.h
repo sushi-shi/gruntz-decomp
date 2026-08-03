@@ -1,10 +1,12 @@
-#include <rva.h>
-
-#include <Ints.h>
-#include <Wap32/WapObj.h>
-
 #ifndef SRC_IMAGE_CIMAGE_H
 #define SRC_IMAGE_CIMAGE_H
+
+#include <rva.h>
+
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/Loadable.h>
+#include <Ints.h>
+#include <Wap32/WapObj.h>
 
 struct CParseSource;
 
@@ -42,10 +44,10 @@ public:
     virtual ~CImage() OVERRIDE;
 
     virtual void FreeAll();
-    virtual i32 GetClassId();
+    virtual LoadableClassId GetClassId();
 
     virtual i32 CreateBlankSurface(i32 width, i32 height, i32 keyed);
-    virtual i32 LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed);
+    virtual i32 LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 keyed);
     virtual i32 Resolve(CParseSource* src, i32 arg);
     virtual i32 Create(char* path, i32 keyed);
     virtual i32 Reload(CParseSource* src, i32 arg);

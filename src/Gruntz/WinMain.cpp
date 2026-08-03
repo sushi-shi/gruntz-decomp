@@ -4,8 +4,9 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/Enums.h>
+#include <Enums.h>
 #include <Gruntz/GruntzApp.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Wap32/Wap32.h>
 
 #include <stdio.h>
@@ -35,7 +36,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 SendMessageA(hPrev, WM_SYSCOMMAND, SC_RESTORE, 0);
             }
             if (lpCmdLine != 0 && strstr(lpCmdLine, "LOBBYLAUNCH") != 0) {
-                PostMessageA(hPrev, WM_COMMAND, LOBBYLAUNCH, 0);
+                PostMessageA(hPrev, WM_COMMAND, IDX(CMD_LOBBY_RESET), 0);
             }
         }
         return 0;

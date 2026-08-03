@@ -396,6 +396,11 @@ source = "src/Gruntz/MotionState.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
+unit = "motionstatestep"
+source = "src/Gruntz/MotionStateStep.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
 unit = "movinglogic"
 source = "src/Gruntz/MovingLogic.cpp"
 flags = "cpp-rtti"
@@ -563,7 +568,7 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "butemgr"
 source = "src/Bute/ButeMgr.cpp"
-flags = "cpp-rtti"
+flags = "cpp"
 
 [[unit]]
 unit = "gamestaterecordload"
@@ -1755,3 +1760,38 @@ flags = "cpp-rtti"
 unit = "modeobjinit"
 source = "src/Gruntz/ModeObjInit.cpp"
 flags = "cpp-rtti"
+
+[[unit]]
+unit = "gruntzmgrrand"
+source = "src/Gruntz/GruntzMgrRand.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "butedtorpool"
+source = "src/Bute/ButeDtorPool.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "ddrawsurfacepairblt"
+source = "src/DDrawMgr/DDrawSurfacePairBlt.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "wwdgeometryapply"
+source = "src/Wwd/WwdGeometryApply.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gamewndcomdats"
+source = "src/Wap32/GameWndComdats.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "cimagecomdats"
+source = "src/Image/CImageComdats.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "ddrawsubmgrrefresh"
+source = "src/DDrawMgr/DDrawSubMgrRefresh.cpp"
+flags = "cpp"

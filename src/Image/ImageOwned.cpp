@@ -2,6 +2,7 @@
 
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Io/FileStream.h>
 #include <Pix16.h>
 
@@ -144,7 +145,7 @@ RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
     i32 flags = src->flags;
 
-    if ((flags & PID_SRC_8BPP_SHADE) || (flags & PID_SRC_8BPP)) {
+    if ((HAS(flags, PID_SRC_8BPP_SHADE)) || (HAS(flags, PID_SRC_8BPP))) {
         if (static_cast<u8>(fmt) == 0x10) {
             m_srcBpp = 1;
             m_dstBpp = 2;
@@ -160,7 +161,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
         m_dstBpp = 1;
     }
 
-    if (src->flags & PID_FILL_IS_WORD) {
+    if (HAS(src->flags, PID_FILL_IS_WORD)) {
         m_colorKey = static_cast<u8>(src->fill);
     } else {
         m_colorKey = -1;
@@ -172,7 +173,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
         return 0;
     }
 
-    if (src->flags & PID_EMBEDDED_PALETTE) {
+    if (HAS(src->flags, PID_EMBEDDED_PALETTE)) {
         stride -= 0x300;
         m_rleLen = stride;
         if (static_cast<u8>(fmt) == 0x10) {

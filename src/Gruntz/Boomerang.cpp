@@ -7,6 +7,8 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
 
@@ -35,7 +37,15 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 
 // @early-stop
 RVA(0x000e0690, 0x1a9)
-i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
+i32 CBoomerang::LoadProjectileSprites(
+    PickupType kind,
+    i32 a,
+    i32 b,
+    i32 sx,
+    i32 sy,
+    i32 t0,
+    i32 t1
+) {
     if (CProjectile::LoadProjectileSprites(kind, a, b, sx, sy, t0, t1) == 0) {
         return 0;
     }
@@ -79,12 +89,17 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
 }
 
 RVA(0x000e15d0, 0x155)
-i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CBoomerang::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_launchX, 4);
             ar->Read(&m_launchY, 4);
             ar->Read(&m_dirX, 8);
@@ -94,7 +109,7 @@ i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObjec
             ar->Read(&m_phase, 8);
             ar->Read(&m_launched, 4);
             break;
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_launchX, 4);
             ar->Write(&m_launchY, 4);
             ar->Write(&m_dirX, 8);

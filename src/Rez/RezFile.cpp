@@ -3,6 +3,7 @@
 #include <Rez/RezFile.h>
 
 #include <Bute/SymParser.h>
+#include <Enums.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 

@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
@@ -25,7 +26,7 @@ public:
 
     virtual void Unload() OVERRIDE;
     RVA(0x001574a0, 0x6)
-    virtual i32 GetClassId() OVERRIDE {
+    virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_SUBMGRPAGES;
     }
     virtual i32 CreateChildren(i32 w, i32 h, i32 bpp, i32 flags);
@@ -66,7 +67,7 @@ protected:
 public:
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 SetGeometry(i32 w, i32 h, i32 bpp);
 
@@ -96,7 +97,7 @@ public:
     virtual ~CDDrawSurfaceChildA() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 SetGeometry(i32 w, i32 h, i32 bpp) OVERRIDE;
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE;

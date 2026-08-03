@@ -12,7 +12,9 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
@@ -183,7 +185,7 @@ i32 CSBI_MenuItem::Blit() {
 }
 
 RVA(0x000e8520, 0x152)
-i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
+i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -194,7 +196,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
 
     char tmp[0x80];
     switch (kind) {
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_state, 4);
             g_serialCounter++;
             ar->Read(tmp, 0x80);
@@ -206,7 +208,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
                 m_record = 0;
             }
             break;
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_state, 4);
             g_serialCounter++;
             memset(tmp, 0, sizeof(tmp));
@@ -224,7 +226,7 @@ RVA(0x0010bfa0, 0x1)
 void CStatusBarItem::Reset() {}
 
 RVA(0x0010bfc0, 0xe8)
-i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
+i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -233,7 +235,7 @@ i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
         return 0;
     }
     switch (kind) {
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_enabled, 4);
             ar->Read(&m_kind, 4);
             ar->Read(&m_cmd, 4);
@@ -241,7 +243,7 @@ i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
             ar->Read(&m_rect14, 0x10);
             ar->Read(&m_redrawFrames, 4);
             break;
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_enabled, 4);
             ar->Write(&m_kind, 4);
             ar->Write(&m_cmd, 4);

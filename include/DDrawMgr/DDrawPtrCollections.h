@@ -16,7 +16,7 @@ struct IDirectDraw2;
 class CPoolItemA88 : public CDDSurface {
 public:
     virtual ~CPoolItemA88() OVERRIDE;
-    virtual i32 GetPoolKind() OVERRIDE;
+    virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
     virtual i32 Blit7(CDDrawPtrCollections*, i32, i32, i32);
 
     virtual i32 UpdateOverlay(void* srcRect, CDDSurface* dest, void* destRect, u32 flags, void* fx);
@@ -27,7 +27,7 @@ class CPoolItemAB8 : public CDDSurface {
 public:
     virtual ~CPoolItemAB8() OVERRIDE;
     virtual i32 CreateFromDesc(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE;
-    virtual i32 GetPoolKind() OVERRIDE;
+    virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
     virtual i32 Setup(CDDrawPtrCollections*, i32, i32, i32);
     virtual i32 InstallColorFormat();
 };
@@ -37,7 +37,7 @@ class CPoolItemAE8 : public CDDSurface {
 public:
     virtual ~CPoolItemAE8() OVERRIDE;
     virtual i32 CreateFromDesc(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE;
-    virtual i32 GetPoolKind() OVERRIDE;
+    virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
 
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32);
 };
@@ -86,7 +86,8 @@ public:
     void RemoveItemB(CDDPalette* item);
     CDDSurface* CreateSurfaceFromDesc(const DDSURFACEDESC* desc);
 
-    CDDSurface* LoadSurfaceFromPid(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans);
+    CDDSurface*
+    LoadSurfaceFromPid(PidHeader* hdr, FileImageFormat type, u32 size, i32 ctrl, i32 trans);
     CDDSurface* CreateKeyedSurface(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
     CDDSurface* CreateFileSurfaceFromDesc(const DDSURFACEDESC* desc);
 

@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/ColorHsv.h>
 #include <DDrawMgr/PixelShift.h>
+#include <Enums.h>
 
 #include <math.h>
 #include <stdlib.h>

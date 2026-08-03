@@ -12,6 +12,8 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -84,7 +86,7 @@ void CTileTriggerContainer::DtorBase() {
 
 RVA(0x00115f60, 0x300)
 CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
-    i32 tag,
+    TrigLogicId tag,
     i32 col,
     i32 row,
     i32 key,
@@ -145,7 +147,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
 }
 
 RVA(0x00116320, 0x66)
-i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
+i32 CTileTriggerContainer::RemoveByKeys(i32 k1, TrigLogicId k2) {
     POSITION pos = m_base.GetHeadPosition();
     while (pos != 0) {
         POSITION cur = pos;
@@ -163,8 +165,8 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
 // @early-stop
 RVA(0x001163b0, 0xb2)
 CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
-    i32 tileType,
-    i32 logicType,
+    TileCollisionKind tileType,
+    TrigLogicId logicType,
     i32 tileX,
     i32 tileY,
     i32 cellKey,
@@ -194,7 +196,11 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
 }
 
 RVA(0x001164a0, 0x116)
-void CTileTriggerContainer::AddLogicFromRecord(i32 tileType, i32 logicType, CGameObject* object) {
+void CTileTriggerContainer::AddLogicFromRecord(
+    TileCollisionKind tileType,
+    TrigLogicId logicType,
+    CGameObject* object
+) {
     AddLogic(
         tileType,
         logicType,
@@ -218,8 +224,8 @@ void CTileTriggerContainer::AddLogicFromRecord(i32 tileType, i32 logicType, CGam
 
 RVA(0x00116610, 0x350)
 CTileTriggerLogic* CTileTriggerContainer::AddLogic(
-    i32 tileType,
-    i32 logicType,
+    TileCollisionKind tileType,
+    TrigLogicId logicType,
     i32 tileX,
     i32 tileY,
     i32 cellKey,
@@ -451,12 +457,12 @@ i32 CTileTriggerContainer::DelFromList1(CTileTriggerLogic* want) {
 }
 
 RVA(0x00116ee0, 0x2f)
-CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, i32 k2) {
+CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, TrigLogicId k2) {
     POSITION pos = m_base.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
         if (data->m_cellKey == k1) {
-            if (k2 == 0 || data->m_typeId == k2) {
+            if (k2 == TRIGID_ANY || data->m_typeId == k2) {
                 return data;
             }
         }
@@ -465,12 +471,12 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, i32 k2) {
 }
 
 RVA(0x00116f20, 0x51)
-CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
+CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, TrigLogicId b) {
     POSITION pos = m_list1.GetHeadPosition();
     while (pos != 0) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
         if (elem->m_cellKey == a) {
-            if (b == 0) {
+            if (b == TRIGID_ANY) {
                 return elem;
             }
             if (elem->m_typeTag == b) {
@@ -482,7 +488,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
     while (pos != 0) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
         if (elem->m_cellKey == a) {
-            if (b == 0) {
+            if (b == TRIGID_ANY) {
                 return elem;
             }
             if (elem->m_typeTag == b) {
@@ -585,7 +591,7 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
 
 // @early-stop
 RVA(0x00117280, 0x2ec)
-i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
+i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -682,52 +688,57 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
 }
 
 RVA(0x00117630, 0xa4)
-i32 __stdcall
-SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o) {
+i32 __stdcall SerializeApplyA(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj,
+    CTileTriggerSwitchLogic* o
+) {
     if (o == 0) {
         return 0;
     }
-    i32 tag = o->m_typeId;
+    TrigLogicId tag = o->m_typeId;
     s->Write(&tag, 4);
 
     switch (tag) {
-        case 1:
+        case TRIGID_SWITCH_1:
 
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 2:
+        case TRIGID_SWITCH_2:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 3:
+        case TRIGID_MULTI_SWITCH_3:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 4:
+        case TRIGID_EXCLUSIVE_SWITCH_4:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 5:
+        case TRIGID_SWITCH_5:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 6:
+        case TRIGID_SECRET_SWITCH_6:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 7:
+        case TRIGID_TIME_SWITCH_7:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 8:
+        case TRIGID_CHECKPOINT_SWITCH_8:
 
             if (o->ValidateByType(s, mode, typeId, pObj) == 0) {
                 return 0;
@@ -740,41 +751,46 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
 }
 
 RVA(0x00117710, 0xc0)
-i32 __stdcall
-SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o) {
+i32 __stdcall SerializeApplyB(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj,
+    CTileTriggerLogic* o
+) {
     if (o == 0) {
         return 0;
     }
-    i32 tag = o->m_typeTag;
+    TrigLogicId tag = o->m_typeTag;
     s->Write(&tag, 4);
 
     switch (tag) {
-        case 0x16:
+        case TRIGID_GIANT_ROCK_22:
             if ((static_cast<CGiantRockLogic*>(o))->ApplyByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 0x15:
+        case TRIGID_TILE_TRIGGER_21:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 0x17:
+        case TRIGID_TIME_TRIGGER_23:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 0x18:
+        case TRIGID_TILE_TRIGGER_24:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 0x19:
+        case TRIGID_SECRET_TRIGGER_25:
             if (o->ValidateByType(s, mode, typeId, pObj)) {
                 break;
             }
             return 0;
-        case 0x1a:
+        case TRIGID_COVERED_POWERUP_26:
             if (o->ValidateByType(s, mode, typeId, pObj) == 0) {
                 return 0;
             }
@@ -789,9 +805,9 @@ static void* RegSwitchTail(
     CTileTriggerContainer* self,
     CTileTriggerSwitchLogic* obj,
     CFileMemBase* reader,
-    i32 typeId,
+    LogicTypeId typeId,
     i32 pObj,
-    i32 id
+    TrigLogicId id
 ) {
     if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
         return 0;
@@ -805,9 +821,9 @@ static void* RegLogicTail(
     CTileTriggerContainer* self,
     CTileTriggerLogic* obj,
     CFileMemBase* reader,
-    i32 typeId,
+    LogicTypeId typeId,
     i32 pObj,
-    i32 id
+    TrigLogicId id
 ) {
     if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
         return 0;
@@ -819,43 +835,49 @@ static void* RegLogicTail(
 
 // @early-stop
 RVA(0x00117800, 0x4d6)
-void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 typeId, i32 pObj) {
+void* CTileTriggerContainer::LoadElement(
+    CFileMemBase* reader,
+    SerialMode kind,
+    LogicTypeId typeId,
+    i32 pObj
+) {
     if (reader == 0) {
         return 0;
     }
     if (kind != SERIAL_LOAD) {
         return 0;
     }
-    i32 id;
+    // Ingest: the archive stores the logic tag as a raw dword.
+    TrigLogicId id;
     reader->Read(&id, 4);
     switch (id) {
-        case 1:
-        case 2:
-        case 5: {
+        case TRIGID_SWITCH_1:
+        case TRIGID_SWITCH_2:
+        case TRIGID_SWITCH_5: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
             return RegSwitchTail(this, obj, reader, typeId, pObj, id);
         }
-        case 3: {
+        case TRIGID_MULTI_SWITCH_3: {
             CTileTriggerSwitchLogic* obj = new CTileMultiTriggerSwitchLogic;
             return RegSwitchTail(this, obj, reader, typeId, pObj, id);
         }
-        case 4: {
+        case TRIGID_EXCLUSIVE_SWITCH_4: {
             CTileTriggerSwitchLogic* obj = new CTileExclusiveTriggerSwitchLogic;
             return RegSwitchTail(this, obj, reader, typeId, pObj, id);
         }
-        case 6: {
+        case TRIGID_SECRET_SWITCH_6: {
             CTileTriggerSwitchLogic* obj = new CTileSecretTriggerSwitchLogic;
             return RegSwitchTail(this, obj, reader, typeId, pObj, id);
         }
-        case 7: {
+        case TRIGID_TIME_SWITCH_7: {
             CTileTriggerSwitchLogic* obj = new CTileTimeTriggerSwitchLogic;
             return RegSwitchTail(this, obj, reader, typeId, pObj, id);
         }
-        case 8: {
+        case TRIGID_CHECKPOINT_SWITCH_8: {
             CTileTriggerSwitchLogic* obj = new CCheckpointTriggerSwitchLogic;
             return RegSwitchTail(this, obj, reader, typeId, pObj, id);
         }
-        case 21: {
+        case TRIGID_TILE_TRIGGER_21: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
                 return 0;
@@ -879,21 +901,22 @@ void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 typ
             }
             i32 cell = geo->m_colOffsets[y] + x;
             i32 tile = geo->m_tileGrid[cell];
-            i32 tileKind;
+            TileCollisionKind tileKind;
             if (tile == static_cast<i32>(0xeeeeeeee) || tile == -1) {
-                tileKind = 0;
+                tileKind = TILEKIND_PASSABLE;
             } else {
 
                 CTileImageSet* rec =
                     static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
-                tileKind = rec->GetCollisionAt(0, 0);
+                // Ingest: the raw WWD attribute byte for this cell.
+                tileKind = static_cast<TileCollisionKind>(rec->GetCollisionAt(0, 0));
             }
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
                 this->m_latchedLeaf = obj;
             }
             return obj;
         }
-        case 22: {
+        case TRIGID_GIANT_ROCK_22: {
             CGiantRockLogic* obj = new CGiantRockLogic;
             if (obj->ApplyByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
                 return 0;
@@ -902,19 +925,19 @@ void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 typ
             obj->m_typeTag = id;
             return obj;
         }
-        case 23: {
+        case TRIGID_TIME_TRIGGER_23: {
             CTileTriggerLogic* obj = new CTileTimeTriggerLogic;
             return RegLogicTail(this, obj, reader, typeId, pObj, id);
         }
-        case 24: {
+        case TRIGID_TILE_TRIGGER_24: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
             return RegLogicTail(this, obj, reader, typeId, pObj, id);
         }
-        case 25: {
+        case TRIGID_SECRET_TRIGGER_25: {
             CTileTriggerLogic* obj = new CTileSecretTriggerLogic;
             return RegLogicTail(this, obj, reader, typeId, pObj, id);
         }
-        case 26: {
+        case TRIGID_COVERED_POWERUP_26: {
             CTileTriggerLogic* obj = new CCoveredPowerupLogic;
             return RegLogicTail(this, obj, reader, typeId, pObj, id);
         }

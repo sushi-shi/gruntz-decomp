@@ -1,4 +1,0 @@
-# data-symbol baseline: POD/scalar/const globals still bound by a
-# storage-less DATA_SYMBOL (should be real DATA defs). Frozen, down-only;
-# drive to 0. Regenerate: python -m gruntz.audit.data_symbol --write-baseline
-# rva	mangled	file

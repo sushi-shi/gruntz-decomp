@@ -10,10 +10,12 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/Play.h>
@@ -21,8 +23,8 @@
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SplashParams.h>
 #include <Gruntz/String.h>
-#include <Image/ImageFormatTag.h>
 #include <Io/FileMem.h>
+#include <Rez/RezTypeTag.h>
 #include <Wap32/EngStr.h>
 
 #include <ddraw.h>
@@ -36,7 +38,7 @@ DATA(0x0024e35c)
 i32 g_playActive;
 
 RVA(0x00039160, 0x46)
-i32 CCreditsState::LeaveState(i32 unused) {
+i32 CCreditsState::LeaveState(GameStateId unused) {
     owner()->m_sound->IsPlaying();
     owner()->m_sound->StopAndFlush();
     m_stateBank = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
@@ -45,11 +47,11 @@ i32 CCreditsState::LeaveState(i32 unused) {
 }
 
 RVA(0x000a03f0, 0x14b)
-i32 CMenuState::EnterState(i32 mode) {
+i32 CMenuState::EnterState(GameStateId mode) {
     char stateName[0x20];
     char titleName[0x20];
 
-    if (mode != 2) {
+    if (mode != GAMESTATE_ATTRACT) {
         i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
         sprintf(stateName, "STATEZ_ATTRACT");
         sprintf(titleName, "TITLE%d", idx);
@@ -510,17 +512,17 @@ i32 CState::ShadeScreen(i32 pct) {
 }
 
 RVA(0x000fafa0, 0x3b)
-i32 CPlay::HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
+i32 CPlay::HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId a2, i32 a3) {
     if (ar == 0) {
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             if (HeaderWrite(ar) == 0) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (HeaderRead(ar) == 0) {
                 return 0;
             }

@@ -121,6 +121,30 @@ Residuals, both real but neither a flag:
   (needs `$GRUNTZ_RUNTIME`) or by patching the hints from retail. Functionally inert —
   the loader falls back to a name search — but it blocks a byte-exact `.idata`.
 
+
+### Static-library split — [VERIFIED]
+
+Retail linked the **engine projects as static libraries**, not as objects on the link
+line, and the incremental thunk band proves it: MSVC thunks every cross-object call
+between OBJECTS but never a `.lib` member. Retail's thunk targets stop dead at
+`0x11c860` — below that line there are **2** cross-unit direct calls, above it **4664**
+and zero thunks. Sorting our units by that boundary puts 227 of 237 `src/Gruntz` units
+below it and DDrawMgr/Image/Bute/Crypto/Rez/Wwd/Dsndmgr/zlib above: the leaked
+`C:\Proj\{...}` project boundary.
+
+`link.py --engine-lib` archives those modules with the real VC5 `LIB.EXE` and links the
+archive instead:
+
+| | `E9` thunks | vs retail |
+|---|---|---|
+| retail | 2695 | — |
+| default (all objs) | 4559 | 1.69x |
+| **`--engine-lib`** | **2976** | **1.10x** |
+
+Opt-in: it changes the map's object attribution wholesale. Import table stays exact and
+`link_order` still reads the map. Partition by MODULE, not by measured `min(RVA)` —
+the latter mis-assigns units that straddle the line (3242 thunks, worse).
+
 ### Layout / addresses
 
 - **`/ORDER:@<file>` — [HEURISTIC]. The biggest lever for the link phase.**
@@ -142,15 +166,24 @@ Residuals, both real but neither a flag:
   * retail keeps a separate writable **`.idata`** section rather than folding the
     import data into read-only `.rdata`, which is what our non-incremental link does.
 
-  So retail is an **incremental** link and `/INCREMENTAL:NO` is a fidelity bug.
-  We cannot switch yet: **any `/FORCE` — including `/FORCE:MULTIPLE` — makes link
-  silently ignore `/INCREMENTAL` (LNK4075)**, and `/FORCE` is still required. As of
-  the last measured link the entire barrier is **two duplicate definitions**:
-  `?SetRect@CRect@@QAEXHHHH@Z` (`src/Wap32/Rect.cpp:14` defines out-of-line what MFC
-  supplies as an inline COMDAT — a `CRect` identity/redefinition defect) and
-  `??1strstream@@UAE@XZ` (`butemgr.obj` vs `libcimt.lib(_strstre.obj)`; see the note
-  in `include/strstrea.h`). Fix those two, drop `/FORCE` (`link.py --no-force`), and
-  `/INCREMENTAL:YES` becomes reachable.
+  So retail is an **incremental** link, and `/INCREMENTAL:YES` is now **the default**
+  (2026-08-03). It became reachable only once the tree linked `/FORCE`-free — any
+  `/FORCE`, including `/FORCE:MULTIPLE`, makes link silently ignore it (LNK4075).
+
+  **The decision was measured, not assumed.** It costs nothing: per-object
+  fragmentation is *identical* under `:YES` and `:NO` (median 1 fragment, mean 1.07,
+  94.7% of 646 objects perfectly contiguous, **zero** objects more fragmented), and
+  `gruntz.audit.link_order` still reads the map. It buys three retail shapes at once:
+
+  | | `:NO` | `:YES` | retail |
+  |---|---|---|---|
+  | `E9` thunks in the first 0x8000 of `.text` | 14 | **4559** | **2704** |
+  | sections | `.text .rdata .data .reloc` | + **`.idata`** | + `.idata .rsrc` |
+  | image | 1,725,952 | **2,258,432** | 2,511,872 |
+
+  Our thunk band is *larger* than retail's (4559 vs 2704) because we thunk library
+  code retail did not — the shape is right, the extent is not yet. `--no-incremental`
+  restores the flat layout for isolating that variable.
 - **`/FIXED:NO` — [VERIFIED ON].** Retail **has a `.reloc`** (it is why the EXE is
   delinkable at all), so base relocations were kept. `link.py` passes it by default;
   measured **purely additive** — `.text`/`.rdata`/`.data` are byte-identical with and

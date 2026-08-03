@@ -13,6 +13,7 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/String.h>
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 
@@ -102,17 +103,20 @@ i32 CPlay::ScanBuildTiles() {
             i32 subX = x - (tileX << shX);
             i32 subY = y - (tileY << shY);
             i32 cell = g->m_tileGrid[g->m_colOffsets[tileY] + tileX];
-            i32 tile;
+            TileCollisionKind tile;
             if (cell == static_cast<i32>(0xeeeeeeee) || cell == static_cast<i32>(0xffffffff)) {
-                tile = 0;
+                tile = TILEKIND_PASSABLE;
             } else {
 
-                tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
-                           ->GetCollisionAt(subX, subY);
+                // Ingest: the raw WWD attribute byte for this cell.
+                tile = static_cast<TileCollisionKind>(
+                    (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
+                        ->GetCollisionAt(subX, subY)
+                );
             }
             if (m_beginMarker->AddLogic(
                     tile,
-                    0x1a,
+                    TRIGID_COVERED_POWERUP_26,
                     p->m_speedX,
                     p->m_speedY,
                     p->m_id,

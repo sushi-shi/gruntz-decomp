@@ -9,6 +9,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
@@ -66,24 +67,6 @@ static const char s_dExitKeyB[] = "B";
 DATA(0x0020bcf4)
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
-enum GruntDeathType {
-    DEATH_DROP = 0,
-    DEATH_NORMAL = 1,
-    DEATH_SQUASH = 2,
-    DEATH_HOLE = 3,
-    DEATH_SINK = 4,
-    DEATH_MELT = 5,
-    DEATH_SHATTER = 6,
-    DEATH_BURN = 7,
-    DEATH_FALL = 8,
-    DEATH_ELECTROCUTE = 9,
-    DEATH_KAROKE = 10,
-    DEATH_EXPLODE = 11,
-    DEATH_DRAIN = 12,
-    DEATH_FALL2 = 14,
-    DEATH_QUICKFALL = 15,
-};
-
 #define DEATH_FRAME()                                                                              \
     (m_wwdObject->m_animCursor.m_animation->m_records.GetSize() > 0                                \
          ? static_cast<CAniRecordView*>(m_wwdObject->m_animCursor.m_animation->m_records.GetAt(0)) \
@@ -104,7 +87,7 @@ enum GruntDeathType {
 
 // @early-stop
 RVA(0x00060150, 0xdd0)
-i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
+i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     if (m_deathAnimStarted != 0) {
         return 0;
     }
@@ -172,7 +155,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
 
     switch (deathType) {
         case DEATH_SQUASH:
-            if (m_entranceReason == 1) {
+            if (m_entranceReason == PICKUP_BOMB) {
                 m_value = m_wwdObject->m_animCursor.m_animation;
                 m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
                 goto pathA;
@@ -347,7 +330,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
         }
 
         case DEATH_EXPLODE: {
-            if (m_entranceReason == 1) {
+            if (m_entranceReason == PICKUP_BOMB) {
                 m_value = m_wwdObject->m_animCursor.m_animation;
                 m_wwdObject->m_animCursor.Setup(m_poseDeath);
                 goto pathA;
@@ -388,7 +371,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
                 }
             }
 
-            if (m_entranceReason == 0x14 && g_gameReg->m_gameMode != 1) {
+            if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != PICKUP_BOMB) {
                 m_wwdObject->ApplyLookupGeometry(s_NORMALGRUNT_DEATH, 0);
                 m_wwdObject->ApplyName(s_NORMALGRUNT_DEATH);
             }
@@ -415,13 +398,13 @@ finalize:
 
 tail:
 
-    if (m_entranceReason == 0x14 && g_gameReg->m_gameMode != 1) {
+    if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != PICKUP_BOMB) {
         SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
     if (m_arrivalState == 0xd) {
         TryPowerupAtTile();
     }
-    m_gruntKind = 0;
+    m_gruntKind = GRUNT_NORMAL;
     m_deathType = deathType;
     return 0;
 }

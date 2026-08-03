@@ -25,6 +25,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameLevel.h>
@@ -70,31 +71,9 @@ static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
     return p->m_cues.GetCount();
 }
 
-RVA(0x00114120, 0x70)
-i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
-    if (m_emitGate != 0) {
-        return 0;
-    }
-    void* val = 0;
-    m_cues.Lookup(key, val);
-    if (val == 0) {
-        return 0;
-    }
-    i32 gate = g_sndEnabled;
-    i32 item = g_sndCueTag;
-    if (gate == 0) {
-        return 0;
-    }
-    LeafCue* p = static_cast<LeafCue*>(val);
-
-    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-        >= static_cast<u32>(p->m_replayDelay)) {
-        p->m_lastPlayTime = g_killCueClock;
-        return p->m_sound->ConfigureItem(item, 0, 0, 0);
-    }
-    return 0;
-}
-
+// @identity-TODO RefreshAsset@CDDrawSubMgrLeafScan - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (118 fns) came from the static library. It belongs to another compiland.
 RVA(0x00156cb0, 0x20)
 CLoadable::CLoadable(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
     m_id = field04;
@@ -116,7 +95,7 @@ fail:
 }
 
 RVA(0x00156cf0, 0x6)
-i32 CDDrawWorkerMapSmall::GetClassId() {
+LoadableClassId CDDrawWorkerMapSmall::GetClassId() {
     return CLASSID_WORKERMAPSMALL;
 }
 
@@ -140,7 +119,7 @@ i32 CDDrawWorkerRegistry::IsLoaded() {
 }
 
 RVA(0x00156de0, 0x6)
-i32 CDDrawWorkerRegistry::GetClassId() {
+LoadableClassId CDDrawWorkerRegistry::GetClassId() {
     return CLASSID_WORKERREGISTRY;
 }
 
@@ -184,7 +163,7 @@ fail:
 }
 
 RVA(0x00156f20, 0x6)
-i32 CDDrawWorkerList::GetClassId() {
+LoadableClassId CDDrawWorkerList::GetClassId() {
     return CLASSID_WORKERLIST;
 }
 
@@ -272,7 +251,7 @@ i32 CDDrawWorkerBase::IsLoaded() {
 }
 
 RVA(0x00157210, 0x6)
-i32 CDDrawWorkerBase::GetClassId() {
+LoadableClassId CDDrawWorkerBase::GetClassId() {
     return CLASSID_WORKERNODE;
 }
 
@@ -412,7 +391,7 @@ i32 CDDrawChildGroup::IsLoaded() {
 }
 
 RVA(0x00157600, 0x6)
-i32 CDDrawChildGroup::GetClassId() {
+LoadableClassId CDDrawChildGroup::GetClassId() {
     return CLASSID_CHILDGROUP;
 }
 
@@ -1241,7 +1220,7 @@ i32 CDrawSubWorker::IsLoaded() {
 }
 
 RVA(0x00158f80, 0x6)
-i32 CDrawSubWorker::GetClassId() {
+LoadableClassId CDrawSubWorker::GetClassId() {
     return CLASSID_SUBWORKER;
 }
 
@@ -1299,7 +1278,7 @@ i32 CDDrawSurfacePair::IsLoaded() {
 }
 
 RVA(0x001590c0, 0x6)
-i32 CDDrawSurfacePair::GetClassId() {
+LoadableClassId CDDrawSurfacePair::GetClassId() {
     return CLASSID_SURFACEPAIR;
 }
 
@@ -1318,7 +1297,7 @@ i32 CDDrawSurfaceChildA::IsLoaded() {
 }
 
 RVA(0x00159180, 0x6)
-i32 CDDrawSurfaceChildA::GetClassId() {
+LoadableClassId CDDrawSurfaceChildA::GetClassId() {
     return CLASSID_SURFACECHILDA;
 }
 

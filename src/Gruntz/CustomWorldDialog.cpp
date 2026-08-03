@@ -6,6 +6,7 @@
 #include <MfcNoInline.h>
 #include <MfcWin.h>
 
+#include <Enums.h>
 #include <Gruntz/CustomWorldInfoDlg.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>

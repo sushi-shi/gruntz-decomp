@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
@@ -19,9 +20,9 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/State.h>
-#include <Image/ImageFormatTag.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezSync.h>
+#include <Rez/RezTypeTag.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/Wap32.h>
 
@@ -80,7 +81,7 @@ i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (surf == 0 || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(0x8006, 0xfa0);
+            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0xfa0);
             return 0;
         }
     }
@@ -177,6 +178,8 @@ void CPreviewState::Cancel() {
     }
     PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->m_hwnd)), 0x111, 0x8027, 0);
 }
+// @interleaver LoadScreen - 170 B lone body at 0xfab90, between FadeSceneClear2
+// (attract) and OnPaint (attract): a first-use placement.
 RVA(0x000fab90, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == 0) {

@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
 class CDoNothing : public CUserLogic, public CWapX {
@@ -16,7 +17,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DONOTHING;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 };
 SIZE(0x54);
 

@@ -23,7 +23,7 @@ i32 CPlay::DrawStateMessage() {
     }
 
     i32 index = 3;
-    if (Update() == 7) {
+    if (Update() == GAMESTATE_DEMO) {
         index = 4;
     }
     CImage* frame = set->GetAt(index);

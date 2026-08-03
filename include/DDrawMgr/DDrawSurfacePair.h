@@ -4,6 +4,8 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Enums.h>
+#include <Gruntz/Loadable.h>
 #include <Ints.h>
 
 class CDDSurface;
@@ -25,7 +27,7 @@ public:
     }
 
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE;
     virtual i32 InitFromSurface(CDDSurface* src);

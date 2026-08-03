@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
 #include <Ints.h>

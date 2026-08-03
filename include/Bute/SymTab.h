@@ -4,7 +4,9 @@
 #include <rva.h>
 
 #include <Bute/Hash.h>
+#include <Enums.h>
 #include <Ints.h>
+#include <Rez/RezTypeTag.h>
 
 void* operator new(u32 size);
 
@@ -97,9 +99,9 @@ public:
 
     void* ResolvePath(const char* path);
 
-    struct CParseSource* ResolveQualified(const char* name, i32 fourcc);
+    struct CParseSource* ResolveQualified(const char* name, RezTypeTag fourcc);
 
-    struct CParseSource* Insert(const char* key, u32 fourcc);
+    struct CParseSource* Insert(const char* key, RezTypeTag fourcc);
 
     void* Find(const char* key);
 

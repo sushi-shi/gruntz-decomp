@@ -7,6 +7,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>
+#include <Enums.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>

@@ -6,6 +6,7 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -13,13 +14,16 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/WarlordOwner.h>
 #include <Io/FileMem.h>
 #include <Wap32/ZVec.h>
 
@@ -105,13 +109,6 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)
 RVA_COMPGEN(0x000107f0, 0x55, ??1CWarlord@@UAE@XZ)
 
-typedef enum WarlordOwner {
-    WARLORDZ_KING = 0,
-    WARLORDZ_NAPOLEAN = 1,
-    WARLORDZ_PATTON = 2,
-    WARLORDZ_VIKING = 3,
-} WarlordOwner;
-
 typedef enum WarlordBattleTag {
     WARLORD_TAG_KING = 0x442,
     WARLORD_TAG_NAPOLEAN = 0x443,
@@ -151,7 +148,8 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_wwdObject->m_flags |= 0x2000002;
 
-    i32 owner = m_object->m_smarts;
+    // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
+    WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
     i32 cfg = g_gameReg->m_options[owner].m_colorIndex;
     if (cfg < 0 || cfg >= 0x11) {
         cfg = 0;
@@ -184,7 +182,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             break;
         default:
 
-            (g_gameReg)->ReportError(0x8009, 0x3e9);
+            (g_gameReg)->ReportError(IDX(CMD_TOGGLE_SOUND), 0x3e9);
             return;
     }
 
@@ -211,7 +209,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 // @early-stop
 RVA(0x00043670, 0xc20)
-i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj) {
+i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, CGameObject* obj) {
 
     char buf[0x80];
     char hdr[0x80];
@@ -225,7 +223,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
     }
 
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
             ar->Read(hdr, 0x80);
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
@@ -241,7 +239,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             }
             break;
         }
-        case 4: {
+        case SERIAL_SAVE: {
             memset(buf, 0, sizeof(buf));
             if (m_value != 0) {
                 strcpy(
@@ -258,7 +256,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
     }
 
     switch (mode) {
-        case 4: {
+        case SERIAL_SAVE: {
             CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
             if (world == 0) {
                 goto fail;
@@ -367,7 +365,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Write(&m_ownerTag, 4);
             break;
         }
-        case 7: {
+        case SERIAL_LOAD: {
             CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
             if (world == 0) {
                 return 0;
@@ -479,7 +477,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
             ar->Read(&m_ownerTag, 4);
             break;
         }
-        case 8: {
+        case SERIAL_POSTLOAD: {
 
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
                 g_gameReg->m_options[m_object->m_smarts].m_colorIndex,
@@ -499,21 +497,21 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
 
     {
         switch (mode) {
-            case 7:
+            case SERIAL_LOAD:
                 ar->Read(&m_cooldownStamp, sizeof(m_cooldownStamp));
                 ar->Read(&m_cooldownWindow, sizeof(m_cooldownWindow));
                 break;
-            case 4:
+            case SERIAL_SAVE:
                 ar->Write(&m_cooldownStamp, sizeof(m_cooldownStamp));
                 ar->Write(&m_cooldownWindow, sizeof(m_cooldownWindow));
                 break;
         }
         switch (mode) {
-            case 7:
+            case SERIAL_LOAD:
                 ar->Read(&m_timer2Stamp, sizeof(m_timer2Stamp));
                 ar->Read(&m_timer2Window, sizeof(m_timer2Window));
                 break;
-            case 4:
+            case SERIAL_SAVE:
                 ar->Write(&m_timer2Stamp, sizeof(m_timer2Stamp));
                 ar->Write(&m_timer2Window, sizeof(m_timer2Window));
                 break;

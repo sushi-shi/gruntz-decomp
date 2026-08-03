@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Loadable.h>
 #include <Image/CImage.h>
@@ -26,13 +27,14 @@ public:
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 SetKey(const char* key);
     virtual i32 BuildFramesFromSymTab(CSymTab* tab);
 
     virtual CImage* CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed);
-    virtual CImage* CreateDescriptorFrame(PidHeader* desc, i32 mode, i32 index, u32 size);
+    virtual CImage*
+    CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size);
     virtual CImage* LoadFrame(char* path, i32 index, i32 keyed);
 
     virtual CImage* InsertFrame(void* rec, i32 n, i32 flag);

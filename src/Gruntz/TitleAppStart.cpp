@@ -5,11 +5,12 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AssetRoot.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/SplashState.h>
 #include <Gruntz/State.h>
 
 RVA(0x000f9880, 0x43)
-i32 CSplashState::EnterState(i32) {
+i32 CSplashState::EnterState(GameStateId) {
     int(WINAPI * sc)(BOOL) = ShowCursor;
     while (sc(0) >= 0) {
     }
@@ -18,7 +19,7 @@ i32 CSplashState::EnterState(i32) {
     return 1;
 }
 RVA(0x000f98f0, 0x16)
-i32 CSplashState::LeaveState(i32) {
+i32 CSplashState::LeaveState(GameStateId) {
     m_world->m_drawTarget->ClearAllPages(0);
     return 1;
 }

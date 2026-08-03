@@ -3,10 +3,11 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
-enum LoadableClassId {
+GZ_ENUM_BEGIN(LoadableClassId)
     CLASSID_NONE = 0,
     CLASSID_SUBWORKER = 1,
     CLASSID_SURFACECHILDA = 2,
@@ -26,6 +27,7 @@ enum LoadableClassId {
     CLASSID_WORKERREGISTRY = 0x12,
     CLASSID_WORKERCACHE = 0x13,
     CLASSID_WORKERMAPSMALL = 0x14,
+    CLASSID_ANIRECORDBASE2 = 0x15,
     CLASSID_GAMELEVEL = 0x19,
     CLASSID_WORKERHOST = 0x1a,
 
@@ -35,8 +37,8 @@ enum LoadableClassId {
     CLASSID_WWDOBJ_F = 0x16,
     CLASSID_WWDOBJ_B = 0x1b,
 
-    CLASSID_CALLBACKOBJ = 0x1c,
-};
+    CLASSID_CALLBACKOBJ = 0x1c
+GZ_ENUM_END(LoadableClassId)
 
 class CLoadable : public CWapObj {
 public:
@@ -44,7 +46,7 @@ public:
 
     virtual void Unload();
 
-    virtual i32 GetClassId();
+    virtual LoadableClassId GetClassId();
 
     CLoadable() {}
 

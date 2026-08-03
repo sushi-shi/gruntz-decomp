@@ -14,7 +14,7 @@ typedef enum AdvancedOptionsDlgId {
     IDC_DEFAULTS = 0x426,
 } AdvancedOptionsDlgId;
 
-DATA_SYMBOL(0x002295d8, 0x21c, _g_registryHelper$S*)
+DATA(0x002295d8)
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;
 

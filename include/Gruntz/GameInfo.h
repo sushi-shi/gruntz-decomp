@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
 
 struct CGameInfoTime {

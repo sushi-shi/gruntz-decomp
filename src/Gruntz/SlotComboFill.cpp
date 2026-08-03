@@ -2,6 +2,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <MsgParam.h>
 #include <Net/LatencyList.h>
 

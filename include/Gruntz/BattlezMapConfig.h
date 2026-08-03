@@ -6,7 +6,9 @@
 #include <Mfc.h>
 
 #include <Clock64.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/SerialArchive.h>
 
 class CTriggerMgr;
 class CTileTriggerSwitchLogic;
@@ -28,7 +30,7 @@ public:
     i32 EnterDefenderMode(CGrunt*, i32);
     i32 PathCrossesMarkedTile(CGrunt*);
     i32 IsCoordOccupied(CGrunt*, i32, i32);
-    i32 SerializeState(CFileMemBase*, i32, i32, i32);
+    i32 SerializeState(CFileMemBase*, SerialMode, LogicTypeId, i32);
     i32 PathToNearbyUnit(CGrunt*);
     i32 Serialize(void*);
     i32 Deserialize(void*);

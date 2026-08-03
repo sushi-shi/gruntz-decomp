@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
+#include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/Grunt.h>
@@ -17,7 +18,7 @@
 #include <string.h>
 
 RVA(0x000087d0, 0x8)
-i32 CUserBase::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
+i32 CUserBase::SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
     return 1;
 }
 
@@ -115,14 +116,14 @@ void CUserLogic::FinalizeStep(char*) {
 
 // @early-stop
 RVA(0x00008c00, 0x152)
-i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
+i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj) {
     char name[0x80];
 
     if (arc == 0) {
         return 0;
     }
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
 
             arc->Read(name, 0x80);
             arc->Read(m_blob, 0x10);
@@ -140,7 +141,7 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
             m_value = static_cast<CAniElement*>(val);
             return 1;
         }
-        case 4: {
+        case SERIAL_SAVE: {
 
             memset(name, 0, sizeof(name));
             if (m_value != 0) {

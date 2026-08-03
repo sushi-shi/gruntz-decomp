@@ -10,6 +10,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
 #include <Image/ImageSet.h>
 #include <Ints.h>
@@ -118,7 +120,12 @@ i32 CSBI_WarlordHead::Render() {
 }
 
 RVA(0x000eb970, 0x72)
-i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
+i32 CSBI_WarlordHead::SerializeFields(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj
+) {
     if (s == 0) {
         return 0;
     }
@@ -126,10 +133,10 @@ i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32
         return 0;
     }
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             s->Read(&m_direction, 4);
             break;
-        case 4:
+        case SERIAL_SAVE:
             s->Write(&m_direction, 4);
             break;
     }

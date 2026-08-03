@@ -2,6 +2,8 @@
 
 #include <Dsndmgr/GruntzSoundZ.h>
 
+#include <Enums.h>
+
 #include <mss.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,6 +17,9 @@ DATA(0x00253c64)
 
 HINSTANCE g_midiResModule = 0;
 
+// @identity-TODO ?1CGruntzSoundZ - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (34 fns) came from the static library. It belongs to another compiland.
 RVA(0x00086040, 0x49)
 CGruntzSoundZ::~CGruntzSoundZ() {
     Shutdown();

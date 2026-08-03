@@ -22,7 +22,7 @@ public:
     virtual i32 IsReady() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual void* CreateWorkerA(i32 x, i32 y, i32 frame);
     virtual void* CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead);

@@ -1,6 +1,7 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/ImageSet.h>
 #include <Rez/FrameClock.h>
@@ -8,11 +9,11 @@
 // @early-stop
 RVA(0x000612a0, 0x23c)
 i32 CGrunt::LoadGruntDecayConfig() {
-    if (m_deathType == 0) {
+    if (m_deathType == DEATH_DROP) {
         return 0;
     }
     if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 1) {
-        if (m_entranceReason == 1 && m_deathType != 5) {
+        if (m_entranceReason == PICKUP_BOMB && m_deathType != DEATH_MELT) {
             m_tileMgr->BuildRockBreakParticles(
                 m_object->m_screenX,
                 m_object->m_screenY,
@@ -25,7 +26,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
                 m_object->m_screenY,
                 m_tileOwnerHi,
                 m_moveIcon,
-                m_deathType != 5,
+                m_deathType != DEATH_MELT,
                 0x19
             );
         }
@@ -37,8 +38,9 @@ i32 CGrunt::LoadGruntDecayConfig() {
     if (sub->m_frameTicksLeft != 0) {
         return 0;
     }
-    i32 mode = m_deathType;
-    if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
+    GruntDeathType mode = m_deathType;
+    if (mode == DEATH_NORMAL || mode == DEATH_SQUASH || mode == DEATH_EXPLODE
+        || mode == DEATH_SHATTER) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("R");
         if (m_cellRemovalNotified == 0) {

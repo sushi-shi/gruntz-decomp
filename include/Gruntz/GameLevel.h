@@ -5,21 +5,17 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdFile.h>
 
 class CFileMemBase;
 class CDDrawSurfacePair;
-
-typedef enum {
-    kTilePassable = 0,
-    kTileSoft = 1,
-    kTileSoft2 = 2,
-    kTileHard = 3,
-    kTileSpecial = 4,
-} TileCollision;
 
 static const i32 TILE_UNINIT = static_cast<i32>(0xeeeeeeee);
 static const i32 TILE_CLEAR = -1;
@@ -53,10 +49,11 @@ static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
-            (RESULT) = kTilePassable;                                                              \
+            (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
             CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);        \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
+            /* Ingest: GetCollisionAt hands back the raw WWD attribute byte. */                    \
+            (RESULT) = static_cast<TileCollisionKind>(set_->GetCollisionAt(subX_, subY_));         \
         }                                                                                          \
     } while (0)
 
@@ -85,7 +82,7 @@ public:
 
     virtual void Unload() OVERRIDE;
     RVA(0x001611b0, 0x6)
-    virtual i32 GetClassId() OVERRIDE {
+    virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_GAMELEVEL;
     }
     virtual i32 LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords);
@@ -129,13 +126,13 @@ public:
 
     i32 MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
-    i32 ProbeColumn(CGameObject* target, i32 dx);
+    TileCollisionKind ProbeColumn(CGameObject* target, i32 dx);
 
     i32 WalkColumnDown(CGameObject* target, i32 unused);
 
     i32 ProbeHeadSoft(CGameObject* target, i32 dy);
 
-    i32 ProbeFeetKind(CGameObject* target, i32 dx);
+    TileCollisionKind ProbeFeetKind(CGameObject* target, i32 dx);
 
     i32 ProbeSpanHard(CGameObject* target, i32 x, i32 off);
 
@@ -143,7 +140,7 @@ public:
 
     void VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx);
 
-    i32 EditDispatch(CFileMemBase* sink, i32 mode, i32 typeId, i32 pObj);
+    i32 EditDispatch(CFileMemBase* sink, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
     i32 SaveName(CFileMemBase* sink);
     i32 LoadName(CFileMemBase* sink);
@@ -177,7 +174,7 @@ private:
     i32 StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32 moveFlags);
     i32 ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
     i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);
-    i32 AxisProbe(i32 coord, i32 limit);
+    TileCollisionKind AxisProbe(i32 coord, i32 limit);
 
     i32 AltStepValidate(
         CGameObject* t,

@@ -3,7 +3,9 @@
 
 #include <rva.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_ImageSet.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
@@ -18,7 +20,8 @@ public:
 
     virtual ~CSBI_ImageSetAni() OVERRIDE;
 
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj)
+        OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;
     virtual i32 Render() OVERRIDE;
 

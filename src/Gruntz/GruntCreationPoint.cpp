@@ -11,6 +11,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -61,14 +62,19 @@ template<> DATA(0x00244700)
 CActReg CActRegPool<CGruntCreationPoint>::s_table(2000, 2010);
 
 RVA(0x0003e7a0, 0xd7)
-i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CGruntCreationPoint::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!Chain(ar, tag, c, d)) {
         return 0;
     }
-    if (tag != 4 && tag == 8) {
+    if (tag != SERIAL_SAVE && tag == SERIAL_POSTLOAD) {
         i32 idx;
         if (g_gameReg->m_gameMode != 1) {
             if (g_gameReg->m_options[m_object->m_smarts].m_liveGate != 0) {

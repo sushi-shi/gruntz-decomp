@@ -5,11 +5,12 @@
 
 #include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
 class CSpotLight : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
     RVA(0x00012ff0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

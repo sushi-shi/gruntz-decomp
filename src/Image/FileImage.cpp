@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/PixelShift.h>
+#include <Enums.h>
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePool.h>
@@ -937,7 +938,7 @@ i32 CDDSurface::DecodePcxData(
     i32 caps,
     u32 key
 ) {
-    i32 flags = static_cast<i32>(hdr->flags);
+    PidFlags flags = static_cast<PidFlags>(hdr->flags);
     i32 w = hdr->width;
     i32 h = hdr->height;
     u8* data = hdr->pixels;
@@ -945,9 +946,9 @@ i32 CDDSurface::DecodePcxData(
     if (w & 3) {
         return 0;
     }
-    if (flags & PID_SYSTEM_MEMORY) {
+    if (HAS(flags, PID_SYSTEM_MEMORY)) {
         caps = (caps & ~0x4000) | 0x800;
-    } else if (flags & PID_VIDEO_MEMORY) {
+    } else if (HAS(flags, PID_VIDEO_MEMORY)) {
         caps = caps & ~0x800;
     }
 
@@ -961,7 +962,7 @@ i32 CDDSurface::DecodePcxData(
         remap = 1;
     }
 
-    if (flags & PID_EMBEDDED_PALETTE) {
+    if (HAS(flags, PID_EMBEDDED_PALETTE)) {
         if (static_cast<u32>(size) <= 0x300) {
             return 0;
         }
@@ -1018,7 +1019,7 @@ i32 CDDSurface::DecodePcxData(
     if (decoded) {
         operator delete(decoded);
     }
-    if (flags & PID_TRANSPARENCY) {
+    if (HAS(flags, PID_TRANSPARENCY)) {
         FillPalette(key);
     }
     return 1;
@@ -1050,7 +1051,7 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32
 
 RVA(0x00145b10, 0x1b5)
 i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u32 colorKey) {
-    i32 flags = static_cast<i32>(hdr->flags);
+    PidFlags flags = static_cast<PidFlags>(hdr->flags);
     i32 width = hdr->width;
     i32 height = hdr->height;
     u8* p = hdr->pixels;
@@ -1067,7 +1068,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
             remap = 1;
         }
 
-        if (flags & PID_EMBEDDED_PALETTE) {
+        if (HAS(flags, PID_EMBEDDED_PALETTE)) {
             if (size <= 0x300) {
                 return 0;
             }
@@ -1118,7 +1119,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
         if (decoded) {
             operator delete(decoded);
         }
-        if (flags & PID_TRANSPARENCY) {
+        if (HAS(flags, PID_TRANSPARENCY)) {
             FillPalette(colorKey);
         }
         return 1;

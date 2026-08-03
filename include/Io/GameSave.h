@@ -3,6 +3,9 @@
 
 #include <rva.h>
 
+#include <Enums.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 class CGruntzMgr;
@@ -13,6 +16,7 @@ extern "C" i32 g_saveBuf[0x24];
 
 extern i32 g_savedMenuCmd;
 
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void* payload);
+i32 __cdecl
+SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload);
 
 #endif // GRUNTZ_IO_GAMESAVE_H

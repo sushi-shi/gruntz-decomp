@@ -13,7 +13,7 @@ RVA(0x00112a50, 0xdd)
 
 i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     CTileTriggerContainer* owner,
-    i32 typeId,
+    TrigLogicId typeId,
     i32 tileX,
     i32 tileY,
     i32 cellKey,
@@ -29,7 +29,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (m_initGate != 0) {
         goto fail;
     }
-    if (typeId == 4 && rect[0].left == 0) {
+    if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
         goto fail;
     }
     memcpy(m_block, rect, sizeof(m_block));

@@ -5,6 +5,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
@@ -14,7 +15,12 @@ template<> DATA(0x00245f70)
 CActReg CActRegPool<CSingleAnimation>::s_table(2000, 2010);
 
 RVA(0x000104a0, 0x47)
-i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CSingleAnimation::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -32,6 +38,8 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_objAux->m_actKey = ActFindId("A");
 }
 
+// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
+// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id));
@@ -40,6 +48,8 @@ void CSingleAnimation::FireActivation(i32 id) {
     }
 }
 
+// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000aeb80, 0x18d)
 void CSingleAnimation::RegisterActs() {
     i32 id = ActFindId("A");
@@ -62,6 +72,8 @@ void CSingleAnimation::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 
+// @interleaver AdvanceAnim - 57 B lone body at 0xaed80, between RegisterActs
+// (singleanimation) and _CreateRollingBall (logicworkerhandlersb): a first-use placement.
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

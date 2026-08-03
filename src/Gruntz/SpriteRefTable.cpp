@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Enums.h>
 
 #include <stdio.h>
 
@@ -348,7 +349,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
 
     char buf[0x40];
     sprintf(buf, "GRUNTZ_PALETTEZ_%s", name);
-    CParseSource* pal = (src)->ResolveQualified(buf, 0x50414c);
+    CParseSource* pal = (src)->ResolveQualified(buf, static_cast<RezTypeTag>(0x50414c));
     if (!pal) {
         return 0;
     }

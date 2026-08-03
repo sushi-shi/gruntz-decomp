@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
@@ -13,14 +14,18 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
@@ -452,19 +457,20 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     } else if (ty >= grid->m_gridH) {
         cy = grid->m_gridH - 1;
     }
-    i32 collision = 0;
+    TileCollisionKind collision = TILEKIND_PASSABLE;
     i32 cval = grid->m_tileGrid[grid->m_colOffsets[cy] + cx];
     if (cval != static_cast<i32>(0xeeeeeeee) && cval != -1) {
 
         CTileImageSet* tc = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(cval & 0xffff));
-        collision = tc->GetCollisionAt(0, 0);
+        // Ingest: the raw WWD attribute byte for this cell.
+        collision = static_cast<TileCollisionKind>(tc->GetCollisionAt(0, 0));
     }
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {
-        i32 alt = cell->m_vehiclePickupType;
+        PickupType alt = cell->m_vehiclePickupType;
         if (hitFlag != 0) {
-            world->LoadCursorSprites(alt + 0xc8, 1);
+            world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, 1);
             return 1;
         }
         CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
@@ -478,13 +484,13 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         if ((attr & 0x939) != 0 || (attr & 2) != 0) {
             world->LoadCursorSprites(pfk, 0);
         } else {
-            world->LoadCursorSprites(alt + 0xc8, 1);
+            world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, 1);
         }
         return 1;
     }
 
-    i32 gruntKind = cell->m_entranceReason;
-    if (gruntKind > 0x16) {
+    PickupType gruntKind = cell->m_entranceReason;
+    if (gruntKind > PICKUP_WINGZ) {
         gruntKind = cell->m_toolId;
     }
 
@@ -498,9 +504,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             world->LoadCursorSprites(0, 0);
             return 1;
         }
-        if (gruntKind != 2 && gruntKind != 9 && gruntKind != 10 && gruntKind != 0xb
-            && gruntKind != 0x15 && gruntKind != 0x16) {
-            world->LoadCursorSprites(gruntKind + 0xc8, 1);
+        if (gruntKind != GRUNT_BOOMERANG && gruntKind != GRUNT_GUNHAT && gruntKind != GRUNT_NERFGUN
+            && gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_WINGZ) {
+            world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
             return 1;
         }
 
@@ -509,7 +515,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         POINT destination = {x, y};
         grid->WrapCoord(&destination.x, &destination.y);
         i32 blocked = cell->RectContains(x, y);
-        world->LoadCursorSprites(blocked ? gruntKind + 0xc8 : pfk, blocked != 0);
+        world->LoadCursorSprites(blocked ? IDX(gruntKind) + kPendingFxIdBase : pfk, blocked != 0);
         world->m_pathPreviewSource = source;
         world->m_pathPreviewDestination = destination;
         world->m_pathPreviewColor = blocked ? red : grey;
@@ -518,23 +524,26 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     switch (gruntKind) {
-        case 1:
-            world->LoadCursorSprites(pfk ? gruntKind + 0xc8 : 0, pfk != 0);
+        case PICKUP_BOMB:
+            world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
             return 1;
 
-        case 2:
-        case 9:
-        case 10:
-        case 0xb:
-        case 0x15:
-        case 0x16:
+        case PICKUP_BOOMERANG:
+        case PICKUP_GUNHAT:
+        case PICKUP_NERFGUN:
+        case PICKUP_ROCK:
+        case PICKUP_WELDER:
+        case PICKUP_WINGZ:
             if (pfk != 0) {
                 POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
                 grid->WrapCoord(&source.x, &source.y);
                 POINT destination = {x, y};
                 grid->WrapCoord(&destination.x, &destination.y);
                 i32 blocked = cell->RectContains(x, y);
-                world->LoadCursorSprites(blocked ? gruntKind + 0xc8 : pfk, blocked != 0);
+                world->LoadCursorSprites(
+                    blocked ? IDX(gruntKind) + kPendingFxIdBase : pfk,
+                    blocked != 0
+                );
                 world->m_pathPreviewSource = source;
                 world->m_pathPreviewDestination = destination;
                 world->m_pathPreviewColor = blocked ? red : grey;
@@ -543,41 +552,46 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             }
             break;
 
-        case 3:
-            if (collision == 0x96 || collision == 0x97 || collision == 0x98) {
-                world->LoadCursorSprites(gruntKind + 0xc8, 1);
+        case PICKUP_BRICK:
+            if (collision == TILEKIND_HIDDEN_POWERUP || collision == TILEKIND_GAUNTLET_BRICK_A
+                || collision == TILEKIND_GAUNTLET_BRICK_B) {
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                 return 1;
             }
             break;
 
-        case 5:
-            if (collision == 0x1e || collision == 0x1f || collision == 0x21 || collision == 0x97
-                || collision == 0x98 || collision == 0x99) {
-                world->LoadCursorSprites(gruntKind + 0xc8, 1);
+        case PICKUP_GAUNTLETZ:
+            if (collision == TILEKIND_GAUNTLET_ROCK_A || collision == TILEKIND_GAUNTLET_ROCK_B
+                || collision == TILEKIND_GIANT_ROCK || collision == TILEKIND_GAUNTLET_BRICK_A
+                || collision == TILEKIND_GAUNTLET_BRICK_B
+                || collision == TILEKIND_GAUNTLET_BRICK_C) {
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                 return 1;
             }
             break;
 
-        case 0xd:
-            if (collision == 0x22 || collision == 0x23) {
-                world->LoadCursorSprites(gruntKind + 0xc8, 1);
+        case PICKUP_SHOVEL:
+            if (collision == TILEKIND_COVERED_POWERUP || collision == TILEKIND_REVEALED_POWERUP) {
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                 return 1;
             }
             break;
 
-        case 0xe:
-            world->LoadCursorSprites(pfk ? gruntKind + 0xc8 : 0, pfk != 0);
+        case PICKUP_SPRING:
+            world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
             return 1;
 
-        case 0xf:
-            if (pfk != 0 || collision == 0x1e || collision == 0x1f || collision == 0x21
-                || collision == 0x97 || collision == 0x98 || collision == 0x99) {
-                world->LoadCursorSprites(gruntKind + 0xc8, 1);
+        case PICKUP_SPY:
+            if (pfk != 0 || collision == TILEKIND_GAUNTLET_ROCK_A
+                || collision == TILEKIND_GAUNTLET_ROCK_B || collision == TILEKIND_GIANT_ROCK
+                || collision == TILEKIND_GAUNTLET_BRICK_A || collision == TILEKIND_GAUNTLET_BRICK_B
+                || collision == TILEKIND_GAUNTLET_BRICK_C) {
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                 return 1;
             }
             break;
 
-        case 0x11: {
+        case PICKUP_TIMEBOMB: {
             CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
             i32 attr;
             if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
@@ -587,15 +601,15 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 attr = plane->m_rowInts[ty][tx * 7];
             }
             if (pfk != 0 && (attr & 0x939) == 0 && (attr & 2) == 0) {
-                world->LoadCursorSprites(gruntKind + 0xc8, 1);
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                 return 1;
             }
             break;
         }
 
-        case 0x14:
+        case PICKUP_WARPSTONE:
             if (g_gameReg->m_gameMode != 1) {
-                world->LoadCursorSprites(pfk ? gruntKind + 0xc8 : 0, pfk != 0);
+                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
                 return 1;
             }
             break;
@@ -673,11 +687,13 @@ i32 CTriggerMgr::ResetGroup(
                     if (hit != cell) {
                         goto reportError;
                     }
-                    i32 v = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_toolId;
-                    if (v != 0xf) {
-                        i32 v2 =
-                            (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_toolId;
-                        if (v2 != 0x13) {
+                    PickupType v = (hit->m_entranceReason <= PICKUP_WINGZ) ? hit->m_entranceReason
+                                                                           : hit->m_toolId;
+                    if (v != PICKUP_SPY) {
+                        PickupType v2 = (hit->m_entranceReason <= PICKUP_WINGZ)
+                                            ? hit->m_entranceReason
+                                            : hit->m_toolId;
+                        if (v2 != PICKUP_WAND) {
                             goto reportError;
                         }
                     }
@@ -694,7 +710,7 @@ i32 CTriggerMgr::ResetGroup(
         case 3:
             if (hit != 0) {
                 if (hit->m_tileOwnerHi == g_curPlayer && g_traitorMode == 0
-                    && (hit != cell || hit->m_vehiclePickupType != 0x1e)) {
+                    && (hit != cell || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
                     goto reportError;
                 }
                 g_gameReg->m_cmdSubMgr->EnqueueSingle(
@@ -753,7 +769,7 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
                 operator delete(o2);
                 m_overlay = 0;
             }
-            g_gameReg->ReportError(0x800a, 0x3ff);
+            g_gameReg->ReportError(IDX(CMD_TOGGLE_MUSIC), 0x3ff);
         }
         return 0;
     }
@@ -889,15 +905,22 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
         tile = grid->m_rowInts[ty][tx * 8 - tx];
     }
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
-        g_gameReg->m_cmdGrid
-            ->LoadPowerupIconSprites(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, anchorIndex, 0);
+        g_gameReg->m_cmdGrid->LoadPowerupIconSprites(
+            PICKUP_WARPSTONE,
+            (tx << 5) + 0x10,
+            (ty << 5) + 0x10,
+            0,
+            anchorIndex,
+            0
+        );
         return 1;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 idx = anchorIndex - 1;
     CPlay::Anchor* rec = (static_cast<u32>(idx) < 4) ? &world->m_anchors[idx] : 0;
     if (rec != 0) {
-        g_gameReg->m_cmdGrid->LoadPowerupIconSprites(0x14, rec->m_x, rec->m_y, 0, anchorIndex, 0);
+        g_gameReg->m_cmdGrid
+            ->LoadPowerupIconSprites(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
     }
     return 1;
 }
@@ -927,15 +950,15 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     m_grid[idx] = 0;
     m_rowCount[col] -= 1;
 
-    i32 k;
+    PickupType k;
     if (z != 0) {
         m_cellFlag[idx] = 1;
         m_gruntzExitedByPlayer[col] += 1;
         k = cell->m_entranceReason;
-        if (k > 0x16) {
+        if (k > PICKUP_WINGZ) {
             k = cell->m_toolId;
         }
-        if (k != 0x14) {
+        if (k != PICKUP_WARPSTONE) {
             goto mark;
         }
         if (g_gameReg->m_gameMode == 1) {
@@ -949,10 +972,10 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         return;
     }
     k = cell->m_entranceReason;
-    if (k > 0x16) {
+    if (k > PICKUP_WINGZ) {
         k = cell->m_toolId;
     }
-    if (k == 0x14) {
+    if (k == PICKUP_WARPSTONE) {
         this->ResetSpawnState();
     }
     m_gruntzLostByPlayer[col] += 1;
@@ -966,7 +989,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
     CWwdGameObjectA* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
 
-        g_gameReg->ReportError(0x8009, 0x400);
+        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x400);
         return 0;
     }
     sprite->m_animWorker->m_notify(sprite);
@@ -986,7 +1009,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     }
     if (tgt->Place(sprite->m_smarts, sprite->m_score, color, d) == 0) {
         tgt->m_wwdObject->m_flags |= 0x10000;
-        g_gameReg->ReportError(0x8009, 0x401);
+        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x401);
         return 0;
     }
     POSITION pos = m_baseList.GetHeadPosition();
@@ -1021,7 +1044,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 }
 
 RVA(0x0007a3f0, 0xd7)
-i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, i32 kind, i32 moveKind) {
+i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
@@ -1041,11 +1064,11 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, i32 kind, i32 moveKind) {
 
     CWwdGameObjectA* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
-        g_gameReg->ReportError(0x8009, 0x402);
+        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x402);
         return 0;
     }
     spr->ApplyName("GAME_TOYBOX");
-    spr->m_points = kind;
+    spr->m_points = IDX(kind);
     spr->m_score = col;
     spr->m_faceDirection = moveKind;
     spr->m_stateFlags |= 1;
@@ -1090,13 +1113,13 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
 }
 
 RVA(0x0007a5e0, 0x121)
-i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32, i32) {
+i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId, i32) {
     if (ar == 0) {
         return 0;
     }
 
-    if (kind != 4) {
-        if (kind == 7) {
+    if (kind != SERIAL_SAVE) {
+        if (kind == SERIAL_LOAD) {
             if (this->Load(ar) == 0) {
                 return 0;
             }
@@ -1407,22 +1430,22 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 kind = ov->HitHover(x, y);
     if (kind == 2) {
-        i32 alt = cell->m_entranceReason;
-        if (alt > 0x16) {
+        PickupType alt = cell->m_entranceReason;
+        if (alt > PICKUP_WINGZ) {
             alt = cell->m_toolId;
         }
-        if (alt == 0x13) {
+        if (alt == PICKUP_WAND) {
             g_gameReg->m_cmdGrid
                 ->ResetGroup(cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
 
-        i32 alt = cell->m_vehiclePickupType;
-        if (alt == 0x1e) {
+        PickupType alt = cell->m_vehiclePickupType;
+        if (alt == PICKUP_SCROLL) {
             CGameObject* o = cell->m_object;
             g_gameReg->m_cmdGrid->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
-        } else if (alt != 0) {
-            i32 v = alt + kPendingFxIdBase;
+        } else if (alt != PICKUP_NONE) {
+            i32 v = IDX(alt) + kPendingFxIdBase;
             m_pendingFxKind = v;
             world->LoadCursorSprites(v, 0);
         }
@@ -1482,30 +1505,35 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             }
             i32 row = (ty >= grid->m_gridH) ? grid->m_gridH - 1 : ty;
             i32 cell = grid->m_tileGrid[grid->m_colOffsets[row] + col];
-            i32 type;
+            TileCollisionKind type;
             if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
-                type = 0;
+                type = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* o =
                     static_cast<CTileImageSet*>(board->m_imageSets.GetAt(cell & 0xffff));
-                type = o->GetCollisionAt(0, 0);
+                // Ingest: the raw WWD attribute byte for this cell.
+                type = static_cast<TileCollisionKind>(o->GetCollisionAt(0, 0));
             }
 
-            if (type != 0x1e && type != 0x1f) {
-                if (type == 0x21) {
+            if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
+                if (type == TILEKIND_GIANT_ROCK) {
                     CGiantRockLogic* gr = root->m_beginMarker->ScanNeighborhood(tx, ty);
                     if (gr == 0) {
                         CString msg;
                         msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
                         g_gameReg->EnterModalUI(msg);
-                        g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_ROCK_SCAN_MISS);
+                        g_gameReg->ReportError(
+                            IDX(TRIGERR_LOOKUP_MISS),
+                            IDX(TRIGSITE_ROCK_SCAN_MISS)
+                        );
                         return 0;
                     }
                     gr->BuildRockBreakInGameText();
                     root->m_beginMarker->DelFromList1(gr);
                     continue;
                 }
-                if (type != 0x97 && type != 0x98 && type != 0x99) {
+                if (type != TILEKIND_GAUNTLET_BRICK_A && type != TILEKIND_GAUNTLET_BRICK_B
+                    && type != TILEKIND_GAUNTLET_BRICK_C) {
                     continue;
                 }
                 CTileActionEvent* o = root->m_beginMarker->FindActionByCellKey(ty + (tx << 8));
@@ -1515,14 +1543,15 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 continue;
             }
 
-            CTileTriggerLogic* lo = root->m_beginMarker->FindInLists12(ty + (tx << 8), 0x1a);
+            CTileTriggerLogic* lo =
+                root->m_beginMarker->FindInLists12(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
             if (lo != 0) {
                 lo->ApplyMove(type);
                 root->m_beginMarker->DelFromList1(lo);
             } else {
                 CDDrawWorkerHost* wg = g_gameReg->m_world->m_level->m_mainPlane;
                 i32 off = wg->m_colOffsets[ty];
-                if (type == 0x1e) {
+                if (type == TILEKIND_GAUNTLET_ROCK_A) {
                     wg->m_tileGrid[off + tx] = 0x5a;
                     (g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
@@ -1597,18 +1626,18 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
             if (xLo <= hx && xHi >= lx && yLo <= hy && yHi >= ly) {
                 switch (tier) {
                     case 1:
-                        if (g->m_gruntKind != 0x38) {
-                            CellDispatch(i, j, 0, flag);
+                        if (g->m_gruntKind != GRUNT_INVULNERABLE) {
+                            CellDispatch(i, j, DEATH_DROP, flag);
                         }
                         break;
                     case 6:
-                        if (g->m_gruntKind != 0x38) {
-                            CellDispatch(i, j, 0xb, flag);
+                        if (g->m_gruntKind != GRUNT_INVULNERABLE) {
+                            CellDispatch(i, j, DEATH_EXPLODE, flag);
                         }
                         break;
                     case 7:
-                        if (g->m_gruntKind != 0x38) {
-                            CellDispatch(i, j, 2, flag);
+                        if (g->m_gruntKind != GRUNT_INVULNERABLE) {
+                            CellDispatch(i, j, DEATH_SQUASH, flag);
                         }
                         break;
                     case 2: {
@@ -1658,7 +1687,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         if (toy == 0x1e) {
                             toy = 0x20;
                         }
-                        g->LoadGruntTypeTable(toy, 1, 0, 0);
+                        g->LoadGruntTypeTable(static_cast<PickupType>(toy), 1, 0, 0);
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
@@ -1802,12 +1831,12 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     CGameObject* o = src->m_object;
     i32 sx = (o->m_screenX & ~0x1f) + 0x10;
     i32 sy = (o->m_screenY & ~0x1f) + 0x10;
-    i32 k = src->m_entranceReason;
-    if (k > 0x16) {
+    PickupType k = src->m_entranceReason;
+    if (k > PICKUP_WINGZ) {
         k = src->m_toolId;
     }
-    i32 vis = src->m_vehiclePickupType;
-    this->CellDispatch(col, row, 0, a18);
+    PickupType vis = src->m_vehiclePickupType;
+    this->CellDispatch(col, row, DEATH_DROP, a18);
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {
@@ -1922,14 +1951,14 @@ Lab_56b:
 
 RVA(0x0007c620, 0x4f7)
 i32 CTriggerMgr::LoadPowerupIconSprites(
-    i32 type,
+    PickupType type,
     i32 geoB,
     i32 geoA,
     i32 m130,
     i32 warpIdx,
     i32 m120
 ) {
-    if (type == 0) {
+    if (type == PICKUP_NONE) {
         return 0;
     }
 
@@ -2466,11 +2495,11 @@ i32 CTriggerMgr::ToggleRegionA() {
         OverlayTick();
         return 1;
     }
-    i32 v = cell->m_entranceReason;
-    if (v > 0x16) {
+    PickupType v = cell->m_entranceReason;
+    if (v > PICKUP_WINGZ) {
         v = cell->m_toolId;
     }
-    if (v == 0x13) {
+    if (v == PICKUP_WAND) {
         Coord pt;
         pt.m_x = cell->m_lastTilePx.m_x;
         pt.m_y = cell->m_lastTilePx.m_y;
@@ -2478,8 +2507,8 @@ i32 CTriggerMgr::ToggleRegionA() {
         OverlayTick();
         return 1;
     }
-    m_pendingFxKind = v + kPendingFxIdBase;
-    (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(v + kPendingFxIdBase, 0);
+    m_pendingFxKind = IDX(v) + kPendingFxIdBase;
+    (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(IDX(v) + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }
@@ -2506,23 +2535,24 @@ i32 CTriggerMgr::ToggleRegionB() {
     if (cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
-    if (cell->m_entranceReason >= 0x17) {
+    if (cell->m_entranceReason >= PICKUP_BABYWALKER) {
         OverlayTick();
         return 1;
     }
-    i32 kind = cell->m_vehiclePickupType;
-    if (kind == 0x1e) {
+    PickupType kind = cell->m_vehiclePickupType;
+    if (kind == PICKUP_SCROLL) {
         CGameObject* o = cell->m_object;
         g_gameReg->m_cmdGrid->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
         OverlayTick();
         return 1;
     }
-    if (kind == 0) {
+    if (kind == PICKUP_NONE) {
         OverlayTick();
         return 1;
     }
-    m_pendingFxKind = kind + kPendingFxIdBase;
-    (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(kind + kPendingFxIdBase, 0);
+    m_pendingFxKind = IDX(kind) + kPendingFxIdBase;
+    (static_cast<CPlay*>(g_gameReg->m_curState))
+        ->LoadCursorSprites(IDX(kind) + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }

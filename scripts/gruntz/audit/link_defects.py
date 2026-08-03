@@ -569,7 +569,7 @@ def main():
         divergent = [d for d in divergent
                      if any(args.unit in us for _sz, us in d[1])]
 
-    # the retail rva each undefined global is annotated at (DATA()/DATA_SYMBOL), when known
+    # the retail rva each undefined global is annotated at (DATA()), when known
     rva_of = {}
     p = REPO / "build/gen/symbol_names.csv"
     if p.is_file():

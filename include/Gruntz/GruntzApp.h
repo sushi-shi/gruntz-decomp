@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/GruntzCommandId.h>
 #include <Wap32/Wap32.h>
 
 class CGruntzApp : public CGameApp {
@@ -27,7 +28,7 @@ public:
     virtual void ShowError() OVERRIDE;
 
     RVA(0x00080aa0, 0x5)
-    virtual i32 HandleCommand(i32 notifyCode, GruntzCommand cmdId, i32 lParam) OVERRIDE {
+    virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId cmdId, i32 lParam) OVERRIDE {
         return 0;
     }
 

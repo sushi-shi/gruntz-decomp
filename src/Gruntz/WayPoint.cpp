@@ -2,11 +2,12 @@
 
 #include <Gruntz/WayPoint.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
 
 RVA(0x00010240, 0x47)
-i32 CWayPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
+i32 CWayPoint::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }

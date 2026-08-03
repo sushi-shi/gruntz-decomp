@@ -7,11 +7,13 @@
 #include <AddrWord.h>
 #include <Bute/SymParser.h>
 #include <Dsndmgr/SoundBankLoad.h>
+#include <Enums.h>
 #include <Gruntz/CustomWorldInfoDlg.h>
 #include <Gruntz/ParseSource.h>
 #include <Rez/DebugPrintf.h>
 #include <Rez/RezFile.h>
 #include <Rez/RezMgr.h>
+#include <Rez/RezTypeTag.h>
 
 #include <io.h>
 #include <stdlib.h>
@@ -131,8 +133,10 @@ void CParseSource::Teardown() {
 }
 
 RVA(0x00139800, 0x6)
-i32 CParseSource::GetEntryTag() {
-    return m_entry->m_key;
+RezTypeTag CParseSource::GetEntryTag() {
+    // CSymRec::m_key is the generic symbol key; for a REZ entry it holds the
+    // entry tag, which is what this accessor exists to expose.
+    return static_cast<RezTypeTag>(m_entry->m_key);
 }
 
 RVA(0x00139810, 0x140)
@@ -354,7 +358,7 @@ CSymTab::~CSymTab() {
 }
 
 RVA(0x0013a000, 0x37)
-CParseSource* CSymTab::Insert(const char* key, u32 fourcc) {
+CParseSource* CSymTab::Insert(const char* key, RezTypeTag fourcc) {
     CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(fourcc));
     if (!rec) {
         return 0;
@@ -378,7 +382,7 @@ void* CSymTab::Find(const char* path) {
     } else {
         fourcc = 0;
     }
-    return Insert(fname, fourcc);
+    return Insert(fname, static_cast<RezTypeTag>(fourcc));
 }
 
 RVA(0x0013a0f0, 0x99)
@@ -1098,7 +1102,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         }
         UnpackTag(extKey, unpackedTag);
         CSymRec* rec = node->FindOrAddSym(static_cast<i32>(extKey));
-        CParseSource* entry = node->Insert(fname, extKey);
+        CParseSource* entry = node->Insert(fname, static_cast<RezTypeTag>(extKey));
         CParseSource* source = 0;
         if (entry == 0) {
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
@@ -1315,7 +1319,7 @@ void* CSymTab::FindQualified(const char* name) {
 }
 
 RVA(0x0013be40, 0x1ac)
-CParseSource* CSymTab::ResolveQualified(const char* name, i32 fourcc) {
+CParseSource* CSymTab::ResolveQualified(const char* name, RezTypeTag fourcc) {
     char path[0x100];
     char leaf[0x20];
     i32 len = static_cast<i32>(strlen(name));
@@ -1350,7 +1354,7 @@ CParseSource* CSymTab::ResolveQualified(const char* name, i32 fourcc) {
 }
 
 RVA(0x0013bff0, 0x19)
-CParseSource* CSymParser::ResolveQualified(const char* name, u32 fourcc) {
+CParseSource* CSymParser::ResolveQualified(const char* name, RezTypeTag fourcc) {
     return GetRoot()->ResolveQualified(name, fourcc);
 }
 

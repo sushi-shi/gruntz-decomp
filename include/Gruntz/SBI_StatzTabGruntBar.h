@@ -4,7 +4,9 @@
 #include <rva.h>
 
 #include <Clock64.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbGeom.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Image/CImage.h>
 #include <Ints.h>
@@ -41,7 +43,8 @@ public:
     }
     virtual ~CSBI_StatzTabGruntBar() OVERRIDE;
 
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj)
+        OVERRIDE;
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;
     virtual i32 Render() OVERRIDE;

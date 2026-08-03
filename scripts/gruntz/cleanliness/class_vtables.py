@@ -11,9 +11,8 @@ A class "has a vtable" when ANY of:
 
 It is "catalogued" (NOT a violator) when ANY of:
   * it carries a ``VTBL(Name, 0x..)`` annotation (the preferred single source), OR
-  * its ``??_7<Name>@@6B..`` datum is named through a ``DATA_SYMBOL(..)`` row
-    (the escape hatch for the MI-decorated ``??_7<Name>@@6B<Base>@@@`` name a
-    plain ``VTBL()`` cannot spell), OR
+  * it carries a ``VTBL2(Name, Base, 0x..)`` annotation (the MI-decorated
+    ``??_7<Name>@@6B<Base>@@@`` name a plain ``VTBL()`` cannot spell), OR
   * it uses a manual ``&...Vtbl`` stamp - the vtable datum is already named through
     the older ``DATA(g_*Vtbl)`` global binding (a VTBL there would just collide on
     that rva; the sweep migrates these, it does not double-bind them), OR
@@ -46,16 +45,10 @@ from gruntz.core.class_meta import (
     vtbl_annotated_names,
     vtbl_annotations,
 )
-# A ??_7<Class>@@6B... datum named via a DATA_SYMBOL(..) row (the escape hatch
-# for the MI-decorated ??_7<Class>@@6B<Base>@@@ names a plain VTBL()'s
-# ??_7<Class>@@6B@ cannot express - e.g. zPTree @0x1e94ac). The datum IS named
-# for the delinker, so the class IS catalogued.
-_DATA_SYM_VTBL_RE = re.compile(
-    r"\bDATA_SYMBOL\s*\(\s*0x[0-9a-fA-F]+\s*,\s*(?:0x[0-9a-fA-F]+|\d+)\s*,"
-    r"\s*\?\?_7([A-Za-z_]\w*)@@6B")
 # A secondary (MI) vtable named via VTBL2(derived, base, addr) - ??_7<derived>@@6B
-# <base>@@@. The `derived` class's vtable datum is named for the delinker, so the
-# class IS catalogued (the successor to the raw secondary-vtable DATA_SYMBOL).
+# <base>@@@, the MI-decorated name a plain VTBL()'s ??_7<derived>@@6B@ cannot
+# express (e.g. zPTree @0x1e94ac). The `derived` class's vtable datum is named for
+# the delinker, so the class IS catalogued.
 _VTBL2_RE = re.compile(r"\bVTBL2\s*\(\s*([A-Za-z_]\w*)\s*,")
 
 
@@ -75,16 +68,13 @@ def present_rvas():
     return out
 
 
-def data_symbol_vtable_classes():
-    """{class_name} for every ??_7<Class>@@6B... datum named through a
-    DATA_SYMBOL(..) row tree-wide. Captures the plain and the MI-decorated
-    (??_7<Class>@@6B<Base>@@@) forms alike - both name the class's vtable datum
-    for the delinker, so the class is catalogued."""
+def vtbl2_vtable_classes():
+    """{class_name} for every MI-decorated ??_7<Class>@@6B<Base>@@@ datum named
+    through a VTBL2(..) row tree-wide - it names the class's secondary vtable
+    datum for the delinker, so the class is catalogued."""
     out = set()
     for path in source_files():
         text = path.read_text(errors="ignore")
-        for m in _DATA_SYM_VTBL_RE.finditer(text):
-            out.add(m.group(1))
         for m in _VTBL2_RE.finditer(text):
             out.add(m.group(1))
     return out
@@ -165,7 +155,7 @@ def main() -> int:
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
     vtbl_absent = vtbl_absent_names()
-    data_sym_vtbl = data_symbol_vtable_classes()
+    vtbl2 = vtbl2_vtable_classes()
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
     virtual = defaultdict(bool)
@@ -206,7 +196,7 @@ def main() -> int:
             name in vtbl_ann
             or name in vtbl_absent
             or manual[name]
-            or name in data_sym_vtbl
+            or name in vtbl2
             or (name in rtti and (rtti[name] in present or rtti[name] in lib_rvas)))
         if not catalogued:
             reason = "rtti" if name in rtti else "virtual"

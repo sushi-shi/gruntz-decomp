@@ -3,14 +3,19 @@
 
 #include <rva.h>
 
+#include <Enums.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 
 class CTileTriggerContainer;
 class CGrunt;
 
-typedef enum PlayerSlot {
-    PLAYERSLOT_ALL = 5,
-} PlayerSlot;
+// Two readings of one storage: the `playerSlot` parameter is an index into
+// CTileActionEvent::m_playerFlags[4] AND carries this "every player" sentinel,
+// so it stays i32 and only the sentinel is named (a constant bag, not a type).
+GZ_ENUM_CONST_BEGIN(PlayerSlot)
+    PLAYERSLOT_ALL = 5
+GZ_ENUM_CONST_END(PlayerSlot)
 
 class CTileActionEvent {
 public:
@@ -26,7 +31,7 @@ public:
 
     i32 MorphByTool(i32 toolId, i32 playerSlot);
 
-    i32 Serialize(void* ar, i32 mode, i32 typeId, i32 pObj);
+    i32 Serialize(void* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
     i32 DeserializeFields(void* ar);
 

@@ -191,7 +191,10 @@ void SetMenuTextRect() {
     g_menuTextRect.bottom = 478;
 }
 
-// @early-stop
+// @identity-TODO BuildMainMenuTree - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (1 fns) came from the static library. It belongs to another compiland.
+
 RVA(0x000a11d0, 0x180d)
 i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (menu == 0) {

@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Wap32/Object.h>
 
 class CFile;

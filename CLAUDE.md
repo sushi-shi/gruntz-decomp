@@ -72,7 +72,9 @@ FLIRT + leaked names) → exports. Not part of the build loop.
 - **Label macros have ONE canonical spelling** (gated FATAL, `gruntz.audit.label_style`):
   addresses zero-padded to 8 hex digits (`0x00xxxxxx`), size args unpadded lowercase hex
   (`0x0` = unknown), one line per invocation. No label ever lives in a comment
-  (`RVA_COMPGEN`/`DATA_SYMBOL` are the compiler-generated pins).
+  (`RVA_COMPGEN` is the compiler-generated pin). There is **no data analog**:
+  `DATA_SYMBOL` is RETIRED and removed from `rva.h` — every datum is a real C++
+  definition carrying `DATA(rva)`, so reintroducing it is a compile error.
 - **Formatting is automated; don't hand-format.** Rust-like clang-format (root
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
@@ -106,6 +108,16 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   the function is <100% — then use **`--branches --diff`**, which names each target by
   branch index (`docs/patterns/masked-diff-hides-branch-target.md`). The Ghidra
   decompiler is banned; assembly only.
+- **Numeric domains are named types, not `i32`** (gated, `gruntz.audit.enum_domains`):
+  one domain per meaning, declared once through the `GZ_ENUM_*` layer in
+  `<Enums.h>`, `SCREAMING_SNAKE` enumerators with a domain prefix and an explicit
+  `= value`. MSVC 5.0 has no `enum class` and sizes every enum as 4 bytes, so the
+  layer expands two ways: real `enum`s for the matching build, `enum class` +
+  `GzEnumStorage<N,S>` for a C++20 clang type-check (`gruntz.audit.strict_enums`).
+  Retyping a member/param/return `i32` -> enum is BYTE-NEUTRAL (measured); only a
+  signature's mangling moves. Use `GZ_ENUM_FORWARD(N)` instead of a new `#include`
+  to type a header without the regalloc butterfly. Details:
+  `docs/enum-modeling-plan.md`, `docs/patterns/enum-domains.md`.
 - **Every body lives in its real owner TU** — owner proven by xref / vtable-slot, never by RVA
   proximity (`docs/tu-partition-brief.md`; a contribution must be contiguous).
 - **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over

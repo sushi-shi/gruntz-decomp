@@ -4,6 +4,7 @@
 
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Enums.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -16,6 +17,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/State.h>
@@ -395,7 +397,7 @@ i32 CObjectDropper::Update() {
 }
 
 RVA(0x000c6680, 0x1b4)
-i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -404,18 +406,18 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
     }
 
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_lastDropTime, 8);
             ar->Write(&m_dropInterval, 8);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_lastDropTime, 8);
             ar->Read(&m_dropInterval, 8);
             break;
     }
 
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_speed, 8);
             ar->Write(&m_posX, 8);
             ar->Write(&m_posY, 8);
@@ -425,7 +427,7 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
             ar->Write(&m_lastDropTileY, 4);
             ar->Write(&m_scrollMode, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_speed, 8);
             ar->Read(&m_posX, 8);
             ar->Read(&m_posY, 8);
@@ -435,7 +437,7 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
             ar->Read(&m_lastDropTileY, 4);
             ar->Read(&m_scrollMode, 4);
             break;
-        case 8: {
+        case SERIAL_POSTLOAD: {
             CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
             CWwdGameObjectA* o = m_object;
             o->m_drawActive = 1;
@@ -614,7 +616,7 @@ i32 CDroppedObject::AdvanceAnimation() {
 }
 
 RVA(0x000c73a0, 0xb5)
-i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -622,12 +624,12 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
         return 0;
     }
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_timePerTile, 8);
             ar->Write(&m_fallY, 8);
             ar->Write(&m_landY, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_timePerTile, 8);
             ar->Read(&m_fallY, 8);
             ar->Read(&m_landY, 4);
@@ -699,14 +701,19 @@ i32 CDroppedObjectShadow::Advance() {
 }
 
 RVA(0x000c7b40, 0x76)
-i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
+i32 CDroppedObjectShadow::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, mode, c, d)) {
         return 0;
     }
     if (!Chain(ar, mode, c, d)) {
         return 0;
     }
-    if (mode == 8) {
+    if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;

@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <EmptyString.h>
+#include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Io/FileStream.h>
 

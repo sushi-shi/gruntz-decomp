@@ -477,8 +477,13 @@ CDDSurface* CDDrawPtrCollections::CreateSurfaceFromDesc(const DDSURFACEDESC* des
 }
 
 RVA(0x00142260, 0xd2)
-CDDSurface*
-CDDrawPtrCollections::LoadSurfaceFromPid(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans) {
+CDDSurface* CDDrawPtrCollections::LoadSurfaceFromPid(
+    PidHeader* hdr,
+    FileImageFormat type,
+    u32 size,
+    i32 ctrl,
+    i32 trans
+) {
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->ResolveEx(this, hdr, type, size, ctrl, trans)) {
         delete item;
@@ -1170,21 +1175,21 @@ i32 CDDrawPtrCollections::ConfigureSurface(
 }
 
 RVA(0x00143cb0, 0x6)
-i32 CPoolItemA88::GetPoolKind() {
+DDSurfacePoolKind CPoolItemA88::GetPoolKind() {
     return POOLKIND_BLIT7;
 }
 
 RVA(0x00143cc0, 0x6)
-i32 CFileImageSurface::GetPoolKind() {
+DDSurfacePoolKind CFileImageSurface::GetPoolKind() {
     return POOLKIND_FILEIMAGE;
 }
 
 RVA(0x00143cd0, 0x6)
-i32 CPoolItemAB8::GetPoolKind() {
+DDSurfacePoolKind CPoolItemAB8::GetPoolKind() {
     return POOLKIND_MODE;
 }
 
 RVA(0x00143ce0, 0x6)
-i32 CPoolItemAE8::GetPoolKind() {
+DDSurfacePoolKind CPoolItemAE8::GetPoolKind() {
     return POOLKIND_BLIT47;
 }

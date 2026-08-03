@@ -6,6 +6,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/XferArchive.h>
 #include <Rez/FrameClock.h>
@@ -71,8 +72,10 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00012bc0, 0x47)
-i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
+i32 CToobSpikez::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }

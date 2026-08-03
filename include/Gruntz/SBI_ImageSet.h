@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
@@ -18,7 +19,8 @@ public:
     }
     virtual ~CSBI_ImageSet() OVERRIDE;
 
-    virtual i32 SerializeFields(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj)
+        OVERRIDE;
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;
     virtual i32 Render() OVERRIDE;

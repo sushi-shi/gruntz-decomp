@@ -7,6 +7,7 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
@@ -18,8 +19,15 @@ VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000105d0, 0x47)
-i32 CGruntStartingPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CGruntStartingPoint::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

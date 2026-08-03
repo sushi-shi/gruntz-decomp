@@ -5,11 +5,17 @@
 #include <Bute/ButeTree.h>
 #include <Gruntz/AnimWorker.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
 RVA(0x00011880, 0x47)
-i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CCursorSnapSprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -19,6 +25,9 @@ i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObje
 RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
+// @identity-TODO _CreateCursorSnapSprite (241 B) sits outside this TU's block at 0x3a200, between
+// BltSelf (ddrawsurfacepair) and ?0CCursorSnapSprite (cursorsnapsprite). No size-family and too
+// large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x0003a200, 0xf1)
 i32 CreateCursorSnapSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
@@ -69,6 +78,8 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
     m_wwdObject->m_stateFlags |= 1;
 }
 
+// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
+// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x0003a5b0, 0x102)
 void CCursorSnapSprite::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));

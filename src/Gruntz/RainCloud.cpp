@@ -3,8 +3,11 @@
 #include <Gruntz/RainCloud.h>
 
 #include <Bute/ButeMgr.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Rez/FrameClock.h>
@@ -21,7 +24,7 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
         static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0))
     );
     m_strike.m_deadline = static_cast<i64>(static_cast<u32>(g_frameTime));
-    g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
+    g_gameReg->m_cmdGrid->CellDispatch(a, b, DEATH_ELECTROCUTE, -1);
 
     CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
@@ -66,11 +69,11 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
 }
 
 RVA(0x000b4cb0, 0x56)
-i32 CRainCloud::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
+i32 CRainCloud::SerializeMove(CFileMemBase* stream, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CPathHazard::SerializeMove(stream, tag, c, d)) {
         return 0;
     }
-    if (tag == 8) {
+    if (tag == SERIAL_POSTLOAD) {
         CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;

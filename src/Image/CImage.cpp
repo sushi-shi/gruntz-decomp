@@ -13,13 +13,14 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/State.h>
-#include <Image/ImageFormatTag.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezTypeTag.h>
 #include <Wwd/WwdFile.h>
 
 #include <ddraw.h>
@@ -35,56 +36,9 @@ DATA(0x002bf380)
 i32 g_surfaceColorKey = 0;
 VTBL(CImage, 0x001eaa2c);
 
-RVA(0x000d5c10, 0x10d)
-i32 CState::DrawScreenTextImage(const char* name) {
-    char buf[0x40];
-    sprintf(buf, "\\SCREENZ\\%sTEXT", name);
-    CParseSource* src = SymTab2c()->ResolveQualified(buf, IMGTAG_DIP);
-    if (src == 0) {
-        return 0;
-    }
-    CDDrawSurfaceMgr* world = m_world;
-    CDDrawSurfacePair* page = world->m_drawTarget->m_backPair;
-    if (page == 0) {
-        return 0;
-    }
-    CImage img(0, world);
-    if (img.Resolve(src, 1) == 0) {
-        return 0;
-    }
-    img.RenderFrame(page, 0x140, 0x158, 0);
-    return 1;
-}
-
-RVA(0x000d5da0, 0x6)
-i32 CWapObj::IsReady() {
-    return 1;
-}
-
-RVA(0x000d5dc0, 0xb)
-i32 CWapObj::IsLoaded() {
-
-    return (static_cast<CImage*>(this))->m_width > 0;
-}
-
-RVA(0x000d5de0, 0x6)
-i32 CImage::GetClassId() {
-    return CLASSID_IMAGE;
-}
-
-RVA(0x000d5e00, 0x3)
-void CImage::FlipHorizontal(void*) {}
-
-RVA(0x000d5e20, 0x1b)
-void CImage::FlipBoth(void* arg) {
-    FlipVertical(arg);
-    FlipHorizontal(arg);
-}
-
-RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
-
-RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
-
+// @identity-TODO DrawScreenTextImage@CState - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (20 fns) came from the static library. It belongs to another compiland.
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
@@ -114,19 +68,19 @@ i32 CImage::Create(char* path, i32 keyed) {
 
 RVA(0x00152f20, 0x86)
 i32 CImage::Resolve(CParseSource* src, i32 arg) {
-    i32 index;
-    switch (static_cast<u32>(src->GetEntryTag())) {
+    FileImageFormat index;
+    switch (src->GetEntryTag()) {
         case IMGTAG_PMB:
-            index = 1;
+            index = FMT_BMP;
             break;
         case IMGTAG_XCP:
-            index = 2;
+            index = FMT_PCX;
             break;
         case IMGTAG_DIR:
-            index = 3;
+            index = FMT_DIR;
             break;
         case IMGTAG_DIP:
-            index = 4;
+            index = FMT_PID;
             break;
         default:
             return 0;
@@ -141,7 +95,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
     i32 result = this->LoadDispatch(
 
         static_cast<PidHeader*>(blob.m_rec),
-        static_cast<u32>(index),
+        index,
         src->m_length,
         arg
     );
@@ -150,24 +104,24 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
 }
 
 RVA(0x00152fb0, 0x123)
-i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
-    if (mode != 1 && mode != 2 && mode != 3 && mode != 4) {
+i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 keyed) {
+    if (mode != FMT_BMP && mode != FMT_PCX && mode != FMT_DIR && mode != FMT_PID) {
         return 0;
     }
 
-    if (mode == 4 && (desc->flags & PID_GRAMMAR_SKIPRUN)) {
+    if (mode == PID_SYSTEM_MEMORY && (HAS(desc->flags, PID_GRAMMAR_SKIPRUN))) {
         if (!BuildShadeBlitter(desc, size)) {
             return 0;
         }
 
-        if (m_owned != 0 && (desc->flags & PID_SRC_8BPP_SHADE)) {
+        if (m_owned != 0 && (HAS(desc->flags, PID_SRC_8BPP_SHADE))) {
             m_owned->Select(2, 0);
             return 1;
         }
         return 1;
     }
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
-    if (mode == 4 || mode == 3) {
+    if (mode == FMT_PID || mode == FMT_DIR) {
         i32 g10 = desc->offsetX;
         i32 g14 = desc->offsetY;
         m_originX = g10;
@@ -182,8 +136,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
     }
 
     CDDSurface* item =
-        m_ownerCtx->m_ptrColl
-            ->LoadSurfaceFromPid(desc, static_cast<i32>(mode), size, capArg, flagsArg);
+        m_ownerCtx->m_ptrColl->LoadSurfaceFromPid(desc, mode, size, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -336,19 +289,19 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
         return this->Resolve(src, arg);
     }
 
-    i32 index;
-    switch (static_cast<u32>(src->GetEntryTag())) {
+    FileImageFormat index;
+    switch (src->GetEntryTag()) {
         case IMGTAG_PMB:
-            index = 1;
+            index = FMT_BMP;
             break;
         case IMGTAG_XCP:
-            index = 2;
+            index = FMT_PCX;
             break;
         case IMGTAG_DIR:
-            index = 3;
+            index = FMT_DIR;
             break;
         case IMGTAG_DIP:
-            index = 4;
+            index = FMT_PID;
             break;
         default:
             return 0;

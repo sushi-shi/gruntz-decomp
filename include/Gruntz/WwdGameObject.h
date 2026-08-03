@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
@@ -18,7 +19,7 @@ struct WwdSnapshot {
     i32 m_objectId;
     i32 m_classId;
     i32 m_serialTypeId;
-    i32 m_logicTypeId;
+    LogicTypeId m_logicTypeId;
     char m_workerName[0x80];
     i32 m_screenX;
     i32 m_screenY;

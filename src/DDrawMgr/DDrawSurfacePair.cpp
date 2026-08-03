@@ -19,25 +19,24 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/String.h>
-#include <Image/ImageFormatTag.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
 #include <Pix16.h>
+#include <Rez/RezTypeTag.h>
 
 #include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
 
-RVA(0x0003a1d0, 0x1d)
-void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
-    m_surface->BltFast(0, 0, src->m_surface, &src->m_srcRect, 0x10);
-}
-
+// @identity-TODO BltSelf@CDDrawSurfacePair - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (43 fns) came from the static library. It belongs to another compiland.
 RVA(0x0006b270, 0x1b)
 CObject* CAniElement::AtChecked(i32 i) const {
     if (i >= 0 && i < m_records.GetSize()) {
@@ -182,19 +181,19 @@ void CDDrawSurfacePair::Unload() {
 
 RVA(0x00163e50, 0x8b)
 i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
-    i32 type;
-    switch (static_cast<u32>(src->GetEntryTag())) {
-        case 0x424d50:
-            type = 1;
+    FileImageFormat type;
+    switch (src->GetEntryTag()) {
+        case IMGTAG_PMB:
+            type = FMT_BMP;
             break;
-        case 0x504358:
-            type = 2;
+        case IMGTAG_XCP:
+            type = FMT_PCX;
             break;
-        case 0x524944:
-            type = 3;
+        case IMGTAG_DIR:
+            type = FMT_DIR;
             break;
-        case 0x504944:
-            type = 4;
+        case IMGTAG_DIP:
+            type = FMT_PID;
             break;
         default:
             return 0;
@@ -733,7 +732,7 @@ fail:
 
 RVA(0x001655c0, 0x53)
 i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
-    if ((static_cast<CParseSource*>(entry))->GetEntryTag() != 0x414e49) {
+    if ((static_cast<CParseSource*>(entry))->GetEntryTag() != REZ_TAG_ANI) {
         return 0;
     }
     m_flags = flags;

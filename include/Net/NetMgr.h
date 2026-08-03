@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ObList.h>
 #include <Gruntz/String.h>

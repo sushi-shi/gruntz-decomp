@@ -41,7 +41,8 @@ void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
     *py = *py + m_bounds50.top;
 }
 
-// @early-stop
+// @interleaver SnapToTileCenter - 76 B lone body at 0x311e0, between Push
+// (freenodepool) and Drain (queuedrainhost): a first-use placement.
 RVA(0x000311e0, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     i32 sx = m_shiftX;
@@ -52,6 +53,8 @@ void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     out->m_y = ry;
 }
 
+// @interleaver GetTileHandle - 25 B lone body at 0xd53a0, between ValidateLevelTiles
+// (leveltilevalidation) and ScanBuildTiles (playplanescan): a first-use placement.
 RVA(0x000d53a0, 0x19)
 i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
     return m_tileGrid[m_colOffsets[col] + row];

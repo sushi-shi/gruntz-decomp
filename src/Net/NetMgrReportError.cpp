@@ -2,6 +2,7 @@
 
 #include <Net/NetMgrReportError.h>
 
+#include <Enums.h>
 #include <Net/EmptyString.h>
 #include <Net/NetMgr.h>
 

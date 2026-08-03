@@ -2,6 +2,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialArchive.h>

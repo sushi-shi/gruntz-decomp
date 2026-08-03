@@ -1,16 +1,23 @@
+#ifndef SRC_GRUNTZ_GRUNT_H
+#define SRC_GRUNTZ_GRUNT_H
+
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <Clock64.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DoubleVector.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MovingLogic.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -19,9 +26,6 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Ints.h>
-
-#ifndef SRC_GRUNTZ_GRUNT_H
-#define SRC_GRUNTZ_GRUNT_H
 
 class CAniElement;
 
@@ -50,7 +54,7 @@ struct CTriRecord {
     CTriRecord(i32 row_, i32 column_, i32 direction_)
         : row(row_), column(column_), direction(direction_) {}
 
-    i32 Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d);
+    i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d);
 
     i32 row;
     i32 column;
@@ -91,31 +95,31 @@ class CGruntPuddle;
 class CArchive;
 
 struct CGruntCellRec {
-    enum NameSlot {
+    GZ_ENUM_BEGIN(NameSlot)
         NAME_ATTACK,
         NAME_STRUCK,
         NAME_WALK,
         NAME_IDLE,
         NAME_ITEM,
         NAME_COUNT
-    };
+    GZ_ENUM_END(NameSlot)
 
-    CString m_names[NAME_COUNT];
+    CString AT(m_names, NAME_COUNT);
 
     CString& AttackName() {
-        return m_names[NAME_ATTACK];
+        return AT(m_names, NAME_ATTACK);
     }
     CString& StruckName() {
-        return m_names[NAME_STRUCK];
+        return AT(m_names, NAME_STRUCK);
     }
     CString& WalkName() {
-        return m_names[NAME_WALK];
+        return AT(m_names, NAME_WALK);
     }
     CString& IdleName() {
-        return m_names[NAME_IDLE];
+        return AT(m_names, NAME_IDLE);
     }
     CString& ItemName() {
-        return m_names[NAME_ITEM];
+        return AT(m_names, NAME_ITEM);
     }
 
     RECT m_rects[3];
@@ -155,39 +159,41 @@ union CoordPos {
     CoordNode* m_node;
 };
 
-typedef enum GruntAttackPose {
+GZ_ENUM_BEGIN(GruntAttackPose)
     GRUNT_ATTACK1 = 0,
-    GRUNT_ATTACK2 = 1,
-} GruntAttackPose;
+    GRUNT_ATTACK2 = 1
+GZ_ENUM_END(GruntAttackPose)
 
-typedef enum GruntStruckPose {
+GZ_ENUM_BEGIN(GruntStruckPose)
     GRUNT_STRUCK1 = 0,
-    GRUNT_STRUCK2 = 1,
-} GruntStruckPose;
+    GRUNT_STRUCK2 = 1
+GZ_ENUM_END(GruntStruckPose)
 
-typedef enum GruntIdlePose {
+GZ_ENUM_BEGIN(GruntIdlePose)
     GRUNT_IDLE1 = 0,
     GRUNT_IDLE2 = 1,
     GRUNT_IDLE3 = 2,
     GRUNT_IDLE4 = 3,
-    GRUNT_IDLE5 = 4,
-} GruntIdlePose;
+    GRUNT_IDLE5 = 4
+GZ_ENUM_END(GruntIdlePose)
 
-typedef enum GruntToyPose {
+GZ_ENUM_BEGIN(GruntToyPose)
     GRUNT_TOY1 = 0,
     GRUNT_TOY2 = 1,
-    GRUNT_TOY_BREAK = 2,
-} GruntToyPose;
+    GRUNT_TOY_BREAK = 2
+GZ_ENUM_END(GruntToyPose)
 
-typedef enum GruntItemPose {
+GZ_ENUM_BEGIN(GruntItemPose)
     GRUNT_ITEM1 = 0,
-    GRUNT_ITEM2 = 1,
-} GruntItemPose;
+    GRUNT_ITEM2 = 1
+GZ_ENUM_END(GruntItemPose)
 
 class CGrunt : public CMovingLogic, public CWapX {
 public:
     virtual ~CGrunt() OVERRIDE;
-    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) OVERRIDE;
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+        OVERRIDE;
     RVA(0x0000f2a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNT;
@@ -248,13 +254,13 @@ public:
     i32 LoadGruntDecayConfig2();
     i32 LoadWandGruntItemConfig();
 
-    i32 LoadGruntDeathAnimations(i32 deathType, i32 killerSlot);
+    i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot);
 
-    i32 LoadPickupSprites(i32 type, i32 forced, i32 helpCueId, i32 unused, i32 countStats);
+    i32 LoadPickupSprites(PickupType type, i32 forced, i32 helpCueId, i32 unused, i32 countStats);
 
     i32 BuildGruntLoseItemAnimation();
 
-    i32 LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
+    i32 LoadGruntTypeTable(PickupType a, i32 b, i32 c, i32 d);
 
     i32 LoadTypeTableClearMove(i32 typeId);
 
@@ -272,15 +278,15 @@ public:
 
     i32 RectSegProbe(RECT* r, POINT* e1, POINT* e2);
 
-    i32 m_entranceReason;
+    PickupType m_entranceReason;
     Coord m_entrancePx;
     Coord m_lastTilePx;
     Coord m_commitPx;
     i32 m_reserved18c;
     i32 m_toyBlendPct;
-    i32 m_brickPickupType;
-    i32 m_vehiclePickupType;
-    i32 m_toolId;
+    PickupType m_brickPickupType;
+    PickupType m_vehiclePickupType;
+    PickupType m_toolId;
     i32 m_moveMode;
     i32 m_helpCueId;
     i32 m_reserved1a8;
@@ -301,7 +307,7 @@ public:
     i32 m_arrivalPending;
     i32 m_tileOwnerHi;
     i32 m_tileOwnerLo;
-    i32 m_moveIcon;
+    PickupType m_moveIcon;
     i32 m_savedMoveIcon;
     i32 m_entranceCommitted;
     Coord m_neighborCell;
@@ -324,7 +330,7 @@ public:
     i32 m_passableMask;
     i32 m_routeMaskA;
     i32 m_routeMaskC;
-    i32 m_gruntKind;
+    PickupType m_gruntKind;
     i32 m_entranceArmed;
 
     class CTriggerMgr* m_tileMgr;
@@ -376,7 +382,7 @@ public:
     i32 m_battleState;
     i32 m_defenderRadius;
     i32 m_defenderQueuePosition;
-    i32 m_defenderPickupType;
+    PickupType m_defenderPickupType;
     i32 m_targetTeam;
     i32 m_dwell;
     Coord m_arrivalCell;
@@ -430,7 +436,7 @@ public:
     i32 m_toolConfigured; // set on every tool (re)config; never read
     i32 m_neighborScanEnabled;
     i32 m_tileMoveCommitted;
-    i32 m_deathType;
+    GruntDeathType m_deathType;
     i32 m_entranceDropActive;
     i32 m_deathAnimStarted;
     i32 m_cellRemovalNotified;
@@ -727,14 +733,14 @@ public:
     i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e);
 
     i32 LoadGruntCombatAnimations(
-        i32 attackKind,
+        PickupType attackKind,
         i32 struckPose,
         i32 srcRow,
         i32 srcCol,
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
-        i32 attackerGruntKind
+        PickupType attackerGruntKind
     );
 
     i32 UpdateArrival(i32 walking, i32 commit);
@@ -795,26 +801,26 @@ public:
     i32 StepEntranceRelatchB();
 
     i32 StepCombatReaction(
-        i32 attackKind,
+        PickupType attackKind,
         i32 struckPose,
         i32 srcRow,
         i32 srcCol,
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
-        i32 attackerGruntKind
+        PickupType attackerGruntKind
     );
 
     i32 TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn);
 
-    i32 LoadVehicleGruntSprites(i32 kind);
+    i32 LoadVehicleGruntSprites(PickupType kind);
 
     i32 Place(
         class CTriggerMgr* board,
         i32 col,
         i32 row,
-        i32 moveIcon,
-        i32 typeKind,
+        PickupType moveIcon,
+        PickupType typeKind,
         i32 vehicleKind,
         i32 kind,
         i32 a8,

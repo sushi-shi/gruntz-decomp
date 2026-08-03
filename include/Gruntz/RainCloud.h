@@ -5,10 +5,11 @@
 
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PathHazard.h>
+#include <Gruntz/SerialArchive.h>
 
 class CRainCloud : public CPathHazard {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual LogicTypeId GetTypeTag() OVERRIDE;
     CRainCloud() {}
     CRainCloud(CGameObject* obj);

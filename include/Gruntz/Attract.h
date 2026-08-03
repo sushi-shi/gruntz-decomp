@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDSurface.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/State.h>
 #include <Ints.h>
 
@@ -27,8 +28,8 @@ public:
     virtual i32 RestoreDisplay() OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 EnterState(i32) OVERRIDE;
-    virtual i32 LeaveState(i32 arg) OVERRIDE;
+    virtual i32 EnterState(GameStateId) OVERRIDE;
+    virtual i32 LeaveState(GameStateId arg) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 

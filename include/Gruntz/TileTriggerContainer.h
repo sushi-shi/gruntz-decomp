@@ -5,8 +5,10 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileTriggerLogic.h>
 #include <Ints.h>
 
 class CTileTriggerContainer;
@@ -17,10 +19,20 @@ struct CGameObject;
 
 extern "C" u32 g_frameTime;
 
-i32 __stdcall
-SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o);
-i32 __stdcall
-SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o);
+i32 __stdcall SerializeApplyA(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj,
+    CTileTriggerSwitchLogic* o
+);
+i32 __stdcall SerializeApplyB(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj,
+    CTileTriggerLogic* o
+);
 
 class CTileTriggerContainer {
 public:
@@ -30,7 +42,7 @@ public:
 
     i32 DelFromList1(CTileTriggerLogic* elem);
 
-    CTileTriggerLogic* FindInLists12(i32 a, i32 b);
+    CTileTriggerLogic* FindInLists12(i32 a, TrigLogicId b);
     i32 FilterList2(i32 arg);
     i32 MoveList1ToList2(void* data);
 
@@ -39,8 +51,8 @@ public:
     ~CTileTriggerContainer();
 
     CTileTriggerLogic* AddLogic(
-        i32 tileType,
-        i32 logicType,
+        TileCollisionKind tileType,
+        TrigLogicId logicType,
         i32 tileX,
         i32 tileY,
         i32 cellKey,
@@ -58,8 +70,8 @@ public:
     );
 
     CTileTriggerLogic* AddLogicDefaults(
-        i32 tileType,
-        i32 logicType,
+        TileCollisionKind tileType,
+        TrigLogicId logicType,
         i32 tileX,
         i32 tileY,
         i32 cellKey,
@@ -69,7 +81,7 @@ public:
         i32 dutyOffSpan
     );
 
-    void AddLogicFromRecord(i32 tileType, i32 logicType, CGameObject* object);
+    void AddLogicFromRecord(TileCollisionKind tileType, TrigLogicId logicType, CGameObject* object);
 
     CTileActionEvent* AddToList3(
         i32 actionCode,
@@ -96,16 +108,16 @@ public:
     AddToList3Switch(i32 actionCode, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
 
     i32 GetFlag74();
-    i32 RemoveByKeys(i32 k1, i32 k2);
+    i32 RemoveByKeys(i32 k1, TrigLogicId k2);
 
-    CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2);
+    CTileTriggerSwitchLogic* FindChild(i32 k1, TrigLogicId k2);
 
     CTileActionEvent* FindActionByCellKey(i32 cellKey);
 
     CGiantRockLogic* ScanNeighborhood(i32 x, i32 y);
 
     CTileTriggerSwitchLogic* AddSwitchLogic(
-        i32 tag,
+        TrigLogicId tag,
         i32 col,
         i32 row,
         i32 key,
@@ -121,9 +133,9 @@ public:
         i32 checkpointType
     );
 
-    i32 Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
-    void* LoadElement(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
+    void* LoadElement(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     i32 LoadFlag74(CFileMemBase* s);
     i32 TransferFlag74(CFileMemBase* s);

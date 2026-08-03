@@ -95,8 +95,8 @@ Audit the whole family, not only the visible 14-byte function. The address pushe
 into `atexit` proves the destructor-helper boundary and global owner. The
 constructor and destructor helpers prove the global's actual type. If the base
 object does not emit a matching `$E` family, the source still has a storage or
-class-model defect—commonly an `extern` plus `DATA_SYMBOL` standing in for the
-real global—and a pin alone would hide that defect.
+class-model defect—commonly an `extern` with no definition anywhere, standing in
+for the real global—and a bare name→rva pin would only hide that defect.
 
 Evidence: `NetLobby::g_str649618` emits all three helpers automatically. Removing
 the hand-written constructor twin recovered the real family at `0x000bd7f0`,

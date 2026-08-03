@@ -6,14 +6,15 @@
 #include <Mfc.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 
-typedef enum AmbientBoxSentinel {
-    AMBIENT_BOX_UNBOUNDED = 0x80000000,
-} AmbientBoxSentinel;
+GZ_ENUM_CONST_BEGIN(AmbientBoxSentinel)
+    AMBIENT_BOX_UNBOUNDED = 0x80000000
+GZ_ENUM_CONST_END(AmbientBoxSentinel)
 
 struct AmbientPoint {
     i32 x;

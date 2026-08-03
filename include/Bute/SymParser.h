@@ -7,8 +7,10 @@
 #include <Bute/ObjListBase.h>
 #include <Bute/SymTab.h>
 #include <EmptyString.h>
+#include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezList.h>
+#include <Rez/RezTypeTag.h>
 
 class CRezItmBase;
 
@@ -93,7 +95,7 @@ public:
 
     void SetDelims(char* s);
 
-    struct CParseSource* ResolveQualified(const char* name, u32 arg);
+    struct CParseSource* ResolveQualified(const char* name, RezTypeTag arg);
     void* ResolvePath(const char* path);
     void AddNode(void* rec);
 

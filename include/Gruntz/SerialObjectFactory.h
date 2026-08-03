@@ -5,8 +5,11 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void* payload);
+i32 __cdecl
+SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload);
 
 #endif // GRUNTZ_SERIALOBJECTFACTORY_H

@@ -6,6 +6,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Net/NetMgr.h>
 
@@ -28,78 +29,78 @@ void CNetSession::BuildGruntzCrcInfo() {
                 continue;
             }
             i32 rnd = rand();
-            i32 type = grunt->m_entranceReason;
+            PickupType type = grunt->m_entranceReason;
             i32 wp;
             switch (type) {
-                case 1:
+                case PICKUP_BOMB:
                     wp = 2;
                     break;
-                case 2:
+                case PICKUP_BOOMERANG:
                     wp = 9;
                     break;
-                case 3:
+                case PICKUP_BRICK:
                     wp = 0xe;
                     break;
-                case 4:
+                case PICKUP_CLUB:
                     wp = 6;
                     break;
-                case 5:
+                case PICKUP_GAUNTLETZ:
                     wp = 0xb;
                     break;
-                case 6:
+                case PICKUP_GLOVEZ:
                     wp = 0x13;
                     break;
-                case 7:
+                case PICKUP_GOOBER:
                     wp = 0x11;
                     break;
-                case 8:
+                case PICKUP_GRAVITYBOOTZ:
                     wp = 0xf;
                     break;
-                case 9:
+                case PICKUP_GUNHAT:
                     wp = 5;
                     break;
-                case 10:
+                case PICKUP_NERFGUN:
                     wp = 0x15;
                     break;
-                case 0xb:
+                case PICKUP_ROCK:
                     wp = 7;
                     break;
-                case 0xc:
+                case PICKUP_SHIELD:
                     wp = 0x10;
                     break;
-                case 0xd:
+                case PICKUP_SHOVEL:
                     wp = 8;
                     break;
-                case 0xe:
+                case PICKUP_SPRING:
                     wp = 0xa;
                     break;
-                case 0xf:
+                case PICKUP_SPY:
                     wp = 0xd;
                     break;
-                case 0x10:
+                case PICKUP_SWORD:
                     wp = 4;
                     break;
-                case 0x11:
+                case PICKUP_TIMEBOMB:
                     wp = 0x14;
                     break;
-                case 0x12:
+                case PICKUP_TOOB:
                     wp = 0x12;
                     break;
-                case 0x13:
+                case PICKUP_WAND:
                     wp = 0x16;
                     break;
-                case 0x15:
+                case PICKUP_WELDER:
                     wp = 3;
                     break;
-                case 0x16:
+                case PICKUP_WINGZ:
                     wp = 0xc;
                     break;
                 default:
                     wp = 0x17;
                     break;
             }
-            i32 tool = type;
-            if (type > 0x16) {
+            PickupType tool = type;
+            if (type > PICKUP_WINGZ) {
                 tool = grunt->m_toolId;
             }
             wsprintfA(

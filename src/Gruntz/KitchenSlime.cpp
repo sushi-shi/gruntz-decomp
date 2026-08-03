@@ -6,12 +6,16 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
+#include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
@@ -179,8 +183,9 @@ i32 CKitchenSlime::Tick() {
             &outX,
             static_cast<RECT*>(0)
         ));
-        if (ent && ent->m_gruntKind != 0x38) {
-            (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->CellDispatch(outY, outX, 5, -1);
+        if (ent && ent->m_gruntKind != GRUNT_INVULNERABLE) {
+            (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                ->CellDispatch(outY, outX, DEATH_MELT, -1);
         }
     }
 
@@ -247,11 +252,16 @@ i32 CKitchenSlime::Tick() {
 }
 
 RVA(0x000b2ff0, 0x11b)
-i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
+i32 CKitchenSlime::SerializeMove(
+    CFileMemBase* stream,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     CFileMemBase* s = stream;
 
-    if (tag != 4) {
-        if (tag == 7) {
+    if (tag != SERIAL_SAVE) {
+        if (tag == SERIAL_LOAD) {
             s->Read(&m_speed, 8);
             s->Read(&m_posX, 8);
             s->Read(&m_posY, 8);

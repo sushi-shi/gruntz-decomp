@@ -68,9 +68,16 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_resolved = 1;
 }
 
-// @early-stop
+// @identity-TODO SerializeMove (327 B) sits outside this TU's block at 0x3f040, between
+// ?0CExitTrigger (exittrigger) and FireActivation (wormholeacts). No size-family and too
+// large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x0003f040, 0x147)
-i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CExitTrigger::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
         return 0;
     }
@@ -81,7 +88,7 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObj
 
     CDDrawSurfaceMgr* holder = g_gameReg->m_world;
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
             arc->Read(&m_resolved, 4);
             i32 key = 0;
             arc->Read(&key, 4);
@@ -102,7 +109,7 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObj
             }
             break;
         }
-        case 4: {
+        case SERIAL_SAVE: {
             arc->Write(&m_resolved, 4);
             if (m_warlordLogic == 0) {
                 g_serialCounter++;

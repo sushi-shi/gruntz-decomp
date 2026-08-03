@@ -10,7 +10,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -77,7 +79,7 @@ i32 CAniPlayer::RenderCel() {
 
 // @early-stop
 RVA(0x000e5c90, 0x87)
-i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
+i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (arc == 0) {
         return 0;
     }
@@ -87,11 +89,11 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
         return 0;
     }
     switch (mode) {
-        case 7:
+        case SERIAL_LOAD:
             arc->Read(&m_start64, 8);
             arc->Read(&m_window64, 8);
             break;
-        case 4:
+        case SERIAL_SAVE:
             arc->Write(&m_start64, 8);
             arc->Write(&m_window64, 8);
             break;

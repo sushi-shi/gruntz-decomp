@@ -14,6 +14,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Enums.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyMessages.h>
@@ -22,6 +23,7 @@
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
@@ -101,7 +103,7 @@ void CBootyState::ReleaseResources() {
 
 // @early-stop
 RVA(0x00018d30, 0xcd)
-i32 CBootyState::EnterState(i32) {
+i32 CBootyState::EnterState(GameStateId) {
     while (ShowCursor(FALSE) >= 0)
         ;
     if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
@@ -130,7 +132,7 @@ i32 CBootyState::EnterState(i32) {
 
 // @early-stop
 RVA(0x00018e40, 0x81)
-i32 CBootyState::LeaveState(i32) {
+i32 CBootyState::LeaveState(GameStateId) {
     void* obj = 0;
     m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
@@ -426,7 +428,7 @@ i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(0x8006, 0x459);
+            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x459);
             return 0;
         }
     }
@@ -984,7 +986,7 @@ void CMultiBootyState::ReleaseResources() {
 }
 
 RVA(0x0001e570, 0xb4)
-i32 CMultiBootyState::EnterState(i32) {
+i32 CMultiBootyState::EnterState(GameStateId) {
     i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok;
@@ -1012,7 +1014,7 @@ i32 CMultiBootyState::EnterState(i32) {
 
 // @early-stop
 RVA(0x0001e660, 0x81)
-i32 CMultiBootyState::LeaveState(i32) {
+i32 CMultiBootyState::LeaveState(GameStateId) {
     void* obj = 0;
     m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
@@ -1201,7 +1203,7 @@ i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(0x8006, 0x459);
+            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x459);
             return 0;
         }
     }

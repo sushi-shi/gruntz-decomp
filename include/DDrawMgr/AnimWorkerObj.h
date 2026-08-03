@@ -4,6 +4,8 @@
 #include <rva.h>
 
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 class CUserLogic;
@@ -22,7 +24,7 @@ struct AnimWorkerObj : public CLoadable {
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 Init(GameObjNotifyFn callback, i32 frame);
 
@@ -42,7 +44,7 @@ struct AnimWorkerObj : public CLoadable {
 
     i32 Consume(i32 amount);
 
-    i32 Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d);
+    i32 Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, void* d);
     i32 CacheTargetId(void* a);
     i32 Save(CFileMemBase* ar);
     i32 Load(CFileMemBase* ar);

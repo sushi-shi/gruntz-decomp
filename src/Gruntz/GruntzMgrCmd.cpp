@@ -6,15 +6,18 @@
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Dsndmgr/GruntzSoundZ.h>
+#include <Enums.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -100,7 +103,7 @@
     }
 #define RESTART(N)                                                                                 \
     {                                                                                              \
-        i32 st = m_curState->Update();                                                             \
+        GameStateId st = m_curState->Update();                                                     \
         CMenuState* mus = 0;                                                                       \
         if (st == GAMESTATE_MENU) {                                                                \
             mus = static_cast<CMenuState*>(m_curState);                                            \
@@ -120,7 +123,7 @@
     }
 #define RESTART2(N)                                                                                \
     {                                                                                              \
-        i32 st = m_curState->Update();                                                             \
+        GameStateId st = m_curState->Update();                                                     \
         CMenuState* mus = 0;                                                                       \
         if (st == GAMESTATE_MENU) {                                                                \
             mus = static_cast<CMenuState*>(m_curState);                                            \
@@ -135,23 +138,23 @@
 // @early-stop
 
 RVA(0x000862f0, 0x4369)
-i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
+i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
     switch (nID) {
-        case kCmdNewGame:
-        case kCmdNewGameAlt:
+        case CMD_NEW_GAME:
+        case CMD_NEW_GAME_ALT:
             m_gameMode = 1;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x41e);
             }
             return 1;
-        case kCmdLoadWorld:
+        case CMD_LOAD_WORLD:
             m_strWorldFile.Empty();
             m_gameMode = 1;
             if (!PassClickToPlayState(lParam, 0, 1)) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
-        case kCmdContinueAtMaxLevel:
+        case CMD_CONTINUE_AT_MAX_LEVEL:
             m_strWorldFile.Empty();
             m_gameMode = 1;
 
@@ -159,19 +162,19 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
-        case kCmdNewGameReplay:
+        case CMD_NEW_GAME_REPLAY:
             m_gameMode = 3;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x420);
             }
             return 1;
-        case kCmdSaveGameAs:
+        case CMD_SAVE_GAME_AS:
             SaveGameAs();
             // fall through to default
         default:
             if (m_curState->Update() == GAMESTATE_PLAY) {
-                switch (nID & 0xffff) {
-                    case kCheatProgrammingGod: {
+                switch (static_cast<GruntzCommandId>(IDX(nID) & 0xffff)) {
+                    case CHEAT_PROGRAMMING_GOD: {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c = static_cast<LeafCue*>(
                                 (static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
@@ -184,47 +187,47 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         AppendChatMessage("Brian L. Goble is a programming God...");
                         return 1;
                     }
-                    case kCheatTraitorMode:
+                    case CHEAT_TRAITOR_MODE:
                         g_traitorMode ^= 1;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Traitor Mode", g_traitorMode);
                         return 1;
-                    case kCheatObjectCountDisplay:
+                    case CHEAT_OBJECT_COUNT_DISPLAY:
                         g_debugDisplayFlags ^= 1;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Object Count Display", g_debugDisplayFlags & 1);
                         return 1;
-                    case kCheatWorldPositionDisplay:
+                    case CHEAT_WORLD_POSITION_DISPLAY:
                         g_debugDisplayFlags ^= 4;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("World Position Display", g_debugDisplayFlags & 4);
                         return 1;
-                    case kCheatFrameRateDisplay:
+                    case CHEAT_FRAME_RATE_DISPLAY:
                         g_debugDisplayFlags ^= 0x10;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Frame Rate Display", g_debugDisplayFlags & 0x10);
                         return 1;
-                    case kCheatDebugFlag20:
+                    case CHEAT_DEBUG_FLAG20:
                         g_debugDisplayFlags ^= 0x20;
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case kCheatBrickTextDisplay:
+                    case CHEAT_BRICK_TEXT_DISPLAY:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ 0x40) & ~0x100;
                         g_brickText1.Empty();
                         g_brickText2.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case kCheatBrickTextAltDisplay:
+                    case CHEAT_BRICK_TEXT_ALT_DISPLAY:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ 0x100) & ~0x40;
                         g_brickText1.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case kCheatElapsedTimeDisplay:
+                    case CHEAT_ELAPSED_TIME_DISPLAY:
                         g_debugDisplayFlags ^= 0x80;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Elapsed Time Display", g_debugDisplayFlags & 0x80);
                         return 1;
-                    case kCheatMonolith: {
+                    case CHEAT_MONOLITH: {
                         CPlay* _g = PickPlayOrPausedState();
                         if (!_g) {
                             return 1;
@@ -246,76 +249,76 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         m_sound->PlayByName(buf, 1);
                         return 1;
                     }
-                    case kCheatNoOp:
+                    case CHEAT_NO_OP:
                         return 1;
-                    case kCheatBrickGoAway:
-                        BRICKPICKUP(0x36, "Hey, where did you go?");
+                    case CHEAT_BRICK_GO_AWAY:
+                        BRICKPICKUP(PICKUP_GHOST, "Hey, where did you go?");
 
-                    case kCheatGiveBomb:
+                    case CHEAT_GIVE_BOMB:
                         ITEMCHEAT(1, "Bombz are cool!");
-                    case kCheatGiveBoomerang:
+                    case CHEAT_GIVE_BOOMERANG:
                         ITEMCHEAT(2, "Boomerangz are cool!");
-                    case kCheatGiveBrickLayer:
+                    case CHEAT_GIVE_BRICK_LAYER:
                         ITEMCHEAT(3, "Brick Laying Toolz are cool!");
-                    case kCheatGiveClub:
+                    case CHEAT_GIVE_CLUB:
                         ITEMCHEAT(4, "Clubz are cool!");
-                    case kCheatGiveGauntlet:
+                    case CHEAT_GIVE_GAUNTLET:
                         ITEMCHEAT(5, "Gauntletz are cool!");
-                    case kCheatGiveGlove:
+                    case CHEAT_GIVE_GLOVE:
                         ITEMCHEAT(6, "Glovez are cool!");
-                    case kCheatGiveGoober:
+                    case CHEAT_GIVE_GOOBER:
                         ITEMCHEAT(7, "Gooberz are cool!");
-                    case kCheatGiveGravityBoot:
+                    case CHEAT_GIVE_GRAVITY_BOOT:
                         ITEMCHEAT(8, "Gravity Bootz are cool!");
-                    case kCheatGiveGunHat:
+                    case CHEAT_GIVE_GUN_HAT:
                         ITEMCHEAT(9, "Gun Hatz are cool!");
-                    case kCheatGiveSpongeGun:
+                    case CHEAT_GIVE_SPONGE_GUN:
                         ITEMCHEAT(0xa, "Sponge Gunz are cool!");
-                    case kCheatGiveRock:
+                    case CHEAT_GIVE_ROCK:
                         ITEMCHEAT(0xb, "Rockz are cool!");
-                    case kCheatGiveShield:
+                    case CHEAT_GIVE_SHIELD:
                         ITEMCHEAT(0xc, "Shieldz are cool!");
-                    case kCheatGiveShovel:
+                    case CHEAT_GIVE_SHOVEL:
                         ITEMCHEAT(0xd, "Shovelz are cool!");
-                    case kCheatGiveSpring:
+                    case CHEAT_GIVE_SPRING:
                         ITEMCHEAT(0xe, "Springz are cool!");
-                    case kCheatGiveSpyGear:
+                    case CHEAT_GIVE_SPY_GEAR:
                         ITEMCHEAT(0xf, "Spy Gear is cool!");
-                    case kCheatGiveSword:
+                    case CHEAT_GIVE_SWORD:
                         ITEMCHEAT(0x10, "Swordz are cool!");
-                    case kCheatGiveTimeBomb:
+                    case CHEAT_GIVE_TIME_BOMB:
                         ITEMCHEAT(0x11, "Time Bombz are cool!");
-                    case kCheatGiveToob:
+                    case CHEAT_GIVE_TOOB:
                         ITEMCHEAT(0x12, "Toobz are cool!");
-                    case kCheatGiveMagicWand:
+                    case CHEAT_GIVE_MAGIC_WAND:
                         ITEMCHEAT(0x13, "Magic Wandz are cool!");
-                    case kCheatGiveSecret:
+                    case CHEAT_GIVE_SECRET:
                         ITEMCHEAT(0x14, "Hey, how did you get this cheat?");
-                    case kCheatGiveWeldersKit:
+                    case CHEAT_GIVE_WELDERS_KIT:
                         ITEMCHEAT(0x15, "Welder's Kitz are cool!");
-                    case kCheatGiveWing:
+                    case CHEAT_GIVE_WING:
                         ITEMCHEAT(0x16, "Wingz are cool!");
-                    case kCheatGiveBabyWalker:
+                    case CHEAT_GIVE_BABY_WALKER:
                         ITEMCHEAT(0x17, "Baby-Walkerz are cool!");
-                    case kCheatGiveBeachBall:
+                    case CHEAT_GIVE_BEACH_BALL:
                         ITEMCHEAT(0x18, "Beach Ballz are cool!");
-                    case kCheatGiveMonsterWheel:
+                    case CHEAT_GIVE_MONSTER_WHEEL:
                         ITEMCHEAT(0x19, "Monster Wheelz are cool!");
-                    case kCheatGiveGoKart:
+                    case CHEAT_GIVE_GO_KART:
                         ITEMCHEAT(0x1a, "Go-Kartz are cool!");
-                    case kCheatGiveJackInTheBox:
+                    case CHEAT_GIVE_JACK_IN_THE_BOX:
                         ITEMCHEAT(0x1b, "Jack-In-The-Boxez are cool!");
-                    case kCheatGiveJumpRope:
+                    case CHEAT_GIVE_JUMP_ROPE:
                         ITEMCHEAT(0x1c, "Jump Ropez are cool!");
-                    case kCheatGivePogoStick:
+                    case CHEAT_GIVE_POGO_STICK:
                         ITEMCHEAT(0x1d, "Pogo Stickz are cool!");
-                    case kCheatGiveScroll:
+                    case CHEAT_GIVE_SCROLL:
                         ITEMCHEAT(0x1e, "Scrollz are cool!");
-                    case kCheatGiveSqueakToy:
+                    case CHEAT_GIVE_SQUEAK_TOY:
                         ITEMCHEAT(0x1f, "Squeak Toyz are cool!");
-                    case kCheatGiveYoYo:
+                    case CHEAT_GIVE_YO_YO:
                         ITEMCHEAT(0x20, "Yo-Yoz are cool!");
-                    case kCheatNuke: {
+                    case CHEAT_NUKE: {
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
@@ -335,7 +338,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         AppendChatMessage("Global thermal nuclear war!");
                         return 1;
                     }
-                    case kCheatKillTimer: {
+                    case CHEAT_KILL_TIMER: {
                         CPlay* _g = PickPlayOrPausedState();
                         if (!_g) {
                             return 0;
@@ -349,32 +352,35 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         AppendChatMessage("Ah, who needed that stupid timer anyway?");
                         return 1;
                     }
-                    case kCheatGiveBombBrick:
+                    case CHEAT_GIVE_BOMB_BRICK:
                         ITEMCHEAT(0x26, "Bomb Brickz are cool!");
-                    case kCheatGiveIndestructibleBrick:
+                    case CHEAT_GIVE_INDESTRUCTIBLE_BRICK:
                         ITEMCHEAT(0x25, "Indestructible Brickz are cool!");
-                    case kCheatGiveGauntletBreakerBrick:
+                    case CHEAT_GIVE_GAUNTLET_BREAKER_BRICK:
                         ITEMCHEAT(0x23, "Gauntlet-Breaker Brickz are cool!");
-                    case kCheatGiveTeleportBrick:
+                    case CHEAT_GIVE_TELEPORT_BRICK:
                         ITEMCHEAT(0x24, "Teleport Brickz are cool!");
 
-                    case kCheatBrickAssimilate:
-                        BRICKPICKUP(0x39, "Oh yes, they will be assimilated!");
-                    case kCheatBrickDeath:
+                    case CHEAT_BRICK_ASSIMILATE:
+                        BRICKPICKUP(PICKUP_CONVERSION, "Oh yes, they will be assimilated!");
+                    case CHEAT_BRICK_DEATH:
                         BRICKPICKUP(
-                            0x3a,
+                            PICKUP_DEATHTOUCH,
                             "Ladies and gentlemen, please welcome... death... "
                             "He'll be here all week."
                         );
-                    case kCheatBrickSuperGrunt:
-                        BRICKPICKUP(0x38, "Super Grunt to the rescue!");
-                    case kCheatBrickHurt:
-                        BRICKPICKUP(0x3c, "This is gonna hurt them more than it will hurt you.");
-                    case kCheatBrickSwallow:
-                        BRICKPICKUP(0x3b, "How did you swallow that?");
-                    case kCheatBrickNoRunning:
-                        BRICKPICKUP(0x37, "There is no running allowed by the pool!");
-                    case kCheatColorGruntz:
+                    case CHEAT_BRICK_SUPER_GRUNT:
+                        BRICKPICKUP(PICKUP_INVULNERABILITY, "Super Grunt to the rescue!");
+                    case CHEAT_BRICK_HURT:
+                        BRICKPICKUP(
+                            PICKUP_REACTIVEARMOR,
+                            "This is gonna hurt them more than it will hurt you."
+                        );
+                    case CHEAT_BRICK_SWALLOW:
+                        BRICKPICKUP(PICKUP_ROIDZ, "How did you swallow that?");
+                    case CHEAT_BRICK_NO_RUNNING:
+                        BRICKPICKUP(PICKUP_SUPERSPEED, "There is no running allowed by the pool!");
+                    case CHEAT_COLOR_GRUNTZ:
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
@@ -382,7 +388,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("How about a little color in your Gruntz?");
                         return 1;
-                    case kCheatRegionMonitor: {
+                    case CHEAT_REGION_MONITOR: {
                         CPlay* _g = PickPlayOrPausedState();
                         if (!_g) {
                             return 0;
@@ -392,7 +398,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         AppendChatMessage("Whoah... you should get this monitor fixed.");
                         return 1;
                     }
-                    case kCheatRegionDark: {
+                    case CHEAT_REGION_DARK: {
                         CPlay* _g = PickPlayOrPausedState();
                         if (!_g) {
                             return 0;
@@ -402,7 +408,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         AppendChatMessage("Is is dark in here?");
                         return 1;
                     }
-                    case kCheatRegionWindow: {
+                    case CHEAT_REGION_WINDOW: {
                         CPlay* _g = PickPlayOrPausedState();
                         if (!_g) {
                             return 0;
@@ -412,23 +418,23 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         AppendChatMessage("Awww... isn't this little window cute?");
                         return 1;
                     }
-                    case kCheatAbilityFreeze:
+                    case CHEAT_ABILITY_FREEZE:
                         BRICKABILITY(1, "Freeze spellz are coooooooooooooooooool!");
-                    case kCheatAbilityHeal:
+                    case CHEAT_ABILITY_HEAL:
                         BRICKABILITY(2, "For only $9.95, you too can have the healing power!");
-                    case kCheatAbilityZombie:
+                    case CHEAT_ABILITY_ZOMBIE:
                         BRICKABILITY(3, "Aaahh!  Zombiez!");
-                    case kCheatAbilityParty:
+                    case CHEAT_ABILITY_PARTY:
                         BRICKABILITY(4, "It's party time!");
-                    case kCheatAbilityTeleport:
+                    case CHEAT_ABILITY_TELEPORT:
                         BRICKABILITY(5, "Oh where oh where did the teleported Gruntz go?");
-                    case kCheatAbilityRoll:
+                    case CHEAT_ABILITY_ROLL:
                         BRICKABILITY(6, "Rollin, rollin, rollin.");
-                    case kCheatDebugFlag400:
+                    case CHEAT_DEBUG_FLAG400:
                         g_debugDisplayFlags ^= 0x400;
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case kCheatWawa:
+                    case CHEAT_WAWA:
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c = static_cast<LeafCue*>(
                                 (static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
@@ -440,9 +446,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         }
                         AppendChatMessage("WA WA WA WA WA WA!");
                         return 1;
-                    case kCheatKevinLambert:
-                    case kCheatKevinLambertAlt:
-                    case kCheatKevinLambertAlt2: {
+                    case CHEAT_KEVIN_LAMBERT:
+                    case CHEAT_KEVIN_LAMBERT_ALT:
+                    case CHEAT_KEVIN_LAMBERT_ALT2: {
                         CPlay* _g = PickPlayOrPausedState();
                         if (!_g) {
                             return 0;
@@ -456,12 +462,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         return 1;
                     }
 
-                    case kCheatGooPuddlez:
+                    case CHEAT_GOO_PUDDLEZ:
                         g_gooPuddlez ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Goo puddlez", g_gooPuddlez);
                         return 1;
-                    case kCheatFillGoo: {
+                    case CHEAT_FILL_GOO: {
                         CPlay* _g = PickPlayOrPausedState();
                         if (!_g) {
                             return 0;
@@ -474,17 +480,17 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         AppendChatMessage("May your Wellz be full of Goo!");
                         return 1;
                     }
-                    case kCheatGruntCreation:
+                    case CHEAT_GRUNT_CREATION:
                         g_gruntCreation ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt creation", g_gruntCreation);
                         return 1;
-                    case kCheatGruntDestruction:
+                    case CHEAT_GRUNT_DESTRUCTION:
                         g_gruntDestruction ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt destruction", g_gruntDestruction);
                         return 1;
-                    case kCheatCheatelson:
+                    case CHEAT_CHEATELSON:
                         PLAYCUE("GAME_MAJORCHEAT");
                         if (m_saveSink) {
                             m_saveSink->SetCurLevel(0x20);
@@ -496,46 +502,46 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             "just behind the CheatMart superstore."
                         );
                         return 1;
-                    case kCheatPsyche:
+                    case CHEAT_PSYCHE:
 
                         RunModalDialog("PSYCHE", PsycheDialogProc, 0);
                         return 1;
-                    case kCheatClearCheats:
+                    case CHEAT_CLEAR_CHEATS:
                         PLAYCUE("GAME_MAJORCHEAT");
                         m_cheatMgr->m_cheatsUsed = 0;
                         AppendChatMessage("Cheatz cleared");
                         return 1;
-                    case kCheatWarpTropicz:
+                    case CHEAT_WARP_TROPICZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Trouble in the Tropicz activated!");
                         m_saveSink->SetCurLevel(8);
                         return 1;
-                    case kCheatWarpSweetz:
+                    case CHEAT_WARP_SWEETZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High on Sweetz activated!");
                         m_saveSink->SetCurLevel(0xc);
                         return 1;
-                    case kCheatWarpRollerz:
+                    case CHEAT_WARP_ROLLERZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High Rollerz activated!");
                         m_saveSink->SetCurLevel(0x10);
                         return 1;
-                    case kCheatWarpHoneyShrunk:
+                    case CHEAT_WARP_HONEY_SHRUNK:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Honey, I Shrunk the Gruntz activated!");
                         m_saveSink->SetCurLevel(0x14);
                         return 1;
-                    case kCheatWarpMiniatureMasterz:
+                    case CHEAT_WARP_MINIATURE_MASTERZ:
                         PLAYCUE_MAP("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to The Miniature Masterz activated!");
                         m_saveSink->SetCurLevel(0x18);
                         return 1;
-                    case kCheatWarpGruntzInSpace:
+                    case CHEAT_WARP_GRUNTZ_IN_SPACE:
                         PLAYCUE_MAP("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Gruntz in Space activated!");
                         m_saveSink->SetCurLevel(0x1c);
                         return 1;
-                    case kCheatExplosionz: {
+                    case CHEAT_EXPLOSIONZ: {
                         g_explosionz ^= 1;
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             void* _c_ob = 0;
@@ -557,7 +563,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             return 0;
 
-        case kCmdLoadSavedGame: {
+        case CMD_LOAD_SAVED_GAME: {
             SaveSlot* si = m_saveInfoRec;
             if (!si) {
                 return 1;
@@ -598,21 +604,21 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             m_loadingSaveGame = 0;
             return 1;
         }
-        case kCmdNoOp80b8:
+        case CMD_NO_OP80_8:
             return 1;
-        case kCmdMultiConnect:
-            if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
+        case CMD_MULTI_CONNECT:
+            if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
                 static_cast<CMulti*>(m_curState)->Connect(lParam);
             }
             return 1;
-        case kCmdLoadGameDialog:
+        case CMD_LOAD_GAME_DIALOG:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
                 if (!g_cdPromptResult) {
                     RunLoadGameDialog();
                 }
             }
             return 1;
-        case kCmdQuickSavePrompt:
+        case CMD_QUICK_SAVE_PROMPT:
             if (m_curState->Update() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState();
                 if (_g->CanQuickSave()) {
@@ -620,7 +626,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 }
             }
             return 1;
-        case kCmdQuickSave:
+        case CMD_QUICK_SAVE:
             if (m_curState->Update() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState();
                 if (_g->CanQuickSave()) {
@@ -628,160 +634,160 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 }
             }
             return 1;
-        case kCmdQuickLoad:
+        case CMD_QUICK_LOAD:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
                 if (!g_cdPromptResult) {
                     Quickload();
                 }
             }
             return 1;
-        case kCmdRestartLevel:
+        case CMD_RESTART_LEVEL:
             RESTART(1);
-        case kCmdRestartWorld:
+        case CMD_RESTART_WORLD:
             RESTART(2);
-        case kCmdRestartWorldNoCursor:
+        case CMD_RESTART_WORLD_NO_CURSOR:
             RESTART2(2);
-        case kCmdRestartGame:
+        case CMD_RESTART_GAME:
             RESTART(3);
-        case kCmdWarpLevel1:
+        case CMD_WARP_LEVEL1:
             WARP(1, 0x422);
-        case kCmdDebugWarpLevel37:
+        case CMD_DEBUG_WARP_LEVEL37:
             WARP(0x25, 0x45a);
-        case kCmdDebugWarpLevel38:
+        case CMD_DEBUG_WARP_LEVEL38:
             WARP(0x26, 0x45b);
-        case kCmdDebugWarpLevel39:
+        case CMD_DEBUG_WARP_LEVEL39:
             WARP(0x27, 0x45c);
-        case kCmdDebugWarpLevel40:
+        case CMD_DEBUG_WARP_LEVEL40:
             WARP(0x28, 0x45d);
-        case kCmdDebugWarpLevel1:
+        case CMD_DEBUG_WARP_LEVEL1:
             WARP(1, 0x45e);
-        case kCmdDebugWarpLevel2:
+        case CMD_DEBUG_WARP_LEVEL2:
             WARP(2, 0x45f);
-        case kCmdDebugWarpLevel3:
+        case CMD_DEBUG_WARP_LEVEL3:
             WARP(3, 0x460);
-        case kCmdDebugWarpLevel4:
+        case CMD_DEBUG_WARP_LEVEL4:
             WARP(4, 0x461);
-        case kCmdDebugWarpLevel5:
+        case CMD_DEBUG_WARP_LEVEL5:
             WARP(5, 0x462);
-        case kCmdDebugWarpLevel6:
+        case CMD_DEBUG_WARP_LEVEL6:
             WARP(6, 0x45f);
-        case kCmdDebugWarpLevel7:
+        case CMD_DEBUG_WARP_LEVEL7:
             WARP(7, 0x460);
-        case kCmdDebugWarpLevel8:
+        case CMD_DEBUG_WARP_LEVEL8:
             WARP(8, 0x461);
-        case kCmdDebugWarpLevel9:
+        case CMD_DEBUG_WARP_LEVEL9:
             WARP(9, 0x462);
-        case kCmdDebugWarpLevel10:
+        case CMD_DEBUG_WARP_LEVEL10:
             WARP(0xa, 0x463);
-        case kCmdDebugWarpLevel11:
+        case CMD_DEBUG_WARP_LEVEL11:
             WARP(0xb, 0x464);
-        case kCmdDebugWarpLevel12:
+        case CMD_DEBUG_WARP_LEVEL12:
             WARP(0xc, 0x465);
-        case kCmdDebugWarpLevel13:
+        case CMD_DEBUG_WARP_LEVEL13:
             WARP(0xd, 0x466);
-        case kCmdDebugWarpLevel14:
+        case CMD_DEBUG_WARP_LEVEL14:
             WARP(0xe, 0x467);
-        case kCmdDebugWarpLevel15:
+        case CMD_DEBUG_WARP_LEVEL15:
             WARP(0xf, 0x468);
-        case kCmdDebugWarpLevel16:
+        case CMD_DEBUG_WARP_LEVEL16:
             WARP(0x10, 0x469);
-        case kCmdDebugWarpLevel17:
+        case CMD_DEBUG_WARP_LEVEL17:
             WARP(0x11, 0x46a);
-        case kCmdDebugWarpLevel18:
+        case CMD_DEBUG_WARP_LEVEL18:
             WARP(0x12, 0x46b);
-        case kCmdDebugWarpLevel19:
+        case CMD_DEBUG_WARP_LEVEL19:
             WARP(0x13, 0x46c);
-        case kCmdDebugWarpLevel20:
+        case CMD_DEBUG_WARP_LEVEL20:
             WARP(0x14, 0x46d);
-        case kCmdDebugWarpLevel21:
+        case CMD_DEBUG_WARP_LEVEL21:
             WARP(0x15, 0x46e);
-        case kCmdDebugWarpLevel22:
+        case CMD_DEBUG_WARP_LEVEL22:
             WARP(0x16, 0x46f);
-        case kCmdDebugWarpLevel23:
+        case CMD_DEBUG_WARP_LEVEL23:
             WARP(0x17, 0x470);
-        case kCmdDebugWarpLevel24:
+        case CMD_DEBUG_WARP_LEVEL24:
             WARP(0x18, 0x471);
-        case kCmdDebugWarpLevel25:
+        case CMD_DEBUG_WARP_LEVEL25:
             WARP(0x19, 0x472);
-        case kCmdDebugWarpLevel26:
+        case CMD_DEBUG_WARP_LEVEL26:
             WARP(0x1a, 0x473);
-        case kCmdDebugWarpLevel27:
+        case CMD_DEBUG_WARP_LEVEL27:
             WARP(0x1b, 0x474);
-        case kCmdDebugWarpLevel28:
+        case CMD_DEBUG_WARP_LEVEL28:
             WARP(0x1c, 0x475);
-        case kCmdDebugWarpLevel29:
+        case CMD_DEBUG_WARP_LEVEL29:
             WARP(0x1d, 0x476);
-        case kCmdDebugWarpLevel30:
+        case CMD_DEBUG_WARP_LEVEL30:
             WARP(0x1e, 0x477);
-        case kCmdDebugWarpLevel31:
+        case CMD_DEBUG_WARP_LEVEL31:
             WARP(0x1f, 0x478);
-        case kCmdDebugWarpLevel32:
+        case CMD_DEBUG_WARP_LEVEL32:
             WARP(0x20, 0x479);
-        case kCmdDebugWarpLevel101:
+        case CMD_DEBUG_WARP_LEVEL101:
             WARP(0x65, 0x45e);
-        case kCmdDebugWarpLevel102:
+        case CMD_DEBUG_WARP_LEVEL102:
             WARP(0x66, 0x45f);
-        case kCmdDebugWarpLevel103:
+        case CMD_DEBUG_WARP_LEVEL103:
             WARP(0x67, 0x460);
-        case kCmdDebugWarpLevel104:
+        case CMD_DEBUG_WARP_LEVEL104:
             WARP(0x68, 0x461);
-        case kCmdDebugWarpLevel105:
+        case CMD_DEBUG_WARP_LEVEL105:
             WARP(0x69, 0x462);
-        case kCmdDebugWarpLevel106:
+        case CMD_DEBUG_WARP_LEVEL106:
             WARP(0x6a, 0x45f);
-        case kCmdDebugWarpLevel107:
+        case CMD_DEBUG_WARP_LEVEL107:
             WARP(0x6b, 0x460);
-        case kCmdDebugWarpLevel108:
+        case CMD_DEBUG_WARP_LEVEL108:
             WARP(0x6c, 0x461);
-        case kCmdDebugWarpLevel109:
+        case CMD_DEBUG_WARP_LEVEL109:
             WARP(0x6d, 0x462);
-        case kCmdDebugWarpLevel110:
+        case CMD_DEBUG_WARP_LEVEL110:
             WARP(0x6e, 0x463);
-        case kCmdDebugWarpLevel111:
+        case CMD_DEBUG_WARP_LEVEL111:
             WARP(0x6f, 0x464);
-        case kCmdDebugWarpLevel112:
+        case CMD_DEBUG_WARP_LEVEL112:
             WARP(0x70, 0x465);
-        case kCmdDebugWarpLevel113:
+        case CMD_DEBUG_WARP_LEVEL113:
             WARP(0x71, 0x466);
-        case kCmdDebugWarpLevel114:
+        case CMD_DEBUG_WARP_LEVEL114:
             WARP(0x72, 0x467);
-        case kCmdDebugWarpLevel115:
+        case CMD_DEBUG_WARP_LEVEL115:
             WARP(0x73, 0x468);
-        case kCmdDebugWarpLevel116:
+        case CMD_DEBUG_WARP_LEVEL116:
             WARP(0x74, 0x469);
-        case kCmdDebugWarpLevel117:
+        case CMD_DEBUG_WARP_LEVEL117:
             WARP(0x75, 0x46a);
-        case kCmdDebugWarpLevel118:
+        case CMD_DEBUG_WARP_LEVEL118:
             WARP(0x76, 0x46b);
-        case kCmdDebugWarpLevel119:
+        case CMD_DEBUG_WARP_LEVEL119:
             WARP(0x77, 0x46c);
-        case kCmdDebugWarpLevel120:
+        case CMD_DEBUG_WARP_LEVEL120:
             WARP(0x78, 0x46d);
-        case kCmdDebugWarpLevel121:
+        case CMD_DEBUG_WARP_LEVEL121:
             WARP(0x79, 0x46e);
-        case kCmdDebugWarpLevel122:
+        case CMD_DEBUG_WARP_LEVEL122:
             WARP(0x7a, 0x46f);
-        case kCmdDebugWarpLevel123:
+        case CMD_DEBUG_WARP_LEVEL123:
             WARP(0x7b, 0x470);
-        case kCmdDebugWarpLevel124:
+        case CMD_DEBUG_WARP_LEVEL124:
             WARP(0x7c, 0x471);
-        case kCmdDebugWarpLevel125:
+        case CMD_DEBUG_WARP_LEVEL125:
             WARP(0x7d, 0x472);
-        case kCmdDebugWarpLevel126:
+        case CMD_DEBUG_WARP_LEVEL126:
             WARP(0x7e, 0x473);
-        case kCmdDebugWarpLevel127:
+        case CMD_DEBUG_WARP_LEVEL127:
             WARP(0x7f, 0x474);
-        case kCmdDebugWarpLevel128:
+        case CMD_DEBUG_WARP_LEVEL128:
             WARP(0x80, 0x475);
-        case kCmdDebugWarpLevel129:
+        case CMD_DEBUG_WARP_LEVEL129:
             WARP(0x81, 0x476);
-        case kCmdDebugWarpLevel130:
+        case CMD_DEBUG_WARP_LEVEL130:
             WARP(0x82, 0x477);
-        case kCmdDebugWarpLevel131:
+        case CMD_DEBUG_WARP_LEVEL131:
             WARP(0x83, 0x478);
-        case kCmdDebugWarpLevel132:
+        case CMD_DEBUG_WARP_LEVEL132:
             WARP(0x84, 0x479);
-        case kCmdWebSite:
+        case CMD_WEB_SITE:
             if (m_curState->Update() == GAMESTATE_MENU
                 || m_curState->Update() == GAMESTATE_ATTRACT) {
                 while (ShowCursor(1) < 0) {
@@ -789,89 +795,89 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 LaunchWebBrowser(const_cast<char*>("http://www.gruntzgoo.com/"));
             }
             return 1;
-        case kCmdMultiJoin:
+        case CMD_MULTI_JOIN:
             m_gameMode = 2;
             g_hostServicesMode = 0;
-            if (TransitionState(0x11, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_MULTI, 1, 0, 0)) {
                 return 1;
             }
-            if (TransitionState(2, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x424);
+            ReportError(IDX(CMD_NEW_GAME), 0x424);
             return 1;
-        case kCmdMultiHost:
+        case CMD_MULTI_HOST:
             m_gameMode = 2;
             g_hostServicesMode = 1;
-            if (TransitionState(0x11, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_MULTI, 1, 0, 0)) {
                 return 1;
             }
-            if (TransitionState(2, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x425);
+            ReportError(IDX(CMD_NEW_GAME), 0x425);
             return 1;
-        case kCmdMainMenu:
-            if (TransitionState(5, 1, 0, 0)) {
+        case CMD_MAIN_MENU:
+            if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x426);
+            ReportError(IDX(CMD_NEW_GAME), 0x426);
             return 1;
-        case kCmdShowCredits:
-            if (TransitionState(0xb, 1, 1, 0)) {
+        case CMD_SHOW_CREDITS:
+            if (TransitionState(GAMESTATE_CREDITS_OVER_CURRENT, 1, 1, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x427);
+            ReportError(IDX(CMD_NEW_GAME), 0x427);
             return 1;
-        case kCmdShowBooty:
-            if (TransitionState(0xd, 1, 1, lParam)) {
+        case CMD_SHOW_BOOTY:
+            if (TransitionState(GAMESTATE_BOOTY_OVER_CURRENT, 1, 1, lParam)) {
                 return 1;
             }
-            ReportError(0x8005, 0x428);
+            ReportError(IDX(CMD_NEW_GAME), 0x428);
             return 1;
-        case kCmdNextState:
+        case CMD_NEXT_STATE:
             if (SwitchToNextState()) {
                 return 1;
             }
-            ReportError(0x8005, 0x429);
+            ReportError(IDX(CMD_NEW_GAME), 0x429);
             return 1;
-        case kCmdShowHelp:
-            if (TransitionState(8, 1, 0, 0)) {
+        case CMD_SHOW_HELP:
+            if (TransitionState(GAMESTATE_CREDITS, 1, 0, 0)) {
                 return 1;
             }
-            if (TransitionState(5, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x42a);
+            ReportError(IDX(CMD_NEW_GAME), 0x42a);
             return 1;
-        case kCmdAttract:
-            if (TransitionState(2, 1, 0, 0)) {
+        case CMD_ATTRACT:
+            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x42b);
+            ReportError(IDX(CMD_NEW_GAME), 0x42b);
             return 1;
-        case kCmdReturnToAttract:
-            if (!TransitionState(2, 1, 0, 0)) {
-                ReportError(0x8005, 0x42c);
+        case CMD_RETURN_TO_ATTRACT:
+            if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+                ReportError(IDX(CMD_NEW_GAME), 0x42c);
                 return 1;
             }
             PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
             return 1;
-        case kCmdShowState0e:
-            if (TransitionState(0xe, 1, 0, 0)) {
+        case CMD_SHOW_STATE0:
+            if (TransitionState(GAMESTATE_SPLASH, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x42d);
+            ReportError(IDX(CMD_NEW_GAME), 0x42d);
             return 1;
-        case kCmdShowState07:
-            if (TransitionState(7, 1, 0, 0)) {
+        case CMD_SHOW_STATE07:
+            if (TransitionState(GAMESTATE_DEMO, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x42e);
+            ReportError(IDX(CMD_NEW_GAME), 0x42e);
             return 1;
-        case kCmdPauseToggle: {
-            i32 st = m_curState->Update();
-            if (st == GAMESTATE_PLAY || st == GAMESTATE_NONE) {
+        case CMD_PAUSE_TOGGLE: {
+            GameStateId st = m_curState->Update();
+            if (st == GAMESTATE_PLAY || st == GAMESTATE_MULTI) {
                 CPlay* ps = static_cast<CPlay*>(m_curState);
                 if (ps->m_inGame) {
                     return 1;
@@ -893,83 +899,84 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             return 1;
         }
-        case kCmdFinishLevel: {
-            i32 st = m_curState->Update();
-            if (st == GAMESTATE_PLAY || st == GAMESTATE_NONE) {
+        case CMD_FINISH_LEVEL: {
+            GameStateId st = m_curState->Update();
+            if (st == GAMESTATE_PLAY || st == GAMESTATE_MULTI) {
                 i32 f = m_frameGate ^ 1;
                 m_frameGate = f;
                 FinishLevel(f, 0);
             }
             return 1;
         }
-        case kCmdPresentWorld:
+        case CMD_PRESENT_WORLD:
             if (!CheckPlayState()) {
                 return 1;
             }
             if (static_cast<CPlay*>(m_curState)->DrawWorldPresent()) {
                 return 1;
             }
-            ReportError(0x8005, 0x42f);
+            ReportError(IDX(CMD_NEW_GAME), 0x42f);
             return 1;
-        case kCmdLobbyReset:
+        case CMD_LOBBY_RESET:
             m_lobbyProbed = 0;
             PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
             return 1;
-        case kCmdExitToAttract:
+        case CMD_EXIT_TO_ATTRACT:
             if (!CheckPlayState()) {
                 return 1;
             }
             if (m_curState->CompleteLevel()) {
                 return 1;
             }
-            if (TransitionState(2, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
                 PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
                 return 1;
             }
-            ReportError(0x8005, 0x430);
+            ReportError(IDX(CMD_NEW_GAME), 0x430);
             return 1;
-        case kCmdCaptureWorld:
+        case CMD_CAPTURE_WORLD:
             if (g_cdPromptResult) {
                 return 1;
             }
             CaptureWorldFile();
             return 1;
-        case kCmdNextLevel:
+        case CMD_NEXT_LEVEL:
             if (GoToNextLevel()) {
                 return 1;
             }
-            ReportError(0x8007, 0x431);
+            ReportError(IDX(CMD_PAUSE_TOGGLE), 0x431);
             return 1;
-        case kCmdPrevLevel:
-            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_NONE) {
+        case CMD_PREV_LEVEL:
+            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
                 GoToPrevLevel();
                 return 1;
             }
             // fall through
-        case kCmdReturnToMenu:
+        case CMD_RETURN_TO_MENU:
             m_curState->m_notifyLatch = 1;
-            if (TransitionState(5, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x432);
+            ReportError(IDX(CMD_NEW_GAME), 0x432);
             return 1;
-        case kCmdQuit:
+        case CMD_QUIT:
             DelayedQuit();
             return 1;
-        case kCmdShowBootyState: {
-            i32 st = m_curState->Update();
-            if (st == 9 || st == 0xd || st == 0xf || st == 0xe || st == GAMESTATE_CREDITS
-                || st == GAMESTATE_BOOTY || st == GAMESTATE_MULTIBOOTY || st == GAMESTATE_NONE) {
+        case CMD_SHOW_BOOTY_STATE: {
+            GameStateId st = m_curState->Update();
+            if (st == GAMESTATE_HELP || st == GAMESTATE_BOOTY_OVER_CURRENT || st == 0xf
+                || st == GAMESTATE_SPLASH || st == GAMESTATE_CREDITS || st == GAMESTATE_BOOTY
+                || st == GAMESTATE_MULTIBOOTY || st == GAMESTATE_MULTI) {
                 return 1;
             }
-            if (TransitionState(9, 1, 1, 0)) {
+            if (TransitionState(GAMESTATE_HELP, 1, 1, 0)) {
                 return 1;
             }
-            ReportError(0x8005, 0x433);
+            ReportError(IDX(CMD_NEW_GAME), 0x433);
             return 1;
         }
-        case kCmdConfigSettings: {
-            i32 st = m_curState->Update();
+        case CMD_CONFIG_SETTINGS: {
+            GameStateId st = m_curState->Update();
             CMenuState* mus = 0;
             if (st == GAMESTATE_MENU) {
                 mus = static_cast<CMenuState*>(m_curState);
@@ -982,7 +989,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             return 1;
         }
-        case kCmdToggleMusic: {
+        case CMD_TOGGLE_MUSIC: {
             if (m_frameGate) {
                 return 1;
             }
@@ -990,8 +997,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             m_musicEnabled = v;
             i32 pl = CheckPlayState();
             if (!pl) {
-                i32 st = m_curState->Update();
-                if (st != 0xb && st != GAMESTATE_MENU) {
+                GameStateId st = m_curState->Update();
+                if (st != GAMESTATE_CREDITS_OVER_CURRENT && st != GAMESTATE_MENU) {
                     return 1;
                 }
             }
@@ -1002,7 +1009,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             return 1;
         }
-        case kCmdToggleSound: {
+        case CMD_TOGGLE_SOUND: {
             if (m_world) {
                 SoundStream* p = m_world->m_soundRegistry->m_soundStream;
                 if (p) {
@@ -1019,36 +1026,36 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             return 1;
         }
-        case kCmdRestoreVideoMode:
+        case CMD_RESTORE_VIDEO_MODE:
             if (!IsInPlayState()) {
                 return 1;
             }
             RestoreVideoMode(0);
             return 1;
-        case kCmdCheckDisplayBoundsA:
+        case CMD_CHECK_DISPLAY_BOUNDS_A:
             if (!IsInPlayState()) {
                 return 1;
             }
             CheckDisplayBoundsA();
             return 1;
-        case kCmdCheckDisplayBoundsB:
+        case CMD_CHECK_DISPLAY_BOUNDS_B:
             if (!IsInPlayState()) {
                 return 1;
             }
             CheckDisplayBoundsB();
             return 1;
-        case kCmdScreenshot: {
+        case CMD_SCREENSHOT: {
             SaveFrontBufferShot(m_settings, this, g_gameReg->m_modeW, g_gameReg->m_modeH, 0, 0);
             return 1;
         }
-        case kCmdReloadLevel: {
+        case CMD_RELOAD_LEVEL: {
             CPlay* _g = PickPlayOrPausedState();
             if (!_g) {
                 return 1;
             }
             m_strWorldFile = m_strWorldFile;
             if (!PassClickToPlayState(m_curState->m_levelIndex, 0, 1)) {
-                ReportError(0x8007, 0x434);
+                ReportError(IDX(CMD_PAUSE_TOGGLE), 0x434);
             }
             return 1;
         }

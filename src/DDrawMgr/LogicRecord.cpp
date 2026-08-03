@@ -7,36 +7,38 @@
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
 
 // @early-stop
 RVA(0x00164830, 0xec)
-i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
+i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, void* d) {
     if (a == 0) {
         return 0;
     }
     switch (mode) {
-        case 3:
+        case SERIAL_PRESAVE:
             m_targetId = 0;
             if (m_target) {
                 m_targetId = m_target->m_objectId;
             }
             break;
-        case 4:
+        case SERIAL_SAVE:
 
             if (Save(a) == 0) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
 
             if (Load(a) == 0) {
                 return 0;
             }
             break;
-        case 8:
+        case SERIAL_POSTLOAD:
             if (m_targetId) {
                 void* out = 0;
                 CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;

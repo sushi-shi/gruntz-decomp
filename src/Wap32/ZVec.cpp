@@ -36,8 +36,8 @@ char* _zdvec::IndexToPtr(i32 i) {
     return r;
 }
 
-// @interleaver _zvec::IndexToPtr emitted between QueueDrainHost::Drain and
-// BattlezMapConfig::Step as a first-use COMDAT.
+// @interleaver IndexToPtr - 116 B lone body at 0x312a0, between Drain
+// (queuedrainhost) and Step (battlezmapconfig): a first-use placement.
 RVA(0x000312a0, 0x74)
 char* _zvec::IndexToPtr(i32 idx) {
     char* r;

@@ -21,7 +21,14 @@
 #
 # The check set is deliberately curated to the de-hack surface and kept
 # low-noise: matching-neutral floods (narrowing, easily-swappable-params,
-# magic-numbers, naming) are intentionally left OUT.
+# naming) are intentionally left OUT.
+#
+# EXCEPTION, added with the numeric-domain campaign (docs/enum-modeling-plan.md):
+# `readability-magic-numbers` IS enabled. It is a flood - thousands of hits - but
+# it is now the campaign's WORKLIST rather than noise, and it is bounded by
+# config/enum-review.tsv, which records which files have been through it. The
+# cleanliness board's `magic case labels` / `unnamed domain compares` rows are the
+# ratcheted summary; this check is how you find the individual sites.
 Checks: >
   -*,
   google-readability-casting,
@@ -37,6 +44,7 @@ Checks: >
   bugprone-suspicious-semicolon,
   bugprone-suspicious-string-compare,
   bugprone-suspicious-enum-usage,
+  readability-magic-numbers,
   bugprone-suspicious-realloc-usage
 
 # Never promote a finding to an error - this is a worklist, not a gate.

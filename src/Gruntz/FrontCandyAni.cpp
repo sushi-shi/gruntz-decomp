@@ -10,6 +10,7 @@
 #include <Gruntz/EyeCandyAni.h>
 #include <Gruntz/FrontCandy.h>
 #include <Gruntz/LogicFnTable.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
@@ -19,7 +20,7 @@ template<> DATA(0x002460b0)
 CActReg CActRegPool<CFrontCandyAni>::s_table(2000, 2010);
 
 RVA(0x0000fa60, 0x47)
-i32 CFrontCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CFrontCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -30,7 +31,7 @@ RVA_COMPGEN(0x0000fad0, 0x1e, ??_GCFrontCandy@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fb00, 0x44, ??1CFrontCandy@@UAE@XZ)
 
 RVA(0x0000fdf0, 0x47)
-i32 CFrontCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CFrontCandyAni::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -41,7 +42,7 @@ RVA_COMPGEN(0x0000fe60, 0x1e, ??_GCFrontCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fe90, 0x44, ??1CFrontCandyAni@@UAE@XZ)
 
 RVA(0x0000ff20, 0x47)
-i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -102,6 +103,8 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
+// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
+// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id));
@@ -110,6 +113,8 @@ void CEyeCandyAni::FireActivation(i32 id) {
     }
 }
 
+// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000acd10, 0x18d)
 void CEyeCandyAni::RegisterActs() {
     i32 id = ActFindId("A");
@@ -132,6 +137,8 @@ void CEyeCandyAni::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
+// @interleaver AdvanceAnim - fixed-size generated body (23 B, byte-identical across
+// 10 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -156,6 +163,8 @@ VTBL(CEyeCandyAni, 0x001e8334);
 VTBL(CFrontCandyAni, 0x001e83e4);
 VTBL(CFrontCandy, 0x001e84ec);
 
+// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
+// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
@@ -165,6 +174,8 @@ void CFrontCandyAni::FireActivation(i32 coord) {
     }
 }
 
+// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad310, 0x18d)
 void CFrontCandyAni::RegisterActs() {
     i32 id = ActFindId("A");
@@ -187,6 +198,8 @@ void CFrontCandyAni::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 
+// @interleaver AdvanceAnim - fixed-size generated body (23 B, byte-identical across
+// 10 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

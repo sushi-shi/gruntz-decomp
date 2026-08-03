@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Ints.h>
 
 i32 FindProcessByName(const char* name, i32 wantCount, void** pHandleOut);

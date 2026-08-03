@@ -4,7 +4,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_StatzTabGruntBar.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
 #include <Io/FileMem.h>
@@ -13,7 +15,12 @@
 
 // @early-stop
 RVA(0x000ea990, 0xa72)
-i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
+i32 CSBI_StatzTabGruntBar::SerializeFields(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj
+) {
     if (s == 0) {
         return 0;
     }
@@ -28,7 +35,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId
     i32 v;
 
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
 
 #define GS_SUBREC(field)                                                                           \
     g_serialCounter++;                                                                             \
@@ -74,7 +81,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId
             s->Write(buf, 0x80);
             break;
 
-        case 7:
+        case SERIAL_LOAD:
 
 #define GS_IDXREF(field)                                                                           \
     g_serialCounter++;                                                                             \

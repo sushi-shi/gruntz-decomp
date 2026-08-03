@@ -34,10 +34,9 @@ import os
 import re
 
 DATA_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
-# VTBL(name, rva) and DATA_SYMBOL(rva, size, sym) rows live beside DATA() in the
-# owning TU and join the within-file ordering audit (they are data rows).
+# VTBL(name, rva) rows live beside DATA() in the owning TU and join the
+# within-file ordering audit (they are data rows).
 VTBL_ORD_RE = re.compile(r"\bVTBL\s*\(\s*\w+\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
-DSYM_ORD_RE = re.compile(r"\bDATA_SYMBOL\s*\(\s*(0x[0-9a-fA-F]+)\s*,[^)]*,\s*([^\s,)]+)\s*\)")
 # strip // and /* */ comments crudely for classification (not for line tracking)
 IDENT_RE = re.compile(r"([A-Za-z_]\w*)\s*(\[|;|=|\()")
 
@@ -93,9 +92,8 @@ def load_manifest(root):
 def exec_ranges():
     """The retail image's EXECUTABLE rva ranges, or [] if the EXE is unreadable.
 
-    A DATA()/DATA_SYMBOL()/VTBL() whose rva lands in .text is NOT a data definition -
-    it names a CODE address (an /INCREMENTAL ILT jmp-thunk, e.g.
-    DATA_SYMBOL(0x113b, 0x0, _MultiPauseCallback), or an address-taken proc). Such a
+    A DATA()/VTBL() whose rva lands in .text is NOT a data definition - it names a
+    CODE address (an /INCREMENTAL ILT jmp-thunk, or an address-taken proc). Such a
     row emits no storage in .data/.rdata/.bss, so it must not join the per-(TU,
     storage) band model: counted as data it drags a TU's band down to ~0x1000 and
     turns it into a multi-file 'pool', which then EXEMPTS the TU from the ordering
@@ -195,9 +193,6 @@ def parse_file(path):
         code = strip_line_comment(line_wo)
         for m in VTBL_ORD_RE.finditer(code):
             blocks.append(Block(int(m.group(1), 16), i + 1, True, "??_7", code.strip()[:80]))
-        for m in DSYM_ORD_RE.finditer(code):
-            blocks.append(Block(int(m.group(1), 16), i + 1, True, m.group(2)[:40],
-                                code.strip()[:80]))
         for m in DATA_RE.finditer(code):
             rva = int(m.group(1), 16)
             # gather the declaration text starting just after this macro

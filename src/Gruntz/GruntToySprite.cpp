@@ -2,9 +2,12 @@
 
 #include <Gruntz/GruntToySprite.h>
 
+#include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
@@ -30,7 +33,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
         m_object->m_sortKey = 0xdbba0;
         m_object->m_flags |= 0x20000;
     }
-    m_lastLayer = 0;
+    m_lastLayer = PICKUP_NONE;
 }
 
 RVA(0x0007f5c0, 0x102)
@@ -76,7 +79,7 @@ i32 CGruntToySprite::Update() {
     if (e == 0) {
         return 0;
     }
-    i32 layer = e->m_vehiclePickupType;
+    PickupType layer = e->m_vehiclePickupType;
     if (m_lastLayer != layer) {
         CWwdGameObjectA* r = m_object;
         m_lastLayer = layer;
@@ -84,7 +87,7 @@ i32 CGruntToySprite::Update() {
         if (h != 0) {
             CImage* mapped;
             if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
-                mapped = static_cast<CImage*>(h->m_items.GetAt(layer));
+                mapped = static_cast<CImage*>(h->m_items.GetAt(IDX(layer)));
             } else {
                 mapped = 0;
             }
@@ -98,13 +101,18 @@ i32 CGruntToySprite::Update() {
 }
 
 RVA(0x0007fa20, 0x89)
-i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CGruntToySprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_cell, 8);
             ar->Write(&m_lastLayer, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_cell, 8);
             ar->Read(&m_lastLayer, 4);
             break;

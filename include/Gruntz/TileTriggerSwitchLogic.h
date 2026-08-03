@@ -5,6 +5,7 @@
 
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileTriggerLogic.h>
 #include <Ints.h>
 
 class CTileTriggerLogic;
@@ -14,7 +15,7 @@ class CTileTriggerSwitchLogic {
 public:
     virtual i32 Setup(
         CTileTriggerContainer* owner,
-        i32 typeId,
+        TrigLogicId typeId,
         i32 tileX,
         i32 tileY,
         i32 cellKey,
@@ -25,7 +26,7 @@ public:
 
     virtual i32 BuildSmall(
         CTileTriggerContainer* owner,
-        i32 typeId,
+        TrigLogicId typeId,
         i32 tileX,
         i32 tileY,
         i32 cellKey,
@@ -46,12 +47,12 @@ public:
     i32 VerifyBlockLinksB();
     i32 VerifyBlockLinks();
 
-    i32 ValidateByType(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj);
+    i32 ValidateByType(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 SaveState(CFileMemBase* s);
 
     i32 LoadState(CFileMemBase* s);
 
-    i32 m_typeId;
+    TrigLogicId m_typeId;
 
     i32 m_tileX;
     i32 m_tileY;
@@ -113,7 +114,7 @@ public:
 
     virtual i32 BuildSmall(
         CTileTriggerContainer* owner,
-        i32 typeId,
+        TrigLogicId typeId,
         i32 tileX,
         i32 tileY,
         i32 cellKey,

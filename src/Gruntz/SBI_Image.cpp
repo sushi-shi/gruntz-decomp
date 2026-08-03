@@ -7,9 +7,11 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -97,7 +99,7 @@ i32 CSBI_Image::Render() {
 
 // @early-stop
 RVA(0x000e6e40, 0x17c)
-i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
+i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -109,7 +111,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     char name[0x80];
     i32 idx;
     switch (kind) {
-        case 7:
+        case SERIAL_LOAD:
 
             g_serialCounter++;
             ar->Read(name, 0x80);
@@ -127,7 +129,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
                 m_frame = 0;
             }
             break;
-        case 4:
+        case SERIAL_SAVE:
 
             idx = 0;
             g_serialCounter++;

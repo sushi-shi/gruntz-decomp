@@ -7,8 +7,12 @@
 
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ResolveNode.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
 #include <Wwd/WwdObjMgr.h>
@@ -59,12 +63,12 @@ public:
     virtual void
     BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) = 0;
 
-    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self);
+    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self);
 
     void Notify(void* p);
 
     i32 Serialize(CFileMemBase* ar);
-    i32 WriteSnapshot(CFileMemBase* dst, i32 unused);
+    i32 WriteSnapshot(CFileMemBase* dst, LogicTypeId unused);
     i32 SerializeObjectState(CFileMemBase* ar);
     i32 ResolveLinkedObject(i32 gate);
 
@@ -177,7 +181,7 @@ public:
         m_frameSet = 0;
         CGameObject::Unload();
     }
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
@@ -185,7 +189,7 @@ public:
         OVERRIDE;
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE;
-    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) OVERRIDE;
+    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) OVERRIDE;
 
     void ApplyLookupSprite(const char* key, i32 frame);
     void ApplyName(const char* name);
@@ -227,7 +231,7 @@ public:
         m_frameSet = 0;
         CGameObject::Unload();
     }
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
@@ -264,7 +268,7 @@ public:
     virtual void Unload() OVERRIDE {
         CGameObject::Unload();
     }
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
@@ -290,7 +294,7 @@ public:
         m_dotColor = 0;
         CGameObject::Unload();
     }
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)

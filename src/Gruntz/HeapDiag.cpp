@@ -4,6 +4,7 @@
 
 #include <Win32.h>
 
+#include <Enums.h>
 #include <ProcAddr.h>
 
 #include <malloc.h>

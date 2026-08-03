@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Bute/ButeStore.h>
+#include <Bute/ButeToken.h>
 #include <Bute/ButeTree.h>
 #include <Bute/ButeValue.h>
 #include <Bute/PTreeNode.h>
@@ -111,7 +112,7 @@ public:
     GetVector(const char* tag, const char* key, struct ButeDoubleVector* def);
     struct ButeDoubleRange* GetRange(const char* tag, const char* key, struct ButeDoubleRange* def);
 
-    bool ScanToken(i32 expectType);
+    bool ScanToken(ButeToken expectType);
     bool ParseTagLine();
     bool Parse();
 
@@ -174,7 +175,7 @@ public:
     iostream* m_pText;
     char m_curChar;
     char m_pada9;
-    i16 m_tokType;
+    GZ_ENUM_STORAGE(ButeToken, i16) m_tokType;
     i16 m_lexState;
     char m_token[0x100 - 0xae];
     CString m_tagName;

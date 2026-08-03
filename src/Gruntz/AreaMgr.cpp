@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Enums.h>
 #include <Image/CImage.h>
 
 #include <stdio.h>

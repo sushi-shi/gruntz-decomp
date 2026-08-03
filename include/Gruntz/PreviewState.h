@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/State.h>
 
 class CPreviewState : public CState {

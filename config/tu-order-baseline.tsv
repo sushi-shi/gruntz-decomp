@@ -1,5 +1,4 @@
 AdvancedOptions	1
-ButeMgr	5
 ButeNode	1
 Dialogs	6
 Fader	5
@@ -7,8 +6,7 @@ GameLevel	10
 GruntzMgr	22
 Play	20
 RegistryHelper	2
-SBI_RectOnly	13
 ScatterSamples	1
 ToobSpikez	1
 WwdFactoryObject	1
-(interleave-pairs)	7414
+(interleave-pairs)	6297

@@ -3,7 +3,9 @@
 
 #include <rva.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_ImageSet.h>
+#include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 
@@ -19,7 +21,8 @@ public:
 
     virtual ~CSBI_WarlordHead() OVERRIDE;
 
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj)
+        OVERRIDE;
     virtual i32 Render() OVERRIDE;
 
     virtual i32 SetupImage(

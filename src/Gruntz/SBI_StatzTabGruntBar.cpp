@@ -6,9 +6,11 @@
 
 #include <AddrWord.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
@@ -147,26 +149,26 @@ i32 CSBI_StatzTabGruntBar::Update() {
             statusVal = (hp <= 0 ? 1 : 0) + 0x26;
         }
 
-        i32 level = unit->m_entranceReason;
+        PickupType level = unit->m_entranceReason;
         abilityVal = -1;
         overrideVal = -1;
         selectVal = 0;
 
-        i32 cap = level;
-        if (level > 0x16) {
+        PickupType cap = level;
+        if (level > PICKUP_WINGZ) {
             cap = unit->m_toolId;
         }
-        if (cap != 0) {
+        if (cap != PICKUP_NONE) {
             abilityVal = level;
-            if (level > 0x16) {
+            if (level > PICKUP_WINGZ) {
                 abilityVal = unit->m_toolId;
             }
             if (abilityVal == 3) {
-                abilityVal = unit->m_brickPickupType + 0x11;
+                abilityVal = IDX(unit->m_brickPickupType) + 0x11;
             }
         }
-        i32 badge = unit->m_vehiclePickupType;
-        if (badge != 0) {
+        PickupType badge = unit->m_vehiclePickupType;
+        if (badge != PICKUP_NONE) {
             overrideVal = badge;
         }
 

@@ -12,7 +12,9 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <Enums.h>
 #include <Gruntz/AniRecordView.h>
+#include <Gruntz/Loadable.h>
 #include <Ints.h>
 #include <Pix16.h>
 #include <Wap32/Object.h>
@@ -42,8 +44,8 @@ i32 CAniRecordBase2::IsLoaded() {
 }
 
 RVA(0x00165da0, 0x6)
-i32 CAniRecordBase2::GetClassId() {
-    return 0x15;
+LoadableClassId CAniRecordBase2::GetClassId() {
+    return CLASSID_ANIRECORDBASE2;
 }
 
 RVA_COMPGEN(0x00165db0, 0x1e, ??_GCAniRecordBase2@@UAEPAXI@Z)

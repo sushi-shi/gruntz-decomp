@@ -17,6 +17,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntVoiceActReg.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
@@ -70,8 +71,10 @@ void RealizeUfoDtor(CUFO* p) {
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000134e0, 0x47)
-i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -81,7 +84,8 @@ i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
 RVA_COMPGEN(0x00013570, 0x1e, ??_GCVoiceTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 
-// @identity-TODO owner TU unproven (utils holding band before 0x119620)
+// @interleaver _ButeParseErrorSink - 21 B lone body at 0x119320, between BlockScreenSaver
+// (timesplit) and _CreateGruntVoice (gruntvoice): a first-use placement.
 RVA(0x00119320, 0x15)
 void ButeParseErrorSink(const char* msg) {
     if (g_gameReg) {

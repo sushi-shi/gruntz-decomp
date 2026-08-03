@@ -3,6 +3,9 @@
 
 #include <rva.h>
 
+#include <Enums.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
 
@@ -38,7 +41,8 @@ class CDDrawSubMgrLeaf;
 class CDDrawPtrCollections;
 class SoundStream;
 
-typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, void*);
+// The archive's per-object callback: (ctx, stream, phase, type id, payload).
+typedef i32(__cdecl* HP_Callback)(void*, void*, SerialMode, LogicTypeId, void*);
 
 typedef i32(__cdecl* SurfaceRestoreFn)();
 
@@ -65,10 +69,10 @@ public:
 
     void SetRestoreHandler(SurfaceRestoreFn handler);
 
-    i32 InvokeCallback(void* ar, i32 mode, i32 typeId, void* payload);
+    i32 InvokeCallback(void* ar, SerialMode mode, LogicTypeId typeId, void* payload);
 
-    i32 SnapshotChildren(HP_Callback cb, char* path, char* name, i32 typeId);
-    i32 RestoreChildren(HP_Callback cb, char* name, i32 typeId);
+    i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
+    i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);
 
     CDDrawSubMgrPages* m_drawTarget;
 

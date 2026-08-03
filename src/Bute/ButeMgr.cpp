@@ -3,6 +3,8 @@
 #include <Bute/ButeMgr.h>
 
 #include <AddrWord.h>
+#include <Bute/ButeToken.h>
+#include <Bute/ButeValue.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/BlowfishApi.h>
 #include <EmptyString.h>
@@ -762,15 +764,127 @@ static const char s_strLBrack[] = "[";
 DATA(0x00213eec)
 static const char s_strRBrack[] = "]";
 
-RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
-RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
+// @identity-TODO ?_GzPTree - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (50 fns) came from the static library. It belongs to another compiland.
+RVA(0x00170330, 0x34)
+void CButeMgr::Init() {
+    m_pos = 0;
+    m_lineNo = 0;
+    m_countLine = 1;
+    m_parseFailed = 0;
+    m_tagName = g_emptyString;
+    m_str104 = g_emptyString;
+}
 
-RVA(0x000213c0, 0x14c)
-CButeMgr::~CButeMgr() {}
+RVA(0x00170380, 0xa)
+void CButeMgr::SetErrCallback(ErrCallback cb) {
+    m_errCallback = cb;
+}
 
-RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
+// @early-stop
+RVA(0x00170390, 0x50)
+void CButeMgr::NextChar() {
+    i32 delta = m_stream->get() - m_streamBase;
+    if (m_stream->eof()) {
+        m_curChar = 0;
+        return;
+    }
+    if (m_countLine) {
+        m_lineNo++;
+    }
+    m_curChar = static_cast<char>(delta);
+    m_countLine = delta == 0xa;
+    m_pos += delta;
+}
 
-RVA_COMPGEN(0x00021600, 0x8, ??_EzPTree@@W7AEPAXI@Z)
+RVA(0x001703e0, 0x15)
+i16 CButeMgr::CharClass(char c) {
+    return static_cast<i16>((g_charClass[static_cast<u8>(c)] - 1));
+}
+
+RVA(0x00170400, 0x2f)
+i16 CButeMgr::PeekState(i16 state, char c) {
+    return g_transTable[state][CharClass(c)][0];
+}
+
+RVA(0x00170430, 0x2f)
+i16 CButeMgr::PeekState2(i16 state, char c) {
+    return g_transTable[state][CharClass(c)][1];
+}
+
+RVA(0x00170460, 0x58)
+void CButeMgr::ScanState(i16 state, char c) {
+    m_tokType = g_transTable[state][CharClass(c)][1];
+    m_lexState = g_transTable[state][CharClass(c)][2];
+}
+
+// @early-stop
+RVA(0x001704c0, 0x200)
+bool CButeMgr::Parse() {
+    const i32 kLexStartState = 0x11;
+    i32 kind = kLexStartState;
+    g_tokenLen = 0;
+
+    for (;;) {
+        i16 cls = PeekState(static_cast<i16>(kind), m_curChar);
+        switch (cls) {
+            case 0:
+                ReportError(s_fmtBadSymbol, m_lineNo);
+                return false;
+
+            case 1:
+                kind = PeekState2(static_cast<i16>(kind), m_curChar);
+                m_token[g_tokenLen++] = m_curChar;
+                if (m_captureText != 0 && m_curChar != 0) {
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                }
+                NextChar();
+                break;
+
+            case 2:
+                kind = PeekState2(static_cast<i16>(kind), m_curChar);
+                if (m_captureText != 0 && m_curChar != 0) {
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                }
+                NextChar();
+                break;
+
+            case 3:
+                ScanState(static_cast<i16>(kind), m_curChar);
+                m_token[g_tokenLen++] = m_curChar;
+                if (m_captureText != 0 && m_curChar != 0) {
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                }
+                NextChar();
+                if (m_tokType == BUTETOK_NONE) {
+                    Parse();
+                }
+                m_token[g_tokenLen] = 0;
+                return true;
+
+            case 4:
+                ScanState(static_cast<i16>(kind), m_curChar);
+                if (m_captureText != 0 && m_curChar != 0) {
+                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                }
+                NextChar();
+                if (m_tokType == BUTETOK_NONE) {
+                    Parse();
+                }
+                m_token[g_tokenLen] = 0;
+                return true;
+
+            case 5:
+                ScanState(static_cast<i16>(kind), m_curChar);
+                if (m_tokType == BUTETOK_NONE) {
+                    Parse();
+                }
+                m_token[g_tokenLen] = 0;
+                return true;
+        }
+    }
+}
 
 RVA(0x001706c0, 0x4b)
 void CButeMgr::ReportError(const char* fmt, ...) {
@@ -788,7 +902,7 @@ void CButeMgr::ReportError(const char* fmt, ...) {
 }
 
 RVA(0x00170710, 0x3b)
-bool CButeMgr::ScanToken(i32 expectType) {
+bool CButeMgr::ScanToken(ButeToken expectType) {
     if (!Parse()) {
         return false;
     }
@@ -800,7 +914,424 @@ bool CButeMgr::ScanToken(i32 expectType) {
     return true;
 }
 
+RVA(0x00170750, 0x9d8)
+bool ButeMgr::ParseAttributeFile() {
+
+    union {
+        i32 vi;
+        DWORD vd;
+        float vf;
+    };
+    vi = 0;
+
+    m_str104 = m_token;
+
+    bool bDup = false;
+    if (!m_writeMode) {
+        if (m_pNode->Find(m_str104)) {
+            ReportError(s_fmtDupTag, m_str104.GetBuffer(0));
+            bDup = true;
+        }
+    }
+
+    if (!ScanToken(BUTETOK_ASSIGN)) {
+        return false;
+    }
+    if (m_writeMode) {
+        (*m_pText) << static_cast<unsigned char>(0x20);
+        m_captureText = 0;
+    }
+    if (!Parse()) {
+        return false;
+    }
+
+    switch (m_tokType) {
+        case BUTETOK_INT:
+        case BUTETOK_INT_SIGNED: {
+            vi = atoi(m_token);
+            if (m_writeMode) {
+                (*m_pText) << static_cast<int>(GetInt(m_tagName, m_str104));
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeInt, vi));
+            }
+            break;
+        }
+        case BUTETOK_KEYWORD_DWORD: {
+            if (!ScanToken(BUTETOK_INT)) {
+                return false;
+            }
+            vd = strtoul(m_token, 0, 10);
+            if (m_writeMode) {
+                (*m_pText) << s_strDword;
+                (*m_pText) << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeDword, vd));
+            }
+            break;
+        }
+        case BUTETOK_KEYWORD_FLOAT: {
+            if (!ScanToken(BUTETOK_DOUBLE)) {
+                return false;
+            }
+            vf = static_cast<float>(atof(m_token));
+            if (m_writeMode) {
+                ((*m_pText) << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeFloat, vf));
+            }
+            break;
+        }
+        case 16: {
+            vf = static_cast<float>(atof(m_token));
+            if (m_writeMode) {
+                (*m_pText) << static_cast<double>(GetFloat(m_tagName, m_str104));
+                (*m_pText) << s_strFloatSuffix;
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeFloat, vf));
+            }
+            break;
+        }
+        case BUTETOK_DOUBLE: {
+            double dv = atof(m_token);
+            if (m_writeMode) {
+                (*m_pText) << static_cast<double>(GetDouble(m_tagName, m_str104));
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeDouble, dv));
+            }
+            break;
+        }
+        case BUTETOK_RECT: {
+            i32 a, b, c, d;
+            sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
+            if (m_writeMode) {
+                ButeIntRect* r = GetRect(m_tagName, m_str104);
+                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->c);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->d);
+                (*m_pText) << s_strClose;
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeRect, a, b, c, d));
+            }
+            break;
+        }
+        case BUTETOK_POINT: {
+            i32 a, b;
+            sscanf(m_token, s_fmtPoint2, &a, &b);
+            if (m_writeMode) {
+                ButeIntPoint* r = GetPoint(m_tagName, m_str104);
+                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
+                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
+                (*m_pText) << s_strClose;
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButePoint, a, b));
+            }
+            break;
+        }
+        case BUTETOK_VECTOR: {
+            double x, y, z;
+            sscanf(m_token, s_fmtRect3, &x, &y, &z);
+            if (m_writeMode) {
+                ButeDoubleVector* r = GetVector(m_tagName, m_str104);
+                double dx = r->x;
+                double dy = r->y;
+                double dz = r->z;
+                ((*m_pText) << s_strLt) << static_cast<double>(dx);
+                ((*m_pText) << s_strComma) << static_cast<double>(dy);
+                ((*m_pText) << s_strComma) << static_cast<double>(dz);
+                (*m_pText) << s_strGt;
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeVector, x, y, z));
+            }
+            break;
+        }
+        case BUTETOK_RANGE: {
+            double x, y;
+            sscanf(m_token, s_fmtRect2, &x, &y);
+            if (m_writeMode) {
+                ButeDoubleRange* r = GetRange(m_tagName, m_str104);
+                double dx = r->x;
+                double dy = r->y;
+                ((*m_pText) << s_strLBrack) << static_cast<double>(dx);
+                ((*m_pText) << s_strComma) << static_cast<double>(dy);
+                (*m_pText) << s_strRBrack;
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeRange, x, y));
+            }
+            break;
+        }
+        case BUTETOK_STRING: {
+            if (m_writeMode) {
+                CString tmp(GetString(m_tagName, m_str104));
+                (*m_pText) << static_cast<unsigned char>(0x22);
+                (*m_pText) << tmp.GetBuffer(0);
+                (*m_pText) << static_cast<unsigned char>(0x22);
+            } else if (!bDup) {
+                m_pNode->Insert(m_str104, new CButeValue(kButeString, m_token));
+            }
+            break;
+        }
+        default:
+            ReportError(s_fmtInvalidToken, m_lineNo);
+            return false;
+    }
+
+    if (m_writeMode) {
+        m_captureText = 1;
+    }
+    return true;
+}
+
+RVA(0x00171160, 0x45)
+bool CButeMgr::SkipToTag() {
+    while ((static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
+        if (!Parse()) {
+            break;
+        }
+        i16 t = m_tokType;
+        if (t == 2 || t == 1) {
+            return true;
+        }
+        if (t != 4) {
+            break;
+        }
+    }
+    return false;
+}
+
+// @early-stop
+RVA(0x001711b0, 0xf5)
+bool CButeMgr::ParseTagLine() {
+    if (!ScanToken(BUTETOK_NAME)) {
+        return false;
+    }
+
+    char* tok = m_token;
+    m_tagName = tok;
+
+    if (!m_writeMode) {
+        CBSecStream* t = Tree();
+        if (t->Find(tok)) {
+            ReportError(s_fmtDupTag, tok);
+            return false;
+        }
+        CButeNode* node = new CButeNode(&ButeValueTeardown, 2);
+
+        m_pNode = node;
+        t->Insert(tok, node);
+    }
+
+    return ScanToken(BUTETOK_TAG_CLOSE) ? true : false;
+}
+
+// @early-stop
+RVA(0x001712b0, 0x204)
+void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
+    ostream& output = *static_cast<ostream*>(ctx);
+    CButeValue* value = static_cast<CButeValue*>(valuePtr);
+
+    output << "\r\n" << key << " = ";
+    switch (value->type) {
+        case kButeInt:
+            output << *static_cast<i32*>(value->pValue);
+            break;
+
+        case kButeDword:
+            output << s_strDword << *static_cast<DWORD*>(value->pValue);
+            break;
+
+        case kButeDouble:
+            output << *static_cast<double*>(value->pValue);
+            break;
+
+        case kButeFloat:
+            output << s_strFloat << static_cast<double>(*static_cast<float*>(value->pValue));
+            break;
+
+        case kButeString:
+            output << static_cast<unsigned char>('"') << static_cast<char*>(value->pValue)
+                   << static_cast<unsigned char>('"');
+            break;
+
+        case kButeRect: {
+            ButeIntRect* ref = static_cast<ButeIntRect*>(value->pValue);
+            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
+                   << static_cast<long>(ref->b) << s_strComma << static_cast<long>(ref->c)
+                   << s_strComma << static_cast<long>(ref->d) << s_strClose;
+            break;
+        }
+
+        case kButePoint: {
+            ButeIntPoint* ref = static_cast<ButeIntPoint*>(value->pValue);
+            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
+                   << static_cast<long>(ref->b) << s_strClose;
+            break;
+        }
+
+        case kButeVector: {
+            ButeDoubleVector* ref = static_cast<ButeDoubleVector*>(value->pValue);
+            output << s_strLt << ref->x << s_strComma << ref->y << s_strComma << ref->z << s_strGt;
+            break;
+        }
+
+        case kButeRange: {
+            ButeDoubleRange* ref = static_cast<ButeDoubleRange*>(value->pValue);
+            output << s_strLBrack << ref->x << s_strComma << ref->y << s_strRBrack;
+            break;
+        }
+    }
+}
+
+RVA(0x001714e0, 0x66)
+void ButeTag_Apply(char* key, void* value, void* ctx) {
+    ostream& output = *static_cast<ostream*>(ctx);
+    output << static_cast<unsigned char>('\n') << endl;
+    output << static_cast<unsigned char>('\n') << endl;
+    output << s_strLBrack << key << s_strRBrack;
+    static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, 0);
+}
+
+RVA(0x00171550, 0x11)
+void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
+    fn(this);
+    return this;
+}
+
+// Emit device for ??_Diostream@0x171a40 - the last remaining reason: with the
+// corrected strstrea.h, Save's teardown and symbols are retail-true, but our cl
+// still emits the state-1 funclet as an inline ??1iostream+??1ios pair where
+// retail tail-jmps the ??_D helper, so nothing materializes the COMDAT.
+// Re-test on any Save/cl-behavior movement.
+void EmitIostreamVbaseDtor(streambuf* b) {
+    iostream s(b);
+    s.flush();
+}
+
+RVA(0x00171580, 0xba)
+bool CButeMgr::ParseGroup() {
+    NextChar();
+    if (!Parse()) {
+        return false;
+    }
+    i16 t = m_tokType;
+    if (t == 1) {
+        return true;
+    }
+    if (t != 2) {
+        return false;
+    }
+    for (;;) {
+        if (!ParseTagLine()) {
+            return false;
+        }
+        if (m_writeMode) {
+
+            CButeNode* grp = static_cast<CButeNode*>(Tree48()->Find(m_tagName));
+            if (grp) {
+                grp->Walk(&ButeGroup_Apply, m_pText, 0);
+            }
+        }
+        if (!Parse()) {
+            return false;
+        }
+        t = m_tokType;
+        if (t == 1) {
+            return true;
+        }
+        if (t != 2) {
+            if (t != 4) {
+                return false;
+            }
+            if (!SkipToTag()) {
+                return false;
+            }
+        }
+        if (m_tokType == BUTETOK_END) {
+            return true;
+        }
+    }
+}
+
+RVA(0x00171640, 0x3f2)
+bool CButeMgr::Save() {
+    Init();
+    if (m_str108.IsEmpty()) {
+        return false;
+    }
+
+    m_writeMode = 1;
+    m_captureText = 1;
+
+    ifstream input(m_str108, ios::nocreate | ios::binary);
+    input.seekg(0, ios::end);
+    i32 length = input.tellg();
+    input.clear();
+    input.seekg(0);
+
+    // The parse stream is HEAP-allocated - the one spelling satisfying all three
+    // byte constraints: (1) retail's neg/sbb/and at the Decode call is cl5's
+    // null-checked pointer upcast (strstream* -> ostream*, +0xc), which a
+    // reference cannot produce; (2) GRUNTZ.EXE contains no ??1strstream or
+    // ??_Dstrstream anywhere, which a stack local's scope-end destruction would
+    // synthesize (the LNK2005 vs libcimt proved the plain-local spelling wrong);
+    // (3) teardown through `delete source` virtual-dispatches into the CRT's own
+    // scalar-deleting dtor (the strstream vtable slot 0 target, 0x169aa0). The
+    // buffer is allocated inline in the ctor args (arg-order proven).
+    strstream* sourceStore = new strstream(new char[length], length, ios::in | ios::out);
+    iostream* source = sourceStore;
+    if (m_encrypted) {
+        m_crypt.Decode(&input, source);
+        m_pText = new iostream(new strstreambuf(length));
+    } else {
+        char block[0x1000];
+        while (!input.eof()) {
+            input.read(block, sizeof(block));
+            source->write(block, input.gcount());
+        }
+        input.close();
+        m_pText = new fstream(m_str108, ios::in | ios::out | ios::binary);
+    }
+    m_pText->precision(100);
+
+    source->clear();
+    m_stream = source;
+    ParseGroup();
+    m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
+    m_pText->clear();
+
+    if (m_encrypted) {
+        ofstream output(m_str108, ios::binary);
+        m_crypt.Encode(m_pText, &output);
+    }
+
+    delete[] sourceStore->str();
+    if (m_encrypted) {
+        delete m_pText->rdbuf();
+    }
+    delete m_pText;
+    delete source;
+
+    m_captureText = 0;
+    m_writeMode = 0;
+    return true;
+}
+
+// @early-stop
 RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
+
+RVA(0x00171a60, 0x34)
+bool CButeMgr::Exists(const char* tag, const char* key) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        if (key == 0) {
+            return true;
+        }
+        if ((static_cast<CButeNode*>(grp))->Find(key)) {
+            return true;
+        }
+    }
+    return false;
+}
 
 RVA(0x00171aa0, 0x50)
 i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
@@ -837,6 +1368,13 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 }
 
 // @early-stop
+RVA(0x00172000, 0x31)
+CButeValue* CButeValue::SetDword(ButeType type, u32 val) {
+    this->type = type;
+    this->pValue = new u32(val);
+    return this;
+}
+
 RVA(0x00172040, 0xfc)
 CButeValue* CButeValue::CopyValue(CButeValue* other) {
     switch (type) {
@@ -937,6 +1475,13 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     return 0;
 }
 
+RVA(0x00172680, 0x31)
+CButeValue* CButeValue::SetFloat(ButeType type, float val) {
+    this->type = type;
+    this->pValue = new float(val);
+    return this;
+}
+
 RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
     void* grp = Tree()->Find(tag);
@@ -975,6 +1520,13 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
     }
     ReportError(s_fmtInvalidTag, tag);
     return s_floatErr;
+}
+
+RVA(0x00172b90, 0x31)
+CButeValue* CButeValue::SetInt(ButeType type, i32 val) {
+    this->type = type;
+    this->pValue = new i32(val);
+    return this;
 }
 
 RVA(0x00172bd0, 0x6c)
@@ -1017,6 +1569,13 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
     return s_doubleErr;
 }
 
+RVA(0x00173140, 0x38)
+CButeValue* CButeValue::SetDouble(ButeType type, double val) {
+    this->type = type;
+    this->pValue = new double(val);
+    return this;
+}
+
 RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
     void* grp = Tree()->Find(tag);
@@ -1057,6 +1616,13 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
     return empty.m_bytes;
 }
 
+RVA(0x001736a0, 0x5f)
+CButeValue* CButeValue::SetString(ButeType type, const CString& src) {
+    this->type = type;
+    this->pValue = new CString(src);
+    return this;
+}
+
 RVA(0x00173720, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
     void* grp = Tree()->Find(tag);
@@ -1070,316 +1636,6 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
         }
     }
     return def;
-}
-
-RVA(0x00173cb0, 0x4e)
-ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
-    void* grp = Tree()->Find(tag);
-    if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
-        if (rec) {
-            if (rec->type == kButePoint) {
-                return static_cast<ButeIntPoint*>(rec->pValue);
-            }
-            ReportError(s_fmtTypeMismatch, tag, key);
-        }
-    }
-    return def;
-}
-
-RVA(0x001741b0, 0x39)
-CButeValue::CButeValue(i32 type, CButeValue* src) {
-    this->type = type;
-    this->pValue = new CButeValue(*src);
-}
-
-RVA(0x001741f0, 0x4e)
-ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
-    void* grp = Tree()->Find(tag);
-    if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
-        if (rec) {
-            if (rec->type == kButeVector) {
-                return static_cast<ButeDoubleVector*>(rec->pValue);
-            }
-            ReportError(s_fmtTypeMismatch, tag, key);
-        }
-    }
-    return def;
-}
-
-RVA(0x00174770, 0x4e)
-ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
-    void* grp = Tree()->Find(tag);
-    if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
-        if (rec) {
-            if (rec->type == kButeRange) {
-                return static_cast<ButeDoubleRange*>(rec->pValue);
-            }
-            ReportError(s_fmtTypeMismatch, tag, key);
-        }
-    }
-    return def;
-}
-
-RVA(0x001711b0, 0xf5)
-bool CButeMgr::ParseTagLine() {
-    if (!ScanToken(4)) {
-        return false;
-    }
-
-    char* tok = m_token;
-    m_tagName = tok;
-
-    if (!m_writeMode) {
-        CBSecStream* t = Tree();
-        if (t->Find(tok)) {
-            ReportError(s_fmtDupTag, tok);
-            return false;
-        }
-        CButeNode* node = new CButeNode(&ButeValueTeardown, 2);
-
-        m_pNode = node;
-        t->Insert(tok, node);
-    }
-
-    return ScanToken(3) ? true : false;
-}
-
-// @early-stop
-RVA(0x001704c0, 0x200)
-bool CButeMgr::Parse() {
-    const i32 kLexStartState = 0x11;
-    i32 kind = kLexStartState;
-    g_tokenLen = 0;
-
-    for (;;) {
-        i16 cls = PeekState(static_cast<i16>(kind), m_curChar);
-        switch (cls) {
-            case 0:
-                ReportError(s_fmtBadSymbol, m_lineNo);
-                return false;
-
-            case 1:
-                kind = PeekState2(static_cast<i16>(kind), m_curChar);
-                m_token[g_tokenLen++] = m_curChar;
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
-                }
-                NextChar();
-                break;
-
-            case 2:
-                kind = PeekState2(static_cast<i16>(kind), m_curChar);
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
-                }
-                NextChar();
-                break;
-
-            case 3:
-                ScanState(static_cast<i16>(kind), m_curChar);
-                m_token[g_tokenLen++] = m_curChar;
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
-                }
-                NextChar();
-                if (m_tokType == 0) {
-                    Parse();
-                }
-                m_token[g_tokenLen] = 0;
-                return true;
-
-            case 4:
-                ScanState(static_cast<i16>(kind), m_curChar);
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
-                }
-                NextChar();
-                if (m_tokType == 0) {
-                    Parse();
-                }
-                m_token[g_tokenLen] = 0;
-                return true;
-
-            case 5:
-                ScanState(static_cast<i16>(kind), m_curChar);
-                if (m_tokType == 0) {
-                    Parse();
-                }
-                m_token[g_tokenLen] = 0;
-                return true;
-        }
-    }
-}
-
-RVA(0x00170750, 0x9d8)
-bool ButeMgr::ParseAttributeFile() {
-
-    union {
-        i32 vi;
-        DWORD vd;
-        float vf;
-    };
-    vi = 0;
-
-    m_str104 = m_token;
-
-    bool bDup = false;
-    if (!m_writeMode) {
-        if (m_pNode->Find(m_str104)) {
-            ReportError(s_fmtDupTag, m_str104.GetBuffer(0));
-            bDup = true;
-        }
-    }
-
-    if (!ScanToken(5)) {
-        return false;
-    }
-    if (m_writeMode) {
-        (*m_pText) << static_cast<unsigned char>(0x20);
-        m_captureText = 0;
-    }
-    if (!Parse()) {
-        return false;
-    }
-
-    switch (m_tokType) {
-        case 6:
-        case 7: {
-            vi = atoi(m_token);
-            if (m_writeMode) {
-                (*m_pText) << static_cast<int>(GetInt(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeInt, vi));
-            }
-            break;
-        }
-        case 14: {
-            if (!ScanToken(6)) {
-                return false;
-            }
-            vd = strtoul(m_token, 0, 10);
-            if (m_writeMode) {
-                (*m_pText) << s_strDword;
-                (*m_pText) << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeDword, vd));
-            }
-            break;
-        }
-        case 15: {
-            if (!ScanToken(8)) {
-                return false;
-            }
-            vf = static_cast<float>(atof(m_token));
-            if (m_writeMode) {
-                ((*m_pText) << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeFloat, vf));
-            }
-            break;
-        }
-        case 16: {
-            vf = static_cast<float>(atof(m_token));
-            if (m_writeMode) {
-                (*m_pText) << static_cast<double>(GetFloat(m_tagName, m_str104));
-                (*m_pText) << s_strFloatSuffix;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeFloat, vf));
-            }
-            break;
-        }
-        case 8: {
-            double dv = atof(m_token);
-            if (m_writeMode) {
-                (*m_pText) << static_cast<double>(GetDouble(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeDouble, dv));
-            }
-            break;
-        }
-        case 10: {
-            i32 a, b, c, d;
-            sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
-            if (m_writeMode) {
-                ButeIntRect* r = GetRect(m_tagName, m_str104);
-                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->c);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->d);
-                (*m_pText) << s_strClose;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeRect, a, b, c, d));
-            }
-            break;
-        }
-        case 11: {
-            i32 a, b;
-            sscanf(m_token, s_fmtPoint2, &a, &b);
-            if (m_writeMode) {
-                ButeIntPoint* r = GetPoint(m_tagName, m_str104);
-                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
-                (*m_pText) << s_strClose;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButePoint, a, b));
-            }
-            break;
-        }
-        case 12: {
-            double x, y, z;
-            sscanf(m_token, s_fmtRect3, &x, &y, &z);
-            if (m_writeMode) {
-                ButeDoubleVector* r = GetVector(m_tagName, m_str104);
-                double dx = r->x;
-                double dy = r->y;
-                double dz = r->z;
-                ((*m_pText) << s_strLt) << static_cast<double>(dx);
-                ((*m_pText) << s_strComma) << static_cast<double>(dy);
-                ((*m_pText) << s_strComma) << static_cast<double>(dz);
-                (*m_pText) << s_strGt;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeVector, x, y, z));
-            }
-            break;
-        }
-        case 13: {
-            double x, y;
-            sscanf(m_token, s_fmtRect2, &x, &y);
-            if (m_writeMode) {
-                ButeDoubleRange* r = GetRange(m_tagName, m_str104);
-                double dx = r->x;
-                double dy = r->y;
-                ((*m_pText) << s_strLBrack) << static_cast<double>(dx);
-                ((*m_pText) << s_strComma) << static_cast<double>(dy);
-                (*m_pText) << s_strRBrack;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeRange, x, y));
-            }
-            break;
-        }
-        case 9: {
-            if (m_writeMode) {
-                CString tmp(GetString(m_tagName, m_str104));
-                (*m_pText) << static_cast<unsigned char>(0x22);
-                (*m_pText) << tmp.GetBuffer(0);
-                (*m_pText) << static_cast<unsigned char>(0x22);
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(kButeString, m_token));
-            }
-            break;
-        }
-        default:
-            ReportError(s_fmtInvalidToken, m_lineNo);
-            return false;
-    }
-
-    if (m_writeMode) {
-        m_captureText = 1;
-    }
-    return true;
 }
 
 RVA(0x00173770, 0xc6)
@@ -1401,6 +1657,28 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     }
     ReportError(s_fmtInvalidTag, tag);
     return &s_default;
+}
+
+RVA(0x00173c60, 0x49)
+CButeValue* CButeValue::SetRect(ButeType type, const ButeRefSmall* src) {
+    this->type = type;
+    this->pValue = new ButeRefSmall(*src);
+    return this;
+}
+
+RVA(0x00173cb0, 0x4e)
+ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        if (rec) {
+            if (rec->type == kButePoint) {
+                return static_cast<ButeIntPoint*>(rec->pValue);
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
 }
 
 RVA(0x00173d00, 0xbb)
@@ -1425,6 +1703,67 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 }
 
 // @early-stop
+RVA(0x00173dd0, 0x38f)
+void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(kButePoint, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(kButePoint, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(kButePoint, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(kButePoint, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(kButePoint, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(kButePoint, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(kButePoint, val));
+}
+RVA(0x001741b0, 0x39)
+CButeValue::CButeValue(ButeType type, CButeValue* src) {
+    this->type = type;
+    this->pValue = new CButeValue(*src);
+}
+
+RVA(0x001741f0, 0x4e)
+ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        if (rec) {
+            if (rec->type == kButeVector) {
+                return static_cast<ButeDoubleVector*>(rec->pValue);
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
+}
+
 RVA(0x00174240, 0xe3)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
     static ButeDoubleVector s_default;
@@ -1447,6 +1786,28 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 // @early-stop
+RVA(0x00174730, 0x3c)
+CButeValue* CButeValue::SetVector(ButeType type, const ButeRefLarge* src) {
+    this->type = type;
+    this->pValue = new ButeRefLarge(*src);
+    return this;
+}
+
+RVA(0x00174770, 0x4e)
+ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        if (rec) {
+            if (rec->type == kButeRange) {
+                return static_cast<ButeDoubleRange*>(rec->pValue);
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
+}
+
 RVA(0x001747c0, 0xcf)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     static ButeDoubleRange s_default;
@@ -1468,376 +1829,9 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     return &s_default;
 }
 
-RVA(0x00171550, 0x11)
-void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
-    fn(this);
-    return this;
-}
-
-// Emit device for ??_Diostream@0x171a40 - the last remaining reason: with the
-// corrected strstrea.h, Save's teardown and symbols are retail-true, but our cl
-// still emits the state-1 funclet as an inline ??1iostream+??1ios pair where
-// retail tail-jmps the ??_D helper, so nothing materializes the COMDAT.
-// Re-test on any Save/cl-behavior movement.
-void EmitIostreamVbaseDtor(streambuf* b) {
-    iostream s(b);
-    s.flush();
-}
-
-RVA(0x00172000, 0x31)
-CButeValue* CButeValue::SetDword(i32 type, u32 val) {
-    this->type = type;
-    this->pValue = new u32(val);
-    return this;
-}
-
-RVA(0x00172680, 0x31)
-CButeValue* CButeValue::SetFloat(i32 type, float val) {
-    this->type = type;
-    this->pValue = new float(val);
-    return this;
-}
-
-RVA(0x00172b90, 0x31)
-CButeValue* CButeValue::SetInt(i32 type, i32 val) {
-    this->type = type;
-    this->pValue = new i32(val);
-    return this;
-}
-
-RVA(0x00173140, 0x38)
-CButeValue* CButeValue::SetDouble(i32 type, double val) {
-    this->type = type;
-    this->pValue = new double(val);
-    return this;
-}
-
-RVA(0x001736a0, 0x5f)
-CButeValue* CButeValue::SetString(i32 type, const CString& src) {
-    this->type = type;
-    this->pValue = new CString(src);
-    return this;
-}
-
-RVA(0x00173c60, 0x49)
-CButeValue* CButeValue::SetRect(i32 type, const ButeRefSmall* src) {
-    this->type = type;
-    this->pValue = new ButeRefSmall(*src);
-    return this;
-}
-
-RVA(0x00174730, 0x3c)
-CButeValue* CButeValue::SetVector(i32 type, const ButeRefLarge* src) {
-    this->type = type;
-    this->pValue = new ButeRefLarge(*src);
-    return this;
-}
-
 RVA(0x00174cb0, 0x49)
-CButeValue* CButeValue::SetRange(i32 type, const ButeRefSmall* src) {
+CButeValue* CButeValue::SetRange(ButeType type, const ButeRefSmall* src) {
     this->type = type;
     this->pValue = new ButeRefSmall(*src);
     return this;
-}
-
-RVA(0x00170330, 0x34)
-void CButeMgr::Init() {
-    m_pos = 0;
-    m_lineNo = 0;
-    m_countLine = 1;
-    m_parseFailed = 0;
-    m_tagName = g_emptyString;
-    m_str104 = g_emptyString;
-}
-
-RVA(0x00170380, 0xa)
-void CButeMgr::SetErrCallback(ErrCallback cb) {
-    m_errCallback = cb;
-}
-
-// @early-stop
-RVA(0x00170390, 0x50)
-void CButeMgr::NextChar() {
-    i32 delta = m_stream->get() - m_streamBase;
-    if (m_stream->eof()) {
-        m_curChar = 0;
-        return;
-    }
-    if (m_countLine) {
-        m_lineNo++;
-    }
-    m_curChar = static_cast<char>(delta);
-    m_countLine = delta == 0xa;
-    m_pos += delta;
-}
-
-RVA(0x001703e0, 0x15)
-i16 CButeMgr::CharClass(char c) {
-    return static_cast<i16>((g_charClass[static_cast<u8>(c)] - 1));
-}
-
-RVA(0x00170400, 0x2f)
-i16 CButeMgr::PeekState(i16 state, char c) {
-    return g_transTable[state][CharClass(c)][0];
-}
-
-RVA(0x00170430, 0x2f)
-i16 CButeMgr::PeekState2(i16 state, char c) {
-    return g_transTable[state][CharClass(c)][1];
-}
-
-RVA(0x00170460, 0x58)
-void CButeMgr::ScanState(i16 state, char c) {
-    m_tokType = g_transTable[state][CharClass(c)][1];
-    m_lexState = g_transTable[state][CharClass(c)][2];
-}
-
-// @early-stop
-RVA(0x00171160, 0x45)
-bool CButeMgr::SkipToTag() {
-    while ((static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
-        if (!Parse()) {
-            break;
-        }
-        i16 t = m_tokType;
-        if (t == 2 || t == 1) {
-            return true;
-        }
-        if (t != 4) {
-            break;
-        }
-    }
-    return false;
-}
-
-// @early-stop
-RVA(0x00171580, 0xba)
-bool CButeMgr::ParseGroup() {
-    NextChar();
-    if (!Parse()) {
-        return false;
-    }
-    i16 t = m_tokType;
-    if (t == 1) {
-        return true;
-    }
-    if (t != 2) {
-        return false;
-    }
-    for (;;) {
-        if (!ParseTagLine()) {
-            return false;
-        }
-        if (m_writeMode) {
-
-            CButeNode* grp = static_cast<CButeNode*>(Tree48()->Find(m_tagName));
-            if (grp) {
-                grp->Walk(&ButeGroup_Apply, m_pText, 0);
-            }
-        }
-        if (!Parse()) {
-            return false;
-        }
-        t = m_tokType;
-        if (t == 1) {
-            return true;
-        }
-        if (t != 2) {
-            if (t != 4) {
-                return false;
-            }
-            if (!SkipToTag()) {
-                return false;
-            }
-        }
-        if (m_tokType == 1) {
-            return true;
-        }
-    }
-}
-
-RVA(0x00171a60, 0x34)
-bool CButeMgr::Exists(const char* tag, const char* key) {
-    void* grp = Tree()->Find(tag);
-    if (grp) {
-        if (key == 0) {
-            return true;
-        }
-        if ((static_cast<CButeNode*>(grp))->Find(key)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-RVA(0x001712b0, 0x204)
-void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
-    ostream& output = *static_cast<ostream*>(ctx);
-    CButeValue* value = static_cast<CButeValue*>(valuePtr);
-
-    output << "\r\n" << key << " = ";
-    switch (value->type) {
-        case kButeInt:
-            output << *static_cast<i32*>(value->pValue);
-            break;
-
-        case kButeDword:
-            output << s_strDword << *static_cast<DWORD*>(value->pValue);
-            break;
-
-        case kButeDouble:
-            output << *static_cast<double*>(value->pValue);
-            break;
-
-        case kButeFloat:
-            output << s_strFloat << static_cast<double>(*static_cast<float*>(value->pValue));
-            break;
-
-        case kButeString:
-            output << static_cast<unsigned char>('"') << static_cast<char*>(value->pValue)
-                   << static_cast<unsigned char>('"');
-            break;
-
-        case kButeRect: {
-            ButeIntRect* ref = static_cast<ButeIntRect*>(value->pValue);
-            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
-                   << static_cast<long>(ref->b) << s_strComma << static_cast<long>(ref->c)
-                   << s_strComma << static_cast<long>(ref->d) << s_strClose;
-            break;
-        }
-
-        case kButePoint: {
-            ButeIntPoint* ref = static_cast<ButeIntPoint*>(value->pValue);
-            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
-                   << static_cast<long>(ref->b) << s_strClose;
-            break;
-        }
-
-        case kButeVector: {
-            ButeDoubleVector* ref = static_cast<ButeDoubleVector*>(value->pValue);
-            output << s_strLt << ref->x << s_strComma << ref->y << s_strComma << ref->z << s_strGt;
-            break;
-        }
-
-        case kButeRange: {
-            ButeDoubleRange* ref = static_cast<ButeDoubleRange*>(value->pValue);
-            output << s_strLBrack << ref->x << s_strComma << ref->y << s_strRBrack;
-            break;
-        }
-    }
-}
-
-RVA(0x001714e0, 0x66)
-void ButeTag_Apply(char* key, void* value, void* ctx) {
-    ostream& output = *static_cast<ostream*>(ctx);
-    output << static_cast<unsigned char>('\n') << endl;
-    output << static_cast<unsigned char>('\n') << endl;
-    output << s_strLBrack << key << s_strRBrack;
-    static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, 0);
-}
-
-RVA(0x00171640, 0x3f2)
-bool CButeMgr::Save() {
-    Init();
-    if (m_str108.IsEmpty()) {
-        return false;
-    }
-
-    m_writeMode = 1;
-    m_captureText = 1;
-
-    ifstream input(m_str108, ios::nocreate | ios::binary);
-    input.seekg(0, ios::end);
-    i32 length = input.tellg();
-    input.clear();
-    input.seekg(0);
-
-    // The parse stream is HEAP-allocated - the one spelling satisfying all three
-    // byte constraints: (1) retail's neg/sbb/and at the Decode call is cl5's
-    // null-checked pointer upcast (strstream* -> ostream*, +0xc), which a
-    // reference cannot produce; (2) GRUNTZ.EXE contains no ??1strstream or
-    // ??_Dstrstream anywhere, which a stack local's scope-end destruction would
-    // synthesize (the LNK2005 vs libcimt proved the plain-local spelling wrong);
-    // (3) teardown through `delete source` virtual-dispatches into the CRT's own
-    // scalar-deleting dtor (the strstream vtable slot 0 target, 0x169aa0). The
-    // buffer is allocated inline in the ctor args (arg-order proven).
-    strstream* sourceStore = new strstream(new char[length], length, ios::in | ios::out);
-    iostream* source = sourceStore;
-    if (m_encrypted) {
-        m_crypt.Decode(&input, source);
-        m_pText = new iostream(new strstreambuf(length));
-    } else {
-        char block[0x1000];
-        while (!input.eof()) {
-            input.read(block, sizeof(block));
-            source->write(block, input.gcount());
-        }
-        input.close();
-        m_pText = new fstream(m_str108, ios::in | ios::out | ios::binary);
-    }
-    m_pText->precision(100);
-
-    source->clear();
-    m_stream = source;
-    ParseGroup();
-    m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
-    m_pText->clear();
-
-    if (m_encrypted) {
-        ofstream output(m_str108, ios::binary);
-        m_crypt.Encode(m_pText, &output);
-    }
-
-    delete[] sourceStore->str();
-    if (m_encrypted) {
-        delete m_pText->rdbuf();
-    }
-    delete m_pText;
-    delete source;
-
-    m_captureText = 0;
-    m_writeMode = 0;
-    return true;
-}
-
-// @early-stop
-RVA(0x00173dd0, 0x38f)
-void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
-    if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
-        if (hit) {
-            CButeValue box(6, val);
-            hit->CopyValue(&box);
-            return;
-        }
-        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
-        if (g48) {
-            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
-            if (hit48) {
-                CButeValue box(6, val);
-                hit48->CopyValue(&box);
-                return;
-            }
-            g48->Insert(key, new CButeValue(6, val));
-            return;
-        }
-        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(6, val));
-        return;
-    }
-
-    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
-    if (g74) {
-        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
-        if (hit74) {
-            CButeValue box(6, val);
-            hit74->CopyValue(&box);
-            return;
-        }
-        g74->Insert(key, new CButeValue(6, val));
-        return;
-    }
-    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(6, val));
 }

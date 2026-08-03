@@ -8,10 +8,12 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <EmptyString.h>
+#include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SoundState.h>
@@ -80,7 +82,7 @@ void CAttract::ReleaseResources() {
 
 // @early-stop
 RVA(0x00014120, 0x1a9)
-i32 CAttract::EnterState(i32 arg) {
+i32 CAttract::EnterState(GameStateId arg) {
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -127,7 +129,7 @@ i32 CAttract::EnterState(i32 arg) {
 }
 
 RVA(0x00014340, 0x71)
-i32 CAttract::LeaveState(i32 arg) {
+i32 CAttract::LeaveState(GameStateId arg) {
     if (m_host == 0) {
         return 1;
     }
@@ -152,7 +154,7 @@ i32 CAttract::Render() {
     IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            owner()->ReportError(0x8006, 0x3e8);
+            owner()->ReportError(IDX(CMD_RETURN_TO_MENU), 0x3e8);
             return 0;
         }
     }
@@ -252,6 +254,8 @@ i32 CAttract::OnPaint() {
     return 1;
 }
 
+// @interleaver Update - fixed-size generated body (6 B, byte-identical across
+// 11 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x0008cd40, 0x6)
 GameStateId CAttract::Update() {
     return GAMESTATE_ATTRACT;

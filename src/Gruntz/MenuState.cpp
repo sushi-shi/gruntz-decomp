@@ -16,6 +16,7 @@
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/MainMenuBuilder.h>
@@ -213,7 +214,7 @@ void CMenuState::StopMusicChain() {
 }
 
 RVA(0x000a06d0, 0x5f)
-i32 CMenuState::LeaveState(i32) {
+i32 CMenuState::LeaveState(GameStateId) {
     m_world->m_drawTarget->TransExit();
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     u32 start = timeGetTime();

@@ -39,7 +39,8 @@ quartets, search for stale numbered compiler-private claims and compare base/tar
 relocation tables before touching the real static objects. The same signature can find
 other cached or mislabeled ordinal islands.
 
-`name$S<n>` data is a narrower case: a `DATA_SYMBOL(..., name$S*)` binding is allowed
-only when fresh COFF proves one real source static with that semantic prefix and the
-numeric suffix is the sole ambiguity. The wildcard does not authorize anonymous
-compiler-generated function labels.
+`name$S<n>` data is a narrower case, and needs no hand-written pin at all: a
+file-scope `static` carrying a plain `DATA(rva)` is resolved by
+`labels.msvc5_data_symbol`, which prefix-matches `_name$S` in fresh COFF and
+accepts ONLY a unique hit — so the volatile numeric suffix never reaches source.
+That prefix rule does not authorize anonymous compiler-generated function labels.

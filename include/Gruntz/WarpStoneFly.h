@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 class CStatusBarMgr;
@@ -18,7 +20,7 @@ public:
     i32 Tick(i32 dt);
     i32 Draw();
 
-    i32 Sync(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
+    i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     i32 m_arrivalMode;
     i32 m_targetX;

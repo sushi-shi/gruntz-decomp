@@ -5,9 +5,10 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Ints.h>
 
-enum ButeType {
+GZ_ENUM_BEGIN(ButeType)
     kButeInt = 0,
     kButeDword = 1,
     kButeDouble = 2,
@@ -16,19 +17,19 @@ enum ButeType {
     kButeRect = 5,
     kButePoint = 6,
     kButeVector = 7,
-    kButeRange = 8,
-};
+    kButeRange = 8
+GZ_ENUM_END(ButeType)
 
 struct CButeValue {
-    i32 type;
+    ButeType type;
     void* pValue;
 
-    CButeValue(i32 type, CButeValue* src);
+    CButeValue(ButeType type, CButeValue* src);
 
     // Parse-arm ctors: ParseAttributeFile's retail arms are `new CButeValue(type, v)`
     // new-expressions - each EH state guards the outer cell across the inlined
     // inner allocation (unwind map @0x604d90: ten alloc states, one per arm).
-    CButeValue(i32 t, i32 v) {
+    CButeValue(ButeType t, i32 v) {
         type = t;
         i32* p = new i32;
         if (p) {
@@ -38,7 +39,7 @@ struct CButeValue {
             pValue = 0;
         }
     }
-    CButeValue(i32 t, unsigned long v) {
+    CButeValue(ButeType t, unsigned long v) {
         type = t;
         unsigned long* p = new unsigned long;
         if (p) {
@@ -48,7 +49,7 @@ struct CButeValue {
             pValue = 0;
         }
     }
-    CButeValue(i32 t, float v) {
+    CButeValue(ButeType t, float v) {
         type = t;
         float* p = new float;
         if (p) {
@@ -58,7 +59,7 @@ struct CButeValue {
             pValue = 0;
         }
     }
-    CButeValue(i32 t, double v) {
+    CButeValue(ButeType t, double v) {
         type = t;
         double* p = new double;
         if (p) {
@@ -68,11 +69,11 @@ struct CButeValue {
             pValue = 0;
         }
     }
-    CButeValue(i32 t, const CString& s) {
+    CButeValue(ButeType t, const CString& s) {
         type = t;
         pValue = new CString(s);
     }
-    CButeValue(i32 t, i32 a, i32 b) {
+    CButeValue(ButeType t, i32 a, i32 b) {
         type = t;
         i32* p = new i32[2];
         if (p) {
@@ -83,7 +84,7 @@ struct CButeValue {
             pValue = 0;
         }
     }
-    CButeValue(i32 t, i32 a, i32 b, i32 c, i32 d) {
+    CButeValue(ButeType t, i32 a, i32 b, i32 c, i32 d) {
         type = t;
         i32* p = new i32[4];
         if (p) {
@@ -96,7 +97,7 @@ struct CButeValue {
             pValue = 0;
         }
     }
-    CButeValue(i32 t, double x, double y) {
+    CButeValue(ButeType t, double x, double y) {
         type = t;
         double* p = new double[2];
         if (p) {
@@ -107,7 +108,7 @@ struct CButeValue {
             pValue = 0;
         }
     }
-    CButeValue(i32 t, double x, double y, double z) {
+    CButeValue(ButeType t, double x, double y, double z) {
         type = t;
         double* p = new double[3];
         if (p) {
@@ -122,15 +123,15 @@ struct CButeValue {
 
     ~CButeValue();
 
-    CButeValue* SetInt(i32 type, i32 val);
-    CButeValue* SetDword(i32 type, u32 val);
-    CButeValue* SetFloat(i32 type, float val);
-    CButeValue* SetDouble(i32 type, double val);
+    CButeValue* SetInt(ButeType type, i32 val);
+    CButeValue* SetDword(ButeType type, u32 val);
+    CButeValue* SetFloat(ButeType type, float val);
+    CButeValue* SetDouble(ButeType type, double val);
 
-    CButeValue* SetString(i32 type, const CString& src);
-    CButeValue* SetRect(i32 type, const struct ButeRefSmall* src);
-    CButeValue* SetVector(i32 type, const struct ButeRefLarge* src);
-    CButeValue* SetRange(i32 type, const struct ButeRefSmall* src);
+    CButeValue* SetString(ButeType type, const CString& src);
+    CButeValue* SetRect(ButeType type, const struct ButeRefSmall* src);
+    CButeValue* SetVector(ButeType type, const struct ButeRefLarge* src);
+    CButeValue* SetRange(ButeType type, const struct ButeRefSmall* src);
 
     CButeValue* CopyValue(CButeValue* other);
 };

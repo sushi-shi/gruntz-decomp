@@ -7,7 +7,9 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_Image.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Image/ImageSet.h>
 #include <Ints.h>
@@ -27,7 +29,8 @@ public:
 
     virtual ~CSBI_WellGoo() OVERRIDE;
 
-    virtual i32 SerializeFields(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 SerializeFields(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj)
+        OVERRIDE;
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,

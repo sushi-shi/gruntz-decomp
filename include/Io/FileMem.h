@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Ints.h>
 #include <Io/FileStream.h>
 

@@ -11,7 +11,6 @@ Checked forms:
   RVA(0x00xxxxxx, 0xN)             DATA(0x00xxxxxx)
   VTBL(CClass, 0x00xxxxxx)         VTBL_ABSENT(CClass)
   RVA_COMPGEN(0x00xxxxxx, 0xN, <mangled>)
-  DATA_SYMBOL(0x00xxxxxx, 0xN, <mangled>)
   SIZE(0xN)                        SIZE_UNKNOWN()
 
 Comments are blanked first (labels.py does the same), so prose may quote an
@@ -53,18 +52,17 @@ CANON = {
     "VTBL": rf"VTBL\({NAME}, {ADDR}\)",
     "VTBL_ABSENT": rf"VTBL_ABSENT\({NAME}\)",
     "RVA_COMPGEN": rf"RVA_COMPGEN\({ADDR}, {HEXN}, {MANGLED}\)",
-    "DATA_SYMBOL": rf"DATA_SYMBOL\({ADDR}, {HEXN}, {MANGLED}\)",
     "SIZE": rf"SIZE\({HEXN}\)",
     "SIZE_UNKNOWN": r"SIZE_UNKNOWN\(\)",
 }
 CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 # StatementMacros-formatted labels: clang-format ARG-WRAPS these past ColumnLimit
-# (the WhitespaceSensitiveMacros carriers RVA_COMPGEN/DATA_SYMBOL are
-# wrap-immune - a giant mangled local-static name may legitimately run long).
+# (the WhitespaceSensitiveMacros carrier RVA_COMPGEN is wrap-immune - a giant
+# mangled name may legitimately run long).
 WRAPPABLE = {"RVA", "DATA", "VTBL", "VTBL_ABSENT", "SIZE", "SIZE_UNKNOWN"}
-# longest-first so RVA_COMPGEN/DATA_SYMBOL/SIZE_UNKNOWN/VTBL_ABSENT win their prefixes
+# longest-first so RVA_COMPGEN/SIZE_UNKNOWN/VTBL_ABSENT win their prefixes
 FIND_RE = re.compile(
-    r"\b(RVA_COMPGEN|DATA_SYMBOL|SIZE_UNKNOWN|VTBL_ABSENT|SIZE|RVA|DATA|VTBL)\s*\(")
+    r"\b(RVA_COMPGEN|SIZE_UNKNOWN|VTBL_ABSENT|SIZE|RVA|DATA|VTBL)\s*\(")
 COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 # The blessed comment-marker vocabulary (docs/comment-markers.md). @stub blocks
 # carry @confidence:/@source: tags (verify_stubs.py REQUIRES them); @early-stop /
@@ -80,7 +78,7 @@ def scan(path: Path):
     out = []
     for i, ln in enumerate(raw.splitlines(), 1):
         if COMMENT_ROW_RE.search(ln):
-            out.append((i, "retired comment-form label row (use RVA_COMPGEN/DATA_SYMBOL)",
+            out.append((i, "retired comment-form label row (use RVA_COMPGEN/DATA)",
                         ln.strip()[:90]))
         m = MARKER_RE.match(ln)
         if m and m.group(1) not in ALLOWED_MARKERS:

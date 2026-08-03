@@ -11,8 +11,10 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TriggerMgr.h>
@@ -30,7 +32,12 @@ static inline CActHandler* ActLookup(i32 coord) {
 }
 
 RVA(0x00010a10, 0x47)
-i32 CSecretTeleporterTrigger::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
+i32 CSecretTeleporterTrigger::SerializeMove(
+    CFileMemBase* a,
+    SerialMode b,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
@@ -44,7 +51,12 @@ RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
 
 RVA(0x00010bb0, 0x47)
-i32 CSecretLevelTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CSecretLevelTrigger::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -74,6 +86,8 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
     }
 }
 
+// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
+// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00042150, 0x102)
 void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     CActHandler* e = ActLookup(coord);
@@ -83,6 +97,8 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     }
 }
 
+// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000422b0, 0x18d)
 void CSecretTeleporterTrigger::RegisterActs() {
     i32 id = ActFindId("A");
@@ -123,6 +139,8 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
     }
 }
 
+// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
+// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
@@ -132,6 +150,8 @@ void CSecretLevelTrigger::FireActivation(i32 coord) {
     }
 }
 
+// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000428c0, 0x18d)
 void CSecretLevelTrigger::RegisterActs() {
     i32 id = ActFindId("A");
@@ -154,6 +174,8 @@ void CSecretLevelTrigger::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
+// @interleaver Tick - 144 B lone body at 0x42ac0, between RegisterActs
+// (secretteleportertrigger) and SpawnTeleporter (secretteleportertrigger): a first-use placement.
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
@@ -166,20 +188,23 @@ i32 CSecretLevelTrigger::Tick() {
         i32 lvl = spr->m_powerup;
         i32 lyr = spr->m_damage;
 
-        if (lvl != 0 && hit->m_entranceReason != lvl) {
+        if (lvl != PICKUP_NONE && hit->m_entranceReason != lvl) {
             ok = 0;
         }
-        if (lyr != 0 && hit->m_vehiclePickupType != lyr) {
+        if (lyr != PICKUP_NONE && hit->m_vehiclePickupType != lyr) {
             ok = 0;
         }
         if (ok) {
-            g_gameReg->m_cmdGrid->CellDispatch(outB, outA, 0xc, -1);
+            g_gameReg->m_cmdGrid->CellDispatch(outB, outA, DEATH_DRAIN, -1);
         }
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;
 }
 
+// @identity-TODO SpawnTeleporter (339 B) sits outside this TU's block at 0x42b80, between
+// Tick (secretteleportertrigger) and ?0CWarlord (warlord). No size-family and too
+// large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;

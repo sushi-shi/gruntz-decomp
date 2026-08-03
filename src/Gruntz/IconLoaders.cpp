@@ -29,7 +29,9 @@ i32 CBootyState::BuildBootyPerfectAnimation() {
 RVA(0x0001e720, 0x400)
 void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ";
-    switch (key) {
+    // Callers hand in <category base> + <index within the category>, so the id is
+    // formed by arithmetic and enters the domain here.
+    switch (static_cast<PickupType>(key)) {
         case PICKUP_BOMB:
             *reg += "TOOLZ_BOMBZ";
             return;

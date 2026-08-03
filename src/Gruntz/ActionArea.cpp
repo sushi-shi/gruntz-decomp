@@ -7,6 +7,7 @@
 #include <Bute/ButeTree.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/HaznColl.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObjTypeRegistrars.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TypeColl.h>
@@ -143,7 +144,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
 }
 
 RVA(0x00008600, 0xcd)
-i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CActionArea::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (ar == 0) {
         return 0;
     }
@@ -154,20 +155,20 @@ i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d)
         return 0;
     }
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_timestamp, 8);
             ar->Write(&m_duration, 8);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_timestamp, 8);
             ar->Read(&m_duration, 8);
             break;
     }
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_phase, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_phase, 4);
             break;
     }

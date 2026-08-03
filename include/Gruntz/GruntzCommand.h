@@ -5,6 +5,8 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 #include <Utils/PtrListPool.h>
 
@@ -38,7 +40,7 @@ public:
 
     virtual ~CGruntzCommand() {}
 
-    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj);
+    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
     virtual i32 Save(CFileMemBase* s);
     virtual i32 Load(CFileMemBase* s);
@@ -81,7 +83,7 @@ extern const u16 g_cmdBitTable[16];
 
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
-    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;
@@ -99,7 +101,7 @@ SIZE(0x14);
 
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
-    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;

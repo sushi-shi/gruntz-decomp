@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <EmptyString.h>
+#include <Enums.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>

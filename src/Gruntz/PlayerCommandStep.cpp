@@ -7,6 +7,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -110,16 +111,16 @@ i32 CPlay::ExecCommand(
                     g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
 
                     switch (g->m_entranceReason) {
-                        case 2:
+                        case PICKUP_BOOMERANG:
                             g->m_defenderRadius = 1;
                             break;
-                        case 9:
-                        case 10:
-                        case 0xb:
+                        case PICKUP_GUNHAT:
+                        case PICKUP_NERFGUN:
+                        case PICKUP_ROCK:
                             g->m_defenderRadius = 1;
                             break;
-                        case 0x15:
-                        case 0x16:
+                        case PICKUP_WELDER:
+                        case PICKUP_WINGZ:
                             g->m_defenderRadius = 1;
                             break;
                         default:
@@ -430,7 +431,13 @@ i32 CPlay::ExecCommand(
             if (g2 == 0 || g2->m_entranceCommitted == 0) {
                 r = 0;
             } else {
-                r = g2->LoadPickupSprites(static_cast<u8>(extraByte), 0, 0, 0, live);
+                r = g2->LoadPickupSprites(
+                    static_cast<PickupType>(static_cast<u8>(extraByte)),
+                    0,
+                    0,
+                    0,
+                    live
+                );
             }
             if (r != 0) {
                 if (player == static_cast<u32>(g_curPlayer)) {

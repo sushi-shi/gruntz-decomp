@@ -14,6 +14,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BracketValueParse.h>
@@ -25,6 +26,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -410,7 +412,7 @@ void CMulti::OnExit() {
 }
 
 RVA(0x000b6330, 0x89)
-i32 CMulti::EnterState(i32 arg) {
+i32 CMulti::EnterState(GameStateId arg) {
     if (CPlay::EnterState(arg) == 0) {
         return 0;
     }
@@ -432,13 +434,13 @@ i32 CMulti::EnterState(i32 arg) {
 
 // @early-stop
 RVA(0x000b63f0, 0x11b)
-i32 CMulti::LeaveState(i32 arg) {
+i32 CMulti::LeaveState(GameStateId arg) {
     m_mgr->m_cueSink->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
     }
-    if (arg == 9) {
+    if (arg == GAMESTATE_HELP) {
         return 1;
     }
     RECT r;
@@ -531,7 +533,7 @@ i32 CMulti::Connect(i32 mode) {
     m_connected = 0;
     m_allPlayersReady = 0;
     if (Mgr()->PassClickToPlayState(mode, 0, 0) == 0) {
-        Mgr()->ReportError(0x8005, 0x446);
+        Mgr()->ReportError(IDX(CMD_NEW_GAME), 0x446);
         return 0;
     }
     m_pumpGuard = 1;

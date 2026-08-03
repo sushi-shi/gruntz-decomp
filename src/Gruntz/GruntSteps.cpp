@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
@@ -13,9 +14,11 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
@@ -149,13 +152,13 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     return 1;
 }
 
-static __inline void SerRecord(CFileMemBase* ar, i32 mode, void* p) {
+static __inline void SerRecord(CFileMemBase* ar, SerialMode mode, void* p) {
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(p, 8);
             ar->Write(static_cast<char*>(p) + 8, 8);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(p, 8);
             ar->Read(static_cast<char*>(p) + 8, 8);
             break;
@@ -174,7 +177,7 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
 RVA(0x00050ca0, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
 
-    i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
+    i32 r = LoadGruntTypeTable(static_cast<PickupType>(typeId), 0, 0, 0);
     m_moveMode = -1;
     m_helpCueId = 0;
     return r;
@@ -182,7 +185,7 @@ i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
 
 // @early-stop
 RVA(0x00050ce0, 0x3c4)
-i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
+i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
     m_moveMode = -1;
 
@@ -483,7 +486,7 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     r2.right = m_toyRectB.right + dx;
     r2.bottom = m_toyRectB.bottom + dy;
 
-    if (m_vehiclePickupType == 0) {
+    if (m_vehiclePickupType == PICKUP_NONE) {
         return 0;
     }
 
@@ -594,14 +597,17 @@ i32 CGrunt::StepCompassMove() {
             } else {
                 owner = board->m_rowInts[mty][mtx * 7 + 1];
             }
-            m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
+            m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_tileOwnerHi);
         }
         goto commit;
     }
 
     if (m_toyTileIndex != 0) {
         CString str;
-        switch (m_entranceReason - 0x17) {
+        // The bias is LOAD-BEARING: switching on the domain directly and using
+        // PICKUP_* case labels compiles to different .text (measured), so the
+        // toy-ordinal jump table stays. IDX marks the two domain exits.
+        switch (IDX(m_entranceReason) - IDX(PICKUP_BABYWALKER)) {
             case 0:
                 str = s_BABYWALKERGRUNT;
                 break;
@@ -882,7 +888,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
 
-        if (m_entranceReason == 0x13) {
+        if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
@@ -893,10 +899,10 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
             m_entranceReason,
             -1
         );
-        if (m_entranceReason != 1) {
+        if (m_entranceReason != PICKUP_BOMB) {
             goto applyTail;
         }
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
         goto applyTail;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
@@ -949,7 +955,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
 
 idleReseed:
 
-    if (m_entranceReason == 0x1e) {
+    if (m_entranceReason == PICKUP_SCROLL) {
         g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
@@ -982,28 +988,36 @@ applyTail:
 modeDispatch: {
     i32 mode = m_moveMode;
     if (mode >= 0x32) {
-        LoadGruntTypeTable(mode, 1, 0, 1);
+        LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
         m_moveMode = -1;
         m_helpCueId = 0;
         return 1;
     }
     if (mode >= 0x22) {
-        m_brickPickupType = mode;
+        // FINDING: m_moveMode is range-dispatched by PICKUP ranges here
+        // (>=0x17 Toyz, >=0x22 Brickz, >=0x32 PowerUpz), so it carries a
+        // PickupType under a movement name. Retyping it is follow-up work.
+        m_brickPickupType = static_cast<PickupType>(mode);
         m_moveMode = -1;
         return 1;
     }
     if (mode >= 0x17) {
-        LoadVehicleGruntSprites(mode);
+        LoadVehicleGruntSprites(static_cast<PickupType>(mode));
         return 1;
     }
-    LoadGruntTypeTable(mode, 1, 0, 1);
+    LoadGruntTypeTable(static_cast<PickupType>(mode), 1, 0, 1);
     m_moveMode = -1;
     return 1;
 }
 }
 
 RVA(0x00053b80, 0x340)
-i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CGrunt::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     if (ar == 0) {
         return 0;
     }
@@ -1016,19 +1030,19 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* p
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
 
             if (Save(ar) == 0) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
 
             if (LoadStateRecord(ar) == 0) {
                 return 0;
             }
             break;
-        case 8:
+        case SERIAL_POSTLOAD:
             m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
@@ -1149,7 +1163,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseAttack[GRUNT_ATTACK1];
+        CAniElement* id = AT(m_poseAttack, GRUNT_ATTACK1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1158,7 +1172,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseAttack[GRUNT_ATTACK2];
+        CAniElement* id = AT(m_poseAttack, GRUNT_ATTACK2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1176,7 +1190,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseStruck[GRUNT_STRUCK1];
+        CAniElement* id = AT(m_poseStruck, GRUNT_STRUCK1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1185,7 +1199,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseStruck[GRUNT_STRUCK2];
+        CAniElement* id = AT(m_poseStruck, GRUNT_STRUCK2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1194,7 +1208,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[GRUNT_IDLE1];
+        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1203,7 +1217,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[GRUNT_IDLE2];
+        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1212,7 +1226,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[GRUNT_IDLE3];
+        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE3);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1221,7 +1235,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[GRUNT_IDLE4];
+        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE4);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1230,7 +1244,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[GRUNT_IDLE5];
+        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE5);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1248,7 +1262,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseToy[GRUNT_TOY1];
+        CAniElement* id = AT(m_poseToy, GRUNT_TOY1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1257,7 +1271,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseToy[GRUNT_TOY2];
+        CAniElement* id = AT(m_poseToy, GRUNT_TOY2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1266,7 +1280,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseToy[GRUNT_TOY_BREAK];
+        CAniElement* id = AT(m_poseToy, GRUNT_TOY_BREAK);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1275,7 +1289,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseItem[GRUNT_ITEM1];
+        CAniElement* id = AT(m_poseItem, GRUNT_ITEM1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1284,7 +1298,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseItem[GRUNT_ITEM2];
+        CAniElement* id = AT(m_poseItem, GRUNT_ITEM2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }

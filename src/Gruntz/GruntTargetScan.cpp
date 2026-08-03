@@ -9,6 +9,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
 
@@ -17,67 +18,67 @@
 
 #define PRIO(dst, r)                                                                               \
     switch (r) {                                                                                   \
-        case 1:                                                                                    \
+        case PICKUP_BOMB:                                                                          \
             dst = 2;                                                                               \
             break;                                                                                 \
-        case 21:                                                                                   \
+        case PICKUP_WELDER:                                                                        \
             dst = 3;                                                                               \
             break;                                                                                 \
-        case 16:                                                                                   \
+        case PICKUP_SWORD:                                                                         \
             dst = 4;                                                                               \
             break;                                                                                 \
-        case 9:                                                                                    \
+        case PICKUP_GUNHAT:                                                                        \
             dst = 5;                                                                               \
             break;                                                                                 \
-        case 4:                                                                                    \
+        case PICKUP_CLUB:                                                                          \
             dst = 6;                                                                               \
             break;                                                                                 \
-        case 11:                                                                                   \
+        case PICKUP_ROCK:                                                                          \
             dst = 7;                                                                               \
             break;                                                                                 \
-        case 13:                                                                                   \
+        case PICKUP_SHOVEL:                                                                        \
             dst = 8;                                                                               \
             break;                                                                                 \
-        case 2:                                                                                    \
+        case PICKUP_BOOMERANG:                                                                     \
             dst = 9;                                                                               \
             break;                                                                                 \
-        case 14:                                                                                   \
+        case PICKUP_SPRING:                                                                        \
             dst = 10;                                                                              \
             break;                                                                                 \
-        case 5:                                                                                    \
+        case PICKUP_GAUNTLETZ:                                                                     \
             dst = 11;                                                                              \
             break;                                                                                 \
-        case 22:                                                                                   \
+        case PICKUP_WINGZ:                                                                         \
             dst = 12;                                                                              \
             break;                                                                                 \
-        case 15:                                                                                   \
+        case PICKUP_SPY:                                                                           \
             dst = 13;                                                                              \
             break;                                                                                 \
-        case 3:                                                                                    \
+        case PICKUP_BRICK:                                                                         \
             dst = 14;                                                                              \
             break;                                                                                 \
-        case 8:                                                                                    \
+        case PICKUP_GRAVITYBOOTZ:                                                                  \
             dst = 15;                                                                              \
             break;                                                                                 \
-        case 12:                                                                                   \
+        case PICKUP_SHIELD:                                                                        \
             dst = 16;                                                                              \
             break;                                                                                 \
-        case 7:                                                                                    \
+        case PICKUP_GOOBER:                                                                        \
             dst = 17;                                                                              \
             break;                                                                                 \
-        case 18:                                                                                   \
+        case PICKUP_TOOB:                                                                          \
             dst = 18;                                                                              \
             break;                                                                                 \
-        case 6:                                                                                    \
+        case PICKUP_GLOVEZ:                                                                        \
             dst = 19;                                                                              \
             break;                                                                                 \
-        case 17:                                                                                   \
+        case PICKUP_TIMEBOMB:                                                                      \
             dst = 20;                                                                              \
             break;                                                                                 \
-        case 10:                                                                                   \
+        case PICKUP_NERFGUN:                                                                       \
             dst = 21;                                                                              \
             break;                                                                                 \
-        case 19:                                                                                   \
+        case PICKUP_WAND:                                                                          \
             dst = 22;                                                                              \
             break;                                                                                 \
         default:                                                                                   \
@@ -102,7 +103,7 @@ i32 CGrunt::ScanNearestTarget() {
         CTriggerMgr* board = g_gameReg->m_cmdGrid;
         for (i32 col = 0; col < 15; col++) {
             CGrunt* cand = board->m_grid[row * TM_GRID_COLS + col];
-            if (cand != 0 && cand->m_entranceCommitted != 0 && cand->m_gruntKind != 0x36) {
+            if (cand != 0 && cand->m_entranceCommitted != 0 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
                 i32 pb;

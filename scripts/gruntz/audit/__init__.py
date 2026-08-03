@@ -1,8 +1,8 @@
 """gruntz.audit - `gruntz audit <tool>` - campaign audits, run on demand as `python -m
-gruntz.audit.<name>`. MOST are on-demand only, but NINE are wired as build gates in
-cli.py (compgen_order, data_symbol, data_tu_order, label_style, rva_size,
-self_recursion, single_view, tu_order_check, view_typedef); the rest of the always-on
-gates live in gruntz/cleanliness/ + gruntz/match/ (TEN with include_order):
+gruntz.audit.<name>`. MOST are on-demand only, but EIGHT are wired as build gates in
+cli.py (compgen_order, data_tu_order, label_style, rva_size, self_recursion,
+single_view, tu_order_check, view_typedef); the rest of the always-on gates live in
+gruntz/cleanliness/ + gruntz/match/ (NINE with include_order):
 
   reloc      assert_relocs (+ link_defects, its lib) - reloc-target fidelity
   data       data_home / data_tu_order / globals_attribute / shredded -

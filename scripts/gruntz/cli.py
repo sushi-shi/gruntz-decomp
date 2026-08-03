@@ -440,6 +440,13 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.view_typedef", ["--ratchet"],
           "view-typedef ratchet violated - delete the alias typedef and use the real "
           "class name (python -m gruntz.audit.view_typedef)", "normal")
+    # Numeric domains: one belief per domain about retail's field width, no bare
+    # header enums outside the GZ_ENUM_* layer, and a synced review manifest.
+    # See docs/enum-modeling-plan.md + docs/patterns/enum-domains.md.
+    _gate("gruntz.audit.enum_domains", ["--gate"],
+          "enum-domain gate violated - a split domain's storage width disagrees, a "
+          "header declares a bare enum, or config/enum-review.tsv is out of sync "
+          "(python -m gruntz.audit.enum_domains)", "normal")
     # The #include block is canonical: no duplicates, and one order tree-wide
     # (rva -> platform preludes -> own header -> project -> library). See
     # docs/patterns/include-order.md; the fixer is mechanical and line-conserving.
@@ -447,14 +454,6 @@ def cmd_build(args) -> None:
           "include-order ratchet violated - the include block is duplicated or out of "
           "canonical order (python -m gruntz.audit.include_order --fix-dupes --fix)",
           "normal")
-    # DATA_SYMBOL is a storage-less name->rva binding; legit only for ctor'd-object
-    # globals + compiler-gen ($S/??_) symbols. A POD/scalar/const one leaves the datum
-    # undefined (unresolved at link) - it must be a real DATA def. Down-only backlog in
-    # config/data-symbol-baseline.tsv; FATAL for any NEW scalar/POD/const DATA_SYMBOL.
-    _gate("gruntz.audit.data_symbol", ["--ratchet"],
-          "data-symbol ratchet violated - a POD/scalar/const global is bound by a "
-          "storage-less DATA_SYMBOL; write a real DATA(rva) type name; def "
-          "(python -m gruntz.audit.data_symbol)", "normal")
     # SECONDARY (MI) vtable coverage: every through-base ??_7<C>@@6B<Base>@@@ name a
     # VTBL2 binds must stay bound. A dropped VTBL2 that shares its rva with a plain VTBL
     # (a through-base primary alias) keeps the rva covered, so vtable_coverage can't see
@@ -533,7 +532,7 @@ def cmd_build(args) -> None:
     # Catalog completeness: every vtable-bearing class positively bound or VTBL_ABSENT-proven.
     _gate("gruntz.cleanliness.class_vtables", [],
           "class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
-          "DATA_SYMBOL(), dissolve the view, or prove VTBL_ABSENT "
+          "VTBL2(), dissolve the view, or prove VTBL_ABSENT "
           "(python -m gruntz.cleanliness.class_vtables)", "full")
     # Vtable COVERAGE: every vtable our analysis finds must be bound in source or catalogued
     # as MFC/CRT in config/library_vtables.csv.

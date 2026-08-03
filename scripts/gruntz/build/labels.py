@@ -40,9 +40,11 @@ How the map is built per TU:
 
 A compiler-generated thunk with no source body (a `??_G` scalar-deleting dtor)
 cannot hang an RVA() attribute, so it is pinned with a self-contained
-`RVA_COMPGEN(<rva>, <size>, <mangled>)` invocation - and a compiler-emitted datum
-with no VarDecl with `DATA_SYMBOL(<rva>, <size>, <mangled>)` (text-scanned - the
-name is given verbatim, so no join and no IR).
+`RVA_COMPGEN(<rva>, <size>, <mangled>)` invocation (text-scanned - the name is
+given verbatim, so no join and no IR). There is NO data analog: every datum is a
+real C++ definition carrying `DATA(<rva>)`, whose name comes from the AST and is
+authority-checked against the base obj (`msvc5_data_symbol` resolves the
+clang-vs-VC5 spellings, including cl's `$S<n>` file-static decoration).
 
 VENDORED PATH: vendored C TUs (vendor/zlib-1.0.4/*.c) keep their source PRISTINE -
 no labels in the source at all. They are mostly `static`/`local` K&R functions
@@ -107,35 +109,11 @@ VTBL2_MACRO_RE = re.compile(
 # Keep invocations in RVA order among the TU's RVA() functions.
 RVA_COMPGEN_RE = re.compile(
     r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
-# `DATA_SYMBOL(<rva>, <size>, <mangled>)` - the DATA analog of RVA_COMPGEN: a
-# compiler-emitted DATUM with no source VarDecl to hang DATA() on (a `??_7`
-# vftable or `??_R*` RTTI record). The EXE carries no debug symbols, so the
-# delinked datum's name is ours to assign - this names it to match what cl emits
-# for the real polymorphic class, so the ctor's `mov [this],offset ??_7...` reloc
-# pairs and can flip to byte-exact. Emitted with kind=data (checked vs all_syms).
-DATA_SYMBOL_RE = re.compile(
-    r"\bDATA_SYMBOL\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
 # `$E<n>` (x86 `_$E<n>`) dynamic-init/EH helpers have a volatile emission
 # ordinal, not a semantic source identity. They are evidence-only rows in
 # config/compiler-generated-functions.tsv and must never become source labels.
 VOLATILE_ORDINAL_FN_RE = re.compile(r"^_?\$E[0-9]+$")
 
-
-def resolve_pool_id(sym, all_syms):
-    """`_s_fmtNotFound$S*` -> the one base-obj symbol with that prefix.
-
-    cl decorates every file-scope static / function-local static with `$S<n>`, where <n>
-    is a per-OBJECT CodeView symbol counter: it walks every symbol the TU emits, so the
-    ids SHIFT whenever the TU gains or loses ANY symbol. Pinning a literal id therefore
-    rots on the next edit to that .cpp, silently unbinding every reloc that pointed at it
-    (this bit the ButeMgr string pool twice). A `$S*` pin is matched by prefix instead, so
-    it survives the churn. Ambiguous or unmatched -> return as-is and let the caller's
-    authority check report the miss."""
-    if "$S*" not in sym or not all_syms:
-        return sym
-    pref = sym.replace("$S*", "$S")
-    cands = [s for s in all_syms if s.startswith(pref) and s[len(pref):].isdigit()]
-    return cands[0] if len(cands) == 1 else sym
 # Annotation strings carried in @llvm.global.annotations (emitted by include/rva.h).
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 # Macro annotation markers (presence of any -> a migrated TU; functions come
@@ -143,9 +121,9 @@ ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?
 # A TU "carries labels" if it invokes ANY rva.h label macro - a pin-only TU (e.g.
 # an explicit template-instantiation host whose every function is a
 # compiler-emitted COMDAT, like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>)
-# carries only RVA_COMPGEN/DATA_SYMBOL rows, and without those alternatives it
-# silently fell through to the vendored-C path and contributed ZERO rows.
-MACRO_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|DATA_SYMBOL|VTBL2)\s*\(")
+# carries only RVA_COMPGEN rows, and without that alternative it silently fell
+# through to the vendored-C path and contributed ZERO rows.
+MACRO_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|VTBL2)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"
@@ -1137,7 +1115,7 @@ def main():
     no_rows = []       # TUs that carry rva.h macros but labelled nothing -> FATAL
     for i, tu in enumerate(args.tu):
         # Comments are BLANKED before any text scan: a doc comment quoting an
-        # RVA_COMPGEN(..)/DATA_SYMBOL(..) invocation must never become a live pin.
+        # RVA_COMPGEN(..) invocation must never become a live pin.
         text = blank_comments(Path(tu).read_text())
         if args.unit:
             unit = args.unit[i]
@@ -1229,21 +1207,6 @@ def main():
                 rows.append((rva, sym, unit, size, "func"))
             else:
                 misses.append((rva, sym, unit, "RVA_COMPGEN not in base obj"))
-
-        # --- DATA_SYMBOL(<rva>, <size>, <mangled>): compiler-emitted data (a
-        # `??_7` vtable / `??_R*` RTTI datum cl emits for a real polymorphic
-        # class; name is deterministic from the class). Authority-checked
-        # against the base obj's DATA symbols. ---
-        for m in DATA_SYMBOL_RE.finditer(text):
-            rva_s, size_s, sym = m.group(1), m.group(2), m.group(3)
-            rva = int(rva_s, 16)
-            size = (int(size_s, 16) if size_s.lower().startswith("0x")
-                    else int(size_s)) or None  # 0 = size unknown
-            sym = resolve_pool_id(sym, all_syms)  # `...$S*` -> the emitted `...$S<n>`
-            if all_syms is None or sym in all_syms:
-                rows.append((rva, sym, unit, size, "data"))
-            else:
-                misses.append((rva, sym, unit, "DATA_SYMBOL not in base obj"))
 
         # --- AUTO deterministic vtable names: name ??_7<Class>@@6B@ on the target
         # whenever THIS TU's base obj emits it (the class is real-polymorphic in

@@ -6,6 +6,7 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <EmptyString.h>
+#include <Enums.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -363,6 +364,9 @@ RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
+// @identity-TODO _BattlezMapComboEditProc@16 - thunk oracle: retail gave this NO incremental
+// thunk, so it came from the static LIBRARY, while the rest of this TU
+// (63 fns) was a link-line object. It belongs to another compiland.
 RVA(0x00015a10, 0x70)
 i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {

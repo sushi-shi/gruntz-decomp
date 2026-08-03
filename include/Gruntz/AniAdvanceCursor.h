@@ -4,6 +4,8 @@
 #include <rva.h>
 
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
 class CWwdGameObjectA;
@@ -28,7 +30,7 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
 
-    i32 Find(CFileMemBase* ar, i32 type, i32 typeId, void* self);
+    i32 Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, void* self);
     i32 Advance(u32 elapsed);
 
     CWwdGameObjectA* m_boundObject;

@@ -5,6 +5,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
 DATA(0x001eab40)
@@ -384,7 +386,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 
 // @early-stop
 RVA(0x000fd3f0, 0x425)
-i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
+i32 CBattlezData::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
     i32* p;
     i32 i;
     i32 r;
@@ -392,8 +394,8 @@ i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
-    if (op != 4) {
-        if (op == 7) {
+    if (op != SERIAL_SAVE) {
+        if (op == SERIAL_LOAD) {
             s->Read(&m_count, 4);
             s->Read(&m_isCustomLevel, 4);
             s->Read(&m_allDone, 4);

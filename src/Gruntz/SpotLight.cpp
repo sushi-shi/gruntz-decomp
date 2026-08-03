@@ -7,15 +7,19 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
@@ -164,14 +168,15 @@ i32 CSpotLight::Tick() {
         CGrunt* tgt =
             reg->m_cmdGrid
                 ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &m_cellRow, &m_cellCol, 0);
-        if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_storyMode != 0 && m_cellRow != 0)) {
+        if (tgt != 0 && tgt->m_gruntKind != GRUNT_INVULNERABLE
+            && !(m_storyMode != 0 && m_cellRow != 0)) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("B");
             CWwdGameObjectA* t = tgt->m_object;
             o->m_screenX = t->m_screenX;
             o->m_screenY = t->m_screenY;
             if (o->m_score == 1) {
-                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, 5, -1);
+                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_MELT, -1);
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {
                     g_randSeeded |= 1;
@@ -198,7 +203,7 @@ i32 CSpotLight::Tick() {
                 }
             } else {
                 tgt->SnapToLastTile(1);
-                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, 0xa, -1);
+                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_KAROKE, -1);
             }
             return 0;
         }
@@ -249,7 +254,7 @@ int CSpotLight::Update() {
 
 // @early-stop
 RVA(0x000b2050, 0x295)
-i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d) {
+i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c, CGameObject* d) {
     if (CUserLogic::SerializeMove(arc, mode, c, d) == 0) {
         return 0;
     }
@@ -259,7 +264,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
     CGruntzMgr* reg = g_gameReg;
     CFileMemBase* s = static_cast<CFileMemBase*>(arc);
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             s->Write(&m_angularVelocity, 8);
             s->Write(&m_position.x, 8);
             s->Write(&m_position.y, 8);
@@ -280,7 +285,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
             s->Write(&m_cellCol, 4);
             s->Write(&m_storyMode, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             s->Read(&m_angularVelocity, 8);
             s->Read(&m_position.x, 8);
             s->Read(&m_position.y, 8);
@@ -311,7 +316,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
             s->Read(&m_cellCol, 4);
             s->Read(&m_storyMode, 4);
             break;
-        case 8: {
+        case SERIAL_POSTLOAD: {
             CWwdGameObjectA* o = m_object;
             CShadeTable* fill = reg->m_logicPump->m_tables[o->m_powerup];
             o->m_drawActive = 1;

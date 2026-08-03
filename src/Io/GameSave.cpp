@@ -3,7 +3,9 @@
 #include <Io/GameSave.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Enums.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialCounter.h>
 
 #include <string.h>
@@ -29,5 +31,5 @@ i32 SaveGame(CGruntzMgr* host, char* name) {
     if (mgr == 0) {
         return 0;
     }
-    return mgr->SnapshotChildren(&SerialObjectFactory, name, "Gruntz Save Game", 0) != 0;
+    return mgr->SnapshotChildren(&SerialObjectFactory, name, "Gruntz Save Game", LOGIC_NONE) != 0;
 }

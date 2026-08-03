@@ -2,6 +2,7 @@
 
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
+#include <Enums.h>
 #include <Gruntz/InputConfig.h>
 #include <Gruntz/String.h>
 #include <MsgParam.h>

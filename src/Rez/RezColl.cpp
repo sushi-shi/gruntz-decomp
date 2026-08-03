@@ -5,6 +5,7 @@
 
 #include <Bute/Hash.h>
 #include <Dsndmgr/SoundVoiceList.h>
+#include <Enums.h>
 #include <Ints.h>
 
 RVA(0x001848b0, 0x47)

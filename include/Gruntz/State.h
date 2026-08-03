@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Gruntz/GameStateId.h>
 #include <Ints.h>
 
@@ -51,10 +52,10 @@ public:
 
     virtual i32 InputVirtual();
     RVA(0x0008c510, 0x8)
-    virtual i32 EnterState(i32) {
+    virtual i32 EnterState(GameStateId) {
         return 1;
     }
-    virtual i32 LeaveState(i32);
+    virtual i32 LeaveState(GameStateId);
 
     RVA(0x0008c550, 0x5)
     virtual i32 OnChar(i32, i32) {

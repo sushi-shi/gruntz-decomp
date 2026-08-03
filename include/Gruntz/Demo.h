@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/Play.h>
 
 class CDemo : public CPlay {

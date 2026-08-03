@@ -3,21 +3,23 @@
 #include <Gruntz/FortressFlag.h>
 
 #include <Bute/ButeTree.h>
+#include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/AnimWorker.h>
-#include <Gruntz/Enums.h>
 #include <Gruntz/Explosion.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/WarlordOwner.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
@@ -62,8 +64,10 @@ static inline i32 RegisterActionName() {
 RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00012cf0, 0x47)
-i32 CParticlez::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CParticlez::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -73,8 +77,10 @@ i32 CParticlez::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) 
 RVA_COMPGEN(0x00012d60, 0x1e, ??_GCParticlez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
 
+// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
+// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00012e20, 0x47)
-i32 CExplosion::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CExplosion::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -94,17 +100,19 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         o->m_flags |= 0x20000;
     }
     const char* name;
-    switch (m_object->m_smarts) {
-        case WARLORD_KING:
+    // The WWD `Smarts` slot is per-logic; for a fortress flag it carries the
+    // owning warlord (docs/domain: Smarts is the team number 0-3).
+    switch (static_cast<WarlordOwner>(m_object->m_smarts)) {
+        case WARLORDZ_KING:
             name = "GAME_FORTRESSFLAGZ_KING";
             break;
-        case WARLORD_NAPOLEAN:
+        case WARLORDZ_NAPOLEAN:
             name = "GAME_FORTRESSFLAGZ_NAPOLEAN";
             break;
-        case WARLORD_PATTON:
+        case WARLORDZ_PATTON:
             name = "GAME_FORTRESSFLAGZ_PATTON";
             break;
-        case WARLORD_VIKING:
+        case WARLORDZ_VIKING:
             name = "GAME_FORTRESSFLAGZ_VIKING";
             break;
         default:
@@ -163,14 +171,14 @@ i32 CFortressFlag::AdvanceAnim() {
 }
 
 RVA(0x00046410, 0x92)
-i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CFortressFlag::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!Chain(ar, tag, c, d)) {
         return 0;
     }
-    if (tag == 8) {
+    if (tag == SERIAL_POSTLOAD) {
         CWwdGameObjectA* spr = m_object;
         i32 idx = g_gameReg->m_options[spr->m_smarts].m_colorIndex;
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);

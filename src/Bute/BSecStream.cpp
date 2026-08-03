@@ -9,7 +9,7 @@
 // own run (see docs/exe-map/README.md).
 VTBL(CBSecStream, 0x001f0510);
 
-VTBL2(CBSecStream, CButeNodeEntry, 0x001f0514)
+VTBL2(CBSecStream, zPtrColl, 0x001f0514)
 
 VTBL2(CBSecStream, CContainerErr, 0x001f0510)
 

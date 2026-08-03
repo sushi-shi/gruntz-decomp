@@ -7,7 +7,7 @@
 #include <Image/CImage.h>
 
 RVA(0x0000fb90, 0x47)
-i32 CBehindCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CBehindCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
 
 RVA(0x001549d0, 0x29)
@@ -14,7 +15,7 @@ CResolveNode::CResolveNode() {
 }
 
 RVA(0x00154a00, 0x3)
-i32 CLoadable::GetClassId() {
+LoadableClassId CLoadable::GetClassId() {
     return CLASSID_NONE;
 }
 RVA(0x00154a10, 0x16)

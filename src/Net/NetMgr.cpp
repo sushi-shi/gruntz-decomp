@@ -3,6 +3,7 @@
 #include <Net/NetMgr.h>
 
 #include <AddrWord.h>
+#include <Enums.h>
 #include <Font/Font.h>
 #include <MsgParam.h>
 #include <Net/InterfaceObject.h>

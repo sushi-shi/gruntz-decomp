@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 
 struct PlayerLatency {
@@ -40,7 +41,7 @@ public:
     CString GetName() {
         return m_name;
     }
-    i32 Serialize(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i32 pObj);
     i32 Deactivate();
     CString GetDefaultName(i32);
 

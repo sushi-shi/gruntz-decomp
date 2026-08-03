@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/GameInfo.h>
 
 #include <string.h>

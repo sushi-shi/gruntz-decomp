@@ -35,7 +35,7 @@ public:
 
     virtual void Unload() OVERRIDE;
     RVA(0x001576f0, 0x6)
-    virtual i32 GetClassId() OVERRIDE {
+    virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_WORKERCACHE;
     }
 

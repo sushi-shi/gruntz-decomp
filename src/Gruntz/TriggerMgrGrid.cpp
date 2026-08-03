@@ -2,18 +2,22 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -135,63 +139,66 @@ i32 CTriggerMgr::PlaceObject(
         sprite->m_animWorker->m_notify(sprite);
         CGrunt* logic = static_cast<CGrunt*>(sprite->m_animWorker->m_logic);
 
+        // NOT a PickupType local: the AI-type switch fills it with tool ids,
+        // but the player-slot path below overwrites it with m_colorIndex, so it
+        // carries two domains. Converted explicitly where it enters Place().
         i32 kindId;
         if (g_gameReg->m_gameMode == 1) {
             switch (aiType) {
                 case 1:
-                    kindId = 1;
+                    kindId = IDX(PICKUP_BOMB);
                     break;
                 case 2:
-                    kindId = 9;
+                    kindId = IDX(PICKUP_GUNHAT);
                     break;
                 case 3:
-                    kindId = 5;
+                    kindId = IDX(PICKUP_GAUNTLETZ);
                     break;
                 case 4:
-                    kindId = 4;
+                    kindId = IDX(PICKUP_CLUB);
                     break;
                 case 5:
-                    kindId = 12;
+                    kindId = IDX(PICKUP_SHIELD);
                     break;
                 case 6:
-                    kindId = 6;
+                    kindId = IDX(PICKUP_GLOVEZ);
                     break;
                 case 7:
-                    kindId = 3;
+                    kindId = IDX(PICKUP_BRICK);
                     typeKind = 1;
                     break;
                 case 8:
-                    kindId = 8;
+                    kindId = IDX(PICKUP_GRAVITYBOOTZ);
                     typeKind = 3;
                     break;
                 case 10:
-                    kindId = 15;
+                    kindId = IDX(PICKUP_SPY);
                     typeKind = 7;
                     break;
                 case 11:
-                    kindId = 10;
+                    kindId = IDX(PICKUP_NERFGUN);
                     typeKind = 13;
                     break;
                 case 9:
-                    kindId = 2;
+                    kindId = IDX(PICKUP_BOOMERANG);
                     typeKind = 5;
                     break;
                 case 13:
-                    kindId = 7;
+                    kindId = IDX(PICKUP_GOOBER);
                     break;
                 case 14:
-                    kindId = 16;
+                    kindId = IDX(PICKUP_SWORD);
                     break;
                 case 12:
-                    kindId = 11;
+                    kindId = IDX(PICKUP_ROCK);
                     typeKind = 17;
                     break;
                 case 15:
-                    kindId = 13;
+                    kindId = IDX(PICKUP_SHOVEL);
                     typeKind = 19;
                     break;
                 case 16:
-                    kindId = 13;
+                    kindId = IDX(PICKUP_SHOVEL);
                     vehicleKind = 30;
                     break;
                 default:
@@ -220,8 +227,8 @@ i32 CTriggerMgr::PlaceObject(
                 this,
                 row,
                 col,
-                kindId,
-                typeKind,
+                static_cast<PickupType>(kindId),
+                static_cast<PickupType>(typeKind),
                 vehicleKind,
                 aiType,
                 aiRadius,
@@ -266,7 +273,7 @@ fail:
 }
 
 RVA(0x0006bc20, 0x6f)
-i32 CTriggerMgr::DispatchCellForObject(CGrunt* obj, i32 startRow, i32 kind, i32 arg) {
+i32 CTriggerMgr::DispatchCellForObject(CGrunt* obj, i32 startRow, GruntDeathType kind, i32 arg) {
     i32 last;
     if (startRow == 5) {
         startRow = 0;
@@ -286,7 +293,7 @@ i32 CTriggerMgr::DispatchCellForObject(CGrunt* obj, i32 startRow, i32 kind, i32 
 }
 
 RVA(0x0006bcb0, 0x6a)
-i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
+i32 CTriggerMgr::CellDispatch(i32 row, i32 col, GruntDeathType kind, i32 arg) {
     CGrunt* cell = m_grid[row * TM_GRID_COLS + col];
     if (cell == 0) {
         return 0;
@@ -296,7 +303,7 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
         return 0;
     }
 
-    if (kind == 0xd) {
+    if (kind == DEATH_EXIT) {
         (static_cast<CGrunt*>(cell))->BuildGruntExitAnimation();
     } else {
         (static_cast<CGrunt*>(cell))->LoadGruntDeathAnimations(kind, arg);
@@ -461,15 +468,16 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     i32 subX = cx - (tx << level->m_mainPlane->m_shiftX);
     i32 subY = cy - (ty << level->m_mainPlane->m_shiftY);
     i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[ty] + tx];
-    i32 tag;
+    TileCollisionKind tag;
     if (raw == static_cast<i32>(0xeeeeeeee) || raw == -1) {
-        tag = 0;
+        tag = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
-        tag = ts->GetCollisionAt(subX, subY);
+        // Ingest: the raw WWD attribute byte for this cell.
+        tag = static_cast<TileCollisionKind>(ts->GetCollisionAt(subX, subY));
     }
 
-    if (static_cast<u32>((tag - 0xb)) > 0x65) {
+    if (static_cast<u32>((IDX(tag) - 0xb)) > 0x65) {
         return 0;
     }
 
@@ -488,7 +496,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_TIME_SWITCH);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_TIME_SWITCH));
                 return 0;
             }
             sw->SwitchDown();
@@ -514,7 +522,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TIME_TRIGGER);
+                g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_TIME_TRIGGER));
                 return 0;
             }
             return 1;
@@ -528,7 +536,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SECRET_SWITCH);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_SECRET_SWITCH));
                 return 0;
             }
             sw->SwitchDown();
@@ -546,7 +554,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_SECRET_TRIGGER);
+                g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_SECRET_TRIGGER));
                 return 0;
             }
             {
@@ -580,12 +588,12 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         case TILEKIND_SWITCH_A:
         case TILEKIND_SWITCH_B:
         case TILEKIND_SWITCH_C:
-            sw = state->m_beginMarker->FindChild(((x >> 5) * 0x100) + (y >> 5), 0);
+            sw = state->m_beginMarker->FindChild(((x >> 5) * 0x100) + (y >> 5), TRIGID_ANY);
             if (sw == 0) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_SWITCH);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_SWITCH));
                 return 0;
             }
             sw->SwitchDown();
@@ -606,7 +614,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_TRIGGER);
+                g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_TRIGGER));
                 return 0;
             }
             return 1;
@@ -620,7 +628,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_MULTI_SWITCH);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_MULTI_SWITCH));
                 return 0;
             }
             sw->SwitchDown();
@@ -644,7 +652,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_MULTI_TRIGGER);
+                g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_MULTI_TRIGGER));
                 return 0;
             }
             return 1;
@@ -658,7 +666,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_EXCLUSIVE_SWITCH);
+                g_gameReg->ReportError(
+                    IDX(TRIGERR_LOOKUP_MISS),
+                    IDX(TRIGSITE_WIRE_EXCLUSIVE_SWITCH)
+                );
                 return 0;
             }
             if (sw->SwitchDown() == 0) {
@@ -681,7 +692,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_EXCLUSIVE_TRIGGER);
+                g_gameReg->ReportError(
+                    IDX(TRIGERR_LINK_BROKEN),
+                    IDX(TRIGSITE_WIRE_EXCLUSIVE_TRIGGER)
+                );
                 return 0;
             }
             return 1;
@@ -794,18 +808,20 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No switch logic found for plate at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_WIRE_CHECKPOINT);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_CHECKPOINT));
                 return 0;
             }
             if (sw->m_checkpointType == 0) {
                 sw->SwitchDown();
             } else {
-                i32 gruntKind = g->m_entranceReason;
-                if (gruntKind > 0x16) {
+                PickupType gruntKind = g->m_entranceReason;
+                if (gruntKind > PICKUP_WINGZ) {
                     gruntKind = g->m_toolId;
                 }
-                if (gruntKind == sw->m_checkpointType
-                    || sw->m_checkpointType == g->m_vehiclePickupType) {
+                // m_checkpointType is a PickupType stored as i32 (declared in
+                // TileTriggerSwitchLogic.h, fed from LevelTileValidation).
+                if (IDX(gruntKind) == sw->m_checkpointType
+                    || sw->m_checkpointType == IDX(g->m_vehiclePickupType)) {
                     sw->SwitchDown();
                 } else {
                     RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
@@ -837,7 +853,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 CString msg;
                 msg.Format("No trigger logic found for plate at: x=%d, y=%d", x, y);
                 g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_WIRE_CHECKPOINT_TRIGGER);
+                g_gameReg->ReportError(
+                    IDX(TRIGERR_LINK_BROKEN),
+                    IDX(TRIGSITE_WIRE_CHECKPOINT_TRIGGER)
+                );
             }
             return 0;
     }
@@ -875,48 +894,51 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     i32 subX = x - (tx << sh);
     i32 subY = y - (ty << sw);
     i32 attr = scroll->m_tileGrid[scroll->m_colOffsets[ty] + tx];
-    i32 kind;
+    TileCollisionKind kind;
     if (attr == static_cast<i32>(0xeeeeeeee) || attr == -1) {
-        kind = 0;
+        kind = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));
-        kind = ts->GetCollisionAt(subX, subY);
+        // Ingest: the raw WWD attribute byte for this cell.
+        kind = static_cast<TileCollisionKind>(ts->GetCollisionAt(subX, subY));
     }
     switch (kind) {
-        case 0x40: {
-            CTileTriggerSwitchLogic* obj =
-                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 7);
+        case TILEKIND_TIME_SWITCH_UP: {
+            CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
+                ((sx >> 5) * 0x100) + (sy >> 5),
+                TRIGID_TIME_SWITCH_7
+            );
             if (obj == 0) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_40);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_40));
                 return 0;
             }
             obj->SwitchUp();
             return 1;
         }
-        case 0x34: {
+        case TILEKIND_SWITCH_A_UP: {
             CTileTriggerSwitchLogic* obj =
-                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 0);
+                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), TRIGID_ANY);
             if (obj == 0) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_34);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_34));
                 return 0;
             }
             obj->SwitchUp();
             return 1;
         }
-        case 0x36: {
+        case TILEKIND_SWITCH_B_UP: {
             CTileTriggerSwitchLogic* obj =
-                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 0);
+                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), TRIGID_ANY);
             if (obj == 0) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_36);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_36));
                 return 0;
             }
             obj->SwitchUp();
@@ -941,19 +963,21 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
-                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_APPLY_TRIGGER_36);
+                g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_APPLY_TRIGGER_36));
                 return 0;
             }
             return 1;
         }
-        case 0x38: {
-            CTileTriggerSwitchLogic* obj =
-                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 3);
+        case TILEKIND_MULTI_SWITCH_UP: {
+            CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
+                ((sx >> 5) * 0x100) + (sy >> 5),
+                TRIGID_MULTI_SWITCH_3
+            );
             if (obj == 0) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_38);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_38));
                 return 0;
             }
             i32 found = 0;
@@ -977,14 +1001,17 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                     CString msg;
                     msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
                     g_gameReg->EnterModalUI(msg);
-                    g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_APPLY_TRIGGER_38);
+                    g_gameReg->ReportError(
+                        IDX(TRIGERR_LINK_BROKEN),
+                        IDX(TRIGSITE_APPLY_TRIGGER_38)
+                    );
                     return 0;
                 }
             }
             obj->SwitchUp();
             return 1;
         }
-        case 0x42: {
+        case TILEKIND_CHECKPOINT_UP: {
 
             if (g_gameReg->m_gameMode != 1) {
                 return 0;
@@ -995,13 +1022,15 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (g->m_tileOwnerHi != g_curPlayer) {
                 return 0;
             }
-            CTileTriggerSwitchLogic* obj =
-                state->m_beginMarker->FindChild(((sx >> 5) * 0x100) + (sy >> 5), 8);
+            CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(
+                ((sx >> 5) * 0x100) + (sy >> 5),
+                TRIGID_CHECKPOINT_SWITCH_8
+            );
             if (obj == 0) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
-                g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_APPLY_SWITCH_42);
+                g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_42));
                 return 0;
             }
             if (obj->VerifyBlockLinks() != 0) {
@@ -1042,11 +1071,11 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (o->m_screenY != cell->m_lastTilePx.m_y) {
         return -1;
     }
-    i32 k = cell->m_entranceReason;
-    if (k > 0x16) {
+    PickupType k = cell->m_entranceReason;
+    if (k > PICKUP_WINGZ) {
         k = cell->m_toolId;
     }
-    if (k == 0x13 && cell->CanShowStamina() != 0) {
+    if (k == PICKUP_WAND && cell->CanShowStamina() != 0) {
         if (cellTileX != argTileX || cellTileY != argTileY) {
             return 0;
         }
@@ -1054,11 +1083,11 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 1;
     }
     if (cellTileX == argTileX && cellTileY == argTileY) {
-        i32 kSame = cell->m_entranceReason;
-        if (kSame > 0x16) {
+        PickupType kSame = cell->m_entranceReason;
+        if (kSame > PICKUP_WINGZ) {
             kSame = cell->m_toolId;
         }
-        if (kSame != 0xf) {
+        if (kSame != PICKUP_SPY) {
             return 0;
         }
         if (cell->CanShowStamina() == 0) {
@@ -1067,11 +1096,11 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         cell->RunMoveConfig(argTileX, argTileY);
         return 1;
     }
-    i32 kDiag = cell->m_entranceReason;
-    if (kDiag > 0x16) {
+    PickupType kDiag = cell->m_entranceReason;
+    if (kDiag > PICKUP_WINGZ) {
         kDiag = cell->m_toolId;
     }
-    if (kDiag == 1) {
+    if (kDiag == PICKUP_BOMB) {
 
         if (cellTileY != argTileY && cellTileX != argTileX) {
             if (abs(argTileY - cellTileY) != abs(argTileX - cellTileX)) {
@@ -1104,26 +1133,26 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     }
     CGruntzMapMgr* map = g_gameReg->m_tileGrid;
     i32 bute = map->m_rows[by >> 5][bx >> 5].m_typeCode;
-    i32 kind = cell->m_entranceReason;
-    if (kind > 0x16) {
+    PickupType kind = cell->m_entranceReason;
+    if (kind > PICKUP_WINGZ) {
         kind = cell->m_toolId;
     }
 
     switch (kind) {
-        case 5:
+        case PICKUP_GAUNTLETZ:
             if (bute == 0x1e || bute == 0x1f || bute == 0x21 || bute == 0x97 || bute == 0x98
                 || bute == 0x99) {
                 cell->RunMoveConfig(argTileX, argTileY);
                 return 1;
             }
             return 0;
-        case 13:
+        case PICKUP_SHOVEL:
             if (bute == 0x22 || bute == 0x23) {
                 cell->RunMoveConfig(argTileX, argTileY);
                 return 1;
             }
             return 0;
-        case 7: {
+        case PICKUP_GOOBER: {
             POSITION pos = m_baseList.GetHeadPosition();
             while (pos != 0) {
                 CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
@@ -1138,27 +1167,27 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
             }
             return 0;
         }
-        case 15:
+        case PICKUP_SPY:
             cell->RunMoveConfig(cellTileX, cellTileY);
             return 1;
-        case 3:
+        case PICKUP_BRICK:
             if (bute == 0x96 || bute == 0x97 || bute == 0x98) {
                 cell->RunMoveConfig(argTileX, argTileY);
                 return 1;
             }
             return 0;
-        case 2:
+        case PICKUP_BOOMERANG:
             return cell->BeginAttack(bx, by) != 0;
-        case 9:
-        case 10:
-        case 11:
+        case PICKUP_GUNHAT:
+        case PICKUP_NERFGUN:
+        case PICKUP_ROCK:
             return cell->BeginAttack(bx, by) != 0;
-        case 17:
+        case PICKUP_TIMEBOMB:
             return cell->BeginAttack(bx, by) != 0;
-        case 21:
-        case 22:
+        case PICKUP_WELDER:
+        case PICKUP_WINGZ:
             return cell->BeginAttack(bx, by) != 0;
-        case 20: {
+        case PICKUP_WARPSTONE: {
             if (g_gameReg->m_gameMode == 1) {
                 return 0;
             }
@@ -1170,7 +1199,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
             if ((flags & 0x40939) != 0 || (flags & 2) != 0) {
                 return 0;
             }
-            LoadPowerupIconSprites(0x14, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
+            LoadPowerupIconSprites(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
             cell->PlayMoveSound(bx, by);
             if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
                 cell->m_entranceActive = 0;
@@ -1179,7 +1208,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
                 cell->m_poweredUp = 0;
                 cell->ResetEntranceAnimation(1, 0, 0);
             }
-            cell->LoadGruntTypeTable(0, 1, 0, 0);
+            cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
             return 1;
         }
     }
@@ -1205,7 +1234,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return -1;
     }
 
-    if (cellTileX == argTileX && cellTileY == argTileY && cell->m_vehiclePickupType != 0x1e
+    if (cellTileX == argTileX && cellTileY == argTileY && cell->m_vehiclePickupType != PICKUP_SCROLL
         && g_traitorMode == 0) {
         return 0;
     }
@@ -1230,8 +1259,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             return 0;
         }
 
-        i32 kind = cell->m_vehiclePickupType;
-        i32 moveKind = kind == 0x1e ? cell->m_moveKind : 0;
+        PickupType kind = cell->m_vehiclePickupType;
+        i32 moveKind = kind == PICKUP_SCROLL ? cell->m_moveKind : 0;
         if (LoadToyBoxIcon(bx, by, col, kind, moveKind) == 0) {
             return 0;
         }
@@ -1255,7 +1284,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             cell->m_poweredUp = 0;
             cell->ResetEntranceAnimation(1, 0, 0);
         }
-        cell->LoadVehicleGruntSprites(0);
+        cell->LoadVehicleGruntSprites(PICKUP_NONE);
         return 1;
     }
 
@@ -1269,8 +1298,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
 
-    i32 kind = cell->m_vehiclePickupType;
-    i32 moveKind = kind == 0x1e ? cell->m_moveKind : 0;
+    PickupType kind = cell->m_vehiclePickupType;
+    i32 moveKind = kind == PICKUP_SCROLL ? cell->m_moveKind : 0;
     cell->PlayMoveSound(bx, by);
     cell->m_neighborValid = 0;
     if (cell->m_poweredUp != 0) {
@@ -1295,7 +1324,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (hit->LoadGruntTypeTable(kind, 1, moveKind, 0) == 0) {
         return 0;
     }
-    cell->LoadVehicleGruntSprites(0);
+    cell->LoadVehicleGruntSprites(PICKUP_NONE);
 
     if (hit->m_tileOwnerHi != col) {
         CGameObject* obj = cell->m_object;
@@ -1339,7 +1368,9 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 w
     if (strcmp(name, "I") == 0) {
         i32 px = cell->m_moveTile.m_x;
         i32 py = cell->m_moveTile.m_y;
-        this->LoadTileArrivalFx(px, py, py, cell->m_entranceReason, -1, py);
+        // NOTE: argument shape differs from the other five LoadTileArrivalFx
+        // call sites - m_entranceReason lands in `tileY`, not in `reason`.
+        this->LoadTileArrivalFx(px, py, py, IDX(cell->m_entranceReason), PICKUP_INVALID, py);
     }
     i32 by = (worldY & ~0x1f) + 0x10;
     i32 bx = (worldX & ~0x1f) + 0x10;
@@ -1361,11 +1392,11 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (!differ) {
         return;
     }
-    i32 k = cell->m_entranceReason;
-    if (k > 0x16) {
+    PickupType k = cell->m_entranceReason;
+    if (k > PICKUP_WINGZ) {
         k = cell->m_toolId;
     }
-    if (k != 0x14) {
+    if (k != PICKUP_WARPSTONE) {
         return;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);

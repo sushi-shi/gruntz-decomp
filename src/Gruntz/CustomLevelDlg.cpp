@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>

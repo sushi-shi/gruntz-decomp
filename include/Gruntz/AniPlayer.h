@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_ImageSetAni.h>
 #include <Gruntz/SerialArchive.h>
 
@@ -26,7 +27,7 @@ public:
     );
     i32 TickToggle(i32 param);
     i32 RenderCel();
-    i32 Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
     union {
         i64 m_start64;

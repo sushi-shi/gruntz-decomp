@@ -427,8 +427,8 @@ class TestMsvc5DataSymbols(unittest.TestCase):
 
     def test_any_const_array_Q_resolves_to_the_vc5_P_in_the_object(self):
         """THE ORIGINAL BUG: the Q->P rewrite was hard-coded to AFX_MSGMAP_ENTRY, so an
-        ordinary `const u8 g_guid1[16]` / `const char s_rb[]` DATA() bound NOTHING and
-        needed a hand-written DATA_SYMBOL. The storage-class difference is generic."""
+        ordinary `const u8 g_guid1[16]` / `const char s_rb[]` DATA() bound NOTHING.
+        The storage-class difference is generic."""
         for clang, vc5 in (("?g_guid1@@3QBEB", "?g_guid1@@3PBEB"),
                            ("?s_rb@@3QBDB", "?s_rb@@3PBDB"),
                            ("?value@CMultiHelpDlg@@0QBUOtherType@@B",
@@ -802,6 +802,69 @@ class TestCleanlinessRatchet(unittest.TestCase):
         cleanliness.save_baseline([("reinterpret_casts", 7)])
         merged = dict(cleanliness.merge_baseline_downonly([("reinterpret_casts", 8)]))
         self.assertEqual(merged["reinterpret_casts"], 7)
+
+
+
+# --------------------------------------------------------------------------- #
+# enum_domains: split-width agreement, header discipline, tag-type exemption   #
+# --------------------------------------------------------------------------- #
+class TestEnumDomainGate(unittest.TestCase):
+    """Negative controls for gruntz.audit.enum_domains - a gate nobody has watched
+    FAIL reports success whether or not it is true."""
+
+    def _audit(self, files):
+        from gruntz.audit import enum_domains
+        tmp = tempfile.TemporaryDirectory()
+        root = Path(tmp.name)
+        for name, text in files.items():
+            fp = root / name
+            fp.parent.mkdir(parents=True, exist_ok=True)
+            fp.write_text(text)
+        (root / "config").mkdir(parents=True, exist_ok=True)
+        saved = (enum_domains.REPO, enum_domains.REVIEW)
+        enum_domains.REPO = root
+        enum_domains.REVIEW = root / "config" / "enum-review.tsv"
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                enum_domains.sync_review()
+            return enum_domains.audit()
+        finally:
+            enum_domains.REPO, enum_domains.REVIEW = saved
+            tmp.cleanup()
+
+    def test_split_width_disagreement_is_caught(self):
+        fatal, _w, _d = self._audit({
+            "include/D.h": "GZ_ENUM_BEGIN_SPLIT(Dom, u8)\n A = 0\nGZ_ENUM_END_SPLIT(Dom, u8)\n",
+            "src/a.cpp": "struct S { GZ_ENUM_STORAGE(Dom, i16) m_x; };\n"})
+        self.assertTrue(any("field width" in f for f in fatal), fatal)
+
+    def test_matching_split_width_passes(self):
+        fatal, _w, _d = self._audit({
+            "include/D.h": "GZ_ENUM_BEGIN_SPLIT(Dom, u8)\n A = 0\nGZ_ENUM_END_SPLIT(Dom, u8)\n",
+            "src/a.cpp": "struct S { GZ_ENUM_STORAGE(Dom, u8) m_x; };\n"})
+        self.assertEqual([f for f in fatal if "field width" in f], [])
+
+    def test_storage_naming_an_undeclared_domain_is_caught(self):
+        fatal, _w, _d = self._audit({"src/a.cpp": "GZ_ENUM_STORAGE(NoSuchDomain, u8) m_x;\n"})
+        self.assertTrue(any("undeclared domain" in f for f in fatal), fatal)
+
+    def test_bare_header_enum_is_caught(self):
+        fatal, _w, _d = self._audit({"include/D.h": "enum Raw { A = 0, B = 1 };\n"})
+        self.assertTrue(any("bare `enum Raw`" in f for f in fatal), fatal)
+
+    def test_single_enumerator_tag_type_is_exempt(self):
+        fatal, _w, _d = self._audit({"include/D.h": "enum ENoSeed { NO_SEED };\n"})
+        self.assertEqual([f for f in fatal if "bare `enum" in f], [])
+
+    def test_a_cpp_local_enum_is_not_a_header_defect(self):
+        fatal, _w, _d = self._audit({"src/a.cpp": "enum Local { A = 0, B = 1 };\n"})
+        self.assertEqual([f for f in fatal if "bare `enum" in f], [])
+
+    def test_implicit_enumerator_value_is_warned_not_fatal(self):
+        fatal, warn, _d = self._audit({
+            "include/D.h": "GZ_ENUM_BEGIN(Dom)\n    A_ONE,\n    A_TWO = 1\nGZ_ENUM_END(Dom)\n"})
+        self.assertTrue(any("A_ONE" in w for w in warn), warn)
+        self.assertEqual([f for f in fatal if "A_ONE" in f], [])
 
 
 # --------------------------------------------------------------------------- #

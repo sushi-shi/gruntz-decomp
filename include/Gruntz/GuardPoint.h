@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
 class CGuardPoint : public CUserLogic, public CWapX {
@@ -13,7 +14,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GUARDPOINT;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     CGuardPoint() {}
     CGuardPoint(CGameObject* obj);
 };

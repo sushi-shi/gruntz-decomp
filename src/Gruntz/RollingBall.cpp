@@ -3,14 +3,18 @@
 #include <Gruntz/RollingBall.h>
 
 #include <Bute/ButeMgr.h>
+#include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/KitchenSlime.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -176,7 +180,7 @@ i32 CRollingBall::Update() {
         i32 hitB;
         if (g_gameReg->m_cmdGrid
                 ->FindGruntAt(lg2->m_screenX, lg2->m_screenY, &lg2->m_area, &hitA, &hitB, 0)) {
-            g_gameReg->m_cmdGrid->CellDispatch(hitA, hitB, 2, -1);
+            g_gameReg->m_cmdGrid->CellDispatch(hitA, hitB, DEATH_SQUASH, -1);
         }
     }
 
@@ -559,7 +563,7 @@ i32 CRollingBall::Update() {
 }
 
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+i32 CRollingBall::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -568,18 +572,18 @@ i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d
     }
 
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_explodeStart, sizeof(m_explodeStart));
             ar->Write(&m_explodeWindow, sizeof(m_explodeWindow));
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_explodeStart, sizeof(m_explodeStart));
             ar->Read(&m_explodeWindow, sizeof(m_explodeWindow));
             break;
     }
 
     switch (tag) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_moveSpeed, 8);
             ar->Write(&m_subX, 8);
             ar->Write(&m_subY, 8);
@@ -590,7 +594,7 @@ i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d
             ar->Write(&m_fallLatch, 4);
             ar->Write(&m_moveDelta, sizeof(m_moveDelta));
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_moveSpeed, 8);
             ar->Read(&m_subX, 8);
             ar->Read(&m_subY, 8);

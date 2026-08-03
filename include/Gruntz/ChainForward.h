@@ -1,6 +1,7 @@
 #ifndef GRUNTZ_GRUNTZ_CHAINFORWARD_H
 #define GRUNTZ_GRUNTZ_CHAINFORWARD_H
 
+#include <Enums.h>
 #include <Ints.h>
 
 class CGruntzMgr;

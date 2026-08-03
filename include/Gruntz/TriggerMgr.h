@@ -7,16 +7,20 @@
 
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GruntDeathType.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 
 extern FreeNodePool g_coordPool;
 
 void operator delete(void*);
 
-typedef enum TmGridDim {
+// Grid extents, used only as array dimensions and in index arithmetic.
+GZ_ENUM_CONST_BEGIN(TmGridDim)
     TM_GRID_COLS = 15,
-    TM_GRID_ROWS = 4,
-} TmGridDim;
+    TM_GRID_ROWS = 4
+GZ_ENUM_CONST_END(TmGridDim)
 
 class CGrunt;
 class CWarlord;
@@ -66,9 +70,9 @@ public:
 
     void ClearRecords();
 
-    i32 DispatchCellForObject(CGrunt* obj, i32 startRow, i32 kind, i32 arg);
+    i32 DispatchCellForObject(CGrunt* obj, i32 startRow, GruntDeathType kind, i32 arg);
 
-    i32 CellDispatch(i32 row, i32 col, i32 kind, i32 arg);
+    i32 CellDispatch(i32 row, i32 col, GruntDeathType kind, i32 arg);
 
     void NotifyCell(i32 row, i32 col, i32 z);
 
@@ -146,7 +150,7 @@ public:
 
     i32 ReinitGroup(i32 col, i32 row);
 
-    i32 Serialize(CFileMemBase* ar, i32 kind, i32 unusedC, i32 unusedD);
+    i32 Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId unusedC, i32 unusedD);
 
     i32 ScanGroup(CFileMemBase* ar);
 
@@ -179,7 +183,8 @@ public:
 
     i32 CenterOnGroup(i32 doSelect);
 
-    i32 LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, i32 reason, i32 sel);
+    i32
+    LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, PickupType reason, i32 sel);
 
     i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag);
 
@@ -194,11 +199,12 @@ public:
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
     i32 PlaceB(i32 a, i32 b, i32 c);
 
-    i32 LoadPowerupIconSprites(i32 type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);
+    i32
+    LoadPowerupIconSprites(PickupType type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);
 
     i32 LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind);
 
-    i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, i32 kind, i32 moveKind);
+    i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind);
 
     CPtrList m_baseList;
     CGrunt* m_grid[0x3c];

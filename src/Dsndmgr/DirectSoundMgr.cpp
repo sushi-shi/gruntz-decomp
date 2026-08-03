@@ -8,6 +8,7 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/WaveFormatPtr.h>
+#include <Enums.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
 #include <Wap32/Wap32.h>

@@ -4,7 +4,9 @@
 #include <rva.h>
 
 #include <Dsndmgr/SoundVoiceList.h>
+#include <Enums.h>
 #include <Ints.h>
+#include <Rez/RezTypeTag.h>
 
 #include <string.h>
 
@@ -86,6 +88,8 @@ public:
     u32 HashStr(const char* s);
     void* Walk(const char* name, i32 ci);
     u32 HashInt(u32 key);
+    // Generic integer-keyed lookup: one caller passes a REZ fourcc, another an
+    // arbitrary symbol key, so the parameter is NOT a single domain.
     void* FindInt(u32 key);
 };
 SIZE(0x8);

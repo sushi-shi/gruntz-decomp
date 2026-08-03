@@ -6,6 +6,7 @@
 
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirPal.h>
+#include <Enums.h>
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePaletteNode.h>
@@ -658,13 +659,13 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
         m_transparent = 0;
     }
 
-    if (flags & PID_FILL_IS_WORD) {
+    if (HAS(flags, PID_FILL_IS_WORD)) {
         fill &= 0xffff;
     } else {
         fill = 0;
     }
 
-    if (flags & PID_GRAMMAR_SKIPRUN) {
+    if (HAS(flags, PID_GRAMMAR_SKIPRUN)) {
         m_transparent = 1;
         u8* dstRow = m_pixels + m_rowOffsets[0];
         i32 x = 0;

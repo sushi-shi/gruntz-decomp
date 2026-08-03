@@ -5,12 +5,15 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Enums.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileGrid.h>
@@ -105,7 +108,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
     m_object->m_animCursor.m_consumeDraw = 0;
-    m_object->m_smarts = g_areaHazardParam;
+    m_object->m_smarts = g_areaHazardDeath;
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;
@@ -116,7 +119,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
     } else {
-        g_gameReg->ReportError(0x8009, 0x461);
+        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x461);
     }
     if (m_object->m_damage == 0) {
         m_idleWindow = m_activeWindow;
@@ -286,7 +289,8 @@ dispatch:
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {
-            g_gameReg->m_cmdGrid->CellDispatch(a, b, m_object->m_smarts, -1);
+            g_gameReg->m_cmdGrid
+                ->CellDispatch(a, b, static_cast<GruntDeathType>(m_object->m_smarts), -1);
         }
         if (m_object->m_sortKey != m_object->m_health) {
             m_object->m_sortKey = m_object->m_health;
@@ -331,10 +335,15 @@ dispatch:
 }
 
 RVA(0x000fc5b0, 0xf5)
-i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CStaticHazard::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     CFileMemBase* arc = ar;
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             arc->Write(&m_pulseEpoch, 4);
             arc->Write(&m_activeWindow, 4);
             arc->Write(&m_idleWindow, 4);
@@ -342,7 +351,7 @@ i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameOb
             arc->Write(&m_tileCol, 4);
             arc->Write(&m_tileRow, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             arc->Read(&m_pulseEpoch, 4);
             arc->Read(&m_activeWindow, 4);
             arc->Read(&m_idleWindow, 4);

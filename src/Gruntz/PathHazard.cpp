@@ -11,6 +11,7 @@
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PathHazardActReg.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/RainCloud.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
@@ -26,6 +27,8 @@ CPathHazard::CPathHazard() {}
 RVA_COMPGEN(0x00013250, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 
+// @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
+// 67 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000132f0, 0x6)
 LogicTypeId CRainCloud::GetTypeTag() {
     return LOGIC_RAINCLOUD;
@@ -131,7 +134,7 @@ i32 CPathHazard::Tick() {
         CGrunt* ent =
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
-        if (ent != 0 && ent->m_gruntKind != 0x38) {
+        if (ent != 0 && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->m_gameMode != 1 || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {
@@ -253,7 +256,7 @@ i32 CPathHazard::SiblingTick() {
         CGrunt* ent =
             reg->m_cmdGrid
                 ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
-        if (ent != 0 && ent->m_gruntKind != 0x38) {
+        if (ent != 0 && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->m_gameMode != 1 || outA == 0) {
                 if (this->HitTest(outA, outB) == 0) {

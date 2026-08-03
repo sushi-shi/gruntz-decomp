@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -26,8 +27,8 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_greyChipSprite = 0;
     m_buttonFrame[0] = 0;
     m_buttonFrame[1] = 0;
-    m_buttonIcon[0] = 0;
-    m_buttonIcon[1] = 0;
+    m_buttonIcon[0] = PICKUP_NONE;
+    m_buttonIcon[1] = PICKUP_NONE;
     m_buttonState[0] = 0;
     m_buttonState[1] = 0;
     m_loaded = 0;
@@ -127,20 +128,23 @@ RVA(0x00009330, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
     CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];
     if (grunt == 0) {
-        m_buttonIcon[1] = 0;
-        m_buttonIcon[0] = 0;
+        m_buttonIcon[1] = PICKUP_NONE;
+        m_buttonIcon[0] = PICKUP_NONE;
     } else {
         m_buttonIcon[1] = grunt->m_vehiclePickupType;
-        if (grunt->m_entranceReason >= 0x17) {
+        if (grunt->m_entranceReason >= PICKUP_BABYWALKER) {
             m_buttonState[1] = 3;
         } else if (m_buttonState[1] == 3) {
             m_buttonState[1] = 1;
         }
-        i32 prim = (grunt->m_entranceReason > 0x16) ? grunt->m_toolId : grunt->m_entranceReason;
+        PickupType prim =
+            (grunt->m_entranceReason > PICKUP_WINGZ) ? grunt->m_toolId : grunt->m_entranceReason;
         m_buttonIcon[0] = prim;
-        if (prim == 0) {
-            m_buttonIcon[0] = 0x21;
-        } else if (prim == 3) {
+        if (prim == PICKUP_NONE) {
+            // 0x21 sits just below the engine's Brickz boundary (0x22) and is
+            // not a documented pickup id - the bare-hands button icon.
+            m_buttonIcon[0] = static_cast<PickupType>(0x21);
+        } else if (prim == PICKUP_BRICK) {
             m_buttonIcon[0] = grunt->m_brickPickupType;
         }
         if (!grunt->CanShowStamina()) {
@@ -151,20 +155,20 @@ i32 CActionOptionsMenuBar::Refresh() {
     }
 
     for (i32 i = 0; i < 2; i++) {
-        if (m_buttonIcon[i] == 0) {
+        if (m_buttonIcon[i] == PICKUP_NONE) {
             m_buttonState[i] = 0;
         } else if (m_buttonState[i] == 0) {
             m_buttonState[i] = 1;
         }
         switch (m_buttonState[i]) {
             case 1:
-                m_buttonFrame[i] = m_normChipSprite->GetAt(m_buttonIcon[i]);
+                m_buttonFrame[i] = m_normChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
             case 2:
-                m_buttonFrame[i] = m_highChipSprite->GetAt(m_buttonIcon[i]);
+                m_buttonFrame[i] = m_highChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
             case 3:
-                m_buttonFrame[i] = m_greyChipSprite->GetAt(m_buttonIcon[i]);
+                m_buttonFrame[i] = m_greyChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
             default:
                 m_buttonFrame[i] = 0;

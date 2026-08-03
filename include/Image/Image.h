@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Io/FileStream.h>
 
 class CDDrawPtrCollections;
@@ -98,9 +99,10 @@ SIZE_UNKNOWN();
 class CFileImageSurface : public CDDSurface {
 public:
     virtual ~CFileImageSurface() OVERRIDE;
-    virtual i32 GetPoolKind() OVERRIDE;
+    virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
 
-    virtual i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans);
+    virtual i32
+    ResolveEx(void* surf, void* buf, FileImageFormat type, u32 size, i32 ctrl, i32 trans);
     virtual i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key);
     virtual i32 LoadKeyed(void* surf, i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
 };

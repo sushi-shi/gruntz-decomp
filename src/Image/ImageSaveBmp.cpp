@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawShadeBlit.h>
+#include <Enums.h>
 #include <Ints.h>
 #include <Io/FileStream.h>
 

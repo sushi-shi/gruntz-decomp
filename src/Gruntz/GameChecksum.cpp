@@ -1,8 +1,10 @@
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
 #include <Net/NetMgr.h>
@@ -24,14 +26,14 @@ i32 CNetSession::Checksum() {
                 sum += obj->m_entranceCell.direction + obj->m_stamina + obj->m_toyTime
                        + obj->m_health + sub->m_screenY + sub->m_sortKey + sub->m_screenX
                        + obj->m_lastTilePx.m_x + obj->m_lastTilePx.m_y;
-                i32 n = obj->m_entranceReason;
-                i32 d = n;
-                if (n > 0x16) {
+                PickupType n = obj->m_entranceReason;
+                PickupType d = n;
+                if (n > PICKUP_WINGZ) {
                     d = obj->m_toolId;
                 }
-                sum += obj->m_vehiclePickupType + obj->m_entranceCommitted + obj->m_entranceActive
-                       + obj->m_daFlag + d;
-                i32 v = obj->m_entranceReason - 1;
+                sum += IDX(obj->m_vehiclePickupType) + obj->m_entranceCommitted
+                       + obj->m_entranceActive + obj->m_daFlag + d;
+                i32 v = IDX(obj->m_entranceReason) - 1;
                 i32 r;
                 if (static_cast<u32>(v) > 0x15) {
                     r = 0x17;

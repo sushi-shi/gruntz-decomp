@@ -72,15 +72,28 @@ StatementMacros:
   - VTBL_ABSENT
   - SIZE
   - SIZE_UNKNOWN
-# The mangled-symbol carriers are whitespace-sensitive ONLY (one canonical
+# The mangled-symbol carrier is whitespace-sensitive ONLY (one canonical
 # spelling, gated by gruntz.audit.label_style): clang-format must never re-space
-# or wrap their args - it splits stdcall decorations (`_WinMain@16` ->
+# or wrap its args - it splits stdcall decorations (`_WinMain@16` ->
 # `_WinMain @16`), which silently unbinds the label. StatementMacros WINS over
-# WhitespaceSensitiveMacros (measured, clang-format 21), so these two must NOT
-# be listed above.
+# WhitespaceSensitiveMacros (measured, clang-format 21), so it must NOT be
+# listed above.
 WhitespaceSensitiveMacros:
   - RVA_COMPGEN
-  - DATA_SYMBOL
 AttributeMacros:
   - OVERRIDE
+
+# --- enum-domain macros (include/Enums.h) ----------------------------------
+# Teach clang-format that the domain BEGIN macros open a brace block, or it
+# reflows every enumerator list onto one line. The END macros close it, so they
+# are statement macros. See docs/enum-modeling-plan.md.
+Macros:
+  - GZ_ENUM_BEGIN(name)=enum name {
+  - GZ_ENUM_BEGIN_SPLIT(name, storage)=enum name {
+  - GZ_ENUM_CONST_BEGIN(name)=enum name {
+  - GZ_ENUM_FLAGS_BEGIN(name, storage)=enum name {
+  - GZ_ENUM_END(name)=};
+  - GZ_ENUM_END_SPLIT(name, storage)=};
+  - GZ_ENUM_CONST_END(name)=};
+  - GZ_ENUM_FLAGS_END(name, storage)=};
 ...

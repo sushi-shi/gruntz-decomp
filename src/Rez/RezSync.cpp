@@ -17,6 +17,7 @@
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <EmptyString.h>
+#include <Enums.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/CoordNode.h>
@@ -34,6 +35,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/ParseSource.h>
+#include <Gruntz/Resolution.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
@@ -44,6 +46,7 @@
 #include <Io/SaveGame.h>
 #include <Net/NetMgr.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezTypeTag.h>
 #include <strstrea.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/GameApp.h>
@@ -87,7 +90,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     CoordPoolNode* pool = static_cast<CoordPoolNode*>(::operator new(0x3a980));
     g_coordPool.m_block = pool;
     if (!pool) {
-        ReportError(0x800a, 0x404);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x404);
         return 0;
     }
     g_coordPool.m_count = 0x4e20;
@@ -103,11 +106,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_coordPool.m_linkOffset = 4;
 
     if (!CGameMgr::Run(pGameWnd, szCmdLine)) {
-        ReportError(0x800a, 0x462);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x462);
         return 0;
     }
     if (!InitializeFonts()) {
-        ReportError(0x800a, 0x463);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x463);
         return 0;
     }
     srand((timeGetTime() + GetTickCount()) >> 1);
@@ -121,7 +124,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_settings = reg;
     if (!m_settings->Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
-        ReportError(0x800a, 0x406);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x406);
         return 0;
     }
     m_savedModeW = 0x280;
@@ -299,12 +302,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         i32 ok =
             m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(fn)), 1, 0) != 0;
         if (!ok) {
-            ReportError(0x800b, 0x409);
+            ReportError(static_cast<GruntzCommandId>(0x800b), 0x409);
             return 0;
         }
     }
     if (!m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) {
-        ReportError(0x8149, 0x460);
+        ReportError(static_cast<GruntzCommandId>(0x8149), 0x460);
         return 0;
     }
     m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.ZZZ"), 1);
@@ -313,12 +316,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_faderMgr = new CFaderMgr;
     if (!m_faderMgr->SetConfig(0, 0, 0)) {
-        ReportError(0x800a, 0x40a);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x40a);
         return 0;
     }
     m_cheatMgr = new CCheatMgr;
     if (!m_cheatMgr->Init(m_gameWnd->m_hwnd)) {
-        ReportError(0x800a, 0x40b);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x40b);
         return 0;
     }
     if (g_disableAudio == 0 && g_disableSoundFonts == 0) {
@@ -332,7 +335,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_sound = new CGruntzSoundZ;
     g_ailMidiDriver = 0;
     if (!m_sound->Init(m_owner->m_hInstance, m_gameWnd->m_hwnd, 0)) {
-        ReportError(0x800a, 0x40c);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x40c);
         return 0;
     }
     if (g_disableAudio == 0 && g_disableMusic == 0) {
@@ -350,7 +353,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_inputState = new CWorldSoundSet;
     if (!m_inputState->Init(world->m_soundRegistry, vSndVol)) {
-        ReportError(0x800a, 0x40d);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x40d);
         return 0;
     }
     {
@@ -386,12 +389,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             ::operator delete(m_logicPump);
             m_logicPump = 0;
         }
-        ReportError(0x800a, 0x411);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x411);
         return 0;
     }
     m_saveSink = new CSaveGame;
     if (!m_saveSink->SaveGameFile(g_emptyString)) {
-        ReportError(0x800a, 0x412);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x412);
         return 0;
     }
     m_scoreHud = new CBattlezData;
@@ -417,19 +420,19 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             ::operator delete(g_spawnConfig);
             g_spawnConfig = 0;
         }
-        ReportError(0x800a, 0x413);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x413);
         return 0;
     }
 
     m_cmdSubMgr = new CGruntzCmdMgr;
 
     if (!m_cmdSubMgr->SetMgr(this)) {
-        ReportError(0x800a, 0x414);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x414);
         return 0;
     }
     m_tileGrid = new CGruntzMapMgr;
     if (!m_tileGrid) {
-        ReportError(0x800a, 0x415);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x415);
         return 0;
     }
     m_spriteFactory = static_cast<CSpriteRefTable*>(::operator new(0x94));
@@ -450,7 +453,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_spriteFactory = 0;
         }
 
-        ReportError(0x800a, 0x416);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x416);
     }
 
     g_gameReg = this;
@@ -459,14 +462,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     for (i32 s = 0; s < 4; ++s) {
 
         if (!m_options[s].SeedForSlot(s)) {
-            ReportError(0x800a, 0x417);
+            ReportError(IDX(CMD_TOGGLE_MUSIC), 0x417);
             return 0;
         }
     }
 
     {
         CSymParser* mgr = m_symParser;
-        CParseSource* stream = mgr->ResolveQualified("GAME_ATTRIBUTEZ", 'TXT');
+        CParseSource* stream =
+            mgr->ResolveQualified("GAME_ATTRIBUTEZ", static_cast<RezTypeTag>('TXT'));
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
         i32 ok = 0;
         if (stream) {
@@ -508,7 +512,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             ::operator delete(rdr);
         }
         if (!ok) {
-            ReportError(0x800a, 0x418);
+            ReportError(IDX(CMD_TOGGLE_MUSIC), 0x418);
             return 0;
         }
     }
@@ -518,7 +522,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_chatLog->LoadFontConfig(0x1388, 0xbb8);
     m_cmdGrid = new CTriggerMgr;
     if (!m_cmdGrid->SetLevel(m_world)) {
-        ReportError(0x800a, 0x41b);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x41b);
         return 0;
     }
     g_localVersion = static_cast<i32>(
@@ -526,7 +530,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     );
     m_cueSink = new CGruntSpawnConfig;
     if (!m_cueSink->Init(this)) {
-        ReportError(0x800a, 0x45f);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x45f);
         return 0;
     }
     m_cueSink->m_voiceVolume = vScroll;
@@ -570,16 +574,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CString title;
         g_attractStateCount = 0;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->ResolveQualified(static_cast<const char*>(title), 'PCX')) {
+        while (attract->ResolveQualified(static_cast<const char*>(title), IMGTAG_XCP)) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }
-        if (TransitionState(mode, 1, 0, 0)) {
+        if (TransitionState(static_cast<GameStateId>(mode), 1, 0, 0)) {
             g_frameDelta = 0;
-        } else if (mode == 0x11 && TransitionState(2, 1, 0, 0)) {
+        } else if (mode == 0x11 && TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
             g_frameDelta = 0;
         } else {
-            ReportError(0x8005, mode == 0x11 ? 0x41c : 0x41d);
+            ReportError(IDX(CMD_NEW_GAME), mode == 0x11 ? 0x41c : 0x41d);
             return 0;
         }
     }

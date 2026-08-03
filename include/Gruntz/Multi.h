@@ -5,6 +5,8 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
 
@@ -64,8 +66,8 @@ public:
     virtual GameStateId Update() OVERRIDE;
 
     virtual i32 Render() OVERRIDE;
-    virtual i32 EnterState(i32) OVERRIDE;
-    virtual i32 LeaveState(i32) OVERRIDE;
+    virtual i32 EnterState(GameStateId) OVERRIDE;
+    virtual i32 LeaveState(GameStateId) OVERRIDE;
     virtual i32 OnChar(i32, i32) OVERRIDE;
     virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 UnusedPlayQuery() OVERRIDE;

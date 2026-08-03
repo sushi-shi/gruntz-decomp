@@ -31,7 +31,14 @@ i32 CFileImageSurface::LoadKeyed(
 }
 
 RVA(0x00148890, 0xad)
-i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans) {
+i32 CFileImageSurface::ResolveEx(
+    void* surf,
+    void* buf,
+    FileImageFormat type,
+    u32 size,
+    i32 ctrl,
+    i32 trans
+) {
     if (size == 0) {
         return 0;
     }

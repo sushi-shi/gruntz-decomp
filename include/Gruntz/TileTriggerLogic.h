@@ -3,12 +3,19 @@
 
 #include <rva.h>
 
+#include <Enums.h>
+#include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 
 class CTileTriggerContainer;
 
-typedef enum TrigLogicId {
+GZ_ENUM_BEGIN(TrigLogicId)
+// Wildcard: the container lookups read `if (k2 == 0 || m_typeId == k2)`,
+// so 0 means "any type" rather than a type of its own.
+    TRIGID_ANY = 0,
     TRIGID_SWITCH_1 = 1,
     TRIGID_SWITCH_2 = 2,
     TRIGID_MULTI_SWITCH_3 = 3,
@@ -22,75 +29,18 @@ typedef enum TrigLogicId {
     TRIGID_TIME_TRIGGER_23 = 0x17,
     TRIGID_TILE_TRIGGER_24 = 0x18,
     TRIGID_SECRET_TRIGGER_25 = 0x19,
-    TRIGID_COVERED_POWERUP_26 = 0x1a,
-} TrigLogicId;
+    TRIGID_COVERED_POWERUP_26 = 0x1a
+GZ_ENUM_END(TrigLogicId)
 
-typedef enum TileCollisionKind {
-    TILEKIND_ARROW_UP_A = 0x0b,
-    TILEKIND_ARROW_DOWN_A = 0x0c,
-    TILEKIND_ARROW_LEFT_A = 0x0d,
-    TILEKIND_ARROW_RIGHT_A = 0x0e,
-    TILEKIND_ARROW_UP_B = 0x0f,
-    TILEKIND_ARROW_DOWN_B = 0x10,
-    TILEKIND_ARROW_LEFT_B = 0x11,
-    TILEKIND_ARROW_RIGHT_B = 0x12,
-    TILEKIND_ARROW_CURRENT = 0x13,
-
-    TILEKIND_GAUNTLET_ROCK_A = 0x1e,
-    TILEKIND_GAUNTLET_ROCK_B = 0x1f,
-    TILEKIND_GIANT_ROCK = 0x21,
-    TILEKIND_COVERED_POWERUP = 0x22,
-    TILEKIND_REVEALED_POWERUP = 0x23,
-
-    TILEKIND_SWITCH_A = 0x33,
-    TILEKIND_SWITCH_B = 0x35,
-    TILEKIND_MULTI_SWITCH = 0x37,
-    TILEKIND_SWITCH_C = 0x39,
-    TILEKIND_EXCLUSIVE_SWITCH = 0x3b,
-    TILEKIND_SECRET_SWITCH = 0x3d,
-    TILEKIND_TIME_SWITCH = 0x3f,
-    TILEKIND_CHECKPOINT = 0x41,
-
-    TILEKIND_HIDDEN_POWERUP = 0x96,
-    TILEKIND_GAUNTLET_BRICK_A = 0x97,
-    TILEKIND_GAUNTLET_BRICK_B = 0x98,
-    TILEKIND_GAUNTLET_BRICK_C = 0x99,
-
-    TILEKIND_CHECKPOINTPYRAMID_DOWN = 0x5d,
-    TILEKIND_CHECKPOINTPYRAMID_UP = 0x5e,
-    TILEKIND_WHITEPYRAMID_DOWN = 0x5f,
-    TILEKIND_WHITEPYRAMID_UP = 0x60,
-    TILEKIND_ORANGEPYRAMID_DOWN = 0x61,
-    TILEKIND_ORANGEPYRAMID_UP = 0x62,
-    TILEKIND_BLACKPYRAMID_DOWN = 0x63,
-    TILEKIND_BLACKPYRAMID_UP = 0x64,
-    TILEKIND_GREENPYRAMID_DOWN = 0x65,
-    TILEKIND_GREENPYRAMID_UP = 0x66,
-
-    TILEKIND_PYRAMID_LATCH_A = 0x67,
-    TILEKIND_PYRAMID_LATCH_B = 0x68,
-    TILEKIND_REDPYRAMID_DOWN = 0x67,
-    TILEKIND_REDPYRAMID_UP = 0x68,
-    TILEKIND_PURPLEPYRAMID_DOWN = 0x69,
-    TILEKIND_PURPLEPYRAMID_UP = 0x6a,
-    TILEKIND_WATERBRIDGE_DOWN = 0x6b,
-    TILEKIND_WATERBRIDGE_UP = 0x6c,
-    TILEKIND_DEATHBRIDGE_DOWN = 0x6d,
-    TILEKIND_DEATHBRIDGE_UP = 0x6e,
-    TILEKIND_CRUMBLEWATERBRIDGE = 0x6f,
-    TILEKIND_CRUMBLEDEATHBRIDGE = 0x70,
-    TILEKIND_TOGGLEWATERBRIDGE_DOWN = 0x71,
-    TILEKIND_TOGGLEWATERBRIDGE_UP = 0x72,
-    TILEKIND_TOGGLEDEATHBRIDGE_DOWN = 0x73,
-    TILEKIND_TOGGLEDEATHBRIDGE_UP = 0x74,
-} TileCollisionKind;
-
-typedef enum TrigErrClass {
+// The diagnostic ids CGruntzMgr::ReportError takes. Its parameter is NOT
+// this domain - the WARP macro passes 0x46c-range ids through the same
+// slot - so these leave the type system with IDX() at the call.
+GZ_ENUM_BEGIN(TrigErrClass)
     TRIGERR_LOOKUP_MISS = 0x80dd,
-    TRIGERR_LINK_BROKEN = 0x80de,
-} TrigErrClass;
+    TRIGERR_LINK_BROKEN = 0x80de
+GZ_ENUM_END(TrigErrClass)
 
-typedef enum TrigErrSite {
+GZ_ENUM_BEGIN(TrigErrSite)
     TRIGSITE_WIRE_TIME_SWITCH = 0x3eb,
     TRIGSITE_WIRE_TIME_TRIGGER = 0x3ec,
     TRIGSITE_WIRE_SECRET_SWITCH = 0x3ed,
@@ -118,8 +68,8 @@ typedef enum TrigErrSite {
     TRIGSITE_BCAST_KEY_MISS = 0x44f,
     TRIGSITE_BCAST_NO_CLAIM = 0x450,
     TRIGSITE_LINKS_NO_OWNER = 0x452,
-    TRIGSITE_LINKS_KEY_MISS = 0x453,
-} TrigErrSite;
+    TRIGSITE_LINKS_KEY_MISS = 0x453
+GZ_ENUM_END(TrigErrSite)
 
 VTBL(CTileTriggerLogic, 0x001eaea4);
 class CTileTriggerLogic {
@@ -135,17 +85,17 @@ public:
 
     i32 Classify(i32 arg);
 
-    i32 ApplyMove(i32 verb);
+    i32 ApplyMove(TileCollisionKind verb);
 
     i32 FindIndexByKey(i32 key);
 
     void LoadBridgeMove(i32 type);
 
-    i32 ValidateByType(void* archive, i32 mode, i32 typeId, i32 pObj);
+    i32 ValidateByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
-    i32 m_typeTag;
+    TrigLogicId m_typeTag;
     i32 m_tileX;
     i32 m_tileY;
     i32 m_cellKey;
@@ -170,7 +120,7 @@ public:
 
     void BuildRockBreakInGameText();
 
-    i32 ApplyByType(void* archive, i32 mode, i32 typeId, i32 pObj);
+    i32 ApplyByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 SerializeMatrix(CFileMemBase* s);
     i32 DeserializeMatrix(CFileMemBase* s);
 

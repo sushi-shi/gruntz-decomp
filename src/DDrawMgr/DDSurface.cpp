@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WallProject.h>
+#include <Enums.h>
 #include <Image/Image.h>
 #include <Image/ImageRotate.h>
 #include <Image/RasterVtx.h>
@@ -251,7 +252,13 @@ void CDDSurface::FreeSurfaces() {
 }
 
 RVA(0x0013e550, 0x71)
-i32 CDDSurface::Resolve(CDDrawPtrCollections* pal, void* buf, i32 type, u32 size, u32 colorKey) {
+i32 CDDSurface::Resolve(
+    CDDrawPtrCollections* pal,
+    void* buf,
+    FileImageFormat type,
+    u32 size,
+    u32 colorKey
+) {
     if (size == 0) {
         return 0;
     }
@@ -1842,7 +1849,7 @@ i32 CDDSurface::IsValid() {
 }
 
 RVA(0x00141300, 0x3)
-i32 CDDSurface::GetPoolKind() {
+DDSurfacePoolKind CDDSurface::GetPoolKind() {
     return POOLKIND_PLAIN;
 }
 

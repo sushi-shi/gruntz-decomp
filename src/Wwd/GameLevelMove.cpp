@@ -78,7 +78,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 yLo = t->m_extent.top + y;
     i32 state = 0;
     while (yLo <= yHi) {
-        i32 result;
+        TileCollisionKind result;
         {
             i32 cx = xEnd;
             if (cx < 0) {
@@ -107,21 +107,22 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = kTilePassable;
+                result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                result = set->GetCollisionAt(subX, subY);
+                // Ingest: the raw WWD attribute byte for this cell.
+                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
             }
         }
-        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-            result = kTilePassable;
+        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+            result = TILEKIND_PASSABLE;
         }
-        if (result == kTileSoft || result == kTileSoft2) {
+        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
             i32 lo = t->m_screenX + t->m_extent.right;
             i32 j = xEnd - 1;
             state |= 0x60000;
             for (; j > lo; j--) {
-                if (AxisProbe(j, yLo) == kTilePassable) {
+                if (AxisProbe(j, yLo) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.right;
                     goto have_x;
                 }
@@ -159,7 +160,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 yLo = t->m_extent.top + y;
     i32 state = 0;
     while (yLo <= yHi) {
-        i32 result;
+        TileCollisionKind result;
         {
             i32 cx = xEnd;
             if (cx < 0) {
@@ -188,21 +189,22 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = kTilePassable;
+                result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                result = set->GetCollisionAt(subX, subY);
+                // Ingest: the raw WWD attribute byte for this cell.
+                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
             }
         }
-        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-            result = kTilePassable;
+        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+            result = TILEKIND_PASSABLE;
         }
-        if (result == kTileSoft || result == kTileSoft2) {
+        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
             i32 lo = t->m_screenX + t->m_extent.left;
             i32 j = xEnd + 1;
             state |= 0xa0000;
             for (; j < lo; j++) {
-                if (AxisProbe(j, yLo) == kTilePassable) {
+                if (AxisProbe(j, yLo) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.left;
                     goto have_x;
                 }
@@ -240,7 +242,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 col = t->m_extent.left + x;
     i32 state = 0;
     while (col <= colHi) {
-        i32 result;
+        TileCollisionKind result;
         {
             i32 cx = col;
             if (cx < 0) {
@@ -269,21 +271,22 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = kTilePassable;
+                result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                result = set->GetCollisionAt(subX, subY);
+                // Ingest: the raw WWD attribute byte for this cell.
+                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
             }
         }
-        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-            result = kTilePassable;
+        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+            result = TILEKIND_PASSABLE;
         }
-        if (result == kTileSoft || result == kTileSoft2) {
+        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
             i32 lo = t->m_screenY + t->m_extent.bottom;
             i32 j = fixedY - 1;
             state |= 0x1020000;
             for (; j > lo; j--) {
-                if (AxisProbe(col, j) == kTilePassable) {
+                if (AxisProbe(col, j) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.bottom;
                     goto have_y;
                 }
@@ -321,7 +324,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 col = t->m_extent.left + x;
     i32 state = 0;
     while (col <= colHi) {
-        i32 result;
+        TileCollisionKind result;
         {
             i32 cx = col;
             if (cx < 0) {
@@ -350,21 +353,22 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = kTilePassable;
+                result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                result = set->GetCollisionAt(subX, subY);
+                // Ingest: the raw WWD attribute byte for this cell.
+                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
             }
         }
-        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-            result = kTilePassable;
+        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+            result = TILEKIND_PASSABLE;
         }
-        if (result == kTileSoft || result == kTileSoft2) {
+        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
             i32 lo = t->m_screenY + t->m_extent.top;
             i32 j = fixedY + 1;
             state |= 0x820000;
             for (; j < lo; j++) {
-                if (AxisProbe(col, j) == kTilePassable) {
+                if (AxisProbe(col, j) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.top;
                     goto have_y;
                 }
@@ -399,9 +403,9 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
     i32 sx = t->m_screenX;
     i32 limit = sx + t->m_extent.right;
     for (x--; x > limit; x--) {
-        i32 result;
+        TileCollisionKind result;
         PROBE_TILE(this, x, y, result);
-        if (result == kTilePassable) {
+        if (result == TILEKIND_PASSABLE) {
             return x - t->m_extent.right;
         }
     }
@@ -413,9 +417,9 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenX;
     limit += t->m_extent.left;
     for (x++; x < limit; x++) {
-        i32 result;
+        TileCollisionKind result;
         PROBE_TILE(this, x, y, result);
-        if (result == kTilePassable) {
+        if (result == TILEKIND_PASSABLE) {
             return x - t->m_extent.left;
         }
     }
@@ -427,9 +431,9 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
     i32 sy = t->m_screenY;
     i32 limit = sy + t->m_extent.bottom;
     for (y--; y > limit; y--) {
-        i32 result;
+        TileCollisionKind result;
         PROBE_TILE(this, x, y, result);
-        if (result == kTilePassable) {
+        if (result == TILEKIND_PASSABLE) {
             return y - t->m_extent.bottom;
         }
     }
@@ -442,9 +446,9 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     i32 e = t->m_extent.top;
     i32 limit = sy + e;
     for (y++; y < limit; y++) {
-        i32 result;
+        TileCollisionKind result;
         PROBE_TILE(this, x, y, result);
-        if (result == kTilePassable) {
+        if (result == TILEKIND_PASSABLE) {
             return y - t->m_extent.top;
         }
     }
@@ -553,9 +557,9 @@ i32 CWwdSpatialMgr::Init(
     return 0;
 }
 
-#undef kTilePassable
-#undef kTileSoft
-#undef kTileSoft2
-#undef kTileHard
-#undef kTileSpecial
+#undef TILEKIND_PASSABLE
+#undef TILEKIND_SOFT
+#undef TILEKIND_SOFT2
+#undef TILEKIND_HARD
+#undef TILEKIND_SPECIAL
 #undef PROBE_TILE

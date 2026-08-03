@@ -1,17 +1,19 @@
+#ifndef GRUNTZ_CSTATUSBARMGR_H
+#define GRUNTZ_CSTATUSBARMGR_H
+
 #include <rva.h>
 
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
+#include <Enums.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Ints.h>
-
-#ifndef GRUNTZ_CSTATUSBARMGR_H
-#define GRUNTZ_CSTATUSBARMGR_H
 
 class CSBI_ImageSet;
 class CSBI_WellGoo;
@@ -19,6 +21,13 @@ class CWarpStoneFly;
 class CSBI_MenuItem;
 class CSBI_GruntMachine;
 class DirectSoundMgr;
+GZ_ENUM_BEGIN(SbiSlotState)
+    kSlotArmed = 0,
+    // Entered when the slot is activated; the progress animation runs from
+    // here until its frame reaches kSlotCommitLevel, which sets kSlotReady.
+    kSlotFilling = 1,
+    kSlotReady = 2
+GZ_ENUM_END(SbiSlotState)
 
 struct CSbiSlot {
 
@@ -27,7 +36,7 @@ struct CSbiSlot {
         m_interval = 0;
         m_startTimeHi = 0;
     }
-    i32 m_state;
+    SbiSlotState m_state;
     i32 m_value;
     union {
         i64 m_startTime;
@@ -69,11 +78,6 @@ class CSBI_WarlordHead;
 class CWarpStoneFly;
 
 extern CButeMgr g_buteMgr;
-
-enum SbiSlotState {
-    kSlotArmed = 0,
-    kSlotReady = 2,
-};
 
 const i32 kSlotCommitLevel = 0x1a;
 
@@ -138,7 +142,7 @@ public:
 
     void ResetGroupA();
 
-    i32 Sync(CFileMemBase* s, i32 op, i32 typeId, i32 pObj);
+    i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     i32 GetActiveValue();
     i32 LoadStatzTabToggleSprite(i32 value, i32 idx);

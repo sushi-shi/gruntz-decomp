@@ -18,6 +18,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
@@ -141,7 +142,7 @@ CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 f
 }
 
 RVA(0x0015b760, 0x6)
-i32 CWwdGameObjectA::GetClassId() {
+LoadableClassId CWwdGameObjectA::GetClassId() {
     return CLASSID_WWDOBJA;
 }
 
@@ -177,7 +178,7 @@ i32 CWwdGameObjectF::IsLoaded() {
 }
 
 RVA(0x0015ba60, 0x6)
-i32 CWwdGameObjectF::GetClassId() {
+LoadableClassId CWwdGameObjectF::GetClassId() {
     return CLASSID_WWDOBJF;
 }
 
@@ -211,7 +212,7 @@ i32 CWwdGameObject::IsLoaded() {
 }
 
 RVA(0x0015bce0, 0x6)
-i32 CWwdGameObject::GetClassId() {
+LoadableClassId CWwdGameObject::GetClassId() {
     return CLASSID_WWDOBJB;
 }
 
@@ -247,7 +248,7 @@ i32 CWwdGameObjectC::IsLoaded() {
 }
 
 RVA(0x0015c020, 0x6)
-i32 CWwdGameObjectC::GetClassId() {
+LoadableClassId CWwdGameObjectC::GetClassId() {
     return CLASSID_WWDOBJC;
 }
 
@@ -706,28 +707,28 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 }
 
 RVA(0x0015c900, 0x5c)
-i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) {
+i32 CAniAdvanceCursor::Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, void* self) {
     if (ar == 0) {
         return 0;
     }
     switch (type) {
-        case 3:
+        case SERIAL_PRESAVE:
             return 1;
-        case 4:
+        case SERIAL_SAVE:
             if (Serialize(ar) == 0) {
                 return 0;
             }
             break;
-        case 5:
+        case SERIAL_POSTSAVE:
             return 1;
-        case 6:
+        case SERIAL_PRELOAD:
             return 1;
-        case 7:
+        case SERIAL_LOAD:
             if (Deserialize(ar) == 0) {
                 return 0;
             }
             break;
-        case 8:
+        case SERIAL_POSTLOAD:
             return 1;
     }
     return 1;

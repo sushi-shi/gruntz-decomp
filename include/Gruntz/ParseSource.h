@@ -4,12 +4,9 @@
 #include <rva.h>
 
 #include <Bute/Hash.h>
+#include <Enums.h>
 #include <Ints.h>
-
-typedef enum ParseEntryTag {
-    PARSETAG_VAW = 0x574156,
-    PARSETAG_INA = 0x414e49,
-} ParseEntryTag;
+#include <Rez/RezTypeTag.h>
 
 class CSymTab;
 class CSymRec;
@@ -28,7 +25,7 @@ SIZE(0x18);
 
 struct CParseSource {
 
-    i32 GetEntryTag();
+    RezTypeTag GetEntryTag();
     char* BeginParse();
     i32 EndParse();
 

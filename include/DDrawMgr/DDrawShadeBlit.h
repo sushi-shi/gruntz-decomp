@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Enums.h>
 #include <Ints.h>
 
 class CString;

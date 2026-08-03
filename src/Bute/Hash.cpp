@@ -5,6 +5,7 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <Dsndmgr/SoundVoiceList.h>
+#include <Enums.h>
 #include <Gruntz/ParseSource.h>
 
 RVA(0x0013c230, 0xf)

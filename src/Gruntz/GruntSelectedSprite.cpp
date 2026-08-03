@@ -6,6 +6,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -84,14 +85,14 @@ i32 CGruntSelectedSprite::Update() {
 RVA(0x0007ea70, 0x6f)
 i32 CGruntSelectedSprite::SerializeMove(
     CFileMemBase* arc,
-    i32 mode,
-    i32 typeId,
+    SerialMode mode,
+    LogicTypeId typeId,
     CGameObject* pObj
 ) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
 
-    if (mode != 4) {
-        if (mode == 7) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
             sa->Read(&m_cell, 8);
         }
     } else {

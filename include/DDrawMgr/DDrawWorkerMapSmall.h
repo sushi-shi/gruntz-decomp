@@ -18,7 +18,7 @@ public:
     virtual i32 IsReady() OVERRIDE;
     virtual void Unload() OVERRIDE;
 
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
     virtual void* LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags);
 
     virtual void* CreateWorkerFromData(void* data, const char* key, i32 flags);

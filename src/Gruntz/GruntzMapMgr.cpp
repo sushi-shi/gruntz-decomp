@@ -1,18 +1,20 @@
 #include <Gruntz/GruntzMapMgr.h>
 
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
 VTBL(CGruntzMapMgr, 0x001e9bb4);
 
 // @early-stop
 RVA(0x00082430, 0x161)
-i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
+i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
     switch (mode) {
-        case 7: {
+        case SERIAL_LOAD: {
 
             ar->Read(&m_reserved90, 4);
             i32 count;
@@ -39,7 +41,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
             }
             break;
         }
-        case 4: {
+        case SERIAL_SAVE: {
 
             ar->Write(&m_reserved90, 4);
             i32 wn = m_arr.GetSize();

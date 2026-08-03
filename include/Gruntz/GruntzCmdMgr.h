@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/GruntzCommand.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
@@ -54,7 +55,7 @@ public:
 
     void EnqueueCommand(i32 flag, void* cmd);
 
-    i32 Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
     i32 IsActive(CFileMemBase* enable);
 

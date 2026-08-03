@@ -2,6 +2,7 @@
 
 #include <Rez/RezMgr.h>
 
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezSync.h>
@@ -50,8 +51,8 @@ i32 CGruntzMgr::PerFrameTick() {
 
     CGameMgrBase::PerFrameTick();
 
-    i32 r = m_curState->Update();
-    if (r != GAMESTATE_NONE) {
+    GameStateId r = m_curState->Update();
+    if (r != GAMESTATE_MULTI) {
         u32 dt = g_wap32FrameDelta;
         g_lastNow = g_wap32Now;
         g_frameDelta = dt;
@@ -167,7 +168,7 @@ i32 CGruntzMgr::MakeRezPath() {
     }
 
     if (!found) {
-        ReportError(0x800b, 0x43e);
+        ReportError(static_cast<GruntzCommandId>(0x800b), 0x43e);
         return 0;
     }
     return 1;

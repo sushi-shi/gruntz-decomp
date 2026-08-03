@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/GruntzSoundZ.h>
+#include <Enums.h>
 
 #include <string.h>
 

@@ -15,9 +15,12 @@
 #include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/Loadable.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
@@ -39,15 +42,9 @@
 DATA(0x002bf674)
 i32 g_logicTypesRegistered;
 
-RVA(0x00058b60, 0x2d)
-void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
-    m_animCursor.Setup(srcSprite);
-    if (applyDefault) {
-        m_animCursor.Advance(g_engineFrameDelta);
-    }
-}
-
-// @early-stop
+// @identity-TODO ApplyGeometryDirect@CWwdGameObjectA - thunk oracle: retail gave this an incremental
+// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
+// (44 fns) came from the static library. It belongs to another compiland.
 RVA(0x001504d0, 0x6c)
 void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     CDDrawWorker* spr = 0;
@@ -243,7 +240,7 @@ i32 CWwdGameObjectA::Test() {
 }
 
 RVA(0x00150a70, 0x89)
-i32 CWwdGameObjectA::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
+i32 CWwdGameObjectA::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
     if (ar == 0) {
         return 0;
     }
@@ -472,13 +469,13 @@ void CGameObject::AddLogicBump(char* key) {
 }
 
 RVA(0x00151150, 0x190)
-i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
+i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
     if (ar == 0) {
         return 0;
     }
 
     switch (mode) {
-        case 3: {
+        case SERIAL_PRESAVE: {
             m_carrierId = 0;
             if (m_carrier != 0) {
                 m_carrierId = m_carrier->m_objectId;
@@ -497,7 +494,7 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             }
             break;
         }
-        case 4: {
+        case SERIAL_SAVE: {
             if (Serialize(ar) == 0) {
                 return 0;
             }
@@ -515,7 +512,7 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             }
             break;
         }
-        case 7: {
+        case SERIAL_LOAD: {
             if (SerializeObjectState(ar) == 0) {
                 return 0;
             }
@@ -533,7 +530,7 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             }
             break;
         }
-        case 8: {
+        case SERIAL_POSTLOAD: {
             i32 node = m_carrierId;
             if (node != 0) {
                 void* found = 0;
@@ -752,7 +749,7 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
 }
 
 RVA(0x00151c00, 0x118)
-i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
+i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     CFileMemBase* ar = dst;
     if (ar == 0) {
         return 0;
@@ -773,7 +770,9 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
 
     w = m_animWorker;
     CUserLogic* logic = w->m_logic;
-    i32 typeTag = 0;
+    // Seeded with 0, NOT LOGIC_NONE(-1): retail writes 0 into the record when
+    // the worker has no logic, and 0 is not a member of this domain.
+    LogicTypeId typeTag = static_cast<LogicTypeId>(0);
     if (logic != 0) {
         typeTag = logic->GetTypeTag();
     }
@@ -816,7 +815,7 @@ i32 AnimWorkerObj::IsLoaded() {
 }
 
 RVA(0x00151d70, 0x6)
-i32 AnimWorkerObj::GetClassId() {
+LoadableClassId AnimWorkerObj::GetClassId() {
     return CLASSID_ANIMWORKER;
 }
 
@@ -934,14 +933,15 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
 }
 
 RVA(0x00152060, 0xab)
-CImage* CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, i32 mode, i32 index, u32 size) {
+CImage*
+CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner());
 
-    if (nf->LoadDispatch(desc, static_cast<u32>(mode), size, 1) == 0) {
+    if (nf->LoadDispatch(desc, mode, size, 1) == 0) {
         if (nf != 0) {
             delete nf;
         }

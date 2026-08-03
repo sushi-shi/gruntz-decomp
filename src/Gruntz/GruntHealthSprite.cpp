@@ -5,6 +5,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
@@ -121,14 +122,19 @@ i32 CGruntHealthSprite::HealthUpdate() {
 }
 
 RVA(0x0007f270, 0xa3)
-i32 CGruntHealthSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+i32 CGruntHealthSprite::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* pObj
+) {
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             ar->Write(&m_cell, 8);
             ar->Write(&m_health, 4);
             ar->Write(&m_yOffset, 4);
             break;
-        case 7:
+        case SERIAL_LOAD:
             ar->Read(&m_cell, 8);
             ar->Read(&m_health, 4);
             ar->Read(&m_yOffset, 4);

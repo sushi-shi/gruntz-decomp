@@ -3,6 +3,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/Resolution.h>
 #include <Ints.h>
 
 extern "C" i32 g_opt_22bd64;
@@ -11,7 +12,7 @@ extern "C" i32 g_opt_22bd6c;
 extern "C" i32 g_opt_22bd70;
 extern "C" i32 g_opt_22bd84;
 extern "C" i32 g_opt_22bdc4;
-extern "C" i32 g_opt_22bdc8;
+extern "C" Resolution g_opt_22bdc8;
 extern "C" i32 g_opt_22bdcc;
 extern "C" i32 g_opt_22bdd0;
 extern "C" i32 g_opt_22bdd4;

@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Enums.h>
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/MenuItem2.h>

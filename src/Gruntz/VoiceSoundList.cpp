@@ -4,10 +4,11 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
-#include <Gruntz/Enums.h>
+#include <Enums.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SpawnList.h>
+#include <Rez/RezTypeTag.h>
 
 // @early-stop
 RVA(0x0011c210, 0x29d)

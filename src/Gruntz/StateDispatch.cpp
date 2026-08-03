@@ -18,6 +18,9 @@ VTBL(CLevelTime, 0x001e801c);
 RVA_COMPGEN(0x00011a20, 0x1e, ??_GCLevelTime@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 
+// @identity-TODO _CreateLevelTime (241 B) sits outside this TU's block at 0x9b770, between
+// IsSameWorld (areamgr) and ?0CLevelTime (statedispatch). No size-family and too
+// large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x0009b770, 0xf1)
 i32 CreateLevelTime(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;

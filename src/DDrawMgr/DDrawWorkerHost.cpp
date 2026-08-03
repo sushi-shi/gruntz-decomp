@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/Loadable.h>
 #include <Wwd/WwdSpatialMgr.h>
 
 RVA(0x00163a90, 0x17)
@@ -15,7 +16,7 @@ i32 CDDrawWorkerHost::IsLoaded() {
 }
 
 RVA(0x00163ab0, 0x6)
-i32 CDDrawWorkerHost::GetClassId() {
+LoadableClassId CDDrawWorkerHost::GetClassId() {
     return CLASSID_WORKERHOST;
 }
 

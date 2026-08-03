@@ -13,6 +13,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Enums.h>
 #include <Gruntz/AssetRoot.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
@@ -64,7 +65,7 @@ i32 CSplashState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
-            m_mgr->ReportError(0x8006, 0x447);
+            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x447);
             return 0;
         }
     }

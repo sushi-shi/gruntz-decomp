@@ -23,7 +23,7 @@ struct CAniRecordBase2 : public CLoadable {
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
-    virtual i32 GetClassId() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 CreatePaletteFromEntries(i32 handle, i32 flag);
     virtual i32 CreatePaletteFromRgb(void* data, i32 flag);

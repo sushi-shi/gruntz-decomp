@@ -7,6 +7,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
@@ -639,17 +640,17 @@ void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
 }
 
 RVA(0x0009f7f0, 0x3b)
-i32 CMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
+i32 CMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             if (Save(ar) == 0) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (Load(ar) == 0) {
                 return 0;
             }
@@ -709,6 +710,9 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     return 1;
 }
 
+// @identity-TODO SetVersionRect - thunk oracle: retail gave this NO incremental
+// thunk, so it came from the static LIBRARY, while the rest of this TU
+// (24 fns) was a link-line object. It belongs to another compiland.
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {
     g_versionRect.left = 5;

@@ -5,6 +5,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -32,7 +33,8 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {}
-    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj);
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj);
     virtual LogicTypeId GetTypeTag();
 };
 SIZE_UNKNOWN();
@@ -42,7 +44,7 @@ public:
     CUserLogic() {}
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {}
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual LogicTypeId GetTypeTag() OVERRIDE;
 
     virtual void XferName(char* name);
@@ -126,7 +128,7 @@ public:
     }
     ~CWapX() {}
 
-    i32 Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj);
+    i32 Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj);
 
     void Apply(class CAniElement* a, i32 b);
 
@@ -142,7 +144,7 @@ SIZE(0x20);
 
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual LogicTypeId GetTypeTag() OVERRIDE;
 
 public:
