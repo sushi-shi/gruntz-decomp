@@ -48,7 +48,7 @@ src/Image/ImagePool.cpp	290	done
 src/DDrawMgr/LevelPlane.cpp	285	done (COORD_UNSET x4; 0x80 is a WWD type bit, rest is plane arithmetic)
 src/DDrawMgr/DirectDrawMgr.cpp	284	done (44 DDERR_* named by their own strings; 3 corrected against the SDK, incl. retail mislabelling NOTLOCKED as LOCKEDSURFACES)
 src/Wwd/WwdGameObject.cpp	277	none (0x80 is the 128-byte serialized name field, a size; flags bits need the WWD table)
-src/Image/CImage.cpp	268	none (0x40000 etc. are REZ buffer sizes and DIB flags)
+src/Image/CImage.cpp	268	none (mode 3/4 here is a PID origin selector, not SerialMode; rest are REZ buffer sizes)
 src/Gruntz/Warlord.cpp	266	none (0x80 is the serialized name field; 0x1770/0x7530 are millisecond timers)
 src/Gruntz/Demo.cpp	251	done (AnimWorkerAct dispatch named)
 src/Gruntz/BattlezData.cpp	249	none (0x37 is a record stride; rest are scoreboard column widths)
@@ -95,7 +95,7 @@ src/Gruntz/BrickzCellFlags.cpp	128	none (0x4002008/0x6021 are WWD flag words nee
 src/Gruntz/GruntAssetLoaders.cpp	120	none (0x10000 fixed-point; 0x357.. are anim ids with no table)
 src/Gruntz/CustomWorldDialog.cpp	120	none (dialog control ids with no resource script; arms are indistinguishable)
 src/Net/LatencyList.cpp	115	none (each AddNode row is labelled by its own string - "High Latency [ping < 400]"; the numbers are its delay/window tuning)
-src/Wwd/GameLevelMove.cpp	113	done (COORD_UNSET; the duplicated file-local AXIS_UNSET is gone)
+src/Wwd/GameLevelMove.cpp	113	done (MOVE_DIRECT + COORD_UNSET/UNINIT_FILL applied)
 src/Gruntz/SpriteRefTable.cpp	109	none (sprite-table strides)
 src/Gruntz/LoadGameMenu.cpp	108	none (dialog control ids, one use each)
 src/Wap32/GameApp.cpp	107	done (WM_QUIT/WM_CLOSE named)
@@ -154,117 +154,117 @@ src/Gruntz/GruntDecay.cpp	34	none (0xbb8 is a millisecond lifetime; 0x10000 fixe
 src/Gruntz/GameAssetNamespaces.cpp	34	none (namespace-table sizes)
 src/Gruntz/BuildGruntzCrcInfo.cpp	34	none (CRC record field offsets)
 src/Gruntz/ProjActCache.cpp	33	none (cache-table sizes)
-src/Gruntz/FortConquered.cpp	33	pending
+src/Gruntz/FortConquered.cpp	33	none (tile-to-pixel geometry and millisecond timers)
 src/Gruntz/ActionArea.cpp	33	none (1/2 pick GAME_ACTIONAREA_BLUE/_RED - the arm string already names it)
-src/Image/PaletteBmp.cpp	32	pending
-src/Image/ImageRle16Encode.cpp	32	pending
-src/Rez/RezMgr.cpp	31	pending
-src/Gruntz/SoundFontPath.cpp	30	pending
-src/Gruntz/SBI_ImageSetAni.cpp	30	pending
+src/Image/PaletteBmp.cpp	32	none (0x400 is the 256-entry BMP palette in bytes)
+src/Image/ImageRle16Encode.cpp	32	none (RLE run-length markers and a 256-entry table)
+src/Rez/RezMgr.cpp	31	none (percentage progress steps)
+src/Gruntz/SoundFontPath.cpp	30	none (buffer sizes and byte masks)
+src/Gruntz/SBI_ImageSetAni.cpp	30	none (sprite frame indices)
 src/Gruntz/InGameWorkerHandlers.cpp	30	done (AnimWorkerAct dispatch named)
 src/Gruntz/GruntIndicatorWorkerHandlers.cpp	30	done (AnimWorkerAct dispatch named)
-src/Gruntz/GameInfoString.cpp	30	pending
+src/Gruntz/GameInfoString.cpp	30	none (buffer sizes and byte masks)
 src/Gruntz/LightFx.cpp	29	done (AnimWorkerAct dispatch named)
 src/Gruntz/GameLevelLookupTile.cpp	29	done (COORD_UNSET; the duplicated file-local AXIS_UNSET is gone)
-src/Gruntz/ExitTrigger.cpp	29	pending
-src/Gruntz/UserLogic.cpp	28	pending
-src/Gruntz/TileScan.cpp	28	pending
-src/Gruntz/NameRecord.cpp	28	pending
-src/Gruntz/LevelRezPath.cpp	28	pending
-src/Wwd/WwdGrid.cpp	27	pending
-src/Utils/BitArray.cpp	27	pending
-src/Gruntz/ImageSet3.cpp	27	pending
-src/Gruntz/GruntCreationPoint.cpp	27	pending
-src/Gruntz/CustomLevelDlg.cpp	27	pending
-src/Gruntz/AdvancedOptions.cpp	27	pending
-src/Gruntz/StatusBarUpdaters.cpp	26	pending
-src/Gruntz/ScatterSamples.cpp	26	pending
-src/Gruntz/SBI_Image.cpp	26	pending
-src/Gruntz/GruntStateRec.cpp	26	pending
-src/Gruntz/CmdScrollApply.cpp	26	pending
-src/DDrawMgr/DDrawSubMgrLeaf.cpp	26	pending
+src/Gruntz/ExitTrigger.cpp	29	none (tile-to-pixel geometry and millisecond timers)
+src/Gruntz/UserLogic.cpp	28	none (0x80 is the serialized name field; rest are record field offsets)
+src/Gruntz/TileScan.cpp	28	none (anim ids with no recovered table)
+src/Gruntz/NameRecord.cpp	28	none (buffer sizes and byte masks)
+src/Gruntz/LevelRezPath.cpp	28	none (0x5f4 is the level header size; 0x24 the quest ceiling already named as QUESTLEVEL_LAST elsewhere)
+src/Wwd/WwdGrid.cpp	27	none (grid bucket offsets)
+src/Utils/BitArray.cpp	27	none (0x20/0x1f are the 32-bit word size and its index mask)
+src/Gruntz/ImageSet3.cpp	27	none (tile-record field offsets)
+src/Gruntz/GruntCreationPoint.cpp	27	none (tile-to-pixel geometry and millisecond timers)
+src/Gruntz/CustomLevelDlg.cpp	27	none (dialog control ids with no resource script)
+src/Gruntz/AdvancedOptions.cpp	27	none (dialog control ids, one use each)
+src/Gruntz/StatusBarUpdaters.cpp	26	none (HUD geometry)
+src/Gruntz/ScatterSamples.cpp	26	none (sample-table sizes)
+src/Gruntz/SBI_Image.cpp	26	none (0x80 is the serialized name field; rest are record field offsets)
+src/Gruntz/GruntStateRec.cpp	26	none (0x80 is the serialized name field; rest are record field offsets)
+src/Gruntz/CmdScrollApply.cpp	26	none (scroll step magnitudes)
+src/DDrawMgr/DDrawSubMgrLeaf.cpp	26	none (one-off table ordinals)
 src/Gruntz/ToobSpikez.cpp	25	done (AnimWorkerAct dispatch named)
-src/Gruntz/SlotComboFill.cpp	25	pending
-src/Gruntz/MenuSparkle.cpp	24	pending
-src/Gruntz/GruntzWnd.cpp	24	pending
-src/Gruntz/BootyCheatState.cpp	24	pending
-src/Gruntz/StartUpPrompt.cpp	23	pending
-src/Gruntz/SBI_ImageSet.cpp	23	pending
-src/Gruntz/GruntzApp.cpp	23	pending
-src/Gruntz/GruntDataRecord.cpp	23	pending
-src/DDrawMgr/LogicRecord.cpp	23	pending
+src/Gruntz/SlotComboFill.cpp	25	none (0xffff is the LOWORD mask)
+src/Gruntz/MenuSparkle.cpp	24	none (millisecond timers and anim ids)
+src/Gruntz/GruntzWnd.cpp	24	none (SC_* system commands and their 0xfff0 mask already named)
+src/Gruntz/BootyCheatState.cpp	24	none (booty screen geometry)
+src/Gruntz/StartUpPrompt.cpp	23	none (0x8003 is a string-table resource id; 0x3e its buffer size)
+src/Gruntz/SBI_ImageSet.cpp	23	none (0x80 is the serialized name field; rest are record field offsets)
+src/Gruntz/GruntzApp.cpp	23	done (CMD_TOGGLE_SOUND named; rest are startup geometry)
+src/Gruntz/GruntDataRecord.cpp	23	none (0x80 is the serialized name field; rest are record field offsets)
+src/DDrawMgr/LogicRecord.cpp	23	none (logic-record field offsets)
 src/Gruntz/StatusBarSpriteActs.cpp	22	done (AnimWorkerAct dispatch named)
-src/Gruntz/GlyphStringDraw.cpp	22	pending
+src/Gruntz/GlyphStringDraw.cpp	22	none (glyph metrics)
 src/Wap32/EngStrRenderText.cpp	21	done
-src/Gruntz/RainCloud.cpp	21	pending
+src/Gruntz/RainCloud.cpp	21	none (millisecond timers and pixel speeds)
 src/Gruntz/InputDeviceConfig.cpp	21	done
-src/Gruntz/GruntPowerupSprite.cpp	21	pending
-src/Gruntz/GruntHealthSprite.cpp	20	pending
-src/Gruntz/CheckpointDlg.cpp	20	pending
-src/Gruntz/GruntToySprite.cpp	19	pending
-src/DDrawMgr/DataBuffer.cpp	19	pending
-src/Gruntz/MovingLogic.cpp	18	pending
-src/Gruntz/GruntzMapMgr.cpp	18	pending
-src/Crypto/BitStreamBlowfish.cpp	18	pending
-src/Gruntz/StreamRecordLoaders.cpp	17	pending
-src/Gruntz/SerialObjectFactory.cpp	16	pending
-src/Gruntz/GruntSelectedSprite.cpp	16	pending
+src/Gruntz/GruntPowerupSprite.cpp	21	none (act-registry id range CActRegPool(2000, 2010); rest are sprite frame offsets)
+src/Gruntz/GruntHealthSprite.cpp	20	none (act-registry id range CActRegPool(2000, 2010); rest are sprite frame offsets)
+src/Gruntz/CheckpointDlg.cpp	20	none (dialog control ids, one use each)
+src/Gruntz/GruntToySprite.cpp	19	none (act-registry id range CActRegPool(2000, 2010); rest are sprite frame offsets)
+src/DDrawMgr/DataBuffer.cpp	19	none (buffer sizes and byte masks)
+src/Gruntz/MovingLogic.cpp	18	none (0x800000 is a move-result flag bit; rest is fixed-point)
+src/Gruntz/GruntzMapMgr.cpp	18	none (map-record field offsets)
+src/Crypto/BitStreamBlowfish.cpp	18	none (block sizes)
+src/Gruntz/StreamRecordLoaders.cpp	17	none (0x80 is the serialized name field; rest are record field offsets)
+src/Gruntz/SerialObjectFactory.cpp	16	none (0x80 is the serialized name field; rest are record field offsets)
+src/Gruntz/GruntSelectedSprite.cpp	16	none (act-registry id range CActRegPool(2000, 2010); rest are sprite frame offsets)
 src/Gruntz/CursorSnapSprite.cpp	16	done (AnimWorkerAct dispatch named)
-src/Gruntz/BehindCandyAni.cpp	16	pending
-src/DDrawMgr/DDrawPolyFill.cpp	16	pending
-src/Gruntz/SimpleAnimation.cpp	15	pending
-src/Bute/Hash.cpp	15	pending
-src/Gruntz/GruntStartingPoint.cpp	14	pending
-src/Gruntz/AniPlayer.cpp	14	pending
-src/Image/CImageComdats.cpp	13	pending
-src/Gruntz/SBI_SideTabBuild.cpp	13	pending
-src/Gruntz/MgrSettings.cpp	13	pending
-src/Io/GameSave.cpp	12	pending
-src/Gruntz/SingleAnimation.cpp	12	pending
-src/Gruntz/LogicRecordDispatch.cpp	12	pending
-src/Gruntz/Boomerang.cpp	12	pending
-src/Utils/TimeSplit.cpp	11	pending
-src/Rez/RezBufferObject.cpp	11	pending
+src/Gruntz/BehindCandyAni.cpp	16	none (act-registry id range CActRegPool(2000, 2010); rest are sprite frame offsets)
+src/DDrawMgr/DDrawPolyFill.cpp	16	none (edge-table sizes)
+src/Gruntz/SimpleAnimation.cpp	15	none (record field offsets and one-off table ordinals)
+src/Bute/Hash.cpp	15	none (hash multipliers)
+src/Gruntz/GruntStartingPoint.cpp	14	none (act-registry id range CActRegPool(2000, 2010); rest are frame offsets)
+src/Gruntz/AniPlayer.cpp	14	none (record field offsets and one-off table ordinals)
+src/Image/CImageComdats.cpp	13	none (record field offsets and one-off table ordinals)
+src/Gruntz/SBI_SideTabBuild.cpp	13	none (HUD geometry)
+src/Gruntz/MgrSettings.cpp	13	none (0x80 is the serialized name field)
+src/Io/GameSave.cpp	12	none (record field offsets and one-off table ordinals)
+src/Gruntz/SingleAnimation.cpp	12	none (record field offsets and one-off table ordinals)
+src/Gruntz/LogicRecordDispatch.cpp	12	none (record field offsets and one-off table ordinals)
+src/Gruntz/Boomerang.cpp	12	none (pixel speeds and a WWD flag bit)
+src/Utils/TimeSplit.cpp	11	none (60000/3600000 are milliseconds per minute and hour)
+src/Rez/RezBufferObject.cpp	11	none (buffer sizes)
 src/Gruntz/StateDispatch.cpp	11	done (AnimWorkerAct dispatch named)
-src/Gruntz/SingleFrameMessage.cpp	11	pending
-src/Gruntz/ImageSet1.cpp	11	pending
-src/Gruntz/GameIconFlashEffect.cpp	11	pending
-src/Rez/RezColl.cpp	10	pending
-src/Image/MoviePaletteUpload.cpp	10	pending
-src/Gruntz/TitleAppStart.cpp	10	pending
-src/Gruntz/AniCycle.cpp	10	pending
-src/DDrawMgr/DDrawSubMgrRefresh.cpp	10	pending
-src/Wap32/GameWndComdats.cpp	9	pending
-src/Gruntz/EyeCandy.cpp	9	pending
-src/Gruntz/DoNothing.cpp	9	pending
-src/Gruntz/CreditzAssets.cpp	9	pending
-src/Gruntz/BracketValueParse.cpp	9	pending
-src/Gruntz/BehindCandy.cpp	9	pending
-src/Wap32/ZVec.cpp	8	pending
-src/Utils/WinAPIModule.cpp	8	pending
+src/Gruntz/SingleFrameMessage.cpp	11	none (record field offsets and one-off table ordinals)
+src/Gruntz/ImageSet1.cpp	11	none (record field offsets and one-off table ordinals)
+src/Gruntz/GameIconFlashEffect.cpp	11	none (fixed-point one and a flash period)
+src/Rez/RezColl.cpp	10	none (record field offsets and one-off table ordinals)
+src/Image/MoviePaletteUpload.cpp	10	none (256-entry palette)
+src/Gruntz/TitleAppStart.cpp	10	none (0xea60 is a 60000 ms timeout)
+src/Gruntz/AniCycle.cpp	10	none (act-registry id range CActRegPool(2000, 2010); rest are frame offsets)
+src/DDrawMgr/DDrawSubMgrRefresh.cpp	10	none (record field offsets and one-off table ordinals)
+src/Wap32/GameWndComdats.cpp	9	none (record field offsets and one-off table ordinals)
+src/Gruntz/EyeCandy.cpp	9	none (0x800000 is a draw flag bit)
+src/Gruntz/DoNothing.cpp	9	none (record field offsets and one-off table ordinals)
+src/Gruntz/CreditzAssets.cpp	9	none (3000 ms scroll period)
+src/Gruntz/BracketValueParse.cpp	9	none (parser buffer size)
+src/Gruntz/BehindCandy.cpp	9	none (0x800000 is a draw flag bit)
+src/Wap32/ZVec.cpp	8	none (record field offsets and one-off table ordinals)
+src/Utils/WinAPIModule.cpp	8	none (record field offsets and one-off table ordinals)
 src/Image/ResolveNode.cpp	8	done (COORD_UNSET)
-src/Image/PaletteReset.cpp	8	pending
-src/Gruntz/UserLogicCtorEmit.cpp	8	pending
-src/Gruntz/SerializeSyncMarker.cpp	8	pending
-src/Gruntz/IconLoaders.cpp	8	pending
-src/Gruntz/Fonts.cpp	8	pending
-src/Gruntz/WarpStoneFly.cpp	7	pending
-src/Gruntz/RockBreakEffectUpdate.cpp	7	pending
+src/Image/PaletteReset.cpp	8	none (256-entry palette)
+src/Gruntz/UserLogicCtorEmit.cpp	8	none (record field offsets and one-off table ordinals)
+src/Gruntz/SerializeSyncMarker.cpp	8	done (SERIAL_SAVE/SERIAL_LOAD applied; SERIAL_SYNC_MARKER_BASE named)
+src/Gruntz/IconLoaders.cpp	8	none (icon frame indices)
+src/Gruntz/Fonts.cpp	8	none (record field offsets and one-off table ordinals)
+src/Gruntz/WarpStoneFly.cpp	7	none (record field offsets and one-off table ordinals)
+src/Gruntz/RockBreakEffectUpdate.cpp	7	none (fixed-point one)
 src/Gruntz/GameText.cpp	7	done
-src/Gruntz/BzKindDispatch.cpp	7	pending
-src/Crypto/ButeTailEncode.cpp	7	pending
-src/Bute/BSecStream.cpp	7	pending
-src/Wwd/WwdFile.cpp	6	pending
-src/Wap32/WapUncompress.cpp	6	pending
-src/Wap32/GameAppComdats.cpp	6	pending
-src/Utils/BitArrayStream.cpp	6	pending
-src/Net/NetSessionNode.cpp	6	pending
-src/Image/ImageSet3.cpp	6	pending
-src/Gruntz/TimeString.cpp	6	pending
-src/Gruntz/GruntWingzTimeSprite.cpp	6	pending
-src/Gruntz/GruntToyTimeSprite.cpp	6	pending
-src/Gruntz/GruntStaminaSprite.cpp	6	pending
-src/Gruntz/WormholeActs.cpp	5	pending
+src/Gruntz/BzKindDispatch.cpp	7	done (NetConnectionType already applied)
+src/Crypto/ButeTailEncode.cpp	7	none (record field offsets and one-off table ordinals)
+src/Bute/BSecStream.cpp	7	none (record field offsets and one-off table ordinals)
+src/Wwd/WwdFile.cpp	6	none (WWD header field offsets)
+src/Wap32/WapUncompress.cpp	6	none (record field offsets and one-off table ordinals)
+src/Wap32/GameAppComdats.cpp	6	none (record field offsets and one-off table ordinals)
+src/Utils/BitArrayStream.cpp	6	none (record field offsets and one-off table ordinals)
+src/Net/NetSessionNode.cpp	6	none (record field offsets and one-off table ordinals)
+src/Image/ImageSet3.cpp	6	none (record field offsets and one-off table ordinals)
+src/Gruntz/TimeString.cpp	6	none (60000/3600000 are milliseconds per minute and hour)
+src/Gruntz/GruntWingzTimeSprite.cpp	6	none (0xdbba0 is a 900000 ms timer; rest are HUD offsets)
+src/Gruntz/GruntToyTimeSprite.cpp	6	none (0xdbba0 is a 900000 ms timer; rest are HUD offsets)
+src/Gruntz/GruntStaminaSprite.cpp	6	none (0xdbba0 is a 900000 ms timer; rest are HUD offsets)
+src/Gruntz/WormholeActs.cpp	5	none (act-registry id range CActRegPool(2000, 2010); rest are frame offsets)
 src/Gruntz/MgrSlotSwap.cpp	5	done (CMD_TOGGLE_SOUND named)
 src/Gruntz/KeyedList.cpp	5	pending
 src/Gruntz/DestructButton.cpp	5	pending

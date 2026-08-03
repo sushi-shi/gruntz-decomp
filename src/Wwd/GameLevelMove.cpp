@@ -9,6 +9,7 @@
 #include <Gruntz/WwdGrid.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
+#include <Wwd/MoveMode.h>
 #include <Wwd/WwdGridShell.h>
 #include <Wwd/WwdSpatialMgr.h>
 
@@ -25,7 +26,7 @@ i32 CGameLevel::ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
 
     if (kind > 0) {
         if (kind > 2) {
-            if (kind == 7) {
+            if (kind == MOVE_DIRECT) {
                 s->m_screenX = a;
                 s->m_screenY = b;
             }
