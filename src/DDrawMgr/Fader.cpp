@@ -2047,13 +2047,13 @@ void CFaderShape::RenderFrame(i32 frame) {
     if (m_stripCopy != 0) {
         if (seam + frame <= static_cast<u32>(m_span - arc - m_halfWidth)) {
             switch (m_mode) {
-                case 1:
+                case FADER_SWEEP_FORWARD:
                     RenderTile(frame, frame - m_previousFrame);
                     break;
-                case 2:
+                case FADER_SWEEP_REVERSE:
                     RenderTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
-                case 3:
+                case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderTile(m_span / 2 + frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
@@ -2063,13 +2063,13 @@ void CFaderShape::RenderFrame(i32 frame) {
             }
         } else {
             switch (m_mode) {
-                case 1:
+                case FADER_SWEEP_FORWARD:
                     RenderWarpTile(frame, frame - m_previousFrame);
                     break;
-                case 2:
+                case FADER_SWEEP_REVERSE:
                     RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
-                case 3:
+                case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderWarpTile(m_span / 2 + frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
@@ -2081,13 +2081,13 @@ void CFaderShape::RenderFrame(i32 frame) {
     } else {
         if (seam + frame > static_cast<u32>(arc - m_halfWidth)) {
             switch (m_mode) {
-                case 1:
+                case FADER_SWEEP_FORWARD:
                     RenderTile(frame, frame - m_previousFrame);
                     break;
-                case 2:
+                case FADER_SWEEP_REVERSE:
                     RenderTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
-                case 3:
+                case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderTile(frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
@@ -2097,13 +2097,13 @@ void CFaderShape::RenderFrame(i32 frame) {
             }
         } else {
             switch (m_mode) {
-                case 1:
+                case FADER_SWEEP_FORWARD:
                     RenderWarpTile(frame, frame - m_previousFrame);
                     break;
-                case 2:
+                case FADER_SWEEP_REVERSE:
                     RenderWarpTile(m_span - frame - stride, frame - m_previousFrame);
                     break;
-                case 3:
+                case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderWarpTile(frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;

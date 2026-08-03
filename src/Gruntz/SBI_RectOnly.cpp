@@ -37,6 +37,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/StatusBarTabWidgets.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -140,7 +141,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_battlezPct[35] = m_battlezPct[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
     m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
     m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
-    SetTabState(5, 3);
+    SetTabState(TAB_GAME, 3);
     if ((static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
             ->GetValueDword("StatusBar Position", 0)
         == 1) {
@@ -433,7 +434,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             SetTabState(cmd, 3);
             return 1;
 
-        case 1:
+        case TAB_STATZ:
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
@@ -452,7 +453,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             }
             return 1;
 
-        case 2:
+        case TAB_GRUNTZ:
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
@@ -465,7 +466,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             ActivateSlot(cmd - 0x64);
             return 1;
 
-        case 3:
+        case TAB_RESOURCE:
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
@@ -484,7 +485,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             }
             return 1;
 
-        case 4:
+        case TAB_MULTIPLAYER:
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
@@ -501,7 +502,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             Deactivate();
             return 1;
 
-        case 5:
+        case TAB_GAME:
             if (m_toggleActive != 0) {
                 return 1;
             }
@@ -634,7 +635,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     }
     r->Click1c(a, x, y);
     i32 cmd = r->m_cmd;
-    if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
+    if (r->m_tab == TAB_STATZ && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= 0x13b && cmd <= 0x149) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
@@ -687,10 +688,10 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
         }
     }
     if (m_activeTab == 5) {
-        if (r->m_tab == 5) {
+        if (r->m_tab == TAB_GAME) {
             SetTabState(cmd, 2);
         } else {
-            ClearTabSprites(5);
+            ClearTabSprites(TAB_GAME);
         }
     }
     if (m_toggleActive) {
@@ -698,7 +699,7 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
             SetTabState(cmd, 2);
             return 1;
         }
-        ClearTabSprites(5);
+        ClearTabSprites(TAB_GAME);
     }
     return 1;
 }
@@ -1131,7 +1132,7 @@ void CStatusBarMgr::ClearTabGroup() {
     }
     m_tabLists[m_activeTab].RemoveAll();
     switch (m_activeTab) {
-        case 1:
+        case TAB_STATZ:
             m_tabSprite5 = 0;
             m_tabSprite6 = 0;
             m_tabSprite7 = 0;
@@ -1140,7 +1141,7 @@ void CStatusBarMgr::ClearTabGroup() {
             m_tabSprite10 = 0;
             m_modeNotify = 0;
             break;
-        case 2:
+        case TAB_GRUNTZ:
 
             memset(m_statObj, 0, sizeof(m_statObj));
             break;
@@ -1225,7 +1226,7 @@ i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
         return 0;
     }
     switch (tab) {
-        case 1:
+        case TAB_STATZ:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1235,7 +1236,7 @@ i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->ProbeState(state);
             return 1;
-        case 2:
+        case TAB_GRUNTZ:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1245,7 +1246,7 @@ i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->ProbeState(state);
             return 1;
-        case 3:
+        case TAB_RESOURCE:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1255,7 +1256,7 @@ i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->ProbeState(state);
             return 1;
-        case 4:
+        case TAB_MULTIPLAYER:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1265,7 +1266,7 @@ i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
             m_tabSprite3->SetState(state, 1);
             m_tabSprite4->ProbeState(state);
             return 1;
-        case 5:
+        case TAB_GAME:
             if (m_hlBusy) {
                 return 1;
             }
@@ -1673,7 +1674,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
         RefreshState();
     }
     if (show && m_activeTab != 5) {
-        SetTabState(5, 3);
+        SetTabState(TAB_GAME, 3);
     }
     if (m_tabSprite5) {
         m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
@@ -1924,7 +1925,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
             RefreshState();
         }
         if (m_activeTab != 2) {
-            SetTabState(2, 3);
+            SetTabState(TAB_GRUNTZ, 3);
         }
         Deactivate();
     }
@@ -2842,7 +2843,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     }
     if (m_activeTab != 5) {
         ClearTabGroup();
-        m_activeTab = 5;
+        m_activeTab = TAB_GAME;
     }
     SetTab(5, 1);
     memset(m_statFlags, 0, sizeof(m_statFlags));
@@ -3608,7 +3609,7 @@ void CStatusBarMgr::ExitMode() {
             RefreshState();
         }
         if (m_activeTab != 5) {
-            SetTabState(5, 3);
+            SetTabState(TAB_GAME, 3);
         }
         SetTab(5, 1);
         Deactivate();
@@ -3676,7 +3677,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
         RefreshState();
     }
     if (m_activeTab != 4) {
-        SetTabState(4, 3);
+        SetTabState(TAB_MULTIPLAYER, 3);
         Deactivate();
         return;
     }

@@ -1,3 +1,4 @@
+#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <AddrWord.h>
@@ -843,7 +844,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
             sbi->Reset();
         }
         if (sbi->m_activeTab != 5) {
-            sbi->SetTabState(5, 3);
+            sbi->SetTabState(TAB_GAME, 3);
         }
         sbi->SetTab(5, 1);
         sbi->Deactivate();

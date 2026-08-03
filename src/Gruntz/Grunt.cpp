@@ -47,6 +47,7 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -3360,7 +3361,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                     sb->RefreshState();
                 }
                 if (sb->m_activeTab != 3) {
-                    sb->SetTabState(3, 3);
+                    sb->SetTabState(TAB_RESOURCE, 3);
                 }
                 sb->Deactivate();
                 play->m_guts->UpdateRezMachineWakeStatusBar();

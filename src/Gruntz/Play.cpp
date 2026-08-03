@@ -65,6 +65,7 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Gruntz/String.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
@@ -1759,7 +1760,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != 2) {
-            lv->SetTabState(2, 3);
+            lv->SetTabState(TAB_GRUNTZ, 3);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1784,7 +1785,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != 3) {
-            lv->SetTabState(3, 3);
+            lv->SetTabState(TAB_RESOURCE, 3);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1805,7 +1806,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != 1) {
-            lv->SetTabState(1, 3);
+            lv->SetTabState(TAB_STATZ, 3);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1838,7 +1839,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != 5) {
-            lv->SetTabState(5, 3);
+            lv->SetTabState(TAB_GAME, 3);
         }
         lv->SetTab(5, 1);
         lv->Deactivate();
@@ -4994,7 +4995,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
             g->RefreshState();
         }
         if (g->m_activeTab != 5) {
-            g->SetTabState(5, 3);
+            g->SetTabState(TAB_GAME, 3);
         }
         g->SetTab(0x1fb, 1);
         g->Deactivate();

@@ -298,6 +298,7 @@ include/Gruntz/StatusBarMgr.h	pending
 include/Gruntz/StatusBarMgrBuilders.h	pending	
 include/Gruntz/StatusBarSprite.h	pending	
 include/Gruntz/StatusBarSpriteActs.h	pending	
+include/Gruntz/StatusBarTab.h	pending	
 include/Gruntz/StatusBarTabWidgets.h	pending	
 include/Gruntz/String.h	pending	
 include/Gruntz/Teleporter.h	pending	
