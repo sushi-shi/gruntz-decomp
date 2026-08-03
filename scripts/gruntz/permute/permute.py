@@ -51,18 +51,25 @@ _SRC_REAL = os.path.realpath(SRC)
 
 
 def _load_flags(tu):
-    """Compile flags for a TU = its config/units.toml [flags] profile (+ any `extra`)."""
+    """Compile flags for a TU = its config/units.toml [flags] profile, verbatim.
+
+    Look the profile up by the unit's OWN `flags` name - never by a hardcoded
+    profile name. A previous version defaulted to a profile literally called
+    "base"; when the profiles were renamed (base/eh -> c/cpp, 2026-08-03) that
+    silently fell through to a `/O2 /MT` fallback with **no /GX**, i.e. the
+    permuter would have climbed against different codegen than the build.
+    """
     with open("config/units.toml", "rb") as fh:
         cfg = tomllib.load(fh)
     profiles = cfg.get("flags", {})
-    units = {u["unit"]: u for u in cfg.get("unit", []) if "unit" in u}
-    default = profiles.get("base", ["/nologo", "/c", "/O2", "/MT"])
-    u = units.get(tu)
+    u = {x["unit"]: x for x in cfg.get("unit", []) if "unit" in x}.get(tu)
     if u is None:
-        return list(default)
-    flags = list(profiles.get(u.get("flags", "base"), default))
-    flags += list(u.get("extra", []))
-    return flags
+        sys.exit(f"[permute] unit '{tu}' is not in config/units.toml")
+    name = u["flags"]
+    if name not in profiles:
+        sys.exit(f"[permute] unit '{tu}' references unknown flags profile "
+                 f"'{name}' (defined: {sorted(profiles)})")
+    return list(profiles[name])
 
 
 FLAGS = _load_flags(TU)

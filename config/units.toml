@@ -9,17 +9,31 @@
 # [build]  - global toolchain config: compiler/platform pass through to the
 #            objdiff scratch block.
 # [flags]  - named flag profiles (full flag sets); EVERY [[unit]] selects one via
-#            `flags = "<name>"`. `base` is the locked VC5 default (cl /c /O2 /MT,
-#            cdecl; see docs/zlib-matching.md); `eh` adds the C++ exception-
-#            handling frame (/GX); `mfc` is the MFC-derived /O1 (favor size) + /GX;
-#            `rtti` = base + /GR; `ehrtti` = eh + /GR.
+#            `flags = "<name>"`. The names are SEMANTIC, because the split turned
+#            out to be one of language/project, not a per-file toggle:
+#              `c`        vendor C (zlib). /O2 /MT. /GX and /GR are meaningless
+#                         here - there is no C++ EH and no polymorphism.
+#              `cpp`      the game's C++ project setting: /O2 /MT /GX.
+#              `cpp-rtti` `cpp` + /GR, for the Gruntz project (see the /GR note).
+#            The locked VC5 defaults (/O2 /MT, cdecl) are in docs/zlib-matching.md.
+#
+# WHY /GX IS ON EVERYWHERE - measured, not assumed. Retail's own EH tables decide
+# it: walk `__ehfuncinfo` (magic 0x19930520) -> its `__ehhandler` stub
+# (`mov eax,<FuncInfo>; jmp __CxxFrameHandler`) -> the `push offset <stub>` in the
+# owning function. Retail has 980 FuncInfo / 972 stubs / 790 attributable pushes,
+# and 741 of those land in 186 of our TUs - every one already on /GX. The old
+# `base` profile held 121 src/ TUs, of which 86 are .text-IDENTICAL either way and
+# ALL 121 emit zero EH tables even when compiled /GX, so they never carried any
+# evidence. The two decidable ones both came out /GX-ON: `fonts` 82.30 -> 100.00,
+# and `gametext`, whose apparent /GX-OFF preference was a planted
+# `volatile i32 slot = 0;` emulating the init that /GX emits by itself.
 # [[unit]] - one TU: `unit` (stem; obj is <unit>.obj, target <unit>.c.obj; must
 #            match symbol_names.csv's unit column), `source` (repo-relative path),
 #            and `flags` (a [flags] profile name). Pick the profile whose FULL set
 #            you need. A profile IS the whole flag set - there is no bolt-on
 #            mechanism, by design (configure.py rejects a stray `extra` key).
 #
-# /GR (RTTI) is a PROFILE choice (`rtti` / `ehrtti`), exactly like /GX. MSVC5
+# /GR (RTTI) is a PROFILE choice (`cpp-rtti`), exactly like /GX. MSVC5
 # enables RTTI only under /GR (default OFF), so a polymorphic class compiled
 # without it emits a vtable with NO Complete Object Locator - which is what
 # retail's NON-RTTI vtables look like. An RTTI class carries a COL at vtable-4
@@ -32,7 +46,7 @@
 #     DDrawMgr    0 RTTI / 14 no-COL   -> engine projects were NOT
 #     Rez         0 /  4      Dsndmgr  0 / 2      Bute  0 / 1
 # i.e. the devs set /GR PER-PROJECT, matching the leaked C:\Proj\{...} layout.
-# So `rtti`/`ehrtti` belong on src/Gruntz TUs and NOT on the engine modules.
+# So `cpp-rtti` belongs on src/Gruntz TUs and NOT on the engine modules.
 # /GR is .text-NEUTRAL (A/B verified): it only adds .rdata$r, grows .data with the
 # type descriptors, and prepends the 4-byte COL to each ??_7. See docs/vtable-map.md.
 #
@@ -44,132 +58,130 @@ compiler = "msvc5.0"
 platform = "win32"
 
 [flags]
-base   = ["/nologo", "/c", "/O2", "/MT"]
-eh     = ["/nologo", "/c", "/O2", "/MT", "/GX"]
-mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
-rtti   = ["/nologo", "/c", "/O2", "/MT", "/GR"]
-ehrtti = ["/nologo", "/c", "/O2", "/MT", "/GX", "/GR"]
+c        = ["/nologo", "/c", "/O2", "/MT"]
+cpp      = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+cpp-rtti = ["/nologo", "/c", "/O2", "/MT", "/GX", "/GR"]
 
 [[unit]]
 unit = "adler32"
 source = "vendor/zlib-1.0.4/adler32.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "deflate"
 source = "vendor/zlib-1.0.4/deflate.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "trees"
 source = "vendor/zlib-1.0.4/trees.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "inftrees"
 source = "vendor/zlib-1.0.4/inftrees.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "infblock"
 source = "vendor/zlib-1.0.4/infblock.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "infcodes"
 source = "vendor/zlib-1.0.4/infcodes.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "inffast"
 source = "vendor/zlib-1.0.4/inffast.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "infutil"
 source = "vendor/zlib-1.0.4/infutil.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "zutil"
 source = "vendor/zlib-1.0.4/zutil.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "inflate"
 source = "vendor/zlib-1.0.4/inflate.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "uncompr"
 source = "vendor/zlib-1.0.4/uncompr.c"
-flags = "base"
+flags = "c"
 
 [[unit]]
 unit = "gamewnd"
 source = "src/Wap32/GameWnd.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "gameapp"
 source = "src/Wap32/GameApp.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "brickz"
 source = "src/Gruntz/Brickz.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "brickzclip"
 source = "src/Gruntz/BrickzClip_02b340.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "brickzcellflags"
 source = "src/Gruntz/BrickzCellFlags_077790.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "soundfontpath"
 source = "src/Gruntz/SoundFontPath.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "savescreenshot"
 source = "src/Gruntz/SaveScreenshot.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "portalpath"
 source = "src/Gruntz/PortalPath.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "buildgruntzcrcinfo"
 source = "src/Gruntz/BuildGruntzCrcInfo.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_menuitem"
 source = "src/Gruntz/SBI_MenuItem.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # The thin RTTI CSBI_RectOnly intermediate's own obj (dossier #16): slot-2 Setup @0xe86e0.
 unit = "sbi_rectonlybase"
 source = "src/Gruntz/SBI_RectOnlyBase.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_rectonly"
 source = "src/Gruntz/SBI_RectOnly.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CTabzBuilder::BuildTabzDialog (0x10a340) - its own retail obj, un-merged back out of
@@ -178,7 +190,7 @@ flags = "eh"
 # MSVC5 has exactly one base-ctor spelling per TU - so they cannot share a TU.
 unit = "sbi_tabzdialog_eh"
 source = "src/Gruntz/SBI_TabzDialogEh.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 # --- the rest of the wave1-E (c62cfaf8d) one-file merge, un-merged (2026-07-13) ---
 # A TU is the unit of BOTH MSVC5's /O2 budget and its compiler flags. Two of these were
@@ -188,306 +200,306 @@ flags = "eh"
 [[unit]]
 unit = "sbi_sidetab_build"
 source = "src/Gruntz/SBI_SideTabBuild.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "warpstonefly"
 source = "src/Gruntz/WarpStoneFly.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "mgrsettings"
 source = "src/Gruntz/MgrSettings.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_image"
 source = "src/Gruntz/SBI_Image.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CSBI_ImageSetAni::Serialize (0xe7cd0), the frameless slot-1 serialize re-attributed
 # from SBI_WarlordHead.cpp (vtable proof: slot 1 = thunk 0x2829, shared w/ StatzTabArrow).
 unit = "sbi_imagesetani"
 source = "src/Gruntz/SBI_ImageSetAni.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_statztabarrow_eh"
 source = "src/Gruntz/SBI_StatzTabArrowEh.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_imageset"
 source = "src/Gruntz/SBI_ImageSet.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_warlordhead"
 source = "src/Gruntz/SBI_WarlordHead.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_wellgoo"
 source = "src/Gruntz/SBI_WellGoo.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sbi_statztabgruntbar"
 source = "src/Gruntz/SBI_StatzTabGruntBar.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "triggermgr"
 source = "src/Gruntz/TriggerMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CTriggerMgr grid/placement obj [0x6b640..0x6eb25] - split off the triggermgr
 # conflation (own init-frag run 10@0x6b370; original filename unknown).
 unit = "triggermgrgrid"
 source = "src/Gruntz/TriggerMgrGrid.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CTriggerMgr hit-test/probe obj [0x759e0..0x75e1a] - split off the triggermgr
 # conflation (tail of the unreconstructed FUN_6f2f0 megafn's TU).
 unit = "triggermgrhittest"
 source = "src/Gruntz/TriggerMgrHitTest.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "userlogic"
 source = "src/Gruntz/UserLogic.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "userlogicctoremit"
 source = "src/Gruntz/UserLogicCtorEmit.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "leveltilevalidation"
 source = "src/Gruntz/LevelTileValidation.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "mainmenubuilder"
 source = "src/Gruntz/MainMenuBuilder.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "menupage"
 source = "src/Gruntz/MenuPage.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original TU (dossier 0x1832d0: MenuItem.cpp [0x185460..0x185a0e]): absorbed menuitem2.
 unit = "menuitem"
 source = "src/Gruntz/MenuItem.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "databuffer"
 source = "src/DDrawMgr/DataBuffer.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "gamekeyhandler"
 source = "src/Gruntz/GameKeyHandler.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "terraintileloader"
 source = "src/Gruntz/TerrainTileLoader.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "rollingball"
 source = "src/Gruntz/RollingBall.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "drawdebugstats"
 source = "src/Gruntz/DrawDebugStats.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "multistartdlgroster"
 source = "src/Gruntz/MultiStartDlgRoster.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "slotcombofill"
 source = "src/Gruntz/SlotComboFill.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "levelrezpath"
 source = "src/Gruntz/LevelRezPath.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "brickzload"
 source = "src/Gruntz/BrickzLoad.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "bootycheatstate"
 source = "src/Gruntz/BootyCheatState.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "grunttilescan"
 source = "src/Gruntz/GruntTileScan.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "worldlevelpath"
 source = "src/Gruntz/WorldLevelPath.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "bootywalkanim"
 source = "src/Gruntz/BootyWalkAnim.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntarrivalscan"
 source = "src/Gruntz/GruntArrivalScan.cpp"
-flags = "eh" # REHOME M2: merged the arrival-band over-split files; Reticle/PhaseStep need /GX
+flags = "cpp" # REHOME M2: merged the arrival-band over-split files; Reticle/PhaseStep need /GX
 
 [[unit]]
 unit = "playplanescan"
 source = "src/Gruntz/PlayPlaneScan.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntchargestep"
 source = "src/Gruntz/GruntChargeStep.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "voicesoundlist"
 source = "src/Gruntz/VoiceSoundList.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original TU (wave3-J): the 0x095b10-0x099b46 text is an I-T-I sandwich +
 # contiguous private-.data extents; absorbs the ex ingametext unit.
 unit = "ingameicon"
 source = "src/Gruntz/InGameIcon.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "aniplayer"
 source = "src/Gruntz/AniPlayer.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "warlord"
 source = "src/Gruntz/Warlord.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntpuddle"
 source = "src/Gruntz/GruntPuddle.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntvoice"
 source = "src/Gruntz/GruntVoice.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntspawnconfig"
 source = "src/Gruntz/GruntSpawnConfig.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original /GX TU (dossier 0x0e8a70-0x0ea3ea): absorbed sbi_gruntmachine +
 # sbi_sidetab + the SetDirection seam pair (ex statusbarmgr).
 unit = "statusbartabbuilders"
 source = "src/Gruntz/StatusBarTabBuilders.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "statusbargamemenu"
 source = "src/Gruntz/StatusBarGameMenu.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "cheatmgr"
 source = "src/Gruntz/CheatMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "raincloud"
 source = "src/Gruntz/RainCloud.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "ufo"
 source = "src/Gruntz/Ufo.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "worldsoundset"
 source = "src/Gruntz/WorldSoundSet.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original TU (wave3-J): the 0x0dec60-0x0e2213 text is a P-T-P sandwich +
 # contiguous private-.data extents; absorbs the ex timebomb unit.
 unit = "projectile"
 source = "src/Gruntz/Projectile.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "motionstate"
 source = "src/Gruntz/MotionState.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "movinglogic"
 source = "src/Gruntz/MovingLogic.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "zvec"
 source = "src/Wap32/ZVec.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "engstr"
 source = "src/Wap32/EngStr.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "dialogs"
 source = "src/Gruntz/Dialogs.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "checkpointdlg"
 source = "src/Gruntz/CheckpointDlg.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "multistartdlg"
 source = "src/Gruntz/MultiStartDlg.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "wwdfile"
 source = "src/Wwd/WwdFile.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "gamelevel"
 source = "src/Gruntz/GameLevel.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 # The movement/collision-resolution module (original TU at 0x167130-0x168276,
 # bracketed by the ImageSet TU before and CWwdSpatialMgr after; filename unknown -
@@ -496,7 +508,7 @@ flags = "eh"
 [[unit]]
 unit = "gamelevelmove"
 source = "src/Wwd/GameLevelMove.cpp"
-flags = "eh"
+flags = "cpp"
 
 # The plane/render module (original TU at [0x161350..0x163a00], @identity-TODO;
 # interval dossier 0x15ccd0, wave1-C): CLevelPlane + CPlaneRender + the WwdFile
@@ -507,17 +519,17 @@ flags = "eh"
 [[unit]]
 unit = "levelplane"
 source = "src/DDrawMgr/LevelPlane.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "imageset1"
 source = "src/Gruntz/ImageSet1.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "imageset2"
 source = "src/Gruntz/ImageSet2.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 # imageset3g: the small (size-0x18) CImageSet3 variant record's bodies. Named
 # distinctly from the existing `imageset3` unit (src/Image/ImageSet3.cpp), which
@@ -525,12 +537,12 @@ flags = "eh"
 [[unit]]
 unit = "imageset3g"
 source = "src/Gruntz/ImageSet3.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "filestream"
 source = "src/Io/FileStream.cpp"
-flags = "mfc"
+flags = "cpp"
 
 [[unit]]
 # ONE original TU (wave3-J): the 0x0e3690 interval's savegame+levelinfodlg text is
@@ -538,56 +550,56 @@ flags = "mfc"
 # levelinfodlg + savegamemenu units (DrawSaveGameMenu 0xe3f40 is text-contained).
 unit = "savegame"
 source = "src/Io/SaveGame.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "rezfile"
 source = "src/Rez/RezFile.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "cimage"
 source = "src/Image/CImage.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "imageowned"
 source = "src/Image/ImageOwned.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # wave4-K: the 0x143cf0-0x145dff surface file-CODEC obj (dossier #14I; original
 # name unknown - no __FILE__ anchor; a DIRFILE.CPP-like DDrawMgr sibling).
 unit = "fileimage"
 source = "src/Image/FileImage.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "registryhelper"
 source = "src/Utils/RegistryHelper.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "advancedoptions"
 source = "src/Gruntz/AdvancedOptions.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntzapp"
 source = "src/Gruntz/GruntzApp.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original TU: C:\Proj\Gruntz\GruntzMgr.cpp (__FILE__-anchored). wave3-J merged
 # the ex playdtor+appdialogs units in (FLAGS group 0x08b8c0-0x093ce7, unified /GX).
 unit = "gruntzmgr"
 source = "src/Gruntz/GruntzMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 # CGruntzMgr::SetCellHeight (0x111ec0) - a lone CGruntzMgr retail-object contribution
 # far from the GruntzMgr.cpp block (interleaved with tile-trigger-switch-logic .text).
@@ -595,69 +607,69 @@ flags = "eh"
 [[unit]]
 unit = "gruntzmgr2"
 source = "src/Gruntz/GruntzMgr2.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 # SerializeSyncMarker (0x13610) - the free WAP32 serialize round validator, a separate
 # retail object far from GruntzMgr.cpp (among the CVoiceTrigger serialize .text).
 [[unit]]
 unit = "serializesyncmarker"
 source = "src/Gruntz/SerializeSyncMarker.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "rezsync"
 source = "src/Rez/RezSync.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "statemgrbz"
 source = "src/Gruntz/StateMgrBZ.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntzwnd"
 source = "src/Gruntz/GruntzWnd.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "mapmgr"
 source = "src/Gruntz/MapMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "maplogic"
 source = "src/Gruntz/MapLogic.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "spritereftable"
 source = "src/Gruntz/SpriteRefTable.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "spriteref"
 source = "src/Gruntz/SpriteRef.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "butemgr"
 source = "src/Bute/ButeMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "gamestaterecordload"
 source = "src/Gruntz/GameStateRecordLoad.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "symtab"
 source = "src/Bute/SymTab.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "hash"
 source = "src/Bute/Hash.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # CButeTree::Find/Insert - the string-keyed crit-bit (PATRICIA) trie. No
@@ -665,7 +677,7 @@ flags = "eh"
 # /O2's /Oi intrinsics.
 unit = "butetree"
 source = "src/Bute/ButeTree.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 # CButeNodeBase / CButeNodeEntry ctors (0x16df70 / 0x16dff0) - the .bute config-tree
@@ -674,53 +686,53 @@ flags = "base"
 # CButeNodeBase decl). flags="eh" == the engine_label_stubs base+/GX it came from.
 unit = "butenode"
 source = "src/Bute/ButeNode.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "debugtiming"
 source = "src/Utils/DebugTiming.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "grunt"
 source = "src/Gruntz/Grunt.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntsteps"
 source = "src/Gruntz/GruntSteps.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntcombat"
 source = "src/Gruntz/GruntCombat.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntentrancemove"
 source = "src/Gruntz/GruntEntranceMove.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # The mechanical CGrunt asset/sprite/tuning loaders (re-homed from ApiCallers).
 # No destructible locals -> /base (no /GX EH frame).
 unit = "gruntassetloaders"
 source = "src/Gruntz/GruntAssetLoaders.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # CGrunt::LoadPickupSprites (0x65e80) - the pickup/powerup entrance-sprite loader
 # (re-homed from ApiCallers). No destructible locals -> /base.
 unit = "gruntpickupload"
 source = "src/Gruntz/GruntPickupLoad.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # The MS-CRT-style LCG random helpers (0xcd00/0xcd70/0x19f50/0x15cbe0), reached
 # through ILT jmp-thunks (re-homed from ApiCallers). No destructible locals -> /base.
 unit = "gruntzrandom"
 source = "src/Gruntz/Random.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # CDDScreen::Snapshot (0x17cd90) - system-palette capture, split out of the ex
@@ -729,7 +741,7 @@ flags = "base"
 # PaletteReset/PaletteCopy, embedded in the DDPageMgr obj). No destructible locals -> /base.
 unit = "palettesnapshot"
 source = "src/DDrawMgr/PaletteSnapshot.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 # CGruntzMgr::HandleCommand (0x862f0) - the WM_COMMAND / accelerator + cheat-code
@@ -738,7 +750,7 @@ flags = "base"
 # local forces the EH frame -> "eh" (== engine_label_stubs' base+/GX).
 unit = "gruntzmgrcmd"
 source = "src/Gruntz/GruntzMgrCmd.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # SerialObjectFactory (0xd2a0) + its ParseSerial helper (0xd210) - the game's
@@ -747,7 +759,7 @@ flags = "eh"
 # exact build flags (byte-neutral - no destructible locals in either fn yet).
 unit = "serialobjectfactory"
 source = "src/Gruntz/SerialObjectFactory.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # SaveFrontBufferShot (0x114ec0) + ...Impl (0x114f00) - the front-buffer screenshot
@@ -755,26 +767,26 @@ flags = "eh"
 # GruntzMgrCmd.cpp (REHOME D9). No destructible locals; "eh" == its old base+/GX.
 unit = "savefrontbuffershot"
 source = "src/Gruntz/SaveFrontBufferShot.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CGrunt nearest-enemy / arrival-target scan (0xf42f0) - sibling of the three
 # GruntArrivalScan steps (re-homed from ApiCallers). No destructible locals -> /base.
 unit = "grunttargetscan"
 source = "src/Gruntz/GruntTargetScan.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
 # the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
 unit = "gruntdatarecord"
 source = "src/Gruntz/GruntDataRecord.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntzcmdmgr"
 source = "src/Gruntz/GruntzCmdMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 # --- src/Stub/ FULLY DRAINED + DELETED (2026-07-10): the labeled-but-unmatched
 # backlog (engine_label_stubs / All.cpp) is empty; every stub was re-homed to its
@@ -784,13 +796,13 @@ flags = "eh"
 # yet, so this is the class's first/real TU.
 unit = "boomerang"
 source = "src/Gruntz/Boomerang.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CSplashState::LoadSounds (0xf9780); first/real CSplashState TU.
 unit = "splashstate"
 source = "src/Gruntz/SplashState.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ??0CFecFile emit TU: the retail copy at 0x8fea0 is gruntzmgr's COMDAT emission
@@ -799,39 +811,39 @@ flags = "eh"
 # and lose the label (inline-depth wall). Kept until that caller converges.
 unit = "unknownfileioctor"
 source = "src/Gruntz/UnknownFileIOCtor.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CBootyState::vfunc_9 (slot 9) + CMultiBootyState::OnActivate2 (slot 8) - vtable-proven.
 unit = "bootystateactivate"
 source = "src/Gruntz/BootyStateActivate.cpp"
 # eh: CMultiBootyState::Render (0x1f480) has the /GX frame for its CString HUD temp.
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CCheckpointTriggerSwitchLogic slot-1 builder (0x112a50) - vtable-proven.
 unit = "checkpointswitchbuild"
 source = "src/Gruntz/CheckpointSwitchBuild.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # GruntzLoadGameDlgProc (0x9dff0) + LoadGameCommand (0x9e390) - the "GAME_LOAD" dialog
 # (load-side sibling of savegamemenu; opened by CGruntzMgr::RunLoadGameDialog).
 unit = "loadgamemenu"
 source = "src/Gruntz/LoadGameMenu.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # CInGameText::Update (0x997c0) per-frame tick - Ghidra cluster attribution.
 unit = "ingametextupdate"
 source = "src/Gruntz/InGameTextUpdate.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # CGameInfo::FormatGameInfoString (0x1183b0) save-game info query builder.
 unit = "gameinfostring"
 source = "src/Gruntz/GameInfoString.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # CSpawnEntry ctor (by-value CString name + data -> /GX); the named spawn/voice
@@ -839,52 +851,52 @@ flags = "base"
 # unification). GetName (ex-obj09a260 unit) re-homed to areamgr, its retail band.
 unit = "cspawnentry"
 source = "src/Gruntz/SpawnEntry.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CObjectTracker per-tick game-object tracker (ex-"Obj0f7d90"); Update re-homed from Discovered.cpp.
 unit = "objecttracker"
 source = "src/Gruntz/ObjectTracker.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # __stdcall Blowfish bit-decode loop (0x16f760), trace mis-attributed to
 # ClassUnknown_4; re-homed from Discovered.cpp.
 unit = "bitstreamblowfish"
 source = "src/Crypto/BitStreamBlowfish.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 # CSpotLight::Update (0x0b1ee0) x87 rotation re-homed from Discovered.cpp.
 unit = "spotlight"
 source = "src/Gruntz/SpotLight.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # CSpotLight 1-arg ctor (0x0b1200); /GX EH frame (throwing CUserBaseLink base).
 unit = "spotlightctor"
 source = "src/Gruntz/SpotLightCtor.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "netmgrerror"
 source = "src/Net/NetMgrReportError.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gamemode"
 source = "src/Gruntz/GameMode.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CCreditsState (credits/attract CState leaf) + CCreditzOwner (SetupTitle), split out of
@@ -892,7 +904,7 @@ flags = "eh"
 # SetupTitle (operator new/delete + CString) carry the /GX SEH frame.
 unit = "creditsstate"
 source = "src/Gruntz/CreditsState.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CState::ReleaseResources (0x0fa150), the base game-state teardown (CState vtable
@@ -900,7 +912,7 @@ flags = "eh"
 # of CState, folded). Its own retail .obj (re-homed from Stub).
 unit = "statereleaseresources"
 source = "src/Gruntz/StateReleaseResources.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # The attract state-services interval [0x0fa1f0..0x0fb328]: woven CAttract title/
@@ -908,7 +920,7 @@ flags = "base"
 # eh: CState::InputVirtual's CString splash + the draw temps carry the /GX frame.
 unit = "attract"
 source = "src/Gruntz/Attract.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # CAttract state-machine CORE obj [0x013fb0..0x014819] + the COMDAT ??1 dtor
@@ -917,7 +929,7 @@ flags = "eh"
 # CString format local + the ??1 EH frame.
 unit = "attractstate"
 source = "src/Gruntz/AttractState.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 
 [[unit]]
@@ -926,366 +938,366 @@ flags = "eh"
 # gruntzplayer+gamemodeobjlifecycle units here, /GX unified.
 unit = "play"
 source = "src/Gruntz/Play.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "playmessageimage"
 source = "src/Gruntz/PlayMessageImage.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # The demo/attract feature obj [0x3bfa0..0x3dee1] (dossier #16): CDemo methods +
 # demo setup/camera + bute debug editors + the anim-worker dispatch family. /GX.
 unit = "demo"
 source = "src/Gruntz/Demo.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # Ghidra-missed 0x476b0: per-frame rock-break effect Update (identity-TODO).
 unit = "rockbreakeffectupdate"
 source = "src/Gruntz/RockBreakEffectUpdate.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # Ghidra-missed 0x4a780: 8-way direction classifier (identity-TODO, FP).
 unit = "directionclassify"
 source = "src/Gruntz/DirectionClassify.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "font"
 source = "src/Font/Font.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "fonts"
 source = "src/Gruntz/Fonts.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "fontconfig"
 source = "src/Gruntz/FontConfig.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gametext"
 source = "src/Gruntz/GameText.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "wormhole"
 source = "src/Gruntz/Wormhole.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "wormholeacts"
 source = "src/Gruntz/WormholeActs.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "battlezmapconfig"
 source = "src/Gruntz/BattlezMapConfig.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "spriteloaders"
 source = "src/Gruntz/SpriteLoaders.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "cremusnode"
 source = "src/Image/ResolveNode.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "statusbarmgr"
 source = "src/Gruntz/StatusBarMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "iconloaders"
 source = "src/Gruntz/IconLoaders.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gameobjectfactory"
 source = "src/Gruntz/GameObjectFactory.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntsprintanim"
 source = "src/Gruntz/GruntSprintAnim.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "playstateactivate"
 source = "src/Gruntz/PlayStateActivate.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # Booty/secret-state HUD message overlays (string-xref cluster): a destructible
 # MFC CString temp per banner -> /GX exception frame.
 unit = "bootymessages"
 source = "src/Gruntz/BootyMessages.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # Launch CD-ROM / Spawn-Mode prompt (StartUpPrompt): two CString temps + the
 # BeginWaitCursor/EndWaitCursor scope -> /GX exception frame.
 unit = "startupprompt"
 source = "src/Gruntz/StartUpPrompt.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "statusbarupdaters"
 source = "src/Gruntz/StatusBarUpdaters.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "kitchenslime"
 source = "src/Gruntz/KitchenSlime.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntcreationpoint"
 source = "src/Gruntz/GruntCreationPoint.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntentrancearrival"
 source = "src/Gruntz/GruntEntranceArrival.cpp"
 # base -> eh (wave3-I: the 0x616e0 interval has 2 EH sites)
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gameiconflasheffect"
 source = "src/Gruntz/GameIconFlashEffect.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "grunthealthsprite"
 source = "src/Gruntz/GruntHealthSprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntwingztimesprite"
 source = "src/Gruntz/GruntWingzTimeSprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntselectedsprite"
 source = "src/Gruntz/GruntSelectedSprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntpowerupsprite"
 source = "src/Gruntz/GruntPowerupSprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "grunttoysprite"
 source = "src/Gruntz/GruntToySprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "pathhazard"
 source = "src/Gruntz/PathHazard.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "droppedobject"
 source = "src/Gruntz/DroppedObject.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "fortressflag"
 source = "src/Gruntz/FortressFlag.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "fortconquered"
 source = "src/Gruntz/FortConquered.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "cursorsnapsprite"
 source = "src/Gruntz/CursorSnapSprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "menustate"
 source = "src/Gruntz/MenuState.cpp"
 # eh: ~CMenuState / ReleaseResources (operator delete + ~CChatBox) / BuildVersionString
 # (CString temp) carry the /GX SEH frame; the base dialog helpers are unwind-free (neutral).
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "donothing"
 source = "src/Gruntz/DoNothing.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "behindcandy"
 source = "src/Gruntz/BehindCandy.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "eyecandy"
 source = "src/Gruntz/EyeCandy.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "exittrigger"
 source = "src/Gruntz/ExitTrigger.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "statichazard"
 source = "src/Gruntz/StaticHazard.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "toobspikez"
 source = "src/Gruntz/ToobSpikez.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "menusparkle"
 source = "src/Gruntz/MenuSparkle.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original TU (wave3-J): the 0x041e90-0x042cd3 text is a T-L-T sandwich
 # (adjacent frag run i40/i41); absorbs the ex secretleveltrigger unit.
 unit = "secretteleportertrigger"
 source = "src/Gruntz/SecretTeleporterTrigger.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "tilelogicpump"
 source = "src/Gruntz/TileLogicPump.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntbehaviorleaf"
 source = "src/Gruntz/GruntDecay.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "actionoptionsmenubar"
 source = "src/Gruntz/ActionOptionsMenuBar.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "inputdeviceconfig"
 source = "src/Gruntz/InputDeviceConfig.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "ddrawshadeblit"
 source = "src/DDrawMgr/DDrawShadeBlit.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "mgrautoscroll"
 source = "src/Gruntz/MgrAutoScroll.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 
 
 [[unit]]
 unit = "ddrawsurfacemgr"
 source = "src/DDrawMgr/DDrawSurfaceMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "ddrawworkerregistry"
 source = "src/DDrawMgr/DDrawWorkerRegistry.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "multi"
 source = "src/Gruntz/Multi.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "tileswitchlogic"
 source = "src/Gruntz/TileTriggerSwitchLogic.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "tiletriggercontainer"
 source = "src/Gruntz/TileTriggerContainer.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "areamgr"
 source = "src/Gruntz/AreaMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "ddrawsubmgrleaf"
 source = "src/DDrawMgr/DDrawSubMgrLeaf.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "anirecord"
 source = "src/DDrawMgr/AniRecord.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "wwdspatialmgr"
 source = "src/Wwd/WwdSpatialMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "wwdgrid"
 source = "src/Wwd/WwdGrid.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "wwdgameobject"
 source = "src/Wwd/WwdGameObject.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "wwdfactoryobject"
 source = "src/Wwd/WwdFactoryObject.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "wwdgameobjectrender"
 source = "src/Wwd/WwdGameObjectRender.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "ddrawsubmgr"
 source = "src/DDrawMgr/DDrawSubMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 # Foreign lone methods carved out of ddrawsubmgr (operation REHOME D8): LeafCue and
 # CQueueDrainHost sit ~1.2 MB before the DDraw submgr block - each its own obj.
 [[unit]]
 unit = "leafcueplay"
 source = "src/Gruntz/LeafCuePlay.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "queuedrainhost"
 source = "src/Gruntz/QueueDrainHost.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "wwdobjmgr"
 source = "src/Wwd/WwdObjMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # wave4-K: now the 0x148840-0x148cd8 surface-extras pocket obj only (dossier #14);
@@ -1293,17 +1305,17 @@ flags = "eh"
 # (the DDRAWMGR.CPP obj). Unit name kept for delinker packing.
 unit = "ddrawptrcollections"
 source = "src/DDrawMgr/DDrawPtrCollections.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "directdrawmgr"
 source = "src/DDrawMgr/DirectDrawMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "ddsurface"
 source = "src/DDrawMgr/DDSurface.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # ONE original TU: C:\Proj\DDrawMgr\DIRPAL.CPP (__FILE__-anchored; wave3-J merge of
@@ -1311,24 +1323,24 @@ flags = "eh"
 # kept "ddpalette" (unit renames disturb delinker packing).
 unit = "ddpalette"
 source = "src/DDrawMgr/DirPal.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "ddrawsurfacepair"
 source = "src/DDrawMgr/DDrawSurfacePair.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # TWO original files (__FILE__-anchored; wave1-E split at 0x134cb0): DinMgr2.cpp
 # (absorbed fixedptrarray32) + InputDevice.cpp below.
 unit = "directinputmgr2"
 source = "src/DinMgr2/DinMgr2.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "inputdevice"
 source = "src/DinMgr2/InputDevice.cpp"
-flags = "eh"
+flags = "cpp"
 
 # The two original Dsndmgr TUs (docs/exe-map/interval-dossiers.md, split @0x137330):
 # directsoundmgr == C:\Proj\Dsndmgr\DSNDMGR.CPP (absorbed sounddevice, dsoundvoice,
@@ -1339,7 +1351,7 @@ flags = "eh"
 [[unit]]
 unit = "directsoundmgr"
 source = "src/Dsndmgr/DirectSoundMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # The five 0x1390e0+ list primitives - a separate retail obj PAST the DSndMgSR.cpp
@@ -1347,32 +1359,32 @@ flags = "eh"
 # to directsoundmgr, whose obj span owns it).
 unit = "soundvoicelist"
 source = "src/Dsndmgr/SoundVoiceList.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "soundbankload"
 source = "src/Dsndmgr/SoundBankLoad.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "soundstream"
 source = "src/Dsndmgr/SoundStream.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "gruntzsoundz"
 source = "src/Dsndmgr/GruntzSoundZ.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "winapimodule"
 source = "src/Utils/WinAPIModule.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "winapicdrom"
 source = "src/Utils/WinAPICdRom.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "chatbox"
@@ -1384,27 +1396,27 @@ source = "src/Gruntz/ChatBox.cpp"
 # Lone dissenter: Find (0x182be0) destructs a CString temp with NO fs:0 frame
 # in retail (non-/GX shape) - see the @early-stop on Find (suspected retail TU
 # split around it; /O1 disproven empirically - mass craters).
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "chatbox_eh"
 source = "src/Gruntz/ChatBoxDtor.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "chatboxowner"
 source = "src/Gruntz/ChatBoxOwner.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "lightfx"
 source = "src/Gruntz/LightFx.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "lightfxrender"
 source = "src/Gruntz/LightFxRender.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 
 
@@ -1412,238 +1424,233 @@ flags = "base"
 [[unit]]
 unit = "gruntstartingpoint"
 source = "src/Gruntz/GruntStartingPoint.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "guardpoint"
 source = "src/Gruntz/GuardPoint.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "waypoint"
 source = "src/Gruntz/WayPoint.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "toypeek"
 source = "src/Gruntz/ToyPeek.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "actionarea"
 source = "src/Gruntz/ActionArea.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "butestoreclear"
 source = "src/Bute/ButeStoreClear.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "interfaceobject"
 source = "src/Net/InterfaceObject.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "lightfxmgr"
 source = "src/Gruntz/LightFxMgr.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "logicrecord"
 source = "src/DDrawMgr/LogicRecord.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "gruntindicatorworkerhandlers"
 source = "src/Gruntz/GruntIndicatorWorkerHandlers.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "ingameworkerhandlers"
 source = "src/Gruntz/InGameWorkerHandlers.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "logicworkerhandlersa"
 source = "src/Gruntz/LogicWorkerHandlersA.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "logicworkerhandlersb"
 source = "src/Gruntz/LogicWorkerHandlersB.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "bridgemovesprites"
 source = "src/Gruntz/BridgeMoveSprites.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "sfselectdevice"
 source = "src/Gruntz/SFSelectDevice.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "shadetablecache"
 source = "src/DDrawMgr/ShadeTableCache.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "battlezdata"
 source = "src/Gruntz/BattlezData.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "goowellmgr"
 source = "src/Gruntz/GooWellMgr.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "fadermgr"
 source = "src/DDrawMgr/FaderMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "netsession"
 source = "src/Net/NetSession.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "zdarrayderived"
 source = "src/Gruntz/ZDArrayDerived.cpp"
-flags = "rtti"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "trirecordserialize"
 source = "src/Gruntz/TriRecordSerialize.cpp"
-flags = "base"
-
-[[unit]]
-unit = "orphanclassmeta"
-source = "src/Gruntz/OrphanClassMeta.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "helpstate"
 source = "src/Gruntz/HelpState.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "tilescan"
 source = "src/Gruntz/TileScan.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "keyedlist"
 source = "src/Gruntz/KeyedList.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "bzkinddispatch"
 source = "src/Gruntz/BzKindDispatch.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "scattersamples"
 source = "src/Gruntz/ScatterSamples.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "fader"
 source = "src/DDrawMgr/Fader.cpp"
-flags = "eh"
+flags = "cpp"
 
 
 [[unit]]
 unit = "engstrrendertext"
 source = "src/Wap32/EngStrRenderText.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "fxmodedesc"
 source = "src/Gruntz/FxModeDesc.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "blowfish"
 source = "src/Crypto/Blowfish.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "blowfishcopy"
 source = "src/Crypto/BlowfishCopy.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "simpleanimation"
 source = "src/Gruntz/SimpleAnimation.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "behindcandyani"
 source = "src/Gruntz/BehindCandyAni.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original TU (wave3-J): the 0x0abfa0-0x0ad527 text is an F-E-F sandwich
 # (frontcandyani frag @0xad110 in the tail); absorbs the ex eyecandyani unit.
 unit = "frontcandyani"
 source = "src/Gruntz/FrontCandyAni.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "singleanimation"
 source = "src/Gruntz/SingleAnimation.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "singleframemessage"
 source = "src/Gruntz/SingleFrameMessage.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "anicycle"
 source = "src/Gruntz/AniCycle.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntstaminasprite"
 source = "src/Gruntz/GruntStaminaSprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "logicdispatchinit"
 source = "src/Gruntz/LogicDispatchInit.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntzmapmgr"
 source = "src/Gruntz/GruntzMapMgr.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "leveltimedtor"
 source = "src/Gruntz/LevelTimeDtor.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "statusbarspriteacts"
 source = "src/Gruntz/StatusBarSpriteActs.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "rezlist"
 source = "src/Rez/RezList.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "rezcoll"
@@ -1653,44 +1660,44 @@ source = "src/Rez/RezColl.cpp"
 # ??_M/??_P forms under /GX - without it, an array delete/new lowers to a plain inline
 # loop (no EH frame), which is what this unit used to produce. So retail compiled this TU
 # with exception handling on.
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "ddrawblterrthunk"
 source = "src/DDrawMgr/DDrawBltErrThunk.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "typekeycoll"
 source = "src/Bute/TypeKeyColl.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "feccrypt"
 source = "src/Crypto/FecCrypt.cpp"
 # /GX: AddFile/ExtractArchive have destructible CFile/CString locals (retail's SEH
 # frame). Neutral for the frameless leaf methods (no destructible locals).
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "ddpagemgr"
 source = "src/DDrawMgr/DDPageMgr.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "imageset3"
 source = "src/Image/ImageSet3.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "netcmdslot"
 source = "src/Net/NetCmdSlot.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "netsessionnode"
 source = "src/Net/NetSessionNode.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # NetMgr lobby / in-game network DialogProcs + their init helpers, re-homed from
@@ -1698,19 +1705,19 @@ flags = "eh"
 # forces the /GX EH frame -> "eh" (== the engine_label_stubs base+/GX it came from).
 unit = "netlobbydialogs"
 source = "src/Net/LobbyDialogs.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # ONE original TU (dossier 0x174e90-0x177476): absorbed rezimage/scanlinesurface/
 # imagevflip/scanlinesurfacesave/imagerectfill. /GX (CFileIO/CFile stack dtors).
 unit = "imagepool"
 source = "src/Image/ImagePool.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "streamrecordloaders"
 source = "src/Gruntz/StreamRecordLoaders.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 # Carved out of streamrecordloaders (operation REHOME D8): the grunt-state /
 # projectile record loaders each sit at their own far-away .text block (separate objs).
@@ -1720,12 +1727,12 @@ flags = "base"
 [[unit]]
 unit = "gruntstaterec"
 source = "src/Gruntz/GruntStateRec.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "statedispatch"
 source = "src/Gruntz/StateDispatch.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 
 [[unit]]
@@ -1733,14 +1740,14 @@ unit = "butesectionctor"
 source = "src/Bute/ButeSectionCtor.cpp"
 # The CButeSection ctor (0x170210) has 8 destructible embedded members (CString +
 # CButeNode streams) -> /GX EH frame + 8-trylevel member-unwind state machine.
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "bsecobj10fctor"
 # CBSecObj10f::CBSecObj10f (0x16f680) - orphan 3-byte empty-ctor COMDAT (returns this);
 # dedicated 1-fn TU so CButeSection's ctor CALL binds to the real RVA.
 source = "src/Bute/BSecObj10fCtor.cpp"
-flags = "base"
+flags = "cpp"
 
 # LogicActRegistrars.cpp + LogicActReg.cpp DRAINED + DELETED (REHOME D1): each was a
 # pure holding TU conflating unrelated per-class activation registrars. Each
@@ -1754,128 +1761,128 @@ flags = "base"
 [[unit]]
 unit = "spotlightactreg"
 source = "src/Gruntz/SpotLightActReg.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "pathhazardactreg"
 source = "src/Gruntz/PathHazardActReg.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntvoiceactreg"
 source = "src/Gruntz/GruntVoiceActReg.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "cursorsnapactreg"
 source = "src/Gruntz/CursorSnapActReg.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "colorhsv"
 source = "src/DDrawMgr/ColorHsv.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 # eh: the retail-kept ??1?$CArray@PAUPLAYLISTINFOSTRUCT... COMDAT (0x39f20) carries a
 # /GX EH frame (push -1 / push 0x5d9b08 / fs:0), so the instantiation host compiles /GX.
 unit = "arrayserialize"
 source = "src/Gruntz/ArraySerialize.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 [[unit]]
 unit = "circleshadeblit"
 source = "src/DDrawMgr/CircleShadeBlit.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "palettebmp"
 source = "src/Image/PaletteBmp.cpp"
-flags = "eh"
+flags = "cpp"
 [[unit]]
 unit = "imagesavebmp"
 source = "src/Image/ImageSaveBmp.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "imagepolyclip"
 source = "src/Image/ImagePolyClip.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "grunttubeanim"
 source = "src/Gruntz/GruntTubeAnim.cpp"
-flags = "base"
+flags = "cpp-rtti"
 [[unit]]
 unit = "imagerle16encode"
 source = "src/Image/ImageRle16Encode.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "gruntmovestep"
 source = "src/Gruntz/GruntMoveStep.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntstatestep"
 source = "src/Gruntz/GruntStateStep.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "freenodepool"
 source = "src/Gruntz/FreeNodePool.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 
 [[unit]]
 unit = "heapdiag"
 source = "src/Gruntz/HeapDiag.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "playercommandstep"
 source = "src/Gruntz/PlayerCommandStep.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "connslotlist"
 source = "src/Net/ConnSlotList.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "namerecord"
 source = "src/Gruntz/NameRecord.cpp"
-flags = "base"
+flags = "cpp-rtti"
 [[unit]]
 unit = "ddrawworkerhost"
 source = "src/DDrawMgr/DDrawWorkerHost.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 unit = "latencylist"
 source = "src/Net/LatencyList.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "menusparkleserial"
 source = "src/Gruntz/MenuSparkleSerial.cpp"
-flags = "base"
+flags = "cpp-rtti"
 [[unit]]
 unit = "projactcache"
 source = "src/Gruntz/ProjActCache.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 [[unit]]
 unit = "movieplayer"
 source = "src/Io/MoviePlayer.cpp"
-flags = "eh"
+flags = "cpp"
 [[unit]]
 unit = "wapuncompress"
 source = "src/Wap32/WapUncompress.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "customworlddialog"
 source = "src/Gruntz/CustomWorldDialog.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "packetpool"
 source = "src/Net/PacketPool.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 # CTitleApp::OnStart (0xf9880) - title-sequence starter, split out of the ex
 # AppHelpers.cpp holding TU. Its orphan-mates re-homed to their real objs: Handle
@@ -1884,40 +1891,40 @@ flags = "base"
 # (+0x1b8 layout conflict). No destructible locals -> /base.
 unit = "titleappstart"
 source = "src/Gruntz/TitleAppStart.cpp"
-flags = "base"
+flags = "cpp-rtti"
 [[unit]]
 unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "recordfill"
 source = "src/Utils/RecordFill.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "netmgrmisc"
 source = "src/Net/NetMgrMisc.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "mgrlistfind"
 source = "src/Gruntz/MgrListFind.cpp"
-flags = "base"
+flags = "cpp-rtti"
 [[unit]]
 unit = "finalvtables"
 source = "src/Gruntz/FinalVtables.cpp"
-flags = "base"
+flags = "cpp-rtti"
 [[unit]]
 unit = "palettecopy"
 source = "src/Image/PaletteCopy.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "chainforward"
 source = "src/Gruntz/ChainForward.cpp"
-flags = "base"
+flags = "cpp-rtti"
 [[unit]]
 unit = "rezbufferobjectdtor"
 source = "src/Rez/RezBufferObjectDtor.cpp"
-flags = "eh"
+flags = "cpp"
 
 [[unit]]
 # CRect - the WAP32 engine rectangle class (derives from tagRECT); its geometry
@@ -1926,116 +1933,116 @@ flags = "eh"
 # RectHost_08c380/RectHost_115b30 per-fn views). No destructible locals -> /base.
 unit = "wap32rect"
 source = "src/Wap32/Rect.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "bitarray"
 source = "src/Utils/BitArray.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "bitarraystream"
 source = "src/Utils/BitArrayStream.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "surfacepalette"
 source = "src/Image/PaletteReset.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "netcmdmgr"
 source = "src/Net/NetCmdMgr.cpp"
-flags = "base"
+flags = "cpp"
 [[unit]]
 unit = "netthingdtor"
 source = "src/Net/NetThingDtor.cpp"
-flags = "eh"
+flags = "cpp"
 
 
 [[unit]]
 unit = "gamechecksum"
 source = "src/Gruntz/GameChecksum.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "glyphstr"
 source = "src/Gruntz/GlyphStringDraw.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "destructbutton"
 source = "src/Gruntz/DestructButton.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "stateimages"
 source = "src/Gruntz/StateImages.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "creditzassets"
 source = "src/Gruntz/CreditzAssets.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # ONE original TU (dossier 0x1832d0 pocket, oracle-proven): absorbed rangeset.
 unit = "debugprintf"
 source = "src/Rez/DebugPrintf.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "battlezdlgrow"
 source = "src/Gruntz/BattlezDlgRow.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "levelpreview"
 source = "src/Gruntz/LevelPreview.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "timestring"
 source = "src/Gruntz/TimeString.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "imageprobe"
 source = "src/Image/ImageProbe.cpp"
-flags = "base"
+flags = "cpp"
 
 [[unit]]
 unit = "gameassetnamespaces"
 source = "src/Gruntz/GameAssetNamespaces.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "bracketvalue"
 source = "src/Gruntz/BracketValueParse.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 
 # trace-discovered leaf dtors re-homed from src/Stub/Discovered.cpp (matcher-1):
 [[unit]]
 unit = "grunttoytimesprite"
 source = "src/Gruntz/GruntToyTimeSprite.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "logicrecorddispatch"
 source = "src/Gruntz/LogicRecordDispatch.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 unit = "cmdscrollapply"
 source = "src/Gruntz/CmdScrollApply.cpp"
-flags = "base"
+flags = "cpp-rtti"
 
 [[unit]]
 # matcher-3: custom-level dialog populate/select (thiscall, magic-static CString + walk).
 unit = "customleveldlg"
 source = "src/Gruntz/CustomLevelDlg.cpp"
-flags = "eh"
+flags = "cpp-rtti"
 
 [[unit]]
 # matcher-3: game-mode/object initializer (four owned sub-objects + /GX teardown).
 unit = "modeobjinit"
 source = "src/Gruntz/ModeObjInit.cpp"
-flags = "eh"
+flags = "cpp-rtti"

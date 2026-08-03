@@ -3,12 +3,23 @@
 
 This is graph phase 2 (see docs/build-system.md). It runs the genuine VC5
 `link.exe` (version 5.10.7303 - the linker that built retail GRUNTZ.EXE) under
-wine over our base `.obj`s. The reconstruction is only partial (most of the game
-is not decompiled yet), so the EXE is NOT runnable; we link it anyway, with
-`/FORCE`, to study the LAYOUT the linker produces: the `.map` gives every
-function's link-assigned RVA and its source object, which is what lets us
-reverse-engineer the retail build order (intra-TU order = source-definition
-order; cross-TU order = object link order). See docs/link-order-investigation.md.
+wine over our base `.obj`s. The `.map` gives every function's link-assigned RVA
+and its source object, which is what lets us reverse-engineer the retail build
+order (intra-TU order = source-definition order; cross-TU order = object link
+order). See docs/link-order-investigation.md.
+
+**There is no `/FORCE`, and it must never come back** (2026-08-03). It was the
+scaffolding for the partial-reconstruction era; the tree now links with ZERO
+unresolved externals and ZERO duplicate symbols, so a real link is available -
+and a real link is an ORACLE. `/FORCE` would silently re-swallow exactly the
+defects this phase exists to catch: an unresolved extern (a fabricated name, a
+body homed nowhere) and an LNK2005/LNK4006 duplicate (an identity defect - a
+symbol the CRT/MFC owns that we also defined, or one global defined in two TUs).
+Every one of those the link found was a real bug. Dropping it also un-blocks
+`/INCREMENTAL`, which ANY `/FORCE` makes link ignore (LNK4075) - and retail IS
+an incremental link (the E9 thunk band at the top of .text, the padded IAT, the
+separate .idata), so incremental is now reachable for the layout campaign.
+A link failure here is a FINDING: read the LNK codes, fix the source.
 
 What it does:
   1. ensure_msdis() - make MSDIS100.DLL resolvable so link.exe even loads under
@@ -41,11 +52,12 @@ comment there. The candidate's import table comes out with the same 16 DLLs and 
 same imported-name set per DLL as retail; the order WITHIN each DLL is still ~random
 against retail, since that follows the object link order, not any flag.
 
-`--no-libs` restores the historical `/NODEFAULTLIB`, objects-only link (a bare
-layout probe with every library symbol left unresolved).
+The historical `/NODEFAULTLIB` objects-only probe is GONE with `/FORCE`: it was
+viable only while unresolved externals were tolerated (it leaves every CRT/MFC
+symbol unresolved by construction), and the real link's map supersedes it.
 
 Other defaults are tuned for layout study, not a shippable binary:
-  /FORCE /SUBSYSTEM:WINDOWS /BASE:0x400000 /INCREMENTAL:NO /MAP
+  /SUBSYSTEM:WINDOWS /BASE:0x400000 /INCREMENTAL:NO /MAP
   /OPT:NOREF /OPT:NOICF   (keep EVERY function so the map is complete)
 
 Run inside `nix develop`.
@@ -89,7 +101,7 @@ LINK_LIBS = ["nafxcw.lib", "libcmt.lib",
              "dinput.lib", "dsound.lib", "ddraw.lib", "dxguid.lib"]
 # The retail entry point, once LIBCMT + NAFXCW are actually on the link line
 # (LIBCMT defines _WinMainCRTStartup, NAFXCW defines the _WinMain@16 it calls).
-ENTRY_LINKED, ENTRY_BARE = "WinMainCRTStartup", "_x"
+ENTRY_LINKED = "WinMainCRTStartup"
 
 
 def die(msg: str) -> None:
@@ -219,18 +231,9 @@ def main() -> None:
     ap.add_argument("--order", help="file listing obj stems/paths in link order.")
     ap.add_argument("--lib", action="append", default=[],
                     help="extra import/static lib to pass to link (repeatable).")
-    ap.add_argument("--no-force", dest="force", action="store_false", default=True,
-                    help="drop /FORCE. Needed to reach retail's shape: /FORCE makes "
-                         "link IGNORE /INCREMENTAL (LNK4075), and retail is an "
-                         "INCREMENTAL link (the E9 thunk band at the top of .text, "
-                         "the padded IAT, the separate .idata).")
-    ap.add_argument("--no-libs", dest="libs", action="store_false", default=True,
-                    help="/NODEFAULTLIB, no libraries at all - the bare objects-only "
-                         "layout probe (every CRT/MFC/Win32 symbol stays unresolved).")
     ap.add_argument("--base", default="0x400000", help="image base (/BASE).")
     ap.add_argument("--entry", default=None,
-                    help=f"forced /ENTRY symbol (default: {ENTRY_LINKED} with "
-                         f"libraries, {ENTRY_BARE} with --no-libs).")
+                    help=f"forced /ENTRY symbol (default: {ENTRY_LINKED}).")
     ap.add_argument("--keep-all", dest="keep_all", action="store_true", default=True,
                     help="/OPT:NOREF /OPT:NOICF - keep every COMDAT (default).")
     ap.add_argument("--opt-ref", dest="keep_all", action="store_false",
@@ -265,7 +268,7 @@ def main() -> None:
     os.environ.setdefault("WINEDEBUG", "fixme-all,err-all")
     ensure_wineserver()
 
-    entry = args.entry or (ENTRY_LINKED if args.libs else ENTRY_BARE)
+    entry = args.entry or ENTRY_LINKED
     rsp_lines = [
         f"/OUT:{winepath_w(out)}",
         f"/MAP:{winepath_w(mapf)}",
@@ -275,21 +278,14 @@ def main() -> None:
         # linked /FIXED:NO. Purely additive: .text/.rdata/.data come out byte-identical.
         "/FIXED:NO",
     ]
-    if args.force:
-        # ANY /FORCE (even /FORCE:MULTIPLE) makes link ignore /INCREMENTAL - LNK4075.
-        rsp_lines.append("/FORCE")
-    if not args.libs:
-        # No libraries at all - the objs' own -defaultlib: directives are ignored too.
-        rsp_lines.append("/NODEFAULTLIB")
     if args.keep_all:
         rsp_lines += ["/OPT:NOREF", "/OPT:NOICF"]
     extra = args.flags[1:] if args.flags and args.flags[0] == "--" else args.flags
     rsp_lines += list(extra)
     libs = list(args.lib)
-    if args.libs:
-        # Substitute the synthesised RAD libs IN PLACE so LINK_LIBS' order survives.
-        synth = {p.name.lower(): str(p) for p in ensure_import_libs()}
-        libs += [synth.get(n, n) for n in LINK_LIBS]
+    # Substitute the synthesised RAD libs IN PLACE so LINK_LIBS' order survives.
+    synth = {p.name.lower(): str(p) for p in ensure_import_libs()}
+    libs += [synth.get(n, n) for n in LINK_LIBS]
     rsp_lines += [winepath_w(lib) if os.path.exists(lib) else lib for lib in libs]
     rsp_lines += [f'"{winepath_w(o)}"' for o in objs]
 
@@ -305,8 +301,10 @@ def main() -> None:
         sys.stderr.write("\n".join(output.strip().splitlines()[-20:]) + "\n")
         sys.exit(rc or 1)
 
-    # /FORCE means unresolved externals are EXPECTED (partial reconstruction);
-    # surface the counts but treat the produced EXE as success.
+    # No /FORCE: an unresolved extern or a duplicate symbol FAILS the link above,
+    # so reaching here means both are zero. They are still reported (and asserted)
+    # because a silent regression to non-zero would mean the link stopped being an
+    # oracle - see the /FORCE note in the module docstring.
     warns = sum(1 for ln in output.splitlines() if "LNK4006" in ln)
     unres_syms = sorted(unresolved(output))
     # save the unresolved-externals punch-list (the drive-to-linkable worklist).
@@ -315,8 +313,10 @@ def main() -> None:
     print(f"[link] {len(objs)} objs + {len(libs)} explicit lib(s) -> {out} "
           f"({out.stat().st_size} B) + {mapf.name}")
     print(f"[link] {len(unres_syms)} unresolved externals -> {unf.name}, "
-          f"{warns} dup-symbol warnings"
-          + (" (tolerated by /FORCE)" if args.force else " (/FORCE off)"))
+          f"{warns} dup-symbol warnings  (no /FORCE - a real link)")
+    if unres_syms or warns:
+        die(f"link is no longer clean: {len(unres_syms)} unresolved, {warns} dup(s). "
+            "Fix the source - never re-add /FORCE (see the module docstring).")
     for bucket, n in sorted(collections.Counter(
             classify(s) for s in unres_syms).items(), key=lambda kv: -kv[1]):
         print(f"[link]   {n:5d}  {bucket}")

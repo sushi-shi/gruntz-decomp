@@ -140,7 +140,7 @@ def load_manifest(path: Path) -> dict:
     # `flags = "<name>"`. The profiles ARE the full flag sets - there is no
     # separate global default to inherit and no per-TU append, so each TU's flag
     # choice is one explicit, greppable name. /GX and /GR are profile choices
-    # (eh/mfc, rtti/ehrtti), never bolt-ons: a stray `extra` key is a hard error.
+    # (cpp, cpp-o1, cpp-rtti), never bolt-ons: a stray `extra` key is a hard error.
     profiles = data.get("flags", {})
     if not profiles:
         raise SystemExit(f"{path}: [flags] must define at least one profile")
@@ -163,7 +163,7 @@ def load_manifest(path: Path) -> dict:
             raise SystemExit(
                 f"{path}: unit '{u['unit']}' sets 'extra' - per-TU flag bolt-ons "
                 f"are not supported. Add (or reuse) a [flags] profile carrying the "
-                f"FULL set instead; /GR lives in the `rtti`/`ehrtti` profiles.")
+                f"FULL set instead; /GR lives in the `cpp-rtti` profile.")
         # Copy the profile - never mutate the shared list.
         u["cflags"] = list(profiles[u["flags"]])
     return data

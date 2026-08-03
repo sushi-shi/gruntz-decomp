@@ -377,9 +377,62 @@
    ]
   },
   {
+   "file": "src/Wwd/WwdFile.cpp",
+   "n": 3,
+   "bytes": 273,
+   "main_lo": 40960,
+   "main_hi": 41132,
+   "main_n": 1,
+   "main_share": 0.3333333333333333,
+   "clusters": 3,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 40960,
+     "hi": 41132,
+     "n": 1
+    },
+    {
+     "lo": 201184,
+     "hi": 201260,
+     "n": 1
+    },
+    {
+     "lo": 873376,
+     "hi": 873401,
+     "n": 1
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 201184,
+     "name": "?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord@@HH@Z",
+     "dist": 160052,
+     "cluster_n": 1,
+     "kind": "interleaver",
+     "home": "src/Gruntz/BattlezMapConfig.cpp",
+     "home_n": 13
+    },
+    {
+     "rva": 873376,
+     "name": "?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z",
+     "dist": 832244,
+     "cluster_n": 1,
+     "kind": "interleaver",
+     "home": "src/Gruntz/Play.cpp",
+     "home_n": 10
+    }
+   ],
+   "rvas": [
+    40960,
+    201184,
+    873376
+   ]
+  },
+  {
    "file": "src/Gruntz/GruntzMgr.cpp",
    "n": 118,
-   "bytes": 19615,
+   "bytes": 19671,
    "main_lo": 571584,
    "main_hi": 605415,
    "main_n": 116,
@@ -770,44 +823,6 @@
    ]
   },
   {
-   "file": "src/Wwd/WwdFile.cpp",
-   "n": 2,
-   "bytes": 197,
-   "main_lo": 40960,
-   "main_hi": 41132,
-   "main_n": 1,
-   "main_share": 0.5,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 40960,
-     "hi": 41132,
-     "n": 1
-    },
-    {
-     "lo": 873376,
-     "hi": 873401,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 873376,
-     "name": "?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z",
-     "dist": 832244,
-     "cluster_n": 1,
-     "kind": "interleaver",
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 10
-    }
-   ],
-   "rvas": [
-    40960,
-    873376
-   ]
-  },
-  {
    "file": "src/Gruntz/GruntSpawnConfig.cpp",
    "n": 18,
    "bytes": 4296,
@@ -837,7 +852,7 @@
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/AreaMgr.cpp",
-     "home_n": 52
+     "home_n": 53
     }
    ],
    "rvas": [
@@ -935,7 +950,7 @@
    "outliers": [
     {
      "rva": 600752,
-     "name": "?winapi_092ab0_EndDialog@@YGHPAUHWND__@@IIJ@Z",
+     "name": "?DebugGruntTypeDialogProc@@YGHPAUHWND__@@IIJ@Z",
      "dist": 450512,
      "cluster_n": 1,
      "kind": "interleaver",
@@ -995,7 +1010,7 @@
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/TileTriggerSwitchLogic.cpp",
-     "home_n": 15
+     "home_n": 16
     }
    ],
    "rvas": [
@@ -1106,7 +1121,7 @@
    "outliers": [
     {
      "rva": 1029728,
-     "name": "?LogicDispatchA@@YAHPAUCGameObject@@@Z",
+     "name": "_CreateStaticHazard",
      "dist": 117327,
      "cluster_n": 1,
      "kind": "interleaver",
@@ -1165,45 +1180,6 @@
     910368,
     910736,
     1026960
-   ]
-  },
-  {
-   "file": "src/Gruntz/GameObjectFactory.cpp",
-   "n": 3,
-   "bytes": 1772,
-   "main_lo": 8536,
-   "main_hi": 10326,
-   "main_n": 2,
-   "main_share": 0.6666666666666666,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 8536,
-     "hi": 10326,
-     "n": 2
-    },
-    {
-     "lo": 41904,
-     "hi": 43666,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 41904,
-     "name": "?RegisterGameObjectTypes@@YAXPAVCDDrawSurfaceMgr@@@Z",
-     "dist": 31578,
-     "cluster_n": 1,
-     "kind": "interleaver",
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 24
-    }
-   ],
-   "rvas": [
-    8536,
-    10321,
-    41904
    ]
   },
   {

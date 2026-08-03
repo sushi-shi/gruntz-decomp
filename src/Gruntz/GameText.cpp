@@ -82,8 +82,6 @@ static CString g_statLabel[8] = {
 
 RVA(0x0001ec20, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {
-
-    volatile i32 slot = 0;
     switch (id) {
         case 0:
             return CString("KING");
