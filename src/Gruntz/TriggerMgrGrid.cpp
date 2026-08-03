@@ -23,6 +23,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
@@ -1143,14 +1144,15 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
 
     switch (kind) {
         case PICKUP_GAUNTLETZ:
-            if (bute == 0x1e || bute == 0x1f || bute == 0x21 || bute == 0x97 || bute == 0x98
-                || bute == 0x99) {
+            if (bute == TILEKIND_GAUNTLET_ROCK_A || bute == TILEKIND_GAUNTLET_ROCK_B
+                || bute == TILEKIND_GIANT_ROCK || bute == TILEKIND_GAUNTLET_BRICK_A
+                || bute == TILEKIND_GAUNTLET_BRICK_B || bute == TILEKIND_GAUNTLET_BRICK_C) {
                 cell->RunMoveConfig(argTileX, argTileY);
                 return 1;
             }
             return 0;
         case PICKUP_SHOVEL:
-            if (bute == 0x22 || bute == 0x23) {
+            if (bute == TILEKIND_COVERED_POWERUP || bute == TILEKIND_REVEALED_POWERUP) {
                 cell->RunMoveConfig(argTileX, argTileY);
                 return 1;
             }
@@ -1174,7 +1176,8 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
             cell->RunMoveConfig(cellTileX, cellTileY);
             return 1;
         case PICKUP_BRICK:
-            if (bute == 0x96 || bute == 0x97 || bute == 0x98) {
+            if (bute == TILEKIND_HIDDEN_POWERUP || bute == TILEKIND_GAUNTLET_BRICK_A
+                || bute == TILEKIND_GAUNTLET_BRICK_B) {
                 cell->RunMoveConfig(argTileX, argTileY);
                 return 1;
             }

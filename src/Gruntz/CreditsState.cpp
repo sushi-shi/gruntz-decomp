@@ -244,7 +244,7 @@ i32 CCreditsState::RestoreDisplay() {
 
 RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
-    if (code == 0x1b || code == 0x20 || code == 0xd) {
+    if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == 5) {
             PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         } else {

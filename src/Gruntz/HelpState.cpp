@@ -149,7 +149,7 @@ i32 CHelpState::RestoreDisplay() {
 
 RVA(0x000953f0, 0x37)
 i32 CHelpState::OnKeyDown(i32 code, i32 unused) {
-    if (code == 0x1b || code == 0x20 || code == 0xd) {
+    if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     }
     return 1;

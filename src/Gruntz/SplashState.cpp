@@ -129,7 +129,7 @@ i32 CSplashState::RestoreDisplay() {
 
 RVA(0x000f9b40, 0x37)
 i32 CSplashState::OnKeyDown(i32 code, i32) {
-    if (code == 0x1b || code == 0x20 || code == 0xd) {
+    if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;

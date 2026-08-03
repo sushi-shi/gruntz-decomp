@@ -257,7 +257,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     i32 code =
         g_gameReg->m_tileGrid->m_rowInts[m_lastTilePx.m_y >> 5][(m_lastTilePx.m_x >> 5) * 7 + 4];
-    if (code == 0x41 || code == 0x42) {
+    if (code == TILEKIND_CHECKPOINT || code == TILEKIND_CHECKPOINT_UP) {
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
 
             m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);

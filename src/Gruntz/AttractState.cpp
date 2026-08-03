@@ -221,7 +221,7 @@ i32 CAttract::RestoreDisplay() {
 
 RVA(0x00014720, 0x37)
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {
-    if (code == 0x20 || code == 0xd || code == 0x1b) {
+    if (code == VK_SPACE || code == VK_RETURN || code == VK_ESCAPE) {
         PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;

@@ -222,7 +222,9 @@ RVA(0x00021e20, 0x95)
 
 i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
     m_inputScrollTotal = 0;
-    if (ch == 0xd) {
+    // A CHARACTER from WM_CHAR, not a virtual key - so the carriage return is
+    // spelled as one rather than as VK_RETURN.
+    if (ch == '\r') {
         if (m_inputActive != 0) {
             if (m_inputText.GetLength() == 0) {
                 return 0;
