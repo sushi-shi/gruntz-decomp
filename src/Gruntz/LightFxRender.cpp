@@ -195,7 +195,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                     } else {
                         idx = 0;
                     }
-                    if (static_cast<u32>(idx) >= 0x1f4) {
+                    if (static_cast<u32>(idx) >= MINIMAP_TILE_COLOR_COUNT) {
                         *dst = 0;
                     } else {
                         *dst = m_buf[idx];
@@ -215,7 +215,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 } else {
                     idx = 0;
                 }
-                if (static_cast<u32>(idx) >= 0x1f4) {
+                if (static_cast<u32>(idx) >= MINIMAP_TILE_COLOR_COUNT) {
                     *dst = 0;
                 } else {
                     *dst = m_buf[idx];

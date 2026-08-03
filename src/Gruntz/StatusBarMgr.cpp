@@ -8,6 +8,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/SbGeom.h>
+#include <Gruntz/SbiCommandId.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgrBuilders.h>
@@ -371,7 +372,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32* cfgp = &m_hlGrid[4].m_value;
                 CSBI_ImageSet** cachep = &m_hlNotify[4];
                 i32 y = by + 0x155;
-                i32 c = 0xd7;
+                i32 c = SBICMD_HL_GROUP1_FIRST;
                 for (i = 0; i < 4; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
                     r.left = bx + 0x1d;
@@ -715,7 +716,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
-                            0x13b + i,
+                            SBICMD_CURSOR_TARGET_FIRST + i,
                             4,
                             r,
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
@@ -770,7 +771,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 arrowR = bx + cOff;
                 i32 y = by + 0xd9;
                 for (i = 0; i < 15; i++) {
-                    i32 id = 0x13b + i;
+                    i32 id = SBICMD_CURSOR_TARGET_FIRST + i;
                     arrow = new CSBI_StatzTabArrow;
                     r.left = arrowL;
                     r.top = y - 0x11;

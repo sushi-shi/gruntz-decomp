@@ -45,7 +45,29 @@ GZ_ENUM_BEGIN(SbiCommandId)
     // cue they play (HiCueLookup vs HiCueTimed), so they are distinguished the same
     // way TileCollisionKind distinguishes its indistinguishable arrow pairs.
     SBICMD_MAIN_MENU_A = 0x325,
-    SBICMD_MAIN_MENU_B = 0x327
+    SBICMD_MAIN_MENU_B = 0x327,
+
+    // Three BANDS of per-slot widgets. Each band's base is proven by the
+    // subtraction its own arm performs - the id is turned straight back into a
+    // 0-based index - and each band's outer bounds by the guard that rejects
+    // everything outside it before the split.
+    //
+    //   `cmd < 0x12c || cmd > 0x149` then
+    //     cmd <= 0x13a -> ToggleStat(cmd - 0x12c)
+    //     else            PlaceCursorTarget(cmd - 0x13b, 0)
+    SBICMD_STAT_TOGGLE_FIRST = 0x12c,
+    SBICMD_STAT_TOGGLE_LAST = 0x13a,
+    SBICMD_CURSOR_TARGET_FIRST = 0x13b,
+    SBICMD_CURSOR_TARGET_LAST = 0x149,
+
+    //   `cmd < 0xd3 || cmd > 0xde` then a three-way split, each arm
+    //   re-basing on its own group's first id
+    SBICMD_HL_GROUP0_FIRST = 0xd3,
+    SBICMD_HL_GROUP0_LAST = 0xd6,
+    SBICMD_HL_GROUP1_FIRST = 0xd7,
+    SBICMD_HL_GROUP1_LAST = 0xda,
+    SBICMD_HL_GROUP2_FIRST = 0xdb,
+    SBICMD_HL_GROUP2_LAST = 0xde
 GZ_ENUM_END(SbiCommandId)
 
 // 0x1f9 and 0x328 are DELIBERATELY absent. 0x1f9 toggles m_frameGate and calls

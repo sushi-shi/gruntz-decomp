@@ -5,12 +5,22 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
+
 class CGruntzMgr;
 class CTriggerMgr;
 class CGruntzMapMgr;
 class CDDrawSurfaceMgr;
 class CDDSurface;
 class CDDrawSurfacePair;
+
+// How many tile ids the minimap colour table covers. m_buf is indexed by
+// m_tileGrid->m_rows[y][x].m_tileId, and both readers guard with
+// `idx >= MINIMAP_TILE_COLOR_COUNT` before indexing - so the array bound and the
+// guard are the same fact written twice.
+GZ_ENUM_CONST_BEGIN(MinimapTileColor)
+    MINIMAP_TILE_COLOR_COUNT = 0x1f4
+GZ_ENUM_CONST_END(MinimapTileColor)
 
 class CLightFxRender {
 public:
@@ -63,7 +73,7 @@ public:
     RECT m_dstRect;
     i32 m_scale;
     i32 m_handle;
-    u16 m_buf[0x1f4];
+    u16 m_buf[MINIMAP_TILE_COLOR_COUNT];
     i32 m_refreshInterval;
     i32 m_refreshRemaining;
 };

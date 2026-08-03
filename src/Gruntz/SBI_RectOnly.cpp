@@ -449,15 +449,15 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
-            if (cmd < 0x12c || cmd > 0x149) {
+            if (cmd < SBICMD_STAT_TOGGLE_FIRST || cmd > SBICMD_CURSOR_TARGET_LAST) {
                 return 0;
             }
-            if (cmd <= 0x13a) {
+            if (cmd <= SBICMD_STAT_TOGGLE_LAST) {
                 HiCueLookup();
-                ToggleStat(cmd - 0x12c);
+                ToggleStat(cmd - SBICMD_STAT_TOGGLE_FIRST);
             } else {
                 HiCueLookup();
-                PlaceCursorTarget(cmd - 0x13b, 0);
+                PlaceCursorTarget(cmd - SBICMD_CURSOR_TARGET_FIRST, 0);
             }
             return 1;
 
@@ -481,15 +481,15 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
-            if (cmd < 0xd3 || cmd > 0xde) {
+            if (cmd < SBICMD_HL_GROUP0_FIRST || cmd > SBICMD_HL_GROUP2_LAST) {
                 return 1;
             }
-            if (cmd <= 0xd6) {
-                HlClickGroup0(cmd - 0xd3);
-            } else if (cmd <= 0xda) {
-                HlClickGroup1(cmd - 0xd7);
+            if (cmd <= SBICMD_HL_GROUP0_LAST) {
+                HlClickGroup0(cmd - SBICMD_HL_GROUP0_FIRST);
+            } else if (cmd <= SBICMD_HL_GROUP1_LAST) {
+                HlClickGroup1(cmd - SBICMD_HL_GROUP1_FIRST);
             } else {
-                HlClickGroup2(cmd - 0xdb);
+                HlClickGroup2(cmd - SBICMD_HL_GROUP2_FIRST);
             }
             return 1;
 
@@ -644,7 +644,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     r->Click1c(a, x, y);
     i32 cmd = r->m_cmd;
     if (r->m_tab == TAB_STATZ && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
-        && cmd >= 0x13b && cmd <= 0x149) {
+        && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* found = 0;
