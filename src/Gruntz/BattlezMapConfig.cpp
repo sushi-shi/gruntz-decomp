@@ -1,3 +1,4 @@
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/GameObjectFactory.h>
@@ -609,7 +610,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     } else {
         unit->m_battleState = 0;
     }
-    unit->m_arrivalState = 0x11;
+    unit->m_arrivalState = AI_BATTLEZ_PATH;
     unit->m_defenderState = 0;
     unit->m_arrivalCell.m_x = -1;
     unit->m_unusedBattleCell.m_x = -1;
@@ -4824,7 +4825,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->m_arrivalCell.m_x = -1;
     unit->m_unusedBattleCell.m_x = -1;
     unit->m_defenderPx.m_x = -1;
-    unit->m_arrivalState = 0x11;
+    unit->m_arrivalState = AI_BATTLEZ_PATH;
     unit->m_arrivalCell.m_y = -1;
     unit->m_targetTeam = -1;
     unit->m_unusedBattleCell.m_y = -1;

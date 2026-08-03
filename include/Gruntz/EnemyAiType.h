@@ -25,15 +25,18 @@
 // Thief drops what it stole), and 4 is the only value that seeds
 // m_defenderRadius = 1 in the per-tool loaders (the Defender's one-tile post).
 //
-// NOT declared: 0x11. It has no arm in the dispatch and no documented slot, yet
-// ~20 sites in Grunt.cpp branch on it - it drives the m_coordList waypoint path
-// and takes m_arrivalFlags = 0x4000983, between AI_NONE's 0x4000901 and every
-// other type's 0x1c000d83. The only aiType the engine produces outside the level
-// file is CTriggerMgr's Battlez respawn, which reads it from the bute
-// ("Grunt" / "RessurectAIType"), and that bute is data we do not have, so pairing
-// 0x11 with that key would be a guess. It stays a literal at its use sites.
-// (AI_COUNT below is 17 for the 0..16 roster; that it collides with the value is
-// a coincidence, not evidence - do not spell 0x11 as AI_COUNT.)
+// 0x11 is NOT one of the level file's sixteen: it is the state a Battlez-spawned
+// unit is put into, named for what it DOES rather than for any bute key.
+// CBattlezMapConfig::StepRowSpawn and ::TrySeedSpawnAt are its only producers,
+// both while seeding a Battlez unit, and every read routes that unit down the
+// Battlez path - ValidateUnitPath(this) against the owner's m_battlezConfig, the
+// m_coordList waypoint walk, and its own m_arrivalFlags = 0x4000983, distinct
+// from AI_NONE's 0x4000901 and every other type's 0x1c000d83.
+//
+// (An earlier pass left it literal because the bute key CTriggerMgr's Battlez
+// RESPAWN reads it from - "Grunt" / "RessurectAIType" - is data we do not have.
+// That is still true and is still not what names it; the two direct producers
+// above are.)
 GZ_ENUM_BEGIN(EnemyAiType)
     AI_NONE = 0,
     AI_DUMBCHASER = 1,
@@ -52,7 +55,10 @@ GZ_ENUM_BEGIN(EnemyAiType)
     AI_TOYER = 14,
     AI_MAGICWANDGRUNT = 15,
     AI_SCROLLGRUNT = 16,
-    AI_COUNT = 17
+    // The Battlez-spawned unit's state. NOT a count: the unused AI_COUNT that used
+    // to sit at this value was removed - it had no use site anywhere, and a marker
+    // with no use site is an invention like any other.
+    AI_BATTLEZ_PATH = 0x11
 GZ_ENUM_END(EnemyAiType)
 
 #endif // GRUNTZ_GRUNTZ_ENEMYAITYPE_H

@@ -1148,7 +1148,7 @@ pathGate:
         }
         return 0;
     }
-    if (m_arrivalState == 0x11) {
+    if (m_arrivalState == AI_BATTLEZ_PATH) {
         reinit = 0;
         goto commitEntrance;
     }
@@ -1396,7 +1396,7 @@ i32 CGrunt::StepGruntMovement() {
             goto label_ret1;
         }
     }
-    if (m_arrivalState == 0x11) {
+    if (m_arrivalState == AI_BATTLEZ_PATH) {
         CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_battlezConfig;
         if (slot != 0 && slot->ValidateUnitPath(this) == 0) {
             SetEntrancePos(1, 1);
@@ -1406,7 +1406,7 @@ i32 CGrunt::StepGruntMovement() {
     if (CoordCount() == 0) {
         goto label_dropRet0;
     }
-    if (m_arrivalState != 0x11) {
+    if (m_arrivalState != AI_BATTLEZ_PATH) {
         Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
         coordX = co->m_x;
         coordY = co->m_y;
@@ -1510,7 +1510,7 @@ i32 CGrunt::StepGruntMovement() {
             goto label_4c68b;
         }
     }
-    if (m_arrivalState == 0x11) {
+    if (m_arrivalState == AI_BATTLEZ_PATH) {
         goto label_4cb2a;
     }
     if (CoordCount() == 0) {
@@ -1621,7 +1621,7 @@ label_4c68b:
     }
 
 label_4c6e4:
-    if (m_arrivalState == 0x11 && CoordCount() != 0) {
+    if (m_arrivalState == AI_BATTLEZ_PATH && CoordCount() != 0) {
         Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
         CoordPoolNode* p = g_coordPool.NodeOf(co);
         p->m_next = g_coordPool.m_freeHead;
@@ -1680,7 +1680,7 @@ label_4c6e4:
         if (beyondFlag & 0x20000939) {
             goto label_4cb2a;
         }
-        if (CoordCount() != 0 && m_arrivalState != 0x11) {
+        if (CoordCount() != 0 && m_arrivalState != AI_BATTLEZ_PATH) {
             Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
             if (co->m_x == btx && co->m_y == bty) {
                 CoordPoolNode* p = g_coordPool.NodeOf(co);
@@ -1874,7 +1874,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
         m_arrivalPhase = 0;
         m_arrivalActive = 0;
     }
-    if (b && m_arrivalState != 0x11 && CoordCount() != 0) {
+    if (b && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
 
         POSITION pos = m_coordList.GetHeadPosition();
         while (pos != 0) {
@@ -2331,7 +2331,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2356,7 +2356,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2381,7 +2381,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2409,7 +2409,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2434,7 +2434,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2459,7 +2459,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2484,7 +2484,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2509,7 +2509,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2519,7 +2519,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_toolConfigured = 1;
-            if (m_arrivalState == 0x11) {
+            if (m_arrivalState == AI_BATTLEZ_PATH) {
                 if (m_battleState != 4) {
                     if (CoordCount() != 0) {
                         CoordNode* p = CoordHead();
@@ -2569,7 +2569,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2594,7 +2594,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2622,7 +2622,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2650,7 +2650,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2678,7 +2678,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2703,7 +2703,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2728,7 +2728,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2753,7 +2753,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2778,7 +2778,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2803,7 +2803,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2829,7 +2829,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2854,7 +2854,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2879,7 +2879,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2904,7 +2904,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2932,7 +2932,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2952,7 +2952,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_BABYWALKER: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2975,7 +2975,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_BEACHBALL: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -2997,7 +2997,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_BIGWHEEL: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3020,7 +3020,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_GOKART: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3042,7 +3042,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_JACKINTHEBOX: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3064,7 +3064,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_JUMPROPE: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3087,7 +3087,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_POGOSTICK: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3110,7 +3110,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_SCROLL: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3133,7 +3133,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_SQUEAKTOY: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3155,7 +3155,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_YOYO: {
             if (m_arrivalState == 1) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3212,7 +3212,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "HAREKRISHNAGRUNT";
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -3244,7 +3244,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "REAPERGRUNT";
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = 0x4000901;
-            } else if (m_arrivalState == 0x11) {
+            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = 0x4000983;
             } else {
                 m_arrivalFlags = 0x1c000d83;
@@ -4082,7 +4082,7 @@ afterArrival:
         }
     }
 
-    if (m_arrivalState == 0x11) {
+    if (m_arrivalState == AI_BATTLEZ_PATH) {
         if (m_poweredUp != 0 && m_stamina >= 0x64) {
             bool eq;
             {
@@ -4383,7 +4383,7 @@ void CGrunt::FinalizeStep(char* name) {
 
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
-    if (m_arrivalState != 0x11) {
+    if (m_arrivalState != AI_BATTLEZ_PATH) {
         bool eq;
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
         if (eq && CoordCount() != 0) {
