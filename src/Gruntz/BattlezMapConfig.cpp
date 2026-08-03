@@ -15,6 +15,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
@@ -197,12 +198,12 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     }
 
     switch (diff) {
-        case 0: {
+        case BZDIFF_EASY: {
             g_buteMgr.GetIntDef("Battlez", "EasyDifficulty", 100);
             g_diffTier = 20;
             break;
         }
-        case 1: {
+        case BZDIFF_NORMAL: {
             i32 r = g_buteMgr.GetIntDef("Battlez", "NormalDifficulty", 50);
             g_diffTier = 10;
             m_gruntCreationTime = static_cast<i32>(
@@ -215,7 +216,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             );
             break;
         }
-        case 2: {
+        case BZDIFF_HARD: {
             i32 r = g_buteMgr.GetIntDef("Battlez", "HardDifficulty", 25);
             g_diffTier = 5;
             m_gruntCreationTime = static_cast<i32>(

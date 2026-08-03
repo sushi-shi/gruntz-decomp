@@ -7,6 +7,7 @@
 
 #include <Clock64.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
@@ -440,7 +441,7 @@ extern GruntDeathType g_areaPitDeath;
 extern "C" i32 g_playActive;
 extern "C" i32 g_profAccA;
 extern "C" i32 g_profAccB;
-extern "C" i32 g_soundChannelInUse[17];
+extern "C" i32 g_soundChannelInUse[TINT_COUNT];
 extern "C" u8 g_scrollLoadFlags;
 extern "C" i32 g_scrollMinSpeed;
 extern "C" i32 g_scrollSpeedRange;
@@ -452,7 +453,7 @@ extern i32 g_lastLevelNum;
 // object's WWD `Smarts` slot at construction.
 extern "C" GruntDeathType g_areaHazardDeath;
 extern "C" i32 g_levelBias100;
-extern "C" i32 g_soundChannelInUse[17];
+extern "C" i32 g_soundChannelInUse[TINT_COUNT];
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 extern "C" i32 g_profAccA;

@@ -32,6 +32,7 @@
 #include <Gruntz/CBrickz.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CheatMgr.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/EnemyAiType.h>
@@ -3986,13 +3987,19 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
     return s;
 }
 
+// NOT sound channels, despite the name this was reconstructed under: it is one
+// slot per ColorTint saying whether that colour is still AVAILABLE to a player.
+// The multiplayer roster proves both halves - it calls FindFree(), assigns the
+// result to s->m_colorIndex, then Set(free, false) to take the colour, and
+// Set(s->m_colorIndex, true) to hand it back when the slot empties. The size is
+// TINT_COUNT, not a coincidence.
 DATA(0x0024c3f0)
-i32 g_soundChannelInUse[17];
+i32 g_soundChannelInUse[TINT_COUNT];
 
 RVA(0x000db1d0, 0x14)
 void ChannelSlots_InitAll() {
-    for (i32 i = 0; i < 17; i++) {
-        g_soundChannelInUse[i] = 1;
+    for (i32 i = 0; i < TINT_COUNT; i++) {
+        g_soundChannelInUse[i] = true;
     }
 }
 
@@ -4012,8 +4019,8 @@ i32 GruntzPlayer::SwapChannel(i32 channel) {
 
 RVA(0x000db280, 0x1b)
 i32 ChannelSlots_FindFree() {
-    for (i32 i = 0; i < 17; i++) {
-        if (g_soundChannelInUse[i] != 0) {
+    for (i32 i = 0; i < TINT_COUNT; i++) {
+        if (g_soundChannelInUse[i] != false) {
             return i;
         }
     }
