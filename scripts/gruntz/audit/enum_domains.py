@@ -55,6 +55,12 @@ FORWARD = re.compile(r"\bGZ_ENUM_FORWARD(?:_SPLIT)?\(\s*(\w+)\s*(?:,\s*(\w+)\s*)
 STORAGE = re.compile(r"\bGZ_ENUM_(?:STORAGE|STORAGE_STEPPED|PARAM|RETURN|BITFIELD)"
                      r"\(\s*(\w+)\s*,\s*(\w+)\s*\)")
 BARE_ENUM = re.compile(r"^[ \t]*(?:typedef[ \t]+)?enum[ \t]+(\w+)[ \t]*\{(?P<body>[^}]*)\}", re.M)
+# a relational test against a SCREAMING_SNAKE name
+RANGE_TEST = re.compile(r"([<>]=?)[ \t]*([A-Z][A-Z0-9_]{2,})\b")
+# names a range test may legitimately target: a band/count marker, or a sentinel
+# (comparing against _NONE/_INVALID/_UNSET is what a sentinel is for), or a grid
+# extent, which is a dimension rather than a member of the domain.
+MARKER_OK = re.compile(r"(_BEGIN|_END|_LAST|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS)$")
 
 
 def is_tag_type(body: str) -> bool:
@@ -172,6 +178,33 @@ def audit():
         if stale:
             fatal.append(f"enum-review.tsv: {len(stale)} row(s) name files that no longer exist "
                          f"(e.g. {sorted(stale)[:3]}) - run --sync-review")
+
+    # (5) a range test must name a BOUNDARY, never a member. `n > PICKUP_WINGZ`
+    # for "not an equippable tool" states a fact about Wingz when it means a fact
+    # about the band edge (docs/patterns/enum-domains.md). The fix is always a
+    # RENAME: declare the marker at the value retail already compares against,
+    # because the compare FORM is load-bearing - `> 22` and `>= 23` are one
+    # predicate but two instructions.
+    enumerators: dict[str, str] = {}          # enumerator -> its domain
+    for f in files:
+        t = strip(f.read_text(errors="replace"))
+        for dom, _kind, _st, body in domain_blocks(t):
+            for m in ENUMERATOR.finditer(body):
+                enumerators.setdefault(m.group(1), dom)
+    for f in files:
+        if f.suffix != ".cpp":
+            continue
+        rel = str(f.relative_to(REPO))
+        t = strip(f.read_text(errors="replace"))
+        for m in RANGE_TEST.finditer(t):
+            name = m.group(2)
+            dom = enumerators.get(name)
+            if dom is None or MARKER_OK.search(name):
+                continue
+            line = t[:m.start()].count("\n") + 1
+            fatal.append(f"{rel}:{line}: range test `{m.group(1)} {name}` names a MEMBER of "
+                         f"{dom} - declare a _BEGIN/_END/_LAST/_COUNT marker AT THAT VALUE and "
+                         f"compare against it (rename only; changing the operator moves bytes)")
 
     return fatal, warn, declared
 

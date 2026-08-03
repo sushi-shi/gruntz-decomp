@@ -113,7 +113,7 @@ GZ_ENUM_END(PlayViewMode)
 
 GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_POINTER = 0,
-    CURSOR_CHIP_FIRST = 1,
+    CURSOR_CHIP_BEGIN = 1,
     CURSOR_CHIP_LAST = 0x26,
     CURSOR_FLAILINGGRUNT = 0x66,
     CURSOR_TOOL_HANDZ = 0xc8,
@@ -5050,7 +5050,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     if (this->m_levelId == frame && flag == this->m_dragEndNotify) {
         return 1;
     }
-    if (cursor >= CURSOR_CHIP_FIRST && cursor <= CURSOR_CHIP_LAST) {
+    if (cursor >= CURSOR_CHIP_BEGIN && cursor <= CURSOR_CHIP_LAST) {
         if (this->BeginGridWalk("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
             return 0;
         }
