@@ -17,10 +17,12 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/TriggerMgr.h>
@@ -63,7 +65,6 @@ static char s_Spellz[] = "Spellz";
 DATA(0x0020ee38)
 static char s_FreezeDelay[] = "FreezeDelay";
 
-DATA(0x0020dbd0)
 static char s_BOMBGRUNT[] = "BOMBGRUNT";
 DATA(0x0020e264)
 static char s_RunningTimePerTile[] = "RunningTimePerTile";
@@ -221,15 +222,18 @@ i32 CGrunt::RunEntranceMove() {
         return 0;
     }
     if (mode >= 0x32) {
-        return LoadVehicleGruntSprites(mode);
+        return LoadVehicleGruntSprites(static_cast<PickupType>(mode));
     }
     if (mode >= 0x22) {
-        m_brickPickupType = mode;
+        // FINDING: m_moveMode is range-dispatched by PICKUP ranges here
+        // (>=0x17 Toyz, >=0x22 Brickz, >=0x32 PowerUpz), so it carries a
+        // PickupType under a movement name. Retyping it is follow-up work.
+        m_brickPickupType = static_cast<PickupType>(mode);
         m_moveMode = -1;
         return 1;
     }
     if (mode >= 0x17) {
-        LoadVehicleGruntSprites(mode);
+        LoadVehicleGruntSprites(static_cast<PickupType>(mode));
         return 0;
     }
     return LoadTypeTableClearMove(mode);
@@ -239,7 +243,7 @@ i32 CGrunt::RunEntranceMove() {
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     CGrunt* other = m_tileMgr->m_grid[col * TM_GRID_COLS + row];
-    if (other != 0 && other->m_entranceCommitted != 0 && other->m_gruntKind != 0x36) {
+    if (other != 0 && other->m_entranceCommitted != 0 && other->m_gruntKind != GRUNT_GHOST) {
         i32 ox = other->m_lastTilePx.m_x >> 5;
         i32 oy = other->m_lastTilePx.m_y >> 5;
         i32 tx = m_defenderPx.m_x >> 5;
@@ -389,7 +393,7 @@ i32 CGrunt::LoadEntranceConfig() {
             i32 b = (owner >> 8) & 0xff;
             i32 a = owner & 0xff;
             if (m_tileOwnerHi != b || m_tileOwnerLo != a) {
-                m_tileMgr->CellDispatch(b, a, 2, m_tileOwnerHi);
+                m_tileMgr->CellDispatch(b, a, DEATH_SQUASH, m_tileOwnerHi);
             }
         }
 
@@ -491,8 +495,8 @@ i32 CGrunt::RearmEntranceDrop() {
         i32 b;
         m_entranceCommitted = 0;
         if (m_tileMgr->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0) != 0) {
-            m_tileMgr->CellDispatch(a, b, 0xb, -1);
-            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+            m_tileMgr->CellDispatch(a, b, DEATH_EXPLODE, -1);
+            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
         } else {
             m_entranceCommitted = 1;
         }
@@ -532,7 +536,7 @@ i32 CGrunt::StartBombGruntRun() {
         m_selectedSprite->m_flags |= 0x10000;
         m_selectedSprite = 0;
     }
-    m_gruntKind = 0;
+    m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
         m_combatActive = 0;
@@ -819,7 +823,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason != 1) {
             goto finalize;
         }
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
         return 0;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
@@ -892,7 +896,7 @@ i32 CGrunt::StepArrivalCommit() {
         GruntScratchTeardown();
         eq = (strcmp(prev, s_codeM) == 0);
         if (eq) {
-            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
             return 0;
         }
         goto finalize;
@@ -927,12 +931,15 @@ modeDispatch: {
         goto finalize;
     }
     if (mode >= 0x22) {
-        m_brickPickupType = mode;
+        // FINDING: m_moveMode is range-dispatched by PICKUP ranges here
+        // (>=0x17 Toyz, >=0x22 Brickz, >=0x32 PowerUpz), so it carries a
+        // PickupType under a movement name. Retyping it is follow-up work.
+        m_brickPickupType = static_cast<PickupType>(mode);
         m_moveMode = -1;
         goto finalize;
     }
     if (mode >= 0x17) {
-        LoadVehicleGruntSprites(mode);
+        LoadVehicleGruntSprites(static_cast<PickupType>(mode));
         goto finalize;
     }
     LoadGruntTypeTable(mode, 1, 0, 1);
@@ -1373,7 +1380,7 @@ i32 CGrunt::FinishActiveAction() {
             i32 ownerHi = (owner >> 8) & 0xff;
             i32 ownerLo = owner & 0xff;
             if (m_tileOwnerHi != ownerHi || m_tileOwnerLo != ownerLo) {
-                m_tileMgr->CellDispatch(ownerHi, ownerLo, 2, m_tileOwnerHi);
+                m_tileMgr->CellDispatch(ownerHi, ownerLo, DEATH_SQUASH, m_tileOwnerHi);
             }
         }
 
@@ -1463,12 +1470,15 @@ modeDispatch: {
         return 1;
     }
     if (mode >= 0x22) {
-        m_brickPickupType = mode;
+        // FINDING: m_moveMode is range-dispatched by PICKUP ranges here
+        // (>=0x17 Toyz, >=0x22 Brickz, >=0x32 PowerUpz), so it carries a
+        // PickupType under a movement name. Retyping it is follow-up work.
+        m_brickPickupType = static_cast<PickupType>(mode);
         m_moveMode = -1;
         return 1;
     }
     if (mode >= 0x17) {
-        LoadVehicleGruntSprites(mode);
+        LoadVehicleGruntSprites(static_cast<PickupType>(mode));
         return 1;
     }
     LoadGruntTypeTable(mode, 1, 0, 1);
