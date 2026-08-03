@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TriggerMgr.h>
@@ -360,43 +361,43 @@ i32 CLightFxRender::BuildShape(i32 shape) {
         return 0;
     }
     memset(m_buf, 0, sizeof(m_buf));
-    switch (shape - 1) {
-        case 0:
+    switch (shape) {
+        case AREA_ROCKY_ROADZ:
             if (!BuildRockyRoadzPalette()) {
                 return 0;
             }
             break;
-        case 1:
+        case AREA_GRUNTZICLEZ:
             if (!BuildGruntziclezPalette()) {
                 return 0;
             }
             break;
-        case 2:
+        case AREA_TROUBLE_IN_THE_TROPICZ:
             if (!BuildTropiczPalette()) {
                 return 0;
             }
             break;
-        case 3:
+        case AREA_HIGH_ON_SWEETZ:
             if (!BuildHighOnSweetzPalette()) {
                 return 0;
             }
             break;
-        case 4:
+        case AREA_HIGH_ROLLERZ:
             if (!BuildHighRollerzPalette()) {
                 return 0;
             }
             break;
-        case 5:
+        case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
             if (!BuildHoneyPalette()) {
                 return 0;
             }
             break;
-        case 6:
+        case AREA_MINIATURE_MASTERZ:
             if (!BuildMiniatureMasterzPalette()) {
                 return 0;
             }
             break;
-        case 7:
+        case AREA_GRUNTZ_IN_SPACE:
             if (!BuildSpacePalette()) {
                 return 0;
             }

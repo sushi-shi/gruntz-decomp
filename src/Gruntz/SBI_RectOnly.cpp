@@ -33,6 +33,7 @@
 #include <Gruntz/SBI_WarlordHead.h>
 #include <Gruntz/SBI_WellGoo.h>
 #include <Gruntz/SbiCommandId.h>
+#include <Gruntz/SbiHlRowState.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -2043,17 +2044,17 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     CSbiHlRow* ph = m_groupSlots;
     do {
         switch (ph->m_state) {
-            case 1:
+            case HLROW_IDLE_CYCLE:
                 if (++ph->m_counter > 9) {
                     ph->m_counter = 1;
                 }
                 break;
-            case 2:
+            case HLROW_RAMP_UP_LOW:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (++ph->m_counter >= 0x12) {
                         ph->m_counter = 0x12;
-                        ph->m_state = 7;
+                        ph->m_state = HLROW_HOLD_LOW;
                         ph->m_interval =
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
                         ph->m_last = static_cast<u32>(g_frameTime);
@@ -2065,21 +2066,21 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                     }
                 }
                 break;
-            case 3:
+            case HLROW_RAMP_DOWN_LOW:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (--ph->m_counter < 0xa) {
-                        ph->m_state = 0;
+                        ph->m_state = HLROW_OFF;
                         ph->m_counter = 1;
                     }
                 }
                 break;
-            case 4:
+            case HLROW_RAMP_UP_HIGH:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (++ph->m_counter >= 0x18) {
                         ph->m_counter = 0x18;
-                        ph->m_state = 6;
+                        ph->m_state = HLROW_HOLD_HIGH;
                         ph->m_interval =
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
                         ph->m_last = static_cast<u32>(g_frameTime);
@@ -2090,16 +2091,16 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                     }
                 }
                 break;
-            case 5:
+            case HLROW_RAMP_DOWN_HIGH:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (--ph->m_counter < 0x13) {
-                        ph->m_state = 0;
+                        ph->m_state = HLROW_OFF;
                         ph->m_counter = 1;
                     }
                 }
                 break;
-            case 6:
+            case HLROW_HOLD_HIGH:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
@@ -2118,10 +2119,10 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             }
                         }
                     }
-                    ph->m_state = 5;
+                    ph->m_state = HLROW_RAMP_DOWN_HIGH;
                 }
                 break;
-            case 7:
+            case HLROW_HOLD_LOW:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last
                     >= ph->m_interval) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
@@ -2140,7 +2141,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             }
                         }
                     }
-                    ph->m_state = 3;
+                    ph->m_state = HLROW_RAMP_DOWN_LOW;
                 }
                 break;
         }

@@ -273,6 +273,7 @@ include/Gruntz/SaveSlotCtrlId.h	pending
 include/Gruntz/SbGeom.h	pending	
 include/Gruntz/SbiCommandId.h	pending	
 include/Gruntz/SbiConfig.h	pending	
+include/Gruntz/SbiHlRowState.h	pending	
 include/Gruntz/SbiMenuItemState.h	pending	
 include/Gruntz/ScrollState.h	pending	
 include/Gruntz/SecretLevelTrigger.h	pending	
