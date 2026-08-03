@@ -19,7 +19,12 @@ void operator delete(void*);
 // Grid extents, used only as array dimensions and in index arithmetic.
 GZ_ENUM_CONST_BEGIN(TmGridDim)
     TM_GRID_COLS = 15,
-    TM_GRID_ROWS = 4
+    TM_GRID_ROWS = 4,
+    // Not a row: the "every player" selector three of the row-ranged walks
+    // accept in place of one. Each opens with the same two lines - if the
+    // argument is this, sweep rows 0..3; otherwise sweep just that row - so it
+    // sits one past the last row rather than inside the range.
+    TM_GRID_ROW_ALL = 5
 GZ_ENUM_CONST_END(TmGridDim)
 
 class CGrunt;

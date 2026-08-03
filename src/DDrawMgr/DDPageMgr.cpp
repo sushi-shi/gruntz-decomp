@@ -326,20 +326,20 @@ i32 CMoviePlayer::Pump(i32 flags, i32 count) {
     MSG msg;
     for (;;) {
         if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
-            if (msg.message == 0x104) {
+            if (msg.message == WM_SYSKEYDOWN) {
                 continue;
             }
-            if (msg.message == 0x105) {
+            if (msg.message == WM_SYSKEYUP) {
                 continue;
             }
-            if (msg.message == 0x100) {
+            if (msg.message == WM_KEYDOWN) {
                 if (flags & 1) {
                     return 1;
                 }
                 continue;
             }
-            if (msg.message == 0x201 || msg.message == 0x204 || msg.message == 0x203
-                || msg.message == 0x206) {
+            if (msg.message == WM_LBUTTONDOWN || msg.message == WM_RBUTTONDOWN
+                || msg.message == WM_LBUTTONDBLCLK || msg.message == WM_RBUTTONDBLCLK) {
                 if (flags & 0x100) {
                     return 0x100;
                 }

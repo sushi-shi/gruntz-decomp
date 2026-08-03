@@ -187,7 +187,7 @@ i32 CGameApp::RunMessageLoop() {
     for (;;) {
         if (PeekMessageA(&msg, 0, 0, 0, 1)) {
             do {
-                if (msg.message == 0x12) {
+                if (msg.message == WM_QUIT) {
                     return 1;
                 }
                 if (m_hAccel && msg.hwnd == hwnd) {

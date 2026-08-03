@@ -189,7 +189,8 @@ i32 CPlay::ExecCommand(
             i32 px = static_cast<u16>(posX);
             i32 py = static_cast<u16>(posY);
 
-            CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &cmdKind, &extraByte, 5);
+            CGrunt* node =
+                m_mgr->m_cmdGrid->CellHitTest(px, py, &cmdKind, &extraByte, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
                     cmdKind,
@@ -310,7 +311,8 @@ i32 CPlay::ExecCommand(
             }
             i32 px = static_cast<u16>(posX);
             i32 py = static_cast<u16>(posY);
-            CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &cmdKind, &extraByte, 5);
+            CGrunt* node =
+                m_mgr->m_cmdGrid->CellHitTest(px, py, &cmdKind, &extraByte, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
                     cmdKind,

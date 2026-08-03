@@ -605,8 +605,8 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
         return DispatchMove(target, destX, destY, moveFlags);
     }
 
-    i32 kind = t->m_moveMode;
-    if (kind == 7) {
+    MoveMode kind = t->m_moveMode;
+    if (kind == MOVE_DIRECT) {
         return DispatchMove(target, destX, destY, moveFlags);
     }
 

@@ -443,7 +443,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     i32 hitFlag = 0;
-    if (CellHitTest(x, y, 0, 0, 5)) {
+    if (CellHitTest(x, y, 0, 0, TM_GRID_ROW_ALL)) {
         hitFlag = 1;
     }
 
@@ -640,7 +640,7 @@ i32 CTriggerMgr::ResetGroup(
     if (m_groupFlag == 0) {
         return 0;
     }
-    CGrunt* hit = CellHitTest(x, y, 0, 0, 5);
+    CGrunt* hit = CellHitTest(x, y, 0, 0, TM_GRID_ROW_ALL);
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
         cell = NULL;

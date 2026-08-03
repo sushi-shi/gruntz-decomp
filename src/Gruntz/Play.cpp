@@ -323,7 +323,7 @@ i32 CPlay::LeaveState(GameStateId arg) {
     ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1);
     if (m_mgr && m_mgr->m_cmdGrid) {
-        m_mgr->m_cmdGrid->ClearGridRange(5);
+        m_mgr->m_cmdGrid->ClearGridRange(TM_GRID_ROW_ALL);
     }
     return 1;
 }
@@ -6496,7 +6496,7 @@ void CPlay::FreeListTeardown() {
         return;
     }
     if (m_mgr->m_cmdGrid != NULL) {
-        m_mgr->m_cmdGrid->ClearGridRange(5);
+        m_mgr->m_cmdGrid->ClearGridRange(TM_GRID_ROW_ALL);
     }
     ForwardReady();
     {

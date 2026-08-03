@@ -358,58 +358,58 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
     strcpy(szLine, g_emptyString);
 
     switch (hr) {
-        case static_cast<i32>(0x80004001):
+        case static_cast<i32>(DIERR_UNSUPPORTED):
             strcpy(szCode, "DIERR_UNSUPPORTED");
             strcpy(szMsg, "The function called is not supported at this time.");
             break;
-        case static_cast<i32>(0x80004002):
+        case static_cast<i32>(DIERR_NOINTERFACE):
             strcpy(szCode, "DIERR_NOINTERFACE");
             strcpy(szMsg, "The specified interface is not supported by the object.");
             break;
-        case static_cast<i32>(0x80004005):
+        case static_cast<i32>(DIERR_GENERIC):
             strcpy(szCode, "DIERR_GENERIC");
             strcpy(szMsg, "An undetermined error occured inside the DInput subsystem.");
             break;
-        case static_cast<i32>(0x80040154):
+        case static_cast<i32>(DIERR_DEVICENOTREG):
             strcpy(szCode, "DIERR_DEVICENOTREG");
             strcpy(
                 szMsg,
                 "The device or device instance or effect is not registered with DirectInput."
             );
             break;
-        case static_cast<i32>(0x80040200):
+        case static_cast<i32>(DIERR_INSUFFICIENTPRIVS):
             strcpy(szCode, "DIERR_INSUFFICIENTPRIVS");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x80070002):
+        case static_cast<i32>(DIERR_NOTFOUND):
             strcpy(szCode, "DIERR_NOTFOUND");
             strcpy(szMsg, "The requested object does not exist.");
             break;
-        case static_cast<i32>(0x80070005):
+        case static_cast<i32>(DIERR_READONLY):
             strcpy(szCode, "DIERR_READONLY");
             strcpy(szMsg, "The specified property cannot be changed.");
             break;
-        case static_cast<i32>(0x8007000c):
+        case static_cast<i32>(DIERR_NOTACQUIRED):
             strcpy(szCode, "DIERR_NOTACQUIRED");
             strcpy(szMsg, "The operation cannot be performed unless the device is acquired.");
             break;
-        case static_cast<i32>(0x8007000e):
+        case static_cast<i32>(DIERR_OUTOFMEMORY):
             strcpy(szCode, "DIERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x80070015):
+        case static_cast<i32>(DIERR_NOTINITIALIZED):
             strcpy(szCode, "DIERR_NOTINITIALIZED");
             strcpy(szMsg, "This object has not been initialized.");
             break;
-        case static_cast<i32>(0x8007001e):
+        case static_cast<i32>(DIERR_INPUTLOST):
             strcpy(szCode, "DIERR_INPUTLOST");
             strcpy(szMsg, "Access to the device has been lost.  It must be re-acquired.");
             break;
-        case static_cast<i32>(0x80070057):
+        case static_cast<i32>(DIERR_INVALIDPARAM):
             strcpy(szCode, "DIERR_INVALIDPARAM");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x80070077):
+        case static_cast<i32>(DIERR_BADDRIVERVER):
             strcpy(szCode, "DIERR_BADDRIVERVER");
             strcpy(
                 szMsg,
@@ -417,15 +417,15 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
                 "mismatched or incomplete driver components."
             );
             break;
-        case static_cast<i32>(0x800700aa):
+        case static_cast<i32>(DIERR_ACQUIRED):
             strcpy(szCode, "DIERR_ACQUIRED");
             strcpy(szMsg, "The operation cannot be performed while the device is acquired.");
             break;
-        case static_cast<i32>(0x8007047e):
+        case static_cast<i32>(DIERR_OLDDIRECTINPUTVERSION):
             strcpy(szCode, "DIERR_OLDDIRECTINPUTVERSION");
             strcpy(szMsg, "The application requires a newer version of DirectInput.");
             break;
-        case static_cast<i32>(0x800704df):
+        case static_cast<i32>(DIERR_ALREADYINITIALIZED):
             strcpy(szCode, "DIERR_ALREADYINITIALIZED");
             strcpy(szMsg, "This object is already initialized.");
             break;

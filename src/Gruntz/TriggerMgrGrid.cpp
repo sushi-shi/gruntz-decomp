@@ -12,6 +12,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -281,7 +282,7 @@ fail:
 RVA(0x0006bc20, 0x6f)
 i32 CTriggerMgr::DispatchCellForObject(CGrunt* obj, i32 startRow, GruntDeathType kind, i32 arg) {
     i32 last;
-    if (startRow == 5) {
+    if (startRow == TM_GRID_ROW_ALL) {
         startRow = 0;
         last = 3;
     } else {
@@ -289,7 +290,7 @@ i32 CTriggerMgr::DispatchCellForObject(CGrunt* obj, i32 startRow, GruntDeathType
     }
     for (i32 row = startRow; row <= last; row++) {
         CGrunt** cell = &m_grid[row * TM_GRID_COLS];
-        for (i32 col = 0; col < 15; col++) {
+        for (i32 col = 0; col < TM_GRID_COLS; col++) {
             if (cell[col] == obj) {
                 return CellDispatch(row, col, kind, arg);
             }
@@ -321,7 +322,7 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, GruntDeathType kind, i32 arg) {
 RVA(0x0006bd40, 0xb3)
 i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     i32 row, last;
-    if (startRow == 5) {
+    if (startRow == TM_GRID_ROW_ALL) {
         row = 0;
         last = 3;
     } else {
@@ -372,7 +373,7 @@ CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 
 RVA(0x0006bea0, 0xe2)
 CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
     i32 row, last;
-    if (startRow == 5) {
+    if (startRow == TM_GRID_ROW_ALL) {
         row = 0;
         last = 3;
     } else {
@@ -383,7 +384,7 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
     if (row <= last) {
         do {
             CGrunt** cell = &m_grid[row * TM_GRID_COLS];
-            for (i32 col = 0; col < 15; col++) {
+            for (i32 col = 0; col < TM_GRID_COLS; col++) {
                 CGrunt* g = cell[col];
                 if (g != NULL && g->m_entranceCommitted != 0) {
                     CWwdGameObjectA* o = g->m_object;
@@ -746,16 +747,16 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g != NULL && g->m_deathAnimStarted == 0) {
                 g->m_entranceActive = 1;
                 switch (g->m_entranceCell.direction) {
-                    case 1:
+                    case DIR_NORTH:
                         g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
                         break;
-                    case 3:
+                    case DIR_EAST:
                         g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
                         break;
-                    case 5:
+                    case DIR_SOUTH:
                         g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
                         break;
-                    case 7:
+                    case DIR_WEST:
                         g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
                         break;
                     default:
@@ -1128,7 +1129,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     cell->m_arrivalPhase = 0;
     i32 hitRow;
     i32 hitCol;
-    CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, 5);
+    CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, TM_GRID_ROW_ALL);
     if (hit != NULL) {
         if (hit->m_tileOwnerHi == cell->m_tileOwnerHi && g_traitorMode == 0) {
             return 0;
@@ -1256,7 +1257,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     cell->m_arrivalPhase = 0;
     i32 hitRow;
     i32 hitCol;
-    CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, 5);
+    CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, TM_GRID_ROW_ALL);
     if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
         i32 flags = 1;

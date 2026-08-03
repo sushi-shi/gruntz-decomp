@@ -18,27 +18,27 @@ src/Gruntz/TriggerMgr.cpp	860	done (CombatCueKind recovered + call sites; toy ba
 src/Gruntz/GruntEntranceArrival.cpp	767	done (GruntDirection named; entranceReason bias is byte-evidenced and kept)
 src/DDrawMgr/DDSurface.cpp	664	none (bits/bitcount are a bits-per-pixel count; each arm divides by 8)
 src/Gruntz/GruntEntranceMove.cpp	599	none (56 tileId cases are per-tileset WWD image indices - no engine names exist)
-src/Gruntz/TriggerMgrGrid.cpp	558	pending
-src/Gruntz/GruntSteps.cpp	490	pending
+src/Gruntz/TriggerMgrGrid.cpp	558	done (GruntDirection arm named by its +-32 delta; TM_GRID_ROW_ALL sentinel + TM_GRID_COLS)
+src/Gruntz/GruntSteps.cpp	490	done (toy-ordinal bias is byte-evidenced and kept; each arm is named by its bute key; directions already DIR_*)
 src/DDrawMgr/Fader.cpp	490	pending
 src/Gruntz/Dialogs.cpp	463	none (index is a 0..3 player-slot ordinal mapping to control ids)
 src/Gruntz/MainMenuBuilder.cpp	459	partial (LevelArea + QuestLevel + CMD_LOAD_WORLD applied; 0x8149 has no handler in-tree)
 src/Gruntz/TileTriggerSwitchLogic.cpp	458	none (<<5 / +0x10 is tile-to-pixel-centre geometry)
-src/Gruntz/GameLevel.cpp	447	pending
-src/DinMgr2/DinMgr2.cpp	446	pending
-src/Dsndmgr/DirectSoundMgr.cpp	445	pending
+src/Gruntz/GameLevel.cpp	447	partial (MOVE_DIRECT named; m_objectType 0x80 is a WWD type bit with no recovered table)
+src/DinMgr2/DinMgr2.cpp	446	done (16 DIERR_* HRESULTs - each arm printed its own name; SDK macros substituted)
+src/Dsndmgr/DirectSoundMgr.cpp	445	none (literals are buffer sizes, sample rates and volume magnitudes)
 src/Gruntz/MultiStartDlgRoster.cpp	437	done (23 raw Win32 message ids named from the SDK; rest are slot ordinals)
 src/Gruntz/InGameIcon.cpp	434	done
-src/Image/FileImage.cpp	427	pending
+src/Image/FileImage.cpp	427	none (bitDepth cases are bits-per-pixel; PCX 0xc0 is the RLE run marker)
 src/Gruntz/GruntzMgrCmd.cpp	415	pending
 src/Gruntz/StatusBarMgr.cpp	408	pending
 src/Gruntz/PlayerCommandStep.cpp	342	partial
-src/Bute/SymTab.cpp	323	pending
-src/DDrawMgr/DDPageMgr.cpp	322	pending
+src/Bute/SymTab.cpp	323	done (_A_SUBDIR from the CRT; rest are string/hash arithmetic)
+src/DDrawMgr/DDPageMgr.cpp	322	done (WM_* message compares named; bpp values are bit counts)
 src/Io/SaveGame.cpp	320	partial
 src/Gruntz/GameMode.cpp	314	done
 src/Net/NetCmdSlot.cpp	311	pending
-src/DDrawMgr/ShadeTableCache.cpp	310	pending
+src/DDrawMgr/ShadeTableCache.cpp	310	none (literals are palette-index arithmetic)
 src/Gruntz/GruntSpawnConfig.cpp	304	pending
 src/Net/NetMgr.cpp	303	pending
 src/DDrawMgr/DDrawSurfacePair.cpp	296	pending
@@ -98,7 +98,7 @@ src/Net/LatencyList.cpp	115	pending
 src/Wwd/GameLevelMove.cpp	113	pending
 src/Gruntz/SpriteRefTable.cpp	109	pending
 src/Gruntz/LoadGameMenu.cpp	108	pending
-src/Wap32/GameApp.cpp	107	pending
+src/Wap32/GameApp.cpp	107	done (WM_QUIT/WM_CLOSE named)
 src/Gruntz/StaticHazard.cpp	105	pending
 src/Gruntz/AttractState.cpp	105	pending
 src/Gruntz/GruntStateStep.cpp	100	pending

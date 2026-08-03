@@ -1060,7 +1060,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         if (strcmp(fd.name, g_dot) == 0 || strcmp(fd.name, g_dotDot) == 0) {
             continue;
         }
-        if ((fd.attrib & 0x10) == 0x10) {
+        if ((fd.attrib & _A_SUBDIR) == _A_SUBDIR) {
 
             char childpath[0x600];
             strcpy(childpath, pattern);
