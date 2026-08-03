@@ -1122,7 +1122,7 @@ i32 CGrunt::ChargeStep() {
     }
 
     switch (m_defenderState) {
-        case 0: {
+        case AISTATE_SEEK: {
 
             if (g != NULL) {
                 if (hitGate != 0 && m_stamina >= 100) {
@@ -1202,7 +1202,7 @@ i32 CGrunt::ChargeStep() {
             }
             break;
         }
-        case 1: {
+        case AISTATE_CHASE: {
 
             CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
             CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
@@ -1236,7 +1236,7 @@ i32 CGrunt::ChargeStep() {
             }
             break;
         }
-        case 2: {
+        case AISTATE_ATTACK: {
 
             if (m_poweredUp != 0) {
                 CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];

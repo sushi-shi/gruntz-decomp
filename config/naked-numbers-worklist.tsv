@@ -6,7 +6,7 @@ src/Bute/ButeMgr.cpp	14615	done (14615 are a generated DFA table; lexer actions+
 src/Gruntz/Play.cpp	2740	done (enum World merged into LevelArea; help switch is EnemyAiType; rest are tick counts and data)
 src/Gruntz/BattlezMapConfig.cpp	1944	done (BattlezDifficulty from the bute keys; rest are tuning magnitudes and grid data)
 src/Gruntz/Grunt.cpp	1698	done (RockNeighborMask recovered; TILEKIND_GIANT_ROCK named; rest are pixel/tick magnitudes)
-src/Gruntz/GruntArrivalScan.cpp	1611	pending
+src/Gruntz/GruntArrivalScan.cpp	1611	done (3 AISTATE cases named; the rest are >>5 tile shifts and priority magnitudes)
 src/Gruntz/LightFxRender.cpp	1423	pending
 src/Gruntz/SBI_RectOnly.cpp	1381	pending
 src/Gruntz/BootyStateActivate.cpp	1221	pending
