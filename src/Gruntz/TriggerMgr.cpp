@@ -9,6 +9,7 @@
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CombatCueKind.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
@@ -1482,7 +1483,7 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
 // @early-stop
 RVA(0x0007b440, 0x3f0)
 i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
-    CombatCue(cx, cy, r, 6, flag);
+    CombatCue(cx, cy, r, CUE_EXPLODE, flag);
 
     CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 tileCx = cx >> 5;
@@ -1630,22 +1631,22 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
             i32 hy = ly + 14;
             if (xLo <= hx && xHi >= lx && yLo <= hy && yHi >= ly) {
                 switch (tier) {
-                    case 1:
+                    case CUE_DROP:
                         if (g->m_gruntKind != GRUNT_INVULNERABLE) {
                             CellDispatch(i, j, DEATH_DROP, flag);
                         }
                         break;
-                    case 6:
+                    case CUE_EXPLODE:
                         if (g->m_gruntKind != GRUNT_INVULNERABLE) {
                             CellDispatch(i, j, DEATH_EXPLODE, flag);
                         }
                         break;
-                    case 7:
+                    case CUE_SQUASH:
                         if (g->m_gruntKind != GRUNT_INVULNERABLE) {
                             CellDispatch(i, j, DEATH_SQUASH, flag);
                         }
                         break;
-                    case 2: {
+                    case CUE_TELEPORT: {
                         if (gx == x && gy == y) {
                             break;
                         }
@@ -1665,7 +1666,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         } while (done == 0);
                         break;
                     }
-                    case 3: {
+                    case CUE_HEAL: {
                         if (gx == x && gy == y) {
                             break;
                         }
@@ -1684,11 +1685,11 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                             ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
                         break;
                     }
-                    case 5: {
+                    case CUE_GIVE_TOY: {
                         if (gx == x && gy == y) {
                             break;
                         }
-                        i32 toy = rand() % 9 + 0x17;
+                        i32 toy = rand() % 9 + PICKUP_TOYZ_FIRST;
                         if (toy == 0x1e) {
                             toy = 0x20;
                         }

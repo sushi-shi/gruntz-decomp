@@ -14,14 +14,14 @@ src/Gruntz/Multi.cpp	1168	done (DirectPlay DPSYS_* ids named from the SDK; membe
 src/Gruntz/GruntCombat.cpp	1165	done (GruntDirection + EnemyAiType named; SETDIR/rand indices left - g_dirVec is runtime-filled)
 src/Gruntz/GruntzMgr.cpp	955	partial (m_lastError is a cross-file banked error domain - raise sites live in DDrawSurfacePair and elsewhere)
 src/DDrawMgr/DDrawShadeBlit.cpp	862	pending
-src/Gruntz/TriggerMgr.cpp	860	pending
+src/Gruntz/TriggerMgr.cpp	860	done (CombatCueKind recovered + call sites; toy band named)
 src/Gruntz/GruntEntranceArrival.cpp	767	done (GruntDirection named; entranceReason bias is byte-evidenced and kept)
 src/DDrawMgr/DDSurface.cpp	664	none (bits/bitcount are a bits-per-pixel count; each arm divides by 8)
 src/Gruntz/GruntEntranceMove.cpp	599	none (56 tileId cases are per-tileset WWD image indices - no engine names exist)
 src/Gruntz/TriggerMgrGrid.cpp	558	pending
 src/Gruntz/GruntSteps.cpp	490	pending
 src/DDrawMgr/Fader.cpp	490	pending
-src/Gruntz/Dialogs.cpp	463	pending
+src/Gruntz/Dialogs.cpp	463	none (index is a 0..3 player-slot ordinal mapping to control ids)
 src/Gruntz/MainMenuBuilder.cpp	459	pending
 src/Gruntz/TileTriggerSwitchLogic.cpp	458	pending
 src/Gruntz/GameLevel.cpp	447	pending
@@ -77,7 +77,7 @@ src/Gruntz/MapMgr.cpp	166	pending
 src/Wwd/WwdFactoryObject.cpp	162	partial (WwdAnimStepMode recovered; modeWord/positionMode still open)
 src/Gruntz/ActionOptionsMenuBar.cpp	162	pending
 src/Gruntz/SpriteRef.cpp	155	pending
-src/Gruntz/MultiStartDlg.cpp	154	pending
+src/Gruntz/MultiStartDlg.cpp	154	none (index is the same 0..3 slot ordinal)
 src/Gruntz/CreditsState.cpp	152	pending
 src/Gruntz/GruntPickupLoad.cpp	151	pending
 src/Gruntz/VideoConfig.cpp	148	pending

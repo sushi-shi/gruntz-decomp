@@ -9,6 +9,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CombatCueKind.h>
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -601,7 +602,7 @@ i32 CDroppedObject::AdvanceFall() {
         m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("B");
-        g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, 7, -1);
+        g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, CUE_SQUASH, -1);
         return 0;
     }
     m_object->m_screenY = landed;

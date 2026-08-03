@@ -113,6 +113,7 @@ include/Gruntz/ChatBoxOwner.h	pending
 include/Gruntz/CheatMgr.h	pending	
 include/Gruntz/CheckpointTrigger.h	pending	
 include/Gruntz/ColorTint.h	pending	
+include/Gruntz/CombatCueKind.h	pending	
 include/Gruntz/CoordNode.h	pending	
 include/Gruntz/CreditsState.h	pending	
 include/Gruntz/CurPlayer.h	pending	
