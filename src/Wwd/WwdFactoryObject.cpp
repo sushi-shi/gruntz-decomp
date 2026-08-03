@@ -31,6 +31,7 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Wwd/WwdAnimStepMode.h>
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdObjMgr.h>
 
@@ -382,8 +383,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         CWwdGameObjectA* ctx = m_boundObject;
         CAniRecordView* d = m_element;
 
-        switch (d->m_stepMode - 1) {
-            case 0: {
+        switch (d->m_stepMode) {
+            case WWDSTEP_NEXT: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
                 if (seq == NULL) {
@@ -399,7 +400,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 1: {
+            case WWDSTEP_PREV: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
                 if (seq == NULL) {
@@ -414,7 +415,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_layer = seq->GetFrame(c->m_frameIndex);
                 break;
             }
-            case 2: {
+            case WWDSTEP_SET: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 frame = d->m_param;
                 CDDrawWorker* seq = c->m_frameSet;
@@ -425,7 +426,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_frameIndex = frame;
                 break;
             }
-            case 3: {
+            case WWDSTEP_FIRST: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
                 if (seq == NULL) {
@@ -436,7 +437,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_layer = seq->GetFrame(first);
                 break;
             }
-            case 4: {
+            case WWDSTEP_LAST: {
                 CWwdGameObjectA* c = m_boundObject;
                 CDDrawWorker* seq = c->m_frameSet;
                 if (seq == NULL) {
@@ -447,7 +448,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_layer = seq->GetFrame(last);
                 break;
             }
-            case 5: {
+            case WWDSTEP_FORWARD_BY: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_frameSet;
@@ -462,7 +463,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 6: {
+            case WWDSTEP_BACK_BY: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 step = d->m_param;
                 CDDrawWorker* seq = c->m_frameSet;

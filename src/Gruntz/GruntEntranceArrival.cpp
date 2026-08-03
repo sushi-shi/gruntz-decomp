@@ -22,6 +22,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -886,19 +887,19 @@ latch:
     i32 direction = m_entranceCell.direction;
     if (m_wwdObject->m_animCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
         switch (direction) {
-            case 2:
-            case 3:
+            case DIR_NORTHEAST:
+            case DIR_EAST:
                 row = s_entrancePreset0[0];
                 column = s_entrancePreset0[1];
                 break;
-            case 4:
-            case 5:
+            case DIR_SOUTHEAST:
+            case DIR_SOUTH:
                 row = s_entrancePreset1[0];
                 column = s_entrancePreset1[1];
                 break;
-            case 6:
-            case 7:
-            case 8:
+            case DIR_SOUTHWEST:
+            case DIR_WEST:
+            case DIR_NORTHWEST:
                 row = s_entrancePreset2[0];
                 column = s_entrancePreset2[1];
                 break;

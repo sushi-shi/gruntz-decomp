@@ -12,6 +12,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/LevelArea.h>
@@ -467,7 +468,7 @@ i32 CRollingBall::Update() {
         m_subX = 0.0;
         m_subY = 0.0;
         switch (dirObj2->m_direction) {
-            case 1:
+            case DIR_NORTH:
                 m_subY = -m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = -1;
@@ -476,7 +477,7 @@ i32 CRollingBall::Update() {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_NORTH");
                 }
                 break;
-            case 2:
+            case DIR_NORTHEAST:
                 m_subX = m_moveDelta;
                 m_stepDirX = 1;
                 m_stepDirY = 0;
@@ -485,7 +486,7 @@ i32 CRollingBall::Update() {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EAST");
                 }
                 break;
-            case 4:
+            case DIR_SOUTHEAST:
                 m_subX = -m_moveDelta;
                 m_stepDirX = -1;
                 m_stepDirY = 0;

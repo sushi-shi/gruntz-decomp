@@ -15,7 +15,7 @@ src/Gruntz/GruntCombat.cpp	1165	done (GruntDirection + EnemyAiType named; SETDIR
 src/Gruntz/GruntzMgr.cpp	955	partial (m_lastError is a cross-file banked error domain - raise sites live in DDrawSurfacePair and elsewhere)
 src/DDrawMgr/DDrawShadeBlit.cpp	862	pending
 src/Gruntz/TriggerMgr.cpp	860	pending
-src/Gruntz/GruntEntranceArrival.cpp	767	pending
+src/Gruntz/GruntEntranceArrival.cpp	767	done (GruntDirection named; entranceReason bias is byte-evidenced and kept)
 src/DDrawMgr/DDSurface.cpp	664	none (bits/bitcount are a bits-per-pixel count; each arm divides by 8)
 src/Gruntz/GruntEntranceMove.cpp	599	none (56 tileId cases are per-tileset WWD image indices - no engine names exist)
 src/Gruntz/TriggerMgrGrid.cpp	558	pending
@@ -57,7 +57,7 @@ src/Gruntz/Projectile.cpp	240	pending
 src/Gruntz/BootyWalkAnim.cpp	219	pending
 src/Gruntz/FontConfig.cpp	214	pending
 src/Bute/TypeKeyColl.cpp	211	pending
-src/Gruntz/RollingBall.cpp	205	pending
+src/Gruntz/RollingBall.cpp	205	done (GruntDirection named; sink is the per-tileset tile id - no names)
 src/Gruntz/StatusBarTabBuilders.cpp	204	pending
 src/Gruntz/TileTriggerContainer.cpp	203	pending
 src/Wwd/WwdObjMgr.cpp	196	pending
@@ -74,7 +74,7 @@ src/Gruntz/Wormhole.cpp	170	pending
 src/Gruntz/BrickzLoad.cpp	168	pending
 src/Crypto/FecCrypt.cpp	167	pending
 src/Gruntz/MapMgr.cpp	166	pending
-src/Wwd/WwdFactoryObject.cpp	162	pending
+src/Wwd/WwdFactoryObject.cpp	162	partial (WwdAnimStepMode recovered; modeWord/positionMode still open)
 src/Gruntz/ActionOptionsMenuBar.cpp	162	pending
 src/Gruntz/SpriteRef.cpp	155	pending
 src/Gruntz/MultiStartDlg.cpp	154	pending
