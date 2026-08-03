@@ -30,6 +30,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
+#include <Wwd/AnimWorkerAct.h>
 
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
@@ -98,22 +99,22 @@ i32 CreateGruntVoice(CGameObject* obj) {
             ctl->m_logic = t;
             break;
         }
-        case 0x1d:
+        case ACT_OBJECT_REMOVED:
             ctl->m_logic->OnObjectRemoved();
             break;
-        case 0x1e:
+        case ACT_LEAVE_ACTIVE_REGION:
             ctl->m_logic->OnLeaveActiveRegion();
             break;
-        case 0x50:
+        case ACT_PREPARE_SAVE:
             ctl->m_logic->PrepareSave();
             break;
-        case 0x51:
+        case ACT_AFTER_SAVE:
             ctl->m_logic->AfterSave();
             break;
-        case 0x52:
+        case ACT_AFTER_LOAD:
             ctl->m_logic->AfterLoad();
             break;
-        case 0x53:
+        case ACT_AFTER_LOAD_REFERENCES:
             ctl->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
@@ -136,22 +137,22 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
             ctl->m_logic = t;
             break;
         }
-        case 0x1d:
+        case ACT_OBJECT_REMOVED:
             ctl->m_logic->OnObjectRemoved();
             break;
-        case 0x1e:
+        case ACT_LEAVE_ACTIVE_REGION:
             ctl->m_logic->OnLeaveActiveRegion();
             break;
-        case 0x50:
+        case ACT_PREPARE_SAVE:
             ctl->m_logic->PrepareSave();
             break;
-        case 0x51:
+        case ACT_AFTER_SAVE:
             ctl->m_logic->AfterSave();
             break;
-        case 0x52:
+        case ACT_AFTER_LOAD:
             ctl->m_logic->AfterLoad();
             break;
-        case 0x53:
+        case ACT_AFTER_LOAD_REFERENCES:
             ctl->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:

@@ -425,6 +425,7 @@ include/Wap32/WapObj.h	pending
 include/Wap32/ZVec.h	pending	
 include/Wap32/zBitVec.h	pending	
 include/Win32.h	pending	
+include/Wwd/AnimWorkerAct.h	pending	
 include/Wwd/MoveMode.h	pending	
 include/Wwd/WwdFactoryObject.h	pending	
 include/Wwd/WwdFile.h	pending	

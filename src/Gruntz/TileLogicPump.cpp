@@ -41,6 +41,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
+#include <Wwd/AnimWorkerAct.h>
 
 #include <string.h>
 
@@ -78,22 +79,22 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
             ctl->m_logic = t;                                                                      \
             break;                                                                                 \
         }                                                                                          \
-        case 0x1d:                                                                                 \
+        case ACT_OBJECT_REMOVED:                                                                   \
             ctl->m_logic->OnObjectRemoved();                                                       \
             break;                                                                                 \
-        case 0x1e:                                                                                 \
+        case ACT_LEAVE_ACTIVE_REGION:                                                              \
             ctl->m_logic->OnLeaveActiveRegion();                                                   \
             break;                                                                                 \
-        case 0x50:                                                                                 \
+        case ACT_PREPARE_SAVE:                                                                     \
             ctl->m_logic->PrepareSave();                                                           \
             break;                                                                                 \
-        case 0x51:                                                                                 \
+        case ACT_AFTER_SAVE:                                                                       \
             ctl->m_logic->AfterSave();                                                             \
             break;                                                                                 \
-        case 0x52:                                                                                 \
+        case ACT_AFTER_LOAD:                                                                       \
             ctl->m_logic->AfterLoad();                                                             \
             break;                                                                                 \
-        case 0x53:                                                                                 \
+        case ACT_AFTER_LOAD_REFERENCES:                                                            \
             ctl->m_logic->AfterLoadReferences();                                                   \
             break;                                                                                 \
         case 0x3e8:                                                                                \
@@ -282,22 +283,22 @@ i32 CreateCheckpointTrigger(CGameObject* obj) {
             ctl->m_logic = t;
             break;
         }
-        case 0x1d:
+        case ACT_OBJECT_REMOVED:
             ctl->m_logic->OnObjectRemoved();
             break;
-        case 0x1e:
+        case ACT_LEAVE_ACTIVE_REGION:
             ctl->m_logic->OnLeaveActiveRegion();
             break;
-        case 0x50:
+        case ACT_PREPARE_SAVE:
             ctl->m_logic->PrepareSave();
             break;
-        case 0x51:
+        case ACT_AFTER_SAVE:
             ctl->m_logic->AfterSave();
             break;
-        case 0x52:
+        case ACT_AFTER_LOAD:
             ctl->m_logic->AfterLoad();
             break;
-        case 0x53:
+        case ACT_AFTER_LOAD_REFERENCES:
             ctl->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:

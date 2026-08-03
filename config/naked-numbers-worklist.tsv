@@ -50,7 +50,7 @@ src/DDrawMgr/DirectDrawMgr.cpp	284	pending
 src/Wwd/WwdGameObject.cpp	277	pending
 src/Image/CImage.cpp	268	pending
 src/Gruntz/Warlord.cpp	266	pending
-src/Gruntz/Demo.cpp	251	pending
+src/Gruntz/Demo.cpp	251	done (AnimWorkerAct dispatch named)
 src/Gruntz/BattlezData.cpp	249	pending
 src/Rez/RezSync.cpp	244	pending
 src/Gruntz/Projectile.cpp	240	pending
@@ -63,9 +63,9 @@ src/Gruntz/TileTriggerContainer.cpp	203	pending
 src/Wwd/WwdObjMgr.cpp	196	pending
 src/Gruntz/TerrainTileLoader.cpp	193	pending
 src/Image/ImagePolyClip.cpp	192	pending
-src/Gruntz/DroppedObject.cpp	190	pending
+src/Gruntz/DroppedObject.cpp	190	done (AnimWorkerAct dispatch named)
 src/Gruntz/GruntzCmdMgr.cpp	189	pending
-src/Gruntz/TileLogicPump.cpp	182	pending
+src/Gruntz/TileLogicPump.cpp	182	done (AnimWorkerAct dispatch named)
 src/DDrawMgr/DirPal.cpp	178	pending
 src/Gruntz/SBI_TabzDialogEh.cpp	174	pending
 src/Dsndmgr/SoundStream.cpp	172	pending
@@ -104,7 +104,7 @@ src/Gruntz/AttractState.cpp	105	pending
 src/Gruntz/GruntStateStep.cpp	100	pending
 src/Rez/RezFile.cpp	99	pending
 src/Image/ImageOwned.cpp	97	pending
-src/Gruntz/GruntVoice.cpp	97	pending
+src/Gruntz/GruntVoice.cpp	97	done (AnimWorkerAct dispatch named)
 src/Gruntz/CheatMgr.cpp	96	pending
 src/Gruntz/KitchenSlime.cpp	94	pending
 src/Gruntz/StateMgrBZ.cpp	91	pending
@@ -119,7 +119,7 @@ src/DDrawMgr/DDrawPtrCollections.cpp	74	pending
 src/Gruntz/GameObjectFactory.cpp	73	pending
 src/Gruntz/Brickz.cpp	73	pending
 src/Gruntz/SpotLight.cpp	71	pending
-src/Gruntz/FortressFlag.cpp	69	pending
+src/Gruntz/FortressFlag.cpp	69	done (AnimWorkerAct dispatch named)
 src/Wap32/GameWnd.cpp	67	pending
 src/Gruntz/SFSelectDevice.cpp	66	pending
 src/Wwd/WwdSpatialMgr.cpp	65	pending
@@ -161,10 +161,10 @@ src/Image/ImageRle16Encode.cpp	32	pending
 src/Rez/RezMgr.cpp	31	pending
 src/Gruntz/SoundFontPath.cpp	30	pending
 src/Gruntz/SBI_ImageSetAni.cpp	30	pending
-src/Gruntz/InGameWorkerHandlers.cpp	30	pending
-src/Gruntz/GruntIndicatorWorkerHandlers.cpp	30	pending
+src/Gruntz/InGameWorkerHandlers.cpp	30	done (AnimWorkerAct dispatch named)
+src/Gruntz/GruntIndicatorWorkerHandlers.cpp	30	done (AnimWorkerAct dispatch named)
 src/Gruntz/GameInfoString.cpp	30	pending
-src/Gruntz/LightFx.cpp	29	pending
+src/Gruntz/LightFx.cpp	29	done (AnimWorkerAct dispatch named)
 src/Gruntz/GameLevelLookupTile.cpp	29	pending
 src/Gruntz/ExitTrigger.cpp	29	pending
 src/Gruntz/UserLogic.cpp	28	pending
@@ -183,7 +183,7 @@ src/Gruntz/SBI_Image.cpp	26	pending
 src/Gruntz/GruntStateRec.cpp	26	pending
 src/Gruntz/CmdScrollApply.cpp	26	pending
 src/DDrawMgr/DDrawSubMgrLeaf.cpp	26	pending
-src/Gruntz/ToobSpikez.cpp	25	pending
+src/Gruntz/ToobSpikez.cpp	25	done (AnimWorkerAct dispatch named)
 src/Gruntz/SlotComboFill.cpp	25	pending
 src/Gruntz/MenuSparkle.cpp	24	pending
 src/Gruntz/GruntzWnd.cpp	24	pending
@@ -193,7 +193,7 @@ src/Gruntz/SBI_ImageSet.cpp	23	pending
 src/Gruntz/GruntzApp.cpp	23	pending
 src/Gruntz/GruntDataRecord.cpp	23	pending
 src/DDrawMgr/LogicRecord.cpp	23	pending
-src/Gruntz/StatusBarSpriteActs.cpp	22	pending
+src/Gruntz/StatusBarSpriteActs.cpp	22	done (AnimWorkerAct dispatch named)
 src/Gruntz/GlyphStringDraw.cpp	22	pending
 src/Wap32/EngStrRenderText.cpp	21	pending
 src/Gruntz/RainCloud.cpp	21	pending
@@ -209,7 +209,7 @@ src/Crypto/BitStreamBlowfish.cpp	18	pending
 src/Gruntz/StreamRecordLoaders.cpp	17	pending
 src/Gruntz/SerialObjectFactory.cpp	16	pending
 src/Gruntz/GruntSelectedSprite.cpp	16	pending
-src/Gruntz/CursorSnapSprite.cpp	16	pending
+src/Gruntz/CursorSnapSprite.cpp	16	done (AnimWorkerAct dispatch named)
 src/Gruntz/BehindCandyAni.cpp	16	pending
 src/DDrawMgr/DDrawPolyFill.cpp	16	pending
 src/Gruntz/SimpleAnimation.cpp	15	pending
@@ -225,7 +225,7 @@ src/Gruntz/LogicRecordDispatch.cpp	12	pending
 src/Gruntz/Boomerang.cpp	12	pending
 src/Utils/TimeSplit.cpp	11	pending
 src/Rez/RezBufferObject.cpp	11	pending
-src/Gruntz/StateDispatch.cpp	11	pending
+src/Gruntz/StateDispatch.cpp	11	done (AnimWorkerAct dispatch named)
 src/Gruntz/SingleFrameMessage.cpp	11	pending
 src/Gruntz/ImageSet1.cpp	11	pending
 src/Gruntz/GameIconFlashEffect.cpp	11	pending

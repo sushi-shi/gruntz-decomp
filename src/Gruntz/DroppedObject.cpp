@@ -32,6 +32,7 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
+#include <Wwd/AnimWorkerAct.h>
 
 #include <string.h>
 
@@ -113,22 +114,22 @@ i32 CreateObjectDropper(CGameObject* obj) {
             aux->m_logic = h;
             break;
         }
-        case 0x1d:
+        case ACT_OBJECT_REMOVED:
             aux->m_logic->OnObjectRemoved();
             break;
-        case 0x1e:
+        case ACT_LEAVE_ACTIVE_REGION:
             aux->m_logic->OnLeaveActiveRegion();
             break;
-        case 0x50:
+        case ACT_PREPARE_SAVE:
             aux->m_logic->PrepareSave();
             break;
-        case 0x51:
+        case ACT_AFTER_SAVE:
             aux->m_logic->AfterSave();
             break;
-        case 0x52:
+        case ACT_AFTER_LOAD:
             aux->m_logic->AfterLoad();
             break;
-        case 0x53:
+        case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
@@ -151,22 +152,22 @@ i32 CreateDroppedObject(CGameObject* obj) {
             aux->m_logic = h;
             break;
         }
-        case 0x1d:
+        case ACT_OBJECT_REMOVED:
             aux->m_logic->OnObjectRemoved();
             break;
-        case 0x1e:
+        case ACT_LEAVE_ACTIVE_REGION:
             aux->m_logic->OnLeaveActiveRegion();
             break;
-        case 0x50:
+        case ACT_PREPARE_SAVE:
             aux->m_logic->PrepareSave();
             break;
-        case 0x51:
+        case ACT_AFTER_SAVE:
             aux->m_logic->AfterSave();
             break;
-        case 0x52:
+        case ACT_AFTER_LOAD:
             aux->m_logic->AfterLoad();
             break;
-        case 0x53:
+        case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:
@@ -189,22 +190,22 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
             aux->m_logic = h;
             break;
         }
-        case 0x1d:
+        case ACT_OBJECT_REMOVED:
             aux->m_logic->OnObjectRemoved();
             break;
-        case 0x1e:
+        case ACT_LEAVE_ACTIVE_REGION:
             aux->m_logic->OnLeaveActiveRegion();
             break;
-        case 0x50:
+        case ACT_PREPARE_SAVE:
             aux->m_logic->PrepareSave();
             break;
-        case 0x51:
+        case ACT_AFTER_SAVE:
             aux->m_logic->AfterSave();
             break;
-        case 0x52:
+        case ACT_AFTER_LOAD:
             aux->m_logic->AfterLoad();
             break;
-        case 0x53:
+        case ACT_AFTER_LOAD_REFERENCES:
             aux->m_logic->AfterLoadReferences();
             break;
         case 0x3e8:

@@ -49,6 +49,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 #include <Wap32/Rect.h>
+#include <Wwd/AnimWorkerAct.h>
 
 #include <math.h>
 #include <new>
@@ -1817,22 +1818,22 @@ i32 CreateGrunt(CGameObject* owner) {
             rec->m_logic = sub;
             break;
         }
-        case 0x1d:
+        case ACT_OBJECT_REMOVED:
             rec->m_logic->OnObjectRemoved();
             break;
-        case 0x1e:
+        case ACT_LEAVE_ACTIVE_REGION:
             rec->m_logic->OnLeaveActiveRegion();
             break;
-        case 0x50:
+        case ACT_PREPARE_SAVE:
             rec->m_logic->PrepareSave();
             break;
-        case 0x53:
+        case ACT_AFTER_LOAD_REFERENCES:
             rec->m_logic->AfterLoadReferences();
             break;
-        case 0x52:
+        case ACT_AFTER_LOAD:
             rec->m_logic->AfterLoad();
             break;
-        case 0x51:
+        case ACT_AFTER_SAVE:
             rec->m_logic->AfterSave();
             break;
         case 0x3e8:
