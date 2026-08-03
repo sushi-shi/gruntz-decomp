@@ -41,7 +41,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
                         MsgParam name;
                         ::SendMessageA(
                             item->m_hWnd,
-                            0x180,
+                            LB_ADDSTRING,
                             0,
                             (name.m_str = static_cast<const char*>((s_custom + fd.name)),
                              name.m_lparam)
@@ -49,12 +49,12 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
                     }
                 } while (_findnext(h, &fd) != -1);
             }
-            ::SendMessageA(item->m_hWnd, 0x186, 0, 0);
+            ::SendMessageA(item->m_hWnd, LB_SETCURSEL, 0, 0);
         }
         afxCurrentWinApp->EndWaitCursor();
         return;
     }
-    i32 sel = static_cast<i32>(::SendMessageA(item->m_hWnd, 0x188, 0, 0));
+    i32 sel = static_cast<i32>(::SendMessageA(item->m_hWnd, LB_GETCURSEL, 0, 0));
     if (sel == -1) {
         return;
     }
@@ -70,7 +70,7 @@ const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
 RVA(0x000183f0, 0x2e)
 void CBattlezDlgCustom::PickIfSelected() {
     HWND h = GetDlgItem(0x516)->m_hWnd;
-    if (::SendMessageA(h, 0x188, 0, 0) != -1) {
+    if (::SendMessageA(h, LB_GETCURSEL, 0, 0) != -1) {
         CDialog::OnOK();
     }
 }

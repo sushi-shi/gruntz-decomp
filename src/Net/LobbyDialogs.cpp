@@ -69,7 +69,7 @@ namespace NetLobby {
                 break;
             case WM_TIMER:
                 if (GetAsyncKeyState(0x13) & 0x80000001) {
-                    PostMessageA(hWnd, 0x111, 0x4d2, 0);
+                    PostMessageA(hWnd, WM_COMMAND, 0x4d2, 0);
                     return 1;
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
@@ -294,7 +294,7 @@ namespace NetLobby {
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateDropWaitDialog(hWnd, g_curMulti);
                 if (g_curMulti->Session()->CheckLatency(0x2710)) {
-                    PostMessageA(hWnd, 0x111, 0x4cd, 0);
+                    PostMessageA(hWnd, WM_COMMAND, 0x4cd, 0);
                 }
                 return 1;
         }

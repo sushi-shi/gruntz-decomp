@@ -118,7 +118,7 @@ i32 FillCustomLevelList(HWND hWnd) {
     if (!lb) {
         return 0;
     }
-    SendMessageA(lb, 0x184, 0, 0);
+    SendMessageA(lb, LB_RESETCONTENT, 0, 0);
     if (_chdir("Custom")) {
         return 0;
     }
@@ -139,7 +139,7 @@ i32 FillCustomLevelList(HWND hWnd) {
                 }
                 MsgParam name;
                 name.m_str = disp;
-                SendMessageA(lb, 0x180, 0, name.m_lparam);
+                SendMessageA(lb, LB_ADDSTRING, 0, name.m_lparam);
             }
         } while (_findnext(h, &fd) != -1);
     }
@@ -186,13 +186,13 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     if (!lb) {
         return 0;
     }
-    i32 sel = SendMessageA(lb, 0x188, 0, 0);
+    i32 sel = SendMessageA(lb, LB_GETCURSEL, 0, 0);
     if (sel == -1) {
         return 0;
     }
     MsgParam out;
     out.m_str = itemText;
-    if (SendMessageA(lb, 0x189, sel, out.m_lparam) == -1) {
+    if (SendMessageA(lb, LB_GETTEXT, sel, out.m_lparam) == -1) {
         return 0;
     }
     if (!_getcwd(dirBuf, 0xfe)) {
@@ -282,13 +282,13 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     if (!hList) {
         return 0;
     }
-    i32 sel = static_cast<i32>(SendMessageA(hList, 0x188, 0, 0));
+    i32 sel = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
     if (sel == -1) {
         return 0;
     }
     MsgParam out;
     out.m_str = szLevel;
-    if (static_cast<i32>(SendMessageA(hList, 0x189, sel, out.m_lparam)) == -1) {
+    if (static_cast<i32>(SendMessageA(hList, LB_GETTEXT, sel, out.m_lparam)) == -1) {
         return 0;
     }
     g_levelStr = szLevel;

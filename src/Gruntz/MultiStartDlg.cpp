@@ -145,7 +145,7 @@ i32 CMultiStartDlg::UpdateColorItems() {
     if (!it4e9) {
         return 0;
     }
-    ::SendMessageA(it4ff->m_hWnd, 0x14e, static_cast<WPARAM>(-1), 0);
+    ::SendMessageA(it4ff->m_hWnd, CB_SETCURSEL, static_cast<WPARAM>(-1), 0);
     m_customWorldFlag = g_multiState->m_customLevel;
     if (g_multiState->m_customLevel != 0) {
         itChild->SetWindowTextA(g_multiState->GetConfigNameB());
@@ -446,7 +446,7 @@ RVA(0x000c28c0, 0x27)
 void CMultiStartDlg::SetComboSelE(i32 index, i32 sel) {
     CWnd* c = GetCtrlE(index);
     if (c != NULL) {
-        ::SendMessageA(c->m_hWnd, 0x14e, sel, 0);
+        ::SendMessageA(c->m_hWnd, CB_SETCURSEL, sel, 0);
     }
 }
 
@@ -456,7 +456,7 @@ i32 CMultiStartDlg::GetComboSelE(i32 index) {
     if (c == NULL) {
         return -1;
     }
-    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0);
+    return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0);
 }
 
 RVA(0x000c2940, 0x2b)
@@ -465,5 +465,5 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     if (c == NULL) {
         return -1;
     }
-    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
 }

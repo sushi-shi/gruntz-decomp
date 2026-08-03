@@ -203,7 +203,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
                             : 0;
     if (found != NULL) {
         if (found->commandId > 0) {
-            PostMessageA(m_owner, 0x111, found->commandId, 0);
+            PostMessageA(m_owner, WM_COMMAND, found->commandId, 0);
             if ((found->flag & 1) == 0) {
                 m_cheatsUsed = 1;
             }

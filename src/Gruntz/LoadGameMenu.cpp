@@ -204,7 +204,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             EnableWindow(hwnd, TRUE);
             if (r) {
                 g_gameReg->m_saveInfoRec = slot;
-                PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
+                PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, 0x807e, 0);
                 EndDialog(hwnd, 1);
             }
             return 1;

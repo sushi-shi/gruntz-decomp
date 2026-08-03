@@ -362,7 +362,7 @@ void CBattlezDlg::ToggleRow(i32 row) {
         return;
     }
     GruntzPlayer* rec = &m_slots->m_options[row];
-    if (::SendMessageA(a->m_hWnd, 0x147, 0, 0) != 0) {
+    if (::SendMessageA(a->m_hWnd, CB_GETCURSEL, 0, 0) != 0) {
         b->EnableWindow(1);
         d->EnableWindow(1);
         rec->m_liveGate = 1;
@@ -443,8 +443,8 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate) {
         CWnd* lb = GetDlgItem(0x515);
         pSend = ::SendMessageA;
-        long sel = pSend(lb->m_hWnd, 0x188, 0, 0);
-        long data = pSend(lb->m_hWnd, 0x199, sel, 0);
+        long sel = pSend(lb->m_hWnd, LB_GETCURSEL, 0, 0);
+        long data = pSend(lb->m_hWnd, LB_GETITEMDATA, sel, 0);
         m_pickedColor = data;
         if (data >= 0x11) {
             m_pickedColor = 0x10;
@@ -465,11 +465,11 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 
                 MsgParam name;
                 name.m_str = "Color";
-                long idx = pSend(lb->m_hWnd, 0x180, 0, name.m_lparam);
-                pSend(lb->m_hWnd, 0x19a, idx, i);
+                long idx = pSend(lb->m_hWnd, LB_ADDSTRING, 0, name.m_lparam);
+                pSend(lb->m_hWnd, LB_SETITEMDATA, idx, i);
             }
         }
-        pSend(lb->m_hWnd, 0x186, 0, 0);
+        pSend(lb->m_hWnd, LB_SETCURSEL, 0, 0);
     }
 }
 
@@ -570,25 +570,25 @@ CWnd* CBattlezDlg::GetCtrlD(i32 index) {
 RVA(0x00015cc0, 0x23)
 i32 CBattlezDlg::SetCurSelA(i32 id, i32 sel) {
     CWnd* c = GetCtrlA(id);
-    return ::SendMessageA(c->m_hWnd, 0x14e, sel, 0);
+    return ::SendMessageA(c->m_hWnd, CB_SETCURSEL, sel, 0);
 }
 
 RVA(0x00015d00, 0x20)
 i32 CBattlezDlg::GetPlayerTypeSelection(i32 slot) {
     CWnd* c = GetCtrlA(slot);
-    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0);
+    return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0);
 }
 
 RVA(0x00015d30, 0x21)
 i32 CBattlezDlg::GetMaxGruntzSelection(i32 id) {
     CWnd* c = GetCtrlC(id);
-    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
 }
 
 RVA(0x00015d70, 0x24)
 i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
     CWnd* c = GetCtrlC(id);
-    return ::SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
+    return ::SendMessageA(c->m_hWnd, CB_SETCURSEL, sel - 1, 0);
 }
 
 RVA(0x00017460, 0x22)
@@ -600,28 +600,28 @@ i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
 RVA(0x00017560, 0x28)
 i32 CBattlezDlg::SaveOptionCombo0() {
     CWnd* c = GetCtrlC(0);
-    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
     g_gameReg->m_options[0].m_comboSel = v;
     return v;
 }
 RVA(0x000175a0, 0x28)
 i32 CBattlezDlg::SaveOptionCombo1() {
     CWnd* c = GetCtrlC(1);
-    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
     g_gameReg->m_options[1].m_comboSel = v;
     return v;
 }
 RVA(0x000175e0, 0x28)
 i32 CBattlezDlg::SaveOptionCombo2() {
     CWnd* c = GetCtrlC(2);
-    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
     g_gameReg->m_options[2].m_comboSel = v;
     return v;
 }
 RVA(0x00017620, 0x28)
 i32 CBattlezDlg::SaveOptionCombo3() {
     CWnd* c = GetCtrlC(3);
-    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
     g_gameReg->m_options[3].m_comboSel = v;
     return v;
 }
@@ -729,7 +729,7 @@ void CBattlezDlg::CopyComboSelToChild() {
     if (combo == NULL) {
         return;
     }
-    long sel = ::SendMessageA(combo->m_hWnd, 0x147, 0, 0);
+    long sel = ::SendMessageA(combo->m_hWnd, CB_GETCURSEL, 0, 0);
     if (sel == -1) {
         return;
     }

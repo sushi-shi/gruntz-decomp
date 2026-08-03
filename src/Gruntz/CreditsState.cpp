@@ -188,7 +188,7 @@ i32 CCreditsState::Render() {
                 if (m_previousStateId == 5) {
                     wp = 0x8023;
                 }
-                PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, wp, 0);
+                PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, wp, 0);
                 Owner(this)->m_owner->m_running = 0;
                 break;
             }
@@ -246,9 +246,9 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == 5) {
-            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
         } else {
-            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, 0x8027, 0);
         }
     }
     return 1;
@@ -275,7 +275,7 @@ i32 CCreditsState::OnLButtonDown(i32 x, i32 unused, i32 y) {
     } else {
         cmd = 0x8027;
     }
-    PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, cmd, 0);
+    PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, cmd, 0);
     return 1;
 }
 

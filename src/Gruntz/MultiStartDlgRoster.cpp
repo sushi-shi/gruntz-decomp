@@ -47,11 +47,11 @@ i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     if (!list) {
         return 0;
     }
-    i32 sel = SendMessageA(list, 0x147, 0, 0);
+    i32 sel = SendMessageA(list, CB_GETCURSEL, 0, 0);
     if (sel == -1) {
         return 0;
     }
-    i32 data = SendMessageA(list, 0x150, sel, 0);
+    i32 data = SendMessageA(list, CB_GETITEMDATA, sel, 0);
     if (data == -1) {
         return 0;
     }
@@ -64,7 +64,7 @@ RVA(0x000c2980, 0x28)
 void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
     CWnd* it = GetCtrlC(id);
     if (it) {
-        ::SendMessageA(it->m_hWnd, 0x14e, wParam - 1, 0);
+        ::SendMessageA(it->m_hWnd, CB_SETCURSEL, wParam - 1, 0);
     }
 }
 
@@ -102,7 +102,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     GetCtrlA(ch);
     GruntzPlayer* s = &m_host->m_options[ch];
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
-    if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
+    if (pSend(owner->m_hWnd, CB_GETCURSEL, 0, 0) == 0) {
         if (s->m_humanControlled != 0) {
             if (s->m_liveGate != 0) {
                 g_multiState->DropChannelPlayer(s->m_playerIndex);
@@ -115,7 +115,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
         c1->EnableWindow(0);
         c2->EnableWindow(0);
     } else {
-        if (pSend(owner->m_hWnd, 0x147, 0, 0) != 4) {
+        if (pSend(owner->m_hWnd, CB_GETCURSEL, 0, 0) != 4) {
             if (s->m_humanControlled != 0) {
                 if (s->m_liveGate != 0) {
                     g_multiState->DropChannelPlayer(s->m_playerIndex);
@@ -130,7 +130,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
             }
             s->m_readyFlag = 1;
             s->m_humanControlled = 0;
-            s->m_configId = static_cast<i32>(pSend(owner->m_hWnd, 0x147, 0, 0)) - 1;
+            s->m_configId = static_cast<i32>(pSend(owner->m_hWnd, CB_GETCURSEL, 0, 0)) - 1;
             s->m_liveGate = 1;
             s->m_name = g_gruntNames[ch];
         }
@@ -160,9 +160,9 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     }
     i32 len = ::GetWindowTextLengthA(edit);
     if (len == 0) {
-        ::SendMessageA(edit, 0xb1, len, -1);
+        ::SendMessageA(edit, EM_SETSEL, len, -1);
     } else {
-        ::SendMessageA(edit, 0xb1, len, len);
+        ::SendMessageA(edit, EM_SETSEL, len, len);
     }
     char buf[0x80];
     buf[0] = 0;
@@ -172,8 +172,8 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     strcat(buf, str);
     MsgParam text;
     text.m_str = buf;
-    ::SendMessageA(edit, 0xc2, 0, text.m_lparam);
-    ::SendMessageA(edit, 0xb6, 0, 0x270f);
+    ::SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
+    ::SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
 }
 
 // @early-stop
@@ -567,7 +567,7 @@ void CMultiStartDlg::CommitWorldHost() {
     if (g_multiState->m_isHost != 0) {
         CWnd* item = GetDlgItem(0x4ff);
         if (item != NULL) {
-            i32 r = ::SendMessageA(item->m_hWnd, 0x147, 0, 0);
+            i32 r = ::SendMessageA(item->m_hWnd, CB_GETCURSEL, 0, 0);
             if (r != -1) {
                 CString name;
                 (static_cast<CComboBox*>(item))->GetLBText(r, name);
@@ -660,15 +660,15 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             ready->EnableWindow(slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0);
             if (slot->m_readyFlag) {
                 if (slot->m_liveGate) {
-                    ::SendMessageA(ready->m_hWnd, 0xf1, 1, 0);
+                    ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 1, 0);
                 } else {
-                    ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
+                    ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
                 }
             } else if (slot->m_liveGate) {
-                ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
+                ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
                 f1c = 0;
             } else {
-                ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
+                ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
             }
             GetCtrlC(idx)->EnableWindow(
                 g_multiState->m_isHost && slot->m_liveGate && localColour == 0 ? 1 : 0
@@ -688,13 +688,13 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     GetCtrlB(idx)->SetWindowTextA(slot->GetName());
                 }
                 if (slot->m_humanControlled) {
-                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 4, 0);
+                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, 4, 0);
                 } else {
-                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, slot->m_configId + 1, 0);
+                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, slot->m_configId + 1, 0);
                 }
             } else {
                 GetCtrlB(idx)->SetWindowTextA(g_emptyString);
-                ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 0, 0);
+                ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, 0, 0);
             }
             this->SyncChannelSlot(idx);
         }
@@ -903,28 +903,28 @@ void CMultiStartDlg::OnOK() {
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
     HWND h = GetCtrlC(0)->m_hWnd;
-    g_gameReg->m_options[0].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[0].m_comboSel = ::SendMessageA(h, CB_GETCURSEL, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnSlotSelect1() {
     HWND h = GetCtrlC(1)->m_hWnd;
-    g_gameReg->m_options[1].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[1].m_comboSel = ::SendMessageA(h, CB_GETCURSEL, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnSlotSelect2() {
     HWND h = GetCtrlC(2)->m_hWnd;
-    g_gameReg->m_options[2].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[2].m_comboSel = ::SendMessageA(h, CB_GETCURSEL, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnSlotSelect3() {
     HWND h = GetCtrlC(3)->m_hWnd;
-    g_gameReg->m_options[3].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[3].m_comboSel = ::SendMessageA(h, CB_GETCURSEL, 0, 0) + 1;
     Drive();
 }
 
@@ -953,7 +953,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
     if (!it) {
         return;
     }
-    i32 sel = ::SendMessageA(it->m_hWnd, 0xf0, 0, 0);
+    i32 sel = ::SendMessageA(it->m_hWnd, BM_GETCHECK, 0, 0);
     GruntzPlayer* slot = &g_gameReg->m_options[idx];
     if (!slot) {
         return;

@@ -959,9 +959,9 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             g_groupEnumMgr->m_groupSel = NULL;
             g_groupEnumMgr->PopulateGroupList(combo, 0);
             if (g_serviceId == NETSERVICE_NONE) {
-                SendMessageA(combo, 0x186, 0, 0);
-            } else if (static_cast<i32>(SendMessageA(combo, 0x186, g_serviceId, 0)) == -1) {
-                SendMessageA(combo, 0x186, 0, 0);
+                SendMessageA(combo, LB_SETCURSEL, 0, 0);
+            } else if (static_cast<i32>(SendMessageA(combo, LB_SETCURSEL, g_serviceId, 0)) == -1) {
+                SendMessageA(combo, LB_SETCURSEL, 0, 0);
             }
 
             DWORD cap = 0xa;
@@ -980,10 +980,10 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             );
 
             HWND edName = GetDlgItem(hDlg, 0x51b);
-            SendMessageA(edName, 0xc5, 9, 0);
+            SendMessageA(edName, EM_LIMITTEXT, 9, 0);
             SetDlgItemTextA(hDlg, 0x51b, nameBuf);
             HWND edGame = GetDlgItem(hDlg, 0x51c);
-            SendMessageA(edGame, 0xc5, 0x3f, 0);
+            SendMessageA(edGame, EM_LIMITTEXT, 0x3f, 0);
             SetDlgItemTextA(hDlg, 0x51c, gameBuf);
             return 1;
         }
@@ -1017,7 +1017,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         }
 
         HWND combo = GetDlgItem(hDlg, 0x3fc);
-        i32 svc = static_cast<i32>(SendMessageA(combo, 0x188, 0, 0));
+        i32 svc = static_cast<i32>(SendMessageA(combo, LB_GETCURSEL, 0, 0));
         if (svc != -1) {
             g_serviceId = svc;
         }
@@ -1087,7 +1087,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if (g_groupEnumMgr != NULL) {
                 g_groupEnumMgr->m_playerSel = NULL;
                 SetTimer(hDlg, 1, 0x9c4, 0);
-                SendMessageA(hDlg, 0x113, 0, 0);
+                SendMessageA(hDlg, WM_TIMER, 0, 0);
                 return 1;
             }
             goto close;
@@ -1118,7 +1118,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_TIMER:
             KillTimer(hDlg, 1);
             {
-                i32 sel = static_cast<i32>(SendMessageA(g_netPlayerListHwnd, 0x188, 0, 0));
+                i32 sel = static_cast<i32>(SendMessageA(g_netPlayerListHwnd, LB_GETCURSEL, 0, 0));
                 i32 hr = g_groupEnumMgr->EnumPlayersInto(0, 0);
                 if (hr == static_cast<i32>(0x88770118)) {
                     goto close;
@@ -1133,9 +1133,9 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 FillPlayerList(g_netPlayerListHwnd, g_groupEnumMgr);
                 if (sel != -1) {
-                    SendMessageA(g_netPlayerListHwnd, 0x186, sel, 0);
+                    SendMessageA(g_netPlayerListHwnd, LB_SETCURSEL, sel, 0);
                 } else {
-                    SendMessageA(g_netPlayerListHwnd, 0x186, 0, 0);
+                    SendMessageA(g_netPlayerListHwnd, LB_SETCURSEL, 0, 0);
                 }
                 RefreshPlayerRow(hDlg, g_netPlayerListHwnd);
                 i32 t = 0x7d0;
@@ -1726,7 +1726,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 break;
             }
             ReportVersionMsg("You have been dropped from the game.", 0);
-            PostMessageA(NetGameMgr()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+            PostMessageA(NetGameMgr()->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
             m_pollAbort = 1;
             break;
 
@@ -2483,9 +2483,9 @@ namespace NetLobby {
         }
         i32 len = GetWindowTextLengthA(edit);
         if (len == 0) {
-            SendMessageA(edit, 0xb1, len, -1);
+            SendMessageA(edit, EM_SETSEL, len, -1);
         } else {
-            SendMessageA(edit, 0xb1, len, len);
+            SendMessageA(edit, EM_SETSEL, len, len);
         }
         char buf[0x80];
         buf[0] = 0;
@@ -2495,8 +2495,8 @@ namespace NetLobby {
         strcat(buf, str);
         MsgParam text;
         text.m_str = buf;
-        SendMessageA(edit, 0xc2, 0, text.m_lparam);
-        SendMessageA(edit, 0xb6, 0, 0x270f);
+        SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
+        SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
     }
 } // namespace NetLobby
 

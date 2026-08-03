@@ -370,7 +370,7 @@ static __inline void HiCueTimed() {
 }
 
 static __inline void HiPost(i32 cmdId) {
-    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, cmdId, 0);
+    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, cmdId, 0);
 }
 
 RVA(0x000fe860, 0x2d)

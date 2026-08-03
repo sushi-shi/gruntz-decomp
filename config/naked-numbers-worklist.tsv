@@ -13,7 +13,7 @@ src/Gruntz/BootyStateActivate.cpp	1221	done (GruntDirection un-biased; BootySeqP
 src/Gruntz/Multi.cpp	1168	done (DirectPlay DPSYS_* ids named from the SDK; member-name transposition recorded at the site)
 src/Gruntz/GruntCombat.cpp	1165	done (GruntDirection + EnemyAiType named; SETDIR/rand indices left - g_dirVec is runtime-filled)
 src/Gruntz/GruntzMgr.cpp	955	partial (m_lastError is a cross-file banked error domain - raise sites live in DDrawSurfacePair and elsewhere)
-src/DDrawMgr/DDrawShadeBlit.cpp	862	pending
+src/DDrawMgr/DDrawShadeBlit.cpp	862	none (0x1f/0x80 are 5-bit RGB channel masks; the rest is blend arithmetic)
 src/Gruntz/TriggerMgr.cpp	860	done (CombatCueKind recovered + call sites; toy band named)
 src/Gruntz/GruntEntranceArrival.cpp	767	done (GruntDirection named; entranceReason bias is byte-evidenced and kept)
 src/DDrawMgr/DDSurface.cpp	664	none (bits/bitcount are a bits-per-pixel count; each arm divides by 8)
@@ -22,12 +22,12 @@ src/Gruntz/TriggerMgrGrid.cpp	558	pending
 src/Gruntz/GruntSteps.cpp	490	pending
 src/DDrawMgr/Fader.cpp	490	pending
 src/Gruntz/Dialogs.cpp	463	none (index is a 0..3 player-slot ordinal mapping to control ids)
-src/Gruntz/MainMenuBuilder.cpp	459	pending
-src/Gruntz/TileTriggerSwitchLogic.cpp	458	pending
+src/Gruntz/MainMenuBuilder.cpp	459	partial (LevelArea + QuestLevel + CMD_LOAD_WORLD applied; 0x8149 has no handler in-tree)
+src/Gruntz/TileTriggerSwitchLogic.cpp	458	none (<<5 / +0x10 is tile-to-pixel-centre geometry)
 src/Gruntz/GameLevel.cpp	447	pending
 src/DinMgr2/DinMgr2.cpp	446	pending
 src/Dsndmgr/DirectSoundMgr.cpp	445	pending
-src/Gruntz/MultiStartDlgRoster.cpp	437	pending
+src/Gruntz/MultiStartDlgRoster.cpp	437	done (23 raw Win32 message ids named from the SDK; rest are slot ordinals)
 src/Gruntz/InGameIcon.cpp	434	done
 src/Image/FileImage.cpp	427	pending
 src/Gruntz/GruntzMgrCmd.cpp	415	pending
@@ -80,7 +80,7 @@ src/Gruntz/SpriteRef.cpp	155	pending
 src/Gruntz/MultiStartDlg.cpp	154	none (index is the same 0..3 slot ordinal)
 src/Gruntz/CreditsState.cpp	152	pending
 src/Gruntz/GruntPickupLoad.cpp	151	pending
-src/Gruntz/VideoConfig.cpp	148	done
+src/Gruntz/VideoConfig.cpp	148	done (SB_* scroll codes and TBM_GETPOS/SETPOS named from the SDK)
 src/Gruntz/LevelTileValidation.cpp	147	pending
 src/DDrawMgr/DDrawSurfaceMgr.cpp	145	pending
 src/Gruntz/SpriteLoaders.cpp	143	pending

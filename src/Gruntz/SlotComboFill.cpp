@@ -52,13 +52,13 @@ i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
     i32 searching = 1;
     i32 i = 0;
     while (searching) {
-        i32 data = pSend(list, 0x150, i, 0);
+        i32 data = pSend(list, CB_GETITEMDATA, i, 0);
         if (data != -1) {
             i32 itemLo = data & 0xffff;
             i32 itemHi = static_cast<u32>(data) >> 0x10;
             if (itemLo == lo && itemHi == hi) {
-                if (pSend(list, 0x147, 0, 0) != i) {
-                    pSend(list, 0x14e, i, 0);
+                if (pSend(list, CB_GETCURSEL, 0, 0) != i) {
+                    pSend(list, CB_SETCURSEL, i, 0);
                 }
                 return 1;
             }

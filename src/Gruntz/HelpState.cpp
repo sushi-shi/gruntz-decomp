@@ -116,7 +116,7 @@ i32 CHelpState::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_items[i]->m_currentKeys & 0xffffff) {
-            PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+            PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8036, 0);
             m_mgr->m_owner->m_running = 0;
             return 1;
         }
@@ -150,13 +150,13 @@ i32 CHelpState::RestoreDisplay() {
 RVA(0x000953f0, 0x37)
 i32 CHelpState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8036, 0);
     }
     return 1;
 }
 
 RVA(0x00095440, 0x24)
 i32 CHelpState::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8036, 0);
     return 1;
 }

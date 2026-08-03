@@ -325,7 +325,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameWnd* wnd = m_gameWnd;
     m_errorReported = 1;
     if (wnd != NULL && wnd->m_closeGuard == 0) {
-        PostMessageA(wnd->m_hwnd, 0x10, 0, 0);
+        PostMessageA(wnd->m_hwnd, WM_CLOSE, 0, 0);
     }
     m_running = 0;
     m_errorCode = wParam;

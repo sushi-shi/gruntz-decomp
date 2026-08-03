@@ -374,7 +374,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
     }
 
     pCtrl->SetRange(1, 3, 1);
-    SendMessageA(pCtrl->m_hWnd, 0x405, 1, nSel);
+    SendMessageA(pCtrl->m_hWnd, TBM_SETPOS, TRUE, nSel);
 
     HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
     if (!hCaption) {
@@ -405,8 +405,8 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
         return;
     }
 
-    // The combo-box selection arrives from Windows as a raw LRESULT.
-    g_videoResolutionMode = static_cast<Resolution>(SendMessageA(pCtrl->m_hWnd, 0x400, 0, 0));
+    // The slider position arrives from Windows as a raw LRESULT.
+    g_videoResolutionMode = static_cast<Resolution>(SendMessageA(pCtrl->m_hWnd, TBM_GETPOS, 0, 0));
 
     HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
     if (!hCaption) {

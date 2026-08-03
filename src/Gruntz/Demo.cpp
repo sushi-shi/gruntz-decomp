@@ -68,7 +68,7 @@ void CDemo::ReleaseResources() {
 
 RVA(0x0003c030, 0x22)
 i32 CDemo::CompleteLevel() {
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8027, 0);
     return 1;
 }
 
@@ -105,7 +105,7 @@ i32 CDemo::Render() {
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
         if (list->m_items[i]->m_currentKeys & 0x100) {
-            PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+            PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
     }
@@ -115,7 +115,7 @@ i32 CDemo::Render() {
         m_demoCountdown -= g_frameDelta;
     }
     if (m_demoCountdown == 0) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, 0x8027, 0);
     }
     return 1;
 }
