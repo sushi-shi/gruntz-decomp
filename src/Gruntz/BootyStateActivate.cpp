@@ -19,6 +19,7 @@
 #include <Gruntz/BattleStatRow.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyMessages.h>
+#include <Gruntz/BootySeqPhase.h>
 #include <Gruntz/BootyStatRow.h>
 #include <Gruntz/BootyWalkAnim.h>
 #include <Gruntz/BzState.h>
@@ -28,6 +29,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
@@ -400,29 +402,29 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         }
 
         CString dir;
-        switch (i - 1) {
-            case 0:
+        switch (i) {
+            case DIR_NORTH:
                 dir = "NORTH";
                 break;
-            case 1:
+            case DIR_NORTHEAST:
                 dir = "NORTHEAST";
                 break;
-            case 2:
+            case DIR_EAST:
                 dir = "EAST";
                 break;
-            case 3:
+            case DIR_SOUTHEAST:
                 dir = "SOUTHEAST";
                 break;
-            case 4:
+            case DIR_SOUTH:
                 dir = "SOUTH";
                 break;
-            case 5:
+            case DIR_SOUTHWEST:
                 dir = "SOUTHWEST";
                 break;
-            case 6:
+            case DIR_WEST:
                 dir = "WEST";
                 break;
-            case 7:
+            case DIR_NORTHWEST:
                 dir = "NORTHWEST";
                 break;
         }
@@ -461,6 +463,10 @@ void CBootyState::MoveLettersByDir() {
         if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
             e->m_stateFlags |= 1;
         } else {
+            // The same eight-direction ring as the dir-name switch above, but
+            // 0-BASED: 0 is north, 1 north-east, and so on clockwise, each arm
+            // offsetting by 4px. Left numeric because GruntDirection is 1-based
+            // and `case DIR_NORTH - 1:` would read worse than the ring does.
             switch (i) {
                 case 0:
                     e->m_screenX = x;
@@ -632,8 +638,8 @@ i32 CBootyState::Render() {
     m_frameStampHi = 0;
 
     switch (m_activation) {
-        case 100: {
-            m_activation = 101;
+        case BOOTYSEQ_WARP_CUE: {
+            m_activation = BOOTYSEQ_GLITTER;
             CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 LeafCue* cue = 0;
@@ -645,11 +651,11 @@ i32 CBootyState::Render() {
         }
             // FALL THROUGH
 
-        case 101: {
+        case BOOTYSEQ_GLITTER: {
             if (StepGlitterAnim() == 0) {
                 break;
             }
-            m_activation = 102;
+            m_activation = BOOTYSEQ_LETTERS;
             CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 LeafCue* cue = 0;
@@ -679,21 +685,21 @@ i32 CBootyState::Render() {
             }
         }
         // FALL THROUGH
-        case 102:
+        case BOOTYSEQ_LETTERS:
             MoveLettersByDir();
             if (LevelMsgHudDriver() == 0) {
                 break;
             }
-            m_activation = 103;
+            m_activation = BOOTYSEQ_WALK;
         // FALL THROUGH
-        case 103:
+        case BOOTYSEQ_WALK:
             LevelMsgHudDriver();
             if (UpdateBootyWalkingGruntz() == 0) {
                 break;
             }
-            m_activation = 0xc7;
+            m_activation = BOOTYSEQ_PERFECT_BONUS;
             break;
-        case 199: {
+        case BOOTYSEQ_PERFECT_BONUS: {
             LevelMsgHudDriver();
             UpdateBootyWalkingGruntz();
             CheckPerfectBonus();
@@ -733,7 +739,7 @@ i32 CBootyState::Render() {
             }
             break;
         }
-        case 200:
+        case BOOTYSEQ_DONE:
             return 1;
     }
 
@@ -941,7 +947,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             }
             m_world->m_drawTarget->TransExit();
             RetireScene(0x50, 0x3e8, 0, 1);
-            m_activation = 0xfffffffe;
+            m_activation = BOOTYSEQ_SECRET_PENDING;
             return 1;
         }
     }

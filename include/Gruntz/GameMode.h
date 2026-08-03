@@ -7,6 +7,7 @@
 #include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/BootySeqPhase.h>
 #include <Gruntz/BootyStatRow.h>
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/FixedPtrArray32.h>
@@ -153,7 +154,7 @@ public:
         m_frameStampHi = 0;
         m_frameIntervalHi = 0;
         m_secretHudHandled = 0;
-        m_activation = 0x64;
+        m_activation = BOOTYSEQ_WARP_CUE;
         m_slot = 0;
         m_stepIndex = 0;
         m_walkStarted = 0;
