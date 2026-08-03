@@ -17,6 +17,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/BattlezTask.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DirectionClassify.h>
@@ -489,7 +490,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_unusedBattleCell.m_y = -1;
     m_arrivalNotified = 0;
     m_defenderState = AISTATE_SEEK;
-    m_battleState = 0;
+    m_battleState = BZTASK_UNASSIGNED;
     {
         CWwdGameObjectA* h = m_object;
         i32 lim = h->m_screenY + 0x186a0;
@@ -2535,7 +2536,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_passableMask = 0;
             m_toolConfigured = 1;
             if (m_arrivalState == AI_BATTLEZ_PATH) {
-                if (m_battleState != 4) {
+                if (m_battleState != BZTASK_ADVANCE) {
                     if (CoordCount() != 0) {
                         CoordNode* p = CoordHead();
                         while (p != NULL) {

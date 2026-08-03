@@ -4,7 +4,7 @@
 file	count	status
 src/Bute/ButeMgr.cpp	14615	done (14615 are a generated DFA table; lexer actions+slots and one char modelled)
 src/Gruntz/Play.cpp	2740	done (per-area death switch un-biased onto LevelArea; QUESTLEVEL_LAST/TRAINING bounds; the 36 m_levelIndex arms are level ordinals, each loading that level's string id)
-src/Gruntz/BattlezMapConfig.cpp	1944	OPEN (61 compares - m_battleState is a real unnamed AI-task domain: 4=defend/0=other is readable from m_defenderChance, 3/6/0xa/0xb are task states still unread. Biggest single piece of remaining debt.)
+src/Gruntz/BattlezMapConfig.cpp	1944	done (BattlezTask recovered - 7 of 9 states named by their tool guards and the step dispatch; 2 and 7 left bare)
 src/Gruntz/Grunt.cpp	1698	done (RockNeighborMask recovered; TILEKIND_GIANT_ROCK named; rest are pixel/tick magnitudes)
 src/Gruntz/GruntArrivalScan.cpp	1611	done (3 AISTATE cases named; the rest are >>5 tile shifts and priority magnitudes)
 src/Gruntz/LightFxRender.cpp	1423	done (shape switch un-biased onto LevelArea; rest are palette data)

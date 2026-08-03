@@ -45,6 +45,7 @@
 
 #include <Gruntz/FreeNodePool.h>
 #include <Wap32/TileGeometry.h>
+#include <Gruntz/BattlezTask.h>
 
 DATA(0x001e96ec)
 const float g_diffScale = 0.01f;
@@ -601,7 +602,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     CGrunt** r2 = &m_triggerMgr->m_grid[m_ownerId * 15];
     for (i32 k = 15; k != 0; k--) {
         CGrunt* g = *r2;
-        if (g != NULL && g->m_battleState == 0) {
+        if (g != NULL && g->m_battleState == BZTASK_UNASSIGNED) {
             freeCount++;
         }
         r2++;
@@ -611,9 +612,9 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
          * static_cast<double>(m_gruntRatio) * g_diffScale)
     );
     if (roll >= m_defenderChance || freeCount >= budget) {
-        unit->m_battleState = 4;
+        unit->m_battleState = BZTASK_ADVANCE;
     } else {
-        unit->m_battleState = 0;
+        unit->m_battleState = BZTASK_UNASSIGNED;
     }
     unit->m_arrivalState = AI_BATTLEZ_PATH;
     unit->m_defenderState = AISTATE_SEEK;
@@ -687,8 +688,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (st > PICKUP_EQUIPPABLE_LAST) {
                                 st = unit->m_toolId;
                             }
-                            if (st == PICKUP_BRICK && unit->m_battleState == 0) {
-                                unit->m_battleState = 0xa;
+                            if (st == PICKUP_BRICK && unit->m_battleState == BZTASK_UNASSIGNED) {
+                                unit->m_battleState = BZTASK_CARRY_BRICK;
                                 if (unit->CoordCount() != 0) {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
@@ -783,7 +784,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->m_battleState == 0xb) {
+                        if (unit->m_battleState == BZTASK_SEEK_SWITCH) {
                             Coord s1;
                             (static_cast<CUserLogic*>(unit))->GetScreenPos((&s1));
                             s1.m_x >>= 5;
@@ -803,7 +804,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                             if (!(tile & 4)) {
                                 unit->m_arrivalCell.m_x = -1;
-                                unit->m_battleState = 4;
+                                unit->m_battleState = BZTASK_ADVANCE;
                                 unit->m_arrivalCell.m_y = -1;
                                 if (unit->CoordCount() != 0) {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
@@ -826,9 +827,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (st > PICKUP_EQUIPPABLE_LAST) {
                                 st = unit->m_toolId;
                             }
-                            if (st != PICKUP_SPY && unit->m_battleState == 9) {
+                            if (st != PICKUP_SPY && unit->m_battleState == BZTASK_CARRY_SPY) {
                                 unit->m_arrivalCell.m_x = -1;
-                                unit->m_battleState = 4;
+                                unit->m_battleState = BZTASK_ADVANCE;
                                 unit->m_arrivalCell.m_y = -1;
                                 if (unit->CoordCount() != 0) {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
@@ -868,7 +869,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     }
                                     unit->m_arrivalCell.m_x = -1;
                                     unit->m_arrivalCell.m_y = -1;
-                                    unit->m_battleState = 6;
+                                    unit->m_battleState = BZTASK_CARRY_GOOBER;
                                 }
                             }
                         }
@@ -877,9 +878,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (st > PICKUP_EQUIPPABLE_LAST) {
                                 st = unit->m_toolId;
                             }
-                            if (st != PICKUP_GOOBER && unit->m_battleState == 6) {
+                            if (st != PICKUP_GOOBER && unit->m_battleState == BZTASK_CARRY_GOOBER) {
                                 unit->m_arrivalCell.m_x = -1;
-                                unit->m_battleState = 4;
+                                unit->m_battleState = BZTASK_ADVANCE;
                                 unit->m_arrivalCell.m_y = -1;
                                 if (unit->CoordCount() != 0) {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
@@ -1333,7 +1334,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                      )
                                                      != 0);
                                                 if (ne) {
-                                                    if (unit->m_battleState != 0) {
+                                                    if (unit->m_battleState != BZTASK_UNASSIGNED) {
                                                         if (RouteToNearbyEnemy(unit) != 0) {
                                                             hit = 1;
                                                         }
@@ -1580,7 +1581,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         PickupType stX = unit->m_entranceReason;
         if (hit == 0) {
             switch (unit->m_battleState) {
-                case 0: {
+                case BZTASK_UNASSIGNED: {
                     StepDefenderUnit(unit);
                     break;
                 }
@@ -1588,15 +1589,15 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     Step(unit);
                     break;
                 }
-                case 3: {
+                case BZTASK_ASSIGNED_TARGET: {
                     TrackAssignedEnemy(unit);
                     break;
                 }
-                case 4: {
+                case BZTASK_ADVANCE: {
                     AdvanceToEnemyBase(unit);
                     break;
                 }
-                case 6: {
+                case BZTASK_CARRY_GOOBER: {
                     RepathToFreeCell(unit);
                     break;
                 }
@@ -1604,15 +1605,15 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     CheckQueuedSpawnTile(unit);
                     break;
                 }
-                case 9: {
+                case BZTASK_CARRY_SPY: {
                     RetargetIdleUnit(unit);
                     break;
                 }
-                case 0xb: {
+                case BZTASK_SEEK_SWITCH: {
                     Scan(unit);
                     break;
                 }
-                case 0xa: {
+                case BZTASK_CARRY_BRICK: {
                     ScanRegion(unit);
                     break;
                 }
@@ -2077,7 +2078,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         scratchB = *srcB;
 
-        if ((scratchB.m_flags & 0x4) && unit->m_battleState != 0xb) {
+        if ((scratchB.m_flags & 0x4) && unit->m_battleState != BZTASK_SEEK_SWITCH) {
             (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
             i32 rx = pt.m_x >> TILE_SHIFT_PX;
             (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
@@ -2096,7 +2097,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     }
                     coordList->RemoveAll();
                 }
-                unit->m_battleState = 0xb;
+                unit->m_battleState = BZTASK_SEEK_SWITCH;
                 unit->m_dwell = 0;
                 return 0;
             }
@@ -2147,7 +2148,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         i32 sA = scratchA.m_flags;
         if (sA & 0x8000) {
-            if (prim == PICKUP_BRICK && unit->m_battleState == 0xa) {
+            if (prim == PICKUP_BRICK && unit->m_battleState == BZTASK_CARRY_BRICK) {
                 m_triggerMgr->ApplyTriggerB(
                     unit->m_tileOwnerHi,
                     unit->m_tileOwnerLo,
@@ -3244,7 +3245,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         m_board->m_gridH = m_board->m_bounds.bottom - m_board->m_bounds.top;
     }
 
-    if ((dest.m_flags & 4) && g->m_battleState != 0xb) {
+    if ((dest.m_flags & 4) && g->m_battleState != BZTASK_SEEK_SWITCH) {
         Coord tp;
         i32 keyHi = g->m_object->m_screenX >> TILE_SHIFT_PX;
         g->GetTilePos(&tp);
@@ -3254,13 +3255,13 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (r->m_typeId == TRIGID_SWITCH_2) {
             g->m_defenderState = AISTATE_SEEK;
             ARR_RECYCLE(g);
-            g->m_battleState = 0xb;
+            g->m_battleState = BZTASK_SEEK_SWITCH;
             g->m_dwell = 0;
             return 0;
         }
     }
 
-    if ((maskFlags & 0x8000) && type == PICKUP_BRICK && g->m_battleState == 0xa) {
+    if ((maskFlags & 0x8000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
         m_triggerMgr->ApplyTriggerA(
             g->m_tileOwnerHi,
             g->m_tileOwnerLo,
@@ -3271,7 +3272,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 0;
     }
 
-    if ((maskFlags & 0x4000) && type == PICKUP_BRICK && g->m_battleState == 0xa) {
+    if ((maskFlags & 0x4000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
         if (m_board->m_rows[fcy][fcx].m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
             m_triggerMgr->ApplyTriggerA(
                 g->m_tileOwnerHi,
@@ -4377,7 +4378,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             i32 nIdle = 0;
             for (i32 s = 15; s != 0; s--) {
                 CGrunt* u = *row;
-                if (u != NULL && u->m_battleState == 3) {
+                if (u != NULL && u->m_battleState == BZTASK_ASSIGNED_TARGET) {
                     nIdle++;
                 }
                 row++;
@@ -4390,14 +4391,14 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 if (u == NULL) {
                     continue;
                 }
-                if (u->m_battleState != 0) {
+                if (u->m_battleState != BZTASK_UNASSIGNED) {
                     continue;
                 }
                 if (u->m_poweredUp != 0) {
                     continue;
                 }
                 (static_cast<CGrunt*>(u))->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
-                u->m_battleState = 3;
+                u->m_battleState = BZTASK_ASSIGNED_TARGET;
                 if (u->CoordCount() != 0) {
                     CoordNode* n = u->CoordHead();
                     while (n != NULL) {
@@ -4696,7 +4697,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
         if (unit == selfUnit) {
             continue;
         }
-        if (unit->m_battleState == 0xb) {
+        if (unit->m_battleState == BZTASK_SEEK_SWITCH) {
             continue;
         }
 
@@ -4749,7 +4750,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     if (src->m_gruntKind == GRUNT_GHOST) {
         return 0;
     }
-    if (src->m_battleState == 4) {
+    if (src->m_battleState == BZTASK_ADVANCE) {
         i32 sx = src->m_arrivalCell.m_x;
         i32 sy = src->m_arrivalCell.m_y;
 
@@ -4763,14 +4764,14 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             continue;
         }
         i32 ok = 1;
-        if (u->m_battleState == 3) {
+        if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
             i32 ux = u->m_arrivalCell.m_x;
             i32 uy = u->m_arrivalCell.m_y;
             if (ux == cellX && uy == cellY) {
                 ok = 0;
             }
         }
-        if (u->m_battleState == 3) {
+        if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
             i32 ux = u->m_arrivalCell.m_x;
             i32 uy = u->m_arrivalCell.m_y;
             if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
@@ -4783,7 +4784,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         CGameObject* lvl = u->m_object;
         i32 lx = lvl->m_screenX >> TILE_SHIFT_PX;
         i32 ly = lvl->m_screenY >> TILE_SHIFT_PX;
-        if (u->m_battleState == 4 && u->m_targetTeam != -1) {
+        if (u->m_battleState == BZTASK_ADVANCE && u->m_targetTeam != -1) {
             CBattlezMapConfig* bundle = &m_ctx->m_options[u->m_targetTeam].m_battlezConfig;
             i32 dx = bundle->m_marker.m_x - lx;
             i32 dy = bundle->m_marker.m_y - ly;
@@ -4798,7 +4799,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             continue;
         }
         u->m_arrivalCell.m_x = cellX;
-        u->m_battleState = 3;
+        u->m_battleState = BZTASK_ASSIGNED_TARGET;
         u->m_arrivalCell.m_y = cellY;
         u->m_defenderState = AISTATE_ATTACK;
         u->m_routeMaskA = 0xd87;
@@ -4856,7 +4857,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->m_defenderQueuePosition = 0;
     unit->m_dwell = 0;
     unit->m_blockedVoicePending = 1;
-    unit->m_battleState = 4;
+    unit->m_battleState = BZTASK_ADVANCE;
     return 1;
 }
 
@@ -5326,7 +5327,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         unit->m_arrivalCell.m_y = -1;
         unit->m_defenderPx.m_x = -1;
         unit->m_defenderState = AISTATE_SEEK;
-        unit->m_battleState = 4;
+        unit->m_battleState = BZTASK_ADVANCE;
         unit->m_defenderPx.m_y = -1;
         if (unit->CoordCount() != 0) {
             CoordNode* n = unit->CoordHead();
@@ -5351,7 +5352,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     unit->m_arrivalCell.m_y = -1;
     unit->m_defenderPx.m_x = -1;
     unit->m_defenderState = AISTATE_SEEK;
-    unit->m_battleState = 4;
+    unit->m_battleState = BZTASK_ADVANCE;
     unit->m_defenderPx.m_y = -1;
     if (unit->CoordCount() != 0) {
         POSITION pos = unit->m_coordList.GetHeadPosition();
@@ -5799,7 +5800,7 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             unit->m_dwell = 0;
             return 1;
         }
-        unit->m_battleState = 4;
+        unit->m_battleState = BZTASK_ADVANCE;
 
         if (unit->CoordCount() != 0) {
             CoordNode* n = unit->CoordHead();
@@ -5813,7 +5814,7 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             unit->m_coordList.RemoveAll();
         }
     } else {
-        unit->m_battleState = 4;
+        unit->m_battleState = BZTASK_ADVANCE;
         if (unit->CoordCount() != 0) {
             CoordNode* n = unit->CoordHead();
             while (n != NULL) {

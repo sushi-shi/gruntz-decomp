@@ -27,6 +27,8 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Ints.h>
 
+GZ_ENUM_FORWARD(BattlezTask);
+
 class CAniElement;
 
 class FreeNodePool;
@@ -383,7 +385,7 @@ public:
     RECT m_toyRectB;
     i32 m_arrivalState;
     i32 m_defenderState;
-    i32 m_battleState;
+    BattlezTask m_battleState;
     i32 m_defenderRadius;
     i32 m_defenderQueuePosition;
     PickupType m_defenderPickupType;
