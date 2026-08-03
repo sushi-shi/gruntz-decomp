@@ -324,7 +324,7 @@ void SoundStream::Stop() {
 RVA(0x00137ac0, 0xa2)
 i32 SoundStream::TickSubManagers(i32 time) {
     if (time == -1) {
-        time = static_cast<i32>(::timeGetTime());
+        time = static_cast<i32>(timeGetTime());
     }
     DSoundLink* head = m_voices.m_head;
     StreamVoice* o = elemOf<StreamVoice>(head);

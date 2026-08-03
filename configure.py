@@ -138,10 +138,9 @@ def load_manifest(path: Path) -> dict:
         data = tomllib.load(f)
     # Named flag profiles ([flags] table): EVERY [[unit]] selects one with
     # `flags = "<name>"`. The profiles ARE the full flag sets - there is no
-    # separate global default to inherit, so each TU's flag choice is explicit.
-    # A unit may additionally set `extra = ["/GR", ...]` to append per-TU flags
-    # on top of its profile (the per-TU /GR RTTI / /GX EH knob). Optional; absent
-    # == unchanged, so it is matching-neutral until a unit opts in.
+    # separate global default to inherit and no per-TU append, so each TU's flag
+    # choice is one explicit, greppable name. /GX and /GR are profile choices
+    # (eh/mfc, rtti/ehrtti), never bolt-ons: a stray `extra` key is a hard error.
     profiles = data.get("flags", {})
     if not profiles:
         raise SystemExit(f"{path}: [flags] must define at least one profile")
@@ -160,15 +159,13 @@ def load_manifest(path: Path) -> dict:
             raise SystemExit(f"{path}: unit '{u['unit']}' references unknown "
                              f"flags profile '{u['flags']}' "
                              f"(defined: {sorted(profiles)})")
-        # Copy the profile (never mutate the shared list) then append optional
-        # per-TU `extra` flags - the /GR (RTTI; MSVC5 default OFF) / /GX (EH) knob.
+        if "extra" in u:
+            raise SystemExit(
+                f"{path}: unit '{u['unit']}' sets 'extra' - per-TU flag bolt-ons "
+                f"are not supported. Add (or reuse) a [flags] profile carrying the "
+                f"FULL set instead; /GR lives in the `rtti`/`ehrtti` profiles.")
+        # Copy the profile - never mutate the shared list.
         u["cflags"] = list(profiles[u["flags"]])
-        extra = u.get("extra", [])
-        if extra:
-            if not isinstance(extra, list) or not all(isinstance(x, str) for x in extra):
-                raise SystemExit(f"{path}: unit '{u['unit']}' 'extra' must be a "
-                                 f"list of strings (got {extra!r})")
-            u["cflags"] = u["cflags"] + extra
     return data
 
 
@@ -178,8 +175,10 @@ def emit_link_phase(w: ninja_syntax.Writer, base_objs: list) -> None:
 
     Runs the genuine VC5 link.exe (5.10.7303) under wine via
     scripts/gruntz/build/link.py over a @response file (VC5 link has a short argv
-    limit under wine). The reconstruction is PARTIAL, so link.py passes /FORCE and
-    the EXE does not run - the deliverable is the `.map`, which gives each
+    limit under wine), against the retail library set - static CRT + MFC via the
+    objs' own -defaultlib: directives, DX6, version/winmm, and the mss32/smackw32
+    import libs synthesised by gruntz.build.import_lib. The reconstruction is still
+    PARTIAL, so /FORCE stays on; the deliverable is the `.map`, which gives each
     function's link-assigned RVA + source object. That, cross-referenced with the
     retail RVAs, is what recovers the build order for matching (intra-TU order =
     source-definition order; cross-TU order = object link order). See
@@ -194,7 +193,8 @@ def emit_link_phase(w: ninja_syntax.Writer, base_objs: list) -> None:
            command=f"{PY} {LINK} --out {cand} --objs-dir {BASE_DIR}",
            description="link base objs -> candidate EXE + map")
     w.build([cand, "build/exe/GRUNTZ.candidate.map"], "link",
-            inputs=base_objs, implicit=[LINK, "scripts/gruntz/build/msdis_stub.py"])
+            inputs=base_objs, implicit=[LINK, "scripts/gruntz/build/msdis_stub.py",
+                                        "scripts/gruntz/build/import_lib.py"])
     w.build("candidate", "phony", inputs=cand)
     w.newline()
 

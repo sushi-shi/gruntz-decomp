@@ -2061,7 +2061,7 @@ i32 CGrunt::Place(
         m_object->m_extent.bottom = span->bottom + (m_lastTilePx.m_y >> 5);
     }
     RECT reach;
-    ::CopyRect(&reach, &m_object->m_extent);
+    CopyRect(&reach, &m_object->m_extent);
     if (reach.right - reach.left == 0 && reach.top - reach.bottom == 0) {
         m_hasExtent = 0;
     } else {

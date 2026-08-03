@@ -295,10 +295,10 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     for (i32 i = 0; i < 0x100; i++) {
         snapshot[i] = m_cacheA[i];
     }
-    i32 t0 = ::timeGetTime();
+    i32 t0 = timeGetTime();
     i32 prev = 9;
 
-    for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = ::timeGetTime() - t0) {
+    for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = timeGetTime() - t0) {
         if (t != prev) {
             for (i32 j = start; j < start + count; j++) {
                 m_cacheA[j].peRed = static_cast<u8>(
@@ -377,7 +377,7 @@ i32 CDDPalette::Tick() {
     if (m_active == 0) {
         return 0;
     }
-    u32 dt = ::timeGetTime() - m_startTimeMs;
+    u32 dt = timeGetTime() - m_startTimeMs;
     if (dt >= static_cast<u32>(m_durationMs)) {
         Flush();
         return 0;
@@ -542,7 +542,7 @@ i32 CDDPalette::CaptureSystemPalette() {
 
 RVA(0x00148720, 0x9f)
 i32 BlackoutSystemPalette() {
-    HDC hdc = ::GetDC(0);
+    HDC hdc = GetDC(0);
     if (hdc != 0) {
         LogPal256 lp;
         lp.palVersion = 0x300;
@@ -553,16 +553,16 @@ i32 BlackoutSystemPalette() {
             lp.palPalEntry[i].peBlue = 0;
             lp.palPalEntry[i].peFlags = 4;
         }
-        HPALETTE hpal = ::CreatePalette(&lp.m_lp);
+        HPALETTE hpal = CreatePalette(&lp.m_lp);
         if (hpal != 0) {
-            HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = ::SelectPalette;
+            HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = SelectPalette;
             HPALETTE old = pSelect(hdc, hpal, 0);
-            ::RealizePalette(hdc);
-            ::DeleteObject(pSelect(hdc, old, 0));
-            ::ReleaseDC(0, hdc);
+            RealizePalette(hdc);
+            DeleteObject(pSelect(hdc, old, 0));
+            ReleaseDC(0, hdc);
             return 1;
         }
-        ::ReleaseDC(0, hdc);
+        ReleaseDC(0, hdc);
     }
     return 0;
 }

@@ -161,8 +161,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         }
         ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
         g_savedDlgWndProc =
-            reinterpret_cast<WNDPROC>(::GetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC));
-        ::SetWindowLongA(
+            reinterpret_cast<WNDPROC>(GetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC));
+        SetWindowLongA(
             comboChild->m_hWnd,
             GWL_WNDPROC,
             reinterpret_cast<LONG>(&BattlezMapComboEditProc) // API-forced Win32 callback seam.
@@ -755,12 +755,12 @@ void CBattlezDlg::FlashCtrlD() {
         } else {
             color = 0x808080;
         }
-        scratch.Attach(::CreateSolidBrush(color));
+        scratch.Attach(CreateSolidBrush(color));
         rc.left += 2;
         rc.top += 2;
         rc.right -= 2;
         rc.bottom -= 2;
-        ::FillRect(dc.m_hDC, &rc, scratch);
+        FillRect(dc.m_hDC, &rc, scratch);
     }
 }
 
@@ -1023,7 +1023,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         CDC dc;
         dc.Attach(lpdis->hDC);
         CBrush brush(color);
-        ::FillRect(dc.m_hDC, &lpdis->rcItem, brush);
+        FillRect(dc.m_hDC, &lpdis->rcItem, brush);
         dc.Detach();
     }
     CWnd::OnDrawItem(nIDCtl, lpdis);

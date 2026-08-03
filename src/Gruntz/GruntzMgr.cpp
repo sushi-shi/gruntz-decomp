@@ -673,7 +673,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
     m_strWorldFile = name;
     m_isMultiLevel = 0;
     m_isBattlezLevel = 0;
-    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x8005, 0);
+    PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x8005, 0);
     return 1;
 }
 
@@ -965,7 +965,7 @@ RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
     if (code > 0 && code <= 0x29) {
         i32 v = (code == 0x29) ? 1 : code;
-        ::PostMessageA(m_gameWnd->m_hwnd, 0x111, GOTOLEVEL, v);
+        PostMessageA(m_gameWnd->m_hwnd, 0x111, GOTOLEVEL, v);
     }
 }
 
@@ -1128,7 +1128,7 @@ i32 CGruntzMgr::WarpCheat() {
                     ReportError(0x8005, 0x43b);
                     return 0;
                 }
-                ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80ca, 0);
+                PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80ca, 0);
                 return 1;
             }
         } else {
@@ -1477,7 +1477,7 @@ i32 CGruntzMgr::ResetWorldState() {
         m_curState = 0;
     }
 
-    int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ShowCursor;
     while (show(1) < 0) {
     }
 
@@ -1523,7 +1523,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
         return 0;
     }
     CAssetRootStorage::s_value = path;
-    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80ab, 0);
+    PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80ab, 0);
     return 1;
 }
 
@@ -1532,7 +1532,7 @@ i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
     }
-    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80b1, slot);
+    PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80b1, slot);
     return 1;
 }
 
@@ -1541,7 +1541,7 @@ i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
     }
-    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80b6, slot);
+    PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80b6, slot);
     return 1;
 }
 
@@ -1786,7 +1786,7 @@ i32 CGruntzMgr::Quickload() {
         if (m_saveSink->VerifySlot(m_saveInfoRec) == 0) {
             return 1;
         }
-        ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
+        PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
         m_chatLog->AddItem("Game Quickloaded successfully.", 0, 0x11);
         return 1;
     }
@@ -2237,7 +2237,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         pc->m_device->FlipToGDISurface();
     }
 
-    int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -2271,7 +2271,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         pc->m_device->FlipToGDISurface();
     }
 
-    int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -2641,7 +2641,7 @@ void CGruntzMgr::AccrueScoreTime() {
         return;
     }
     CBattlezData* hud = g_gameReg->m_scoreHud;
-    u32 now = ::timeGetTime();
+    u32 now = timeGetTime();
     hud->m_elapsedTimeMs += (now - g_scoreTimeBase);
     TransitionState(0x12, 1, 0, 0);
 }
@@ -2653,7 +2653,7 @@ void CGruntzMgr::OnCheckpointReached() {
     }
     CCheckpointDlg dlg(0);
     if (ExitModalUI(&dlg, 0) == 1) {
-        ::SendMessageA(m_gameWnd->m_hwnd, 0x111, 0x80cf, 0);
+        SendMessageA(m_gameWnd->m_hwnd, 0x111, 0x80cf, 0);
     }
 }
 
@@ -2674,15 +2674,15 @@ void CGruntzMgr::DelayedQuit() {
     } else {
         base = 0;
     }
-    base += ::timeGetTime();
+    base += timeGetTime();
     u32 deadline = base;
-    while (::timeGetTime() < deadline) {
+    while (timeGetTime() < deadline) {
     }
     if (m_owner) {
         m_owner->m_running = 0;
     }
     if (m_gameWnd) {
-        ::PostMessageA(m_gameWnd->m_hwnd, 0x10, 0, 0);
+        PostMessageA(m_gameWnd->m_hwnd, 0x10, 0, 0);
     }
 }
 
@@ -2730,13 +2730,13 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
         pc->m_device->FlipToGDISurface();
     }
 
-    int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
 
     m_modalBusy = 1;
-    i32 result = ::DialogBoxParamA(
+    i32 result = DialogBoxParamA(
         m_owner->m_hInstance,
         tmpl,
         m_gameWnd->m_hwnd,
@@ -2797,7 +2797,7 @@ i32 CGruntzMgr::SaveGameAs() {
     if (m_strWorldFile.GetLength() == 0) {
         return 0;
     }
-    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80e3, 0);
+    PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80e3, 0);
     return 1;
 }
 
@@ -3045,7 +3045,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (!m_world->SetDimensions(w, h, m_colorDepth)) {
         return 0;
     }
-    while (::ShowCursor(0) >= 0) {
+    while (ShowCursor(0) >= 0) {
     }
     m_modeW = w;
     m_modeH = h;

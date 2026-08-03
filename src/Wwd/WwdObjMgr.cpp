@@ -279,7 +279,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     sortQueue.SetSize(0, -1);
 
     if (advance != 0) {
-        u32 now = ::timeGetTime();
+        u32 now = timeGetTime();
         u32 delta = now - g_killCueClock;
         g_engineFrameDelta = delta;
         g_killCueClock = now;
@@ -719,7 +719,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 i32 x = obj->m_screenX;
                 i32 y = obj->m_screenY;
                 RECT box;
-                ::SetRect(&box, x - 0x20, y + 8, x + 0x20, y + 0x20);
+                SetRect(&box, x - 0x20, y + 8, x + 0x20, y + 0x20);
                 RECT rc;
                 rc.left = box.left;
                 rc.top = box.top;

@@ -218,7 +218,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     u32 x;
                     if (!(g_randSeeded & 1)) {
                         g_randSeeded |= 1;
-                        x = ::timeGetTime();
+                        x = timeGetTime();
                     } else {
                         x = g_randSeed;
                     }

@@ -277,7 +277,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
         rc.top = rect->top;
         rc.right = rect->right;
         rc.bottom = rect->bottom;
-        ::DrawTextA(hdc, text, text.GetLength(), &rc, 0x420);
+        DrawTextA(hdc, text, text.GetLength(), &rc, 0x420);
         i32 textW = rc.right - rc.left;
         i32 provW = rect->right - rect->left;
         g_chatTextWidth = provW;
@@ -302,7 +302,7 @@ RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     if (hdc != 0) {
         CString text(m_inputText);
-        if (::GetAsyncKeyState(0x11) & 0x8000) {
+        if (GetAsyncKeyState(0x11) & 0x8000) {
             for (i32 i = 0; i < text.GetLength(); i++) {
                 text.SetAt(i, '*');
             }
@@ -323,12 +323,12 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         } else {
             HGDIOBJ prev = 0;
             if (m_arialFont) {
-                prev = ::SelectObject(hdc, m_arialFont);
+                prev = SelectObject(hdc, m_arialFont);
             }
             if (g_caretBlinkOn) {
                 MeasureLabel(hdc, rect);
             }
-            int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
+            int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
             RECT rc;
             rc.left = rect->left;
             rc.top = rect->top;
@@ -339,7 +339,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
             g_lastDrawTextFormat = fmt;
             pDraw(hdc, text, text.GetLength(), rect, fmt);
             if (prev) {
-                ::SelectObject(hdc, prev);
+                SelectObject(hdc, prev);
             }
         }
         return 1;
@@ -539,11 +539,11 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
     }
     HGDIOBJ prev = 0;
     if (m_arialFont) {
-        prev = ::SelectObject(hdc, m_arialFont);
+        prev = SelectObject(hdc, m_arialFont);
     }
-    ::DrawTextA(hdc, text, strlen(text), rect, format);
+    DrawTextA(hdc, text, strlen(text), rect, format);
     if (prev) {
-        ::SelectObject(hdc, prev);
+        SelectObject(hdc, prev);
     }
     return 1;
 }
@@ -579,12 +579,12 @@ i32 CFontConfig::Draw3DText(
     rc.bottom = dst->bottom;
     HGDIOBJ obj = fontFlag ? m_messageFont : m_trainingFont;
     if (obj) {
-        selPrev = ::SelectObject(hdc, obj);
+        selPrev = SelectObject(hdc, obj);
     }
-    ::SetBkMode(hdc, 1);
-    ::SetBkColor(hdc, 0);
+    SetBkMode(hdc, 1);
+    SetBkColor(hdc, 0);
     CString text(*strSrc);
-    ::DrawTextA(hdc, text, strlen(text), &rc, 0x411);
+    DrawTextA(hdc, text, strlen(text), &rc, 0x411);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
     rc.left += hoff;
@@ -592,21 +592,21 @@ i32 CFontConfig::Draw3DText(
     rc.top += voff;
     rc.bottom += voff;
     if (shadow) {
-        ::SetTextColor(hdc, 0);
+        SetTextColor(hdc, 0);
         rc.left += dx;
         rc.top += dy;
         rc.right += dx;
         rc.bottom += dy;
-        ::DrawTextA(hdc, text, strlen(text), &rc, 0x11);
+        DrawTextA(hdc, text, strlen(text), &rc, 0x11);
         rc.right -= dx;
         rc.left -= dx;
         rc.bottom -= dy;
         rc.top -= dy;
     }
-    ::SetTextColor(hdc, RGB(r, g, b));
-    ::DrawTextA(hdc, text, strlen(text), &rc, 0x11);
+    SetTextColor(hdc, RGB(r, g, b));
+    DrawTextA(hdc, text, strlen(text), &rc, 0x11);
     if (selPrev) {
-        ::SelectObject(hdc, selPrev);
+        SelectObject(hdc, selPrev);
     }
     return 1;
 }

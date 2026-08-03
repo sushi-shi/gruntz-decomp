@@ -3095,3 +3095,4 @@ rva,name,lib,confidence,source
 0x18e8a2,label52,LIBCMT,HIGH,offstart-ghidra-missed
 0x18e927,label58,LIBCMT,HIGH,offstart-ghidra-missed
 0x18e946,label60,LIBCMT,HIGH,offstart-ghidra-missed
+0x1f03e0,?openprot@filebuf@@2HB,LIBCIMT,HIGH,link-dup-oracle

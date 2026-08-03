@@ -913,15 +913,18 @@ def cmd_status(args) -> None:
 
 
 def cmd_link(args) -> None:
-    """Phase 2: link the base objs into a candidate (non-runnable) GRUNTZ.EXE + map.
+    """Phase 2: link the base objs into a candidate GRUNTZ.EXE + map.
 
-    Runs the genuine VC5 link.exe (5.10.7303) over build/objdiff/base/*.obj with
-    /FORCE. The reconstruction is PARTIAL, so most externals are unresolved and the
-    EXE does not run - the point is the .map, which exposes each function's
-    link-assigned RVA and source object. Combined with the retail RVAs that gives
-    the build-order model (intra-TU = source order, cross-TU = object order); see
-    docs/link-order-investigation.md. Pass --order FILE to test a hypothesised
-    link order, --analyze to print the layout report afterwards.
+    Runs the genuine VC5 link.exe (5.10.7303) over build/objdiff/base/*.obj against
+    the retail library set - static CRT + MFC via the objs' own `-defaultlib:`
+    directives, plus DirectX 6, version/winmm and the synthesised mss32/smackw32
+    import libs (gruntz.build.import_lib) - with /FORCE for whatever is still
+    missing. The point is the .map, which exposes each function's link-assigned RVA
+    and source object. Combined with the retail RVAs that gives the build-order
+    model (intra-TU = source order, cross-TU = object order); see
+    docs/link-order-investigation.md. Pass --order FILE to test a hypothesised link
+    order, --no-libs for the bare objects-only probe, --analyze to print the layout
+    report afterwards.
     """
     run([sys.executable, str(CONFIGURE)])
     ninja = tool("ninja")
@@ -933,6 +936,8 @@ def cmd_link(args) -> None:
             cmd += ["--order", args.order]
         if args.opt_ref:
             cmd += ["--opt-ref"]
+        if args.no_libs:
+            cmd += ["--no-libs"]
         run(cmd)
     finally:
         _kill_wine_session()
@@ -1358,6 +1363,10 @@ def main() -> None:
     lk.add_argument("--order", help="file listing obj stems in link order to test")
     lk.add_argument("--opt-ref", action="store_true",
                     help="let the linker strip/fold unreferenced COMDATs (default keeps all)")
+    lk.add_argument("--no-libs", action="store_true",
+                    help="/NODEFAULTLIB objects-only probe (default links the retail "
+                         "lib set: CRT/MFC via the objs' -defaultlib:, plus DX6, "
+                         "version/winmm and the synthesised mss32/smackw32)")
     lk.add_argument("--analyze", action="store_true",
                     help="print the layout/link-order report after linking")
     lk.set_defaults(func=cmd_link)

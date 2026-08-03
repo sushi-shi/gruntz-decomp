@@ -690,8 +690,8 @@ i32 CDDSurface::ShadeBlt(
     i32 shade
 ) {
     RECT dr, sr;
-    ::CopyRect(&dr, dstRect);
-    ::CopyRect(&sr, srcRect);
+    CopyRect(&dr, dstRect);
+    CopyRect(&sr, srcRect);
     if (m_bytesPerPixel != 2) {
         return 0;
     }

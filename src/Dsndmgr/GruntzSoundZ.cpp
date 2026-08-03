@@ -321,7 +321,7 @@ i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
     if (rsrc == 0) {
         return 0;
     }
-    HGLOBAL hRes = ::LoadResource(g_midiResModule, rsrc);
+    HGLOBAL hRes = LoadResource(g_midiResModule, rsrc);
     if (hRes == 0) {
         return 0;
     }

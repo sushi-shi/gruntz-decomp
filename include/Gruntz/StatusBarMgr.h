@@ -292,7 +292,7 @@ public:
     i32 m_rezActive;
     i32 m_rezTick;
 
-    ::CPtrArray m_ptrPool;
+    CPtrArray m_ptrPool;
     i32 m_reserved544;
 
     i32 m_hlBusy;

@@ -53,7 +53,7 @@ i32 CDDrawShadeBlit::BuildRle(
     m_width = width;
     m_height = height;
 
-    ::CByteArray ba;
+    CByteArray ba;
     ba.SetSize(0x3e8, 0);
 
     i32 row = 0;

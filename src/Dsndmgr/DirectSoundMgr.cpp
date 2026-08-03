@@ -1216,7 +1216,7 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
         return 0;
     }
     if (time == -1) {
-        time = static_cast<i32>(::timeGetTime());
+        time = static_cast<i32>(timeGetTime());
     }
     if (static_cast<u32>(time) <= static_cast<u32>(m_createFlag)) {
         return 1;
@@ -1290,7 +1290,7 @@ DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 
     m_rampStartVolume = pct;
     m_rampEndVolume = key;
     m_rampDurationMs = mode;
-    m_rampStartTime = (stamp == -1) ? ::timeGetTime() : stamp;
+    m_rampStartTime = (stamp == -1) ? timeGetTime() : stamp;
 }
 
 // @early-stop

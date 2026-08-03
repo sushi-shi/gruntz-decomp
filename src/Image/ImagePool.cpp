@@ -289,13 +289,13 @@ i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 fl
     if (img == 0) {
         return 0;
     }
-    HDC dc = ::GetDC(m_sourceHwnd);
+    HDC dc = GetDC(m_sourceHwnd);
     i32 result = img->EnsureSize(dc, w, h, bitCount, flag);
     if (m_selectedPalette) {
-        ::SelectPalette(dc, m_selectedPalette, FALSE);
+        SelectPalette(dc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
     }
-    ::ReleaseDC(m_sourceHwnd, dc);
+    ReleaseDC(m_sourceHwnd, dc);
     return result;
 }
 

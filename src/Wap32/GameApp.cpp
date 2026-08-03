@@ -348,7 +348,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameWnd* wnd = m_gameWnd;
     m_errorReported = 1;
     if (wnd != 0 && wnd->m_closeGuard == 0) {
-        ::PostMessageA(wnd->m_hwnd, 0x10, 0, 0);
+        PostMessageA(wnd->m_hwnd, 0x10, 0, 0);
     }
     m_running = 0;
     m_errorCode = wParam;
@@ -395,7 +395,7 @@ void CGameMgr::Close() {
 RVA(0x0013ddc0, 0xaa)
 i32 CGameMgr::PerFrameTick() {
 
-    DWORD(WINAPI * pTGT)(void) = ::timeGetTime;
+    DWORD(WINAPI * pTGT)(void) = timeGetTime;
     u32 now = pTGT();
     u32 delta = now - static_cast<u32>(g_wap32Now);
     g_wap32Now = now;
@@ -446,7 +446,7 @@ void CGameMgr::InitializeTimeGlobal() {
 
 RVA(0x0013dec0, 0x20)
 void CGameMgr::SpinWaitUntil(i32 ms) {
-    DWORD(WINAPI * fn)(void) = ::timeGetTime;
+    DWORD(WINAPI * fn)(void) = timeGetTime;
     u32 now = fn();
     u32 end = now + static_cast<u32>(ms);
     if (now <= end) {
@@ -477,15 +477,15 @@ i32 CGameMgr::TrySetFrameRate(i32 fps) {
 RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {
-        SHORT(WINAPI * gaks)(int) = ::GetAsyncKeyState;
+        SHORT(WINAPI * gaks)(int) = GetAsyncKeyState;
         while (!(static_cast<i32>(gaks(vk)) & 0x80000000))
             ;
         while (static_cast<i32>(gaks(vk)) & 0x80000000)
             ;
     } else {
-        DWORD(WINAPI * tgt)(void) = ::timeGetTime;
+        DWORD(WINAPI * tgt)(void) = timeGetTime;
         u32 deadline = tgt() + timeoutMs;
-        SHORT(WINAPI * gaks)(int) = ::GetAsyncKeyState;
+        SHORT(WINAPI * gaks)(int) = GetAsyncKeyState;
         while (!(static_cast<i32>(gaks(vk)) & 0x80000000)) {
             if (tgt() > deadline) {
                 return;

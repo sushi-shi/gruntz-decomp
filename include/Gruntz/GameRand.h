@@ -10,7 +10,7 @@ static __inline i32 GameRand() {
     i32 seed;
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
-        seed = static_cast<i32>(::timeGetTime());
+        seed = static_cast<i32>(timeGetTime());
     } else {
         seed = g_randSeed;
     }

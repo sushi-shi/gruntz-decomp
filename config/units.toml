@@ -12,21 +12,29 @@
 #            `flags = "<name>"`. `base` is the locked VC5 default (cl /c /O2 /MT,
 #            cdecl; see docs/zlib-matching.md); `eh` adds the C++ exception-
 #            handling frame (/GX); `mfc` is the MFC-derived /O1 (favor size) + /GX;
-#            `framed` adds /Oy- (keep frame pointers); `framedeh` = framed + /GX.
+#            `rtti` = base + /GR; `ehrtti` = eh + /GR.
 # [[unit]] - one TU: `unit` (stem; obj is <unit>.obj, target <unit>.c.obj; must
 #            match symbol_names.csv's unit column), `source` (repo-relative path),
 #            and `flags` (a [flags] profile name). Pick the profile whose FULL set
-#            you need - /GX is a profile choice (eh/mfc/framedeh), never a bolt-on.
+#            you need. A profile IS the whole flag set - there is no bolt-on
+#            mechanism, by design (configure.py rejects a stray `extra` key).
 #
-# Per-TU /GR (RTTI) knob (`extra`) - CURRENTLY UNUSED, kept as an escape hatch:
-# MSVC5 enables RTTI only under /GR (default OFF), so a polymorphic class compiled
-# here emits a vtable with NO Complete Object Locator - matching retail's NON-RTTI
-# vtables. To match an RTTI class (retail vtable carries a COL at vtable-4) the
-# compiler must emit the COL + RTTI tree (??_R0..R4), which would need
-# `extra = ["/GR"]` on that TU. No reconstructed unit needs this yet. (/GX is NOT
-# an `extra` - it lives in the eh/mfc/framedeh profiles.) When first needed it is
-# matching-NEUTRAL until a unit reconstructs its full vtable + base subobject and
-# opts in. See docs/vtable-map.md.
+# /GR (RTTI) is a PROFILE choice (`rtti` / `ehrtti`), exactly like /GX. MSVC5
+# enables RTTI only under /GR (default OFF), so a polymorphic class compiled
+# without it emits a vtable with NO Complete Object Locator - which is what
+# retail's NON-RTTI vtables look like. An RTTI class carries a COL at vtable-4
+# plus the ??_R0..R4 tree, and only /GR emits those.
+#
+# WHICH UNITS WANT IT - measured from retail, not guessed. `gruntz.core.vtable_scan`
+# finds vtables independently of RTTI, so it sees COL-less ones; retail splits
+# 192 with a COL / 73 without, and attributing each to its owning TU gives:
+#     Gruntz    105 RTTI /  2 no-COL   -> the game project was built /GR
+#     DDrawMgr    0 RTTI / 14 no-COL   -> engine projects were NOT
+#     Rez         0 /  4      Dsndmgr  0 / 2      Bute  0 / 1
+# i.e. the devs set /GR PER-PROJECT, matching the leaked C:\Proj\{...} layout.
+# So `rtti`/`ehrtti` belong on src/Gruntz TUs and NOT on the engine modules.
+# /GR is .text-NEUTRAL (A/B verified): it only adds .rdata$r, grows .data with the
+# type descriptors, and prepends the 4-byte COL to each ??_7. See docs/vtable-map.md.
 #
 # Add a TU: add an [[unit]] block here (+ its functions to symbol_names.csv), then
 # re-run `python3 configure.py` and `ninja`.
@@ -39,6 +47,8 @@ platform = "win32"
 base   = ["/nologo", "/c", "/O2", "/MT"]
 eh     = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
+rtti   = ["/nologo", "/c", "/O2", "/MT", "/GR"]
+ehrtti = ["/nologo", "/c", "/O2", "/MT", "/GX", "/GR"]
 
 [[unit]]
 unit = "adler32"
@@ -587,9 +597,6 @@ unit = "gruntzmgr2"
 source = "src/Gruntz/GruntzMgr2.cpp"
 flags = "eh"
 
-# (RefreshA 0x0fe460 / HideRect 0x0fe600 were the ScreenRegionMgr fake-view unit -
-# folded into SBI_RectOnly.cpp as CSBI_RectOnly methods, their true interleaved home.)
-
 # SerializeSyncMarker (0x13610) - the free WAP32 serialize round validator, a separate
 # retail object far from GruntzMgr.cpp (among the CVoiceTrigger serialize .text).
 [[unit]]
@@ -864,14 +871,10 @@ unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"
 
-# The Gruntz-side half of the conflated CNetMgr (the 0x0b5xxx-0x0bdxxx multiplayer
-# game-state cluster, really CMulti); split out of the netmgr god-TU (2026-07-10).
-# Separate retail object from the engine CNetMgr at 0x178xxx (~0xbaf30 .text gap).
 [[unit]]
 unit = "netmgrerror"
 source = "src/Net/NetMgrReportError.cpp"
 flags = "base"
-
 
 [[unit]]
 unit = "winmain"
@@ -1510,8 +1513,7 @@ flags = "base"
 [[unit]]
 unit = "zdarrayderived"
 source = "src/Gruntz/ZDArrayDerived.cpp"
-flags = "base"
-extra = ["/GR"]
+flags = "rtti"
 
 [[unit]]
 unit = "trirecordserialize"

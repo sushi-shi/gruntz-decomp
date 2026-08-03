@@ -224,7 +224,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_drainReload = 0;
     m_lightFx = 0;
     m_savedClock = 0;
-    m_rngSeed = static_cast<i32>(::timeGetTime());
+    m_rngSeed = static_cast<i32>(timeGetTime());
     m_connectAccepted = 0;
     m_roundComplete = 0;
 
@@ -254,7 +254,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     } else {
         if (Open() == 0) {
             NetGameMgr()->m_modalBusy = 0;
-            while (::ShowCursor(0) >= 0) {
+            while (ShowCursor(0) >= 0) {
             }
             return 0;
         }
@@ -278,7 +278,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (ShowMultiStartDlg() == 0) {
         return 0;
     }
-    while (::ShowCursor(0) >= 0) {
+    while (ShowCursor(0) >= 0) {
     }
     if (CreateSession() == 0) {
         return 0;
@@ -416,7 +416,7 @@ i32 CMulti::EnterState(i32 arg) {
     }
     m_mgr->RefreshGameClock();
     g_frameTime = m_savedClock;
-    DWORD(WINAPI * tg)(void) = ::timeGetTime;
+    DWORD(WINAPI * tg)(void) = timeGetTime;
     m_drainTimer = 0;
     m_lastTime = tg();
     m_frameDelta = 0;
@@ -838,7 +838,7 @@ i32 CMulti::StartTitle() {
 
     m_world->m_ptrColl->m_device->FlipToGDISurface();
     m_stateBank = saved;
-    while (::ShowCursor(1) < 0) {
+    while (ShowCursor(1) < 0) {
     }
     if (!Mgr()->m_lobby) {
         return 0;
@@ -971,13 +971,13 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
     switch (msg) {
         case 0x110: {
-            HWND combo = ::GetDlgItem(hDlg, 0x3fc);
+            HWND combo = GetDlgItem(hDlg, 0x3fc);
             g_groupEnumMgr->m_groupSel = 0;
             g_groupEnumMgr->PopulateGroupList(combo, 0);
             if (g_serviceId == NETSERVICE_NONE) {
-                ::SendMessageA(combo, 0x186, 0, 0);
-            } else if (static_cast<i32>(::SendMessageA(combo, 0x186, g_serviceId, 0)) == -1) {
-                ::SendMessageA(combo, 0x186, 0, 0);
+                SendMessageA(combo, 0x186, 0, 0);
+            } else if (static_cast<i32>(SendMessageA(combo, 0x186, g_serviceId, 0)) == -1) {
+                SendMessageA(combo, 0x186, 0, 0);
             }
 
             DWORD cap = 0xa;
@@ -995,12 +995,12 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 "Multiplayer_Gruntz"
             );
 
-            HWND edName = ::GetDlgItem(hDlg, 0x51b);
-            ::SendMessageA(edName, 0xc5, 9, 0);
-            ::SetDlgItemTextA(hDlg, 0x51b, nameBuf);
-            HWND edGame = ::GetDlgItem(hDlg, 0x51c);
-            ::SendMessageA(edGame, 0xc5, 0x3f, 0);
-            ::SetDlgItemTextA(hDlg, 0x51c, gameBuf);
+            HWND edName = GetDlgItem(hDlg, 0x51b);
+            SendMessageA(edName, 0xc5, 9, 0);
+            SetDlgItemTextA(hDlg, 0x51b, nameBuf);
+            HWND edGame = GetDlgItem(hDlg, 0x51c);
+            SendMessageA(edGame, 0xc5, 0x3f, 0);
+            SetDlgItemTextA(hDlg, 0x51c, gameBuf);
             return 1;
         }
         case 0x111:
@@ -1010,35 +1010,35 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
 
     if (wParam == 2) {
-        ::EndDialog(hDlg, 0);
+        EndDialog(hDlg, 0);
         return 1;
     }
 
     if (wParam == 1) {
 
-        ::GetDlgItemTextA(hDlg, 0x51b, gameBuf, 0xa);
+        GetDlgItemTextA(hDlg, 0x51b, gameBuf, 0xa);
         if (gameBuf[0] == 0) {
-            ::MessageBeep(0);
+            MessageBeep(0);
             return wParam;
         }
         g_connectRptMgr->SetServiceName(CString(gameBuf));
 
         if (g_hostServicesMode != 0) {
-            ::GetDlgItemTextA(hDlg, 0x51c, gameBuf, 0x40);
+            GetDlgItemTextA(hDlg, 0x51c, gameBuf, 0x40);
             if (gameBuf[0] == 0) {
-                ::MessageBeep(0);
+                MessageBeep(0);
                 return 1;
             }
             g_connectRptMgr->ApplyDynSetting(CString(gameBuf));
         }
 
-        HWND combo = ::GetDlgItem(hDlg, 0x3fc);
-        i32 svc = static_cast<i32>(::SendMessageA(combo, 0x188, 0, 0));
+        HWND combo = GetDlgItem(hDlg, 0x3fc);
+        i32 svc = static_cast<i32>(SendMessageA(combo, 0x188, 0, 0));
         if (svc != -1) {
             g_serviceId = svc;
         }
-        g_groupEnumMgr->ReadGroupSel(::GetDlgItem(hDlg, 0x3fc));
-        ::EndDialog(hDlg, 1);
+        g_groupEnumMgr->ReadGroupSel(GetDlgItem(hDlg, 0x3fc));
+        EndDialog(hDlg, 1);
         return 1;
     }
 ret_false:
@@ -1095,7 +1095,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
     }
     switch (msg) {
         case 0x110:
-            g_netPlayerListHwnd = ::GetDlgItem(hDlg, 0x3fc);
+            g_netPlayerListHwnd = GetDlgItem(hDlg, 0x3fc);
             if (g_netPlayerListHwnd == 0) {
                 goto close;
             }
@@ -1103,14 +1103,14 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if (g_groupEnumMgr != 0) {
                 g_groupEnumMgr->m_playerSel = 0;
                 SetTimer(hDlg, 1, 0x9c4, 0);
-                ::SendMessageA(hDlg, 0x113, 0, 0);
+                SendMessageA(hDlg, 0x113, 0, 0);
                 return 1;
             }
             goto close;
         case 0x111:
             if (wParam == 2) {
                 KillTimer(hDlg, 1);
-                ::EndDialog(hDlg, 0);
+                EndDialog(hDlg, 0);
                 return 1;
             }
 
@@ -1118,7 +1118,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 KillTimer(hDlg, 1);
 
                 if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) == 0) {
-                    ::MessageBeep(0);
+                    MessageBeep(0);
                     i32 t = 0x7d0;
                     InterfaceObject* io = g_groupEnumMgr->m_groupSel;
                     if (io && io->IsTcpIpProvider()) {
@@ -1127,14 +1127,14 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SetTimer(hDlg, 1, t, 0);
                     return 0;
                 }
-                ::EndDialog(hDlg, 1);
+                EndDialog(hDlg, 1);
                 return 1;
             }
             break;
         case 0x113:
             KillTimer(hDlg, 1);
             {
-                i32 sel = static_cast<i32>(::SendMessageA(g_netPlayerListHwnd, 0x188, 0, 0));
+                i32 sel = static_cast<i32>(SendMessageA(g_netPlayerListHwnd, 0x188, 0, 0));
                 i32 hr = g_groupEnumMgr->EnumPlayersInto(0, 0);
                 if (hr == static_cast<i32>(0x88770118)) {
                     goto close;
@@ -1144,14 +1144,14 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         goto close;
                     }
                     (static_cast<CMulti*>(g_connectRptMgr))->ReportNetError(0);
-                    ::EndDialog(hDlg, 0);
+                    EndDialog(hDlg, 0);
                     return 1;
                 }
                 FillPlayerList(g_netPlayerListHwnd, g_groupEnumMgr);
                 if (sel != -1) {
-                    ::SendMessageA(g_netPlayerListHwnd, 0x186, sel, 0);
+                    SendMessageA(g_netPlayerListHwnd, 0x186, sel, 0);
                 } else {
-                    ::SendMessageA(g_netPlayerListHwnd, 0x186, 0, 0);
+                    SendMessageA(g_netPlayerListHwnd, 0x186, 0, 0);
                 }
                 RefreshPlayerRow(hDlg, g_netPlayerListHwnd);
                 i32 t = 0x7d0;
@@ -1166,7 +1166,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 ret_false:
     return 0;
 close:
-    ::EndDialog(hDlg, 0);
+    EndDialog(hDlg, 0);
 ret_true:
     return 1;
 }
@@ -1296,7 +1296,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
     if (!sess) {
         return;
     }
-    ::SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
     sess->m_playerSelId = sess->m_players.GetHeadPosition();
     CNetPlayerListNode* player =
         sess->m_playerSelId != 0
@@ -1308,15 +1308,15 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         i32 idx;
         if (ExtractBracketValue(buf, player->m_desc.m_lpszName, "NAME")) {
             name.m_str = buf;
-            idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+            idx = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
         } else {
             name.m_str = player->m_desc.m_lpszName;
-            idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+            idx = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
         }
         if (idx != -1) {
             MsgParam cookie;
             cookie.m_player = player;
-            ::SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
+            SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
         }
 
         if (sess->m_playerSelId != 0) {
@@ -1371,7 +1371,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    g_groupEnumMgr->ReadPlayerSel(::GetDlgItem(static_cast<HWND>(hDlg), 0x3fc));
+    g_groupEnumMgr->ReadPlayerSel(GetDlgItem(static_cast<HWND>(hDlg), 0x3fc));
     CNetPlayerListNode* sel = Peer()->m_playerSel;
     if (sel == 0) {
         return 0;
@@ -1742,7 +1742,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 break;
             }
             ReportVersionMsg("You have been dropped from the game.", 0);
-            ::PostMessageA(NetGameMgr()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+            PostMessageA(NetGameMgr()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             m_pollAbort = 1;
             break;
 
@@ -2302,7 +2302,7 @@ void CMulti::OnMultiPause() {
 
     if (r == DISPATCH_RESYNC) {
         HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-        ::PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
+        PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
     }
 }
 
@@ -2333,14 +2333,14 @@ void CMulti::OnOutOfSync() {
     switch (r) {
         case DISPATCH_RESYNC: {
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            ::PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
+            PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
             break;
         }
         case DISPATCH_RESET:
             break;
         default: {
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            ::PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
     }
@@ -2919,7 +2919,7 @@ void CMulti::OnDropPlayer() {
         case DISPATCH_ABORT: {
             Session()->ResetCmdBuffers();
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            ::PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
         case DISPATCH_PLAYERLEFT:
@@ -3293,7 +3293,7 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
                 0
             );
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
-            ::PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
         }
     }
     if (mismatch) {

@@ -17,6 +17,6 @@ void CRect::SetRect(i32 l, i32 t, i32 r, i32 b) {
 
 RVA(0x00115b30, 0x15)
 CRect& CRect::operator=(const tagRECT& src) {
-    ::CopyRect(this, &src);
+    CopyRect(this, &src);
     return *this;
 }

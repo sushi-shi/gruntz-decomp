@@ -120,7 +120,7 @@ i32 CSBI_WellGoo::Setup(
         f->m_owned->m_palDescr = node;
     }
 
-    ::SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
+    SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
     m_srcRect = rc;
 
     m_drawX = m_rect14.left + ((m_rect14.right - m_rect14.left) >> 1) + 1;

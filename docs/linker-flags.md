@@ -69,6 +69,58 @@ Mostly relevant to the link-reproduction phase, **not** per-function matching.
   bodies the retail image dropped (or vice-versa), revisit this. Don't assume a
   setting until measured.
 
+### Libraries — [VERIFIED]
+
+Recovered from the objs' own `.drectve` directives cross-checked against retail's
+import table; wired into `link.py` (details + the synthesis story:
+`docs/build-system.md` § "The library set"). Summary:
+
+- **`/NODEFAULTLIB` — OFF.** `cl /MT` writes `-defaultlib:LIBCMT` +
+  `-defaultlib:OLDNAMES`, and the MFC headers add `nafxcw kernel32 user32 gdi32
+  comdlg32 winspool advapi32 shell32 comctl32` (+ `uuid`, and `libcpmt`/`libcimt`
+  from the ANSI-C++ / old-iostream headers). Letting those fire reproduces the devs'
+  link line for free.
+- **Explicit extras:** `version winmm` (imported by the game, declared by nothing) and
+  DX6 `ddraw dsound dinput dplayx dxguid` (the DX SDK ships no `#pragma comment(lib)`).
+- **Synthesised:** `mss32 smackw32` — the RAD SDKs we lack; `gruntz.build.import_lib`
+  rebuilds their import libs from retail's import table.
+- **`/ENTRY` — `WinMainCRTStartup`** (LIBCMT), which calls `_WinMain@16` (NAFXCW).
+  The old `_x` placeholder only existed because no library was on the line.
+
+With that set the punch list drops from **481** unresolved externals to **1**.
+
+**Library ORDER is load-bearing — [VERIFIED], and `LINK_LIBS` reproduces retail's
+import-descriptor order EXACTLY (0/120 inversions, all 16 DLLs).** Two rules:
+
+1. link.exe emits a DLL's `__IMPORT_DESCRIPTOR_*` when a library search **first
+   satisfies an undefined symbol**, so lib order = descriptor order.
+2. …but only for symbols already undefined when that lib is searched. **`nafxcw`/
+   `libcmt` must therefore be named FIRST.** Two thirds of the import table (306 of
+   456 names, including *all* of comctl32/winspool/comdlg32/shell32) is referenced by
+   **nothing in our objs** — it arrives through MFC/CRT library members. Search Win32
+   before MFC and those four DLLs have no pending undefines yet, so they resolve only
+   on a later pass and their descriptors sink to the end (17/120 inversions). Naming
+   MFC/CRT ahead of them fixes it — and says the retail link line did the same.
+
+Measured side effects of the ordering: **zero of our own symbols move** (only the
+MFC/CRT block shifts, ~2959 library symbols); the imported-name *sets* are unchanged.
+
+Residuals, both real but neither a flag:
+
+- **Per-DLL name order does NOT follow our object order.** Relinking with the objects
+  fed in retail-RVA order (`--order`) moved it 63.2% → 62.1% pairwise-misordered —
+  nothing. It is dominated by the order MFC/CRT members get pulled from `NAFXCW.LIB`,
+  which is a function of *which* members our code drags in, not of TU sequence. It is
+  also not hint-sorted in either binary (~50% ascending in both), so there is no cheap
+  structural rule to copy.
+- **26 wrong hint values, all in the synthesised libs.** 423 of 449 named imports
+  carry the *same* `.idata$6` hint as retail — our Win32/DX import libs are the right
+  vintage. The 26 that differ are exactly mss32(16) + smackw32(10): a hint is the
+  export-table index, and our stub DLL exports only the 26 names retail imports, not
+  the real DLL's full export list. Fixable by stubbing every export of the real DLLs
+  (needs `$GRUNTZ_RUNTIME`) or by patching the hints from retail. Functionally inert —
+  the loader falls back to a name search — but it blocks a byte-exact `.idata`.
+
 ### Layout / addresses
 
 - **`/ORDER:@<file>` — [HEURISTIC]. The biggest lever for the link phase.**
@@ -79,10 +131,30 @@ Mostly relevant to the link-reproduction phase, **not** per-function matching.
   binary exists to relink.
 - **`/BASE:0x400000` — [VERIFIED] image base.** Confirmed `0x400000`
   (`docs/libraries-and-funcid.md` § section map; `.text` VMA `0x00401000`).
-- **`/INCREMENTAL:NO` — [HEURISTIC]. Must be OFF.** Incremental linking inserts
-  thunks and padding and reorders functions, which would never match a retail
-  (full) link. Retail is a non-incremental link by nature; force `:NO` when
-  relinking.
+- **`/INCREMENTAL` — [VERIFIED ON; the old "must be OFF" here was WRONG].** The
+  reasoning used to be "incremental linking inserts thunks and padding, which would
+  never match a retail link." Retail *has* those thunks and that padding:
+  * the `E9 rel32` band at the top of `.text` (`pe.ILT_LO..ILT_HI` = 0x1000..0x7c20,
+    which this repo already models) is the incremental linker's thunk table —
+    **399 of the first 400 5-byte slots are `E9`**;
+  * retail's IAT carries **zeroed slack after every DLL's terminator** (705 slots
+    allocated for 472 used) — incremental growth room, not a packed array;
+  * retail keeps a separate writable **`.idata`** section rather than folding the
+    import data into read-only `.rdata`, which is what our non-incremental link does.
+
+  So retail is an **incremental** link and `/INCREMENTAL:NO` is a fidelity bug.
+  We cannot switch yet: **any `/FORCE` — including `/FORCE:MULTIPLE` — makes link
+  silently ignore `/INCREMENTAL` (LNK4075)**, and `/FORCE` is still required. As of
+  the last measured link the entire barrier is **two duplicate definitions**:
+  `?SetRect@CRect@@QAEXHHHH@Z` (`src/Wap32/Rect.cpp:14` defines out-of-line what MFC
+  supplies as an inline COMDAT — a `CRect` identity/redefinition defect) and
+  `??1strstream@@UAE@XZ` (`butemgr.obj` vs `libcimt.lib(_strstre.obj)`; see the note
+  in `include/strstrea.h`). Fix those two, drop `/FORCE` (`link.py --no-force`), and
+  `/INCREMENTAL:YES` becomes reachable.
+- **`/FIXED:NO` — [VERIFIED ON].** Retail **has a `.reloc`** (it is why the EXE is
+  delinkable at all), so base relocations were kept. `link.py` passes it by default;
+  measured **purely additive** — `.text`/`.rdata`/`.data` are byte-identical with and
+  without it, only the trailing `.reloc` section appears.
 - **`/ALIGN`, `/FILEALIGN` — [HEURISTIC].** Section virtual/file alignment; wrong
   values shift every section and break the PE header/layout match.
 - **`/SUBSYSTEM` — [HEURISTIC].** `WINDOWS` here (PE32 GUI —

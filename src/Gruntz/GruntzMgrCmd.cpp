@@ -105,15 +105,15 @@
         if (st == GAMESTATE_MENU) {                                                                \
             mus = static_cast<CMenuState*>(m_curState);                                            \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
-            if (::ShowCursor(0) >= 0)                                                              \
-                while (::ShowCursor(0) >= 0) {                                                     \
+            if (ShowCursor(0) >= 0)                                                                \
+                while (ShowCursor(0) >= 0) {                                                       \
                 }                                                                                  \
         }                                                                                          \
         ChangeState(N);                                                                            \
         if (mus) {                                                                                 \
             mus->StartMusic();                                                                     \
-            if (::ShowCursor(1) < 0)                                                               \
-                while (::ShowCursor(1) < 0) {                                                      \
+            if (ShowCursor(1) < 0)                                                                 \
+                while (ShowCursor(1) < 0) {                                                        \
                 }                                                                                  \
         }                                                                                          \
         return 1;                                                                                  \
@@ -784,7 +784,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
         case kCmdWebSite:
             if (m_curState->Update() == GAMESTATE_MENU
                 || m_curState->Update() == GAMESTATE_ATTRACT) {
-                while (::ShowCursor(1) < 0) {
+                while (ShowCursor(1) < 0) {
                 }
                 LaunchWebBrowser(const_cast<char*>("http://www.gruntzgoo.com/"));
             }
@@ -855,7 +855,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 ReportError(0x8005, 0x42c);
                 return 1;
             }
-            ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
             return 1;
         case kCmdShowState0e:
             if (TransitionState(0xe, 1, 0, 0)) {
@@ -913,7 +913,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             return 1;
         case kCmdLobbyReset:
             m_lobbyProbed = 0;
-            ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
+            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
             return 1;
         case kCmdExitToAttract:
             if (!CheckPlayState()) {
@@ -923,7 +923,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 return 1;
             }
             if (TransitionState(2, 1, 0, 0)) {
-                ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+                PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
                 return 1;
             }
             ReportError(0x8005, 0x430);

@@ -628,7 +628,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
     }
     {
-        int(WINAPI * sc)(BOOL) = ::ShowCursor;
+        int(WINAPI * sc)(BOOL) = ShowCursor;
         while (sc(0) >= 0) {
         }
     }
@@ -1056,7 +1056,7 @@ RVA(0x0001ed30, 0x5ac)
 void CMultiBootyState::DrawBattleStats() {
     CString s;
     RECT rc;
-    BOOL(WINAPI * copyRect)(LPRECT, const RECT*) = ::CopyRect;
+    BOOL(WINAPI * copyRect)(LPRECT, const RECT*) = CopyRect;
     i32 i;
     i32 c;
 
@@ -1295,7 +1295,7 @@ i32 CMultiBootyState::OnPaint() {
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
     if (m_sequenceState == 0xc7) {
-        ::PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;
 }

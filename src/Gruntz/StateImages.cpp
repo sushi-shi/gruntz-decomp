@@ -25,7 +25,7 @@ i32 CMenuState::InputVirtual() {
     if (RestoreDisplay() == 0) {
         return 0;
     }
-    int(WINAPI * sc)(BOOL) = ::ShowCursor;
+    int(WINAPI * sc)(BOOL) = ShowCursor;
     i32 r = sc(1);
     while (r < 0) {
         r = sc(1);
@@ -38,7 +38,7 @@ i32 CBootyState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
-    int(WINAPI * sc)(BOOL) = ::ShowCursor;
+    int(WINAPI * sc)(BOOL) = ShowCursor;
     i32 r = sc(0);
     while (r >= 0) {
         r = sc(0);

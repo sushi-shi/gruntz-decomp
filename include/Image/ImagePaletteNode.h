@@ -34,5 +34,6 @@ struct CImagePaletteNode {
     i32 LoadBmpFile(char* path, i32 arg);
     i32 Apply(char* path, i32 arg);
 };
+SIZE(0x414);
 
 #endif // SRC_IMAGE_IMAGEPALETTENODE_H

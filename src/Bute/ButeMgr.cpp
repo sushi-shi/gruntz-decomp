@@ -790,8 +790,6 @@ bool CButeMgr::ScanToken(i32 expectType) {
     return true;
 }
 
-DATA(0x001f03e0)
-const int filebuf::openprot = 0644;
 RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
 
 RVA(0x00171aa0, 0x50)
@@ -1744,15 +1742,17 @@ bool CButeMgr::Save() {
     input.clear();
     input.seekg(0);
 
-    // The parse stream is a plain local (its implicit dtor inlines to ??1iostream +
-    // ??1ios, so the unreferenced ??1strstream COMDAT is dropped at link - which is
-    // why GRUNTZ.EXE contains no strstream dtor). The buffer is allocated inline in
-    // the ctor args (arg-order proven), and the stream is handed around by POINTER:
-    // retail's neg/sbb/and at the Decode call is cl5's null-checked upcast of a
-    // pointer expression (strstream* -> ostream*, +0xc), which a reference cannot
-    // produce.
-    strstream sourceStore(new char[length], length, ios::in | ios::out);
-    iostream* source = &sourceStore;
+    // The parse stream is HEAP-allocated - the one spelling satisfying all three
+    // byte constraints: (1) retail's neg/sbb/and at the Decode call is cl5's
+    // null-checked pointer upcast (strstream* -> ostream*, +0xc), which a
+    // reference cannot produce; (2) GRUNTZ.EXE contains no ??1strstream or
+    // ??_Dstrstream anywhere, which a stack local's scope-end destruction would
+    // synthesize (the LNK2005 vs libcimt proved the plain-local spelling wrong);
+    // (3) teardown through `delete source` virtual-dispatches into the CRT's own
+    // scalar-deleting dtor (the strstream vtable slot 0 target, 0x169aa0). The
+    // buffer is allocated inline in the ctor args (arg-order proven).
+    strstream* sourceStore = new strstream(new char[length], length, ios::in | ios::out);
+    iostream* source = sourceStore;
     if (m_encrypted) {
         m_crypt.Decode(&input, source);
         m_pText = new iostream(new strstreambuf(length));
@@ -1778,11 +1778,12 @@ bool CButeMgr::Save() {
         m_crypt.Encode(m_pText, &output);
     }
 
-    delete[] sourceStore.str();
+    delete[] sourceStore->str();
     if (m_encrypted) {
         delete m_pText->rdbuf();
     }
     delete m_pText;
+    delete source;
 
     m_captureText = 0;
     m_writeMode = 0;

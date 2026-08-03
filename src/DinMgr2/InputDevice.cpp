@@ -5,10 +5,6 @@
 
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-DATA(0x001ef458)
-const GUID IID_IDirectInputDevice2A =
-    {0x5944E682, 0xC92E, 0x11CF, {0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
-
 RVA(0x00134cb0, 0x94)
 i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) {
     if (di == 0) {

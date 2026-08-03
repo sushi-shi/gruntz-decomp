@@ -1223,7 +1223,7 @@ i32 CGrunt::StepArrivalReroll() {
     if (range == 0) {
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
-            x = ::timeGetTime();
+            x = timeGetTime();
         } else {
             x = g_randSeed;
         }
@@ -1236,7 +1236,7 @@ i32 CGrunt::StepArrivalReroll() {
     } else {
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
-            x = ::timeGetTime();
+            x = timeGetTime();
         } else {
             x = g_randSeed;
         }
@@ -1249,7 +1249,7 @@ i32 CGrunt::StepArrivalReroll() {
     u32 x2;
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
-        x2 = ::timeGetTime();
+        x2 = timeGetTime();
     } else {
         x2 = g_randSeed;
     }

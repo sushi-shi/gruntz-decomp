@@ -10,7 +10,7 @@
 
 RVA(0x000f9880, 0x43)
 i32 CSplashState::EnterState(i32) {
-    int(WINAPI * sc)(BOOL) = ::ShowCursor;
+    int(WINAPI * sc)(BOOL) = ShowCursor;
     while (sc(0) >= 0) {
     }
     RunTitleSeq(static_cast<const char*>(CAssetRootStorage::s_value), 1, 1, 1, 0);

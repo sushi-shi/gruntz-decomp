@@ -76,3 +76,14 @@ additionally make cl5 hold the temp's slot; the uncast binding does that but
 resurrects the synthesized ??1strstream/??_Dstrstream. Next levers: permute
 (slot assignment follows declaration/temp order), or a spelling that binds an
 lvalue path before the upcast without retyping the dtor.
+
+## Save residue: RESOLVED by the heap spelling (2026-08-03)
+
+`strstream* sourceStore = new strstream(...)` + `iostream* source = sourceStore`
+satisfies all three byte constraints at once: the pointer upcast (neg/sbb/and at
+Decode), no synthesized ??1strstream/??_Dstrstream (scope-end destruction of a
+stack local emits both - proven by the LNK2005 vs libcimt's _strstre.obj), and
+teardown virtual-dispatching into the CRT's own scalar-deleting dtor (the retail
+strstream vtable slot-0 target, 0x169aa0 - the "missing" dtor was never missing,
+only unnamed). The slot-lifetime 0x58 delta reads naturally now: a heap pointer
+lives in one slot to scope end.

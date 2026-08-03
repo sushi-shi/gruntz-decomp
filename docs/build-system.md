@@ -264,15 +264,51 @@ unaffected.
 - `configure.py:emit_link_phase` emits the `link` rule; it runs
   `scripts/gruntz/build/link.py`, which feeds the obj list + flags through a
   **response file** (`@…objs.rsp`) — VC5 `link` has a short argv limit under wine.
-- The reconstruction is **partial**, so link.py passes **`/FORCE`** and the EXE is
-  **not runnable**. Layout study uses `/OPT:NOREF /OPT:NOICF` to keep every COMDAT
-  in the map. The deliverable is the **`.map`** (each function's link-assigned RVA
-  + source object).
+- **Libraries are linked** (see § below): the retail set resolves everything but the
+  reconstruction backlog, so the punch list is **1 unresolved external**. `/FORCE`
+  stays on to survive that one. Layout study uses `/OPT:NOREF /OPT:NOICF` to keep
+  every COMDAT in the map, and `/FIXED:NO` to emit the `.reloc` retail has (purely
+  additive — `.text`/`.rdata`/`.data` come out byte-identical either way).
+  `--no-libs` restores the historical objects-only probe.
+- The deliverable is the **`.map`** (each function's link-assigned RVA + source
+  object) plus `…link.log` and `…unresolved.txt`, the drive-to-linkable worklist.
 - link.exe statically imports **`MSDIS100.DLL`** (VC5 disassembler, only used by
   `/dump /disasm`), which the toolchain omits, so it would not load under wine.
   `scripts/gruntz/build/msdis_stub.py` makes it resolvable (a real sourced DLL if
   present, else a generated export-only stub — link output is identical either way)
   and installs it into the wine prefix's 32-bit system dir.
+
+#### The library set (and the two libs we have to synthesise)
+
+The objs already carry most of it: `cl /MT` writes `-defaultlib:LIBCMT` +
+`-defaultlib:OLDNAMES` into `.drectve`, and MFC's headers add `nafxcw kernel32
+user32 gdi32 comdlg32 winspool advapi32 shell32 comctl32` — which is 8 of the 10
+Win32 DLLs in retail's import table. link.py simply does **not** pass
+`/NODEFAULTLIB`, so those fire exactly as they did for the devs. Three groups
+declare themselves nowhere and are named explicitly:
+
+| group | libs | why it is not declared |
+|---|---|---|
+| game-only Win32 | `version winmm` | used by the game, requested by no header |
+| DirectX 6 | `ddraw dsound dinput dplayx` + static `dxguid` | the DX SDK ships no `#pragma comment(lib)` |
+| RAD SDKs | `mss32 smackw32` | **we do not have those SDKs** |
+
+`scripts/gruntz/build/import_lib.py` rebuilds the two missing RAD import libs into
+`build/lib/` from **retail's own import table** (`gruntz.core.pe.PE.imports`), whose
+stored names (`_AIL_startup@0`) are already decorated exactly as the original import
+lib produced them. It does this by generating a throwaway **stub DLL** of
+`__declspec(dllexport) __stdcall` functions with the matching argument-byte counts
+and keeping link.exe's `/IMPLIB:` — `LIB /DEF:` cannot express it, because it derives
+the public symbol by prefixing an underscore (`__imp___AIL_startup@0`, one too many)
+or, if you drop the underscore in the .def, writes the wrong hint/name string.
+
+Result: the candidate EXE's import table has **the same 16 DLLs in retail's exact
+descriptor order, and the same imported-name set per DLL** — 456 names, none missing,
+none extra (`PE.imports` on both). Getting the DLL order exact required naming
+`nafxcw`/`libcmt` *first*, since 306 of the 456 names are referenced only by MFC/CRT
+members; see `docs/linker-flags.md` § Libraries. Still open: the order *within* each
+DLL (pull order of MFC's own members — not driven by our TU order) and 26 hint values
+in the two synthesised libs.
 
 This is the tool behind **`docs/link-order-investigation.md`**: the candidate map
 cross-referenced with retail RVAs recovers the build order (intra-TU order =

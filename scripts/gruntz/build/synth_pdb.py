@@ -942,6 +942,12 @@ def main():
         print("[synth_pdb] applied %d tracked library symbol name(s)" % nlib,
               file=sys.stderr)
     data_names = {rva: t[0] for rva, t in overlay.items() if t[3] == "data"}
+    # A tracked library symbol outside .text is library DATA (filebuf::openprot,
+    # the dxguid IIDs when untracked by Ghidra): name it for the delink side too.
+    # Src overlay rows keep priority; function RVAs never land here (.text only).
+    for rva, (name, _unit, _size) in names_map.items():
+        if not (TEXT_BASE <= rva < TEXT_END):
+            data_names.setdefault(rva, name)
     thunk_names = read_ilt_thunk_names(args.exe, args.functions, names_map)
     if thunk_names:
         print("[synth_pdb] propagated %d curated body name(s) to ILT forwarding thunks"

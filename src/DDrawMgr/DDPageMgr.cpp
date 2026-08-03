@@ -22,21 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x001ef848)
-const GUID IID_IDirectDraw2 = {
-    0xB3A6F3E0,
-    0x2B43,
-    0x11CF,
-    {0xA2, 0xDE, 0x00, 0xAA, 0x00, 0xB9, 0x33, 0x56},
-};
-DATA(0x001ef888)
-const GUID IID_IDirectDrawSurface3 = {
-    0xDA044E00,
-    0x69B2,
-    0x11D0,
-    {0xA1, 0xD5, 0x00, 0xAA, 0x00, 0xB8, 0xDF, 0xBB},
-};
-
 // @early-stop
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
@@ -197,7 +182,7 @@ i32 CMoviePlayer::InitMode(
     m_srcSurf = 0;
     m_srcSurfRaw = 0;
     m_directSound = dsound;
-    ::ShowCursor(0);
+    ShowCursor(0);
     m_initialized = 1;
     FreeAll();
     return 1;

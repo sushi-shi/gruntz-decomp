@@ -2237,7 +2237,7 @@ L_tailc:
 // @early-stop
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
-    ::CDWordArray acc;
+    CDWordArray acc;
     Coord pa;
     Coord pb;
 

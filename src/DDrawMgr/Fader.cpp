@@ -257,7 +257,7 @@ static __inline i32 FxRand(i32 range) {
     u32 x;
     if (!(g_fxRandSeeded & 1)) {
         g_fxRandSeeded |= 1;
-        x = ::timeGetTime();
+        x = timeGetTime();
     } else {
         x = g_fxRandSeed;
     }
@@ -383,7 +383,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     POINT pt;
     pt.x = m_centerX;
     pt.y = m_centerY;
-    if (::PtInRect(&rect, pt) == 0) {
+    if (PtInRect(&rect, pt) == 0) {
         return 0;
     }
     if (m_lightGate != 0) {

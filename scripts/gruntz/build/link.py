@@ -35,6 +35,12 @@ and must be named explicitly, all corroborated by retail's own import table
   * `mss32` + `smackw32` - the RAD SDKs we do not have, so their import libs are
     SYNTHESISED from retail's import table by gruntz.build.import_lib.
 
+`LINK_LIBS` then names the whole set (Win32 included, redundantly) in **retail's
+import-descriptor order**, because that order is what link.exe reproduces - see the
+comment there. The candidate's import table comes out with the same 16 DLLs and the
+same imported-name set per DLL as retail; the order WITHIN each DLL is still ~random
+against retail, since that follows the object link order, not any flag.
+
 `--no-libs` restores the historical `/NODEFAULTLIB`, objects-only link (a bare
 layout probe with every library symbol left unresolved).
 
@@ -61,10 +67,26 @@ REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIP
 sys.path.insert(0, str(SCRIPT_DIR))
 from msdis_stub import ensure_msdis  # noqa: E402
 
-# Libraries no `.drectve` asks for. DX6 lives in the toolchain's dx/Lib; the two
-# RAD libs are synthesised into build/lib by gruntz.build.import_lib.
-EXTRA_LIBS = ["version.lib", "winmm.lib",
-              "ddraw.lib", "dsound.lib", "dinput.lib", "dplayx.lib", "dxguid.lib"]
+# The explicit library line. Order is load-bearing and this exact sequence
+# REPRODUCES RETAIL'S IMPORT-DESCRIPTOR ORDER (`PE.imports` on GRUNTZ.EXE) - all 16
+# DLLs, 0/120 inversions. Two rules produce it:
+#
+#   1. link.exe emits a DLL's `__IMPORT_DESCRIPTOR_*` when a library search first
+#      satisfies an undefined symbol, so LIB ORDER = DESCRIPTOR ORDER.
+#   2. ...but only for symbols that are already undefined when that lib is searched.
+#      Most of the Win32 surface (all of comctl32/winspool/comdlg32/shell32) is
+#      referenced by NOTHING in our objs - it arrives via MFC. So **nafxcw/libcmt
+#      must be searched FIRST**; otherwise those four resolve only on a later pass
+#      and their descriptors sink to the end (17/120 inversions). Naming them here
+#      rather than leaving them to the objs' `-defaultlib:` directives is what fixes
+#      it - and it says the retail link line searched MFC/CRT before Win32 too.
+#
+# `dxguid` is static GUID data, contributes no descriptor, so it rides at the end.
+LINK_LIBS = ["nafxcw.lib", "libcmt.lib",
+             "kernel32.lib", "user32.lib", "gdi32.lib", "advapi32.lib", "comctl32.lib",
+             "mss32.lib", "winmm.lib", "dplayx.lib", "smackw32.lib", "version.lib",
+             "winspool.lib", "comdlg32.lib", "shell32.lib",
+             "dinput.lib", "dsound.lib", "ddraw.lib", "dxguid.lib"]
 # The retail entry point, once LIBCMT + NAFXCW are actually on the link line
 # (LIBCMT defines _WinMainCRTStartup, NAFXCW defines the _WinMain@16 it calls).
 ENTRY_LINKED, ENTRY_BARE = "WinMainCRTStartup", "_x"
@@ -197,6 +219,11 @@ def main() -> None:
     ap.add_argument("--order", help="file listing obj stems/paths in link order.")
     ap.add_argument("--lib", action="append", default=[],
                     help="extra import/static lib to pass to link (repeatable).")
+    ap.add_argument("--no-force", dest="force", action="store_false", default=True,
+                    help="drop /FORCE. Needed to reach retail's shape: /FORCE makes "
+                         "link IGNORE /INCREMENTAL (LNK4075), and retail is an "
+                         "INCREMENTAL link (the E9 thunk band at the top of .text, "
+                         "the padded IAT, the separate .idata).")
     ap.add_argument("--no-libs", dest="libs", action="store_false", default=True,
                     help="/NODEFAULTLIB, no libraries at all - the bare objects-only "
                          "layout probe (every CRT/MFC/Win32 symbol stays unresolved).")
@@ -242,9 +269,15 @@ def main() -> None:
     rsp_lines = [
         f"/OUT:{winepath_w(out)}",
         f"/MAP:{winepath_w(mapf)}",
-        "/NOLOGO", "/FORCE", "/SUBSYSTEM:WINDOWS",
+        "/NOLOGO", "/SUBSYSTEM:WINDOWS",
         f"/BASE:{args.base}", "/INCREMENTAL:NO", f"/ENTRY:{entry}",
+        # Retail HAS a .reloc (it is why the EXE is delinkable at all), so it was
+        # linked /FIXED:NO. Purely additive: .text/.rdata/.data come out byte-identical.
+        "/FIXED:NO",
     ]
+    if args.force:
+        # ANY /FORCE (even /FORCE:MULTIPLE) makes link ignore /INCREMENTAL - LNK4075.
+        rsp_lines.append("/FORCE")
     if not args.libs:
         # No libraries at all - the objs' own -defaultlib: directives are ignored too.
         rsp_lines.append("/NODEFAULTLIB")
@@ -254,7 +287,9 @@ def main() -> None:
     rsp_lines += list(extra)
     libs = list(args.lib)
     if args.libs:
-        libs += EXTRA_LIBS + [str(p) for p in ensure_import_libs()]
+        # Substitute the synthesised RAD libs IN PLACE so LINK_LIBS' order survives.
+        synth = {p.name.lower(): str(p) for p in ensure_import_libs()}
+        libs += [synth.get(n, n) for n in LINK_LIBS]
     rsp_lines += [winepath_w(lib) if os.path.exists(lib) else lib for lib in libs]
     rsp_lines += [f'"{winepath_w(o)}"' for o in objs]
 
@@ -280,7 +315,8 @@ def main() -> None:
     print(f"[link] {len(objs)} objs + {len(libs)} explicit lib(s) -> {out} "
           f"({out.stat().st_size} B) + {mapf.name}")
     print(f"[link] {len(unres_syms)} unresolved externals -> {unf.name}, "
-          f"{warns} dup-symbol warnings (expected: partial reconstruction, /FORCE)")
+          f"{warns} dup-symbol warnings"
+          + (" (tolerated by /FORCE)" if args.force else " (/FORCE off)"))
     for bucket, n in sorted(collections.Counter(
             classify(s) for s in unres_syms).items(), key=lambda kv: -kv[1]):
         print(f"[link]   {n:5d}  {bucket}")

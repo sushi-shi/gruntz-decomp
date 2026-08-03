@@ -5031,7 +5031,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         if (static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleRerouteDelay)) {
             Coord here;
             g->GetScreenPos((&here));
-            ::TileSwitch(g, here.m_x >> 5, here.m_y >> 5, m_idleBurnRandX, m_idleBurnRandY, -1);
+            TileSwitch(g, here.m_x >> 5, here.m_y >> 5, m_idleBurnRandX, m_idleBurnRandY, -1);
             if (g->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX && g->CoordCount() != 0) {
                 POSITION pos = g->m_coordList.GetHeadPosition();
                 if (pos != 0) {

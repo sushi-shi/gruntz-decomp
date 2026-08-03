@@ -32,7 +32,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (wParam == 0xf100) {
                 return 1;
             }
-            BOOL(WINAPI * isIconic)(HWND) = ::IsIconic;
+            BOOL(WINAPI * isIconic)(HWND) = IsIconic;
             i32 mm = wParam & 0xfff0;
             if (mm == 0xf140 || mm == 0xf170) {
                 if (!isIconic(m_hwnd)) {
@@ -45,7 +45,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (NetLobby::g_curDlg == 0) {
                 break;
             }
-            ::SendMessageA(NetLobby::g_curDlg, 0x112, wParam, lParam);
+            SendMessageA(NetLobby::g_curDlg, 0x112, wParam, lParam);
             break;
         }
         case 0x3b9: {

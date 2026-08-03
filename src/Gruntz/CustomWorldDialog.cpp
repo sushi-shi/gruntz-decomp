@@ -113,11 +113,11 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 // @early-stop
 RVA(0x0003af90, 0x194)
 i32 FillCustomLevelList(HWND hWnd) {
-    HWND lb = ::GetDlgItem(hWnd, 0x3fc);
+    HWND lb = GetDlgItem(hWnd, 0x3fc);
     if (!lb) {
         return 0;
     }
-    ::SendMessageA(lb, 0x184, 0, 0);
+    SendMessageA(lb, 0x184, 0, 0);
     if (_chdir("Custom")) {
         return 0;
     }
@@ -126,7 +126,7 @@ i32 FillCustomLevelList(HWND hWnd) {
     _finddata_t fd;
     i32 h = _findfirst(pattern, &fd);
     i32 found = (h != -1);
-    AfxGetApp()->BeginWaitCursor();
+    afxCurrentWinApp->BeginWaitCursor();
     if (found) {
         do {
             char disp[260];
@@ -138,18 +138,18 @@ i32 FillCustomLevelList(HWND hWnd) {
                 }
                 MsgParam name;
                 name.m_str = disp;
-                ::SendMessageA(lb, 0x180, 0, name.m_lparam);
+                SendMessageA(lb, 0x180, 0, name.m_lparam);
             }
         } while (_findnext(h, &fd) != -1);
     }
     _chdir(g_dotDot);
-    AfxGetApp()->EndWaitCursor();
+    afxCurrentWinApp->EndWaitCursor();
     return 1;
 }
 
 RVA(0x0003b1a0, 0x118)
 i32 FillLevelInfoDialog(HWND hDlg) {
-    if (!::GetDlgItem(hDlg, 0x3fc)) {
+    if (!GetDlgItem(hDlg, 0x3fc)) {
         return 0;
     }
     if (!LoadCustomWorldSelection(hDlg)) {
@@ -157,7 +157,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     }
     char num[0x20];
     WwdHeader info;
-    BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
+    BOOL(WINAPI * setText)(HWND, int, LPCSTR) = SetDlgItemTextA;
     if (g_gameReg->m_world->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {

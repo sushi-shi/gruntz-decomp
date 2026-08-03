@@ -9,9 +9,9 @@
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     if (m_list.GetCount() > 0) {
-        HWND combo = ::GetDlgItem(hDlg, ctrlId);
+        HWND combo = GetDlgItem(hDlg, ctrlId);
         if (combo != 0) {
-            ::SendMessageA(combo, CB_RESETCONTENT, 0, 0);
+            SendMessageA(combo, CB_RESETCONTENT, 0, 0);
             POSITION pos = m_list.GetHeadPosition();
             while (pos != 0) {
                 CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
@@ -19,7 +19,7 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
                 i32 idx;
                 {
                     MsgParam name;
-                    idx = ::SendMessageA(
+                    idx = SendMessageA(
                         combo,
                         CB_ADDSTRING,
                         0,
@@ -27,7 +27,7 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
                     );
                 }
                 if (idx != -1) {
-                    ::SendMessageA(combo, CB_SETITEMDATA, idx, data);
+                    SendMessageA(combo, CB_SETITEMDATA, idx, data);
                 }
             }
             return m_list.GetCount();
@@ -43,11 +43,11 @@ CString CKeyedNode::GetName() {
 
 RVA(0x00038150, 0x91)
 i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
-    HWND list = ::GetDlgItem(hDlg, id);
+    HWND list = GetDlgItem(hDlg, id);
     if (!list) {
         return 0;
     }
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = SendMessageA;
     i32 searching = 1;
     i32 i = 0;
     while (searching) {

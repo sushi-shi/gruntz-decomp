@@ -154,7 +154,7 @@ i32 CPlay::ScanShuffleQuads() {
     POSITION pos = pl->GetHeadPosition();
 
     i32 perm[4];
-    ::CByteArray arr;
+    CByteArray arr;
     arr.SetAtGrow(arr.GetSize(), 0);
     arr.SetAtGrow(arr.GetSize(), 1);
     arr.SetAtGrow(arr.GetSize(), 2);

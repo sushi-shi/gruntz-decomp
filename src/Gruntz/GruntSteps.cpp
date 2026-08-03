@@ -668,7 +668,7 @@ i32 CGrunt::StepCompassMove() {
     }
 
     {
-        ::CByteArray bag;
+        CByteArray bag;
         bag.SetAtGrow(bag.GetSize(), 1);
         bag.SetAtGrow(bag.GetSize(), 2);
         bag.SetAtGrow(bag.GetSize(), 3);

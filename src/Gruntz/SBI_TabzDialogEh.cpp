@@ -26,7 +26,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     src.right = lr.right;
     src.bottom = lr.bottom;
     RECT dst;
-    ::CopyRect(&dst, &src);
+    CopyRect(&dst, &src);
     i32 cx = dst.left + (dst.right - dst.left) / 2;
     i32 cy = dst.top + (dst.bottom - dst.top) / 2;
 

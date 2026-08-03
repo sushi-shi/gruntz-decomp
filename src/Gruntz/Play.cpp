@@ -2121,7 +2121,7 @@ i32 CPlay::DrawWorldFrames() {
 
 RVA(0x000ca0a0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
-    DWORD(WINAPI * tg)(void) = ::timeGetTime;
+    DWORD(WINAPI * tg)(void) = timeGetTime;
     i32 updates = 0;
     u32 t0 = tg();
     u32 d = g_frameDelta;
@@ -2170,7 +2170,7 @@ i32 CPlay::ProfileInputFrame() {
         m_world->m_level->m_mainPlane->m_snappedX,
         m_world->m_level->m_mainPlane->m_snappedY
     );
-    DWORD(WINAPI * tg)(void) = ::timeGetTime;
+    DWORD(WINAPI * tg)(void) = timeGetTime;
 
     i32 activateMs = static_cast<i32>(tg());
     TickStateMgrs();
@@ -2762,11 +2762,11 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == 0) {
         return 0;
     }
-    HWND cb = ::GetDlgItem(hDlg, nID);
+    HWND cb = GetDlgItem(hDlg, nID);
     if (cb == 0) {
         return 0;
     }
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 0x11; i++) {
         pSend(cb, 0x143, 0, reinterpret_cast<LPARAM>(static_cast<const char*>(GetColorName(i, 0))));
@@ -2782,11 +2782,11 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == 0) {
         return 0;
     }
-    HWND cb = ::GetDlgItem(hDlg, nID);
+    HWND cb = GetDlgItem(hDlg, nID);
     if (cb == 0) {
         return 0;
     }
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
         pSend(
@@ -3351,7 +3351,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        ::PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
         return 1;
     }
 
@@ -3975,11 +3975,11 @@ i32 CPlay::CompleteLevel() {
         m_mgr->m_sound->StopAndFlush();
         m_mgr->m_inputState->Teardown();
         m_mgr->m_cueSink->ClearSprites();
-        ::PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }
     if (m_returnToMenuOnComplete) {
-        ::PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }
     m_mgr->Post(m_levelIndex + 1);
@@ -4259,18 +4259,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sx -= d;
-                self->m_lastScrollTimeX = ::timeGetTime();
+                self->m_lastScrollTimeX = timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 1;
-            self->m_lastScrollTimeX = ::timeGetTime();
+            self->m_lastScrollTimeX = timeGetTime();
         }
     } else {
         self->m_scrollEdgeActive &= ~1;
@@ -4278,18 +4278,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorX > extent.cx - 0xc || (self->m_scrollEdgeLock & 4)) {
         if (self->m_scrollEdgeActive & 4) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sx += d;
-                self->m_lastScrollTimeX = ::timeGetTime();
+                self->m_lastScrollTimeX = timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 4;
-            self->m_lastScrollTimeX = ::timeGetTime();
+            self->m_lastScrollTimeX = timeGetTime();
         }
     } else {
         self->m_scrollEdgeActive &= ~4;
@@ -4297,18 +4297,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
         if (self->m_scrollEdgeActive & 2) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sy -= d;
-                self->m_lastScrollTimeY = ::timeGetTime();
+                self->m_lastScrollTimeY = timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 2;
-            self->m_lastScrollTimeY = ::timeGetTime();
+            self->m_lastScrollTimeY = timeGetTime();
 
             changed = 1;
         }
@@ -4318,18 +4318,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorY > extent.cy - 0xf || (self->m_scrollEdgeLock & 8)) {
         if (self->m_scrollEdgeActive & 8) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sy += d;
-                self->m_lastScrollTimeY = ::timeGetTime();
+                self->m_lastScrollTimeY = timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 8;
-            self->m_lastScrollTimeY = ::timeGetTime();
+            self->m_lastScrollTimeY = timeGetTime();
         }
     } else {
         self->m_scrollEdgeActive &= ~8;

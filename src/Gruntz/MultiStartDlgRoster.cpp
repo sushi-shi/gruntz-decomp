@@ -33,11 +33,11 @@ i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     if (!list) {
         return 0;
     }
-    i32 sel = ::SendMessageA(list, 0x147, 0, 0);
+    i32 sel = SendMessageA(list, 0x147, 0, 0);
     if (sel == -1) {
         return 0;
     }
-    i32 data = ::SendMessageA(list, 0x150, sel, 0);
+    i32 data = SendMessageA(list, 0x150, sel, 0);
     if (data == -1) {
         return 0;
     }
@@ -190,8 +190,8 @@ i32 CMultiStartDlg::FlashCtrlD() {
         } else {
             color = 0x808080;
         }
-        scratch.Attach(::CreateSolidBrush(color));
-        ::FillRect(dc.m_hDC, &rc, scratch);
+        scratch.Attach(CreateSolidBrush(color));
+        FillRect(dc.m_hDC, &rc, scratch);
     }
     return 1;
 }
@@ -447,10 +447,10 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
     }
     if (bDraw) {
-        ::CDC dc;
+        CDC dc;
         dc.Attach(lpdis->hDC);
-        ::CBrush brush(color);
-        ::FillRect(dc.m_hDC, &lpdis->rcItem, brush);
+        CBrush brush(color);
+        FillRect(dc.m_hDC, &lpdis->rcItem, brush);
         dc.Detach();
     }
     CWnd::OnDrawItem(nIDCtl, lpdis);
@@ -716,7 +716,7 @@ void CMultiStartDlg::Watchdog() {
     g_multiState->m_netGate->EnumGroupsRange(h, 0);
     g_multiState->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
-        u32 t = ::timeGetTime();
+        u32 t = timeGetTime();
         g_multiState->SendNetStat(0x41f, static_cast<i32>(t), 0);
     }
     if (g_multiState->m_isHost == 0) {

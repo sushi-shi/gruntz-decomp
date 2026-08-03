@@ -17,10 +17,6 @@
 
 DATA(0x0020d7f8)
 char s_codeK[] = "K";
-DATA(0x002bf3bc)
-u32 g_engineFrameDelta;
-DATA(0x002bf3c0)
-u32 g_killCueClock;
 
 // @early-stop
 RVA(0x000997c0, 0x1e7)

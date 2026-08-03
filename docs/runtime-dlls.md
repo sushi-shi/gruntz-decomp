@@ -23,8 +23,8 @@ Date: 2026-06-13. Item: `gruntz-pc`, `Gruntz.iso` (English retail v1.0).
 
 | DLL | how the EXE binds it | link-time dependency? |
 |---|---|---|
-| `MSS32.DLL` | load-time import (named imports `AIL_*`) | satisfied by an **import lib** we synthesise from the DLL (or take from the MSS SDK). No DLL needed at link; the `.lib` is enough. |
-| `SMACKW32.DLL` | load-time import (`_Smack*@n`) | same - an import lib (from the DLL or SDK) satisfies the linker; the DLL itself is runtime-only. |
+| `MSS32.DLL` | load-time import (named imports `AIL_*`) | satisfied by an **import lib** — **DONE**: `gruntz.build.import_lib` synthesises `build/lib/mss32.lib` from **retail's own import table**, not from the DLL. No DLL needed at link. |
+| `SMACKW32.DLL` | load-time import (`_Smack*@n`) | same — `build/lib/smackw32.lib`, same generator; the DLL itself is runtime-only. |
 | `SFMAN32.DLL` | **`LoadLibraryA` at runtime** (resolves the `SFManager` export by name) | **none at all** - dynamic load, no import-table entry, no `.lib`. |
 | `CTL3D32.DLL` | **`LoadLibraryA` at runtime** (pulled in by static MFC's `_AFX_CTL3D_*`) | **none at all** - dynamic load. |
 
@@ -40,8 +40,10 @@ So: `gruntz-runtime` is for *running* the result, not for the matching build.
 
 ## Import table (verified) — DirectX is dynamic, and it doubles as a labeling signal
 
-Parsing `GRUNTZ.EXE`'s PE import directory (authoritative, not just strings)
-gives the exact dynamic dependency set — **16 DLLs**:
+Parsing `GRUNTZ.EXE`'s PE import directory (`gruntz.core.pe.PE.imports`;
+authoritative, not just strings) gives the exact dynamic dependency set — **16
+DLLs**. The candidate EXE `gruntz link` now produces reproduces this table
+**name-for-name**:
 
 - Win32 system: `KERNEL32(152) USER32(156) GDI32(83) ADVAPI32(11) COMCTL32(9)
   SHELL32(4) VERSION(3) WINSPOOL(3) comdlg32(1) WINMM(1)`

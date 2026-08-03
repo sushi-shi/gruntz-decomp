@@ -168,7 +168,7 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
     m_loop = loop;
     m_frameIndex = m_frameStart;
     m_redrawFrames = 2;
-    m_lastTime = ::timeGetTime();
+    m_lastTime = timeGetTime();
 }
 
 RVA(0x000e7cd0, 0xf8)

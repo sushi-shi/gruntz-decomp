@@ -94,7 +94,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     }
 
     {
-        int(WINAPI * sc)(BOOL) = ::ShowCursor;
+        int(WINAPI * sc)(BOOL) = ShowCursor;
         while (sc(0) >= 0) {
         }
     }

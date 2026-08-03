@@ -2402,7 +2402,7 @@ static __inline i32 WapRand(i32 range) {
     if (range == 0) {
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
-            x = ::timeGetTime();
+            x = timeGetTime();
         } else {
             x = g_randSeed;
         }
@@ -2411,7 +2411,7 @@ static __inline i32 WapRand(i32 range) {
     }
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
-        x = ::timeGetTime();
+        x = timeGetTime();
     } else {
         x = g_randSeed;
     }
@@ -2720,7 +2720,7 @@ static __inline void HiCueTimed() {
 }
 
 static __inline void HiPost(i32 cmdId) {
-    ::PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, cmdId, 0);
+    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, cmdId, 0);
 }
 
 RVA(0x000fe910, 0xc2c)

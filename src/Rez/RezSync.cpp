@@ -110,9 +110,9 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x463);
         return 0;
     }
-    srand((::timeGetTime() + ::GetTickCount()) >> 1);
+    srand((timeGetTime() + GetTickCount()) >> 1);
     g_wap32Run80 = 0x21;
-    while (::ShowCursor(0) >= 0) {
+    while (ShowCursor(0) >= 0) {
     }
 
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(::operator new(0x21c));
@@ -253,7 +253,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_appHInstance = m_owner->m_hInstance;
     char dpBuf[0x114];
     strcpy(dpBuf, szCmdLine);
-    ::AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1);
+    AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1);
     m_strWorldFile.Empty();
 
     CDDrawSurfaceMgr* world = new CDDrawSurfaceMgr;
@@ -454,7 +454,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     g_gameReg = this;
-    g_lastNow = ::timeGetTime();
+    g_lastNow = timeGetTime();
     g_frameDelta = 0;
     for (i32 s = 0; s < 4; ++s) {
 
