@@ -88,6 +88,7 @@ include/Gruntz/Attract.h	pending
 include/Gruntz/BankMgr.h	pending	
 include/Gruntz/BattlezData.h	pending	
 include/Gruntz/BattlezMapConfig.h	pending	
+include/Gruntz/BattlezUnitKind.h	pending	
 include/Gruntz/BehindCandy.h	pending	
 include/Gruntz/BehindCandyAni.h	pending	
 include/Gruntz/Blk6c.h	pending	

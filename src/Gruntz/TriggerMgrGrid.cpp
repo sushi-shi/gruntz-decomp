@@ -6,6 +6,7 @@
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/BattlezUnitKind.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -146,61 +147,61 @@ i32 CTriggerMgr::PlaceObject(
         i32 kindId;
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             switch (aiType) {
-                case 1:
+                case BZUNIT_BOMB:
                     kindId = IDX(PICKUP_BOMB);
                     break;
-                case 2:
+                case BZUNIT_GUNHAT:
                     kindId = IDX(PICKUP_GUNHAT);
                     break;
-                case 3:
+                case BZUNIT_GAUNTLETZ:
                     kindId = IDX(PICKUP_GAUNTLETZ);
                     break;
-                case 4:
+                case BZUNIT_CLUB:
                     kindId = IDX(PICKUP_CLUB);
                     break;
-                case 5:
+                case BZUNIT_SHIELD:
                     kindId = IDX(PICKUP_SHIELD);
                     break;
-                case 6:
+                case BZUNIT_GLOVEZ:
                     kindId = IDX(PICKUP_GLOVEZ);
                     break;
-                case 7:
+                case BZUNIT_BRICK:
                     kindId = IDX(PICKUP_BRICK);
                     typeKind = 1;
                     break;
-                case 8:
+                case BZUNIT_GRAVITYBOOTZ:
                     kindId = IDX(PICKUP_GRAVITYBOOTZ);
                     typeKind = 3;
                     break;
-                case 10:
+                case BZUNIT_SPY:
                     kindId = IDX(PICKUP_SPY);
                     typeKind = 7;
                     break;
-                case 11:
+                case BZUNIT_NERFGUN:
                     kindId = IDX(PICKUP_NERFGUN);
                     typeKind = 13;
                     break;
-                case 9:
+                case BZUNIT_BOOMERANG:
                     kindId = IDX(PICKUP_BOOMERANG);
                     typeKind = 5;
                     break;
-                case 13:
+                case BZUNIT_GOOBER:
                     kindId = IDX(PICKUP_GOOBER);
                     break;
-                case 14:
+                case BZUNIT_SWORD:
                     kindId = IDX(PICKUP_SWORD);
                     break;
-                case 12:
+                case BZUNIT_ROCK:
                     kindId = IDX(PICKUP_ROCK);
                     typeKind = 17;
                     break;
-                case 15:
+                case BZUNIT_SHOVEL:
                     kindId = IDX(PICKUP_SHOVEL);
                     typeKind = 19;
                     break;
-                case 16:
+                case BZUNIT_SHOVEL_MOUNTED:
                     kindId = IDX(PICKUP_SHOVEL);
-                    vehicleKind = 30;
+                    vehicleKind = IDX(PICKUP_SCROLL);
                     break;
                 default:
                     kindId = kindDefault;
