@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -12,14 +13,14 @@
 #include <Io/GameSave.h>
 
 RVA(0x000e2df0, 0x3f0)
-i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
+i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, ColorTint kind) {
     m_cache = cache;
     m_alphaKey = static_cast<CShadeTable*>(shade);
     u8 r1, g1, b1;
     u8 r2, g2, b2;
     u8 r3, g3, b3;
     switch (kind) {
-        case 0:
+        case TINT_ORANGE:
             r2 = 0xff;
             g2 = 0x80;
             b2 = 0x00;
@@ -30,7 +31,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x40;
             b3 = 0x00;
             break;
-        case 1:
+        case TINT_GREEN:
             r2 = 0x00;
             g2 = 0xff;
             b2 = 0x00;
@@ -41,7 +42,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x80;
             b3 = 0x00;
             break;
-        case 2:
+        case TINT_BLUE:
             r2 = 0x00;
             g2 = 0x00;
             b2 = 0xff;
@@ -52,7 +53,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x00;
             b3 = 0x80;
             break;
-        case 3:
+        case TINT_RED:
             r2 = 0xff;
             g2 = 0x00;
             b2 = 0x00;
@@ -63,7 +64,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x00;
             b3 = 0x00;
             break;
-        case 6:
+        case TINT_HOTPINK:
             r2 = 0xff;
             g2 = 0x00;
             b2 = 0x80;
@@ -74,7 +75,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x00;
             b3 = 0x40;
             break;
-        case 5:
+        case TINT_YELLOW:
             r2 = 0xff;
             g2 = 0xff;
             b2 = 0x00;
@@ -85,7 +86,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x80;
             b3 = 0x00;
             break;
-        case 12:
+        case TINT_PINK:
             r2 = 0xff;
             g2 = 0x00;
             b2 = 0xff;
@@ -96,7 +97,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x00;
             b3 = 0x80;
             break;
-        case 8:
+        case TINT_DKBLUE:
             r2 = 0x00;
             g2 = 0x00;
             b2 = 0x80;
@@ -107,7 +108,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x00;
             b3 = 0x40;
             break;
-        case 9:
+        case TINT_DKGREEN:
             r2 = 0x00;
             g2 = 0x80;
             b2 = 0x00;
@@ -118,7 +119,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x40;
             b3 = 0x00;
             break;
-        case 10:
+        case TINT_TURQ:
             r2 = 0x00;
             g2 = 0x80;
             b2 = 0x80;
@@ -129,7 +130,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x40;
             b3 = 0x40;
             break;
-        case 11:
+        case TINT_DKRED:
             r2 = 0x80;
             g2 = 0x00;
             b2 = 0x00;
@@ -140,7 +141,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x00;
             b3 = 0x00;
             break;
-        case 4:
+        case TINT_PURPLE:
             r2 = 0x80;
             g2 = 0x00;
             b2 = 0x80;
@@ -151,7 +152,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x00;
             b3 = 0x40;
             break;
-        case 13:
+        case TINT_DKYELLOW:
             r2 = 0x80;
             g2 = 0x80;
             b2 = 0x00;
@@ -162,7 +163,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x40;
             b3 = 0x00;
             break;
-        case 14:
+        case TINT_GREY:
             r2 = 0x80;
             g2 = 0x80;
             b2 = 0x80;
@@ -173,7 +174,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x40;
             b3 = 0x40;
             break;
-        case 15:
+        case TINT_CYAN:
             r2 = 0x00;
             g2 = 0xff;
             b2 = 0xff;
@@ -184,7 +185,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x80;
             b3 = 0x80;
             break;
-        case 16:
+        case TINT_WHITE:
             r2 = 0xff;
             g2 = 0xff;
             b2 = 0xff;
@@ -195,7 +196,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
             g3 = 0x80;
             b3 = 0x80;
             break;
-        case 7:
+        case TINT_BLACK:
             r2 = 0x40;
             g2 = 0x40;
             b2 = 0x40;

@@ -9,6 +9,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Enums.h>
+#include <Gruntz/ColorTint.h>
 
 #include <stdio.h>
 
@@ -101,172 +102,172 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CSymParser* src) {
         return 0;
     }
     CSpriteRef* r;
-    r = Add("BLACKTOOL", 7);
+    r = Add("BLACKTOOL", TINT_BLACK);
     if (!r) {
         return 0;
     }
     m_toolRefs[7] = r;
-    r = Add("BLACKTOY", 7);
+    r = Add("BLACKTOY", TINT_BLACK);
     if (!r) {
         return 0;
     }
     m_toyRefs[7] = r;
-    r = Add("DKBLUETOOL", 8);
+    r = Add("DKBLUETOOL", TINT_DKBLUE);
     if (!r) {
         return 0;
     }
     m_toolRefs[8] = r;
-    r = Add("DKBLUETOY", 8);
+    r = Add("DKBLUETOY", TINT_DKBLUE);
     if (!r) {
         return 0;
     }
     m_toyRefs[8] = r;
-    r = Add("DKGREENTOOL", 9);
+    r = Add("DKGREENTOOL", TINT_DKGREEN);
     if (!r) {
         return 0;
     }
     m_toolRefs[9] = r;
-    r = Add("DKGREENTOY", 9);
+    r = Add("DKGREENTOY", TINT_DKGREEN);
     if (!r) {
         return 0;
     }
     m_toyRefs[9] = r;
-    r = Add("TURQTOOL", 0xa);
+    r = Add("TURQTOOL", TINT_TURQ);
     if (!r) {
         return 0;
     }
     m_toolRefs[0xa] = r;
-    r = Add("TURQTOY", 0xa);
+    r = Add("TURQTOY", TINT_TURQ);
     if (!r) {
         return 0;
     }
     m_toyRefs[0xa] = r;
-    r = Add("DKREDTOOL", 0xb);
+    r = Add("DKREDTOOL", TINT_DKRED);
     if (!r) {
         return 0;
     }
     m_toolRefs[0xb] = r;
-    r = Add("DKREDTOY", 0xb);
+    r = Add("DKREDTOY", TINT_DKRED);
     if (!r) {
         return 0;
     }
     m_toyRefs[0xb] = r;
-    r = Add("PURPLETOOL", 4);
+    r = Add("PURPLETOOL", TINT_PURPLE);
     if (!r) {
         return 0;
     }
     m_toolRefs[4] = r;
-    r = Add("PURPLETOY", 4);
+    r = Add("PURPLETOY", TINT_PURPLE);
     if (!r) {
         return 0;
     }
     m_toyRefs[4] = r;
-    r = Add("DKYELLOWTOOL", 0xd);
+    r = Add("DKYELLOWTOOL", TINT_DKYELLOW);
     if (!r) {
         return 0;
     }
     m_toolRefs[0xd] = r;
-    r = Add("DKYELLOWTOY", 0xd);
+    r = Add("DKYELLOWTOY", TINT_DKYELLOW);
     if (!r) {
         return 0;
     }
     m_toyRefs[0xd] = r;
-    r = Add("GREYTOOL", 0xe);
+    r = Add("GREYTOOL", TINT_GREY);
     if (!r) {
         return 0;
     }
     m_toolRefs[0xe] = r;
-    r = Add("GREYTOY", 0xe);
+    r = Add("GREYTOY", TINT_GREY);
     if (!r) {
         return 0;
     }
     m_toyRefs[0xe] = r;
-    r = Add("BLUETOOL", 2);
+    r = Add("BLUETOOL", TINT_BLUE);
     if (!r) {
         return 0;
     }
     m_toolRefs[2] = r;
-    r = Add("BLUETOY", 2);
+    r = Add("BLUETOY", TINT_BLUE);
     if (!r) {
         return 0;
     }
     m_toyRefs[2] = r;
-    r = Add("GREENTOOL", 1);
+    r = Add("GREENTOOL", TINT_GREEN);
     if (!r) {
         return 0;
     }
     m_toolRefs[1] = r;
-    r = Add("GREENTOY", 1);
+    r = Add("GREENTOY", TINT_GREEN);
     if (!r) {
         return 0;
     }
     m_toyRefs[1] = r;
-    r = Add("CYANTOOL", 0xf);
+    r = Add("CYANTOOL", TINT_CYAN);
     if (!r) {
         return 0;
     }
     m_toolRefs[0xf] = r;
-    r = Add("CYANTOY", 0xf);
+    r = Add("CYANTOY", TINT_CYAN);
     if (!r) {
         return 0;
     }
     m_toyRefs[0xf] = r;
-    r = Add("REDTOOL", 3);
+    r = Add("REDTOOL", TINT_RED);
     if (!r) {
         return 0;
     }
     m_toolRefs[3] = r;
-    r = Add("REDTOY", 3);
+    r = Add("REDTOY", TINT_RED);
     if (!r) {
         return 0;
     }
     m_toyRefs[3] = r;
-    r = Add("PINKTOOL", 0xc);
+    r = Add("PINKTOOL", TINT_PINK);
     if (!r) {
         return 0;
     }
     m_toolRefs[0xc] = r;
-    r = Add("PINKTOY", 0xc);
+    r = Add("PINKTOY", TINT_PINK);
     if (!r) {
         return 0;
     }
     m_toyRefs[0xc] = r;
-    r = Add("YELLOWTOOL", 5);
+    r = Add("YELLOWTOOL", TINT_YELLOW);
     if (!r) {
         return 0;
     }
     m_toolRefs[5] = r;
-    r = Add("YELLOWTOY", 5);
+    r = Add("YELLOWTOY", TINT_YELLOW);
     if (!r) {
         return 0;
     }
     m_toyRefs[5] = r;
-    r = Add("WHITETOOL", 0x10);
+    r = Add("WHITETOOL", TINT_WHITE);
     if (!r) {
         return 0;
     }
     m_toolRefs[0x10] = r;
-    r = Add("WHITETOY", 0x10);
+    r = Add("WHITETOY", TINT_WHITE);
     if (!r) {
         return 0;
     }
     m_toyRefs[0x10] = r;
-    r = Add("ORANGETOOL", 0);
+    r = Add("ORANGETOOL", TINT_ORANGE);
     if (!r) {
         return 0;
     }
     m_toolRefs[0] = r;
-    r = Add("ORANGETOY", 0);
+    r = Add("ORANGETOY", TINT_ORANGE);
     if (!r) {
         return 0;
     }
     m_toyRefs[0] = r;
-    r = Add("HOTPINKTOOL", 6);
+    r = Add("HOTPINKTOOL", TINT_HOTPINK);
     if (!r) {
         return 0;
     }
     m_toolRefs[6] = r;
-    r = Add("HOTPINKTOY", 6);
+    r = Add("HOTPINKTOY", TINT_HOTPINK);
     if (!r) {
         return 0;
     }
@@ -275,7 +276,7 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CSymParser* src) {
     return 1;
 }
 RVA(0x000e2890, 0xb6)
-CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
+CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     CObject* out = 0;
     m_spriteMgrHolder->m_workerMap->m_map1.Lookup(szName, out);
     if (!out) {

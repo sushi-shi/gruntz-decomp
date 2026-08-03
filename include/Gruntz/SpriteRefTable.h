@@ -7,9 +7,11 @@
 #include <Enums.h>
 #include <Ints.h>
 
+GZ_ENUM_FORWARD_SPLIT(ColorTint, u8);
+
 class CSpriteRef {
 public:
-    i32 Build(CShadeTableCache* cache, void* shade, i32 kind);
+    i32 Build(CShadeTableCache* cache, void* shade, ColorTint kind);
     void Free();
     CShadeTableCache* m_cache;
     CShadeTable* m_alphaKey;
@@ -39,7 +41,7 @@ public:
 
     CShadeTable* GetSel(i32 i, i32 bAlt);
 
-    CSpriteRef* Add(char* szName, i32 kind);
+    CSpriteRef* Add(char* szName, ColorTint kind);
 
     i32 LoadGruntzPalette(CSymParser* src, const char* name);
 
