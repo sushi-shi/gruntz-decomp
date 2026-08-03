@@ -2,6 +2,11 @@
 
 #include <Bute/ButeMgr.h>
 
+// This TU realizes CBSecStream's vtable set (the CButeMgr ctor below is what
+// makes cl emit them). The ??_G deleting dtor lands at 0x174d30, inside
+// ButeNode's block - that is COMDAT POOLING, not a mis-home: the symbol really
+// is in this unit's object, and MSVC pools deleting dtors away from the TU's
+// own run (see docs/exe-map/README.md).
 VTBL(CBSecStream, 0x001f0510);
 
 VTBL2(CBSecStream, CButeNodeEntry, 0x001f0514)

@@ -40,7 +40,7 @@
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>
 #include <Gruntz/KitchenSlime.h>
-#include <Gruntz/LevelTimeDtor.h>
+#include <Gruntz/LevelTime.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/MenuSparkle.h>
 #include <Gruntz/ObjectDropper.h>

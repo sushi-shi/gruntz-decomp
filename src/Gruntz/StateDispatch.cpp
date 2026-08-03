@@ -3,9 +3,20 @@
 #include <Gruntz/StateDispatch.h>
 
 #include <Gruntz/GameObjectFactory.h>
-#include <Gruntz/LevelTimeDtor.h>
+#include <Gruntz/LevelTime.h>
 
 class CUserLogic;
+
+VTBL(CLevelTime, 0x001e801c);
+
+// CLevelTime's ctor is defined HERE, not in LevelTime.cpp: retail's copy sits at
+// 0x9b8b0, immediately behind this TU's CreateLevelTime (0x9b770), so this is the
+// TU that emits it - along with the rest of the class's COMDAT set (vtable, RTTI,
+// ??_G, ??1), which constructing the object pulls in. Spelling it out-of-line
+// here is required: as a header inline our cl flattens it into CreateLevelTime,
+// while retail keeps a standalone 0x18f-byte body.
+RVA_COMPGEN(0x00011a20, 0x1e, ??_GCLevelTime@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 
 RVA(0x0009b770, 0xf1)
 i32 CreateLevelTime(CGameObject* obj) {
@@ -44,4 +55,10 @@ i32 CreateLevelTime(CGameObject* obj) {
             break;
     }
     return 1;
+}
+
+// @early-stop
+RVA(0x0009b8b0, 0x18f)
+CLevelTime::CLevelTime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+    m_wwdObject->m_flags |= 2;
 }

@@ -22,11 +22,9 @@ ModeObjInit	1
 Play	20
 PlayMessageImage	1
 RegistryHelper	2
-RezBufferObjectDtor	1
 SBI_RectOnly	13
 SaveGame	2
 ScatterSamples	1
-SpotLightCtor	1
 SpriteLoaders	1
 SpriteRefTable	2
 StateImages	1
@@ -35,4 +33,4 @@ SymTab	1
 ToobSpikez	1
 WwdFactoryObject	1
 WwdGrid	1
-(interleave-pairs)	7591
+(interleave-pairs)	7414

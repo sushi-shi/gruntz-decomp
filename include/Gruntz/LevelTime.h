@@ -1,5 +1,5 @@
-#ifndef GRUNTZ_CLEVELTIMEDTOR_H
-#define GRUNTZ_CLEVELTIMEDTOR_H
+#ifndef GRUNTZ_CLEVELTIME_H
+#define GRUNTZ_CLEVELTIME_H
 
 #include <rva.h>
 
@@ -15,8 +15,9 @@ public:
 
 public:
     CLevelTime() {}
+
     CLevelTime(CGameObject* obj);
 };
 SIZE(0x54);
 
-#endif // GRUNTZ_CLEVELTIMEDTOR_H
+#endif // GRUNTZ_CLEVELTIME_H

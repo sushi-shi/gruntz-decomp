@@ -1,9 +1,10 @@
 #include <rva.h>
 
+#include <Rez/RezBufferObject.h>
+
 #include <Mfc.h>
 
 #include <Ints.h>
-#include <Rez/RezBufferObject.h>
 #include <Utils/RecordFill.h>
 #include <Wap32/Object.h>
 
@@ -14,16 +15,6 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
         ::new (p) RezElem40;
-    }
-}
-
-RVA(0x0017f300, 0x3)
-RezElem40::RezElem40() {}
-
-RVA(0x0017f330, 0x51)
-CRezBufferObject::~CRezBufferObject() {
-    if (m_pData) {
-        ::operator delete(m_pData);
     }
 }
 
@@ -86,3 +77,14 @@ void CRezBufferObject::Serialize(CArchive& ar) {
         ar.Read(data, cnt * sizeof(RezElem40));
     }
 }
+RVA(0x0017f300, 0x3)
+RezElem40::RezElem40() {}
+
+RVA(0x0017f330, 0x51)
+CRezBufferObject::~CRezBufferObject() {
+    if (m_pData) {
+        ::operator delete(m_pData);
+    }
+}
+
+// @early-stop

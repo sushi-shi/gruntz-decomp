@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 351  functions: 4477
+# units: 349  functions: 4477
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -34,12 +34,12 @@ brickz	4
 brickzcellflags	3
 brickzload	1
 bridgemovesprites	1
-bsecobj10fctor	2
+bsecstream	2
 buildgruntzcrcinfo	1
 butemgr	55
 butenode	5
-butesectionctor	2
 butestoreclear	1
+butetail	2
 butetree	1
 bzkinddispatch	1
 chainforward	2
@@ -197,7 +197,7 @@ levelplane	24
 levelpreview	10
 levelrezpath	1
 leveltilevalidation	3
-leveltimedtor	5
+leveltime	1
 lightfx	11
 lightfxmgr	3
 lightfxrender	23
@@ -251,7 +251,7 @@ queuedrainhost	1
 raincloud	5
 recordfill	1
 registryhelper	11
-rezbufferobjectdtor	3
+rezbufferobject	3
 rezcoll	13
 rezfile	36
 rezlist	5
@@ -289,14 +289,12 @@ soundfontpath	4
 soundstream	36
 soundvoicelist	5
 splashstate	7
-spotlight	1
-spotlightactreg	1
-spotlightctor	7
+spotlight	9
 spriteloaders	10
 spriteref	2
 spritereftable	10
 startupprompt	1
-statedispatch	1
+statedispatch	5
 stateimages	2
 statemgrbz	7
 statereleaseresources	1

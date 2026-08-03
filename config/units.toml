@@ -97,7 +97,7 @@ flags = "cpp-rtti"
 
 [[unit]]
 unit = "brickzcellflags"
-source = "src/Gruntz/BrickzCellFlags_077790.cpp"
+source = "src/Gruntz/BrickzCellFlags.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -721,11 +721,6 @@ source = "src/Gruntz/SpotLight.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "spotlightctor"
-source = "src/Gruntz/SpotLightCtor.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "cpp"
@@ -1187,7 +1182,7 @@ flags = "cpp-rtti"
 
 [[unit]]
 unit = "chatbox_eh"
-source = "src/Gruntz/ChatBoxDtor.cpp"
+source = "src/Gruntz/ChatBoxEh.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1416,8 +1411,8 @@ source = "src/Gruntz/GruntzMapMgr.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "leveltimedtor"
-source = "src/Gruntz/LevelTimeDtor.cpp"
+unit = "leveltime"
+source = "src/Gruntz/LevelTime.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1496,19 +1491,14 @@ source = "src/Gruntz/StateDispatch.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "butesectionctor"
-source = "src/Bute/ButeSectionCtor.cpp"
+unit = "bsecstream"
+source = "src/Bute/BSecStream.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "bsecobj10fctor"
-source = "src/Bute/BSecObj10fCtor.cpp"
+unit = "butetail"
+source = "src/Bute/ButeTail.cpp"
 flags = "cpp"
-
-[[unit]]
-unit = "spotlightactreg"
-source = "src/Gruntz/SpotLightActReg.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "pathhazardactreg"
@@ -1656,8 +1646,8 @@ unit = "chainforward"
 source = "src/Gruntz/ChainForward.cpp"
 flags = "cpp-rtti"
 [[unit]]
-unit = "rezbufferobjectdtor"
-source = "src/Rez/RezBufferObjectDtor.cpp"
+unit = "rezbufferobject"
+source = "src/Rez/RezBufferObject.cpp"
 flags = "cpp"
 
 [[unit]]

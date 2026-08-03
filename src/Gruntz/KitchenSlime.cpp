@@ -131,6 +131,16 @@ static inline CString* TypeLookup(i32 key) {
     return g_typeColl.Scratch();
 }
 
+RVA(0x000b2940, 0x102)
+void CKitchenSlime::FireActivation(i32 coord) {
+    CActHandler* e = KSlimeLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = KSlimeLookup(coord);
+        (this->*((*e2)))();
+    }
+}
+
+// @early-stop
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
     i32 id = ActFindId("A");
@@ -153,16 +163,6 @@ void CKitchenSlime::RegisterType() {
     *KSlimeLookup(id) = static_cast<CActHandler>(&CKitchenSlime::Tick);
 }
 
-RVA(0x000b2940, 0x102)
-void CKitchenSlime::FireActivation(i32 coord) {
-    CActHandler* e = KSlimeLookup(coord);
-    if ((*e) != 0) {
-        CActHandler* e2 = KSlimeLookup(coord);
-        (this->*((*e2)))();
-    }
-}
-
-// @early-stop
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
