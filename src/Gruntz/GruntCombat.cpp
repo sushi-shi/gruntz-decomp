@@ -16,6 +16,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -25,6 +26,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -217,31 +219,31 @@ void CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
     switch (m_entranceCell.direction) {
-        case 1:
+        case DIR_NORTH:
             y -= 0x20;
             break;
-        case 2:
+        case DIR_NORTHEAST:
             x += 0x20;
             y -= 0x20;
             break;
-        case 3:
+        case DIR_EAST:
             x += 0x20;
             break;
-        case 4:
+        case DIR_SOUTHEAST:
             x += 0x20;
             y += 0x20;
             break;
-        case 5:
+        case DIR_SOUTH:
             y += 0x20;
             break;
-        case 6:
+        case DIR_SOUTHWEST:
             x -= 0x20;
             y += 0x20;
             break;
-        case 7:
+        case DIR_WEST:
             x -= 0x20;
             break;
-        case 8:
+        case DIR_NORTHWEST:
             x -= 0x20;
             y -= 0x20;
             break;
@@ -1025,28 +1027,28 @@ RVA(0x00059230, 0x40d)
 i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     if (mode == 0) {
         switch (m_arrivalState) {
-            case 2:
+            case AI_SMARTCHASER:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
                 break;
-            case 1:
-            case 4:
-                m_arrivalCell.m_x = d;
-                m_arrivalCell.m_y = e;
-                m_defenderState = AISTATE_ATTACK;
-                break;
-            case 5:
+            case AI_DUMBCHASER:
+            case AI_DEFENDER:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
                 m_defenderState = AISTATE_ATTACK;
                 break;
-            case 3:
-            case 6:
+            case AI_POSTGUARD:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
                 m_defenderState = AISTATE_ATTACK;
                 break;
-            case 0x11:
+            case AI_HITANDRUNNER:
+            case AI_OBJECTGUARD:
+                m_arrivalCell.m_x = d;
+                m_arrivalCell.m_y = e;
+                m_defenderState = AISTATE_ATTACK;
+                break;
+            case AI_BATTLEZ_PATH:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
                 break;

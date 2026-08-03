@@ -11,7 +11,7 @@ src/Gruntz/LightFxRender.cpp	1423	done (shape switch un-biased onto LevelArea; r
 src/Gruntz/SBI_RectOnly.cpp	1381	done (SbiHlRowState, SbiMachineState, SbiBeltPhase; 11 left are HUD geometry with no naming evidence)
 src/Gruntz/BootyStateActivate.cpp	1221	done (GruntDirection un-biased; BootySeqPhase recovered; sibling 0-based ring documented)
 src/Gruntz/Multi.cpp	1168	pending
-src/Gruntz/GruntCombat.cpp	1165	pending
+src/Gruntz/GruntCombat.cpp	1165	done (GruntDirection + EnemyAiType named; SETDIR/rand indices left - g_dirVec is runtime-filled)
 src/Gruntz/GruntzMgr.cpp	955	pending
 src/DDrawMgr/DDrawShadeBlit.cpp	862	pending
 src/Gruntz/TriggerMgr.cpp	860	pending
