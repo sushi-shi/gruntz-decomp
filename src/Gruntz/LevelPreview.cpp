@@ -123,10 +123,10 @@ i32 CPreviewState::RefadeVirtual() {
 
 RVA(0x000de3c0, 0x2d)
 i32 CPreviewState::OnKey(i32 key, i32 param) {
-    if (key == 0x1b) {
+    if (key == VK_ESCAPE) {
         Cancel();
     }
-    if (key == 0x20 || key == 0xd) {
+    if (key == VK_SPACE || key == VK_RETURN) {
         LoadLevelPreviewScreen();
     }
     return 1;

@@ -57,7 +57,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (level->m_toggleActive != 0 || level->m_toggleHandle != 0) {
         if (level->m_toggleHandle != 0) {
 
-            if (key == 0x59 || key == 0xd) {
+            if (key == 'Y' || key == VK_RETURN) {
                 if (g_gameReg->m_gameMode == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
@@ -70,7 +70,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
                 return 1;
             }
-            if (key == 0x4e || key == 0x1b) {
+            if (key == 'N' || key == VK_ESCAPE) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 this->ReleaseLevelOverlay(0);
                 return 1;
@@ -78,7 +78,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
         } else {
 
-            if (key == 0x51) {
+            if (key == 'Q') {
                 if (g_gameReg->m_gameMode == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
@@ -89,11 +89,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
 
-            if (key == 0x53 && g_gameReg->m_gameMode == 1) {
+            if (key == 'S' && g_gameReg->m_gameMode == 1) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
             }
-            if (key == 0x52) {
+            if (key == 'R') {
                 if (host->m_gameMode == 1 && g_gameReg->m_cmdGrid->m_phase != 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     CGameWnd* r = g_gameReg->m_gameWnd;
@@ -101,14 +101,14 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 }
                 return 1;
             }
-            if (key == 0x4e) {
+            if (key == 'N') {
                 if (host->m_gameMode == 1 && g_gameReg->m_cmdGrid->m_phase == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
                 }
                 return 1;
             }
-            if (key == 0x4f) {
+            if (key == 'O') {
                 if (host->m_gameMode != 1 && self->m_guts->m_observerTabAvailable != 0) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     this->ReleaseLevelOverlay(0);
@@ -118,7 +118,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
     }
 
-    if (key == 0xd) {
+    if (key == VK_RETURN) {
         CChatBoxOwner* rec = self->m_hitTest;
         if (rec->m_inputActive != 0) {
             rec->ProcessCheatInput(0xd, lparam);
@@ -130,7 +130,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x1b) {
+    if (key == VK_ESCAPE) {
         CTriggerMgr* h68 = host->m_cmdGrid;
         CWwdGameObjectA* n = h68->m_goal;
         if (n != 0) {
@@ -166,7 +166,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     StateMgrBZ* dev = g_spawnConfig;
 
-    if (key == 0x9) {
+    if (key == VK_TAB) {
         i32 idx = self->m_focusPlayerIndex;
         i32 pick;
         GruntzPlayer* area;
@@ -209,7 +209,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
     }
 
-    if (key == 0x48) {
+    if (key == 'H') {
         GruntzPlayer* a = &g_gameReg->m_options[g_curPlayer];
         if (a == 0) {
             return 1;
@@ -218,7 +218,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x51) {
+    if (key == 'Q') {
         if ((dev->m_edgeKeys & 0x20) == 0) {
             return 1;
         }
@@ -238,29 +238,29 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x5a) {
+    if (key == 'Z') {
         g_gameReg->m_cmdGrid->EnqueueGroupCells();
         return 1;
     }
 
-    if (key == 0x43) {
+    if (key == 'C') {
         g_gameReg->m_cmdGrid->CenterOnGroup(dev->m_edgeKeys & 0x20);
         return 1;
     }
 
-    if (key == 0x54) {
+    if (key == 'T') {
         this->FlushPendingOps();
         g_gameReg->m_cmdGrid->ToggleRegionA();
         return 1;
     }
 
-    if (key == 0x59) {
+    if (key == 'Y') {
         this->FlushPendingOps();
         g_gameReg->m_cmdGrid->ToggleRegionB();
         return 1;
     }
 
-    if (key == 0x20) {
+    if (key == VK_SPACE) {
         if (dev->m_edgeKeys & 0x20) {
             CDDrawWorkerHost* obj = self->m_world->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
@@ -317,7 +317,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x8) {
+    if (key == VK_BACK) {
         if (self->CameraBookmarkCount() <= 0) {
             return 1;
         }
@@ -341,17 +341,17 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x4d && (dev->m_edgeKeys & 0x20)) {
+    if (key == 'M' && (dev->m_edgeKeys & 0x20)) {
         g_gameReg->SetSoundLevelState(g_gameReg->m_musicEnabled == 0);
         return 1;
     }
 
-    if (key == 0x56 && (dev->m_edgeKeys & 0x20)) {
+    if (key == 'V' && (dev->m_edgeKeys & 0x20)) {
         g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == 0);
         return 1;
     }
 
-    if (key == 0x41) {
+    if (key == 'A') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
@@ -372,7 +372,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x53) {
+    if (key == 'S') {
         if (dev->m_edgeKeys & 0x20) {
             g_gameReg->SetRunState(g_gameReg->m_soundEnabled == 0);
             return 1;
@@ -397,7 +397,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x44) {
+    if (key == 'D') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
@@ -418,7 +418,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x46) {
+    if (key == 'F') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
@@ -430,7 +430,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x47) {
+    if (key == 'G') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
@@ -451,36 +451,38 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (lparam & 0x1000000) {
-        if (key == 0x25) {
+        if (key == VK_LEFT) {
             self->m_scrollEdgeLock |= 1;
             return 1;
         }
-        if (key == 0x27) {
+        if (key == VK_RIGHT) {
             self->m_scrollEdgeLock |= 4;
             return 1;
         }
-        if (key == 0x26) {
+        if (key == VK_UP) {
             self->m_scrollEdgeLock |= 2;
             return 1;
         }
-        if (key == 0x28) {
+        if (key == VK_DOWN) {
             self->m_scrollEdgeLock |= 8;
             return 1;
         }
-        if (key == 0x2d || key == 0x2e || key == 0x24 || key == 0x23 || key == 0x21
-            || key == 0x22) {
+        if (key == VK_INSERT || key == VK_DELETE || key == VK_HOME || key == VK_END
+            || key == VK_PRIOR || key == VK_NEXT) {
             return 1;
         }
     }
 
-    if (key == 0x61 || key == 0x62 || key == 0x63 || key == 0x64 || key == 0x65 || key == 0x66
-        || key == 0x67 || key == 0x68 || key == 0x69 || key == 0x90 || key == 0x6f || key == 0x6a
-        || key == 0x24 || key == 0x23 || key == 0x21 || key == 0x22 || key == 0xc || key == 0x26
-        || key == 0x28 || key == 0x25 || key == 0x27 || key == 0x2d || key == 0x2e || key == 0x6e) {
+    if (key == VK_NUMPAD1 || key == VK_NUMPAD2 || key == VK_NUMPAD3 || key == VK_NUMPAD4
+        || key == VK_NUMPAD5 || key == VK_NUMPAD6 || key == VK_NUMPAD7 || key == VK_NUMPAD8
+        || key == VK_NUMPAD9 || key == VK_NUMLOCK || key == VK_DIVIDE || key == VK_MULTIPLY
+        || key == VK_HOME || key == VK_END || key == VK_PRIOR || key == VK_NEXT || key == VK_CLEAR
+        || key == VK_UP || key == VK_DOWN || key == VK_LEFT || key == VK_RIGHT || key == VK_INSERT
+        || key == VK_DELETE || key == VK_DECIMAL) {
         goto recorder_place;
     }
 
-    if (key == 0x49) {
+    if (key == 'I') {
         if (g_gruntCreation == 0) {
             return 1;
         }
@@ -512,7 +514,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x50) {
+    if (key == 'P') {
         if (g_gooPuddlez == 0) {
             return 1;
         }
@@ -536,7 +538,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
     }
 
-    if (key == 0x78) {
+    if (key == VK_F9) {
         if (g_explosionz == 0) {
             return 1;
         }
@@ -550,7 +552,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x4b) {
+    if (key == 'K') {
         if (g_gruntDestruction == 0) {
             return 1;
         }
@@ -565,7 +567,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 0x31) {
+    if (key == '1') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(1);
         } else {
@@ -573,7 +575,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x32) {
+    if (key == '2') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(2);
         } else {
@@ -581,7 +583,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x33) {
+    if (key == '3') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(3);
         } else {
@@ -589,7 +591,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x34) {
+    if (key == '4') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(4);
         } else {
@@ -597,7 +599,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x35) {
+    if (key == '5') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(5);
         } else {
@@ -605,7 +607,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x36) {
+    if (key == '6') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(6);
         } else {
@@ -613,7 +615,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x37) {
+    if (key == '7') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(7);
         } else {
@@ -621,7 +623,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x38) {
+    if (key == '8') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(8);
         } else {
@@ -629,7 +631,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == 0x39) {
+    if (key == '9') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(9);
         } else {
@@ -649,7 +651,7 @@ recorder_place:
         self->m_dragInhibit1 = 0;
         self->m_guts->CommitSlot(0);
         this->SetCursorFrame(0);
-        if (key != 0x2d) {
+        if (key != VK_INSERT) {
             goto tail_default;
         }
         return 1;
@@ -666,7 +668,7 @@ recorder_place:
         lvl = (st >= 0x17);
     }
     self->m_dragInhibit2 = 0;
-    if (key == 0x2e || key == 0x6e) {
+    if (key == VK_DELETE || key == VK_DECIMAL) {
         level->ReportTab(st);
         this->SetCursorFrame(0);
         return 1;
@@ -675,95 +677,95 @@ recorder_place:
     this->SetCursorFrame(0);
     if (lvl == 0) {
         if (ph == 0) {
-            if (key != 0x90) {
+            if (key != VK_NUMLOCK) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == 1) {
-            if (key == 0x67) {
+            if (key == VK_NUMPAD7) {
                 return 1;
             }
-            if (key != 0x24) {
+            if (key != VK_HOME) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == 2) {
-            if (key == 0x64) {
+            if (key == VK_NUMPAD4) {
                 return 1;
             }
-            if (key != 0x25) {
+            if (key != VK_LEFT) {
                 goto tail_default;
             }
             return 1;
         }
-        if (key == 0x61) {
+        if (key == VK_NUMPAD1) {
             return 1;
         }
-        if (key != 0x23) {
+        if (key != VK_END) {
             goto tail_default;
         }
         return 1;
     }
     if (lvl == 1) {
         if (ph == 0) {
-            if (key != 0x6f) {
+            if (key != VK_DIVIDE) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == 1) {
-            if (key == 0x68) {
+            if (key == VK_NUMPAD8) {
                 return 1;
             }
-            if (key != 0x26) {
+            if (key != VK_UP) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == 2) {
-            if (key != 0xc) {
+            if (key != VK_CLEAR) {
                 goto tail_default;
             }
             return 1;
         }
-        if (key == 0x62) {
+        if (key == VK_NUMPAD2) {
             return 1;
         }
-        if (key != 0x28) {
+        if (key != VK_DOWN) {
             goto tail_default;
         }
         return 1;
     }
     if (ph == 0) {
-        if (key != 0x6a) {
+        if (key != VK_MULTIPLY) {
             goto tail_default;
         }
         return 1;
     }
     if (ph == 1) {
-        if (key == 0x69) {
+        if (key == VK_NUMPAD9) {
             return 1;
         }
-        if (key != 0x21) {
+        if (key != VK_PRIOR) {
             goto tail_default;
         }
         return 1;
     }
     if (ph == 2) {
-        if (key == 0x66) {
+        if (key == VK_NUMPAD6) {
             return 1;
         }
-        if (key != 0x27) {
+        if (key != VK_RIGHT) {
             goto tail_default;
         }
         return 1;
     }
-    if (key == 0x63) {
+    if (key == VK_NUMPAD3) {
         return 1;
     }
-    if (key != 0x22) {
+    if (key != VK_NEXT) {
         goto tail_default;
     }
     return 1;
@@ -784,70 +786,70 @@ tail_default2:
 
         CStatusBarMgr* lv = self->m_guts;
         switch (key) {
-            case 0x0c:
+            case VK_CLEAR:
                 lv->HlClickGroup1(2);
                 return 1;
-            case 0x21:
+            case VK_PRIOR:
                 lv->HlClickGroup2(1);
                 return 1;
-            case 0x22:
+            case VK_NEXT:
                 lv->HlClickGroup2(3);
                 return 1;
-            case 0x23:
+            case VK_END:
                 lv->HlClickGroup0(3);
                 return 1;
-            case 0x24:
+            case VK_HOME:
                 lv->HlClickGroup0(1);
                 return 1;
-            case 0x25:
+            case VK_LEFT:
                 lv->HlClickGroup0(2);
                 return 1;
-            case 0x26:
+            case VK_UP:
                 lv->HlClickGroup1(1);
                 return 1;
-            case 0x27:
+            case VK_RIGHT:
                 lv->HlClickGroup2(2);
                 return 1;
-            case 0x28:
+            case VK_DOWN:
                 lv->HlClickGroup1(3);
                 return 1;
-            case 0x2d:
+            case VK_INSERT:
                 lv->ActivateSlot(-1);
                 return 1;
-            case 0x61:
+            case VK_NUMPAD1:
                 lv->HlClickGroup0(3);
                 return 1;
-            case 0x62:
+            case VK_NUMPAD2:
                 lv->HlClickGroup1(3);
                 return 1;
-            case 0x63:
+            case VK_NUMPAD3:
                 lv->HlClickGroup2(3);
                 return 1;
-            case 0x64:
+            case VK_NUMPAD4:
                 lv->HlClickGroup0(2);
                 return 1;
-            case 0x65:
+            case VK_NUMPAD5:
                 lv->HlClickGroup1(2);
                 return 1;
-            case 0x66:
+            case VK_NUMPAD6:
                 lv->HlClickGroup2(2);
                 return 1;
-            case 0x67:
+            case VK_NUMPAD7:
                 lv->HlClickGroup0(1);
                 return 1;
-            case 0x68:
+            case VK_NUMPAD8:
                 lv->HlClickGroup1(1);
                 return 1;
-            case 0x69:
+            case VK_NUMPAD9:
                 lv->HlClickGroup2(1);
                 return 1;
-            case 0x6a:
+            case VK_MULTIPLY:
                 lv->HlClickGroup2(0);
                 return 1;
-            case 0x6f:
+            case VK_DIVIDE:
                 lv->HlClickGroup1(0);
                 return 1;
-            case 0x90:
+            case VK_NUMLOCK:
                 lv->HlClickGroup0(0);
                 return 1;
         }

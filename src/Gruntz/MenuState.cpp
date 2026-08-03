@@ -284,17 +284,17 @@ tail:
 
 RVA(0x000a0b90, 0xc7)
 i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
-    if (key == 0x28) {
+    if (key == VK_DOWN) {
         m_menuTree->MoveFocusDownFollowingLinks();
-    } else if (key == 0x26) {
+    } else if (key == VK_UP) {
         m_menuTree->MoveFocusUpFollowingLinks();
-    } else if (key == 0x27) {
+    } else if (key == VK_RIGHT) {
         m_menuTree->MoveFocusRightFollowingLinks();
-    } else if (key == 0x25) {
+    } else if (key == VK_LEFT) {
         m_menuTree->MoveFocusLeftFollowingLinks();
-    } else if (key == 0xd || key == 0x20) {
+    } else if (key == VK_RETURN || key == VK_SPACE) {
         m_menuTree->ActivateFocusedItem();
-    } else if (key == 0x1b) {
+    } else if (key == VK_ESCAPE) {
         if (m_menuTree->ReturnToPreviousPage() == 0) {
             m_activateCueDurationMs = 0;
             PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
