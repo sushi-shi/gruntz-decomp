@@ -940,17 +940,17 @@ i32 CGrunt::ResolveEntranceArrival() {
 
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
         CGruntzMgr* g = g_gameReg;
-        i32 mode = g->m_gameMode;
-        if (mode != 1) {
+        GameModeId mode = g->m_gameMode;
+        if (mode != GAMEMODE_SINGLE) {
             GruntzPlayer* slot = &g->m_options[m_tileOwnerHi];
             if (slot != 0 && slot->m_humanControlled != 0) {
-                if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == 2
+                if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == GAMEMODE_MULTIPLAYER
                     && g_curPlayer == m_tileOwnerHi && m_arrived == 0) {
                     m_tileMgr->GridAction6(m_tileOwnerHi, m_tileOwnerLo);
                     m_arrivalNotified = 1;
                     goto tail;
                 }
-                if (mode != 2 && g_curPlayer == m_tileOwnerHi && m_arrived == 0
+                if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_tileOwnerHi && m_arrived == 0
                     && m_tileClaimed != 1) {
                     m_arrivalRerollLo = 0;
                     m_arrivalRerollWindowLo = 0;

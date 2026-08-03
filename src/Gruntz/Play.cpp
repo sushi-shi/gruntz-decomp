@@ -758,7 +758,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    i32 modeFlag = (static_cast<i32>(Update()) == 0x11) ? 1 : 0;
+    i32 modeFlag = (Update() == GAMESTATE_MULTI) ? 1 : 0;
     CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : 0;
     self->m_initialFramePending = 1;
     self->m_levelIndex = level;
@@ -2733,7 +2733,7 @@ RVA(0x000d8c60, 0xea)
 i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
     i32 right = w->m_modeW;
-    i32 state = m_guts->m_position;
+    StatusBarDock state = m_guts->m_position;
     i32 bottom = w->m_modeH;
     RECT r;
     if (state == 1) {
@@ -3446,8 +3446,8 @@ i32 CPlay::DrawLevelInfoText() {
             s0 = g_emptyString;
     }
 
-    i32 mode = g_gameReg->m_gameMode;
-    if (mode == 1) {
+    GameModeId mode = g_gameReg->m_gameMode;
+    if (mode == GAMEMODE_SINGLE) {
         if (g_gameReg->m_isCustomLevel != 0) {
             s1.LoadString(0x81a0);
         } else {
@@ -3589,13 +3589,13 @@ i32 CPlay::DrawLevelInfoText() {
                 s2.LoadString(0x81ad);
             }
         }
-    } else if (mode == 3) {
+    } else if (mode == GAMEMODE_REPLAY) {
         if (g_gameReg->m_isCustomLevel != 0) {
             s1.LoadString(0x819f);
         } else {
             s1.LoadString(0x819e);
         }
-    } else if (mode == 2) {
+    } else if (mode == GAMEMODE_MULTIPLAYER) {
         if (g_gameReg->m_isCustomLevel != 0) {
             s1.LoadString(0x819d);
         } else {
@@ -6075,7 +6075,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     CMulti* finishGate
 ) {
     i32 result;
-    if (mode != 0) {
+    if (mode != GAMEMODE_NONE) {
         if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
             g_gameReg->m_cueSink->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();

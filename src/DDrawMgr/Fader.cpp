@@ -1794,7 +1794,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
 
 RVA(0x00182900, 0x35)
 i32 CFaderShape::GetFrameCount() {
-    i32 mode = m_mode;
+    FaderMode mode = m_mode;
     if (mode == 1 || mode == 2) {
         return m_span - m_halfWidth * 2;
     }

@@ -177,7 +177,7 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
     if (m_hlBusy != 0) {
         return 1;
     }
-    i32 old = m_position;
+    StatusBarDock old = m_position;
     if (old == state) {
         return 1;
     }
@@ -2853,13 +2853,13 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     memset(m_statFlags, 0, sizeof(m_statFlags));
     Reset();
 
-    i32 mode = g_gameReg->m_gameMode;
-    if (mode == 2) {
+    GameModeId mode = g_gameReg->m_gameMode;
+    if (mode == GAMEMODE_MULTIPLAYER) {
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Multiplayer", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = kSlotCommitLevel;
             m_slots[i].m_state = SLOT_READY;
         }
-    } else if (mode == 3) {
+    } else if (mode == GAMEMODE_REPLAY) {
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Battlez", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = kSlotCommitLevel;
             m_slots[i].m_state = SLOT_READY;

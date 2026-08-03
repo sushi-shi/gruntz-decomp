@@ -21,7 +21,7 @@ i32 CGameLevel::ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
     i32 eax = 0;
     i32 prevX = s->m_screenX;
     i32 prevY = s->m_screenY;
-    i32 kind = s->m_moveMode;
+    MoveMode kind = s->m_moveMode;
 
     if (kind > 0) {
         if (kind > 2) {

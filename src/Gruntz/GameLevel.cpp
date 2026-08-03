@@ -808,7 +808,7 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
 
     CGameObject* s = target;
     i32 eax = 0;
-    i32 kind = s->m_moveMode;
+    MoveMode kind = s->m_moveMode;
     i32 prevX = s->m_screenX;
     i32 prevY = s->m_screenY;
 
