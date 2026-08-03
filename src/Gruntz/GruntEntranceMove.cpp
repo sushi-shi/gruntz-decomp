@@ -58,6 +58,7 @@ DATA(0x0020ee48)
 static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";
 DATA(0x0020ee1c)
 static const char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE";
+DATA(0x0020cca8)
 static char s_Spellz[] = "Spellz";
 DATA(0x0020ee38)
 static char s_FreezeDelay[] = "FreezeDelay";

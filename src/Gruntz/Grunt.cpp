@@ -87,7 +87,9 @@ i32 g_movingSeed;
 
 DATA(0x0020d414)
 static char s_TimePerTile[] = "TimePerTile";
+DATA(0x0020a9ec)
 static char s_Grunt[] = "Grunt";
+DATA(0x0020df98)
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
 static char s_IdleDelay[] = "IdleDelay";
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
@@ -109,11 +111,14 @@ DATA(0x0020dfc0)
 static char s_SafeFlashTime[] = "SafeFlashTime";
 DATA(0x0020dfac)
 static char s_AccelerateFlash[] = "AccelerateFlash";
+DATA(0x0020d9b4)
 static char s_Powerupz[] = "Powerupz";
 DATA(0x0020d974)
 static char s_ConversionTime[] = "ConversionTime";
+DATA(0x0020d900)
 static char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
 
+DATA(0x0020a454)
 static char s_codeA[] = "A";
 static char s_codeE[] = "E";
 static char s_codeI[] = "I";

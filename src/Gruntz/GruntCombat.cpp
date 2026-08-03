@@ -131,6 +131,7 @@ static char s_Grunt[] = "Grunt";
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
 static char s_IdleDelay[] = "IdleDelay";
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
+DATA(0x0020df84)
 static char s_CombatTimeout[] = "CombatTimeout";
 
 DATA(0x0020dd30)

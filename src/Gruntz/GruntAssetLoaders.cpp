@@ -28,6 +28,7 @@ static void GruntScratchTeardown() {
     }
 }
 
+DATA(0x0020cc90)
 static const char s_dAnimKeyC[] = "C";
 DATA(0x0020e158)
 static const char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
@@ -37,6 +38,7 @@ DATA(0x0020e128)
 static const char s_DEATHZ_HOLE[] = "GRUNTZ_DEATHZ_HOLE";
 DATA(0x0020e10c)
 static const char s_DEATHZ_SHATTER[] = "GRUNTZ_DEATHZ_SHATTER";
+DATA(0x0020e0f0)
 static const char s_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 DATA(0x0020e0d8)
 static const char s_DEATHZ_BURN[] = "GRUNTZ_DEATHZ_BURN";
@@ -50,6 +52,7 @@ DATA(0x0020e06c)
 static const char s_DEATHZ_QUICKFALL2[] = "GRUNTZ_DEATHZ_QUICKFALL2";
 DATA(0x0020e04c)
 static const char s_DEATHZ_ELECTROCUTE[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
+DATA(0x0020e034)
 static const char s_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 DATA(0x0020e018)
 static const char s_DEATHZ_KAROKE[] = "GRUNTZ_DEATHZ_KAROKE";
@@ -57,6 +60,7 @@ DATA(0x0020dffc)
 static const char s_DEATHZ_EXPLODE[] = "GRUNTZ_DEATHZ_EXPLODE";
 DATA(0x0020dfe4)
 static const char s_EXITZ_DRAIN[] = "GRUNTZ_EXITZ_DRAIN";
+DATA(0x0020bd28)
 static const char s_dEXITZ[] = "GRUNTZ_EXITZ";
 static const char s_dExitKeyB[] = "B";
 DATA(0x0020bcf4)
