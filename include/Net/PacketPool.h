@@ -1,6 +1,0 @@
-#ifndef GRUNTZ_NET_PACKETPOOL_H
-#define GRUNTZ_NET_PACKETPOOL_H
-
-#include <Net/CmdPool.h>
-
-#endif // GRUNTZ_NET_PACKETPOOL_H

@@ -41,10 +41,38 @@ are misattributions. Find the real owner by xref / vtable slot (`gruntz sema xre
 | `gamelevel` | 2 strays (`0x06b330`, `0x082600`) | — | `0x15ccd0..0x1614e0` (73 fns) |
 | `ddrawsurfacepair` | 2 strays (`0x03a1d0`, `0x06b270`) | — | `0x163bc0..0x1660b0` |
 
-**Note `0x06b2a0` and `0x06b330` are 0x90 apart** — `ddrawsubmgrleaf`'s stray and one of
-`gamelevel`'s sit side by side in a region neither unit occupies. That is very likely a
-*third* real object we have not identified, and both strays belong to it. Resolve that
-region first; it may dissolve two rows at once.
+**`0x06b2a0` and `0x06b330` are 0x90 apart** — `ddrawsubmgrleaf`'s stray and one of
+`gamelevel`'s sit side by side. This was first read as an unidentified third object;
+**that is wrong**. The region is fully attributed — five functions, five *different*
+units, packed back to back with a 0x2e6 gap after:
+
+```
+0x06b260   5B  gruntentrancemove      CGrunt::StepAttackAction
+0x06b270  27B  ddrawsurfacepair       CAniElement::AtChecked
+0x06b2a0  35B  ddrawsubmgrleaf        CDDrawSubMgrLeaf::LookupValue
+0x06b2e0  57B  gruntentrancearrival   CWapX::Apply
+0x06b330  42B  gamelevel              CGameLevel::PointInBounds
+```
+
+That is a pooled band — small bodies from many TUs placed together — not a compiland.
+
+### Do NOT try to fix these by moving the body to a header — measured, it fails
+
+The obvious hypothesis is that a body landing in a pooled band was a header inline in the
+original, folded to its first referencer. **Tested; it does not hold for any of these.**
+
+* `CDDrawSubMgrLeaf::LookupValue` (35 B) moved into its header (24 includers) was emitted
+  in **0** base objs — MSVC inlines a trivial non-virtual away entirely — while the target
+  still defines it, so it became an unmatched target symbol. Reverted.
+* Of the **110** bodies already defined in `include/`, **101 are virtual** (the vtable
+  forces emission) and the remaining **9 all return `CString` by value** (an NRV temporary
+  MSVC5 will not elide). Those are the only two shapes that keep a header body emitted.
+  **All ten strays here are non-virtual returning `int`/`void`/pointer** — neither shape.
+* Size is not the competing explanation: the largest, `CPreviewState::LoadScreen` (170 B),
+  will not even compile in a header — it needs `IMGTAG_XCP`, `CParseSource` and
+  `m_world->m_drawTarget->LoadPageImage`, i.e. half the engine hoisted into a header.
+
+So these strays are **mis-homed**, and re-homing by xref is the only route open.
 
 `gamelevel` is the priority: its `/GR` verdict is currently **contaminated** by the
 conflation (it emits 6 RTTI descriptors retail lacks), so it is parked on `cpp` and
@@ -104,9 +132,9 @@ orphans of another object (re-home).
 
 ## Sequence
 
-1. The `0x06b2a0`/`0x06b330` region — may dissolve two Tier-1 rows at once.
-2. Remaining Tier-1 strays (cheap, low risk, each removes a row).
-3. `gamelevel` — unblocks its `/GR` scope.
+1. Tier-1 strays, by xref (cheap, low risk, each removes a row). Not header moves —
+   see the measured negative above.
+2. `gamelevel` — unblocks its `/GR` scope.
 4. Tier-2, smallest first (`motionstate`, `attractstate`, `menustate`, `sbi_wellgoo`).
 5. `cimage`, `gameapp`, `gamewnd` — clearest semantic seams of the larger ones.
 6. `secretteleportertrigger`, `ufo` — need a behavioural seam, hardest to name.

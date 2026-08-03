@@ -1,6 +1,0 @@
-#ifndef GRUNTZ_GRUNTZ_CSTEPLIST2_H
-#define GRUNTZ_GRUNTZ_CSTEPLIST2_H
-
-#include <rva.h>
-
-#endif // GRUNTZ_GRUNTZ_CSTEPLIST2_H
