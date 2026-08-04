@@ -51,6 +51,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
@@ -1919,7 +1920,7 @@ i32 CGrunt::CreateHealthSprite() {
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x19,
-        0xdbba0,
+        SORTKEY_GRUNT_HUD,
         s_GruntHealthSprite,
         0x40003
     );
@@ -1945,7 +1946,7 @@ i32 CGrunt::CreateToySprite() {
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x19,
-        0xdbba0,
+        SORTKEY_GRUNT_HUD,
         s_GruntToySprite,
         0x40003
     );
@@ -1972,7 +1973,7 @@ i32 CGrunt::CreateStaminaSprite() {
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x20,
-        0xdbba0,
+        SORTKEY_GRUNT_HUD,
         s_GruntStaminaSprite,
         0x40003
     );
@@ -2008,7 +2009,7 @@ i32 CGrunt::CreateToyTimeSprite() {
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x20,
-        0xdbba0,
+        SORTKEY_GRUNT_HUD,
         s_GruntToyTimeSprite,
         0x40003
     );
@@ -2040,7 +2041,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x26,
-        0xdbba0,
+        SORTKEY_GRUNT_HUD,
         s_GruntWingzTimeSprite,
         0x40003
     );

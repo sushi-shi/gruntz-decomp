@@ -31,6 +31,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -148,8 +149,8 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_wwdObject->m_flags |= 0x2000002;
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != 0xcf850) {
-        o->m_sortKey = 0xcf850;
+    if (o->m_sortKey != SORTKEY_ACTOR) {
+        o->m_sortKey = SORTKEY_ACTOR;
         o->m_flags |= 0x20000;
     }
     memset(&m_frames[0], 0, 0x1c);
@@ -316,9 +317,14 @@ i32 CProjectile::LoadProjectileSprites(
     m_arrived = 0;
 
     CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
-    m_shadow =
-        (factory
-             ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003));
+    m_shadow = (factory->CreateSprite(
+        0,
+        owner->m_screenX,
+        owner->m_screenY,
+        SORTKEY_ACTOR_BEHIND,
+        "LightFx",
+        0x2040003
+    ));
     if (m_shadow != NULL) {
         m_shadow->m_animWorker->m_notify(m_shadow);
         (static_cast<CLightFx*>(m_shadow->m_animWorker->m_logic))
@@ -530,9 +536,14 @@ void CProjectile::AdvanceMotion() {
 
             if (m_targetX < reg->m_viewBounds.right && m_targetX >= reg->m_viewBounds.left
                 && m_targetY < reg->m_viewBounds.bottom && m_targetY >= reg->m_viewBounds.top) {
-                CWwdGameObjectA* fx =
-                    reg->m_world->m_childGroup
-                        ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
+                CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
+                    0,
+                    m_targetX,
+                    m_targetY,
+                    SORTKEY_ACTOR_BEHIND,
+                    "Particlez",
+                    0x40003
+                );
                 if (fx != NULL) {
                     fx->ApplyName("GAME_WATER");
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
@@ -563,7 +574,7 @@ void CProjectile::AdvanceMotion() {
                                 0,
                                 m_targetX,
                                 m_targetY,
-                                0xcf84f,
+                                SORTKEY_ACTOR_BEHIND,
                                 "Particlez",
                                 0x40003
                             );

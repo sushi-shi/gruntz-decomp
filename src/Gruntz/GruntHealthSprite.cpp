@@ -8,6 +8,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -33,8 +34,8 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_health = 0x64;
-    if (m_object->m_sortKey != 0xdbba0) {
-        m_object->m_sortKey = 0xdbba0;
+    if (m_object->m_sortKey != SORTKEY_GRUNT_HUD) {
+        m_object->m_sortKey = SORTKEY_GRUNT_HUD;
         m_object->m_flags |= 0x20000;
     }
     m_yOffset = -0x19;

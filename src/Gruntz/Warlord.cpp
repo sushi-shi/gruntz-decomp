@@ -19,6 +19,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Timer.h>
@@ -652,7 +653,7 @@ i32 CWarlord::BuildFortSplashParticles() {
             && y < g_gameReg->m_viewBounds.bottom && y >= g_gameReg->m_viewBounds.top) {
             CWwdGameObjectA* fx =
                 g_gameReg->m_world->m_childGroup
-                    ->CreateSprite(0, x - 30, y + 10, 0xcf84f, "Particlez", 0x40003);
+                    ->CreateSprite(0, x - 30, y + 10, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
             if (fx != NULL) {
                 fx->ApplyName("LEVEL_FORTSPLASH");
                 fx->ApplyLookupGeometry("LEVEL_FORTSPLASH", 0);

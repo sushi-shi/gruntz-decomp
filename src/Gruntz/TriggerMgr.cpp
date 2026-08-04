@@ -31,6 +31,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -400,7 +401,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
     }
 
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdGameObjectA* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
+    CWwdGameObjectA* spr = fac->CreateSprite(0, ax, cx, SORTKEY_OVERLAY, "DoNothing", 1);
     m_goal = spr;
     spr->m_animWorker->m_notify(spr);
     m_goal->ApplyName("GAME_CAMERASPRITE");
@@ -684,7 +685,8 @@ i32 CTriggerMgr::ResetGroup(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(0, x, y, 0xf4240, "LightFx", 0x40003);
+            sprite =
+                m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_animWorker->m_notify(sprite);
             kindArg = 2;
             goto arm;
@@ -714,7 +716,8 @@ i32 CTriggerMgr::ResetGroup(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(0, x, y, 0xf4240, "LightFx", 0x40003);
+            sprite =
+                m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_animWorker->m_notify(sprite);
             kindArg = 1;
             goto arm;
@@ -749,7 +752,8 @@ i32 CTriggerMgr::ResetGroup(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(0, x, y, 0xf4240, "LightFx", 0x40003);
+            sprite =
+                m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_animWorker->m_notify(sprite);
             kindArg = 3;
             goto arm;
@@ -1578,7 +1582,8 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 continue;
             }
             CWwdGameObjectA* spr =
-                m_world->m_childGroup->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
+                m_world->m_childGroup
+                    ->CreateSprite(0, pxX, pxY, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
             if (spr == NULL) {
                 continue;
             }
@@ -1660,9 +1665,14 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                             i32 dx = rangeA ? rand() % rangeA + 1 : rand() & 1;
                             i32 dy = rangeB ? rand() % rangeB + 1 : rand() & 1;
                             if (g->TryTeleportToCell(dx, dy, 0, 1)) {
-                                CGameObject* spr =
-                                    g_gameReg->m_world->m_childGroup
-                                        ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
+                                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                                    0,
+                                    gx,
+                                    gy,
+                                    SORTKEY_OVERLAY,
+                                    s_LightFx,
+                                    0x40003
+                                );
                                 done = 1;
                                 spr->m_animWorker->m_notify(spr);
                                 (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
@@ -1684,7 +1694,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         g->m_combatClockHi = 0;
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
+                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, s_LightFx, 0x40003);
                         spr->m_animWorker->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                             ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
@@ -1701,7 +1711,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         g->LoadGruntTypeTable(static_cast<PickupType>(toy), 1, 0, 0);
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
+                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, s_LightFx, 0x40003);
                         spr->m_animWorker->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                             ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
@@ -1716,7 +1726,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                             0,
                             h->m_screenX,
                             h->m_screenY,
-                            0xf4240,
+                            SORTKEY_OVERLAY,
                             s_LightFx,
                             0x40003
                         );
@@ -1814,7 +1824,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
             m_baseList.RemoveAt(cur);
             CGameObject* spr = g_gameReg->m_world->m_childGroup
-                                   ->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
+                                   ->CreateSprite(0, px, py, SORTKEY_OVERLAY, "LightFx", 0x40003);
             spr->m_animWorker->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);

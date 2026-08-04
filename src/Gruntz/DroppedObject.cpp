@@ -24,6 +24,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -231,8 +232,8 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (o->m_sortKey != 0xcf851) {
-        o->m_sortKey = 0xcf851;
+    if (o->m_sortKey != SORTKEY_ACTOR_FRONT) {
+        o->m_sortKey = SORTKEY_ACTOR_FRONT;
         o->m_flags |= 0x20000;
     }
 
@@ -462,8 +463,8 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
     m_fallY = static_cast<double>(m_object->m_screenY);
-    if (m_object->m_sortKey != 0xcf851) {
-        m_object->m_sortKey = 0xcf851;
+    if (m_object->m_sortKey != SORTKEY_ACTOR_FRONT) {
+        m_object->m_sortKey = SORTKEY_ACTOR_FRONT;
         m_object->m_flags |= 0x20000;
     }
     m_timePerTile =
@@ -565,7 +566,7 @@ i32 CDroppedObject::AdvanceFall() {
                                     0,
                                     x,
                                     m_landY,
-                                    0xcf84f,
+                                    SORTKEY_ACTOR_BEHIND,
                                     "Particlez",
                                     0x40003
                                 );
@@ -586,7 +587,7 @@ i32 CDroppedObject::AdvanceFall() {
                 && m_landY >= g_gameReg->m_viewBounds.top) {
                 CWwdGameObjectA* s =
                     g_gameReg->m_world->m_childGroup
-                        ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
+                        ->CreateSprite(0, x, m_landY, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
                 if (s != NULL) {
                     s->ApplyName("GAME_WATER");
                     s->ApplyLookupGeometry("GAME_WATER", 0);
@@ -649,8 +650,8 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     m_object->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    if (m_object->m_sortKey != 0xcf84f) {
-        m_object->m_sortKey = 0xcf84f;
+    if (m_object->m_sortKey != SORTKEY_ACTOR_BEHIND) {
+        m_object->m_sortKey = SORTKEY_ACTOR_BEHIND;
         m_object->m_flags |= 0x20000;
     }
 }

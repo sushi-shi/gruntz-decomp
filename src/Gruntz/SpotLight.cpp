@@ -23,6 +23,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLightActReg.h>
 #include <Gruntz/TriggerMgr.h>
@@ -83,8 +84,8 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenY = cx;
     m_position.x = static_cast<double>(nx);
     m_position.y = m_center.y;
-    if (m_object->m_sortKey != 0xcf850) {
-        m_object->m_sortKey = 0xcf850;
+    if (m_object->m_sortKey != SORTKEY_ACTOR) {
+        m_object->m_sortKey = SORTKEY_ACTOR;
         m_object->m_flags |= 0x20000;
     }
     m_offset.x = m_center.x - m_position.x;

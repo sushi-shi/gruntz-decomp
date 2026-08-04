@@ -27,6 +27,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -266,8 +267,8 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
     m_entranceActive = 1;
-    if (m_object->m_sortKey != 0xcf850) {
-        m_object->m_sortKey = 0xcf850;
+    if (m_object->m_sortKey != SORTKEY_ACTOR) {
+        m_object->m_sortKey = SORTKEY_ACTOR;
         m_object->m_flags |= 0x20000;
     }
 

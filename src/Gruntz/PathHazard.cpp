@@ -15,6 +15,7 @@
 #include <Gruntz/PathHazardActReg.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/RainCloud.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
@@ -64,8 +65,8 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenY = snapY;
     m_posX = static_cast<double>(snapX);
     m_posY = static_cast<double>(snapY);
-    if (m_object->m_sortKey != 0xcf850) {
-        m_object->m_sortKey = 0xcf850;
+    if (m_object->m_sortKey != SORTKEY_ACTOR) {
+        m_object->m_sortKey = SORTKEY_ACTOR;
         m_object->m_flags |= 0x20000;
     }
 

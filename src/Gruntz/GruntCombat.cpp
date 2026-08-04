@@ -38,6 +38,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpellzEffect.h>
@@ -385,7 +386,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                0xf4240,
+                SORTKEY_OVERLAY,
                 "LightFx",
                 0x40003
             );
@@ -405,7 +406,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                0xf4240,
+                SORTKEY_OVERLAY,
                 "LightFx",
                 0x40003
             );
@@ -425,7 +426,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                0xf4240,
+                SORTKEY_OVERLAY,
                 "LightFx",
                 0x40003
             );
@@ -443,7 +444,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                0xf4240,
+                SORTKEY_OVERLAY,
                 "LightFx",
                 0x40003
             );
@@ -463,7 +464,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                0xf4240,
+                SORTKEY_OVERLAY,
                 "LightFx",
                 0x40003
             );
@@ -578,7 +579,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         0,
         m_object->m_screenX,
         m_object->m_screenY,
-        0xcf850,
+        SORTKEY_ACTOR,
         s_SingleAnimation,
         0x40003
     );

@@ -14,6 +14,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Warlord.h>
@@ -166,7 +167,7 @@ i32 CExitTrigger::AdvanceAnim() {
                             && y >= g_gameReg->m_viewBounds.top) {
                             CWwdGameObjectA* fx =
                                 g_gameReg->m_world->m_childGroup
-                                    ->CreateSprite(0, x, y, 0xf4240, "Explosion", 0x40003);
+                                    ->CreateSprite(0, x, y, SORTKEY_OVERLAY, "Explosion", 0x40003);
                             if (fx != NULL) {
                                 fx->ApplyLookupGeometry("GAME_EXPLOSION3", 0);
                                 fx->m_smarts = 0;

@@ -303,6 +303,7 @@ include/Gruntz/SimpleAnimation.h	pending
 include/Gruntz/SingleAnimation.h	pending	
 include/Gruntz/SingleFrameMessage.h	pending	
 include/Gruntz/SlotHolder.h	pending	
+include/Gruntz/SortKeyLayer.h	pending	
 include/Gruntz/SoundCue.h	pending	
 include/Gruntz/SoundFont.h	pending	
 include/Gruntz/SoundFontPath.h	pending	

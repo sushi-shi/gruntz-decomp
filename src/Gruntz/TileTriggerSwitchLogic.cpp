@@ -18,6 +18,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TileActionEvent.h>
@@ -754,7 +755,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
                     0,
                     ((i + m_tileX) << TILE_SHIFT_PX) - 0x10,
                     ((j + m_tileY) << TILE_SHIFT_PX) - 0x10,
-                    0xcf84f,
+                    SORTKEY_ACTOR_BEHIND,
                     "Particlez",
                     0x40003
                 );
@@ -1307,8 +1308,9 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
         && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
-        CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
-                                   ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+        CWwdGameObjectA* spr =
+            g_gameReg->m_world->m_childGroup
+                ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
         if (spr != NULL) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
 

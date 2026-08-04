@@ -39,6 +39,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
@@ -1733,7 +1734,8 @@ i32 CStatusBarMgr::Activate() {
         m_barY = d - 0x22;
     }
     m_barSprite =
-        (m_world)->m_childGroup->CreateSprite(0, m_barX, m_barY, 0xf4240, "StatusBarSprite", 1);
+        (m_world)
+            ->m_childGroup->CreateSprite(0, m_barX, m_barY, SORTKEY_OVERLAY, "StatusBarSprite", 1);
     return m_barSprite != NULL;
 }
 

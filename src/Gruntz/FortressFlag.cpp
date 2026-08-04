@@ -16,6 +16,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -297,8 +298,8 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
-    if (m_object->m_sortKey != 0xcf84f) {
-        m_object->m_sortKey = 0xcf84f;
+    if (m_object->m_sortKey != SORTKEY_ACTOR_BEHIND) {
+        m_object->m_sortKey = SORTKEY_ACTOR_BEHIND;
         m_object->m_flags |= 0x20000;
     }
     m_object->m_dirty.m_armed = 0;
@@ -352,8 +353,8 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != 0xf4240) {
-        o->m_sortKey = 0xf4240;
+    if (o->m_sortKey != SORTKEY_OVERLAY) {
+        o->m_sortKey = SORTKEY_OVERLAY;
         o->m_flags |= 0x20000;
     }
     m_object->m_dirty.m_armed = 0;

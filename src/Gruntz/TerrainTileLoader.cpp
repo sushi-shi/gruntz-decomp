@@ -18,6 +18,7 @@
 #include <Gruntz/LightFx.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -188,7 +189,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.y = py;
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     CWwdGameObjectA* particle =
-                        level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                        level->m_childGroup
+                            ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
                     if (particle != NULL) {
                         particle->ApplyName("LEVEL_ROCKBREAK");
                         particle->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
@@ -236,7 +238,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.y = py;
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     CWwdGameObjectA* set =
-                        level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                        level->m_childGroup
+                            ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
                     if (set != NULL) {
                         set->ApplyName("LEVEL_DIRT");
                         set->ApplyLookupGeometry("GAME_DIRT", 0);
@@ -551,9 +554,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.x = waterX;
                 pt.y = waterY;
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                    CWwdGameObjectA* splash =
-                        level->m_childGroup
-                            ->CreateSprite(0, waterX, waterY, 0xcf84f, "Particlez", 0x40003);
+                    CWwdGameObjectA* splash = level->m_childGroup->CreateSprite(
+                        0,
+                        waterX,
+                        waterY,
+                        SORTKEY_ACTOR_BEHIND,
+                        "Particlez",
+                        0x40003
+                    );
                     if (splash != NULL) {
                         splash->ApplyName("GAME_WATER");
                         splash->ApplyLookupGeometry("GAME_WATER", 0);

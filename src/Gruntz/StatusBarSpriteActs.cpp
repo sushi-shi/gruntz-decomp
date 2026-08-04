@@ -7,6 +7,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/UserLogic.h>
@@ -91,8 +92,8 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_object->m_sortKey != 0xf4240) {
-        m_object->m_sortKey = 0xf4240;
+    if (m_object->m_sortKey != SORTKEY_OVERLAY) {
+        m_object->m_sortKey = SORTKEY_OVERLAY;
         m_object->m_flags |= 0x20000;
     }
 }

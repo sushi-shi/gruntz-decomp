@@ -20,6 +20,7 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -270,8 +271,14 @@ i32 CRollingBall::Update() {
                                 && py < g_gameReg->m_viewBounds.bottom
                                 && py >= g_gameReg->m_viewBounds.top) {
                                 CWwdGameObjectA* fx =
-                                    g_gameReg->m_world->m_childGroup
-                                        ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                                    g_gameReg->m_world->m_childGroup->CreateSprite(
+                                        0,
+                                        px,
+                                        py,
+                                        SORTKEY_ACTOR_BEHIND,
+                                        "Particlez",
+                                        0x40003
+                                    );
                                 if (fx != NULL) {
                                     fx->ApplyName("LEVEL_DEATHSPLASH");
                                     fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
@@ -383,9 +390,14 @@ i32 CRollingBall::Update() {
                     if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
                         && py < g_gameReg->m_viewBounds.bottom
                         && py >= g_gameReg->m_viewBounds.top) {
-                        CWwdGameObjectA* fx =
-                            g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                        CWwdGameObjectA* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+                            0,
+                            px,
+                            py,
+                            SORTKEY_ACTOR_BEHIND,
+                            "Particlez",
+                            0x40003
+                        );
                         if (fx != NULL) {
                             fx->ApplyName("GAME_WATER");
                             fx->ApplyLookupGeometry("GAME_WATER", 0);
