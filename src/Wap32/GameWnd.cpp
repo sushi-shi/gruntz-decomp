@@ -52,7 +52,7 @@ i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
         return 0;
     }
 
-    ShowWindow(m_hwnd, 1);
+    ShowWindow(m_hwnd, SW_SHOWNORMAL);
     return 1;
 }
 

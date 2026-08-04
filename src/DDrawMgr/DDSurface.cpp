@@ -600,7 +600,7 @@ void CDDSurface::Clear(i32 white) {
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
-    fx.m_fx.dwSize = 0x64;
+    fx.m_fx.dwSize = sizeof(fx.m_fx);
 
     fx.m_fx.dwROP = white ? static_cast<i32>(0xff0062) : 0x42;
     i32 hr = this->m_ddSurface->Blt(0, 0, 0, 0x1020000, &fx.m_fx);

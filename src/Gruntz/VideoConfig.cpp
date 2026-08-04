@@ -438,7 +438,7 @@ void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
         SCROLLINFO si;
         si.nMax = max;
         si.cbSize = 0x1c;
-        si.fMask = 0x17;
+        si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS | SIF_TRACKPOS;
         si.nMin = 1;
         si.nPage = 0xa;
         si.nPos = pos;

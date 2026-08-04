@@ -391,7 +391,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     if (bpp == 0) {
         DDSURFACEDESC desc;
         memset(&desc, 0, sizeof(desc));
-        desc.dwSize = 0x6c;
+        desc.dwSize = sizeof(desc);
         hr = m_device->GetDisplayMode(&desc);
         if (hr == 0) {
             m_palBpp = desc.ddpfPixelFormat.dwRGBBitCount;
@@ -937,7 +937,7 @@ RVA(0x00143740, 0x93)
 i32 CDDrawPtrCollections::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
-    desc.dwSize = 0x6c;
+    desc.dwSize = sizeof(desc);
     i32 hr = m_device->GetDisplayMode(&desc);
     if (hr != 0) {
         *pWidth = 0;
@@ -1097,7 +1097,7 @@ RVA(0x00143b20, 0xfc)
 i32 CDDrawPtrCollections::ComputeColorMasks() {
     DDSURFACEDESC desc;
     memset(&desc, 0, 0x6c);
-    desc.dwSize = 0x6c;
+    desc.dwSize = sizeof(desc);
     i32 hr = m_device->GetDisplayMode(&desc);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x82c, hr);

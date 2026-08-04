@@ -69,7 +69,7 @@ DeviceState* CInputDevRoot::ReadState() {
 
 RVA(0x00134df0, 0x33)
 DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
-    m_deviceInfo.dwSize = 0x244;
+    m_deviceInfo.dwSize = sizeof(m_deviceInfo);
     i32 hr = m_device2->GetDeviceInfo(&m_deviceInfo);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0xa6, hr);
@@ -80,6 +80,10 @@ DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
 
 RVA(0x00134e30, 0x36)
 DIDEVCAPS* CInputDevRoot::GetCapabilities() {
+    // RETAIL BUG, preserved: 0x244 is sizeof(DIDEVICEINSTANCEA), copied down
+    // from GetDeviceInfo above. DIDEVCAPS is not that size, and DirectInput
+    // validates dwSize - so this call cannot succeed. Byte-identical to retail;
+    // writing sizeof(m_caps) here would move bytes AND silently fix the game.
     m_caps.dwSize = 0x244;
     i32 hr = m_device2->GetCapabilities(&m_caps);
     if (hr != 0) {
@@ -91,6 +95,8 @@ DIDEVCAPS* CInputDevRoot::GetCapabilities() {
 
 RVA(0x00134e70, 0x3f)
 DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
+    // Same copied size, same consequence - DIPROPHEADER is 0x10 bytes. See the
+    // note in GetCapabilities.
     m_prop.dwSize = 0x244;
     i32 hr = m_device2->GetProperty(rguid, &m_prop);
     if (hr != 0) {
@@ -142,7 +148,7 @@ i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwD
     prop.diph.dwObj = dwObj;
     prop.diph.dwHow = dwHow;
     prop.dwData = dwData;
-    prop.diph.dwSize = 0x14;
+    prop.diph.dwSize = sizeof(prop);
     prop.diph.dwHeaderSize = 0x10;
     return SetProperty(rguid, &prop);
 }

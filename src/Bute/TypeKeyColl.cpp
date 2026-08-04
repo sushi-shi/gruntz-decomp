@@ -762,7 +762,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     *q = 0;
 
     MessageBeep(0);
-    MessageBoxA(0, msg, "C++ Tools error handler", 0x2010);
+    MessageBoxA(0, msg, "C++ Tools error handler", MB_TASKMODAL | MB_ICONHAND);
     FatalAppExitA(0, "The error handler terminated the application");
     exit(1);
 }

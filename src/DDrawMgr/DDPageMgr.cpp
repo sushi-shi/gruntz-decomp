@@ -466,7 +466,7 @@ afterLock:
 RVA(0x0017cbe0, 0x97)
 i32 CMoviePlayer::CheckGrid() {
     memset(&m_srcDesc, 0, 0x6c);
-    m_srcDesc.dwSize = 0x6c;
+    m_srcDesc.dwSize = sizeof(m_srcDesc);
     m_srcDesc.dwFlags = 7;
     m_srcDesc.ddsCaps.dwCaps = 0x840;
     m_srcDesc.dwHeight = m_smackHandle->Height;

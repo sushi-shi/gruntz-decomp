@@ -32,7 +32,7 @@ i32 CNetPlayerListNode::Init(CNetSessionDesc* src) {
         return 0;
     }
     memcpy(&m_desc, src, sizeof(*src));
-    m_desc.m_dwSize = 0x50;
+    m_desc.m_dwSize = sizeof(m_desc);
     m_desc.m_lpszName = NULL;
     m_desc.m_lpszPassword = NULL;
     if (src->m_lpszName && strlen(src->m_lpszName)) {
