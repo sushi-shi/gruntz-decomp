@@ -963,10 +963,8 @@ i32 CGrunt::ArrivalReticleScan() {
             if (PtInRect(&scanBounds, target) != 0 && m_defenderRadius > 1) {
                 RECT oldBounds = grid->m_bounds;
                 CDWordArray saved;
-                i32 endY = oldBounds.bottom + 1;
-                i32 endX = oldBounds.right + 1;
-                for (i32 y = oldBounds.top; y < endY; y++) {
-                    for (i32 x = oldBounds.left; x < endX; x++) {
+                for (i32 y = oldBounds.top; y <= oldBounds.bottom; y++) {
+                    for (i32 x = oldBounds.left; x <= oldBounds.right; x++) {
                         if (static_cast<u32>(x) < grid->m_width
                             && static_cast<u32>(y) < grid->m_height) {
                             saved.SetAtGrow(
@@ -981,7 +979,7 @@ i32 CGrunt::ArrivalReticleScan() {
                 i32 right = defTX + m_defenderRadius;
                 i32 top = defTY - m_defenderRadius;
                 i32 bottom = defTY + m_defenderRadius;
-                for (i32 borderX = left; borderX < right + 1; borderX++) {
+                for (i32 borderX = left; borderX <= right; borderX++) {
                     if (static_cast<u32>(borderX) < grid->m_width
                         && static_cast<u32>(top) < grid->m_height
                         && (borderX != occTX || top != occTY)) {
@@ -993,7 +991,7 @@ i32 CGrunt::ArrivalReticleScan() {
                         grid->m_rowInts[bottom][borderX * 7] = 1;
                     }
                 }
-                for (i32 borderY = top; borderY < bottom + 1; borderY++) {
+                for (i32 borderY = top; borderY <= bottom; borderY++) {
                     if (static_cast<u32>(left) < grid->m_width
                         && static_cast<u32>(borderY) < grid->m_height
                         && (left != occTX || borderY != occTY)) {
@@ -1009,8 +1007,8 @@ i32 CGrunt::ArrivalReticleScan() {
                 TileSwitch(occTX, occTY, 0, m_arrivalFlags, 1, 0);
 
                 i32 savedIndex = 0;
-                for (i32 restoreY = oldBounds.top; restoreY < endY; restoreY++) {
-                    for (i32 restoreX = oldBounds.left; restoreX < endX; restoreX++) {
+                for (i32 restoreY = oldBounds.top; restoreY <= oldBounds.bottom; restoreY++) {
+                    for (i32 restoreX = oldBounds.left; restoreX <= oldBounds.right; restoreX++) {
                         if (static_cast<u32>(restoreX) < grid->m_width
                             && static_cast<u32>(restoreY) < grid->m_height) {
                             grid->m_rowInts[restoreY][restoreX * 7] = saved.GetAt(savedIndex++);
