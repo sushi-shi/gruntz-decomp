@@ -458,22 +458,25 @@ i32 CDDrawPtrCollections::GetCapsChecked() {
     return hr;
 }
 
+// @early-stop
+// Retail RELOADS m_modeW/m_modeH for the save (load,load,store,store - the
+// 8-byte struct-copy shape) and keeps 0x280/0x1e0 as immediates; cl promotes
+// both constants to registers for the compare + the SetVideoMode args and then
+// constant-propagates them into the two stores.
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(i32 save) {
-    i32 w = m_modeW;
-    i32 h = m_modeH;
-    if (w == SCREEN_W_PX && h == SCREEN_H_PX) {
+    if (m_modeW == SCREEN_W_PX && m_modeH == SCREEN_H_PX) {
         if (save) {
-            m_savedModeW = w;
-            m_savedModeH = h;
+            m_savedModeW = m_modeW;
+            m_savedModeH = m_modeH;
         }
         return 1;
     }
-    if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, save)) {
-        return 1;
+    if (!SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, save)) {
+        ReportError(IDX(CMD_QUIT), 0x438);
+        return 0;
     }
-    ReportError(IDX(CMD_QUIT), 0x438);
-    return 0;
+    return 1;
 }
 
 RVA(0x0008e470, 0x50)
@@ -1439,17 +1442,22 @@ i32 CGruntzMgr::MakeRezPath() {
         }
     }
 
+    i32 movFound = 1;
     CString fecHi(s_fecName);
     CString fecLo(s_fecLoName);
-    CString fec(g_disableHqMovie ? fecLo : fecHi);
+    // Retail selects Gruntz.FEC when HQ movies are DISABLED and GruntzLo.FEC
+    // when they are enabled - inverted, but that is what 0x91779 branches on.
+    CString fec(g_disableHqMovie ? fecHi : fecLo);
 
     m_haveMoviez = false;
-    i32 movFound = 0;
-    m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fec));
-    if (!m_inGameDir && !FileExists(m_strMoviePath) && !g_disableHqMovie) {
-        m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fecHi));
-        if (FileExists(m_strMoviePath)) {
-            movFound = 1;
+    m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fecHi));
+    if (!m_inGameDir && !FileExists(m_strMoviePath)) {
+        movFound = 0;
+        if (!g_disableHqMovie) {
+            m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fecLo));
+            if (FileExists(m_strMoviePath)) {
+                movFound = 1;
+            }
         }
     }
     if (!movFound && drive) {
