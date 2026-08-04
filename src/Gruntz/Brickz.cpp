@@ -96,10 +96,14 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
                         dl = down - 1;
                     }
                     cell->m_flags &= ~0x1000;
-                    if ((up && down && !(up->m_flags & 0x939) && !(down->m_flags & 0x939))
-                        || (right && left && !(right->m_flags & 0x939) && !(left->m_flags & 0x939))
-                        || (ur && dl && !(ur->m_flags & 0x939) && !(dl->m_flags & 0x939))
-                        || (ul && dr && !(ul->m_flags & 0x939) && !(dr->m_flags & 0x939))) {
+                    if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
+                         && !(down->m_flags & BRICKZ_BLOCKED_MASK))
+                        || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
+                            && !(left->m_flags & BRICKZ_BLOCKED_MASK))
+                        || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
+                            && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
+                        || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
+                            && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
                         cell->m_flags |= 0x1000;
                     }
                 }

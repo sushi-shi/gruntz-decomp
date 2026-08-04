@@ -1019,7 +1019,7 @@ static inline void TBombGridClear(CGameObject* obj) {
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::LoadAttributes() {
     i32 cell = TBombGridCell(m_object);
-    if ((cell & 0x939) || (cell & 2)) {
+    if ((cell & BRICKZ_BLOCKED_MASK) || (cell & 2)) {
         m_wwdObject->m_flags |= 0x10000;
         TBombGridClear(m_object);
         return 0;

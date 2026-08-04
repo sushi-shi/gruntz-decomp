@@ -369,14 +369,17 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                         BrickzCell* ul = (up && left) ? up - colCount : 0;
                         BrickzCell* dr = (down && right) ? down + colCount : 0;
                         bool set = false;
-                        if (up && down && !(up->m_flags & 0x939) && !(down->m_flags & 0x939)) {
+                        if (up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
+                            && !(down->m_flags & BRICKZ_BLOCKED_MASK)) {
                             set = true;
-                        } else if (right && left && !(right->m_flags & 0x939)
-                                   && !(left->m_flags & 0x939)) {
+                        } else if (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
+                                   && !(left->m_flags & BRICKZ_BLOCKED_MASK)) {
                             set = true;
-                        } else if (ur && dl && !(ur->m_flags & 0x939) && !(dl->m_flags & 0x939)) {
+                        } else if (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
+                                   && !(dl->m_flags & BRICKZ_BLOCKED_MASK)) {
                             set = true;
-                        } else if (ul && dr && !(ul->m_flags & 0x939) && !(dr->m_flags & 0x939)) {
+                        } else if (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
+                                   && !(dr->m_flags & BRICKZ_BLOCKED_MASK)) {
                             set = true;
                         }
                         if (set) {

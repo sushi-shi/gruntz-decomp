@@ -1676,7 +1676,7 @@ label_4c6e4:
         }
     }
     if (tgtPxX == m_entrancePx.m_x && tgtPxY == m_entrancePx.m_y) {
-        if ((flagHead & 0x939) == 0) {
+        if ((flagHead & BRICKZ_BLOCKED_MASK) == 0) {
             goto label_4c92b;
         }
         goto label_4cb2a;
@@ -3810,7 +3810,7 @@ void CGrunt::XferName(char*) {
                         hazard = g_areaPitDeath;
                     } else {
                         hazard = DEATH_EXPLODE;
-                        if ((flags & 0x80) != 0 || (flags & 0x939) == 0) {
+                        if ((flags & 0x80) != 0 || (flags & BRICKZ_BLOCKED_MASK) == 0) {
                             gate = 0;
                         }
                     }

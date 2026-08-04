@@ -11,6 +11,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
@@ -307,7 +308,7 @@ i32 CGruntPuddle::Remove() {
         } else {
             flags = 1;
         }
-        if ((flags & 0x939) != 0 || (flags & 0x2) != 0) {
+        if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & 0x2) != 0) {
             m_wwdObject->m_flags |= 0x10000;
             CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
             POSITION pos = list.GetHeadPosition();

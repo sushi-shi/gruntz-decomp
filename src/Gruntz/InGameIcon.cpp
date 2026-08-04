@@ -624,7 +624,7 @@ i32 CInGameIcon::PeekCycle() {
         } else {
             cell = 1;
         }
-        if ((cell & 0x939) != 0 || (cell & 2) != 0) {
+        if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & 2) != 0) {
             if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
                 BrickzCell* row0 = grid->m_rows[tileY];

@@ -51,7 +51,7 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
                 continue;
             }
             i32 flags = GridLookup(grid, b, a);
-            if (flags & 0x939) {
+            if (flags & BRICKZ_BLOCKED_MASK) {
                 continue;
             }
             if ((flags & 2) == 0) {

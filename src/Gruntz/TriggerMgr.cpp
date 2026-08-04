@@ -490,7 +490,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         } else {
             attr = plane->m_rowInts[ty][tx * 7];
         }
-        if ((attr & 0x939) != 0 || (attr & 2) != 0) {
+        if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & 2) != 0) {
             world->LoadCursorSprites(pfk, 0);
         } else {
             world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, 1);
@@ -609,7 +609,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             } else {
                 attr = plane->m_rowInts[ty][tx * 7];
             }
-            if (pfk != 0 && (attr & 0x939) == 0 && (attr & 2) == 0) {
+            if (pfk != 0 && (attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & 2) == 0) {
                 world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                 return 1;
             }

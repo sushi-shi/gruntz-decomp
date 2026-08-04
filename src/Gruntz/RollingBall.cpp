@@ -7,6 +7,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/CardinalDir.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -210,7 +211,7 @@ i32 CRollingBall::Update() {
             terrain = 1;
         }
 
-        if ((terrain & 0x939) != 0 || (terrain & 2) != 0) {
+        if ((terrain & BRICKZ_BLOCKED_MASK) != 0 || (terrain & 2) != 0) {
             CString fall;
             CString explosion;
 

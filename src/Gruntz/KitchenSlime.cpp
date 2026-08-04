@@ -9,6 +9,7 @@
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/CardinalDir.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -329,8 +330,8 @@ i32 CKitchenSlime::LoadSprites() {
         }
 
         if (tileY >= lvl->m_extent.top && tileX <= lvl->m_extent.right
-            && tileY <= lvl->m_extent.bottom && tileX >= lvl->m_extent.left && !(tileFlags & 0x939)
-            && !(tileFlags & 2)) {
+            && tileY <= lvl->m_extent.bottom && tileX >= lvl->m_extent.left
+            && !(tileFlags & BRICKZ_BLOCKED_MASK) && !(tileFlags & 2)) {
             found = 1;
             break;
         }

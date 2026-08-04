@@ -619,7 +619,7 @@ i32 CGrunt::TryPowerupAtTile() {
     } else {
         flags = b->m_rowInts[ty][tx * 7];
     }
-    if ((flags & 0x939) || (flags & 2)) {
+    if ((flags & BRICKZ_BLOCKED_MASK) || (flags & 2)) {
         return 0;
     }
     m_tileMgr->LoadPowerupIconSprites(reason, px, py, 0, 1, 0);

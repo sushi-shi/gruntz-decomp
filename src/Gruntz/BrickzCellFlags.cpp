@@ -245,16 +245,20 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
             BrickzCell* dr = (down && right) ? down + 1 : 0;
             nf &= ~0x1000;
             nc->m_flags = nf;
-            if (up && down && !(up->m_flags & 0x939) && !(down->m_flags & 0x939)) {
+            if (up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
+                && !(down->m_flags & BRICKZ_BLOCKED_MASK)) {
                 goto setbit;
             }
-            if (right && left && !(right->m_flags & 0x939) && !(left->m_flags & 0x939)) {
+            if (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
+                && !(left->m_flags & BRICKZ_BLOCKED_MASK)) {
                 goto setbit;
             }
-            if (ur && dl && !(ur->m_flags & 0x939) && !(dl->m_flags & 0x939)) {
+            if (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
+                && !(dl->m_flags & BRICKZ_BLOCKED_MASK)) {
                 goto setbit;
             }
-            if (ul && dr && !(ul->m_flags & 0x939) && !(dr->m_flags & 0x939)) {
+            if (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
+                && !(dr->m_flags & BRICKZ_BLOCKED_MASK)) {
             setbit:
                 nc->m_flags = nf | 0x1000;
             }

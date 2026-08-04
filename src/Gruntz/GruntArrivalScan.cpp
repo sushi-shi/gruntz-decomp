@@ -3065,7 +3065,7 @@ state2: {
         } else {
             flag = 1;
         }
-        if ((flag & 0x939) == 0) {
+        if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
             if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
                 m_defenderState = AISTATE_COOLDOWN;
                 m_dwell = 0;

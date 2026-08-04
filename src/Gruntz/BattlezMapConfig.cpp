@@ -3318,7 +3318,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
                         && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
                         i32 cf = arrCell(m_board, col, row);
-                        if (cf & 0x939) {
+                        if (cf & BRICKZ_BLOCKED_MASK) {
                             return 1;
                         }
                         if (g->RectContains(
