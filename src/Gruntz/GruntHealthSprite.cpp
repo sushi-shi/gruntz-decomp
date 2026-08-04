@@ -6,6 +6,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HealthPct.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -33,7 +34,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
     m_wwdObject->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_health = 0x64;
+    m_health = HEALTH_FULL;
     if (m_object->m_sortKey != SORTKEY_GRUNT_HUD) {
         m_object->m_sortKey = SORTKEY_GRUNT_HUD;
         m_object->m_flags |= 0x20000;

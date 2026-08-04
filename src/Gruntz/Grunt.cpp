@@ -40,6 +40,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HealthPct.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -3196,24 +3197,24 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_HEALTH1: {
             i32 h = g_buteMgr.GetIntDef("Powerupz", "Health1", 0x19) + m_health;
-            if (h >= 0x64) {
-                h = 0x64;
+            if (h >= HEALTH_FULL) {
+                h = HEALTH_FULL;
             }
             m_health = h;
             return 1;
         }
         case PICKUP_HEALTH2: {
             i32 h = g_buteMgr.GetIntDef("Powerupz", "Health2", 0x19) + m_health;
-            if (h >= 0x64) {
-                h = 0x64;
+            if (h >= HEALTH_FULL) {
+                h = HEALTH_FULL;
             }
             m_health = h;
             return 1;
         }
         case PICKUP_HEALTH3: {
             i32 h = g_buteMgr.GetIntDef("Powerupz", "Health3", 0x19) + m_health;
-            if (h >= 0x64) {
-                h = 0x64;
+            if (h >= HEALTH_FULL) {
+                h = HEALTH_FULL;
             }
             m_health = h;
             return 1;

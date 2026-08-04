@@ -22,6 +22,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HealthPct.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
@@ -1685,7 +1686,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         if (gx == x && gy == y) {
                             break;
                         }
-                        g->m_health = 0x64;
+                        g->m_health = HEALTH_FULL;
                         g->CreateHealthSprite();
                         g->m_combatTimeoutLo =
                             g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);

@@ -402,11 +402,11 @@ i32 DirectSoundMgr::SetFrequencyOffsetPercent(i32 percentOffset) {
         return 0;
     }
     i32 v = percentOffset * static_cast<i32>(m_freq) / 100 + static_cast<i32>(m_freq);
-    if (static_cast<u32>(v) >= 0x186a0) {
-        v = 0x1869f;
+    if (static_cast<u32>(v) >= DSOUND_FREQUENCY_MAX) {
+        v = DSOUND_FREQUENCY_MAX - 1;
     }
-    if (static_cast<u32>(v) <= 0x64) {
-        v = 0x65;
+    if (static_cast<u32>(v) <= DSOUND_FREQUENCY_MIN) {
+        v = DSOUND_FREQUENCY_MIN + 1;
     }
     i32 r = SetFrequency(v);
     m_sampleRate = percentOffset * m_rateBase / 100 + m_rateBase;

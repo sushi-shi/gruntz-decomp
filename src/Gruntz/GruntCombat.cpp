@@ -32,6 +32,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HealthPct.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -1176,8 +1177,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
                    enemy->m_moveIcon
                ) != 0) {
             i32 h = enemy->m_health + 0x19;
-            if (h >= 0x64) {
-                h = 0x64;
+            if (h >= HEALTH_FULL) {
+                h = HEALTH_FULL;
             }
             enemy->m_health = h;
 
@@ -1946,7 +1947,7 @@ void CGrunt::Activate() {
     m_entrancePx.m_y = py;
     m_reserved1dc.m_x = 0;
     m_reserved1dc.m_y = 0;
-    m_health = 0x64;
+    m_health = HEALTH_FULL;
     m_stamina = STAMINA_FULL;
     m_toyTime = 0;
     m_wingzTime = 0;

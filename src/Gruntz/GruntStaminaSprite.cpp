@@ -3,6 +3,7 @@
 #include <Gruntz/GruntStaminaSprite.h>
 
 #include <Bute/ButeTree.h>
+#include <Gruntz/HealthPct.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SortKeyLayer.h>
 
@@ -20,7 +21,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
         o->m_sortKey = SORTKEY_GRUNT_HUD;
         o->m_flags |= 0x20000;
     }
-    m_health = 0x64;
+    m_health = HEALTH_FULL;
     m_yOffset = -0x20;
 }
 

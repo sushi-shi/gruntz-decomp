@@ -207,6 +207,7 @@ include/Gruntz/GruntzPlayer.h	pending
 include/Gruntz/GruntzWnd.h	pending	
 include/Gruntz/GuardPoint.h	pending	
 include/Gruntz/HaznColl.h	pending	
+include/Gruntz/HealthPct.h	pending	
 include/Gruntz/HeapDiag.h	pending	
 include/Gruntz/HelpState.h	pending	
 include/Gruntz/ImageSets.h	pending	

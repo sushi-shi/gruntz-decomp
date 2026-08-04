@@ -27,4 +27,18 @@ GZ_ENUM_CONST_BEGIN(VolumeScale)
     MIDI_VOLUME_MAX = 127
 GZ_ENUM_CONST_END(VolumeScale)
 
+// DirectSound's playback-rate limits, as clamped by
+// DirectSoundMgr::SetFrequencyPercent. It computes a rate from a percentage
+// offset and then pins it strictly INSIDE the range - `>= MAX` becomes MAX - 1
+// and `<= MIN` becomes MIN + 1 - which is why the constants are the bounds
+// themselves rather than the values assigned.
+//
+// These are DSBFREQUENCY_MIN and DSBFREQUENCY_MAX in the DirectX SDK, but the
+// dsound.h that MSVC 5.0 ships predates those macros, so they are spelled out
+// here rather than included.
+GZ_ENUM_CONST_BEGIN(DSoundFrequency)
+    DSOUND_FREQUENCY_MIN = 100,
+    DSOUND_FREQUENCY_MAX = 100000
+GZ_ENUM_CONST_END(DSoundFrequency)
+
 #endif // DSNDMGR_VOLUMESCALE_H
