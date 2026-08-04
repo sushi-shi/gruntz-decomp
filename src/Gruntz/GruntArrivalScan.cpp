@@ -851,9 +851,9 @@ i32 CGrunt::ArrivalReticleScan() {
 
     Coord pt;
     GetScreenPos(&pt);
-    i32 dTX = abs((pt.m_x >> TILE_SHIFT_PX) - defTX);
+    i32 dTX = abs((pt.m_x >> TILE_SHIFT_PX) - (m_defenderPx.m_x >> TILE_SHIFT_PX));
     GetScreenPos(&pt);
-    i32 dTY = abs((pt.m_y >> TILE_SHIFT_PX) - defTY);
+    i32 dTY = abs((pt.m_y >> TILE_SHIFT_PX) - (m_defenderPx.m_y >> TILE_SHIFT_PX));
     i32 dist = dTX > dTY ? dTX : dTY;
     if (dist > m_defenderRadius) {
         m_defenderPx.m_x = m_lastTilePx.m_x;

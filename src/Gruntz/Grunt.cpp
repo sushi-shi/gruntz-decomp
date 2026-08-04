@@ -1089,8 +1089,8 @@ i32 CGrunt::StepArrivalDrop(
     bool eq;
 
     m_pendingTrigger = 0;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
-    if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    if (eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
         goto commitPhase;
     }
 
