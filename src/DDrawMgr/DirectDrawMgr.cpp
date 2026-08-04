@@ -979,7 +979,7 @@ i32 CDDrawPtrCollections::GetFreeVidMem() {
     DDSCAPS caps;
     DWORD total;
     DWORD freeMem;
-    caps.dwCaps = 0x1000;
+    caps.dwCaps = DDSCAPS_TEXTURE;
     i32 hr = m_device->GetAvailableVidMem(&caps, &total, &freeMem);
     return hr == 0 ? freeMem : 0;
 }

@@ -6,6 +6,7 @@
 #include <Enums.h>
 #include <Font/Font.h>
 #include <MsgParam.h>
+#include <Net/DPlaySessionFlags.h>
 #include <Net/InterfaceObject.h>
 #include <Net/NetGuids.h>
 
@@ -473,7 +474,8 @@ CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char
     CNetSessionDesc buf;
     memset(&buf, 0, sizeof(buf));
     buf.m_dwSize = sizeof(buf);
-    buf.m_dwFlags = 0xa044;
+    buf.m_dwFlags = DPSESSION_MIGRATEHOST | DPSESSION_KEEPALIVE
+                    | DPSESSION_OPTIMIZELATENCY | DPSESSION_DIRECTPLAYPROTOCOL;
     buf.m_guidApplication = m_appGuid.m_guid;
     buf.m_dwMaxPlayers = maxPlayers;
     buf.m_lpszName = sessionName;

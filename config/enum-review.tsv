@@ -405,6 +405,7 @@ include/MfcNoInline.h	pending
 include/MfcWin.h	pending	
 include/MsgParam.h	pending	
 include/Net/CmdPool.h	pending	
+include/Net/DPlaySessionFlags.h	pending	
 include/Net/EmptyString.h	pending	
 include/Net/InterfaceObject.h	pending	
 include/Net/KeyedList.h	pending	
