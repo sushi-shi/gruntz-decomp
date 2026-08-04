@@ -3802,16 +3802,15 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         goto notActivated;
     }
     if (idx == -1) {
-        i32 slot = 0;
-        for (;;) {
+        i32 slot;
+        for (slot = 0; slot < 5; slot++) {
             if (m_slots[slot].m_state == SLOT_READY) {
-                break;
-            }
-            slot++;
-            if (slot >= 5) {
-                return 0;
+                goto slotFound;
             }
         }
+        return 0;
+
+    slotFound:
         if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
             goto notActivated;
         }
