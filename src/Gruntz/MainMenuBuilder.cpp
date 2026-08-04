@@ -21,10 +21,6 @@ typedef u32 u32;
 DATA(0x00245d88)
 RECT g_menuTextRect = {0};
 
-static i32 RegisterPage(CChatBox* menu, CMenuPage* page) {
-    return menu->AddNode(page);
-}
-
 DATA(0x00211a98)
 static char s_MAIN[] = "MAIN";
 DATA(0x00211aa0)
@@ -226,7 +222,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     }
     page->AddItem(s_HELP, s_MENU_MAINMENU_HELP, 0x8035, 0, 0);
     page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, 0, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -241,7 +237,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     page->AddItem(s_LOADGAME, s_MENU_SINGLEPLAYER_LOADGAME, 0x80ce, 0, 0);
     page->AddItem(s_CUSTOMLEVELZ, s_MENU_SINGLEPLAYER_CUSTOMLEVELZ, 0x8042, 0, 0);
     page->AddItem(s_BACK, s_MENU_SINGLEPLAYER_BACK, 0, s_MAIN, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -256,7 +252,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     }
     page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, 0, 0);
     page->AddItem(s_BACK, s_MENU_MULTIPLAYER_BACK, 0, s_MAIN, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -274,7 +270,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     }
     page->AddItem(s_CREDITZ, s_MENU_MOVIEZ_CREDITZ, 0x8021, 0, 0);
     page->AddItem(s_BACK, s_MENU_MOVIEZ_BACK, 0, s_MAIN, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -340,7 +336,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_BACK, s_MENU_QUESTZ_BACK, 0, s_SINGLEPLAYER, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -371,7 +367,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         0
     );
     page->AddItem(s_BACK, s_MENU_AREAS_BACK, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -395,7 +391,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -422,7 +418,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -449,7 +445,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -476,7 +472,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -503,7 +499,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -530,7 +526,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -557,7 +553,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(menu, page) == 0) {
+    if (menu->AddNode(page) == 0) {
         return 0;
     }
 
@@ -584,5 +580,5 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    return RegisterPage(menu, page) != 0;
+    return menu->AddNode(page) != 0;
 }
