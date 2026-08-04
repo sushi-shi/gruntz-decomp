@@ -49,11 +49,15 @@ i32 g_levelMsgIconPos[16] = {
 #include <Gruntz/GruntDirection.h>
 #include <Wap32/ScreenGeometry.h>
 #include <Gruntz/SpriteStateFlags.h>
+// @early-stop
 RVA(0x00019cd0, 0x200)
 void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;
     }
+    // the coin flip is latched into a local; retail spills it to the (now dead)
+    // outX parameter slot in each of the three arms that take it.
+    i32 flip;
     switch (sel) {
         case DIR_NORTH:
             *outX = g_gameReg->Rand() % 0x281;
@@ -73,7 +77,8 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
             *outY = g_gameReg->Rand() % 0x1e1;
             return;
         case DIR_NORTHEAST:
-            if (g_gameReg->Rand() % 2) {
+            flip = g_gameReg->Rand() % 2;
+            if (flip) {
                 *outX = 0;
                 goto y_f1;
             }
@@ -81,7 +86,8 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
             *outY = SCREEN_H_PX;
             return;
         case DIR_NORTHWEST:
-            if (g_gameReg->Rand() % 2) {
+            flip = g_gameReg->Rand() % 2;
+            if (flip) {
                 *outX = SCREEN_W_PX;
                 goto y_f1;
             }
@@ -92,7 +98,8 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
             *outY = g_gameReg->Rand() % 0xf1 + SCREEN_HALF_H_PX;
             return;
         case DIR_SOUTHEAST:
-            if (g_gameReg->Rand() % 2) {
+            flip = g_gameReg->Rand() % 2;
+            if (flip) {
                 *outX = g_gameReg->RandRange(0, SCREEN_HALF_W_PX);
                 *outY = 0;
                 return;
@@ -144,6 +151,7 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
 // @interleaver Rng2Next - 70 B lone body at 0x15cbe0, between Deserialize
 // (wwdfactoryobject) and GetFrame (wwdfactoryobject): a first-use placement.
 
+// @early-stop
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
     CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
@@ -175,10 +183,11 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == NULL) {
         return 0;
     }
-    CShadeTable* tint =
-        g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
+    CLightFxMgr* pump = g_gameReg->m_logicPump;
+    CShadeTable* tint = pump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
+    m_icons[7]->m_stateFlags |= SPRITE_STATE_HIDDEN;
     CWwdGameObjectA* icon7 = m_icons[7];
     icon7->m_drawActive = 1;
     icon7->m_drawFillCmd = SHADE_DST_BY_SRC_16;
