@@ -223,9 +223,10 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         }
         m_hitTest = ctl;
         if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
-            if (m_hitTest) {
-                m_hitTest->Deactivate();
-                ::operator delete(m_hitTest);
+            CChatBoxOwner* dead = m_hitTest;
+            if (dead) {
+                dead->Deactivate();
+                ::operator delete(dead);
             }
             m_hitTest = NULL;
             return 0;

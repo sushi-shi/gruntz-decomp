@@ -35,9 +35,8 @@ GZ_ENUM_END(SbiSlotState)
 struct CSbiSlot {
 
     CSbiSlot() {
-        m_startTimeLo = 0;
+        m_startTime = 0;
         m_interval = 0;
-        m_startTimeHi = 0;
     }
     SbiSlotState m_state;
     i32 m_value;
