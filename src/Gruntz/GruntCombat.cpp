@@ -1101,7 +1101,8 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     PlayMoveSound(a, b);
 
     char* nm0 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    if (strcmp(nm0, s_codeH) == 0) {
+    bool eqH = (strcmp(nm0, s_codeH) == 0);
+    if (eqH) {
         return 1;
     }
     {
@@ -1122,7 +1123,8 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         static_cast<void>(rec);
     }
     char* nm1 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    if (strcmp(nm1, s_codeF) == 0) {
+    bool eqF = (strcmp(nm1, s_codeF) == 0);
+    if (eqF) {
         return 1;
     }
     {
@@ -1145,7 +1147,8 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         static_cast<void>(rec);
     }
     char* nm2 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    if (strcmp(nm2, s_codeO) == 0) {
+    bool eqO = (strcmp(nm2, s_codeO) == 0);
+    if (eqO) {
         return 1;
     }
     ResetGeometry();

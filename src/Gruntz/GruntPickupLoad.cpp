@@ -42,10 +42,15 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
         }
 
-        if (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "A") != 0
-            && strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), s_codeD) != 0
-            && strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "E") != 0) {
-            return 0;
+        bool neA = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "A") != 0);
+        if (neA) {
+            bool neD = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), s_codeD) != 0);
+            if (neD) {
+                bool neE = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "E") != 0);
+                if (neE) {
+                    return 0;
+                }
+            }
         }
     }
     FinishActiveAction();

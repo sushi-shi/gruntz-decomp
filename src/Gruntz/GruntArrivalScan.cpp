@@ -37,14 +37,9 @@
 
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
-        RECT ra;                                                                                   \
-        RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
-        ra.left = pb->left;                                                                        \
-        ra.top = pb->top;                                                                          \
-        ra.right = pb->right;                                                                      \
-        ra.bottom = pb->bottom;                                                                    \
+        CRect ra(0, 0, (grid)->m_width, (grid)->m_height);                                         \
+        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
+        ra = rb;                                                                                   \
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
@@ -69,14 +64,9 @@
 
 #define GRID_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
-        RECT ra;                                                                                   \
-        RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
-        ra.left = pb->left;                                                                        \
-        ra.top = pb->top;                                                                          \
-        ra.right = pb->right;                                                                      \
-        ra.bottom = pb->bottom;                                                                    \
+        CRect ra(0, 0, (grid)->m_width, (grid)->m_height);                                         \
+        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
+        ra = rb;                                                                                   \
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
@@ -1300,7 +1290,8 @@ i32 CGrunt::ChargeStep() {
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    if (strcmp(name, "I") != 0) {
+    bool neI = (strcmp(name, "I") != 0);
+    if (neI) {
         return 1;
     }
     this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
@@ -1557,7 +1548,8 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
 
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
+    bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    if (eqI) {
         return 1;
     }
     m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -3548,7 +3540,8 @@ RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
+    bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    if (eqI) {
         return 1;
     }
     CGrunt* occ;
