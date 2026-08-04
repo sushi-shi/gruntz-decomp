@@ -1112,19 +1112,21 @@ bool ButeMgr::ParseAttributeFile() {
 
 RVA(0x00171160, 0x45)
 bool CButeMgr::SkipToTag() {
-    while ((static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
+    for (;;) {
+        if (!(static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
+            return false;
+        }
         if (!Parse()) {
-            break;
+            return false;
         }
         i16 t = m_tokType;
-        if (t == 2 || t == 1) {
+        if (t == BUTETOK_TAG_OPEN || t == BUTETOK_END) {
             return true;
         }
-        if (t != 4) {
-            break;
+        if (t != BUTETOK_NAME) {
+            return false;
         }
     }
-    return false;
 }
 
 // @early-stop
@@ -1213,17 +1215,17 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
 RVA(0x001714e0, 0x66)
 void ButeTag_Apply(char* key, void* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
-    output << static_cast<unsigned char>('\n') << endl;
-    output << static_cast<unsigned char>('\n') << endl;
+    output << endl;
+    output << endl;
     output << s_strLBrack << key << s_strRBrack;
     static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, 0);
 }
 
-RVA(0x00171550, 0x11)
-void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
-    fn(this);
-    return this;
-}
+// cl5 inlines endl's body (`_outs << '\n' << flush`) but stops before the
+// manipulator operator<< and `flush` themselves - so both land here as
+// out-of-line COMDATs, in this TU, between ButeTag_Apply and ParseGroup.
+RVA_COMPGEN(0x00171550, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
+RVA_COMPGEN(0x00171570, 0x9, ?flush@@YAAAVostream@@AAV1@@Z)
 
 // Emit device for ??_Diostream@0x171a40 - the last remaining reason: with the
 // corrected strstrea.h, Save's teardown and symbols are retail-true, but our cl
@@ -1242,13 +1244,13 @@ bool CButeMgr::ParseGroup() {
         return false;
     }
     i16 t = m_tokType;
-    if (t == 1) {
+    if (t == BUTETOK_END) {
         return true;
     }
-    if (t != 2) {
+    if (t != BUTETOK_TAG_OPEN) {
         return false;
     }
-    for (;;) {
+    while (t != BUTETOK_END) {
         if (!ParseTagLine()) {
             return false;
         }
@@ -1263,21 +1265,20 @@ bool CButeMgr::ParseGroup() {
             return false;
         }
         t = m_tokType;
-        if (t == 1) {
+        if (t == BUTETOK_END) {
             return true;
         }
-        if (t != 2) {
-            if (t != 4) {
+        if (t != BUTETOK_TAG_OPEN) {
+            if (t != BUTETOK_NAME) {
                 return false;
             }
             if (!SkipToTag()) {
                 return false;
             }
         }
-        if (m_tokType == BUTETOK_END) {
-            return true;
-        }
+        t = m_tokType;
     }
+    return true;
 }
 
 RVA(0x00171640, 0x3f2)
@@ -1403,41 +1404,41 @@ CButeValue* CButeValue::SetDword(ButeType type, u32 val) {
     return this;
 }
 
-RVA(0x00172040, 0xfc)
+RVA(0x00172040, 0x120)
 CButeValue* CButeValue::CopyValue(CButeValue* other) {
+    // The retail jump table (0x17213c) proves the ButeType values AND that the
+    // arms are written in value order: 1 and 3 share one arm because cl folded
+    // the (identical) BUTE_DWORD body into the BUTE_FLOAT one.  Every payload is
+    // copied as a whole object so both pointers stay in registers - a per-field
+    // copy makes cl reload other->pValue for each word.
     switch (type) {
         case BUTE_INT:
             *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
             break;
         case BUTE_DWORD:
-        case BUTE_FLOAT:
-            *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
+            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
             break;
         case BUTE_DOUBLE:
-            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
-            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
+            *static_cast<double*>(pValue) = *static_cast<double*>(other->pValue);
+            break;
+        case BUTE_FLOAT:
+            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
             break;
         case BUTE_STRING:
             *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);
             break;
         case BUTE_RECT:
-            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
-            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
-            (static_cast<i32*>(pValue))[2] = (static_cast<i32*>(other->pValue))[2];
-            (static_cast<i32*>(pValue))[3] = (static_cast<i32*>(other->pValue))[3];
+            *static_cast<ButeIntRect*>(pValue) = *static_cast<ButeIntRect*>(other->pValue);
             break;
         case BUTE_POINT:
-            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
-            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
+            *static_cast<ButeIntPoint*>(pValue) = *static_cast<ButeIntPoint*>(other->pValue);
             break;
         case BUTE_VECTOR:
-            *static_cast<ButeRefLarge*>(pValue) = *static_cast<ButeRefLarge*>(other->pValue);
+            *static_cast<ButeDoubleVector*>(pValue) =
+                *static_cast<ButeDoubleVector*>(other->pValue);
             break;
         case BUTE_RANGE:
-            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
-            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
-            (static_cast<i32*>(pValue))[2] = (static_cast<i32*>(other->pValue))[2];
-            (static_cast<i32*>(pValue))[3] = (static_cast<i32*>(other->pValue))[3];
+            *static_cast<ButeDoubleRange*>(pValue) = *static_cast<ButeDoubleRange*>(other->pValue);
             break;
     }
     return this;

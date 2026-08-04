@@ -10,6 +10,8 @@
 //
 //   0  the lexer's failure state - every caller treats it as "no token"
 //   1  ends the scan: `if (m_tokType == 1) return true;` after SkipToTag
+//   2  opens a tag line: ParseGroup enters (and re-enters) its tag loop on it,
+//      and SkipToTag scans forward until it sees one
 //   3  closes a tag line: the last thing ParseTagLine requires
 //   4  the tag/key name: ParseTagLine takes m_token as m_tagName right after it
 //   5  the separator before a value
@@ -24,6 +26,7 @@
 GZ_ENUM_BEGIN_SPLIT(ButeToken, i16)
     BUTETOK_NONE = 0,
     BUTETOK_END = 1,
+    BUTETOK_TAG_OPEN = 2,
     BUTETOK_TAG_CLOSE = 3,
     BUTETOK_NAME = 4,
     BUTETOK_ASSIGN = 5,
