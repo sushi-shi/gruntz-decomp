@@ -447,6 +447,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
@@ -826,10 +827,10 @@ void CBootyState::ShowLevelCompleteMessage() {
         }
     }
 
-    CBattlezData* rec = g_gameReg->m_scoreHud;
-    if (rec->m_isCustomLevel == 0 && m_secretGate != 0) {
+    if (g_gameReg->m_scoreHud->m_isCustomLevel == 0 && m_secretGate != 0) {
         CString s;
         RECT r;
+        CBattlezData* rec = g_gameReg->m_scoreHud;
         if (rec->m_count > QUESTLEVEL_LAST) {
             if (rec->m_allDone != 0) {
                 s = "You have completed training! Now go and conquer the Battlez!";
@@ -872,6 +873,7 @@ i32 CBootyState::OnPaint() {
     return CState::OnPaint() != 0;
 }
 
+// @early-stop
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     i32 state = m_activation;
@@ -901,7 +903,10 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                     m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
                     m_animSprites[p]->m_screenY = 0xdc;
                     m_animSprites[p]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                    if ((g_gameReg->m_scoreHud)->GetRecordValue(p) != 0) {
+                    if ((g_gameReg->m_scoreHud)->GetRecordValue(p) == 0) {
+                        m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                    } else {
                         CString letter;
                         switch (p) {
                             case 0:
@@ -919,9 +924,6 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                         }
                         m_animSprites[p]->ApplyName("GRUNTZ_PICKUPS");
                         m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
-                    } else {
-                        m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
-                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     }
                 }
             }
