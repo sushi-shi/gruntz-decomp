@@ -14,6 +14,7 @@
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
@@ -1953,7 +1954,7 @@ void CGrunt::Activate() {
     m_arrivalState = 0;
     m_poweredUp = 0;
     m_resetApplied = 0;
-    m_arrivalFlags = 0x4000901;
+    m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
     m_passableMask = 0;
     m_deathAnimStarted = 0;
     m_tileClaimed = 0;

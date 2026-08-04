@@ -88,6 +88,7 @@ include/Gruntz/AniRecordView.h	pending
 include/Gruntz/AnimSink.h	pending	
 include/Gruntz/AnimWorker.h	pending	
 include/Gruntz/AreaMgr.h	pending	
+include/Gruntz/ArrivalFlagsPreset.h	pending	
 include/Gruntz/AssetRoot.h	pending	
 include/Gruntz/Attract.h	pending	
 include/Gruntz/BankMgr.h	pending	

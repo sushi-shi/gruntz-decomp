@@ -15,6 +15,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BattlezTask.h>
@@ -2125,15 +2126,15 @@ i32 CGrunt::Place(
 ) {
 
     if (kind != 0) {
-        if (kind != 0x11) {
-            m_arrivalFlags = 0x1c000d83;
+        if (kind != AI_BATTLEZ_PATH) {
+            m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
         } else {
-            m_arrivalFlags = 0x4000983;
+            m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
         }
     } else {
-        m_arrivalFlags = 0x4000901;
+        m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            m_arrivalFlags = 0x4000911;
+            m_arrivalFlags = ARRIVAL_FLAGS_PLAYER_SINGLE;
         }
     }
     m_arrivalTargetPx.m_x = -1;
@@ -2348,11 +2349,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2373,11 +2374,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2398,11 +2399,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
@@ -2426,11 +2427,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2451,11 +2452,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2476,11 +2477,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2501,11 +2502,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2526,11 +2527,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2586,11 +2587,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2611,11 +2612,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2639,11 +2640,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2667,11 +2668,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2695,11 +2696,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2720,11 +2721,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2745,11 +2746,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2770,11 +2771,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2795,11 +2796,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2820,11 +2821,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2846,11 +2847,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2871,11 +2872,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2896,11 +2897,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2921,11 +2922,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2949,11 +2950,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect.right = 0;
             m_reachExclusionRect.bottom = 0;
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2969,11 +2970,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_BABYWALKER: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -2992,11 +2993,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_BEACHBALL: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3014,11 +3015,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_BIGWHEEL: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3037,11 +3038,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GOKART: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3059,11 +3060,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_JACKINTHEBOX: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3081,11 +3082,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_JUMPROPE: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3104,11 +3105,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_POGOSTICK: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3127,11 +3128,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_SCROLL: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3150,11 +3151,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_SQUEAKTOY: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3172,11 +3173,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_YOYO: {
             if (m_arrivalState == 1) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3229,11 +3230,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             fresh = 0;
             m_animSetName = "HAREKRISHNAGRUNT";
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
@@ -3261,11 +3262,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             fresh = 0;
             m_animSetName = "REAPERGRUNT";
             if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = 0x4000901;
+                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = 0x4000983;
+                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
             } else {
-                m_arrivalFlags = 0x1c000d83;
+                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
