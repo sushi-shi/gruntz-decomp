@@ -29,9 +29,9 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     m_inputScrollTotal = 0;
     m_inputActive = 0;
 
-    m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, "ARIAL");
+    m_arialFont = CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, "ARIAL");
     if (!m_arialFont) {
-        m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        m_arialFont = CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, 0);
     }
 
     CString arial("ARIAL");
@@ -44,11 +44,11 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0xe),
         0,
         0,
-        0x2bc,
+        FW_BOLD,
         0,
         0,
         0,
-        1,
+        DEFAULT_CHARSET,
         0,
         0,
         0,
@@ -56,16 +56,20 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         faceTF
     );
     if (!m_trainingFont) {
+        // The retry deliberately asks for DIFFERENT default metrics - 24x16
+        // rather than 28x14 - so the two GetIntDef defaults for
+        // "TrainingFontHeight"/"TrainingFontWidth" disagreeing is retail's
+        // fallback, not a transcription slip.
         m_trainingFont = CreateFontA(
             g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x18),
             g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0x10),
             0,
             0,
-            0x2bc,
+            FW_BOLD,
             0,
             0,
             0,
-            1,
+            DEFAULT_CHARSET,
             0,
             0,
             0,
@@ -82,11 +86,11 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
         0,
         0,
-        0x2bc,
+        FW_BOLD,
         0,
         0,
         0,
-        1,
+        DEFAULT_CHARSET,
         0,
         0,
         0,
@@ -99,11 +103,11 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
             g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
             0,
             0,
-            0x2bc,
+            FW_BOLD,
             0,
             0,
             0,
-            1,
+            DEFAULT_CHARSET,
             0,
             0,
             0,
