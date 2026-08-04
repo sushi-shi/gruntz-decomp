@@ -383,14 +383,16 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
     return 1;
 }
 
+// @early-stop
 RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_armClock = 0;
     m_interval = 0;
     m_wwdObject->m_flags |= 0x2000002;
-    if (m_object->m_sortKey != 0x1869f) {
-        m_object->m_sortKey = 0x1869f;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0x1869f) {
+        o->m_sortKey = 0x1869f;
+        o->m_flags |= 0x20000;
     }
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -446,14 +448,17 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, 
     if (!Chain(ar, tag, c, d)) {
         return 0;
     }
+    // one cursor over the adjacent m_armClock/m_interval pair - retail hoists it
+    // above the arms and advances it, rather than re-lea'ing each member.
+    i64* clocks = &m_armClock;
     if (tag != SERIAL_SAVE) {
         if (tag == SERIAL_LOAD) {
-            ar->Read(&m_armClock, sizeof(m_armClock));
-            ar->Read(&m_interval, sizeof(m_interval));
+            ar->Read(clocks, sizeof(*clocks));
+            ar->Read(clocks + 1, sizeof(*clocks));
         }
     } else {
-        ar->Write(&m_armClock, sizeof(m_armClock));
-        ar->Write(&m_interval, sizeof(m_interval));
+        ar->Write(clocks, sizeof(*clocks));
+        ar->Write(clocks + 1, sizeof(*clocks));
     }
     switch (tag) {
         case SERIAL_SAVE:
