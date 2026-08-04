@@ -3551,14 +3551,16 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
     i32 ty = base->m_rect10.top + dy;
     m_targetY = ty;
 
-    i32 dxv = tx - srcX;
+    // phase is dead after the switch and retail re-uses its incoming home slot
+    // for the x delta ([esp+0x3c] is the 4th parameter, not a local).
+    phase = tx - srcX;
     i32 dyv = ty - srcY;
-    i32 dist2 = dxv * dxv + dyv * dyv;
+    i32 dist2 = phase * phase + dyv * dyv;
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDwordDef("WarpStone", "FlyTime", 0x5dc);
 
     m_velocityScale = dist / static_cast<double>(flyTime);
-    m_xDirection = static_cast<double>(dxv) / dist;
+    m_xDirection = static_cast<double>(phase) / dist;
     m_yDirection = static_cast<double>(dyv) / dist;
 
     CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
