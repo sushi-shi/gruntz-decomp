@@ -33,6 +33,7 @@
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TriggerMgr.h>
@@ -1282,7 +1283,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     StopStruckSlotSound();
     StopStruckVoiceSound();
 
-    m_object->m_stateFlags &= ~8;
+    m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
     m_entranceCommitted = 0;
     m_deathAnimStarted = 1;
 
@@ -1756,7 +1757,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     if (m_entranceReason == PICKUP_BOMB) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId(s_codeM);
-        m_object->m_stateFlags &= ~8;
+        m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
         m_timePerTile = g_buteMgr.GetDwordDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
         m_entranceActive = 1;
         m_bombRunActive = 1;

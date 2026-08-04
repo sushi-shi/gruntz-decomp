@@ -33,6 +33,7 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
@@ -1081,7 +1082,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     spr->m_points = IDX(kind);
     spr->m_score = col;
     spr->m_faceDirection = moveKind;
-    spr->m_stateFlags |= 1;
+    spr->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 1;
 }
 

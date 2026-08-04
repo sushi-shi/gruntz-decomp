@@ -9,6 +9,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -45,7 +46,7 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 1;
     m_wwdObject->m_flags |= 2;
-    m_wwdObject->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
 static inline CString* TypeLookup(i32 key) {

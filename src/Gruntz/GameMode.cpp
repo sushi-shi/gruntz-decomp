@@ -48,6 +48,7 @@ i32 g_levelMsgIconPos[16] = {
 #include <Gruntz/Random.h>
 #include <Gruntz/GruntDirection.h>
 #include <Wap32/ScreenGeometry.h>
+#include <Gruntz/SpriteStateFlags.h>
 RVA(0x00019cd0, 0x200)
 void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
@@ -166,7 +167,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     sw->ApplyName("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
     m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_icons[0]->m_stateFlags |= 1;
+    m_icons[0]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* wh =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
@@ -195,7 +196,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     icon1->m_drawActive = 1;
     icon1->m_drawFillCmd = SHADE_PAL_16;
     icon1->m_drawFillArg = handleA;
-    m_icons[1]->m_stateFlags |= 1;
+    m_icons[1]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* dt =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
@@ -209,7 +210,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     icon2->m_drawActive = 1;
     icon2->m_drawFillCmd = SHADE_PAL_16;
     icon2->m_drawFillArg = handleA;
-    m_icons[2]->m_stateFlags |= 1;
+    m_icons[2]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* gl =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
@@ -223,7 +224,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     icon3->m_drawActive = 1;
     icon3->m_drawFillCmd = SHADE_PAL_16;
     icon3->m_drawFillArg = handleA;
-    m_icons[3]->m_stateFlags |= 1;
+    m_icons[3]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* bb =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
@@ -237,7 +238,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     p30c->m_drawActive = 1;
     p30c->m_drawFillCmd = SHADE_PAL_16;
     p30c->m_drawFillArg = handleA;
-    m_icons[4]->m_stateFlags |= 1;
+    m_icons[4]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* rz =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
@@ -251,7 +252,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     icon5->m_drawActive = 1;
     icon5->m_drawFillCmd = SHADE_PAL_16;
     icon5->m_drawFillArg = handleA;
-    m_icons[5]->m_stateFlags |= 1;
+    m_icons[5]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* cn =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
@@ -265,7 +266,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     icon6->m_drawActive = 1;
     icon6->m_drawFillCmd = SHADE_PAL_16;
     icon6->m_drawFillArg = handleA;
-    m_icons[6]->m_stateFlags |= 1;
+    m_icons[6]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     for (i32 i = 0; i < 8; i++) {
         CWwdGameObjectA* b =
@@ -282,7 +283,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         bp->m_drawFillArg = handleA;
         m_bomb[i]->m_screenX = 0x2c6;
         m_bomb[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
-        m_bomb[i]->m_stateFlags |= 1;
+        m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         CWwdGameObjectA* e =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
@@ -291,7 +292,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
             return 0;
         }
         e->ApplyName("GAME_EXPLOSION");
-        m_expl[i]->m_stateFlags |= 1;
+        m_expl[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         CWwdGameObjectA* g =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
@@ -307,7 +308,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         gp->m_drawFillArg = handleB;
         m_gokart[i]->m_screenX = -70;
         m_gokart[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
-        m_gokart[i]->m_stateFlags |= 1;
+        m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     return 1;
 }
@@ -322,7 +323,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             for (i32 i = 0; i < 8; i++) {
                 CWwdGameObjectA* e = m_expl[i];
                 if (e->m_animCursor.m_finished != 0 && e->m_animCursor.m_frameTicksLeft == 0) {
-                    e->m_stateFlags |= 1;
+                    e->m_stateFlags |= SPRITE_STATE_HIDDEN;
                 }
             }
             return 1;
@@ -331,9 +332,9 @@ i32 CBootyState::LevelMsgHudDriver() {
         i32 shown = 0;
         for (i32 i = 0; i < 8; i++) {
             RECT box;
-            m_bomb[i]->m_stateFlags |= 1;
-            m_gokart[i]->m_stateFlags |= 1;
-            m_icons[i]->m_stateFlags &= ~1;
+            m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_icons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
             m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
             CopyRect(&box, &g_levelMsgRectsA[i]);
@@ -346,7 +347,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_animCursor.m_animation == NULL)) {
                 CWwdGameObjectA* e = m_expl[i];
-                e->m_stateFlags &= ~1;
+                e->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                 e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
                 e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
                 e->m_screenY = (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
@@ -370,9 +371,11 @@ i32 CBootyState::LevelMsgHudDriver() {
     }
 
     if (m_slot < 8) {
-        if (m_slot == 0 && ((m_bomb[0]->m_stateFlags & 1) || (m_gokart[0]->m_stateFlags & 1))) {
-            m_bomb[0]->m_stateFlags &= ~1;
-            m_gokart[0]->m_stateFlags &= ~1;
+        if (m_slot == 0
+            && ((m_bomb[0]->m_stateFlags & SPRITE_STATE_HIDDEN)
+                || (m_gokart[0]->m_stateFlags & SPRITE_STATE_HIDDEN))) {
+            m_bomb[0]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            m_gokart[0]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
         m_bomb[m_slot]->m_screenX -= 10;
         i32 gx = m_gokart[m_slot]->m_screenX + 10;
@@ -391,7 +394,7 @@ i32 CBootyState::LevelMsgHudDriver() {
         s = m_slot;
         if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s * 2]) {
             m_readyFlags[s] = 1;
-            m_icons[m_slot]->m_stateFlags &= ~1;
+            m_icons[m_slot]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             m_icons[m_slot]->m_screenX = g_levelMsgIconPos[m_slot * 2];
             m_icons[m_slot]->m_screenY = g_levelMsgIconPos[m_slot * 2 + 1];
         }
@@ -400,7 +403,7 @@ i32 CBootyState::LevelMsgHudDriver() {
     for (i32 j = 0; j < m_slot; j++) {
         CWwdGameObjectA* e = m_expl[j];
         if (e->m_animCursor.m_finished != 0 && e->m_animCursor.m_frameTicksLeft == 0) {
-            e->m_stateFlags |= 1;
+            e->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
     }
 
@@ -413,12 +416,12 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_readyFlags[i] = 1;
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CWwdGameObjectA* e = m_expl[i];
-            e->m_stateFlags &= ~1;
+            e->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
             e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
             e->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
-            m_bomb[i]->m_stateFlags |= 1;
-            m_gokart[i]->m_stateFlags |= 1;
+            m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_slot++;
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
@@ -435,8 +438,8 @@ i32 CBootyState::LevelMsgHudDriver() {
             if (m_slot >= 8) {
                 return 1;
             }
-            m_bomb[m_slot]->m_stateFlags &= ~1;
-            m_gokart[m_slot]->m_stateFlags &= ~1;
+            m_bomb[m_slot]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            m_gokart[m_slot]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
     }
     return 0;

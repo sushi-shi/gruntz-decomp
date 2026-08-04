@@ -27,6 +27,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Image/CImage.h>
 #include <Ints.h>
@@ -495,7 +496,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 2: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 x = c->m_screenX;
-                if (c->m_stateFlags & 0x2) {
+                if (c->m_stateFlags & SPRITE_STATE_MIRROR_X) {
                     i32 dy = d->m_positionDeltaY;
                     i32 dx = d->m_positionDeltaX;
                     c->m_screenX = x - dx;

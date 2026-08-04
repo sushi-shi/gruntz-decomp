@@ -316,6 +316,7 @@ include/Gruntz/SpotLight.h	pending
 include/Gruntz/SpotLightActReg.h	pending	
 include/Gruntz/Sprite.h	pending	
 include/Gruntz/SpriteRefTable.h	pending	
+include/Gruntz/SpriteStateFlags.h	pending	
 include/Gruntz/StaminaPct.h	pending	
 include/Gruntz/StartUpPrompt.h	pending	
 include/Gruntz/State.h	pending	

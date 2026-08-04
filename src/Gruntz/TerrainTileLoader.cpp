@@ -18,6 +18,7 @@
 #include <Gruntz/LightFx.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
@@ -206,7 +207,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     continue;
                 }
                 if (sel == -1) {
-                    puddle->m_object->m_stateFlags &= ~1;
+                    puddle->m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     puddle->SetBute("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2");
                     puddle->m_pending = 1;
                     puddle->m_placed = 0;

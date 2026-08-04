@@ -5,6 +5,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpriteStateFlags.h>
 
 RVA(0x00010240, 0x47)
 i32 CWayPoint::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d) {
@@ -21,5 +22,5 @@ VTBL(CWayPoint, 0x001e74b4);
 // @early-stop
 RVA(0x000ae3f0, 0x18f)
 CWayPoint::CWayPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_wwdObject->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }

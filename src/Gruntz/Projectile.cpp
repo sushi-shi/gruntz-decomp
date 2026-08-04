@@ -33,6 +33,7 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TimeBomb.h>
 #include <Gruntz/TriggerMgr.h>
@@ -145,7 +146,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_wwdObject = static_cast<CWwdGameObjectA*>(owner);
     m_animWorker = owner->m_animWorker;
     m_wwdObject->m_flags |= 0x2000002;
-    m_wwdObject->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0xcf850) {
         o->m_sortKey = 0xcf850;

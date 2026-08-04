@@ -7,6 +7,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
 #include <Wwd/AnimWorkerAct.h>
 
@@ -76,7 +77,7 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
-    m_wwdObject->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
 // @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across

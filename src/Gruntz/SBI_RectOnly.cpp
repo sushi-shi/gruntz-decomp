@@ -42,6 +42,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
@@ -1070,7 +1071,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     if (keepHost) {
         if (m_barSprite) {
 
-            m_barSprite->m_stateFlags |= 1;
+            m_barSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_barSprite->m_flags |= 0x10000;
         }
     }

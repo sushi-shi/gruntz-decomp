@@ -18,6 +18,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -83,7 +84,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
             m_object->m_flags |= 0x20000;
         }
         m_wwdObject->m_flags |= 2;
-        m_wwdObject->m_stateFlags |= 1;
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
         g_gameReg->m_scoreHud->m_secretsAvailable++;
@@ -135,7 +136,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
             m_object->m_flags |= 0x20000;
         }
         m_wwdObject->m_flags |= 2;
-        m_wwdObject->m_stateFlags |= 1;
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
     } else {

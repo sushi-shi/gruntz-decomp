@@ -50,6 +50,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarDock.h>
@@ -4228,10 +4229,10 @@ kindDispatch:
                 obj->m_fillFraction = frac;
             } else {
                 CWwdGameObjectA* obj = m_object;
-                if ((obj->m_stateFlags & 8) == 0) {
+                if ((obj->m_stateFlags & SPRITE_STATE_FLASHING) == 0) {
                     obj->m_flashInterval = 0x7d;
                     obj->m_flashCountdown = 0;
-                    m_object->m_stateFlags |= 8;
+                    m_object->m_stateFlags |= SPRITE_STATE_FLASHING;
                 }
             }
             if (leftMs == 0) {
@@ -4270,7 +4271,7 @@ kindDispatch:
                         break;
                     }
                 }
-                m_object->m_stateFlags &= ~8;
+                m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
                 ReadConfigFromButeMgr();
                 PickupType reason = m_entranceReason;
                 i32 vehicle = (reason >= PICKUP_TOYZ_FIRST) ? 1 : 0;

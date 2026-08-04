@@ -71,6 +71,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -301,7 +302,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         }
         CWwdGameObjectA* peer = m_scrollSink;
         if (peer) {
-            peer->m_stateFlags |= 1;
+            peer->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         return 1;
     }
@@ -4305,16 +4306,16 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
             if (s2 == NULL) {
                 return 1;
             }
-            s2->m_stateFlags |= 1;
+            s2->m_stateFlags |= SPRITE_STATE_HIDDEN;
             return 1;
         }
         if (m_levelId != 0) {
             if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags |= 1;
+                m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
             }
         } else {
             if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags &= ~1;
+                m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             }
         }
         CGameLevel* v = m_world->m_level;
@@ -4325,7 +4326,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     }
 
     if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags |= 1;
+        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     m_dragInProgress = 1;
     m_guts->ClickToggle(a, x, y);
@@ -4362,7 +4363,7 @@ rearm:
     if (s == NULL) {
         return 1;
     }
-    s->m_stateFlags |= 1;
+    s->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 1;
 }
 
@@ -4380,7 +4381,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
 
     PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_scrollSink) {
-        m_scrollSink->m_stateFlags |= 1;
+        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     return 1;
 }
@@ -6451,7 +6452,7 @@ i32 CPlay::ResetPlayState() {
         }
     }
     if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags &= ~1;
+        m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
     m_inGame = 0;
     if (!PlaceStartGruntz()) {

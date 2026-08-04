@@ -48,6 +48,7 @@
 #include <Gruntz/BattlezTask.h>
 #include <Gruntz/StaminaPct.h>
 #include <limits.h>
+#include <Gruntz/SpriteStateFlags.h>
 
 DATA(0x001e96ec)
 const float g_diffScale = 0.01f;
@@ -3015,7 +3016,8 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     coll->m_scanCursor = coll->m_list.GetHeadPosition();
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != NULL) {
-        if (g->m_animWorker->m_notify == &CreateInGameIcon && (g->m_stateFlags & 1) == 0) {
+        if (g->m_animWorker->m_notify == &CreateInGameIcon
+            && (g->m_stateFlags & SPRITE_STATE_HIDDEN) == 0) {
             i32 special = 0;
 
             switch (g->m_smarts) {

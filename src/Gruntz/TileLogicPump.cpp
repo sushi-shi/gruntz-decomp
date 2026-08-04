@@ -28,6 +28,7 @@
 #include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileTrigger.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerSwitch.h>
@@ -323,7 +324,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        m_wwdObject->m_stateFlags |= 1;
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_wwdObject->m_flags |= 0x10000;
     }
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -373,7 +374,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWap
 
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
 RVA(0x0010dea0, 0x102)
@@ -418,7 +419,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* o = m_object;
     i32 tileX = o->m_screenX >> TILE_SHIFT_PX;
@@ -466,7 +467,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= 1;
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* o = m_object;
     i32 tileX = o->m_screenX >> TILE_SHIFT_PX;
