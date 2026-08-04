@@ -22,6 +22,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SbGeom.h>
@@ -2408,10 +2409,10 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
         return;
     }
     i32 group;
-    if (key >= 0x22) {
+    if (key >= PICKUP_BRICKZ_FIRST) {
         group = 2;
     } else {
-        group = (key >= 0x17);
+        group = (key >= PICKUP_TOYZ_FIRST);
     }
     if (shift != 0) {
         ClearHlCell(group, m_pendingHlRow);
@@ -2500,10 +2501,10 @@ void CStatusBarMgr::NotifyAllSlots() {
 RVA(0x00106af0, 0x37)
 i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
     i32 row;
-    if (handle >= 0x22) {
+    if (handle >= PICKUP_BRICKZ_FIRST) {
         row = 2;
     } else {
-        row = (handle >= 0x17);
+        row = (handle >= PICKUP_TOYZ_FIRST);
     }
     return SetHlCell(row, handle, group);
 }
@@ -2606,9 +2607,9 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_machinePhase = BELT_TRAVELLING;
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = static_cast<u32>(g_frameTime);
-                if (m_extraNotifyArg0 >= 0x22) {
+                if (m_extraNotifyArg0 >= PICKUP_BRICKZ_FIRST) {
                     m_itemBaseX = 0x6d;
-                } else if (m_extraNotifyArg0 >= 0x17) {
+                } else if (m_extraNotifyArg0 >= PICKUP_TOYZ_FIRST) {
                     m_itemBaseX = 0x45;
                 } else {
                     m_itemBaseX = 0x1d;
@@ -2648,10 +2649,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
             i32 col;
-            if (m_extraNotifyArg0 >= 0x22) {
+            if (m_extraNotifyArg0 >= PICKUP_BRICKZ_FIRST) {
                 col = 2;
             } else {
-                col = (m_extraNotifyArg0 >= 0x17) ? 1 : 0;
+                col = (m_extraNotifyArg0 >= PICKUP_TOYZ_FIRST) ? 1 : 0;
             }
             i32 row = 3;
             while (m_hlGrid[col * 4 + row].m_state == 1) {

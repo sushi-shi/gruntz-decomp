@@ -61,7 +61,14 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_CURSOR_TARGET_LAST = 0x149,
 
     //   `cmd < 0xd3 || cmd > 0xde` then a three-way split, each arm
-    //   re-basing on its own group's first id
+    //   re-basing on its own group's first id.
+    //
+    //   The three groups are the HUD's three inventory rows, and four separate
+    //   sites in CStatusBarMgr say which is which by tiering a PickupType the
+    //   same way every time: `>= PICKUP_BRICKZ_FIRST` picks 2, else
+    //   `>= PICKUP_TOYZ_FIRST` picks 1, else 0. So group 0 is toolz, 1 is toyz,
+    //   2 is brickz - which is also the order they are drawn in, at
+    //   m_itemBaseX 0x1d, 0x45 and 0x6d.
     SBICMD_HL_GROUP0_FIRST = 0xd3,
     SBICMD_HL_GROUP0_LAST = 0xd6,
     SBICMD_HL_GROUP1_FIRST = 0xd7,
