@@ -46,11 +46,11 @@
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
 template<> DATA(0x002458b0)
-CActReg CActRegPool<CInGameIcon>::s_table(2000, 2010);
+CActReg CActRegPool<CInGameIcon>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00245928)
-CActReg CActRegPool<CToyPeek>::s_table(2000, 2010);
+CActReg CActRegPool<CToyPeek>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00245950)
-CActReg CActRegPool<CInGameText>::s_table(2000, 2010);
+CActReg CActRegPool<CInGameText>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     CString* r;

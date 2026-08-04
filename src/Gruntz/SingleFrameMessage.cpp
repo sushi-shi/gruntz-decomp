@@ -14,7 +14,7 @@
 #include <Wap32/ZVec.h>
 
 template<> DATA(0x00245ef0)
-CActReg CActRegPool<CSingleFrameMessage>::s_table(2000, 2010);
+CActReg CActRegPool<CSingleFrameMessage>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0000f5a0, 0x47)
 i32 CSingleFrameMessage::SerializeMove(

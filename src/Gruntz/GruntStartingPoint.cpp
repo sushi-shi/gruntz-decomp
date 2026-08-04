@@ -17,7 +17,7 @@
 
 VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)
-CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
+CActReg CActRegPool<CGruntStartingPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.

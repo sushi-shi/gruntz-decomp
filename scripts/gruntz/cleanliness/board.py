@@ -179,8 +179,16 @@ _CPP_PROTO = re.compile(
 # prototype. This shape is required for non-copyable VC5 types such as
 # `CPtrList Pool<T>::s_list(10)`, so copy-initialization is not an available
 # spelling merely to appease the textual census.
+# A qualified definition with a direct-initialiser - `CActReg
+# CActRegPool<T>::s_table(2000, 2010);` - is a DEFINITION, not a prototype.
+# The first argument may be a literal OR a SCREAMING_SNAKE constant: this
+# campaign replaces those literals with named constants, and keying the
+# exemption on the literal alone made all 51 CActRegPool definitions read as
+# prototypes the moment they were named. No type in this tree is spelled
+# SCREAMING_SNAKE, so a parameter declaration cannot match.
 _CPP_QUALIFIED_DIRECT_INIT = re.compile(
-    r"::[A-Za-z_]\w*\s*\(\s*(?:0[xX][0-9A-Fa-f]+|[0-9]+)(?:\s*[,)]|[uUlL]+\s*[,)])"
+    r"::[A-Za-z_]\w*\s*\(\s*(?:0[xX][0-9A-Fa-f]+|[0-9]+|[A-Z][A-Z0-9_]{2,})"
+    r"(?:\s*[,)]|[uUlL]+\s*[,)])"
 )
 _NAMESPACE_OPEN = re.compile(r"(?:^|[;{}])\s*(?:inline\s+)?namespace(?:\s+\w+(?:::\w+)*)?\s*$")
 _EXTERN_BLOCK_OPEN = re.compile(r"(?:^|[;{}])\s*extern\s*$")

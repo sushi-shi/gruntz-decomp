@@ -17,7 +17,7 @@
 #include <stddef.h>
 
 template<> DATA(0x0024e670)
-CActReg CActRegPool<CStatusBarSprite>::s_table(2000, 2010);
+CActReg CActRegPool<CStatusBarSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 VTBL(CStatusBarSprite, 0x001e7fc4);
 

@@ -3,6 +3,7 @@
 #include <Gruntz/GruntToySprite.h>
 
 #include <Enums.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
@@ -21,7 +22,7 @@
 VTBL(CGruntToySprite, 0x001e7b4c);
 
 template<> DATA(0x00244d58)
-CActReg CActRegPool<CGruntToySprite>::s_table(2000, 2010);
+CActReg CActRegPool<CGruntToySprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00012280, 0x1e, ??_GCGruntToySprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x000122b0, 0x44, ??1CGruntToySprite@@UAE@XZ)
 

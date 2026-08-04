@@ -33,11 +33,11 @@
 #include <Wap32/ZVec.h>
 
 template<> DATA(0x00244660)
-CActReg CActRegPool<CWormhole>::s_table(2000, 2010);
+CActReg CActRegPool<CWormhole>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x002445e8)
-CActReg CActRegPool<CGruntPuddle>::s_table(2000, 2010);
+CActReg CActRegPool<CGruntPuddle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x002446b0)
-CActReg CActRegPool<CTeleporter>::s_table(2000, 2010);
+CActReg CActRegPool<CTeleporter>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 VTBL(CGruntPuddle, 0x001e8124);
 VTBL(CWormhole, 0x001e817c);

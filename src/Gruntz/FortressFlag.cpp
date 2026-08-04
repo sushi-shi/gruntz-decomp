@@ -34,11 +34,11 @@ VTBL(CParticlez, 0x001e7614);
 VTBL(CExplosion, 0x001e766c);
 
 template<> DATA(0x00244638)
-CActReg CActRegPool<CFortressFlag>::s_table(2000, 2010);
+CActReg CActRegPool<CFortressFlag>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00244870)
-CActReg CActRegPool<CParticlez>::s_table(2000, 2010);
+CActReg CActRegPool<CParticlez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x002447f8)
-CActReg CActRegPool<CExplosion>::s_table(2000, 2010);
+CActReg CActRegPool<CExplosion>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* PartLookup(i32 coord) {
     return (CActRegPool<CParticlez>::s_table.ResolveEntry(coord));

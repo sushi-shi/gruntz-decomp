@@ -28,7 +28,7 @@
 #include <stddef.h>
 
 template<> DATA(0x00246250)
-CActReg CActRegPool<CPathHazard>::s_table(2000, 2010);
+CActReg CActRegPool<CPathHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     CString* list = ActNameSlots();

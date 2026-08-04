@@ -30,7 +30,7 @@
 #include <string.h>
 
 template<> DATA(0x002461b0)
-CActReg CActRegPool<CRollingBall>::s_table(2000, 2010);
+CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 VTBL(CRollingBall, 0x001e86fc);
 

@@ -63,9 +63,9 @@ const double g_projPhase1 = 6.2831854;
 DATA(0x001f04e8)
 u32 g_defaultZ = 0;
 template<> DATA(0x0024c758)
-CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
+CActReg CActRegPool<CProjectile>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024c780)
-CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
+CActReg CActRegPool<CTimeBomb>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @interleaver CTimeBomb::~CTimeBomb emitted in the 0x12xxx destructor COMDAT pool.
 RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)

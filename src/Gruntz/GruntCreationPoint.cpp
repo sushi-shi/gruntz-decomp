@@ -63,7 +63,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
 }
 
 template<> DATA(0x00244700)
-CActReg CActRegPool<CGruntCreationPoint>::s_table(2000, 2010);
+CActReg CActRegPool<CGruntCreationPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0003e7a0, 0xd7)
 i32 CGruntCreationPoint::SerializeMove(

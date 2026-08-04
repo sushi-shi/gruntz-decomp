@@ -39,10 +39,10 @@ DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;
 
 template<> DATA(0x00246228)
-CActReg CActRegPool<CKitchenSlime>::s_table(2000, 2010);
+CActReg CActRegPool<CKitchenSlime>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 DATA(0x0021aea8)
-i32 g_typeCounter = 2000;
+i32 g_typeCounter = ACT_ID_FIRST;
 
 static inline CActHandler* KSlimeLookup(i32 coord) {
     return (CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));

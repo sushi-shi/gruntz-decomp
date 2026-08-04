@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <Enums.h>
 #include <Gruntz/ActName.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameModeId.h>
@@ -31,7 +32,7 @@
 
 VTBL(CStaticHazard, 0x001e7824);
 template<> DATA(0x0024e3d0)
-CActReg CActRegPool<CStaticHazard>::s_table(2000, 2010);
+CActReg CActRegPool<CStaticHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA_COMPGEN(0x00012b00, 0x1e, ??_GCStaticHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)

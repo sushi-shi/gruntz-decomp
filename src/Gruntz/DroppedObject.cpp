@@ -48,11 +48,11 @@ DATA(0x001eaa00)
 double g_dropFallBias = -0.5;
 
 template<> DATA(0x0024be90)
-CActReg CActRegPool<CObjectDropper>::s_table(2000, 2010);
+CActReg CActRegPool<CObjectDropper>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024bed8)
-CActReg CActRegPool<CDroppedObject>::s_table(2000, 2010);
+CActReg CActRegPool<CDroppedObject>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024bf00)
-CActReg CActRegPool<CDroppedObjectShadow>::s_table(2000, 2010);
+CActReg CActRegPool<CDroppedObjectShadow>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 struct CString;
 

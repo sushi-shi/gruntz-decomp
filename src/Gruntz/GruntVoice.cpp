@@ -34,9 +34,9 @@
 #include <Wwd/AnimWorkerAct.h>
 
 template<> DATA(0x002514d8)
-CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
+CActReg CActRegPool<CGruntVoice>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00251500)
-CActReg CActRegPool<CVoiceTrigger>::s_table(2000, 2010);
+CActReg CActRegPool<CVoiceTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 VTBL(CVoiceTrigger, 0x001e885c);
 VTBL(CGruntVoice, 0x001eaf6c);

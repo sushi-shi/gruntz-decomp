@@ -43,7 +43,7 @@ DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0;
 
 template<> DATA(0x00246188)
-CActReg CActRegPool<CSpotLight>::s_table(2000, 2010);
+CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;

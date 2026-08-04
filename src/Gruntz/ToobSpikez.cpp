@@ -59,7 +59,7 @@ i32 CreateToobSpikez(CGameObject* obj) {
 
 VTBL(CToobSpikez, 0x001e7774);
 template<> DATA(0x0024e978)
-CActReg CActRegPool<CToobSpikez>::s_table(2000, 2010);
+CActReg CActRegPool<CToobSpikez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

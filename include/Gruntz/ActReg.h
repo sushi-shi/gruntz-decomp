@@ -4,9 +4,26 @@
 #include <rva.h>
 
 #include <Bute/ButeTree.h>
+#include <Enums.h>
 #include <Gruntz/UserLogic.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
+
+// The act-id range every CActRegPool table covers.
+//
+// g_typeCounter is what pins the low end: it is initialised to ACT_ID_FIRST and
+// then handed out one at a time - `ActInsertId("A", g_typeCounter);
+// g_typeCounter++` - so 2000 is the first act id the game ever allocates. The
+// high end is the bound all 51 tables are constructed with, and they are
+// constructed identically: `s_table(ACT_ID_FIRST, ACT_ID_LAST)` in every single
+// TU that has one.
+//
+// zDArray stores the pair as m_lo/m_hi and indexes with `m_base + (id - m_lo) *
+// m_stride`, so these are the inclusive ends of a sparse range, not a count.
+GZ_ENUM_CONST_BEGIN(ActIdRange)
+    ACT_ID_FIRST = 2000,
+    ACT_ID_LAST = 2010
+GZ_ENUM_CONST_END(ActIdRange)
 
 typedef i32 (CUserLogic::*CActHandler)();
 typedef zDArray<CActHandler> CActReg;

@@ -27,9 +27,9 @@
 VTBL(CSecretTeleporterTrigger, 0x001e7564);
 VTBL(CSecretLevelTrigger, 0x001e8804);
 template<> DATA(0x00244688)
-CActReg CActRegPool<CSecretTeleporterTrigger>::s_table(2000, 2010);
+CActReg CActRegPool<CSecretTeleporterTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00244598)
-CActReg CActRegPool<CSecretLevelTrigger>::s_table(2000, 2010);
+CActReg CActRegPool<CSecretLevelTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* ActLookup(i32 coord) {
     return (CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord));

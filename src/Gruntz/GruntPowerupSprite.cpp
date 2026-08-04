@@ -2,6 +2,7 @@
 
 #include <Gruntz/GruntPowerupSprite.h>
 
+#include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -19,7 +20,7 @@
 VTBL(CGruntPowerupSprite, 0x001e76c4);
 
 template<> DATA(0x00244d30)
-CActReg CActRegPool<CGruntPowerupSprite>::s_table(2000, 2010);
+CActReg CActRegPool<CGruntPowerupSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00012340, 0x1e, ??_GCGruntPowerupSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 

@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Bute/ButeTree.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicTypeId.h>
@@ -24,7 +25,7 @@ VTBL(CActionArea, 0x001e7004);
 VTBL(CUserLogic, 0x001e705c);
 VTBL(CUserBase, 0x001e70b4);
 template<> DATA(0x00229388)
-CActReg CActRegPool<CActionArea>::s_table(2000, 2010);
+CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* R3Lookup(i32 coord) {
     return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));

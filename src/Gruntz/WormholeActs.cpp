@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 template<> DATA(0x002445c0)
-CActReg CActRegPool<CExitTrigger>::s_table(2000, 2010);
+CActReg CActRegPool<CExitTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {

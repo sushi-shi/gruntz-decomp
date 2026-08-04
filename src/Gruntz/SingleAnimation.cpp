@@ -14,7 +14,7 @@
 
 VTBL(CSingleAnimation, 0x001e745c);
 template<> DATA(0x00245f70)
-CActReg CActRegPool<CSingleAnimation>::s_table(2000, 2010);
+CActReg CActRegPool<CSingleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x000104a0, 0x47)
 i32 CSingleAnimation::SerializeMove(

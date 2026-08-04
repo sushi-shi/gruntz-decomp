@@ -19,7 +19,7 @@
 #include <stddef.h>
 
 template<> DATA(0x002460b0)
-CActReg CActRegPool<CFrontCandyAni>::s_table(2000, 2010);
+CActReg CActRegPool<CFrontCandyAni>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0000fa60, 0x47)
 i32 CFrontCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {

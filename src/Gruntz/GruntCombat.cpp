@@ -125,7 +125,7 @@ DATA(0x0020d2e8)
 char s_codeF[] = "F";
 
 template<> DATA(0x00244af0)
-CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
+CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";

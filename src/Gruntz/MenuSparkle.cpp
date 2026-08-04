@@ -15,7 +15,7 @@
 #include <stdlib.h>
 
 template<> DATA(0x00246010)
-CActReg CActRegPool<CMenuSparkle>::s_table(2000, 2010);
+CActReg CActRegPool<CMenuSparkle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA_COMPGEN(0x00010180, 0x1e, ??_GCMenuSparkle@@UAEPAXI@Z)
 RVA_COMPGEN(0x000101b0, 0x44, ??1CMenuSparkle@@UAE@XZ)

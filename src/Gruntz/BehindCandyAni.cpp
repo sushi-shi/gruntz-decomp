@@ -16,7 +16,7 @@
 
 VTBL(CBehindCandyAni, 0x001e838c);
 template<> DATA(0x00245f98)
-CActReg CActRegPool<CBehindCandyAni>::s_table(2000, 2010);
+CActReg CActRegPool<CBehindCandyAni>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.

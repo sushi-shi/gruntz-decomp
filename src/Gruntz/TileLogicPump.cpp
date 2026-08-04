@@ -47,15 +47,15 @@
 #include <string.h>
 
 template<> DATA(0x0024e6a0)
-CActReg CActRegPool<CWarpStonePad>::s_table(2000, 2010);
+CActReg CActRegPool<CWarpStonePad>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024e798)
-CActReg CActRegPool<CTileTriggerSwitch>::s_table(2000, 2010);
+CActReg CActRegPool<CTileTriggerSwitch>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024e810)
-CActReg CActRegPool<CTileTrigger>::s_table(2000, 2010);
+CActReg CActRegPool<CTileTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024e7c0)
-CActReg CActRegPool<CBrickz>::s_table(2000, 2010);
+CActReg CActRegPool<CBrickz>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024e7e8)
-CActReg CActRegPool<CCheckpointTrigger>::s_table(2000, 2010);
+CActReg CActRegPool<CCheckpointTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 VTBL(CWarpStonePad, 0x001e71ac);
 VTBL(CBrickz, 0x001e7c54);
@@ -68,7 +68,7 @@ VTBL(CTileTrigger, 0x001e7f14);
 VTBL(CTileTriggerSwitch, 0x001e7f6c);
 
 template<> DATA(0x0024e720)
-CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
+CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_animWorker;                                                        \

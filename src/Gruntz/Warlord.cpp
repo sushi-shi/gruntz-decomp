@@ -77,7 +77,7 @@ static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
 template<> DATA(0x00244610)
-CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
+CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define REGISTER_NAME(key)                                                                         \
     i32 id_ = ActFindId(key);                                                                      \

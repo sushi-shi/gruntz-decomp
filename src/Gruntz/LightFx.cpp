@@ -27,7 +27,7 @@
 #include <stddef.h>
 
 template<> DATA(0x00245ad0)
-CActReg CActRegPool<CLightFx>::s_table(2000, 2010);
+CActReg CActRegPool<CLightFx>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 VTBL(CLightFx, 0x001e7af4);
 

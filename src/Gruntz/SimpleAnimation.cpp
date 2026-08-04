@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
+#include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/LogicFnTable.h>
@@ -34,7 +35,7 @@ RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 VTBL(CSimpleAnimation, 0x001e8544);
 template<> DATA(0x00246038)
-CActReg CActRegPool<CSimpleAnimation>::s_table(2000, 2010);
+CActReg CActRegPool<CSimpleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     CString* r;
