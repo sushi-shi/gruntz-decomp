@@ -757,7 +757,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         gameReg = g_gameReg;
         GruntzPlayer* team = &hostBase->m_options[t];
         if (gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            team->SeedForSlot(0);
+            team->SeedForSlot(t);
             if (t == 0) {
                 team->m_liveGate = 1;
                 team->m_joined = 1;
@@ -803,7 +803,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             CParseSource* ins = (static_cast<CSymTab*>(set))
                                     ->Insert(
                                         static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                                        REZ_TAG_NONE
+                                        REZ_TAG_WWD
                                     );
             if (ins == NULL) {
                 return 0;
@@ -834,7 +834,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             CParseSource* ins = (static_cast<CSymTab*>(set))
                                     ->Insert(
                                         static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                                        REZ_TAG_NONE
+                                        REZ_TAG_WWD
                                     );
             if (ins == NULL) {
                 return 0;
