@@ -2,6 +2,7 @@
 
 #include <Dsndmgr/GruntzSoundZ.h>
 
+#include <Dsndmgr/VolumeScale.h>
 #include <Enums.h>
 
 #include <mss.h>
@@ -243,10 +244,10 @@ i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
     i32 scaled;
     if (volume <= 0) {
         scaled = 0;
-    } else if (volume >= 100) {
-        scaled = 0x7f;
+    } else if (volume >= VOLUME_PCT_MAX) {
+        scaled = MIDI_VOLUME_MAX;
     } else {
-        scaled = volume * 127 / 100;
+        scaled = volume * MIDI_VOLUME_MAX / VOLUME_PCT_MAX;
     }
     AIL_set_XMIDI_master_volume(g_ailMidiDriver, scaled);
     return 1;
@@ -256,16 +257,16 @@ i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
 RVA(0x001389c0, 0x47)
 i32 CGruntzSoundZ::GetXMidiVolume() {
     if (g_ailMidiDriver == NULL) {
-        return 0x64;
+        return VOLUME_PCT_MAX;
     }
     i32 v = AIL_XMIDI_master_volume(g_ailMidiDriver);
     if (v <= 0) {
         return 0;
     }
-    if (v >= 0x7f) {
-        return 0x64;
+    if (v >= MIDI_VOLUME_MAX) {
+        return VOLUME_PCT_MAX;
     }
-    return v * 100 / 127;
+    return v * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
 }
 
 RVA(0x00138a10, 0xb)
@@ -321,7 +322,7 @@ i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
     ++g_midiSeqCounter;
     m_playMode = 0;
     m_tempoPct = 100;
-    m_volumePct = 100;
+    m_volumePct = VOLUME_PCT_MAX;
     if (name != NULL) {
         strcpy(m_name, name);
     } else {
@@ -480,10 +481,10 @@ i32 CGruntzSoundInnerZ::SetVolume(i32 volume, i32 ms) {
     i32 scaled;
     if (volume <= 0) {
         scaled = 0;
-    } else if (volume >= 100) {
-        scaled = 0x7f;
+    } else if (volume >= VOLUME_PCT_MAX) {
+        scaled = MIDI_VOLUME_MAX;
     } else {
-        scaled = volume * 127 / 100;
+        scaled = volume * MIDI_VOLUME_MAX / VOLUME_PCT_MAX;
     }
     AIL_set_sequence_volume(m_seqHandle, scaled, ms);
     m_volumePct = volume;

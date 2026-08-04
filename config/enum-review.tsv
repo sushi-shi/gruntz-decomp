@@ -67,6 +67,7 @@ include/Dsndmgr/SoundStream.h	pending
 include/Dsndmgr/SoundVoiceList.h	pending	
 include/Dsndmgr/StreamFeeder.h	pending	
 include/Dsndmgr/StreamVoice.h	pending	
+include/Dsndmgr/VolumeScale.h	pending	
 include/Dsndmgr/WaveFormatPtr.h	pending	
 include/Dsndmgr/WaveFormatX.h	pending	
 include/EmptyString.h	pending	

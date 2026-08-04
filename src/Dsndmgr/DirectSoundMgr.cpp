@@ -7,6 +7,7 @@
 #include <Dsndmgr/DSoundVoice.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/VolumeScale.h>
 #include <Dsndmgr/WaveFormatPtr.h>
 #include <Enums.h>
 #include <Pix16.h>
@@ -46,7 +47,7 @@ VTBL(SoundDevice, 0x001ef6c4);
 VTBL(PureSoundElem, 0x001ef6c8);
 VTBL(DSoundVoice, 0x001ef6d0);
 DATA(0x00253ab8)
-i32 g_volumeTable[100];
+i32 g_volumeTable[VOLUME_PCT_MAX];
 DATA(0x00253c48)
 i32 g_panTable[8];
 
@@ -57,7 +58,7 @@ const char s_rb[] = "rb";
 
 RVA(0x001350b0, 0x5d)
 i32 SoundDevice::VolumeToAttenuation(i32 value) {
-    if (value == 100) {
+    if (value == VOLUME_PCT_MAX) {
         return 0;
     }
     if (value == 0) {
@@ -71,7 +72,7 @@ i32 SoundDevice::VolumeToAttenuation(i32 value) {
 RVA(0x00135110, 0x8e)
 i32 ConvertVolumeToPercent(i32 v) {
     if (v == 0) {
-        return 100;
+        return VOLUME_PCT_MAX;
     }
     double d;
     if (v < 0) {
@@ -90,7 +91,7 @@ i32 ConvertVolumeToPercent(i32 v) {
 
 RVA(0x001351a0, 0x23)
 void SoundDevice::BuildVolumeTable() {
-    for (i32 i = 0; i <= 100; i++) {
+    for (i32 i = 0; i <= VOLUME_PCT_MAX; i++) {
         g_volumeTable[i] = VolumeToAttenuation(i);
     }
 }
@@ -373,9 +374,9 @@ i32 DirectSoundMgr::GetPanPercent() {
         return 0;
     }
     if (pan > 0) {
-        return 100 - ConvertVolumeToPercent(-pan);
+        return VOLUME_PCT_MAX - ConvertVolumeToPercent(-pan);
     }
-    return ConvertVolumeToPercent(pan) - 100;
+    return ConvertVolumeToPercent(pan) - VOLUME_PCT_MAX;
 }
 
 RVA(0x00135880, 0x60)
