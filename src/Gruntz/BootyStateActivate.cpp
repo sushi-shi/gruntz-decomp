@@ -37,6 +37,7 @@
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/QuestLevel.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -710,7 +711,7 @@ i32 CBootyState::Render() {
                 CString s;
                 RECT rc;
                 CBattlezData* hud = g_gameReg->m_scoreHud;
-                if (hud->m_count > 0x24) {
+                if (hud->m_count > QUESTLEVEL_LAST) {
 
                     if (hud->m_allDone != 0) {
                         s = "You have completed training! Now, grab the pebble from my hand.";
@@ -782,7 +783,7 @@ i32 CBootyState::InputVirtual() {
     if (m_world->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
-    if (m_activation != 200) {
+    if (m_activation != BOOTYSEQ_DONE) {
         if (FadeInTitle("bg", 0, 0, 0, 0, 1) == 0) {
             return 0;
         }
@@ -829,7 +830,7 @@ void CBootyState::ShowLevelCompleteMessage() {
     if (rec->m_isCustomLevel == 0 && m_secretGate != 0) {
         CString s;
         RECT r;
-        if (rec->m_count > 0x24) {
+        if (rec->m_count > QUESTLEVEL_LAST) {
             if (rec->m_allDone != 0) {
                 s = "You have completed training! Now go and conquer the Battlez!";
             } else {
@@ -874,7 +875,7 @@ i32 CBootyState::OnPaint() {
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     i32 state = m_activation;
-    if (state != 0xc7 && state != 0xc8) {
+    if (state != BOOTYSEQ_PERFECT_BONUS && state != BOOTYSEQ_DONE) {
         m_initGate = 1;
         return 1;
     }
@@ -943,7 +944,8 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             ShowLevelCompleteMessage();
             return 1;
         }
-    } else if (rec->m_allDone != 0 && rec->m_count < 0x24 && state == 0xc7) {
+    } else if (rec->m_allDone != 0 && rec->m_count < QUESTLEVEL_LAST
+               && state == BOOTYSEQ_PERFECT_BONUS) {
         if ((rec)->GroupAllScored()) {
             if (!ShowSecretBonusMessage()) {
                 return 0;
@@ -967,7 +969,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
 
     CBattlezData* rec2 = g_gameReg->m_scoreHud;
-    if (rec2->m_count == 0x20) {
+    if (rec2->m_count == QUESTLEVEL_CAMPAIGN_LAST) {
         SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
         if (sub != NULL) {
             sub->Stop();
@@ -1609,7 +1611,7 @@ i32 CMultiBootyState::Render() {
             return 0;
         }
     }
-    if (m_sequenceState == 0x64) {
+    if (m_sequenceState == BOOTYSEQ_WARP_CUE) {
         DrawBattleStats();
         m_sequenceState = 0xc7;
     }
@@ -1698,7 +1700,7 @@ i32 CMultiBootyState::OnPaint() {
 
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
-    if (m_sequenceState == 0xc7) {
+    if (m_sequenceState == BOOTYSEQ_PERFECT_BONUS) {
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;

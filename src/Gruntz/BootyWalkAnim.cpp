@@ -11,6 +11,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/QuestLevel.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -45,7 +46,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_scoreHud->m_isCustomLevel != 0) {
         return 1;
     }
-    if (g_gameReg->m_scoreHud->m_count > 0x24) {
+    if (g_gameReg->m_scoreHud->m_count > QUESTLEVEL_LAST) {
         return 1;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
