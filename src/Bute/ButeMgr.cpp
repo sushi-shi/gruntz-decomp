@@ -942,7 +942,13 @@ bool CButeMgr::ScanToken(ButeToken expectType) {
     return true;
 }
 
-RVA(0x00170750, 0x9d8)
+// @early-stop
+// Frame, locals and every arm are retail-shaped (the claim covers the trailing
+// jump table at 0x171128).  The residue is one regalloc ranking: retail pins
+// this->ebp, &m_token->esi, &m_str104->edi, where cl ranks m_str104 above this
+// and lands this->esi, &m_token->edi, &m_str104->ebp - the same instructions
+// with three callee-saved registers permuted.
+RVA(0x00170750, 0xa10)
 bool ButeMgr::ParseAttributeFile() {
 
     union {
@@ -950,6 +956,10 @@ bool ButeMgr::ParseAttributeFile() {
         DWORD vd;
         float vf;
     };
+    double dv;
+    i32 a, b, c, d;
+    i32 px, py;
+    double x, y, z;
     vi = 0;
 
     m_str104 = m_token;
@@ -1020,7 +1030,7 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case BUTETOK_DOUBLE: {
-            double dv = atof(m_token);
+            dv = atof(m_token);
             if (m_writeMode) {
                 (*m_pText) << static_cast<double>(GetDouble(m_tagName, m_str104));
             } else if (!bDup) {
@@ -1029,7 +1039,6 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case BUTETOK_RECT: {
-            i32 a, b, c, d;
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (m_writeMode) {
                 ButeIntRect* r = GetRect(m_tagName, m_str104);
@@ -1044,20 +1053,18 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case BUTETOK_POINT: {
-            i32 a, b;
-            sscanf(m_token, s_fmtPoint2, &a, &b);
+            sscanf(m_token, s_fmtPoint2, &px, &py);
             if (m_writeMode) {
                 ButeIntPoint* r = GetPoint(m_tagName, m_str104);
                 ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->b);
                 (*m_pText) << s_strClose;
             } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_POINT, a, b));
+                m_pNode->Insert(m_str104, new CButeValue(BUTE_POINT, px, py));
             }
             break;
         }
         case BUTETOK_VECTOR: {
-            double x, y, z;
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
                 ButeDoubleVector* r = GetVector(m_tagName, m_str104);
@@ -1074,7 +1081,6 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case BUTETOK_RANGE: {
-            double x, y;
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (m_writeMode) {
                 ButeDoubleRange* r = GetRange(m_tagName, m_str104);
@@ -1281,6 +1287,12 @@ bool CButeMgr::ParseGroup() {
     return true;
 }
 
+// @early-stop
+// Structure is retail-exact (stack strstream, statement order, every callee).
+// The residue is one regalloc decision: retail pins the constant 1 in ebx
+// (`mov [esi+0x10d],bl`, `push ebx` for each virtual-base ctor flag,
+// `test [..],bl`, `mov al,bl`) where cl gives us the immediate form and one
+// fewer callee-saved push, shifting every esp displacement by 4.
 RVA(0x00171640, 0x3f2)
 bool CButeMgr::Save() {
     Init();
@@ -1297,33 +1309,27 @@ bool CButeMgr::Save() {
     input.clear();
     input.seekg(0);
 
-    // The parse stream is HEAP-allocated - the one spelling satisfying all three
-    // byte constraints: (1) retail's neg/sbb/and at the Decode call is cl5's
-    // null-checked pointer upcast (strstream* -> ostream*, +0xc), which a
-    // reference cannot produce; (2) GRUNTZ.EXE contains no ??1strstream or
-    // ??_Dstrstream anywhere, which a stack local's scope-end destruction would
-    // synthesize (the LNK2005 vs libcimt proved the plain-local spelling wrong);
-    // (3) teardown through `delete source` virtual-dispatches into the CRT's own
-    // scalar-deleting dtor (the strstream vtable slot 0 target, 0x169aa0). The
-    // buffer is allocated inline in the ctor args (arg-order proven).
-    strstream* sourceStore = new strstream(new char[length], length, ios::in | ios::out);
-    iostream* source = sourceStore;
+    // The parse stream is a STACK local: retail's frame is 0x64 bytes bigger
+    // than a heap spelling's, its ctor takes `lea ecx,[esp+0x84]`, and scope
+    // exit runs ~strstream + ~ios on that same address (0x1719e9 / 0x1719f5) -
+    // the two-part teardown of a class with a virtual `ios` base.
+    strstream source(new char[length], length, ios::in | ios::out);
     if (m_encrypted) {
-        m_crypt.Decode(&input, source);
+        m_crypt.Decode(&input, &source);
         m_pText = new iostream(new strstreambuf(length));
     } else {
         char block[0x1000];
         while (!input.eof()) {
             input.read(block, sizeof(block));
-            source->write(block, input.gcount());
+            source.write(block, input.gcount());
         }
         input.close();
         m_pText = new fstream(m_str108, ios::in | ios::out | ios::binary);
     }
     m_pText->precision(100);
 
-    source->clear();
-    m_stream = source;
+    source.clear();
+    m_stream = &source;
     ParseGroup();
     m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
     m_pText->clear();
@@ -1333,12 +1339,11 @@ bool CButeMgr::Save() {
         m_crypt.Encode(m_pText, &output);
     }
 
-    delete[] sourceStore->str();
+    delete[] source.str();
     if (m_encrypted) {
         delete m_pText->rdbuf();
     }
     delete m_pText;
-    delete source;
 
     m_captureText = 0;
     m_writeMode = 0;
