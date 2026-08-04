@@ -25,7 +25,7 @@
         m_pickupGeoSrc = geo;                                                                      \
     } while (0)
 
-RVA(0x00065e80, 0x12b8)
+RVA(0x00065e80, 0x13a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,
     i32 forced,

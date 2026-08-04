@@ -1306,12 +1306,12 @@ i32 CGrunt::UpdateArrival() {
     this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
     this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-    bool atTarget = false;
+    i32 atTarget = 0;
     if (g != NULL) {
         i32 x = g->m_object->m_screenX;
         if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
             && g->RectContains(x, g->m_object->m_screenY) != 0) {
-            atTarget = true;
+            atTarget = 1;
         }
     }
 
@@ -3386,13 +3386,13 @@ i32 CGrunt::SeekTarget() {
         );
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-        bool atTarget = false;
+        i32 atTarget = 0;
         if (g != NULL) {
             i32 x = g->m_object->m_screenX;
             if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
 
                 && RectContains(x, g->m_object->m_screenY) != 0) {
-                atTarget = true;
+                atTarget = 1;
             }
         }
         if (this->m_poweredUp != 0) {

@@ -1063,7 +1063,7 @@ i32 CGrunt::FinishEntranceMove() {
     return 0;
 }
 
-RVA(0x0006a060, 0x43d)
+RVA(0x0006a060, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_moveSpeed =
         16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
@@ -1129,13 +1129,17 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
                 MV_S;
                 break;
             case 0x6b:
+            case 0x70:
+            case 0x71:
                 MV_SW;
                 break;
             case 0x78:
+            case 0x80:
                 MV_W;
                 break;
             case 0x86:
             case 0x87:
+            case 0x8b:
                 MV_NW;
                 break;
             case 0x89:
@@ -1144,33 +1148,17 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
                 break;
             case 0x82:
             case 0x83:
-                MV_NE;
-                break;
-            case 0x73:
-                MV_E;
-                break;
-            case 0x68:
-                MV_SE;
-                break;
-            case 0x6c:
-            case 0x6d:
-                MV_SE;
-                break;
-            case 0x70:
-            case 0x71:
-                MV_SW;
-                break;
-            case 0x7b:
-                MV_E;
-                break;
-            case 0x80:
-                MV_W;
-                break;
             case 0x88:
                 MV_NE;
                 break;
-            case 0x8b:
-                MV_NW;
+            case 0x73:
+            case 0x7b:
+                MV_E;
+                break;
+            case 0x68:
+            case 0x6c:
+            case 0x6d:
+                MV_SE;
                 break;
             default:
                 return 0;
@@ -1184,14 +1172,24 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
                 MV_N;
                 break;
             case 0x79:
+            case 0x7f:
+            case 0x80:
+            case 0x81:
+            case 0x85:
                 MV_NE;
                 break;
             case 0x6f:
             case 0x70:
+            case 0x77:
+            case 0x78:
                 MV_E;
                 break;
             case 0x63:
             case 0x64:
+            case 0x69:
+            case 0x6a:
+            case 0x6b:
+            case 0x71:
                 MV_SE;
                 break;
             case 0x65:
@@ -1200,52 +1198,22 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
                 break;
             case 0x67:
             case 0x68:
+            case 0x6c:
+            case 0x6d:
+            case 0x6e:
+            case 0x74:
                 MV_SW;
                 break;
             case 0x75:
             case 0x76:
-                MV_W;
-                break;
-            case 0x7c:
-                MV_NW;
-                break;
-            case 0x69:
-            case 0x6a:
-            case 0x6b:
-                MV_SE;
-                break;
-            case 0x6c:
-            case 0x6d:
-            case 0x6e:
-                MV_SW;
-                break;
-            case 0x71:
-                MV_SE;
-                break;
-            case 0x74:
-                MV_SW;
-                break;
-            case 0x77:
-            case 0x78:
-                MV_E;
-                break;
             case 0x7d:
             case 0x7e:
                 MV_W;
                 break;
-            case 0x7f:
-            case 0x80:
-            case 0x81:
-                MV_NE;
-                break;
+            case 0x7c:
             case 0x82:
             case 0x83:
             case 0x84:
-                MV_NW;
-                break;
-            case 0x85:
-                MV_NE;
-                break;
             case 0x8a:
                 MV_NW;
                 break;
@@ -1253,7 +1221,6 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
                 return 0;
         }
     }
-
 #undef MV_VEC
 #undef MV_N
 #undef MV_S
