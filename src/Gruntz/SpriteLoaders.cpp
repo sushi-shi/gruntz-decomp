@@ -23,6 +23,7 @@
 
 #include <string.h>
 
+// @early-stop
 RVA(0x0009bab0, 0x35)
 CTimer* CTimer::Init() {
     m_baseTime.m_v = 0;

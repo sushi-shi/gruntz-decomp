@@ -1049,6 +1049,7 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicT
     return 1;
 }
 
+// @early-stop
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == NULL) {
@@ -1077,6 +1078,7 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     return 1;
 }
 
+// @early-stop
 RVA(0x001638c0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == NULL) {

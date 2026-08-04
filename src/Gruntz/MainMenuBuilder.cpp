@@ -195,6 +195,7 @@ void SetMenuTextRect() {
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (1 fns) came from the static library. It belongs to another compiland.
 
+// @early-stop
 RVA(0x000a11d0, 0x180d)
 i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (menu == NULL) {

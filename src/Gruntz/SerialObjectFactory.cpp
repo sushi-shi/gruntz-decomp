@@ -98,6 +98,7 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, LOGIC_NONE) != 0;
 }
 
+// @early-stop
 RVA(0x0000d2a0, 0x1984)
 i32 __cdecl
 SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {

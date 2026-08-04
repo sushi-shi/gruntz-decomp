@@ -815,6 +815,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     return 0;
 }
 
+// @early-stop
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -1058,6 +1059,7 @@ RVA_COMPGEN(0x001007a0, 0x1e, ??_GCSBI_MenuItem@@UAEPAXI@Z)
 RVA_COMPGEN(0x001007d0, 0x7f, ??1CSBI_MenuItem@@UAE@XZ)
 RVA_COMPGEN(0x00100870, 0x6a, ??1CSBI_Image@@UAE@XZ)
 RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
+// @early-stop
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
@@ -1129,6 +1131,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     m_tabsBuilt = 0;
 }
 
+// @early-stop
 RVA(0x00100b00, 0x150)
 void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == TAB_NONE) {
@@ -1231,6 +1234,7 @@ i32 CStatusBarMgr::Deactivate() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00100d70, 0x548)
 i32 CStatusBarMgr::SetTabState(StatusBarTab tab, SbiMenuItemState state) {
     if (m_tabSprite0 == NULL || m_tabSprite1 == NULL || m_tabSprite2 == NULL || m_tabSprite3 == NULL
@@ -1440,6 +1444,7 @@ i32 CStatusBarMgr::ClearTabSprites(i32 idx) {
     return 1;
 }
 
+// @early-stop
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
@@ -1837,6 +1842,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
     return 1;
 }
 
+// @early-stop
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_hitTestDisabled == 0) {
@@ -1950,6 +1956,7 @@ void CStatusBarMgr::ArmSlot(i32 idx) {
     }
 }
 
+// @early-stop
 RVA(0x001055b0, 0x109)
 i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* sp = &m_slots[idx];
@@ -2068,6 +2075,7 @@ void CStatusBarMgr::Reset() {
     m_destructWarnActive = 0;
 }
 
+// @early-stop
 RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
@@ -2544,6 +2552,7 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     return 1;
 }
 
+// @early-stop
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
@@ -2752,6 +2761,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+// @early-stop
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
@@ -2923,6 +2933,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     m_modeArmed = 0;
     TryActivate();
 }
+// @early-stop
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     i32 result;
@@ -3087,6 +3098,7 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
     }
 }
 
+// @early-stop
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) {
     if (s == NULL) {
@@ -3507,6 +3519,7 @@ i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, i32 c) {
     return o->Init(this, a, b, c);
 }
 
+// @early-stop
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
     m_owner = static_cast<CStatusBarMgr*>(owner);
@@ -3797,6 +3810,7 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
     return 0;
 }
 
+// @early-stop
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
 

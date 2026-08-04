@@ -180,6 +180,7 @@ GZ_ENUM_END(ToolCursorId)
         }                                                                                          \
     } while (0)
 
+// @early-stop
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -309,6 +310,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
     }
 }
 
+// @early-stop
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::LeaveState(GameStateId arg) {
     m_mgr->m_cueSink->PauseAllVoices();
@@ -691,6 +693,7 @@ u32 g_engineFrameDelta = 0;
 DATA(0x002bf3c0)
 u32 g_killCueClock = 0;
 
+// @early-stop
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
@@ -1442,6 +1445,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
     return 0;
 }
 
+// @early-stop
 RVA(0x000cbcc0, 0x1770)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     CPlay* self = this;
@@ -6392,6 +6396,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     return 0;
 }
 
+// @early-stop
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char buf[0x40];

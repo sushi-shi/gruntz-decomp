@@ -38,6 +38,7 @@ i32 g_suppress_64e360 = 0;
 DATA(0x0024e35c)
 i32 g_playActive;
 
+// @early-stop
 RVA(0x000fa1f0, 0xc6)
 i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     static_cast<void>(a);

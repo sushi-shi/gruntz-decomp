@@ -1569,6 +1569,7 @@ i32 __stdcall WwdFile_CompressMainBlock(
     return WapUncompress(dest, &outLen, src, srcLen) == 0 ? static_cast<i32>(outLen) : 0;
 }
 
+// @early-stop
 RVA(0x001608c0, 0xc0)
 TileCollisionKind CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
@@ -1578,6 +1579,7 @@ TileCollisionKind CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     return result;
 }
 
+// @early-stop
 RVA(0x00160980, 0xc0)
 TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;

@@ -135,6 +135,7 @@ CBattlezMapConfig::~CBattlezMapConfig() {
     FreeArrays();
 }
 
+// @early-stop
 RVA(0x00025020, 0x984)
 i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
@@ -2575,6 +2576,7 @@ void CBattlezMapConfig::Clear() {
     m_active = 0;
 }
 
+// @early-stop
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     if (unit->m_entranceCommitted == 0) {
@@ -3995,6 +3997,7 @@ i32 CBattlezMapConfig::PathToNearbyUnit(CGrunt*) {
     return 0;
 }
 
+// @early-stop
 RVA(0x0002edb0, 0x6b4)
 i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, i32 ay) {
     if (unit->CoordCount() == 0) {
