@@ -471,6 +471,9 @@ void CGameObject::AddLogicBump(char* key) {
     EnsureBumpWorker(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
+// @early-stop
+// objdiff pairs the symbol but scores 0: retail duplicates the shared
+// Dispatch tail into the first switch arm where cl tail-merges ours.
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
     if (ar == NULL) {
@@ -1085,6 +1088,9 @@ i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
     return el->Reload(rec, flag) != 0;
 }
 
+// @early-stop
+// cl canonicalises the imul operand order, so the width/height loads
+// come out swapped whichever way the multiply is spelled.
 RVA(0x001523f0, 0x82)
 i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     i32 sum = 0;

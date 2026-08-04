@@ -834,6 +834,9 @@ timeout:
     return 1;
 }
 
+// @early-stop
+// objdiff pairs the symbol but scores 0 - the instruction alignment
+// carries more inserts+deletes than matches, so the body still diverges structurally.
 RVA(0x000ee800, 0x971)
 i32 CGrunt::ArrivalReticleScan() {
     i32 defTX = m_defenderPx.m_x >> TILE_SHIFT_PX;
@@ -1287,6 +1290,7 @@ i32 CGrunt::ChargeStep() {
     return 1;
 }
 
+// @early-stop
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
@@ -1546,6 +1550,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
     return 0;
 }
 
+// @early-stop
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -2950,9 +2955,11 @@ i32 CGrunt::ScanNearestTarget() {
     return 1;
 }
 
+// @early-stop
+// retail reads BOTH components of each GetScreenPos result and shifts
+// them in place; the frame is also 16 bytes smaller than ours.
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
-    CDWordArray acc;
     Coord pa;
     Coord pb;
 
@@ -3029,6 +3036,7 @@ state2: {
         grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
+    CDWordArray acc;
     acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y - 2) & 0xffff));
     acc.SetAtGrow(acc.GetSize(), ((x - 1) << 16) | ((y - 2) & 0xffff));
     acc.SetAtGrow(acc.GetSize(), (x << 16) | ((y - 2) & 0xffff));
@@ -3071,7 +3079,6 @@ state2: {
 build_tail: {
     CMapMgr* pl2 = g_gameReg->m_tileGrid;
     GRID_BOUNDS(pl2);
-    acc.~CDWordArray();
     goto common;
 }
 }
@@ -3536,6 +3543,7 @@ i32 CGrunt::StepPeerTracking() {
     return 1;
 }
 
+// @early-stop
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderPx.m_x = m_lastTilePx.m_x;

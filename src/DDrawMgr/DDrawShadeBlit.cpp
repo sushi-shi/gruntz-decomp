@@ -435,6 +435,9 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     surf->m_ddSurface->Unlock(0);
 }
 
+// @early-stop
+// the shade/copy row loops are transcribed; the residue is /O2 register
+// allocation and induction-variable choice inside the inlined row bodies.
 RVA(0x0014a200, 0x1570)
 void CDDrawShadeBlit::BlitShadedForward(
     ShadeRect* dst,
@@ -986,6 +989,8 @@ void CDDrawShadeBlit::BlitShadedForward(
     src->m_ddSurface->Unlock(0);
 }
 
+// @early-stop
+// mirror of BlitShadedForward; same regalloc residue.
 RVA(0x0014b770, 0x1280)
 void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* dst,
@@ -1448,6 +1453,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
     surf->m_ddSurface->Unlock(0);
 }
 
+// @early-stop
 RVA(0x0014c9f0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     i32 i;
@@ -1579,6 +1585,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     }
 }
 
+// @early-stop
 RVA(0x0014cfc0, 0x620)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     u8* base = m_palDescr ? m_palDescr->m_data : src;
@@ -1702,6 +1709,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     }
 }
 
+// @early-stop
+// retail spills nothing here - it fits the whole arm in the four
+// parameter home slots, so our two extra spill slots shift every frame offset.
 RVA(0x0014d5e0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
@@ -1786,6 +1796,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
     }
 }
 
+// @early-stop
 RVA(0x0014d950, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;

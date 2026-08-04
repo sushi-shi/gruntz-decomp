@@ -1062,6 +1062,9 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
     );
 }
 
+// @early-stop
+// objdiff pairs the symbol but scores 0; retail also carries one more
+// 4-byte local, so every parameter offset in our frame is short by four.
 RVA(0x0004b370, 0xafd)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -4306,6 +4309,9 @@ kindDispatch:
     }
 }
 
+// @early-stop
+// retail re-evaluates the m_entranceCell index at each use and inlines
+// GruntPosScratchTeardown; both are still folded here.
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);

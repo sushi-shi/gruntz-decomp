@@ -28,6 +28,8 @@
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
+// @early-stop
+// roughly 210 instructions of retail logic are still missing from this body.
 RVA(0x00075e90, 0x1329)
 i32 CTriggerMgr::LoadTileArrivalFx(
     i32 ownerHi,
