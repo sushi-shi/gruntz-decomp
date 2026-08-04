@@ -240,8 +240,8 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
         return;
     }
     u8 count = 0;
-    u8 firstByte = 0;
-    u8 bytes[0x70];
+    u8 firstByte; // retail leaves it uninitialized - only the loop writes it
+    u8 bytes[0x80];
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
@@ -254,7 +254,7 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
     }
     CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
-        rep->EnqueueSingle(
+        g_gameReg->m_cmdSubMgr->EnqueueSingle(
             tag,
             firstByte,
             bytes[0],
@@ -265,7 +265,7 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
             0
         );
     } else {
-        rep->EnqueueMulti(
+        g_gameReg->m_cmdSubMgr->EnqueueMulti(
             tag,
             firstByte,
             count,
@@ -284,8 +284,8 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
         return;
     }
     u8 count = 0;
-    u8 firstByte = 0;
-    u8 bytes[0x70];
+    u8 firstByte; // retail leaves it uninitialized - only the loop writes it
+    u8 bytes[0x80];
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
@@ -299,7 +299,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
     CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
         if (flag != 0) {
-            rep->EnqueueSingle(
+            g_gameReg->m_cmdSubMgr->EnqueueSingle(
                 tag,
                 firstByte,
                 bytes[0],
@@ -310,7 +310,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
                 0
             );
         } else {
-            rep->EnqueueSingle(
+            g_gameReg->m_cmdSubMgr->EnqueueSingle(
                 tag,
                 firstByte,
                 bytes[0],
@@ -323,7 +323,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
         }
     } else {
         if (flag != 0) {
-            rep->EnqueueMulti(
+            g_gameReg->m_cmdSubMgr->EnqueueMulti(
                 tag,
                 firstByte,
                 count,
@@ -334,7 +334,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
                 0
             );
         } else {
-            rep->EnqueueMulti(
+            g_gameReg->m_cmdSubMgr->EnqueueMulti(
                 tag,
                 firstByte,
                 count,

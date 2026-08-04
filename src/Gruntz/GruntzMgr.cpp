@@ -220,12 +220,11 @@ CMulti::CMulti() {
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
-    CState* cur = m_curState;
     GameStateId local10 = static_cast<GameStateId>(0);
-    if (cur != NULL) {
-        local10 = cur->Update();
-        i32 savedSub = cur->m_levelIndex;
-        cur->LeaveState(stateId);
+    if (m_curState != NULL) {
+        local10 = m_curState->Update();
+        i32 savedSub = m_curState->m_levelIndex;
+        m_curState->LeaveState(stateId);
         if (keepCurrent != 0) {
             PushState(m_curState);
             areaArg = savedSub;

@@ -599,14 +599,19 @@ i32 CRollingBall::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
         return 0;
     }
 
+    // Retail walks one pointer over the two adjacent i64 clocks (lea + add 8),
+    // so it stays live across the call in a callee-saved register.
+    i64* explode = &m_explodeStart;
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_explodeStart, sizeof(m_explodeStart));
-            ar->Write(&m_explodeWindow, sizeof(m_explodeWindow));
+            ar->Write(explode, sizeof(*explode));
+            explode++;
+            ar->Write(explode, sizeof(*explode));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_explodeStart, sizeof(m_explodeStart));
-            ar->Read(&m_explodeWindow, sizeof(m_explodeWindow));
+            ar->Read(explode, sizeof(*explode));
+            explode++;
+            ar->Read(explode, sizeof(*explode));
             break;
     }
 
