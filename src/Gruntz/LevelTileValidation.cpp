@@ -167,7 +167,7 @@ i32 CPlay::ValidateLevelTiles() {
         if (who == CreateTileTriggerSwitch) {
             CGameLevel* grid = LevelOf(m_world);
             i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
-            if (type == 0x21) {
+            if (type == TILEKIND_GIANT_ROCK) {
 
                 void* hit = 0;
                 i32 col = obj->m_speedX - 1;
@@ -212,7 +212,8 @@ i32 CPlay::ValidateLevelTiles() {
                 type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
             }
-            if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
+            if (type == TILEKIND_GAUNTLET_ROCK_A || type == TILEKIND_GAUNTLET_ROCK_B
+                || type == TILEKIND_COVERED_POWERUP || type == TILEKIND_REVEALED_POWERUP) {
 
                 CTileTriggerLogic* r =
                     m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
@@ -473,7 +474,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateTileTrigger) {
             CGameLevel* grid = LevelOf(m_world);
             i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
-            if (type == 0x21) {
+            if (type == TILEKIND_GIANT_ROCK) {
 
                 void* hit = 0;
                 i32 col = obj->m_speedX - 1;
@@ -517,7 +518,8 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
-            } else if (type == 0x1e || type == 0x1f || type == 0x22) {
+            } else if (type == TILEKIND_GAUNTLET_ROCK_A || type == TILEKIND_GAUNTLET_ROCK_B
+                       || type == TILEKIND_COVERED_POWERUP) {
 
                 CTileTriggerLogic* r =
                     m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
@@ -537,7 +539,7 @@ i32 CPlay::ValidateLevelTiles() {
                 type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
             }
-            if (type >= TILEKIND_TOGGLEWATERBRIDGE_DOWN && type <= TILEKIND_TOGGLEDEATHBRIDGE_UP) {
+            if (type >= TILEKIND_TOGGLE_BRIDGE_FIRST && type <= TILEKIND_TOGGLE_BRIDGE_LAST) {
                 if (!m_beginMarker->AddLogic(
                         static_cast<TileCollisionKind>(type),
                         TRIGID_TIME_TRIGGER_23,
