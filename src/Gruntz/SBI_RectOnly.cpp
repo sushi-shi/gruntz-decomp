@@ -2913,8 +2913,6 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     m_ptrPool.SetSize(0, -1);
     m_reserved2b0 = 0;
     m_reserved2b8 = 0;
-    m_reserved2b4 = 0;
-    m_reserved2bc = 0;
     m_hlBusy = 0;
     if (m_retabNotify) {
         free(m_retabNotify);
@@ -3074,6 +3072,21 @@ insert:
     return 1;
 }
 
+// Retail serializes every {i64 last; i64 interval} pair through one inlined
+// helper: the base address is hoisted into a register before the mode test and
+// the second field reached with `add reg,8`.
+static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
+    if (op != SERIAL_SAVE) {
+        if (op == SERIAL_LOAD) {
+            s->Read(pair, sizeof(*pair));
+            s->Read(pair + 1, sizeof(*pair));
+        }
+    } else {
+        s->Write(pair, sizeof(*pair));
+        s->Write(pair + 1, sizeof(*pair));
+    }
+}
+
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) {
     if (s == NULL) {
@@ -3099,7 +3112,12 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
             break;
     }
 
-    if (m_retabNotify == NULL) {
+    if (m_retabNotify != NULL) {
+        i32 tmp = 1;
+        if (op == SERIAL_SAVE) {
+            s->Write(&tmp, sizeof(tmp));
+        }
+    } else {
         i32 tmp = 0;
         if (op == SERIAL_SAVE) {
             s->Write(&tmp, sizeof(tmp));
@@ -3111,11 +3129,6 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
                 c->m_owner = this;
             }
         }
-    } else {
-        i32 tmp = 1;
-        if (op == SERIAL_SAVE) {
-            s->Write(&tmp, sizeof(tmp));
-        }
     }
 
     if (m_retabNotify != NULL) {
@@ -3124,52 +3137,16 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
         }
     }
 
-    if (op == SERIAL_SAVE) {
-        s->Write(&m_beltLast, sizeof(m_beltLast));
-        s->Write(&m_beltInterval, sizeof(m_beltInterval));
-    } else if (op == SERIAL_LOAD) {
-        s->Read(&m_beltLast, sizeof(m_beltLast));
-        s->Read(&m_beltInterval, sizeof(m_beltInterval));
-    }
-    if (op == SERIAL_SAVE) {
-        s->Write(&m_fallLast, sizeof(m_fallLast));
-        s->Write(&m_fallDelay, sizeof(m_fallDelay));
-    } else if (op == SERIAL_LOAD) {
-        s->Read(&m_fallLast, sizeof(m_fallLast));
-        s->Read(&m_fallDelay, sizeof(m_fallDelay));
-    }
-    if (op == SERIAL_SAVE) {
-        s->Write(&m_machineB.m_last, sizeof(m_machineB.m_last));
-        s->Write(&m_machineB.m_interval, sizeof(m_machineB.m_interval));
-    } else if (op == SERIAL_LOAD) {
-        s->Read(&m_machineB.m_last, sizeof(m_machineB.m_last));
-        s->Read(&m_machineB.m_interval, sizeof(m_machineB.m_interval));
-    }
-    if (op == SERIAL_SAVE) {
-        s->Write(&m_machineA.m_last, sizeof(m_machineA.m_last));
-        s->Write(&m_machineA.m_interval, sizeof(m_machineA.m_interval));
-    } else if (op == SERIAL_LOAD) {
-        s->Read(&m_machineA.m_last, sizeof(m_machineA.m_last));
-        s->Read(&m_machineA.m_interval, sizeof(m_machineA.m_interval));
-    }
-    if (op == SERIAL_SAVE) {
-        s->Write(&m_destructWarnLast, sizeof(m_destructWarnLast));
-        s->Write(&m_destructWarnDelay, sizeof(m_destructWarnDelay));
-    } else if (op == SERIAL_LOAD) {
-        s->Read(&m_destructWarnLast, sizeof(m_destructWarnLast));
-        s->Read(&m_destructWarnDelay, sizeof(m_destructWarnDelay));
-    }
+    SyncClockPair(s, op, &m_beltLast);
+    SyncClockPair(s, op, &m_fallLast);
+    SyncClockPair(s, op, &m_machineB.m_last);
+    SyncClockPair(s, op, &m_machineA.m_last);
+    SyncClockPair(s, op, &m_destructWarnLast);
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
     do {
-        if (op == SERIAL_SAVE) {
-            s->Write(&p->m_startTime, sizeof(p->m_startTime));
-            s->Write(&p->m_interval, sizeof(p->m_interval));
-        } else if (op == SERIAL_LOAD) {
-            s->Read(&p->m_startTime, sizeof(p->m_startTime));
-            s->Read(&p->m_interval, sizeof(p->m_interval));
-        }
+        SyncClockPair(s, op, &p->m_startTime);
         p++;
         n--;
     } while (n != 0);
@@ -3177,42 +3154,25 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     n = 3;
     CSbiHlRow* r = m_groupSlots;
     do {
-        if (op == SERIAL_SAVE) {
-            s->Write(&r->m_last, sizeof(r->m_last));
-            s->Write(&r->m_interval, sizeof(r->m_interval));
-        } else if (op == SERIAL_LOAD) {
-            s->Read(&r->m_last, sizeof(r->m_last));
-            s->Read(&r->m_interval, sizeof(r->m_interval));
-        }
+        SyncClockPair(s, op, &r->m_last);
         r++;
         n--;
     } while (n != 0);
 
     i32 outer = 3;
-    r = m_hlGrid;
+    CSbiHlRow* g = m_hlGrid;
     do {
         n = 4;
         do {
-            if (op == SERIAL_SAVE) {
-                s->Write(&r->m_last, sizeof(r->m_last));
-                s->Write(&r->m_interval, sizeof(r->m_interval));
-            } else if (op == SERIAL_LOAD) {
-                s->Read(&r->m_last, sizeof(r->m_last));
-                s->Read(&r->m_interval, sizeof(r->m_interval));
-            }
-            r++;
+            SyncClockPair(s, op, &g->m_last);
+            g++;
             n--;
         } while (n != 0);
         outer--;
     } while (outer != 0);
 
-    if (op == SERIAL_SAVE) {
-        s->Write(&m_reserved2a0, sizeof(m_reserved2a0));
-        s->Write(&m_reserved2a8, sizeof(m_reserved2a8));
-    } else if (op == SERIAL_LOAD) {
-        s->Read(&m_reserved2a0, sizeof(m_reserved2a0));
-        s->Read(&m_reserved2a8, sizeof(m_reserved2a8));
-    }
+    SyncClockPair(s, op, &m_reserved2a0);
+    SyncClockPair(s, op, &m_reserved2b0);
     if (op == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
     }
@@ -3225,12 +3185,10 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
 
     {
         i32 i = 0;
-        CSBI_StatzTabArrow** q = m_statObj;
         do {
             SER(m_hitRects[i])
-            SER(*q)
+            SER(m_statObj[i])
             i++;
-            q++;
         } while (i < 0xf);
     }
     {

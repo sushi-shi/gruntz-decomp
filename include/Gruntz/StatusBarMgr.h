@@ -257,10 +257,8 @@ public:
 
     i64 m_reserved2a0;
     i64 m_reserved2a8;
-    i32 m_reserved2b0;
-    i32 m_reserved2b4;
-    i32 m_reserved2b8;
-    i32 m_reserved2bc;
+    i64 m_reserved2b0;
+    i64 m_reserved2b8;
 
     CSbiHlRow m_groupSlots[3];
     CSBI_ImageSet* m_groupNotify[3];
@@ -329,9 +327,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_reserved2a0 = 0;
     m_reserved2a8 = 0;
     m_reserved2b0 = 0;
-    m_reserved2b4 = 0;
     m_reserved2b8 = 0;
-    m_reserved2bc = 0;
     m_machineB.m_lastLo = 0;
     m_machineB.m_lastHi = 0;
     m_machineB.m_intervalLo = 0;
