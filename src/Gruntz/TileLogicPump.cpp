@@ -75,7 +75,7 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
     AnimWorkerObj* ctl = obj->m_animWorker;                                                        \
     switch (static_cast<u32>(ctl->ActKey())) {                                                     \
         case 0: {                                                                                  \
-            ctl->SetActKey(0x3e8);                                                                 \
+            ctl->SetActKey(ACT_LIVE);                                                              \
             LEAF* t = new LEAF(obj);                                                               \
             t->Activate();                                                                         \
             ctl->m_logic = t;                                                                      \

@@ -9,6 +9,7 @@
 #include <Gruntz/WwdGrid.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Wap32/Object.h>
+#include <Wwd/AnimWorkerAct.h>
 
 VTBL(CWwdGridIter, 0x001f02a8);
 RVA_COMPGEN(0x00163a20, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
@@ -115,7 +116,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                 || newY < m_bounds.top - 0xdc || newY > m_bounds.bottom + 0xdc) {
                 if (obj->m_flags & 0x80000) {
                     AnimWorkerObj* w = obj->m_animWorker;
-                    w->SetActKey(0x1d);
+                    w->SetActKey(ACT_OBJECT_REMOVED);
                     w->m_notify(obj);
                 }
                 m_mgr->RemoveAll(cur, obj);
@@ -152,7 +153,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
                         AnimWorkerObj* w = obj->m_animWorker;
-                        w->SetActKey(0x1d);
+                        w->SetActKey(ACT_OBJECT_REMOVED);
                         w->m_notify(obj);
                     }
                     m_mgr->RemoveAll(cur, obj);
@@ -162,9 +163,9 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     if (flags & 0x100000) {
                         AnimWorkerObj* w = obj->m_animWorker;
                         i32 saved = w->ActKey();
-                        w->SetActKey(0x1e);
+                        w->SetActKey(ACT_LEAVE_ACTIVE_REGION);
                         w->m_notify(obj);
-                        if (w->ActKey() == 0x1e) {
+                        if (w->ActKey() == ACT_LEAVE_ACTIVE_REGION) {
                             w->m_actKey = saved;
                         }
                     }
@@ -179,7 +180,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
                         AnimWorkerObj* w = obj->m_animWorker;
-                        w->SetActKey(0x1d);
+                        w->SetActKey(ACT_OBJECT_REMOVED);
                         w->m_notify(obj);
                     }
                     m_mgr->RemoveAll(cur, obj);
@@ -189,9 +190,9 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     if (flags & 0x100000) {
                         AnimWorkerObj* w = obj->m_animWorker;
                         i32 saved = w->ActKey();
-                        w->SetActKey(0x1e);
+                        w->SetActKey(ACT_LEAVE_ACTIVE_REGION);
                         w->m_notify(obj);
-                        if (w->ActKey() == 0x1e) {
+                        if (w->ActKey() == ACT_LEAVE_ACTIVE_REGION) {
                             w->m_actKey = saved;
                         }
                     }
@@ -206,7 +207,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
                         AnimWorkerObj* w = obj->m_animWorker;
-                        w->SetActKey(0x1d);
+                        w->SetActKey(ACT_OBJECT_REMOVED);
                         w->m_notify(obj);
                     }
                     m_mgr->RemoveAll(cur, obj);
@@ -216,9 +217,9 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     if (flags & 0x100000) {
                         AnimWorkerObj* w = obj->m_animWorker;
                         i32 saved = w->ActKey();
-                        w->SetActKey(0x1e);
+                        w->SetActKey(ACT_LEAVE_ACTIVE_REGION);
                         w->m_notify(obj);
-                        if (w->ActKey() == 0x1e) {
+                        if (w->ActKey() == ACT_LEAVE_ACTIVE_REGION) {
                             w->m_actKey = saved;
                         }
                     }

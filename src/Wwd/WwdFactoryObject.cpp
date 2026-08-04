@@ -33,6 +33,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Wap32/CoordUnset.h>
+#include <Wwd/AnimWorkerAct.h>
 #include <Wwd/WwdAnimStepMode.h>
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdObjMgr.h>
@@ -121,7 +122,7 @@ void CGameObject::Notify(void* p) {
         i32 d = m_health - (static_cast<CGameObject*>(p))->m_damage;
         m_health = d;
         if (d <= 0) {
-            m_animWorker->SetActKey(0x1c);
+            m_animWorker->SetActKey(ACT_HEALTH_DEPLETED);
         }
     } else {
         AnimWorkerObj* h = m_hitWorker;

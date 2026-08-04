@@ -36,6 +36,7 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
+#include <Wwd/AnimWorkerAct.h>
 #include <Wwd/WwdFactoryObject.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -314,7 +315,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
         if (obj->m_flags & 0x80000) {
             AnimWorkerObj* rec = obj->m_animWorker;
-            rec->SetActKey(0x1d);
+            rec->SetActKey(ACT_OBJECT_REMOVED);
             rec->m_notify(static_cast<CGameObject*>(obj));
         }
         if (obj->m_flags & 0x800) {
@@ -511,7 +512,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     oi->m_health = v;
                                     if (v <= 0) {
 
-                                        oi->m_animWorker->SetActKey(0x1c);
+                                        oi->m_animWorker->SetActKey(ACT_HEALTH_DEPLETED);
                                     }
                                 } else {
                                     AnimWorkerObj* nf = oi->m_hitWorker;

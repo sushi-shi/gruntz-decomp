@@ -4676,10 +4676,10 @@ drag_box: {
     if (m_dragEndNotify != 0) {
         i32 ex = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 ey = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 lv = m_levelId - 0xc8;
-        if (lv <= 0x16) {
+        i32 lv = m_levelId - CURSOR_TOOL_HANDZ;
+        if (lv <= PICKUP_EQUIPPABLE_LAST) {
             g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 2, 1);
-        } else if (lv >= 0x17 && lv <= 0x20) {
+        } else if (lv >= PICKUP_TOYZ_FIRST && lv <= PICKUP_TOYZ_LAST) {
             g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 3, 1);
         }
         g_gameReg->m_cmdGrid->m_pendingFxKind = 0;
@@ -7006,13 +7006,14 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 }
             } else if (marker == static_cast<void*>(CreateInGameIcon)) {
                 i32 cv = obj->m_smarts == PICKUP_MEGAPHONE ? obj->m_points : obj->m_smarts;
-                if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
+                if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
+                    && cv != PICKUP_WARPSTONE) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
-                } else if (cv >= 0x17 && cv <= 0x20) {
+                } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
                     m_mgr->m_scoreHud->m_toyzAvailable++;
-                } else if (cv >= 0x36 && cv <= 0x3c) {
+                } else if (cv >= PICKUP_POWERUPZ_FIRST && cv <= PICKUP_POWERUPZ_LAST) {
                     m_mgr->m_scoreHud->m_powerupzAvailable++;
-                } else if (cv == 0x50) {
+                } else if (cv == PICKUP_COIN) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 d = obj->m_smarts;
@@ -7057,13 +7058,14 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             } else if (marker == static_cast<void*>(CreateCoveredPowerup)
                        || marker == static_cast<void*>(CreateGiantRock)) {
                 i32 cv = obj->m_powerup == 0x32 ? obj->m_points : obj->m_powerup;
-                if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
+                if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
+                    && cv != PICKUP_WARPSTONE) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
-                } else if (cv >= 0x17 && cv <= 0x20) {
+                } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
                     m_mgr->m_scoreHud->m_toyzAvailable++;
-                } else if (cv >= 0x36 && cv <= 0x3c) {
+                } else if (cv >= PICKUP_POWERUPZ_FIRST && cv <= PICKUP_POWERUPZ_LAST) {
                     m_mgr->m_scoreHud->m_powerupzAvailable++;
-                } else if (cv == 0x50) {
+                } else if (cv == PICKUP_COIN) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 e = obj->m_powerup;

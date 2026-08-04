@@ -39,7 +39,7 @@ i32 CreateLightFx(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
     switch (static_cast<u32>(static_cast<size_t>(aux->ActKey()))) {
         case 0:
-            aux->SetActKey(0x3e8);
+            aux->SetActKey(ACT_LIVE);
             {
                 CLightFx* p = new CLightFx(obj);
                 (static_cast<CUserLogic*>(p))->Activate();

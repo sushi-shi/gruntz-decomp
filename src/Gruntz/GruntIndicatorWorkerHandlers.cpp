@@ -16,7 +16,7 @@
     AnimWorkerObj* rec = owner->m_animWorker;                                                      \
     switch (static_cast<u32>(rec->ActKey())) {                                                     \
         case 0: {                                                                                  \
-            rec->SetActKey(0x3e8);                                                                 \
+            rec->SetActKey(ACT_LIVE);                                                              \
             CUserLogic* sub = new LEAF(owner);                                                     \
             sub->Activate();                                                                       \
             rec->m_logic = sub;                                                                    \

@@ -35,6 +35,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
+#include <Wwd/AnimWorkerAct.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
@@ -487,11 +488,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved3 = w3->m_actKey;
-            w3->SetActKey(0x50);
+            w3->SetActKey(ACT_PREPARE_SAVE);
 
             m_animWorker->m_notify(this);
             w3 = m_animWorker;
-            if (w3->ActKey() == 0x50) {
+            if (w3->ActKey() == ACT_PREPARE_SAVE) {
                 w3->m_actKey = saved3;
             }
             break;
@@ -505,11 +506,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved4 = w4->m_actKey;
-            w4->SetActKey(0x51);
+            w4->SetActKey(ACT_AFTER_SAVE);
 
             m_animWorker->m_notify(this);
             w4 = m_animWorker;
-            if (w4->ActKey() == 0x51) {
+            if (w4->ActKey() == ACT_AFTER_SAVE) {
                 w4->m_actKey = saved4;
             }
             break;
@@ -523,11 +524,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved7 = w7->m_actKey;
-            w7->SetActKey(0x52);
+            w7->SetActKey(ACT_AFTER_LOAD);
 
             m_animWorker->m_notify(this);
             w7 = m_animWorker;
-            if (w7->ActKey() == 0x52) {
+            if (w7->ActKey() == ACT_AFTER_LOAD) {
                 w7->m_actKey = saved7;
             }
             break;
@@ -550,11 +551,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved8 = w8->m_actKey;
-            w8->SetActKey(0x53);
+            w8->SetActKey(ACT_AFTER_LOAD_REFERENCES);
 
             m_animWorker->m_notify(this);
             w8 = m_animWorker;
-            if (w8->ActKey() == 0x53) {
+            if (w8->ActKey() == ACT_AFTER_LOAD_REFERENCES) {
                 w8->m_actKey = saved8;
             }
             break;

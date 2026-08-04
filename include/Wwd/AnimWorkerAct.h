@@ -23,6 +23,12 @@ GZ_ENUM_BEGIN(AnimWorkerAct)
     ACT_UNINITIALISED = 0,
     // The logic exists and is running; the arm is empty everywhere.
     ACT_LIVE = 0x3e8,
+    // Both sites that raise it are the same three lines in different files -
+    // CGameObject::Notify and CWwdObjMgr's collision pass each subtract the
+    // hitter's m_damage from m_health and raise this when the result reaches
+    // zero. Named for that condition rather than for a handler, because no arm
+    // in the tree consumes it.
+    ACT_HEALTH_DEPLETED = 0x1c,
     ACT_OBJECT_REMOVED = 0x1d,
     ACT_LEAVE_ACTIVE_REGION = 0x1e,
     ACT_PREPARE_SAVE = 0x50,
