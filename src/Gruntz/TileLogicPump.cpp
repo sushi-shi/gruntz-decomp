@@ -41,6 +41,7 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 #include <Wwd/AnimWorkerAct.h>
@@ -533,16 +534,16 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
         o->m_flags |= 0x20000;
     }
     memset(m_state, 0, sizeof(m_state));
-    if (m_object->m_extent.left == 0x80000000) {
+    if (m_object->m_extent.left == COORD_UNSET) {
         m_object->m_extent.left = 0;
     }
-    if (m_object->m_area.left == 0x80000000) {
+    if (m_object->m_area.left == COORD_UNSET) {
         m_object->m_area.left = 0;
     }
-    if (m_object->m_switchRect.left == 0x80000000) {
+    if (m_object->m_switchRect.left == COORD_UNSET) {
         m_object->m_switchRect.left = 0;
     }
-    if (m_object->m_clip.left == 0x80000000) {
+    if (m_object->m_clip.left == COORD_UNSET) {
         m_object->m_clip.left = 0;
     }
     m_state[0] = m_object->m_extent.left;

@@ -7041,7 +7041,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
-                } else if (d == 0x55 || d == 0x32) {
+                } else if (d == PICKUP_TOYBOX || d == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,
@@ -7093,7 +7093,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
-                } else if (e == 0x55 || e == 0x32) {
+                } else if (e == PICKUP_TOYBOX || e == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,

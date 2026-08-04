@@ -614,7 +614,7 @@ i32 CInGameIcon::PeekCycle() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* obj = m_object;
     i32 cmd = obj->m_smarts;
-    if (cmd == 0x55) {
+    if (cmd == PICKUP_TOYBOX) {
         CGruntzMgr* reg = g_gameReg;
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
@@ -690,7 +690,7 @@ RVA(0x000986b0, 0x30c)
 i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_gameMode == GAMEMODE_SINGLE && tileOwnerHi != g_curPlayer
-        && m_object->m_smarts != 0x55) {
+        && m_object->m_smarts != PICKUP_TOYBOX) {
         return 0;
     }
     CWwdGameObjectA* obj = m_object;
