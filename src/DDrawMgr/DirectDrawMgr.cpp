@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Dsndmgr/SoundBankLoad.h>
 #include <EmptyString.h>
@@ -1025,7 +1026,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
         return 0;
     }
     PALETTEENTRY* dst = m_palette;
-    for (i32 i = 0; i < 256; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         *dst++ = *src++;
     }
     m_hasPalette = 1;
@@ -1039,7 +1040,7 @@ CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
         return 0;
     }
     const u8* src = static_cast<const u8*>(buf);
-    for (i32 i = 0; i < 256; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_palette[i].peRed = *src++;
         m_palette[i].peGreen = *src++;
         m_palette[i].peBlue = *src++;
@@ -1059,7 +1060,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag
         return 0;
     }
     PALETTEENTRY* src = entries;
-    for (i32 i = 0; i < 256; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_palette[i] = *src++;
     }
     m_hasPalette = 1;

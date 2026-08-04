@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <Image/FileImageRecords.h>
 #include <Io/FileStream.h>
 
@@ -18,7 +19,7 @@ RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
     m_cacheA = static_cast<PALETTEENTRY*>(::operator new(0x400));
 
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_cacheA[i] = entries[i];
     }
     m_cacheB = static_cast<PALETTEENTRY*>(::operator new(0x400));
@@ -45,10 +46,10 @@ i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
 
 RVA(0x001474d0, 0x60)
 i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
-    PALETTEENTRY entries[0x100];
+    PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
 
     u8* src = static_cast<u8*>(rgb);
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         entries[i].peRed = *src++;
         entries[i].peGreen = *src++;
         entries[i].peBlue = *src++;
@@ -82,7 +83,7 @@ void CDDPalette::Destroy() {
 RVA(0x00147590, 0x17e)
 i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     BITMAPFILEHEADER hdr;
-    PALETTEENTRY pe[0x100];
+    PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     Bmp256Info info;
     CFile file;
     if (file.Open(filename, 0, 0) == 0) {
@@ -98,7 +99,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     if (file.Read(info.bmiColors, 0x400) != 0x400) {
         return 0;
     }
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         pe[i].peRed = info.bmiColors[i].rgbRed;
         pe[i].peGreen = info.bmiColors[i].rgbGreen;
         pe[i].peBlue = info.bmiColors[i].rgbBlue;
@@ -109,7 +110,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
 
 RVA(0x00147710, 0x122)
 i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
-    PALETTEENTRY pe[0x100];
+    PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[0x300];
     CFile file;
     if (file.Open(filename, 0, 0) == 0) {
@@ -120,7 +121,7 @@ i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
         return 0;
     }
     u8* src = rgb;
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         pe[i].peRed = *src++;
         pe[i].peGreen = *src++;
         pe[i].peBlue = *src++;
@@ -134,10 +135,10 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
     if (size < 0x300) {
         return 0;
     }
-    PALETTEENTRY entries[0x100];
+    PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
     u8* src = static_cast<u8*>(data) + size - 0x300;
 
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         entries[i].peRed = *src++;
         entries[i].peGreen = *src++;
         entries[i].peBlue = *src++;
@@ -148,7 +149,7 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
 
 RVA(0x001478c0, 0x112)
 i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
-    PALETTEENTRY pe[0x100];
+    PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[0x300];
     CFile file;
     if (file.Open(filename, 0, 0) == 0) {
@@ -158,7 +159,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
         return 0;
     }
     u8* src = rgb;
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         pe[i].peRed = *src++;
         pe[i].peGreen = *src++;
         pe[i].peBlue = *src++;
@@ -169,7 +170,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
 
 RVA(0x001479e0, 0xbb)
 i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
-    PALETTEENTRY pal[256];
+    PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     HRSRC hr = FindResourceA(g_resModule, filename, "PALETTE");
     if (!hr) {
         return 0;
@@ -182,7 +183,7 @@ i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
     if (!src) {
         return 0;
     }
-    for (i32 i = 0; i < 256; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         pal[i].peRed = *src++;
         pal[i].peGreen = *src++;
         pal[i].peBlue = *src++;
@@ -261,14 +262,14 @@ void CDDPalette::Apply(i32 unused) {
         return;
     }
 
-    for (u32 i = 0; i < 0x100; i++) {
+    for (u32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_cacheA[i] = readback[i];
     }
     if (g_DirectDrawMgr != NULL) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    m_palette->SetEntries(0, 0, 0x100, readback);
+    m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, readback);
 }
 
 RVA(0x00147cd0, 0x78)
@@ -292,7 +293,7 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
         CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
     }
     PALETTEENTRY* snapshot = static_cast<PALETTEENTRY*>(::operator new(0x400));
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         snapshot[i] = m_cacheA[i];
     }
     i32 t0 = timeGetTime();
@@ -340,7 +341,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     if (!m_sourcePalette) {
         m_sourcePalette = static_cast<PALETTEENTRY*>(::operator new(0x400));
     }
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_sourcePalette[i] = m_cacheA[i];
     }
     m_active = 1;
@@ -365,7 +366,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, 
     if (!m_sourcePalette) {
         m_sourcePalette = static_cast<PALETTEENTRY*>(::operator new(0x400));
     }
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_sourcePalette[i] = m_cacheA[i];
     }
     m_active = 1;
@@ -547,7 +548,7 @@ i32 BlackoutSystemPalette() {
         LogPal256 lp;
         lp.palVersion = 0x300;
         lp.palNumEntries = 0x100;
-        for (i32 i = 0; i < 0x100; i++) {
+        for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             lp.palPalEntry[i].peRed = 0;
             lp.palPalEntry[i].peGreen = 0;
             lp.palPalEntry[i].peBlue = 0;

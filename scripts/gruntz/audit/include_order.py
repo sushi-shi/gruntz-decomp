@@ -370,7 +370,13 @@ def missing_prelude(path: Path, headers) -> list[str]:
     incs = [m.group(1) for m in (INC_RE.match(l) for l in txt.splitlines()) if m]
     afx_ok = any(_supply(h)[0] or h in MFC_SUPPLIERS for h in incs)
     win_ok = afx_ok or any(_supply(h)[1] or h in WIN_SUPPLIERS for h in incs)
+    # COMMENTS ARE STRIPPED FIRST. A header that merely NAMES a type in prose -
+    # "written as PALETTEENTRY entries[256]", "the CString's initialiser" - does
+    # not need that type declared, and scanning comment text for tokens reported
+    # exactly those two as missing preludes.
     body = "\n".join(l for l in txt.splitlines() if not INC_RE.match(l))
+    body = re.sub(r"/\*.*?\*/", " ", body, flags=re.S)
+    body = re.sub(r"//[^\n]*", "", body)
     # names satisfied without any prelude: fwd decls in this file or one hop
     # down its project includes, plus elaborated uses (`struct tagRECT* r`)
     declared = set(FWD_RE.findall(body)) | set(ELAB_RE.findall(body))

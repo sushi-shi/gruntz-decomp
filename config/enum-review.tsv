@@ -50,6 +50,7 @@ include/DDrawMgr/DDrawWorkerRegistry.h	pending
 include/DDrawMgr/DirPal.h	pending	
 include/DDrawMgr/DirectDrawMgr.h	pending	
 include/DDrawMgr/LogicRecord.h	pending	
+include/DDrawMgr/PaletteSize.h	pending	
 include/DDrawMgr/PixelShift.h	pending	
 include/DDrawMgr/ShadeMode.h	pending	
 include/DDrawMgr/ShadeTableCache.h	pending	

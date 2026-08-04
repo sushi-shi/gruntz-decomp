@@ -7,6 +7,7 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirPal.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <Enums.h>
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
@@ -341,7 +342,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
     u16* pal = m_pal;
     void* pixels;
     if (m_bitCount == BPP_PALETTED_8) {
-        for (i32 i = 0; i < 256; i++) {
+        for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             *pal++ = static_cast<u16>(i);
         }
         m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, &pixels, 0, 0);
@@ -906,10 +907,10 @@ i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
 
 RVA(0x00176e70, 0x4e)
 i32 CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
-    PALETTEENTRY pal[256];
+    PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     u8* s = static_cast<u8*>(rgb);
 
-    for (i32 i = 0; i < 256; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         pal[i].peRed = *s++;
         pal[i].peGreen = *s++;
         pal[i].peBlue = *s++;
@@ -919,8 +920,8 @@ i32 CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
 
 RVA(0x00176ec0, 0x64)
 i32 CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
-    PALETTEENTRY pal[256];
-    for (i32 i = 0; i < 256; i++) {
+    PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         u8* s = static_cast<u8*>(bgr) + i * 4;
         pal[i].peRed = s[2];
         pal[i].peGreen = s[1];
@@ -931,8 +932,8 @@ i32 CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
 
 RVA(0x00176f30, 0x51)
 i32 CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
-    PALETTEENTRY pal[256];
-    for (i32 i = 0; i < 256; i++) {
+    PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         u8* s = static_cast<u8*>(bgr) + i * 3;
         pal[i].peRed = s[2];
         pal[i].peGreen = s[1];
@@ -1011,7 +1012,7 @@ void ResetSystemPalette() {
     HDC hdc = GetDC(0);
     lp.palVersion = 0x300;
     lp.palNumEntries = 256;
-    for (i32 i = 0; i < 256; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         lp.palPalEntry[i].peRed = 0;
         lp.palPalEntry[i].peGreen = 0;
         lp.palPalEntry[i].peBlue = 0;
@@ -1047,7 +1048,7 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     CFile file;
     u8 rgb[0x300];
 
-    PALETTEENTRY rgbq[0x100];
+    PALETTEENTRY rgbq[PALETTE_ENTRY_COUNT];
 
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -1072,13 +1073,13 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
 // @early-stop
 RVA(0x00177400, 0x76)
 i32 CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
-    PALETTEENTRY pal[256];
+    PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     if (size < 0x300) {
         return 0;
     }
     u8* s = static_cast<u8*>(buf) + size - 0x300;
     PALETTEENTRY* d = pal;
-    for (i32 i = 0; i < 256; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         d->peRed = *s++;
         d->peGreen = *s++;
         d->peBlue = *s++;

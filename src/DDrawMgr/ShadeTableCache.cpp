@@ -5,6 +5,7 @@
 #include <Win32.h>
 
 #include <DDrawMgr/ColorHsv.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Ints.h>
@@ -156,7 +157,7 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
     m_arr.m_pData[oldSize] = t;
 
     u8* data = t->m_data;
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         PALETTEENTRY* p = &pal[i];
         u8* ramp = &data[i * total];
 
@@ -224,7 +225,7 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     double dGamma = static_cast<double>(gamma);
     float fPct = static_cast<float>((pct - 100));
     float fSteps = static_cast<float>(steps);
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         PALETTEENTRY* p = &pal[i];
         for (i32 j = 0; j < steps; j++) {
             i32 r = p->peRed;
@@ -267,7 +268,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     i32 cr = packedColor & 0xff;
     i32 cg = (packedColor >> 8) & 0xff;
     i32 cb = (packedColor >> 0x10) & 0xff;
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         PALETTEENTRY* p = &pal[i];
         for (i32 j = 0; j < steps; j++) {
             float t1 = static_cast<float>(j) / static_cast<float>(steps);
@@ -304,9 +305,9 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     arr.m_pData[idx] = t;
     u8* data = t->m_data;
     i32 div = (wRow + wCol) / 100;
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         PALETTEENTRY* pr = &pal[i];
-        for (i32 j = 0; j < 0x100; j++) {
+        for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
             PALETTEENTRY* pc = &pal[j];
             i32 r = (pc->peRed * wCol / 100 + pr->peRed * wRow / 100) / div;
             i32 g = (pc->peGreen * wCol / 100 + pr->peGreen * wRow / 100) / div;
@@ -333,12 +334,12 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     arr.m_pData[idx] = t;
     u8* data = t->m_data;
     g_pal = pal;
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         data[i] = static_cast<u8>(i);
     }
     qsort(data, 0x100, 1, CompareLuma);
-    for (i32 c = 0; c < 0x100; c++) {
-        for (i32 j = 0; j < 0x100; j++) {
+    for (i32 c = 0; c < PALETTE_ENTRY_COUNT; c++) {
+        for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
             if (data[j] == c) {
                 data[0x100 + c] = static_cast<u8>(j);
                 break;
@@ -388,12 +389,12 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     arr.m_pData[idx] = t;
     u8* data = t->m_data;
     g_pal = pal;
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         data[i] = static_cast<u8>(i);
     }
     qsort(data, 0x100, 1, CompareHue);
-    for (i32 c = 0; c < 0x100; c++) {
-        for (i32 j = 0; j < 0x100; j++) {
+    for (i32 c = 0; c < PALETTE_ENTRY_COUNT; c++) {
+        for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
             if (data[j] == c) {
                 data[0x100 + c] = static_cast<u8>(j);
                 break;
@@ -456,7 +457,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
 
-    for (i32 v = 0; v < 0x100; v += 0x10) {
+    for (i32 v = 0; v < PALETTE_ENTRY_COUNT; v += 0x10) {
         i32 r = 8;
         for (i32 nr = 0x10; nr != 0; nr--) {
             i32 g = 8;
@@ -743,7 +744,7 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, 
     i32 dr = r - pal->peRed;
     i32 bestDist = dg * dg + db * db + dr * dr;
     i32 best = 0;
-    for (i32 i = 1; i < 256; i++) {
+    for (i32 i = 1; i < PALETTE_ENTRY_COUNT; i++) {
         i32 dr2 = r - pal[i].peRed;
         i32 dg2 = g - pal[i].peGreen;
         i32 db2 = b - pal[i].peBlue;

@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Io/FileStream.h>
@@ -235,7 +236,7 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
         if (m_palette == NULL) {
             return 0;
         }
-        for (i32 i = 0; i < 0x100; i++) {
+        for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             file.Write(&m_palette[i].peRed, sizeof(m_palette[i].peRed));
             file.Write(&m_palette[i].peGreen, sizeof(m_palette[i].peGreen));
             file.Write(&m_palette[i].peBlue, sizeof(m_palette[i].peBlue));

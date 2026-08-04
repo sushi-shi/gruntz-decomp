@@ -14,6 +14,7 @@
 #undef s32
 #undef s64
 #include <Io/MoviePlayer.h>
+#include <DDrawMgr/PaletteSize.h>
 
 RVA(0x0017ca10, 0x49)
 void CMoviePlayer::UploadPalette() {
@@ -27,5 +28,5 @@ void CMoviePlayer::UploadPalette() {
         p += 4;
         --n;
     } while (n != 0);
-    m_palette->SetEntries(0, 0, 0x100, m_palEntries);
+    m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, m_palEntries);
 }

@@ -24,6 +24,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/ScreenGeometry.h>
 #include <DDrawMgr/ColorDepth.h>
+#include <DDrawMgr/PaletteSize.h>
 
 // @early-stop
 RVA(0x0017c040, 0x25d)
@@ -538,8 +539,8 @@ void CMoviePlayer::HandleError() {
 RVA(0x0017cd90, 0x58)
 void CMoviePlayer::Snapshot(HWND hWnd) {
     HDC hdc = GetDC(hWnd);
-    GetSystemPaletteEntries(hdc, 0, 0x100, m_palEntries);
-    for (i32 i = 0; i < 0x100; i++) {
+    GetSystemPaletteEntries(hdc, 0, PALETTE_ENTRY_COUNT, m_palEntries);
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_palEntries[i].peRed = 0;
         m_palEntries[i].peBlue = 0;
         m_palEntries[i].peGreen = 0;

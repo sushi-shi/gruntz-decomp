@@ -6,6 +6,7 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/WallProject.h>
 #include <Enums.h>
 #include <Image/Image.h>
@@ -1094,7 +1095,7 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
         return 0;
     }
 
-    for (i32 i = 0; i < 0x100; i++) {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         u8 r = static_cast<u8>((static_cast<u8>(pal[0]) >> g_rDown));
         pal += 4;
         u8 g = static_cast<u8>((static_cast<u8>(pal[-3]) >> g_gDown));
@@ -1278,7 +1279,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
-                for (i32 k = 1; k < 256; k++) {
+                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = s2 - pal[k].peRed;
                     i32 e1 = s1 - pal[k].peGreen;
                     i32 e2 = s0 - pal[k].peBlue;
@@ -1308,7 +1309,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
-                for (i32 k = 1; k < 256; k++) {
+                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = s2 - pal[k].peRed;
                     i32 e1 = s1 - pal[k].peGreen;
                     i32 e2 = s0 - pal[k].peBlue;
@@ -1357,7 +1358,7 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
                 i32 d2 = blue - pal[0].peBlue;
                 i32 d0 = red - pal[0].peRed;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
-                for (i32 k = 1; k < 256; k++) {
+                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = red - pal[k].peRed;
                     i32 e1 = green - pal[k].peGreen;
                     i32 e2 = blue - pal[k].peBlue;
@@ -1389,7 +1390,7 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
                 i32 d2 = blue - pal[0].peBlue;
                 i32 d0 = red - pal[0].peRed;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
-                for (i32 k = 1; k < 256; k++) {
+                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = red - pal[k].peRed;
                     i32 e1 = green - pal[k].peGreen;
                     i32 e2 = blue - pal[k].peBlue;

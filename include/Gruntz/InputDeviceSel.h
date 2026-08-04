@@ -10,8 +10,8 @@
 // switch whose every arm does nothing but pick the label the options screen
 // shows:
 //
-//   0  "None"        (the string the switch starts from, so 0 is the
-//                      default rather than a hole below the first device)
+//   0  "None"        (the CString's initialiser, so 0 is the default rather
+//                      than a hole below the first device)
 //   1  "Keyboard"
 //   2  "Joystick 1"
 //   3  "Joystick 2"
