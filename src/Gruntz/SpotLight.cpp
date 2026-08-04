@@ -46,17 +46,6 @@ const double g_spotRateMul = -1.0;
 template<> DATA(0x00246188)
 CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-static inline void FreeNameSlotNodes() {
-    i32 n = g_typeColl.m_grown;
-    CString* list = ActNameSlots();
-    while (n-- != 0) {
-        if (list != NULL) {
-            list->CString::~CString();
-        }
-        list++;
-    }
-}
-
 RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
@@ -140,7 +129,14 @@ void RegisterSpotLightActions() {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookupCallReport(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "A";
         g_typeCounter++;
     }
@@ -153,7 +149,14 @@ void RegisterSpotLightActions() {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "B";
         g_typeCounter++;
     }

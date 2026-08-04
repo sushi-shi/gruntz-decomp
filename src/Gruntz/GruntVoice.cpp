@@ -48,17 +48,6 @@ static inline CActHandler* VActLookup(i32 coord) {
     return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
 }
 
-static inline void FreeNameSlotNodes() {
-    i32 n = g_typeColl.m_grown;
-    CString* list = ActNameSlots();
-    while (n-- != 0) {
-        if (list != NULL) {
-            list->CString::~CString();
-        }
-        list++;
-    }
-}
-
 RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
 void RealizeUfoDtor(CUFO* p);
 void RealizeUfoDtor(CUFO* p) {
@@ -227,7 +216,14 @@ void RegisterGruntVoiceActions() {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookupCallReport(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "A";
         g_typeCounter++;
     }
@@ -240,7 +236,14 @@ void RegisterGruntVoiceActions() {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "B";
         g_typeCounter++;
     }

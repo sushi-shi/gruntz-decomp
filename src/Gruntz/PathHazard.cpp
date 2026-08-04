@@ -30,17 +30,6 @@
 
 template<> DATA(0x00246250)
 CActReg CActRegPool<CPathHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-static inline void FreeNameSlotNodes() {
-    i32 n = g_typeColl.m_grown;
-    CString* list = ActNameSlots();
-    while (n-- != 0) {
-        if (list != NULL) {
-            list->CString::~CString();
-        }
-        list++;
-    }
-}
-
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {}
 
@@ -143,7 +132,14 @@ void RegisterPathHazardActions() {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookupCallReport(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "A";
         g_typeCounter++;
     }
@@ -156,7 +152,14 @@ void RegisterPathHazardActions() {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "B";
         g_typeCounter++;
     }

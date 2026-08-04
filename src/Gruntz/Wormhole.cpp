@@ -70,17 +70,6 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-static inline void FreeNameSlotNodes() {
-    i32 n = g_typeColl.m_grown;
-    CString* list = ActNameSlots();
-    while (n-- != 0) {
-        if (list != NULL) {
-            list->CString::~CString();
-        }
-        list++;
-    }
-}
-
 RVA_COMPGEN(0x00010950, 0x1e, ??_GCWormhole@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010980, 0x44, ??1CWormhole@@UAE@XZ)
 
@@ -242,7 +231,14 @@ void RegisterLogic() {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookupCallReport(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "A";
         g_typeCounter++;
     }
@@ -255,7 +251,14 @@ void RegisterLogic() {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "B";
         g_typeCounter++;
     }
@@ -484,7 +487,14 @@ void CTeleporter_RegisterActs() {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookupCallReport(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "A";
         g_typeCounter++;
     }
@@ -497,7 +507,14 @@ void CTeleporter_RegisterActs() {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(g_typeCounter);
-        FreeNameSlotNodes();
+        i32 n = g_typeColl.m_grown;
+        CString* list = ActNameSlots();
+        while (n-- != 0) {
+            if (list != NULL) {
+                list->CString::~CString();
+            }
+            list++;
+        }
         *slot = "B";
         g_typeCounter++;
     }
