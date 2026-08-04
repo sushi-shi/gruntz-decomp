@@ -2313,6 +2313,7 @@ void CPlay::PostSetup(void* dc) {
         (ar)->Write((p) + 2, 8);                                                                   \
     }
 
+// @early-stop
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
@@ -3618,13 +3619,11 @@ i32 CPlay::DrawLevelInfoText() {
         if (strchr(buf, '.')) {
             *strchr(buf, '.') = 0;
         }
-        char* base;
         if (strrchr(buf, '\\') != NULL) {
-            base = strrchr(buf, '\\') + 1;
+            s2 = strrchr(buf, '\\') + 1;
         } else {
-            base = buf;
+            s2 = buf;
         }
-        s2 = base;
     }
 
     s3.LoadString(0x819b);
@@ -5451,6 +5450,7 @@ i32 g_scrollSpeedRange;
 DATA(0x0024c274)
 i32 g_scrollMinSpeed;
 
+// @early-stop
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
     if (!(g_scrollLoadFlags & 1)) {
@@ -5471,9 +5471,10 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     i32 sx = g->m_snappedX;
     i32 sy = g->m_snappedY;
-    i32 speed = static_cast<i32>(
-        (static_cast<double>(w->m_scrollSpeed) * 0.01 * g_scrollSpeedRange + g_scrollMinSpeed)
-    );
+    // retail keeps the percent scale as its own temp: the int range multiply
+    // lands after the double multiply, not reassociated ahead of it.
+    double frac = static_cast<double>(w->m_scrollSpeed) * 0.01;
+    i32 speed = static_cast<i32>(frac * g_scrollSpeedRange + g_scrollMinSpeed);
 
     SIZE
     extent;
