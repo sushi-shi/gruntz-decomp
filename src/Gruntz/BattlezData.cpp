@@ -86,27 +86,27 @@ void CBattlezData::SetCount(i32 count) {
 
 RVA(0x000fcb50, 0x2b)
 void CBattlezData::MarkFlag(i32 y, i32 x) {
-    if (y >= 0 && y <= 4 && x >= 0 && x <= 4) {
+    if (y >= 0 && y <= BZ_PLAYER_COUNT && x >= 0 && x <= BZ_PLAYER_COUNT) {
         m_flags[y][x] = 1;
     }
 }
 
 RVA(0x000fcb90, 0x12)
 void CBattlezData::ClearFlags() {
-    for (i32 i = 0; i < 16; i++) {
+    for (i32 i = 0; i < BZ_PLAYER_COUNT * BZ_PLAYER_COUNT; i++) {
         (&m_flags[0][0])[i] = 0;
     }
 }
 
 RVA(0x000fcbc0, 0x3a)
 i32 CBattlezData::SumFlags(i32 y) {
-    if (y < 0 || y > 4) {
+    if (y < 0 || y > BZ_PLAYER_COUNT) {
         return 0;
     }
     i32 sum = 0;
     i32* p = &m_flags[0][0];
-    for (i32 r = 0; r < 4; r++) {
-        for (i32 c = 0; c < 4; c++) {
+    for (i32 r = 0; r < BZ_PLAYER_COUNT; r++) {
+        for (i32 c = 0; c < BZ_PLAYER_COUNT; c++) {
             sum += *p++;
         }
     }
@@ -115,7 +115,7 @@ i32 CBattlezData::SumFlags(i32 y) {
 
 RVA(0x000fcc10, 0x2f)
 i32 CBattlezData::GetFlag(i32 x, i32 y) {
-    if (x >= 0 && x <= 4 && y >= 0 && y <= 4) {
+    if (x >= 0 && x <= BZ_PLAYER_COUNT && y >= 0 && y <= BZ_PLAYER_COUNT) {
         return m_flags[x][y];
     }
     return 0;
@@ -123,14 +123,14 @@ i32 CBattlezData::GetFlag(i32 x, i32 y) {
 
 RVA(0x000fcc50, 0x2a)
 void CBattlezData::BumpWin(i32 y, i32 x) {
-    if (y >= 0 && y <= 4 && x >= 0 && x <= 4 && y != x) {
+    if (y >= 0 && y <= BZ_PLAYER_COUNT && x >= 0 && x <= BZ_PLAYER_COUNT && y != x) {
         m_wins[y][x]++;
     }
 }
 
 RVA(0x000fcc90, 0xf)
 void CBattlezData::ClearWins() {
-    for (i32 i = 0; i < 16; i++) {
+    for (i32 i = 0; i < BZ_PLAYER_COUNT * BZ_PLAYER_COUNT; i++) {
         (&m_wins[0][0])[i] = 0;
     }
 }
@@ -139,7 +139,7 @@ RVA(0x000fccb0, 0x21)
 i32 CBattlezData::SumWinRow(i32 y) {
     i32 sum = 0;
     i32* p = m_wins[y];
-    for (i32 c = 0; c < 4; c++) {
+    for (i32 c = 0; c < BZ_PLAYER_COUNT; c++) {
         sum += *p++;
     }
     return sum;

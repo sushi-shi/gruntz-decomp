@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
@@ -26,6 +27,23 @@ struct BattlezRecord {
     i32 m_coinsAvailable;
 };
 SIZE_UNKNOWN();
+
+// The four Battlez players. It is the dimension of every per-player table on
+// CBattlezData - m_counts, and the m_wins / m_flags matrices - and the stride
+// the accessors index those matrices with.
+//
+// RETAIL OFF-BY-ONE, deliberately preserved. MarkFlag, GetFlag and SumFlags all
+// bound their arguments with `<= BZ_PLAYER_COUNT` where the array needs `<`, so
+// an index of 4 is accepted and written. The generated code confirms it and our
+// reconstruction is byte-identical to retail: `cmp edx, 0x4; jg` for each axis,
+// then `lea eax, [eax + edx*4]` - stride 4 - and a store at
+// [ecx + eax*4 + 0x98]. With both indices allowed to reach 4 the linear index
+// runs to 20 in a 16-entry table, so the shipped game overruns m_flags by up to
+// five dwords. The guards keep the `<=` spelling on purpose: writing `<` would
+// move bytes AND hide the defect.
+GZ_ENUM_CONST_BEGIN(BattlezPlayerCount)
+    BZ_PLAYER_COUNT = 4
+GZ_ENUM_CONST_END(BattlezPlayerCount)
 
 class CBattlezData {
 public:
@@ -80,9 +98,9 @@ public:
     i32 m_secretsAvailable;
     i32 m_coinsAvailable;
     i32 m_scoreValue;
-    i32 m_counts[4];
-    i32 m_wins[4][4];
-    i32 m_flags[4][4];
+    i32 m_counts[BZ_PLAYER_COUNT];
+    i32 m_wins[BZ_PLAYER_COUNT][BZ_PLAYER_COUNT];
+    i32 m_flags[BZ_PLAYER_COUNT][BZ_PLAYER_COUNT];
 
     i32 m_weaponPickupz[88];
     i32 m_toyPickupz[40];
