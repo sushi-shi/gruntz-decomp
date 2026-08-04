@@ -135,9 +135,6 @@ i32 CPlay::PlaceStartGruntz() {
 }
 
 // @early-stop
-// the CreateTileTrigger / CreateTileSecretTrigger / CreateBrickz arms are
-// still placeholders: retail runs a giant-rock scan and three AddLogic calls there,
-// with nine more per-arm diagnostics (Bad trigger / toggle-bridge / secret / brickz).
 RVA(0x000d2dd0, 0x1de4)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0;

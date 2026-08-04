@@ -435,6 +435,10 @@ public:
     i32 CoordCount() const {
         return m_coordList.GetCount();
     }
+    CGruntCellRec* EntranceCell() {
+        GruntDirectionCell c = m_entranceCell;
+        return &m_cells[3 * c.row + c.column];
+    }
     i32 PayloadCount() const {
         return m_payloads.GetCount();
     }
