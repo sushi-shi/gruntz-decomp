@@ -3927,7 +3927,7 @@ afterTile:
         {
             i32 hp = m_health;
             if (hp <= 5 && hp > 0 && (m_arrivalState == 2 || m_arrivalState == 3)) {
-                if (static_cast<u32>(m_dwell) > 0x3e8) {
+                if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
 
                     i32 baseRow = sy >> TILE_SHIFT_PX;
                     i32 baseCol = sx >> TILE_SHIFT_PX;

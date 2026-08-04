@@ -3,6 +3,22 @@
 
 #include <Enums.h>
 
+// The m_dwell thresholds the behaviours below wait on. m_dwell accumulates
+// g_frameDelta (CGrunt::Step), so these are milliseconds, and each is named for
+// the transition it gates - the prose below already described all three, in hex:
+//
+//   500   the CHASE re-path interval, and the value ATTACK reseeds m_dwell to
+//         when it falls back. Also what nine sites assign as the seed.
+//   1000  how long SEEK waits before TileSwitch paths it to a target
+//   3000  how long a stuck grunt waits before ResetEntranceAnimation
+//   8000  the only exit from COOLDOWN
+GZ_ENUM_CONST_BEGIN(GruntDwellMs)
+    DWELL_REPATH_MS = 0x1f4,
+    DWELL_SEEK_PATH_MS = 0x3e8,
+    DWELL_STUCK_RESET_MS = 0xbb8,
+    DWELL_COOLDOWN_MS = 0x1f40
+GZ_ENUM_CONST_END(GruntDwellMs)
+
 // The engagement sub-state an enemy grunt's behaviour step runs in, held in
 // CGrunt::m_defenderState. Orthogonal to EnemyAiType: the type picks WHICH step
 // method runs each frame, this says where in its fight/return cycle the grunt is.

@@ -5179,7 +5179,7 @@ void CPlay::TickStateMgrs() {
 
 RVA(0x000cfbd0, 0x8f)
 i32 CPlay::CompleteLevel() {
-    if (m_levelIndex == 0x20) {
+    if (m_levelIndex == QUESTLEVEL_CAMPAIGN_LAST) {
         m_completedFinalLevel = 1;
         m_notifyLatch = 1;
 
@@ -7017,7 +7017,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 d = obj->m_smarts;
-                if (d <= 0x20) {
+                if (d <= PICKUP_TOYZ_LAST) {
                     if (!BuildGruntTypeNameTable(static_cast<PickupType>(d), 1, 0, ctx)) {
                         return 0;
                     }
@@ -7069,7 +7069,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 e = obj->m_powerup;
-                if (e <= 0x20) {
+                if (e <= PICKUP_TOYZ_LAST) {
                     if (!BuildGruntTypeNameTable(static_cast<PickupType>(e), 1, 0, ctx)) {
                         return 0;
                     }

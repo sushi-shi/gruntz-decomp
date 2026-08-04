@@ -371,7 +371,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
 
 L_ed006:
-    if (g == NULL || static_cast<u32>(m_dwell) <= 0x1f4
+    if (g == NULL || static_cast<u32>(m_dwell) <= DWELL_REPATH_MS
         || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
         m_blockedVoicePending = 0;
         goto L_ed153;
@@ -435,7 +435,7 @@ L_ed153:
         }
         return 1;
     }
-    if (static_cast<u32>(m_dwell) <= 0x3e8) {
+    if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
         return 1;
     }
 
@@ -588,7 +588,7 @@ i32 CGrunt::WanderStep() {
                     m_defenderState = AISTATE_RETREAT;
                     return 1;
                 }
-                if (static_cast<u32>(m_dwell) > 0x3e8) {
+                if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
                         g->GetScreenPos(c);
@@ -635,7 +635,7 @@ i32 CGrunt::WanderStep() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                 StepArrivalDrop(
                     slot->m_lastTilePx.m_x,
                     slot->m_lastTilePx.m_y,
@@ -732,11 +732,11 @@ i32 CGrunt::WanderStep() {
                 m_coordList.RemoveAll();
             }
             m_defenderState = AISTATE_RETREAT;
-            m_dwell = 0x1f4;
+            m_dwell = DWELL_REPATH_MS;
             return 1;
         ph1:
             m_defenderState = AISTATE_CHASE;
-            m_dwell = 0x1f4;
+            m_dwell = DWELL_REPATH_MS;
             return 1;
         }
 
@@ -793,7 +793,8 @@ i32 CGrunt::WanderStep() {
     }
 
 timeout:
-    if (m_resetApplied == 0 && m_hasExtent != 0 && static_cast<u32>(m_dwell) > 0xbb8) {
+    if (m_resetApplied == 0 && m_hasExtent != 0
+        && static_cast<u32>(m_dwell) > DWELL_STUCK_RESET_MS) {
         i32 hi =
             -static_cast<i32>((static_cast<u32>(g_frameTime) < static_cast<u32>(m_arrivalRerollLo)))
             - m_arrivalRerollHi;
@@ -946,7 +947,7 @@ i32 CGrunt::ArrivalReticleScan() {
     }
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    if (occ != NULL && static_cast<u32>(m_dwell) > 0x1f4) {
+    if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
         i32 occTX = occ->m_object->m_screenX >> TILE_SHIFT_PX;
         i32 occTY = occ->m_object->m_screenY >> TILE_SHIFT_PX;
         i32 dx = abs(occTX - defTX);
@@ -1073,7 +1074,7 @@ i32 CGrunt::ArrivalReticleScan() {
             TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
         }
         m_dwell = 0;
-    } else if (occ == NULL && static_cast<u32>(m_dwell) > 0x1f4
+    } else if (occ == NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS
                && ((m_object->m_screenX >> TILE_SHIFT_PX) != defTX
                    || (m_object->m_screenY >> TILE_SHIFT_PX) != defTY)) {
         TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
@@ -1267,7 +1268,7 @@ i32 CGrunt::ChargeStep() {
                 if (t == NULL || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = AISTATE_CHASE;
-                    m_dwell = 0x1f4;
+                    m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
                 if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
@@ -1277,7 +1278,7 @@ i32 CGrunt::ChargeStep() {
                     || t->m_object->m_screenX != t->m_lastTilePx.m_x
                     || t->m_object->m_screenY != t->m_lastTilePx.m_y) {
                     m_defenderState = AISTATE_CHASE;
-                    m_dwell = 0x1f4;
+                    m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
                 CommitNeighbor(
@@ -1289,7 +1290,7 @@ i32 CGrunt::ChargeStep() {
                 return 1;
             }
             m_defenderState = AISTATE_CHASE;
-            m_dwell = 0x1f4;
+            m_dwell = DWELL_REPATH_MS;
             return 1;
         }
     }
@@ -1664,7 +1665,7 @@ L_ed006b:
     if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if (static_cast<u32>(m_dwell) <= 0x1f4) {
+    if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
         goto L_scanb;
     }
     {
@@ -1713,7 +1714,7 @@ L_scanb:
         }
         return 1;
     }
-    if (static_cast<u32>(m_dwell) <= 0x3e8) {
+    if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
         return 1;
     }
 
@@ -2209,7 +2210,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                 StepArrivalDrop(
                     occ->m_lastTilePx.m_x,
                     occ->m_lastTilePx.m_y,
@@ -2287,7 +2288,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ == NULL) {
                 goto L_f308a;
             }
-            if (static_cast<u32>(m_dwell) <= 0x3e8) {
+            if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
                 goto L_f308a;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
@@ -2328,7 +2329,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_hasExtent == 0) {
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) <= 0xbb8) {
+            if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
@@ -2475,7 +2476,7 @@ i32 CGrunt::StepDiggerBehavior() {
     if (m_poweredUp != 0) {
         goto L_tailc;
     }
-    if (static_cast<u32>(m_dwell) <= 0x1f4) {
+    if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
         goto L_tailc;
     }
     if (TileSwitch(
@@ -2517,7 +2518,7 @@ L_tailc:
         }
         return 1;
     }
-    if (m_poweredUp == 0 && static_cast<u32>(m_dwell) > 0x3e8) {
+    if (m_poweredUp == 0 && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
         i32 r = m_defenderRadius;
         RECT box;
         box.left = cx - r;
@@ -2739,7 +2740,7 @@ i32 CGrunt::ScanNearestTarget() {
                     goto L_wander;
                 }
             }
-            if (static_cast<u32>(m_dwell) <= 0x3e8) {
+            if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
                 goto L_wander;
             }
             m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -2790,7 +2791,8 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
 
         L_wander:
-            if (m_resetApplied != 0 || m_hasExtent == 0 || static_cast<u32>(m_dwell) <= 0xbb8) {
+            if (m_resetApplied != 0 || m_hasExtent == 0
+                || static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
 
@@ -2872,7 +2874,7 @@ i32 CGrunt::ScanNearestTarget() {
             if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
                 goto L_clearMode;
             }
-            if (static_cast<u32>(m_dwell) > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                 StepArrivalDrop(
                     sg->m_lastTilePx.m_x,
                     sg->m_lastTilePx.m_y,
@@ -2945,11 +2947,11 @@ i32 CGrunt::ScanNearestTarget() {
                 return 1;
             L_setLock:
                 m_defenderState = AISTATE_CHASE;
-                m_dwell = 0x1f4;
+                m_dwell = DWELL_REPATH_MS;
                 return 1;
             }
             m_defenderState = AISTATE_CHASE;
-            m_dwell = 0x1f4;
+            m_dwell = DWELL_REPATH_MS;
             return 1;
         }
     }
@@ -3005,7 +3007,7 @@ i32 CGrunt::PhaseStep() {
     if (m_defenderState != AISTATE_COOLDOWN) {
         goto common;
     }
-    if (m_dwell <= 0x1f40) {
+    if (m_dwell <= DWELL_COOLDOWN_MS) {
         return 1;
     }
     m_defenderState = AISTATE_SEEK;
@@ -3105,7 +3107,7 @@ state0: {
         m_defenderState = AISTATE_ATTACK;
         goto common;
     }
-    if (m_dwell <= 0x1f4) {
+    if (m_dwell <= DWELL_REPATH_MS) {
         goto common;
     }
     if (GruntInRadius(nb->m_tileOwnerHi, nb->m_tileOwnerLo) == 0) {
@@ -3511,7 +3513,7 @@ i32 CGrunt::StepPeerTracking() {
             ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);
         return 1;
     }
-    if (static_cast<u32>(m_dwell) <= 0x3e8) {
+    if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
         return 1;
     }
     if (GruntInRadius(p->m_tileOwnerHi, p->m_tileOwnerLo)) {
@@ -3599,7 +3601,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             }
         }
             m_defenderState = AISTATE_CHASE;
-            m_dwell = 0x1f4;
+            m_dwell = DWELL_REPATH_MS;
             return 1;
         c2_occcheck:
             if (occ == NULL) {
@@ -3607,7 +3609,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             m_defenderState = AISTATE_CHASE;
-            m_dwell = 0x1f4;
+            m_dwell = DWELL_REPATH_MS;
             {
                 CWwdGameObjectA* h = m_object;
                 i32 vx = h->m_screenX;
@@ -3640,7 +3642,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                 StepArrivalDrop(
                     occ->m_lastTilePx.m_x,
                     occ->m_lastTilePx.m_y,
@@ -3694,7 +3696,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (m_hasExtent == 0) {
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) <= 0xbb8) {
+            if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64

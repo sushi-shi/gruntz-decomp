@@ -5311,7 +5311,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             }
             board->m_gridW = board->m_bounds.right - board->m_bounds.left;
             board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
-            if (static_cast<u32>(unit->m_dwell) > 0x1f4 && unit->CoordCount() == 0) {
+            if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordCount() == 0) {
                 i32 flags = unit->m_routeMaskA;
                 unit->m_routeMaskC = 0x4268;
                 CGameObject* tl = target->m_object;

@@ -76,14 +76,16 @@ RANGE_TEST = re.compile(r"(?<![<>])([<>]=?)(?![<>])[ \t]*([A-Z][A-Z0-9_]{2,})\b"
 # is not a member of a value set, it is the size of one, so `x > SCREEN_W_PX`
 # ("off the right edge") is the extent being used for the only thing it is for.
 # _FULL/_EMPTY/_HALF/_MAX/_MIN are marks on a CONTINUOUS SCALE (a percentage, a
-# gauge, a volume) rather than members of a set of alternatives.
+# gauge, a volume) rather than members of a set of alternatives, and _MS is a
+# duration THRESHOLD - `m_dwell > DWELL_REPATH_MS` is the only thing a re-path
+# interval exists for.
 # `m_stamina >= STAMINA_FULL` and `volume >= VOLUME_PCT_MAX` are the only thing a
 # scale's endpoint is for, so requiring a separate marker at the same value would
 # just duplicate the name. A DISCRETE domain's band end is spelled _LAST or
 # _COUNT in this tree, so those keep needing a real marker.
 MARKER_OK = re.compile(
     r"(_FIRST|_LAST|_BEGIN|_END|_COUNT|_NONE|_INVALID|_UNSET|_COLS|_ROWS|_PX"
-    r"|_FULL|_EMPTY|_HALF|_MAX|_MIN)$")
+    r"|_FULL|_EMPTY|_HALF|_MAX|_MIN|_MS)$")
 
 
 def is_tag_type(body: str) -> bool:
