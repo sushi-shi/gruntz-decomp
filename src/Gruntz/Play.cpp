@@ -2463,7 +2463,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 
     g_serialCounter++;
     {
-        char buf[0x80];
+        char buf[SERIAL_NAME_LEN];
         memset(buf, 0, sizeof(buf));
 
         CImage* frame = m_gridCurFrame;
@@ -2471,18 +2471,18 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         if (frame != NULL) {
             mc->m_imageRegistry->AnyValueMatches(frame, buf, &v);
         }
-        s->Write(buf, 0x80);
+        s->Write(buf, SERIAL_NAME_LEN);
         s->Write(&v, sizeof(v));
     }
 
     g_serialCounter++;
     {
-        char buf[0x80];
+        char buf[SERIAL_NAME_LEN];
         memset(buf, 0, sizeof(buf));
         if (m_grid != NULL) {
             strcpy(buf, m_grid->m_name);
         }
-        s->Write(buf, 0x80);
+        s->Write(buf, SERIAL_NAME_LEN);
     }
 
     s->Write(&m_gridDelayBase, sizeof(m_gridDelayBase));
@@ -2635,8 +2635,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
     g_serialCounter++;
-    char buf80a[0x80];
-    ar->Read(buf80a, 0x80);
+    char buf80a[SERIAL_NAME_LEN];
+    ar->Read(buf80a, SERIAL_NAME_LEN);
     i32 idx;
     ar->Read(&idx, sizeof(idx));
     if (strlen(buf80a) == 0) {
@@ -2653,8 +2653,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     }
 
     g_serialCounter++;
-    char buf80b[0x80];
-    ar->Read(buf80b, 0x80);
+    char buf80b[SERIAL_NAME_LEN];
+    ar->Read(buf80b, SERIAL_NAME_LEN);
     CObject* gridObj = 0;
     if (strlen(buf80b) == 0) {
         m_grid = NULL;
@@ -3920,7 +3920,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
 
 RVA(0x000dace0, 0x239)
 i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i32 pObj) {
-    char tmp[0x80];
+    char tmp[SERIAL_NAME_LEN];
 
     if (kind != SERIAL_SAVE) {
         if (kind == SERIAL_LOAD) {
@@ -3936,7 +3936,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeI
             ar->Read(&m_joined, sizeof(m_joined));
             ar->Read(&m_clearedRound, sizeof(m_clearedRound));
             g_serialCounter++;
-            ar->Read(tmp, 0x80);
+            ar->Read(tmp, SERIAL_NAME_LEN);
             m_name = tmp;
             ar->Read(&m_focusX, sizeof(m_focusX));
             ar->Read(&m_focusY, sizeof(m_focusY));
@@ -3957,7 +3957,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeI
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
         strcpy(tmp, static_cast<const char*>(m_name));
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&m_focusX, sizeof(m_focusX));
         ar->Write(&m_focusY, sizeof(m_focusY));
         ar->Write(&m_comboSel, sizeof(m_comboSel));

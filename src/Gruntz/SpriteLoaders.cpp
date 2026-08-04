@@ -322,14 +322,14 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
     ar->Write(&m_baseX, sizeof(m_baseX));
     ar->Write(&m_baseY, sizeof(m_baseY));
 
-    char tmp[0x80];
+    char tmp[SERIAL_NAME_LEN];
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_sprite) {
         strcpy(tmp, m_sprite->m_name);
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
     ar->Write(&m_active, sizeof(m_active));
 
@@ -340,7 +340,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
         if (m_frameMinTens) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameMinTens, tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 
@@ -351,7 +351,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
         if (m_frameMinOnes) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameMinOnes, tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 
@@ -362,7 +362,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
         if (m_frameSecTens) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameSecTens, tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 
@@ -373,7 +373,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
         if (m_frameSecOnes) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameSecOnes, tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 
@@ -384,7 +384,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
         if (m_frameColon) {
             mgr->m_imageRegistry->AnyValueMatches(m_frameColon, tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 

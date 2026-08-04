@@ -2249,10 +2249,10 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     }
     g_serialCounter++;
 
-    char buf[0x80];
-    memset(buf, 0, 0x80);
+    char buf[SERIAL_NAME_LEN];
+    memset(buf, 0, SERIAL_NAME_LEN);
     strcpy(buf, m_strWorldFile);
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
 
     ar->Write(&m_loadingSaveGame, sizeof(m_loadingSaveGame));
     ar->Write(&m_soundVolume, sizeof(m_soundVolume));
@@ -2297,8 +2297,8 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     }
     g_serialCounter++;
 
-    char buf[0x80];
-    ar->Read(buf, 0x80);
+    char buf[SERIAL_NAME_LEN];
+    ar->Read(buf, SERIAL_NAME_LEN);
     m_strWorldFile = buf;
 
     ar->Read(&m_loadingSaveGame, sizeof(m_loadingSaveGame));
@@ -3265,7 +3265,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     RefreshGameClock();
     if (g_resolutionChanged != 0) {
         g_resolutionChanged = 0;
-        char buf[0x80];
+        char buf[SERIAL_NAME_LEN];
 
         sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
         AppendChatMessage(buf);

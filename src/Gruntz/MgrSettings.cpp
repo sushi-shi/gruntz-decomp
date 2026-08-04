@@ -41,9 +41,9 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
             arc->Read(&m_yDirection, sizeof(m_yDirection));
             g_serialCounter++;
 
-            char name[0x80];
+            char name[SERIAL_NAME_LEN];
             i32 index;
-            arc->Read(name, 0x80);
+            arc->Read(name, SERIAL_NAME_LEN);
             arc->Read(&index, sizeof(index));
             if (strlen(name) != 0) {
                 i32 i = index;
@@ -75,13 +75,13 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
             g_serialCounter++;
 
             CImage* obj = m_sprite;
-            char name[0x80];
+            char name[SERIAL_NAME_LEN];
             i32 index = 0;
-            memset(name, 0, 0x80);
+            memset(name, 0, SERIAL_NAME_LEN);
             if (obj != NULL) {
                 lvl->m_imageRegistry->AnyValueMatches(obj, name, &index);
             }
-            arc->Write(name, 0x80);
+            arc->Write(name, SERIAL_NAME_LEN);
             arc->Write(&index, sizeof(index));
             break;
         }

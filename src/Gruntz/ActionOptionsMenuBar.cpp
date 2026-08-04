@@ -295,28 +295,28 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     ar->Write(m_buttonState, 8);
     ar->Write(m_buttonIcon, 8);
 
-    char tmp[0x80];
+    char tmp[SERIAL_NAME_LEN];
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_normChipSprite) {
         strcpy(tmp, m_normChipSprite->m_name);
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_highChipSprite) {
         strcpy(tmp, m_highChipSprite->m_name);
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_greyChipSprite) {
         strcpy(tmp, m_greyChipSprite->m_name);
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
@@ -325,7 +325,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         if (m_frame) {
             mgr->m_imageRegistry->AnyValueMatches(m_frame, tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 
@@ -336,7 +336,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         if (m_buttonFrame[0]) {
             mgr->m_imageRegistry->AnyValueMatches(m_buttonFrame[0], tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 
@@ -348,7 +348,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         if (v20) {
             mgr->m_imageRegistry->AnyValueMatches(v20, tmp, &zero);
         }
-        ar->Write(tmp, 0x80);
+        ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
     return 1;
@@ -369,7 +369,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     CObject* out;
     i32 idx;
 
@@ -382,7 +382,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&m_buttonIcon[0], 8);
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
@@ -392,7 +392,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
@@ -402,7 +402,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
@@ -412,7 +412,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
@@ -431,7 +431,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
@@ -450,7 +450,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;

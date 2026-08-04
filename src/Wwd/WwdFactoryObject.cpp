@@ -760,13 +760,13 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     ar->Write(&m_pendingDraw, sizeof(m_pendingDraw));
     ar->Write(&m_curDraw, sizeof(m_curDraw));
     ar->Write(&m_scale, sizeof(m_scale));
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     memset(buf, 0, sizeof(buf));
     if (m_animation != NULL) {
 
         strcpy(buf, OwnerMgr()->m_animRegistry->KeyOfValue(m_animation));
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     return 1;
 }
 
@@ -784,8 +784,8 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_pendingDraw, sizeof(m_pendingDraw));
     ar->Read(&m_curDraw, sizeof(m_curDraw));
     ar->Read(&m_scale, sizeof(m_scale));
-    char buf[0x80];
-    ar->Read(buf, 0x80);
+    char buf[SERIAL_NAME_LEN];
+    ar->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) == 0) {
         m_animation = NULL;
     } else {

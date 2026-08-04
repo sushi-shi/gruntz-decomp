@@ -108,13 +108,13 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
         return 0;
     }
 
-    char name[0x80];
+    char name[SERIAL_NAME_LEN];
     i32 idx;
     switch (kind) {
         case SERIAL_LOAD:
 
             g_serialCounter++;
-            ar->Read(name, 0x80);
+            ar->Read(name, SERIAL_NAME_LEN);
             ar->Read(&idx, sizeof(idx));
             if (strlen(name) != 0) {
                 CObject* r_ob = 0;
@@ -137,7 +137,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
             if (m_frame) {
                 mgr->m_imageRegistry->AnyValueMatches(m_frame, name, &idx);
             }
-            ar->Write(name, 0x80);
+            ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(&idx, sizeof(idx));
             break;
     }

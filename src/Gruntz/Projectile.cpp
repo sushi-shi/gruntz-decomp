@@ -752,7 +752,7 @@ i32 CProjectile::SerializeMove(
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
 
     switch (mode) {
         case SERIAL_LOAD: {
@@ -781,7 +781,7 @@ i32 CProjectile::SerializeMove(
             void* out;
             for (i32 ni = 0; ni < 7; ni++) {
                 g_serialCounter++;
-                s->Read(buf, 0x80);
+                s->Read(buf, SERIAL_NAME_LEN);
                 if (strlen(buf) != 0) {
                     out = NULL;
                     reg->m_animRegistry->m_animations.Lookup(buf, out);
@@ -855,7 +855,7 @@ i32 CProjectile::SerializeMove(
                 if (*fp != NULL) {
                     strcpy(buf, reg->m_animRegistry->KeyOfValue(*fp));
                 }
-                s->Write(buf, 0x80);
+                s->Write(buf, SERIAL_NAME_LEN);
                 fp++;
             }
 
@@ -886,7 +886,7 @@ i32 CProjectile::SerializeMove(
 
     switch (mode) {
         case SERIAL_LOAD: {
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             s->Read(m_blob, 0x10);
             CGameObject* obj = pObj;
             m_gameObject = obj;
@@ -902,12 +902,12 @@ i32 CProjectile::SerializeMove(
             return 1;
         }
         case SERIAL_SAVE: {
-            char blob[0x80];
+            char blob[SERIAL_NAME_LEN];
             memset(blob, 0, sizeof(blob));
             if (m_value != NULL) {
                 strcpy(blob, m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value));
             }
-            s->Write(blob, 0x80);
+            s->Write(blob, SERIAL_NAME_LEN);
             s->Write(m_blob, 0x10);
             return 1;
         }

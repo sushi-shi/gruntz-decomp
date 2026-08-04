@@ -743,7 +743,7 @@ i32 CGameLevel::EditDispatch(CFileMemBase* s, SerialMode mode, LogicTypeId typeI
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
 
     switch (mode) {
         case SERIAL_PRESAVE:
@@ -751,14 +751,14 @@ i32 CGameLevel::EditDispatch(CFileMemBase* s, SerialMode mode, LogicTypeId typeI
         case SERIAL_SAVE:
             memset(buf, 0, sizeof(buf));
             strcpy(buf, m_levelName);
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             break;
         case SERIAL_POSTSAVE:
             break;
         case SERIAL_PRELOAD:
             break;
         case SERIAL_LOAD:
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             strcpy(m_levelName, buf);
             break;
         case SERIAL_POSTLOAD:
@@ -780,10 +780,10 @@ i32 CGameLevel::SaveName(CFileMemBase* s) {
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     memset(buf, 0, sizeof(buf));
     strcpy(buf, m_levelName);
-    s->Write(buf, 0x80);
+    s->Write(buf, SERIAL_NAME_LEN);
     return 1;
 }
 
@@ -793,8 +793,8 @@ i32 CGameLevel::LoadName(CFileMemBase* s) {
         return 0;
     }
 
-    char buf[0x80];
-    s->Read(buf, 0x80);
+    char buf[SERIAL_NAME_LEN];
+    s->Read(buf, SERIAL_NAME_LEN);
     strcpy(m_levelName, buf);
     return 1;
 }

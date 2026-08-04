@@ -199,12 +199,12 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
         return 0;
     }
 
-    char tmp[0x80];
+    char tmp[SERIAL_NAME_LEN];
     switch (kind) {
         case SERIAL_LOAD:
             ar->Read(&m_state, sizeof(m_state));
             g_serialCounter++;
-            ar->Read(tmp, 0x80);
+            ar->Read(tmp, SERIAL_NAME_LEN);
             if (strlen(tmp) != 0) {
                 CObject* found_ob = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
@@ -220,7 +220,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
             if (m_record) {
                 strcpy(tmp, m_record->m_name);
             }
-            ar->Write(tmp, 0x80);
+            ar->Write(tmp, SERIAL_NAME_LEN);
             break;
     }
 

@@ -214,8 +214,8 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA(0x00043670, 0xc20)
 i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, CGameObject* obj) {
 
-    char buf[0x80];
-    char hdr[0x80];
+    char buf[SERIAL_NAME_LEN];
+    char hdr[SERIAL_NAME_LEN];
 
     if (CUserLogic::SerializeMove(ar, mode, a3, obj) == 0) {
         return 0;
@@ -227,7 +227,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
 
     switch (mode) {
         case SERIAL_LOAD: {
-            ar->Read(hdr, 0x80);
+            ar->Read(hdr, SERIAL_NAME_LEN);
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
@@ -252,7 +252,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     )
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             ar->Write(m_blob, 0x10);
             break;
         }
@@ -267,7 +267,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             strcpy(buf, static_cast<const char*>(m_warlordName));
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_idleAnims[0] != NULL) {
@@ -276,7 +276,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[0]))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_idleAnims[1] != NULL) {
@@ -285,7 +285,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[1]))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_idleAnims[2] != NULL) {
@@ -294,7 +294,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[2]))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_idleAnims[3] != NULL) {
@@ -303,7 +303,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[3]))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_battlecryAnims[0] != NULL) {
@@ -312,7 +312,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[0]))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_battlecryAnims[1] != NULL) {
@@ -321,7 +321,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[1]))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_battlecryAnims[2] != NULL) {
@@ -330,13 +330,13 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[2]))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_animJoy != NULL) {
                 strcpy(buf, static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animJoy)));
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_animDeath != NULL) {
@@ -345,7 +345,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animDeath))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_animMoving != NULL) {
@@ -354,7 +354,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animMoving))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_animPanic != NULL) {
@@ -363,7 +363,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                     static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animPanic))
                 );
             }
-            ar->Write(buf, 0x80);
+            ar->Write(buf, SERIAL_NAME_LEN);
             ar->Write(&m_deathStarted, sizeof(m_deathStarted));
             ar->Write(&m_ownerTag, sizeof(m_ownerTag));
             break;
@@ -374,11 +374,11 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 return 0;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             m_warlordName = buf;
 
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -387,7 +387,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_idleAnims[0] = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -396,7 +396,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_idleAnims[1] = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -405,7 +405,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_idleAnims[2] = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -414,7 +414,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_idleAnims[3] = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -423,7 +423,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_battlecryAnims[0] = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -432,7 +432,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_battlecryAnims[1] = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -441,7 +441,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_battlecryAnims[2] = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -450,7 +450,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_animJoy = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -459,7 +459,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_animDeath = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);
@@ -468,7 +468,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_animMoving = NULL;
             }
             g_serialCounter++;
-            ar->Read(buf, 0x80);
+            ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 void* v = 0;
                 world->m_animRegistry->m_animations.Lookup(buf, v);

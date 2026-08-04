@@ -192,23 +192,23 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Write(&m_drawX, sizeof(m_drawX));
             arc->Write(&m_srcRect, sizeof(m_srcRect));
             arc->Write(&m_dstRect, sizeof(m_dstRect));
-            char buf[0x80];
+            char buf[SERIAL_NAME_LEN];
             i32 idx;
             g_serialCounter++;
-            memset(buf, 0, 0x80);
+            memset(buf, 0, SERIAL_NAME_LEN);
             idx = 0;
             if (m_fgFrame != NULL) {
                 mgr->m_imageRegistry->AnyValueMatches(m_fgFrame, buf, &idx);
             }
-            arc->Write(buf, 0x80);
+            arc->Write(buf, SERIAL_NAME_LEN);
             arc->Write(&idx, sizeof(idx));
             g_serialCounter++;
-            memset(buf, 0, 0x80);
+            memset(buf, 0, SERIAL_NAME_LEN);
             idx = 0;
             if (m_baseFrame != NULL) {
                 mgr->m_imageRegistry->AnyValueMatches(m_baseFrame, buf, &idx);
             }
-            arc->Write(buf, 0x80);
+            arc->Write(buf, SERIAL_NAME_LEN);
             arc->Write(&idx, sizeof(idx));
             return 1;
         }
@@ -218,10 +218,10 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&m_drawX, sizeof(m_drawX));
             arc->Read(&m_srcRect, sizeof(m_srcRect));
             arc->Read(&m_dstRect, sizeof(m_dstRect));
-            char buf[0x80];
+            char buf[SERIAL_NAME_LEN];
             i32 idx;
             g_serialCounter++;
-            arc->Read(buf, 0x80);
+            arc->Read(buf, SERIAL_NAME_LEN);
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 CObject* found = 0;
@@ -236,7 +236,7 @@ i32 CSBI_WellGoo::SerializeFields(
                 m_fgFrame = NULL;
             }
             g_serialCounter++;
-            arc->Read(buf, 0x80);
+            arc->Read(buf, SERIAL_NAME_LEN);
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 CObject* found = 0;

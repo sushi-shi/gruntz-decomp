@@ -279,17 +279,17 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
     ar->Write(&flag, sizeof(flag));
 
     char tmp[0x100];
-    memset(tmp, 0, 0x80);
+    memset(tmp, 0, SERIAL_NAME_LEN);
     if (m_frameSet != NULL) {
         strcpy(tmp, m_frameSet->m_name);
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
-    memset(tmp, 0, 0x80);
+    memset(tmp, 0, SERIAL_NAME_LEN);
     {
         strcpy(tmp, OwnerMgr()->m_soundRegistry->FindKeyOfValue(m_soundCue));
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
 }
 
@@ -306,7 +306,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     m_frameSet = NULL;
 
     char name[0x100];
-    ar->Read(name, 0x80);
+    ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
         CDDrawWorker* found = 0;
@@ -328,7 +328,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     }
 
     m_soundCue = NULL;
-    ar->Read(name, 0x80);
+    ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
         void* found = 0;
@@ -574,10 +574,10 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     ar->Write(&m_shadow, sizeof(m_shadow));
 
-    char tmp[0x80];
+    char tmp[SERIAL_NAME_LEN];
     memset(tmp, 0, sizeof(tmp));
     strcpy(tmp, m_name);
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
     ar->Write(&m_moveMode, sizeof(m_moveMode));
     ar->Write(&m_objectType, sizeof(m_objectType));
@@ -628,19 +628,19 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     if (m_hitWorker != NULL) {
         strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_hitWorker));
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_attackWorker != NULL) {
         strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_attackWorker));
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collideWorker != NULL) {
         strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_collideWorker));
     }
-    ar->Write(tmp, 0x80);
+    ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
 }
 
@@ -653,8 +653,8 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
 
     ar->Read(&m_shadow, sizeof(m_shadow));
 
-    char name[0x80];
-    ar->Read(name, 0x80);
+    char name[SERIAL_NAME_LEN];
+    ar->Read(name, SERIAL_NAME_LEN);
     m_name = name;
 
     ar->Read(&m_moveMode, sizeof(m_moveMode));
@@ -702,7 +702,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_flags, sizeof(m_flags));
     ar->Read(&m_carrierId, sizeof(m_carrierId));
 
-    ar->Read(name, 0x80);
+    ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
@@ -711,7 +711,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
         }
     }
 
-    ar->Read(name, 0x80);
+    ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
@@ -720,7 +720,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
         }
     }
 
-    ar->Read(name, 0x80);
+    ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);

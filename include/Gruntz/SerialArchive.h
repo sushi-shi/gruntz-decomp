@@ -13,6 +13,21 @@ class CFileMemBase;
 // The pre/post phases are the pointer<->id swizzle: CGameObject's case 3 writes
 // `m_carrierId = m_carrier->m_objectId`, and its case 8 looks the id back up
 // with MapLookupById.
+// The fixed width of a name field in the save format.
+//
+// One fact spelled two ways, sometimes in adjacent lines - CWarlord serialises
+// its name as `memset(buf, 0, sizeof(buf)); strcpy(buf, m_warlordName);
+// ar->Write(buf, 0x80);`, where the memset already asks the buffer and the
+// Write does not. Every one of the ~140 Read/Write pairs in the tree uses this
+// same width, over buffers declared `char x[SERIAL_NAME_LEN]`, so the array
+// bound and the byte count are the same number by construction.
+//
+// The width is LOAD-BEARING: it is a file-format field, not a buffer size that
+// could be enlarged.
+GZ_ENUM_CONST_BEGIN(SerialNameField)
+    SERIAL_NAME_LEN = 0x80
+GZ_ENUM_CONST_END(SerialNameField)
+
 GZ_ENUM_BEGIN(SerialMode)
 // The archive opens each direction with a BEGIN phase before the
 // pre/main/post trio (CDDrawSurfaceMgr passes 1 then 3,4,5; 2 then 6,7,8).

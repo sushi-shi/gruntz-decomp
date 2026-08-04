@@ -1076,7 +1076,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         return 0;
     }
     i32 n;
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     g_serialCounter++;
     {
         i32 tmp = 0;
@@ -1141,179 +1141,179 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         ar->Write(&tmp, sizeof(tmp));
     }
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     strcpy(buf, static_cast<const char*>(m_animSetName));
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     strcpy(buf, m_frameSetName);
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     strcpy(buf, m_deathFrameSetName);
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = m_poseWalk;
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseAttack, GRUNT_ATTACK1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseAttack, GRUNT_ATTACK2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = m_poseAttackIdle;
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseStruck, GRUNT_STRUCK1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseStruck, GRUNT_STRUCK2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseIdle, GRUNT_IDLE1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseIdle, GRUNT_IDLE2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseIdle, GRUNT_IDLE3);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseIdle, GRUNT_IDLE4);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseIdle, GRUNT_IDLE5);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = m_poseDeath;
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseToy, GRUNT_TOY1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseToy, GRUNT_TOY2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseToy, GRUNT_TOY_BREAK);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseItem, GRUNT_ITEM1);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = AT(m_poseItem, GRUNT_ITEM2);
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, 0x80);
+    memset(buf, 0, SERIAL_NAME_LEN);
     {
         CAniElement* id = m_pickupGeoSrc;
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(id));
         }
     }
-    ar->Write(buf, 0x80);
+    ar->Write(buf, SERIAL_NAME_LEN);
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));

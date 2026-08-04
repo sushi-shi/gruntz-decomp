@@ -41,13 +41,13 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
 #define READCSTR(field)                                                                            \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
-        ar->Read(buf, 0x80);                                                                       \
+        ar->Read(buf, SERIAL_NAME_LEN);                                                            \
         (field) = buf;                                                                             \
     } while (0)
 #define NAMEREF(field)                                                                             \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
-        ar->Read(buf, 0x80);                                                                       \
+        ar->Read(buf, SERIAL_NAME_LEN);                                                            \
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
             dir->m_animRegistry->m_animations.Lookup(buf, obj);                                    \
@@ -70,7 +70,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     i32 id;
     void* obj;
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
 
     m_struckSlotSound = NULL;
     m_struckVoiceSound = NULL;

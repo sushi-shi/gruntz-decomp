@@ -5,7 +5,6 @@
 #include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Io/FileMem.h>
 

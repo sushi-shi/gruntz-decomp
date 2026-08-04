@@ -184,7 +184,7 @@ i32 CSBI_GruntMachine::SerializeFields(
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
 
     switch (mode) {
         case SERIAL_SAVE: {
@@ -195,7 +195,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             if (m_config != NULL) {
                 strcpy(buf, m_config->m_name);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&m_frameIdxA, sizeof(m_frameIdxA));
 
             g_serialCounter++;
@@ -204,7 +204,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             if (m_frameA != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_frameA, buf, &v);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&v, sizeof(v));
             s->Write(&m_frameIdxB, sizeof(m_frameIdxB));
 
@@ -214,7 +214,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             if (m_frameB != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_frameB, buf, &v);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&v, sizeof(v));
 
             g_serialCounter++;
@@ -223,7 +223,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             if (m_standaloneFrame != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_standaloneFrame, buf, &v);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&v, sizeof(v));
             break;
         }
@@ -233,7 +233,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             i32 idx;
 
             g_serialCounter++;
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 out = NULL;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
@@ -244,7 +244,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Read(&m_frameIdxA, sizeof(m_frameIdxA));
 
             g_serialCounter++;
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
@@ -264,7 +264,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Read(&m_frameIdxB, sizeof(m_frameIdxB));
 
             g_serialCounter++;
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
@@ -283,7 +283,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             }
 
             g_serialCounter++;
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
@@ -491,7 +491,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
 
     switch (mode) {
         case SERIAL_SAVE: {
@@ -503,7 +503,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             if (m_topFrame != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_topFrame, buf, &v);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&v, sizeof(v));
 
             g_serialCounter++;
@@ -512,7 +512,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             if (m_bottomFrame != NULL) {
                 reg->m_imageRegistry->AnyValueMatches(m_bottomFrame, buf, &v);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&v, sizeof(v));
 
             s->Write(&m_sampledValue, sizeof(m_sampledValue));
@@ -531,7 +531,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             i32 idx;
 
             g_serialCounter++;
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;
@@ -550,7 +550,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             }
 
             g_serialCounter++;
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             s->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 i = idx;

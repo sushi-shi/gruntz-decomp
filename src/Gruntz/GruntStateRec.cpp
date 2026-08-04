@@ -29,7 +29,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     CObject* out;
     i32 idx;
     i32 v;
@@ -44,7 +44,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
     if (field != 0) {                                                                              \
         reg->m_imageRegistry->AnyValueMatches(field, buf, &v);                                     \
     }                                                                                              \
-    s->Write(buf, 0x80);                                                                           \
+    s->Write(buf, SERIAL_NAME_LEN);                                                                \
     s->Write(&v, 4)
 
             GS_SUBREC(m_statusGlyph);
@@ -71,21 +71,21 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             if (m_glyphMap != NULL) {
                 strcpy(buf, m_glyphMap->m_name);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_timerGlyphMap != NULL) {
                 strcpy(buf, m_timerGlyphMap->m_name);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             break;
 
         case SERIAL_LOAD:
 
 #define GS_IDXREF(field)                                                                           \
     g_serialCounter++;                                                                             \
-    s->Read(buf, 0x80);                                                                            \
+    s->Read(buf, SERIAL_NAME_LEN);                                                                 \
     s->Read(&idx, 4);                                                                              \
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
@@ -104,7 +104,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
     }
 #define GS_NAMEREF(field)                                                                          \
     g_serialCounter++;                                                                             \
-    s->Read(buf, 0x80);                                                                            \
+    s->Read(buf, SERIAL_NAME_LEN);                                                                 \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
         reg->m_imageRegistry->m_10map.Lookup(buf, out);                                            \

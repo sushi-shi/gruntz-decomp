@@ -25,7 +25,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     CObject* out;
     i32 idx;
 
@@ -33,7 +33,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&m_baseY, sizeof(m_baseY));
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
@@ -45,7 +45,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&m_active, sizeof(m_active));
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
@@ -64,7 +64,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
@@ -83,7 +83,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
@@ -102,7 +102,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
@@ -121,7 +121,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     }
 
     g_serialCounter++;
-    s->Read(buf, 0x80);
+    s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;

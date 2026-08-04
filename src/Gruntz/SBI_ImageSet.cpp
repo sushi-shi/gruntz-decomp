@@ -124,12 +124,12 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
     if (reg == NULL) {
         return 0;
     }
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     switch (mode) {
         case SERIAL_LOAD:
             s->Read(&m_frameIndex, sizeof(m_frameIndex));
             g_serialCounter++;
-            s->Read(buf, 0x80);
+            s->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf)) {
                 CDDrawWorker* out;
 
@@ -144,11 +144,11 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
         case SERIAL_SAVE:
             s->Write(&m_frameIndex, sizeof(m_frameIndex));
             g_serialCounter++;
-            memset(buf, 0, 0x80);
+            memset(buf, 0, SERIAL_NAME_LEN);
             if (m_frameSet) {
                 strcpy(buf, m_frameSet->m_name);
             }
-            s->Write(buf, 0x80);
+            s->Write(buf, SERIAL_NAME_LEN);
             break;
     }
 

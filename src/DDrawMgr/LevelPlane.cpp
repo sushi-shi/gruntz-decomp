@@ -1070,10 +1070,10 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&gridSize, sizeof(gridSize));
     s->Write(m_tileGrid, gridSize);
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     memset(buf, 0, sizeof(buf));
     strcpy(buf, m_name);
-    s->Write(buf, 0x80);
+    s->Write(buf, SERIAL_NAME_LEN);
     return 1;
 }
 
@@ -1101,8 +1101,8 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     }
     s->Read(m_tileGrid, gridSize);
 
-    char buf[0x80];
-    s->Read(buf, 0x80);
+    char buf[SERIAL_NAME_LEN];
+    s->Read(buf, SERIAL_NAME_LEN);
     strcpy(m_name, buf);
     return 1;
 }

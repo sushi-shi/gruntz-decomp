@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/Grunt.h>
+#include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
 #include <string.h>
@@ -13,7 +14,7 @@ i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     i32 i;
     for (i = 0; i < 5; i++) {
         memset(buf, 0, sizeof(buf));
@@ -34,7 +35,7 @@ i32 CGruntCellRec::DeserializeStrings(CFileMemBase* ar) {
         return 0;
     }
 
-    char buf[0x80];
+    char buf[SERIAL_NAME_LEN];
     i32 i;
     for (i = 0; i < 5; i++) {
         ar->Read(buf, sizeof(buf));

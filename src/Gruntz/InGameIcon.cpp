@@ -853,7 +853,7 @@ i32 CInGameIcon::SerializeMove(
     CGameObject* obj
 ) {
 
-    char chainName[0x80];
+    char chainName[SERIAL_NAME_LEN];
 
     if (ar == NULL) {
         return 0;
@@ -864,7 +864,7 @@ i32 CInGameIcon::SerializeMove(
 
     switch (mode) {
         case SERIAL_LOAD: {
-            ar->Read(chainName, 0x80);
+            ar->Read(chainName, SERIAL_NAME_LEN);
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
@@ -884,7 +884,7 @@ i32 CInGameIcon::SerializeMove(
                 CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
                 strcpy(chainName, static_cast<const char*>(nm));
             }
-            ar->Write(chainName, 0x80);
+            ar->Write(chainName, SERIAL_NAME_LEN);
             ar->Write(m_blob, 0x10);
             break;
         }
@@ -917,7 +917,7 @@ i32 CInGameIcon::SerializeMove(
             break;
     }
 
-    char tailName[0x80];
+    char tailName[SERIAL_NAME_LEN];
     switch (mode) {
         case SERIAL_SAVE: {
             memset(tailName, 0, sizeof(tailName));
@@ -925,7 +925,7 @@ i32 CInGameIcon::SerializeMove(
                 CString nm = m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
                 strcpy(tailName, static_cast<const char*>(nm));
             }
-            ar->Write(tailName, 0x80);
+            ar->Write(tailName, SERIAL_NAME_LEN);
             g_serialCounter++;
             i32 id = 0;
             if (m_glitterSprite != NULL) {
@@ -935,7 +935,7 @@ i32 CInGameIcon::SerializeMove(
             break;
         }
         case SERIAL_LOAD: {
-            ar->Read(tailName, 0x80);
+            ar->Read(tailName, SERIAL_NAME_LEN);
 
             if (strlen(tailName) == 0) {
                 m_cue = NULL;

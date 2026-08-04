@@ -117,7 +117,7 @@ void CUserLogic::FinalizeStep(char*) {
 // @early-stop
 RVA(0x00008c00, 0x152)
 i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj) {
-    char name[0x80];
+    char name[SERIAL_NAME_LEN];
 
     if (arc == NULL) {
         return 0;
@@ -125,7 +125,7 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
     switch (mode) {
         case SERIAL_LOAD: {
 
-            arc->Read(name, 0x80);
+            arc->Read(name, SERIAL_NAME_LEN);
             arc->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
@@ -148,7 +148,7 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
                 CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
                 strcpy(name, static_cast<const char*>(nm));
             }
-            arc->Write(name, 0x80);
+            arc->Write(name, SERIAL_NAME_LEN);
             arc->Write(m_blob, 0x10);
             break;
         }
