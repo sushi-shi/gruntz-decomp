@@ -4312,8 +4312,11 @@ void CGrunt::FinalizeStep(char* name) {
     AdvanceMotion();
     if (m_struckSlotSound != NULL) {
         bool neL = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") != 0);
-        if (neL && strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") != 0) {
-            StopStruckSlotSound();
+        if (neL) {
+            bool neG = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") != 0);
+            if (neG) {
+                StopStruckSlotSound();
+            }
         }
     }
     if (m_struckVoiceSound != NULL) {
@@ -4329,24 +4332,34 @@ void CGrunt::FinalizeStep(char* name) {
             }
         }
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0) {
+    bool eqO = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+    if (eqO) {
 
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
             return;
         }
         GruntDirectionCell c = m_entranceCell;
-        i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
-        i32 column = (c.column == 0) ? 2 : (c.column == 2 ? 0 : c.column);
+        i32 row = c.row;
+        if (row == 0) {
+            row = 2;
+        } else if (row == 2) {
+            row = 0;
+        }
+        i32 column = c.column;
+        if (column == 0) {
+            column = 2;
+        } else if (column == 2) {
+            column = 0;
+        }
         i32 base = 3 * row + column;
-        CGruntCellRec* cell = &m_cells[base];
-        double d48 = cell->m_motion.m_direction.x;
-        double d50 = cell->m_motion.m_direction.y;
+        double d48 = m_cells[base].m_motion.m_direction.x;
+        double d50 = m_cells[base].m_motion.m_direction.y;
         m_movePosX =
             static_cast<double>(static_cast<i64>(g_frameDelta)) * d48 * m_moveSpeed + m_movePosX;
         m_movePosY =
             static_cast<double>(static_cast<i64>(g_frameDelta)) * d50 * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((cell->m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((cell->m_motion.m_step.y + m_movePosY));
+        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.x + m_movePosX));
+        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.y + m_movePosY));
         if ((d48 > s_fpZero && nx > m_lastTilePx.m_x)
             || (d48 < s_fpZero && nx < m_lastTilePx.m_x)) {
             nx = m_lastTilePx.m_x;
@@ -4374,15 +4387,14 @@ void CGrunt::FinalizeStep(char* name) {
         }
         GruntDirectionCell c = m_entranceCell;
         i32 base = 3 * c.row + c.column;
-        CGruntCellRec* cell = &m_cells[base];
-        double d48 = cell->m_motion.m_direction.x;
-        double d50 = cell->m_motion.m_direction.y;
+        double d48 = m_cells[base].m_motion.m_direction.x;
+        double d50 = m_cells[base].m_motion.m_direction.y;
         m_movePosX =
             static_cast<double>(static_cast<i64>(g_frameDelta)) * d48 * m_moveSpeed + m_movePosX;
         m_movePosY =
             static_cast<double>(static_cast<i64>(g_frameDelta)) * d50 * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((cell->m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((cell->m_motion.m_step.y + m_movePosY));
+        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.x + m_movePosX));
+        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.y + m_movePosY));
         if ((d48 > s_fpZero && nx > m_lastTilePx.m_x)
             || (d48 < s_fpZero && nx < m_lastTilePx.m_x)) {
             nx = m_lastTilePx.m_x;
