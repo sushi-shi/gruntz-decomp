@@ -101,15 +101,21 @@ Artifacts: `build/zlib-cal/` (per-flag `.obj` + extracted `code_*.bin` + disasms
 base `build/delink/base/seg_0018.cpp.obj` = `cl /O2 /MT adler32.c`).
 
 ## Status
-Source vendored. **Step 5 (flag calibration) COMPLETE: global flags locked at
-`cl /c /O2 /MT`.** 42 zlib functions across 8 TUs (adler32, zutil, infutil, deflate,
-trees, inftrees, infcodes, infblock, inffast) are byte-exact; `/Zp`=default(`/Zp8`)
-pinned by deflate.c, `/Gy` forced-on by `/O2` (confirmed by COMDAT layout), `/GF`
-unconstrained (no effect). Remaining roll-forward: the deflate front-end
-(deflate/deflateInit2_/etc.), inflate.c, and the 4 trees.c init/rare functions
-(`_tr_init`, `_tr_static_init`, `_tr_align`, `_bi_flush`) that Ghidra did not carve as
-distinct functions in the contiguous zlib region — locate via xref/byte-search and
-add their `rva,name,unit` rows to `config/zlib_labels.csv`. The vendored zlib C source
+**COMPLETE — every zlib TU is 100% (matched_code 100, all functions exact).**
+Global flags locked at `cl /c /O2 /MT`; `/Zp`=default(`/Zp8`) pinned by deflate.c,
+`/Gy` forced-on by `/O2` (confirmed by COMDAT layout), `/GF` unconstrained (no effect).
+
+The last three functions (`_inflate`, `_inflate_blocks`, `_inflate_codes` — the big
+`switch(state->mode)` state machines) were byte-exact all along but mis-measured:
+Ghidra's carve ends at the code, so the delinked target dropped each function's INLINE
+`.text` jump table while the base COMDAT contains it. Fix: the `size` column of their
+`config/zlib_labels.csv` rows now carries the FULL COMDAT span (`0x430`/`0xcb0`/`0x7b0`
+— for each, retail next-symbol gap == base COMDAT size), which synth_pdb honors, so the
+delinker carves the table into the function; normalize's jump-table reloc rewrite then
+pairs the table dwords. Two `data` rows complete the reloc naming: `_border$S454`
+(infblock static; the CSV must use the base obj's DECORATED `$S<n>` name or the
+authority check drops the row) and `_inflate_mask` (infutil) — without them the target
+relocs bind to a neighboring string COMDAT with an addend. The vendored zlib C source
 stays PRISTINE — no labels in it at all (NOT the `include/rva.h` `RVA()` macros that `src/`
 uses): their static/K&R functions are dropped from IR when unused, so labels can't ride
 attributes/IR. `labels.py` emits each zlib unit's rows straight from that static config

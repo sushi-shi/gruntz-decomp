@@ -346,6 +346,10 @@ def _is_canonical_candidate(definition: Definition) -> bool:
             definition.storage == "text"
             and definition.symbol.storage_class in (2, 3)
         )
+    if family[0] == "named":
+        # cl keeps `name$S<n>` statics TU-local while the delinker exposes the
+        # RVA-pinned copy as external. Both are real definitions.
+        return definition.storage != "text" and definition.symbol.storage_class in (2, 3)
     return definition.storage != "text" and definition.symbol.storage_class == 3
 
 

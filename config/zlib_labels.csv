@@ -4,7 +4,7 @@ rva,name,unit,size,kind
 0x185a60,_inflateEnd,inflate,,func
 0x185ab0,_inflateInit2_,inflate,,func
 0x185bc0,_inflateInit_,inflate,,func
-0x185be0,_inflate,inflate,,func
+0x185be0,_inflate,inflate,0x430,func
 0x186010,_inflateSetDictionary,inflate,,func
 0x1860a0,_inflateSync,inflate,,func
 0x186180,_deflateInit_,deflate,,func
@@ -24,7 +24,7 @@ rva,name,unit,size,kind
 0x187170,_deflate_slow,deflate,,func
 0x187490,_inflate_blocks_reset,infblock,,func
 0x187530,_inflate_blocks_new,infblock,,func
-0x1875a0,_inflate_blocks,infblock,,func
+0x1875a0,_inflate_blocks,infblock,0xcb0,func
 0x188250,_inflate_blocks_free,infblock,,func
 0x188290,_inflate_set_dictionary,infblock,,func
 0x1882d0,_adler32,adler32,,func
@@ -58,7 +58,9 @@ rva,name,unit,size,kind
 0x18aa90,_falloc,inftrees,,func
 0x18aab0,_inflate_trees_free,inftrees,,func
 0x18aaf0,_inflate_codes_new,infcodes,,func
-0x18ab30,_inflate_codes,infcodes,,func
+0x18ab30,_inflate_codes,infcodes,0x7b0,func
 0x18b2e0,_inflate_codes_free,infcodes,,func
 0x18b300,_inflate_flush,infutil,,func
 0x18b440,_inflate_fast,inffast,,func
+0x225060,_border$S454,infblock,0x4c,data
+0x225640,_inflate_mask,infutil,0x44,data

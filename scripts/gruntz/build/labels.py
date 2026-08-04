@@ -646,7 +646,7 @@ def config_tu(unit, entries, obj_syms, all_syms, rows, misses, addr_sites):
             addr_sites.setdefault(rva, []).append((unit, name))
         pool = all_syms if kind == "data" else obj_syms
         if obj_syms is None or name in pool:
-            rows.append((rva, name, unit, size, "func"))
+            rows.append((rva, name, unit, size, kind))
         else:
             misses.append((rva, name, unit, "config candidate not in base obj"))
 
