@@ -142,10 +142,9 @@ RVA(0x000d2dd0, 0x1de4)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0;
     i32 counts[4];
-    counts[0] = 0;
-    counts[1] = 0;
-    counts[2] = 0;
-    counts[3] = 0;
+    for (i32 c = 0; c < 4; c++) {
+        counts[c] = 0;
+    }
 
     CObList* list = &m_world->m_childGroup->m_list;
     if (list == NULL) {
@@ -472,12 +471,152 @@ i32 CPlay::ValidateLevelTiles() {
                 }
             }
         } else if (who == CreateTileTrigger) {
+            CGameLevel* grid = LevelOf(m_world);
             i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
-            static_cast<void>(type);
-            obj->m_flags |= 0x10000;
+            if (type == 0x21) {
+
+                void* hit = 0;
+                i32 col = obj->m_speedX - 1;
+                i32 colOff = col << 8;
+                i32 row = obj->m_speedY - 1;
+                while (col < obj->m_speedX + 2) {
+                    row = obj->m_speedY - 1;
+                    if (hit != NULL) {
+                        break;
+                    }
+                    while (row < obj->m_speedY + 2) {
+                        void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
+                        if (r != NULL) {
+                            hit = r;
+                        }
+                        if (hit != NULL) {
+                            break;
+                        }
+                        row++;
+                    }
+                    if (hit != NULL) {
+                        break;
+                    }
+                    col++;
+                    colOff += 0x100;
+                }
+                if (hit == NULL) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                i32 rel = (obj->m_speedX - col) * 3 - row + obj->m_speedY;
+
+                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
+                if (tcidx == 0) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
+            } else if (type == 0x1e || type == 0x1f || type == 0x22) {
+
+                CTileTriggerLogic* r =
+                    m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                if (r == NULL) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                i32 tcidx = r->m_tileToken;
+                if (tcidx == 0) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
+            }
+            if (type >= TILEKIND_TOGGLEWATERBRIDGE_DOWN && type <= TILEKIND_TOGGLEDEATHBRIDGE_UP) {
+                if (!m_beginMarker->AddLogic(
+                        static_cast<TileCollisionKind>(type),
+                        TRIGID_TIME_TRIGGER_23,
+                        obj->m_speedX,
+                        obj->m_speedY,
+                        obj->m_id,
+                        obj->m_extent,
+                        obj->m_area,
+                        obj->m_switchRect,
+                        obj->m_clip,
+                        obj->m_animWorker->m_userRect1,
+                        obj->m_animWorker->m_userRect2,
+                        0,
+                        obj->m_damage,
+                        obj->m_points,
+                        obj->m_health
+                    )) {
+                    CString s;
+                    s.Format(
+                        "Bad toggle-bridge trigger at: x=%d, y=%d",
+                        obj->m_screenX,
+                        obj->m_screenY
+                    );
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                validCount++;
+                obj->m_flags |= 0x10000;
+            } else {
+                if (!m_beginMarker->AddLogic(
+                        static_cast<TileCollisionKind>(type),
+                        TRIGID_TILE_TRIGGER_21,
+                        obj->m_speedX,
+                        obj->m_speedY,
+                        obj->m_id,
+                        obj->m_extent,
+                        obj->m_area,
+                        obj->m_switchRect,
+                        obj->m_clip,
+                        obj->m_animWorker->m_userRect1,
+                        obj->m_animWorker->m_userRect2,
+                        obj->m_smarts,
+                        obj->m_damage,
+                        obj->m_points,
+                        0
+                    )) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                validCount++;
+                obj->m_flags |= 0x10000;
+            }
         } else if (who == CreateTileSecretTrigger) {
             i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
-            static_cast<void>(type);
+            if (!m_beginMarker->AddLogic(
+                    static_cast<TileCollisionKind>(type),
+                    TRIGID_SECRET_TRIGGER_25,
+                    obj->m_speedX,
+                    obj->m_speedY,
+                    obj->m_id,
+                    obj->m_extent,
+                    obj->m_area,
+                    obj->m_switchRect,
+                    obj->m_clip,
+                    obj->m_animWorker->m_userRect1,
+                    obj->m_animWorker->m_userRect2,
+                    obj->m_smarts,
+                    obj->m_damage,
+                    obj->m_points,
+                    0
+                )) {
+                CString s;
+                s.Format("Bad secret trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                return 0;
+            }
+            validCount++;
             obj->m_flags |= 0x10000;
         } else if (who == CreateLevelTime) {
 
@@ -502,15 +641,14 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateGruntCreationPoint) {
             if (obj->m_smarts == g_curPlayer) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
-                void* slot = 0;
+                Coord* slot = 0;
                 if (cell->m_next != NULL) {
                     slot = &cell->m_coord;
                     g_coordPool.m_freeHead = cell->m_next;
                 }
-                if (slot != NULL) {
-                    (static_cast<i32*>(slot))[0] = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                    (static_cast<i32*>(slot))[1] = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                }
+                slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
             }
         } else if (who == CreateBrickz) {
 
@@ -527,10 +665,19 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_extent.right,
                         obj->m_extent.bottom
                     )
-                    != NULL) {
-                    validCount++;
-                    obj->m_flags |= 0x10000;
+                    == NULL) {
+                    CString s;
+                    s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
                 }
+                validCount++;
+                obj->m_flags |= 0x10000;
+            } else {
+                CString s;
+                s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                return 0;
             }
         } else if (who == CreateGruntPuddle) {
 
@@ -588,13 +735,20 @@ i32 CPlay::ValidateLevelTiles() {
             i32 cy = obj->m_screenX >> TILE_SHIFT_PX;
             i32 cx = obj->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(cy) < gg->m_width && static_cast<u32>(cx) < gg->m_height) {
+                gg->m_rowInts[cx][cy * 7] |= 0x2000000;
             }
         } else if (who == CreateWarpStonePad) {
             if (g_gameReg->m_gameMode != ok) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
+                Coord* slot = 0;
                 if (cell->m_next != NULL) {
+                    slot = &cell->m_coord;
                     g_coordPool.m_freeHead = cell->m_next;
                 }
+                slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
+                slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
+                CPtrArray* cells = &m_placedObjectCells[obj->m_score];
+                cells->SetAtGrow(cells->GetSize(), slot);
             }
         }
     } while (pos != NULL);
