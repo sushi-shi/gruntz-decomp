@@ -63,7 +63,7 @@ void CSpriteRefTable::Clear() {
 
 RVA(0x000e2360, 0x15)
 CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
-    if (static_cast<u32>(colorId) >= 0x11) {
+    if (static_cast<u32>(colorId) >= TINT_COUNT) {
         return 0;
     }
     return m_toolRefs[colorId];
@@ -71,7 +71,7 @@ CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
 
 RVA(0x000e2390, 0x15)
 CSpriteRef* CSpriteRefTable::GetToy(i32 colorId) {
-    if (static_cast<u32>(colorId) >= 0x11) {
+    if (static_cast<u32>(colorId) >= TINT_COUNT) {
         return 0;
     }
     return m_toyRefs[colorId];

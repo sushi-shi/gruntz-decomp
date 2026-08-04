@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageSets.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -74,7 +75,7 @@ i32 CPlay::ScanBuildTiles() {
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
-            if (p->m_powerup == 0x32) {
+            if (p->m_powerup == PICKUP_MEGAPHONE) {
                 m_guts->InsertPtr(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
@@ -140,7 +141,7 @@ i32 CPlay::ScanBuildTiles() {
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
-            if (p->m_powerup == 0x32) {
+            if (p->m_powerup == PICKUP_MEGAPHONE) {
                 m_guts->InsertPtr(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;

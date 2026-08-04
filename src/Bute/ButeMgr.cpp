@@ -822,7 +822,7 @@ void CButeMgr::NextChar() {
         m_lineNo++;
     }
     m_curChar = static_cast<char>(delta);
-    m_countLine = delta == 0xa;
+    m_countLine = delta == '\n';
     m_pos += delta;
 }
 

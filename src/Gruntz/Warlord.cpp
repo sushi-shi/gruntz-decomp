@@ -10,6 +10,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/Grunt.h>
@@ -154,7 +155,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
     i32 cfg = g_gameReg->m_options[owner].m_colorIndex;
-    if (cfg < 0 || cfg >= 0x11) {
+    if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(cfg, 0);

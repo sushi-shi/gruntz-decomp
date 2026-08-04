@@ -7057,7 +7057,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 }
             } else if (marker == static_cast<void*>(CreateCoveredPowerup)
                        || marker == static_cast<void*>(CreateGiantRock)) {
-                i32 cv = obj->m_powerup == 0x32 ? obj->m_points : obj->m_powerup;
+                i32 cv = obj->m_powerup == PICKUP_MEGAPHONE ? obj->m_points : obj->m_powerup;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;

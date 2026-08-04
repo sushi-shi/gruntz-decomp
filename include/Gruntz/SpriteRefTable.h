@@ -5,6 +5,7 @@
 
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Enums.h>
+#include <Gruntz/ColorTint.h>
 #include <Ints.h>
 
 GZ_ENUM_FORWARD_SPLIT(ColorTint, u8);
@@ -51,8 +52,8 @@ public:
 
     CShadeTableCache* m_factory;
     CDDrawSurfaceMgr* m_spriteMgrHolder;
-    CSpriteRef* m_toolRefs[0x11];
-    CSpriteRef* m_toyRefs[0x11];
+    CSpriteRef* m_toolRefs[TINT_COUNT];
+    CSpriteRef* m_toyRefs[TINT_COUNT];
     i32 m_built;
 };
 SIZE_UNKNOWN();

@@ -446,8 +446,8 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         long sel = pSend(lb->m_hWnd, LB_GETCURSEL, 0, 0);
         long data = pSend(lb->m_hWnd, LB_GETITEMDATA, sel, 0);
         m_pickedColor = data;
-        if (data >= 0x11) {
-            m_pickedColor = 0x10;
+        if (data >= TINT_COUNT) {
+            m_pickedColor = TINT_WHITE;
         }
     } else {
         CWnd* lb = GetDlgItem(0x515);
