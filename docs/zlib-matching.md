@@ -83,12 +83,13 @@ all, confirming this.)
   packaging). This matches GRUNTZ.EXE, where each zlib function appears at its own RVA
   with its own size and the TUs are laid out as independently-orderable COMDATs (the
   layout is link/COMDAT order, NOT source-definition order — see trees.c). -> default ok.
-- **`/GF` (read-only string/const pooling) — UNCONSTRAINED (no effect).** `/GF` vs `/GF-`
-  produce **byte-identical `.text` and `.rdata`** for every zlib TU tested (inflate, zutil,
-  inftrees, deflate). zlib's `const char[]` error strings are pooled into per-string
-  `.rdata` COMDATs by `/Gy`/`/O2`, independent of `/GF`; zlib has no duplicate string
-  literals for `/GF` to fold. So `/GF` is neither required nor harmful here -> left off
-  (VC5 default; the default `cl /O2 /MT` equals `/GF-`).
+- **`/GF` (read-only string pooling) — OFF, proven (2026-08-04, supersedes the earlier
+  "no effect" claim).** At `/O2` string literals already pool: each unique literal becomes
+  its own **writable `.data` COMDAT** (selection `Any`), symbol `??_C@…` — that is `/Gf`,
+  which `/O2` implies (`/O2 /Gf` output is byte-identical to `/O2` modulo the COFF
+  timestamp). `/GF` = `/Gf` + move the literal COMDATs to read-only `.rdata`. The zlib
+  base objs and retail both hold these literals in **writable `.data`**, so retail was NOT
+  built with `/GF` -> leave off. (See `string-pooling.md` for the full pooling semantics.)
 
 **Conclusion: the global compile flags are `cl /c /O2 /MT` (cdecl). No `/Gy`, `/GF`, or
 `/Zp` override is needed — `/O2` already forces COMDAT, default packing is `/Zp8`, and

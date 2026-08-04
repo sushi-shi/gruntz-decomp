@@ -33,8 +33,10 @@ phase doesn't second-guess them. Authority: `docs/zlib-matching.md`.
   functions (zlib `_name` cdecl); members are `__thiscall` (the 5 matched ctors
   are `??0…@@QAE@XZ`). Do not globally override the convention.
 - `/Zp` = default (`/Zp8`) [VERIFIED, pinned by deflate.c], `/Gy` forced on by
-  `/O2` [VERIFIED], `/GF` unconstrained / no effect [VERIFIED]. See
-  `zlib-matching.md` for the evidence.
+  `/O2` [VERIFIED]. `/Gf` (string pooling) implied by `/O2` — passing it is a
+  byte-neutral no-op [VERIFIED]; `/GF` would move the pooled literal COMDATs from
+  writable `.data` to `.rdata` — retail's literals are in writable `.data`, so
+  `/GF` is OFF [VERIFIED]. See `zlib-matching.md` and `string-pooling.md`.
 - `/Zi` or `/Z7` (PDB / debug info) [HEURISTIC] — **no codegen change**; affects
   only the debug stream, so it neither helps nor hurts byte-matching. (We synth our
   own PDB; see `synth_pdb`.)
