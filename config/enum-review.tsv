@@ -432,6 +432,7 @@ include/Rez/RezTypeTag.h	pending
 include/Utils/BitArrayWord.h	pending	
 include/Utils/DebugTiming.h	pending	
 include/Utils/MapTyped.h	pending	
+include/Utils/MillisPer.h	pending	
 include/Utils/PtrListPool.h	pending	
 include/Utils/RecordFill.h	pending	
 include/Utils/RegistryHelper.h	pending	

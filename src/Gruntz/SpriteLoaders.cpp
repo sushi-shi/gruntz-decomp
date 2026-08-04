@@ -19,6 +19,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Utils/MillisPer.h>
 
 #include <string.h>
 
@@ -161,17 +162,17 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     u32 t = static_cast<u32>(v);
-    i32 d10min = t / 600000;
-    i32 d1min = t / 60000 % 10;
+    i32 d10min = t / (MILLIS_PER_MINUTE * 10);
+    i32 d1min = t / MILLIS_PER_MINUTE % 10;
     if (d1min == 0 && d10min != 0) {
         d1min = 10;
     }
-    u32 r = t % 60000;
+    u32 r = t % MILLIS_PER_MINUTE;
     i32 d10sec = r / 10000;
     if (d10sec == 0 && (d10min != 0 || d1min != 0)) {
         d10sec = 10;
     }
-    i32 d1sec = r / 1000 % 10;
+    i32 d1sec = r / MILLIS_PER_SECOND % 10;
     if (d1sec == 0 && d10min == 0 && d1min == 0 && d10sec == 0) {
         d1sec = 10;
     }
@@ -249,11 +250,11 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
     u32 onClock;
 
     u32 carry = 0;
-    if (cur % 60000 / 1000 + mins > 0x3b) {
+    if (cur % MILLIS_PER_MINUTE / MILLIS_PER_SECOND + mins > 0x3b) {
         carry = 1;
     }
 
-    onClock = cur / 60000;
+    onClock = cur / MILLIS_PER_MINUTE;
     if (onClock + secs > 0x63) {
         secs = 0x63 - onClock - carry;
     }

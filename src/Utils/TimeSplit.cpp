@@ -2,15 +2,17 @@
 
 #include <Win32.h>
 
+#include <Utils/MillisPer.h>
+
 RVA(0x00119210, 0x66)
 void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {
-    unsigned q1 = n / 3600000;
+    unsigned q1 = n / MILLIS_PER_HOUR;
     *hh = q1;
-    n -= q1 * 3600000;
-    unsigned q2 = n / 60000;
+    n -= q1 * MILLIS_PER_HOUR;
+    unsigned q2 = n / MILLIS_PER_MINUTE;
     *mm = q2;
-    n -= q2 * 60000;
-    *ss = n / 1000;
+    n -= q2 * MILLIS_PER_MINUTE;
+    *ss = n / MILLIS_PER_SECOND;
 }
 
 RVA(0x001192d0, 0x39)
