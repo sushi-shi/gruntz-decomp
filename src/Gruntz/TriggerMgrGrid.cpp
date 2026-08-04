@@ -67,7 +67,7 @@ void CTriggerMgr::Cleanup() {
 }
 
 // @early-stop
-RVA(0x0006b6d0, 0x3f4)
+RVA(0x0006b6d0, 0x434)
 i32 CTriggerMgr::PlaceObject(
     i32 row,
     i32 x,
@@ -451,7 +451,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     return cell->CommitArrival();
 }
 
-RVA(0x0006c130, 0xd62)
+RVA(0x0006c130, 0xe38)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -878,7 +878,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x0006d300, 0x5b2)
+RVA(0x0006d300, 0x5db)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* view = m_world->m_level;
@@ -1072,7 +1072,7 @@ void CTriggerMgr::GridAction7(i32 a, i32 b) {
 }
 
 // @early-stop
-RVA(0x0006dae0, 0x4b7)
+RVA(0x0006dae0, 0x4f9)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == NULL || cell->m_entranceCommitted == 0) {

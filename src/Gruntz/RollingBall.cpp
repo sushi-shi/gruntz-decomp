@@ -145,7 +145,7 @@ void CRollingBall::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
-RVA(0x000b0140, 0xa7a)
+RVA(0x000b0140, 0xba8)
 i32 CRollingBall::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 

@@ -252,7 +252,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     }
 }
 
-RVA(0x00110c10, 0xe3f)
+RVA(0x00110c10, 0xeee)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
     CTileTriggerTransition* trans = 0;
@@ -1149,7 +1149,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
     return 1;
 }
 
-RVA(0x00112ee0, 0x35e)
+RVA(0x00112ee0, 0x42b)
 i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 newCode = m_actionCode;
     i32 effect = 0;
@@ -1343,7 +1343,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     return newCode == BRICKTILE_CLEARED;
 }
 
-RVA(0x00113420, 0x350)
+RVA(0x00113420, 0x358)
 i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     if (toolId == PICKUP_BROWNBRICK) {
         switch (m_actionCode) {

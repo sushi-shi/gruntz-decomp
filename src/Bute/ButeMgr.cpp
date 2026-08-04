@@ -1161,7 +1161,7 @@ bool CButeMgr::ParseTagLine() {
 }
 
 // @early-stop
-RVA(0x001712b0, 0x204)
+RVA(0x001712b0, 0x228)
 void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
     CButeValue* value = static_cast<CButeValue*>(valuePtr);
@@ -1737,7 +1737,7 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 }
 
 // @early-stop
-RVA(0x00173dd0, 0x38f)
+RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
     if (grp) {
