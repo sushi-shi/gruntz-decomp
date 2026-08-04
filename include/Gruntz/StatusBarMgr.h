@@ -101,7 +101,7 @@ public:
     }
 
     i32 LoadTabSprites();
-    void BuildGameMenu();
+    i32 BuildGameMenu();
 
     void UpdateDestructButton(i32 arg);
     i32 EnsureSub(i32 a, i32 b, i32 c);

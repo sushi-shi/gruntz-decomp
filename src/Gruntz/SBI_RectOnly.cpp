@@ -1441,7 +1441,7 @@ i32 CStatusBarMgr::ClearTabSprites(i32 idx) {
 }
 
 RVA(0x00101580, 0x806)
-void CStatusBarMgr::BuildGameMenu() {
+i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
@@ -1469,7 +1469,7 @@ void CStatusBarMgr::BuildGameMenu() {
                 if (it) {
                     delete it;
                 }
-                return;
+                return 0;
             }
             m_tabLists[5].AddTail(it);
         } else {
@@ -1491,7 +1491,7 @@ void CStatusBarMgr::BuildGameMenu() {
                 if (it) {
                     delete it;
                 }
-                return;
+                return 0;
             }
             m_tabLists[5].AddTail(it);
         }
@@ -1506,7 +1506,7 @@ void CStatusBarMgr::BuildGameMenu() {
             if (it) {
                 delete it;
             }
-            return;
+            return 0;
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite6 = static_cast<CSBI_MenuItem*>(it);
@@ -1523,7 +1523,7 @@ void CStatusBarMgr::BuildGameMenu() {
             if (it) {
                 delete it;
             }
-            return;
+            return 0;
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite7 = static_cast<CSBI_MenuItem*>(it);
@@ -1549,7 +1549,7 @@ void CStatusBarMgr::BuildGameMenu() {
             if (it) {
                 delete it;
             }
-            return;
+            return 0;
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite8 = static_cast<CSBI_MenuItem*>(it);
@@ -1563,7 +1563,7 @@ void CStatusBarMgr::BuildGameMenu() {
             if (it) {
                 delete it;
             }
-            return;
+            return 0;
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite9 = static_cast<CSBI_MenuItem*>(it);
@@ -1580,7 +1580,7 @@ void CStatusBarMgr::BuildGameMenu() {
             if (it) {
                 delete it;
             }
-            return;
+            return 0;
         }
         m_tabLists[5].AddTail(it);
         m_tabSprite10 = static_cast<CSBI_MenuItem*>(it);
@@ -1603,7 +1603,7 @@ void CStatusBarMgr::BuildGameMenu() {
             if (it) {
                 delete it;
             }
-            return;
+            return 0;
         }
         m_tabLists[5].AddTail(it);
         m_modeNotify = static_cast<CSBI_ImageSet*>(it);
@@ -1613,31 +1613,54 @@ void CStatusBarMgr::BuildGameMenu() {
             m_destructWarnActive = 0;
             m_modeNotify->Notify(7);
         }
-        return;
+        return 1;
     }
 
-    it = new CSBI_ImageSet;
-    i32 variant = (g_gameReg->m_cmdGrid->m_phase == 1) ? 1 : 2;
-    r.left = bx;
-    r.top = by + 0xd7;
-    r.right = bx + 0x9f;
-    r.bottom = by + 0xec;
-    if (!it->SetupImage(
-            this,
-            code,
-            0x1fb,
-            5,
-            r,
-            "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
-            variant,
-            0
-        )) {
-        if (it) {
-            delete it;
+    if (g_gameReg->m_cmdGrid->m_phase == 1) {
+        it = new CSBI_ImageSet;
+        r.left = bx;
+        r.top = by + 0xd7;
+        r.right = bx + 0x9f;
+        r.bottom = by + 0x118;
+        if (!it->SetupImage(
+                this,
+                code,
+                0x1fb,
+                5,
+                r,
+                "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
+                1,
+                0
+            )) {
+            if (it) {
+                delete it;
+            }
+            return 0;
         }
-        return;
+    } else {
+        it = new CSBI_ImageSet;
+        r.left = bx;
+        r.top = by + 0xd7;
+        r.right = bx + 0x9f;
+        r.bottom = by + 0x118;
+        if (!it->SetupImage(
+                this,
+                code,
+                0x1fb,
+                5,
+                r,
+                "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
+                2,
+                0
+            )) {
+            if (it) {
+                delete it;
+            }
+            return 0;
+        }
     }
     m_tabLists[5].AddTail(it);
+    return 1;
 }
 
 // ??0CSBI_RectOnly: BuildGameMenu's construction set is complete; retail keeps
