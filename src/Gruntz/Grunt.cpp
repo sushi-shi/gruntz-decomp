@@ -87,15 +87,14 @@ VTBL(CGrunt, 0x001e8754);
 DATA(0x001e9a68)
 double s_fpZero = 0.0;
 
-static void GruntPosScratchTeardown() {
+static __inline void GruntPosScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt--) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
 }
 
@@ -230,12 +229,11 @@ void GruntRecycleCoords(CGrunt* g) {
 static __inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt--) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
 }
 
@@ -4387,7 +4385,8 @@ void CGrunt::FinalizeStep(char* name) {
 
     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     GruntPosScratchTeardown();
-    if (strcmp(*rec, k_60df94) == 0) {
+    bool eqPos = (strcmp(*rec, k_60df94) == 0);
+    if (eqPos) {
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
             return;
         }

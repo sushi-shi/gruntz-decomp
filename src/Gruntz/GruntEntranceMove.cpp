@@ -169,12 +169,11 @@ void CGrunt::ApplyMoveKind(i32 v) {}
 static void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt--) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
 }
 
