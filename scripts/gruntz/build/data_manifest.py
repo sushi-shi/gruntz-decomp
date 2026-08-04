@@ -183,6 +183,44 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
     return rows, withheld
 
 
+def compgen_rows(exe=EXE, table=None):
+    """Reviewed `DATA_COMPGEN(rva, name, value)` claims -> per-owning-unit rows.
+
+    labels.py already authority-checked every claim against the claiming TU's
+    base obj (a string payload equals a `??_C@` COMDAT there; a float's bits sit
+    in the TU's `$T` FP pool) and gated the fold rule: one compiler-generated
+    identity per RVA, EXCEPT byte-identical string payloads, which /Gf pooling
+    (implied by /O2) folds across TUs onto one retail RVA - those claims are the
+    SAME datum and enroll once per owner, the folded-COMDAT alias form the
+    delinker admits (docs/string-pooling.md). This just re-shapes the table and
+    applies the usual storage screen.
+
+    String claims take the candidate-COFF section shape (they own a whole
+    `??_C@` COMDAT in the base obj - section_rows handles them exactly like the
+    auto-inferred literals); float claims keep the legacy packed form.
+    """
+    table = Path(table or REPO / "build/gen/data_compgen.csv")
+    if not table.is_file():
+        return [], []
+    pe = read_pe(exe)
+    rows, withheld = [], []
+    with table.open(newline="") as f:
+        for r in csv.DictReader(f):
+            rva, size = int(r["rva"], 16), int(r["size"], 16)
+            start = classify_pe_storage(pe, rva)["class"]
+            end = classify_pe_storage(pe, rva + size - 1)["class"]
+            if start not in STORAGE or start != end:
+                withheld.append((rva, r["name"],
+                                 "DATA_COMPGEN storage %s not enrollable" % start))
+                continue
+            prov = ("candidate-COFF-string" if r["kind"] == "str"
+                    else "src-DATA_COMPGEN")
+            rows.append({"name": r["name"], "object": "%s.c" % r["unit"],
+                         "rva": rva, "size": size, "storage": STORAGE[start],
+                         "alignment": _alignment(rva, size), "provenance": prov})
+    return rows, withheld
+
+
 def vtable_rows(exe=EXE, base_dir=None):
     """Enrollable `??_7` vtable definitions + the withheld ones.
 
@@ -301,6 +339,30 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     vtables, vtable_withheld = vtable_rows(exe=exe)
     rows += vtables
     withheld += vtable_withheld
+
+    # The reviewed DATA_COMPGEN claims (one per owning unit, labels.py-gated).
+    compgen, compgen_withheld = compgen_rows(exe=exe)
+    rows += compgen
+    withheld += compgen_withheld
+
+    # One definition may be stated by several provenances - the symbol_names
+    # representative row, the auto-inferred candidate-COFF string/vtable, and
+    # the explicit DATA_COMPGEN claim are the SAME datum. Collapse them,
+    # preferring any candidate-COFF-* statement: those take the candidate
+    # SECTION shape in section_rows, and a fold must not mix section-form and
+    # legacy-form rows at one rva (the delinker rejects that as a duplicate).
+    # Anything still duplicated after this is a real defect the checks below own.
+    seen, deduped = {}, []
+    for r in rows:
+        key = (r["name"], r["object"], r["rva"], r["size"])
+        prev = seen.get(key)
+        if prev is None:
+            seen[key] = r
+            deduped.append(r)
+        elif (not prev["provenance"].startswith("candidate-COFF")
+                and r["provenance"].startswith("candidate-COFF")):
+            prev.update(r)
+    rows = deduped
 
     # The N owners of a folded COMDAT all claim ONE rva, so collapse each fold to a
     # single extent before the neighbour check - otherwise the copies read as mutual

@@ -331,6 +331,42 @@ named — the data-side analog of "a fn flips exact only when its WHOLE referent
 named". ⇒ **`.rdata` unlocks as vtable-slot function naming completes**, and it pays ~21 KB
 when it does. Do not re-derive this; the enrolment is already wired.
 
+### 3b-iii. `DATA_COMPGEN(rva, name, value)` — reviewed compiler-generated data (wired)
+
+Adopted from homm2-decomp's contract (its `docs/candidate-data-topology.md`): automatic
+string inference cannot establish retail identity when a payload content-matches several
+retail RVAs (the "identical payload at N retail RVAs" withheld class - short strings whose
+bytes also occur inside other data), when Ghidra never carved the literal, or for FP pool
+entries (no content-derived name exists at all). The macro wraps the value AT ITS USE SITE
+and expands to it under both compilers:
+
+    g_pathStr += DATA_COMPGEN(0x0020cfbc, wwdExtension, ".WWD");
+    health * DATA_COMPGEN(0x001e9a98, healthSlotScale, 0.2)
+
+`labels.py` parses the invocations (balanced-paren - expression position wraps), then
+authority-checks each claim against the claiming TU's base obj: a string payload must
+equal a `??_C@` COMDAT there (cl's own spelling for those bytes IS the emitted name), a
+float's bits must sit in the TU's `$T` FP pool (emitted spelling `$T<rva>`, which only has
+to satisfy canonicalize's VOLATILE_T - both sides content-address to `$anon_f64_<bits>`,
+so the volatile counter never matters). Claims land in `build/gen/data_compgen.csv` (one
+row per claiming unit) + one representative `symbol_names.csv` row per rva; the data
+manifest enrolls them via `compgen_rows()` (strings take the candidate-COFF section
+shape, floats the legacy packed form).
+
+**Gates (labels.py, FATAL):** semantic name unique per TU; one compiler-generated
+identity per RVA - EXCEPT byte-identical string payloads, which /Gf pooling (implied by
+/O2) legitimately folds from N TUs onto ONE retail RVA (`docs/string-pooling.md`); those
+claims coalesce onto the one `??_C@` name and enroll once per owner (the §3b-i alias
+form). This per-RVA relaxation is the deliberate divergence from homm2's stricter
+"different names at one RVA are rejected" rule: VC4.2 there, VC5 pooling here. FP pools
+never fold, so a numeric RVA claimed by two TUs is always a mis-pin. The semantic name is
+per-TU documentation only - it never reaches the delinker.
+
+First proven claims: the `".WWD"` disambiguation (0x20cfbc vs the `"*.WWD"` tail at
+0x20cf95 that inference withheld), a 2-TU `"Wormhole"` fold (gameobjectfactory +
+wormhole at 0x20a7ac), and grunthealthsprite's `0.2`/`0.5` FP pool entries
+(0x1e9a98/0x1e9aa0) - the first FP data to pair at all.
+
 ### 3c. `.bss` is capped by an objdiff INFERENCE artifact — do not budget against it
 
 **`.bss` is 212211 of 279630 `total_data` (~76%), and `ddsurface` alone is 197144 of it

@@ -75,7 +75,12 @@ RVA(0x0007f0d0, 0x6e)
 i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cell.m_x = x;
     m_cell.m_y = y;
-    i32 slot = 0x15 - static_cast<i32>((static_cast<double>(health) * 0.2 + 0.5));
+    i32 slot =
+        0x15
+        - static_cast<i32>((
+            static_cast<double>(health)
+            * DATA_COMPGEN(0x001e9a98, healthSlotScale, 0.2) + DATA_COMPGEN(0x001e9aa0, healthSlotRound, 0.5))
+        );
     CWwdGameObjectA* obj = m_object;
     CDDrawWorker* map = obj->m_frameSet;
     if (map) {

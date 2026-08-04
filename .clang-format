@@ -80,6 +80,7 @@ StatementMacros:
 # listed above.
 WhitespaceSensitiveMacros:
   - RVA_COMPGEN
+  - DATA_COMPGEN
 AttributeMacros:
   - OVERRIDE
 

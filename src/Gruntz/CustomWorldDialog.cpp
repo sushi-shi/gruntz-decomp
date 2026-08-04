@@ -201,7 +201,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     g_pathStr = dirBuf;
     g_pathStr += "\\Custom\\";
     g_pathStr += itemText;
-    g_pathStr += ".WWD";
+    g_pathStr += DATA_COMPGEN(0x0020cfbc, wwdExtension, ".WWD");
     if (!FileExists(g_pathStr)) {
         g_pathStr.Empty();
         return 0;

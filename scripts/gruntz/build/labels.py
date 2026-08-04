@@ -125,7 +125,7 @@ ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?
 # compiler-emitted COMDAT, like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>)
 # carries only RVA_COMPGEN rows, and without that alternative it silently fell
 # through to the vendored-C path and contributed ZERO rows.
-MACRO_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|VTBL2)\s*\(")
+MACRO_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|DATA_COMPGEN|VTBL2)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"
@@ -439,6 +439,177 @@ def blank_comments(text):
             st = "code"
         i += 1
     return "".join(out)
+
+
+DATACOMPGEN_RE = re.compile(r"\bDATA_COMPGEN\s*\(")
+COMPGEN_ADDR_RE = re.compile(r"0x[0-9a-f]{8}$")
+COMPGEN_NAME_RE = re.compile(r"[A-Za-z_]\w*$")
+_STR_SEG_RE = re.compile(r'"((?:[^"\\]|\\.)*)"')
+_FLOAT_RE = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+[eE][-+]?\d+|\d+\.?\d*[eE][-+]?\d+)"
+                       r"([fF]?)$")
+
+
+def compgen_invocations(text):
+    """[(line, [arg, ...])] for each DATA_COMPGEN(...) in comment-blanked TU text.
+
+    The macro sits in EXPRESSION position, so unlike the statement labels it may
+    be wrapped by clang-format - the scan is balanced-paren and quote-aware, not
+    line-based. Args are split on top-level commas.
+    """
+    out = []
+    for m in DATACOMPGEN_RE.finditer(text):
+        i, n = m.end(), len(text)
+        depth, j = 1, m.end()
+        while j < n and depth:
+            c = text[j]
+            if c in "\"'":
+                q = c
+                j += 1
+                while j < n and text[j] != q:
+                    j += 2 if text[j] == "\\" else 1
+            elif c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            j += 1
+        body = text[i:j - 1]
+        parts, depth, start, k = [], 0, 0, 0
+        while k < len(body):
+            c = body[k]
+            if c in "\"'":
+                q = c
+                k += 1
+                while k < len(body) and body[k] != q:
+                    k += 2 if body[k] == "\\" else 1
+            elif c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            elif c == "," and depth == 0:
+                parts.append(body[start:k])
+                start = k + 1
+            k += 1
+        parts.append(body[start:])
+        out.append((text.count("\n", 0, m.start()) + 1,
+                    [p.strip() for p in parts]))
+    return out
+
+
+def compgen_value(value_src):
+    """('str'|'f32'|'f64', payload bytes) or (None, reason).
+
+    The value spelling is the allocation's type (homm2 contract): `0.0` is an
+    f64 pool entry, `0.0f` an f32, a (concatenation of) narrow string literal(s)
+    the pooled `??_C@` payload. Anything else - identifiers, wide strings,
+    integers (immediates live in code, not data) - is rejected.
+    """
+    import struct as _struct
+    v = value_src.strip()
+    if v.startswith('"'):
+        segs = _STR_SEG_RE.findall(v)
+        if not segs or _STR_SEG_RE.sub("", v).strip():
+            return None, "value must be pure narrow string literal(s)"
+        try:
+            payload = ("".join(segs).encode("latin-1")
+                       .decode("unicode_escape").encode("latin-1"))
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return None, "unsupported escape in string literal"
+        return "str", payload
+    m = _FLOAT_RE.fullmatch(v)
+    if m:
+        num = v[:-1] if m.group(1) else v
+        try:
+            val = float(num)
+        except ValueError:
+            return None, "unparsable float constant"
+        if m.group(1):
+            return "f32", _struct.pack("<f", val)
+        return "f64", _struct.pack("<d", val)
+    return None, "value is neither a string literal nor a float constant"
+
+
+def compgen_tu(text, tu, unit, obj_path):
+    """[(rva, name, unit, size, vkind, payload, semantic)] claims + [errors].
+
+    Every claim is authority-checked against the TU's base obj - the exact
+    artifact cl emitted from this source:
+      * a string value must equal a `??_C@` COMDAT payload there (cl's own
+        spelling for those bytes IS the emitted name - coff_oracle doctrine);
+      * a float value's bits must occur in the obj's section bytes (the TU's
+        `$T<n>` FP pool); the emitted `$T<rva>` spelling only has to satisfy
+        canonicalize's VOLATILE_T so both sides content-address identically.
+    """
+    from gruntz.build.coff_oracle import _Coff
+
+    claims, errors = [], []
+    coff = None
+    if obj_path is not None:
+        try:
+            coff = _Coff(Path(obj_path))
+        except Exception as e:
+            errors.append((tu, 0, "base obj unreadable for DATA_COMPGEN: %s" % e))
+            return claims, errors
+    strings = {}
+    if coff is not None:
+        for idx, value, secnum in coff.iter_symbols():
+            nm = coff.sym_name(idx)
+            if nm.startswith("??_C@") and secnum >= 1:
+                cs = coff.cstring(secnum, value)
+                if cs is not None:
+                    strings[cs] = nm
+    seen_sem, seen_rva = {}, {}
+    for line, args_ in compgen_invocations(text):
+        where = (tu, line)
+        if len(args_) != 3:
+            errors.append((*where, "DATA_COMPGEN takes (addr, name, value); got %d arg(s)"
+                           % len(args_)))
+            continue
+        addr_s, sem, value_src = args_
+        if not COMPGEN_ADDR_RE.fullmatch(addr_s):
+            errors.append((*where, "address %r not canonical 0x%%08x form" % addr_s))
+            continue
+        if not COMPGEN_NAME_RE.fullmatch(sem):
+            errors.append((*where, "semantic name %r is not an identifier" % sem))
+            continue
+        vkind, payload = compgen_value(value_src)
+        if vkind is None:
+            errors.append((*where, "%s: %s" % (sem, payload)))
+            continue
+        rva = int(addr_s, 16)
+        if sem in seen_sem and seen_sem[sem] != rva:
+            errors.append((*where, "semantic name %r reused for a second rva "
+                           "0x%08x (first: 0x%08x)" % (sem, rva, seen_sem[sem])))
+            continue
+        seen_sem[sem] = rva
+        if rva in seen_rva:
+            if seen_rva[rva] != (vkind, payload):
+                errors.append((*where, "0x%08x claimed twice in this TU with "
+                               "different values" % rva))
+            continue                    # repeated expansions coalesce
+        seen_rva[rva] = (vkind, payload)
+        if vkind == "str":
+            name = strings.get(payload)
+            if coff is not None and name is None:
+                errors.append((*where, "%s: string %r is not a pooled ??_C@ literal "
+                               "in this TU's base obj" % (sem, payload[:40])))
+                continue
+            if name is None:            # no obj (candidate mode): cannot derive
+                continue
+            size = len(payload) + 1
+        else:
+            found = any(payload in coff.buf[rawptr:rawptr + rawsize]
+                        for rawptr, rawsize in coff.sections
+                        if rawsize) if coff is not None else False
+            if coff is not None and not found:
+                errors.append((*where, "%s: %s bits %s not present in this TU's "
+                               "base obj (FP pool)" % (sem, vkind, payload.hex())))
+                continue
+            if coff is None:
+                continue
+            name = "$T%d" % rva
+            size = len(payload)
+        claims.append((rva, name, unit, size, vkind, payload, sem))
+    return claims, errors
 
 
 def data_labels(text, ast, main_file):
@@ -1115,6 +1286,8 @@ def main():
     global_meta = {}   # rva -> {name, type, unit} for globals.json (typed data)
     no_ir = []         # TUs whose label pass produced NO IR at all      -> FATAL
     no_rows = []       # TUs that carry rva.h macros but labelled nothing -> FATAL
+    compgen_claims = []  # (rva, name, unit, size, vkind, payload, semantic)
+    compgen_errors = []  # (tu, line, reason)                            -> FATAL
     for i, tu in enumerate(args.tu):
         # Comments are BLANKED before any text scan: a doc comment quoting an
         # RVA_COMPGEN(..) invocation must never become a live pin.
@@ -1244,6 +1417,17 @@ def main():
                     misses.append((rva, cand, unit,
                                    "data candidate not in base obj"))
 
+        # --- compiler-generated data via DATA_COMPGEN (source parse: the macro
+        # sits in EXPRESSION position, so there is no IR/AST carrier to ride -
+        # the homm2 strategy, see docs/data-attribution.md) ---
+        if DATACOMPGEN_RE.search(text):
+            cg_claims, cg_errors = compgen_tu(
+                text, tu, unit, args.obj[i] if have_obj else None)
+            compgen_claims += cg_claims
+            compgen_errors += cg_errors
+            for rva, name, cunit, size, _vkind, _payload, _sem in cg_claims:
+                rows.append((rva, name, cunit, size, "data"))
+
         # A TU that carries rva.h macros MUST label something. If it labelled nothing,
         # the label pass silently dropped it (clang parsed the source but the IR/AST
         # join produced no rows) - the same class of silent hole as `no_ir` above.
@@ -1262,6 +1446,35 @@ def main():
     # denominator move. A green build must MEAN the labels landed - so this is fatal, and
     # it names the units.
     # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # DATA_COMPGEN cross-TU gate (fatal). One compiler-generated identity per
+    # RVA - EXCEPT identical string payloads: /Gf pooling (implied by /O2) folds
+    # the same literal from N TUs onto ONE retail RVA, so N string claims with
+    # byte-identical content are the SAME datum and all coalesce onto its one
+    # `??_C@` name (docs/string-pooling.md). FP pools never fold (per-TU $T
+    # statics), so a numeric RVA claimed by two TUs is always a mis-pin.
+    # ------------------------------------------------------------------
+    by_rva = {}
+    for c in compgen_claims:
+        by_rva.setdefault(c[0], []).append(c)
+    for rva, group in sorted(by_rva.items()):
+        if len(group) == 1:
+            continue
+        kinds = {c[4] for c in group}
+        payloads = {c[5] for c in group}
+        if kinds != {"str"} or len(payloads) != 1:
+            units = ", ".join(sorted({c[2] for c in group}))
+            compgen_errors.append(
+                ("<cross-TU>", 0,
+                 "0x%08x claimed by [%s] with non-identical or non-string values - "
+                 "only byte-identical pooled strings may share an rva" % (rva, units)))
+    if compgen_errors:
+        for etu, eline, why in compgen_errors:
+            log(f"ERROR {etu}:{eline}: DATA_COMPGEN {why}")
+        log(f"{len(compgen_errors)} DATA_COMPGEN violation(s); refusing to write "
+            f"{args.out}.")
+        return 1
+
     if no_ir or no_rows:
         for tu in no_ir:
             log(f"ERROR {tu}: label pass produced NO IR - the TU compiles under cl but "
@@ -1333,6 +1546,18 @@ def main():
                 f"the wrong rva. Delete it, or put its declaration back.")
         log(f"{len(orphans)} orphan annotation(s); refusing to write {args.out}.")
         return 1
+
+    # The reviewed DATA_COMPGEN claims table, one row PER CLAIMING UNIT (unlike
+    # symbol_names.csv, whose per-rva dedup keeps one representative row) - the
+    # data manifest enrolls a folded literal once per owner from this.
+    cg_out = Path(args.out).with_name("data_compgen.csv")
+    cg_out.parent.mkdir(parents=True, exist_ok=True)
+    cg_lines = ["rva,name,unit,size,kind,semantic\n"] + [
+        "0x%08x,%s,%s,0x%x,%s,%s\n" % (rva, name, unit, size, vkind, sem)
+        for rva, name, unit, size, vkind, _payload, sem in sorted(compgen_claims)]
+    cg_text = "".join(cg_lines)
+    if not cg_out.exists() or cg_out.read_text() != cg_text:
+        cg_out.write_text(cg_text)
 
     # Finalize + write the CSV via the shared helper (cross-TU dup-RVA guard,
     # DATA keep-last-per-rva dedup, sort, write-if-changed). It sorts `rows` in
