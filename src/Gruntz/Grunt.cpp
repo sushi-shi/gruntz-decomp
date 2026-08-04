@@ -2272,7 +2272,7 @@ static inline void ConstructGrownSlots() {
 }
 
 // @early-stop
-RVA(0x0004dd50, 0x22c0)
+RVA(0x0004dd50, 0x2880)
 i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
     char eq;
     if (kind == PICKUP_INVALID) {

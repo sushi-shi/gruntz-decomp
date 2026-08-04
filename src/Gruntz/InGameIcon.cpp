@@ -113,7 +113,7 @@ RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
 // @early-stop
-RVA(0x00095b10, 0x15f0)
+RVA(0x00095b10, 0x1720)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_driftPos.m_lo = 0;

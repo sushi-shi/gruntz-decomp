@@ -83,7 +83,7 @@ static __inline i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     return (r > 0x190) ? BRICKTILE_BLACK_3_TOP : BRICKTILE_BLACK_3_MID;
 }
 
-RVA(0x000810f0, 0x8b4)
+RVA(0x000810f0, 0xab0)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
     CDDrawWorkerHost* grid = m_attrMgr->m_level->m_mainPlane;

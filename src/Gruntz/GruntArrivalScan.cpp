@@ -507,7 +507,7 @@ L_ed153:
 }
 
 // @early-stop
-RVA(0x000ed9f0, 0x8dd)
+RVA(0x000ed9f0, 0x9a0)
 i32 CGrunt::WanderStep() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
