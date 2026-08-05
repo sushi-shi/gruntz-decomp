@@ -417,6 +417,19 @@ void CTriggerMgr::OverlayTick() {
     }
 }
 
+// The 16-bit path-preview colour: retail packs all THREE channels through the
+// runtime shift globals even when green/blue are zero (cl5 does not fold
+// `0 >> var`, so the zero channels are visible as xor/sar/shl).
+static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
+    return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+}
+
+// @early-stop
+// residue is a whole-function regalloc divergence: retail keeps `view` in the
+// scratch ecx and cx in edi, while cl parks view in ebx and spills cx, which
+// costs a frame word (0x1c vs 0x18) and lets cl cross-jump the two
+// path-preview blocks and several LoadCursorSprites tails that retail emits
+// separately (14 calls / 6 rets vs retail's 24 / 16).
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -427,10 +440,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
-    if (cell == NULL) {
-        return 1;
-    }
-    if (cell->m_tileOwnerHi != g_curPlayer) {
+    if (cell == NULL || cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
 
@@ -454,23 +464,22 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     CGameLevel* view = m_world->m_level;
-    CDDrawWorkerHost* grid = view->m_mainPlane;
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
     i32 cx = tx;
     if (tx < 0) {
         cx = 0;
-    } else if (tx >= grid->m_gridW) {
-        cx = grid->m_gridW - 1;
+    } else if (tx >= view->m_mainPlane->m_gridW) {
+        cx = view->m_mainPlane->m_gridW - 1;
     }
     i32 cy = ty;
     if (ty < 0) {
         cy = 0;
-    } else if (ty >= grid->m_gridH) {
-        cy = grid->m_gridH - 1;
+    } else if (ty >= view->m_mainPlane->m_gridH) {
+        cy = view->m_mainPlane->m_gridH - 1;
     }
     TileCollisionKind collision = TILEKIND_PASSABLE;
-    i32 cval = grid->m_tileGrid[grid->m_colOffsets[cy] + cx];
+    i32 cval = view->m_mainPlane->m_tileGrid[view->m_mainPlane->m_colOffsets[cy] + cx];
     if (cval != UNINIT_FILL && cval != -1) {
 
         CTileImageSet* tc = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(cval & 0xffff));
@@ -506,11 +515,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         gruntKind = cell->m_toolId;
     }
 
-    const u16 grey = static_cast<u16>(
-        ((0x20 >> g_rDown) << g_rUp) | ((0x20 >> g_gDown) << g_gUp) | (0x20 >> g_bDown)
-    );
-    const u16 red = static_cast<u16>((0xff >> g_rDown) << g_rUp);
-
     if (hitFlag != 0) {
         if (pfk == 0) {
             world->LoadCursorSprites(0, 0);
@@ -523,14 +527,20 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
 
         POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-        grid->WrapCoord(&source.x, &source.y);
+        view->m_mainPlane->WrapCoord(&source.x, &source.y);
         POINT destination = {x, y};
-        grid->WrapCoord(&destination.x, &destination.y);
-        i32 blocked = cell->RectContains(x, y);
-        world->LoadCursorSprites(blocked ? IDX(gruntKind) + kPendingFxIdBase : pfk, blocked != 0);
+        view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+        u16 color;
+        if (cell->RectContains(x, y)) {
+            color = PackRgb16(0xff, 0, 0);
+            world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+        } else {
+            color = PackRgb16(0x20, 0x20, 0x20);
+            world->LoadCursorSprites(pfk, 0);
+        }
         world->m_pathPreviewSource = source;
         world->m_pathPreviewDestination = destination;
-        world->m_pathPreviewColor = blocked ? red : grey;
+        world->m_pathPreviewColor = color;
         world->m_drewThisFrame = 1;
         return 1;
     }
@@ -548,17 +558,20 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         case PICKUP_WINGZ:
             if (pfk != 0) {
                 POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-                grid->WrapCoord(&source.x, &source.y);
+                view->m_mainPlane->WrapCoord(&source.x, &source.y);
                 POINT destination = {x, y};
-                grid->WrapCoord(&destination.x, &destination.y);
-                i32 blocked = cell->RectContains(x, y);
-                world->LoadCursorSprites(
-                    blocked ? IDX(gruntKind) + kPendingFxIdBase : pfk,
-                    blocked != 0
-                );
+                view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+                u16 color;
+                if (cell->RectContains(x, y)) {
+                    color = PackRgb16(0xff, 0, 0);
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                } else {
+                    color = PackRgb16(0x20, 0x20, 0x20);
+                    world->LoadCursorSprites(pfk, 0);
+                }
                 world->m_pathPreviewSource = source;
                 world->m_pathPreviewDestination = destination;
-                world->m_pathPreviewColor = blocked ? red : grey;
+                world->m_pathPreviewColor = color;
                 world->m_drewThisFrame = 1;
                 return 1;
             }
