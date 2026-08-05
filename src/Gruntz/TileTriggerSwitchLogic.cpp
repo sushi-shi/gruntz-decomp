@@ -751,18 +751,16 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
             i32 value = m_matrix[j * 3 + i];
             i32 px = i + m_tileX - 1;
             i32 py = j + m_tileY - 1;
-            CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
+            CGruntzMgr* reg = g_gameReg;
+            CDDrawWorkerHost* plane = reg->m_world->m_level->m_mainPlane;
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
-            g_gameReg->m_tileGrid->ComputeCellFlags(px, py, value);
+            reg->m_tileGrid->ComputeCellFlags(px, py, value);
+            i32 sx = ((i + m_tileX) << TILE_SHIFT_PX) - 0x10;
+            i32 sy = ((j + m_tileY) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
-                CWwdGameObjectA* spr = gameMgr->m_childGroup->CreateSprite(
-                    0,
-                    ((i + m_tileX) << TILE_SHIFT_PX) - 0x10,
-                    ((j + m_tileY) << TILE_SHIFT_PX) - 0x10,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    0x40003
-                );
+                CWwdGameObjectA* spr =
+                    gameMgr->m_childGroup
+                        ->CreateSprite(0, sx, sy, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
                 if (spr != NULL) {
                     spr->ApplyName("LEVEL_ROCKBREAK");
                     spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
@@ -791,10 +789,10 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         txt->m_smarts = m_textId;
     }
 
-    if ((m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX >= g_gameReg->m_viewBounds.right
-        || (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX < g_gameReg->m_viewBounds.left
-        || (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX >= g_gameReg->m_viewBounds.bottom
-        || (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX < g_gameReg->m_viewBounds.top) {
+    i32 bx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 by = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    if (bx >= g_gameReg->m_viewBounds.right || bx < g_gameReg->m_viewBounds.left
+        || by >= g_gameReg->m_viewBounds.bottom || by < g_gameReg->m_viewBounds.top) {
         return;
     }
     CDDrawSubMgrLeafScan* sreg = gameMgr->m_soundRegistry;
@@ -807,6 +805,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     if (out == NULL) {
         return;
     }
+    i32 tag = g_sndCueTag;
     if (g_sndEnabled == 0) {
         return;
     }
@@ -815,42 +814,49 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         return;
     }
     out->m_lastPlayTime = kc;
-    out->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+    out->m_sound->ConfigureItem(tag, 0, 0, 0);
 }
 
 // @early-stop
 RVA(0x00112590, 0x166)
 i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
-    i32 v;
-    if (m_tileToken != 0) {
+    i32 tok = m_tileToken;
+    if (tok != 0) {
         CGruntzMgr* reg = g_gameReg;
+        i32 ty = m_tileY;
+        i32 tx = m_tileX;
         CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-        L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = m_tileToken;
-        v = m_tileToken;
-        (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
+        L->m_tileGrid[L->m_colOffsets[ty] + tx] = tok;
+        (reg->m_tileGrid)->ComputeCellFlags(tx, ty, tok);
     } else {
         switch (verb) {
             case TILEKIND_COVERED_POWERUP: {
                 CGruntzMgr* reg = g_gameReg;
+                i32 tx = m_tileX;
+                i32 ty = m_tileY;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                v = L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] + 1;
-                CDDrawWorkerHost* L2 = reg->m_world->m_level->m_mainPlane;
-                L2->m_tileGrid[L2->m_colOffsets[m_tileY] + m_tileX] = v;
-                (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
+                i32 v = L->m_tileGrid[L->m_colOffsets[ty] + tx] + 1;
+                CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
+                L2->m_tileGrid[L2->m_colOffsets[ty] + tx] = v;
+                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, v);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_B: {
                 CGruntzMgr* reg = g_gameReg;
+                i32 ty = m_tileY;
+                i32 tx = m_tileX;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = 0x5b;
-                (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, 0x5b);
+                L->m_tileGrid[L->m_colOffsets[ty] + tx] = 0x5b;
+                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_A: {
                 CGruntzMgr* reg = g_gameReg;
+                i32 ty = m_tileY;
+                i32 tx = m_tileX;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = 0x5a;
-                (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, 0x5a);
+                L->m_tileGrid[L->m_colOffsets[ty] + tx] = 0x5a;
+                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 break;
             }
             default:
@@ -870,7 +876,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     );
     if (m_leadInSpan != 0) {
         CGameObject* rec =
-            reg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != NULL) {
             rec->m_smarts = m_leadInSpan;
         }
@@ -1112,7 +1118,7 @@ CTileActionEvent::CTileActionEvent() {
 }
 
 // @early-stop
-RVA(0x00112da0, 0xf0)
+RVA(0x00112da0, 0x100)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
     if (m_playerFlags[g_curPlayer] == 0 && static_cast<u32>((code - BRICKTILE_BROWN_1)) <= 0x1a) {
@@ -1153,16 +1159,19 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
 
+    CGruntzMgr* reg = g_gameReg;
     i32 ty = m_tileY;
     i32 tx = m_tileX;
-    if (g_gameReg->m_world->m_level->m_mainPlane
-            ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx]
+    if (reg->m_world->m_level->m_mainPlane
+            ->m_tileGrid[reg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx]
         == code) {
         return 0;
     }
+    // The write goes through the UN-CACHED global on purpose: it defeats the
+    // read/write address CSE so cl re-walks the chain, as retail does.
     g_gameReg->m_world->m_level->m_mainPlane
         ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx] = code;
-    g_gameReg->m_tileGrid->ComputeCellFlags(tx, ty, code);
+    reg->m_tileGrid->ComputeCellFlags(tx, ty, code);
     return 1;
 }
 
