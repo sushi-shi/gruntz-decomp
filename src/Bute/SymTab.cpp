@@ -1122,6 +1122,9 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
 }
 
 // @early-stop
+// One transposition: retail stores the cleared m_activeNode BEFORE reading the list
+// head, cl after. The loop spelling is not the lever - for, while-assign and a
+// loop-scoped cursor are byte-identical.
 RVA(0x0013b850, 0xa8)
 i32 CSymParser::Clear(i32 final) {
     static_cast<void>(final);

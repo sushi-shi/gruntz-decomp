@@ -3279,6 +3279,8 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
 }
 
 // @early-stop
+// The do-while counter's stack slot (0x18 vs retail's 0x10). Declaring it beside
+// tmp, before tmp, or before nb are all byte-identical - the slot is not decl-order.
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == NULL) {

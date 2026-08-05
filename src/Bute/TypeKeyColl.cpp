@@ -157,6 +157,9 @@ zBitVec::~zBitVec() {
 
 // @early-stop
 RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
+// @early-stop
+// One scratch register on the capacity copy (retail eax, cl ecx); naming the value
+// in a local does not move it.
 RVA(0x0016d2f0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {
     if (this != &that) {

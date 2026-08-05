@@ -228,6 +228,11 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
 }
 
 // @early-stop
+// Residue is the two scratch registers on the map chain and the out-param address
+// (retail edx/ecx, cl ecx/edx). This shape is the RIGHT trade: declaring `out` before
+// `res` DOES flip the registers to retail's, but it simultaneously lifts the `out = 0`
+// store above both argument pushes where retail sinks it below them - measured
+// 99.33 -> 86.67. The store position outweighs the register naming.
 RVA(0x001651b0, 0x5d)
 i32 AnimWorkerObj::ResolveTarget(void* a) {
     if (a == NULL) {
