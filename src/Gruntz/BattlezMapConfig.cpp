@@ -136,6 +136,10 @@ CBattlezMapConfig::~CBattlezMapConfig() {
 }
 
 // @early-stop
+// ebx and edi are transposed against retail (retail keeps the object cursor in
+// ebx and the shared 0 in edi); that accounts for about two thirds of the
+// residual. The rest is the g_diffScale multiply, which retail folds into
+// `fmul m32` while cl preloads it with fld/fmulp.
 RVA(0x00025020, 0x984)
 i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
@@ -214,11 +218,13 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             g_diffTier = 10;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_gruntCreationTime)))
+                    * g_diffScale))
             );
             m_resourceCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_resourceCreationTime)))
+                    * g_diffScale))
             );
             break;
         }
@@ -227,11 +233,13 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             g_diffTier = 5;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_gruntCreationTime)))
+                    * g_diffScale))
             );
             m_resourceCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_resourceCreationTime)))
+                    * g_diffScale))
             );
             break;
         }
