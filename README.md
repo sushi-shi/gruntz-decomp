@@ -116,8 +116,8 @@ gruntz init          # Wine prefix + clangd DB + Ghidra project
 compile DB, and the **Ghidra project** (import + auto-analyze `GRUNTZ.EXE`). Cold it
 is ~2–3 min; it is idempotent and self-skips once the Ghidra exports exist. How the
 *named* Ghidra DB is populated — name precedence (`src` > FID > Ghidra), byte-exact
-stack locals, incremental `gruntz ghidra-refresh`, and the human-annotation
-round-trip — is detailed in [Populating the Ghidra database](#populating-the-ghidra-database)
+stack locals, and incremental `gruntz ghidra-refresh` — is detailed in
+[Populating the Ghidra database](#populating-the-ghidra-database)
 below; **read that section first** if you plan to touch names.
 
 **3. Run the matching loop.**
@@ -209,12 +209,7 @@ by two commands (both under `nix develop .#build`):
 3. **byte-exact (100%-matched) functions** additionally get their **stack locals**
    named, harvested from a `cl /Z7` CodeView build (`harvest_locals.py`).
 
-**Human edits round-trip:** GUI renames/comments/typed locals are `USER_DEFINED` and
-win over all generated names; capture them into the tracked
-`config/user_annotations.json` with **`gruntz capture`** — `apply.py` re-applies them
-LAST so they survive a clean rebuild (and never demotes/clobbers them mid-run).
-
 **What happened:** every run writes a per-layer tally (applied / skipped / conflicts,
-incl. `src-claimed skipped` and `human skipped`) to
+including `src-claimed skipped`) to
 `build/ghidra-named/exports/enrichment_apply_report.txt`. Details:
 [`docs/build-system.md`](docs/build-system.md#name-precedence-src-wins-and-the-apply-report).

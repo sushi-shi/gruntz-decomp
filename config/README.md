@@ -55,12 +55,6 @@ and let the tool re-roll; never hand-pick a whole file.
 - **`vtable_names.csv`** — vtable RVA → mangled `??_7` name for the
   delink/synth-PDB side (configure.py input).
 
-## Round-trip mechanism (empty ≠ dead)
-
-- **`user_annotations.json`** — human edits captured FROM the Ghidra DB
-  (`export_user.py`) and re-applied on every `gruntz ghidra-refresh`
-  (`apply.py`). Currently empty lists; the channel, not the data.
-
 Retired configs (caller-audit ledgers, match-queue.md) are gone — their
 purposes live in `gruntz.cleanliness.caller_callee` and
 `gruntz.match.residual_queue` (→ `build/gen/`, regenerable, untracked).

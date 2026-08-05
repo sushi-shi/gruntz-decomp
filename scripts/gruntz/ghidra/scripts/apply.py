@@ -24,8 +24,8 @@
 #   Win32/CRT types resolve against the windows_vs12_32 archive in the DTM; custom
 #   types against the generated structs; anything unresolved falls back to void*/int.
 #
-#   Idempotent: re-runnable, never downgrades a better existing name, keeps prior
-#   [LABEL] plate comments. Run as a GhidraScript under PyGhidra (CPython3 + JPype),
+#   Idempotent: re-runnable, reasserts source-derived names, and keeps prior [LABEL]
+#   plate comments. Run as a GhidraScript under PyGhidra (CPython3 + JPype),
 #   driven by scripts/gruntz/ghidra/ghidra_metadata_apply.py (which boots PyGhidra,
 #   imports/analyzes GRUNTZ.EXE, then runs this + export.py); invoked via `gruntz
 #   init` / `gruntz ghidra-refresh`. Flat-API globals (currentProgram, monitor, ...)
@@ -36,8 +36,7 @@
 import json
 import re
 from ghidra.program.model.symbol import SourceType
-from ghidra.program.model.listing import CodeUnit, GhidraClass, CommentType
-from ghidra.program.model.listing import Function, ParameterImpl, ReturnParameterImpl
+from ghidra.program.model.listing import CommentType, ParameterImpl, ReturnParameterImpl
 from ghidra.program.model.listing.Function import FunctionUpdateType
 from ghidra.program.model.data import (
     StructureDataType, EnumDataType, CategoryPath, PointerDataType,
@@ -46,9 +45,7 @@ from ghidra.program.model.address import AddressSet
 from java.util import ArrayList
 
 PLATE = CommentType.PLATE
-US = SourceType.USER_DEFINED        # reserved for HUMAN edits (the Ghidra GUI uses it)
-GEN = SourceType.ANALYSIS           # everything apply.py generates - so the round-trip
-                                    # capture (export_user.py) can tell the two apart
+GEN = SourceType.ANALYSIS
 IMAGE_BASE = 0x400000
 
 import os
@@ -74,12 +71,6 @@ STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
 CSV_FID    = ROOT + "/config/library_labels.csv"
 CSV_FUNCTION_FIXES = ROOT + "/config/ghidra_function_fixes.csv"
-# Round-trip: human edits captured from the DB by export_user.py (`gruntz capture`),
-# TRACKED in git, re-applied here LAST so they survive a clean rebuild.
-USER_ANN   = ROOT + "/config/user_annotations.json"
-# Comments have no SourceType, so apply.py snapshots the GENERATED comments here
-# (everything minus the human comments it re-applies); export_user.py diffs it.
-APPLIED_COMMENTS = ROOT + "/build/gen/applied_comments.json"
 REPORT     = ROOT + "/build/ghidra-named/exports/enrichment_apply_report.txt"
 
 prog     = currentProgram
@@ -116,7 +107,7 @@ def demangle_apply(addr, mangled):
         from ghidra.app.cmd.label import DemanglerCmd
         from ghidra.util.task import TaskMonitor
         prim = st.getPrimarySymbol(addr)
-        if prim is not None and prim.getSource() == US:
+        if prim is not None and prim.getSource() == SourceType.USER_DEFINED:
             try:
                 prim.setName(None, SourceType.DEFAULT)  # let the demangler win
             except Exception:
@@ -240,87 +231,6 @@ def load_globals_json(path):
             pass
     return out
 
-
-_COMMENT_KINDS = {"plate": CommentType.PLATE, "pre": CommentType.PRE,
-                  "post": CommentType.POST, "eol": CommentType.EOL,
-                  "repeatable": CommentType.REPEATABLE}
-_COMMENT_KIND_LIST = sorted(_COMMENT_KINDS.items())
-
-
-def load_user_annotations():
-    if not os.path.exists(USER_ANN):
-        return {}
-    try:
-        with open(USER_ANN) as fh:
-            return json.load(fh)
-    except Exception:
-        return {}
-
-
-def dump_comment_baseline(user_comments):
-    """Snapshot the GENERATED comments to APPLIED_COMMENTS = every comment in the DB
-    EXCEPT the human ones about to be re-applied (those are the user_annotations
-    comments). On a cold init the DB has no human comments yet; on a refresh they
-    are present but excluded here - so the baseline is the generated set either way,
-    and export_user.py captures `current - baseline` = the human comments."""
-    human = set((c.get("rva"), c.get("kind"), c.get("text")) for c in user_comments)
-    rows = []
-    it = listing.getCommentAddressIterator(prog.getMemory(), True)
-    while it.hasNext():
-        addr = it.next()
-        if not addr.isMemoryAddress():
-            continue
-        r = "0x%06x" % (addr.getOffset() - IMAGE_BASE)
-        for kind, ct in _COMMENT_KIND_LIST:
-            txt = listing.getComment(ct, addr)
-            if txt and (r, kind, txt) not in human:
-                rows.append({"rva": r, "kind": kind, "text": txt})
-    rows.sort(key=lambda d: (d["rva"], d["kind"]))
-    d = os.path.dirname(APPLIED_COMMENTS)
-    if d and not os.path.isdir(d):
-        os.makedirs(d)
-    with open(APPLIED_COMMENTS, "w") as f:
-        json.dump(rows, f)
-
-
-def apply_user_annotations(data):
-    """Re-apply human edits captured by export_user.py (`gruntz capture`) - the
-    back-direction of the round-trip. Applied LAST and as USER_DEFINED so they win
-    over the generated (ANALYSIS) enrichment and survive a clean rebuild. Returns
-    (n_names, n_comments, n_locals)."""
-    nn = nc = nl = 0
-    for d in data.get("functions", []):
-        try:
-            addr = toaddr(int(d["rva"], 16))
-            fn = fm.getFunctionAt(addr) or ensure_function(addr)
-            if fn is not None and d.get("name"):
-                fn.setName(d["name"], US); nn += 1
-        except Exception:
-            pass
-    for d in data.get("comments", []):
-        try:
-            ct = _COMMENT_KINDS.get(d.get("kind", "pre"))
-            if ct is not None and d.get("text"):
-                listing.setComment(toaddr(int(d["rva"], 16)), ct, d["text"]); nc += 1
-        except Exception:
-            pass
-    for d in data.get("locals", []):
-        try:
-            fn = fm.getFunctionAt(toaddr(int(d["rva"], 16)))
-            off, nm = d.get("offset"), d.get("name")
-            if fn is None or off is None or not nm:
-                continue
-            sf = fn.getStackFrame()
-            dt = resolve_type(d.get("type") or "") or Undefined4DataType.dataType
-            try:
-                sf.createVariable(nm, off, dt, US); nl += 1
-            except Exception:
-                v = sf.getVariableContaining(off)
-                if v is not None:
-                    v.setName(nm, US); nl += 1
-        except Exception:
-            pass
-    return (nn, nc, nl)
 
 # =====================================================================
 # 1. TYPE RESOLUTION
@@ -742,11 +652,10 @@ try:
     # (CFileIO::~CFile) or a global wrongly nested in a FID class
     # (CFile::GetFileTimeInfo). Skipping src RVAs here makes src win deterministically
     # AT THE SOURCE LAYER, cold and on idempotent re-runs, independent of (E). This is
-    # the spec rule: FID labels cover only what src does NOT claim. Human (USER_DEFINED)
-    # names are likewise never touched here - they are re-asserted last by (G).
+    # the spec rule: FID labels cover only what src does NOT claim.
     src_rvas = set(rva for (rva, _n) in syms) | set(rva for (rva, _n) in data_syms)
     n_fid_named = 0; n_fid_skip_low = 0; n_fid_nofunc = 0; n_fid_demangled = 0
-    n_fid_skip_src = 0; n_fid_skip_human = 0
+    n_fid_skip_src = 0
     for (rva, name, lib, conf) in fids:
         if conf == "LOW":
             n_fid_skip_low += 1
@@ -760,14 +669,12 @@ try:
             n_fid_nofunc += 1
             continue
         prim = st.getPrimarySymbol(addr)
-        if prim is not None and prim.getSource() == US:
-            n_fid_skip_human += 1      # never demote/clobber a human name (check #6)
-            continue
+        user_named = prim is not None and prim.getSource() == SourceType.USER_DEFINED
         cur = str(fn.getName())
         # name it when unnamed/bogus OR still showing a mangled string (a prior
         # run set the raw name); a successful demangle leaves a readable name with
         # no '?'/'@', so the next run skips it (idempotent).
-        if is_default(cur) or is_bogus(cur) or "?" in cur or "@" in cur:
+        if user_named or is_default(cur) or is_bogus(cur) or "?" in cur or "@" in cur:
             if demangle_apply(addr, name):
                 n_fid_named += 1; n_fid_demangled += 1
             else:
@@ -776,11 +683,11 @@ try:
                 except Exception:
                     pass
     R("FID/library funcs named (HIGH/MED/AMBIG): %d  (%d demangled, LOW skipped: %d, "
-      "src-claimed skipped: %d, human skipped: %d, no-func: %d)" %
-      (n_fid_named, n_fid_demangled, n_fid_skip_low, n_fid_skip_src, n_fid_skip_human, n_fid_nofunc))
+      "src-claimed skipped: %d, no-func: %d)" %
+      (n_fid_named, n_fid_demangled, n_fid_skip_low, n_fid_skip_src, n_fid_nofunc))
 
     n_sym_named = 0; n_sym_nofunc = 0; n_sym_demangled = 0
-    n_sym_skip_human = 0; n_sym_already = 0
+    n_sym_already = 0
     for (rva, name) in syms:
         addr = toaddr(rva)
         fn = ensure_function(addr)
@@ -788,11 +695,9 @@ try:
             n_sym_nofunc += 1
             continue
         prim = st.getPrimarySymbol(addr)
-        if prim is not None and prim.getSource() == US:
-            n_sym_skip_human += 1      # never demote/clobber a human name (check #6)
-            continue
+        user_named = prim is not None and prim.getSource() == SourceType.USER_DEFINED
         cur = str(fn.getName())
-        if is_default(cur) or is_bogus(cur) or "?" in cur or "@" in cur:
+        if user_named or is_default(cur) or is_bogus(cur) or "?" in cur or "@" in cur:
             if demangle_apply(addr, name):
                 n_sym_named += 1; n_sym_demangled += 1
             else:
@@ -803,8 +708,8 @@ try:
         else:
             n_sym_already += 1         # already carries the src (demangled) name (idempotent)
     R("symbol_names (zlib+ctors) reconciled: %d  (%d demangled, already-named: %d, "
-      "human skipped: %d, no-func: %d)"
-      % (n_sym_named, n_sym_demangled, n_sym_already, n_sym_skip_human, n_sym_nofunc))
+      "no-func: %d)"
+      % (n_sym_named, n_sym_demangled, n_sym_already, n_sym_nofunc))
 
     # Global DATA symbols a matched global is referenced through (labels.py @data
     # rows). The name is the clang MS-ABI mangling (?g_foo@@3.. / _g_foo); Ghidra
@@ -853,7 +758,7 @@ try:
     n_nofunc = 0; n_created = 0
     n_proto = 0; n_proto_fail = 0
     n_this_applied = 0
-    n_local_vars = 0; n_local_funcs = 0; n_local_skip_human = 0
+    n_local_vars = 0; n_local_funcs = 0
     local_rvas_hit = set()          # locals.json RVAs the (E) loop actually reached
     this_methods_by_class = {}
     proto_examples = []
@@ -884,9 +789,7 @@ try:
         # keep the mangled name Ghidra demangles on its own.
         leaf = name.rsplit("::", 1)[-1] if name else ""
         cur = str(fn.getName())
-        _prim = st.getPrimarySymbol(addr)
-        _human = _prim is not None and _prim.getSource() == US   # don't clobber a rename
-        if leaf and _ident.match(leaf) and cur != leaf and not _human:
+        if leaf and _ident.match(leaf) and cur != leaf:
             try:
                 fn.setName(leaf, GEN); n_renamed += 1
             except Exception:
@@ -975,11 +878,7 @@ try:
                 off, nm = L.get("offset"), L.get("name")
                 if off is None or not nm:
                     continue
-                # don't clobber a human-named slot at this offset (USER_DEFINED)
                 ev = sf.getVariableContaining(off)
-                if ev is not None and ev.getSource() == US:
-                    n_local_skip_human += 1
-                    continue
                 try:
                     sf.createVariable(nm, off, Undefined4DataType.dataType, GEN)
                     set_here += 1
@@ -999,8 +898,8 @@ try:
       % (n_renamed, n_kept, n_ns, n_plate, n_created, n_nofunc))
     R("prototypes applied (typed return + named params): %d  (failed: %d)" % (n_proto, n_proto_fail))
     R("local variables named (byte-exact funcs): %d across %d function(s)  "
-      "(locals.json sets=%d, reached=%d, human slots preserved=%d)"
-      % (n_local_vars, n_local_funcs, len(locals_map), len(local_rvas_hit), n_local_skip_human))
+      "(locals.json sets=%d, reached=%d)"
+      % (n_local_vars, n_local_funcs, len(locals_map), len(local_rvas_hit)))
     for e in proto_examples: R("    proto: " + e)
     R("this-type (struct*) applications: %d  across %d classes" %
       (n_this_applied, len(this_methods_by_class)))
@@ -1085,14 +984,6 @@ try:
     R("=== dominant still-bare FUN_ regions (64KB buckets, top 15) ===")
     for (b, c) in sorted(bare_regions.items(), key=lambda kv: -kv[1])[:15]:
         R("  RVA 0x%06x-0x%06x : %5d bare FUN_" % (b, b + 0xFFFF, c))
-
-    # ---- (G) round-trip: snapshot the generated-comment baseline, then re-apply
-    #         captured human edits LAST (so they win + survive a clean rebuild) ----
-    _ua = load_user_annotations()
-    dump_comment_baseline(_ua.get("comments", []))
-    un, uc, ul = apply_user_annotations(_ua)
-    R("user annotations re-applied (config/user_annotations.json): "
-      "%d name(s), %d comment(s), %d local(s)" % (un, uc, ul))
 
     ok = True
 finally:

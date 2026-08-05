@@ -91,8 +91,7 @@ def main() -> int:
             _analyze_program(flat, program)  # only analyzes if not yet analyzed
 
         # Each script runs as a GhidraScript with currentProgram=program, in order
-        # (e.g. apply.py mutates the DB then export.py dumps the CSVs; or a single
-        # export_user.py that reads the DB for `gruntz capture`).
+        # (apply.py mutates the DB, then export.py dumps the CSVs).
         for script in scripts:
             print(f"[ghidra_metadata_apply] running {Path(script).name} ...", flush=True)
             pyghidra.ghidra_script(script, project, program=program)
