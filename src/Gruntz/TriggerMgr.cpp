@@ -714,24 +714,24 @@ i32 CTriggerMgr::ResetGroup(
         }
         if (selector != 0) {
             sel = selector;
-        } else if (hit == NULL) {
-            sel = 1;
-        } else if (hit == cell) {
-            m_pendingFxKind = 0;
-            (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
-            CGameObject* o = hit->m_object;
+        } else if (hit != NULL) {
+            if (hit == cell) {
+                m_pendingFxKind = 0;
+                (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
+                CGameObject* o = hit->m_object;
 
-            this->DestroyGroup(o->m_screenX, o->m_screenY, worldX, worldY);
-            return 1;
-        } else {
+                this->DestroyGroup(o->m_screenX, o->m_screenY, worldX, worldY);
+                return 1;
+            }
             sel = 2;
+        } else {
+            sel = 1;
         }
     } else {
         sel = (hit != NULL) ? 2 : 1;
     }
 
     CGameObject* sprite;
-    i32 kindArg;
     switch (sel) {
         case 1:
             this->ReportRecordsA(1, x, y);
@@ -741,15 +741,14 @@ i32 CTriggerMgr::ResetGroup(
             sprite =
                 m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_animWorker->m_notify(sprite);
-            kindArg = 2;
-            goto arm;
+            (static_cast<CLightFx*>(sprite->m_animWorker->m_logic))
+                ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 2, 1);
+            return 1;
         case 2:
-            if (hit == NULL) {
-                this->ReportRecordsB(1, x, y, 0);
-            } else {
+            if (hit != NULL) {
                 i32 owner = hit->m_tileOwnerHi;
                 if (owner == g_curPlayer && g_traitorMode == 0) {
-                    if (hit != cell) {
+                    if (cell != hit) {
                         goto reportError;
                     }
                     PickupType v = (hit->m_entranceReason <= PICKUP_EQUIPPABLE_LAST)
@@ -765,6 +764,8 @@ i32 CTriggerMgr::ResetGroup(
                     }
                 }
                 this->ReportRecordsB(1, owner, hit->m_tileOwnerLo, 1);
+            } else {
+                this->ReportRecordsB(1, x, y, 0);
             }
             if (spawnCursor == 0) {
                 return 1;
@@ -772,35 +773,24 @@ i32 CTriggerMgr::ResetGroup(
             sprite =
                 m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_animWorker->m_notify(sprite);
-            kindArg = 1;
-            goto arm;
+            (static_cast<CLightFx*>(sprite->m_animWorker->m_logic))
+                ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 1, 1);
+            return 1;
         case 3:
             if (hit != NULL) {
                 if (hit->m_tileOwnerHi == g_curPlayer && g_traitorMode == 0
-                    && (hit != cell || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
+                    && (cell != hit || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
                     goto reportError;
                 }
-                g_gameReg->m_cmdSubMgr->EnqueueSingle(
-                    1,
-                    static_cast<char>(cell->m_tileOwnerHi),
-                    static_cast<char>(cell->m_tileOwnerLo),
-                    10,
-                    static_cast<i16>(hit->m_tileOwnerHi),
-                    static_cast<i16>(hit->m_tileOwnerLo),
-                    0,
-                    0
-                );
+                i32 hitHi = hit->m_tileOwnerHi;
+                i32 hitLo = hit->m_tileOwnerLo;
+                i32 cellLo = cell->m_tileOwnerLo;
+                i32 cellHi = cell->m_tileOwnerHi;
+                g_gameReg->m_cmdSubMgr->EnqueueSingle(1, cellHi, cellLo, 10, hitHi, hitLo, 0, 0);
             } else {
-                g_gameReg->m_cmdSubMgr->EnqueueSingle(
-                    1,
-                    static_cast<char>(cell->m_tileOwnerHi),
-                    static_cast<char>(cell->m_tileOwnerLo),
-                    4,
-                    static_cast<i16>(x),
-                    static_cast<i16>(y),
-                    0,
-                    0
-                );
+                i32 cellLo2 = cell->m_tileOwnerLo;
+                i32 cellHi2 = cell->m_tileOwnerHi;
+                g_gameReg->m_cmdSubMgr->EnqueueSingle(1, cellHi2, cellLo2, 4, x, y, 0, 0);
             }
             if (spawnCursor == 0) {
                 return 1;
@@ -808,16 +798,12 @@ i32 CTriggerMgr::ResetGroup(
             sprite =
                 m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_animWorker->m_notify(sprite);
-            kindArg = 3;
-            goto arm;
+            (static_cast<CLightFx*>(sprite->m_animWorker->m_logic))
+                ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 3, 1);
+            return 1;
         default:
             return 1;
     }
-
-arm:
-    (static_cast<CLightFx*>(sprite->m_animWorker->m_logic))
-        ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, 1);
-    return 1;
 
 reportError:
     g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x324, -1, 0, -1, -1);
@@ -1821,9 +1807,11 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         if (g->m_pending != 0) {
             continue;
         }
+        i32 tx = g->m_tileX;
+        i32 ty = g->m_tileY;
         POINT pt;
-        pt.x = g->m_tileX;
-        pt.y = g->m_tileY;
+        pt.x = tx;
+        pt.y = ty;
         if (!PtInRect(&rect, pt)) {
             continue;
         }
@@ -1832,19 +1820,17 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         GruntzPlayer* cfg = &g_gameReg->m_options[type];
         i32 aiType = 0;
         i32 ok = 0;
-        i32 px = (g->m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-        i32 py = (g->m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+        i32 radius = 0;
 
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            i32 radius = 0;
             if (cfg->m_humanControlled == 0) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
             if (PlaceObject(
                     type,
-                    px,
-                    py,
+                    (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                     0x186a0,
                     3,
                     g->m_placeIndex,
@@ -1861,11 +1847,25 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             }
         } else if (cfg->m_liveGate != 0 && cfg->m_doneFlag == 0 && cfg->m_clearedRound == 0) {
             if (cfg->m_humanControlled != 0) {
-                if (PlaceObject(type, px, py, 0x186a0, 3, g->m_placeIndex, 0, 0, 0, 0, 0, 0, 0)
+                if (PlaceObject(
+                        type,
+                        (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        0x186a0,
+                        3,
+                        g->m_placeIndex,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    )
                     != -1) {
                     ok = 1;
                 }
-            } else if (cfg->m_battlezConfig.TrySeedSpawnAt(g->m_tileX, g->m_tileY) != 0) {
+            } else if (cfg->m_battlezConfig.TrySeedSpawnAt(tx, ty) != 0) {
                 ok = 1;
             }
         }
@@ -1874,8 +1874,14 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             g->m_wwdObject->m_flags |= 0x10000;
 
             m_baseList.RemoveAt(cur);
-            CGameObject* spr = g_gameReg->m_world->m_childGroup
-                                   ->CreateSprite(0, px, py, SORTKEY_OVERLAY, "LightFx", 0x40003);
+            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                0,
+                (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
+                SORTKEY_OVERLAY,
+                "LightFx",
+                0x40003
+            );
             spr->m_animWorker->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
