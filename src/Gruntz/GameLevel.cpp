@@ -23,21 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline void StampParamBlock(CGameLevel* o) {
-    o->m_pairA[0] = 500;
-    o->m_pairA[1] = 250;
-    o->m_pairB[0] = 1000;
-    o->m_pairB[1] = 1000;
-    o->m_pairC[0] = 250;
-    o->m_pairC[1] = 125;
-    o->m_rectA.w = 1600;
-    o->m_rectA.h = 1200;
-    o->m_rectB.w = 2560;
-    o->m_rectB.h = 1920;
-    o->m_rectC.w = 768;
-    o->m_rectC.h = 576;
-}
-
 // @early-stop
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags) : CLoadable(id, flags, owner) {
@@ -63,6 +48,7 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags) : CLoadable(i
     m_rectC.h = 576;
 }
 
+RVA_COMPGEN(0x0015d170, 0x73, ?ResetParamBlock@CGameLevel@@QAEXXZ)
 RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren();
@@ -215,7 +201,7 @@ i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
     m_planeCtx.top = 0;
     m_planeCtx.right = w - 1;
     m_planeCtx.bottom = h - 1;
-    StampParamBlock(this);
+    ResetParamBlock();
     return 1;
 }
 
@@ -311,7 +297,7 @@ void CGameLevel::ReleaseChildren() {
 RVA(0x0015cdf0, 0xb8)
 i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    StampParamBlock(this);
+    ResetParamBlock();
     if (LoadFromFile(path) == 0) {
         Unload();
         return 0;
@@ -322,7 +308,7 @@ i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
 RVA(0x0015ceb0, 0xb8)
 i32 CGameLevel::LoadSourceWithCoords(CParseSource* src, LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    StampParamBlock(this);
+    ResetParamBlock();
     if (LoadFromSource(src) == 0) {
         Unload();
         return 0;
@@ -333,7 +319,7 @@ i32 CGameLevel::LoadSourceWithCoords(CParseSource* src, LevelCoordRect* coords) 
 RVA(0x0015cf70, 0xb8)
 i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    StampParamBlock(this);
+    ResetParamBlock();
     if (LoadWwd(hdr) == 0) {
         Unload();
         return 0;
@@ -344,7 +330,7 @@ i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
 RVA(0x0015d0d0, 0x99)
 i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    StampParamBlock(this);
+    ResetParamBlock();
     return 1;
 }
 
@@ -1939,3 +1925,12 @@ VTBL(CGameLevel, 0x001f0150);
 VTBL(CImageSet1, 0x001f0198);
 VTBL(CImageSet2, 0x001f01e0);
 VTBL(CImageSet3, 0x001f0228);
+
+// Retail's standalone COMDAT of the inline ResetParamBlock has no caller: the
+// five real uses are all folded.  Force the out-of-line copy out.
+static CGameLevel* volatile g_resetParamBlockSink;
+#pragma inline_depth(0)
+void ForceEmitResetParamBlock() {
+    g_resetParamBlockSink->ResetParamBlock();
+}
+#pragma inline_depth()

@@ -95,6 +95,24 @@ public:
 
     CGameLevel(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
+    // The scroll/zoom parameter block's defaults. Retail inlines this at all
+    // five uses and still emits the standalone __thiscall COMDAT at 0x15d170,
+    // which has no caller at all - see the forcer at the end of GameLevel.cpp.
+    void ResetParamBlock() {
+        m_pairA[0] = 500;
+        m_pairA[1] = 250;
+        m_pairB[0] = 1000;
+        m_pairB[1] = 1000;
+        m_pairC[0] = 250;
+        m_pairC[1] = 125;
+        m_rectA.w = 1600;
+        m_rectA.h = 1200;
+        m_rectB.w = 2560;
+        m_rectB.h = 1920;
+        m_rectC.w = 768;
+        m_rectC.h = 576;
+    }
+
     static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y);
 
     i32 LookupTile(i32 x, i32 y);
