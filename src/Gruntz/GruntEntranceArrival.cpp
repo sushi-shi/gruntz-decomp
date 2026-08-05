@@ -298,7 +298,7 @@ i32 CGrunt::RearmAttackAnim2() {
     return 0;
 }
 
-RVA(0x00061cb0, 0x34a)
+RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     i32 flag = 0;
