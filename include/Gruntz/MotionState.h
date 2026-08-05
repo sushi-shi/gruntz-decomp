@@ -16,6 +16,7 @@ extern const double g_motionNegTwo;
 class CMotionState {
 public:
     CMotionState();
+    ~CMotionState();
 
     i32 SetParams(
         double posX,
@@ -52,6 +53,8 @@ public:
     DoubleVector3 m_maxVelocity;
 };
 SIZE(0x108);
+
+inline CMotionState::~CMotionState() {}
 
 #ifndef MOTIONSTATE_OOL_CTOR
 inline CMotionState::CMotionState() {

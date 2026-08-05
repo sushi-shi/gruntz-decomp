@@ -52,32 +52,31 @@ SIZE_UNKNOWN();
 inline CMovingLogic::CMovingLogic() {}
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
-    CMotionState* m = Motion();
     i32 lo0 = m_objAux->m_minX;
     if (lo0 == 0) {
-        m->m_minBounds.x = g_movingLogicMin;
+        m_motion.m_minBounds.x = g_movingLogicMin;
     } else {
-        m->m_minBounds.x = static_cast<double>(lo0);
+        m_motion.m_minBounds.x = static_cast<double>(lo0);
     }
     i32 lo1 = m_objAux->m_minY;
     if (lo1 == 0) {
-        m->m_minBounds.y = g_movingLogicMin;
+        m_motion.m_minBounds.y = g_movingLogicMin;
     } else {
-        m->m_minBounds.y = static_cast<double>(lo1);
+        m_motion.m_minBounds.y = static_cast<double>(lo1);
     }
     i32 hi0 = m_objAux->m_maxX;
     if (hi0 == 0) {
-        m->m_maxBounds.x = g_movingLogicMax;
+        m_motion.m_maxBounds.x = g_movingLogicMax;
     } else {
-        m->m_maxBounds.x = static_cast<double>(hi0);
+        m_motion.m_maxBounds.x = static_cast<double>(hi0);
     }
     i32 hi1 = m_objAux->m_maxY;
     if (hi1 == 0) {
-        m->m_maxBounds.y = g_movingLogicMax;
+        m_motion.m_maxBounds.y = g_movingLogicMax;
     } else {
-        m->m_maxBounds.y = static_cast<double>(hi1);
+        m_motion.m_maxBounds.y = static_cast<double>(hi1);
     }
-    m->SetParams(
+    m_motion.SetParams(
         static_cast<double>(m_object->m_screenX),
         static_cast<double>(m_object->m_screenY),
         0.0,
@@ -90,7 +89,7 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
         static_cast<double>(g_frameTime) * g_motionZScale,
         0.0
     );
-    m->SetZ(static_cast<double>(g_defaultZ));
+    m_motion.SetZ(static_cast<double>(g_defaultZ));
     m_collisionFlags = 0;
     m_moveFlags = 0;
     m_object->m_moveMode = MOVE_DIRECT;

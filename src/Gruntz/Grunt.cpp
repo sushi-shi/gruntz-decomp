@@ -259,73 +259,69 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT";
 // @early-stop
 
 RVA(0x00047a10, 0x770)
-CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
-    CGameObject* obj = static_cast<CGameObject*>(owner);
-    m_gameObject = obj;
-    m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
-    m_animWorker = obj->m_animWorker;
-    m_struckClockLo = 0;
-    m_struckTimerLo = 0;
-    m_struckClockHi = 0;
-    m_struckTimerHi = 0;
-    m_holdAnchorLo = 0;
-    m_holdWindowLo = 0;
-    m_holdAnchorHi = 0;
-    m_holdWindowHi = 0;
-    m_arrivalRerollLo = 0;
-    m_arrivalRerollWindowLo = 0;
-    m_arrivalRerollHi = 0;
-    m_arrivalRerollWindowHi = 0;
-
-    m_toyClockLo = 0;
-    m_toyDurationLo = 0;
-    m_toyClockHi = 0;
-    m_toyDurationHi = 0;
-    m_idleAnchorLo = 0;
-    m_idleDelayLo = 0;
-    m_idleAnchorHi = 0;
-    m_idleDelayHi = 0;
-    m_idleTimerLo = 0;
-    m_idleWindowLo = 0;
-    m_idleTimerHi = 0;
-    m_idleWindowHi = 0;
-    m_entranceClockLo = 0;
-    m_entranceSafeTimeLo = 0;
-    m_entranceClockHi = 0;
-    m_entranceSafeTimeHi = 0;
-    m_flashClockLo = 0;
-    m_flashWindowLo = 0;
-    m_flashClockHi = 0;
-    m_flashWindowHi = 0;
-    m_attackClockLo = 0;
-    m_attackDowntimeLo = 0;
-    m_attackClockHi = 0;
-    m_attackDowntimeHi = 0;
-    m_combatClockLo = 0;
-    m_combatTimeoutLo = 0;
-    m_combatClockHi = 0;
-    m_combatTimeoutHi = 0;
-    m_hudRetireClockLo = 0;
-    m_hudRetireWindowLo = 0;
-    m_hudRetireClockHi = 0;
-    m_hudRetireWindowHi = 0;
-    m_wingzClockLo = 0;
-    m_wingzDurationLo = 0;
-    m_wingzClockHi = 0;
-    m_wingzDurationHi = 0;
-    m_convertClockLo = 0;
-    m_convertTimeLo = 0;
-    m_convertClockHi = 0;
-    m_convertTimeHi = 0;
-    m_shimmerClockLo = 0;
-    m_shimmerWindowLo = 0;
-    m_shimmerClockHi = 0;
-    m_shimmerWindowHi = 0;
-    m_arrivalVoiceClockLo = 0;
-    m_arrivalVoiceWindowLo = 0;
-    m_arrivalVoiceClockHi = 0;
-    m_arrivalVoiceWindowHi = 0;
-
+CGrunt::CGrunt(void* owner)
+    : CMovingLogic(static_cast<CGameObject*>(owner)),
+      CWapX(static_cast<CGameObject*>(owner)),
+      m_struckClockLo(0),
+      m_struckTimerLo(0),
+      m_struckClockHi(0),
+      m_struckTimerHi(0),
+      m_holdAnchorLo(0),
+      m_holdWindowLo(0),
+      m_holdAnchorHi(0),
+      m_holdWindowHi(0),
+      m_arrivalRerollLo(0),
+      m_arrivalRerollWindowLo(0),
+      m_arrivalRerollHi(0),
+      m_arrivalRerollWindowHi(0),
+      m_toyClockLo(0),
+      m_toyDurationLo(0),
+      m_toyClockHi(0),
+      m_toyDurationHi(0),
+      m_idleAnchorLo(0),
+      m_idleDelayLo(0),
+      m_idleAnchorHi(0),
+      m_idleDelayHi(0),
+      m_idleTimerLo(0),
+      m_idleWindowLo(0),
+      m_idleTimerHi(0),
+      m_idleWindowHi(0),
+      m_entranceClockLo(0),
+      m_entranceSafeTimeLo(0),
+      m_entranceClockHi(0),
+      m_entranceSafeTimeHi(0),
+      m_flashClockLo(0),
+      m_flashWindowLo(0),
+      m_flashClockHi(0),
+      m_flashWindowHi(0),
+      m_attackClockLo(0),
+      m_attackDowntimeLo(0),
+      m_attackClockHi(0),
+      m_attackDowntimeHi(0),
+      m_combatClockLo(0),
+      m_combatTimeoutLo(0),
+      m_combatClockHi(0),
+      m_combatTimeoutHi(0),
+      m_hudRetireClockLo(0),
+      m_hudRetireWindowLo(0),
+      m_hudRetireClockHi(0),
+      m_hudRetireWindowHi(0),
+      m_wingzClockLo(0),
+      m_wingzDurationLo(0),
+      m_wingzClockHi(0),
+      m_wingzDurationHi(0),
+      m_convertClockLo(0),
+      m_convertTimeLo(0),
+      m_convertClockHi(0),
+      m_convertTimeHi(0),
+      m_shimmerClockLo(0),
+      m_shimmerWindowLo(0),
+      m_shimmerClockHi(0),
+      m_shimmerWindowHi(0),
+      m_arrivalVoiceClockLo(0),
+      m_arrivalVoiceWindowLo(0),
+      m_arrivalVoiceClockHi(0),
+      m_arrivalVoiceWindowHi(0) {
     m_entranceCell.row = g_gruntMoveDirSouth.row;
     m_entranceCell.column = g_gruntMoveDirSouth.column;
     m_entranceCell.direction = g_gruntMoveDirSouth.direction;
