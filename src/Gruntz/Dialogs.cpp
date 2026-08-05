@@ -106,6 +106,8 @@ CBattlezDlg::CBattlezDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc0, pParent
 RVA_COMPGEN(0x00014c60, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
 RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
+// @early-stop
+// Stack-slot assignment and DDX block placement diverge from retail's.
 RVA(0x00014d00, 0xa68)
 void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = g_gameReg->m_settings;

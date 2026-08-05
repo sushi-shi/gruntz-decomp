@@ -69,6 +69,9 @@ i32 WarpIsPow2(i32 x) {
     return c == 1;
 }
 
+// @early-stop
+// Retail spills dx1/dy1 as float temps and keeps v0->x on the x87 stack across
+// the two idivs; cl computes the cross product entirely in x87 registers.
 RVA(0x00145e30, 0x125)
 i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     i32 sign = 0;

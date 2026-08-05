@@ -258,6 +258,9 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     return 0;
 }
 
+// @early-stop
+// Regalloc: retail spills `found` into the dead `mode` param home (one fewer
+// frame dword) and keeps `base` on the stack instead of a register.
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(i32 mode) {
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -374,6 +377,9 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     }
 }
 
+// @early-stop
+// Regalloc colour only: retail pins the tile flags in edi where cl uses ebp,
+// so retail cannot CSE grid->m_width across the two range checks.
 RVA(0x00067f80, 0x313)
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
@@ -1243,6 +1249,10 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     return 1;
 }
 
+// @early-stop
+// Same 144 blocks as retail; cl hoists the shared `idleReseed` goto target to
+// ~35% of the function where retail leaves it next to the epilogue
+// (docs/patterns/forward-goto-hoists-target-block.md).
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool eq;

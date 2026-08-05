@@ -122,6 +122,8 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
     return result;
 }
 
+// @early-stop
+// Regalloc: retail memory-homes `remap` and re-reads it; cl keeps it in a register.
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
 
@@ -204,6 +206,8 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
     return result;
 }
 
+// @early-stop
+// One SIB byte: retail's `lea` uses the buffer as base and biSize as index.
 RVA(0x00144270, 0xd2)
 i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     HRSRC hr = FindResourceA(g_resModule, name, RT_BITMAP);
@@ -933,6 +937,9 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
 
 #pragma optimize("", on)
 
+// @early-stop
+// Retail reads the PidHeader fields through a walking cursor (lea +4 / add 4 /
+// add 0x14) rather than fixed displacements off the parameter.
 RVA(0x001457a0, 0x22c)
 i32 CDDSurface::DecodePcxData(
     CDDrawPtrCollections* dst,
@@ -1054,6 +1061,8 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32
     return result;
 }
 
+// @early-stop
+// Same PidHeader walking-cursor prologue as DecodePcxData.
 RVA(0x00145b10, 0x1b5)
 i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u32 colorKey) {
     PidFlags flags = static_cast<PidFlags>(hdr->flags);
