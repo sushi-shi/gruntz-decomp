@@ -481,7 +481,6 @@ src/Crypto/FecCrypt.cpp	pending
 src/DDrawMgr/AniRecord.cpp	pending	
 src/DDrawMgr/DDPageMgr.cpp	pending	
 src/DDrawMgr/DDSurface.cpp	pending	
-src/DDrawMgr/DDrawPolyFill.cpp	pending	
 src/DDrawMgr/DDrawPtrCollections.cpp	pending	
 src/DDrawMgr/DDrawShadeBlit.cpp	pending	
 src/DDrawMgr/DDrawSubMgr.cpp	pending	
@@ -561,7 +560,6 @@ src/Gruntz/GameAssetNamespaces.cpp	pending
 src/Gruntz/GameIconFlashEffect.cpp	pending	
 src/Gruntz/GameInfoString.cpp	pending	
 src/Gruntz/GameLevel.cpp	pending	
-src/Gruntz/GameLevelLookupTile.cpp	pending	
 src/Gruntz/GameMode.cpp	pending	
 src/Gruntz/GameObjectFactory.cpp	pending	
 src/Gruntz/GameStateRecordLoad.cpp	pending	
@@ -635,7 +633,6 @@ src/Gruntz/MenuPage.cpp	pending
 src/Gruntz/MenuSparkle.cpp	pending	
 src/Gruntz/MenuState.cpp	pending	
 src/Gruntz/MgrSettings.cpp	pending	
-src/Gruntz/MgrSlotSwap.cpp	pending	
 src/Gruntz/MotionState.cpp	pending	
 src/Gruntz/MotionStateStep.cpp	pending	
 src/Gruntz/MovingLogic.cpp	pending	
