@@ -2540,7 +2540,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                         memset(payload, 0, 0x2c);
                     }
                     payload[0] = 9;
-                    m_payloads.AddTail(payload);
+                    m_payloads.AddHead(payload);
                 }
             }
             break;
@@ -4381,12 +4381,6 @@ void CGrunt::FinalizeStep(char* name) {
         }
         m_object->m_screenX = nx;
         m_object->m_screenY = ny;
-        CWwdGameObjectA* h = m_object;
-        i32 v = h->m_screenY + 0x186a0;
-        if (h->m_sortKey != v) {
-            h->m_sortKey = v;
-            h->m_flags |= 0x20000;
-        }
     }
     return;
 }
