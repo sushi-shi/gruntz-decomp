@@ -70,6 +70,7 @@ public:
     void FillRect(CRezFillRect* r, i32 color);
     void FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color);
     void FlipVertical();
+    i32 PasteFrom(CRezImage* src, i32 x, i32 y);
 
     union {
         BITMAPINFO m_bmi;

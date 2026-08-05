@@ -796,6 +796,50 @@ void CRezImage::FlipVertical() {
     ::operator delete(scratch);
 }
 
+// @early-stop
+RVA(0x00176960, 0x168)
+i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
+    i32 h = src->m_height;
+    i32 w = src->m_width;
+    if (x < 0) {
+        w += x;
+        x = 0;
+    }
+    if (w + x - 1 >= m_width) {
+        w = m_width - x;
+    }
+    if (y < 0) {
+        h += y;
+        y = 0;
+    }
+    if (h + y - 1 >= m_height) {
+        h = m_height - y;
+    }
+
+    if (src->m_transparent) {
+        for (i32 row = 0; row < h; row++) {
+            u8* d = m_pixels + m_rowOffsets[y + row] + x;
+            u8* s = src->m_pixels + src->m_rowOffsets[row];
+            for (i32 i = w; i > 0; i--) {
+                u8 px = *s;
+                if (px != 0) {
+                    *d = px;
+                }
+                s++;
+                d++;
+            }
+        }
+        return h;
+    }
+
+    for (i32 row = 0; row < h; row++) {
+        u8* s = src->m_pixels + src->m_rowOffsets[row];
+        u8* d = m_pixels + m_rowOffsets[y + row] + x;
+        memcpy(d, s, w);
+    }
+    return h;
+}
+
 RVA(0x00176ad0, 0x17)
 void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
 
