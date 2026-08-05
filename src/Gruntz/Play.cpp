@@ -134,6 +134,9 @@ GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_CHIP_LAST = 0x26,
     CURSOR_FLAILINGGRUNT = 0x66,
     CURSOR_TOOL_HANDZ = 0xc8,
+    // The tool band's low edge. LoadCursorSprites guards its switch with
+    // `< CURSOR_TOOL_FIRST` (retail 0xd0159: `cmp eax,0xc8; jl`).
+    CURSOR_TOOL_FIRST = CURSOR_TOOL_HANDZ,
     CURSOR_TOOL_BOMBZ = 0xc9,
     CURSOR_TOOL_BOOMERANGZ = 0xca,
     CURSOR_TOOL_BRICKZ = 0xcb,
@@ -5260,7 +5263,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_levelId = frame;
         return 1;
     }
-    if (cursor < CURSOR_TOOL_HANDZ) {
+    if (cursor < CURSOR_TOOL_FIRST) {
         return 0;
     }
     switch (cursor) {
