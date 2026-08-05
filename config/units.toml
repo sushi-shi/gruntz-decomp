@@ -1584,6 +1584,11 @@ source = "src/Wap32/GameWndComdats.cpp"
 flags = "cpp"
 
 [[unit]]
+unit = "gameappcomdats"
+source = "src/Wap32/GameAppComdats.cpp"
+flags = "cpp"
+
+[[unit]]
 unit = "cimagecomdats"
 source = "src/Image/CImageComdats.cpp"
 flags = "cpp-rtti"
