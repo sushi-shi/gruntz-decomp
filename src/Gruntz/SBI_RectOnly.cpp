@@ -2021,6 +2021,16 @@ void CStatusBarMgr::AdvanceGauge(i32 delta) {
     m_gaugeTarget = v;
 }
 
+RVA(0x00105780, 0x1f)
+void CStatusBarMgr::DrainGauge(i32 delta) {
+    m_gaugeTarget = m_gauge - delta > 0 ? m_gauge - delta : 0;
+}
+
+RVA(0x001057b0, 0xd)
+void CStatusBarMgr::SetGaugeTarget(i32 value) {
+    m_gaugeTarget = value;
+}
+
 RVA(0x001057d0, 0x13)
 void CStatusBarMgr::SetGauge(i32 value) {
     m_gaugeTarget = value;

@@ -109,6 +109,8 @@ public:
     void ArmSlot(i32 idx);
     i32 AnySlotActive();
     void AdvanceGauge(i32 delta);
+    void DrainGauge(i32 delta);
+    void SetGaugeTarget(i32 value);
     void SetGauge(i32 value);
     void RefreshAll();
     void Reset();

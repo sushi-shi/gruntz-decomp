@@ -1449,7 +1449,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
 }
 
 // @early-stop
-RVA(0x000cbcc0, 0x1770)
+RVA(0x000cbcc0, 0x17c0)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     CPlay* self = this;
 
