@@ -496,8 +496,19 @@ inline CPlay::~CPlay() {
 }
 
 // @early-stop
-// retail copy 0x0008c9d0 (emitted by gruntzmgr; pin there). Init list is
-// byte-proven: scalar zero-stores interleave the member-object ctors.
+// retail copy 0x0008c9d0 (emitted by gruntzmgr; pin there).
+//
+// Residue: each timer/interval pair is zeroed in retail as +0, +8, +4, +0xc
+// (0x328, 0x330, 0x32c, 0x334 and eight more groups just like it), inside the
+// mem-init run - i.e. BETWEEN the subobject ctor calls, with the EH state byte
+// stepping 0..4 around them. A mem-init list cannot produce that: MSVC5 runs
+// mem-inits in DECLARATION order and ignores the list order (measured - the
+// list below is already written lo/interval/hi/intervalHi and cl still emits
+// 0x328, 0x32c, 0x330, 0x334). So each pair is really ONE 16-byte member class
+// whose inline ctor body writes m_timeLo, m_intervalLo, m_timeHi,
+// m_intervalHi - the same source-order effect that makes CState::CState emit
+// its RECTs as left, right, top, bottom. Realizing that class means retyping
+// ~147 references across Play.cpp and friends.
 inline CPlay::CPlay()
     : m_bootyTimerLo(0),
       m_bootyInterval(0),

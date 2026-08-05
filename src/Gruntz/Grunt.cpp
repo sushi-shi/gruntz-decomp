@@ -772,7 +772,8 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         return &g_gruntMoveDirCenter;
     }
     i32 dy = static_cast<i32>((other->m_positionX - m_positionX));
-    i32 dx = static_cast<i32>((m_positionY - other->m_positionY));
+    double otherY = other->m_positionY;
+    i32 dx = static_cast<i32>((m_positionY - otherY));
     if (dy == 0) {
         if (dx > 0) {
             return &g_gruntMoveDirNorth;
