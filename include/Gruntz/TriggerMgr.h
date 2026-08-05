@@ -128,7 +128,7 @@ public:
     i32 ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY);
     i32 ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY);
 
-    i32 ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 worldY);
+    i32 ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrivalPhase);
 
     union HitSpanArg {
         RECT* m_span;

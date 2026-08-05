@@ -1365,13 +1365,13 @@ CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
 
 // @early-stop
 RVA(0x0006e800, 0x189)
-i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 worldY) {
+i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrivalPhase) {
     i32 idx = col * TM_GRID_COLS + row;
     CGrunt* cell = m_grid[idx];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         return 0;
     }
-    if (cell->m_tileClaimed == 0) {
+    if (cell->m_tileClaimed != 0) {
         cell->m_arrivalRerollLo = 0;
         cell->m_arrivalRerollWindowLo = 0;
         cell->m_arrivalRerollHi = 0;
@@ -1384,19 +1384,26 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 w
     if (cell->m_entranceActive != 0) {
         return 0;
     }
-    const char* name = *g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
-    if (strcmp(name, "I") == 0) {
-        i32 px = cell->m_moveTile.m_x;
-        i32 py = cell->m_moveTile.m_y;
-        // NOTE: argument shape differs from the other five LoadTileArrivalFx
-        // call sites - m_entranceReason lands in `tileY`, not in `reason`.
-        this->LoadTileArrivalFx(px, py, py, IDX(cell->m_entranceReason), PICKUP_INVALID, py);
+    CString* typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
+    CString* p = g_typeColl.Slots();
+    i32 n = g_typeColl.m_grown;
+    if (n != 0) {
+        do {
+            if (p != NULL) {
+                p->CString::CString();
+            }
+            p++;
+        } while (--n != 0);
+    }
+    bool isI = (strcmp(*typeRec, "I") == 0);
+    if (isI) {
+        Coord t = cell->m_moveTile;
+        this->LoadTileArrivalFx(col, row, t.m_x, t.m_y, cell->m_entranceReason, -1);
     }
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;
-    i32 r = cell->StepArrivalDrop(bx, by, arrivalPhase, -1, 1, 0);
-    return r != 0 ? 1 : 0;
+    return cell->StepArrivalDrop(bx, by, arrivalPhase, -1, 1, 0) != 0;
 }
 
 // @early-stop
@@ -1407,7 +1414,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outCol != g_curPlayer) {
         return;
     }
-    const char* name = *g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
+    const char* name = *g_typeColl.GetNameRecord(cell->m_objAux->m_actKey);
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;
