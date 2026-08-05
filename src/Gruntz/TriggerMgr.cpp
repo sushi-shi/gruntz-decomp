@@ -425,11 +425,16 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
 }
 
 // @early-stop
-// residue is a whole-function regalloc divergence: retail keeps `view` in the
-// scratch ecx and cx in edi, while cl parks view in ebx and spills cx, which
-// costs a frame word (0x1c vs 0x18) and lets cl cross-jump the two
-// path-preview blocks and several LoadCursorSprites tails that retail emits
-// separately (14 calls / 6 rets vs retail's 24 / 16).
+// Two things are still open. (1) The tool switch's ARM ORDER: retail emits
+// GAUNTLETZ, SHOVEL, <a m_baseList walk we do not have>, BRICK, a pfk-only
+// arm, WARPSTONE, the other pfk-only arm, the shared LoadCursorSprites(0,0)
+// tail, SPY, then the boomerang group. The unplaced arm walks m_baseList and
+// shows the icon when an entry matches (tx,ty) with its +0x5c word zero -
+// most likely retail's TIMEBOMB body, which would mean ours is wrong.
+// (2) A whole-function regalloc divergence: retail keeps `view` in the scratch
+// ecx and cx in edi, while cl parks view in ebx and spills cx, which costs a
+// frame word (0x1c vs 0x18) and lets cl cross-jump tails retail emits
+// separately.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -606,7 +611,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
             return 1;
 
-        case PICKUP_SPY:
+        case PICKUP_SPY: {
             if (pfk != 0 || collision == TILEKIND_GAUNTLET_ROCK_A
                 || collision == TILEKIND_GAUNTLET_ROCK_B || collision == TILEKIND_GIANT_ROCK
                 || collision == TILEKIND_GAUNTLET_BRICK_A || collision == TILEKIND_GAUNTLET_BRICK_B
@@ -614,7 +619,30 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                 return 1;
             }
+            // the spy also lights up over a hidden object parked on this cell
+            CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+            i32 occupantId;
+            if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
+                || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
+                occupantId = 0;
+            } else {
+                occupantId = plane->m_rowInts[ty][tx * 7 + 2];
+            }
+            if (occupantId != 0) {
+                void* out = 0;
+                CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
+                CGameObject* occupant =
+                    MapLookupById(*map, occupantId, out) ? static_cast<CGameObject*>(out) : NULL;
+                if (occupant != NULL) {
+                    CUserLogic* logic = occupant->m_animWorker->m_logic;
+                    if (logic != NULL && logic->m_object->m_smarts == 0x55) {
+                        world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                        return 1;
+                    }
+                }
+            }
             break;
+        }
 
         case PICKUP_TIMEBOMB: {
             CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
