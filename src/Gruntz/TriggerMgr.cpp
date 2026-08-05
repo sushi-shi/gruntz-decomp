@@ -881,20 +881,16 @@ i32 CTriggerMgr::ByteTableHas(i32 b) {
 // @early-stop
 RVA(0x00079b80, 0x194)
 i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
-    if (m_groupInitialized != 0) {
-        return 0;
-    }
-    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (m_groupInitialized != 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         return 0;
     }
     CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
     CString name;
-    name.Format("Level%i", lvl->m_levelIndex, 0);
-    i32 color =
-        g_buteMgr.GetIntDef(const_cast<char*>(static_cast<const char*>(name)), "WarpStone", 0);
-    if (row >= g_gameReg->m_viewBounds.right || row < g_gameReg->m_viewBounds.left
-        || col >= g_gameReg->m_viewBounds.bottom || col < g_gameReg->m_viewBounds.top) {
-        lvl->ResetGoals(row, col);
+    name.Format("Level%i", lvl->m_levelIndex);
+    i32 color = g_buteMgr.GetInt("WarpStone", const_cast<char*>(static_cast<const char*>(name)));
+    if (col >= g_gameReg->m_viewBounds.right || col < g_gameReg->m_viewBounds.left
+        || row >= g_gameReg->m_viewBounds.bottom || row < g_gameReg->m_viewBounds.top) {
+        lvl->ResetGoals(col, row);
     }
 
     CGameLevel* plane = g_gameReg->m_world->m_level;
@@ -904,7 +900,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     CStatusBarMgr* sbi = lvl->m_guts;
     if (sbi->m_hlBusy == 0) {
         if (sbi->m_position == STATUSBAR_HIDDEN) {
-            sbi->Reset();
+            sbi->RefreshState();
         }
         if (sbi->m_activeTab != TAB_GAME) {
             sbi->SetTabState(TAB_GAME, MENUITEM_SELECTED);
@@ -912,10 +908,10 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         sbi->SetTab(5, 1);
         sbi->Deactivate();
     }
-    if (sbi->EnsureSub(color, outR, outC) != 0) {
-        sbi->m_hlBusy = 1;
+    if (lvl->m_guts->EnsureSub(outR, outC, color) != 0) {
+        lvl->m_guts->m_hlBusy = 1;
     } else {
-        m_byteArr.InsertAt(m_byteArr.GetSize(), 0, 0);
+        m_byteArr.SetAtGrow(m_byteArr.GetSize(), static_cast<u8>(color));
     }
     m_groupInitialized = 1;
     return 1;
