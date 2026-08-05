@@ -158,13 +158,20 @@ static __inline char* PbStr(const CString& s) {
     return const_cast<char*>(static_cast<const char*>(s));
 }
 
-// @early-stop
-RVA(0x00110860, 0x2a0)
+RVA(0x00110860, 0x2e6)
 void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     i32 px, py;
     CGruntzMgr* r;
     CDDrawSubMgrLeafScan* set;
     switch (type) {
+        // The retail byte index table starts at 15 (0x0f) and its slot 0 is an
+        // arm distinct from the default: four empty cases that widen the dense
+        // range to 102 entries.
+        case TILEKIND_ARROW_UP_B:
+        case TILEKIND_ARROW_DOWN_B:
+        case TILEKIND_ARROW_LEFT_B:
+        case TILEKIND_ARROW_RIGHT_B:
+            break;
         case TILEKIND_CHECKPOINTPYRAMID_DOWN:
         case TILEKIND_CHECKPOINTPYRAMID_UP:
         case TILEKIND_WHITEPYRAMID_DOWN:
