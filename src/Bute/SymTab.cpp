@@ -1274,7 +1274,7 @@ i32 CSymParser::CheckNodes() {
     return ok;
 }
 
-RVA(0x0013ba50, 0x1d)
+RVA(0x0013ba50, 0x1f)
 void CSymParser::SetBucketCounts(
     i32 valueBuckets,
     i32 keyBuckets,
@@ -1411,7 +1411,7 @@ CParseSource* CSymParser::ResolveQualified(const char* name, RezTypeTag fourcc) 
     return GetRoot()->ResolveQualified(name, fourcc);
 }
 
-RVA(0x0013c010, 0x13)
+RVA(0x0013c010, 0x14)
 void* CSymParser::FindQualified(const char* name) {
     return GetRoot()->FindQualified(name);
 }
