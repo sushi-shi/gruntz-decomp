@@ -43,6 +43,8 @@ LogicTypeId CRainCloud::GetTypeTag() {
     return LOGIC_RAINCLOUD;
 }
 
+// @early-stop
+// Regalloc colour only: retail keeps m_object in eax across the sortKey block.
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
@@ -54,9 +56,10 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenY = snapY;
     m_posX = static_cast<double>(snapX);
     m_posY = static_cast<double>(snapY);
-    if (m_object->m_sortKey != SORTKEY_ACTOR) {
-        m_object->m_sortKey = SORTKEY_ACTOR;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* h = m_object;
+    if (h->m_sortKey != SORTKEY_ACTOR) {
+        h->m_sortKey = SORTKEY_ACTOR;
+        h->m_flags |= 0x20000;
     }
 
     m_wp[0].x = m_object->m_screenX;
@@ -168,6 +171,8 @@ void RegisterPathHazardActions() {
         static_cast<CActHandler>(&CPathHazard::ForwardSiblingTick);
 }
 
+// @early-stop
+// Scheduling only: retail hoists the ActFindId("B") push above the m_leg stores.
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -197,17 +202,16 @@ i32 CPathHazard::Tick() {
     }
 
     CWwdGameObjectA* m10 = m_object;
-    i32 wx = m_wpX;
-    if (m10->m_screenX == wx) {
+    if (m10->m_screenX == m_wpX) {
         i32 wy = m_wpY;
         if (m10->m_screenY == wy) {
 
-            m_posX = static_cast<double>(wx);
+            m_posX = static_cast<double>(m_wpX);
             m_posY = static_cast<double>(wy);
             this->Arrive();
             i32 segs = m_object->m_damage;
             if (segs > 0) {
-                m_leg.m_window = segs;
+                m_leg.m_window = static_cast<u32>(segs);
                 m_leg.m_deadline = static_cast<u32>(g_frameTime);
                 m_prevAnimSetNode = m_objAux->m_actKey;
                 m_objAux->m_actKey = ActFindId("B");
