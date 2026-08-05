@@ -153,7 +153,7 @@ def units() -> list[dict]:
 
 def _record_build_time(mode: str, total_s: float, ninja_s: float, gates_s: float) -> None:
     """Print + append a per-invocation build-timing row (BUILD_TIMES), so worker build
-    cost can be analysed. `mode` is noop/fast/full. build/ is gitignored + per-worktree,
+    cost can be analysed. `mode` is noop/fast/normal/full. build/ is gitignored + per-worktree,
     so each worktree accumulates its own log; the `worktree` column keeps rows
     distinguishable if pooled. Best-effort: a logging failure never fails the build."""
     parts = [f"ninja {ninja_s:.1f}s"] + ([f"gates {gates_s:.1f}s"] if gates_s else [])
@@ -180,7 +180,7 @@ def _pct(n: int, d: int) -> float:
 
 
 def summarize(report: dict, full: bool = True, table: bool = False,
-              write: bool = False) -> None:
+              write: bool = False, vtable_health: bool = True) -> None:
     """The report tail. `write=True` (the BUILD only) rolls the high-water +
     cleanliness baselines and enforces the hard ratchet gate; `gruntz status`/
     `report` are pure READS - same scoreboard vs the committed baselines,
@@ -275,23 +275,33 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     # ('the proper ones not in the hierarchy'). Reducing these is what drives the
     # 'placeholder vtable slots' text metric to 0 AND removes placeholder view
     # classes. See `gruntz.core.vtable_hierarchy --audit / --coverage`.
-    try:
-        import re as _re
-        def _vh(mode: str) -> str:
-            return subprocess.run([sys.executable, "-m", "gruntz.core.vtable_hierarchy", mode],
-                                  capture_output=True, text=True, cwd=str(REPO),
-                                  env=_pkg_env()).stdout
-        aud, cov = _vh("--audit"), _vh("--coverage")
-        def _n(txt: str, pat: str) -> str:
-            m = _re.search(pat, txt)
-            return m.group(1) if m else "?"
-        inh, red = _n(aud, r"#\s*INHERIT\s*:\s*(\d+)"), _n(aud, r"#\s*REDECLARE\s*:\s*(\d+)")
-        ovr, mis = _n(aud, r"#\s*OVERRIDE\s*:\s*(\d+)"), _n(aud, r"#\s*MISSING\s*:\s*(\d+)")
-        anch, unanch = _n(cov, r"#\s*anchored\s*:\s*(\d+)"), _n(cov, r"UNANCHORED[^:]*:\s*(\d+)")
-        print(f"  vtable health (-> 0; binary-proven): INHERIT {inh}  REDECLARE {red}  "
-              f"OVERRIDE-unmarked {ovr}  MISSING {mis}  |  anchored {anch}, UNANCHORED {unanch}")
-    except Exception as exc:  # never let the vtable probe break a build report
-        print(f"  vtable health: (unavailable: {exc})")
+    if vtable_health:
+        try:
+            import re as _re
+
+            def _vh(mode: str) -> str:
+                return subprocess.run(
+                    [sys.executable, "-m", "gruntz.core.vtable_hierarchy", mode],
+                    capture_output=True, text=True, cwd=str(REPO), env=_pkg_env()
+                ).stdout
+
+            aud, cov = _vh("--audit"), _vh("--coverage")
+
+            def _n(txt: str, pat: str) -> str:
+                m = _re.search(pat, txt)
+                return m.group(1) if m else "?"
+
+            inh = _n(aud, r"#\s*INHERIT\s*:\s*(\d+)")
+            red = _n(aud, r"#\s*REDECLARE\s*:\s*(\d+)")
+            ovr = _n(aud, r"#\s*OVERRIDE\s*:\s*(\d+)")
+            mis = _n(aud, r"#\s*MISSING\s*:\s*(\d+)")
+            anch = _n(cov, r"#\s*anchored\s*:\s*(\d+)")
+            unanch = _n(cov, r"UNANCHORED[^:]*:\s*(\d+)")
+            print(f"  vtable health (-> 0; binary-proven): INHERIT {inh}  "
+                  f"REDECLARE {red}  OVERRIDE-unmarked {ovr}  MISSING {mis}  |  "
+                  f"anchored {anch}, UNANCHORED {unanch}")
+        except Exception as exc:  # never let the vtable probe break a build report
+            print(f"  vtable health: (unavailable: {exc})")
 
 
 # --- subcommands -----------------------------------------------------------
@@ -331,49 +341,94 @@ def cmd_build(args) -> None:
     # checked". Measured: an @stub metadata fix + a header edit -> ninja no-op -> exit 0,
     # gates never ran.
     #
-    # So: a no-op is now reported, not returned on. The gate tail is ~20s; the fast inner
-    # loop is `--fast`, which skips it deliberately and says so.
+    # So: a no-op is now reported, not returned on. The latency-sensitive matcher loop is
+    # `--fast`, which deliberately runs no source gates and says so.
     before = REPORT.stat().st_mtime if REPORT.exists() else 0
     ninja_t0 = time.monotonic()
     run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
     ninja_s = time.monotonic() - ninja_t0
     noop = (REPORT.stat().st_mtime if REPORT.exists() else 0) == before
     if noop:
-        log("up to date - nothing rebuilt (running the source gates anyway; they read "
-            "src/, not report.json).")
+        log("up to date - nothing rebuilt (the selected tier determines which source "
+            "checks run).")
     if not REPORT.exists():
         die("no objdiff report - the build did not produce build/objdiff/report.json.")
 
     # Gate tiers (measured wall-times in docs/build-system.md):
-    #   fast   gate_selftest + the ratchets a %-grind edit can trip: compgen_order,
-    #          data_tu_order, single_view - the matcher inner loop.
-    #   normal fast + verify_* (uniqueness) + %-regression + the rare/orchestrator
-    #          ratchets: tu_order (a TU move is rare now), label_style, view_typedef -
-    #          the DEFAULT, per commit.
-    #   full   normal + the class/vtable modelling audits + structs regen (the vtable
-    #          family is at 0 and stable, so it only needs re-checking when a class/
-    #          vtable actually changes - run --full before committing such a change)
-    #          + view_debt / class_sizes.
-    tier = "full" if getattr(args, "full", False) else (
-        "fast" if getattr(args, "fast", False) else getattr(args, "tier", "full"))
+    #   fast   build + objdiff summary only - the matcher inner loop.
+    #   normal quick structural-integrity checks - the DEFAULT, per commit.
+    #   full   normal + exhaustive whole-tree discovery audits and durable worklists -
+    #          periodic/daily, and allowed to be slow.
+    tier = getattr(args, "tier", None) or "normal"
+    if getattr(args, "fast", False):
+        tier = "fast"
+    elif getattr(args, "normal", False):
+        tier = "normal"
+    elif getattr(args, "full", False):
+        tier = "full"
     _ORD = {"fast": 0, "normal": 1, "full": 2}
+    if tier not in _ORD:
+        die(f"unknown build tier {tier!r}; choose fast, normal, or full")
     req = _ORD[tier]
     gates_t0 = time.monotonic()
+    gate_timings = []
+    full_findings = []
+
+    def _timed(label, start):
+        gate_timings.append((label, time.monotonic() - start))
+
+    def _print_gate_timings():
+        if gate_timings:
+            body = ", ".join(f"{name} {secs:.2f}s"
+                             for name, secs in sorted(gate_timings,
+                                                      key=lambda row: row[1], reverse=True))
+            log(f"gate timings (slowest first): {body}")
+
+    def _run_checked(mod, gargs=()):
+        started = time.monotonic()
+        try:
+            run([sys.executable, "-m", mod, *gargs])
+        finally:
+            _timed(mod, started)
 
     def _gate(mod, gargs, die_msg, gtier):
-        """Run a fatal source-gate iff its tier is within the requested tier;
-        print all output + die() on failure, else log the summary line."""
+        """Run a source gate when its tier is requested.
+
+        Normal integrity checks fail immediately. Full discovery checks continue after
+        findings so one periodic run searches the entire tree and produces every
+        available worklist; their failures are reported together at the end.
+        """
         if req < _ORD[gtier]:
             return
+        started = time.monotonic()
         r = subprocess.run([sys.executable, "-m", mod, *gargs],
                            cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+        _timed(mod, started)
         if r.returncode != 0:
             for ln in (r.stdout + r.stderr).splitlines():
                 print(ln, file=sys.stderr)
+            if gtier == "full":
+                full_findings.append((mod, die_msg))
+                log(f"full audit finding: {mod} (continuing)")
+                return
+            _print_gate_timings()
             die(die_msg)
         out = (r.stdout + r.stderr).strip()
         if out:
             log(out.splitlines()[-1])
+
+    _report = json.loads(REPORT.read_text())
+
+    # FAST is a true matcher loop: compile/delink/objdiff and print the number, with
+    # no source gates. Even the previously reduced gate set cost ~1.1s on a no-op
+    # build. Normal owns the cheap integrity gates; full owns the periodic audits.
+    if req == 0:
+        summarize(_report, full=False)
+        log("fast tier: build + objdiff summary only; no source gates. Run `gruntz build "
+            "--normal` per commit and `gruntz build --full` for the periodic audit.")
+        _record_build_time("fast", time.monotonic() - build_start, ninja_s,
+                           time.monotonic() - gates_t0)
+        return
 
     # Gate 0: the gates' own NEGATIVE CONTROLS (~0.01s, hermetic - no build artifacts).
     # Every gate below reports a number, and a gate nobody has watched FAIL reports it
@@ -382,51 +437,41 @@ def cmd_build(args) -> None:
     # code), and the MAX-% ratchet absorbed a 0/0 report's 100% and pinned itself there
     # forever. Each of those is now a test that fails against the code that shipped it.
     # This runs FIRST: if the checks are broken, their verdicts below are worthless.
-    run([sys.executable, "-m", "gruntz.match.gate_selftest"])
-    _report = json.loads(REPORT.read_text())
+    _run_checked("gruntz.match.gate_selftest")
 
-    # FAST tier - what a matcher's own %-grind edit can break: an annotation it just
-    # added (a compgen pin, a moved DATA def) or an extern decl it changed. Run in
-    # EVERY tier. (tu_order / label_style / view_typedef are NORMAL - see below: a TU
-    # move is rare and label/typedef slips are trivial orchestrator fixups, none of
-    # which the %-grind inner loop should carry.)
+    # NORMAL+ integrity gates. These are cheap and catch annotation/order/source
+    # mistakes, but they do not belong in the latency-sensitive matcher loop.
     _gate("gruntz.audit.rva_size", ["--gate"],
           "rva-size: an RVA(addr, size) label is SHORTER than the function's real extent, "
           "so the delinker truncates the TARGET and objdiff scores a complete body against "
           "a partial one - a silently capped score, not a code problem "
-          "(python -m gruntz.audit.rva_size)", "fast")
+          "(python -m gruntz.audit.rva_size)", "normal")
     _gate("gruntz.audit.compgen_order", ["--gate"],
           "compgen-order ratchet violated - move the RVA_COMPGEN invocation to its "
-          "RVA-sorted slot (python -m gruntz.audit.compgen_order)", "fast")
+          "RVA-sorted slot (python -m gruntz.audit.compgen_order)", "normal")
     _gate("gruntz.audit.data_tu_order", ["--ratchet"],
           "data-tu-order ratchet violated - a DATA def lands inside another TU's "
-          "same-storage band (python -m gruntz.audit.data_tu_order)", "fast")
+          "same-storage band (python -m gruntz.audit.data_tu_order)", "normal")
     _gate("gruntz.audit.single_view", ["--ratchet"],
           "single-view ratchet violated - a global is declared with two types/"
-          "linkages (python -m gruntz.audit.single_view)", "fast")
+          "linkages (python -m gruntz.audit.single_view)", "normal")
     _gate("gruntz.audit.self_recursion", ["--gate"],
           "self-recursion ratchet violated - a seam accessor returns a call to "
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "
-          "the %% gate cannot see it) (python -m gruntz.audit.self_recursion)", "fast")
-
-    if req == 0:  # fast tier: just the objdiff %, then stop (the cleanliness-board scan
-        summarize(_report, full=False)  # + baseline writes below are normal+ only)
-        log("fast tier: %% + the sub-second ratchets; run `gruntz build` (normal) or "
-            "`--full` before committing.")
-        _record_build_time("fast", time.monotonic() - build_start, ninja_s,
-                           time.monotonic() - gates_t0)
-        return
+          "the %% gate cannot see it) (python -m gruntz.audit.self_recursion)", "normal")
 
     # normal+ only: the FULL scoreboard (high-water + cleanliness board) and the ONE
     # write of the baselines - this is the ~several-second src/include cleanliness scan.
-    summarize(_report, write=True)
+    started = time.monotonic()
+    summarize(_report, write=True, vtable_health=False)
+    _timed("scoreboard", started)
 
     # NORMAL tier - structural uniqueness invariants (low per-edit violation, so out of
     # the fast inner loop): the @stub-backlog address format, the game-body/library-body
     # exclusivity, and one-mangled-name-per-RVA. All FATAL, no allowlist.
-    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
-    run([sys.executable, "-m", "gruntz.match.verify_library_overlap"])
-    run([sys.executable, "-m", "gruntz.match.verify_unique_names"])
+    _run_checked("gruntz.match.verify_stubs")
+    _run_checked("gruntz.match.verify_library_overlap")
+    _run_checked("gruntz.match.verify_unique_names")
 
     # NORMAL ratchets - rare-during-%-grind + trivial orchestrator fixups, so out of the
     # fast loop: a TU move (tu_order), a mal-formed label (label_style), a re-introduced
@@ -452,14 +497,14 @@ def cmd_build(args) -> None:
     # is libclang over the real compdb, which is why it catches what the campaign's
     # own regex rewriters kept missing (`case 0xa:` when the pattern wanted decimal,
     # `case 0: {` when it wanted end-of-line). FULL tier: it reparses every TU.
-    _gate("gruntz.audit.enum_case_labels", ["--gate"],
+    _gate("gruntz.audit.enum_case_labels", ["--gate", "--detail"],
           "a switch with an enum-typed key still has numeric case labels - "
           "python -m gruntz.audit.enum_case_labels --apply", "full")
     # The rest of the same problem: a literal written where the surrounding TYPE
     # already says what it means - a 0 against a pointer, a byte count that is
     # sizeof the thing beside it, a bare value against an enum. Ratcheted
     # down-only against config/bare-constants-baseline.tsv. FULL tier: libclang.
-    _gate("gruntz.audit.bare_constants", ["--gate"],
+    _gate("gruntz.audit.bare_constants", ["--gate", "--detail"],
           "bare-constants ratchet regressed - a literal was added where a type "
           "already names it (python -m gruntz.audit.bare_constants --detail)", "full")
     # The #include block is canonical: no duplicates, and one order tree-wide
@@ -481,15 +526,21 @@ def cmd_build(args) -> None:
 
     # Non-fatal extras (normal+): per-function fingerprints, README score, regressions.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
+        started = time.monotonic()
         subprocess.run([sys.executable, "-m", "gruntz.match.fingerprints"],
                        cwd=str(REPO), env=_pkg_env())
+        _timed("feedback:fingerprints", started)
+    started = time.monotonic()
     subprocess.run([sys.executable, "-m", "gruntz.match.status",
                     "--report", str(REPORT), "summary", "--write-readme"],
                    cwd=str(REPO), stdout=subprocess.DEVNULL, env=_pkg_env())
+    _timed("feedback:readme", started)
     if (REPO / "config" / "match_baseline.tsv").is_file():
         log("regressions vs baseline ...")
+        started = time.monotonic()
         subprocess.run([sys.executable, "-m", "gruntz.match.status",
                         "--report", str(REPORT), "check"], cwd=str(REPO), env=_pkg_env())
+        _timed("feedback:regressions", started)
 
     # build/gen/structs.json holds clang's ACTUAL record layouts, and it is NOT a ninja
     # target - so it goes stale the instant a header changes, and every consumer then
@@ -512,7 +563,9 @@ def cmd_build(args) -> None:
     if req >= _ORD["full"]:
         from gruntz.cleanliness.class_sizes import _stale_sources
         if _stale_sources() or not (GEN_NAMES.parent / "structs.json").is_file():
+            started = time.monotonic()
             cmd_structs(argparse.Namespace(tu=[]))
+            _timed("gruntz.structs", started)
         else:
             log("structs.json is current (no source newer) - skipping the layout regen.")
 
@@ -578,8 +631,8 @@ def cmd_build(args) -> None:
           "vtable-slot-binding: a vtable slot's body is bound under a non-virtual or "
           "wrong-class name - wire it to the class's declared virtual "
           "(python -m gruntz.cleanliness.vtable_slot_binding)", "full")
-    # (the fast tu-order / compgen / data-rva / single-view / view-typedef / label-style
-    #  ratchets ran up top - they are in EVERY tier.)
+    # (the normal tu-order / compgen / data-rva / single-view / view-typedef /
+    #  label-style integrity checks ran up top.)
 
     # FULL tier - the UNGAMEABLE fake-view metric (slowest gate; reached 0 2026-07-21).
     _gate("gruntz.cleanliness.view_debt", ["--fatal"],
@@ -593,8 +646,15 @@ def cmd_build(args) -> None:
           "decl to the real symbol or define the owner "
           "(python -m gruntz.cleanliness.declared_only --list)", "full")
 
+    _print_gate_timings()
     _record_build_time(tier, time.monotonic() - build_start, ninja_s,
                        time.monotonic() - gates_t0)
+    if full_findings:
+        print("\nFull audit findings:", file=sys.stderr)
+        for mod, message in full_findings:
+            print(f"  {mod}: {message}", file=sys.stderr)
+        die(f"full audit found unfinished work in {len(full_findings)} area(s); "
+            "use its generated inventories and the commands above to plan the work")
 
 
 def cmd_labels(args) -> None:
@@ -914,9 +974,9 @@ def cmd_init(args) -> None:
     # functions.csv), build again (the delink + the "vs full engine" metric now
     # read the warm exports). This is the reproducible warm state.
     log("init warmup: build -> ghidra-refresh -> build ...")
-    cmd_build(argparse.Namespace(ninja_args=[]))
+    cmd_build(argparse.Namespace(ninja_args=[], tier="normal"))
     cmd_ghidra_refresh(argparse.Namespace())
-    cmd_build(argparse.Namespace(ninja_args=[]))
+    cmd_build(argparse.Namespace(ninja_args=[], tier="normal"))
     log("init complete (warmed).")
 
 
@@ -1322,18 +1382,18 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     b = sub.add_parser("build", help="compile -> labels -> delink -> objdiff")
-    # Gate tiers (measured wall-times in docs/build-system.md): fast ~2s = the cheap
-    # honest ratchets agents trip every edit (label/order/data/single-view/typedef);
-    # normal ~10s = fast + the vtable/class-metadata family (the default, run per
-    # commit); full ~19s = everything incl. the three slowest (view_debt, class_sizes,
-    # vtable_owner) - run from time to time, not every commit.
-    b.add_argument("--tier", choices=("fast", "normal", "full"), default="normal",
-                   help="which structural gate tier to run (default: normal).")
-    b.add_argument("--fast", action="store_true",
-                   help="alias for --tier fast: the sub-second honest ratchets only "
-                        "(matcher inner loop). Run --tier full before committing.")
-    b.add_argument("--full", action="store_true",
-                   help="alias for --tier full: every gate, incl. the 3 slowest.")
+    # Gate tiers (measured wall-times in docs/build-system.md): fast is the matcher
+    # inner loop, normal is the default per-commit integrity pass, and full is
+    # the periodic/daily whole-tree audit (libclang, class layouts, vtables).
+    tiers = b.add_mutually_exclusive_group()
+    tiers.add_argument("--tier", choices=("fast", "normal", "full"),
+                       help="which gate tier to run (default: normal).")
+    tiers.add_argument("--fast", action="store_true",
+                       help="matcher inner loop: build plus objdiff summary, with no source gates.")
+    tiers.add_argument("--normal", action="store_true",
+                       help="per-commit integrity gates (the default).")
+    tiers.add_argument("--full", action="store_true",
+                       help="periodic/daily whole-tree discovery audit and worklists.")
     b.add_argument("--force-delink", action="store_true",
                    help="re-delink the target objs even if symbol_names.csv is "
                         "unchanged (removes the delink stamp).")

@@ -457,32 +457,33 @@ Two regimes:
 
 This keeps a single-TU rebuild ~1s instead of re-emitting clang IR for all ~23
 TUs and re-delinking the whole EXE on every edit. `gruntz build` itself is thin:
-it ensures the wineserver is up (kept alive across builds, not killed each time),
-runs `ninja` (which builds the objs AND `report.json` in-graph), and runs the
-non-fatal feedback tail (README score block + regression check) **only when
-`report.json` actually moved** — a no-op build returns in ~0.15s.
+it ensures the wineserver is up (kept alive across builds, not killed each time)
+and runs `ninja`, which builds the objs and `report.json` in-graph. With a warm
+wineserver, the build/objdiff portion of an up-to-date `--fast` invocation is
+subsecond; source-tree checks are intentionally not part of that path.
 
 **Gate tiers.** The structural gate tail runs in one of three tiers (`--tier`,
-default `normal`; `--fast`/`--full` alias to fast/full). Each gate is assigned a
-tier by its measured cost and by how likely a routine edit is to trip it:
+default `normal`; `--fast`, `--normal`, and `--full` are convenience flags). The
+tiers answer different questions:
 
 | tier | ~wall | what runs | when |
 | --- | --- | --- | --- |
-| **fast** (`--fast`) | **~1s** | the objdiff `%` + `gate_selftest` + the ratchets a %-grind edit can trip: `compgen_order`, `data_tu_order`, `single_view` | the matcher inner loop |
-| **normal** (default) | ~12s | fast + the full scoreboard (cleanliness board + high-water, ~9s) + `verify_*` + the rare/orchestrator ratchets `tu_order_check`, `label_style`, `view_typedef` | per commit |
-| **full** (`--full`) | ~32s | normal + the class/vtable modelling audits (`class_sizes`, `vtable_*`, `class_vtables`) + `structs` regen + `view_debt` | before a class/vtable/view change |
+| **fast** (`--fast`) | **0s of gates** | incremental build, objdiff, concise score only | every matcher iteration |
+| **normal** (default/`--normal`) | ~11s of checks | fast + negative controls, annotation/order/uniqueness checks, scoreboard, and cheap feedback | once per commit or hand-off |
+| **full** (`--full`) | ~10–15 min warm; ~15–20 min if layouts are stale | normal + whole-tree libclang scans, class layouts, vtables, view debt, and declared-only discovery | periodic/daily, or to create a work plan |
 
-Fast prints **only the objdiff `%`** (the number a matcher grinds) plus the sub-second
-ratchets its own edit can break — a moved DATA def, a mis-placed compgen pin, a
-split-view extern. It deliberately skips the ~9s **cleanliness-board scan** of
-src/include (casts/placeholders/views/`m_<hex>` metrics + the high-water/baseline
-writes), which is a per-commit concern, not an inner-loop one — that lives in normal.
-The rare or trivially-orchestrator-fixed ratchets are also normal: a **TU move** is rare
-(agents mostly grind %, not re-home), a **mal-formed label** and a **re-introduced alias
-typedef** are one-line renames. The whole **vtable/class-metadata family is full**: it
-reached 0 and is stable, so it only needs re-checking when a class or vtable *actually
-changes* — run `--full` before committing such a change (`structs.json` regen lives in
-full too, since only those gates read it).
+Fast deliberately runs **zero source gates**. Normal owns the checks that answer
+“is this change structurally safe?” Full answers “what reconstruction debt remains?”
+Full checks therefore continue after a finding so a single run searches the whole tree
+instead of stopping at the first backlog item. Discovery scans write durable worklists
+such as `build/gen/bare_constants.tsv` and `build/gen/enum_case_labels.tsv`.
+
+Measured end to end on 2026-08-05, an up-to-date fast build took 0.3s with 0.0s
+of gates, while normal took 11.4s. Its individual integrity checks were 0.04–0.72s
+each; the cleanliness/MAX scoreboard dominated at 6.65s. Full-only non-libclang
+checks were 0.4–6.0s each.
+The two all-TU libclang scans (`enum_case_labels` and `bare_constants`) were roughly
+5–7 minutes each, and a stale `structs.json` layout regeneration adds about 4.5 minutes.
 
 **Build timing.** Every `gruntz build` records its wall-clock — printed as
 `[gruntz] build timing: total Ns (ninja Xs, gates Ys) [tier]` and appended to

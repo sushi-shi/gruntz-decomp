@@ -26,10 +26,11 @@ Matching-neutral by construction - an enumerator and its value are the same
 integer constant to the compiler - but verify with a build anyway; that is the
 house rule.
 
-  python3 -m gruntz.audit.enum_case_labels [--apply] [--gate] [--through-casts] [paths...]
+  python3 -m gruntz.audit.enum_case_labels [--apply] [--detail] [--gate] [--through-casts] [paths...]
 
     (default)       report what could be named, write nothing
     --apply         rewrite the labels
+    --detail        write build/gen/enum_case_labels.tsv, one row per finding
     --through-casts also treat `switch (static_cast<u32>(enumExpr))` sites as
                     nameable. Reported separately by default because an explicit
                     cast is how a two-domain reinterpretation is spelled too -
@@ -51,6 +52,7 @@ import clang.cindex as cidx
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 CDB = REPO / "build" / "clangd" / "compile_commands.json"
+DETAIL = REPO / "build" / "gen" / "enum_case_labels.tsv"
 
 
 def _enum_decl(t):
@@ -250,9 +252,29 @@ def apply(found):
     return total
 
 
+def write_detail(found, ambiguous, via_cast):
+    """Write the complete reviewable inventory produced by this scan."""
+    rows = []
+    for rel, hits in found.items():
+        for line, col, val, spelling, ename, name in hits:
+            rows.append((rel, line, col, "nameable", ename, val, spelling, name))
+    for rel, line, val, ename, names in ambiguous:
+        rows.append((rel, line, 0, "ambiguous", ename, val, "", "/".join(names)))
+    for rel, hits in via_cast.items():
+        for line, col, val, spelling, ename, name in hits:
+            rows.append((rel, line, col, "via-cast", ename, val, spelling, name))
+    DETAIL.parent.mkdir(parents=True, exist_ok=True)
+    DETAIL.write_text("file\tline\tcolumn\tstatus\tenum\tvalue\tspelling\treplacement\n" +
+                      "".join("%s\t%d\t%d\t%s\t%s\t%d\t%s\t%s\n" % row
+                              for row in sorted(rows)))
+    print("[enum-case-labels] detail -> %s" % DETAIL.relative_to(REPO))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gruntz.audit.enum_case_labels")
     ap.add_argument("--apply", action="store_true", help="rewrite the labels")
+    ap.add_argument("--detail", action="store_true",
+                    help="write build/gen/enum_case_labels.tsv")
     ap.add_argument("--through-casts", action="store_true",
                     help="include switches whose key is an explicit cast of an enum")
     ap.add_argument("--gate", action="store_true", help="exit 1 if any remain")
@@ -269,6 +291,9 @@ def main(argv=None):
             found[rel].extend(hits)
         via_cast = {}
     n = sum(len(v) for v in found.values())
+
+    if a.detail:
+        write_detail(found, ambiguous, via_cast)
 
     by_enum = collections.Counter()
     for hits in found.values():
