@@ -1284,15 +1284,17 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                     snd->PlayIfElapsed(static_cast<i32>(g_sndCueTag), 0, 0, 0);
                 }
             }
-            if (brick->m_tileOwnerHi == 5) {
-                m_playerFlags[0] = 1;
-                m_playerFlags[1] = 1;
-                m_playerFlags[2] = 1;
-                m_playerFlags[3] = 1;
+            i32 slot = brick->m_tileOwnerHi;
+            if (slot == PLAYERSLOT_ALL) {
+                i32* flags = m_playerFlags;
+                flags[0] = 1;
+                flags[1] = 1;
+                flags[2] = 1;
+                flags[3] = 1;
                 SetActionCode(m_actionCode);
                 return 0;
             }
-            m_playerFlags[brick->m_tileOwnerHi] = 1;
+            m_playerFlags[slot] = 1;
             SetActionCode(m_actionCode);
             return 0;
         } else if (effect == BRICKTILE_BLACK_1) {
