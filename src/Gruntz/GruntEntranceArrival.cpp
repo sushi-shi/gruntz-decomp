@@ -772,6 +772,9 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     return 0;
 }
 
+// @early-stop
+// Three `rand() % var` sites: retail's toolchain peels a divisor-zero guard that
+// our cl never emits for any honest spelling - docs/patterns/rand-modulo-peel.md.
 RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;

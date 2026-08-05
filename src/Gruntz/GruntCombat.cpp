@@ -353,7 +353,7 @@ static inline CString* ActNameSlots() {
     }
 
 // @early-stop
-RVA(0x00057100, 0x577)
+RVA(0x00057100, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     // `forced` arrives from m_moveVariant, which also carries a raw cue-variant
     // index, so the spell domain is entered here.
@@ -1030,7 +1030,7 @@ void CGrunt::OnStruck(i32 wasHit) {
 }
 
 // @early-stop
-RVA(0x00059230, 0x40d)
+RVA(0x00059230, 0x450)
 i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     if (mode == 0) {
         switch (m_arrivalState) {
