@@ -108,16 +108,19 @@ public:
     i32 m_gooberzChance;
     i32 m_gruntRatio;
 
+    // One 16-byte block read three ways. SerializeState walks it as the pair
+    // m_routeTimers[0..1] (retail materialises this+0x78 once and reaches the
+    // second element as +8 off it); the route throttle reads the named halves;
+    // the ctor and the re-arm write the lo/hi dwords separately.
     union {
-        Clock64 m_routeClock;
+        Clock64 m_routeTimers[2];
+        struct {
+            Clock64 m_routeClock;
+            Clock64 m_routeWindow;
+        };
         struct {
             i32 m_scratch78;
             i32 m_scratch7c;
-        };
-    };
-    union {
-        Clock64 m_routeWindow;
-        struct {
             i32 m_scratch80;
             i32 m_scratch84;
         };
@@ -175,8 +178,13 @@ public:
     i32 m_scrollzPct;
     i32 m_squeakToyzPct;
     i32 m_yoyozPct;
+    // The tool CDF. Every entry is the running total through its own key, so
+    // the LAST one (m_wingzPct) doubles as the divisor for the roll. The names
+    // are pinned by CBattlezMapConfig::ChooseIdleBehavior, whose arms return
+    // exactly the PickupType id of the key each slot accumulates.
     i32 m_bombzPct;
     i32 m_boomerangzPct;
+    i32 m_toolBrickzPct;
     i32 m_clubzPct;
     i32 m_gauntletzPct;
     i32 m_glovezPct;
@@ -195,7 +203,6 @@ public:
     i32 m_wandzPct;
     i32 m_welderzPct;
     i32 m_wingzPct;
-    i32 m_toolThresholdTotal;
 };
 SIZE(0x1e8);
 

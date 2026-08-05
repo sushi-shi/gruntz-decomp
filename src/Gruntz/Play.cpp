@@ -3353,6 +3353,9 @@ i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
 }
 
 // @early-stop
+// SIB base/index transposition in the three inlined CByteArray::GetAt loads
+// ([edx+ecx] vs retail's [ecx+edx*1]); operator[]/ElementAt spellings are
+// byte-identical to GetAt here. Everything else is instruction-for-instruction.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
@@ -3369,14 +3372,36 @@ i32 CPlay::ScanShuffleQuads() {
     arr.SetAtGrow(arr.GetSize(), 1);
     arr.SetAtGrow(arr.GetSize(), 2);
     arr.SetAtGrow(arr.GetSize(), 3);
+    // retail keeps the degenerate empty-bag arm at every pick: cl cannot prove
+    // count != 0, so both rand() calls survive.
+    i32 last;
+    i32 count;
     i32 r;
-    r = rand() % arr.GetSize();
+    last = arr.GetUpperBound();
+    count = last + 1;
+    if (count == 0) {
+        r = (rand() & 1) != 0 ? 0 : last;
+    } else {
+        r = rand() % count;
+    }
     perm[0] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    r = rand() % arr.GetSize();
+    last = arr.GetUpperBound();
+    count = last + 1;
+    if (count == 0) {
+        r = (rand() & 1) != 0 ? 0 : last;
+    } else {
+        r = rand() % count;
+    }
     perm[1] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    r = rand() % arr.GetSize();
+    last = arr.GetUpperBound();
+    count = last + 1;
+    if (count == 0) {
+        r = (rand() & 1) != 0 ? 0 : last;
+    } else {
+        r = rand() % count;
+    }
     perm[2] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
     perm[3] = arr.GetAt(0);
@@ -4394,10 +4419,12 @@ i32 CPlay::PostActionCue(i32 cueId) {
 }
 
 // @early-stop
+// Retail emits the loop guard `cmp edi,0x37 / jge` TWICE back to back before the
+// strip loop; cl folds the second away from every spelling tried (if+for, if+if+
+// do/while, `||` with one or two predecessors on the preheader). Nothing else
+// differs.
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
-    static_cast<void>(final);
-
     CDDrawSurfacePair* view = m_world->m_drawTarget->m_backPair;
     if (view == NULL) {
         return 0;
@@ -4416,18 +4443,20 @@ i32 CPlay::BuildHelpReveal(i32 final) {
 
     i32 counter = m_revealFrame;
     i32 col = static_cast<i32>((static_cast<float>(counter) * 3.7857143878936768f));
-    if (counter < 0x37) {
-        i32 i = counter;
-        do {
-            i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
-            LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), x, 0x1a6, 1, 0);
-            i++;
-        } while (i < 0x37);
-    } else {
+    // `final` picks the shape: a mid-reveal frame slides ONE strip to col+0xe0
+    // and stops there; the final frame paints every remaining strip and then
+    // caps the run. cl cross-jumps the two LayerBlitFrame calls into one.
+    if (counter < 0x37 && final != 1) {
         LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), col + 0xe0, 0x1a6, 1, 0);
+    } else {
+        if (counter < 0x37) {
+            for (i32 i = counter; i < 0x37; i++) {
+                i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
+                LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), x, 0x1a6, 1, 0);
+            }
+        }
+        LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapEnd), 0x1b4, 0x1a6, 1, 0);
     }
-
-    LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapEnd), 0x1b4, 0x1a6, 1, 0);
     m_revealFrame = m_revealFrame + 1;
     return 1;
 }

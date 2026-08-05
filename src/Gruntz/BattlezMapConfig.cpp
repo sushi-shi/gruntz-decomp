@@ -136,6 +136,10 @@ CBattlezMapConfig::~CBattlezMapConfig() {
 }
 
 // @early-stop
+// ebx and edi are transposed against retail (retail keeps the object cursor in
+// ebx and the shared 0 in edi); that accounts for about two thirds of the
+// residual. The rest is the g_diffScale multiply, which retail folds into
+// `fmul m32` while cl preloads it with fld/fmulp.
 RVA(0x00025020, 0x984)
 i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
@@ -214,11 +218,13 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             g_diffTier = 10;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_gruntCreationTime)))
+                    * g_diffScale))
             );
             m_resourceCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_resourceCreationTime)))
+                    * g_diffScale))
             );
             break;
         }
@@ -227,11 +233,13 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             g_diffTier = 5;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_gruntCreationTime)))
+                    * g_diffScale))
             );
             m_resourceCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale))
+                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_resourceCreationTime)))
+                    * g_diffScale))
             );
             break;
         }
@@ -259,42 +267,45 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     m_toolzPct = g_buteMgr.GetInt("Battlez", "ToolzPercent");
     m_toyzPct = m_toolzPct + g_buteMgr.GetInt("Battlez", "ToyzPercent");
     m_brickzPct = m_toyzPct + g_buteMgr.GetInt("Battlez", "BrickzPercent");
+    // The brick CDF: RedBrick through BlackBrick.
     m_redBrickPct = g_buteMgr.GetInt("Battlez", "RedBrick");
     m_blueBrickPct = m_redBrickPct + g_buteMgr.GetInt("Battlez", "BlueBrick");
-    m_goldBrickPct = g_buteMgr.GetInt("Battlez", "GoldBrick");
+    m_goldBrickPct = m_blueBrickPct + g_buteMgr.GetInt("Battlez", "GoldBrick");
     m_blackBrickPct = m_goldBrickPct + g_buteMgr.GetInt("Battlez", "BlackBrick");
+    // The toy CDF: one running total per key, from BabyWalkerz to Yoyoz.
     m_babyWalkerzPct = g_buteMgr.GetInt("Battlez", "BabyWalkerz");
     m_beachBallzPct = m_babyWalkerzPct + g_buteMgr.GetInt("Battlez", "BeachBallz");
-    m_bigWheelzPct = g_buteMgr.GetInt("Battlez", "BigWheelz");
+    m_bigWheelzPct = m_beachBallzPct + g_buteMgr.GetInt("Battlez", "BigWheelz");
     m_goKartzPct = m_bigWheelzPct + g_buteMgr.GetInt("Battlez", "GoKartz");
-    m_jackInTheBoxzPct = g_buteMgr.GetInt("Battlez", "JackInTheBoxz");
+    m_jackInTheBoxzPct = m_goKartzPct + g_buteMgr.GetInt("Battlez", "JackInTheBoxz");
     m_jumpRopezPct = m_jackInTheBoxzPct + g_buteMgr.GetInt("Battlez", "JumpRopez");
-    m_pogoStickzPct = g_buteMgr.GetInt("Battlez", "PogoStickz");
+    m_pogoStickzPct = m_jumpRopezPct + g_buteMgr.GetInt("Battlez", "PogoStickz");
     m_scrollzPct = m_pogoStickzPct + g_buteMgr.GetInt("Battlez", "Scrollz");
-    m_squeakToyzPct = g_buteMgr.GetInt("Battlez", "SqueakToyz");
+    m_squeakToyzPct = m_scrollzPct + g_buteMgr.GetInt("Battlez", "SqueakToyz");
     m_yoyozPct = m_squeakToyzPct + g_buteMgr.GetInt("Battlez", "Yoyoz");
+
+    // The tool CDF: Bombz through Wingz, the last entry being the grand total.
     m_bombzPct = g_buteMgr.GetInt("Battlez", "Bombz");
     m_boomerangzPct = m_bombzPct + g_buteMgr.GetInt("Battlez", "Boomerangz");
-    g_buteMgr.GetInt("Battlez", "Brickz");
-    m_clubzPct = m_boomerangzPct + g_buteMgr.GetInt("Battlez", "Clubz");
-    m_gauntletzPct = g_buteMgr.GetInt("Battlez", "Gauntletz");
+    m_toolBrickzPct = m_boomerangzPct + g_buteMgr.GetInt("Battlez", "Brickz");
+    m_clubzPct = m_toolBrickzPct + g_buteMgr.GetInt("Battlez", "Clubz");
+    m_gauntletzPct = m_clubzPct + g_buteMgr.GetInt("Battlez", "Gauntletz");
     m_glovezPct = m_gauntletzPct + g_buteMgr.GetInt("Battlez", "Glovez");
-    m_gooberzPct = g_buteMgr.GetInt("Battlez", "Gooberz");
+    m_gooberzPct = m_glovezPct + g_buteMgr.GetInt("Battlez", "Gooberz");
     m_gravityBootzPct = m_gooberzPct + g_buteMgr.GetInt("Battlez", "GravityBootz");
-    m_gunHatzPct = g_buteMgr.GetInt("Battlez", "GunHatz");
+    m_gunHatzPct = m_gravityBootzPct + g_buteMgr.GetInt("Battlez", "GunHatz");
     m_nerfGunzPct = m_gunHatzPct + g_buteMgr.GetInt("Battlez", "NerfGunz");
-    m_rockzPct = g_buteMgr.GetInt("Battlez", "Rockz");
+    m_rockzPct = m_nerfGunzPct + g_buteMgr.GetInt("Battlez", "Rockz");
     m_shieldzPct = m_rockzPct + g_buteMgr.GetInt("Battlez", "Shieldz");
-    m_shovelzPct = g_buteMgr.GetInt("Battlez", "Shovelz");
+    m_shovelzPct = m_shieldzPct + g_buteMgr.GetInt("Battlez", "Shovelz");
     m_springzPct = m_shovelzPct + g_buteMgr.GetInt("Battlez", "Springz");
-    m_spyzPct = g_buteMgr.GetInt("Battlez", "Spyz");
+    m_spyzPct = m_springzPct + g_buteMgr.GetInt("Battlez", "Spyz");
     m_swordzPct = m_spyzPct + g_buteMgr.GetInt("Battlez", "Swordz");
-    m_timeBombzPct = g_buteMgr.GetInt("Battlez", "TimeBombz");
+    m_timeBombzPct = m_swordzPct + g_buteMgr.GetInt("Battlez", "TimeBombz");
     m_toobzPct = m_timeBombzPct + g_buteMgr.GetInt("Battlez", "Toobz");
-    m_wandzPct = g_buteMgr.GetInt("Battlez", "Wandz");
+    m_wandzPct = m_toobzPct + g_buteMgr.GetInt("Battlez", "Wandz");
     m_welderzPct = m_wandzPct + g_buteMgr.GetInt("Battlez", "Welderz");
-    m_wingzPct = g_buteMgr.GetInt("Battlez", "Wingz");
-    m_toolThresholdTotal = m_wingzPct + g_buteMgr.GetInt("Battlez", "Wingz");
+    m_wingzPct = m_welderzPct + g_buteMgr.GetInt("Battlez", "Wingz");
 
     m_scratch78 = 0;
     m_scratch80 = 0;
@@ -510,8 +521,8 @@ i32 CBattlezMapConfig::StepBoard() {
 // @early-stop
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
-    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     i32 occupied = 0;
+    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     for (i32 c = 15; c != 0; c--) {
         if (*row != NULL) {
             occupied++;
@@ -2935,14 +2946,17 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, SerialMode kindArg, 
             break;
     }
 
+    // retail materialises this+0x78 once, ahead of the dispatch, and reaches
+    // the second timer as +8 off that cursor rather than off `this`.
+    Clock64* p = m_routeTimers;
     switch (kind) {
         case SERIAL_SAVE:
-            obj->Write(&m_routeClock, sizeof(m_routeClock));
-            obj->Write(&m_routeWindow, sizeof(m_routeWindow));
+            obj->Write(&p[0], sizeof(Clock64));
+            obj->Write(&p[1], sizeof(Clock64));
             break;
         case SERIAL_LOAD:
-            obj->Read(&m_routeClock, sizeof(m_routeClock));
-            obj->Read(&m_routeWindow, sizeof(m_routeWindow));
+            obj->Read(&p[0], sizeof(Clock64));
+            obj->Read(&p[1], sizeof(Clock64));
             break;
     }
     return 1;
@@ -3179,11 +3193,11 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     i32 fcy = fc->m_y;
 
     Coord a;
-    g->GetTilePos(&a);
+    a = g->GetTilePos();
     i32 gy = a.m_y >> TILE_SHIFT_PX;
     i32 gx = a.m_x >> TILE_SHIFT_PX;
     Coord b;
-    g->GetTilePos(&b);
+    b = g->GetTilePos();
     i32 bx = b.m_x >> TILE_SHIFT_PX;
 
     BrickzCell dest;
@@ -3218,7 +3232,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (own.m_flags & 0x4000) {
 
             Coord da;
-            g->GetTilePos(&da);
+            da = g->GetTilePos();
             for (i32 drow = m_board->m_bounds.top; drow < m_board->m_bounds.bottom; drow++) {
                 for (i32 dcol = m_board->m_bounds.left; dcol < m_board->m_bounds.right; dcol++) {
                     CPtrList cs(0xa);
@@ -3255,7 +3269,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if ((dest.m_flags & 4) && g->m_battleState != BZTASK_SEEK_SWITCH) {
         Coord tp;
         i32 keyHi = g->m_object->m_screenX >> TILE_SHIFT_PX;
-        g->GetTilePos(&tp);
+        tp = g->GetTilePos();
         i32 key = (keyHi << 8) + (tp.m_y >> TILE_SHIFT_PX);
         static_cast<void>((tp.m_x >> TILE_SHIFT_PX));
         CTileTriggerSwitchLogic* r = m_cellQuery->FindChild(key, TRIGID_ANY);
@@ -4003,8 +4017,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     if (unit->CoordCount() == 0) {
         return 0;
     }
-    i32 tx = 0;
-    i32 ty = 0;
+    // retail leaves the target cell uninitialised - it is only read on the
+    // found == 1 path.
+    i32 tx;
+    i32 ty;
     i32 found = 0;
     if (useArg != 0) {
         tx = ax;
@@ -4045,9 +4061,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                 CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != NULL) {
-                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                    node->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
+                    g_coordPool.Push(cur->m_coord);
                 }
             }
             unit->m_coordList.RemoveAll();
@@ -4121,16 +4135,16 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                     if (dx * dx + dy * dy <= 0x190) {
 
                         i32 flags = 0x4020;
-                        PickupType sec = unit->m_entranceReason;
+                        PickupType sec = cand->m_entranceReason;
                         if (sec > PICKUP_EQUIPPABLE_LAST) {
-                            sec = unit->m_toolId;
+                            sec = cand->m_toolId;
                         }
                         if (sec == PICKUP_WINGZ) {
                             flags = 0x4962;
                         }
-                        PickupType prim = unit->m_entranceReason;
+                        PickupType prim = cand->m_entranceReason;
                         if (prim > PICKUP_EQUIPPABLE_LAST) {
-                            prim = unit->m_toolId;
+                            prim = cand->m_toolId;
                         }
                         if (prim == PICKUP_TOOB) {
                             flags |= 0x100;
@@ -4151,12 +4165,24 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                             )
                             != 0) {
                             if (list.GetHeadPosition() != NULL) {
-
                                 void* head = list.RemoveHead();
                                 if (head != NULL) {
                                     CoordPoolNode* node = g_coordPool.NodeOf(head);
                                     node->m_next = g_coordPool.m_freeHead;
                                     g_coordPool.m_freeHead = node;
+                                }
+                            }
+                            if (list.GetHeadPosition() != NULL) {
+                                if (cand->CoordCount() != 0) {
+                                    CoordNode* cn = cand->CoordHead();
+                                    while (cn != NULL) {
+                                        CoordNode* cur = cn;
+                                        cn = cn->m_next;
+                                        if (cur->m_coord != NULL) {
+                                            g_coordPool.Push(cur->m_coord);
+                                        }
+                                    }
+                                    cand->m_coordList.RemoveAll();
                                 }
                                 if (unit->CoordCount() != 0) {
                                     CoordNode* nn = unit->CoordHead();
@@ -4164,9 +4190,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                         CoordNode* cur = nn;
                                         nn = nn->m_next;
                                         if (cur->m_coord != NULL) {
-                                            CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
-                                            fn->m_next = g_coordPool.m_freeHead;
-                                            g_coordPool.m_freeHead = fn;
+                                            g_coordPool.Push(cur->m_coord);
                                         }
                                     }
                                     unit->m_coordList.RemoveAll();
@@ -4328,57 +4352,60 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             return 1;
         }
         i32 roll;
-        if (m_toolThresholdTotal == 0) {
+        if (m_wingzPct == 0) {
             roll = rand() & 1;
         } else {
-            roll = rand() % m_toolThresholdTotal + 1;
+            roll = rand() % m_wingzPct + 1;
         }
+        // Every arm yields the PickupType id of the key its bucket accumulates;
+        // 0x14 is not a droppable tool, so the chain skips straight to Wingz.
         i32 mode;
         if (roll <= m_bombzPct) {
-            mode = 1;
+            mode = PICKUP_BOMB;
         } else if (roll <= m_boomerangzPct) {
-            mode = 2;
+            mode = PICKUP_BOOMERANG;
+        } else if (roll <= m_toolBrickzPct) {
+            mode = PICKUP_BRICK;
         } else if (roll <= m_clubzPct) {
-            mode = 3;
+            mode = PICKUP_CLUB;
         } else if (roll <= m_gauntletzPct) {
-            mode = 4;
+            mode = PICKUP_GAUNTLETZ;
         } else if (roll <= m_glovezPct) {
-            mode = 5;
+            mode = PICKUP_GLOVEZ;
         } else if (roll <= m_gooberzPct) {
-            mode = 6;
+            mode = PICKUP_GOOBER;
         } else if (roll <= m_gravityBootzPct) {
-            mode = 7;
+            mode = PICKUP_GRAVITYBOOTZ;
         } else if (roll <= m_gunHatzPct) {
-            mode = 8;
+            mode = PICKUP_GUNHAT;
         } else if (roll <= m_nerfGunzPct) {
-            mode = 9;
+            mode = PICKUP_NERFGUN;
         } else if (roll <= m_rockzPct) {
-            mode = 0xa;
+            mode = PICKUP_ROCK;
         } else if (roll <= m_shieldzPct) {
-            mode = 0xb;
+            mode = PICKUP_SHIELD;
         } else if (roll <= m_shovelzPct) {
-            mode = 0xc;
+            mode = PICKUP_SHOVEL;
         } else if (roll <= m_springzPct) {
-            mode = 0xd;
+            mode = PICKUP_SPRING;
         } else if (roll <= m_spyzPct) {
-            mode = 0xe;
+            mode = PICKUP_SPY;
         } else if (roll <= m_swordzPct) {
-            mode = 0xf;
+            mode = PICKUP_SWORD;
         } else if (roll <= m_timeBombzPct) {
-            mode = 0x10;
+            mode = PICKUP_TIMEBOMB;
         } else if (roll <= m_toobzPct) {
-            mode = 0x11;
+            mode = PICKUP_TOOB;
         } else if (roll <= m_wandzPct) {
-            mode = 0x12;
+            mode = PICKUP_WAND;
         } else if (roll <= m_welderzPct) {
-            mode = 0x13;
-        } else if (roll <= m_wingzPct) {
-            mode = 0x15;
+            mode = PICKUP_WELDER;
         } else {
-            mode = 0x16;
+            mode = PICKUP_WINGZ;
         }
-        if (mode == 0x14) {
-            mode = 5;
+        // 0x14 has no Battlez bute key of its own; retail folds it onto Gauntletz.
+        if (mode == PICKUP_WARPSTONE) {
+            mode = PICKUP_GAUNTLETZ;
         }
         if (mode == 3) {
 
@@ -4817,10 +4844,14 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
 }
 
 // @early-stop
+// ebx/ebp are transposed: retail parks the shared 0 in ebx and `occupied` in
+// ebp, we do the reverse, and every store that uses either follows. Declaration
+// order of `occupied`/`row` does not move it. The argument order to PlaceObject
+// and the store order are both retail's now.
 RVA(0x00030990, 0x11b)
 i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
-    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     i32 occupied = 0;
+    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     for (i32 c = 15; c != 0; c--) {
         if (*row != NULL) {
             occupied++;
@@ -4832,8 +4863,8 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     }
     i32 cell = m_triggerMgr->PlaceObject(
         m_ownerId,
-        (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         (ax << TILE_SHIFT_PX) + TILE_HALF_PX,
+        (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         3,
         m_ctx->m_options[m_ownerId].m_colorIndex,
@@ -5216,7 +5247,7 @@ inflight: {
         i32 x5 = here.m_x >> TILE_SHIFT_PX;
         i32 y5 = here.m_y >> TILE_SHIFT_PX;
         Coord nbpos;
-        cur->GetTilePos((&nbpos));
+        nbpos = cur->GetTilePos();
         i32 dx = nbpos.m_x - x5;
         i32 dy = nbpos.m_y - y5;
         i32 adx = dx < 0 ? -dx : dx;
@@ -5262,13 +5293,15 @@ L_clear:
 #undef MOVE_RECYCLE
 
 // @early-stop
+// cl keeps the hidden return pointer in eax and writes through it; retail parks
+// it in edx and copies (`mov eax,edx`) at the end. The member load order
+// (m_screenX then m_screenY) only comes out right in the by-value form.
 RVA(0x00031c70, 0x1d)
-Coord* CGrunt::GetTilePos(Coord* out) {
+Coord CGrunt::GetTilePos() {
+    Coord out;
     CWwdGameObjectA* h = m_object;
-    i32 x = h->m_screenX >> TILE_SHIFT_PX;
-    i32 y = h->m_screenY >> TILE_SHIFT_PX;
-    out->m_x = x;
-    out->m_y = y;
+    out.m_x = h->m_screenX >> TILE_SHIFT_PX;
+    out.m_y = h->m_screenY >> TILE_SHIFT_PX;
     return out;
 }
 
