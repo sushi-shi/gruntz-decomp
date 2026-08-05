@@ -1359,6 +1359,10 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     return newCode == BRICKTILE_CLEARED;
 }
 
+// @early-stop
+// commit block is byte-correct except the literal 1: cl hoists it into esi
+// above the playerSlot test, retail keeps it an immediate at the else store
+// and the return and materializes it inside the taken arm.
 RVA(0x00113420, 0x358)
 i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     if (toolId == PICKUP_BROWNBRICK) {
@@ -1369,18 +1373,14 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             commit: {
 
                 i32* flags = m_playerFlags;
-                i32* p = flags;
-                p[0] = 0;
-                p[1] = 0;
-                p[2] = 0;
-                p[3] = 0;
+                memset(flags, 0, sizeof(m_playerFlags));
                 if (playerSlot == PLAYERSLOT_ALL) {
                     flags[0] = 1;
                     flags[1] = 1;
                     flags[2] = 1;
                     flags[3] = 1;
                 } else {
-                    flags[playerSlot] = 1;
+                    m_playerFlags[playerSlot] = 1;
                 }
                 SetActionCode(m_actionCode);
                 return 1;
