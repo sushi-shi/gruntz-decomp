@@ -500,24 +500,32 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
     }
 
     {
+        // retail walks each stamp/window pair with one cursor (`add edi,8` /
+        // `add ebp,8` between the two calls), not two member addresses.
+        i64* cooldown = &m_cooldownStamp;
         switch (mode) {
             case SERIAL_LOAD:
-                ar->Read(&m_cooldownStamp, sizeof(m_cooldownStamp));
-                ar->Read(&m_cooldownWindow, sizeof(m_cooldownWindow));
+                ar->Read(cooldown, sizeof(*cooldown));
+                cooldown++;
+                ar->Read(cooldown, sizeof(*cooldown));
                 break;
             case SERIAL_SAVE:
-                ar->Write(&m_cooldownStamp, sizeof(m_cooldownStamp));
-                ar->Write(&m_cooldownWindow, sizeof(m_cooldownWindow));
+                ar->Write(cooldown, sizeof(*cooldown));
+                cooldown++;
+                ar->Write(cooldown, sizeof(*cooldown));
                 break;
         }
+        i64* timer2 = &m_timer2Stamp;
         switch (mode) {
             case SERIAL_LOAD:
-                ar->Read(&m_timer2Stamp, sizeof(m_timer2Stamp));
-                ar->Read(&m_timer2Window, sizeof(m_timer2Window));
+                ar->Read(timer2, sizeof(*timer2));
+                timer2++;
+                ar->Read(timer2, sizeof(*timer2));
                 break;
             case SERIAL_SAVE:
-                ar->Write(&m_timer2Stamp, sizeof(m_timer2Stamp));
-                ar->Write(&m_timer2Window, sizeof(m_timer2Window));
+                ar->Write(timer2, sizeof(*timer2));
+                timer2++;
+                ar->Write(timer2, sizeof(*timer2));
                 break;
         }
     }
