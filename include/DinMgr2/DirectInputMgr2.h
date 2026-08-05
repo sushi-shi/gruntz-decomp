@@ -153,6 +153,26 @@ public:
 };
 SIZE(0x2b4);
 
+// The device's 32 key bindings. Owning the fill + the element access here is what
+// reproduces retail's emission order in CInputDevice::SetupKeyTable (a raw member
+// array with a hand-written loop is one instruction off; see that function).
+class CKeyTable {
+public:
+    void Clear() {
+        for (i32 i = 0; i < 0x20; i++) {
+            m_keys[i] = 0;
+        }
+    }
+    u32& operator[](i32 i) {
+        return m_keys[i];
+    }
+    const u32& operator[](i32 i) const {
+        return m_keys[i];
+    }
+
+    u32 m_keys[0x20];
+};
+
 class CInputDevice : public CInputDevBase {
 public:
     CInputDevice();
@@ -163,7 +183,7 @@ public:
     void SetupKeyTable();
     virtual i32 Poll() OVERRIDE;
 
-    u32 m_keyTable[0x20];
+    CKeyTable m_keyTable;
     i32 m_modeFlags;
 };
 SIZE(0x338);
@@ -215,10 +235,7 @@ inline CInputDevRoot::CInputDevRoot() {
 inline CInputDevBase::CInputDevBase() {}
 
 inline CInputDevice::CInputDevice() {
-
-    for (i32 i = 0; i < 0x20; i++) {
-        m_keyTable[i] = 0;
-    }
+    m_keyTable.Clear();
     m_modeFlags = 0;
 }
 
