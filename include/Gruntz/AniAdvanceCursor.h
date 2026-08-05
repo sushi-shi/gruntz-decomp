@@ -20,7 +20,12 @@ public:
     CAniAdvanceCursor() {}
 
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
-    virtual ~CAniAdvanceCursor() OVERRIDE;
+    virtual ~CAniAdvanceCursor() OVERRIDE {
+        Unload();
+        m_id = -1;
+        m_flags = 0;
+        m_ownerCtx = NULL;
+    }
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;

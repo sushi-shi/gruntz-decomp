@@ -139,14 +139,7 @@ i32 CAniAdvanceCursor::IsLoaded() {
 }
 
 RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
-RVA(0x0015b6d0, 0x5b)
-CAniAdvanceCursor::~CAniAdvanceCursor() {
-    Unload();
-    m_id = -1;
-    m_flags = 0;
-    m_ownerCtx = NULL;
-}
-
+RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(field04, field08, owner) {
