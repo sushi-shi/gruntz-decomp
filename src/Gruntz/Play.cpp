@@ -5260,6 +5260,9 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_levelId = frame;
         return 1;
     }
+    if (cursor < CURSOR_TOOL_HANDZ) {
+        return 0;
+    }
     switch (cursor) {
         case CURSOR_TOOL_HANDZ:
             if (this->BeginGridWalk("GAME_CURSORZ_HANDZ", 1, flag, 0x64, 1) == 0) {
