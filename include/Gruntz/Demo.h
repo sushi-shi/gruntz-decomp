@@ -19,7 +19,6 @@ public:
     virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 BuildWorldLevelPath(i32) OVERRIDE;
 
-    char m_pad51c[0x520 - 0x51c];
     i32 m_demoCountdown;
     i32 m_reserved524;
 };

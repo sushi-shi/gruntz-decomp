@@ -217,6 +217,11 @@ CMulti::CMulti() {
     m_autoCommandDelay = 1;
 }
 
+// @early-stop
+// arm order + default-arm shape are byte-proven; residue is one whole-function
+// regalloc swap - retail colours this=edi / stateId=ebp (it materializes the
+// stateId argument BEFORE this), and cl picks the other way round, which also
+// leaves the `obj` join variable in eax instead of coalescing it onto esi.
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
@@ -247,44 +252,45 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
         return 1;
     }
 
-    CState* obj;
+    CState* obj = NULL;
     switch (stateId) {
+        // arm order is byte-proven by the retail bodies' allocation sizes
+        // (0x1c0, 0x520, 0x660, 0x528, 0x1c0, 0x1b8, 0x1bc, 0x320, 0x218, 0x244)
         case GAMESTATE_ATTRACT:
             obj = new CAttract;
             break;
         case GAMESTATE_PLAY:
             obj = new CPlay;
             break;
-        case GAMESTATE_MENU:
-            obj = new CMenuState;
+        case GAMESTATE_MULTI:
+            obj = new CMulti;
             break;
         case GAMESTATE_DEMO:
             obj = new CDemo;
             break;
-        case GAMESTATE_CREDITS:
-            obj = new CCreditsState;
+        case GAMESTATE_MENU:
+            obj = new CMenuState;
             break;
         case GAMESTATE_HELP:
             obj = new CHelpState;
             break;
-        case GAMESTATE_BOOTY:
-            obj = new CBootyState;
-            break;
         case GAMESTATE_SPLASH:
             obj = new CSplashState;
             break;
-        case GAMESTATE_MULTI:
-            obj = new CMulti;
+        case GAMESTATE_BOOTY:
+            obj = new CBootyState;
+            break;
+        case GAMESTATE_CREDITS:
+            obj = new CCreditsState;
             break;
         case GAMESTATE_MULTIBOOTY:
             obj = new CMultiBootyState;
             break;
         default:
-            goto install;
+            break;
     }
     m_curState = obj;
 
-install:
     if (m_curState == NULL) {
         m_owner->m_running = 0;
         return 0;

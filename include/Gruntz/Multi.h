@@ -219,7 +219,6 @@ public:
     void SetServiceName(CString s);
     void PopulateGroupList(void* hList, i32 flag);
 
-    char _padMp[0x520 - 0x51c];
     CNetSession* m_session;
     CNetMgr* m_netGate;
     i32 m_isHost;

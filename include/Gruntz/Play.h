@@ -416,6 +416,9 @@ public:
     i32 m_stepCountdown;
     i32 m_focusPlayerIndex;
     CGruntzSoundInnerZ* m_savedZonedSound;
+    // retail `new CPlay` is push 0x520 (CGruntzMgr::TransitionState @0x8b960);
+    // the ctor never touches this tail word.
+    i32 m_reserved51c;
 
     i32 DrawCursorSaveUnder(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 frame, i32 flag);
