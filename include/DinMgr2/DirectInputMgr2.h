@@ -172,6 +172,7 @@ public:
 
     u32 m_keys[0x20];
 };
+SIZE(0x80);
 
 class CInputDevice : public CInputDevBase {
 public:
