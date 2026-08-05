@@ -1984,7 +1984,7 @@ Lab_56b:
     m_finishReasonFrame = state;
 }
 
-RVA(0x0007c620, 0x4f7)
+RVA(0x0007c620, 0x500)
 i32 CTriggerMgr::LoadPowerupIconSprites(
     PickupType type,
     i32 geoB,

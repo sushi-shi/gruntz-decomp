@@ -2113,7 +2113,7 @@ i32 CGrunt::CreateSelectedSprite() {
 }
 
 // @early-stop
-RVA(0x0004d800, 0x423)
+RVA(0x0004d800, 0x440)
 i32 CGrunt::Place(
     class CTriggerMgr* board,
     i32 col,
