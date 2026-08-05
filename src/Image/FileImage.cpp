@@ -955,11 +955,13 @@ i32 CDDSurface::DecodePcxData(
         caps = caps & ~0x800;
     }
 
-    void* palette = 0;
+    i32 remap = 0;
+    void* palette;
     if (dst->m_hasPalette) {
         palette = dst->m_palette;
+    } else {
+        palette = 0;
     }
-    i32 remap = 0;
     i32 palBpp = dst->m_palBpp;
     if (palBpp != 8) {
         remap = 1;
